@@ -4,7 +4,6 @@ PROGRAMS
 
 ORTS has three executable programs:
 
-123
 
 Users launch ORTS with ORTS.exe - all it does is verify dependancies are installed.  This program
 appears in Visual Studio as Launcher.   Once dependancies are checked, ORTS.EXE executes MENU.EXE.
