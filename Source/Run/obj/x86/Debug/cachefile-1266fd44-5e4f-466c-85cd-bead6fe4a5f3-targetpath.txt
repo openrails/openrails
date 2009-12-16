@@ -1,0 +1,5 @@
+Content\CourierNew.xnb
+Content\BlockShapes.xnb
+Content\SceneryShader.xnb
+Content\sky.xnb
+Content\blank.xnb

@@ -1,0 +1,9 @@
+C:\Personal\Programming\VR\ORS\ORS\Content\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Personal\Programming\VR\ORTS\ORTS\Content\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Personal\Programming\VR\ORTS\Program\Content\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Personal\Programming\ORTS\RunActivity\Content\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Wayne\Desktop\ORTS\Program\Content\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Personal\Programming\ORTS\Program\Content\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Personal\Programming\ORTS\Run\Content\obj\x86\Debug\ResolveAssemblyReference.cache
+\\WAYNE-PC\Personal\Programming\ORTS\Source\Run\Content\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Personal\Programming\ORTS\Source\Run\Content\obj\x86\Debug\ResolveAssemblyReference.cache

@@ -1,0 +1,5 @@
+﻿MSTS QUESTIONS
+
+does disabletrigger effect the entire soundsource, or just the stream
+
+when coupling and uncoupling- which of the three events listed is actually fired?
