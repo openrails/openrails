@@ -174,6 +174,11 @@ namespace MSTS
 			Second = f.ReadInt();
 			f.VerifyEndOfBlock();
 		}
+
+        public String FormattedStartTime()
+        {
+            return Hour.ToString("00")+":"+Minute.ToString("00")+":"+Second.ToString("00");
+        }
 	}
 
 	public class Duration
@@ -194,6 +199,11 @@ namespace MSTS
 			Minute = f.ReadInt();
 			f.VerifyEndOfBlock();
 		}
+
+        public String FormattedDurationTime()
+        {
+            return Hour.ToString("00") + ":" + Minute.ToString("00");
+        }
 	}
 
 	public class Tr_Activity_File
