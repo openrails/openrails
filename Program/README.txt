@@ -1,4 +1,4 @@
-﻿ORTS README
+﻿[ORTS README]
 
 INSTALLATION
 - you must have DirectX 9 installed 
