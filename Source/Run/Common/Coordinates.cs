@@ -68,7 +68,7 @@ namespace ORTS
             }
             set
             {
-                value.Z *= 01;
+                value.Z *= -1;
                 XNAMatrix.Translation = value;
             }
         }
