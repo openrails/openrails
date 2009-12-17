@@ -129,9 +129,7 @@ namespace ORTS
         {
             TileX = tileX;
             TileZ = tileZ;
-            Location.X = location.X;
-            Location.Y = location.Y;
-            Location.Z = location.Z;
+            Location = location;
         }
 
         /// <summary>
