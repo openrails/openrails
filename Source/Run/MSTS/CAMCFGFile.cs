@@ -1,7 +1,7 @@
-﻿/// COPYRIGHT 2009 by Wayne Campbell of the Open Rails Transport Simulator project.
+﻿/// COPYRIGHT 2009 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from Wayne Campbell.
+/// is prohibited without specific written permission from admin@openrails.org.
 /// 
 /// Read the camera config file (msts)\global\camcfg.dat - Paul Gausden Dec 2009
 /// This class reads the config file into a list of camera objects
