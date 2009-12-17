@@ -377,7 +377,7 @@ namespace ORTS
             GraphicsDevice.RenderState.FogEnable = true;
             GraphicsDevice.RenderState.FogVertexMode = FogMode.None;  // vertex fog
             GraphicsDevice.RenderState.FogTableMode = FogMode.Linear;     // pixel fog off
-            GraphicsDevice.RenderState.FogColor = new Color(162, 185, 215, 255); // new Color(128, 128, 128, 255);
+            GraphicsDevice.RenderState.FogColor = new Color(189, 189, 189, 255); // new Color(128, 128, 128, 255);
             GraphicsDevice.RenderState.FogDensity = 1.0f;                      // used for exponential fog only, not linear
             GraphicsDevice.RenderState.FogEnd = ViewingDistance; // +300;
             GraphicsDevice.RenderState.FogStart = ViewingDistance / 2;
