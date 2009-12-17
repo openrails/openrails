@@ -137,6 +137,7 @@
     <Compile Include="3DViewer\TrainCar.cs" />
     <Compile Include="3DViewer\Water.cs" />
     <Compile Include="Common\Math.cs" />
+    <Compile Include="MSTS\CAMCFGFile.cs" />
     <Compile Include="MSTS\SMSFile.cs" />
     <Compile Include="Physics\DieselLocomotive.cs" />
     <Compile Include="Physics\SteamLocomotive.cs" />
@@ -190,15 +191,6 @@
     <Compile Include="Simulator\TDBTraveller.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\..\..\Wayne\WebSpace\ORTS\REVISIONS.txt">
-      <Link>REVISIONS.txt</Link>
-    </Content>
-    <Content Include="..\..\..\..\Wayne\WebSpace\ORTS\ROADMAP.txt">
-      <Link>ROADMAP.txt</Link>
-    </Content>
-    <Content Include="..\..\..\..\Wayne\WebSpace\ORTS\TODO.txt">
-      <Link>TODO.txt</Link>
-    </Content>
     <Content Include="..\..\Program\README.txt">
       <Link>README.txt</Link>
     </Content>
