@@ -110,7 +110,7 @@ namespace ORTS
 
             Console.Write(" CON");
             InitializePlayerTrain();
-            //InitializeStaticConsists();
+            InitializeStaticConsists();
 
             Train playerTrain = Trains[0]; // TODO< temp code for now
             PlayerLocomotive = null;
@@ -288,13 +288,6 @@ namespace ORTS
             // Debug Stop
             if (keyboard.IsKeyDown(Keys.Pause) && !keyboard.IsShiftDown() ) { 
                 int a = 1; }  
-
-
-            if( keyboard.IsPressed(Keys.T) )
-                InitializeStaticConsists();
-            if (keyboard.IsPressed(Keys.R))
-                Trains.Clear();
-
 
             // Switch Track Control
             if (keyboard.IsPressed(Keys.G)) // Switch Track?
