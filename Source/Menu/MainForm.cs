@@ -1,7 +1,7 @@
-﻿/// COPYWRITE 2009 by Wayne Campbell of the Open Rails Transport Simulator project.
+﻿/// COPYRIGHT 2009 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from Wayne Campbell.
+/// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
 using System.Collections.Generic;
@@ -318,7 +318,7 @@ namespace ORTS
             if (listBoxActivities.SelectedIndex >= 0)
             {
                 DetailsForm frmDetails = new DetailsForm();
-                if (frmDetails.AcivityDetails(SelectedActivityPath))
+                if (frmDetails.ActivityDetails(SelectedActivityPath))
                 {
                     frmDetails.ShowDialog();
                 }

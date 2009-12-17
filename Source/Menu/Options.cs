@@ -1,4 +1,9 @@
-﻿using System;
+﻿/// COPYRIGHT 2009 by the Open Rails project.
+/// This code is provided to enable you to contribute improvements to the open rails program.  
+/// Use of the code for any other purpose or distribution of the code to anyone else
+/// is prohibited without specific written permission from admin@openrails.org.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
