@@ -1,7 +1,7 @@
-﻿/// COPYRIGHT 2009 by the Open Rails project.
+﻿/// COPYWRITE 2009 by Wayne Campbell of the Open Rails Transport Simulator project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from admin@openrails.org.
+/// is prohibited without specific written permission from Wayne Campbell.
 
 using System;
 using System.Collections.Generic;
@@ -35,6 +35,9 @@ namespace ORTS
             FolderDataFileName = UserDataFolder + @"\" + FolderDataFileName;
 
             InitializeComponent();
+
+            listBoxActivities.DoubleClick += new EventHandler(listBoxActivities_DoubleClick);
+            listBoxRoutes.DoubleClick += new EventHandler(listBoxRoutes_DoubleClick);
 
             // Handle cleanup from pre version 0021
             if( null != Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
@@ -98,6 +101,16 @@ namespace ORTS
                 listBoxFolder.ClearSelected();
         }
 
+        void listBoxRoutes_DoubleClick(object sender, EventArgs e)
+        {
+            DisplayRouteDetails();
+        }
+
+        void listBoxActivities_DoubleClick(object sender, EventArgs e)
+        {
+            DisplayActivityDetails();
+        }
+
         private void MainForm_Load(object sender, EventArgs e)
         {
         }
@@ -137,7 +150,6 @@ namespace ORTS
                     }
                     catch
                     {
-                        MessageBox.Show("Unable to open .TRK file in route folder " + routePath);
                     }
                 }
 
@@ -178,7 +190,6 @@ namespace ORTS
                         }
                         catch 
                         {
-                            MessageBox.Show("Unable to read " + activityPath);
                         }
                     }
                 }
@@ -196,8 +207,7 @@ namespace ORTS
         private void buttonStart_Click(object sender, EventArgs e)
         {
             if (listBoxActivities.SelectedIndex >= 0 )
-            {
-               
+            {              
                 DialogResult = DialogResult.OK;
             }
             
@@ -290,7 +300,40 @@ namespace ORTS
         {
             (new OptionsForm()).ShowDialog();
         }
-        
+
+        private void DisplayRouteDetails()
+        {
+            if (listBoxRoutes.SelectedIndex >= 0)
+            {
+                DetailsForm frmDetails = new DetailsForm();
+                if (frmDetails.RouteDetails(SelectedRoutePath))
+                {
+                    frmDetails.ShowDialog();
+                }
+            }
+        }
+
+        private void DisplayActivityDetails()
+        {
+            if (listBoxActivities.SelectedIndex >= 0)
+            {
+                DetailsForm frmDetails = new DetailsForm();
+                if (frmDetails.AcivityDetails(SelectedActivityPath))
+                {
+                    frmDetails.ShowDialog();
+                }
+            }
+        }
+
+        private void buttonRouteDtls_Click(object sender, EventArgs e)
+        {
+            DisplayRouteDetails();
+        }
+
+        private void buttonActivityDtls_Click_1(object sender, EventArgs e)
+        {
+            DisplayActivityDetails();
+        }
 
     }
 }

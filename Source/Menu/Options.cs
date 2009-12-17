@@ -23,8 +23,8 @@ namespace ORTS
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
             if (RK != null)
             {
-                this.numericWorldObjectDensity.Value = (int)RK.GetValue("WorldObjectDensity", numericWorldObjectDensity.Value);
-                this.numericSoundDetailLevel.Value = (int)RK.GetValue("SoundDetailLevel", numericSoundDetailLevel.Value);
+                this.numericWorldObjectDensity.Value = (int)RK.GetValue("WorldObjectDensity", (int)numericWorldObjectDensity.Value);
+                this.numericSoundDetailLevel.Value = (int)RK.GetValue("SoundDetailLevel", (int)numericSoundDetailLevel.Value);
 
             }
         }

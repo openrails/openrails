@@ -49,6 +49,8 @@
             this.buttonJoin = new System.Windows.Forms.Button();
             this.checkBoxHost = new System.Windows.Forms.CheckBox();
             this.buttonOptions = new System.Windows.Forms.Button();
+            this.buttonRouteDtls = new System.Windows.Forms.Button();
+            this.buttonActivityDtls = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -226,11 +228,33 @@
             this.buttonOptions.UseVisualStyleBackColor = true;
             this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
             // 
+            // buttonRouteDtls
+            // 
+            this.buttonRouteDtls.Location = new System.Drawing.Point(374, 5);
+            this.buttonRouteDtls.Name = "buttonRouteDtls";
+            this.buttonRouteDtls.Size = new System.Drawing.Size(57, 21);
+            this.buttonRouteDtls.TabIndex = 7;
+            this.buttonRouteDtls.Text = "Details";
+            this.buttonRouteDtls.UseVisualStyleBackColor = true;
+            this.buttonRouteDtls.Click += new System.EventHandler(this.buttonRouteDtls_Click);
+            // 
+            // buttonActivityDtls
+            // 
+            this.buttonActivityDtls.Location = new System.Drawing.Point(592, 5);
+            this.buttonActivityDtls.Name = "buttonActivityDtls";
+            this.buttonActivityDtls.Size = new System.Drawing.Size(57, 21);
+            this.buttonActivityDtls.TabIndex = 8;
+            this.buttonActivityDtls.Text = "Details";
+            this.buttonActivityDtls.UseVisualStyleBackColor = true;
+            this.buttonActivityDtls.Click += new System.EventHandler(this.buttonActivityDtls_Click_1);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(664, 334);
+            this.Controls.Add(this.buttonActivityDtls);
+            this.Controls.Add(this.buttonRouteDtls);
             this.Controls.Add(this.buttonOptions);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label4);
@@ -282,5 +306,7 @@
         private System.Windows.Forms.Button buttonJoin;
         private System.Windows.Forms.CheckBox checkBoxHost;
         private System.Windows.Forms.Button buttonOptions;
+        private System.Windows.Forms.Button buttonRouteDtls;
+        private System.Windows.Forms.Button buttonActivityDtls;
     }
 }

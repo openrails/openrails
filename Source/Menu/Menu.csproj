@@ -106,6 +106,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="RouteDetails.resx">
+      <DependentUpon>RouteDetails.cs</DependentUpon>
+    </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -119,6 +122,12 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="RouteDetails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RouteDetails.designer.cs">
+      <DependentUpon>RouteDetails.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

@@ -125,6 +125,14 @@
       <Link>Main\Options.designer.cs</Link>
       <DependentUpon>Options.cs</DependentUpon>
     </Compile>
+    <Compile Include="..\Menu\RouteDetails.cs">
+      <Link>Main\RouteDetails.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\Menu\RouteDetails.designer.cs">
+      <Link>Main\RouteDetails.designer.cs</Link>
+      <DependentUpon>RouteDetails.cs</DependentUpon>
+    </Compile>
     <Compile Include="3DViewer\Cameras.cs" />
     <Compile Include="3DViewer\Train.cs" />
     <Compile Include="3DViewer\DieselLocomotive.cs" />
@@ -259,6 +267,10 @@
     <EmbeddedResource Include="..\Menu\Options.resx">
       <Link>Main\Options.resx</Link>
       <DependentUpon>Options.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Menu\RouteDetails.resx">
+      <Link>Main\RouteDetails.resx</Link>
+      <DependentUpon>RouteDetails.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
