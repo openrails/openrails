@@ -185,7 +185,7 @@ namespace MSTS
         public TrPathNode(STFReader f)
         {
             f.VerifyStartOfBlock();
-            A = f.ReadUInt();
+            A = f.ReadFlags();
             NextNode = f.ReadUInt();
             C = f.ReadUInt();
             FromPDP = f.ReadUInt();

@@ -191,6 +191,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="SignalsAI\AI.cs" />
+    <Compile Include="SignalsAI\AIPath.cs" />
+    <Compile Include="SignalsAI\AITrain.cs" />
+    <Compile Include="SignalsAI\Dispatcher.cs" />
     <Compile Include="SignalsAI\Signals.cs" />
     <Compile Include="Simulator\Network.cs" />
     <Compile Include="Simulator\Simulator.cs" />

@@ -204,7 +204,7 @@ namespace MSTS
 					SectionIdxs = new SectionIdx[ NumPaths ];
 				}
 				else if( 0 == String.Compare( token,"MainRoute",true ) ) MainRoute = f.ReadUIntBlock();
-				else if( 0 == String.Compare( token,"ClearanceDistance",true ) ) ClearanceDistance = f.ReadDoubleBlock();
+				else if( 0 == String.Compare( token,"ClearanceDist",true ) ) ClearanceDistance = f.ReadDoubleBlock();
 				else if( 0 == String.Compare( token,"SectionIdx",true ) ) SectionIdxs[ nextPath++ ] = new SectionIdx( f );
 				else if( 0 == String.Compare( token,"TunnelShape",true ) ) TunnelShape = f.ReadBoolBlock();
 				else if( 0 == String.Compare( token,"RoadShape",true ) ) RoadShape = f.ReadBoolBlock();

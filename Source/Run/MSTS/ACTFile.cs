@@ -155,9 +155,9 @@ namespace MSTS
 
 	public class StartTime
 	{
-		int Hour;
-		int Minute;
-		int Second;
+		public int Hour;
+		public int Minute;
+		public int Second;
 
 		public StartTime( int h, int m, int s )
 		{
@@ -214,7 +214,7 @@ namespace MSTS
 		public ActivityObjects ActivityObjects = new ActivityObjects();
 		public ActivityFailedSignals ActivityFailedSignals = new ActivityFailedSignals();
 		public Events Events = new Events();
-		public string Traffic_Definition = null;
+		public Traffic_Definition Traffic_Definition = null;
 		string PlatformNumPassengersWaiting = null;
 		string ActivityRestrictedSpeedZones = null;
 
@@ -228,7 +228,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "NextServiceUID", true)) NextServiceUID = f.ReadIntBlock();
                 else if (0 == String.Compare(token, "NextActivityObjectUID", true)) NextActivityObjectUID = f.ReadIntBlock();
                 else if (0 == String.Compare(token, "Events", true)) Events = new Events(f);
-                else if (0 == String.Compare(token, "Traffic_Definition", true)) f.SkipBlock();// todo complete parse
+                else if (0 == String.Compare(token, "Traffic_Definition", true)) Traffic_Definition = new Traffic_Definition(f);
                 else if (0 == String.Compare(token, "ActivityObjects", true)) ActivityObjects = new ActivityObjects(f);
                 else if (0 == String.Compare(token, "ActivityFailedSignals", true)) ActivityFailedSignals = new ActivityFailedSignals(f);
                 else if (0 == String.Compare(token, "PlatformNumPassengersWaiting", true)) f.SkipBlock();// todo complete parse
@@ -253,7 +253,6 @@ namespace MSTS
 
 	}
 
-	// TODO this isn't in use yet
 	public class Traffic_Definition: ArrayList
 	{
 		public string Label;
@@ -282,14 +281,20 @@ namespace MSTS
 			f.VerifyStartOfBlock();
 			Service = f.ReadToken();
 			Time = f.ReadInt();
-
-			f.MustMatch( "UiD" );
-			f.VerifyStartOfBlock();
-			UiD = f.ReadInt();
-			f.VerifyEndOfBlock();
-
-			f.VerifyEndOfBlock();
-		}
+            while (!f.EndOfBlock())
+            {
+                string token = f.ReadToken();
+                switch (token.ToLower())
+                {
+                    case "uid": UiD = f.ReadIntBlock(); break;
+                    case "efficiency": f.ReadFloatBlock(); break;
+                    case "skipcount": f.ReadIntBlock(); break;
+                    case "distancedownpath": f.ReadFloatBlock(); break;
+                    case "platformstartid": f.ReadIntBlock(); break;
+                    default: f.SkipUnknownBlock(token); break;
+                }
+            }
+        }
 	}
 
 	public class Events: ArrayList

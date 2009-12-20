@@ -74,6 +74,11 @@ namespace ORTS
             }
         }
 
+        public int TrackNodeIndex
+        {
+            get { return iTrackNode; }
+        }
+
         public void ReverseDirection()
         {
             if (Direction == 0)
@@ -175,7 +180,7 @@ namespace ORTS
                         }
                         else // it wasn't in this section so just add the length of the section to the distance travelled.
                         {
-                            float radiansTravelled = MSTSMath.M.Radians(traveller.TS.SectionCurve.Angle) - initialOffset;
+                            float radiansTravelled = Math.Abs(MSTSMath.M.Radians(traveller.TS.SectionCurve.Angle)) - initialOffset;
                             accumulatedDistance += radiansTravelled * traveller.TS.SectionCurve.Radius;
                         }
                     }
