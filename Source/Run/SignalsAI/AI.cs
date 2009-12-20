@@ -22,7 +22,6 @@ namespace ORTS
 {
     public class AI
     {
-        double ClockTime = 0;
         StartQueue StartQueue = new StartQueue();
         public Simulator Simulator;
         public List<AITrain> AITrains = new List<AITrain>();// active AI trains
@@ -38,15 +37,14 @@ namespace ORTS
         public AI(Simulator simulator)
         {
             Simulator = simulator;
-            StartTime st = simulator.Activity.Tr_Activity.Tr_Activity_Header.StartTime;
-            ClockTime = st.Second + 60 * (st.Minute + 60 * st.Hour);
             //Console.WriteLine("AI {0} {1} {2} {3}", ClockTime, st.Hour, st.Minute, st.Second);
-            foreach (Service_Definition sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition)
-            {
-                StartQueue.Add(sd);
-                AITrainDictionary.Add(sd.UiD, CreateAITrain(sd));
-                //Console.WriteLine("AIQ {0} {1} {2}", sd.Service, sd.Time, sd.UiD);
-            }
+            if( simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null )
+                foreach (Service_Definition sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition)
+                {
+                    StartQueue.Add(sd);
+                    AITrainDictionary.Add(sd.UiD, CreateAITrain(sd));
+                    //Console.WriteLine("AIQ {0} {1} {2}", sd.Service, sd.Time, sd.UiD);
+                }
             Dispatcher = new Dispatcher(this);
         }
 
@@ -64,9 +62,8 @@ namespace ORTS
                     Simulator.Trains.Remove(kvp.Value);
                 FirstUpdate = false;
             }
-            ClockTime += gameTime.ElapsedGameTime.TotalSeconds;
-            Dispatcher.Update(ClockTime);
-            for (Service_Definition sd = StartQueue.GetNext(ClockTime); sd!=null; sd=StartQueue.GetNext(ClockTime))
+            Dispatcher.Update(Simulator.ClockTime);
+            for (Service_Definition sd = StartQueue.GetNext(Simulator.ClockTime); sd!=null; sd=StartQueue.GetNext(Simulator.ClockTime))
             {
                 AITrain train = AITrainDictionary[sd.UiD];
                 if (Dispatcher.RequestAuth(train) == false)
@@ -85,7 +82,7 @@ namespace ORTS
                 if (train.NextStopNode == null || train.RearNode == null || train.Cars[0].Train != train)
                     remove = true;
                 else
-                    train.AIUpdate(gameTime, ClockTime);
+                    train.AIUpdate(gameTime, Simulator.ClockTime);
             if (remove)
                 RemoveTrains();
         }

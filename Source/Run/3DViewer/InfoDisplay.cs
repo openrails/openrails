@@ -61,6 +61,18 @@ namespace ORTS
             CourierNew =  Viewer.Content.Load<SpriteFont>("CourierNew");
             base.LoadContent();
         }
+
+        string FormattedTime(double clockTimeSeconds)
+        {
+            int hour = (int)(clockTimeSeconds / (60.0*60.0));
+            clockTimeSeconds -= hour * 60.0 * 60.0;
+            int minute = (int)(clockTimeSeconds / 60.0);
+            clockTimeSeconds -= minute * 60.0;
+            int seconds = (int)clockTimeSeconds;
+
+            return string.Format("{0:D2}:{1:D2}:{2:D2}", hour, minute, seconds);
+        }
+
         /// <summary>
         /// Allows the game component to update itself.
         /// </summary>
@@ -72,6 +84,7 @@ namespace ORTS
             Viewer.Text = Viewer.Text + "Throttle = " + Viewer.Simulator.PlayerLocomotive.ThrottlePercent.ToString() + "\n";
             Viewer.Text = Viewer.Text + "Brake = " + Viewer.Simulator.PlayerTrain.TrainBrakePercent.ToString() + "\n";
             Viewer.Text = Viewer.Text + "Speed = " + MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString() + "\n";
+            Viewer.Text = Viewer.Text + "Time = " + FormattedTime( Viewer.Simulator.ClockTime ) + "\n";
             
 
             //TODO, REMOVE TDB DEBUG STUFF 

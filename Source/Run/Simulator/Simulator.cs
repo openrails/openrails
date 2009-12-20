@@ -58,6 +58,8 @@ namespace ORTS
         public string BasePath;     // ie c:\program files\microsoft games\train simulator
 
         public double SecondsRunning = 0;   // the number of game time seconds the program has been running - stops when paused, etc
+        public double ClockTime = 0;        // Second + 60 * (Minute + 60 * Hour)
+
 
         public static Random Random = new Random();   // for use by the entire program
 
@@ -107,6 +109,9 @@ namespace ORTS
 
             Console.Write(" ACT");
             Activity = new ACTFile(activityPath);
+
+            StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
+            ClockTime = st.Second + 60 * (st.Minute + 60 * st.Hour);
 
             Console.Write(" CON");
             InitializePlayerTrain();
@@ -284,6 +289,7 @@ namespace ORTS
                 return;
 
             SecondsRunning += gameTime.ElapsedGameTime.TotalSeconds;
+            ClockTime += gameTime.ElapsedGameTime.TotalSeconds;
 
             // Debug Stop
             if (keyboard.IsKeyDown(Keys.Pause) && !keyboard.IsShiftDown() ) { 
