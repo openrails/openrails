@@ -108,6 +108,8 @@ namespace ORTS
             WorldObjectDensity = 10;
             SoundDetailLevel = 10;
 
+            Window.Title = "Open Rails";
+
             // Restore retained settings
             RegistryKey RK = Registry.CurrentUser.OpenSubKey( Program.RegistryKey);
             if (RK != null)

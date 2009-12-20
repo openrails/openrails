@@ -34,6 +34,9 @@ namespace ORTS
         public double SmoothedFrameRate = 1000;     // information displayed by InfoViewer in upper left
         public double MinFrameRate = 1000;
 
+        private double lastClockUpdate = 0;
+        private string ClockTimeString = "";
+
         public InfoDisplay( Viewer viewer)
             : base(viewer)
         {
@@ -73,6 +76,7 @@ namespace ORTS
             return string.Format("{0:D2}:{1:D2}:{2:D2}", hour, minute, seconds);
         }
 
+
         /// <summary>
         /// Allows the game component to update itself.
         /// </summary>
@@ -83,9 +87,13 @@ namespace ORTS
             Viewer.Text = "Direction = " + (Viewer.Simulator.PlayerLocomotive.Forward ? "FORWARD\n" : "REVERSE\n");
             Viewer.Text = Viewer.Text + "Throttle = " + Viewer.Simulator.PlayerLocomotive.ThrottlePercent.ToString() + "\n";
             Viewer.Text = Viewer.Text + "Brake = " + Viewer.Simulator.PlayerTrain.TrainBrakePercent.ToString() + "\n";
-            Viewer.Text = Viewer.Text + "Speed = " + MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString() + "\n";
-            Viewer.Text = Viewer.Text + "Time = " + FormattedTime( Viewer.Simulator.ClockTime ) + "\n";
-            
+            Viewer.Text = Viewer.Text + "Speed = " + MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString("F1") + "\n";
+
+            if (Viewer.Simulator.ClockTime - lastClockUpdate  > 1)  // Update very second
+            {
+                ClockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
+                lastClockUpdate = Viewer.Simulator.ClockTime;
+            }
 
             //TODO, REMOVE TDB DEBUG STUFF 
             //Viewer.Text += "\n\n" + tdb.ToString() + string.Format( " D={0}\n",tdb.Direction ) +
@@ -131,7 +139,8 @@ namespace ORTS
             SpriteBatch.DrawString(CourierNew, "Version = " + Program.Version, new Vector2(20, 20), color);
             SpriteBatch.DrawString(CourierNew, "Memory = " + memory.ToString(), new Vector2(20, 40), color); 
             SpriteBatch.DrawString(CourierNew, "FPS = " + Math.Round(SmoothedFrameRate).ToString(), new Vector2(20, 60), color);
-            SpriteBatch.DrawString(CourierNew, Viewer.Text, new Vector2(20, 80), color);
+            SpriteBatch.DrawString(CourierNew, "Time = " + ClockTimeString, new Vector2(20, 80), color);
+            SpriteBatch.DrawString(CourierNew, Viewer.Text, new Vector2(20, 100), color);
             SpriteBatch.End();
 
             base.Draw(gameTime);
