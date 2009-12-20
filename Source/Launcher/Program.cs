@@ -45,6 +45,8 @@ namespace ORTS
             foreach (string filename in new string[] {
                         "ICSharpCode.SharpZipLib.dll",
                         "irrKlang.NET2.0.dll",
+                        "ACEFile.dll",
+                        "SFile.dll",
                         "Menu.exe",
                         "Run.exe" })
             {
