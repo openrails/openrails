@@ -115,8 +115,8 @@ namespace ORTS
                 WorldObjectDensity = (int)RK.GetValue("WorldObjectDensity", WorldObjectDensity);
                 SoundDetailLevel = (int)RK.GetValue("SoundDetailLevel", SoundDetailLevel);
             }
-            if (Simulator.RouteName == "LPS")
-                ViewingDistance = 800;
+
+            ViewingDistance = Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, ViewingDistance);
 
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";

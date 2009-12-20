@@ -22,6 +22,7 @@ namespace MSTS
                 {
                     if (token == "(") f.SkipBlock();
                     else if (0 == String.Compare(token, "Tr_RouteFile", true)) Tr_RouteFile = new Tr_RouteFile(f);
+                    else if (0 == String.Compare(token, "_OpenRails", true)) ORTRKData = new ORTRKData(f);
                     else f.SkipBlock();
                     token = f.ReadToken();
                 }
@@ -30,9 +31,35 @@ namespace MSTS
             finally
             {
                 f.Close();
+                if (ORTRKData == null)
+                    ORTRKData = new ORTRKData();
             }
         }
         public Tr_RouteFile Tr_RouteFile;
+        public ORTRKData ORTRKData = null;
+    }
+
+    public class ORTRKData
+    {
+        public float MaxViewingDistance = float.MaxValue;  // disables local route override
+
+        public ORTRKData()
+        {
+        }
+
+        public ORTRKData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            while (!f.EndOfBlock())
+            {
+                string token = f.ReadToken();
+                switch (token.ToLower())
+                {
+                    case "maxviewingdistance": MaxViewingDistance = f.ReadFloatBlock(); break;
+                    default: f.SkipUnknownBlock(token); break;
+                }
+            }
+        }
     }
 
     public class Tr_RouteFile

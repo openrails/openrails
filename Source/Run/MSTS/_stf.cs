@@ -535,9 +535,9 @@ namespace MSTS
 					IOException An I/O error occurs. 
 			*/
 		{
-			MustMatch( "(" );
+            VerifyStartOfBlock();
 			string s = ReadString();
-			MustMatch( ")" );
+            VerifyEndOfBlock();
 			return s;
 		}
 		public uint ReadUIntBlock()
@@ -589,7 +589,7 @@ namespace MSTS
 					IOException An I/O error occurs. 
 			*/
 		{
-			MustMatch( "(" );
+            VerifyStartOfBlock();
 			double result = ReadDouble();
             VerifyEndOfBlock();
 			return result;
@@ -602,7 +602,7 @@ namespace MSTS
 					IOException An I/O error occurs. 
 			*/
 		{
-			MustMatch( "(" );
+            VerifyStartOfBlock();
 			string s = ReadToken();
 			if( s == ")" )
 				return true;  // assume a null block is true
@@ -616,14 +616,14 @@ namespace MSTS
 				STFError.Report( this, e.Message );
                 return false;
 			}
-			MustMatch( ")" );
+            VerifyEndOfBlock();
 			return i != 0;
 		}
 
         public Vector3 ReadVector3Block()
         {
             Vector3 vector = new Vector3();
-            MustMatch("(");
+            VerifyStartOfBlock();
             vector.X = ReadFloat();
             vector.Y = ReadFloat();
             vector.Z = ReadFloat();
