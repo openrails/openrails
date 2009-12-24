@@ -14,7 +14,7 @@ namespace ORTS
 {
     static class Program
     {
-        const string RunActivityProgram = "run.exe";
+        const string RunActivityProgram = "runactivity.exe";
 
         static string WarningLogFileName;
         public static string RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
@@ -31,7 +31,7 @@ namespace ORTS
             {
 
                 MainForm MainForm = new MainForm();
-                MainForm.Text = "ORTS Launcher V" + Application.ProductVersion.Replace(".", "");
+                MainForm.Text = "Open Rails A" + Application.ProductVersion.Replace(".", "");
 
                 while (true)
                 {

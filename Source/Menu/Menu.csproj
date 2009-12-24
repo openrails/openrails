@@ -12,7 +12,8 @@
     <AssemblyName>Menu</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <ApplicationIcon>openrails.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,22 +55,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Run\MSTS\ACTFile.cs">
+    <Compile Include="..\MSTS\ACTFile.cs">
       <Link>MSTS\ACTFile.cs</Link>
     </Compile>
-    <Compile Include="..\Run\MSTS\TRKFile.cs">
+    <Compile Include="..\MSTS\TRKFile.cs">
       <Link>MSTS\TRKFile.cs</Link>
     </Compile>
-    <Compile Include="..\Run\MSTS\_paths.cs">
+    <Compile Include="..\MSTS\_paths.cs">
       <Link>MSTS\_paths.cs</Link>
     </Compile>
-    <Compile Include="..\Run\MSTS\_sbr.cs">
+    <Compile Include="..\MSTS\_sbr.cs">
       <Link>MSTS\_sbr.cs</Link>
     </Compile>
-    <Compile Include="..\Run\MSTS\_stf.cs">
+    <Compile Include="..\MSTS\_stf.cs">
       <Link>MSTS\_stf.cs</Link>
     </Compile>
-    <Compile Include="..\Run\MSTS\_tokenid.cs">
+    <Compile Include="..\MSTS\_tokenid.cs">
       <Link>MSTS\_tokenid.cs</Link>
     </Compile>
     <Compile Include="FormFolderName.cs">
@@ -131,7 +132,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="openrails.ico" />
+    <Content Include="..\openrails.ico">
+      <Link>openrails.ico</Link>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
