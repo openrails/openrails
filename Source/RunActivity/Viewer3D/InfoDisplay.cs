@@ -38,6 +38,8 @@ namespace ORTS
         private double lastClockUpdate = 0;
         private string ClockTimeString = "";
 
+        int processors = System.Environment.ProcessorCount;
+
         double SmoothJitter = 0;
 
         public InfoDisplay( Viewer3D viewer )
@@ -71,6 +73,7 @@ namespace ORTS
             Text = Text + "Primitives = " + Viewer.RenderProcess.PrimitivesPerFrame.ToString() + "\n";
             Text = Text + "StateChanges = " + Viewer.RenderProcess.RenderStateChangesPerFrame.ToString() + "\n";
             Text = Text + "ImageChanges = " + Viewer.RenderProcess.ImageChangesPerFrame.ToString() + "\n";
+            Text = Text + "Processors = " + processors.ToString() + "\n";
             if (Viewer.RenderProcess.UpdateSlow)
                 Text = Text + "\r\nUpdate Slow";
             if (Viewer.RenderProcess.LoaderSlow)

@@ -39,7 +39,9 @@ namespace ORTS
         public double LastUpdate = 0;       // time in seconds of the last update call to the simulator
         public const double UpdatePeriod = 0.03;    // aim for 30 times per second, drops to 10 when window is minimized, 
                                                    // but runs at the full frame rate in a multiprocessor computer
+
         public bool Paused = false;
+        public int GameSpeed = 1;   
 
         public string BasePath;     // ie c:\program files\microsoft games\train simulator
         public string RoutePath;    // ie c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's
@@ -101,7 +103,8 @@ namespace ORTS
             Activity = new ACTFile(activityPath);
 
             StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
-            ClockTimeSeconds = st.Second + 60 * (st.Minute + 60 * st.Hour);
+            TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
+            ClockTimeSeconds = StartTime.TotalSeconds;
 
             Console.Write(" CON");
             InitializePlayerTrain();
@@ -136,7 +139,7 @@ namespace ORTS
 
             if (Paused) return;
 
-            ClockTimeSeconds += gameTime.ElapsedGameTime.TotalSeconds;
+            ClockTimeSeconds += gameTime.ElapsedGameTime.TotalSeconds * (double)GameSpeed;
 
             PlayerTrain.Update(gameTime);
             Signals.Update(gameTime);

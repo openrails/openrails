@@ -238,12 +238,9 @@ namespace MSTS
         {
             // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket
             int depth = 1;
-            while (depth > 0)
+            while (!EOF() &&  depth > 0)
             {
                 string token = ReadToken();
-                if (token == "")
-                    return;
-
                 if (token == "(")
                     ++depth;
                 if (token == ")")

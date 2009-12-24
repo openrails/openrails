@@ -96,22 +96,7 @@ namespace ORTS
         {
             // TODO, enhance this:
             //   - to sort translucent primitives
-            //   - and to minimize render state changes
-
-            if (UserInput.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.X))  // TODO, this reduced frame rates due to sorting time
-            {
-                Array.Sort(RenderItems,0, RenderItemCount, RenderSorter);
-            }
-
-            if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.D1))  
-            {
-                for (int i = 0; i < RenderItemCount; ++i)
-                {
-                    RenderItem ri = RenderItems[i];
-                    Console.WriteLine("{0} {1}", ri.Material.GetType(), ri.Material.GetHashCode());
-                }
-            }
-
+            //   - and to minimize render state changes ( sorting was taking too long! for this )
 
         }
 

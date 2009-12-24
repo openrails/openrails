@@ -133,6 +133,7 @@ namespace ORTS
             base.Draw(gameTime);
         }
 
+
         private void UpdateEverything(GameTime gameTime)
         {
             double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;
