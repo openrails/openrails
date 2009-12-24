@@ -48,7 +48,7 @@ namespace ORTS
                         "ACEFile.dll",
                         "SFile.dll",
                         "Menu.exe",
-                        "Run.exe" })
+                        "RunActivity.exe" })
             {
                 if (!File.Exists(filename))
                 {
@@ -62,6 +62,8 @@ namespace ORTS
             ProcessStartInfo objPSI = new ProcessStartInfo();
             objPSI.FileName = menuFolder + @"\menu.exe";
             objPSI.WindowStyle = ProcessWindowStyle.Normal; // or Hidden, Maximized or Normal
+
+            // TODO ADD A CHECK FOR .NET 3.5
 
             Process.Start(objPSI);
         }

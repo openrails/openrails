@@ -104,3 +104,105 @@ ROLES  PROPOSED
 	- arrows move - right - headout, left - head in
 	- home end, page down, page up
 
+
+
+public Viewer3D(Simulator simulator)
+
+public void UserSetup()
+
+public void Configure(RenderProcess renderProcess)
+
+public void Initialize(RenderProcess renderProcess)
+
+public void LoadPrep()
+
+public void Load( RenderProcess renderProcess )
+
+public void HandleUserInput()
+
+public void Update( GameTime gameTime )
+
+public void PrepareFrame(RenderFrame frame, GameTime gameTime)
+
+void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
+                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix);
+
+void Draw(GraphicsDevice graphicsDevice);
+
+void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial);
+
+public void Unload(RenderProcess renderProcess)
+
+
+SIMULATOR
+
+public TrainCar(WAGFile wagFile)
+
+public virtual TrainCarViewer GetViewer(Viewer3D viewer)
+
+public virtual void Update(GameTime gameTime)
+
+VIEWER
+
+public virtual void HandleUserInput()
+
+public virtual Update(GameTime gameTime)
+
+
+
+// Processes
+/// 
+/// Open Rails can use multiple processors.  In a multiprocessor environment, 
+/// we set up the following threads:
+///     - the RenderProcess thread 
+///             - is actually the XNA game engine thread 
+///             - handling initializing and drawing to the graphics card
+///     - a LoaderProcess thread runs in the background 
+///             - 10 times per second 
+///             - to give the 3D viewer an opportunity to load content as the player moves
+///     - an UpdaterProcess thread runs in the background
+///             - updating the simulator state
+///             - and preparing content for the next rendered frame to be drawn
+///     - in additon, IrrKlang, can be configured to run in its own separate thread
+///     
+/// Thread Safety:
+/// 
+/// Thread safety is maintained more by data partitioning rather than through the use
+/// of semaphores or locks (which can slow down the program).  UpdaterProcess, has 
+/// exclusive access to all input devices, all simulator state data and local matrices for 
+/// 3D components.   Information exchange with the main render process is through the 
+/// RenderFrame class.  UpdaterThread prepares a RenderFrame ( list of primitives and 
+/// their position matrices ) and hands it off to the RenderProcess for drawing.  While 
+/// RenderProcess does the drawing, UpdaterProcess is preparing the next frame.
+/// RenderProcess is assured that the RenderFrame contents won't change after it begins
+/// drawing.
+/// 
+/// LoaderProcess needs access to volatile data in the simulator and viewer classes such
+/// as train location and camera location.   To make this thread safe, RenderProcess calls
+/// LoaderProcess.Update as soon as UpdaterProcess has finished with the simulator and
+/// viewer classes.   UpdaterProcess will be blocked while LoaderProcess copies any needed
+/// volatile data.  When LoaderProcess.Update returns, the UpdaterProcess continues on with 
+/// updating train location and camera locations for the next frame.  Meanwhile LoaderProcess
+/// analyzes the data it copied and continues with loading/unloading graphics content as
+/// needed.
+/// 
+/// Process Synchronization:
+/// 
+/// These processes don't free-wheel.   In order to prevent jitter and memory contention
+/// they operate synchronously to the frame rate.   Each frame triggers UpdaterProcess 
+/// to update the Simulator state, and to build a RenderFrame.   While thats being done,
+/// RenderProcess draws the previous RenderFrame.   LoaderProcess is launched by 
+/// UpdaterProcess immediately after the UpdaterProcess has finished.  
+/// Note that when the program is minimized no frame draw calls are made.  During this
+/// time, RenderProcess continues to update the LoaderProcess and the Simulator state
+/// at a fixed 10 times per second rate.
+/// 
+/// And on machines with only one processor, we eliminate UpdaterProcess to reduce the
+/// overhead of frame swapping etc.
+
+public virtual void PrepareFrame(RenderFrame frame, GameTime gameTime)
+
+public virtual void Unload()
+
+
+
