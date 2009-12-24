@@ -443,6 +443,7 @@ namespace MSTS
 		{
 			double scale = 1.0;
 			string token = ReadToken();
+            token = token.ToLower();
 			int i;
 			// Add handling of units
 			i = token.IndexOf( "/2" );
@@ -475,15 +476,13 @@ namespace MSTS
 				scale *= 0.0254;
 				token = token.Substring( 0,i );
 			}
-			i = token.IndexOf( "kN" );
-            if (i == -1)
-                i = token.IndexOf("kn");
+			i = token.IndexOf( "kn" );
 			if( i != -1 )
 			{
 				scale *= 1e3;
 				token = token.Substring( 0,i );
 			}
-            i = token.IndexOf("N");
+            i = token.IndexOf("n");
             if (i != -1)
             {
                 scale *= 1e0;

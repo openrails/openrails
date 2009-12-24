@@ -219,8 +219,15 @@ namespace ORTS
         /// <param name="gameTime"></param>
         public virtual void Update(GameTime gameTime)
         {
-            foreach (SoundSource soundSource in SoundSources)
-                soundSource.Update(gameTime);
+            // THREAD SAFETY ISSUE - what if Loader is descarding this while we are still updating?
+            try
+            {
+                foreach (SoundSource soundSource in SoundSources)
+                    soundSource.Update(gameTime);
+            }
+            catch
+            {
+            }
         }
 
         public virtual void PrepareFrame(RenderFrame frame, GameTime gameTime)

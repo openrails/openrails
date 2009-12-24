@@ -16,7 +16,7 @@ namespace ORTS
         private static SkyMaterial SkyMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
-
+        public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
 
         public static Material Load(RenderProcess renderProcess, string materialName)
         {
@@ -31,6 +31,9 @@ namespace ORTS
         {
             if( textureName != null )
                 textureName = textureName.ToLower();
+
+            if (MissingTexture == null)
+                MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
 
             if (SceneryShader == null)
             {
@@ -57,8 +60,12 @@ namespace ORTS
                         return TerrainMaterials[textureName];
                     }
                 case "SceneryMaterial":
-                    string key = options.ToString() + ":" + textureName;
-                    if (!SceneryMaterials.ContainsKey(key))  // TODO should discriminate between various options
+                    string key;
+                    if (textureName != null)
+                        key = options.ToString() + ":" + textureName;
+                    else
+                        key = options.ToString() + ":";
+                    if (!SceneryMaterials.ContainsKey(key))  
                     {
                         SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName);
                         sceneryMaterial.Options = options;
@@ -78,7 +85,7 @@ namespace ORTS
                         SkyMaterial = new SkyMaterial(renderProcess);
                     return SkyMaterial; 
                 default:
-                    throw new System.Exception("Unknown material: " + materialName);
+                    return Load(renderProcess, "ScenerMaterial");
             }
             
         }
@@ -106,11 +113,21 @@ namespace ORTS
 
         public static Texture2D Get(GraphicsDevice device, string path)
         {
+            if (path == null)
+                return Materials.MissingTexture;
+
             if (!SharedTextures.ContainsKey(path))
             {
-                Texture2D texture = MSTS.ACEFile.Texture2DFromFile(device, path);
-                SharedTextures.Add(path, texture);
-                return texture;
+                try { 
+                    Texture2D texture = MSTS.ACEFile.Texture2DFromFile(device, path);
+                    SharedTextures.Add(path, texture);
+                    return texture;
+                }
+                catch (System.Exception error)
+                {
+                    Console.Error.WriteLine("While loading " + path + " " + error.Message);
+                    return Materials.MissingTexture;
+                }
             }
             else
             {
