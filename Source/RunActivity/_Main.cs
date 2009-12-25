@@ -32,7 +32,7 @@ namespace ORTS
     static class Program
     {
         public static string ActivityPath;
-        public static string Version = Application.ProductVersion.Replace(".", "");
+        public static string Version = Application.ProductVersion;
         public static string RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
 
         static Simulator Simulator; 
@@ -42,6 +42,8 @@ namespace ORTS
         /// </summary>
         static void Main(string[] args)
         {
+            Version = Version + "." + SVNRevision();
+
             // TODO, read warnings on/off from the registry
             bool WarningsOn = true;
 
@@ -72,6 +74,19 @@ namespace ORTS
                 MessageBox.Show(error.Message);
             }
 
+        }
+
+        public static string SVNRevision()
+        {
+            if( File.Exists( "Revision.txt" ) )
+                using (StreamReader f = new StreamReader("Revision.txt"))
+                {
+                    string line = f.ReadLine();
+                    string rev = line.Substring(11);
+                    int i = rev.IndexOf('$');
+                    return rev.Substring(0, i);
+                }
+            return "XX";
         }
 
     }

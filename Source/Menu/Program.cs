@@ -31,7 +31,7 @@ namespace ORTS
             {
 
                 MainForm MainForm = new MainForm();
-                MainForm.Text = "Open Rails A" + Application.ProductVersion.Replace(".", "");
+                MainForm.Text = "Open Rails V" + SVNRevision();
 
                 while (true)
                 {
@@ -88,6 +88,18 @@ namespace ORTS
             f.Close();
         }
 
+        public static string SVNRevision()
+        {
+            if (File.Exists("Revision.txt"))
+                using (StreamReader f = new StreamReader("Revision.txt"))
+                {
+                    string line = f.ReadLine();
+                    string rev = line.Substring(11);
+                    int i = rev.IndexOf('$');
+                    return rev.Substring(0,i);
+                }
+            return "XX";
+        }
     } // class Program
 
 }

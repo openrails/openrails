@@ -28,36 +28,19 @@ namespace ORTS
     {
         private Viewer3D Viewer;
 
+        /// THREAD SAFETY WARNING -
+        public Dictionary<TrainCar, TrainCarViewer> LoadedCars = new Dictionary<TrainCar, TrainCarViewer>();   // is not written to by LoaderProcess
+        public Dictionary<TrainCar, TrainCarViewer> UpdatedLoadedCars = new Dictionary<TrainCar, TrainCarViewer>();  // is not read by UpdaterProcess
+        public List<TrainCar> ViewableCars = new List<TrainCar>();
+
 
         public TrainDrawer(Viewer3D viewer)
         {
             Viewer = viewer;
         }
 
-        public float ApproximateDistance( WorldLocation a, WorldLocation b )
-        {
-            float dx = a.Location.X - b.Location.X;
-            float dz = a.Location.Z - b.Location.Z;
-            dx += (a.TileX - b.TileX) * 2048;
-            dz += (a.TileZ - b.TileZ) * 2048;
-
-            return Math.Abs(dx) + Math.Abs(dz);
-        }
-
-        /// THREAD SAFETY WARNING - only LoaderPocess can write to or change this array.
-        public Dictionary<TrainCar, TrainCarViewer> LoadedCars = new Dictionary<TrainCar, TrainCarViewer>();
-
-        WorldLocation viewerWorldLocation;
-
-        public void LoadPrep()
-        {
-            // TODO, buffer in all train locations as well to prevent issues
-            viewerWorldLocation = new WorldLocation(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location);
-        }
-
         /// <summary>
         /// Get the viewer for this car.  If the car doesn't have a viewer, then load it.
-        /// THREAD SAFETY WARNING - use inside LoaderProcess, or when Loader Process is idle
         /// </summary>
         /// <param name="car"></param>
         /// <returns></returns>
@@ -72,56 +55,51 @@ namespace ORTS
             return carViewer;
         }
 
-        public void Load(RenderProcess renderProcess)
+        /// <summary>
+        /// Executes in the UpdateProcess thread.
+        /// </summary>
+        public void LoadPrep()
         {
+            // fetch the list of carviewers that we generated with the last Load
+            Swap(ref LoadedCars, ref UpdatedLoadedCars);
 
-            Dictionary<TrainCar, bool> carsInUse = new Dictionary<TrainCar, bool>();
-
-            // list all cars in viewing range
-            float removeDistance = Viewer.ViewingDistance * 1.5f;   // apply some hysteresis
+            // build a list of cars in viewing range
+            float removeDistance = Viewer.ViewingDistance * 1.5f;  
+            ViewableCars.Clear();
+            ViewableCars.Add(Viewer.PlayerLocomotiveViewer.Car);  // lets make sure its included even if its out of viewing range
             foreach (Train train in Viewer.Simulator.Trains)
                 foreach (TrainCar car in train.Cars)
-                    if (ApproximateDistance(viewerWorldLocation, car.WorldPosition.WorldLocation) < removeDistance)
-                        carsInUse.Add(car, true);
-
-            // include the player's locomotive - we can't unload the viewer no matter how far away it is from the loco
-            // THREAD SAFETY WARNING - wat if UpdateProcess switches the player to a different loco?
-            {
-                TrainCarViewer carViewer = Viewer.PlayerLocomotiveViewer;
-                if (!carsInUse.ContainsKey(carViewer.Car))
-                    carsInUse.Add(carViewer.Car, true);
-            }
-
-            // remove cars not in the list
-            List<TrainCar> carsToRemove = new List<TrainCar>();
-            foreach (TrainCar car in LoadedCars.Keys)
-                if (!carsInUse.ContainsKey(car))
-                {
-                    Console.Write("c");
-                    TrainCarViewer carViewer = LoadedCars[car];
-                    carsToRemove.Add(car);
-                    carViewer.Unload();
-                }
-            foreach (TrainCar car in carsToRemove)
-                // THREAD SAFETY WARNING - UpdateProcess could read this array at any time
-                LoadedCars.Remove(car);
-            carsToRemove.Clear();
-
-
-            // Add trains coming into range
-            float addDistance = Viewer.ViewingDistance * 1.2f;
-            foreach (Train train in Viewer.Simulator.Trains)
-                foreach (TrainCar car in train.Cars)
-                    if (ApproximateDistance(viewerWorldLocation, car.WorldPosition.WorldLocation) < addDistance
-                        && !LoadedCars.ContainsKey(car))
-                    {
-                        Console.Write("C");
-                        TrainCarViewer carViewer = car.GetViewer(Viewer);
-                        // THREAD SAFETY WARNING - UpdateProcess could read this array at any time
-                        LoadedCars.Add(car, carViewer);
-                    }
+                    if (ApproximateDistance(Viewer.Camera.WorldLocation, car.WorldPosition.WorldLocation) < removeDistance
+                        && car != Viewer.PlayerLocomotiveViewer.Car)  // don't duplicate the player car
+                          ViewableCars.Add(car);
+            
+            // when LoadPrep returns, it launches Load in the background LoaderProcess thread
         }
 
+        /// <summary>
+        /// Executes in the LoaderProcess thread.
+        /// </summary>
+        public void Load(RenderProcess renderProcess)
+        {
+            UpdatedLoadedCars.Clear();
+            foreach( TrainCar car in ViewableCars )
+                if (LoadedCars.ContainsKey(car))
+                {
+                    UpdatedLoadedCars.Add(car, LoadedCars[car]);
+                }
+                else
+                {
+                    Console.Write("C");
+                    TrainCarViewer carViewer = car.GetViewer(Viewer);
+                    UpdatedLoadedCars.Add(car, carViewer);
+                }
+
+            // next time LoadPrep runs, it will fetch the UpdatedLoadedCars list of viewers.
+        }
+
+        /// <summary>
+        /// Executes in the UpdateProcess thread.
+        /// </summary>
         public void Update(GameTime gameTime)
         {
             try
@@ -135,6 +113,9 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Executes in the UpdateProcess thread.
+        /// </summary>
         public void PrepareFrame(RenderFrame frame, GameTime gameTime)
         {
             try
@@ -147,5 +128,23 @@ namespace ORTS
             }
 
         }
+
+        public void Swap(ref Dictionary<TrainCar, TrainCarViewer> a, ref Dictionary<TrainCar, TrainCarViewer> b)
+        {
+            Dictionary<TrainCar, TrainCarViewer> temp = a;
+            a = b;
+            b = temp;
+        }
+
+        public float ApproximateDistance(WorldLocation a, WorldLocation b)
+        {
+            float dx = a.Location.X - b.Location.X;
+            float dz = a.Location.Z - b.Location.Z;
+            dx += (a.TileX - b.TileX) * 2048;
+            dz += (a.TileZ - b.TileZ) * 2048;
+
+            return Math.Abs(dx) + Math.Abs(dz);
+        }
+
     }
 }
