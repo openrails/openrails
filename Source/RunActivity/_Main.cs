@@ -78,7 +78,8 @@ namespace ORTS
 
         public static string SVNRevision()
         {
-            if( File.Exists( "Revision.txt" ) )
+            try
+            {
                 using (StreamReader f = new StreamReader("Revision.txt"))
                 {
                     string line = f.ReadLine();
@@ -86,7 +87,11 @@ namespace ORTS
                     int i = rev.IndexOf('$');
                     return rev.Substring(0, i);
                 }
-            return "XX";
+            }
+            catch
+            {
+                return "XX";
+            }
         }
 
     }

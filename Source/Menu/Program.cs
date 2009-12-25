@@ -90,15 +90,20 @@ namespace ORTS
 
         public static string SVNRevision()
         {
-            if (File.Exists("Revision.txt"))
+            try
+            {
                 using (StreamReader f = new StreamReader("Revision.txt"))
                 {
                     string line = f.ReadLine();
                     string rev = line.Substring(11);
                     int i = rev.IndexOf('$');
-                    return rev.Substring(0,i);
+                    return rev.Substring(0, i);
                 }
-            return "XX";
+            }
+            catch
+            {
+                return "XX";
+            }
         }
     } // class Program
 

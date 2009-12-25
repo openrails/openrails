@@ -475,14 +475,14 @@ namespace ORTS
                 UpdateOnboardLocation();
             }
 
-            if (UserInput.IsAltKeyDown(Keys.Down))
+            if (UserInput.IsCtrlKeyDown(Keys.Down))
             {
                 tiltR -= movement / 10f;
                 RotationXRadians -= movement / 10f;
                 if (tiltR < -1.5f) tiltR = -1.5f;
                 UpdateOnboardLocation();
             }
-            else if (UserInput.IsAltKeyDown(Keys.Up))
+            else if (UserInput.IsCtrlKeyDown(Keys.Up))
             {
                 tiltR += movement / 10f;
                 RotationXRadians += movement / 10f;
@@ -490,13 +490,13 @@ namespace ORTS
                 UpdateOnboardLocation();
             }
 
-            if (UserInput.IsKeyDown(Keys.Down) && !UserInput.IsAltKeyDown())
+            if (UserInput.IsKeyDown(Keys.Down) && !UserInput.IsCtrlKeyDown())
             {
                 distance += movement * distance / 10;
                 if (distance < 1) distance = 1;
                 UpdateOnboardLocation();
             }
-            else if (UserInput.IsKeyDown(Keys.Up) && !UserInput.IsAltKeyDown())
+            else if (UserInput.IsKeyDown(Keys.Up) && !UserInput.IsCtrlKeyDown())
             {
                 distance -= movement * distance / 10;
                 if (distance > 100) distance = 100;
