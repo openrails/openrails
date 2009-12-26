@@ -97,21 +97,6 @@ namespace ORTS
             // next time LoadPrep runs, it will fetch the UpdatedLoadedCars list of viewers.
         }
 
-        /// <summary>
-        /// Executes in the UpdateProcess thread.
-        /// </summary>
-        public void Update(ElapsedTime elapsedTime)
-        {
-            try
-            {
-                // THREAD SAFETY WARNING - LoaderProcess could write to this array or change the size at any time
-                foreach (TrainCarViewer car in LoadedCars.Values)
-                    car.Update(elapsedTime);
-            }
-            catch  // thread safety violation - try again next time
-            {
-            }
-        }
 
         /// <summary>
         /// Executes in the UpdateProcess thread.
@@ -123,8 +108,9 @@ namespace ORTS
                 foreach (TrainCarViewer car in LoadedCars.Values)
                     car.PrepareFrame(frame, elapsedTime);
             }
-            catch  // thread safety violation - try again next time
+            catch( System.Exception error )  // possible thread safety violation - try again next time
             {
+                Console.Error.WriteLine("Trains.PrepareFrame() \r\n   " + error.Message);
             }
 
         }

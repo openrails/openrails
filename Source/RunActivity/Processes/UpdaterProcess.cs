@@ -84,10 +84,6 @@ namespace ORTS
                     UserInput.Handled();
                 }
 
-                // Update slowly changing items
-                if (Program.RealTime - Viewer.RenderProcess.LastViewerUpdateTime > Viewer3D.ViewerUpdatePeriod)
-                    Viewer.Update( Viewer.RenderProcess.GetViewerUpdateElapsedTime() );
-
                 // Prepare the frame for drawing
                 if (Frame != null)
                 {

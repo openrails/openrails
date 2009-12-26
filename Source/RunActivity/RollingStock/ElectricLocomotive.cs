@@ -125,10 +125,6 @@ namespace ORTS
             base.HandleUserInput( elapsedTime);
         }
 
-        public override void Update(ElapsedTime elapsedTime)
-        {
-            base.Update(elapsedTime);
-        }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {

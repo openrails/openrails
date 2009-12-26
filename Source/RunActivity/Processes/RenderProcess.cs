@@ -61,11 +61,9 @@ namespace ORTS
         // Timing Information -  THREAD SAFETY - don't use these outside the UpdaterProcess thread  
         public double LastFrameTime = 0;         // real time seconds of the last simulator.update and viewer.prepareframe
         public double LastUserInputTime = 0;     // real time seconds when we last started Viewer.HandleUserInput()
-        public double LastViewerUpdateTime = 0;    // real time seconds when we last started Viewer.SlowUpdate()
 
         private ElapsedTime FrameElapsedTime = new ElapsedTime();
         private ElapsedTime UserInputElapsedTime = new ElapsedTime();
-        private ElapsedTime ViewerUpdateElapsedTime = new ElapsedTime();
 
         public ElapsedTime GetFrameElapsedTime()
         {
@@ -81,14 +79,6 @@ namespace ORTS
             UserInputElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(UserInputElapsedTime.RealSeconds);
             LastUserInputTime = Program.RealTime;
             return UserInputElapsedTime;
-        }
-
-        public ElapsedTime GetViewerUpdateElapsedTime()
-        {
-            ViewerUpdateElapsedTime.RealSeconds = (float)( Program.RealTime - LastViewerUpdateTime );
-            ViewerUpdateElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(ViewerUpdateElapsedTime.RealSeconds);
-            LastViewerUpdateTime = Program.RealTime;
-            return ViewerUpdateElapsedTime;
         }
 
         Stopwatch sw = new Stopwatch();
@@ -211,8 +201,7 @@ namespace ORTS
                 }
 
                 // Time to read the keyboard - must be done in XNA Game thread
-                if ( actualRealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)  
-                    UserInput.Update();
+                UserInput.Update();
 
                 // launch updater to prepare the next frame
                 SwapFrames(ref CurrentFrame, ref NextFrame);
@@ -220,8 +209,7 @@ namespace ORTS
             }
             else
             {   // single processor machine
-                if (actualRealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)
-                    UserInput.Update();
+                UserInput.Update();
 
                 Program.RealTime = actualRealTime;
                 ElapsedTime frameElapsedTime = GetFrameElapsedTime();
@@ -236,10 +224,6 @@ namespace ORTS
                     Viewer.HandleUserInput( GetUserInputElapsedTime() );
                     UserInput.Handled();
                 }
-
-                // Update slowly changing items
-                if (Program.RealTime - LastViewerUpdateTime > Viewer3D.ViewerUpdatePeriod )
-                    Viewer.Update( GetViewerUpdateElapsedTime() );
 
                 // Prepare the frame for drawing
                 CurrentFrame.Clear();

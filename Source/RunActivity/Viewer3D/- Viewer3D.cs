@@ -211,16 +211,11 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Called periodically when user input should be processed.
-        /// Note, this is not called at the frame rate so you can't count
-        /// on a specific time interval for animation.
+        /// Called whenever a key or mouse buttin is pressed for handling user input
         /// elapsedTime represents the the time since the last call to HandleUserInput
         /// Examine the static class UserInput for mouse and keyboard status
-        /// 
         /// Executes in the UpdaterProcess thread.
         /// </summary>
-        /// <param name="keyboardInput"></param>
-        /// <param name="mouseState"></param>
         public void HandleUserInput( ElapsedTime elapsedTime )
         {
             Camera.HandleUserInput( elapsedTime );
@@ -262,31 +257,7 @@ namespace ORTS
             {
                 RenderProcess.IsMouseVisible = false;
             }
-        }
 
-        /// <summary>
-        /// Called periodically to slowly changing items
-        /// ie flashing lights, sound sources etc
-        /// Called at a slow rate - 10 times per second maximum
-        /// elapsedTime represents the the time since the last call to Update
-        /// Executes in the UpdaterProcess thread.
-        /// </summary>
-        /// <param name="keyboardInput"></param>
-        /// <param name="mouseState"></param>
-        public void Update( ElapsedTime elapsedTime )
-        {
-            // Mute sound when paused
-            if (Simulator.Paused)
-                SoundEngine.SoundVolume = 0;
-            else
-                SoundEngine.SoundVolume = 1;
-
-            TrainDrawer.Update( elapsedTime );
-
-            if (ScreenHasChanged() )
-                NotifyCamerasOfScreenChange();
-
-            InfoDisplay.Update( elapsedTime );
         }
 
         /// <summary>
@@ -299,6 +270,14 @@ namespace ORTS
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime )
         {
+            // Mute sound when paused
+            if (Simulator.Paused)
+                SoundEngine.SoundVolume = 0;
+            else
+                SoundEngine.SoundVolume = 1;
+
+            if (ScreenHasChanged())
+                NotifyCamerasOfScreenChange();
             Camera.PrepareFrame(frame, elapsedTime);
             SkyDrawer.PrepareFrame(frame, elapsedTime);
             TerrainDrawer.PrepareFrame(frame, elapsedTime);

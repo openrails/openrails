@@ -91,6 +91,7 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            Update(elapsedTime);   // TODO, slow these updates
             frame.AddPrimitive( Material, this, ref Matrix);
         }
 

@@ -24,21 +24,24 @@ namespace ORTS
     /// </summary>
     public static class UserInput
     {
-        public static double LastUpdateTime = 0;  // realtime seconds when the keyboard and mouse were read last
-        public const double UpdatePeriod = 0.03;  // update the user input at 10 times per second maximum
         public static bool Ready = false;  // flag UpdaterProcess that its time to handle keyboard input
 
-        public static MouseState MouseState;
-        public static KeyboardState KeyboardState;
+        public static MouseState MouseState;        
+        public static KeyboardState KeyboardState;   
         private static KeyboardState lastKeyboardState;
+        private static MouseState lastMouseState;
 
         public static void Update()
         {
-            LastUpdateTime = Program.RealTime;
             lastKeyboardState = KeyboardState;
             KeyboardState = Keyboard.GetState();
+            lastMouseState = MouseState;
             MouseState = Mouse.GetState();
-            Ready = true;
+            if (lastKeyboardState != KeyboardState
+                || lastMouseState.LeftButton != MouseState.LeftButton 
+                || lastMouseState.RightButton != MouseState.RightButton
+                || lastMouseState.MiddleButton != MouseState.MiddleButton )
+                Ready = true;
         }
 
         public static void Handled()

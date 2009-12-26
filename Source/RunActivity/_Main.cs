@@ -62,8 +62,15 @@ namespace ORTS
                 Console.SetOut(new Logger(warningLogFileName));
                 Console.WriteLine("ORTS V " + Version);
                 Console.WriteLine();
-                Console.Error.WriteLine("Build = " + Application.ProductVersion);
+                Console.WriteLine("Build = " + Application.ProductVersion);
                 Console.WriteLine();
+            }
+
+            if (args.Length == 0)
+            {
+                Console.WriteLine( "Missing activity file name\r\n   ie RunActivity \"c:\\program files\\microsoft games\\train simulator\\routes\\usa1\\activites\\xxx.act\"\r\n\r\nOr launch the OpenRails program and select from the menu." );
+                Console.ReadKey();
+                return;
             }
 
             try

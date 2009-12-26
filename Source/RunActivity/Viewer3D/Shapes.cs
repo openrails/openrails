@@ -230,9 +230,20 @@ namespace ORTS
             if (  !SharedShapes.ContainsKey(path))
             {
                 // We haven't set up this shape yet, so go ahead and add it
-                SharedShape shape = new SharedShape(viewer, path);    
-                SharedShapes.Add(path, shape );
-                return shape;
+                try
+                {
+                    SharedShape shape = new SharedShape(viewer, path);
+                    SharedShapes.Add(path, shape);
+                    return shape;
+                }
+                catch (System.Exception error)
+                {
+                    Console.Error.WriteLine("Error loading shape: " + path + "\r\n   " + error.Message);
+                    if (EmptyShape == null)
+                        EmptyShape = new SharedShape(viewer);
+                    SharedShapes.Add(path, EmptyShape);
+                    return EmptyShape;
+                }
             }
             else
             {
@@ -243,6 +254,7 @@ namespace ORTS
 
         private static Dictionary<string, SharedShape> SharedShapes = new Dictionary<string, SharedShape>();
 
+        private static SharedShape EmptyShape = null;
     }
 
 
@@ -295,6 +307,24 @@ namespace ORTS
         // This is the data unique for each primitive
         ShapePrimitive[] ShapePrimitives;
 
+        /// <summary>
+        /// Create an empty shape
+        /// </summary>
+        /// <param name="viewer"></param>
+        public SharedShape(Viewer3D viewer)
+        {
+            Viewer = viewer;
+            FilePath = "Empty";
+            GraphicsDevice = viewer.GraphicsDevice;
+            ViewingDistance = 100;
+            ViewSphereRadius = 10;
+            Hierarchy = new int[0];
+            MatrixNames = new string[0];
+            Matrices = new Matrix[0];
+            Animations = null;
+            ShapePrimitives = new ShapePrimitive[0];
+        }
+
         public SharedShape(Viewer3D viewer, string path )
             
         {
@@ -309,150 +339,142 @@ namespace ORTS
         /// </summary>
         private void LoadContent( string FilePath)
         {
-            try
+            // TODO a temp fix for trackobj's converted to static objects
+            if (!File.Exists(FilePath))
             {
-                // TODO a temp fix for trackobj's converted to static objects
-                if (!File.Exists(FilePath))
+                string globalPath = Viewer.Simulator.RoutePath + @"\GLOBAL\SHAPES\" + Path.GetFileName(FilePath);
+                if (!File.Exists(globalPath))
                 {
-                    string globalPath = Viewer.Simulator.RoutePath + @"\GLOBAL\SHAPES\" + Path.GetFileName(FilePath);
+                    globalPath = Viewer.Simulator.BasePath + @"\GLOBAL\SHAPES\" + Path.GetFileName(FilePath);
                     if (!File.Exists(globalPath))
-                    {
-                        globalPath = Viewer.Simulator.BasePath + @"\GLOBAL\SHAPES\" + Path.GetFileName(FilePath);
-                        if (!File.Exists(globalPath))
-                            throw new System.Exception("Can't find file " + FilePath);
-                    }
-                    FilePath = globalPath;
+                        throw new System.Exception("Can't find file " + FilePath);
                 }
-                Console.Write( "S" );
-                SFile sFile = new SFile(FilePath);
-
-                // determine the correct texture folder, 
-                //    trainsets have their textures in the same folder as the shape, 
-                //    route scenery has their textures in a separate textures folder
-                string textureFolder;
-                if (FilePath.ToUpper().Contains(@"\TRAINS\TRAINSET\"))   // TODO this is pretty crude
-                    textureFolder = Path.GetDirectoryName(FilePath);
-                else
-                    textureFolder = Viewer.Simulator.RoutePath + @"\textures";  // TODO, and this shouldn't be hard coded
-
-                // for now, use one load, but set it to the farthest viewing distance
-                ViewingDistance = sFile.shape.lod_controls[0].distance_levels[sFile.shape.lod_controls[0].distance_levels.Count-1].distance_level_header.dlevel_selection;
-                ViewSphereRadius = sFile.shape.volumes[0].Radius;
-
-                // get a total count of drawing primitives
-                int primCount = 0;
-                foreach (sub_object sub_object in sFile.shape.lod_controls[0].distance_levels[0].sub_objects)
-                    primCount += sub_object.primitives.Count;
-
-                // set up the buffers to hold the drawing primtives
-                ShapePrimitives = new ShapePrimitive[primCount]; 
-
-                // Hierarchy and matrix names are common to all instances
-                Hierarchy = sFile.shape.lod_controls[0].distance_levels[0].distance_level_header.hierarchy;
-                MatrixNames = new string[Hierarchy.Length];
-                Matrices = new Matrix[Hierarchy.Length];
-                for (int i = 0; i < Hierarchy.Length; ++i)
-                {
-                    MatrixNames[i] = sFile.shape.matrices[i].Name.ToUpper();
-                    Matrices[i] = XNAMatrixFromMSTS(sFile.shape.matrices[i]);
-                }
-                Animations = sFile.shape.animations;
-
-
-                // read in the drawing primitives
-                int iPrim = 0;
-                foreach (sub_object sub_object in sFile.shape.lod_controls[0].distance_levels[0].sub_objects)
-                {
-                    int vertexCount = sub_object.vertices.Count;
-
-                    // Set up one vertex buffer for each sub_object, all primitives will share this buffer
-                    VertexPositionNormalTexture[] vertexData = new VertexPositionNormalTexture[vertexCount];
-
-                    for (int iVert = 0; iVert < vertexCount; ++iVert)
-                    {
-                        MSTS.vertex MSTSvertex = sub_object.vertices[iVert];
-                        vertexData[iVert] = XNAVertexPositionNormalTextureFromMSTS(MSTSvertex, sFile.shape);
-                    }
-                    VertexDeclaration subObjectVertexDeclaration = new VertexDeclaration(this.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
-                    VertexBuffer subObjectVertexBuffer = new VertexBuffer(GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Length, BufferUsage.WriteOnly);
-                    subObjectVertexBuffer.SetData(vertexData);
-
-                    // For each primitive, set up an effect and index buffer
-                    foreach (primitive primitive in sub_object.primitives)
-                    {
-                        ShapePrimitive shapePrimitive = new ShapePrimitive();
-
-                        prim_state prim_state = sFile.shape.prim_states[ primitive.prim_state_idx ];
-                        vtx_state vtx_state = sFile.shape.vtx_states[ prim_state.ivtx_state];
-
-                        int options = 0;
-                        // eliminate diffuse color on trees
-                        if (vtx_state.LightMatIdx == -9 || vtx_state.LightMatIdx == -10)
-                            options |= 1;
-                        // transparency test   TODO, add capability to handle alpha blending properly
-                        if (prim_state.alphatestmode == 1 
-                            || sFile.shape.shader_names[prim_state.ishader].StartsWith("BlendA", StringComparison.OrdinalIgnoreCase))
-                            options |= 2;
-
-                        if (prim_state.tex_idxs.Length == 0)
-                        {   // untextured objects get a blank texture
-                            shapePrimitive.Material = (SceneryMaterial)Materials.Load( Viewer.RenderProcess, "SceneryMaterial", null, options );  
-                        }
-                        else
-                        {
-                            texture texture = sFile.shape.textures[prim_state.tex_idxs[0]];
-                            string imageName = sFile.shape.images[texture.iImage];
-                            shapePrimitive.Material = (SceneryMaterial)Materials.Load( Viewer.RenderProcess, 
-                                "SceneryMaterial", textureFolder + @"\" + imageName, options);
-                        }
-
-                        int iMatrix = sFile.shape.vtx_states[sFile.shape.prim_states[primitive.prim_state_idx].ivtx_state].imatrix;
-                        shapePrimitive.PrimMatrixIndex = iMatrix;
-
-                        int indexCount = primitive.indexed_trilist.vertex_idxs.Count * 3;
-
-                        short[] indexData = new short[indexCount];
-
-                        int iIndex = 0;
-                        foreach (vertex_idx vertex_idx in primitive.indexed_trilist.vertex_idxs)
-                        {
-                            indexData[iIndex++] = (short)vertex_idx.a;
-                            indexData[iIndex++] = (short)vertex_idx.b;
-                            indexData[iIndex++] = (short)vertex_idx.c;
-                        }
-
-                        shapePrimitive.IndexCount = indexCount;
-                        shapePrimitive.VertexCount = vertexCount;
-
-                        shapePrimitive.IndexBuffer = new IndexBuffer(GraphicsDevice, sizeof(short) * indexCount, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
-                        shapePrimitive.IndexBuffer.SetData<short>(indexData);
-
-                        shapePrimitive.VertexBuffer = subObjectVertexBuffer;
-                        shapePrimitive.VertexDeclaration = subObjectVertexDeclaration;
-
-                        // Record range of vertices involved in this primitive as MinVertex and NumVertices
-                        // TODO Extract this from the sub_object header
-                        bool vertex_set_found = false;
-                        foreach( vertex_set vertex_set in sub_object.vertex_sets )
-                            if (vertex_set.VtxStateIdx == prim_state.ivtx_state)
-                            {
-                                shapePrimitive.MinVertex = vertex_set.StartVtxIdx;
-                                shapePrimitive.NumVertices = vertex_set.VtxCount;
-                                vertex_set_found = true;
-                                break;
-                            }
-                        if (!vertex_set_found)
-                            throw new System.Exception("vertex_set not found for vtx_state = " + prim_state.ivtx_state.ToString());
-                        ShapePrimitives[iPrim] = shapePrimitive;
-                        ++iPrim;
-                    }
-                }
+                FilePath = globalPath;
             }
-            catch (System.Exception error)
+            Console.Write( "S" );
+            SFile sFile = new SFile(FilePath);
+
+            // determine the correct texture folder, 
+            //    trainsets have their textures in the same folder as the shape, 
+            //    route scenery has their textures in a separate textures folder
+            string textureFolder;
+            if (FilePath.ToUpper().Contains(@"\TRAINS\TRAINSET\"))   // TODO this is pretty crude
+                textureFolder = Path.GetDirectoryName(FilePath);
+            else
+                textureFolder = Viewer.Simulator.RoutePath + @"\textures";  // TODO, and this shouldn't be hard coded
+
+            // for now, use one load, but set it to the farthest viewing distance
+            ViewingDistance = sFile.shape.lod_controls[0].distance_levels[sFile.shape.lod_controls[0].distance_levels.Count-1].distance_level_header.dlevel_selection;
+            ViewSphereRadius = sFile.shape.volumes[0].Radius;
+
+            // get a total count of drawing primitives
+            int primCount = 0;
+            foreach (sub_object sub_object in sFile.shape.lod_controls[0].distance_levels[0].sub_objects)
+                primCount += sub_object.primitives.Count;
+
+            // set up the buffers to hold the drawing primtives
+            ShapePrimitives = new ShapePrimitive[primCount]; 
+
+            // Hierarchy and matrix names are common to all instances
+            Hierarchy = sFile.shape.lod_controls[0].distance_levels[0].distance_level_header.hierarchy;
+            MatrixNames = new string[Hierarchy.Length];
+            Matrices = new Matrix[Hierarchy.Length];
+            for (int i = 0; i < Hierarchy.Length; ++i)
             {
-                Console.Error.WriteLine("Error loading shape: " + FilePath + "\r\n\r\n" + error);
+                MatrixNames[i] = sFile.shape.matrices[i].Name.ToUpper();
+                Matrices[i] = XNAMatrixFromMSTS(sFile.shape.matrices[i]);
             }
+            Animations = sFile.shape.animations;
 
+
+            // read in the drawing primitives
+            int iPrim = 0;
+            foreach (sub_object sub_object in sFile.shape.lod_controls[0].distance_levels[0].sub_objects)
+            {
+                int vertexCount = sub_object.vertices.Count;
+
+                // Set up one vertex buffer for each sub_object, all primitives will share this buffer
+                VertexPositionNormalTexture[] vertexData = new VertexPositionNormalTexture[vertexCount];
+
+                for (int iVert = 0; iVert < vertexCount; ++iVert)
+                {
+                    MSTS.vertex MSTSvertex = sub_object.vertices[iVert];
+                    vertexData[iVert] = XNAVertexPositionNormalTextureFromMSTS(MSTSvertex, sFile.shape);
+                }
+                VertexDeclaration subObjectVertexDeclaration = new VertexDeclaration(this.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
+                VertexBuffer subObjectVertexBuffer = new VertexBuffer(GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Length, BufferUsage.WriteOnly);
+                subObjectVertexBuffer.SetData(vertexData);
+
+                // For each primitive, set up an effect and index buffer
+                foreach (primitive primitive in sub_object.primitives)
+                {
+                    ShapePrimitive shapePrimitive = new ShapePrimitive();
+
+                    prim_state prim_state = sFile.shape.prim_states[ primitive.prim_state_idx ];
+                    vtx_state vtx_state = sFile.shape.vtx_states[ prim_state.ivtx_state];
+
+                    int options = 0;
+                    // eliminate diffuse color on trees
+                    if (vtx_state.LightMatIdx == -9 || vtx_state.LightMatIdx == -10)
+                        options |= 1;
+                    // transparency test   TODO, add capability to handle alpha blending properly
+                    if (prim_state.alphatestmode == 1 
+                        || sFile.shape.shader_names[prim_state.ishader].StartsWith("BlendA", StringComparison.OrdinalIgnoreCase))
+                        options |= 2;
+
+                    if (prim_state.tex_idxs.Length == 0)
+                    {   // untextured objects get a blank texture
+                        shapePrimitive.Material = (SceneryMaterial)Materials.Load( Viewer.RenderProcess, "SceneryMaterial", null, options );  
+                    }
+                    else
+                    {
+                        texture texture = sFile.shape.textures[prim_state.tex_idxs[0]];
+                        string imageName = sFile.shape.images[texture.iImage];
+                        shapePrimitive.Material = (SceneryMaterial)Materials.Load( Viewer.RenderProcess, 
+                            "SceneryMaterial", textureFolder + @"\" + imageName, options);
+                    }
+
+                    int iMatrix = sFile.shape.vtx_states[sFile.shape.prim_states[primitive.prim_state_idx].ivtx_state].imatrix;
+                    shapePrimitive.PrimMatrixIndex = iMatrix;
+
+                    int indexCount = primitive.indexed_trilist.vertex_idxs.Count * 3;
+
+                    short[] indexData = new short[indexCount];
+
+                    int iIndex = 0;
+                    foreach (vertex_idx vertex_idx in primitive.indexed_trilist.vertex_idxs)
+                    {
+                        indexData[iIndex++] = (short)vertex_idx.a;
+                        indexData[iIndex++] = (short)vertex_idx.b;
+                        indexData[iIndex++] = (short)vertex_idx.c;
+                    }
+
+                    shapePrimitive.IndexCount = indexCount;
+                    shapePrimitive.VertexCount = vertexCount;
+
+                    shapePrimitive.IndexBuffer = new IndexBuffer(GraphicsDevice, sizeof(short) * indexCount, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+                    shapePrimitive.IndexBuffer.SetData<short>(indexData);
+
+                    shapePrimitive.VertexBuffer = subObjectVertexBuffer;
+                    shapePrimitive.VertexDeclaration = subObjectVertexDeclaration;
+
+                    // Record range of vertices involved in this primitive as MinVertex and NumVertices
+                    // TODO Extract this from the sub_object header
+                    bool vertex_set_found = false;
+                    foreach( vertex_set vertex_set in sub_object.vertex_sets )
+                        if (vertex_set.VtxStateIdx == prim_state.ivtx_state)
+                        {
+                            shapePrimitive.MinVertex = vertex_set.StartVtxIdx;
+                            shapePrimitive.NumVertices = vertex_set.VtxCount;
+                            vertex_set_found = true;
+                            break;
+                        }
+                    if (!vertex_set_found)
+                        throw new System.Exception("vertex_set not found for vtx_state = " + prim_state.ivtx_state.ToString());
+                    ShapePrimitives[iPrim] = shapePrimitive;
+                    ++iPrim;
+                }
+            }
         }
 
         private VertexPositionTexture XNAVertexPositionTextureFromMSTS(vertex MSTSvertex, shape MSTSshape)

@@ -51,8 +51,6 @@ namespace ORTS
     /// </summary>
     public class Locomotive: TrainCar
     {
-        public float ThrottlePercent = 0;
-        public bool Forward = true;  // true = forward, false = reverse
         public bool Horn = false;
         public bool Bell = false;
         public bool Sander = false;  // false = off

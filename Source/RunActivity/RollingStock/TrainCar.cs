@@ -52,6 +52,8 @@ namespace ORTS
         public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
         public float SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
 
+        public float ThrottlePercent = 0;
+        public bool Forward = true;  // true = forward, false = reverse
         public float MotiveForceN = 0.0f;   // ie motor and gravity in Newtons  - signed relative to direction of car - 
         public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned
         public float Variable1 = 0.0f;  // used to convey status to soundsource
@@ -207,30 +209,38 @@ namespace ORTS
 
         }
 
-        public virtual void HandleUserInput( ElapsedTime elapsedTime )
+        public virtual void HandleUserInput(ElapsedTime elapsedTime)
         {
         }
 
+
         /// <summary>
-        /// Handle things related to this specific viewer 
-        /// that should be updated even if the object isn't visible.
-        /// ie don't update the TrainCar simulation class here.
+        /// Called at the full frame rate
+        /// elapsedTime is time since last frame
+        /// Executes in the UpdaterThread
         /// </summary>
-        /// <param name="gameTime"></param>
-        public virtual void Update( ElapsedTime elapsedTime)
+        public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // THREAD SAFETY ISSUE - what if Loader is descarding this while we are still updating?
+            UpdateSound(elapsedTime);
+            UpdateAnimation(frame, elapsedTime);
+        }
+
+
+        public void UpdateSound(ElapsedTime elapsedTime)
+        {
             try
             {
                 foreach (SoundSource soundSource in SoundSources)
-                    soundSource.Update(elapsedTime );
+                    soundSource.Update(elapsedTime);
             }
-            catch
+            catch( System.Exception error )
             {
+                Console.Error.WriteLine("Updating Sound: " + error.Message);
             }
         }
 
-        public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+
+        private void UpdateAnimation( RenderFrame frame, ElapsedTime elapsedTime )
         {
             float distanceTravelledM = Car.SpeedMpS * elapsedTime.ClockSeconds ;
 
@@ -279,7 +289,7 @@ namespace ORTS
                 TrainCarShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
             }
 
-        }//public override void Update(GameTime gameTime)
+        }
 
 
 

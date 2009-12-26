@@ -58,7 +58,7 @@ namespace ORTS
         public Signals Signals = null;
         public AI AI = null;
 
-        public Locomotive PlayerLocomotive = null;  // TODO, make this a 'generic locomotive'
+        public TrainCar PlayerLocomotive = null;  // TODO, make this a 'generic locomotive'
         public Train PlayerTrain 
         { 
             get 
@@ -114,7 +114,7 @@ namespace ORTS
             foreach (TrainCar car in playerTrain.Cars)
                 if (car.GetType().IsSubclassOf(typeof(Locomotive)))  // first loco is the one the player drives
                 {
-                    PlayerLocomotive = (Locomotive)car;
+                    PlayerLocomotive = car;
                     break;
                 }
             if (PlayerLocomotive == null)
