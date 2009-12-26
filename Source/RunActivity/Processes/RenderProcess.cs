@@ -194,7 +194,7 @@ namespace ORTS
 
         private void FrameUpdate(GameTime gameTime)
         {
-            // Update system clock
+            double actualRealTime = gameTime.TotalRealTime.TotalSeconds;
 
             if (Viewer.UpdaterProcess != null)
             {   // multi processor machine
@@ -210,19 +210,19 @@ namespace ORTS
                 }
 
                 // Time to read the keyboard - must be done in XNA Game thread
-                if (Program.RealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)  
+                if ( actualRealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)  
                     UserInput.Update();
 
                 // launch updater to prepare the next frame
                 SwapFrames(ref CurrentFrame, ref NextFrame);
-                Viewer.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalRealTime.TotalSeconds);
+                Viewer.UpdaterProcess.StartUpdate(NextFrame, actualRealTime);
             }
             else
             {   // single processor machine
-                if (Program.RealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)
+                if (actualRealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)
                     UserInput.Update();
 
-                Program.RealTime = gameTime.ElapsedRealTime.TotalSeconds;
+                Program.RealTime = actualRealTime;
                 ElapsedTime frameElapsedTime = GetFrameElapsedTime();
 
                 ComputeFPS( frameElapsedTime.RealSeconds );
@@ -230,7 +230,7 @@ namespace ORTS
                 // Update the simulator
                 Viewer.Simulator.Update( frameElapsedTime.ClockSeconds );
 
-                if (Program.RealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)
+                if ( UserInput.Ready )
                 {
                     Viewer.HandleUserInput( GetUserInputElapsedTime() );
                     UserInput.Handled();
