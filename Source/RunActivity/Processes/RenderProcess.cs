@@ -91,6 +91,7 @@ namespace ORTS
             return ViewerUpdateElapsedTime;
         }
 
+        Stopwatch sw = new Stopwatch();
 
         public RenderProcess( Viewer3D viewer3D )
         {
@@ -169,7 +170,7 @@ namespace ORTS
                 FrameUpdate(gameTime);
             }
 
-            /* when using Sync to Retrace this isn't required
+            /* When using SynchronizeWithVerticalRetrace = true, then this isn't required
             // if the loader is running slow, limit render's frame rates to give loader some GPU time
             if (LoaderSlow )
             {

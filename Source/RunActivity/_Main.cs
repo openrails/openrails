@@ -58,6 +58,7 @@ namespace ORTS
                 TraceListener traceListener = new System.Diagnostics.TextWriterTraceListener(errorLogger);
                 System.Diagnostics.Debug.Listeners.Insert(0, traceListener);
                 System.Diagnostics.Trace.Listeners.Insert(0, traceListener);
+                Console.SetError(errorLogger);
                 Console.SetOut(new Logger(warningLogFileName));
                 Console.WriteLine("ORTS V " + Version);
                 Console.WriteLine();
