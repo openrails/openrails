@@ -278,6 +278,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>echo $Revision: 0 $ &gt;revision.txt</PreBuildEvent>
+    <PreBuildEvent>echo $Revision: 000 $ &gt;revision.txt</PreBuildEvent>
   </PropertyGroup>
 </Project>
