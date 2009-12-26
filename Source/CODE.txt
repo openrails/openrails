@@ -204,5 +204,20 @@ public virtual void PrepareFrame(RenderFrame frame, GameTime gameTime)
 
 public virtual void Unload()
 
+TIME
 
+TODO Explain
 
+double Program.RealTime
+double Simulator.ClockTime
+ElapsedTime
+	. ClockSeconds  watch for /0 errors		elapsedClockSeconds
+	. RealSeconds     "						elapsedRealSeconds
+
+ElapsedSeconds  - refers to real time,  look at clockTimeSeconds for 
+
+explain why some get clock, some get real, some get both
+
+constraints - 
+
+TODO Explain float vs double

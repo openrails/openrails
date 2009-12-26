@@ -73,7 +73,7 @@ namespace ORTS
             return new TrainCarViewer(viewer, this);
         }
 
-        public virtual void Update(GameTime gameTime)
+        public virtual void Update( float elapsedClockSeconds )
         {
             if (SpeedMpS < 0.1)
             {
@@ -207,7 +207,7 @@ namespace ORTS
 
         }
 
-        public virtual void HandleUserInput()
+        public virtual void HandleUserInput( ElapsedTime elapsedTime )
         {
         }
 
@@ -217,54 +217,50 @@ namespace ORTS
         /// ie don't update the TrainCar simulation class here.
         /// </summary>
         /// <param name="gameTime"></param>
-        public virtual void Update(GameTime gameTime)
+        public virtual void Update( ElapsedTime elapsedTime)
         {
             // THREAD SAFETY ISSUE - what if Loader is descarding this while we are still updating?
             try
             {
                 foreach (SoundSource soundSource in SoundSources)
-                    soundSource.Update(gameTime);
+                    soundSource.Update(elapsedTime );
             }
             catch
             {
             }
         }
 
-        public virtual void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            float distanceTravelledM = Car.SpeedMpS * elapsedTime.ClockSeconds ;
 
-            if (!Viewer.Simulator.Paused)
+            // Running gear animation
+            if (RunningGearPartIndexes.Count > 0 && Car.WagFile.Engine != null)  // skip this if there is no running gear and only engines can have running gear
             {
-                float distanceTravelledM = Car.SpeedMpS * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                float driverWheelCircumferenceM = 3.14159f * 2.0f * Car.WagFile.Engine.DriverWheelRadiusM;
+                float framesAdvanced = (float)TrainCarShape.SharedShape.Animations[0].FrameCount * distanceTravelledM / driverWheelCircumferenceM;
+                DriverRotationKey += framesAdvanced;  // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
+                while (DriverRotationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) DriverRotationKey -= TrainCarShape.SharedShape.Animations[0].FrameCount;
+                while (DriverRotationKey < -0.00001) DriverRotationKey += TrainCarShape.SharedShape.Animations[0].FrameCount;
+                foreach (int iMatrix in RunningGearPartIndexes)
+                    TrainCarShape.AnimateMatrix(iMatrix, DriverRotationKey);
+            }
 
-                // Running gear animation
-                if (RunningGearPartIndexes.Count > 0 && Car.WagFile.Engine != null)  // skip this if there is no running gear and only engines can have running gear
-                {
-                    float driverWheelCircumferenceM = 3.14159f * 2.0f * Car.WagFile.Engine.DriverWheelRadiusM;
-                    float framesAdvanced = (float)TrainCarShape.SharedShape.Animations[0].FrameCount * distanceTravelledM / driverWheelCircumferenceM;
-                    DriverRotationKey += framesAdvanced;  // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                    while (DriverRotationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) DriverRotationKey -= TrainCarShape.SharedShape.Animations[0].FrameCount;
-                    while (DriverRotationKey < -0.00001) DriverRotationKey += TrainCarShape.SharedShape.Animations[0].FrameCount;
-                    foreach (int iMatrix in RunningGearPartIndexes)
-                        TrainCarShape.AnimateMatrix(iMatrix, DriverRotationKey);
-                }
-
-                // Wheel animation
-                if (WheelPartIndexes.Count > 0)
-                {
-                    float wheelCircumferenceM = 3.14159f * 2.0f * Car.WagFile.Wagon.WheelRadiusM;
-                    float rotationalDistanceR = 3.14159f * 2.0f * distanceTravelledM / wheelCircumferenceM;  // in radians
-                    WheelRotationR -= rotationalDistanceR;
-                    while (WheelRotationR > Math.PI) WheelRotationR -= (float)Math.PI * 2;   // normalize for -180 to +180 degrees
-                    while (WheelRotationR < -Math.PI) WheelRotationR += (float)Math.PI * 2;
-                    Matrix wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
-                    foreach (int iMatrix in WheelPartIndexes)
-                        TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
-                }
+            // Wheel animation
+            if (WheelPartIndexes.Count > 0)
+            {
+                float wheelCircumferenceM = 3.14159f * 2.0f * Car.WagFile.Wagon.WheelRadiusM;
+                float rotationalDistanceR = 3.14159f * 2.0f * distanceTravelledM / wheelCircumferenceM;  // in radians
+                WheelRotationR -= rotationalDistanceR;
+                while (WheelRotationR > Math.PI) WheelRotationR -= (float)Math.PI * 2;   // normalize for -180 to +180 degrees
+                while (WheelRotationR < -Math.PI) WheelRotationR += (float)Math.PI * 2;
+                Matrix wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
+                foreach (int iMatrix in WheelPartIndexes)
+                    TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
             }
 
             if (FreightAnimShape != null)
-                FreightAnimShape.PrepareFrame(frame, gameTime);
+                FreightAnimShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
 
             // Control visibility of passenger cabin when inside it
             if (Viewer.Camera.AttachedToCar == this.Car
@@ -273,14 +269,14 @@ namespace ORTS
             {
                 // We are in the passenger cabin
                 if (PassengerCabin != null)
-                    PassengerCabin.PrepareFrame(frame, gameTime);
+                    PassengerCabin.PrepareFrame(frame, elapsedTime.ClockSeconds);
                 else
-                    TrainCarShape.PrepareFrame(frame, gameTime);
+                    TrainCarShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
             }
             else
             {
                 // We are outside the passenger cabin
-                TrainCarShape.PrepareFrame(frame, gameTime);
+                TrainCarShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
             }
 
         }//public override void Update(GameTime gameTime)

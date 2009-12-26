@@ -82,7 +82,7 @@ namespace ORTS
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public void PrepareFrame(RenderFrame frame)
         {
             if (WaterMaterial == null)  // if there was a problem loading the water texture
                 return;
@@ -187,8 +187,6 @@ namespace ORTS
                     vertexData[iV].TextureCoordinate = new Vector2(xp, zp);
                     vertexData[iV].Normal = new Vector3(0, 1, 0);
                     iV++;
-
-                    // TODO deal with disabled patches
                 }
             TileVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Length, BufferUsage.WriteOnly);
             TileVertexBuffer.SetData(vertexData);

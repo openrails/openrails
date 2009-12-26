@@ -17,6 +17,23 @@ namespace ORTS
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
         public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
+        private static bool IsInitialized = false;
+
+        /// <summary>
+        /// THREAD SAFETY:  XNA Content Manager is not thread safe and must only be called from the Game thread.
+        /// ( per Shawn Hargreaves )
+        /// </summary>
+        /// <param name="renderProcess"></param>
+        public static void Initialize(RenderProcess renderProcess)
+        {
+            MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
+            SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
+            SceneryShader.BumpTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, 
+                                                        renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
+            SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
+            SkyMaterial = new SkyMaterial(renderProcess);
+            IsInitialized = true;
+        }
 
         public static Material Load(RenderProcess renderProcess, string materialName)
         {
@@ -29,24 +46,19 @@ namespace ORTS
 
         public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options )
         {
+            System.Diagnostics.Debug.Assert(IsInitialized, "Must initialize Materials before using.");
+            if (!IsInitialized)             // this shouldn't happen, but if it does
+            {
+                Console.Error.WriteLine("Program Bug: Must initialize Materials before using.");
+                Initialize(renderProcess);  // warn, and do it now rather than fail
+            }
+
             if( textureName != null )
                 textureName = textureName.ToLower();
-
-            if (MissingTexture == null)
-                MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
-
-            if (SceneryShader == null)
-            {
-                SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
-                SceneryShader.BumpTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
-
-            }
 
             switch( materialName )
             {
                 case "SpriteBatch":
-                    if (SpriteBatchMaterial == null)
-                        SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
                     return SpriteBatchMaterial;
                 case "Terrain":
                     if (!TerrainMaterials.ContainsKey(textureName))
@@ -81,8 +93,6 @@ namespace ORTS
                         WaterMaterial = new WaterMaterial(renderProcess, textureName);
                     return WaterMaterial;
                 case "SkyMaterial":
-                    if (SkyMaterial == null)
-                        SkyMaterial = new SkyMaterial(renderProcess);
                     return SkyMaterial; 
                 default:
                     return Load(renderProcess, "ScenerMaterial");

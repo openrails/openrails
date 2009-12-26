@@ -54,7 +54,7 @@ namespace ORTS
         /// Moves all active AI trains by calling their Update method.
         /// And finally, removes any AI trains that have reached the end of their path.
         /// </summary>
-        public void Update(GameTime gameTime)
+        public void Update( float elapsedClockSeconds )
         {
             if (FirstUpdate)
             {
@@ -62,8 +62,8 @@ namespace ORTS
                     Simulator.Trains.Remove(kvp.Value);
                 FirstUpdate = false;
             }
-            Dispatcher.Update(Simulator.ClockTimeSeconds);
-            for (Service_Definition sd = StartQueue.GetNext(Simulator.ClockTimeSeconds); sd!=null; sd=StartQueue.GetNext(Simulator.ClockTimeSeconds))
+            Dispatcher.Update(Simulator.ClockTime);
+            for (Service_Definition sd = StartQueue.GetNext(Simulator.ClockTime); sd!=null; sd=StartQueue.GetNext(Simulator.ClockTime))
             {
                 AITrain train = AITrainDictionary[sd.UiD];
                 if (Dispatcher.RequestAuth(train) == false)
@@ -82,7 +82,7 @@ namespace ORTS
                 if (train.NextStopNode == null || train.RearNode == null || train.Cars[0].Train != train)
                     remove = true;
                 else
-                    train.AIUpdate(gameTime, Simulator.ClockTimeSeconds);
+                    train.AIUpdate( elapsedClockSeconds, Simulator.ClockTime);
             if (remove)
                 RemoveTrains();
         }

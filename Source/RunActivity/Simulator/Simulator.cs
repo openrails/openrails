@@ -36,12 +36,11 @@ namespace ORTS
 {
     public class Simulator
     {
-        public double LastUpdate = 0;       // time in seconds of the last update call to the simulator
-        public const double UpdatePeriod = 0.03;    // aim for 30 times per second, drops to 10 when window is minimized, 
-                                                   // but runs at the full frame rate in a multiprocessor computer
-
         public bool Paused = false;
-        public int GameSpeed = 1;   
+        public float GameSpeed = 1;
+        public double ClockTime = 0;         // relative to 00:00:00 on the day the activity starts 
+                                                    // while Simulator.Update() is running, objects are adjusted to this target time 
+                                                    // after Simulator.Update() is complete, the simulator state matches this time
 
         public string BasePath;     // ie c:\program files\microsoft games\train simulator
         public string RoutePath;    // ie c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's
@@ -52,8 +51,6 @@ namespace ORTS
         // These items are what are saved and loaded in a game save.
         public string RouteName;    // ie LPS, USA1  represents the folder name
         public ACTFile Activity;
-        public double ClockTimeSeconds = 0;        // Second + 60 * (Minute + 60 * Hour)
-        public double RealTimeSeconds = 0;
         public TDBFile TDB;
         public TRKFile TRK;
         public TSectionDatFile TSectionDat;
@@ -72,6 +69,8 @@ namespace ORTS
                     return null; 
             } 
         }
+
+
 
         public static Random Random = new Random();   // for use by the entire program
 
@@ -104,7 +103,7 @@ namespace ORTS
 
             StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
             TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
-            ClockTimeSeconds = StartTime.TotalSeconds;
+            ClockTime = StartTime.TotalSeconds;
 
             Console.Write(" CON");
             InitializePlayerTrain();
@@ -128,27 +127,35 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Update the simulator state
+        /// Convert and elapsed real time into clock time based on simulator
+        /// running speed and paused state.
+        /// </summary>
+        /// <param name="elapsedRealTimeSeconds"></param>
+        /// <returns></returns>
+        public float GetElapsedClockSeconds( float elapsedRealSeconds )
+        {
+            return elapsedRealSeconds * (Paused ? 0 : GameSpeed);
+        }
+
+        /// <summary>
+        /// Update the simulator state 
+        /// elapsedClockSeconds represents the the time since the last call to Simulator.Update
         /// Executes in the UpdaterProcess thread.
         /// </summary>
         /// <param name="gameTime"></param>
-        public void Update(GameTime gameTime)
+        public void Update( float elapsedClockSeconds )
         {
-            LastUpdate = gameTime.TotalRealTime.TotalSeconds;
-            RealTimeSeconds += gameTime.ElapsedRealTime.TotalSeconds;
+            // Advance the Clock
+            ClockTime += elapsedClockSeconds;
 
-            if (Paused) return;
-
-            ClockTimeSeconds += gameTime.ElapsedGameTime.TotalSeconds * (double)GameSpeed;
-
-            PlayerTrain.Update(gameTime);
-            Signals.Update(gameTime);
-            AI.Update(gameTime);
+            // Represent conditions at the specified clock time.
+            PlayerTrain.Update( elapsedClockSeconds );
+            Signals.Update( elapsedClockSeconds );
+            AI.Update( elapsedClockSeconds );
 
             AlignTrailingPointSwitches(PlayerTrain, PlayerLocomotive.Forward);
 
             CheckForCoupling(PlayerTrain);
-
         }
 
         /// <summary>
@@ -516,8 +523,8 @@ namespace ORTS
 
             Trains.Add(train2);
 
-            train.Update(null);   // stop the wheels from moving etc
-            train2.Update(null);  // stop the wheels from moving etc
+            train.Update( 0 );   // stop the wheels from moving etc
+            train2.Update( 0 );  // stop the wheels from moving etc
 
             car.CreateEvent(61);
             // TODO which event should we fire

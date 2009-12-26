@@ -45,8 +45,6 @@ namespace ORTS
 
     }
 
-
-
     public class RenderFrame
     {
         private int RenderItemCount = 0;
@@ -57,9 +55,6 @@ namespace ORTS
 
         IComparer RenderSorter = new RenderSorter();
 
-        // Diagnostic info
-        public double TargetRenderTimeS = 0;  // the exact time when this frame should render
-        
         public void Clear() 
         { 
             RenderItemCount = 0;  
@@ -84,7 +79,6 @@ namespace ORTS
             RenderItems[RenderItemCount].Material = material;
             RenderItems[RenderItemCount].RenderPrimitive = primitive;
             RenderItems[RenderItemCount].XNAMatrix = xnaMatrix;
-            RenderItemsDone[RenderItemCount] = false; 
             ++RenderItemCount;
 
             // TODO, enhance this:
@@ -116,6 +110,10 @@ namespace ORTS
             // make a decision on what renderstates need to be
             // changed.
             Material prevMaterial = null;
+
+            for (int i = 0; i < RenderItemCount; ++i)  // TODO should I keep this experiment tries to reduce image changes
+                RenderItemsDone[i] = false; 
+
             for (int i = 0; i < RenderItemCount; ++i)
             {
                 if (!RenderItemsDone[i])   // this experiment tries to reduce image changes

@@ -113,7 +113,7 @@ namespace ORTS
                 SoundStreams.Add(new SoundStream(mstsStream, this));
         }
 
-        public void Update(GameTime gameTime)
+        public void Update(ElapsedTime elapsedTime)
         {
             if (!Active)
             {
@@ -537,13 +537,13 @@ namespace ORTS
             Simulator = soundStream.SoundSource.Viewer.Simulator;
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
 
-            StartSeconds = Simulator.RealTimeSeconds;
+            StartSeconds = Simulator.ClockTime;
             UpdateTriggerAtSeconds();
         }
 
         public void TryTrigger()
         {
-            if (Simulator.RealTimeSeconds > triggerAtSeconds)
+            if (Simulator.ClockTime > triggerAtSeconds)
             {
                 SoundCommand.Run();
                 float volume = (float)Simulator.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
@@ -555,7 +555,7 @@ namespace ORTS
         private void UpdateTriggerAtSeconds()
         {
             double interval = Simulator.Random.NextDouble() * (SMS.Delay_Max - SMS.Delay_Min) + SMS.Delay_Min;
-            triggerAtSeconds = Simulator.RealTimeSeconds + interval;
+            triggerAtSeconds = Simulator.ClockTime + interval;
         }
 
     }  // class RandomTrigger

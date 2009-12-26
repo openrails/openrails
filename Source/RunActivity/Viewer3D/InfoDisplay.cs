@@ -18,7 +18,7 @@ using Microsoft.Xna.Framework.Storage;
 using System.Diagnostics;
 using System.Threading;
 using System.Text;
-
+using System.Windows.Forms;
 
 namespace ORTS
 {
@@ -32,15 +32,10 @@ namespace ORTS
         SpriteBatchMaterial Material;
         Viewer3D Viewer;
 
-        public double SmoothedFrameRate = 1000;     // information displayed by InfoViewer in upper left
-        public double MinFrameRate = 1000;
-
-        private double lastClockUpdate = 0;
+        private int lastClockTime = 0;   // in seconds
         private string ClockTimeString = "";
 
         int processors = System.Environment.ProcessorCount;
-
-        double SmoothJitter = 0;
 
         public InfoDisplay( Viewer3D viewer )
         {
@@ -49,16 +44,13 @@ namespace ORTS
             Material = (SpriteBatchMaterial) Materials.Load( Viewer.RenderProcess, "SpriteBatch" );
         }
 
-        public void Update(GameTime gameTime)
+        public void Update(ElapsedTime elapsedTime)
         {
-            if (Viewer.Simulator.ClockTimeSeconds - lastClockUpdate > 1)  // Update very second
+            if ( (int)Viewer.Simulator.ClockTime != lastClockTime )  // Update very second
             {
-                ClockTimeString = FormattedTime(Viewer.Simulator.ClockTimeSeconds);
-                lastClockUpdate = Viewer.Simulator.ClockTimeSeconds;
+                ClockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
+                lastClockTime = (int)Viewer.Simulator.ClockTime;
             }
-
-            // Memory Useage
-            long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
 
             Text = "Version = " + Program.Version + "\n";
             Text = Text + "Time = " + ClockTimeString + "\n";
@@ -67,59 +59,38 @@ namespace ORTS
             Text = Text + "Brake = " + Viewer.Simulator.PlayerTrain.TrainBrakePercent.ToString() + "\n";
             Text = Text + "Speed = " + MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString("F1") + "\n";
             Text = Text + "\n";
+            Text = Text + "FPS = " + Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString() + "\n";
+
+            AddDebugInfo();
+        }
+
+
+        [Conditional("DEBUG")]
+        private void AddDebugInfo( )
+        {
+            // Memory Useage
+            long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
+
+            Text = Text + "\n";
+            Text = Text + "Build = " + Application.ProductVersion + "\n";
             Text = Text + "Memory = " + memory.ToString() + "\n";
-            Text = Text + "FPS = " + Math.Round(SmoothedFrameRate).ToString() + "\n";
-            Text = Text + "Jitter = " + SmoothJitter.ToString("F4") + "\n";
+            Text = Text + "Jitter = " + Viewer.RenderProcess.SmoothJitter.ToString("F4") + "\n";
             Text = Text + "Primitives = " + Viewer.RenderProcess.PrimitivesPerFrame.ToString() + "\n";
             Text = Text + "StateChanges = " + Viewer.RenderProcess.RenderStateChangesPerFrame.ToString() + "\n";
             Text = Text + "ImageChanges = " + Viewer.RenderProcess.ImageChangesPerFrame.ToString() + "\n";
             Text = Text + "Processors = " + processors.ToString() + "\n";
-            if (Viewer.RenderProcess.UpdateSlow)
-                Text = Text + "\r\nUpdate Slow";
             if (Viewer.RenderProcess.LoaderSlow)
                 Text = Text + "\r\nLoader Slow";
+            if (Viewer.RenderProcess.UpdateSlow)
+                Text = Text + "\r\nUpdate Slow";
         }
 
         /// <summary>
         /// Allows the game component to update itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void PrepareFrame( RenderFrame frame, GameTime gameTime)
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // Smoothing filter length
-            double seconds = gameTime.ElapsedRealTime.TotalSeconds;
-            double rate = 5.0/seconds;
-            
-
-            // Jitter
-            if( seconds > 0 )
-            {
-                double jitter = Math.Abs(Viewer.RenderProcess.Jitter);
-                if (Math.Abs(jitter - SmoothJitter) > 0.01 )
-                    SmoothJitter = jitter;
-                else
-                    SmoothJitter = SmoothJitter * (rate - 1.0) / rate + jitter * 1.0 / rate;
-            }
-
-            // Frame Rate
-            int elapsedMS = gameTime.ElapsedGameTime.Milliseconds;
-
-            if (elapsedMS != 0)
-            {
-                double frameRate = 1000f / elapsedMS;
-
-                if (frameRate < MinFrameRate)
-                    MinFrameRate = frameRate;
-                else
-                    MinFrameRate = ((MinFrameRate * 19f) + frameRate) / 20f;
-
-                if (Math.Abs(frameRate - SmoothedFrameRate) > 5)
-                    SmoothedFrameRate = frameRate;
-                else
-                    SmoothedFrameRate = SmoothedFrameRate * (rate - 1.0) / rate + frameRate * 1.0 / rate;
-            }
-
-
             frame.AddPrimitive( Material, this, ref Matrix);
         }
 

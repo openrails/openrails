@@ -26,6 +26,7 @@ using MSTS;
 using System.Threading;
 using Microsoft.Win32;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ORTS
 {
@@ -34,6 +35,8 @@ namespace ORTS
         public static string ActivityPath;
         public static string Version = Application.ProductVersion;
         public static string RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+        public static double RealTime = 0;  // tracks the real time for the frame we are currently processing
+                                                   // only update process may 
 
         static Simulator Simulator; 
 
@@ -42,7 +45,7 @@ namespace ORTS
         /// </summary>
         static void Main(string[] args)
         {
-            Version = Version + "." + SVNRevision();
+            Version = SVNRevision();
 
             // TODO, read warnings on/off from the registry
             bool WarningsOn = true;
@@ -51,9 +54,14 @@ namespace ORTS
             {
                 string warningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\ORTS Log.txt";
                 File.Delete(warningLogFileName);
-                Console.SetError(new ErrorLogger(warningLogFileName));
+                ErrorLogger errorLogger = new ErrorLogger(warningLogFileName);
+                TraceListener traceListener = new System.Diagnostics.TextWriterTraceListener(errorLogger);
+                System.Diagnostics.Debug.Listeners.Insert(0, traceListener);
+                System.Diagnostics.Trace.Listeners.Insert(0, traceListener);
                 Console.SetOut(new Logger(warningLogFileName));
-                Console.WriteLine("ORTS V" + Version);
+                Console.WriteLine("ORTS V " + Version);
+                Console.WriteLine();
+                Console.Error.WriteLine("Build = " + Application.ProductVersion);
                 Console.WriteLine();
             }
 

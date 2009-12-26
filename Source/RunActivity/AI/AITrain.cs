@@ -50,7 +50,7 @@ namespace ORTS
         /// Performs stop processing if a planned stop is made.
         /// Then moves the train, calculates target accelleration and adjusts the controls.
         /// </summary>
-        public void AIUpdate(GameTime gameTime, double clockTime)
+        public void AIUpdate( float elapsedClockSeconds, double clockTime)
         {
             if (WaitUntil > clockTime)
                 return;
@@ -116,10 +116,9 @@ namespace ORTS
             }
             WaitUntil = 0;
             float timeS = 0;
-            if (gameTime != null)
-                timeS = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            
             float prevSpeedMpS = SpeedMpS;
-            base.Update(gameTime);
+            base.Update( elapsedClockSeconds );
             float dir = TrainDirectionForward ? 1 : -1;
             float distanceM = dir * SpeedMpS * timeS;
             NextStopDistanceM -= distanceM;

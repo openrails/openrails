@@ -15,24 +15,17 @@ namespace ORTS
 {
     public class UpdaterProcess
     {
-        public const double UpdatePeriod = 0.1;       // 10 times per second maximum - we'll call the viewer's Update 
-        public double LastUpdate = 0;          // last time we were updated
-
         RenderFrame Frame;       //     this frame has been             Note: when frame is null, then update simulator only
-        GameTime GameTime;       //         updated to this time
-
+        double NewRealTime;    //  real time seconds of the requested frame.
         Viewer3D Viewer;       //     3D viewer and the 
-
         Thread UpdaterThread;    // The updater thread calls the
-
         public bool Finished { get { return State.Finished; } }
-
         ProcessState State = new ProcessState();  // manage interprocess signalling
 
         public UpdaterProcess( Viewer3D viewer )
         {
             Viewer = viewer;
-            UpdaterThread = new Thread(Updater);
+            UpdaterThread = new Thread(UpdateLoop);
             UpdaterThread.Priority = ThreadPriority.AboveNormal;
         }
 
@@ -53,50 +46,53 @@ namespace ORTS
 
         /// <summary>
         /// Note:  caller must pass gametime as a threadsafe copy
+        /// Executes in the RenderProcess thread.
         /// </summary>
-        /// <param name="frame"></param>
-        /// <param name="gameTime"></param>
-        public void Update(RenderFrame frame, GameTime gameTime)
+        public void StartUpdate(RenderFrame frame, double newRealTime )
         {
-            if (!State.Finished)
+            if (!State.Finished)   
             {
                 System.Diagnostics.Debug.Assert( false, "Can't overlap updates");
                 return;
             }
             Frame = frame;
-            GameTime = gameTime;
-            if( frame != null )
-                Frame.TargetRenderTimeS = gameTime.TotalRealTime.TotalSeconds;
-            State.SignalStart();
+            NewRealTime = newRealTime;
+            State.SignalStart();   
         }
 
-        public void Updater()
+
+
+        public void UpdateLoop()
         {
             while (Thread.CurrentThread.ThreadState == ThreadState.Running)
             {
                 // Wait for a new Update() command
                 State.WaitTillStarted();
 
+                Program.RealTime = NewRealTime;
+                ElapsedTime frameElapsedTime = Viewer.RenderProcess.GetFrameElapsedTime();
+
+                Viewer.RenderProcess.ComputeFPS( frameElapsedTime.RealSeconds );
+
                 // Update the simulator 
-                Viewer.Simulator.Update(GameTime);
+                Viewer.Simulator.Update( frameElapsedTime.ClockSeconds );
 
                 // Handle user input, its was read is in RenderProcess thread
                 if (UserInput.Ready)
                 {
-                    Viewer.HandleUserInput();
+                    Viewer.HandleUserInput( Viewer.RenderProcess.GetUserInputElapsedTime() );
                     UserInput.Handled();
                 }
 
                 // Update slowly changing items
-                double totalRealSeconds = GameTime.TotalRealTime.TotalSeconds;
-                if (totalRealSeconds - LastUpdate > UpdatePeriod)  
-                    Viewer.Update(GameTime);
+                if (Program.RealTime - Viewer.RenderProcess.LastViewerUpdateTime > Viewer3D.ViewerUpdatePeriod)
+                    Viewer.Update( Viewer.RenderProcess.GetViewerUpdateElapsedTime() );
 
                 // Prepare the frame for drawing
                 if (Frame != null)
                 {
                     Frame.Clear();
-                    Viewer.PrepareFrame(Frame, GameTime);
+                    Viewer.PrepareFrame(Frame, frameElapsedTime );
                     Frame.Sort();
                 }
 
@@ -104,8 +100,8 @@ namespace ORTS
                 State.SignalFinish();
 
                 // Update the loader - it should only copy volatile data and return
-                if (totalRealSeconds - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
-                    Viewer.LoaderProcess.Update(GameTime);
+                if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
+                    Viewer.LoaderProcess.StartUpdate();
 
             }
         }

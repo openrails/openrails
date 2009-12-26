@@ -436,7 +436,7 @@ namespace MSTS
 				IOException An I/O error occurs. 
 				STFError
 			*/
-			// TODO, some tokens have units indicators, km, etc
+			// TODO, complete parsing of units ie, km, etc - some are done but not all
 		{
 			double scale = 1.0;
 			string token = ReadToken();

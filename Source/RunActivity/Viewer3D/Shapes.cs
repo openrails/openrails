@@ -37,7 +37,7 @@ namespace ORTS
             SharedShape = SharedShapeManager.Get(Viewer, path);
         }
 
-        public virtual void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public virtual void PrepareFrame(RenderFrame frame, float elapsedSeconds )
         {
             SharedShape.PrepareFrame(frame, Location);
         }
@@ -64,7 +64,7 @@ namespace ORTS
         }
 
 
-        public override void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public override void PrepareFrame(RenderFrame frame, float elapsedSeconds )
         {
             SharedShape.PrepareFrame( frame, Location, XNAMatrices);
         }
@@ -120,7 +120,6 @@ namespace ORTS
                     Vector3 location = xnaPose.Translation;
                     xnaPose = Matrix.CreateFromQuaternion(q);
                     xnaPose.Translation = location;
-                    //xnaPose = Matrix.CreateFromQuaternion(q) *xnaPose;  //TODO, was this, but pantographs weren't moving properly
                 }
                 else if (position1.GetType() == typeof(linear_key))  // a key sets an absolute position, vs shifting the existing matrix
                 {
@@ -164,14 +163,14 @@ namespace ORTS
         {
         }
 
-        public override void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public override void PrepareFrame(RenderFrame frame, float elapsedSeconds )
         {
             // if the shape has animations
             if (SharedShape.Animations != null && SharedShape.Animations[0].FrameCount > 1)
             {
                 // Compute the animation key based on framerate etc
                 // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                AnimationKey += ((float)SharedShape.Animations[0].FrameRate / 10f) * (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+                AnimationKey += ((float)SharedShape.Animations[0].FrameRate / 10f) * elapsedSeconds;
                 while (AnimationKey >= SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
                 while (AnimationKey < -0.00001) AnimationKey += SharedShape.Animations[0].FrameCount;
 
@@ -199,17 +198,17 @@ namespace ORTS
             MainRoute = TS.MainRoute;
         }
 
-        public override void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public override void PrepareFrame(RenderFrame frame, float elapsedClockSeconds )
         {
             // ie, with 2 frames of animation, the key will advance from 0 to 1
             if (TrJunctionNode.SelectedRoute == MainRoute)
             {
-                if (AnimationKey > 0.001) AnimationKey -= 0.002f * gameTime.ElapsedGameTime.Milliseconds;
+                if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedClockSeconds*1000.0f;
                 if (AnimationKey < 0.001) AnimationKey = 0;
             }
             else
             {
-                if (AnimationKey < 0.999) AnimationKey += 0.002f * gameTime.ElapsedGameTime.Milliseconds;
+                if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedClockSeconds*1000.0f;
                 if (AnimationKey > 0.999) AnimationKey = 1.0f;
             }
 
@@ -228,7 +227,7 @@ namespace ORTS
     {
         public static SharedShape Get(Viewer3D viewer, string path)
         {
-            if (!SharedShapes.ContainsKey(path))
+            if (  !SharedShapes.ContainsKey(path))
             {
                 // We haven't set up this shape yet, so go ahead and add it
                 SharedShape shape = new SharedShape(viewer, path);    
@@ -432,7 +431,7 @@ namespace ORTS
                         shapePrimitive.VertexDeclaration = subObjectVertexDeclaration;
 
                         // Record range of vertices involved in this primitive as MinVertex and NumVertices
-                        // TODO Extract this from the MSTS vertex_set statement
+                        // TODO Extract this from the sub_object header
                         bool vertex_set_found = false;
                         foreach( vertex_set vertex_set in sub_object.vertex_sets )
                             if (vertex_set.VtxStateIdx == prim_state.ivtx_state)

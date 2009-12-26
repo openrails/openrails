@@ -157,13 +157,13 @@ namespace ORTS
             System.Diagnostics.Debug.Assert(false, "Program Bug - didn't expect TerrainTiles array to be full.");
         }
 
-        public void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // THREAD SAFETY WARNING - LoaderProcess could write to this array at any time
             // its OK to iterate through this array because LoaderProcess never changes the size
             foreach (WorldFile wFile in WorldFiles)
                 if (wFile != null)
-                    wFile.PrepareFrame(frame, gameTime);
+                    wFile.PrepareFrame(frame, elapsedTime);
         }
 
     } // SceneryDrawer
@@ -242,10 +242,10 @@ namespace ORTS
 
         } // WorldFile constructor
 
-        public void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             foreach ( StaticShape shape in SceneryObjects )
-                shape.PrepareFrame(frame, gameTime);
+                shape.PrepareFrame(frame, elapsedTime.ClockSeconds );
         }
 
         /// <summary>

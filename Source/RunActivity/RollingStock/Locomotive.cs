@@ -150,7 +150,7 @@ namespace ORTS
 
         }
 
-        public override void Update(GameTime gameTime)
+        public override void Update( float elapsedClockSeconds )
         {
             // TODO  this is a wild simplification for electric and diesel electric
             float maxForceN = 300e3f * Train.TrainThrottlePercent/100f;   // TODO pull 300e3 from wag file
@@ -166,7 +166,7 @@ namespace ORTS
             Variable2 = MotiveForceN/300e3f;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
 
-            base.Update(gameTime);
+            base.Update( elapsedClockSeconds );
         }
 
     } // LocomotiveSimualtor
@@ -217,15 +217,16 @@ namespace ORTS
             }
         }
 
-        public override void HandleUserInput()
+        public override void HandleUserInput( ElapsedTime elapsedTime )
         {
             Locomotive.HandleUserInput(); // TODO, replace this with calls to loco controls, ie SetThrottle, SetDirection etc 
-            base.HandleUserInput();
+            base.HandleUserInput( elapsedTime );
         }
 
 
-        public override void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime )
         {
+            float elapsedClockMilliseconds = elapsedTime.ClockSeconds / 1000.0f;
             // Wiper animation
             if (WiperPartIndexes.Count > 0)  // skip this if there are no wipers
             {
@@ -234,7 +235,7 @@ namespace ORTS
                     // Wiper Animation
                     // Compute the animation key based on framerate etc
                     // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                    WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+                    WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * elapsedClockMilliseconds;
                     while (WiperAnimationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) WiperAnimationKey -= TrainCarShape.SharedShape.Animations[0].FrameCount;
                     while (WiperAnimationKey < -0.00001) WiperAnimationKey += TrainCarShape.SharedShape.Animations[0].FrameCount;
                     foreach (int iMatrix in WiperPartIndexes)
@@ -244,7 +245,7 @@ namespace ORTS
                 {
                     if (WiperAnimationKey > 0.001)  // park the blades
                     {
-                        WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+                        WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * elapsedClockMilliseconds;
                         if (WiperAnimationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) WiperAnimationKey = 0;
                         foreach (int iMatrix in WiperPartIndexes)
                             TrainCarShape.AnimateMatrix(iMatrix, WiperAnimationKey);
@@ -252,7 +253,7 @@ namespace ORTS
                 }
             }
 
-            base.PrepareFrame( frame, gameTime );
+            base.PrepareFrame( frame, elapsedTime );
         }
 
     } // Class LocomotiveViewer

@@ -258,6 +258,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\CODE.txt">
+      <Link>CODE.txt</Link>
+    </Content>
     <Content Include="..\openrails.ico">
       <Link>openrails.ico</Link>
     </Content>

@@ -61,19 +61,15 @@ namespace ORTS
             // TODO finish this.
         }
 
-        public void Update(GameTime gameTime)
+        public void Update( float elapsedClockSeconds )
         {
-            float timeS = 0;
-            if( gameTime != null )
-                 timeS = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             // some extremely simple 'physics'
             float TrainMotiveForceN = 0;     // newtons relative to forward train direction
             float TrainFrictionForceN  = 0;   // newtons always positive
             float TrainMassKG = 0;            // kg 
             foreach (TrainCar car in Cars)
             {
-                car.Update(gameTime);
+                car.Update(elapsedClockSeconds);
                 TrainMotiveForceN += car.MotiveForceN;
                 TrainFrictionForceN += car.FrictionForceN;
                 TrainMassKG += car.WagFile.Wagon.MassKG;
@@ -101,20 +97,20 @@ namespace ORTS
 
             if (SpeedMpS >= 0)
             {
-                SpeedMpS -= decellerationMpS2 * timeS;
+                SpeedMpS -= decellerationMpS2 * elapsedClockSeconds;
                 if (SpeedMpS < 0)
                     SpeedMpS = 0;
-                SpeedMpS += accellerationMpS2 * timeS;
+                SpeedMpS += accellerationMpS2 * elapsedClockSeconds;
             }
             else
             {
-                SpeedMpS += decellerationMpS2 * timeS;
+                SpeedMpS += decellerationMpS2 * elapsedClockSeconds;
                 if (SpeedMpS > 0)
                     SpeedMpS = 0;
-                SpeedMpS += accellerationMpS2 * timeS;
+                SpeedMpS += accellerationMpS2 * elapsedClockSeconds;
             }
 
-            float distanceM = SpeedMpS * timeS;
+            float distanceM = SpeedMpS * elapsedClockSeconds;
 
             CalculatePositionOfCars( distanceM );
 
@@ -181,16 +177,6 @@ namespace ORTS
         /// <param name="distance"></param>
         public void CalculatePositionOfCars( float distance )
         {
-            // TODO Debug shows location of trian.tdbtraveller
-            /*
-            WorldPosition wm = new WorldPosition();
-            wm.TileMatrix = Matrix.CreateTranslation(train.TDBTraveller.X, train.TDBTraveller.Y, -train.TDBTraveller.Z);
-            wm.TileX = train.TDBTraveller.TileX;
-            wm.TileZ = train.TDBTraveller.TileZ;
-            TrainCars[0].WorldPosition = wm;
-            return;
-            */
-
             RearTDBTraveller.Move(distance);
 
             TDBTraveller traveller = new TDBTraveller(RearTDBTraveller);

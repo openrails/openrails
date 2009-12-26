@@ -75,6 +75,8 @@ namespace ORTS
         private BrakemanCamera BrakemanCamera;
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
 
+        public const double ViewerUpdatePeriod = 0.1; // 10 times per second maximum - we'll call the viewer's Update() 
+
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
@@ -136,7 +138,8 @@ namespace ORTS
             renderProcess.Content.RootDirectory = "Content";
 
             // TODO, this may cause problems with video cards not set up to handle these settings
-            GDM.SynchronizeWithVerticalRetrace = false;
+            // do we need to check device capabilities first?
+            GDM.SynchronizeWithVerticalRetrace = true;
             renderProcess.IsFixedTimeStep = false; // you get smoother animation if we pace to video card retrace setting
             renderProcess.TargetElapsedTime = TimeSpan.FromMilliseconds(1); // setting this a value near refresh rate, ie 16ms, causes hickups ( beating against refresh rate )
             GDM.PreferredBackBufferWidth = 1024; // screen.Bounds.Width; // 1680;
@@ -211,17 +214,19 @@ namespace ORTS
         /// Called periodically when user input should be processed.
         /// Note, this is not called at the frame rate so you can't count
         /// on a specific time interval for animation.
+        /// elapsedTime represents the the time since the last call to HandleUserInput
         /// Examine the static class UserInput for mouse and keyboard status
+        /// 
         /// Executes in the UpdaterProcess thread.
         /// </summary>
         /// <param name="keyboardInput"></param>
         /// <param name="mouseState"></param>
-        public void HandleUserInput()
+        public void HandleUserInput( ElapsedTime elapsedTime )
         {
-            Camera.HandleUserInput();
+            Camera.HandleUserInput( elapsedTime );
 
             if( PlayerLocomotiveViewer != null )
-                PlayerLocomotiveViewer.HandleUserInput(); 
+                PlayerLocomotiveViewer.HandleUserInput( elapsedTime); 
 
             // Check for game control keys
             if (UserInput.IsKeyDown(Keys.Escape)) {  Stop(); return; }
@@ -263,11 +268,12 @@ namespace ORTS
         /// Called periodically to slowly changing items
         /// ie flashing lights, sound sources etc
         /// Called at a slow rate - 10 times per second maximum
+        /// elapsedTime represents the the time since the last call to Update
         /// Executes in the UpdaterProcess thread.
         /// </summary>
         /// <param name="keyboardInput"></param>
         /// <param name="mouseState"></param>
-        public void Update( GameTime gameTime )
+        public void Update( ElapsedTime elapsedTime )
         {
             // Mute sound when paused
             if (Simulator.Paused)
@@ -275,29 +281,30 @@ namespace ORTS
             else
                 SoundEngine.SoundVolume = 1;
 
-            TrainDrawer.Update(gameTime);
-            if (ScreenHasChanged() )
-                SignalScreenChange();
+            TrainDrawer.Update( elapsedTime );
 
-            InfoDisplay.Update(gameTime);
+            if (ScreenHasChanged() )
+                NotifyCamerasOfScreenChange();
+
+            InfoDisplay.Update( elapsedTime );
         }
 
         /// <summary>
-        /// Called every frame
-        /// Load the frame contents as it should appear at the specified time.
+        /// Called every frame to update animations and load the frame contents .
         /// Note:  this doesn't actually draw on the screen surface, but 
         /// instead prepares a list of drawing primitives that will be rendered
         /// later in RenderFrame.Draw() by the RenderProcess thread.
+        /// elapsedTime represents the the time since the last call to PrepareFrame
         /// Executes in the UpdaterProcess thread.
         /// </summary>
-        public void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime )
         {
-            Camera.PrepareFrame(frame, gameTime );
-            SkyDrawer.PrepareFrame(frame, gameTime);
-            TerrainDrawer.PrepareFrame(frame, gameTime);
-            SceneryDrawer.PrepareFrame(frame, gameTime);
-            TrainDrawer.PrepareFrame(frame, gameTime);
-            InfoDisplay.PrepareFrame(frame, gameTime);
+            Camera.PrepareFrame(frame, elapsedTime);
+            SkyDrawer.PrepareFrame(frame, elapsedTime);
+            TerrainDrawer.PrepareFrame(frame, elapsedTime);
+            SceneryDrawer.PrepareFrame(frame, elapsedTime);
+            TrainDrawer.PrepareFrame(frame, elapsedTime);
+            InfoDisplay.PrepareFrame(frame, elapsedTime);
         }
 
 
@@ -365,7 +372,7 @@ namespace ORTS
         /// <summary>
         /// Called when we detect that the screen size has changed
         /// </summary>
-        private void SignalScreenChange()
+        private void NotifyCamerasOfScreenChange()
         {
             // since each camera has its own projection matrix, they all have to be notified
             Camera.ScreenChanged();
@@ -421,7 +428,6 @@ namespace ORTS
 
         public void SetupBackgroundProcesses()
         {
-            // TODO, read registry for number of processors
             int processors = System.Environment.ProcessorCount;
             RenderProcess = new RenderProcess( this);   // the order is important, since one process depends on the next
             LoaderProcess = new LoaderProcess( this);

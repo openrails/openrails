@@ -45,7 +45,7 @@ namespace ORTS
             SkyMesh = new SkyMesh( Viewer.RenderProcess);
         }
 
-        public void PrepareFrame(RenderFrame frame, GameTime gameTime )
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y - 400, -Viewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);

@@ -77,10 +77,8 @@ namespace MSTS
                     return;
 
             }
-            /*TODO RESTORE
 			if( Tr_Activity_File == null )
 				throw( new STFError( f, "Missing Tr_Activity_File statement" ) );
-             */
 		}
 	}
 
@@ -135,22 +133,6 @@ namespace MSTS
 			}
 		}
 
-		public Tr_Activity_Header(  string name, string routeID, string player_Service_Name )
-		{
-			Name = name;
-			RouteID = routeID;
-
-			if( player_Service_Name == "_L2SBCarshop4" ) // TODO - look up the pathid in the player service file
-				PathID = "CarshopSB";
-			else if( player_Service_Name == "L2ReadyTrack" ) 
-				PathID = "ReadyTrack";
-			else if( player_Service_Name == "L2NorthLead" ) 
-				PathID = "NorthLead";
-			else if( player_Service_Name == "T9" ) 
-				PathID = "T9P";
-			else
-				Debug.Assert( false, "TODO - handle player service definitions" );
-		}
 	}
 
 	public class StartTime

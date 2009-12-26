@@ -58,10 +58,11 @@ namespace ORTS
             }
         }
 
-        public override void Update(GameTime gameTime)
+        public override void Update( float elapsedClockSeconds )
         {
-            base.Update(gameTime);
+            base.Update(elapsedClockSeconds);
         }
+
     } // class ElectricLocomotive
 
     ///////////////////////////////////////////////////
@@ -118,18 +119,18 @@ namespace ORTS
             }
         }
 
-        public override void HandleUserInput()
+        public override void HandleUserInput( ElapsedTime elapsedTime)
         {
             ElectricLocomotive.HandleUserInput();  // TODO , replace with method calls to loco controls
-            base.HandleUserInput();
+            base.HandleUserInput( elapsedTime);
         }
 
-        public override void Update(GameTime gameTime)
+        public override void Update(ElapsedTime elapsedTime)
         {
-            base.Update(gameTime);
+            base.Update(elapsedTime);
         }
 
-        public override void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (!Viewer.Simulator.Paused)
             {
@@ -141,7 +142,7 @@ namespace ORTS
                         if (PanAnimationKey < 0.999)
                         {
                             // moving up
-                            PanAnimationKey += 0.002f * gameTime.ElapsedGameTime.Milliseconds;
+                            PanAnimationKey += 0.002f * elapsedTime.ClockSeconds;
                             if (PanAnimationKey > 0.999) PanAnimationKey = 1.0f;
                             foreach (int iMatrix in PantographPartIndexes)
                                 TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
@@ -152,7 +153,7 @@ namespace ORTS
                         if (PanAnimationKey > 0.001)
                         {
                             // moving down
-                            PanAnimationKey -= 0.002f * gameTime.ElapsedGameTime.Milliseconds;
+                            PanAnimationKey -= 0.002f * elapsedTime.ClockSeconds;
                             if (PanAnimationKey < 0.001) PanAnimationKey = 0;
                             foreach (int iMatrix in PantographPartIndexes)
                                 TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
@@ -160,7 +161,7 @@ namespace ORTS
                     }
                 }
             }
-            base.PrepareFrame(frame, gameTime);
+            base.PrepareFrame(frame, elapsedTime);
         }
 
         public override void Unload()

@@ -128,13 +128,13 @@ namespace ORTS
             System.Diagnostics.Debug.Assert( false, "Program Bug - didn't expect TerrainTiles array to be full.");
         }
 
-        public void PrepareFrame(RenderFrame frame, GameTime gameTime )
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // THREAD SAFETY WARNING - LoaderProcess could write to this array at any time
             // its OK to iterate through this array because LoaderProcess never changes the size
             foreach (TerrainTile tile in TerrainTiles)
                 if (tile != null)
-                    tile.PrepareFrame(frame, gameTime);
+                    tile.PrepareFrame(frame, elapsedTime);
         }
 
     } // TerrainDrawer
@@ -176,10 +176,10 @@ namespace ORTS
             }
         }
 
-        public void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (WaterTile != null)
-                WaterTile.PrepareFrame(frame, gameTime);
+                WaterTile.PrepareFrame(frame);
             for (int x = 0; x < 16; ++x)
                 for (int z = 0; z < 16; ++z)
                 {

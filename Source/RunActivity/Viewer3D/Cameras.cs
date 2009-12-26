@@ -36,7 +36,7 @@ namespace ORTS
         public float RightFrustrumA, RightFrustrumB;  // the right frustrum is precomputed,
         //       represented by this equation 0 = Ax + Bz; where A^2 + B^2 = 1;
 
-        public volatile int TileX;                           // camera position and orientation TODO, move these to the camera class
+        public volatile int TileX;                           // camera position and orientation 
         public volatile int TileZ;
         public Vector3 Location = new Vector3(45, 242, 178);
         public WorldLocation WorldLocation
@@ -81,7 +81,7 @@ namespace ORTS
         public virtual void Activate()
         {
             Viewer.Camera = this;
-            Update();
+            Update( ElapsedTime.Zero );
         }
 
         /// <summary>
@@ -101,11 +101,11 @@ namespace ORTS
 
 
 
-        public virtual void HandleUserInput()
+        public virtual void HandleUserInput(ElapsedTime elapsedTime)
         {
         }
 
-        public virtual void Update()
+        public virtual void Update(ElapsedTime elapsedTime)
         {
             Vector3 lookAtPosition;
 
@@ -124,15 +124,15 @@ namespace ORTS
         /// Update the XNAView based on the current camera pose and location
         /// </summary>
         /// <param name="gameTime"></param>
-        public virtual void PrepareFrame( RenderFrame frame, GameTime gameTime )
+        public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            float milliseconds = (float)gameTime.ElapsedRealTime.TotalMilliseconds; 
+            float elapsedRealMilliseconds = elapsedTime.RealSeconds * 1000;
 
             // Rotation
             if (UserInput.MouseState.RightButton == ButtonState.Pressed)
-                RotationXRadians += (UserInput.MouseState.Y - MouseY) * milliseconds / 1000f;
+                RotationXRadians += (UserInput.MouseState.Y - MouseY) * elapsedRealMilliseconds /1000f;
             if (UserInput.MouseState.RightButton == ButtonState.Pressed)
-                RotationYRadians -= (MouseX - UserInput.MouseState.X) * milliseconds / 1000f;
+                RotationYRadians -= (MouseX - UserInput.MouseState.X) * elapsedRealMilliseconds /1000f;
 
 
             // Movement
@@ -145,24 +145,24 @@ namespace ORTS
 
             if (UserInput.IsKeyDown(Keys.Left))
                 if (UserInput.IsKeyDown(Keys.LeftControl))
-                    RotationYRadians += speed * milliseconds / 1000f;
+                    RotationYRadians += speed * elapsedRealMilliseconds / 1000f ;
                 else
-                    movement.X -= speed * milliseconds / 10f;
+                    movement.X -= speed * elapsedRealMilliseconds / 10f;
             if (UserInput.IsKeyDown(Keys.Right))
                 if (UserInput.IsKeyDown(Keys.LeftControl))
-                    RotationYRadians -= speed * milliseconds / 1000f;
+                    RotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
                 else
-                    movement.X += speed * milliseconds / 10f;
+                    movement.X += speed * elapsedRealMilliseconds / 10f;
             if (UserInput.IsKeyDown(Keys.Up))
                 if (UserInput.IsKeyDown(Keys.LeftControl))
-                    movement.Y += speed * milliseconds / 10f;
+                    movement.Y += speed * elapsedRealMilliseconds / 10f;
                 else
-                    movement.Z += speed * milliseconds / 10f;
+                    movement.Z += speed * elapsedRealMilliseconds / 10f;
             if (UserInput.IsKeyDown(Keys.Down))
                 if (UserInput.IsKeyDown(Keys.LeftControl))
-                    movement.Y -= speed * milliseconds / 10f;
+                    movement.Y -= speed * elapsedRealMilliseconds / 10f;
                 else
-                    movement.Z -= speed * milliseconds / 10f;
+                    movement.Z -= speed * elapsedRealMilliseconds / 10f;
 
             movement = Vector3.Transform(movement, Matrix.CreateRotationX(RotationXRadians));
             movement = Vector3.Transform(movement, Matrix.CreateRotationY(RotationYRadians));
@@ -180,7 +180,7 @@ namespace ORTS
             MouseX = UserInput.MouseState.X;
             MouseY = UserInput.MouseState.Y;
 
-            Update();
+            Update( elapsedTime);
             frame.SetCamera(ref XNAView, ref XNAProjection);
         }
 
@@ -206,7 +206,7 @@ namespace ORTS
             if (distance > Viewer.ViewingDistance || distance > objectViewingDistance)
                 return false;  // nearest part of object is too far away
 
-            // cull for fov
+            // Cull for fov
             Vector3 xnaObjectCenter = new Vector3(mstsObjectCenter.X, mstsObjectCenter.Y, -mstsObjectCenter.Z);
             Vector3.Transform(ref xnaObjectCenter, ref XNAView, out xnaObjectCenter);
 
@@ -214,7 +214,7 @@ namespace ORTS
                 return false;  // behind camera
 
 
-            // Todo, cull for left and right
+            // Cull for left and right
             float d = MSTSMath.M.DistanceToLine(RightFrustrumA, RightFrustrumB, 0, xnaObjectCenter.X, xnaObjectCenter.Z);
             if (d > objectRadius * 2)
                 return false;  // right of view
@@ -262,7 +262,7 @@ namespace ORTS
         {
         }
 
-        public override void Update()
+        public override void Update( ElapsedTime elapsedTime )
         {
             Vector3 xnaOnboardLocation = new Vector3(OnboardLocation.X, OnboardLocation.Y, -OnboardLocation.Z);
 
@@ -287,9 +287,9 @@ namespace ORTS
 
         }
 
-        public override void PrepareFrame( RenderFrame frame, GameTime gameTime)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            base.PrepareFrame(frame, gameTime);
+            base.PrepareFrame(frame, elapsedTime);
         }
 
     }
@@ -318,14 +318,14 @@ namespace ORTS
             base.Activate();
         }
 
-        public override void HandleUserInput()
+        public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             if (UserInput.IsPressed(Keys.Home))
                 GotoFront();
             else if (UserInput.IsPressed(Keys.End))
                 GotoBack();
 
-            base.HandleUserInput();
+            base.HandleUserInput(elapsedTime);
         }
 
         public void PositionViewer()
@@ -390,14 +390,14 @@ namespace ORTS
             OnboardLocation = AttachedToCar.CVFFile.Locations[iLocation];
         }
 
-        public override void HandleUserInput()
+        public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             if (UserInput.IsPressed(Keys.Left))
                 ShiftView(-1);
             else if (UserInput.IsPressed(Keys.Right))
                 ShiftView(+1);
             
-            base.HandleUserInput();
+            base.HandleUserInput(elapsedTime);
         }
     }
 
@@ -450,16 +450,16 @@ namespace ORTS
             OnboardLocation.Z += AttachedToCar.WagFile.Wagon.Length / 2.0f *(TetherAttachment == Tether.ToFront ? 1 : -1);
         }
 
-        public override void HandleUserInput()
+        public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            base.HandleUserInput();
+            base.HandleUserInput(elapsedTime);
         }
 
-        public override void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            float elapsedS = (float) gameTime.ElapsedRealTime.TotalSeconds;
+            float elapsedRealSeconds = elapsedTime.RealSeconds;
             float speedMpS = 5;
-            float movement = speedMpS * elapsedS;
+            float movement = speedMpS * elapsedRealSeconds;
 
 
             if (UserInput.IsKeyDown(Keys.Left))
@@ -503,7 +503,7 @@ namespace ORTS
                 UpdateOnboardLocation();
             }
 
-            base.PrepareFrame(frame, gameTime);
+            base.PrepareFrame(frame, elapsedTime);
         }
 
     }

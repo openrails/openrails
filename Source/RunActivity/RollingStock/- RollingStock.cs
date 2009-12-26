@@ -11,7 +11,7 @@ namespace ORTS
     {
         public static TrainCar Load(string wagFilePath)
         {
-            WAGFile wagFile = SharedWAGFileManager.Get(wagFilePath);  // TODO, look this up in database to avoid duplicate data
+            WAGFile wagFile = SharedWAGFileManager.Get(wagFilePath);  
             TrainCar car;
             if (!wagFile.IsEngine)
                 car = new TrainCar(wagFile);

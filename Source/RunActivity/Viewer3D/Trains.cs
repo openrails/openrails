@@ -100,13 +100,13 @@ namespace ORTS
         /// <summary>
         /// Executes in the UpdateProcess thread.
         /// </summary>
-        public void Update(GameTime gameTime)
+        public void Update(ElapsedTime elapsedTime)
         {
             try
             {
                 // THREAD SAFETY WARNING - LoaderProcess could write to this array or change the size at any time
                 foreach (TrainCarViewer car in LoadedCars.Values)
-                    car.Update(gameTime);
+                    car.Update(elapsedTime);
             }
             catch  // thread safety violation - try again next time
             {
@@ -116,12 +116,12 @@ namespace ORTS
         /// <summary>
         /// Executes in the UpdateProcess thread.
         /// </summary>
-        public void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             try
             {
                 foreach (TrainCarViewer car in LoadedCars.Values)
-                    car.PrepareFrame(frame, gameTime);
+                    car.PrepareFrame(frame, elapsedTime);
             }
             catch  // thread safety violation - try again next time
             {

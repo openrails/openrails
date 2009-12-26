@@ -25,7 +25,7 @@ namespace ORTS
         public LoaderProcess(Viewer3D viewer )
         {
             Viewer = viewer;
-            LoaderThread = new Thread(Loader);
+            LoaderThread = new Thread(LoadLoop);
             LoaderThread.Priority = ThreadPriority.AboveNormal;  // after the initial load, we drop this to .BelowNormal
         }
 
@@ -37,7 +37,7 @@ namespace ORTS
         /// <summary>
         /// LoadPrep and Load
         /// </summary>
-        public void Update( GameTime gameTime )
+        public void StartUpdate( )
         {
             if (!State.Finished)
             {
@@ -48,11 +48,11 @@ namespace ORTS
             }
             Viewer.RenderProcess.LoaderSlow = false;
 
-            LastUpdate = gameTime.TotalRealTime.TotalSeconds;
-
             Viewer.LoadPrep();  
 
             State.SignalStart();
+
+            LastUpdate = Program.RealTime;
         }
 
         public void Run( )
@@ -65,7 +65,7 @@ namespace ORTS
             LoaderThread.Abort();
         }
 
-        public void Loader()
+        public void LoadLoop()
         {
             while (Thread.CurrentThread.ThreadState == ThreadState.Running)
             {

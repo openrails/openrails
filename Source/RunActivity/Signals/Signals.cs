@@ -12,7 +12,7 @@ namespace ORTS
         {
         }
 
-        public void Update(GameTime gametime)
+        public void Update(float elapsedClockSeconds )
         {
         }
     }

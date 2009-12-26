@@ -11,10 +11,20 @@ using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Net;
 using Microsoft.Xna.Framework.Storage;
 using System.Threading;
+using System.Diagnostics;
 
 
 namespace ORTS
 {
+    public class ElapsedTime
+    {
+        public float ClockSeconds;
+        public float RealSeconds;
+
+        public static ElapsedTime Zero = new ElapsedTime();
+    }
+
+
     /// <summary>
     /// This is the main type for your game
     /// </summary>
@@ -35,7 +45,10 @@ namespace ORTS
         public new bool IsMouseVisible = false;  // handles cross thread issues by signalling RenderProcess of a change
 
         // Diagnostic information
-        public double Jitter = 0;  // difference between when a frame should be rendered vs when it was rendered
+        public float SmoothedFrameRate = 1000;     // information displayed by InfoViewer in upper left
+        public float MinFrameRate = 1000;
+        public float SmoothJitter = 0;
+        public float Jitter = 0;  // difference between when a frame should be rendered vs when it was rendered
         public bool UpdateSlow = false;  // true if the render loop finishes faster than the update loop.
         public bool LoaderSlow = false;  // true if the loader loop is falling behind
         public int PrimitiveCount = 0;
@@ -44,6 +57,40 @@ namespace ORTS
         public int RenderStateChangesPerFrame = 0;
         public int ImageChangesCount = 0;
         public int ImageChangesPerFrame = 0;
+
+        // Timing Information -  THREAD SAFETY - don't use these outside the UpdaterProcess thread  
+        public double LastFrameTime = 0;         // real time seconds of the last simulator.update and viewer.prepareframe
+        public double LastUserInputTime = 0;     // real time seconds when we last started Viewer.HandleUserInput()
+        public double LastViewerUpdateTime = 0;    // real time seconds when we last started Viewer.SlowUpdate()
+
+        private ElapsedTime FrameElapsedTime = new ElapsedTime();
+        private ElapsedTime UserInputElapsedTime = new ElapsedTime();
+        private ElapsedTime ViewerUpdateElapsedTime = new ElapsedTime();
+
+        public ElapsedTime GetFrameElapsedTime()
+        {
+            FrameElapsedTime.RealSeconds = (float)(Program.RealTime - LastFrameTime);
+            FrameElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(FrameElapsedTime.RealSeconds);
+            LastFrameTime = Program.RealTime;
+            return FrameElapsedTime;
+        }
+
+        public ElapsedTime GetUserInputElapsedTime()
+        {
+            UserInputElapsedTime.RealSeconds = (float)( Program.RealTime - LastUserInputTime);
+            UserInputElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(UserInputElapsedTime.RealSeconds);
+            LastUserInputTime = Program.RealTime;
+            return UserInputElapsedTime;
+        }
+
+        public ElapsedTime GetViewerUpdateElapsedTime()
+        {
+            ViewerUpdateElapsedTime.RealSeconds = (float)( Program.RealTime - LastViewerUpdateTime );
+            ViewerUpdateElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(ViewerUpdateElapsedTime.RealSeconds);
+            LastViewerUpdateTime = Program.RealTime;
+            return ViewerUpdateElapsedTime;
+        }
+
 
         public RenderProcess( Viewer3D viewer3D )
         {
@@ -61,6 +108,7 @@ namespace ORTS
         /// </summary>
         protected override void Initialize()
         {
+            Materials.Initialize(this);
             Viewer.Initialize(this);
             Viewer.LoadPrep();  // Does initial load before 3D window is displayed
             Viewer.Load(this);  // after this Load is done in a background thread.
@@ -83,9 +131,9 @@ namespace ORTS
             double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;
 
             if ( Form.WindowState == System.Windows.Forms.FormWindowState.Minimized
-                && totalRealSeconds - Viewer.Simulator.LastUpdate > 0.1)  // 10 times a second should be enough to keep it running
-            {  // keep the simulator running while the window is minimized
-                UpdateEverything(gameTime);
+                && totalRealSeconds - LastFrameTime > 0.1 ) 
+            {  // keep the everything running at a slower pace while the window is minimized
+                FrameUpdate(gameTime);
             }
 
             if (IsMouseVisible != base.IsMouseVisible)
@@ -103,7 +151,6 @@ namespace ORTS
                 this.Exit();
             }
 
-
             base.Update(gameTime);
         }
 
@@ -116,13 +163,25 @@ namespace ORTS
         /// </summary>
         protected override void Draw(GameTime gameTime)
         {
-            UpdateEverything(gameTime);
+            if (gameTime.ElapsedRealTime.TotalSeconds > 0.00001)
+            {  // a zero elapsed time indicates the window needs to be redrawn with the same content
+                // ie after restoring from minimized, or uncovering a window
+                FrameUpdate(gameTime);
+            }
+
+            /* when using Sync to Retrace this isn't required
+            // if the loader is running slow, limit render's frame rates to give loader some GPU time
+            if (LoaderSlow )
+            {
+                Thread.Sleep(10);
+            }
+             */
 
             CurrentFrame.Draw(GraphicsDevice);
 
             // Diagnositics
-            double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;
-            Jitter = totalRealSeconds - CurrentFrame.TargetRenderTimeS;
+            // double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;
+            // TODO - compute Jitter = totalRealSeconds - CurrentFrame.TargetRenderTimeS;
             PrimitivesPerFrame = PrimitiveCount;
             PrimitiveCount = 0;
             RenderStateChangesPerFrame = RenderStateChangesCount;
@@ -133,14 +192,13 @@ namespace ORTS
             base.Draw(gameTime);
         }
 
-
-        private void UpdateEverything(GameTime gameTime)
+        private void FrameUpdate(GameTime gameTime)
         {
-            double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;
-
+            // Update system clock
 
             if (Viewer.UpdaterProcess != null)
             {   // multi processor machine
+                // Wait for updater to finish, and flag if its slow
                 if (!Viewer.UpdaterProcess.Finished)
                 {
                     UpdateSlow = true;
@@ -151,32 +209,46 @@ namespace ORTS
                     UpdateSlow = false;
                 }
 
-                if (totalRealSeconds - UserInput.LastUpdate > UserInput.UpdatePeriod)  // do this now to ensure no conflict with updater thread
-                    UserInput.Update(gameTime);
+                // Time to read the keyboard - must be done in XNA Game thread
+                if (Program.RealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)  
+                    UserInput.Update();
 
+                // launch updater to prepare the next frame
                 SwapFrames(ref CurrentFrame, ref NextFrame);
-                GameTime RenderTimeNextFrame = new GameTime(gameTime.TotalRealTime.Add(gameTime.ElapsedRealTime), gameTime.ElapsedRealTime,
-                                                         gameTime.TotalGameTime.Add(gameTime.ElapsedGameTime), gameTime.ElapsedGameTime,
-                                                         gameTime.IsRunningSlowly);
-                Viewer.UpdaterProcess.Update(NextFrame, RenderTimeNextFrame);
+                Viewer.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalRealTime.TotalSeconds);
             }
             else
             {   // single processor machine
-                if (totalRealSeconds - UserInput.LastUpdate > UserInput.UpdatePeriod)
+                if (Program.RealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)
+                    UserInput.Update();
+
+                Program.RealTime = gameTime.ElapsedRealTime.TotalSeconds;
+                ElapsedTime frameElapsedTime = GetFrameElapsedTime();
+
+                ComputeFPS( frameElapsedTime.RealSeconds );
+
+                // Update the simulator
+                Viewer.Simulator.Update( frameElapsedTime.ClockSeconds );
+
+                if (Program.RealTime - UserInput.LastUpdateTime > UserInput.UpdatePeriod)
                 {
-                    UserInput.Update(gameTime);
-                    Viewer.HandleUserInput();
+                    Viewer.HandleUserInput( GetUserInputElapsedTime() );
+                    UserInput.Handled();
                 }
-                if (totalRealSeconds - Viewer.Simulator.LastUpdate > Simulator.UpdatePeriod)  // limit rate on low spec machines
-                    Viewer.Simulator.Update(gameTime);
-                if (totalRealSeconds - Viewer.UpdaterProcess.LastUpdate > UpdaterProcess.UpdatePeriod)
-                    Viewer.Update(gameTime);
-                if (totalRealSeconds - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
-                    Viewer.LoaderProcess.Update(gameTime);
+
+                // Update slowly changing items
+                if (Program.RealTime - LastViewerUpdateTime > Viewer3D.ViewerUpdatePeriod )
+                    Viewer.Update( GetViewerUpdateElapsedTime() );
+
+                // Prepare the frame for drawing
                 CurrentFrame.Clear();
-                CurrentFrame.TargetRenderTimeS = totalRealSeconds;
-                Viewer.PrepareFrame(CurrentFrame, gameTime);
+                Viewer.PrepareFrame(CurrentFrame, frameElapsedTime );
                 CurrentFrame.Sort();
+
+                // Update the loader - it should only copy volatile data and return
+                if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
+                    Viewer.LoaderProcess.StartUpdate();
+
             }
 
         }
@@ -213,6 +285,35 @@ namespace ORTS
         {
             Terminate();
             base.OnExiting(sender, args);
+        }
+
+        public void ComputeFPS( float elapsedRealTime )
+        {
+
+            if (elapsedRealTime > 0.00001)
+            {
+                // Smoothing filter length
+                float rate = 10.0f / elapsedRealTime;
+
+                // Jitter
+                float jitter = Math.Abs(Viewer.RenderProcess.Jitter);
+                if (Math.Abs(jitter - SmoothJitter) > 0.01)
+                    SmoothJitter = jitter;
+                else
+                    SmoothJitter = (SmoothJitter * (rate - 1.0f) / rate) + (jitter / rate);
+
+                // Frame Rate - Min and Smooth
+                float frameRate = 1.0f / elapsedRealTime;
+                if (frameRate < MinFrameRate)
+                    MinFrameRate = frameRate;
+                else
+                    MinFrameRate = (MinFrameRate * (rate - 1.0f) / rate) + (frameRate / rate);
+
+                if (Math.Abs(frameRate - SmoothedFrameRate) > 5.0)
+                    SmoothedFrameRate = frameRate;
+                else
+                    SmoothedFrameRate = (SmoothedFrameRate * (rate - 1.0f) / rate) + (frameRate / rate);
+            }
         }
 
     }

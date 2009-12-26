@@ -43,9 +43,9 @@ namespace ORTS
             return new DieselLocomotiveViewer(viewer, this);
         }
 
-        public override void Update(GameTime gameTime)
+        public override void Update(float elapsedClockSeconds)
         {
-            base.Update(gameTime);
+            base.Update(elapsedClockSeconds );
         }
 
     } // class DieselLocomotive
@@ -68,19 +68,19 @@ namespace ORTS
             DieselLocomotive = car;
         }
 
-        public override void HandleUserInput()
+        public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            base.HandleUserInput();
+            base.HandleUserInput(elapsedTime);
         }
 
-        public override void Update(GameTime gameTime)
+        public override void Update(ElapsedTime elapsedTime)
         {
-            base.Update(gameTime);
+            base.Update(elapsedTime);
         }
 
-        public override void PrepareFrame(RenderFrame frame, GameTime gameTime)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            base.PrepareFrame(frame, gameTime);
+            base.PrepareFrame(frame, elapsedTime);
         }
 
         public override void Unload()
