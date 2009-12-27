@@ -31,9 +31,8 @@ namespace ORTS
         Matrix Matrix = Matrix.Identity;
         SpriteBatchMaterial Material;
         Viewer3D Viewer;
-
-        private int lastClockTime = 0;   // in seconds
-        private string ClockTimeString = "";
+        int InfoAmount = 1;
+        private double lastUpdateTime = 0;   // update text message only 10 times per second
 
         int processors = System.Environment.ProcessorCount;
 
@@ -44,29 +43,74 @@ namespace ORTS
             Material = (SpriteBatchMaterial) Materials.Load( Viewer.RenderProcess, "SpriteBatch" );
         }
 
-        public void Update(ElapsedTime elapsedTime)
+        public void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if ( (int)Viewer.Simulator.ClockTime != lastClockTime )  // Update very second
+            if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F5))
             {
-                ClockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
-                lastClockTime = (int)Viewer.Simulator.ClockTime;
+                ++InfoAmount;
+                if (InfoAmount > 2)
+                    InfoAmount = 0;
             }
+        }
+
+        /// <summary>
+        /// Allows the game component to update itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            if (Program.RealTime - lastUpdateTime > 0.1)
+            {
+                lastUpdateTime = Program.RealTime;
+                UpdateText();
+            }
+            if( Text != "" )
+                frame.AddPrimitive( Material, this, ref Matrix);
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        public void Draw(GraphicsDevice graphicsDevice)
+        {
+            Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(5, 10), Color.Yellow);
+        }
+
+
+        public void UpdateText()
+        {
+            Text = "";
+
+            if (InfoAmount > 0)
+            {
+                AddBasicInfo();
+            }
+            if (InfoAmount > 1)
+            {
+                AddDebugInfo();
+            }
+        }
+
+
+
+        private void AddBasicInfo()
+        {
+            string clockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
 
             Text = "Version = " + Program.Version + "\n";
-            Text = Text + "Time = " + ClockTimeString + "\n";
+            Text = Text + "Time = " + clockTimeString + "\n";
             Text = Text + "Direction = " + (Viewer.Simulator.PlayerLocomotive.Forward ? "FORWARD\n" : "REVERSE\n");
             Text = Text + "Throttle = " + Viewer.Simulator.PlayerLocomotive.ThrottlePercent.ToString() + "\n";
             Text = Text + "Brake = " + Viewer.Simulator.PlayerTrain.TrainBrakePercent.ToString() + "\n";
             Text = Text + "Speed = " + MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString("F1") + "\n";
             Text = Text + "\n";
             Text = Text + "FPS = " + Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString() + "\n";
-
-            AddDebugInfo();
         }
 
 
         [Conditional("DEBUG")]
-        private void AddDebugInfo( )
+        private void AddDebugInfo()
         {
             // Memory Useage
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
@@ -80,30 +124,10 @@ namespace ORTS
             Text = Text + "ImageChanges = " + Viewer.RenderProcess.ImageChangesPerFrame.ToString() + "\n";
             Text = Text + "Processors = " + processors.ToString() + "\n";
             if (Viewer.RenderProcess.LoaderSlow)
-                Text = Text + "\r\nLoader Slow";
+                Text = Text + "\r\nLoading";
             if (Viewer.RenderProcess.UpdateSlow)
-                Text = Text + "\r\nUpdate Slow";
+                Text = Text + "\r\nUpdate Overrun";
         }
-
-        /// <summary>
-        /// Allows the game component to update itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-            Update(elapsedTime);   // TODO, slow these updates
-            frame.AddPrimitive( Material, this, ref Matrix);
-        }
-
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void Draw(GraphicsDevice graphicsDevice)
-        {
-            Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(5, 10), Color.Yellow);
-        }
-
 
         string FormattedTime(double clockTimeSeconds)
         {

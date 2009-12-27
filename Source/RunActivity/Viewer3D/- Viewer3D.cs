@@ -75,8 +75,6 @@ namespace ORTS
         private BrakemanCamera BrakemanCamera;
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
 
-        public const double ViewerUpdatePeriod = 0.1; // 10 times per second maximum - we'll call the viewer's Update() 
-
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
@@ -221,7 +219,9 @@ namespace ORTS
             Camera.HandleUserInput( elapsedTime );
 
             if( PlayerLocomotiveViewer != null )
-                PlayerLocomotiveViewer.HandleUserInput( elapsedTime); 
+                PlayerLocomotiveViewer.HandleUserInput( elapsedTime);
+
+            InfoDisplay.HandleUserInput(elapsedTime);
 
             // Check for game control keys
             if (UserInput.IsKeyDown(Keys.Escape)) {  Stop(); return; }

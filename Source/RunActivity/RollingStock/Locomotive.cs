@@ -221,10 +221,9 @@ namespace ORTS
             base.HandleUserInput( elapsedTime );
         }
 
-
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime )
         {
-            float elapsedClockMilliseconds = elapsedTime.ClockSeconds / 1000.0f;
+            float elapsedClockSeconds = elapsedTime.ClockSeconds;
             // Wiper animation
             if (WiperPartIndexes.Count > 0)  // skip this if there are no wipers
             {
@@ -233,7 +232,7 @@ namespace ORTS
                     // Wiper Animation
                     // Compute the animation key based on framerate etc
                     // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                    WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * elapsedClockMilliseconds;
+                    WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * elapsedClockSeconds;
                     while (WiperAnimationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) WiperAnimationKey -= TrainCarShape.SharedShape.Animations[0].FrameCount;
                     while (WiperAnimationKey < -0.00001) WiperAnimationKey += TrainCarShape.SharedShape.Animations[0].FrameCount;
                     foreach (int iMatrix in WiperPartIndexes)
@@ -243,7 +242,7 @@ namespace ORTS
                 {
                     if (WiperAnimationKey > 0.001)  // park the blades
                     {
-                        WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * elapsedClockMilliseconds;
+                        WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * elapsedClockSeconds;
                         if (WiperAnimationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) WiperAnimationKey = 0;
                         foreach (int iMatrix in WiperPartIndexes)
                             TrainCarShape.AnimateMatrix(iMatrix, WiperAnimationKey);

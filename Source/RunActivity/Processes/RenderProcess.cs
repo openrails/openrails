@@ -272,16 +272,20 @@ namespace ORTS
             base.OnExiting(sender, args);
         }
 
+
+        float lastElapsedTime = 0;
+
         public void ComputeFPS( float elapsedRealTime )
         {
 
             if (elapsedRealTime > 0.00001)
             {
                 // Smoothing filter length
-                float rate = 10.0f / elapsedRealTime;
+                float rate = 3.0f / elapsedRealTime;
 
                 // Jitter
-                float jitter = Math.Abs(Viewer.RenderProcess.Jitter);
+                float jitter = Math.Abs(lastElapsedTime - elapsedRealTime);
+                lastElapsedTime = elapsedRealTime;
                 if (Math.Abs(jitter - SmoothJitter) > 0.01)
                     SmoothJitter = jitter;
                 else

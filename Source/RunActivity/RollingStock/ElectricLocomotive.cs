@@ -138,7 +138,7 @@ namespace ORTS
                         if (PanAnimationKey < 0.999)
                         {
                             // moving up
-                            PanAnimationKey += 0.002f * elapsedTime.ClockSeconds;
+                            PanAnimationKey += 2f * elapsedTime.ClockSeconds;
                             if (PanAnimationKey > 0.999) PanAnimationKey = 1.0f;
                             foreach (int iMatrix in PantographPartIndexes)
                                 TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
@@ -149,7 +149,7 @@ namespace ORTS
                         if (PanAnimationKey > 0.001)
                         {
                             // moving down
-                            PanAnimationKey -= 0.002f * elapsedTime.ClockSeconds;
+                            PanAnimationKey -= 2f * elapsedTime.ClockSeconds;
                             if (PanAnimationKey < 0.001) PanAnimationKey = 0;
                             foreach (int iMatrix in PantographPartIndexes)
                                 TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
