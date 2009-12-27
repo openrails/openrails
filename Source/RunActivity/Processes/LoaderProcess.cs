@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
 
 namespace ORTS
 {
@@ -16,8 +17,6 @@ namespace ORTS
         Viewer3D Viewer;              //   by the 3D viewer 10 times a second
         Thread LoaderThread;
 
-        public ThreadPriority Priority { get { return LoaderThread.Priority; } }  // for diagnostic purposes
-
         public bool Finished { get { return State.Finished; } }
 
         ProcessState State = new ProcessState();   // manage interprocess signalling
@@ -26,7 +25,6 @@ namespace ORTS
         {
             Viewer = viewer;
             LoaderThread = new Thread(LoadLoop);
-            LoaderThread.Priority = ThreadPriority.AboveNormal;  // after the initial load, we drop this to .BelowNormal
         }
 
         public void WaitTillFinished()
@@ -62,21 +60,58 @@ namespace ORTS
 
         public void Stop()
         {
+            LoopTimer.Stop();
             LoaderThread.Abort();
         }
 
         public void LoadLoop()
         {
-            while (Thread.CurrentThread.ThreadState == ThreadState.Running)
+            LoopTimer.Start();
+            while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
             {
                 // Wait for a new Update() command
                 State.WaitTillStarted();
 
+                BusyTimer.Start();
                 Viewer.Load(Viewer.RenderProcess);  // complete scan and load as necessary
 
                 State.SignalFinish();
-                LoaderThread.Priority = ThreadPriority.BelowNormal;  // after the initial load, we drop this from .Highest
+
+                BusyTimeEnd();
+            }
+
+        }
+
+        // Profiling
+        public int UtilizationPercent
+        {
+            get  
+            {
+                long loopMilliseconds = lastLoopMilliseconds +LoopTimer.ElapsedMilliseconds;
+                long busyMilliseconds = lastBusyMilliseconds +BusyTimer.ElapsedMilliseconds;
+                if (loopMilliseconds != 0)
+                    lastUtilitationPercent = (int)(busyMilliseconds * 100 / loopMilliseconds);
+                return lastUtilitationPercent;
             }
         }
-    }
+        private long lastLoopMilliseconds;
+        private long lastBusyMilliseconds;
+        private int lastUtilitationPercent;
+
+        // Start the loop timer when the process is launched
+        public Stopwatch LoopTimer = new Stopwatch();
+        // Start the busy timer when your code runs
+        Stopwatch BusyTimer = new Stopwatch();
+        // Stop the busy timer and compute utilization
+        public void BusyTimeEnd()
+        {
+            lastLoopMilliseconds = LoopTimer.ElapsedMilliseconds;  // these two should be atomic
+            lastBusyMilliseconds = BusyTimer.ElapsedMilliseconds;
+            LoopTimer.Reset();
+            LoopTimer.Start();
+            BusyTimer.Reset();
+        }
+
+
+    } // LoaderProcess
 }

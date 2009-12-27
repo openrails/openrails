@@ -25,11 +25,12 @@ namespace ORTS
     /// <summary>
     /// Displays Viewer frame rate and Viewer.Text debug messages in the upper left corner of the screen.
     /// </summary>
-    public class InfoDisplay: RenderPrimitive
+    public class InfoDisplay
     {
-        string  Text = "";
+        StringBuilder TextBuilder = new StringBuilder();
         Matrix Matrix = Matrix.Identity;
         SpriteBatchMaterial Material;
+        TextPrimitive TextPrimitive = new TextPrimitive();
         Viewer3D Viewer;
         int InfoAmount = 1;
         private double lastUpdateTime = 0;   // update text message only 10 times per second
@@ -41,6 +42,9 @@ namespace ORTS
             Viewer = viewer;
             // Create a new SpriteBatch, which can be used to draw text.
             Material = (SpriteBatchMaterial) Materials.Load( Viewer.RenderProcess, "SpriteBatch" );
+            TextPrimitive.Material = Material;
+            TextPrimitive.Color = Color.Yellow;
+            TextPrimitive.Location = new Vector2(10, 10);
         }
 
         public void HandleUserInput(ElapsedTime elapsedTime)
@@ -64,23 +68,14 @@ namespace ORTS
                 lastUpdateTime = Program.RealTime;
                 UpdateText();
             }
-            if( Text != "" )
-                frame.AddPrimitive( Material, this, ref Matrix);
-        }
-
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void Draw(GraphicsDevice graphicsDevice)
-        {
-            Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(5, 10), Color.Yellow);
+            TextPrimitive.Text = TextBuilder.ToString();
+            frame.AddPrimitive( Material, TextPrimitive, ref Matrix);
         }
 
 
         public void UpdateText()
         {
-            Text = "";
+            TextBuilder.Length = 0;
 
             if (InfoAmount > 0)
             {
@@ -98,14 +93,14 @@ namespace ORTS
         {
             string clockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
 
-            Text = "Version = " + Program.Version + "\n";
-            Text = Text + "Time = " + clockTimeString + "\n";
-            Text = Text + "Direction = " + (Viewer.Simulator.PlayerLocomotive.Forward ? "FORWARD\n" : "REVERSE\n");
-            Text = Text + "Throttle = " + Viewer.Simulator.PlayerLocomotive.ThrottlePercent.ToString() + "\n";
-            Text = Text + "Brake = " + Viewer.Simulator.PlayerTrain.TrainBrakePercent.ToString() + "\n";
-            Text = Text + "Speed = " + MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString("F1") + "\n";
-            Text = Text + "\n";
-            Text = Text + "FPS = " + Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString() + "\n";
+            TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Version);
+            TextBuilder.Append("Time = "); TextBuilder.AppendLine(clockTimeString);
+            TextBuilder.Append("Direction = "); TextBuilder.AppendLine((Viewer.Simulator.PlayerLocomotive.Forward ? "FORWARD\n" : "REVERSE\n"));
+            TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerLocomotive.ThrottlePercent.ToString());
+            TextBuilder.Append("Brake = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerTrain.TrainBrakePercent.ToString());
+            TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString("F1"));
+            TextBuilder.AppendLine();
+            TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString());
         }
 
 
@@ -115,18 +110,21 @@ namespace ORTS
             // Memory Useage
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
 
-            Text = Text + "\n";
-            Text = Text + "Build = " + Application.ProductVersion + "\n";
-            Text = Text + "Memory = " + memory.ToString() + "\n";
-            Text = Text + "Jitter = " + Viewer.RenderProcess.SmoothJitter.ToString("F4") + "\n";
-            Text = Text + "Primitives = " + Viewer.RenderProcess.PrimitivesPerFrame.ToString() + "\n";
-            Text = Text + "StateChanges = " + Viewer.RenderProcess.RenderStateChangesPerFrame.ToString() + "\n";
-            Text = Text + "ImageChanges = " + Viewer.RenderProcess.ImageChangesPerFrame.ToString() + "\n";
-            Text = Text + "Processors = " + processors.ToString() + "\n";
-            if (Viewer.RenderProcess.LoaderSlow)
-                Text = Text + "\r\nLoading";
-            if (Viewer.RenderProcess.UpdateSlow)
-                Text = Text + "\r\nUpdate Overrun";
+            TextBuilder.AppendLine();
+            TextBuilder.Append("Build = "); TextBuilder.AppendLine(Application.ProductVersion);
+            TextBuilder.Append("Memory = "); TextBuilder.AppendLine(memory.ToString());
+            TextBuilder.Append("Jitter = "); TextBuilder.AppendLine(Viewer.RenderProcess.SmoothJitter.ToString("F4"));
+            TextBuilder.Append("Primitives = "); TextBuilder.AppendLine(Viewer.RenderProcess.PrimitivesPerFrame.ToString());
+            TextBuilder.Append("StateChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString());
+            TextBuilder.Append("ImageChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.ImageChangesPerFrame.ToString());
+            TextBuilder.Append("Processors = "); TextBuilder.AppendLine(processors.ToString());
+            TextBuilder.Append("Render Process % = "); TextBuilder.AppendLine(Viewer.RenderProcess.RenderUtilizationPercent.ToString());
+            TextBuilder.Append("Update Process % = "); 
+            if( Viewer.UpdaterProcess != null )
+                TextBuilder.AppendLine( Viewer.UpdaterProcess.UtilizationPercent.ToString());
+            else
+                TextBuilder.AppendLine( "NA" );
+            TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine(Viewer.LoaderProcess.UtilizationPercent.ToString());
         }
 
         string FormattedTime(double clockTimeSeconds)
@@ -141,5 +139,22 @@ namespace ORTS
         }
 
 
+    } // Class Info Display
+
+    public class TextPrimitive : RenderPrimitive
+    {
+        public SpriteBatchMaterial Material;
+        public string Text;
+        public Color Color;
+        public Vector2 Location;
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        public void Draw(GraphicsDevice graphicsDevice)
+        {
+            Material.SpriteBatch.DrawString(Material.DefaultFont, Text, Location, Color );
+        }
     }
 }

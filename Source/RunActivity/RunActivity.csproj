@@ -180,6 +180,7 @@
     <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Math.cs" />
+    <Compile Include="Processes\Profiler.cs" />
     <Compile Include="RollingStock\DieselLocomotive.cs" />
     <Compile Include="RollingStock\ElectricLocomotive.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />

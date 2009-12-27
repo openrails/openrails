@@ -407,7 +407,7 @@ namespace ORTS
 
         public void SetupBackgroundProcesses()
         {
-            int processors = System.Environment.ProcessorCount;
+            int processors =  System.Environment.ProcessorCount;
             RenderProcess = new RenderProcess( this);   // the order is important, since one process depends on the next
             LoaderProcess = new LoaderProcess( this);
             if (processors > 1)

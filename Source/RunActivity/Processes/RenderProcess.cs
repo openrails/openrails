@@ -85,7 +85,7 @@ namespace ORTS
 
         public RenderProcess( Viewer3D viewer3D )
         {
-            Thread.CurrentThread.Priority = ThreadPriority.Highest;
+            //Thread.CurrentThread.Priority = ThreadPriority.Highest;
             
             System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
             Form = control.FindForm();
@@ -111,6 +111,8 @@ namespace ORTS
                 Viewer.UpdaterProcess.Run();
             }
             base.Initialize();
+
+            LoopTimer.Start();
         }
 
         /// <summary>
@@ -154,6 +156,7 @@ namespace ORTS
         /// </summary>
         protected override void Draw(GameTime gameTime)
         {
+            RenderBusyTimer.Start();
             if (gameTime.ElapsedRealTime.TotalSeconds > 0.00001)
             {  // a zero elapsed time indicates the window needs to be redrawn with the same content
                 // ie after restoring from minimized, or uncovering a window
@@ -181,6 +184,9 @@ namespace ORTS
             ImageChangesCount = 0;
 
             base.Draw(gameTime);
+
+            RenderBusyTimeEnd();
+            Thread.Sleep(1);  // Make sure LoaderProcess gets some GPU time TODO - is this needed?  
         }
 
         private void FrameUpdate(GameTime gameTime)
@@ -305,5 +311,44 @@ namespace ORTS
             }
         }
 
-    }
+
+        // Profiling
+        public int RenderUtilizationPercent
+        {
+            get  
+            {
+                long loopMilliseconds = lastLoopMilliseconds; // +LoopTimer.ElapsedMilliseconds;
+                long renderBusyMilliseconds = lastRenderBusyMilliseconds; // +BusyTimer.ElapsedMilliseconds;
+                long updateBusyMilliseconds = lastUpdateBusyMilliseconds; // +BusyTimer.ElapsedMilliseconds;
+                if (loopMilliseconds != 0)
+                {
+                    lastLoopMilliseconds = 0;
+                    lastRenderBusyMilliseconds = 0;
+                    lastUpdateBusyMilliseconds = 0;
+                    lastRenderUtilizationPercent = (int)(renderBusyMilliseconds * 100 / loopMilliseconds);
+                    lastUpdateUtilizationPercent = (int)(updateBusyMilliseconds * 100 / loopMilliseconds);
+                }
+                return lastRenderUtilizationPercent;
+            }
+        }
+        private long lastLoopMilliseconds;
+        private long lastRenderBusyMilliseconds;
+        private long lastUpdateBusyMilliseconds;
+        private int lastRenderUtilizationPercent;
+        public int lastUpdateUtilizationPercent;
+
+        public Stopwatch LoopTimer = new Stopwatch();
+        Stopwatch RenderBusyTimer = new Stopwatch();
+        Stopwatch UpdateBusyTimer = new Stopwatch();
+
+        public void RenderBusyTimeEnd()
+        {
+            lastLoopMilliseconds += LoopTimer.ElapsedMilliseconds;  // these two should be atomic
+            lastRenderBusyMilliseconds += RenderBusyTimer.ElapsedMilliseconds;
+            LoopTimer.Reset();
+            LoopTimer.Start();
+            RenderBusyTimer.Reset();
+        }
+
+    }// RenderProcess
 }
