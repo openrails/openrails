@@ -186,7 +186,6 @@ namespace ORTS
             base.Draw(gameTime);
 
             RenderBusyTimeEnd();
-            Thread.Sleep(1);  // Make sure LoaderProcess gets some GPU time TODO - is this needed?  
         }
 
         private void FrameUpdate(GameTime gameTime)

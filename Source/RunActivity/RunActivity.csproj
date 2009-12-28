@@ -180,15 +180,19 @@
     <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Math.cs" />
+    <Compile Include="Common\ORTSPaths.cs" />
     <Compile Include="Processes\Profiler.cs" />
-    <Compile Include="RollingStock\DieselLocomotive.cs" />
-    <Compile Include="RollingStock\ElectricLocomotive.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />
-    <Compile Include="RollingStock\Locomotive.cs" />
-    <Compile Include="RollingStock\SteamLocomotive.cs" />
     <Compile Include="Physics\Train.cs" />
-    <Compile Include="RollingStock\TrainCar.cs" />
+    <Compile Include="RollingStock\MSTSElectricLocomotive.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RollingStock\MSTSLocomotive.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RollingStock\MSTSWagon.cs" />
     <Compile Include="Processes\ProcessState.cs" />
+    <Compile Include="RollingStock\TrainCar.cs" />
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Simulator\TDBTraveller.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />

@@ -278,7 +278,9 @@ namespace MSTS
         /// <param name="token"></param>
         public void SkipUnknownBlock(string token)
         {
-            switch( token.ToLower() )
+            if( token.StartsWith( "_" ) )
+                SkipBlock();
+            else switch( token.ToLower() )
             {
                 case "skip":
                 case "comment": SkipBlock(); break;

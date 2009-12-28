@@ -118,13 +118,13 @@ namespace ORTS
             TextBuilder.Append("StateChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString());
             TextBuilder.Append("ImageChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.ImageChangesPerFrame.ToString());
             TextBuilder.Append("Processors = "); TextBuilder.AppendLine(processors.ToString());
-            TextBuilder.Append("Render Process % = "); TextBuilder.AppendLine(Viewer.RenderProcess.RenderUtilizationPercent.ToString());
+            TextBuilder.Append("Render Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",Viewer.RenderProcess.RenderUtilizationPercent ));
             TextBuilder.Append("Update Process % = "); 
             if( Viewer.UpdaterProcess != null )
-                TextBuilder.AppendLine( Viewer.UpdaterProcess.UtilizationPercent.ToString());
+                TextBuilder.AppendLine( string.Format( "{0,3}", Viewer.UpdaterProcess.UtilizationPercent));
             else
                 TextBuilder.AppendLine( "NA" );
-            TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine(Viewer.LoaderProcess.UtilizationPercent.ToString());
+            TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",Viewer.LoaderProcess.UtilizationPercent));
         }
 
         string FormattedTime(double clockTimeSeconds)

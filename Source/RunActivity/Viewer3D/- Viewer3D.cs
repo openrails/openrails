@@ -391,7 +391,7 @@ namespace ORTS
             traveller.ReverseDirection();
             foreach (TrainCar car in Simulator.PlayerTrain.Cars)
             {
-                traveller.Move(car.WagFile.Wagon.Length);
+                traveller.Move(car.Length);
 
                 Vector3 xnaCenter = Camera.XNALocation(traveller.WorldLocation);
                 float radius = 2f;  // 2 meter click range

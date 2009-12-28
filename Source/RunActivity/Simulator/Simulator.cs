@@ -112,7 +112,7 @@ namespace ORTS
             Train playerTrain = Trains[0]; // TODO< temp code for now
             PlayerLocomotive = null;
             foreach (TrainCar car in playerTrain.Cars)
-                if (car.GetType().IsSubclassOf(typeof(Locomotive)))  // first loco is the one the player drives
+                if (car.IsDriveable )  // first loco is the one the player drives
                 {
                     PlayerLocomotive = car;
                     break;
@@ -439,7 +439,7 @@ namespace ORTS
                     // our TDB traveller is always at the back of the last car so it needs to be repositioned
                     TrainCar lastCar = train.LastCar;
                     train.RearTDBTraveller.ReverseDirection();
-                    train.RearTDBTraveller.Move(lastCar.WagFile.Wagon.Length / 2f);
+                    train.RearTDBTraveller.Move(lastCar.Length / 2f);
                     train.RearTDBTraveller.ReverseDirection();
 
                     train.CalculatePositionOfCars(0);

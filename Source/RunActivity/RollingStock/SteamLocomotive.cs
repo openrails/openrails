@@ -31,7 +31,7 @@ namespace ORTS
     /// <summary>
     /// Adds physics and control for a steam locomotive
     /// </summary>
-    public class SteamLocomotive: Locomotive
+    public class SteamLocomotive: MSTSLocomotive
     {
         public SteamLocomotive(WAGFile wagFile)
             : base(wagFile)
@@ -58,7 +58,7 @@ namespace ORTS
     /// <summary>
     /// Adds any special steam loco animation to the basic LocomotiveViewer class
     /// </summary>
-    class SteamLocomotiveViewer : LocomotiveViewer
+    class SteamLocomotiveViewer : MSTSLocomotiveViewer
     {
         SteamLocomotive SteamLocomotive;
 

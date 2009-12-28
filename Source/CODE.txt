@@ -205,19 +205,48 @@ public virtual void PrepareFrame(RenderFrame frame, GameTime gameTime)
 public virtual void Unload()
 
 TIME
+----
 
-TODO Explain
+The following time variables are used:
 
-double Program.RealTime
-double Simulator.ClockTime
-ElapsedTime
-	. ClockSeconds  watch for /0 errors		elapsedClockSeconds
-	. RealSeconds     "						elapsedRealSeconds
+double Program.RealTime 
+- global static variable representing number of seconds the program has been running
 
-ElapsedSeconds  - refers to real time,  look at clockTimeSeconds for 
+double Simulator.ClockTime 
+- class variable representing the number of seconds since 00:00:00 on the day of the activity, this 
+clock stops when the game is paused, and runs fast when the game is sped up.
 
-explain why some get clock, some get real, some get both
+When various objects are updated, they are passed an elapsed time consisting of one of the following:
 
-constraints - 
+struct ElapsedTime
+float RealSeconds;
+float ClockSeconds;
 
-TODO Explain float vs double
+This represents the elapsed time since that function was last called in both real time and clock time 
+units. Functions interacting with the player generally want to use real time, ie camera motion doesn't 
+stop when the game is stopped. Functions related to animating game elements, ie wheels turning, use 
+clock time.
+
+At a certain point it doesn't make sense to propagate both types of time. For example, the simulator 
+classes ( ai, signals etc ) have no concept of real time and work only in clock time. To avoid errors, 
+they recieve a float elapsedClockSeconds parameter to eliminate any possibility of error.
+
+Also there are other classes that receive only a float elapsedRealSeconds parameter.
+
+Most floating point variables in Open Rails are stored as float's including elapsed time. But notice 
+that to avoid accumulated errors, ClockTime and RealTime are doubles. Keep that in mind if you have 
+to create variables that store one of these values. 
+
+The times always represent the target time of the frame currently being prepared and rendered.
+
+All timekeeping is handled in the UpdaterProcess ( see the Architecture Diagram ) for thread safety 
+reasons. If any other process is examining time variables, there is probably something wrong and 
+warning bells should go off. 
+
+
+TRAINCARS
+---------
+
+Custom parsers.
+Don't even need a parser.
+

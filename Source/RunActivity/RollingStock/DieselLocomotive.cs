@@ -31,7 +31,7 @@ namespace ORTS
     /// <summary>
     /// Adds physics and control for a diesel locomotive
     /// </summary>
-    public class DieselLocomotive : Locomotive
+    public class DieselLocomotive : MSTSLocomotive
     {
         public DieselLocomotive(WAGFile wagFile)
             : base(wagFile)
@@ -58,7 +58,7 @@ namespace ORTS
     /// <summary>
     /// Adds any special Diesel loco animation to the basic LocomotiveViewer class
     /// </summary>
-    class DieselLocomotiveViewer : LocomotiveViewer
+    class DieselLocomotiveViewer : MSTSLocomotiveViewer
     {
         DieselLocomotive DieselLocomotive;
 

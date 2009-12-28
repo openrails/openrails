@@ -72,7 +72,7 @@ namespace ORTS
                 car.Update(elapsedClockSeconds);
                 TrainMotiveForceN += car.MotiveForceN;
                 TrainFrictionForceN += car.FrictionForceN;
-                TrainMassKG += car.WagFile.Wagon.MassKG;
+                TrainMassKG += car.MassKG;
             }
 
             // easier to calculate if TrainMotiveForceN is positive
@@ -132,11 +132,11 @@ namespace ORTS
                 TrainCar car = Cars[i];
                 car.SpeedMpS = SpeedMpS * ( car.Flipped ? -1: 1 );
 
-                float bogieSpacing = car.WagFile.Wagon.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
+                float bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
                 // traveller is positioned at the front of the car
                 // advance to the first bogie 
-                traveller.Move((car.WagFile.Wagon.Length - bogieSpacing) / 2.0f);
+                traveller.Move((car.Length - bogieSpacing) / 2.0f);
                 int tileX = traveller.TileX;
                 int tileZ = traveller.TileZ;
                 float x = traveller.X;
@@ -163,7 +163,7 @@ namespace ORTS
                 car.WorldPosition.TileX = traveller.TileX;
                 car.WorldPosition.TileZ = traveller.TileZ;
 
-                traveller.Move((car.WagFile.Wagon.Length - bogieSpacing) / 2.0f);  // Move to the rear of the car 
+                traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the rear of the car 
             }
 
             traveller.ReverseDirection();
@@ -189,11 +189,11 @@ namespace ORTS
                 car.SpeedMpS = SpeedMpS * (car.Flipped ? -1 : 1 );
                 car.DistanceM += Math.Abs(distance);
 
-                float bogieSpacing = car.WagFile.Wagon.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
+                float bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
                 // traveller is positioned at the back of the car
                 // advance to the first bogie 
-                traveller.Move((car.WagFile.Wagon.Length - bogieSpacing) / 2.0f);
+                traveller.Move((car.Length - bogieSpacing) / 2.0f);
                 int tileX = traveller.TileX;
                 int tileZ = traveller.TileZ;
                 float x = traveller.X;
@@ -220,7 +220,7 @@ namespace ORTS
                 car.WorldPosition.TileX = traveller.TileX;
                 car.WorldPosition.TileZ = traveller.TileZ;
 
-                traveller.Move((car.WagFile.Wagon.Length - bogieSpacing) / 2.0f);  // Move to the front of the car 
+                traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the front of the car 
             }
 
             FrontTDBTraveller = traveller;

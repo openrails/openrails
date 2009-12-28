@@ -10,7 +10,7 @@ using System.Text;
 
 namespace ORTS
 {
-    class MpH
+    public class MpH
     {
         public static float FromMpS(float MpS)
         {
@@ -18,7 +18,7 @@ namespace ORTS
         }
     }
 
-    class MpS
+    public class MpS
     {
         public static float FromMpH(float MpH)
         {

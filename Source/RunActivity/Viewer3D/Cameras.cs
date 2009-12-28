@@ -54,6 +54,7 @@ namespace ORTS
         public ViewPoints ViewPoint = ViewPoints.External;  
         public enum ViewPoints { External, Cab, Passenger };
         public TrainCar AttachedToCar = null;  // we are attached to this car, or null if we are free roaming
+        public TrainCarViewer AttachedToCarViewer = null; // the car we are attached to has this viewer
 
         // Internals
         private int MouseX = 0, MouseY = 0;
@@ -330,7 +331,7 @@ namespace ORTS
 
         public void PositionViewer()
         {
-            float z = AttachedToCar.WagFile.Wagon.Length / 2 - 0.3f;
+            float z = AttachedToCar.Length / 2 - 0.3f;
             if (AttachedToCar.Flipped)
                 z *= -1;
             OnboardLocation = new Vector3(1.8f, 2.0f, z);
@@ -369,16 +370,19 @@ namespace ORTS
         /// </summary>
         public override void Activate()
         {
+            /* TODO RESTORE THIS
             if (Viewer.Simulator.PlayerLocomotive != null)
                 AttachedToCar = Viewer.Simulator.PlayerLocomotive;
-            if (AttachedToCar.CVFFile == null)
+            if (!AttachedToCar.HasCabView)
                 return;
             ShiftView(0);
             base.Activate();
+             */
         }
 
         private void ShiftView(int index)
         {
+            /* TODO RESTORE CAB CAMERA
             iLocation += index;
 
             if (iLocation < 0)
@@ -388,6 +392,7 @@ namespace ORTS
 
             RotationYRadians = MSTSMath.M.Radians(AttachedToCar.CVFFile.Directions[iLocation].Y);
             OnboardLocation = AttachedToCar.CVFFile.Locations[iLocation];
+             */
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -447,7 +452,7 @@ namespace ORTS
             OnboardLocation.Y = 2;
             OnboardLocation = Vector3.Transform(OnboardLocation, Matrix.CreateRotationX(-tiltR));
             OnboardLocation = Vector3.Transform(OnboardLocation, Matrix.CreateRotationY(rotationR));
-            OnboardLocation.Z += AttachedToCar.WagFile.Wagon.Length / 2.0f *(TetherAttachment == Tether.ToFront ? 1 : -1);
+            OnboardLocation.Z += AttachedToCar.Length / 2.0f *(TetherAttachment == Tether.ToFront ? 1 : -1);
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -519,6 +524,7 @@ namespace ORTS
 
         public override void Activate()
         {
+            /* TODO RESTORE PASSENGER VIEW
             Train train = Viewer.Simulator.PlayerTrain;
 
             // find first car with a passenger view
@@ -535,6 +541,7 @@ namespace ORTS
             OnboardLocation = AttachedToCar.WagFile.Wagon.Inside.PassengerCabinHeadPos;
 
             base.Activate();
+             */
         }
 
     } // Class PassengerCamera

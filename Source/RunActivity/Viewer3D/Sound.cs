@@ -57,7 +57,7 @@ namespace ORTS
         /// <param name="viewer"></param>
         /// <param name="car"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer3D viewer, TrainCar car, string smsFilePath)
+        public SoundSource(Viewer3D viewer, MSTSWagon car, string smsFilePath)
         {
             Car = car;
             Initialize(viewer, car.WorldPosition.WorldLocation, smsFilePath);
@@ -78,7 +78,7 @@ namespace ORTS
         
         public WorldLocation WorldLocation;   // current location for the sound source
         public Viewer3D Viewer;                 // the listener is connected to this viewer
-        public TrainCar Car = null;          // the sound may be from a train car
+        public MSTSWagon Car = null;          // the sound may be from a train car
 
         public string SMSFolder;              // the wave files will be relative to this folder
         public bool Active = false;
@@ -300,7 +300,7 @@ namespace ORTS
                 ISound.Position = IRRposition;
             }
 
-            TrainCar car = SoundSource.Car;
+            MSTSWagon car = SoundSource.Car;
             if (car != null && ISound != null)
             {
                 if (MSTSStream.FrequencyCurve != null)
@@ -348,7 +348,7 @@ namespace ORTS
         /// <param name="control"></param>
         /// <param name="car"></param>
         /// <returns></returns>
-        private float ReadValue(MSTS.VolumeCurve.Controls control, TrainCar car)
+        private float ReadValue(MSTS.VolumeCurve.Controls control, MSTSWagon car)
         {
             switch (control)
             {
@@ -566,7 +566,7 @@ namespace ORTS
     public class ORTSVariableTrigger
     {
         MSTS.Variable_Trigger SMS;
-        TrainCar car;
+        MSTSWagon car;
         ORTSSoundCommand SoundCommand;
 
         float StartValue;

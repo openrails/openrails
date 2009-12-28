@@ -80,9 +80,7 @@ namespace ORTS
                 Console.WriteLine();
                 Console.WriteLine("------------------------------------------------");
 
-                Simulator = new Simulator(ActivityPath);
-                Viewer3D viewer = new Viewer3D(Simulator);
-                viewer.Run();
+                ViewerProcess viewer = new ViewerProcess();
             }
             catch (System.Exception error)
             {
@@ -91,6 +89,7 @@ namespace ORTS
             }
 
         }
+
 
         public static string SVNRevision()
         {
@@ -110,6 +109,34 @@ namespace ORTS
             }
         }
 
-    }
+        class ViewerProcess
+        {
+            public ViewerProcess()
+            {
+                Thread thread = new Thread(Run);
+                thread.Priority = ThreadPriority.Highest;
+                thread.Start();
+                while (thread.ThreadState == System.Threading.ThreadState.Running)
+                    Thread.Sleep(100);
+            }
+
+            public void Run()
+            {
+                try
+                {
+                    Program.Simulator = new Simulator(ActivityPath);
+                    Viewer3D viewer = new Viewer3D(Simulator);
+                    viewer.Run();
+                }
+                catch (System.Exception error)
+                {
+                    Console.Error.WriteLine(error.Message);
+                    MessageBox.Show(error.Message);
+                }
+            }
+        }
+
+    }// Program
+
 }
 
