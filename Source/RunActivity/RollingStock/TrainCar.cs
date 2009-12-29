@@ -2,9 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace ORTS
 {
+    public class ViewPoint
+    {
+        public Vector3 Location;
+        public Vector3 StartDirection;
+        public Vector3 RotationLimit;
+    }
+
     public abstract class TrainCar
     {
         // some properties of this car
@@ -23,12 +31,20 @@ namespace ORTS
         public float SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
 
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
-        public float ThrottlePercent = 0;   
-        public bool Forward = true;         
+        public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
+        public Direction Direction { 
+            get { return Flipped ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection; } 
+            set { Train.MUDirection = Flipped ? DirectionControl.Flip( value ) : value; } }
+        public BrakeSystem BrakeSystem = null;
 
         // TrainCar.Update() must set these variables
         public float MotiveForceN = 0.0f;   // ie motor power in Newtons  - signed relative to direction of car - 
         public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
+
+        // For use by cameras, initialized in MSTSWagon class and its derived classes
+        public List<ViewPoint> FrontCabViewpoints = new List<ViewPoint>();
+        public List<ViewPoint> RearCabViewpoints = new List<ViewPoint>();
+        public List<ViewPoint> PassengerViewpoints = new List<ViewPoint>();
 
         // Load 3D geometry into this 3D viewer and return it as a TrainCarViewer
         public abstract TrainCarViewer GetViewer(Viewer3D viewer);
@@ -36,8 +52,9 @@ namespace ORTS
         // called when its time to update the MotiveForce and FrictionForce
         public abstract void Update(float elapsedClockSeconds);
 
-        // Notifications from the core simulator of key outside events, ie coupling etc
-        public abstract void CreateEvent(int eventID);
+        // Notifications from others of key outside events, ie coupling etc, pantograph up etc
+        public abstract void SignalEvent(EventID eventID);
+
 
     }
 
@@ -53,6 +70,7 @@ namespace ORTS
         {
             Car = car;
             Viewer = viewer;
+
         }
 
         public abstract void HandleUserInput(ElapsedTime elapsedTime);
@@ -64,4 +82,5 @@ namespace ORTS
         /// </summary>
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
     }
+
 }

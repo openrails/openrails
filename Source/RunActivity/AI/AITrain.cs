@@ -58,8 +58,8 @@ namespace ORTS
             {
                 //Console.WriteLine("stop {0} {1} {2}", NextStopDistanceM, SpeedMpS, NextStopNode.Type);
                 SpeedMpS = 0;
-                TrainThrottlePercent = 0;
-                TrainBrakePercent = 100;
+                AITrainThrottlePercent = 0;
+                AITrainBrakePercent = 100;
                 if (WaitUntil == 0 && HandleNodeAction(NextStopNode, clockTime))
                     return;
                 if (NextStopNode.NextMainNode == null && NextStopNode.NextSidingNode == null)
@@ -85,7 +85,7 @@ namespace ORTS
                     return;
                 //Console.WriteLine("nextstop {0} {1} {2}", NextStopNode.ID, NextStopNode.Type, NextStopNode.IsFacingPoint);
                 WorldLocation wl = NextStopNode.Location;
-                if (TrainDirectionForward)
+                if (AITrainDirectionForward)
                     NextStopDistanceM = FrontTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
                 else
                 {
@@ -115,11 +115,10 @@ namespace ORTS
                     NextStopDistanceM = 0;
             }
             WaitUntil = 0;
-            float timeS = 0;
-            
+            float timeS = elapsedClockSeconds;            
             float prevSpeedMpS = SpeedMpS;
             base.Update( elapsedClockSeconds );
-            float dir = TrainDirectionForward ? 1 : -1;
+            float dir = AITrainDirectionForward ? 1 : -1;
             float distanceM = dir * SpeedMpS * timeS;
             NextStopDistanceM -= distanceM;
             float targetMpSS = CalcAccelMpSS();
@@ -187,7 +186,7 @@ namespace ORTS
                     WaitUntil = clockTime + node.WaitTimeS;
                     return true;
                 case AIPathNodeType.Reverse:
-                    TrainDirectionForward = !TrainDirectionForward;
+                    AITrainDirectionForward = !AITrainDirectionForward;
                     WaitUntil = clockTime + 5;
                     return true;
                 case AIPathNodeType.Couple:
@@ -275,22 +274,22 @@ namespace ORTS
         {
             if (NextStopDistanceM < 0)
             {
-                TrainThrottlePercent = 0;
-                TrainBrakePercent = 100;
+                AITrainThrottlePercent = 0;
+                AITrainBrakePercent = 100;
             }
             if (targetMpSS < 0 && measMpSS > targetMpSS)
             {
-                if (TrainThrottlePercent > 0)
+                if (AITrainThrottlePercent > 0)
                 {
-                    TrainThrottlePercent -= 10;
-                    if (TrainThrottlePercent < 0)
-                        TrainThrottlePercent = 0;
+                    AITrainThrottlePercent -= 10;
+                    if (AITrainThrottlePercent < 0)
+                        AITrainThrottlePercent = 0;
                 }
-                else if (TrainBrakePercent < 100)
+                else if (AITrainBrakePercent < 100)
                 {
-                    TrainBrakePercent += 10;
-                    if (TrainBrakePercent > 100)
-                        TrainBrakePercent = 100;
+                    AITrainBrakePercent += 10;
+                    if (AITrainBrakePercent > 100)
+                        AITrainBrakePercent = 100;
                 }
                 else
                 {
@@ -301,17 +300,17 @@ namespace ORTS
             }
             if (targetMpSS > 0 && measMpSS < targetMpSS)
             {
-                if (TrainBrakePercent > 0)
+                if (AITrainBrakePercent > 0)
                 {
-                    TrainBrakePercent -= 10;
-                    if (TrainBrakePercent < 0)
-                        TrainBrakePercent = 0;
+                    AITrainBrakePercent -= 10;
+                    if (AITrainBrakePercent < 0)
+                        AITrainBrakePercent = 0;
                 }
-                else if (TrainThrottlePercent < 100)
+                else if (AITrainThrottlePercent < 100)
                 {
-                    TrainThrottlePercent += 10;
-                    if (TrainThrottlePercent > 100)
-                        TrainThrottlePercent = 100;
+                    AITrainThrottlePercent += 10;
+                    if (AITrainThrottlePercent > 100)
+                        AITrainThrottlePercent = 100;
                 }
                 else
                 {

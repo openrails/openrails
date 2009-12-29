@@ -24,7 +24,7 @@ namespace ORTS
         static void Main(string[] args)
         {
 
-            WarningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\ORTS Warning Log.txt";
+            WarningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
             File.Delete(WarningLogFileName);
 
             try

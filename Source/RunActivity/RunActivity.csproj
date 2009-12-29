@@ -148,9 +148,6 @@
     <Compile Include="..\MSTS\TTypeDatFile.cs">
       <Link>MSTS\TTypeDatFile.cs</Link>
     </Compile>
-    <Compile Include="..\MSTS\WAGFile.cs">
-      <Link>MSTS\WAGFile.cs</Link>
-    </Compile>
     <Compile Include="..\MSTS\WFile.cs">
       <Link>MSTS\WFile.cs</Link>
     </Compile>
@@ -178,9 +175,12 @@
     <Compile Include="AI\Dispatcher.cs" />
     <Compile Include="Common\Conversions.cs" />
     <Compile Include="Common\Coordinates.cs" />
+    <Compile Include="Common\enums.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
+    <Compile Include="Physics\Brakes.cs" />
+    <Compile Include="Physics\Events.cs" />
     <Compile Include="Processes\Profiler.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />
     <Compile Include="Physics\Train.cs" />

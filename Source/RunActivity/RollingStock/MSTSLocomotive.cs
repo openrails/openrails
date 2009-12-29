@@ -52,16 +52,87 @@ namespace ORTS
     /// </summary>
     public class MSTSLocomotive: MSTSWagon
     {
+        // simulation parameters
         public bool Horn = false;
         public bool Bell = false;
-        public bool Sander = false;  // false = off
-        public bool Wiper = false;   // false = off
+        public bool Sander = false;  
+        public bool Wiper = false;   
+
+        // wag file data
+        public string CabSoundFileName = null;
+        public string CVFFileName = null;
+
+        public CVFFile CVFFile = null;
+
 
         public MSTSLocomotive(string  wagPath)
             : base(wagPath)
         {
+        }
+
+        /// <summary>
+        /// This initializer is called when we haven't loaded this type of car before
+        /// and must read it new from the wag file.
+        /// </summary>
+        public override void InitializeFromWagFile(string wagFilePath)
+        {
+            base.InitializeFromWagFile(wagFilePath);
+
+            if (CVFFileName != null)
+            {
+                string CVFFilePath = Path.GetDirectoryName(WagFilePath) + @"\CABVIEW\" + CVFFileName;
+                CVFFile = new CVFFile(CVFFilePath);
+
+                // Set up camera locations for the cab views
+                for( int i = 0; i < CVFFile.Locations.Count; ++i )
+                {
+                    if (i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count)
+                    {
+                        Console.Error.WriteLine("Position or Direction missing in " + CVFFilePath);
+                        break;
+                    }
+                    ViewPoint viewPoint = new ViewPoint();
+                    viewPoint.Location = CVFFile.Locations[i];
+                    viewPoint.StartDirection = CVFFile.Directions[i];
+                    viewPoint.RotationLimit = new Vector3( 0,0,0 );  // cab views have a fixed head position
+                    FrontCabViewpoints.Add(viewPoint);
+                }
+            }
+
+
+
             IsDriveable = true;
         }
+
+        /// <summary>
+        /// Parse the wag file parameters required for the simulator and viewer classes
+        /// </summary>
+        public override void Parse(string lowercasetoken, STFReader f)
+        {
+            switch (lowercasetoken)
+            {
+                case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
+                case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
+                default: base.Parse(lowercasetoken, f); break;
+            }
+        }
+
+        /// <summary>
+        /// This initializer is called when we are making a new copy of a car already
+        /// loaded in memory.  We use this one to speed up loading by eliminating the
+        /// need to parse the wag file multiple times.
+        /// </summary>
+        /// <param name="copy"></param>
+        public override void InitializeFromCopy(MSTSWagon copy)
+        {
+            MSTSLocomotive locoCopy = (MSTSLocomotive)copy;
+            CabSoundFileName = locoCopy.CabSoundFileName;
+            CVFFileName = locoCopy.CVFFileName;
+            CVFFile = locoCopy.CVFFile;
+
+            base.InitializeFromCopy(copy);  // each derived level initializes its own variables
+        }
+
 
         public override TrainCarViewer GetViewer(Viewer3D viewer)
         {
@@ -71,14 +142,14 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             // TODO  this is a wild simplification for electric and diesel electric
-            float maxForceN = 300e3f * Train.TrainThrottlePercent / 100f;   // TODO pull 300e3 from wag file
-            float maxSpeedMpS = MpS.FromMpH(50) * Train.TrainThrottlePercent / 100f;  // TODO pull 50 from wag file
+            float maxForceN = 300e3f * ThrottlePercent / 100f;   // TODO pull 300e3 from wag file
+            float maxSpeedMpS = MpS.FromMpH(50) * ThrottlePercent / 100f;  // TODO pull 50 from wag file
             float currentSpeedMpS = Math.Abs(SpeedMpS);
             float balanceRatio = 1;
             if (maxSpeedMpS > currentSpeedMpS)
                 balanceRatio = currentSpeedMpS / maxSpeedMpS;
 
-            MotiveForceN = (Train.TrainDirectionForward ? 1 : -1) * maxForceN * (1f - balanceRatio);
+            MotiveForceN = ( Direction == Direction.Forward ? 1 : -1) * maxForceN * (1f - balanceRatio);
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
             Variable2 = MotiveForceN / 300e3f;   // force generated
@@ -87,97 +158,54 @@ namespace ORTS
             base.Update(elapsedClockSeconds);
         }
 
-        public void HandleUserInput()
+        public void SetDirection( Direction direction )
         {
             // Direction Control
-            if (UserInput.IsPressed(Keys.W))
+            if ( Direction != direction)
             {
-                this.Forward = true;
-                CreateEvent(15);
+                Direction = direction;
+                SignalEvent( direction == Direction.Forward ? EventID.Forward : EventID.Reverse);
             }
-            if (UserInput.IsPressed(Keys.S))
-            {
-                this.Forward = false;
-                CreateEvent(16);
-            }
-            Train.TrainDirectionForward = this.Forward;
-
-            // Some extremely simple physics for the Throttle
-            if (UserInput.IsPressed(Keys.D))
-            {
-                this.ThrottlePercent += 10;
-                Train.TrainBrakePercent = 0;
-            }
-            if (UserInput.IsPressed(Keys.A)) this.ThrottlePercent -= 10;
-            if (this.ThrottlePercent < 0) this.ThrottlePercent = 0;
-            if (this.ThrottlePercent > 100) this.ThrottlePercent = 100;
-
-            //Some extremely simple physics for the Brake
-            if (UserInput.IsPressed(Keys.OemQuotes) || UserInput.IsPressed(Keys.E))
-            {
-                Train.TrainBrakePercent += 10;
-                this.ThrottlePercent = 0;
-            }
-            if (UserInput.IsPressed(Keys.OemSemicolon) || UserInput.IsPressed(Keys.Q)) Train.TrainBrakePercent -= 10;
-            if (Train.TrainBrakePercent < 0) Train.TrainBrakePercent = 0;
-            if (Train.TrainBrakePercent > 100) Train.TrainBrakePercent = 100;
-
-            Train.TrainThrottlePercent = this.ThrottlePercent;
-
-            // Horn
-            if (UserInput.IsKeyDown(Keys.Space))
-            {
-                if (!Horn)
-                {
-                    Horn = true;
-                    CreateEvent(8);
-                }
-            }
-            else 
-            {
-                if (Horn)
-                {
-                    Horn = false;
-                    CreateEvent(9);
-                }
-            }
-
-            // Bell
-            if (UserInput.IsKeyDown(Keys.B))
-            {
-                if (!Bell)
-                {
-                    Bell = true;
-                    CreateEvent(10);
-                }
-            }
-            else
-            {
-                if (Bell)
-                {
-                    Bell = false;
-                    CreateEvent(11);
-                }
-            }
-
-            // Sander
-            if (UserInput.IsPressed(Keys.X))
-            {
-                Sander = !Sander;
-                CreateEvent(26);  // sander toggled
-                CreateEvent(Sander ? 4 : 5);  // on or off event
-            }
-
-            // Wiper
-            if (UserInput.IsPressed(Keys.V))
-            {
-                Wiper = !Wiper;
-                CreateEvent(Wiper ? 6 : 7);  // on or off event
-            }
-
         }
 
-    } // LocomotiveSimualtor
+        public void SetThrottle( float percent )
+        {
+            if (percent < 0) percent = 0;       // limit the range
+            if (percent > 100) percent = 100;
+
+            ThrottlePercent = percent;   
+        }
+        
+        public void SetHorn( bool on )
+        {
+            if ( on != Horn )
+            {
+                Horn = on;
+                SignalEvent( Horn ? EventID.HornOn : EventID.HornOff);
+            }
+        }
+
+        /// <summary>
+        /// Used when someone want to notify us of an event
+        /// </summary>
+        public override void SignalEvent(EventID eventID)
+        {
+            switch (eventID)
+            {
+                case EventID.BellOn: Bell = true; break;
+                case EventID.BellOff: Bell = false; break;
+                case EventID.HornOn: Horn = true; break;
+                case EventID.HornOff: Horn = false; break;
+                case EventID.SanderOn: Sander = true; break;
+                case EventID.SanderOff: Sander = false; break;
+                case EventID.WiperOn: Wiper = true; break;
+                case EventID.WiperOff: Wiper = false; break;
+            }
+
+            base.SignalEvent(eventID );
+        }
+
+    } // LocomotiveSimulator
 
     ///////////////////////////////////////////////////
     ///   3D VIEW
@@ -201,11 +229,6 @@ namespace ORTS
         {
             Locomotive = car;
 
-            if (car.WagFile.Engine.CabView != null)
-            {
-                string CVFFilePath = Path.GetDirectoryName( MSTSWagon.WagFilePath) + @"\CABVIEW\" + car.WagFile.Engine.CabView;
-                car.CVFFile = new CVFFile(CVFFilePath);
-            }
 
             // Find the animated parts
             if (TrainCarShape.SharedShape.Animations != null)
@@ -232,12 +255,24 @@ namespace ORTS
                 }
             }
 
+            string wagonFolderSlash = Path.GetDirectoryName(Locomotive.WagFilePath) + "\\";
+            if (Locomotive.CabSoundFileName != null) LoadCarSound(wagonFolderSlash, Locomotive.CabSoundFileName);
 
         }
 
         public override void HandleUserInput( ElapsedTime elapsedTime )
         {
-            Locomotive.HandleUserInput(); // TODO, replace this with calls to loco controls, ie SetThrottle, SetDirection etc 
+            if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
+            if (UserInput.IsPressed(Keys.S)) Locomotive.SetDirection(Direction.Reverse);
+            if (UserInput.IsPressed(Keys.D)) Locomotive.SetThrottle( Locomotive.ThrottlePercent + 10);
+            if (UserInput.IsPressed(Keys.A)) Locomotive.SetThrottle(Locomotive.ThrottlePercent - 10);
+            if (UserInput.IsPressed(Keys.OemQuotes) || UserInput.IsPressed(Keys.E)) Locomotive.MSTSBrakeSystem.Increase();
+            if (UserInput.IsPressed(Keys.OemSemicolon) || UserInput.IsPressed(Keys.Q)) Locomotive.MSTSBrakeSystem.Decrease();
+            if (UserInput.IsPressed(Keys.X)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn); 
+            if (UserInput.IsPressed(Keys.V)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
+            if (UserInput.IsKeyDown(Keys.Space) != Locomotive.Horn) Locomotive.SignalEvent(Locomotive.Horn ? EventID.HornOff : EventID.HornOn);
+            if (UserInput.IsAltKeyDown(Keys.B) != Locomotive.Bell) Locomotive.SignalEvent(Locomotive.Bell ? EventID.BellOff : EventID.BellOn);
+
             base.HandleUserInput( elapsedTime );
         }
 
@@ -272,6 +307,7 @@ namespace ORTS
 
             base.PrepareFrame( frame, elapsedTime );
         }
+
 
     } // Class LocomotiveViewer
 

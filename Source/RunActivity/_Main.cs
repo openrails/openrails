@@ -38,7 +38,7 @@ namespace ORTS
         public static double RealTime = 0;  // tracks the real time for the frame we are currently processing
                                                    // only update process may 
 
-        static Simulator Simulator; 
+        public static Simulator Simulator; 
 
         /// <summary>
         /// The main entry point for the application.
@@ -52,7 +52,7 @@ namespace ORTS
 
             if (WarningsOn)
             {
-                string warningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\ORTS Log.txt";
+                string warningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
                 File.Delete(warningLogFileName);
                 ErrorLogger errorLogger = new ErrorLogger(warningLogFileName);
                 TraceListener traceListener = new System.Diagnostics.TextWriterTraceListener(errorLogger);
@@ -75,12 +75,18 @@ namespace ORTS
 
             try
             {
-                ActivityPath = args[0];
+                if (args[0] == "-random")
+                    ActivityPath = Testing.GetRandomActivity();
+                else
+                    ActivityPath = args[0];
                 Console.WriteLine("Activity = " + ActivityPath);
                 Console.WriteLine();
                 Console.WriteLine("------------------------------------------------");
 
-                ViewerProcess viewer = new ViewerProcess();
+                Program.Simulator = new Simulator(ActivityPath);
+                Viewer3D viewer = new Viewer3D(Simulator);
+                viewer.Run();
+
             }
             catch (System.Exception error)
             {
@@ -109,6 +115,7 @@ namespace ORTS
             }
         }
 
+        // TODO REMOVE EXPERIMENT RUNNING IN NEW PROCESS
         class ViewerProcess
         {
             public ViewerProcess()
@@ -133,6 +140,34 @@ namespace ORTS
                     Console.Error.WriteLine(error.Message);
                     MessageBox.Show(error.Message);
                 }
+            }
+        }
+
+
+        class Testing
+        {
+            static Random Random = new Random();
+
+            static string[] BaseFolders = new string[] { @"c:\personal\msts", @"c:\personal\mststest", @"c:\program files\microsoft games\train simulator" };
+            public static string GetRandomActivity()
+            {
+                List<string> activityFileNames = new List<string>();
+
+                foreach (string baseFolder in BaseFolders)
+                {
+                    string[] routeFolders = Directory.GetDirectories( baseFolder + @"\routes" );
+                    foreach (string routeFolder in routeFolders)
+                    {
+                        string[] activityFiles = Directory.GetFiles(routeFolder + @"\activities", "*.act");
+                        foreach (string activityFileName in activityFiles)
+                        {
+                            activityFileNames.Add(activityFileName);
+                        }
+                    }
+                }
+
+                int i = Random.Next(activityFileNames.Count);
+                return activityFileNames[i];
             }
         }
 

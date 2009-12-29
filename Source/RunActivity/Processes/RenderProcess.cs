@@ -65,6 +65,10 @@ namespace ORTS
         private ElapsedTime FrameElapsedTime = new ElapsedTime();
         private ElapsedTime UserInputElapsedTime = new ElapsedTime();
 
+        // Profiling
+        public Stopwatch RenderTime = new Stopwatch();
+        public Stopwatch UpdateTime = new Stopwatch();
+
         public ElapsedTime GetFrameElapsedTime()
         {
             FrameElapsedTime.RealSeconds = (float)(Program.RealTime - LastFrameTime);
@@ -111,8 +115,6 @@ namespace ORTS
                 Viewer.UpdaterProcess.Run();
             }
             base.Initialize();
-
-            LoopTimer.Start();
         }
 
         /// <summary>
@@ -156,7 +158,9 @@ namespace ORTS
         /// </summary>
         protected override void Draw(GameTime gameTime)
         {
-            RenderBusyTimer.Start();
+            Thread.BeginCriticalRegion();
+            RenderTime.Start();
+
             if (gameTime.ElapsedRealTime.TotalSeconds > 0.00001)
             {  // a zero elapsed time indicates the window needs to be redrawn with the same content
                 // ie after restoring from minimized, or uncovering a window
@@ -185,7 +189,8 @@ namespace ORTS
 
             base.Draw(gameTime);
 
-            RenderBusyTimeEnd();
+            RenderTime.Stop();
+            Thread.EndCriticalRegion();
         }
 
         private void FrameUpdate(GameTime gameTime)
@@ -216,6 +221,7 @@ namespace ORTS
             {   // single processor machine
                 UserInput.Update();
 
+                UpdateTime.Start();
                 Program.RealTime = actualRealTime;
                 ElapsedTime frameElapsedTime = GetFrameElapsedTime();
 
@@ -238,6 +244,8 @@ namespace ORTS
                 // Update the loader - it should only copy volatile data and return
                 if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
                     Viewer.LoaderProcess.StartUpdate();
+
+                UpdateTime.Stop();
 
             }
 
@@ -311,43 +319,6 @@ namespace ORTS
         }
 
 
-        // Profiling
-        public int RenderUtilizationPercent
-        {
-            get  
-            {
-                long loopMilliseconds = lastLoopMilliseconds; // +LoopTimer.ElapsedMilliseconds;
-                long renderBusyMilliseconds = lastRenderBusyMilliseconds; // +BusyTimer.ElapsedMilliseconds;
-                long updateBusyMilliseconds = lastUpdateBusyMilliseconds; // +BusyTimer.ElapsedMilliseconds;
-                if (loopMilliseconds != 0)
-                {
-                    lastLoopMilliseconds = 0;
-                    lastRenderBusyMilliseconds = 0;
-                    lastUpdateBusyMilliseconds = 0;
-                    lastRenderUtilizationPercent = (int)(renderBusyMilliseconds * 100 / loopMilliseconds);
-                    lastUpdateUtilizationPercent = (int)(updateBusyMilliseconds * 100 / loopMilliseconds);
-                }
-                return lastRenderUtilizationPercent;
-            }
-        }
-        private long lastLoopMilliseconds;
-        private long lastRenderBusyMilliseconds;
-        private long lastUpdateBusyMilliseconds;
-        private int lastRenderUtilizationPercent;
-        public int lastUpdateUtilizationPercent;
-
-        public Stopwatch LoopTimer = new Stopwatch();
-        Stopwatch RenderBusyTimer = new Stopwatch();
-        Stopwatch UpdateBusyTimer = new Stopwatch();
-
-        public void RenderBusyTimeEnd()
-        {
-            lastLoopMilliseconds += LoopTimer.ElapsedMilliseconds;  // these two should be atomic
-            lastRenderBusyMilliseconds += RenderBusyTimer.ElapsedMilliseconds;
-            LoopTimer.Reset();
-            LoopTimer.Start();
-            RenderBusyTimer.Reset();
-        }
 
     }// RenderProcess
 }

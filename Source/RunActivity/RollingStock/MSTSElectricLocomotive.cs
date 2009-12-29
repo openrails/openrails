@@ -52,16 +52,18 @@ namespace ORTS
             base.Update(elapsedClockSeconds);
         }
 
-
-        public new void HandleUserInput()  // TODO temp code, replace with proper control calls
+        /// <summary>
+        /// Used when someone want to notify us of an event
+        /// </summary>
+        public override void SignalEvent( EventID eventID)
         {
-            // Pantograph
-            if (UserInput.IsPressed(Keys.P) && !UserInput.IsShiftDown() )
+            switch (eventID)
             {
-                Pan = !Pan;
-                CreateEvent(47); // pantograph toggle 
-                CreateEvent(Pan ? 45 : 46);  // up or down event
+                case EventID.PantographUp: Pan = true; break;  // pan up
+                case EventID.PantographDown : Pan = false; break; // pan down
+                case EventID.PantographToggle: Pan = !Pan; break;  // pan toggle
             }
+            base.SignalEvent(eventID);
         }
 
     } // class ElectricLocomotive
@@ -122,7 +124,9 @@ namespace ORTS
 
         public override void HandleUserInput( ElapsedTime elapsedTime)
         {
-            ElectricLocomotive.HandleUserInput();  // TODO , replace with method calls to loco controls
+            // Pantograph
+            if (UserInput.IsPressed(Keys.P) && !UserInput.IsShiftDown())
+                ElectricLocomotive.Train.SignalEvent(ElectricLocomotive.Pan ? EventID.PantographDown : EventID.PantographUp);
 
             base.HandleUserInput( elapsedTime);
         }

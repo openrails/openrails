@@ -44,25 +44,46 @@ namespace ORTS
         public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
 
         // These signals pass through to all cars and locomotives on the train
-        public bool TrainDirectionForward = true; //set by player locomotive to control MU'd locomotives
-        public float TrainThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives 
-        public float TrainBrakePercent = 0;     // set by player locomotove to control entire train brakes
-                                                // todo , make this air pressure
+        public Direction MUDirection = Direction.Forward; //set by player locomotive to control MU'd locomotives
+        public float MUThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives 
+        public float BrakeLine1PressurePSI = 90;     // set by player locomotive to control entire train brakes
+        public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems
+        public float BrakeLine3PressurePSI = 0;     // extra line just in case
+
+        // For AI control of the train
+        public float AITrainBrakePercent
+        {
+            get { return aiBrakePercent; }
+            set { aiBrakePercent = value; foreach (TrainCar car in Cars) car.BrakeSystem.AISetPercent(aiBrakePercent); }
+        }
+        private float aiBrakePercent = 0;
+        public float AITrainThrottlePercent 
+        { 
+            get { return MUThrottlePercent; } 
+            set{ MUThrottlePercent = value; } 
+        }
+        public bool AITrainDirectionForward 
+        { 
+            get { return MUDirection == Direction.Forward; } 
+            set { MUDirection = value ? Direction.Forward : Direction.Reverse; } 
+        }
+        
 
         /// <summary>
-        /// Used by AI code to control train movement
-        /// overrides all locomotive and train physics
-        /// Note: while under AI control, locomotives
-        /// will not get any keyboard commands.
+        /// Someone is sending an event notification to all cars on this train.
+        /// ie doors open, pantograph up, lights on etc.
         /// </summary>
-        /// <param name="MpSS"></param>
-        public void SetAccelleration(float MpSS)
+        public void SignalEvent(EventID eventID)
         {
-            // TODO finish this.
+            foreach (TrainCar car in Cars)
+                car.SignalEvent(eventID);
         }
+
 
         public void Update( float elapsedClockSeconds )
         {
+            PropagateBrakePressure();
+
             // some extremely simple 'physics'
             float TrainMotiveForceN = 0;     // newtons relative to forward train direction
             float TrainFrictionForceN  = 0;   // newtons always positive
@@ -114,6 +135,17 @@ namespace ORTS
 
             CalculatePositionOfCars( distanceM );
 
+        }
+
+        private void PropagateBrakePressure()
+        {
+            // TODO , finish this
+            foreach (TrainCar car in Cars)
+            {
+                car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+                car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
+                car.BrakeSystem.BrakeLine3PressurePSI = BrakeLine3PressurePSI;
+            }
         }
 
         /// <summary>

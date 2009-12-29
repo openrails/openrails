@@ -65,7 +65,9 @@ namespace ORTS
         {
             if (Program.RealTime - lastUpdateTime > 0.1)
             {
+                double elapsedRealSeconds = Program.RealTime - lastUpdateTime;
                 lastUpdateTime = Program.RealTime;
+                Profile( elapsedRealSeconds);
                 UpdateText();
             }
             TextPrimitive.Text = TextBuilder.ToString();
@@ -95,9 +97,9 @@ namespace ORTS
 
             TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Version);
             TextBuilder.Append("Time = "); TextBuilder.AppendLine(clockTimeString);
-            TextBuilder.Append("Direction = "); TextBuilder.AppendLine((Viewer.Simulator.PlayerLocomotive.Forward ? "FORWARD\n" : "REVERSE\n"));
+            TextBuilder.Append("Direction = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerLocomotive.Direction.ToString());
             TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerLocomotive.ThrottlePercent.ToString());
-            TextBuilder.Append("Brake = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerTrain.TrainBrakePercent.ToString());
+            TextBuilder.Append("Brake = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerLocomotive.BrakeSystem.GetStatus());
             TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString("F1"));
             TextBuilder.AppendLine();
             TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString());
@@ -118,13 +120,10 @@ namespace ORTS
             TextBuilder.Append("StateChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString());
             TextBuilder.Append("ImageChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.ImageChangesPerFrame.ToString());
             TextBuilder.Append("Processors = "); TextBuilder.AppendLine(processors.ToString());
-            TextBuilder.Append("Render Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",Viewer.RenderProcess.RenderUtilizationPercent ));
-            TextBuilder.Append("Update Process % = "); 
-            if( Viewer.UpdaterProcess != null )
-                TextBuilder.AppendLine( string.Format( "{0,3}", Viewer.UpdaterProcess.UtilizationPercent));
-            else
-                TextBuilder.AppendLine( "NA" );
-            TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",Viewer.LoaderProcess.UtilizationPercent));
+            TextBuilder.Append("Render Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",RenderPercent ));
+            TextBuilder.Append("Update Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}", UpdatePercent));
+            TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",LoaderPercent));
+            TextBuilder.Append("Total Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", LoaderPercent+UpdatePercent+RenderPercent));
         }
 
         string FormattedTime(double clockTimeSeconds)
@@ -138,6 +137,47 @@ namespace ORTS
             return string.Format("{0:D2}:{1:D2}:{2:D2}", hour, minute, seconds);
         }
 
+        // Profiling
+        int RenderPercent = 0;
+        int UpdatePercent = 0;
+        int LoaderPercent = 0;
+        double lastRender = 0;        // render work  ( seconds )
+        double lastRenderUpdate = 0;  // the update work done by the render process
+        double lastUpdater = 0;        // update work done by the update process
+        double lastLoader = 0;        // loader work
+        public void Profile(double elapsedRealSeconds) // should be called every 100mS
+        {
+            if( elapsedRealSeconds < 0.01 ) return;  // just in case
+
+            // capture time
+            double render = Viewer.RenderProcess.RenderTime.Elapsed.TotalSeconds;
+            double renderupdate = Viewer.RenderProcess.UpdateTime.Elapsed.TotalSeconds;
+            double update = Viewer.UpdaterProcess == null ? 0 :  Viewer.UpdaterProcess.UpdateTimer.Elapsed.TotalSeconds;
+            double loader = Viewer.LoaderProcess.LoaderTimer.Elapsed.TotalSeconds;
+
+            // determine elapsed times
+            //    note - these processing times are approximate and assume the task had the processor for the full time
+            //           in reality the processor could have been interupted to service other tasks
+            double elapsedRender = render - lastRender;
+            double elapsedRenderUpdate = renderupdate - lastRenderUpdate;
+            double elapsedLoader = loader - lastLoader;
+            double elapsedUpdater = update - lastUpdater; 
+
+            // save last times
+            lastRender = render;
+            lastRenderUpdate = renderupdate;
+            lastUpdater = update;
+            lastLoader = loader;
+
+            // computer percentages
+            elapsedRender -= elapsedRenderUpdate;
+            elapsedUpdater += elapsedRenderUpdate;
+
+            RenderPercent = (int)(elapsedRender * 100.0 / elapsedRealSeconds);
+            UpdatePercent = (int)(elapsedUpdater * 100.0 / elapsedRealSeconds);
+            LoaderPercent = (int)(elapsedLoader * 100.0 / elapsedRealSeconds);
+           
+        }
 
     } // Class Info Display
 
@@ -157,4 +197,7 @@ namespace ORTS
             Material.SpriteBatch.DrawString(Material.DefaultFont, Text, Location, Color );
         }
     }
+
+
+
 }

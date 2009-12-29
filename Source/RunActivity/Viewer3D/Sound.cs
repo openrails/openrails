@@ -441,18 +441,18 @@ namespace ORTS
     /// </summary>
     public class ORTSDiscreteTrigger: CarEventHandler
     {
-        public int TriggerID;
+        public EventID TriggerID;
         ORTSSoundCommand SoundCommand;
         public bool Enabled = true;  // set by the DisableTrigger, EnableTrigger sound commands
 
         public ORTSDiscreteTrigger(SoundStream soundStream, MSTS.Discrete_Trigger smsData)
         {
-            TriggerID = smsData.TriggerID;
+            TriggerID = (EventID)smsData.TriggerID;
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
         }
 
 
-        public void HandleCarEvent(int eventID)
+        public void HandleCarEvent(EventID eventID)
         {
             if( Enabled )
                 if (eventID == TriggerID)
@@ -724,12 +724,12 @@ namespace ORTS
     /// </summary>
     public class ORTSDisableTrigger : ORTSSoundCommand
     {
-        int TriggerID;
+        EventID TriggerID;
 
         public ORTSDisableTrigger(SoundStream ortsStream, MSTS.DisableTrigger smsData )
             : base(ortsStream)
         {
-            TriggerID = smsData.TriggerID;
+            TriggerID = (EventID)smsData.TriggerID;
         }
 
         public override void Run()
@@ -745,12 +745,12 @@ namespace ORTS
     /// </summary>
     public class ORTSEnableTrigger : ORTSSoundCommand
     {
-        int TriggerID;
+        EventID TriggerID;
 
         public ORTSEnableTrigger(SoundStream ortsStream, MSTS.DisableTrigger smsData)
             : base(ortsStream)
         {
-            TriggerID = smsData.TriggerID;
+            TriggerID = (EventID)smsData.TriggerID;
         }
 
         public override void Run()

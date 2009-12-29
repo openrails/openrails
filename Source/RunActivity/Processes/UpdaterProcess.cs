@@ -23,6 +23,9 @@ namespace ORTS
         public bool Finished { get { return State.Finished; } }
         ProcessState State = new ProcessState();  // manage interprocess signalling
 
+        // Profiling
+        public Stopwatch UpdateTimer = new Stopwatch();
+
         public UpdaterProcess( Viewer3D viewer )
         {
             Viewer = viewer;
@@ -65,13 +68,12 @@ namespace ORTS
 
         public void UpdateLoop()
         {
-            LoopTimer.Start();
             while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
             {
                 // Wait for a new Update() command
                 State.WaitTillStarted();
 
-                BusyTimer.Start();
+                UpdateTimer.Start();
                 Program.RealTime = NewRealTime;
                 ElapsedTime frameElapsedTime = Viewer.RenderProcess.GetFrameElapsedTime();
 
@@ -102,42 +104,8 @@ namespace ORTS
                 if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
                     Viewer.LoaderProcess.StartUpdate();
 
-                BusyTimeEnd();
+                UpdateTimer.Stop();
             }
-        }
-
-        // Profiling
-        public int UtilizationPercent
-        {
-            get
-            {
-                long loopMilliseconds = lastLoopMilliseconds; // +LoopTimer.ElapsedMilliseconds;
-                long busyMilliseconds = lastBusyMilliseconds; // +BusyTimer.ElapsedMilliseconds;
-                if (loopMilliseconds != 0)
-                {
-                    lastLoopMilliseconds = 0;
-                    lastBusyMilliseconds = 0;
-                    lastUtilitationPercent = (int)(busyMilliseconds * 100 / loopMilliseconds);
-                }
-                return lastUtilitationPercent;
-            }
-        }
-        private long lastLoopMilliseconds;
-        private long lastBusyMilliseconds;
-        private int lastUtilitationPercent;
-
-        // Start the loop timer when the process is launched
-        public Stopwatch LoopTimer = new Stopwatch();
-        // Start the busy timer when your code runs
-        Stopwatch BusyTimer = new Stopwatch();
-        // Stop the busy timer and compute utilization
-        public void BusyTimeEnd()
-        {
-            lastLoopMilliseconds += LoopTimer.ElapsedMilliseconds;  // these two should be atomic
-            lastBusyMilliseconds += BusyTimer.ElapsedMilliseconds;
-            LoopTimer.Reset();
-            LoopTimer.Start();
-            BusyTimer.Reset();
         }
 
     } // Updater Process

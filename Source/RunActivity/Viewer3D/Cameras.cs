@@ -311,7 +311,7 @@ namespace ORTS
             Train playerTrain = Viewer.Simulator.PlayerTrain;
             if ( AttachedToCar == null || playerTrain != AttachedToCar.Train)
             {
-                if( playerTrain.SpeedMpS >= 0 )
+                if( playerTrain.MUDirection == Direction.Forward )
                     GotoFront();
                 else
                     GotoBack();
@@ -370,29 +370,26 @@ namespace ORTS
         /// </summary>
         public override void Activate()
         {
-            /* TODO RESTORE THIS
             if (Viewer.Simulator.PlayerLocomotive != null)
                 AttachedToCar = Viewer.Simulator.PlayerLocomotive;
-            if (!AttachedToCar.HasCabView)
+            if (AttachedToCar.FrontCabViewpoints.Count == 0 )
                 return;
             ShiftView(0);
             base.Activate();
-             */
         }
 
         private void ShiftView(int index)
         {
-            /* TODO RESTORE CAB CAMERA
             iLocation += index;
 
             if (iLocation < 0)
-                iLocation = AttachedToCar.CVFFile.Locations.Count - 1;
-            else if (iLocation >= AttachedToCar.CVFFile.Locations.Count)
+                iLocation = AttachedToCar.FrontCabViewpoints.Count - 1;
+            else if (iLocation >= AttachedToCar.FrontCabViewpoints.Count)
                 iLocation = 0;
 
-            RotationYRadians = MSTSMath.M.Radians(AttachedToCar.CVFFile.Directions[iLocation].Y);
-            OnboardLocation = AttachedToCar.CVFFile.Locations[iLocation];
-             */
+            RotationYRadians = MSTSMath.M.Radians(AttachedToCar.FrontCabViewpoints[iLocation].StartDirection.Y);
+            // TODO add X rotation and Z rotation
+            OnboardLocation = AttachedToCar.FrontCabViewpoints[iLocation].Location;
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -524,13 +521,12 @@ namespace ORTS
 
         public override void Activate()
         {
-            /* TODO RESTORE PASSENGER VIEW
             Train train = Viewer.Simulator.PlayerTrain;
 
             // find first car with a passenger view
             AttachedToCar = null;
             foreach (TrainCar car in train.Cars)
-                if (car.WagFile.HasInsideView)
+                if (car.PassengerViewpoints.Count > 0)
                 {
                     AttachedToCar = car;
                     break;
@@ -538,10 +534,11 @@ namespace ORTS
             if (AttachedToCar == null) 
                 return; // no cars have a passenger view
 
-            OnboardLocation = AttachedToCar.WagFile.Wagon.Inside.PassengerCabinHeadPos;
+            RotationYRadians = MSTSMath.M.Radians(AttachedToCar.PassengerViewpoints[0].StartDirection.Y);
+            // TODO finish X and Z rotation
+            OnboardLocation = AttachedToCar.PassengerViewpoints[0].Location;
 
             base.Activate();
-             */
         }
 
     } // Class PassengerCamera

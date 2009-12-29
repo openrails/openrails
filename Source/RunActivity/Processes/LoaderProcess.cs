@@ -21,6 +21,9 @@ namespace ORTS
 
         ProcessState State = new ProcessState();   // manage interprocess signalling
 
+        // Profiling
+        public Stopwatch LoaderTimer = new Stopwatch();
+
         public LoaderProcess(Viewer3D viewer )
         {
             Viewer = viewer;
@@ -60,58 +63,25 @@ namespace ORTS
 
         public void Stop()
         {
-            LoopTimer.Stop();
             LoaderThread.Abort();
         }
 
         public void LoadLoop()
         {
-            LoopTimer.Start();
             while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
             {
                 // Wait for a new Update() command
                 State.WaitTillStarted();
-
-                BusyTimer.Start();
+                LoaderTimer.Start();
                 Viewer.Load(Viewer.RenderProcess);  // complete scan and load as necessary
 
                 State.SignalFinish();
 
-                BusyTimeEnd();
+                LoaderTimer.Stop();
+
             }
 
         }
-
-        // Profiling
-        public int UtilizationPercent
-        {
-            get  
-            {
-                long loopMilliseconds = lastLoopMilliseconds +LoopTimer.ElapsedMilliseconds;
-                long busyMilliseconds = lastBusyMilliseconds +BusyTimer.ElapsedMilliseconds;
-                if (loopMilliseconds != 0)
-                    lastUtilitationPercent = (int)(busyMilliseconds * 100 / loopMilliseconds);
-                return lastUtilitationPercent;
-            }
-        }
-        private long lastLoopMilliseconds;
-        private long lastBusyMilliseconds;
-        private int lastUtilitationPercent;
-
-        // Start the loop timer when the process is launched
-        public Stopwatch LoopTimer = new Stopwatch();
-        // Start the busy timer when your code runs
-        Stopwatch BusyTimer = new Stopwatch();
-        // Stop the busy timer and compute utilization
-        public void BusyTimeEnd()
-        {
-            lastLoopMilliseconds = LoopTimer.ElapsedMilliseconds;  // these two should be atomic
-            lastBusyMilliseconds = BusyTimer.ElapsedMilliseconds;
-            LoopTimer.Reset();
-            LoopTimer.Start();
-            BusyTimer.Reset();
-        }
-
 
     } // LoaderProcess
 }

@@ -153,7 +153,7 @@ namespace ORTS
             Signals.Update( elapsedClockSeconds );
             AI.Update( elapsedClockSeconds );
 
-            AlignTrailingPointSwitches(PlayerTrain, PlayerLocomotive.Forward);
+            AlignTrailingPointSwitches(PlayerTrain, PlayerLocomotive.Direction == Direction.Forward);
 
             CheckForCoupling(PlayerTrain);
         }
@@ -184,7 +184,7 @@ namespace ORTS
                             }
                             playerTrain.RepositionRearTraveller();
                             Trains.Remove(train);
-                            PlayerTrain.LastCar.CreateEvent(58);
+                            PlayerTrain.LastCar.SignalEvent(EventID.Couple);
                             return;
                         }
                         if (WorldLocation.DistanceSquared(playerTrain.RearTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
@@ -201,7 +201,7 @@ namespace ORTS
                             }
                             playerTrain.RepositionRearTraveller();
                             Trains.Remove(train);
-                            PlayerTrain.LastCar.CreateEvent(58);
+                            PlayerTrain.LastCar.SignalEvent(EventID.Couple);
                             return;
                         }
                     }
@@ -224,7 +224,7 @@ namespace ORTS
                             }
                             playerTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
-                            PlayerTrain.FirstCar.CreateEvent(58);
+                            PlayerTrain.FirstCar.SignalEvent(EventID.Couple);
                             return;
                         }
                         if (WorldLocation.DistanceSquared(playerTrain.FrontTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
@@ -241,7 +241,7 @@ namespace ORTS
                             }
                             playerTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
-                            PlayerTrain.FirstCar.CreateEvent(58);
+                            PlayerTrain.FirstCar.SignalEvent(EventID.Couple);
                             return;
                         }
                     }
@@ -526,19 +526,13 @@ namespace ORTS
             train.Update( 0 );   // stop the wheels from moving etc
             train2.Update( 0 );  // stop the wheels from moving etc
 
-            car.CreateEvent(61);
+            car.SignalEvent(EventID.Uncouple);
             // TODO which event should we fire
             //car.CreateEvent(62);  these are listed as alternate events
             //car.CreateEvent(63);
 
         }
 
-
-
     } // Simulator
 
-    public interface CarEventHandler
-    {
-        void HandleCarEvent(int eventID);
-    }
 }
