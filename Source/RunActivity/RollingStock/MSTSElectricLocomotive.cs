@@ -42,11 +42,51 @@ namespace ORTS
         {
         }
 
+        /// <summary>
+        /// Parse the wag file parameters required for the simulator and viewer classes
+        /// </summary>
+        public override void Parse(string lowercasetoken, STFReader f)
+        {
+            switch (lowercasetoken)
+            {
+                // for example
+                //case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
+                //case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
+                default: base.Parse(lowercasetoken, f); break;
+            }
+        }
+
+        /// <summary>
+        /// This initializer is called when we are making a new copy of a car already
+        /// loaded in memory.  We use this one to speed up loading by eliminating the
+        /// need to parse the wag file multiple times.
+        /// NOTE:  you must initialize all the same variables as you parsed above
+        /// </summary>
+        /// <param name="copy"></param>
+        public override void InitializeFromCopy(MSTSWagon copy)
+        {
+            // for example
+            //CabSoundFileName = locoCopy.CabSoundFileName;
+            //CVFFileName = locoCopy.CVFFileName;
+
+            base.InitializeFromCopy(copy);  // each derived level initializes its own variables
+        }
+
+        /// <summary>
+        /// Create a viewer for this locomotive.   Viewers are only attached
+        /// while the locomotive is in viewing range.
+        /// </summary>
         public override TrainCarViewer GetViewer(Viewer3D viewer)
         {
             return new MSTSElectricLocomotiveViewer(viewer, this);
         }
 
+        /// <summary>
+        /// This is a periodic update to calculate physics 
+        /// parameters and update the base class's MotiveForceN 
+        /// and FrictionForceN values based on throttle settings
+        /// etc for the locomotive.
+        /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
@@ -122,7 +162,11 @@ namespace ORTS
             }
         }
 
-        public override void HandleUserInput( ElapsedTime elapsedTime)
+        /// <summary>
+        /// A keyboard or mouse click has occured. Read the UserInput
+        /// structure to determine what was pressed.
+        /// </summary>
+        public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             // Pantograph
             if (UserInput.IsPressed(Keys.P) && !UserInput.IsShiftDown())
@@ -132,6 +176,10 @@ namespace ORTS
         }
 
 
+        /// <summary>
+        /// We are about to display a video frame.  Calculate positions for 
+        /// animated objects, and add their primitives to the RenderFrame list.
+        /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // Pan Animation
@@ -163,6 +211,9 @@ namespace ORTS
             base.PrepareFrame(frame, elapsedTime);
         }
 
+        /// <summary>
+        /// This doesn't function yet.
+        /// </summary>
         public override void Unload()
         {
             base.Unload();

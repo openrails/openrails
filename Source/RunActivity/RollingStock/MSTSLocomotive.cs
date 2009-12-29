@@ -133,12 +133,21 @@ namespace ORTS
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
 
-
+        /// <summary>
+        /// Create a viewer for this locomotive.   Viewers are only attached
+        /// while the locomotive is in viewing range.
+        /// </summary>
         public override TrainCarViewer GetViewer(Viewer3D viewer)
         {
             return new MSTSLocomotiveViewer(viewer, this);
         }
 
+        /// <summary>
+        /// This is a periodic update to calculate physics 
+        /// parameters and update the base class's MotiveForceN 
+        /// and FrictionForceN values based on throttle settings
+        /// etc for the locomotive.
+        /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
             // TODO  this is a wild simplification for electric and diesel electric
@@ -176,15 +185,6 @@ namespace ORTS
             ThrottlePercent = percent;   
         }
         
-        public void SetHorn( bool on )
-        {
-            if ( on != Horn )
-            {
-                Horn = on;
-                SignalEvent( Horn ? EventID.HornOn : EventID.HornOff);
-            }
-        }
-
         /// <summary>
         /// Used when someone want to notify us of an event
         /// </summary>
@@ -260,7 +260,11 @@ namespace ORTS
 
         }
 
-        public override void HandleUserInput( ElapsedTime elapsedTime )
+        /// <summary>
+        /// A keyboard or mouse click has occured. Read the UserInput
+        /// structure to determine what was pressed.
+        /// </summary>
+        public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
             if (UserInput.IsPressed(Keys.S)) Locomotive.SetDirection(Direction.Reverse);
@@ -276,7 +280,11 @@ namespace ORTS
             base.HandleUserInput( elapsedTime );
         }
 
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime )
+        /// <summary>
+        /// We are about to display a video frame.  Calculate positions for 
+        /// animated objects, and add their primitives to the RenderFrame list.
+        /// </summary>
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             float elapsedClockSeconds = elapsedTime.ClockSeconds;
             // Wiper animation
@@ -308,6 +316,14 @@ namespace ORTS
             base.PrepareFrame( frame, elapsedTime );
         }
 
+
+        /// <summary>
+        /// This doesn't function yet.
+        /// </summary>
+        public override void Unload()
+        {
+            base.Unload();
+        }
 
     } // Class LocomotiveViewer
 
