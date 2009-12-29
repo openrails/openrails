@@ -308,7 +308,7 @@ namespace ORTS
 
         public override void Activate()
         {
-            Train playerTrain = Viewer.Simulator.PlayerTrain;
+            Train playerTrain = Viewer.PlayerTrain;
             if ( AttachedToCar == null || playerTrain != AttachedToCar.Train)
             {
                 if( playerTrain.MUDirection == Direction.Forward )
@@ -339,14 +339,14 @@ namespace ORTS
 
         public void GotoFront()
         {
-            Train train = Viewer.Simulator.PlayerTrain;
+            Train train = Viewer.PlayerTrain;
             AttachedToCar = train.FirstCar;
             PositionViewer();
         }
 
         public void GotoBack()
         {
-            Train train = Viewer.Simulator.PlayerTrain;
+            Train train = Viewer.PlayerTrain;
             AttachedToCar = train.LastCar;
             PositionViewer();
             OnboardLocation.Z *= -1;
@@ -370,8 +370,8 @@ namespace ORTS
         /// </summary>
         public override void Activate()
         {
-            if (Viewer.Simulator.PlayerLocomotive != null)
-                AttachedToCar = Viewer.Simulator.PlayerLocomotive;
+            if (Viewer.PlayerLocomotive != null)
+                AttachedToCar = Viewer.PlayerLocomotive;
             if (AttachedToCar.FrontCabViewpoints.Count == 0 )
                 return;
             ShiftView(0);
@@ -424,7 +424,7 @@ namespace ORTS
 
         public override void Activate()
         {
-            Train playerTrain = Viewer.Simulator.PlayerTrain;
+            Train playerTrain = Viewer.PlayerTrain;
             if (TetherAttachment == Tether.ToFront)
                 AttachedToCar = playerTrain.FirstCar;
             else
@@ -521,7 +521,7 @@ namespace ORTS
 
         public override void Activate()
         {
-            Train train = Viewer.Simulator.PlayerTrain;
+            Train train = Viewer.PlayerTrain;
 
             // find first car with a passenger view
             AttachedToCar = null;

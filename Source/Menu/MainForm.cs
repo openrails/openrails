@@ -335,5 +335,10 @@ namespace ORTS
             DisplayActivityDetails();
         }
 
+        private void buttonResume_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Retry;
+        }
+
     }
 }

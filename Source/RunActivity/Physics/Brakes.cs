@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MSTS;
+using System.IO;
 
 namespace ORTS
 {
@@ -16,6 +17,9 @@ namespace ORTS
 
         public abstract string GetStatus();
 
+        public abstract void Save(BinaryWriter outf);
+
+        public abstract void Restore( BinaryReader inf );
     }
 
     public abstract class MSTSBrakeSystem: BrakeSystem
@@ -31,6 +35,7 @@ namespace ORTS
         public abstract void Decrease();
 
         public abstract void InitializeFromCopy(BrakeSystem copy);
+
     }
 
     public class AirSinglePipe : MSTSBrakeSystem
@@ -64,6 +69,22 @@ namespace ORTS
                 case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = f.ReadFloatBlock(); break;
                // case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(); break;
             }
+        }
+
+        public override void Save(BinaryWriter outf)
+        {
+            outf.Write(BrakeLine1PressurePSI);
+            outf.Write(BrakeLine2PressurePSI);
+            outf.Write(BrakeLine3PressurePSI);
+            outf.Write(BrakePercent);
+        }
+
+        public override void Restore(BinaryReader inf)
+        {
+            BrakeLine1PressurePSI = inf.ReadSingle();
+            BrakeLine2PressurePSI = inf.ReadSingle();
+            BrakeLine3PressurePSI = inf.ReadSingle();
+            BrakePercent = inf.ReadSingle();
         }
 
         public override void Update(float elapsedClockSeconds)

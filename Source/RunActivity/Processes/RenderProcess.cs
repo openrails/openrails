@@ -71,16 +71,22 @@ namespace ORTS
 
         public ElapsedTime GetFrameElapsedTime()
         {
-            FrameElapsedTime.RealSeconds = (float)(Program.RealTime - LastFrameTime);
-            FrameElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(FrameElapsedTime.RealSeconds);
+            if (LastFrameTime != 0)
+            {
+                FrameElapsedTime.RealSeconds = (float)(Program.RealTime - LastFrameTime);
+                FrameElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(FrameElapsedTime.RealSeconds);
+            }
             LastFrameTime = Program.RealTime;
             return FrameElapsedTime;
         }
 
         public ElapsedTime GetUserInputElapsedTime()
         {
-            UserInputElapsedTime.RealSeconds = (float)( Program.RealTime - LastUserInputTime);
-            UserInputElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(UserInputElapsedTime.RealSeconds);
+            if (LastUserInputTime != 0)
+            {
+                UserInputElapsedTime.RealSeconds = (float)(Program.RealTime - LastUserInputTime);
+                UserInputElapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(UserInputElapsedTime.RealSeconds);
+            }
             LastUserInputTime = Program.RealTime;
             return UserInputElapsedTime;
         }
@@ -115,6 +121,7 @@ namespace ORTS
                 Viewer.UpdaterProcess.Run();
             }
             base.Initialize();
+            Viewer.Simulator.Paused = false;
         }
 
         /// <summary>

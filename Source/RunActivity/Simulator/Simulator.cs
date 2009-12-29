@@ -36,7 +36,7 @@ namespace ORTS
 {
     public class Simulator
     {
-        public bool Paused = false;
+        public bool Paused = true;          // start off paused, set to true once the viewer is fully loaded and initialized
         public float GameSpeed = 1;
         public double ClockTime = 0;         // relative to 00:00:00 on the day the activity starts 
                                                     // while Simulator.Update() is running, objects are adjusted to this target time 
@@ -58,23 +58,46 @@ namespace ORTS
         public Signals Signals = null;
         public AI AI = null;
 
-        public TrainCar PlayerLocomotive = null;  // TODO, make this a 'generic locomotive'
-        public Train PlayerTrain 
-        { 
-            get 
-            { 
-                if (PlayerLocomotive != null) 
-                    return PlayerLocomotive.Train; 
-                else 
-                    return null; 
-            } 
-        }
-
-
+        
+        public TrainCar PlayerLocomotive = null;  // Set by the Viewer - TODO there could be more than one player so eliminate this.
 
         public static Random Random = new Random();   // for use by the entire program
 
         public Simulator(string activityPath)
+        {
+            Init(activityPath);
+
+            StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
+            TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
+            ClockTime = StartTime.TotalSeconds;
+
+            Console.Write(" CON");
+            InitializePlayerTrain();
+            InitializeStaticConsists();
+
+            Signals = new Signals(this);
+            AI = new AI(this);
+
+
+        }
+
+        public void Restore(BinaryReader inf)
+        {
+            ClockTime = inf.ReadDouble();
+            RestoreSwitchSettings(inf);
+            RestoreTrains(inf);
+            // TODO restore signals and ai
+        }
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(ClockTime);
+            SaveSwitchSettings(outf);
+            SaveTrains(outf);
+            // TODO save signals and ai
+        }
+
+        public void Init(string activityPath)
         {
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             RouteName = Path.GetFileName(RoutePath);
@@ -101,30 +124,27 @@ namespace ORTS
             Console.Write(" ACT");
             Activity = new ACTFile(activityPath);
 
-            StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
-            TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
-            ClockTime = StartTime.TotalSeconds;
+        }
 
-            Console.Write(" CON");
-            InitializePlayerTrain();
-            InitializeStaticConsists();
 
-            Train playerTrain = Trains[0]; // TODO< temp code for now
-            PlayerLocomotive = null;
+        /// <summary>
+        /// Which locomotive does the activity specify for the player.
+        /// </summary>
+        public TrainCar InitialPlayerLocomotive()
+        {
+            Train playerTrain = Trains[0];    // we install the player train first
+            TrainCar PlayerLocomotive = null;
             foreach (TrainCar car in playerTrain.Cars)
-                if (car.IsDriveable )  // first loco is the one the player drives
+                if (car.IsDriveable)  // first loco is the one the player drives
                 {
                     PlayerLocomotive = car;
                     break;
                 }
             if (PlayerLocomotive == null)
                 throw new System.Exception("Can't find player locomotive in activity");
-
-            Signals = new Signals(this);
-            AI = new AI(this);
-
-
+            return PlayerLocomotive;
         }
+
 
         /// <summary>
         /// Convert and elapsed real time into clock time based on simulator
@@ -149,99 +169,104 @@ namespace ORTS
             ClockTime += elapsedClockSeconds;
 
             // Represent conditions at the specified clock time.
-            PlayerTrain.Update( elapsedClockSeconds );
-            Signals.Update( elapsedClockSeconds );
+            if (PlayerLocomotive != null)
+            {
+                // TODO, this shouldn't really be handled this way, ie what if there are more than one players?
+                Train PlayerTrain = PlayerLocomotive.Train;
+                PlayerTrain.Update(elapsedClockSeconds);
+                AlignTrailingPointSwitches(PlayerTrain, PlayerLocomotive.Direction == Direction.Forward);
+                CheckForCoupling(PlayerTrain);
+            }
+
+            Signals.Update(elapsedClockSeconds);
             AI.Update( elapsedClockSeconds );
 
-            AlignTrailingPointSwitches(PlayerTrain, PlayerLocomotive.Direction == Direction.Forward);
-
-            CheckForCoupling(PlayerTrain);
         }
 
         /// <summary>
         /// Scan other trains
         /// </summary>
         /// <param name="train"></param>
-        public void CheckForCoupling(Train playerTrain)
+        public void CheckForCoupling(Train drivenTrain)
         {
-            float captureDistance = 0.1f * playerTrain.SpeedMpS / 5.0f;
+            float captureDistance = 0.1f * drivenTrain.SpeedMpS / 5.0f;
             float captureDistanceSquared = captureDistance * captureDistance;
 
-            if (playerTrain.SpeedMpS < 0.01)
+            if (drivenTrain.SpeedMpS < 0.01)
             {
                 foreach (Train train in Trains)
-                    if (train != playerTrain)
+                    if (train != drivenTrain)
                     {
-                        if (WorldLocation.DistanceSquared(playerTrain.RearTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
+                        if (WorldLocation.DistanceSquared(drivenTrain.RearTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
                         {
                             // couple my rear to front of train
-                            if (playerTrain.SpeedMpS < -0.1f)
-                                playerTrain.SpeedMpS = -0.1f;  // TODO, make this depend on mass and brake settings on cars coupled to
+                            if (drivenTrain.SpeedMpS < -0.1f)
+                                drivenTrain.SpeedMpS = -0.1f;  // TODO, make this depend on mass and brake settings on cars coupled to
                             foreach (TrainCar car in train.Cars)
                             {
-                                playerTrain.Cars.Add(car);
-                                car.Train = playerTrain;
+                                drivenTrain.Cars.Add(car);
+                                car.Train = drivenTrain;
                             }
-                            playerTrain.RepositionRearTraveller();
+                            drivenTrain.RepositionRearTraveller();
                             Trains.Remove(train);
-                            PlayerTrain.LastCar.SignalEvent(EventID.Couple);
+                            drivenTrain.LastCar.SignalEvent(EventID.Couple);
                             return;
                         }
-                        if (WorldLocation.DistanceSquared(playerTrain.RearTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
+                        if (WorldLocation.DistanceSquared(drivenTrain.RearTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
                         {
                             // couple my rear to rear of train
-                            if (playerTrain.SpeedMpS < -0.1f)
-                                playerTrain.SpeedMpS = -0.1f;
+                            if (drivenTrain.SpeedMpS < -0.1f)
+                                drivenTrain.SpeedMpS = -0.1f;
                             for (int i = train.Cars.Count - 1; i >= 0; --i)
                             {
                                 TrainCar car = train.Cars[i];
-                                playerTrain.Cars.Add(car);
-                                car.Train = playerTrain;
+                                drivenTrain.Cars.Add(car);
+                                car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
                             }
-                            playerTrain.RepositionRearTraveller();
+                            drivenTrain.RepositionRearTraveller();
                             Trains.Remove(train);
-                            PlayerTrain.LastCar.SignalEvent(EventID.Couple);
+                            drivenTrain.LastCar.SignalEvent(EventID.Couple);
                             return;
                         }
                     }
             }
-            else if (playerTrain.SpeedMpS > 0.01)
+            else if (drivenTrain.SpeedMpS > 0.01)
             {
                 foreach (Train train in Trains)
-                    if (train != playerTrain)
+                    if (train != drivenTrain)
                     {
-                        if (WorldLocation.DistanceSquared(playerTrain.FrontTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
+                        if (WorldLocation.DistanceSquared(drivenTrain.FrontTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
                         {
                             // couple my front to rear of train
-                            if (playerTrain.SpeedMpS > 0.1f)
-                                playerTrain.SpeedMpS = 0.1f;
+                            if (drivenTrain.SpeedMpS > 0.1f)
+                                drivenTrain.SpeedMpS = 0.1f;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
                                 TrainCar car = train.Cars[i];
-                                playerTrain.Cars.Insert(i, car);
-                                car.Train = playerTrain;
+                                drivenTrain.Cars.Insert(i, car);
+                                car.Train = drivenTrain;
                             }
-                            playerTrain.CalculatePositionOfCars(0);
+                            drivenTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
-                            PlayerTrain.FirstCar.SignalEvent(EventID.Couple);
+                            drivenTrain.FirstCar.SignalEvent(EventID.Couple);
                             return;
                         }
-                        if (WorldLocation.DistanceSquared(playerTrain.FrontTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
+                        if (WorldLocation.DistanceSquared(drivenTrain.FrontTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
                         {
                             // couple my front to front of train
-                            if (playerTrain.SpeedMpS > 0.1f)
-                                playerTrain.SpeedMpS = 0.1f;
+                            if (drivenTrain.SpeedMpS > 0.1f)
+                                drivenTrain.SpeedMpS = 0.1f;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
                                 TrainCar car = train.Cars[i];
-                                playerTrain.Cars.Insert(0, car);
-                                car.Train = playerTrain;
+                                drivenTrain.Cars.Insert(0, car);
+                                car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
                             }
-                            playerTrain.CalculatePositionOfCars(0);
+                            drivenTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
-                            PlayerTrain.FirstCar.SignalEvent(EventID.Couple);
+                            drivenTrain.FirstCar.SignalEvent(EventID.Couple);
                             return;
                         }
                     }
@@ -309,13 +334,27 @@ namespace ORTS
             }
         }
 
+        private void SaveSwitchSettings(BinaryWriter outf)
+        {
+            foreach (TrackNode TN in TDB.TrackDB.TrackNodes) // for each run of track in the database
+                if (TN != null && TN.TrJunctionNode != null)  // if this is a switch track 
+                    outf.Write(TN.TrJunctionNode.SelectedRoute);
+        }
+
+        private void RestoreSwitchSettings(BinaryReader inf)
+        {
+            foreach (TrackNode TN in TDB.TrackDB.TrackNodes) // for each run of track in the database
+                if (TN != null && TN.TrJunctionNode != null)  // if this is a switch track 
+                    TN.TrJunctionNode.SelectedRoute = inf.ReadInt32();
+        }
+
         /// <summary>
         /// Align the switchtrack behind the players train to the opposite position
         /// </summary>
-        public void SwitchTrackBehind()
+        public void SwitchTrackBehind( Train train)
         {
             TrJunctionNode nextSwitchTrack;
-            nextSwitchTrack = PlayerTrain.RearTDBTraveller.TrJunctionNodeBehind();
+            nextSwitchTrack = train.RearTDBTraveller.TrJunctionNodeBehind();
 
             if (nextSwitchTrack != null)
             {
@@ -329,10 +368,10 @@ namespace ORTS
         /// <summary>
         /// Align the switchtrack ahead of the players train to the opposite position
         /// </summary>
-        public void SwitchTrackAhead()
+        public void SwitchTrackAhead( Train train)
         {
             TrJunctionNode nextSwitchTrack;
-            nextSwitchTrack = PlayerTrain.FrontTDBTraveller.TrJunctionNodeAhead();
+            nextSwitchTrack = train.FrontTDBTraveller.TrJunctionNodeAhead();
 
             if (nextSwitchTrack != null)
             {
@@ -363,7 +402,6 @@ namespace ORTS
             patTraveller.NextWaypoint();
             if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
                 train.RearTDBTraveller.ReverseDirection();
-            train.PATTraveller = patTraveller;
 
             // add wagons
             foreach (ConsistTrainset wagon in conFile)
@@ -453,6 +491,21 @@ namespace ORTS
                 }
             }// for each train
 
+        }
+
+        private void SaveTrains(BinaryWriter outf)
+        {
+            outf.Write(Trains.Count);
+            foreach (Train train in Trains)
+                train.Save(outf);
+        }
+
+        private void RestoreTrains(BinaryReader inf)
+        {
+            int count = inf.ReadInt32();
+            Trains.Clear();
+            for (int i = 0; i < count; ++i)
+                Trains.Add(new Train(inf));
         }
 
         /// <summary>

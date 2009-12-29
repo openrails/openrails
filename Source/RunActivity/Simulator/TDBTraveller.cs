@@ -21,6 +21,7 @@ using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using MSTS;
 using MSTSMath;
+using System.IO;
 
 namespace ORTS
 {
@@ -112,6 +113,46 @@ namespace ORTS
             TS = copy.TS;
             TN = copy.TN;
             TVS = copy.TVS;
+        }
+
+        public TDBTraveller( BinaryReader inf )
+        {
+            TDB = Program.Simulator.TDB;
+            TSectionDat = Program.Simulator.TSectionDat;
+            TileX = inf.ReadInt32();
+            TileZ = inf.ReadInt32();
+            X = inf.ReadSingle();
+            Y = inf.ReadSingle();
+            Z = inf.ReadSingle();
+            AX = inf.ReadSingle();
+            AY = inf.ReadSingle();
+            AZ = inf.ReadSingle();
+            Offset = inf.ReadSingle();
+            pDirection = inf.ReadInt32();
+            iTrackNode = inf.ReadInt32();
+            iTrVectorSection = inf.ReadInt32();
+            TS = TSectionDat.TrackSections[inf.ReadInt32()];
+            TN = TDB.TrackDB.TrackNodes[inf.ReadInt32()];
+            TVS = TN.TrVectorNode.TrVectorSections[inf.ReadInt32()];
+        }
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(TileX);
+            outf.Write(TileZ);
+            outf.Write(X);
+            outf.Write(Y);
+            outf.Write(Z);
+            outf.Write(AX);
+            outf.Write(AY);
+            outf.Write(AZ);
+            outf.Write(Offset);
+            outf.Write(pDirection);
+            outf.Write(iTrackNode);
+            outf.Write(iTrVectorSection);
+            outf.Write(TSectionDat.TrackSections.IndexOf(TS));
+            outf.Write(TDB.TrackDB.TrackNodesIndexOf(TN));
+            outf.Write(TN.TrVectorNode.TrVectorSectionsIndexOf(TVS));
         }
 
         /// <summary>

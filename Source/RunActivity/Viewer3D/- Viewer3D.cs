@@ -75,14 +75,20 @@ namespace ORTS
         private BrakemanCamera BrakemanCamera;
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
 
+        // This is the train we are controlling
+        public TrainCar PlayerLocomotive { get { return Simulator.PlayerLocomotive; } set { Simulator.PlayerLocomotive = value; } }
+        public Train PlayerTrain { get { if (PlayerLocomotive == null) return null; else return PlayerLocomotive.Train; } }
+
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
         /// </summary>
         /// <param name="simulator"></param>
-        public Viewer3D(Simulator simulator)
+        public Viewer3D(Simulator simulator, TrainCar initialPlayerLocomotive )
         {
             Simulator = simulator;
+
+            PlayerLocomotive = initialPlayerLocomotive;
 
             UserSetup();
 
@@ -226,12 +232,8 @@ namespace ORTS
             // Check for game control keys
             if (UserInput.IsKeyDown(Keys.Escape)) {  Stop(); return; }
             if (UserInput.IsAltPressed(Keys.Enter)) { ToggleFullscreen(); }
-
-            // Pause
-            if (UserInput.IsPressed(Keys.Pause) && UserInput.IsShiftDown()) 
-            { 
-                Simulator.Paused = !Simulator.Paused; 
-            } 
+            if (UserInput.IsPressed(Keys.Pause) && UserInput.IsShiftDown()) Simulator.Paused = !Simulator.Paused;
+            if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
 
             // Change view point - cab, passenger, outside, etc
             if (UserInput.IsPressed(Keys.D1)) CabCamera.Activate();
@@ -243,8 +245,8 @@ namespace ORTS
               || UserInput.IsPressed(Keys.D7)
               || UserInput.IsPressed(Keys.D8)) (new Camera(this, Camera)).Activate();
 
-            if (UserInput.IsPressed(Keys.G) && !UserInput.IsShiftDown()) Simulator.SwitchTrackAhead();
-            if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind();
+            if (UserInput.IsPressed(Keys.G) && !UserInput.IsShiftDown()) Simulator.SwitchTrackAhead( PlayerTrain );
+            if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );
 
             // Uncoupling?
             if (!Simulator.Paused && UserInput.IsKeyDown(Keys.U))
@@ -364,7 +366,7 @@ namespace ORTS
 
         private TrainCarViewer GetPlayerLocomotiveViewer()
         {
-            return TrainDrawer.GetViewer(Simulator.PlayerLocomotive);
+            return TrainDrawer.GetViewer(PlayerLocomotive);
         }
 
         /// <summary>
@@ -387,9 +389,9 @@ namespace ORTS
             Ray pickRay = new Ray(nearPoint, direction);
 
             // check each car
-            TDBTraveller traveller = new TDBTraveller(Simulator.PlayerTrain.FrontTDBTraveller);
+            TDBTraveller traveller = new TDBTraveller(PlayerTrain.FrontTDBTraveller);
             traveller.ReverseDirection();
-            foreach (TrainCar car in Simulator.PlayerTrain.Cars)
+            foreach (TrainCar car in PlayerTrain.Cars)
             {
                 traveller.Move(car.Length);
 

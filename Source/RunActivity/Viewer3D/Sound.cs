@@ -129,6 +129,10 @@ namespace ORTS
                     foreach( SoundStream stream in SoundStreams )
                         stream.Activate();
 
+                    // restore state of variable triggers, ie engine noise
+                    foreach (ORTSVariableTrigger trigger in VariableTriggers)
+                        trigger.TryTrigger();
+
                 }
             }
             else

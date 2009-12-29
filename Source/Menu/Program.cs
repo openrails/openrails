@@ -15,15 +15,16 @@ namespace ORTS
     static class Program
     {
         const string RunActivityProgram = "runactivity.exe";
-
         static string WarningLogFileName;
         public static string RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+        public static string Build;
+        public static string Revision;
 
 
         [STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
         static void Main(string[] args)
         {
-
+            SetBuildRevision();
             WarningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
             File.Delete(WarningLogFileName);
 
@@ -31,13 +32,24 @@ namespace ORTS
             {
 
                 MainForm MainForm = new MainForm();
-                MainForm.Text = "Open Rails V" + SVNRevision();
+                if (Revision != "000")
+                    MainForm.Text = "Open Rails V " + Revision;
+                else
+                    MainForm.Text = "Open Rails   BUILD = " +  Build;
 
                 while (true)
                 {
 
                     MainForm.ShowDialog();
-                    if (MainForm.DialogResult != DialogResult.OK) return;
+
+                    string parameter;
+
+                    switch( MainForm.DialogResult )
+                    {
+                        case DialogResult.OK:   parameter = "\"" + MainForm.SelectedActivityPath + "\""; break;
+                        case DialogResult.Retry: parameter = "-resume"; break;
+                        default: return;
+                    }
 
                     // find the RunActivity program, normally in the startup path, 
                     //  but while debugging it will be in an adjacent directory
@@ -45,7 +57,7 @@ namespace ORTS
 
                     System.Diagnostics.ProcessStartInfo objPSI = new System.Diagnostics.ProcessStartInfo();
                     objPSI.FileName = RunActivityFolder + @"\" + RunActivityProgram ;
-                    objPSI.Arguments = "\"" + MainForm.SelectedActivityPath + "\"";
+                    objPSI.Arguments = parameter;
                     objPSI.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal; // or Hidden, Maximized or Normal 
                     objPSI.WorkingDirectory = RunActivityFolder;
 
@@ -88,7 +100,7 @@ namespace ORTS
             f.Close();
         }
 
-        public static string SVNRevision()
+        public static void SetBuildRevision()
         {
             try
             {
@@ -97,14 +109,20 @@ namespace ORTS
                     string line = f.ReadLine();
                     string rev = line.Substring(11);
                     int i = rev.IndexOf('$');
-                    return rev.Substring(0, i);
+                    Revision = rev.Substring(0, i).Trim();
+
+                    Build = Application.ProductVersion;  // from assembly
+                    Build = Build + " " + f.ReadLine();  // date
+                    Build = Build + " " + f.ReadLine(); // time
                 }
             }
             catch
             {
-                return "XX";
+                Revision = "000";
+                Build = Application.ProductVersion;
             }
         }
+
     } // class Program
 
 }

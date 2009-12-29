@@ -122,7 +122,6 @@ namespace ORTS
         /// loaded in memory.  We use this one to speed up loading by eliminating the
         /// need to parse the wag file multiple times.
         /// </summary>
-        /// <param name="copy"></param>
         public override void InitializeFromCopy(MSTSWagon copy)
         {
             MSTSLocomotive locoCopy = (MSTSLocomotive)copy;
@@ -132,6 +131,33 @@ namespace ORTS
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
+
+        /// <summary>
+        /// We are saving the game.  Save anything that we'll need to restore the 
+        /// status later.
+        /// </summary>
+        public override void Save(BinaryWriter outf)
+        {
+            // we won't save the horn state
+            outf.Write(Bell);
+            outf.Write(Sander);
+            outf.Write(Wiper);
+            base.Save(outf);
+        }
+
+        /// <summary>
+        /// We are restoring a saved game.  The TrainCar class has already
+        /// been initialized.   Restore the game state.
+        /// </summary>
+        public override void Restore(BinaryReader inf)
+        {
+            if (inf.ReadBoolean()) SignalEvent(EventID.BellOn);
+            if (inf.ReadBoolean()) SignalEvent(EventID.SanderOn);
+            if (inf.ReadBoolean()) SignalEvent(EventID.WiperOn);
+            base.Restore(inf);
+        }
+
+
 
         /// <summary>
         /// Create a viewer for this locomotive.   Viewers are only attached

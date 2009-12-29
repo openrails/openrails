@@ -40,7 +40,6 @@ namespace ORTS
         public TrainCar LastCar { get { return Cars[Cars.Count - 1]; } }
         public TDBTraveller RearTDBTraveller;   // positioned at the back of the last car in the train
         public TDBTraveller FrontTDBTraveller; // positioned at the front of the train by CalculatePositionOfCars
-        public PATTraveller PATTraveller = null;      // tracks where we are in the path file - this is the next waypoint
         public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
 
         // These signals pass through to all cars and locomotives on the train
@@ -67,7 +66,54 @@ namespace ORTS
             get { return MUDirection == Direction.Forward; } 
             set { MUDirection = value ? Direction.Forward : Direction.Reverse; } 
         }
-        
+
+        public Train()
+        {
+        }
+
+        // restore
+        public Train(BinaryReader inf)
+        {
+            RestoreCars( inf );
+            SpeedMpS = inf.ReadSingle();
+            MUDirection = (Direction)inf.ReadInt32();
+            MUThrottlePercent = inf.ReadSingle();
+            BrakeLine1PressurePSI = inf.ReadSingle();
+            BrakeLine2PressurePSI = inf.ReadSingle();
+            BrakeLine3PressurePSI = inf.ReadSingle();
+            aiBrakePercent = inf.ReadSingle();
+            RearTDBTraveller = new TDBTraveller( inf );
+            CalculatePositionOfCars(0);
+
+        }
+
+        public void Save(BinaryWriter outf)
+        {
+            // TODO
+            SaveCars( outf );
+            outf.Write(SpeedMpS);
+            outf.Write((int)MUDirection);
+            outf.Write(MUThrottlePercent);
+            outf.Write(BrakeLine1PressurePSI);
+            outf.Write(BrakeLine2PressurePSI);
+            outf.Write(BrakeLine3PressurePSI);
+            outf.Write(aiBrakePercent);
+            RearTDBTraveller.Save(outf);
+        }
+
+        private void SaveCars(BinaryWriter outf)
+        {
+            outf.Write(Cars.Count);
+            foreach (TrainCar car in Cars)
+                RollingStock.Save(outf, car); 
+        }
+
+        private void RestoreCars(BinaryReader inf)
+        {
+            int count = inf.ReadInt32();
+            for (int i = 0; i < count; ++i)
+                Cars.Add( RollingStock.Restore(inf, this));
+        }
 
         /// <summary>
         /// Someone is sending an event notification to all cars on this train.

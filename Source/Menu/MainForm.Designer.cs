@@ -51,6 +51,7 @@
             this.buttonOptions = new System.Windows.Forms.Button();
             this.buttonRouteDtls = new System.Windows.Forms.Button();
             this.buttonActivityDtls = new System.Windows.Forms.Button();
+            this.buttonResume = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -74,7 +75,7 @@
             // checkBoxFullScreen
             // 
             this.checkBoxFullScreen.AutoSize = true;
-            this.checkBoxFullScreen.Location = new System.Drawing.Point(489, 280);
+            this.checkBoxFullScreen.Location = new System.Drawing.Point(426, 280);
             this.checkBoxFullScreen.Name = "checkBoxFullScreen";
             this.checkBoxFullScreen.Size = new System.Drawing.Size(79, 17);
             this.checkBoxFullScreen.TabIndex = 1;
@@ -116,7 +117,7 @@
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.Gray;
-            this.label3.Location = new System.Drawing.Point(263, 271);
+            this.label3.Location = new System.Drawing.Point(237, 268);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(71, 29);
             this.label3.TabIndex = 4;
@@ -125,7 +126,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(200, 268);
+            this.pictureBox1.Location = new System.Drawing.Point(174, 265);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(67, 68);
             this.pictureBox1.TabIndex = 5;
@@ -136,7 +137,7 @@
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.Color.Gray;
-            this.label4.Location = new System.Drawing.Point(302, 296);
+            this.label4.Location = new System.Drawing.Point(276, 293);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(62, 29);
             this.label4.TabIndex = 4;
@@ -201,17 +202,17 @@
             // 
             // buttonJoin
             // 
-            this.buttonJoin.Location = new System.Drawing.Point(395, 306);
+            this.buttonJoin.Location = new System.Drawing.Point(347, 306);
             this.buttonJoin.Name = "buttonJoin";
-            this.buttonJoin.Size = new System.Drawing.Size(75, 22);
+            this.buttonJoin.Size = new System.Drawing.Size(60, 22);
             this.buttonJoin.TabIndex = 2;
-            this.buttonJoin.Text = "Join Remote";
+            this.buttonJoin.Text = "Join";
             this.buttonJoin.UseVisualStyleBackColor = true;
             // 
             // checkBoxHost
             // 
             this.checkBoxHost.AutoSize = true;
-            this.checkBoxHost.Location = new System.Drawing.Point(489, 311);
+            this.checkBoxHost.Location = new System.Drawing.Point(426, 311);
             this.checkBoxHost.Name = "checkBoxHost";
             this.checkBoxHost.Size = new System.Drawing.Size(88, 17);
             this.checkBoxHost.TabIndex = 1;
@@ -220,9 +221,9 @@
             // 
             // buttonOptions
             // 
-            this.buttonOptions.Location = new System.Drawing.Point(395, 276);
+            this.buttonOptions.Location = new System.Drawing.Point(347, 276);
             this.buttonOptions.Name = "buttonOptions";
-            this.buttonOptions.Size = new System.Drawing.Size(75, 23);
+            this.buttonOptions.Size = new System.Drawing.Size(60, 23);
             this.buttonOptions.TabIndex = 6;
             this.buttonOptions.Text = "Options";
             this.buttonOptions.UseVisualStyleBackColor = true;
@@ -248,6 +249,16 @@
             this.buttonActivityDtls.UseVisualStyleBackColor = true;
             this.buttonActivityDtls.Click += new System.EventHandler(this.buttonActivityDtls_Click_1);
             // 
+            // buttonResume
+            // 
+            this.buttonResume.Location = new System.Drawing.Point(508, 288);
+            this.buttonResume.Name = "buttonResume";
+            this.buttonResume.Size = new System.Drawing.Size(60, 23);
+            this.buttonResume.TabIndex = 6;
+            this.buttonResume.Text = "Resume";
+            this.buttonResume.UseVisualStyleBackColor = true;
+            this.buttonResume.Click += new System.EventHandler(this.buttonResume_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -255,6 +266,7 @@
             this.ClientSize = new System.Drawing.Size(664, 334);
             this.Controls.Add(this.buttonActivityDtls);
             this.Controls.Add(this.buttonRouteDtls);
+            this.Controls.Add(this.buttonResume);
             this.Controls.Add(this.buttonOptions);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label4);
@@ -308,5 +320,6 @@
         private System.Windows.Forms.Button buttonOptions;
         private System.Windows.Forms.Button buttonRouteDtls;
         private System.Windows.Forms.Button buttonActivityDtls;
+        private System.Windows.Forms.Button buttonResume;
     }
 }

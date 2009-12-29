@@ -15,6 +15,7 @@ namespace MSTS
     /// Summary description for TDBFile.
     /// </summary>
     /// 
+    /// 
 
     public class TDBFile
     {
@@ -100,6 +101,14 @@ namespace MSTS
             }
         }
         public TrackNode[] TrackNodes;
+
+        public int TrackNodesIndexOf( TrackNode targetTN )
+        {
+            for (int i = 0; i < TrackNodes.Length; ++i)
+                if (TrackNodes[i] == targetTN)
+                    return i;
+            throw new System.Exception("Program Bug: Can't Find Track Node");
+        }
     }
 
 
@@ -230,6 +239,15 @@ namespace MSTS
             }
         }
         public TrVectorSection[] TrVectorSections;
+
+        public int TrVectorSectionsIndexOf(TrVectorSection targetTVS)
+        {
+            for (int i = 0; i < TrVectorSections.Length; ++i)
+                if (TrVectorSections[i] == targetTVS)
+                    return i;
+            throw new System.Exception("Program Bug: Can't Find TVS");
+        }
+
     }
 
     public class TrVectorSection

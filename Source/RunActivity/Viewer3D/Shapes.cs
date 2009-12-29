@@ -261,7 +261,7 @@ namespace ORTS
 
     public class ShapePrimitive : RenderPrimitive
     {
-        public SceneryMaterial Material;
+        public Material Material;
 
         public VertexDeclaration VertexDeclaration;
         public VertexBuffer VertexBuffer;
@@ -430,7 +430,7 @@ namespace ORTS
                     {
                         texture texture = sFile.shape.textures[prim_state.tex_idxs[0]];
                         string imageName = sFile.shape.images[texture.iImage];
-                        shapePrimitive.Material = (SceneryMaterial)Materials.Load( Viewer.RenderProcess, 
+                        shapePrimitive.Material = Materials.Load( Viewer.RenderProcess, 
                             "SceneryMaterial", textureFolder + @"\" + imageName, options);
                     }
 

@@ -111,6 +111,12 @@ namespace MSTS
 
 	public class TrackSections: ArrayList
 	{
+        public new TrackSection this[int i]
+        {
+            get { return (TrackSection)base[i]; }
+            set { base[i] = value; }
+        }
+
 		public TrackSections( STFReader f )
 		{
 			f.VerifyStartOfBlock();

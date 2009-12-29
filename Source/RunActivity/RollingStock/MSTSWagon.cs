@@ -49,7 +49,6 @@ namespace ORTS
         public float Variable3 = 0.0f;
 
         // wag file data
-        public string WagFilePath;
         public string MainShapeFileName = null;
         public string FreightShapeFileName = null;
         public string InteriorShapeFileName = null; // passenger view shape file name
@@ -60,7 +59,7 @@ namespace ORTS
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
-        public MSTSWagon(string wagFilePath)
+        public MSTSWagon(string wagFilePath): base( wagFilePath )
         {
             if (CarManager.LoadedCars.ContainsKey(wagFilePath))
             {
@@ -79,7 +78,6 @@ namespace ORTS
         /// </summary>
         public virtual void InitializeFromWagFile(string wagFilePath)
         {
-            WagFilePath = wagFilePath;
             STFReader f = new STFReader(wagFilePath);
             while (!f.EOF())
             {
@@ -133,10 +131,8 @@ namespace ORTS
         /// 
         /// IMPORTANT NOTE:  everything you initialized in parse, must be initialized here
         /// </summary>
-        /// <param name="copy"></param>
         public virtual void InitializeFromCopy(MSTSWagon copy)
         {
-            WagFilePath = copy.WagFilePath;
             MainShapeFileName = copy.MainShapeFileName;
             FreightShapeFileName = copy.FreightShapeFileName;
             InteriorShapeFileName = copy.InteriorShapeFileName;
@@ -155,6 +151,30 @@ namespace ORTS
 
             BrakeSystem = new AirSinglePipe(this);  // TODO - select different types
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
+        }
+
+        /// <summary>
+        /// We are saving the game.  Save anything that we'll need to restore the 
+        /// status later.
+        /// </summary>
+        public override void Save(BinaryWriter outf)
+        {
+            outf.Write(Variable1);
+            outf.Write(Variable2);
+            outf.Write(Variable3);
+            base.Save(outf);
+        }
+
+        /// <summary>
+        /// We are restoring a saved game.  The TrainCar class has already
+        /// been initialized.   Restore the game state.
+        /// </summary>
+        public override void Restore(BinaryReader inf)
+        {
+            Variable1 = inf.ReadSingle();
+            Variable2 = inf.ReadSingle();
+            Variable3 = inf.ReadSingle();
+            base.Restore(inf);
         }
 
 

@@ -22,6 +22,7 @@ using System.Text;
 using MSTS;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
+using System.IO;
 
 namespace ORTS
 {
@@ -62,7 +63,6 @@ namespace ORTS
         /// need to parse the wag file multiple times.
         /// NOTE:  you must initialize all the same variables as you parsed above
         /// </summary>
-        /// <param name="copy"></param>
         public override void InitializeFromCopy(MSTSWagon copy)
         {
             // for example
@@ -70,6 +70,26 @@ namespace ORTS
             //CVFFileName = locoCopy.CVFFileName;
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
+        }
+
+        /// <summary>
+        /// We are saving the game.  Save anything that we'll need to restore the 
+        /// status later.
+        /// </summary>
+        public override void Save(BinaryWriter outf)
+        {
+            outf.Write(Pan);
+            base.Save(outf);
+        }
+
+        /// <summary>
+        /// We are restoring a saved game.  The TrainCar class has already
+        /// been initialized.   Restore the game state.
+        /// </summary>
+        public override void Restore(BinaryReader inf)
+        {
+            if (inf.ReadBoolean()) SignalEvent(EventID.PantographUp);
+            base.Restore(inf);
         }
 
         /// <summary>
@@ -160,6 +180,11 @@ namespace ORTS
                     }
                 }
             }
+
+            // Initialize position based on pan setting ,ie if attaching to a car with the pan up.
+            PanAnimationKey = car.Pan ? 1.0f : 0.0f;
+            foreach (int iMatrix in PantographPartIndexes)
+                TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
         }
 
         /// <summary>

@@ -95,12 +95,12 @@ namespace ORTS
         {
             string clockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
 
-            TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Version);
+            TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Revision);
             TextBuilder.Append("Time = "); TextBuilder.AppendLine(clockTimeString);
-            TextBuilder.Append("Direction = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerLocomotive.Direction.ToString());
-            TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerLocomotive.ThrottlePercent.ToString());
-            TextBuilder.Append("Brake = "); TextBuilder.AppendLine(Viewer.Simulator.PlayerLocomotive.BrakeSystem.GetStatus());
-            TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.Simulator.PlayerLocomotive.SpeedMpS)).ToString("F1"));
+            TextBuilder.Append("Direction = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.Direction.ToString());
+            TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.ThrottlePercent.ToString());
+            TextBuilder.Append("Brake = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.BrakeSystem.GetStatus());
+            TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.PlayerLocomotive.SpeedMpS)).ToString("F1"));
             TextBuilder.AppendLine();
             TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString());
         }
@@ -113,7 +113,7 @@ namespace ORTS
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
 
             TextBuilder.AppendLine();
-            TextBuilder.Append("Build = "); TextBuilder.AppendLine(Application.ProductVersion);
+            TextBuilder.Append("Build = "); TextBuilder.AppendLine(Program.Build);
             TextBuilder.Append("Memory = "); TextBuilder.AppendLine(memory.ToString());
             TextBuilder.Append("Jitter = "); TextBuilder.AppendLine(Viewer.RenderProcess.SmoothJitter.ToString("F4"));
             TextBuilder.Append("Primitives = "); TextBuilder.AppendLine(Viewer.RenderProcess.PrimitivesPerFrame.ToString());

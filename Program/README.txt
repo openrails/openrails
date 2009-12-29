@@ -22,6 +22,7 @@ CAMERA CONTROLS
 - 8 free camera
 ALT-ENTER toggles fullscreen on and off
 - Shift - Pause -  toggles pause on and off
+- F2 - saves game
 
 TRAIN CONTROLS
 W - forward

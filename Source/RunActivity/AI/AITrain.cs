@@ -45,6 +45,7 @@ namespace ORTS
             RearNode = Path.FirstNode;
         }
 
+
         /// <summary>
         /// Update function for a single AI train.
         /// Performs stop processing if a planned stop is made.

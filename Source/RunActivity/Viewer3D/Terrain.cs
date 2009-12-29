@@ -303,6 +303,10 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void Draw(GraphicsDevice graphicsDevice)
         {
+            // TODO ADD THESE LINES USING EXPERIMENTAL FAST MATERIALS
+            // graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
+            // graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
+
             graphicsDevice.Vertices[0].SetSource(this.PatchVertexBuffer, 0, PatchVertexStride);
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList,0, 0, 17 * 17, 0, 16 * 16 * 2 );
         }

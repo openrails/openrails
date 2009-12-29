@@ -18,6 +18,9 @@ namespace ORTS
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
         public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
         private static bool IsInitialized = false;
+        private static Material FastMaterial = null;
+
+        public static bool UseFast = false;   // WARNING- see comment in Terrain Draw() when using Fast Materials
 
         /// <summary>
         /// THREAD SAFETY:  XNA Content Manager is not thread safe and must only be called from the Game thread.
@@ -32,6 +35,7 @@ namespace ORTS
                                                         renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
             SkyMaterial = new SkyMaterial(renderProcess);
+            FastMaterial = new FastMaterial(renderProcess);
             IsInitialized = true;
         }
 
@@ -56,46 +60,60 @@ namespace ORTS
             if( textureName != null )
                 textureName = textureName.ToLower();
 
-            switch( materialName )
+            if (UseFast)
             {
-                case "SpriteBatch":
-                    return SpriteBatchMaterial;
-                case "Terrain":
-                    if (!TerrainMaterials.ContainsKey(textureName))
-                    {
-                        TerrainMaterial terrainMaterial = new TerrainMaterial(renderProcess, textureName);
-                        TerrainMaterials.Add(textureName, terrainMaterial);
-                        return terrainMaterial;
-                    }
-                    else
-                    {
-                        return TerrainMaterials[textureName];
-                    }
-                case "SceneryMaterial":
-                    string key;
-                    if (textureName != null)
-                        key = options.ToString() + ":" + textureName;
-                    else
-                        key = options.ToString() + ":";
-                    if (!SceneryMaterials.ContainsKey(key))  
-                    {
-                        SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName);
-                        sceneryMaterial.Options = options;
-                        SceneryMaterials.Add(key, sceneryMaterial);
-                        return sceneryMaterial;
-                    }
-                    else
-                    {
-                        return SceneryMaterials[key];
-                    }
-                case "WaterMaterial":
-                    if (WaterMaterial == null)
-                        WaterMaterial = new WaterMaterial(renderProcess, textureName);
-                    return WaterMaterial;
-                case "SkyMaterial":
-                    return SkyMaterial; 
-                default:
-                    return Load(renderProcess, "ScenerMaterial");
+                switch (materialName)
+                {
+                    case "SpriteBatch":
+                        return SpriteBatchMaterial;
+                    default:
+                        return FastMaterial;
+                }
+
+            }
+            else // quality materials
+            {
+                switch (materialName)
+                {
+                    case "SpriteBatch":
+                        return SpriteBatchMaterial;
+                    case "Terrain":
+                        if (!TerrainMaterials.ContainsKey(textureName))
+                        {
+                            TerrainMaterial terrainMaterial = new TerrainMaterial(renderProcess, textureName);
+                            TerrainMaterials.Add(textureName, terrainMaterial);
+                            return terrainMaterial;
+                        }
+                        else
+                        {
+                            return TerrainMaterials[textureName];
+                        }
+                    case "SceneryMaterial":
+                        string key;
+                        if (textureName != null)
+                            key = options.ToString() + ":" + textureName;
+                        else
+                            key = options.ToString() + ":";
+                        if (!SceneryMaterials.ContainsKey(key))
+                        {
+                            SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName);
+                            sceneryMaterial.Options = options;
+                            SceneryMaterials.Add(key, sceneryMaterial);
+                            return sceneryMaterial;
+                        }
+                        else
+                        {
+                            return SceneryMaterials[key];
+                        }
+                    case "WaterMaterial":
+                        if (WaterMaterial == null)
+                            WaterMaterial = new WaterMaterial(renderProcess, textureName);
+                        return WaterMaterial;
+                    case "SkyMaterial":
+                        return SkyMaterial;
+                    default:
+                        return Load(renderProcess, "ScenerMaterial");
+                }
             }
             
         }
@@ -459,4 +477,71 @@ namespace ORTS
         {
         }
     }
+
+    public class FastMaterial : Material
+    {
+        static BasicEffect basicEffect = null;
+        RenderProcess RenderProcess;
+
+        public FastMaterial(RenderProcess renderProcess)
+        {
+            RenderProcess = renderProcess;
+            if( basicEffect == null )
+            {
+                basicEffect = new BasicEffect(renderProcess.GraphicsDevice, null);
+                basicEffect.Alpha = 1.0f;
+                basicEffect.DiffuseColor = new Vector3(1.0f, 0.0f, 1.0f);
+                basicEffect.SpecularColor = new Vector3(0.25f, 0.25f, 0.25f);
+                basicEffect.SpecularPower = 5.0f;
+                basicEffect.AmbientLightColor = new Vector3(0.75f, 0.75f, 0.75f);
+
+                basicEffect.DirectionalLight0.Enabled = true;
+                basicEffect.DirectionalLight0.DiffuseColor = Vector3.One;
+                basicEffect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(1.0f, -1.0f, -1.0f));
+                basicEffect.DirectionalLight0.SpecularColor = Vector3.One;
+
+                basicEffect.DirectionalLight1.Enabled = true;
+                basicEffect.DirectionalLight1.DiffuseColor = new Vector3(0.5f, 0.5f, 0.5f);
+                basicEffect.DirectionalLight1.Direction = Vector3.Normalize(new Vector3(-1.0f, -1.0f, 1.0f));
+                basicEffect.DirectionalLight1.SpecularColor = new Vector3(0.5f, 0.5f, 0.5f);
+
+                basicEffect.LightingEnabled = true;
+            }
+        }
+
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
+                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            basicEffect.World = XNAWorldMatrix;
+            basicEffect.View = XNAViewMatrix;
+            basicEffect.Projection = XNAProjectionMatrix;
+
+            if (previousMaterial != this)
+            {
+                RenderProcess.RenderStateChangesCount++;
+
+                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+                graphicsDevice.RenderState.DepthBias = 0f;
+                //Materials.SetupFog(graphicsDevice);
+
+                graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
+            }
+
+
+            basicEffect.Begin();
+            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            basicEffect.End();
+        }
+
+        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        {
+        }
+    }
+    
 }

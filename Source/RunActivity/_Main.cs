@@ -33,71 +33,146 @@ namespace ORTS
     static class Program
     {
         public static string ActivityPath;
-        public static string Version = Application.ProductVersion;
-        public static string RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+        public static string Revision;
+        public static string Build;
+        public static string RegistryKey;
+        public static string UserDataFolder;
         public static double RealTime = 0;  // tracks the real time for the frame we are currently processing
-                                                   // only update process may 
-
         public static Simulator Simulator; 
+        private static Viewer3D Viewer;
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         static void Main(string[] args)
         {
-            Version = SVNRevision();
+            SetBuildRevision();
 
-            // TODO, read warnings on/off from the registry
-            bool WarningsOn = true;
+            UserDataFolder = Path.GetDirectoryName( Path.GetDirectoryName(Application.UserAppDataPath));
 
-            if (WarningsOn)
-            {
-                string warningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
-                File.Delete(warningLogFileName);
-                ErrorLogger errorLogger = new ErrorLogger(warningLogFileName);
-                TraceListener traceListener = new System.Diagnostics.TextWriterTraceListener(errorLogger);
-                System.Diagnostics.Debug.Listeners.Insert(0, traceListener);
-                System.Diagnostics.Trace.Listeners.Insert(0, traceListener);
-                Console.SetError(errorLogger);
-                Console.SetOut(new Logger(warningLogFileName));
-                Console.WriteLine("ORTS V " + Version);
-                Console.WriteLine();
-                Console.WriteLine("Build = " + Application.ProductVersion);
-                Console.WriteLine();
-            }
+            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
 
-            if (args.Length == 0)
-            {
-                Console.WriteLine( "Missing activity file name\r\n   ie RunActivity \"c:\\program files\\microsoft games\\train simulator\\routes\\usa1\\activites\\xxx.act\"\r\n\r\nOr launch the OpenRails program and select from the menu." );
-                Console.ReadKey();
-                return;
-            }
+            if (IsWarningsOn()) EnableLogging();
 
+            ValidateArgs(args);
+
+            if (args[0] == "-resume")
+
+                Resume();
+
+            else
+
+                Start(args[0]);
+
+        }
+
+
+        public static void Start(string parameter)
+        {
             try
             {
-                if (args[0] == "-random")
+                if (parameter == "-random")
                     ActivityPath = Testing.GetRandomActivity();
                 else
-                    ActivityPath = args[0];
-                Console.WriteLine("Activity = " + ActivityPath);
+                    ActivityPath = parameter;
+
+                Console.WriteLine("Starting Activity = " + ActivityPath);
                 Console.WriteLine();
                 Console.WriteLine("------------------------------------------------");
 
-                Program.Simulator = new Simulator(ActivityPath);
-                Viewer3D viewer = new Viewer3D(Simulator);
-                viewer.Run();
-
+                Simulator = new Simulator(ActivityPath);
+                TrainCar playerLoco = Simulator.InitialPlayerLocomotive();
+                Viewer = new Viewer3D(Simulator, playerLoco);
+                Viewer.Run();
             }
             catch (System.Exception error)
             {
                 Console.Error.WriteLine(error.Message);
                 MessageBox.Show(error.Message);
             }
-
         }
 
 
-        public static string SVNRevision()
+        public static void Save()
+        {
+            try
+            {
+                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
+                {
+                    outf.Write(ActivityPath);
+                    Simulator.Save(outf);
+                    outf.Write(Simulator.Trains.IndexOf(Viewer.PlayerTrain));
+                    outf.Write(Viewer.PlayerTrain.Cars.IndexOf(Viewer.PlayerLocomotive));
+                    Console.WriteLine("\nSaved");
+                }
+            }
+            catch (System.Exception error)
+            {
+                Console.Error.WriteLine("While Saving: " + error.Message);
+            }
+        }
+
+        public static void Resume()
+        {
+            try
+            {
+                using( BinaryReader inf = new BinaryReader( new FileStream( UserDataFolder + "\\SAVE.BIN", FileMode.Open, FileAccess.Read )) )
+                {
+                    ActivityPath = inf.ReadString();
+
+                    Console.WriteLine("Restoring Activity = " + ActivityPath);
+                    Console.WriteLine();
+                    Console.WriteLine("------------------------------------------------");
+
+                    Simulator = new Simulator(ActivityPath);
+                    Simulator.Restore(inf);
+                    Train playerTrain = Simulator.Trains[inf.ReadInt32()];
+                    TrainCar playerLoco = playerTrain.Cars[inf.ReadInt32()];
+                    Viewer = new Viewer3D(Simulator, playerLoco);
+                }
+                Viewer.Run();
+            }
+            catch (System.Exception error)
+            {
+                Console.Error.WriteLine("While restoring: " + error.Message);
+            }
+        }
+
+
+        public static void ValidateArgs(string[] args)
+        {
+            if (args.Length == 0)
+            {
+                Console.WriteLine("Missing activity file name\r\n   ie RunActivity \"c:\\program files\\microsoft games\\train simulator\\routes\\usa1\\activites\\xxx.act\"\r\n\r\nOr launch the OpenRails program and select from the menu.");
+                Console.ReadKey();
+                return;
+            }
+        }
+
+        public static bool IsWarningsOn()
+        {
+            // TODO Read from Registry
+            return true;
+        }
+
+
+        public static void EnableLogging()
+        {
+            string warningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
+            File.Delete(warningLogFileName);
+            ErrorLogger errorLogger = new ErrorLogger(warningLogFileName);
+            TraceListener traceListener = new System.Diagnostics.TextWriterTraceListener(errorLogger);
+            System.Diagnostics.Debug.Listeners.Insert(0, traceListener);
+            System.Diagnostics.Trace.Listeners.Insert(0, traceListener);
+            Console.SetError(errorLogger);
+            Console.SetOut(new Logger(warningLogFileName));
+            Console.WriteLine("SVN V = " + Revision);
+            Console.WriteLine("BUILD = " + Build);
+            Console.WriteLine();
+        }
+
+
+        public static void SetBuildRevision()
         {
             try
             {
@@ -106,43 +181,19 @@ namespace ORTS
                     string line = f.ReadLine();
                     string rev = line.Substring(11);
                     int i = rev.IndexOf('$');
-                    return rev.Substring(0, i);
+                    Revision = rev.Substring(0, i).Trim();
+
+                    Build = Application.ProductVersion;  // from assembly
+                    Build = Build + " " + f.ReadLine();  // date
+                    Build = Build + " " + f.ReadLine(); // time
                 }
             }
             catch
             {
-                return "XX";
+                Revision = "";
+                Build = Application.ProductVersion;
             }
         }
-
-        // TODO REMOVE EXPERIMENT RUNNING IN NEW PROCESS
-        class ViewerProcess
-        {
-            public ViewerProcess()
-            {
-                Thread thread = new Thread(Run);
-                thread.Priority = ThreadPriority.Highest;
-                thread.Start();
-                while (thread.ThreadState == System.Threading.ThreadState.Running)
-                    Thread.Sleep(100);
-            }
-
-            public void Run()
-            {
-                try
-                {
-                    Program.Simulator = new Simulator(ActivityPath);
-                    Viewer3D viewer = new Viewer3D(Simulator);
-                    viewer.Run();
-                }
-                catch (System.Exception error)
-                {
-                    Console.Error.WriteLine(error.Message);
-                    MessageBox.Show(error.Message);
-                }
-            }
-        }
-
 
         class Testing
         {

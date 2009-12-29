@@ -25,37 +25,50 @@ namespace ORTS
                     string dllPath = ORTSPaths.FindTrainCarPlugin(wagFolder, wagFile.OpenRails.DLL);
                     Assembly customDLL = Assembly.LoadFrom(dllPath);
                     object[] args = new object[] { wagFilePath };
-                    car = (TrainCar)customDLL.CreateInstance("ORTS.CustomCar", true, BindingFlags.CreateInstance, null, args,
-    null, null);
+                    car = (TrainCar)customDLL.CreateInstance("ORTS.CustomCar", true, BindingFlags.CreateInstance, null, args, null, null);
                     return car;
                 }
                 catch (System.Exception error)
                 {
                     Console.Error.WriteLine(error.Message);
+                    // on error, fall through and try loading without the custom dll
                 }
             }
             if (!wagFile.IsEngine)
-            {   // its an ordinary MSTS wagon
+            {   
+                // its an ordinary MSTS wagon
                 car = new MSTSWagon(wagFilePath);
             }
             else
-            {   // its an ordinary MSTS engine of some type.
+            {   
+                // its an ordinary MSTS engine of some type.
                 if (wagFile.Engine.Type == null)
                     throw new System.Exception(wagFilePath + "\r\n\r\nEngine type missing");
 
                 switch (wagFile.Engine.Type.ToLower())
                 {
                         // TODO complete parsing of proper car types
-                    case "electric": //car = new ElectricLocomotive(wagFile); break;
-                        car = new MSTSElectricLocomotive(wagFilePath);
-                        break;
-                    case "steam": //car = new SteamLocomotive(wagFile); break;
-                    case "diesel": //car = new DieselLocomotive(wagFile); break;
-                        car = new MSTSLocomotive(wagFilePath);
-                        break;
+                    case "electric": car = new MSTSElectricLocomotive(wagFilePath); break;
+                    case "steam": car = new MSTSSteamLocomotive(wagFilePath); break;
+                    case "diesel": car = new MSTSDieselLocomotive(wagFilePath); break;
                     default: throw new System.Exception(wagFilePath + "\r\n\r\nUnknown engine type: " + wagFile.Engine.Type);
                 }
             }
+            return car;
+        }
+
+        public static void Save(BinaryWriter outf, TrainCar car)
+        {
+            MSTSWagon wagon = (MSTSWagon)car;   // extend this when we introduce other types of rolling stock
+            outf.Write(wagon.WagFilePath);
+            wagon.Save(outf);
+        }
+
+        public static TrainCar Restore(BinaryReader inf, Train train)
+        {
+            TrainCar car = Load(inf.ReadString());
+            car.Train = train;
+            car.Restore(inf);
             return car;
         }
 

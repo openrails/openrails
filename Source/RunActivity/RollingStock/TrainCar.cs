@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using System.IO;
 
 namespace ORTS
 {
@@ -13,8 +14,10 @@ namespace ORTS
         public Vector3 RotationLimit;
     }
 
-    public abstract class TrainCar
+    public class TrainCar
     {
+        public string WagFilePath;
+
         // some properties of this car
         public float Length = 40;       // derived classes must overwrite these defaults
         public float MassKG = 10000;
@@ -22,8 +25,8 @@ namespace ORTS
         //public bool HasCabView = false;
 
         // instance variables set by train train physics when it creates the traincar
-        public bool Flipped = false; // the car is reversed in the consist
         public Train Train = null;  // the car is connected to this train
+        public bool Flipped = false; // the car is reversed in the consist
 
         // status of the traincar - set by the train physics after it call calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
@@ -47,15 +50,36 @@ namespace ORTS
         public List<ViewPoint> PassengerViewpoints = new List<ViewPoint>();
 
         // Load 3D geometry into this 3D viewer and return it as a TrainCarViewer
-        public abstract TrainCarViewer GetViewer(Viewer3D viewer);
+        public virtual TrainCarViewer GetViewer(Viewer3D viewer) { return null; }
 
         // called when its time to update the MotiveForce and FrictionForce
-        public abstract void Update(float elapsedClockSeconds);
+        public virtual void Update(float elapsedClockSeconds) { }
 
         // Notifications from others of key outside events, ie coupling etc, pantograph up etc
-        public abstract void SignalEvent(EventID eventID);
+        public virtual void SignalEvent(EventID eventID) { }
 
+        public TrainCar(string wagFile)
+        {
+            WagFilePath = wagFile;
+        }
 
+        // Game save
+        public virtual void Save(BinaryWriter outf)
+        {
+            outf.Write(Flipped);
+            BrakeSystem.Save(outf);
+            outf.Write(MotiveForceN);
+            outf.Write(FrictionForceN);
+        }
+
+        // Game restore
+        public virtual void Restore(BinaryReader inf)
+        {
+            Flipped = inf.ReadBoolean();
+            BrakeSystem.Restore(inf);
+            MotiveForceN = inf.ReadSingle();
+            FrictionForceN = inf.ReadSingle();
+        }
     }
 
 
