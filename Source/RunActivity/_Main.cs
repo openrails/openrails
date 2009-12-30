@@ -81,8 +81,8 @@ namespace ORTS
                 Console.WriteLine("------------------------------------------------");
 
                 Simulator = new Simulator(ActivityPath);
-                TrainCar playerLoco = Simulator.InitialPlayerLocomotive();
-                Viewer = new Viewer3D(Simulator, playerLoco);
+                Simulator.Start();
+                Viewer = new Viewer3D(Simulator);
                 Viewer.Run();
             }
             catch (System.Exception error)
@@ -101,8 +101,7 @@ namespace ORTS
                 {
                     outf.Write(ActivityPath);
                     Simulator.Save(outf);
-                    outf.Write(Simulator.Trains.IndexOf(Viewer.PlayerTrain));
-                    outf.Write(Viewer.PlayerTrain.Cars.IndexOf(Viewer.PlayerLocomotive));
+                    Viewer.Save(outf);
                     Console.WriteLine("\nSaved");
                 }
             }
@@ -126,9 +125,8 @@ namespace ORTS
 
                     Simulator = new Simulator(ActivityPath);
                     Simulator.Restore(inf);
-                    Train playerTrain = Simulator.Trains[inf.ReadInt32()];
-                    TrainCar playerLoco = playerTrain.Cars[inf.ReadInt32()];
-                    Viewer = new Viewer3D(Simulator, playerLoco);
+                    Viewer = new Viewer3D(Simulator);
+                    Viewer.Restore(inf);
                 }
                 Viewer.Run();
             }

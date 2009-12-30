@@ -99,8 +99,6 @@ namespace ORTS
                 }
             }
 
-
-
             IsDriveable = true;
         }
 
@@ -128,6 +126,8 @@ namespace ORTS
             CabSoundFileName = locoCopy.CabSoundFileName;
             CVFFileName = locoCopy.CVFFileName;
             CVFFile = locoCopy.CVFFile;
+
+            IsDriveable = copy.IsDriveable;
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }

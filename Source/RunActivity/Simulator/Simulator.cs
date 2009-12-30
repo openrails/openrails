@@ -65,40 +65,6 @@ namespace ORTS
 
         public Simulator(string activityPath)
         {
-            Init(activityPath);
-
-            StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
-            TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
-            ClockTime = StartTime.TotalSeconds;
-
-            Console.Write(" CON");
-            InitializePlayerTrain();
-            InitializeStaticConsists();
-
-            Signals = new Signals(this);
-            AI = new AI(this);
-
-
-        }
-
-        public void Restore(BinaryReader inf)
-        {
-            ClockTime = inf.ReadDouble();
-            RestoreSwitchSettings(inf);
-            RestoreTrains(inf);
-            // TODO restore signals and ai
-        }
-
-        public void Save(BinaryWriter outf)
-        {
-            outf.Write(ClockTime);
-            SaveSwitchSettings(outf);
-            SaveTrains(outf);
-            // TODO save signals and ai
-        }
-
-        public void Init(string activityPath)
-        {
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             RouteName = Path.GetFileName(RoutePath);
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
@@ -119,11 +85,49 @@ namespace ORTS
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
 
-            AlignSwitchesToDefault();  // ie straight through routing
-
             Console.Write(" ACT");
             Activity = new ACTFile(activityPath);
+        }
 
+        // restart the simulator the the beginning of the activity
+        public void Start()
+        {
+            // Clock time
+            StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
+            TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
+            ClockTime = StartTime.TotalSeconds;
+            // Switches
+            AlignSwitchesToDefault();  // ie straight through routing
+            // Trains
+            Console.Write(" CON");
+            Trains.Clear();
+            InitializePlayerTrain();
+            InitializeStaticConsists();
+
+            Signals = new Signals(this);
+            AI = new AI(this);
+        }
+
+        // resume game after a save
+        public void Restore(BinaryReader inf)
+        {
+            ClockTime = inf.ReadDouble();
+            RestoreSwitchSettings(inf);
+            RestoreTrains(inf);
+            Signals = new Signals(this, inf);
+            // TODO restore AI
+            // AI = new AI(this, inf);
+        }
+
+        // save game state so we can resume later
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(ClockTime);
+            SaveSwitchSettings(outf);
+            SaveTrains(outf);
+            Signals.Save(outf);
+            // TODO save AI
+            // AI.Save(outf);
         }
 
 
@@ -178,8 +182,8 @@ namespace ORTS
                 CheckForCoupling(PlayerTrain);
             }
 
-            Signals.Update(elapsedClockSeconds);
-            AI.Update( elapsedClockSeconds );
+            if( Signals != null ) Signals.Update(elapsedClockSeconds);
+            if( AI != null ) AI.Update( elapsedClockSeconds );
 
         }
 
@@ -497,7 +501,19 @@ namespace ORTS
         {
             outf.Write(Trains.Count);
             foreach (Train train in Trains)
+            {
+                if (train.GetType() == typeof(Train))
+                    outf.Write(0);
+                else if (train.GetType() == typeof(AITrain))
+                    outf.Write(1);
+                else
+                {
+                    Console.Error.WriteLine( "Don't know how to save train type: " + train.GetType().ToString() );
+                    System.Diagnostics.Debug.Assert( false );  // in debug mode, halt on this error
+                    outf.Write(1);  // for release version, we'll try to press on anyway
+                }
                 train.Save(outf);
+            }
         }
 
         private void RestoreTrains(BinaryReader inf)
@@ -505,7 +521,19 @@ namespace ORTS
             int count = inf.ReadInt32();
             Trains.Clear();
             for (int i = 0; i < count; ++i)
-                Trains.Add(new Train(inf));
+            {
+                int trainType = inf.ReadInt32();
+                if (trainType == 0)
+                    Trains.Add(new Train(inf));
+                else if (trainType == 1)
+                    Trains.Add(new AITrain(inf));
+                else
+                {
+                    Console.Error.WriteLine("Don't know how to restore train type: " + trainType.ToString());
+                    System.Diagnostics.Debug.Assert(false);  // in debug mode, halt on this error
+                    Trains.Add(new Train(inf)); // for release version, we'll try to press on anyway
+                }
+            }
         }
 
         /// <summary>

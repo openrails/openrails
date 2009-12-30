@@ -71,7 +71,7 @@ namespace ORTS
         {
         }
 
-        // restore
+        // restore game state
         public Train(BinaryReader inf)
         {
             RestoreCars( inf );
@@ -87,9 +87,9 @@ namespace ORTS
 
         }
 
-        public void Save(BinaryWriter outf)
+        // save game state
+        public virtual void Save(BinaryWriter outf)
         {
-            // TODO
             SaveCars( outf );
             outf.Write(SpeedMpS);
             outf.Write((int)MUDirection);

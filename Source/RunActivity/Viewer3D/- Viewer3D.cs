@@ -84,11 +84,9 @@ namespace ORTS
         /// and the graphics device is not ready to accept content.
         /// </summary>
         /// <param name="simulator"></param>
-        public Viewer3D(Simulator simulator, TrainCar initialPlayerLocomotive )
+        public Viewer3D(Simulator simulator )
         {
             Simulator = simulator;
-
-            PlayerLocomotive = initialPlayerLocomotive;
 
             UserSetup();
 
@@ -100,6 +98,24 @@ namespace ORTS
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
             Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
             SetupBackgroundProcesses( );
+        }
+
+        /// <summary>
+        /// Save game
+        /// </summary>
+        public void Save( BinaryWriter outf)
+        {
+            outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
+            outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
+        }
+
+        /// <summary>
+        /// Restore after game resumes
+        /// </summary>
+        public void Restore( BinaryReader inf )
+        {
+            Train playerTrain = Simulator.Trains[inf.ReadInt32()];
+            PlayerLocomotive = playerTrain.Cars[inf.ReadInt32()];
         }
 
         public void Run()
@@ -163,6 +179,9 @@ namespace ORTS
         public void Initialize(RenderProcess renderProcess)
         {
             GraphicsDevice = renderProcess.GraphicsDevice;
+
+            PlayerLocomotive = Simulator.InitialPlayerLocomotive();
+
             ISound ambientSound = SoundEngine.Play2D(Simulator.BasePath + @"\SOUND\gen_urb1.wav", true);  // TODO temp code
             ambientSound.Volume = 0.2f;
 
@@ -233,8 +252,8 @@ namespace ORTS
             if (UserInput.IsKeyDown(Keys.Escape)) {  Stop(); return; }
             if (UserInput.IsAltPressed(Keys.Enter)) { ToggleFullscreen(); }
             if (UserInput.IsPressed(Keys.Pause) ) Simulator.Paused = !Simulator.Paused;
-            if (UserInput.IsPressed(Keys.PageUp)) Simulator.GameSpeed = Simulator.GameSpeed * 1.5f;
-            if (UserInput.IsPressed(Keys.PageDown)) { Simulator.GameSpeed = Simulator.GameSpeed / 1.5f; if (Simulator.GameSpeed < 1) Simulator.GameSpeed = 1; }
+            if (UserInput.IsPressed(Keys.PageUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
+            if (UserInput.IsPressed(Keys.PageDown)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
 
             // Change view point - cab, passenger, outside, etc

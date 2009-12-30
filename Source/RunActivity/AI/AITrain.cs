@@ -46,6 +46,21 @@ namespace ORTS
         }
 
 
+        // restore game state
+        public AITrain(BinaryReader inf): base( inf )
+        {
+            // add your code here
+        }
+
+        // save game state
+        public override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            // add your code here
+
+        }
+
+
         /// <summary>
         /// Update function for a single AI train.
         /// Performs stop processing if a planned stop is made.
