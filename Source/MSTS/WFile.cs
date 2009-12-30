@@ -57,13 +57,14 @@ namespace MSTS
                         case TokenID.CollideObject:
                         case TokenID.Static: Add(new StaticObj(subBlock, currentWatermark)); break;
                         case TokenID.TrackObj: Add(new TrackObj(subBlock, currentWatermark)); break;
-                        case TokenID.CarSpawner: subBlock.Skip(); break; // TODO parse this
-                        case TokenID.Siding: subBlock.Skip(); break; // TODO parse this
-                        case TokenID.Forest: subBlock.Skip(); break; // TODO parse this
-                        case TokenID.LevelCr: subBlock.Skip(); break; // TODO parse this
-                        case TokenID.Dyntrack: subBlock.Skip(); break; // TODO parse this
-                        case TokenID.Transfer: subBlock.Skip(); break; // TODO parse this
-                        case TokenID.Gantry: subBlock.Skip(); break;   // TODO parse this
+                        case TokenID.CarSpawner: subBlock.Skip(); break; // TODO
+                        case TokenID.Siding: subBlock.Skip(); break; // TODO
+                        case TokenID.Forest: subBlock.Skip(); break; // TODO
+                        case TokenID.LevelCr: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                        case TokenID.Dyntrack: subBlock.Skip(); break; // TODO
+                        case TokenID.Transfer: subBlock.Skip(); break; // TODO
+                        case TokenID.Gantry: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                        case TokenID.Pickup: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Tr_Watermark: currentWatermark = subBlock.ReadInt(); break;
                         default: subBlock.Skip(); break;
                     }

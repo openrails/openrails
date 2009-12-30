@@ -56,7 +56,11 @@ namespace ORTS
 
             ValidateArgs(args);
 
-            if (args[0] == "-resume")
+            if (args[0] == "-runtest")
+
+                Testing.TestAll();  
+
+            else if (args[0] == "-resume")
 
                 Resume();
 
@@ -218,6 +222,42 @@ namespace ORTS
                 int i = Random.Next(activityFileNames.Count);
                 return activityFileNames[i];
             }
+
+            /// <summary>
+            /// Test all files in all MSTS folders 
+            /// used by the development team for adhoc testing - customize this for whatever you need
+            /// </summary>
+            public static void TestAll()
+            {
+                List<string> FileNames = new List<string>();
+
+                foreach (string baseFolder in BaseFolders)
+                {
+                    string[] routeFolders = Directory.GetDirectories(baseFolder + @"\routes");
+                    foreach (string routeFolder in routeFolders)
+                    {
+                        string[] filenamesinfolder = Directory.GetFiles(routeFolder + @"\world", "*.w");
+                        foreach (string filenameinfolder in filenamesinfolder)
+                        {
+                            FileNames.Add(filenameinfolder);
+                        }
+                    }
+                }
+
+                // RUN TEST HERE
+                foreach( string filename in FileNames )
+                    try
+                    {
+                        WFile file = new WFile(filename);
+                    }
+                    catch (System.Exception error)
+                    {
+                        Console.Error.WriteLine("While testing " + filename + "\r\n   " + error.Message );
+                    }
+
+                Console.WriteLine("DONE");
+                Console.ReadKey();
+            } // TestAll
         }
 
     }// Program

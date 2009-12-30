@@ -1678,7 +1678,8 @@ namespace MSTS
 
         DEMPath,
 
-        // others  TODO determine proper ID from a compressed world file
+        // these assigned ID's are arbitrary - I haven't seen them in a compressed MSTS W file yet
+        // TODO determine proper ID from a compressed world file
         Forest,
         CarSpawner, 
         Siding, 
@@ -1686,6 +1687,7 @@ namespace MSTS
         Dyntrack,
         Transfer,
         Gantry,
+        Pickup,   
 
         Wagon,
         Engine
