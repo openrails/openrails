@@ -30,7 +30,7 @@ namespace ORTS
 
         /// THREAD SAFETY WARNING -
         public Dictionary<TrainCar, TrainCarViewer> LoadedCars = new Dictionary<TrainCar, TrainCarViewer>();   // is not written to by LoaderProcess
-        public Dictionary<TrainCar, TrainCarViewer> UpdatedLoadedCars = new Dictionary<TrainCar, TrainCarViewer>();  // is not read by UpdaterProcess
+        public Dictionary<TrainCar, TrainCarViewer> UpdatedLoadedCars = null;  // is not read by UpdaterProcess
         public List<TrainCar> ViewableCars = new List<TrainCar>();
 
 
@@ -61,9 +61,16 @@ namespace ORTS
         public void LoadPrep()
         {
             // fetch the list of carviewers that we generated with the last Load
-            Swap(ref LoadedCars, ref UpdatedLoadedCars);
-
-            // build a list of cars in viewing range
+            if (UpdatedLoadedCars == null)
+            {
+                // first pass, we don't have any yet
+                UpdatedLoadedCars = new Dictionary<TrainCar, TrainCarViewer>(); 
+            }
+            else
+            {
+                Swap(ref LoadedCars, ref UpdatedLoadedCars);
+            }
+            // build a list of cars in viewing range for loader to ensure are loaded
             float removeDistance = Viewer.ViewingDistance * 1.5f;  
             ViewableCars.Clear();
             ViewableCars.Add(Viewer.PlayerLocomotiveViewer.Car);  // lets make sure its included even if its out of viewing range

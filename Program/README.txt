@@ -21,7 +21,8 @@ CAMERA CONTROLS
 - 6 brakeman view - home and end move to front and back of train
 - 8 free camera
 ALT-ENTER toggles fullscreen on and off
-- Shift - Pause -  toggles pause on and off
+- Pause -  toggles pause on and off
+- PgUp, PgDn - adjusts game speed
 - F2 - saves game
 
 TRAIN CONTROLS

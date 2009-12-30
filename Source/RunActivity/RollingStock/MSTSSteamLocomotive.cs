@@ -111,6 +111,25 @@ namespace ORTS
         {
             base.Update(elapsedClockSeconds);
             Variable1 = Math.Abs(SpeedMpS);   // Steam loco's seem to need this.
+            Variable2 = 50;   // not sure what this ones for ie in an SMS file
+
+            /* VolumeCurve (				
+					Variable2Controlled			
+					CurvePoints ( 12			
+						0		0
+						0.2		0
+						5		1
+						20		1
+						30		1
+						40		1
+						50		1
+						60		1
+						70		1
+						80		1
+						90		1
+						100		1
+					)			
+					Granularity (0.05)		*/
         }
 
         /// <summary>

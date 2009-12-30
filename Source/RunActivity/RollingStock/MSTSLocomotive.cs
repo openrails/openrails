@@ -187,7 +187,7 @@ namespace ORTS
             MotiveForceN = ( Direction == Direction.Forward ? 1 : -1) * maxForceN * (1f - balanceRatio);
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
-            Variable2 = MotiveForceN / 300e3f;   // force generated
+            Variable2 = Math.Abs(MotiveForceN) / 300e3f;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
 
             base.Update(elapsedClockSeconds);

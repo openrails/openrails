@@ -232,7 +232,9 @@ namespace ORTS
             // Check for game control keys
             if (UserInput.IsKeyDown(Keys.Escape)) {  Stop(); return; }
             if (UserInput.IsAltPressed(Keys.Enter)) { ToggleFullscreen(); }
-            if (UserInput.IsPressed(Keys.Pause) && UserInput.IsShiftDown()) Simulator.Paused = !Simulator.Paused;
+            if (UserInput.IsPressed(Keys.Pause) ) Simulator.Paused = !Simulator.Paused;
+            if (UserInput.IsPressed(Keys.PageUp)) Simulator.GameSpeed = Simulator.GameSpeed * 1.5f;
+            if (UserInput.IsPressed(Keys.PageDown)) { Simulator.GameSpeed = Simulator.GameSpeed / 1.5f; if (Simulator.GameSpeed < 1) Simulator.GameSpeed = 1; }
             if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
 
             // Change view point - cab, passenger, outside, etc
