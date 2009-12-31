@@ -620,30 +620,33 @@ namespace ORTS
 
             LodControl lodControl = LodControls[0];
 
-            foreach (DistanceLevel distanceLevel in lodControl.DistanceLevels)
+            if( Viewer.Camera.InFOV( mstsLocation, lodControl.DistanceLevels[0].ViewSphereRadius ))
             {
-                if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewingDistance))
+                foreach (DistanceLevel distanceLevel in lodControl.DistanceLevels)
                 {
-                    foreach (SubObject subObject in distanceLevel.SubObjects)
+                    if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewingDistance))
                     {
-                        // for each primitive
-                        for (int iPrim = 0; iPrim < subObject.ShapePrimitives.Length; ++iPrim)
+                        foreach (SubObject subObject in distanceLevel.SubObjects)
                         {
-                            ShapePrimitive shapePrimitive = subObject.ShapePrimitives[iPrim];
-                            Matrix xnaMatrix = Matrix.Identity;
-                            int iNode = shapePrimitive.PrimMatrixIndex;
-                            while (iNode != -1)
+                            // for each primitive
+                            for (int iPrim = 0; iPrim < subObject.ShapePrimitives.Length; ++iPrim)
                             {
-                                xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
-                                iNode = shapePrimitive.Hierarchy[iNode];
-                            }
-                            xnaMatrix *= xnaDTileTranslation;
+                                ShapePrimitive shapePrimitive = subObject.ShapePrimitives[iPrim];
+                                Matrix xnaMatrix = Matrix.Identity;
+                                int iNode = shapePrimitive.PrimMatrixIndex;
+                                while (iNode != -1)
+                                {
+                                    xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
+                                    iNode = shapePrimitive.Hierarchy[iNode];
+                                }
+                                xnaMatrix *= xnaDTileTranslation;
 
-                            frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix);
-                        } // for each primitive
+                                frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix);
+                            } // for each primitive
+                        }
+
+                        break; // only draw one distance level.
                     }
-
-                    break; // only draw one distance level.
                 }
             }
         }// PrepareFrame()
