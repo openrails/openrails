@@ -101,9 +101,9 @@ namespace ORTS
         /// <param name="graphicsDevice"></param>
         public void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.Clear(Color.CornflowerBlue);
+            graphicsDevice.Clear(new Color(189, 189, 189, 255));  // the fog color
             graphicsDevice.RenderState.DepthBias = 0f;
-            
+
             // Render each material on the specified primitive
             // To minimize renderstate changes, the material is
             // told what material was used previously so it can
@@ -112,7 +112,7 @@ namespace ORTS
             Material prevMaterial = null;
 
             for (int i = 0; i < RenderItemCount; ++i)  // TODO should I keep this experiment tries to reduce image changes
-                RenderItemsDone[i] = false; 
+                RenderItemsDone[i] = false;
 
             for (int i = 0; i < RenderItemCount; ++i)
             {
@@ -126,8 +126,8 @@ namespace ORTS
                     RenderItemsDone[i] = true;
 
                     // do any more now that have the same image
-                    for (int j = i+1; j < RenderItemCount; ++j)
-                        if (!RenderItemsDone[j] &&  RenderItems[j].Material == currentMaterial )
+                    for (int j = i + 1; j < RenderItemCount; ++j)
+                        if (!RenderItemsDone[j] && RenderItems[j].Material == currentMaterial)
                         {
                             currentMaterial.Render(graphicsDevice, currentMaterial, RenderItems[j].RenderPrimitive,
                                     ref RenderItems[j].XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
@@ -139,8 +139,9 @@ namespace ORTS
                 prevMaterial.ResetState(graphicsDevice, null);
         }
 
+
         /// <summary>
-        /// Executed in the RenderProcess thread
+        /// Executed in the RenderProcess thread - simple draw
         /// </summary>
         /// <param name="graphicsDevice"></param>
         public void DrawSimple(GraphicsDevice graphicsDevice)

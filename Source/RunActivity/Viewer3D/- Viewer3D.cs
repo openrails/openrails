@@ -166,8 +166,8 @@ namespace ORTS
             GDM.PreferredBackBufferHeight = 768; // screen.Bounds.Height; // 1050;
             GDM.IsFullScreen = false;
             GDM.PreferMultiSampling = true;
-            GDM.PreferredBackBufferFormat = SurfaceFormat.Bgr32;
-
+            //GDM.PreferredBackBufferFormat = SurfaceFormat.Bgr32;
+            //GDM.PreferredDepthStencilFormat = DepthFormat.Depth32;
         }
 
         /// <summary>
@@ -347,6 +347,8 @@ namespace ORTS
                 System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.PrimaryScreen;
                 GDM.PreferredBackBufferWidth = screen.Bounds.Width; // 1680;
                 GDM.PreferredBackBufferHeight = screen.Bounds.Height;
+                GDM.PreferredBackBufferFormat = SurfaceFormat.Color;
+                GDM.PreferredDepthStencilFormat = DepthFormat.Depth32;
             }
             else
             {

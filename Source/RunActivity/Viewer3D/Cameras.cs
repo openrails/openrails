@@ -92,7 +92,7 @@ namespace ORTS
         public virtual void ScreenChanged()
         {
             float aspectRatio = (float)Viewer.GraphicsDevice.Viewport.Width / (float)Viewer.GraphicsDevice.Viewport.Height;
-            float farPlaneDistance = SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
+            float farPlaneDistance =  SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
             float fovWidthRadians = MathHelper.ToRadians(45.0f);
             XNAProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.1f, farPlaneDistance);
             RightFrustrumA = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // precompute the right edge of the view frustrum

@@ -251,11 +251,9 @@ namespace ORTS
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
                 graphicsDevice.VertexSamplerStates[0].AddressU = TextureAddressMode.Wrap;
                 graphicsDevice.VertexSamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.Always;
+                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
                 graphicsDevice.RenderState.AlphaTestEnable = true;
                 graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become transparent
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
-
                 Materials.SetupFog(graphicsDevice);
             }
 

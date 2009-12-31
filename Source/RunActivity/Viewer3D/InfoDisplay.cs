@@ -63,7 +63,7 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (Program.RealTime - lastUpdateTime > 0.1)
+            if (Program.RealTime - lastUpdateTime > 0.3)
             {
                 double elapsedRealSeconds = Program.RealTime - lastUpdateTime;
                 lastUpdateTime = Program.RealTime;
