@@ -91,6 +91,7 @@ namespace ORTS
         }
 
         ViewPoint passengerViewPoint = new ViewPoint();
+        string brakeSystemType = null;
 
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
@@ -113,15 +114,11 @@ namespace ORTS
                 case "wagon(wheelradius": WheelRadiusM = f.ReadFloatBlock(); break;
                 case "engine(wheelradius": DriverWheelRadiusM = f.ReadFloatBlock(); break;
                 case "wagon(sound": MainSoundFileName = f.ReadStringBlock(); break;
-                case "wagon(brakesystemtype": string braketype = f.ReadStringBlock();
-                    switch (braketype.ToLower()) {
-                        case "air_single_pipe": BrakeSystem = new AirSinglePipe(this); break; //TODO parse and setup other brake systems
-                        default: BrakeSystem = new AirSinglePipe(this); break;
-                    } break;
+                case "wagon(brakesystemtype": brakeSystemType = f.ReadStringBlock(); break;
             }
 
-            if (MSTSBrakeSystem != null)
-                MSTSBrakeSystem.Parse(lowercasetoken, f);
+            // TODO parse brakeSystemType to set up the correct type
+            BrakeSystem = new AirSinglePipe(this);
         }
 
         /// <summary>

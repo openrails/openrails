@@ -185,35 +185,15 @@ namespace ORTS
             frame.SetCamera(ref XNAView, ref XNAProjection);
         }
 
-        /// <summary>
-        /// If the nearest part of the object is within camera viewing distance
-        /// and is within the object's defined viewing distance then
-        /// we can see it.   The objectViewingDistance allows a small object
-        /// to specify a cutoff beyond which the object can't be seen.
-        /// </summary>
-        /// <param name="objectCenter"></param>
-        /// <param name="objectRadius"></param>
-        /// <param name="objectViewingDistance"></param>
-        /// <returns></returns>
-        public bool CanSee(Vector3 mstsObjectCenter, float objectRadius, float objectViewingDistance)
+
+        // Cull for fov
+        public bool InFOV(Vector3 mstsObjectCenter, float objectRadius)
         {
-            // cull for distance
-            float distance = Math.Abs(mstsObjectCenter.X - Location.X) + Math.Abs(mstsObjectCenter.Z - Location.Z);
-
-            if (distance < objectRadius * 2)
-                return true;// we are 'in the object' - can't cull it
-
-            distance -= objectRadius;
-            if (distance > Viewer.ViewingDistance || distance > objectViewingDistance)
-                return false;  // nearest part of object is too far away
-
-            // Cull for fov
             Vector3 xnaObjectCenter = new Vector3(mstsObjectCenter.X, mstsObjectCenter.Y, -mstsObjectCenter.Z);
             Vector3.Transform(ref xnaObjectCenter, ref XNAView, out xnaObjectCenter);
 
             if (xnaObjectCenter.Z > objectRadius * 2)
                 return false;  // behind camera
-
 
             // Cull for left and right
             float d = MSTSMath.M.DistanceToLine(RightFrustrumA, RightFrustrumB, 0, xnaObjectCenter.X, xnaObjectCenter.Z);
@@ -224,7 +204,36 @@ namespace ORTS
             if (d > objectRadius * 2)
                 return false; // left of view
 
+            return true;
+        }
 
+        // cull for distance
+        public bool InRange(Vector3 mstsObjectCenter, float viewingRange)
+        {
+            float dx = mstsObjectCenter.X - Location.X;
+            float dz = mstsObjectCenter.Z - Location.Z;
+            float distanceSquared = dx * dx + dz * dz;
+
+            return distanceSquared < viewingRange * viewingRange;
+        }
+
+        /// <summary>
+        /// If the nearest part of the object is within camera viewing distance
+        /// and is within the object's defined viewing distance then
+        /// we can see it.   The objectViewingDistance allows a small object
+        /// to specify a cutoff beyond which the object can't be seen.
+        /// </summary>
+        public bool CanSee(Vector3 mstsObjectCenter, float objectRadius, float objectViewingDistance)
+        {
+            // whichever is less, camera or object
+            if (Viewer.ViewingDistance < objectViewingDistance)
+                objectViewingDistance = Viewer.ViewingDistance;
+
+            // account for the object's size
+            float minDistance = objectViewingDistance + objectRadius;
+
+            if (!InRange(mstsObjectCenter, minDistance )) return false;
+            if (!InFOV( mstsObjectCenter, objectRadius )) return false;
             return true;
         }
 
