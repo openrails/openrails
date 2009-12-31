@@ -22,10 +22,10 @@ namespace ORTS
 {
     public class AI
     {
-        StartQueue StartQueue = new StartQueue();
+        Heap<AITrain> StartQueue = new Heap<AITrain>();
         public Simulator Simulator;
         public List<AITrain> AITrains = new List<AITrain>();// active AI trains
-        Dictionary<int, AITrain> AITrainDictionary = new Dictionary<int, AITrain>();
+        public Dictionary<int, AITrain> AITrainDictionary = new Dictionary<int, AITrain>();
         bool FirstUpdate = true; // flag for special processing if first call to Update
         public Dispatcher Dispatcher;
 
@@ -41,11 +41,14 @@ namespace ORTS
             if( simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null )
                 foreach (Service_Definition sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition)
                 {
-                    StartQueue.Add(sd);
+                    if (sd.Time < Simulator.ClockTime)
+                        continue;
                     AITrainDictionary.Add(sd.UiD, CreateAITrain(sd));
                     //Console.WriteLine("AIQ {0} {1} {2}", sd.Service, sd.Time, sd.UiD);
                 }
             Dispatcher = new Dispatcher(this);
+            foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
+                StartQueue.Add(kvp.Value.StartTime, kvp.Value);
         }
 
         /// <summary>
@@ -63,14 +66,12 @@ namespace ORTS
                 FirstUpdate = false;
             }
             Dispatcher.Update(Simulator.ClockTime);
-            for (Service_Definition sd = StartQueue.GetNext(Simulator.ClockTime); sd!=null; sd=StartQueue.GetNext(Simulator.ClockTime))
+            while (StartQueue.GetMinKey() < Simulator.ClockTime)
             {
-                AITrain train = AITrainDictionary[sd.UiD];
-                if (Dispatcher.RequestAuth(train) == false)
-                {
-                    sd.Time += 60;
-                    StartQueue.Add(sd);
-                }
+                AITrain train = StartQueue.GetMinValue();
+                StartQueue.DeleteMin();
+                if (Dispatcher.RequestAuth(train,false) == false)
+                    StartQueue.Add(Simulator.ClockTime + 10, train);
                 else
                 {
                     AITrains.Add(train);
@@ -103,7 +104,7 @@ namespace ORTS
             string pathFileName = srvFile.PathID;
 
             PATFile patFile = new PATFile(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
-            AITrain train = new AITrain(sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat));
+            AITrain train = new AITrain(sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat), sd.Time);
 
             // This is the position of the back end of the train in the database.
             //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
@@ -179,20 +180,46 @@ namespace ORTS
                 List[QueueSize]= sd;
             else
                 List.Add(sd);
-            QueueSize++;
+            int i = QueueSize++;
+            while (i > 0)
+            {
+                int j = (i - 1) / 2;
+                if (List[j].Time <= List[i].Time)
+                    break;
+                Service_Definition t = List[j];
+                List[j] = List[i];
+                List[i] = t;
+                i = j;
+            }
+        }
+        public void Print()
+        {
+            Console.WriteLine("StartQueue {0}",QueueSize);
+            for (int i=0; i<QueueSize; i++)
+                Console.WriteLine(" {0} {1}", i, List[i].Time);
         }
         public Service_Definition GetNext(double time)
         {
-            for (int i=0; i<QueueSize; i++)
+            if (QueueSize <= 0 || List[0].Time > time)
+                return null;
+            Service_Definition result = List[0];
+            List[0] = List[--QueueSize];
+            int i = 0;
+            while (true)
             {
-                if (List[i] != null && List[i].Time < time)
-                {
-                    Service_Definition sd = List[i];
-                    List[i] = List[--QueueSize];
-                    return sd;
-                }
+                int j = 2 * i + 1;
+                if (j >= QueueSize)
+                    break;
+                if (j < QueueSize-1 && List[j + 1].Time < List[j].Time)
+                    j++;
+                if (List[i].Time <= List[j].Time)
+                    break;
+                Service_Definition t = List[j];
+                List[j] = List[i];
+                List[i] = t;
+                i = j;
             }
-            return null;
+            return result;
         }
     }
 }

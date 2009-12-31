@@ -25,6 +25,8 @@ namespace ORTS
     {
         public AI AI;
         private int[] reservations;
+        public float[] trackLength;
+        private TimeTable TimeTable = null;
 
         /// <summary>
         /// Initializes the dispatcher.
@@ -36,6 +38,19 @@ namespace ORTS
             reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
             for (int i = 0; i < reservations.Length; i++)
                 reservations[i] = -1;
+            FindDoubleTrack();
+            CalcTrackLength();
+            int minPriority = 10;
+            int maxPriority = 0;
+            foreach (KeyValuePair<int, AITrain> kvp in AI.AITrainDictionary)
+            {
+                if (minPriority > kvp.Value.Priority)
+                    minPriority= kvp.Value.Priority;
+                if (maxPriority < kvp.Value.Priority)
+                    maxPriority = kvp.Value.Priority;
+            }
+            if (minPriority != maxPriority)
+                TimeTable= new TimeTable(this);
         }
 
         /// <summary>
@@ -77,8 +92,21 @@ namespace ORTS
         /// Returns true if an authorization was granted, else false.
         /// The authorization is specified using the SetAuthorization method.
         /// </summary>
-        public bool RequestAuth(AITrain train)
+        public bool RequestAuth(AITrain train, bool update)
         {
+            TTTrainTimes ttTimes = null;
+            if (TimeTable != null)
+            {
+                if (!TimeTable.ContainsKey(train.UiD))
+                    return false;
+                ttTimes= TimeTable[train.UiD];
+                if (train.NextStopNode == train.AuthEndNode)
+                {
+                    int ji = train.NextStopNode.JunctionIndex;
+                    if (!ttTimes.ContainsKey(ji) || ttTimes[ji].Arrive > AI.Simulator.ClockTime)
+                        return false;
+                }
+            }
             List<int> tnList = new List<int>();
             AIPathNode node = train.RearNode;
             while (node != null && (node == train.RearNode || node.Type != AIPathNodeType.SidingStart))
@@ -109,27 +137,49 @@ namespace ORTS
             //Console.WriteLine("start siding {0}", node.ID);
             List<int> tnList1 = new List<int>();
             AIPathNode sidingNode = node;
-            for (; node.Type != AIPathNodeType.SidingEnd; node = node.NextMainNode)
-                tnList1.Add(node.NextMainTVNIndex);
-            if (CanReserve(train, tnList1))
+            bool sidingFirst = !update;
+            if (sidingFirst)
             {
-                Unreserve(train);
-                Reserve(train, tnList);
-                Reserve(train, tnList1);
-                //Console.WriteLine("got main {0}", node.ID);
-                return train.SetAuthorization(node, null);
+                WorldLocation wl = sidingNode.Location;
+                if (train.FrontTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z) < 10)
+                    sidingFirst = false;
             }
-            //Console.WriteLine("try siding {0}", node.ID);
-            tnList1.Clear();
-            for (node = sidingNode; node.Type != AIPathNodeType.SidingEnd; node = node.NextSidingNode)
-                tnList1.Add(node.NextSidingTVNIndex);
-            if (CanReserve(train, tnList1))
+            for (int i = 0; i < 2; i++)
             {
-                Unreserve(train);
-                Reserve(train, tnList);
-                Reserve(train, tnList1);
-                //Console.WriteLine("got siding {0} {1}", node.ID, sidingNode.ID);
-                return train.SetAuthorization(node, sidingNode);
+                tnList1.Clear();
+                if (sidingFirst ? i == 1 : i == 0)
+                {
+                    //Console.WriteLine("try main {0}", node.ID);
+                    if (ttTimes != null && !ttTimes.ContainsKey(sidingNode.NextMainTVNIndex))
+                        continue;
+                    for (node = sidingNode; node.Type != AIPathNodeType.SidingEnd; node = node.NextMainNode)
+                        tnList1.Add(node.NextMainTVNIndex);
+                    if (CanReserve(train, tnList1))
+                    {
+                        Unreserve(train);
+                        Reserve(train, tnList);
+                        Reserve(train, tnList1);
+                        //Console.WriteLine("got main {0}", node.ID);
+                        return train.SetAuthorization(node, null);
+                    }
+                }
+                else
+                {
+                    //Console.WriteLine("try siding {0}", node.ID);
+                    if (ttTimes != null && !ttTimes.ContainsKey(sidingNode.NextSidingTVNIndex))
+                        continue;
+                    tnList1.Clear();
+                    for (node = sidingNode; node.Type != AIPathNodeType.SidingEnd; node = node.NextSidingNode)
+                        tnList1.Add(node.NextSidingTVNIndex);
+                    if (CanReserve(train, tnList1))
+                    {
+                        Unreserve(train);
+                        Reserve(train, tnList);
+                        Reserve(train, tnList1);
+                        //Console.WriteLine("got siding {0} {1}", node.ID, sidingNode.ID);
+                        return train.SetAuthorization(node, sidingNode);
+                    }
+                }
             }
             return false;
         }
@@ -175,6 +225,92 @@ namespace ORTS
         {
             train.SetAuthorization(null, null);
             Unreserve(train);
+        }
+
+        /// <summary>
+        /// Scans all AI paths to identify double track passing possibilities.
+        /// Changes the path node type to SidingEnd if its the end of double track.
+        /// </summary>
+        private void FindDoubleTrack()
+        {
+            int[] flags  = new int[AI.Simulator.TDB.TrackDB.TrackNodes.Length];
+            foreach (KeyValuePair<int, AITrain> kvp in AI.AITrainDictionary)
+            {
+                AITrain train = kvp.Value;
+                int prevIndex = -1;
+                bool forward = true;
+                for (AIPathNode node = train.Path.FirstNode; node != null; node = node.NextMainNode)
+                {
+                    if (node.Type == AIPathNodeType.Reverse)
+                        forward = !forward;
+                    if (forward && node.JunctionIndex >= 0)
+                    {
+                        int f = 0;
+                        bool aligned = train.Path.SwitchIsAligned(node.JunctionIndex, node.NextMainTVNIndex);
+                        if (node.Type == AIPathNodeType.SidingStart)
+                            f = 03;
+                        else if (node.Type == AIPathNodeType.SidingEnd)
+                            f = 014;
+                        else if (node.IsFacingPoint && train.Path.SwitchIsAligned(node.JunctionIndex, node.NextMainTVNIndex))
+                            f = 01;
+                        else if (node.IsFacingPoint)
+                            f = 02;
+                        else if (!node.IsFacingPoint && train.Path.SwitchIsAligned(node.JunctionIndex, prevIndex))
+                            f = 04;
+                        else
+                            f = 010;
+                        flags[node.JunctionIndex] |= f;
+                        //Console.WriteLine("junction {0} {1} {2} {3}", train.UiD, node.JunctionIndex, f, node.Type);
+                    }
+                    prevIndex = node.NextMainTVNIndex;
+                }
+            }
+            foreach (KeyValuePair<int, AITrain> kvp in AI.AITrainDictionary)
+            {
+                AITrain train = kvp.Value;
+                for (AIPathNode node = train.Path.FirstNode; node != null; node = node.NextMainNode)
+                {
+                    if (node.Type == AIPathNodeType.Other && node.JunctionIndex >= 0 && !node.IsFacingPoint)
+                    {
+                        int f = flags[node.JunctionIndex];
+                        if ((f & 011) == 011 || (f & 06) == 06)
+                            node.Type = AIPathNodeType.SidingEnd;
+                        //Console.WriteLine("junction {0} {1} {2} {3}", train.UiD, node.JunctionIndex, f, node.Type);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates the length of all track vector nodes and saves it in the trackLength array.
+        /// This should probably be moved elsewhere if others need this information.
+        /// </summary>
+        private void CalcTrackLength()
+        {
+            trackLength = new float[AI.Simulator.TDB.TrackDB.TrackNodes.Length];
+            for (int i = 0; i < trackLength.Length; i++)
+            {
+                TrackNode tn = AI.Simulator.TDB.TrackDB.TrackNodes[i];
+                if (tn == null || tn.TrVectorNode == null)
+                    continue;
+                for (int j = 0; j < tn.TrVectorNode.TrVectorSections.Length; j++)
+                {
+                    uint k = tn.TrVectorNode.TrVectorSections[j].SectionIndex;
+                    TrackSection ts = AI.Simulator.TSectionDat.TrackSections.Get(k);
+                    if (ts == null)
+                        continue;
+                    if (ts.SectionCurve == null)
+                        trackLength[i] += ts.SectionSize.Length;
+                    else
+                    {
+                        float len = ts.SectionCurve.Radius * MSTSMath.M.Radians(ts.SectionCurve.Angle);
+                        if (len < 0)
+                            len = -len;
+                        trackLength[i] += len;
+                    }
+                }
+                //Console.WriteLine("tracklength {0} {1}", i, trackLength[i]);
+            }
         }
     }
 }
