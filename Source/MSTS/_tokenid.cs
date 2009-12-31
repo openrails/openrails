@@ -1687,7 +1687,7 @@ namespace MSTS
         Dyntrack,
         Transfer,
         Gantry,
-        Pickup,   
+        Pickup,  
 
         Wagon,
         Engine

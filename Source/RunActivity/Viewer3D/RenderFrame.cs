@@ -96,7 +96,7 @@ namespace ORTS
 
 
         /// <summary>
-        /// Executed in the RenderProcess thread
+        /// Experimental Draw - in groups
         /// </summary>
         /// <param name="graphicsDevice"></param>
         public void Draw(GraphicsDevice graphicsDevice)
@@ -139,6 +139,32 @@ namespace ORTS
                 prevMaterial.ResetState(graphicsDevice, null);
         }
 
+        /// <summary>
+        /// Executed in the RenderProcess thread - reverse draw
+        /// </summary>
+        /// <param name="graphicsDevice"></param>
+        public void DrawReverse(GraphicsDevice graphicsDevice)
+        {
+            graphicsDevice.Clear(Color.CornflowerBlue);
+            graphicsDevice.RenderState.DepthBias = 0f;
+
+            // Render each material on the specified primitive
+            // To minimize renderstate changes, the material is
+            // told what material was used previously so it can
+            // make a decision on what renderstates need to be
+            // changed.
+            Material prevMaterial = null;
+            for (int i = RenderItemCount - 1; i >= 0; --i)
+            {
+                Material currentMaterial = RenderItems[i].Material;
+                if (prevMaterial != null) prevMaterial.ResetState(graphicsDevice, currentMaterial);
+                currentMaterial.Render(graphicsDevice, prevMaterial, RenderItems[i].RenderPrimitive,
+                        ref RenderItems[i].XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                prevMaterial = currentMaterial;
+            }
+            if (prevMaterial != null)
+                prevMaterial.ResetState(graphicsDevice, null);
+        }
 
         /// <summary>
         /// Executed in the RenderProcess thread - simple draw

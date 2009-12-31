@@ -65,6 +65,8 @@ namespace MSTS
                         case TokenID.Transfer: subBlock.Skip(); break; // TODO
                         case TokenID.Gantry: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Pickup: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                        case TokenID.Signal: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                        case TokenID.Speedpost: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Tr_Watermark: currentWatermark = subBlock.ReadInt(); break;
                         default: subBlock.Skip(); break;
                     }
