@@ -50,21 +50,46 @@ namespace ORTS
             Priority = start % 10;
         }
 
-
         // restore game state
         public AITrain(BinaryReader inf): base( inf )
         {
-            // add your code here
+            UiD = inf.ReadInt32();
+            AuthUpdateDistanceM = inf.ReadSingle();
+            NextStopDistanceM = inf.ReadSingle();
+            NextStopTimeS = inf.ReadSingle();
+            MaxDecelMpSS = inf.ReadSingle();
+            MaxAccelMpSS = inf.ReadSingle();
+            MaxSpeedMpS = inf.ReadSingle();
+            WaitUntil = inf.ReadDouble();
+            StartTime = inf.ReadInt32();
+            Priority = inf.ReadInt32();
+            Path = new AIPath(inf);
+            RearNode = Path.ReadNode(inf);
+            NextStopNode = Path.ReadNode(inf);
+            AuthEndNode = Path.ReadNode(inf);
+            AuthSidingNode = Path.ReadNode(inf);
         }
 
         // save game state
         public override void Save(BinaryWriter outf)
         {
             base.Save(outf);
-            // add your code here
-
+            outf.Write(UiD);
+            outf.Write(AuthUpdateDistanceM);
+            outf.Write(NextStopDistanceM);
+            outf.Write(NextStopTimeS);
+            outf.Write(MaxDecelMpSS);
+            outf.Write(MaxAccelMpSS);
+            outf.Write(MaxSpeedMpS);
+            outf.Write(WaitUntil);
+            outf.Write(StartTime);
+            outf.Write(Priority);
+            Path.Save(outf);
+            Path.WriteNode(outf, RearNode);
+            Path.WriteNode(outf, NextStopNode);
+            Path.WriteNode(outf, AuthEndNode);
+            Path.WriteNode(outf, AuthSidingNode);
         }
-
 
         /// <summary>
         /// Update function for a single AI train.

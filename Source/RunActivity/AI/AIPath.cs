@@ -26,6 +26,7 @@ namespace ORTS
         public TrackDB TrackDB;
         public TSectionDatFile TSectionDat;
         public AIPathNode FirstNode;    // path starting node
+        List<AIPathNode> Nodes = new List<AIPathNode>();
 
         /// <summary>
         /// Creates an AIPath from PAT file information.
@@ -36,24 +37,24 @@ namespace ORTS
         {
             TrackDB = TDB.TrackDB;
             TSectionDat = tsectiondat;
-            List<AIPathNode> nodes = new List<AIPathNode>();
             foreach (TrPathNode tpn in patFile.TrPathNodes)
-                nodes.Add(new AIPathNode(tpn, patFile.TrackPDPs[(int)tpn.FromPDP], TrackDB));
-            FirstNode = nodes[0];
-            for (int i = 0; i < nodes.Count; i++)
+                Nodes.Add(new AIPathNode(tpn, patFile.TrackPDPs[(int)tpn.FromPDP], TrackDB));
+            FirstNode = Nodes[0];
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                AIPathNode node = nodes[i];
+                AIPathNode node = Nodes[i];
+                node.Index = i;
                 TrPathNode tpn = patFile.TrPathNodes[i];
                 if (tpn.NextNode != 0xffffffff)
                 {
-                    node.NextMainNode = nodes[(int)tpn.NextNode];
+                    node.NextMainNode = Nodes[(int)tpn.NextNode];
                     node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode, TDB, tsectiondat);
                     if (node.JunctionIndex >= 0)
                         node.IsFacingPoint = TestFacingPoint(node.JunctionIndex, node.NextMainTVNIndex);
                 }
                 if (tpn.C != 0xffffffff)
                 {
-                    node.NextSidingNode = nodes[(int)tpn.C];
+                    node.NextSidingNode = Nodes[(int)tpn.C];
                     node.NextSidingTVNIndex = node.FindTVNIndex(node.NextSidingNode, TDB, tsectiondat);
                     if (node.JunctionIndex >= 0)
                         node.IsFacingPoint = TestFacingPoint(node.JunctionIndex, node.NextSidingTVNIndex);
@@ -73,6 +74,48 @@ namespace ORTS
                 if (node2 != null)
                     node2.Type = AIPathNodeType.SidingEnd;
             }
+        }
+
+        // restore game state
+        public AIPath(BinaryReader inf)
+        {
+            int n = inf.ReadInt32();
+            for (int i = 0; i < n; i++)
+                Nodes.Add(new AIPathNode(inf));
+            for (int i = 0; i < n; i++)
+            {
+                Nodes[i].NextMainNode = ReadNode(inf);
+                Nodes[i].NextSidingNode = ReadNode(inf);
+            }
+            FirstNode = Nodes[0];
+        }
+        public AIPathNode ReadNode(BinaryReader inf)
+        {
+            int index = inf.ReadInt32();
+            if (index < 0 || index > Nodes.Count)
+                return null;
+            else
+                return Nodes[index];
+        }
+
+        // save game state
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(Nodes.Count);
+            for (int i = 0; i < Nodes.Count; i++)
+                Nodes[i].Save(outf);
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                WriteNode(outf, Nodes[i].NextMainNode);
+                WriteNode(outf, Nodes[i].NextSidingNode);
+            }
+        }
+        public void WriteNode(BinaryWriter outf, AIPathNode node)
+        {
+            if (node == null)
+                outf.Write((int)-1);
+            else
+                outf.Write(node.Index);
         }
 
         /// <summary>
@@ -138,6 +181,7 @@ namespace ORTS
     public class AIPathNode
     {
         public int ID;
+        public int Index;
         public AIPathNodeType Type = AIPathNodeType.Other;
         public int WaitTimeS = 0;   // number of seconds to wait after stopping at this node
         public int NCars = 0;       // number of cars to uncouple, negative means keep rear
@@ -197,6 +241,45 @@ namespace ORTS
                     }
                 }
             }
+        }
+
+        // restore game state
+        public AIPathNode(BinaryReader inf)
+        {
+            ID = inf.ReadInt32();
+            Index = inf.ReadInt32();
+            Type = (AIPathNodeType)inf.ReadInt32();
+            WaitTimeS = inf.ReadInt32();
+            NCars = inf.ReadInt32();
+            NextMainTVNIndex = inf.ReadInt32();
+            NextSidingTVNIndex = inf.ReadInt32();
+            JunctionIndex = inf.ReadInt32();
+            IsFacingPoint = inf.ReadBoolean();
+            Location = new WorldLocation();
+            Location.TileX = inf.ReadInt32();
+            Location.TileZ = inf.ReadInt32();
+            Location.Location.X = inf.ReadSingle();
+            Location.Location.Y = inf.ReadSingle();
+            Location.Location.Z = inf.ReadSingle();
+        }
+
+        // save game state
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(ID);
+            outf.Write(Index);
+            outf.Write((int)Type);
+            outf.Write(WaitTimeS);
+            outf.Write(NCars);
+            outf.Write(NextMainTVNIndex);
+            outf.Write(NextSidingTVNIndex);
+            outf.Write(JunctionIndex);
+            outf.Write(IsFacingPoint);
+            outf.Write(Location.TileX);
+            outf.Write(Location.TileZ);
+            outf.Write(Location.Location.X);
+            outf.Write(Location.Location.Y);
+            outf.Write(Location.Location.Z);
         }
 
         /// <summary>

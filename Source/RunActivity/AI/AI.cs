@@ -51,6 +51,49 @@ namespace ORTS
                 StartQueue.Add(kvp.Value.StartTime, kvp.Value);
         }
 
+        // restore game state
+        public AI(Simulator simulator, BinaryReader inf)
+        {
+            Simulator = simulator;
+            FirstUpdate = false;
+            foreach (Train train in Simulator.Trains)
+            {
+                if (train.GetType() == typeof(AITrain))
+                {
+                    AITrain aiTrain = (AITrain)train;
+                    AITrainDictionary.Add(aiTrain.UiD, aiTrain);
+                    aiTrain.AI = this;
+                    AITrains.Add(aiTrain);
+                    aiTrain.Path.TrackDB = Simulator.TDB.TrackDB;
+                    aiTrain.Path.TSectionDat = Simulator.TSectionDat;
+                }
+            }
+            int n = inf.ReadInt32();
+            for (int i = 0; i < n; i++)
+            {
+                double time = inf.ReadDouble();
+                AITrain train = new AITrain(inf);
+                StartQueue.Add(time, train);
+                AITrainDictionary.Add(train.UiD, train);
+                train.AI = this;
+                train.Path.TrackDB = Simulator.TDB.TrackDB;
+                train.Path.TSectionDat = Simulator.TSectionDat;
+            }
+            Dispatcher = new Dispatcher(this, inf);
+        }
+
+        // save game state
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(StartQueue.GetSize());
+            for (int i = 0; i < StartQueue.GetSize(); i++)
+            {
+                outf.Write(StartQueue.getKey(i));
+                StartQueue.getValue(i).Save(outf);
+            }
+            Dispatcher.Save(outf);
+        }
+
         /// <summary>
         /// Updates AI train information.
         /// Creates any AI trains that are scheduled to appear.

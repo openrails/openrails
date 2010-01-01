@@ -48,6 +48,29 @@ namespace ORTS
             }
         }
 
+        // restore game state
+        public TimeTable(Dispatcher dispatcher, int nTrains, BinaryReader inf)
+        {
+            Dispatcher = dispatcher;
+            for (int i = 0; i < nTrains; i++)
+            {
+                int uid = inf.ReadInt32();
+                TTTrainTimes times = new TTTrainTimes(dispatcher.AI.AITrainDictionary[uid], inf);
+                Add(times);
+            }
+        }
+
+        // save game state
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(Count);
+            foreach (KeyValuePair<int, TTTrainTimes> kvp in this)
+            {
+                outf.Write(kvp.Key);
+                kvp.Value.Save(outf);
+            }
+        }
+
         /// <summary>
         /// Recursive function that tries to built a list of times for a train that does not overlap any trains already in the timetable.
         /// Returns the number of seconds the train needs to wait at a previous node.
@@ -193,6 +216,33 @@ namespace ORTS
         {
             Train = train;
         }
+
+        // restore game state
+        public TTTrainTimes(AITrain train, BinaryReader inf)
+        {
+            Train = train;
+            int n = inf.ReadInt32();
+            for (int i = 0; i < n; i++)
+            {
+                int index = inf.ReadInt32();
+                int atime = inf.ReadInt32();
+                int ltime = inf.ReadInt32();
+                Add(index, atime, ltime);
+            }
+        }
+
+        // save game state
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(Count);
+            foreach (KeyValuePair<int, TimeTableTime> kvp in this)
+            {
+                outf.Write(kvp.Key);
+                outf.Write(kvp.Value.Arrive);
+                outf.Write(kvp.Value.Leave);
+            }
+        }
+
         /// <summary>
         /// Adds an entry for the specified track node.
         /// </summary>

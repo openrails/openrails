@@ -92,5 +92,18 @@ namespace ORTS
             }
             return result;
         }
+
+        public int GetSize()
+        {
+            return Size;
+        }
+        public double getKey(int index)
+        {
+            return List[index].Key;
+        }
+        public TValue getValue(int index)
+        {
+            return List[index].Value;
+        }
     }
 }

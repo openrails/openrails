@@ -115,8 +115,7 @@ namespace ORTS
             RestoreSwitchSettings(inf);
             RestoreTrains(inf);
             Signals = new Signals(this, inf);
-            // TODO restore AI
-            // AI = new AI(this, inf);
+            AI = new AI(this, inf);
         }
 
         // save game state so we can resume later
@@ -126,8 +125,7 @@ namespace ORTS
             SaveSwitchSettings(outf);
             SaveTrains(outf);
             Signals.Save(outf);
-            // TODO save AI
-            // AI.Save(outf);
+            AI.Save(outf);
         }
 
 

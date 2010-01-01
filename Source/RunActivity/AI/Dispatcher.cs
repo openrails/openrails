@@ -53,6 +53,38 @@ namespace ORTS
                 TimeTable= new TimeTable(this);
         }
 
+        // restore game state
+        public Dispatcher(AI ai, BinaryReader inf)
+        {
+            AI = ai;
+            int n = inf.ReadInt32();
+            reservations = new int[n];
+            for (int i = 0; i < n; i++)
+                reservations[i] = inf.ReadInt32();
+            n = inf.ReadInt32();
+            trackLength = new float[n];
+            for (int i = 0; i < n; i++)
+                trackLength[i] = inf.ReadSingle();
+            n = inf.ReadInt32();
+            if (n > 0)
+                TimeTable = new TimeTable(this, n, inf);
+        }
+
+        // save game state
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(reservations.Length);
+            for (int i = 0; i < reservations.Length; i++)
+                outf.Write(reservations[i]);
+            outf.Write(trackLength.Length);
+            for (int i = 0; i < trackLength.Length; i++)
+                outf.Write(trackLength[i]);
+            if (TimeTable == null)
+                outf.Write((int)0);
+            else
+                TimeTable.Save(outf);
+         }
+
         /// <summary>
         /// Updates dispatcher information.
         /// Moves each train's rear path node forward and updates reservations.
