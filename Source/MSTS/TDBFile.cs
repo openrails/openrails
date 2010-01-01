@@ -15,8 +15,8 @@ namespace MSTS
     /// Summary description for TDBFile.
     /// </summary>
     /// 
-    /// 
 
+ 
     public class TDBFile
     {
         public TDBFile(string filenamewithpath)
@@ -96,13 +96,70 @@ namespace MSTS
                         token = f.ReadToken();
                     }
                 }
+                else if (0 == String.Compare(token, "TrItemTable", true))
+                {
+                    f.VerifyStartOfBlock();
+                    int count = f.ReadInt();
+                    TrItemTable = new TrItem[count];
+                    count = 0;
+                    token = f.ReadToken();
+                    while (token != ")")
+                    {
+                        if (token == "") throw (new STFError(f, "Missing )"));
+                        else if (0 == String.Compare(token, "CrossoverItem", true))
+                        {
+                            TrItemTable[count]=new CrossoverItem(f,count);
+                        }
+                        else if (0 == String.Compare(token, "SignalItem", true))
+                        {
+                            TrItemTable[count] = new SignalItem(f, count);
+                        }
+                        //else if (0 == String.Compare(token, "SpeedPostItem", true))
+                        //{
+                        //    TrItemTable[count] = new SpeedPostItem(f, count);
+                        //}
+                        else if (0 == String.Compare(token, "PlatformItem", true))
+                        {
+                            TrItemTable[count] = new PlatformItem(f, count);
+                        }
+                        else if (0 == String.Compare(token, "SoundRegionItem", true))
+                        {
+                            TrItemTable[count] = new SoundRegionItem(f, count);
+                        }
+                        else if (0 == String.Compare(token, "EmptyItem", true))
+                        {
+                            TrItemTable[count] = new EmptyItem(f, count);
+                        }
+                        else if (0 == String.Compare(token, "LevelCrItem", true))
+                        {
+                            TrItemTable[count] = new LevelCrItem(f, count);
+                        }
+                        else if (0 == String.Compare(token, "SidingItem", true))
+                        {
+                            TrItemTable[count] = new CrossoverItem(f, count);
+                        }
+                        else if (0 == String.Compare(token, "HazzardItem", true))
+                        {
+                            TrItemTable[count] = new HazzardItem(f, count);
+                        }
+                        else if (0 == String.Compare(token, "PickupItem", true))
+                        {
+                            TrItemTable[count] = new PickupItem(f, count);
+                        }
+                        else f.SkipBlock();
+                        ++count;
+                        token = f.ReadToken();
+                    }
+                }
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
         }
         public TrackNode[] TrackNodes;
+        public TrItem[] TrItemTable;
 
-        public int TrackNodesIndexOf( TrackNode targetTN )
+
+        public int TrackNodesIndexOf(TrackNode targetTN)
         {
             for (int i = 0; i < TrackNodes.Length; ++i)
                 if (TrackNodes[i] == targetTN)
@@ -293,6 +350,444 @@ namespace MSTS
             f.MustMatch(")");
         }
 
+    }
+
+    public class TrItem
+    {
+        public uint TrItemId, TrItemType;
+        public int TileX;
+        public int TileZ;
+        public float X, Y, Z;   //  Location within world tile. Track node not shape
+        public int TilePX;
+        public int TilePZ;      // Appears to be copy of SData but X,Z only.
+        public float PX, PZ;   
+        public float SData1;
+        public string SData2;
+        //public TrItem()
+        //{
+
+        //}
+        protected void TrItemRData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            X = f.ReadFloat();
+            Y = f.ReadFloat();
+            Z = f.ReadFloat();
+            TileX = f.ReadInt();
+            TileZ = f.ReadInt();
+            f.MustMatch(")");
+        }
+
+        protected void TrItemPData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            PX = f.ReadFloat();
+            PZ = f.ReadFloat();
+            TilePX = f.ReadInt();
+            TilePZ = f.ReadInt();
+            f.MustMatch(")");
+        }
+
+        protected void TrItemSData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            SData1 = f.ReadFloat();
+            SData2 = f.ReadToken();
+            f.MustMatch(")");
+        }
+    }
+
+    public class CrossoverItem:TrItem
+    {
+        uint TrackNode, CID1;
+        public CrossoverItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "CrossoverItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "CrossoverTrItemData", true)) CrossoverTrItemData(f);
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+        private void CrossoverTrItemData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            TrackNode = f.ReadUInt();
+            CID1 = f.ReadUInt();
+            f.MustMatch(")");
+        }
+    }
+
+    public class SignalItem : TrItem
+    {
+        public struct strTrSignalDir
+        {
+            public uint TrackNode;                  // Index to the junction track node
+            public uint sd1, sd2, sd3;              // Used with junction signals (appears to be either 1 or 0
+        }
+
+        public string Flags1;
+        public uint Flags2;
+        public float SigData1;
+        public string SignalType;
+        public uint noSigDirs=0;              // Number of junction links
+        public strTrSignalDir[] TrSignalDirs;
+
+        public SignalItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "SignalItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrSignalType", true)) this.TrSignalType(f);
+                else if (0 == String.Compare(token, "TrSignalDirs", true)) this.TrSigDirs(f);
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+        private void TrSignalType(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            Flags1 = f.ReadToken();
+            Flags2 = f.ReadUInt();
+            SigData1 = f.ReadFloat();
+            SignalType = f.ReadString();
+            // To do get index to Sigtypes table corresponding to this sigmal
+            f.MustMatch(")");
+        }
+        private void TrSigDirs(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            this.noSigDirs = f.ReadUInt();
+            TrSignalDirs = new strTrSignalDir[noSigDirs];
+            int count=0;
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrSignalDir", true)) 
+                {
+                    if(count<noSigDirs)
+                    {
+                        TrSignalDirs[count]=new strTrSignalDir();
+                        f.VerifyStartOfBlock();
+                        TrSignalDirs[count].TrackNode=f.ReadUInt();
+                        TrSignalDirs[count].sd1=f.ReadUInt();
+                        TrSignalDirs[count].sd2=f.ReadUInt();
+                        TrSignalDirs[count].sd3=f.ReadUInt();
+                        f.MustMatch(")");
+                        count++;
+                    }
+                    else
+                    {
+                        throw (new STFError(f, "TrSignalDirs count mismatch"));
+                    }
+                }
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+            if(count!=noSigDirs)throw (new STFError(f, "TrSignalDirs count mismatch"));
+        }
+    }
+
+    public class SpeedPostItem : TrItem
+    {
+        uint Flags;
+        float SpeedInd;      // Or distance if mile post.
+        float SID1;
+        public SpeedPostItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "SpeedPostItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else if (0 == String.Compare(token, "SpeedpostTrItemData", true)) SpeedpostTrItemData(f);
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+        private void SpeedpostTrItemData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            Flags = f.ReadUInt();
+            //
+            //  The number of parameters depends on the flags seeting
+            //  To do: Check flags seetings and parse accordingly.
+            //
+            SpeedInd = f.ReadFloat();
+            SID1 = f.ReadFloat();
+            f.MustMatch(")");
+        }
+    }
+
+    public class PlatformItem : TrItem
+    {
+        public string PlatformName, Station;
+        public string Flags1;
+        public uint PlatformMinWaitingTime, PlatformNumPassengersWaiting;
+        public uint Flags2;
+
+        public PlatformItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "PlatformItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "PlatformName", true))
+                {
+                    f.VerifyStartOfBlock();
+                    PlatformName = f.ReadString();
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "Station", true))
+                {
+                    f.VerifyStartOfBlock();
+                    Station = f.ReadString();
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "PlatformMinWaitingTime", true))
+                {
+                    f.VerifyStartOfBlock();
+                    PlatformMinWaitingTime = f.ReadUInt();
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "PlatformNumPassengersWaiting", true))
+                {
+                    f.VerifyStartOfBlock();
+                    PlatformNumPassengersWaiting = f.ReadUInt();
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "PlatformTrItemData", true)) PlatformTrItemData(f);
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+        private void PlatformTrItemData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            Flags1 = f.ReadString();
+            Flags2 = f.ReadUInt();
+            f.MustMatch(")");
+        }
+    }
+
+    public class SoundRegionItem : TrItem
+    {
+        public uint SRData1, SRData2;
+        public float SRData3;
+        public SoundRegionItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "SoundRegionItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+        private void TrItemSRData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            SRData1 = f.ReadUInt();
+            SRData2 = f.ReadUInt();
+            SRData3 = f.ReadFloat();
+            f.MustMatch(")");
+        }
+    }
+
+    public class EmptyItem : TrItem
+    {
+        public EmptyItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "EmptyItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+    }
+
+    public class LevelCrItem : TrItem
+    {
+        public LevelCrItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "LevelCrItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+    }
+
+    public class SidingItem : TrItem
+    {
+        public string SidingName;
+        public string Flags1;
+        public uint Flags2;
+
+        public SidingItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "SidingItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "SidingTrItemData", true)) SidingTrItemData(f);
+                else if (0 == String.Compare(token, "SidingName", true))
+                {
+                    f.VerifyStartOfBlock();
+                    SidingName = f.ReadString();
+                    f.MustMatch(")");
+                }
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+
+        private void SidingTrItemData(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            Flags1 = f.ReadString();
+            Flags2 = f.ReadUInt();
+            f.MustMatch(")");
+        }
+    }
+
+    public class HazzardItem : TrItem
+    {
+        public HazzardItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "HazzardItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
+    }
+
+    public class PickupItem : TrItem
+    {
+        public PickupItem(STFReader f, int count)
+        {
+            f.VerifyStartOfBlock();
+            string token = f.ReadToken();
+            while (token != ")")
+            {
+                if (token == "") throw (new STFError(f, "Missing )"));
+                else if (0 == String.Compare(token, "TrItemID", true))
+                {
+                    f.VerifyStartOfBlock();
+                    this.TrItemId = f.ReadUInt();
+                    Debug.Assert(count == this.TrItemId, "PickupItem Index Mismatch");
+                    f.MustMatch(")");
+                }
+                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else f.SkipBlock();
+                token = f.ReadToken();
+            }
+        }
     }
 
 }
