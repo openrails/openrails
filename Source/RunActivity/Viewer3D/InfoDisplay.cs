@@ -192,7 +192,7 @@ namespace ORTS
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void Draw(GraphicsDevice graphicsDevice)
+        public override void Draw(GraphicsDevice graphicsDevice)
         {
             Material.SpriteBatch.DrawString(Material.DefaultFont, Text, Location, Color );
         }

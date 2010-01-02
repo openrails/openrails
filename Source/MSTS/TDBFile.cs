@@ -200,7 +200,7 @@ namespace MSTS
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
-            // TODO DEBUG CODE
+            // TODO We assume there is only 2 outputs to each junction
             if (TrVectorNode != null && TrPins.Length != 2)
                 Console.Error.WriteLine("TDB DEBUG TVN={0} has {1} pins.", UiD, TrPins.Length);
         }

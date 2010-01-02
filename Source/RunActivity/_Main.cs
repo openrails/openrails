@@ -58,7 +58,7 @@ namespace ORTS
 
             if (args[0] == "-runtest")
 
-                Testing.TestAll();  
+                Testing.Test();  
 
             else if (args[0] == "-resume")
 
@@ -223,6 +223,20 @@ namespace ORTS
                 return activityFileNames[i];
             }
 
+
+            /// <summary>
+            /// Adhoc testing for programmers
+            /// </summary>
+            public static void Test()
+            {
+                SFile sfile = new SFile(@"c:\users\wayne\desktop\CI_MIcant1.s");
+
+                // TestAll();
+
+                Console.WriteLine("DONE");
+                Console.ReadKey();
+            }
+
             /// <summary>
             /// Test all files in all MSTS folders 
             /// used by the development team for adhoc testing - customize this for whatever you need
@@ -255,8 +269,6 @@ namespace ORTS
                         Console.Error.WriteLine("While testing " + filename + "\r\n   " + error.Message );
                     }
 
-                Console.WriteLine("DONE");
-                Console.ReadKey();
             } // TestAll
         }
 

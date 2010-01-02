@@ -116,6 +116,7 @@ namespace ORTS
             RestoreTrains(inf);
             Signals = new Signals(this, inf);
             AI = new AI(this, inf);
+
         }
 
         // save game state so we can resume later

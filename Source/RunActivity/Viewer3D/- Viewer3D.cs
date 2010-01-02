@@ -131,7 +131,7 @@ namespace ORTS
             // Restore retained settings
             WorldObjectDensity = 10;
             SoundDetailLevel = 5;
-            ViewingDistance = 1500;
+            ViewingDistance = 1500; 
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
             if (RK != null)
             {

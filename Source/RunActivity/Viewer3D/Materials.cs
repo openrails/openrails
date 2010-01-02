@@ -11,16 +11,18 @@ namespace ORTS
     public class Materials
     {
         public static SceneryShader SceneryShader = null;
-        private static SpriteBatchMaterial SpriteBatchMaterial = null;
+        public static SpriteBatchMaterial SpriteBatchMaterial = null;
         private static WaterMaterial WaterMaterial = null;
         private static SkyMaterial SkyMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
+        private static Dictionary<string, ShadowReceivingMaterial> ShadowReceivingMaterials = new Dictionary<string, ShadowReceivingMaterial>();
         public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
         private static bool IsInitialized = false;
-        private static Material FastMaterial = null;
-
-        public static bool UseFast = false;   // WARNING- see comment in Terrain Draw() when using Fast Materials
+        private static Material YellowMaterial = null;   // for debug and experiments
+        public static ShadowCastingMaterial ShadowMaterial = null;
+        public static Color FogColor = new Color(189, 189, 189, 255);
+        public static ShadowMappingShader ShadowMappingShader = null;
 
         /// <summary>
         /// THREAD SAFETY:  XNA Content Manager is not thread safe and must only be called from the Game thread.
@@ -29,13 +31,15 @@ namespace ORTS
         /// <param name="renderProcess"></param>
         public static void Initialize(RenderProcess renderProcess)
         {
+            ShadowMappingShader = new ShadowMappingShader(renderProcess.GraphicsDevice, renderProcess.Content);
             MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
             SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SceneryShader.BumpTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, 
                                                         renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
             SkyMaterial = new SkyMaterial(renderProcess);
-            FastMaterial = new FastMaterial(renderProcess);
+            YellowMaterial = new YellowMaterial(renderProcess);
+            ShadowMaterial = new ShadowCastingMaterial(renderProcess);
             IsInitialized = true;
         }
 
@@ -60,62 +64,63 @@ namespace ORTS
             if( textureName != null )
                 textureName = textureName.ToLower();
 
-            if (UseFast)
+            switch (materialName)
             {
-                switch (materialName)
-                {
-                    case "SpriteBatch":
-                        return SpriteBatchMaterial;
-                    default:
-                        return FastMaterial;
-                }
-
-            }
-            else // quality materials
-            {
-                switch (materialName)
-                {
-                    case "SpriteBatch":
-                        return SpriteBatchMaterial;
-                    case "Terrain":
+                case "SpriteBatch":
+                    return SpriteBatchMaterial;
+                case "Terrain":
+                    if (renderProcess.ShadowMappingOn)
+                    {
+                        if (!ShadowReceivingMaterials.ContainsKey(textureName))
+                        {
+                            ShadowReceivingMaterial material = new ShadowReceivingMaterial(renderProcess, textureName);
+                            ShadowReceivingMaterials.Add(textureName, material);
+                            return material;
+                        }
+                        else
+                        {
+                            return ShadowReceivingMaterials[textureName];
+                        }
+                    }
+                    else
+                    {
                         if (!TerrainMaterials.ContainsKey(textureName))
                         {
-                            TerrainMaterial terrainMaterial = new TerrainMaterial(renderProcess, textureName);
-                            TerrainMaterials.Add(textureName, terrainMaterial);
-                            return terrainMaterial;
+                            TerrainMaterial material = new TerrainMaterial(renderProcess, textureName);
+                            TerrainMaterials.Add(textureName, material);
+                            return material;
                         }
                         else
                         {
                             return TerrainMaterials[textureName];
                         }
-                    case "SceneryMaterial":
-                        string key;
-                        if (textureName != null)
-                            key = options.ToString() + ":" + textureName;
-                        else
-                            key = options.ToString() + ":";
-                        if (!SceneryMaterials.ContainsKey(key))
-                        {
-                            SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName);
-                            sceneryMaterial.Options = options;
-                            SceneryMaterials.Add(key, sceneryMaterial);
-                            return sceneryMaterial;
-                        }
-                        else
-                        {
-                            return SceneryMaterials[key];
-                        }
-                    case "WaterMaterial":
-                        if (WaterMaterial == null)
-                            WaterMaterial = new WaterMaterial(renderProcess, textureName);
-                        return WaterMaterial;
-                    case "SkyMaterial":
-                        return SkyMaterial;
-                    default:
-                        return Load(renderProcess, "ScenerMaterial");
-                }
+                    }
+                case "SceneryMaterial":
+                    string key;
+                    if (textureName != null)
+                        key = options.ToString() + ":" + textureName;
+                    else
+                        key = options.ToString() + ":";
+                    if (!SceneryMaterials.ContainsKey(key))
+                    {
+                        SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName);
+                        sceneryMaterial.Options = options;
+                        SceneryMaterials.Add(key, sceneryMaterial);
+                        return sceneryMaterial;
+                    }
+                    else
+                    {
+                        return SceneryMaterials[key];
+                    }
+                case "WaterMaterial":
+                    if (WaterMaterial == null)
+                        WaterMaterial = new WaterMaterial(renderProcess, textureName);
+                    return WaterMaterial;
+                case "SkyMaterial":
+                    return SkyMaterial;
+                default:
+                    return Load(renderProcess, "ScenerMaterial");
             }
-            
         }
 
         public static float ViewingDistance = 2000;  // TODO, this is awkward, viewer must set this to control fog
@@ -128,7 +133,7 @@ namespace ORTS
             graphicsDevice.RenderState.FogEnable = true;
             graphicsDevice.RenderState.FogVertexMode = FogMode.None;  // vertex fog
             graphicsDevice.RenderState.FogTableMode = FogMode.Linear;     // pixel fog off
-            graphicsDevice.RenderState.FogColor = new Color(189, 189, 189, 255); // new Color(128, 128, 128, 255);
+            graphicsDevice.RenderState.FogColor = Materials.FogColor; // new Color(128, 128, 128, 255);
             graphicsDevice.RenderState.FogDensity = 1.0f;                      // used for exponential fog only, not linear
             graphicsDevice.RenderState.FogEnd = ViewingDistance; // +300;
             graphicsDevice.RenderState.FogStart = ViewingDistance / 2;
@@ -212,7 +217,7 @@ namespace ORTS
             }
             RenderProcess.PrimitiveCount++;
             renderPrimitive.Draw(graphicsDevice);
-        }              // TODO Note- using negative DepthBias anywhere results text being drawn underneath the scenery.
+        }              
         
 
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial )
@@ -241,11 +246,11 @@ namespace ORTS
         {
 
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+            SceneryShader.ZBias = renderPrimitive.ZBias;
                   
             if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
                 RenderProcess.RenderStateChangesCount++;
-                graphicsDevice.RenderState.DepthBias = 0;
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
                 graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
@@ -316,19 +321,19 @@ namespace ORTS
         {
             if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
+                SceneryShader.ZBias = 0.0001f;  // push terrain back
+
                 RenderProcess.RenderStateChangesCount++;
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
                 graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
                 graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
-                graphicsDevice.RenderState.DepthBias = 0f;
                 graphicsDevice.VertexSamplerStates[0].AddressU = TextureAddressMode.Wrap;
                 graphicsDevice.VertexSamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.Always;
+                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
                 SceneryShader.CurrentTechnique = SceneryShader.Techniques[2];
                 graphicsDevice.RenderState.AlphaTestEnable = true;
                 graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become transparent
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
                 Materials.SetupFog( graphicsDevice );
 
                 graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
@@ -377,10 +382,11 @@ namespace ORTS
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
                             ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
             RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
+
             SceneryShader.CurrentTechnique = SceneryShader.Techniques[3];
             SceneryShader.Texture = skyTexture;
             // These parameter changes have no effect
@@ -390,6 +396,8 @@ namespace ORTS
 
             graphicsDevice.RenderState.CullMode = CullMode.None;
             graphicsDevice.RenderState.FillMode = FillMode.Solid;
+            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.Always;
+            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
 
             graphicsDevice.RenderState.FogVertexMode = FogMode.None;  // vertex fog
             graphicsDevice.RenderState.FogTableMode = FogMode.Linear;     // pixel fog off
@@ -413,6 +421,8 @@ namespace ORTS
 
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
+            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
+            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
         }
     }
 
@@ -443,7 +453,6 @@ namespace ORTS
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
                 graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.RenderState.DepthBias = 0f;
                 graphicsDevice.VertexSamplerStates[0].AddressU = TextureAddressMode.Wrap;
                 graphicsDevice.VertexSamplerStates[0].AddressV = TextureAddressMode.Wrap;
                 graphicsDevice.RenderState.AlphaFunction = CompareFunction.Always;
@@ -476,25 +485,141 @@ namespace ORTS
         }
     }
 
-    public class FastMaterial : Material
+    public class ShadowCastingMaterial : Material
+    {
+        public ShadowMappingShader Shader;
+        EffectPass pass;
+
+        public ShadowCastingMaterial(RenderProcess renderProcess)
+        {
+            Shader = Materials.ShadowMappingShader;
+        }
+
+        public void SetState(GraphicsDevice graphicsDevice, Matrix lightViewProjection, Vector3 lightDirection)
+        {
+            Shader.CurrentTechnique = Shader.Techniques["CreateShadowMap"];
+            Shader.LightViewProj = lightViewProjection;
+
+            RenderState rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.AlphaTestEnable = false;
+            rs.CullMode = CullMode.CullCounterClockwiseFace; //TODO
+            rs.DepthBufferFunction = CompareFunction.LessEqual;
+            rs.DepthBufferWriteEnable = true;
+            rs.DestinationBlend = Blend.Zero;
+            rs.FillMode = FillMode.Solid;
+            rs.FogEnable = false;
+            rs.RangeFogEnable = false;
+            
+        }
+
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
+                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            Shader.World = XNAWorldMatrix;
+
+            Shader.Begin();
+            pass = Shader.CurrentTechnique.Passes[0];
+            pass.Begin();
+                renderPrimitive.Draw(graphicsDevice);
+            pass.End();
+            Shader.End();
+        }
+
+        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        {
+        }
+
+    }
+
+
+    public class ShadowReceivingMaterial : Material
+    {
+        public ShadowMappingShader Shader;
+        RenderProcess RenderProcess;
+        Texture2D PatchTexture;
+
+
+        public ShadowReceivingMaterial(RenderProcess renderProcess, string terrainTexture)
+        {
+            Shader = Materials.ShadowMappingShader;
+            RenderProcess = renderProcess;
+            PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, terrainTexture);
+        }
+
+        public void SetState(GraphicsDevice graphicsDevice )
+        {
+            RenderProcess.RenderStateChangesCount++;
+
+            Shader.CurrentTechnique = Shader.Techniques["DrawWithShadowMap"];
+
+            //SceneryShader.ZBias = 0.0001f;  // push terrain back TODO get this working again
+
+            graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+            graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+            graphicsDevice.VertexSamplerStates[0].AddressU = TextureAddressMode.Wrap;
+            graphicsDevice.VertexSamplerStates[0].AddressV = TextureAddressMode.Wrap;
+            RenderState rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.AlphaTestEnable = false;
+            rs.CullMode = CullMode.CullCounterClockwiseFace; 
+            rs.DestinationBlend = Blend.Zero;
+            rs.FillMode = FillMode.Solid;
+            Materials.SetupFog( graphicsDevice );
+
+            graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
+            graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
+
+        }
+
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
+                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
+                SetState( graphicsDevice);
+
+            Shader.World = XNAWorldMatrix;
+            Shader.View = XNAViewMatrix;
+            Shader.Projection = XNAProjectionMatrix;
+            Shader.Texture = PatchTexture;
+            
+            Shader.Begin();
+            EffectPass pass = Shader.CurrentTechnique.Passes[0];
+            pass.Begin();
+                renderPrimitive.Draw(graphicsDevice);
+            pass.End();
+            Shader.End();
+        }
+
+        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        {
+        }
+
+    }
+
+
+    /// <summary>
+    /// This material is used for debug and testing.
+    /// </summary>
+    public class YellowMaterial : Material
     {
         static BasicEffect basicEffect = null;
         RenderProcess RenderProcess;
 
-        public FastMaterial(RenderProcess renderProcess)
+        public YellowMaterial(RenderProcess renderProcess)
         {
             RenderProcess = renderProcess;
             if( basicEffect == null )
             {
                 basicEffect = new BasicEffect(renderProcess.GraphicsDevice, null);
                 basicEffect.Alpha = 1.0f;
-                basicEffect.DiffuseColor = new Vector3(1.0f, 0.0f, 1.0f);
+                basicEffect.DiffuseColor = new Vector3(197.0f/255.0f, 203.0f/255.0f, 37.0f/255.0f);
                 basicEffect.SpecularColor = new Vector3(0.25f, 0.25f, 0.25f);
                 basicEffect.SpecularPower = 5.0f;
-                basicEffect.AmbientLightColor = new Vector3(0.75f, 0.75f, 0.75f);
+                basicEffect.AmbientLightColor = new Vector3(0.2f, 0.2f, 0.2f);
 
                 basicEffect.DirectionalLight0.Enabled = true;
-                basicEffect.DirectionalLight0.DiffuseColor = Vector3.One;
+                basicEffect.DirectionalLight0.DiffuseColor = Vector3.One * 0.8f;
                 basicEffect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(1.0f, -1.0f, -1.0f));
                 basicEffect.DirectionalLight0.SpecularColor = Vector3.One;
 
@@ -519,7 +644,6 @@ namespace ORTS
                 RenderProcess.RenderStateChangesCount++;
 
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-                graphicsDevice.RenderState.DepthBias = 0f;
                 //Materials.SetupFog(graphicsDevice);
 
                 graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;

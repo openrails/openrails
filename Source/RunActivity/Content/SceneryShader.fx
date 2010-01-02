@@ -16,6 +16,7 @@ float3 BumpScale = float3( 1.0, -1.0, 1.0 );  // multiply bump map by this  -1 s
 float Saturation = 0.9;
 float Ambient = 0.5;
 float Brightness = 0.7;
+float ZBias = 0.0;  // TODO TESTING
 
 texture imageMap_Tex;
 sampler imageMap = sampler_state
@@ -63,7 +64,7 @@ VS_OUTPUT VS(   float4 pPositionM : POSITION,	// in model space
    Out.pPositionP = mul( mModelToProjection, pPositionM );		// shift point position from model space to projection space
    Out.vNormalW   = normalize(mul(vNormalM,mModelToWorld).xyz);	   // from model space to world space
    Out.uvImageT = uvImageT;	
-   
+   Out.pPositionP.z += ZBias;  // TODO TESTING
    Out.distance = length( Out.pPositionP );
    
    Out.light = dot( Out.vNormalW, LightVector ) *0.5 + 0.5;									

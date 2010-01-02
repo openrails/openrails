@@ -80,7 +80,7 @@ namespace ORTS
             InitializeIndexBuffer( renderProcess.GraphicsDevice);
         }
 
-        public void Draw(GraphicsDevice graphicsDevice)
+        public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.VertexDeclaration = SkyVertexDeclaration;
             graphicsDevice.Vertices[0].SetSource(SkyVertexBuffer, 0, SkyVertexStride);

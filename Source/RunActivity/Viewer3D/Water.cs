@@ -101,7 +101,7 @@ namespace ORTS
         /// <summary>
         /// This is called when the water should draw itself.
         /// </summary>
-        public void Draw(GraphicsDevice graphicsDevice)
+        public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.Indices = TileIndexBuffer;
             graphicsDevice.Vertices[0].SetSource(TileVertexBuffer, 0, PatchVertexStride);

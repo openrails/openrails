@@ -275,7 +275,7 @@ namespace ORTS
         /// This is called when the game should draw itself.
         /// Executes in RenderProcess thread.
         /// </summary>
-        public void Draw(GraphicsDevice graphicsDevice)
+        public override void Draw(GraphicsDevice graphicsDevice)
         {
             // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
             graphicsDevice.VertexDeclaration = VertexBufferSet.Declaration;
@@ -313,6 +313,7 @@ namespace ORTS
             MatrixNames = new string[0];
             Matrices = new Matrix[0];
             Animations = null;
+            LodControls = new LodControl[0];
         }
 
         public SharedShape(Viewer3D viewer, string path )
@@ -366,7 +367,11 @@ namespace ORTS
             for (int i = 0; i < sFile.shape.lod_controls.Count; ++ i )
                 LodControls[i] = new LodControl( sFile.shape.lod_controls[i], sFile , this );
 
+            if (LodControls.Length == 0)
+                throw new System.Exception("Shape file missing lod_control section");
+
             textureFolder = null;  // release it
+
         } // LoadContent
 
         public class LodControl
@@ -378,7 +383,10 @@ namespace ORTS
                 DistanceLevels = new DistanceLevel[ MSTSlod_control.distance_levels.Count ];
 
                 for ( int i = 0; i < MSTSlod_control.distance_levels.Count; ++i )
-                    DistanceLevels[i] = new DistanceLevel( MSTSlod_control.distance_levels[i], sFile, sharedShape );                
+                    DistanceLevels[i] = new DistanceLevel( MSTSlod_control.distance_levels[i], sFile, sharedShape );
+
+                if (DistanceLevels.Length == 0)
+                    throw new System.Exception("Shape file missing distance_level");
             }
         }
 
@@ -400,6 +408,10 @@ namespace ORTS
                 int[] Hierarchy = MSTSdistance_level.distance_level_header.hierarchy;
                 for( int i = 0; i < MSTSdistance_level.sub_objects.Count; ++i )
                     SubObjects[i] = new SubObject( MSTSdistance_level.sub_objects[i], Hierarchy, sFile , sharedShape);
+
+                if (SubObjects.Length == 0)
+                    throw new System.Exception("Shape file missing sub_object");
+
             }
         }
 
@@ -458,6 +470,9 @@ namespace ORTS
                         shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
                             "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options);
                     }
+
+                    // automatic zbias to reduce bleed through - later prims rendered over top of earlier ones
+                    shapePrimitive.ZBias = prim_state.ZBias + (-0.0001f * (float)iPrim);  
 
                     int iMatrix = vtx_state.imatrix;
                     shapePrimitive.PrimMatrixIndex = iMatrix;
@@ -618,34 +633,36 @@ namespace ORTS
 
             Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
 
-            LodControl lodControl = LodControls[0];
 
-            if( Viewer.Camera.InFOV( mstsLocation, lodControl.DistanceLevels[0].ViewSphereRadius ))
+            foreach (LodControl lodControl in LodControls)
             {
-                foreach (DistanceLevel distanceLevel in lodControl.DistanceLevels)
+                if (Viewer.Camera.InFOV(mstsLocation, lodControl.DistanceLevels[0].ViewSphereRadius))
                 {
-                    if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewingDistance))
+                    foreach (DistanceLevel distanceLevel in lodControl.DistanceLevels)
                     {
-                        foreach (SubObject subObject in distanceLevel.SubObjects)
+                        if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewingDistance))
                         {
-                            // for each primitive
-                            for (int iPrim = 0; iPrim < subObject.ShapePrimitives.Length; ++iPrim)
+                            foreach (SubObject subObject in distanceLevel.SubObjects)
                             {
-                                ShapePrimitive shapePrimitive = subObject.ShapePrimitives[iPrim];
-                                Matrix xnaMatrix = Matrix.Identity;
-                                int iNode = shapePrimitive.PrimMatrixIndex;
-                                while (iNode != -1)
+                                // for each primitive
+                                for (int iPrim = 0; iPrim < subObject.ShapePrimitives.Length; ++iPrim)
                                 {
-                                    xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
-                                    iNode = shapePrimitive.Hierarchy[iNode];
-                                }
-                                xnaMatrix *= xnaDTileTranslation;
+                                    ShapePrimitive shapePrimitive = subObject.ShapePrimitives[iPrim];
+                                    Matrix xnaMatrix = Matrix.Identity;
+                                    int iNode = shapePrimitive.PrimMatrixIndex;
+                                    while (iNode != -1)
+                                    {
+                                        xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
+                                        iNode = shapePrimitive.Hierarchy[iNode];
+                                    }
+                                    xnaMatrix *= xnaDTileTranslation;
 
-                                frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix);
-                            } // for each primitive
+                                    frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix);
+                                } // for each primitive
+                            }
+
+                            break; // only draw one distance level.
                         }
-
-                        break; // only draw one distance level.
                     }
                 }
             }
