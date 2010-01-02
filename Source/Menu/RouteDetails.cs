@@ -47,8 +47,8 @@ namespace ORTS
                 }
                 TRKFile trkFile = new TRKFile(RouteTRK[0]);
                 txtName.Text = trkFile.Tr_RouteFile.Name;
-                txtDescription.Text = trkFile.Tr_RouteFile.Description;
-
+                string Description = trkFile.Tr_RouteFile.Description;
+                txtDescription.Text = Description.Replace("\n", "\r\n");
                 txtBriefing.Visible = false;
                 lblBriefing.Visible = false;
                 groupBox1.Visible = false;
@@ -74,8 +74,10 @@ namespace ORTS
                 int i;
                 ACTFile actFile=new ACTFile(strActiviyPath,true);
                 txtName.Text=actFile.Tr_Activity.Tr_Activity_Header.Name;
-                txtDescription.Text=actFile.Tr_Activity.Tr_Activity_Header.Description;
-                txtBriefing.Text=actFile.Tr_Activity.Tr_Activity_Header.Briefing;
+                string Description = actFile.Tr_Activity.Tr_Activity_Header.Description;
+                txtDescription.Text=Description.Replace("\n","\r\n");
+                string Briefing = actFile.Tr_Activity.Tr_Activity_Header.Briefing;
+                txtBriefing.Text=Briefing.Replace("\n","\r\n");
                 StartTime startTime = actFile.Tr_Activity.Tr_Activity_Header.StartTime;
                 txtStartTime.Text = actFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
                 txtDuration.Text = actFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
