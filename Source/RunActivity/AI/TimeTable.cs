@@ -32,7 +32,7 @@ namespace ORTS
             for (AITrain train = trains.DeleteMin(); train != null; train = trains.DeleteMin())
             {
                 TTTrainTimes times = new TTTrainTimes(train);
-                for (int tries = 0; tries < 1; tries++)
+                for (int tries = 0; tries < 2; tries++)
                 {
                     int d = CalcTrackTimes(train.StartTime, train.StartTime + train.PassTime(), train.Path.FirstNode, times, -1);
                     if (d == 0)
