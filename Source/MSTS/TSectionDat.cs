@@ -144,6 +144,8 @@ namespace MSTS
 			}
 		}
 
+        public static int MissingTrackSectionWarnings = 0;
+
 		public TrackSection Get( uint targetSectionIndex )
 		{
 			// TODO - do this better - linear search is pretty slow
@@ -152,7 +154,9 @@ namespace MSTS
 				{
 					return (TrackSection)this[i];
 				}
-			throw( new System.Exception( "SectionIndex not found" ) );
+            if( MissingTrackSectionWarnings++ < 5 )
+                Console.Error.WriteLine("TDB references track section not listed in global or dynamic TSECTION.DAT: " + targetSectionIndex.ToString());
+            return null;
 		}
 		public uint MaxSectionIndex;
 	}

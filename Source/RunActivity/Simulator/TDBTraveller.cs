@@ -359,8 +359,8 @@ namespace ORTS
                         TVS = TN.TrVectorNode.TrVectorSections[iTrVectorSection];
 
                         // Note dynamic track will have  TVS.SectionIndex >= 40000 
-
                         TS = TSectionDat.TrackSections.Get(TVS.SectionIndex);
+                        if (TS == null) continue;
 
                         if (TS.SectionCurve != null)
                         // Its a curve
@@ -736,6 +736,7 @@ namespace ORTS
                 ++iTrVectorSection;
                 TVS = TN.TrVectorNode.TrVectorSections[iTrVectorSection];
                 TS = TSectionDat.TrackSections.Get(TVS.SectionIndex);
+                if (TS == null) return false;
                 Offset = 0;
 
                 TileX = TVS.TileX;
@@ -769,6 +770,7 @@ namespace ORTS
                 --iTrVectorSection;
                 TVS = TN.TrVectorNode.TrVectorSections[iTrVectorSection];
                 TS = TSectionDat.TrackSections.Get(TVS.SectionIndex);
+                if (TS == null) return false;
 
                 // as we transition across, we must adopt the pitch of the new section of track
                 AX = -TVS.AX;
