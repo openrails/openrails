@@ -450,7 +450,13 @@ namespace ORTS
                 {
                     // construct train data
                     Train train = new Train();
-                    int consistDirection = (activityObject.Direction != 0 ? 1 : 0);  // 1 = forward
+                    int consistDirection;
+                    switch (activityObject.Direction)  // TODO, we don't really understand this
+                    {
+                        case 0: consistDirection = 0; break;  // reversed
+                        case 18: consistDirection = 0; break;  // reversed
+                        default: consistDirection = 1; break;  // forward
+                    }
                     train.RearTDBTraveller = new TDBTraveller(activityObject.TileX, activityObject.TileZ, activityObject.X, activityObject.Z, 1, TDB, TSectionDat);
                     if (consistDirection != 1)
                         train.RearTDBTraveller.ReverseDirection();
