@@ -407,17 +407,18 @@ namespace ORTS
                 train.RearTDBTraveller.ReverseDirection();
 
             // add wagons
-            foreach (ConsistTrainset wagon in conFile)
+            foreach (Wagon wagon in conFile.Train.TrainCfg.Wagons)
             {
 
                 string wagonFolder = BasePath + @"\trains\trainset\" + wagon.Folder;
-                string wagonFilePath = wagonFolder + @"\" + wagon.File + ".wag"; ;
+                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
                 if (wagon.IsEngine)
                     wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 
                 try
                 {
                     TrainCar car = RollingStock.Load(wagonFilePath);
+                    car.Flipped = wagon.Flip;
                     train.Cars.Add(car);
                     car.Train = train;
                 }

@@ -554,7 +554,7 @@ namespace MSTS
 	{
 		public string Name = "Loose consist.";
 		int Serial = 1;
-		MaxVelocity MaxVelocity = new MaxVelocity();
+		public MaxVelocity MaxVelocity = new MaxVelocity();
 		int NextWagonUID = 0;
 		float Durability = 1.0f;
 

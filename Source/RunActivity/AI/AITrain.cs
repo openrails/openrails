@@ -104,6 +104,7 @@ namespace ORTS
             {
                 //Console.WriteLine("stop {0} {1} {2}", NextStopDistanceM, SpeedMpS, NextStopNode.Type);
                 SpeedMpS = 0;
+                Update(0);   // stop the wheels from moving etc
                 AITrainThrottlePercent = 0;
                 AITrainBrakePercent = 100;
                 if (WaitUntil == 0 && HandleNodeAction(NextStopNode, clockTime))
@@ -168,18 +169,43 @@ namespace ORTS
         private bool CalcNextStopDistance(double clockTime)
         {
             WorldLocation wl = NextStopNode.Location;
-            if (AITrainDirectionForward)
-                NextStopDistanceM = FrontTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
-            else
+            TDBTraveller traveller= FrontTDBTraveller;
+            if (!AITrainDirectionForward)
             {
-                TDBTraveller traveller = new TDBTraveller(RearTDBTraveller);
+                traveller = new TDBTraveller(RearTDBTraveller);
                 traveller.ReverseDirection();
-                NextStopDistanceM = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
             }
+            NextStopDistanceM = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
             //Console.WriteLine("nextstopdist {0} {1} {2} {3}", NextStopDistanceM, FrontTDBTraveller.Direction, RearTDBTraveller.Direction,
             //    Math.Sqrt(WorldLocation.DistanceSquared(wl,FrontTDBTraveller.WorldLocation)));
             if (NextStopDistanceM < 0 && HandleNodeAction(NextStopNode, clockTime))
                 return false;
+            if (NextStopNode.Type == AIPathNodeType.Couple)
+            {
+                int index= NextStopNode.NextMainTVNIndex;
+                if (index < 0)
+                    index= NextStopNode.NextSidingTVNIndex;
+                foreach (Train train in AI.Simulator.Trains)
+                {
+                    if (train == this)
+                        continue;
+                    if (train.FrontTDBTraveller.TrackNodeIndex == index)
+                    {
+                        wl = train.FrontTDBTraveller.WorldLocation;
+                        float d= traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
+                        if (d > 0 && d < NextStopDistanceM)
+                            NextStopDistanceM = d;
+                    }
+                    if (train.RearTDBTraveller.TrackNodeIndex == index)
+                    {
+                        wl = train.RearTDBTraveller.WorldLocation;
+                        float d = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
+                        if (d > 0 && d < NextStopDistanceM)
+                            NextStopDistanceM = d;
+                    }
+                }
+                return true;
+            }
             NextStopDistanceM -= 1;
             if (NextStopNode.IsFacingPoint == false && NextStopNode.JunctionIndex >= 0)
             {
@@ -268,25 +294,76 @@ namespace ORTS
                     WaitUntil = clockTime + 5;
                     return true;
                 case AIPathNodeType.Couple:
-                    // couple onto the train we should have just hit
-                    // TODO add code elsewhere to find train etc.
+                    if (AITrainDirectionForward)
+                        SpeedMpS = 20; // speed controls distance threshold
+                    else
+                        SpeedMpS = -20;
+                    AI.Simulator.CheckForCoupling(this);
+                    SpeedMpS = 0;
+                    CalculatePositionOfCars(0);
                     WaitUntil = clockTime + node.WaitTimeS;
                     return true;
                 case AIPathNodeType.Uncouple:
-                    if (node.NCars > 0 && node.NCars < Cars.Count - 1)
-                        AI.Simulator.UncoupleBehind(Cars[node.NCars - 1]);
-                    else if (-node.NCars > 0 && -node.NCars < Cars.Count-1)
-                    {
-                        int n = -node.NCars;
-                        // TODO add code to uncouple front end of train and keep rear
-                    }
-                    // uncouple train
+                    Uncouple(node.NCars);
                     WaitUntil = clockTime + node.WaitTimeS;
                     return true;
                 default:
                     break;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Uncouples cars from the AI train and keeps the specified number of cars.
+        /// If nCars is negative, -nCars are counted from the rear and the rear is kept.
+        /// If nCars if zero, the entire train is uncoupled and the AI train will be deleted.
+        /// Returns true if an action was performed.
+        /// </summary>
+        public void Uncouple(int nCars)
+        {
+            int n1 = nCars;
+            int n2 = Cars.Count;
+            if (nCars < 0)
+            {
+                n1 = 0;
+                n2 = Cars.Count + nCars;
+            }
+            if (n1 > n2 || n2 > Cars.Count)
+                return;
+            //Console.WriteLine("uncouple {0} {1} {2} {3}", nCars, n1, n2, Cars.Count);
+            // move rest of cars to the new train
+            Train train2 = new Train();
+            for (int k = n1; k < n2; ++k)
+            {
+                TrainCar newcar = Cars[k];
+                train2.Cars.Add(newcar);
+                newcar.Train = train2;
+            }
+            // and drop them from the old train
+            for (int k = n2 - 1; k >= n1; --k)
+            {
+                Cars.RemoveAt(k);
+            }
+            // and fix up the travellers
+            if (nCars < 0)
+            {
+                train2.FrontTDBTraveller = new TDBTraveller(FrontTDBTraveller);
+                train2.RepositionRearTraveller();
+                CalculatePositionOfCars(0);
+            }
+            else
+            {
+                train2.RearTDBTraveller = new TDBTraveller(RearTDBTraveller);
+                train2.CalculatePositionOfCars(0);  // fix the front traveller
+                RepositionRearTraveller();    // fix the rear traveller
+            }
+            AI.Simulator.Trains.Add(train2);
+            Update(0);   // stop the wheels from moving etc
+            train2.Update(0);  // stop the wheels from moving etc
+            if (nCars > 0)
+                Cars[nCars - 1].SignalEvent(EventID.Uncouple);
+            else if (nCars < 0)
+                Cars[0].SignalEvent(EventID.Uncouple);
         }
 
         public AIPathNode GetNextNode(AIPathNode node)
@@ -310,6 +387,8 @@ namespace ORTS
         private float CalcAccelMpSS()
         {
             float targetMpS = MaxSpeedMpS;
+            if (!AITrainDirectionForward || NextStopNode.Type == AIPathNodeType.Couple)
+                targetMpS *= .5f;
             float stopDistanceM = NextStopDistanceM;
             // adjust stopDistanceM to account for signals etc.
             float maxSpeedSq = targetMpS * targetMpS;
@@ -374,7 +453,7 @@ namespace ORTS
                     SpeedMpS += timeS * (targetMpSS - measMpSS);
                     //Console.WriteLine("extra {0} {1} {2}", SpeedMpS, targetMpSS, measMpSS);
                 }
-                //Console.WriteLine("down {0} {1}", TrainThrottlePercent, TrainBrakePercent);
+                //Console.WriteLine("down {0} {1}", AITrainThrottlePercent, AITrainBrakePercent);
             }
             if (targetMpSS > 0 && measMpSS < targetMpSS)
             {
@@ -395,7 +474,7 @@ namespace ORTS
                     SpeedMpS += timeS * (targetMpSS - measMpSS);
                     //Console.WriteLine("extra {0} {1} {2}", SpeedMpS, targetMpSS, measMpSS);
                 }
-                //Console.WriteLine("up {0} {1}", TrainThrottlePercent, TrainBrakePercent);
+                //Console.WriteLine("up {0} {1}", AITrainThrottlePercent, AITrainBrakePercent);
             }
         }
 

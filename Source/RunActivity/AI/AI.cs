@@ -123,7 +123,7 @@ namespace ORTS
             }
             bool remove = false;
             foreach (AITrain train in AITrains)
-                if (train.NextStopNode == null || train.RearNode == null || train.Cars[0].Train != train)
+                if (train.NextStopNode == null || train.RearNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
                     remove = true;
                 else
                     train.AIUpdate( elapsedClockSeconds, Simulator.ClockTime);
@@ -161,17 +161,18 @@ namespace ORTS
             //train.PATTraveller = patTraveller;
 
             // add wagons
-            foreach (ConsistTrainset wagon in conFile)
+            foreach (Wagon wagon in conFile.Train.TrainCfg.Wagons)
             {
 
                 string wagonFolder = Simulator.BasePath + @"\trains\trainset\" + wagon.Folder;
-                string wagonFilePath = wagonFolder + @"\" + wagon.File + ".wag"; ;
+                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
                 if (wagon.IsEngine)
                     wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 
                 try
                 {
                     TrainCar car = RollingStock.Load(wagonFilePath);
+                    car.Flipped = wagon.Flip;
                     train.Cars.Add(car);
                     car.Train = train;
                 }
@@ -185,6 +186,9 @@ namespace ORTS
             train.CalculatePositionOfCars(0);
             for (int i = 0; i < train.Cars.Count; i++)
                 train.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
+
+            if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
+                train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
 
             //AITrains.Add(train);
             Simulator.Trains.Add(train);
@@ -200,16 +204,16 @@ namespace ORTS
         {
             List<AITrain> removeList = new List<AITrain>();
             foreach (AITrain train in AITrains)
-                if (train.NextStopNode == null || train.RearNode == null || train.Cars[0].Train != train)
+                if (train.NextStopNode == null || train.RearNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
                     removeList.Add(train);
             foreach (AITrain train in removeList)
             {
                 AITrains.Remove(train);
                 Simulator.Trains.Remove(train);
                 Dispatcher.Release(train);
-                if (train.Cars[0].Train == train)
+                if (train.Cars.Count > 0 && train.Cars[0].Train == train)
                     foreach (TrainCar car in train.Cars)
-                        car.WorldPosition.XNAMatrix.M42 -= 1000;
+                        car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
             }
         }
     }

@@ -10,78 +10,32 @@ using System.IO;
 namespace MSTS
 {
 	/// <summary>
-	/// Work with consist files, contains an ArrayList of ConsistTrainset
+	/// Work with consist files
 	/// </summary>
-	public class CONFile: ArrayList /* of ConsistTrainset */
+	public class CONFile
 	{
-        public new ConsistTrainset this[int i]
+        public string FileName;   // no extension, no path
+        public string Description;  // form the Name field or label field of the consist file
+        public Train_Config Train;
+        public CONFile(string filenamewithpath)
         {
-            get { return (ConsistTrainset)base[i]; }
-            set { base[i] = value; }
-        }
-        
-        /// <summary>
-		/// Open a consist file, 
-		/// filePath includes full path and extension
-		/// </summary>
-		/// <param name="filePath"></param>
-		public CONFile( string filePath ): base()
-		{
-			FileName = Path.GetFileNameWithoutExtension( filePath );
-			Description = FileName;
-
-
-			STFReader inf = new STFReader( filePath );
-			try
-			{
-				while( !inf.EOF() )
-				{
-					inf.ReadToken();
-
-					if( inf.Tree == "Train(TrainCfg(Name(" )
-					{
-						Description = inf.ReadToken();
-						inf.VerifyEndOfBlock();
-					}
-					if( inf.Tree == "Train(TrainCfg(Engine(EngineData(" )
-					{
-						string file = inf.ReadToken();
-						string folder = inf.ReadToken();
-						inf.VerifyEndOfBlock();
-						this.Add( new ConsistTrainset( folder, file, true ) );
-					}
-					if( inf.Tree == "Train(TrainCfg(Wagon(WagonData(" )
-					{
-						string file = inf.ReadToken();
-						string folder = inf.ReadToken();
-						inf.VerifyEndOfBlock();
-						this.Add( new ConsistTrainset( folder, file, false ) );
-					}
-				}
-			}
+            FileName = Path.GetFileNameWithoutExtension(filenamewithpath);
+            Description = FileName;
+            STFReader f = new STFReader(filenamewithpath);
+            try
+            {
+                while (!f.EndOfBlock()) // EOF
+                {
+                    string token = f.ReadToken();
+                    if (0 == String.Compare(token, "Train", true)) Train = new Train_Config(f);
+                    else f.SkipBlock();
+                }
+            }
 			finally
 			{
-				inf.Close();
+				f.Close();
 			}
-
-		}
-
-		public string FileName;   // no extension, no path
-		public string Description;  // form the Name field or label field of the consist file
-	} // CONFile
-
-	public class ConsistTrainset
-	{
-		public bool IsEngine;
-		public string Folder;
-		public string File;
-
-		public ConsistTrainset( string folder, string file, bool isEngine )
-		{
-			Folder = folder;
-			File = file;
-			IsEngine = isEngine;
-		}
-	}
+       }
+    }
 }
 
