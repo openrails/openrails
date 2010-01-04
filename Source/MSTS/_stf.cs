@@ -47,6 +47,7 @@ namespace MSTS
             f = new StreamReader(filename, true); // TODO,was  System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
             FileName = filename;
             string Header = f.ReadLine();
+            ++LineNumber;
         }
 
         /// <summary>
@@ -110,7 +111,7 @@ namespace MSTS
             int c = f.Peek();
             while ( IsEof(c) || IsWhiteSpace(c) ) // skip over eof and white space
             {
-                c = f.Read();
+                c = ReadChar();
                 if (IsEof(c))
                     break;   // break on reading eof 
                 c = f.Peek();
