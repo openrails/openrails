@@ -137,7 +137,7 @@ namespace ORTS
             foreach (TrainCar car in Cars)
             {
                 car.Update(elapsedClockSeconds);
-                TrainMotiveForceN += car.MotiveForceN;
+                TrainMotiveForceN += car.MotiveForceN * (car.Flipped ? -1.0f : 1.0f);
                 TrainFrictionForceN += car.FrictionForceN;
                 TrainMassKG += car.MassKG;
             }
