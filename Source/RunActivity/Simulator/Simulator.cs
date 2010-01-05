@@ -454,9 +454,10 @@ namespace ORTS
                     int consistDirection;
                     switch (activityObject.Direction)  // TODO, we don't really understand this
                     {
-                        case 0: consistDirection = 0; break;  // reversed
+                        case 0: consistDirection = 0; break;  // reversed ( confirmed on L&PS route )
                         case 18: consistDirection = 0; break;  // reversed
-                        default: consistDirection = 1; break;  // forward
+                        case 131: consistDirection = 1; break; // forward ( confirmed on L&PS route )
+                        default: consistDirection = 1; break;  // forward ( confirmed on L&PS route )
                     }
                     train.RearTDBTraveller = new TDBTraveller(activityObject.TileX, activityObject.TileZ, activityObject.X, activityObject.Z, 1, TDB, TSectionDat);
                     if (consistDirection != 1)

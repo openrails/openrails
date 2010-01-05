@@ -471,8 +471,7 @@ namespace ORTS
                             "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options);
                     }
 
-                    // automatic zbias to reduce bleed through - later prims rendered over top of earlier ones
-                    shapePrimitive.ZBias = prim_state.ZBias + (-0.0001f * (float)iPrim);  
+                    shapePrimitive.ZBias = prim_state.ZBias;
 
                     int iMatrix = vtx_state.imatrix;
                     shapePrimitive.PrimMatrixIndex = iMatrix;
