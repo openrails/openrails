@@ -336,11 +336,17 @@ namespace ORTS
         public DepthStencilBuffer shadowDepthBuffer;
         public Texture2D shadowMap;
 
-        const int shadowMapWidthHeight = 4096;
+        int shadowMapWidthHeight = 4096;
 
         public void InitShadows()
         {
             SurfaceFormat shadowMapFormat = SurfaceFormat.Unknown;
+
+            GraphicsDeviceCapabilities capabilities = GraphicsAdapter.DefaultAdapter.GetCapabilities(DeviceType.Hardware);
+            if (capabilities.MaxTextureHeight < shadowMapWidthHeight)
+                shadowMapWidthHeight = capabilities.MaxTextureHeight;
+            if (capabilities.MaxTextureWidth < shadowMapWidthHeight)
+                shadowMapWidthHeight = capabilities.MaxTextureWidth;
 
             // Check to see if the device supports a 32 or 16 bit 
             // floating point render target
