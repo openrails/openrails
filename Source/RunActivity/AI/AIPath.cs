@@ -19,7 +19,7 @@ using MSTS;
 
 namespace ORTS
 {
-    public enum AIPathNodeType { Other, Stop, SidingStart, SidingEnd, Couple, Uncouple, Reverse };
+    public enum AIPathNodeType { Other, Stop, SidingStart, SidingEnd, Uncouple, Reverse };
 
     public class AIPath
     {
@@ -62,18 +62,25 @@ namespace ORTS
                 if (node.NextMainNode != null && node.NextSidingNode != null)
                     node.Type = AIPathNodeType.SidingStart;
             }
+            Dictionary<int, AIPathNode> lastUse = new Dictionary<int, AIPathNode>();
             for (AIPathNode node1 = FirstNode; node1 != null; node1 = node1.NextMainNode)
             {
-                //Console.WriteLine("path {0} {1} {2 } {3 } {4}", node1.ID, node1.Type, node1.JunctionIndex, node1.NextMainTVNIndex, node1.NextSidingTVNIndex);
+                //Console.WriteLine("path {0} {1} {2} {3} {4}", node1.ID, node1.Type, node1.JunctionIndex, node1.NextMainTVNIndex, node1.NextSidingTVNIndex);
+                if (node1.JunctionIndex >= 0)
+                    lastUse[node1.JunctionIndex] = node1;
                 AIPathNode node2 = node1.NextSidingNode;
                 while (node2 != null && node2.NextSidingNode != null)
                 {
                     //Console.WriteLine("siding {0} {1} {2} {3} {4}", node2.ID, node2.Type, node2.JunctionIndex, node2.NextMainTVNIndex, node2.NextSidingTVNIndex);
+                    if (node2.JunctionIndex >= 0)
+                        lastUse[node2.JunctionIndex] = node2;
                     node2 = node2.NextSidingNode;
                 }
                 if (node2 != null)
                     node2.Type = AIPathNodeType.SidingEnd;
             }
+            foreach (KeyValuePair<int, AIPathNode> kvp in lastUse)
+                kvp.Value.IsLastSwitchUse = true;
         }
 
         // restore game state
@@ -148,6 +155,20 @@ namespace ORTS
         }
 
         /// <summary>
+        /// aligns the specified switch to its default/main route.
+        /// </summary>
+        public void RestoreSwitch(int junctionIndex)
+        {
+            if (junctionIndex < 0)
+                return;
+            TrackNode tn = TrackDB.TrackNodes[junctionIndex];
+            if (tn.TrJunctionNode == null)
+                return;
+            TrackShape ts = TSectionDat.TrackShapes.Get(tn.TrJunctionNode.ShapeIndex);
+            tn.TrJunctionNode.SelectedRoute = (int)ts.MainRoute;
+        }
+
+        /// <summary>
         /// returns true if the specified vector node is at the facing point end of
         /// the specified juction node, else false.
         /// </summary>
@@ -192,6 +213,7 @@ namespace ORTS
         public WorldLocation Location;      // coordinates for this path node
         public int JunctionIndex = -1;      // index of junction node, -1 if none
         public bool IsFacingPoint = false;// true if this node entered from the facing point end
+        public bool IsLastSwitchUse = false;//true if this node is last to touch a switch
 
         /// <summary>
         /// Creates a single AIPathNode and initializes everything that do not depend on other nodes.
@@ -200,23 +222,24 @@ namespace ORTS
         public AIPathNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB)
         {
             ID = (int)tpn.FromPDP;
-            if ((tpn.A & 01) != 0)
-                Type = AIPathNodeType.Reverse;
-            else if ((tpn.A & 02) != 0)
+            if ((tpn.A & 03) != 0)
             {
-                Type = AIPathNodeType.Stop;
+                if ((tpn.A & 01) != 0)
+                    Type = AIPathNodeType.Reverse;
+                else
+                    Type = AIPathNodeType.Stop;
                 WaitTimeS = (int)((tpn.A >> 16) & 0xffff);
                 if (WaitTimeS >= 40000 && WaitTimeS < 60000)
                 {
-                    Type = AIPathNodeType.Uncouple;
                     NCars = (WaitTimeS / 100) % 100;
                     if (WaitTimeS >= 50000)
                         NCars = -NCars;
                     WaitTimeS %= 100;
+                    if (Type == AIPathNodeType.Stop)
+                        Type = AIPathNodeType.Uncouple;
                 }
-                else if (WaitTimeS >= 60000)
+                else if (WaitTimeS >= 60000)  // this is old and should be removed/reused
                 {
-                    Type = AIPathNodeType.Couple;
                     WaitTimeS %= 1000;
                 }
             }
@@ -255,6 +278,7 @@ namespace ORTS
             NextSidingTVNIndex = inf.ReadInt32();
             JunctionIndex = inf.ReadInt32();
             IsFacingPoint = inf.ReadBoolean();
+            IsLastSwitchUse = inf.ReadBoolean();
             Location = new WorldLocation();
             Location.TileX = inf.ReadInt32();
             Location.TileZ = inf.ReadInt32();
@@ -275,6 +299,7 @@ namespace ORTS
             outf.Write(NextSidingTVNIndex);
             outf.Write(JunctionIndex);
             outf.Write(IsFacingPoint);
+            outf.Write(IsLastSwitchUse);
             outf.Write(Location.TileX);
             outf.Write(Location.TileZ);
             outf.Write(Location.Location.X);

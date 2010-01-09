@@ -95,7 +95,6 @@ namespace ORTS
             {
                 case AIPathNodeType.Stop:
                 case AIPathNodeType.Reverse:
-                case AIPathNodeType.Couple:
                 case AIPathNodeType.Uncouple:
                     nextLTime += node.WaitTimeS + times.Train.StopStartTime();
                     break;

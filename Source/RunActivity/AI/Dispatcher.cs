@@ -93,6 +93,26 @@ namespace ORTS
         {
             foreach (AITrain train in AI.AITrains)
             {
+                if (!train.AITrainDirectionForward)
+                {
+                    if (train.NReverseNodes > 0 && train.NReverseNodes % 2 == 0)
+                    {
+                        train.NReverseNodes--;
+                        train.RearNode = FindNextReverseNode(train);
+                        //Console.WriteLine("new rev r {0}", train.RearNode.ID);
+                    }
+                    continue;
+                }
+                if (train.NReverseNodes > 0 && train.NReverseNodes % 2 == 1)
+                {
+                    train.NReverseNodes--;
+                    train.RearNode = FindNextReverseNode(train);
+                    ///Console.WriteLine("new rev f {0}", train.RearNode.ID);
+                    if (train.NReverseNodes == 0)
+                        Rereserve(train);
+                }
+                if (train.NReverseNodes > 0 && train.RearNode.Type == AIPathNodeType.Reverse)
+                    continue;
                 if (train.RearNode.NextMainTVNIndex == train.RearTDBTraveller.TrackNodeIndex ||
                   train.RearNode.NextSidingTVNIndex == train.RearTDBTraveller.TrackNodeIndex ||
                   train.RearTDBTraveller.TN.TrVectorNode == null)
@@ -111,6 +131,8 @@ namespace ORTS
                 //for (int j = 0; j < reservations.Length; j++)
                 //    if (reservations[j] == train.UiD)
                 //        Console.WriteLine(" res {0}", j);
+                if (train.RearNode.IsLastSwitchUse)
+                    train.Path.RestoreSwitch(train.RearNode.JunctionIndex);
                 train.RearNode = train.Path.FindTrackNode(train.RearNode, train.RearTDBTraveller.TrackNodeIndex);
             }
         }
@@ -141,10 +163,24 @@ namespace ORTS
             }
             List<int> tnList = new List<int>();
             AIPathNode node = train.RearNode;
-            while (node != null && (node == train.RearNode || node.Type != AIPathNodeType.SidingStart))
+            bool movingForward = train.AITrainDirectionForward;
+            int nRev = 0;
+            if (!movingForward)
+                nRev++;
+            //Console.WriteLine("reqa {0}", train.UiD);
+            while (node != null)
             {
-                if (node.Type == AIPathNodeType.SidingEnd && node != train.AuthEndNode)
+                //Console.WriteLine(" node {0} {1}", node.ID, node.Type);
+                if (movingForward && node != train.RearNode && node.Type == AIPathNodeType.SidingStart)
                     break;
+                if (movingForward && node.Type == AIPathNodeType.SidingEnd && node != train.AuthEndNode && reservations[node.NextMainTVNIndex] != train.UiD)
+                    break;
+                if (node != train.RearNode && node.Type == AIPathNodeType.Reverse)
+                {
+                    movingForward = !movingForward;
+                    nRev++;
+                    //Console.WriteLine("rev node {0}", node.ID);
+                }
                 if (node.NextMainNode != null && node != train.AuthSidingNode)
                 {
                     tnList.Add(node.NextMainTVNIndex);
@@ -164,11 +200,13 @@ namespace ORTS
             {
                 Unreserve(train);
                 Reserve(train, tnList);
-                return train.SetAuthorization(node, null);
+                return train.SetAuthorization(node, null, nRev);
             }
             //Console.WriteLine("start siding {0}", node.ID);
             List<int> tnList1 = new List<int>();
             AIPathNode sidingNode = node;
+            int nReverse = nRev;
+            bool forward = movingForward;
             bool sidingFirst = !update;
             if (sidingFirst)
             {
@@ -179,20 +217,29 @@ namespace ORTS
             for (int i = 0; i < 2; i++)
             {
                 tnList1.Clear();
+                nRev = nReverse;
+                movingForward = forward;
                 if (sidingFirst ? i == 1 : i == 0)
                 {
                     //Console.WriteLine("try main {0}", node.ID);
                     if (ttTimes != null && !ttTimes.ContainsKey(sidingNode.NextMainTVNIndex))
                         continue;
-                    for (node = sidingNode; node.Type != AIPathNodeType.SidingEnd; node = node.NextMainNode)
+                    for (node = sidingNode; !movingForward || node.Type != AIPathNodeType.SidingEnd; node = node.NextMainNode)
+                    {
                         tnList1.Add(node.NextMainTVNIndex);
+                        if (node.Type == AIPathNodeType.Reverse)
+                        {
+                            movingForward = !movingForward;
+                            nRev++;
+                        }
+                    }
                     if (CanReserve(train, tnList1))
                     {
                         Unreserve(train);
                         Reserve(train, tnList);
                         Reserve(train, tnList1);
                         //Console.WriteLine("got main {0}", node.ID);
-                        return train.SetAuthorization(node, null);
+                        return train.SetAuthorization(node, null, nRev);
                     }
                 }
                 else
@@ -202,14 +249,21 @@ namespace ORTS
                         continue;
                     tnList1.Clear();
                     for (node = sidingNode; node.Type != AIPathNodeType.SidingEnd; node = node.NextSidingNode)
+                    {
                         tnList1.Add(node.NextSidingTVNIndex);
+                        if (node.Type == AIPathNodeType.Reverse)
+                        {
+                            movingForward = !movingForward;
+                            nRev++;
+                        }
+                    }
                     if (CanReserve(train, tnList1))
                     {
                         Unreserve(train);
                         Reserve(train, tnList);
                         Reserve(train, tnList1);
                         //Console.WriteLine("got siding {0} {1}", node.ID, sidingNode.ID);
-                        return train.SetAuthorization(node, sidingNode);
+                        return train.SetAuthorization(node, sidingNode, nRev);
                     }
                 }
             }
@@ -255,8 +309,52 @@ namespace ORTS
         /// </summary>
         public void Release(AITrain train)
         {
-            train.SetAuthorization(null, null);
+            train.SetAuthorization(null, null, 0);
             Unreserve(train);
+        }
+
+        /// <summary>
+        /// Releases the specified train's movement authorization.
+        /// </summary>
+        public void Rereserve(AITrain train)
+        {
+            Unreserve(train);
+            for (AIPathNode node = train.RearNode; node != null && node != train.AuthEndNode; )
+            {
+                if (node != train.AuthSidingNode && node.NextMainNode != null)
+                {
+                    reservations[node.NextMainTVNIndex] = train.UiD;
+                    node = node.NextMainNode;
+                }
+                else if (node.NextSidingNode != null)
+                {
+                    reservations[node.NextSidingTVNIndex] = train.UiD;
+                    node = node.NextSidingNode;
+                }
+                else
+                    break;
+            }
+            //Console.WriteLine("rereserve {0}", train.UiD);
+            //for (int j = 0; j < reservations.Length; j++)
+            //    if (reservations[j] == train.UiD)
+            //        Console.WriteLine(" res {0}", j);
+        }
+        AIPathNode FindNextReverseNode(AITrain train)
+        {
+            for (AIPathNode node = train.RearNode; node != null && node != train.AuthEndNode; )
+            {
+                if (node != train.RearNode && node.Type == AIPathNodeType.Reverse)
+                    return node;
+                if (node.IsLastSwitchUse)
+                    train.Path.RestoreSwitch(node.JunctionIndex);
+                if (node != train.AuthSidingNode && node.NextMainNode != null)
+                    node = node.NextMainNode;
+                else if (node.NextSidingNode != null)
+                    node = node.NextSidingNode;
+                else
+                    break;
+            }
+            return train.RearNode;
         }
 
         /// <summary>
@@ -280,17 +378,17 @@ namespace ORTS
                         int f = 0;
                         bool aligned = train.Path.SwitchIsAligned(node.JunctionIndex, node.NextMainTVNIndex);
                         if (node.Type == AIPathNodeType.SidingStart)
-                            f = 03;
+                            f = 0x3;
                         else if (node.Type == AIPathNodeType.SidingEnd)
-                            f = 014;
+                            f = 0xc;
                         else if (node.IsFacingPoint && train.Path.SwitchIsAligned(node.JunctionIndex, node.NextMainTVNIndex))
-                            f = 01;
+                            f = 0x1;
                         else if (node.IsFacingPoint)
-                            f = 02;
+                            f = 0x2;
                         else if (!node.IsFacingPoint && train.Path.SwitchIsAligned(node.JunctionIndex, prevIndex))
-                            f = 04;
+                            f = 0x4;
                         else
-                            f = 010;
+                            f = 0x8;
                         flags[node.JunctionIndex] |= f;
                         //Console.WriteLine("junction {0} {1} {2} {3}", train.UiD, node.JunctionIndex, f, node.Type);
                     }
@@ -305,7 +403,7 @@ namespace ORTS
                     if (node.Type == AIPathNodeType.Other && node.JunctionIndex >= 0 && !node.IsFacingPoint)
                     {
                         int f = flags[node.JunctionIndex];
-                        if ((f & 011) == 011 || (f & 06) == 06)
+                        if ((f & 0x9) == 0x9 || (f & 0x6) == 0x6)
                             node.Type = AIPathNodeType.SidingEnd;
                         //Console.WriteLine("junction {0} {1} {2} {3}", train.UiD, node.JunctionIndex, f, node.Type);
                     }

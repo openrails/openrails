@@ -28,9 +28,11 @@ namespace ORTS
         public AIPathNode NextStopNode = null;  // next path node train should stop at
         public AIPathNode AuthEndNode = null;   // end of authorized movement, set by dispatcher 
         public AIPathNode AuthSidingNode = null;// start of siding, take siding if not null
+        public int NReverseNodes = 0;           // number of reverse nodes before AuthEndNode
         public float AuthUpdateDistanceM = 0;  // distance to next stop node to ask for longer authorization
         public float NextStopDistanceM = 0;  // distance to next stop node
         public float NextStopTimeS = 0;      // seconds to next stop
+        public bool CoupleOnNextStop = false;   // true if cars at next stop to couple onto
         public float MaxDecelMpSS = 1;  // maximum decelleration
         public float MaxAccelMpSS = .5f;// maximum accelleration
         public float MaxSpeedMpS = 10;  // maximum speed
@@ -57,6 +59,7 @@ namespace ORTS
             AuthUpdateDistanceM = inf.ReadSingle();
             NextStopDistanceM = inf.ReadSingle();
             NextStopTimeS = inf.ReadSingle();
+            CoupleOnNextStop = inf.ReadBoolean();
             MaxDecelMpSS = inf.ReadSingle();
             MaxAccelMpSS = inf.ReadSingle();
             MaxSpeedMpS = inf.ReadSingle();
@@ -68,6 +71,7 @@ namespace ORTS
             NextStopNode = Path.ReadNode(inf);
             AuthEndNode = Path.ReadNode(inf);
             AuthSidingNode = Path.ReadNode(inf);
+            NReverseNodes = inf.ReadInt32();
         }
 
         // save game state
@@ -78,6 +82,7 @@ namespace ORTS
             outf.Write(AuthUpdateDistanceM);
             outf.Write(NextStopDistanceM);
             outf.Write(NextStopTimeS);
+            outf.Write(CoupleOnNextStop);
             outf.Write(MaxDecelMpSS);
             outf.Write(MaxAccelMpSS);
             outf.Write(MaxSpeedMpS);
@@ -89,6 +94,7 @@ namespace ORTS
             Path.WriteNode(outf, NextStopNode);
             Path.WriteNode(outf, AuthEndNode);
             Path.WriteNode(outf, AuthSidingNode);
+            outf.Write(NReverseNodes);
         }
 
         /// <summary>
@@ -127,7 +133,7 @@ namespace ORTS
                     Path.AlignSwitch(NextStopNode.JunctionIndex, GetTVNIndex(prevNode));
                 }
                 //Console.WriteLine("auth {0} {1}", AuthEndNode.ID, (AuthSidingNode == null ? "null" : AuthSidingNode.ID.ToString()));
-                NextStopNode = FindStopNode(NextStopNode);
+                NextStopNode = FindStopNode(NextStopNode, 50);
                 if (NextStopNode == null)
                     return;
                 //Console.WriteLine("nextstop {0} {1} {2}", NextStopNode.ID, NextStopNode.Type, NextStopNode.IsFacingPoint);
@@ -141,8 +147,8 @@ namespace ORTS
                 {
                     if (Path.SwitchIsAligned(NextStopNode.JunctionIndex, NextStopNode.IsFacingPoint ? GetTVNIndex(NextStopNode) : FrontTDBTraveller.TrackNodeIndex))
                     {
-                        AIPathNode node = FindStopNode(NextStopNode);
-                        //Console.WriteLine("authupdate {0} {1}", NextStopNode.ID, node.ID);
+                        AIPathNode node = FindStopNode(NextStopNode, 50);
+                        //Console.WriteLine("authupdate {0} {1} {2} {3}", NextStopNode.ID, node.ID, NextStopNode.Type, node.Type);
                         if (node != null && NextStopNode != node)
                         {
                             NextStopNode = node;
@@ -150,6 +156,7 @@ namespace ORTS
                         }
                     }
                 }
+                //Console.WriteLine("new next stop distance {0} {1} {2}", UiD, NextStopDistanceM, AuthUpdateDistanceM);
             }
             WaitUntil = 0;
             float prevSpeedMpS = SpeedMpS;
@@ -164,10 +171,13 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Computes the NextStopDistanceM value.
+        /// Computes the NextStopDistanceM value, i.e. the distance from one end of the train to the NextStopNode.
+        /// Returns false and performs the NextStopNode action if its past the train end.
+        /// Also checks for possible coupling and sets CoupleOnNextStop and adjusts the distance if any.
         /// </summary>
         private bool CalcNextStopDistance(double clockTime)
         {
+            CoupleOnNextStop = false;
             WorldLocation wl = NextStopNode.Location;
             TDBTraveller traveller= FrontTDBTraveller;
             if (!AITrainDirectionForward)
@@ -180,7 +190,7 @@ namespace ORTS
             //    Math.Sqrt(WorldLocation.DistanceSquared(wl,FrontTDBTraveller.WorldLocation)));
             if (NextStopDistanceM < 0 && HandleNodeAction(NextStopNode, clockTime))
                 return false;
-            if (NextStopNode.Type == AIPathNodeType.Couple)
+            if (NextStopNode.Type == AIPathNodeType.Stop || NextStopNode.Type == AIPathNodeType.Reverse || NextStopNode.Type == AIPathNodeType.Uncouple)
             {
                 int index= NextStopNode.NextMainTVNIndex;
                 if (index < 0)
@@ -194,14 +204,38 @@ namespace ORTS
                         wl = train.FrontTDBTraveller.WorldLocation;
                         float d= traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
                         if (d > 0 && d < NextStopDistanceM)
+                        {
                             NextStopDistanceM = d;
+                            CoupleOnNextStop = true;
+                        }
                     }
                     if (train.RearTDBTraveller.TrackNodeIndex == index)
                     {
                         wl = train.RearTDBTraveller.WorldLocation;
                         float d = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
                         if (d > 0 && d < NextStopDistanceM)
+                        {
                             NextStopDistanceM = d;
+                            CoupleOnNextStop = true;
+                        }
+                    }
+                }
+                if (CoupleOnNextStop == false && NextStopNode.Type == AIPathNodeType.Reverse)
+                {
+                    AIPathNode node = FindStopNode(NextStopNode, 0);
+                    if (node != null && node.JunctionIndex >= 0)
+                    {
+                        wl = node.Location;
+                        TDBTraveller rtraveller = RearTDBTraveller;
+                        if (!AITrainDirectionForward)
+                        {
+                            rtraveller = new TDBTraveller(FrontTDBTraveller);
+                            rtraveller.ReverseDirection();
+                        }
+                        float d = rtraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
+                        //Console.WriteLine("reverse distance {0} {1}", d, NextStopDistanceM);
+                        if (d > 0 && d + 1 < NextStopDistanceM && d + 100 > NextStopDistanceM)
+                            NextStopDistanceM = d + 1;
                     }
                 }
                 return true;
@@ -209,13 +243,17 @@ namespace ORTS
             NextStopDistanceM -= 1;
             if (NextStopNode.IsFacingPoint == false && NextStopNode.JunctionIndex >= 0)
             {
-                TrackNode tn = Path.TrackDB.TrackNodes[NextStopNode.JunctionIndex];
-                float clearance = 40;
-                if (tn != null && tn.TrJunctionNode != null)
+                float clearance = 10;
+                if (NextStopNode == AuthEndNode)
                 {
-                    TrackShape shape = Path.TSectionDat.TrackShapes.Get(tn.TrJunctionNode.ShapeIndex);
-                    if (shape != null)
-                        clearance = 1.5f * (float)shape.ClearanceDistance;
+                    TrackNode tn = Path.TrackDB.TrackNodes[NextStopNode.JunctionIndex];
+                    clearance = 40;
+                    if (tn != null && tn.TrJunctionNode != null)
+                    {
+                        TrackShape shape = Path.TSectionDat.TrackShapes.Get(tn.TrJunctionNode.ShapeIndex);
+                        if (shape != null)
+                            clearance = 1.5f * (float)shape.ClearanceDistance;
+                    }
                 }
                 NextStopDistanceM -= clearance;
             }
@@ -236,7 +274,7 @@ namespace ORTS
         /// <summary>
         /// Finds the next path node the train should stop at.
         /// </summary>
-        private AIPathNode FindStopNode(AIPathNode node)
+        private AIPathNode FindStopNode(AIPathNode node, float throwDistance)
         {
             if (node.NextMainNode == null && node.NextSidingNode == null)
                 return null;
@@ -250,14 +288,22 @@ namespace ORTS
                 {
                     case AIPathNodeType.Stop:
                     case AIPathNodeType.Reverse:
-                    case AIPathNodeType.Couple:
                     case AIPathNodeType.Uncouple:
                         return node;
                     default:
                         break;
                 }
                 if (!Path.SwitchIsAligned(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode)))
-                    return node;
+                {
+                    TDBTraveller traveller= FrontTDBTraveller;
+                    if (!AITrainDirectionForward)
+                        traveller = RearTDBTraveller;
+                    float d= WorldLocation.DistanceSquared(traveller.WorldLocation, node.Location);
+                    //Console.WriteLine("throw distance {0}", d);
+                    if (d > throwDistance*throwDistance)
+                        return node;
+                    Path.AlignSwitch(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode));
+                }
             }
             return node;
         }
@@ -271,6 +317,8 @@ namespace ORTS
             while (node1 != target)
             {
                 AIPathNode node2= GetNextNode(node1);
+                if (node2 == null)
+                    return RearNode;
                 if (node2 == target)
                     return node1;
                 node1 = node2;
@@ -284,6 +332,19 @@ namespace ORTS
         /// </summary>
         private bool HandleNodeAction(AIPathNode node, double clockTime)
         {
+            if (CoupleOnNextStop)
+            {
+                //Console.WriteLine("couple");
+                CoupleOnNextStop = false;
+                if (AITrainDirectionForward)
+                    SpeedMpS = 20; // speed controls distance threshold which must be larger than our stop threshold
+                else
+                    SpeedMpS = -20;
+                AI.Simulator.CheckForCoupling(this);
+                SpeedMpS = 0;
+                CalculatePositionOfCars(0);
+            }
+            //Console.WriteLine("stop node type {0} {1} {2}", node.Type, node.NCars, node.WaitTimeS);
             switch (node.Type)
             {
                 case AIPathNodeType.Stop:
@@ -291,17 +352,9 @@ namespace ORTS
                     return true;
                 case AIPathNodeType.Reverse:
                     AITrainDirectionForward = !AITrainDirectionForward;
-                    WaitUntil = clockTime + 5;
-                    return true;
-                case AIPathNodeType.Couple:
-                    if (AITrainDirectionForward)
-                        SpeedMpS = 20; // speed controls distance threshold
-                    else
-                        SpeedMpS = -20;
-                    AI.Simulator.CheckForCoupling(this);
-                    SpeedMpS = 0;
-                    CalculatePositionOfCars(0);
-                    WaitUntil = clockTime + node.WaitTimeS;
+                    WaitUntil = clockTime + (node.WaitTimeS > 0 ? node.WaitTimeS : 5);
+                    if (node.NCars != 0)
+                        Uncouple(node.NCars);
                     return true;
                 case AIPathNodeType.Uncouple:
                     Uncouple(node.NCars);
@@ -328,9 +381,9 @@ namespace ORTS
                 n1 = 0;
                 n2 = Cars.Count + nCars;
             }
+            //Console.WriteLine("uncouple {0} {1} {2} {3}", nCars, n1, n2, Cars.Count);
             if (n1 > n2 || n2 > Cars.Count)
                 return;
-            //Console.WriteLine("uncouple {0} {1} {2} {3}", nCars, n1, n2, Cars.Count);
             // move rest of cars to the new train
             Train train2 = new Train();
             for (int k = n1; k < n2; ++k)
@@ -358,7 +411,8 @@ namespace ORTS
                 RepositionRearTraveller();    // fix the rear traveller
             }
             AI.Simulator.Trains.Add(train2);
-            Update(0);   // stop the wheels from moving etc
+            if (nCars != 0)
+                Update(0);   // stop the wheels from moving etc
             train2.Update(0);  // stop the wheels from moving etc
             if (nCars > 0)
                 Cars[nCars - 1].SignalEvent(EventID.Uncouple);
@@ -387,8 +441,8 @@ namespace ORTS
         private float CalcAccelMpSS()
         {
             float targetMpS = MaxSpeedMpS;
-            if (!AITrainDirectionForward || NextStopNode.Type == AIPathNodeType.Couple)
-                targetMpS *= .5f;
+            if (!AITrainDirectionForward || CoupleOnNextStop)
+                targetMpS *= .75f;
             float stopDistanceM = NextStopDistanceM;
             // adjust stopDistanceM to account for signals etc.
             float maxSpeedSq = targetMpS * targetMpS;
@@ -484,11 +538,13 @@ namespace ORTS
         /// if siding is not null the train should enter the siding at the specified node.
         /// In the future the dispatcher might change the authorization while a train is moving.
         /// </summary>
-        public bool SetAuthorization(AIPathNode end, AIPathNode siding)
+        public bool SetAuthorization(AIPathNode end, AIPathNode siding, int nRev)
         {
             bool result = AuthEndNode != end || AuthSidingNode != siding;
             AuthEndNode = end;
             AuthSidingNode = siding;
+            NReverseNodes = nRev;
+            //Console.WriteLine("setauth {0} {1} {2} {3} {4}", UiD, result, end.ID, siding != null, nRev);
             return result;
         }
 
