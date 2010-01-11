@@ -40,13 +40,13 @@ namespace MSTS
 		StreamReader f;
 		public string FileName;  // only needed for error reporting purposes
         public int LineNumber = 1;    // current line number for error reporting
-
+        public string Header;
        
 		public STFReader( string filename )
         {
             f = new StreamReader(filename, true); // TODO,was  System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
             FileName = filename;
-            string Header = f.ReadLine();
+            Header = f.ReadLine();
             ++LineNumber;
         }
 

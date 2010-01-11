@@ -75,15 +75,6 @@ VS_OUTPUT VS(   float4 pPositionM : POSITION,	// in model space
 
 /////////////////////    P I X E L     S H A D E R    /////////////////////////////////
 
-float4 AdjustSaturation( float4 color )
-{
-	float level = (color.x + color.y + color.z) / 3;
-	color.r *= 0.95;
-	color.g *= 0.95;
-	color.b *= 1.1;
-	return lerp( float4( level,level,level, color.w ), color, level * 0.25 + 0.75 );   // 0 is no saturation, 1 is full saturation	
-	//return color;
-}
 
 float4 PSImage( 
 		   float light          : TEXCOORD1,
@@ -94,9 +85,9 @@ float4 PSImage(
 
     float4 surfColor = tex2D( imageMap, uvImageT );
     float alpha = surfColor.a;
-    surfColor *= light * 0.85 + 0.4; //Brightness + Ambient;
+    surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
     surfColor.a = alpha;
-    return AdjustSaturation( surfColor );
+    return surfColor;
 }
 
 float4 PSVegetation( 
@@ -106,8 +97,9 @@ float4 PSVegetation(
            : COLOR
 { 
 	float4 surfColor = tex2D( imageMap, uvImageT );
-	surfColor *= 0.7 + 0.5;   //Brightness + Ambient;
-	return AdjustSaturation(surfColor);
+	surfColor *= 0.8;  
+	surfColor += 0.03;
+	return surfColor;
 }
 
 
@@ -125,8 +117,8 @@ float4 PSTerrain(
     float effect = 10/distance;
     float3 bump = tex2D( normalMap, uvImageT * 50 ) - 0.5;
 	surfColor *=  1.0 + effect * 2.0 * bump;
-    surfColor *= light * 0.85 + 0.4; //Brightness + Ambient;
-    return AdjustSaturation(float4( surfColor,1));
+    surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
+    return float4( surfColor,1);
 }
 
 float4 PSSky( 

@@ -61,8 +61,6 @@ namespace ORTS
         
         public TrainCar PlayerLocomotive = null;  // Set by the Viewer - TODO there could be more than one player so eliminate this.
 
-        public static Random Random = new Random();   // for use by the entire program
-
         public Simulator(string activityPath)
         {
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));

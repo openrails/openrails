@@ -170,10 +170,9 @@ namespace ORTS
         /// </summary>
         protected override void Draw(GameTime gameTime)
         {
-            Thread.BeginCriticalRegion();
             RenderTime.Start();
 
-            if (gameTime.ElapsedRealTime.TotalSeconds > 0.00001)
+            if (gameTime.ElapsedRealTime.TotalSeconds > 0.001)
             {  // a zero elapsed time indicates the window needs to be redrawn with the same content
                 // ie after restoring from minimized, or uncovering a window
                 FrameUpdate(gameTime);
@@ -202,7 +201,6 @@ namespace ORTS
             base.Draw(gameTime);
 
             RenderTime.Stop();
-            Thread.EndCriticalRegion();
         }
 
         private void FrameUpdate(GameTime gameTime)
@@ -213,14 +211,11 @@ namespace ORTS
             {   // multi processor machine
                 // Wait for updater to finish, and flag if its slow
                 if (!Viewer.UpdaterProcess.Finished)
-                {
                     UpdateSlow = true;
-                    Viewer.UpdaterProcess.WaitTillFinished();
-                }
                 else
-                {
                     UpdateSlow = false;
-                }
+
+                Viewer.UpdaterProcess.WaitTillFinished();
 
                 // Time to read the keyboard - must be done in XNA Game thread
                 UserInput.Update();

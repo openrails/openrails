@@ -115,14 +115,6 @@ namespace ORTS
         {
         }
 
-        public void RandomizeSelection()
-        {
-            Random random = new Random();
-            listBoxFolder.SelectedIndex = random.Next(listBoxFolder.Items.Count);
-            listBoxRoutes.SelectedIndex = random.Next(listBoxRoutes.Items.Count);
-            listBoxActivities.SelectedIndex = random.Next(listBoxActivities.Items.Count);
-        }
-
         private void listBoxFolder_SelectedIndexChanged(object sender, EventArgs e)
         {
             listBoxRoutes.Items.Clear();
@@ -289,11 +281,6 @@ namespace ORTS
                 RK.SetValue("Fullscreen", checkBoxFullScreen.Checked ? 1 : 0);
                 RK.SetValue("Warnings", checkBoxWarnings.Checked ? 1 : 0);
             }
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            RandomizeSelection();
         }
 
         private void buttonOptions_Click(object sender, EventArgs e)

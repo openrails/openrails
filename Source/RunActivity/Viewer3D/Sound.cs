@@ -482,7 +482,7 @@ namespace ORTS
                 if (Enabled)
                 {
                     SoundCommand.Run();
-                    float volume = (float)Simulator.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
+                    float volume = (float)Program.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
                     SoundStream.Volume = volume;
                 }
                 UpdateTriggerDistance();
@@ -491,7 +491,7 @@ namespace ORTS
 
         private void UpdateTriggerDistance()
         {
-                triggerDistance = car.DistanceM + ( (float)Simulator.Random.NextDouble() * (SMS.Dist_Max - SMS.Dist_Min) + SMS.Dist_Min );
+                triggerDistance = car.DistanceM + ( (float)Program.Random.NextDouble() * (SMS.Dist_Max - SMS.Dist_Min) + SMS.Dist_Min );
         }
 
     } // class ORTSDistanceTravelledTrigger
@@ -550,7 +550,7 @@ namespace ORTS
                 if (Enabled)
                 {
                     SoundCommand.Run();
-                    float volume = (float)Simulator.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
+                    float volume = (float)Program.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
                     SoundStream.Volume = volume;
                 }
                 UpdateTriggerAtSeconds();
@@ -559,7 +559,7 @@ namespace ORTS
 
         private void UpdateTriggerAtSeconds()
         {
-            double interval = Simulator.Random.NextDouble() * (SMS.Delay_Max - SMS.Delay_Min) + SMS.Delay_Min;
+            double interval = Program.Random.NextDouble() * (SMS.Delay_Max - SMS.Delay_Min) + SMS.Delay_Min;
             triggerAtSeconds = Simulator.ClockTime + interval;
         }
 
@@ -895,7 +895,7 @@ namespace ORTS
             }
             else if (SelectionMethod == MSTS.SoundCommand.SelectionMethods.RandomSelection)
             {
-                iFile = Simulator.Random.Next(Files.Length);
+                iFile = Program.Random.Next(Files.Length);
             }
 
             string filePath = ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile];

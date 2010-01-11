@@ -269,6 +269,11 @@ namespace MSTS
 		public void AddRouteTSectionDatFile( string pathNameExt )
 		{
 			STFReader f = new STFReader( pathNameExt );
+            if (f.Header != "SIMISA@@@@@@@@@@JINX0T0t______")
+            {
+                Console.Error.WriteLine("Ignoring invalid TSECTION.DAT in route folder.");
+                return;
+            }
 			try
 			{
 				string token = f.ReadToken();

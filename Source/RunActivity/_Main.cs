@@ -33,13 +33,15 @@ namespace ORTS
     static class Program
     {
         public static string ActivityPath;
-        public static string Revision;
-        public static string Build;
-        public static string RegistryKey;
-        public static string UserDataFolder;
-        public static double RealTime = 0;  // tracks the real time for the frame we are currently processing
+        public static string Revision;        // ie 078
+        public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
+        public static string RegistryKey;     // ie "SOFTWARE\\OpenRails\\ORTS"
+        public static string UserDataFolder;  // ie "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS"
+        public static double RealTime = 0;    // tracks the real time in seconds for the frame we are currently processing
+        public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator; 
         private static Viewer3D Viewer;
+
 
         /// <summary>
         /// The main entry point for the application.
@@ -54,11 +56,15 @@ namespace ORTS
 
             if (IsWarningsOn()) EnableLogging();
 
-            ValidateArgs(args);
+            if (!ValidateArgs(args)) return;
 
             if (args[0] == "-runtest")
 
-                Testing.Test();  
+                Testing.Test();
+
+            else if (args[0] == "-random")
+
+                Start(Testing.GetRandomActivity());
 
             else if (args[0] == "-resume")
 
@@ -71,14 +77,14 @@ namespace ORTS
         }
 
 
+        /// <summary>
+        /// Run the specified activity from the beginning.
+        /// </summary>
         public static void Start(string parameter)
         {
             try
             {
-                if (parameter == "-random")
-                    ActivityPath = Testing.GetRandomActivity();
-                else
-                    ActivityPath = parameter;
+                ActivityPath = parameter;
 
                 Console.WriteLine("Starting Activity = " + ActivityPath);
                 Console.WriteLine();
@@ -97,6 +103,12 @@ namespace ORTS
         }
 
 
+        /// <summary>
+        /// Save the current game state for later resume.
+        /// Currently only supports one save, in a SAVE.BIN file in 
+        /// the users local program storage, 
+        /// ie.  "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS\\SAVE.BIN"
+        /// </summary>
         public static void Save()
         {
             try
@@ -115,6 +127,9 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Resume a saved game.
+        /// </summary>
         public static void Resume()
         {
             try
@@ -141,16 +156,26 @@ namespace ORTS
         }
 
 
-        public static void ValidateArgs(string[] args)
+        /// <summary>
+        /// If the command line arguments are invalid, 
+        /// display an error message and return false.
+        /// </summary>
+        /// <param name="args"></param>
+        public static bool ValidateArgs(string[] args)
         {
             if (args.Length == 0)
             {
                 Console.WriteLine("Missing activity file name\r\n   ie RunActivity \"c:\\program files\\microsoft games\\train simulator\\routes\\usa1\\activites\\xxx.act\"\r\n\r\nOr launch the OpenRails program and select from the menu.");
                 Console.ReadKey();
-                return;
+                return false;
             }
+            return true;
         }
 
+        /// <summary>
+        /// Check the registry and return true if the OpenRailsLog.TXT
+        /// file should be created.
+        /// </summary>
         public static bool IsWarningsOn()
         {
             // TODO Read from Registry
@@ -158,6 +183,9 @@ namespace ORTS
         }
 
 
+        /// <summary>
+        /// Set up to capture all console and error I/O into a  log file.
+        /// </summary>
         public static void EnableLogging()
         {
             string warningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
@@ -173,7 +201,10 @@ namespace ORTS
             Console.WriteLine();
         }
 
-
+        /// <summary>
+        /// Set up the global Build and Revision variables
+        /// from assembly data and the revision.txt file.
+        /// </summary>
         public static void SetBuildRevision()
         {
             try
@@ -197,11 +228,18 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// This class is for programmer's use in setting up adhoc tests.
+        /// </summary>
         class Testing
         {
-            static Random Random = new Random();
 
             static string[] BaseFolders = new string[] { @"c:\personal\msts", @"c:\personal\mststest", @"c:\program files\microsoft games\train simulator" };
+
+
+            /// <summary>
+            /// For testing purposes, select a random activity from the available routes.
+            /// </summary>
             public static string GetRandomActivity()
             {
                 List<string> activityFileNames = new List<string>();
