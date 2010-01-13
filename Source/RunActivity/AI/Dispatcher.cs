@@ -167,7 +167,7 @@ namespace ORTS
             int nRev = 0;
             if (!movingForward)
                 nRev++;
-            //Console.WriteLine("reqa {0}", train.UiD);
+            //Console.WriteLine("reqa {0} {1}", train.UiD, update);
             while (node != null)
             {
                 //Console.WriteLine(" node {0} {1}", node.ID, node.Type);
@@ -309,6 +309,7 @@ namespace ORTS
         /// </summary>
         public void Release(AITrain train)
         {
+            //Console.WriteLine("release ai {0}", train.UiD);
             train.SetAuthorization(null, null, 0);
             Unreserve(train);
         }

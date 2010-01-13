@@ -106,9 +106,14 @@ namespace ORTS
         {
             if (WaitUntil > clockTime)
                 return;
-            if (SpeedMpS <= 0 && NextStopDistanceM < .3)
+            if ((SpeedMpS <= 0 && NextStopDistanceM < .3) || NextStopDistanceM < 0)
             {
                 //Console.WriteLine("stop {0} {1} {2}", NextStopDistanceM, SpeedMpS, NextStopNode.Type);
+                if (NextStopDistanceM < 0)
+                {
+                    CalculatePositionOfCars(NextStopDistanceM);
+                    NextStopDistanceM = 0;
+                }
                 SpeedMpS = 0;
                 Update(0);   // stop the wheels from moving etc
                 AITrainThrottlePercent = 0;
@@ -142,6 +147,7 @@ namespace ORTS
             }
             if (NextStopDistanceM < AuthUpdateDistanceM)
             {
+                //Console.WriteLine("auth update {0} {1}", NextStopDistanceM, AuthUpdateDistanceM);
                 AuthUpdateDistanceM = -1;
                 if (AI.Dispatcher.RequestAuth(this, true))
                 {
@@ -220,7 +226,7 @@ namespace ORTS
                         }
                     }
                 }
-                if (CoupleOnNextStop == false && NextStopNode.Type == AIPathNodeType.Reverse)
+                if (CoupleOnNextStop == false && NextStopNode.Type == AIPathNodeType.Reverse && NextStopNode.WaitUntil == 0 && NextStopNode.WaitTimeS == 0)
                 {
                     AIPathNode node = FindStopNode(NextStopNode, 0);
                     if (node != null && node.JunctionIndex >= 0)
@@ -349,16 +355,22 @@ namespace ORTS
             {
                 case AIPathNodeType.Stop:
                     WaitUntil = clockTime + node.WaitTimeS;
+                    if (WaitUntil < node.WaitUntil)
+                        WaitUntil = node.WaitUntil;
                     return true;
                 case AIPathNodeType.Reverse:
                     AITrainDirectionForward = !AITrainDirectionForward;
                     WaitUntil = clockTime + (node.WaitTimeS > 0 ? node.WaitTimeS : 5);
+                    if (WaitUntil < node.WaitUntil)
+                        WaitUntil = node.WaitUntil;
                     if (node.NCars != 0)
                         Uncouple(node.NCars);
                     return true;
                 case AIPathNodeType.Uncouple:
                     Uncouple(node.NCars);
                     WaitUntil = clockTime + node.WaitTimeS;
+                    if (WaitUntil < node.WaitUntil)
+                        WaitUntil = node.WaitUntil;
                     return true;
                 default:
                     break;
@@ -544,7 +556,10 @@ namespace ORTS
             AuthEndNode = end;
             AuthSidingNode = siding;
             NReverseNodes = nRev;
-            //Console.WriteLine("setauth {0} {1} {2} {3} {4}", UiD, result, end.ID, siding != null, nRev);
+            //if (end == null)
+            //    Console.WriteLine("setauth {0} {1} {2} {3} {4}", UiD, result, "null", siding != null, nRev);
+            //else
+            //    Console.WriteLine("setauth {0} {1} {2} {3} {4}", UiD, result, end.ID, siding != null, nRev);
             return result;
         }
 

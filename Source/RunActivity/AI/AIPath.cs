@@ -131,7 +131,6 @@ namespace ORTS
         /// </summary>
         public void AlignSwitch(int junctionIndex, int vectorIndex)
         {
-            //Console.WriteLine("align {0} {1}", junctionIndex, vectorIndex);
             if (junctionIndex < 0 || vectorIndex < 0)
                 return;
             TrackNode tn = TrackDB.TrackNodes[junctionIndex];
@@ -205,6 +204,7 @@ namespace ORTS
         public int Index;
         public AIPathNodeType Type = AIPathNodeType.Other;
         public int WaitTimeS = 0;   // number of seconds to wait after stopping at this node
+        public int WaitUntil = 0;   // clock time to wait until if not zero
         public int NCars = 0;       // number of cars to uncouple, negative means keep rear
         public AIPathNode NextMainNode = null;      // next path node on main path
         public AIPathNode NextSidingNode = null;    // next path node on siding path
@@ -229,7 +229,14 @@ namespace ORTS
                 else
                     Type = AIPathNodeType.Stop;
                 WaitTimeS = (int)((tpn.A >> 16) & 0xffff);
-                if (WaitTimeS >= 40000 && WaitTimeS < 60000)
+                if (WaitTimeS >= 30000 && WaitTimeS < 40000)
+                {
+                    int hour = (WaitTimeS / 100) % 100;
+                    int minute = WaitTimeS % 100;
+                    WaitUntil = 60 * (minute + 60 * hour);
+                    WaitTimeS = 0;
+                }
+                else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
                 {
                     NCars = (WaitTimeS / 100) % 100;
                     if (WaitTimeS >= 50000)
@@ -246,6 +253,7 @@ namespace ORTS
             Location = new WorldLocation(pdp.TileX, pdp.TileZ, pdp.X, pdp.Y, pdp.Z);
             if (pdp.A == 2)
             {
+                float best = 1e10f;
                 for (int j = 0; j < trackDB.TrackNodes.Count(); j++)
                 {
                     TrackNode tn = trackDB.TrackNodes[j];
@@ -256,10 +264,11 @@ namespace ORTS
                         float dz = tn.UiD.Z - pdp.Z;
                         dz += (tn.UiD.TileZ - pdp.TileZ) * 2048;
                         float dy = tn.UiD.Y - pdp.Y;
-                        if (Math.Abs(dx) + Math.Abs(dz) + Math.Abs(dy) < 0.1)  // we found it at this junction
+                        float d = dx * dx + dy * dy + dz * dz;
+                        if (best > d)
                         {
                             JunctionIndex = j;
-                            break;
+                            best = d;
                         }
                     }
                 }
@@ -273,6 +282,7 @@ namespace ORTS
             Index = inf.ReadInt32();
             Type = (AIPathNodeType)inf.ReadInt32();
             WaitTimeS = inf.ReadInt32();
+            WaitUntil = inf.ReadInt32();
             NCars = inf.ReadInt32();
             NextMainTVNIndex = inf.ReadInt32();
             NextSidingTVNIndex = inf.ReadInt32();
@@ -294,6 +304,7 @@ namespace ORTS
             outf.Write(Index);
             outf.Write((int)Type);
             outf.Write(WaitTimeS);
+            outf.Write(WaitUntil);
             outf.Write(NCars);
             outf.Write(NextMainTVNIndex);
             outf.Write(NextSidingTVNIndex);
