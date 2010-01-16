@@ -247,42 +247,88 @@ namespace ORTS
 
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             SceneryShader.ZBias = renderPrimitive.ZBias;
-                  
-            if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
+
+            int prevOptions = -1;
+
+            if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
                 RenderProcess.RenderStateChangesCount++;
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-                graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-                graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.VertexSamplerStates[0].AddressU = TextureAddressMode.Wrap;
-                graphicsDevice.VertexSamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
-                graphicsDevice.RenderState.AlphaTestEnable = true;
-                graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become transparent
+                graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
                 Materials.SetupFog(graphicsDevice);
+            }
+            else
+            {
+                prevOptions = ((SceneryMaterial)previousMaterial).Options;
+            }
+
+            if ( prevOptions  != Options)  
+            {
+                if ((Options & 3) == 0)     // normal lighting
+                {
+                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[0];
+                }
+                else if ((Options & 3) == 1)  // cruciform vegetation
+                {
+                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[1];
+                }
+                else // (Options & 3) == 2)  // dark interiors
+                {
+                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[4];
+                }
+
+                if ((Options & 0xC) == 0)   // no alpha
+                {
+                    graphicsDevice.RenderState.AlphaBlendEnable = false;
+                    graphicsDevice.RenderState.AlphaTestEnable = false;
+                }
+                else if ((Options & 0xC) == 4)   // transparancy testing
+                {
+                    graphicsDevice.RenderState.AlphaBlendEnable = false;
+                    graphicsDevice.RenderState.AlphaTestEnable = true;
+                    graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
+                    graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+                }
+                else  // (Options & 0xC) == 8   alpha translucency
+                {
+                    graphicsDevice.RenderState.AlphaTestEnable = true;
+                    graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
+                    graphicsDevice.RenderState.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
+                    graphicsDevice.RenderState.AlphaBlendEnable = true;
+                    graphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
+                    graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+                    graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+                    graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
+                    graphicsDevice.RenderState.AlphaSourceBlend = Blend.Zero;
+                    graphicsDevice.RenderState.AlphaDestinationBlend = Blend.One;
+                    graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
+                }
+
+                int wrapping = (Options >> 4) & 3;
+
+                switch (wrapping)
+                {
+                    case 0:
+                    case 1: // wrap
+                        graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+                        graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+                        break;
+                    case 2: // mirror
+                        graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Mirror;
+                        graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Mirror;
+                        break;
+                    case 3: // clamp
+                        graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
+                        graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
+                        break;
+                }
+
             }
 
             if (this != previousMaterial)
             {
                 RenderProcess.ImageChangesCount++;
                 SceneryShader.Texture = Texture;
-                
-                if ( (Options & 1) == 1)
-                {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[1];
-                }
-                else
-                {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[0];
-                }
-                if ( (Options & 2) == 2)
-                {
-                    graphicsDevice.RenderState.AlphaTestEnable = true;
-                }
-                else
-                {
-                    graphicsDevice.RenderState.AlphaTestEnable = false;
-                }
             }
 
             // With the GPU configured, now we can draw the primitive
@@ -321,19 +367,17 @@ namespace ORTS
         {
             if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
-                SceneryShader.ZBias = 0.0001f;  // push terrain back
-
                 RenderProcess.RenderStateChangesCount++;
-                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+
+                graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+
                 graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
-                graphicsDevice.VertexSamplerStates[0].AddressU = TextureAddressMode.Wrap;
-                graphicsDevice.VertexSamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
+
+                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
                 SceneryShader.CurrentTechnique = SceneryShader.Techniques[2];
-                graphicsDevice.RenderState.AlphaTestEnable = true;
-                graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become transparent
+                graphicsDevice.RenderState.AlphaTestEnable = false;
+                graphicsDevice.RenderState.AlphaBlendEnable = false;
                 Materials.SetupFog( graphicsDevice );
 
                 graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
@@ -349,6 +393,8 @@ namespace ORTS
             }
 
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+
+            SceneryShader.ZBias = 0.00001f;  // push terrain back
 
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
@@ -393,6 +439,13 @@ namespace ORTS
             SceneryShader.Brightness = 1.0f;
             SceneryShader.Ambient = 1.0f;
             SceneryShader.Saturation = 1.0f;
+
+            graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+            graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+            graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+
+            graphicsDevice.RenderState.AlphaTestEnable = false;
+            graphicsDevice.RenderState.AlphaBlendEnable = false;
 
             graphicsDevice.RenderState.CullMode = CullMode.None;
             graphicsDevice.RenderState.FillMode = FillMode.Solid;
@@ -450,16 +503,14 @@ namespace ORTS
             {
                 RenderProcess.RenderStateChangesCount++;
 
-                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
                 graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.VertexSamplerStates[0].AddressU = TextureAddressMode.Wrap;
-                graphicsDevice.VertexSamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.Always;
-                SceneryShader.CurrentTechnique = SceneryShader.Techniques[2];
+                graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+
+                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+                SceneryShader.CurrentTechnique = SceneryShader.Techniques[0];
                 graphicsDevice.RenderState.AlphaTestEnable = false;
-                graphicsDevice.RenderState.ReferenceAlpha = 200;  
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
+                graphicsDevice.RenderState.AlphaBlendEnable = false;
                 Materials.SetupFog(graphicsDevice);
 
                 RenderProcess.ImageChangesCount++;

@@ -60,10 +60,6 @@
     <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ACEFile, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Personal\Programming\OpenRails\Program\ACEFile.dll</HintPath>
-    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.81.0.1407, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Personal\Programming\OpenRails\Program\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -83,10 +79,7 @@
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
-    <Reference Include="SFile, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Personal\Programming\OpenRails\Program\SFile.dll</HintPath>
-    </Reference>
+    <Reference Include="Reader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -159,15 +152,6 @@
     </Compile>
     <Compile Include="..\MSTS\_paths.cs">
       <Link>MSTS\_paths.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_sbr.cs">
-      <Link>MSTS\_sbr.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_stf.cs">
-      <Link>MSTS\_stf.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_tokenid.cs">
-      <Link>MSTS\_tokenid.cs</Link>
     </Compile>
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />

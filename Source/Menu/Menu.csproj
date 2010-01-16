@@ -38,6 +38,7 @@
       <HintPath>..\..\Program\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="Reader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -63,15 +64,6 @@
     </Compile>
     <Compile Include="..\MSTS\_paths.cs">
       <Link>MSTS\_paths.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_sbr.cs">
-      <Link>MSTS\_sbr.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_stf.cs">
-      <Link>MSTS\_stf.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_tokenid.cs">
-      <Link>MSTS\_tokenid.cs</Link>
     </Compile>
     <Compile Include="FormFolderName.cs">
       <SubType>Form</SubType>

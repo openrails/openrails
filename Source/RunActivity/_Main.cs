@@ -267,9 +267,8 @@ namespace ORTS
             /// </summary>
             public static void Test()
             {
-                SFile sfile = new SFile(@"c:\users\wayne\desktop\CI_MIcant1.s");
-
-                // TestAll();
+                
+                TestAll();
 
                 Console.WriteLine("DONE");
                 Console.ReadKey();
@@ -288,7 +287,7 @@ namespace ORTS
                     string[] routeFolders = Directory.GetDirectories(baseFolder + @"\routes");
                     foreach (string routeFolder in routeFolders)
                     {
-                        string[] filenamesinfolder = Directory.GetFiles(routeFolder + @"\world", "*.w");
+                        string[] filenamesinfolder = Directory.GetFiles(routeFolder + @"\world", "*.ace");
                         foreach (string filenameinfolder in filenamesinfolder)
                         {
                             FileNames.Add(filenameinfolder);

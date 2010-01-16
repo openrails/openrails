@@ -24,20 +24,19 @@ sampler imageMap = sampler_state
    Texture = (imageMap_Tex);
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
-   MIPFILTER = LINEAR;
-   MIPMAPLODBIAS = 0.000000;
-   AddressU = Wrap;
-   AddressV = Wrap;
+   MIPFILTER = Linear;
+   //AddressU = Wrap;  set in the Materials class
+   //AddressV = Wrap;
 };
 
 texture normalMap_Tex;
 sampler normalMap = sampler_state
 {
    Texture = (normalMap_Tex);
-   MAGFILTER =  LINEAR;
-   MINFILTER =  LINEAR;
-   MIPFILTER =  LINEAR;
-   MIPMAPLODBIAS = 0.000000;
+   MAGFILTER =  Linear;
+   MINFILTER =  Linear;
+   MIPFILTER =  Linear;
+   MipMapLodBias = 0;
    AddressU = Wrap;
    AddressV = Wrap;
 };
@@ -62,11 +61,15 @@ VS_OUTPUT VS(   float4 pPositionM : POSITION,	// in model space
    VS_OUTPUT Out = (VS_OUTPUT) 0; 
 
    Out.pPositionP = mul( mModelToProjection, pPositionM );		// shift point position from model space to projection space
+   // Out.pPositionP.z and .w = 0 - far clip plane , ie 0 - 1000
+   Out.pPositionP.z += ZBias; 
+   Out.pPositionP.w += ZBias;
+   
    Out.vNormalW   = normalize(mul(vNormalM,mModelToWorld).xyz);	   // from model space to world space
    Out.uvImageT = uvImageT;	
-   Out.pPositionP.z += ZBias;  // TODO TESTING
+
    Out.distance = length( Out.pPositionP );
-   
+
    Out.light = dot( Out.vNormalW, LightVector ) *0.5 + 0.5;									
 
    return Out;
@@ -97,11 +100,25 @@ float4 PSVegetation(
            : COLOR
 { 
 	float4 surfColor = tex2D( imageMap, uvImageT );
+	float alpha = surfColor.a;
 	surfColor *= 0.8;  
 	surfColor += 0.03;
+	surfColor.a = alpha;
 	return surfColor;
 }
 
+float4 PSDark( 
+		   float light          : TEXCOORD1,
+           float2 uvImageT		: TEXCOORD0,	// in texture space
+           float3 vNormalW     : TEXCOORD3 )	// in world space
+           : COLOR
+{ 
+	float4 surfColor = tex2D( imageMap, uvImageT );
+	float alpha = surfColor.a;
+	surfColor *= 0.4;  
+	surfColor.a = alpha;
+	return surfColor;
+}
 
 float4 PSTerrain( 
 		   float light          : TEXCOORD1,
@@ -113,10 +130,11 @@ float4 PSTerrain(
 
     float3 surfColor = tex2D( imageMap, uvImageT );
     
-    //distance = clamp(distance,10,100);
-    float effect = 10/distance;
-    float3 bump = tex2D( normalMap, uvImageT * 50 ) - 0.5;
-	surfColor *=  1.0 + effect * 2.0 * bump;
+    distance = clamp(distance,100,500);
+    float effect = 100/distance;
+    float3 bump = tex2D( normalMap, uvImageT * 50 );
+    bump -= 0.5;
+	surfColor +=  0.5 * bump;
     surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
     return float4( surfColor,1);
 }
@@ -168,4 +186,14 @@ technique Sky   // 3
       VertexShader = compile vs_2_0 VS ( );
       PixelShader = compile ps_2_0 PSSky ( );
    }
+}
+
+technique Dark  // 4
+{
+   pass Pass_0
+   {
+      VertexShader = compile vs_2_0 VS ( );
+      PixelShader = compile ps_2_0 PSDark ( );
+   }
+
 }

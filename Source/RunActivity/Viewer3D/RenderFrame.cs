@@ -12,6 +12,8 @@ namespace ORTS
     public abstract class RenderPrimitive
     {
         public float ZBias = 0f;
+        public int Sequence = 0;
+
         /// <summary>
         /// This is when the object actually renders itself onto the screen.
         /// Do not reference any volatile data.
@@ -50,7 +52,6 @@ namespace ORTS
     {
         private int RenderItemCount = 0;
         RenderItem[] RenderItems = new RenderItem[10000];
-        bool[] RenderItemsDone = new bool[10000];  // true when rendered
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
         RenderProcess RenderProcess;
@@ -176,6 +177,13 @@ namespace ORTS
         {
             graphicsDevice.Clear(Materials.FogColor);
 
+            for (int iSequence = 0; iSequence < 2; ++iSequence)
+                DrawSequence(graphicsDevice, iSequence);
+
+        }
+
+        public void DrawSequence( GraphicsDevice graphicsDevice, int sequence )
+        {
             // Render each material on the specified primitive
             // To minimize renderstate changes, the material is
             // told what material was used previously so it can
@@ -184,11 +192,14 @@ namespace ORTS
             Material prevMaterial = null;
             for (int i = 0; i < RenderItemCount; ++i)
             {
-                Material currentMaterial = RenderItems[i].Material;
-                if (prevMaterial != null) prevMaterial.ResetState(graphicsDevice, currentMaterial);
-                currentMaterial.Render(graphicsDevice, prevMaterial, RenderItems[i].RenderPrimitive,
-                        ref RenderItems[i].XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                prevMaterial = currentMaterial;
+                if (RenderItems[i].RenderPrimitive.Sequence == sequence)
+                {
+                    Material currentMaterial = RenderItems[i].Material;
+                    if (prevMaterial != null) prevMaterial.ResetState(graphicsDevice, currentMaterial);
+                    currentMaterial.Render(graphicsDevice, prevMaterial, RenderItems[i].RenderPrimitive,
+                            ref RenderItems[i].XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    prevMaterial = currentMaterial;
+                }
             }
             if (prevMaterial != null)
                 prevMaterial.ResetState(graphicsDevice, null);

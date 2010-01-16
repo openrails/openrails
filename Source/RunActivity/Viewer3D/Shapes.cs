@@ -266,9 +266,9 @@ namespace ORTS
         public SharedShape.VertexBufferSet VertexBufferSet;
         public IndexBuffer IndexBuffer;
         public  int IndexCount;         // the number of indexes in the index buffer for each primitive
-        public int PrimMatrixIndex;     // index into the instance matrix list which provides pose for this primitive
         public int MinVertex;           // the first vertex index used by this primitive
         public int NumVertices;         // the number of vertex indexes used by this primitive
+        public int iHierarchy;          // index into the hiearchy array which provides pose for this primitive
         public int[] Hierarchy;         // the hierarchy from the sub_object
 
         /// <summary>
@@ -395,6 +395,7 @@ namespace ORTS
             public float ViewingDistance;
             public float ViewSphereRadius;
             public SubObject[] SubObjects;
+            private int PrimCount = 0;  // used for auto ZBias
 
             public DistanceLevel( distance_level MSTSdistance_level, SFile sFile, SharedShape sharedShape )
             {
@@ -407,7 +408,7 @@ namespace ORTS
                     ViewSphereRadius = 100;
                 int[] Hierarchy = MSTSdistance_level.distance_level_header.hierarchy;
                 for( int i = 0; i < MSTSdistance_level.sub_objects.Count; ++i )
-                    SubObjects[i] = new SubObject( MSTSdistance_level.sub_objects[i], Hierarchy, sFile , sharedShape);
+                    SubObjects[i] = new SubObject( ref PrimCount, MSTSdistance_level.sub_objects[i], Hierarchy, sFile , sharedShape);
 
                 if (SubObjects.Length == 0)
                     throw new System.Exception("Shape file missing sub_object");
@@ -420,7 +421,8 @@ namespace ORTS
             public ShapePrimitive[] ShapePrimitives;
             public VertexBufferSet[] VertexBufferSets;
 
-            public SubObject( sub_object sub_object, int[] hierarchy, SFile sFile, SharedShape sharedShape )
+            
+            public SubObject( ref int dLevelPrimCount, sub_object sub_object, int[] hierarchy, SFile sFile, SharedShape sharedShape )
             {
                 // get a total count of drawing primitives
                 int primCount = sub_object.primitives.Count;
@@ -448,16 +450,36 @@ namespace ORTS
                     prim_state prim_state = sFile.shape.prim_states[primitive.prim_state_idx];
                     vtx_state vtx_state = sFile.shape.vtx_states[prim_state.ivtx_state];
                     VertexBufferSet vertexBufferSet = VertexBufferSets[0]; //TODO temp code uses one big bufferset
+                    light_model_cfg light_model_cfg = sFile.shape.light_model_cfgs[vtx_state.LightCfgIdx];
+
+                    
                     
                     // Select a material
                     int options = 0;
+
+                    if (light_model_cfg.uv_ops.Count > 0)
+                    {
+                        uv_op uv_op = light_model_cfg.uv_ops[0];
+                        // wrapping
+                        options |= uv_op.TexAddrMode << 4;
+                    }
+
                     // eliminate diffuse color on trees
                     if (vtx_state.LightMatIdx == -9 || vtx_state.LightMatIdx == -10)
                         options |= 1;
-                    // transparency test   TODO, add capability to handle alpha blending properly
-                    if (prim_state.alphatestmode == 1
-                        || sFile.shape.shader_names[prim_state.ishader].StartsWith("BlendA", StringComparison.OrdinalIgnoreCase))
+                    else if (vtx_state.LightMatIdx == -12)
                         options |= 2;
+
+                    // transparency test  
+                    if (prim_state.alphatestmode == 1)
+                        options |= 4;
+                    // alpha translucency
+                    else if (sFile.shape.shader_names[prim_state.ishader].StartsWith("BlendA", StringComparison.OrdinalIgnoreCase))
+                        options |= 8;
+                    
+
+                    if ((options & 0xC) == 8) // alpha translucent
+                        shapePrimitive.Sequence = 1;   
 
                     if (prim_state.tex_idxs.Length == 0)
                     {   // untextured objects get a blank texture
@@ -471,10 +493,10 @@ namespace ORTS
                             "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options);
                     }
 
-                    shapePrimitive.ZBias = prim_state.ZBias;
+                    shapePrimitive.ZBias = prim_state.ZBias; // -(float)dLevelPrimCount * 0.00001f;  //Auto zbias causes issues
 
                     int iMatrix = vtx_state.imatrix;
-                    shapePrimitive.PrimMatrixIndex = iMatrix;
+                    shapePrimitive.iHierarchy = iMatrix;
 
                     int indexCount = primitive.indexed_trilist.vertex_idxs.Count * 3;
 
@@ -510,6 +532,7 @@ namespace ORTS
                         throw new System.Exception("vertex_set not found for vtx_state = " + prim_state.ivtx_state.ToString());
                     ShapePrimitives[iPrim] = shapePrimitive;
                     ++iPrim;
+                    ++dLevelPrimCount;
                 }
             }
         }
@@ -639,7 +662,7 @@ namespace ORTS
                 {
                     foreach (DistanceLevel distanceLevel in lodControl.DistanceLevels)
                     {
-                        if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewingDistance))
+                        if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewingDistance + distanceLevel.ViewSphereRadius))
                         {
                             foreach (SubObject subObject in distanceLevel.SubObjects)
                             {
@@ -648,7 +671,7 @@ namespace ORTS
                                 {
                                     ShapePrimitive shapePrimitive = subObject.ShapePrimitives[iPrim];
                                     Matrix xnaMatrix = Matrix.Identity;
-                                    int iNode = shapePrimitive.PrimMatrixIndex;
+                                    int iNode = shapePrimitive.iHierarchy;
                                     while (iNode != -1)
                                     {
                                         xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
@@ -656,7 +679,7 @@ namespace ORTS
                                     }
                                     xnaMatrix *= xnaDTileTranslation;
 
-                                    frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix);
+                                    frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix );
                                 } // for each primitive
                             }
 
