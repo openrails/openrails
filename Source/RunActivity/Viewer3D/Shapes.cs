@@ -490,7 +490,7 @@ namespace ORTS
                         texture texture = sFile.shape.textures[prim_state.tex_idxs[0]];
                         string imageName = sFile.shape.images[texture.iImage];
                         shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
-                            "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options);
+                            "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options, texture.MipMapLODBias);
                     }
 
                     shapePrimitive.ZBias = prim_state.ZBias; // -(float)dLevelPrimCount * 0.00001f;  //Auto zbias causes issues

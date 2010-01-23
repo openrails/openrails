@@ -45,14 +45,19 @@ namespace ORTS
 
         public static Material Load(RenderProcess renderProcess, string materialName)
         {
-            return Load(renderProcess, materialName, null, 0);
+            return Load(renderProcess, materialName, null, 0, 0);
         }
         public static Material Load(RenderProcess renderProcess, string materialName, string textureName)
         {
-            return Load(renderProcess, materialName, textureName, 0);
+            return Load(renderProcess, materialName, textureName, 0, 0);
         }
 
-        public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options )
+        public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options)
+        {
+            return Load(renderProcess, materialName, textureName, options, 0);
+        }
+
+        public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options, float mipMapBias )
         {
             System.Diagnostics.Debug.Assert(IsInitialized, "Must initialize Materials before using.");
             if (!IsInitialized)             // this shouldn't happen, but if it does
@@ -98,13 +103,14 @@ namespace ORTS
                 case "SceneryMaterial":
                     string key;
                     if (textureName != null)
-                        key = options.ToString() + ":" + textureName;
+                        key = options.ToString() + ":" + mipMapBias.ToString() + ":" + textureName;
                     else
                         key = options.ToString() + ":";
                     if (!SceneryMaterials.ContainsKey(key))
                     {
                         SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName);
                         sceneryMaterial.Options = options;
+                        sceneryMaterial.MipMapBias = mipMapBias;
                         SceneryMaterials.Add(key, sceneryMaterial);
                         return sceneryMaterial;
                     }
@@ -230,6 +236,7 @@ namespace ORTS
     public class SceneryMaterial : Material
     {
         public int Options = 0;
+        public float MipMapBias = 0;
         SceneryShader SceneryShader;
         Texture2D Texture;
         public RenderProcess RenderProcess;  // for diagnostics only
@@ -329,6 +336,10 @@ namespace ORTS
             {
                 RenderProcess.ImageChangesCount++;
                 SceneryShader.Texture = Texture;
+                if( MipMapBias < -1 )
+                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
+                else
+                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = MipMapBias;
             }
 
             // With the GPU configured, now we can draw the primitive
