@@ -165,6 +165,7 @@
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
+    <Compile Include="MSTS\SIGCFGFile.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Processes\Profiler.cs" />
