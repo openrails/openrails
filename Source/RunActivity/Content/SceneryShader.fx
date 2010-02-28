@@ -10,13 +10,14 @@ float4x4 mModelToProjection : ViewProjection;	// SetValueTranspose((world * view
 float4x4 mWorldToView  : ViewInverse;			// SetValue(Matrix.Invert(view));
 float4x4 mModelToWorld : WorldMatrix;			// SetValue(world);
 
-float3 LightVector = float3( 0.5 ,1,0.5 );  // direction vector to light
-float3 BumpScale = float3( 1.0, -1.0, 1.0 );  // multiply bump map by this  -1 seems to work with Ultimapper sometimes
+float3 LightVector;								// Direction vector to sun
+float3 BumpScale = float3( 1.0, -1.0, 1.0 );	// multiply bump map by this  -1 seems to work with Ultimapper sometimes
 
 float Saturation = 0.9;
 float Ambient = 0.5;
 float Brightness = 0.7;
 float ZBias = 0.0;  // TODO TESTING
+float overcast;									// Lower saturation & brightness when overcast
 
 texture imageMap_Tex;
 sampler imageMap = sampler_state
@@ -78,6 +79,51 @@ VS_OUTPUT VS(   float4 pPositionM : POSITION,	// in model space
 
 /////////////////////    P I X E L     S H A D E R    /////////////////////////////////
 
+// This function dims the lighting at night, with a transition period as the sun rises/sets
+float Day2Night( )
+{
+	// The following constants define the beginning and the end conditions of the day-night transition
+	const float startNightTrans = 0.1; // The "NightTrans" values refer to the Y postion of LightVector
+	const float finishNightTrans = -0.1;
+	const float minDarknessCoeff = 0.2;
+	
+	// Internal variables
+	// The following two are used to interpoate between day and night lighting (y = mx + b)
+	// Can't use lerp() here, as overall dimming action is too complex
+	float slope = (1.0-minDarknessCoeff)/(startNightTrans-finishNightTrans); // "m"
+	float incpt = 1.0 - slope*startNightTrans; // "b"
+	// This is the return value used to darken scenery
+	float adjustment;
+	
+    if (LightVector.y < finishNightTrans)
+      adjustment = minDarknessCoeff;
+    else if (LightVector.y > startNightTrans)
+      adjustment = 1.0; // Scenery is fully lit during the day
+    else
+      adjustment = slope*LightVector.y + incpt;
+
+	return adjustment;
+}
+
+// This function reduces color saturation and brightness as overcast increases
+// Adapted from an algorithm by Romain Dura aka Romz
+float3 Overcast(float3 color, float sat)
+{
+	// This value limits desaturation amount:
+	const float satLower = 0.8; 
+	// Values used to determine equivalent grayscale color:
+	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
+	
+	float intensityf = dot(color, LumCoeff);
+	float3 intensity = float3(intensityf, intensityf, intensityf);
+	float3 satColor = lerp(intensity, color, clamp(sat, satLower, 1.0));
+	
+	// Reduce brightness slightly
+	// Default overcast=0.2 and sat=1-0.2, so this equation yields a default brightness of 1.0 
+	satColor *= 0.6*(0.867+sat); 
+	
+	return satColor;
+}
 
 float4 PSImage( 
 		   float light          : TEXCOORD1,
@@ -89,6 +135,13 @@ float4 PSImage(
     float4 surfColor = tex2D( imageMap, uvImageT );
     float alpha = surfColor.a;
     surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
+    
+    // Darken at night
+    surfColor *= Day2Night(); 
+    // Reduce saturaton when overcast
+    float3 color = Overcast(surfColor.xyz, 1-overcast);
+    surfColor = float4(color, 1);
+    
     surfColor.a = alpha;
     return surfColor;
 }
@@ -103,6 +156,13 @@ float4 PSVegetation(
 	float alpha = surfColor.a;
 	surfColor *= 0.8;  
 	surfColor += 0.03;
+	
+    // Darken at night
+    surfColor *= Day2Night();
+    // Reduce saturaton when overcast
+    float3 color = Overcast(surfColor.xyz, 1-overcast);
+    surfColor = float4(color, 1);
+
 	surfColor.a = alpha;
 	return surfColor;
 }
@@ -115,7 +175,7 @@ float4 PSDark(
 { 
 	float4 surfColor = tex2D( imageMap, uvImageT );
 	float alpha = surfColor.a;
-	surfColor *= 0.4;  
+	surfColor *= 0.4; 
 	surfColor.a = alpha;
 	return surfColor;
 }
@@ -136,17 +196,13 @@ float4 PSTerrain(
     bump -= 0.5;
 	surfColor +=  0.5 * bump;
     surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
-    return float4( surfColor,1);
-}
+    
+    // Darken at night
+    surfColor *= Day2Night();
+    // Reduce saturaton when overcast
+    surfColor = Overcast(surfColor, 1-overcast);
 
-float4 PSSky( 
-		   float light          : TEXCOORD1,
-           float2 uvImageT		: TEXCOORD0,	// in texture space
-           float3 vNormalW     : TEXCOORD3 )	// in world space
-           : COLOR
-{ 
-	float4 surfColor = tex2D( imageMap, uvImageT );
-	return surfColor;
+    return float4( surfColor,1);
 }
 
 technique Image   //0
@@ -179,16 +235,7 @@ technique Terrain   // 2
 
 }
 
-technique Sky   // 3
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VS ( );
-      PixelShader = compile ps_2_0 PSSky ( );
-   }
-}
-
-technique Dark  // 4
+technique Dark  // 3
 {
    pass Pass_0
    {

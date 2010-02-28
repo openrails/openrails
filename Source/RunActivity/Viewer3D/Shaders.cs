@@ -1,9 +1,16 @@
-/// These are thin wrappers for the  .FX files 
+/// These are thin wrappers for the .FX files 
 /// 
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
+/// 
+/// Principal Author:
+///    Wayne Campbell
+/// Contributors:
+///    Rick Grout
+///     
+
 
 #region Using Statements
 using System;
@@ -18,6 +25,7 @@ using Microsoft.Xna.Framework.Storage;
 
 namespace ORTS
 {
+    #region Scenery shader
     /// <summary>
     /// Wrapper for SceneryShader.fx
     /// </summary>
@@ -67,6 +75,16 @@ namespace ORTS
         }
             private float zbiasValue = 0.0f;
 
+        public Vector3 SunDirection
+        {
+            set { sunDirection.SetValue(value); }
+        }
+
+        public float Overcast
+        {
+            set { overcast.SetValue(value); }
+        }
+
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
             mModelToProjection.SetValueTranspose((world * view) * projection);
@@ -84,6 +102,8 @@ namespace ORTS
         EffectParameter saturation = null;
         EffectParameter ambient = null;
         EffectParameter zbias = null;  // TODO TEST
+        EffectParameter sunDirection = null;
+        EffectParameter overcast = null;
 
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
@@ -97,12 +117,15 @@ namespace ORTS
             saturation = Parameters["Saturation"];
             ambient = Parameters["Ambient"];
             zbias = Parameters["ZBias"];  // TODO TEST
+            sunDirection = Parameters["LightVector"];
+            overcast = Parameters["overcast"];
 
-            Parameters["LightVector"].SetValue(Vector3.Normalize(new Vector3(1f, .3f, 1f)));
+            //Parameters["LightVector"].SetValue(Vector3.Normalize(new Vector3(1f, .3f, 1f)));
         }
     }
+    #endregion
 
-
+    #region Shadow mapping shader
     /// <summary>
     /// Wrapper for DrawModel.fx
     /// </summary>
@@ -138,6 +161,185 @@ namespace ORTS
             pTexture = Parameters["Texture"];
             pShadowMap = Parameters["ShadowMap"];
         }
-
     }
+    #endregion
+
+    #region Sky shader
+    public class SkyShader : Effect
+    {
+        EffectParameter mModelToProjection = null;
+        EffectParameter View = null;
+        EffectParameter sunDirection = null;
+        EffectParameter skyMap_Tex = null;
+        EffectParameter starMap_Tex = null;
+        EffectParameter moonMap_Tex = null;
+        EffectParameter moonMask_Tex = null;
+        EffectParameter cloudMap_Tex = null;
+        EffectParameter sunpeakColor = null;
+        EffectParameter sunriseColor = null;
+        EffectParameter sunsetColor = null;
+        EffectParameter time = null;
+        EffectParameter random = null;
+        EffectParameter overcast = null;
+        EffectParameter windSpeed = null;
+        EffectParameter windDirection = null;
+
+        public Vector3 SunDirection
+        {
+            set { sunDirection.SetValue(value); }
+        }
+
+        public Texture2D SkyTexture
+        {
+            set { skyMap_Tex.SetValue(value); }
+        }
+ 
+        public Texture2D StarTexture
+        {
+            set { starMap_Tex.SetValue(value); }
+        }
+
+        public Texture2D MoonTexture
+        {
+            set { moonMap_Tex.SetValue(value); }
+        }
+
+        public Texture2D MoonMaskTexture
+        {
+            set { moonMask_Tex.SetValue(value); }
+        }
+
+        public Texture2D CloudTexture
+        {
+            set { cloudMap_Tex.SetValue(value); }
+        }
+
+        public Vector4 SunpeakColor
+        {
+            set { sunpeakColor.SetValue(value); }
+        }
+
+        public Vector4 SunriseColor
+        {
+            set { sunriseColor.SetValue(value); }
+        }
+
+        public Vector4 SunsetColor
+        {
+            set { sunsetColor.SetValue(value); }
+        }
+
+        public float Time
+        {
+            set { time.SetValue(value); }
+        }
+
+        public float Random
+        {
+            set { random.SetValue(value); }
+        }
+
+        public float Overcast
+        {
+            set { overcast.SetValue(value); }
+        }
+
+        public float WindSpeed
+        {
+            set { windSpeed.SetValue(value); }
+        }
+
+        public float WindDirection
+        {
+            set { windDirection.SetValue(value); }
+        }
+
+        public SkyShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("SkyShader"))
+        {
+            mModelToProjection = Parameters["mModelToProjection"];
+            View = Parameters["mView"];
+            skyMap_Tex = Parameters["skyMap_Tex"];
+            sunDirection = Parameters["LightVector"];
+            starMap_Tex = Parameters["starMap_Tex"];
+            sunpeakColor = Parameters["sunpeakColor"];
+            sunriseColor = Parameters["sunriseColor"];
+            sunsetColor = Parameters["sunsetColor"];
+            moonMap_Tex = Parameters["moonMap_Tex"];
+            moonMask_Tex = Parameters["moonMask_Tex"];
+            cloudMap_Tex = Parameters["cloudMap_Tex"];
+            time = Parameters["time"];
+            random = Parameters["random"];
+            overcast = Parameters["overcast"];
+            windSpeed = Parameters["windSpeed"];
+            windDirection = Parameters["windDirection"];
+        }
+
+        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+        {
+            mModelToProjection.SetValueTranspose((world * view) * projection);
+            View.SetValue(view);
+        }
+    }
+    #endregion
+
+    #region Precipitation shader
+    public class PrecipShader : Effect
+    {
+        EffectParameter mProjection = null;
+        EffectParameter mView = null;
+        EffectParameter mWorld = null;
+        EffectParameter sunDirection = null;
+        EffectParameter viewportHeight = null;
+        EffectParameter currentTime = null;
+        EffectParameter precip_Tex = null;
+        EffectParameter weatherType = null;
+
+        public Vector3 SunDirection
+        {
+            set { sunDirection.SetValue(value); }
+        }
+
+        public int ViewportHeight
+        {
+            set { viewportHeight.SetValue(value); }
+        }
+
+        public float CurrentTime
+        {
+            set { currentTime.SetValue(value); }
+        }
+
+        public int WeatherType
+        {
+            set { weatherType.SetValue(value); }
+        }
+
+        public Texture2D PrecipTexture
+        {
+            set { precip_Tex.SetValue(value); }
+        }
+
+        public PrecipShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("PrecipShader"))
+        {
+            mProjection = Parameters["mProjection"];
+            mView = Parameters["mView"];
+            mWorld = Parameters["mWorld"];
+            sunDirection = Parameters["LightVector"];
+            viewportHeight = Parameters["viewportHeight"];
+            currentTime = Parameters["currentTime"];
+            weatherType = Parameters["weatherType"];
+            precip_Tex = Parameters["precip_Tex"];
+        }
+
+        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+        {
+            mProjection.SetValue(projection);
+            mView.SetValue(view);
+            mWorld.SetValue(world);
+        }
+    }
+    #endregion
+
 }

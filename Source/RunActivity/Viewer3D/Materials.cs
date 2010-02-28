@@ -1,4 +1,15 @@
-﻿using System;
+﻿/// COPYRIGHT 2010 by the Open Rails project.
+/// This code is provided to enable you to contribute improvements to the open rails program.  
+/// Use of the code for any other purpose or distribution of the code to anyone else
+/// is prohibited without specific written permission from admin@openrails.org.
+/// 
+/// Principal Author:
+///    Wayne Campbell
+/// Contributors:
+///    Rick Grout
+///     
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,12 +19,16 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS
 {
+    #region Materials class
     public class Materials
     {
         public static SceneryShader SceneryShader = null;
+        public static SkyShader SkyShader = null;
+        public static PrecipShader PrecipShader = null;
         public static SpriteBatchMaterial SpriteBatchMaterial = null;
         private static WaterMaterial WaterMaterial = null;
         private static SkyMaterial SkyMaterial = null;
+        private static PrecipMaterial PrecipMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
         private static Dictionary<string, ShadowReceivingMaterial> ShadowReceivingMaterials = new Dictionary<string, ShadowReceivingMaterial>();
@@ -21,7 +36,7 @@ namespace ORTS
         private static bool IsInitialized = false;
         private static Material YellowMaterial = null;   // for debug and experiments
         public static ShadowCastingMaterial ShadowMaterial = null;
-        public static Color FogColor = new Color(189, 189, 189, 255);
+        public static Color FogColor = new Color(110, 110, 110, 255);
         public static ShadowMappingShader ShadowMappingShader = null;
 
         /// <summary>
@@ -36,8 +51,11 @@ namespace ORTS
             SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SceneryShader.BumpTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, 
                                                         renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
+            SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
+            PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
             SkyMaterial = new SkyMaterial(renderProcess);
+            PrecipMaterial = new PrecipMaterial(renderProcess);
             YellowMaterial = new YellowMaterial(renderProcess);
             ShadowMaterial = new ShadowCastingMaterial(renderProcess);
             IsInitialized = true;
@@ -124,8 +142,10 @@ namespace ORTS
                     return WaterMaterial;
                 case "SkyMaterial":
                     return SkyMaterial;
+                case "PrecipMaterial":
+                    return PrecipMaterial;
                 default:
-                    return Load(renderProcess, "ScenerMaterial");
+                    return Load(renderProcess, "SceneryMaterial");
             }
         }
 
@@ -145,7 +165,9 @@ namespace ORTS
             graphicsDevice.RenderState.FogStart = ViewingDistance / 2;
         }
     }
+    #endregion
 
+    #region Shared texture manager
     public class SharedTextureManager
     {
         private static Dictionary<string, Texture2D> SharedTextures = new Dictionary<string, Texture2D>();
@@ -174,7 +196,9 @@ namespace ORTS
             }
         }
     }
+    #endregion
 
+    #region Material interface
     public interface Material
     {
         /// <summary>
@@ -189,7 +213,9 @@ namespace ORTS
         /// </summary>
         void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial);
     }
+    #endregion
 
+    #region Empty material
     public class EmptyMaterial : Material
     {
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
@@ -198,8 +224,9 @@ namespace ORTS
         }
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial) { }
     }
+    #endregion
 
-
+    #region Sprite batch material
     public class SpriteBatchMaterial:  Material
     {
         public SpriteBatch SpriteBatch;
@@ -232,7 +259,9 @@ namespace ORTS
                 SpriteBatch.End();
         }
     }
+    #endregion
 
+    #region Scenery material
     public class SceneryMaterial : Material
     {
         public int Options = 0;
@@ -254,6 +283,8 @@ namespace ORTS
 
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             SceneryShader.ZBias = renderPrimitive.ZBias;
+            SceneryShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+            SceneryShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
 
             int prevOptions = -1;
 
@@ -359,7 +390,9 @@ namespace ORTS
             }
         }
     }
+    #endregion
 
+    #region Terrain material
     public class TerrainMaterial : Material
     {
         SceneryShader SceneryShader;
@@ -422,75 +455,286 @@ namespace ORTS
         {
         }
     }
+    #endregion
 
+    #region Sky material
     public class SkyMaterial : Material
     {
-        SceneryShader SceneryShader;
+        SkyShader SkyShader;
         Texture2D skyTexture;
+        Texture2D starTextureN;
+        Texture2D starTextureS;
+        Texture2D moonTexture;
+        Texture2D moonMask;
+        Texture2D cloudTexture;
+        private Matrix XNAMoonMatrix;
+        private Matrix XNAMoonWorldMatrix;
         public RenderProcess RenderProcess;  // for diagnostics only
 
         public SkyMaterial(RenderProcess renderProcess)
         {
             RenderProcess = renderProcess;
-            SceneryShader = Materials.SceneryShader;
-            skyTexture = renderProcess.Content.Load<Texture2D>("sky");
+            SkyShader = Materials.SkyShader;
+            skyTexture = renderProcess.Content.Load<Texture2D>("SkyDome1");
+            starTextureN = renderProcess.Content.Load<Texture2D>("Starmap_N");
+            starTextureS = renderProcess.Content.Load<Texture2D>("Starmap_S");
+            moonTexture = renderProcess.Content.Load<Texture2D>("MoonMap");
+            moonMask = renderProcess.Content.Load<Texture2D>("MoonMask");
+            cloudTexture = renderProcess.Content.Load<Texture2D>("Clouds01");
         }
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
                             ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+            SkyShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
             RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
 
-            SceneryShader.CurrentTechnique = SceneryShader.Techniques[3];
-            SceneryShader.Texture = skyTexture;
-            // These parameter changes have no effect
-            SceneryShader.Brightness = 1.0f;
-            SceneryShader.Ambient = 1.0f;
-            SceneryShader.Saturation = 1.0f;
+            // Adjust Fog color for day-night conditions and overcast
+            FogDay2Night(
+                RenderProcess.Viewer.SkyDrawer.solarDirection.Y,
+                RenderProcess.Viewer.SkyDrawer.overcast);
 
-            graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-            graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-            graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+            SkyShader.CurrentTechnique = SkyShader.Techniques["SkyTechnique"];
+            SkyShader.SkyTexture = skyTexture;
+            SkyShader.StarTexture = skyTexture;
 
-            graphicsDevice.RenderState.AlphaTestEnable = false;
-            graphicsDevice.RenderState.AlphaBlendEnable = false;
+            // Variables passed from SkyDrawer
+            SkyShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+            if (RenderProcess.Viewer.SkyDrawer.latitude > 0)
+                SkyShader.StarTexture = starTextureN;
+            else
+                SkyShader.StarTexture = starTextureS;
+            SkyShader.SunpeakColor = RenderProcess.Viewer.SkyDrawer.sunpeakColor;
+            SkyShader.SunriseColor = RenderProcess.Viewer.SkyDrawer.sunriseColor;
+            SkyShader.SunsetColor = RenderProcess.Viewer.SkyDrawer.sunsetColor;
+            SkyShader.Time = (float)RenderProcess.Viewer.Simulator.ClockTime/100000;
 
-            graphicsDevice.RenderState.CullMode = CullMode.None;
-            graphicsDevice.RenderState.FillMode = FillMode.Solid;
-            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.Always;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
-
-            graphicsDevice.RenderState.FogVertexMode = FogMode.None;  // vertex fog
-            graphicsDevice.RenderState.FogTableMode = FogMode.Linear;     // pixel fog off
-            graphicsDevice.RenderState.FogColor = new Color(128, 128, 128, 255);
-            graphicsDevice.RenderState.FogDensity = 1.0f;                      // used for exponential fog only, not linear
-            graphicsDevice.RenderState.FogEnd = SkyConstants.skyRadius + 100;
-            graphicsDevice.RenderState.FogStart = 1000f;
+            // Save existing render state
+            bool fogEnable = graphicsDevice.RenderState.FogEnable;
+            CullMode cullMode = graphicsDevice.RenderState.CullMode;
+            // Set render state for drawing sky
             graphicsDevice.RenderState.FogEnable = false;
+            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
-            SceneryShader.Begin();
-            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+            // Sky dome
+            RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 1;
+            SkyShader.Begin();
+            foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
                 RenderProcess.PrimitiveCount++;
                 renderPrimitive.Draw(graphicsDevice);
                 pass.End();
             }
-            SceneryShader.End();
+            SkyShader.End();
 
+            // Moon
+            // Send the transform matrices to the shader
+            int skyRadius = RenderProcess.Viewer.SkyDrawer.SkyMesh.skyRadius;
+            int cloudRadiusDiff = RenderProcess.Viewer.SkyDrawer.SkyMesh.cloudDomeRadiusDiff;
+            XNAMoonMatrix = Matrix.CreateTranslation(RenderProcess.Viewer.SkyDrawer.lunarDirection * (skyRadius - cloudRadiusDiff));
+            XNAMoonWorldMatrix = XNAWorldMatrix * XNAMoonMatrix;
+            // Shader setup
+            SkyShader.SetMatrix(XNAMoonWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+            SkyShader.CurrentTechnique = SkyShader.Techniques["MoonTechnique"];
+            SkyShader.MoonTexture = moonTexture;
+            SkyShader.MoonMaskTexture = moonMask;
+            SkyShader.Random = RenderProcess.Viewer.SkyDrawer.moonPhase;
+
+            // Save the existing alpha render state
+            bool alphaBlendEnable = graphicsDevice.RenderState.AlphaBlendEnable;
+            Blend destinationBlend = graphicsDevice.RenderState.DestinationBlend;
+            Blend sourceBlend = graphicsDevice.RenderState.SourceBlend;
+            bool alphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
+            // Set alpha render state for drawing the moon and clouds
+            graphicsDevice.RenderState.AlphaBlendEnable = true;
+            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            graphicsDevice.RenderState.AlphaTestEnable = false;
+            graphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
+
+            RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 2;
+            SkyShader.Begin();
+            foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            SkyShader.End();
+
+            // Clouds
+            // Send the transform matrices to the shader
+            SkyShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+            // Shader setup
+            SkyShader.CurrentTechnique = SkyShader.Techniques["CloudTechnique"];
+            SkyShader.CloudTexture = cloudTexture;
+            SkyShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
+            SkyShader.WindSpeed = RenderProcess.Viewer.SkyDrawer.windSpeed;
+            SkyShader.WindDirection = RenderProcess.Viewer.SkyDrawer.windDirection;
+            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+
+            RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 3;
+            SkyShader.Begin();
+            foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            SkyShader.End();
+
+            // Restore the pre-existing render state
+            graphicsDevice.RenderState.AlphaBlendEnable = alphaBlendEnable;
+            graphicsDevice.RenderState.DestinationBlend = destinationBlend;
+            graphicsDevice.RenderState.SourceBlend = sourceBlend;
+            graphicsDevice.RenderState.AlphaTestEnable = alphaTestEnable;
+            graphicsDevice.RenderState.CullMode = cullMode;
+            graphicsDevice.RenderState.FogEnable = fogEnable;
         }
 
+        // Is this needed? SkyMaterial doesn't change any of these render states.
+        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        {
+            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
+            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+        }
+
+        /// <summary>
+        /// This function darkens the fog color as night begins to fall
+        /// as well as with increasing overcast.
+        /// </summary>
+        /// <param name="sunHeight">The Y value of the sunlight vector</param>
+        /// <param name="overcast">The amount of overcast</param>
+        private void FogDay2Night(float sunHeight, float overcast)
+        {
+            // We'll work with floating-point values, then convert to a "Color" object
+            const float nightStart = 0.15f; // The sun's Y value where it begins to get dark
+            const float nightFinish = -0.05f; // The Y value where darkest fog color is reached and held steady
+            Vector3 startColor; // Original daytime fog color - must be preserved!
+            Vector3 finishColor; //Darkest nighttime fog color
+            Vector3 floatColor; // A scratchpad variable
+
+            // These should be user defined in the Environment files (future)
+            startColor = new Vector3(0.47f, 0.55f, 0.51f);
+            finishColor = new Vector3(0.05f, 0.05f, 0.05f);
+
+            if (sunHeight > nightStart)
+                floatColor = startColor;
+            else if (sunHeight < nightFinish)
+                floatColor = finishColor;
+            else
+            {
+                float amount = (sunHeight - nightFinish) / (nightStart - nightFinish);
+                floatColor.X = MathHelper.Lerp(finishColor.X, startColor.X, amount);
+                floatColor.Y = MathHelper.Lerp(finishColor.Y, startColor.Y, amount);
+                floatColor.Z = MathHelper.Lerp(finishColor.Z, startColor.Z, amount);
+            }
+
+            // Adjust fog color for overcast
+            floatColor *= (1 - 0.5f*overcast);
+
+            // Convert color format
+            Materials.FogColor.R = (byte)(floatColor.X * 255);
+            Materials.FogColor.G = (byte)(floatColor.Y * 255);
+            Materials.FogColor.B = (byte)(floatColor.Z * 255);
+        }
+    }
+    #endregion
+
+    #region Precipitation material
+    public class PrecipMaterial : Material
+    {
+        PrecipShader PrecipShader;
+        Texture2D rainTexture;
+        Texture2D snowTexture;
+        public RenderProcess RenderProcess;  // for diagnostics only
+
+        public PrecipMaterial(RenderProcess renderProcess)
+        {
+            RenderProcess = renderProcess;
+            PrecipShader = Materials.PrecipShader;
+            rainTexture = renderProcess.Content.Load<Texture2D>("Raindrop");
+            snowTexture = renderProcess.Content.Load<Texture2D>("Snowflake");
+        }
+
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
+                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            int weatherType = RenderProcess.Viewer.PrecipDrawer.weatherType;
+            if (weatherType == 0) return; // Clear weather
+
+            PrecipShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+
+            RenderProcess.RenderStateChangesCount++;
+            RenderProcess.ImageChangesCount++;
+
+            PrecipShader.CurrentTechnique = PrecipShader.Techniques["RainTechnique"];
+
+            // Variables passed from PrecipDrawer
+            PrecipShader.WeatherType = weatherType;
+            PrecipShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+            PrecipShader.ViewportHeight = graphicsDevice.Viewport.Height;
+            PrecipShader.CurrentTime = (float)RenderProcess.Viewer.Simulator.ClockTime - (float)RenderProcess.Viewer.PrecipDrawer.startTime;
+            switch (weatherType)
+            {
+                case 1:
+                    PrecipShader.PrecipTexture = snowTexture;
+                    break;
+                case 2:
+                    PrecipShader.PrecipTexture = rainTexture;
+                    break;
+                // Safe? or need a default here? If so, what?
+            }
+
+            // Save the existing render state
+            bool AlphaBlendEnable = graphicsDevice.RenderState.AlphaBlendEnable;
+            bool AlphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
+            Blend DestinationBlend = graphicsDevice.RenderState.DestinationBlend;
+            Blend SourceBlend = graphicsDevice.RenderState.SourceBlend;
+            bool DepthBufferEnable = graphicsDevice.RenderState.DepthBufferEnable;
+            // Set render state for drawing precipitation
+            graphicsDevice.RenderState.AlphaBlendEnable = true;
+            graphicsDevice.RenderState.SourceBlend = Blend.One;
+            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            graphicsDevice.RenderState.AlphaTestEnable = false;
+            graphicsDevice.RenderState.DepthBufferEnable = true;
+            // Enable point sprites
+            graphicsDevice.RenderState.PointSpriteEnable = true;
+
+            PrecipShader.Begin();
+            foreach (EffectPass pass in PrecipShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            PrecipShader.End();
+
+            // Restore the pre-existing render state
+            graphicsDevice.RenderState.PointSpriteEnable = false;
+            graphicsDevice.RenderState.AlphaBlendEnable = AlphaBlendEnable;
+            graphicsDevice.RenderState.AlphaTestEnable = AlphaTestEnable;
+            graphicsDevice.RenderState.DestinationBlend = DestinationBlend;
+            graphicsDevice.RenderState.SourceBlend = SourceBlend;
+            graphicsDevice.RenderState.DepthBufferEnable = DepthBufferEnable;
+        }
+
+        // Is this needed? PrecipMaterial doesn't change any of these render states.
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
             graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
             graphicsDevice.RenderState.DepthBufferWriteEnable = true;
         }
     }
+	#endregion
 
-
+    #region Water material
     public class WaterMaterial : Material
     {
         SceneryShader SceneryShader;
@@ -546,7 +790,9 @@ namespace ORTS
         {
         }
     }
+    #endregion
 
+    #region Shadow casting material
     public class ShadowCastingMaterial : Material
     {
         public ShadowMappingShader Shader;
@@ -593,8 +839,9 @@ namespace ORTS
         }
 
     }
+    #endregion
 
-
+    #region Shadow receiving material
     public class ShadowReceivingMaterial : Material
     {
         public ShadowMappingShader Shader;
@@ -658,8 +905,9 @@ namespace ORTS
         }
 
     }
+    #endregion
 
-
+    #region Yellow (testing) material
     /// <summary>
     /// This material is used for debug and testing.
     /// </summary>
@@ -727,5 +975,5 @@ namespace ORTS
         {
         }
     }
-    
+    #endregion
 }

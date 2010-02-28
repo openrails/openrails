@@ -57,7 +57,8 @@ namespace ORTS
         // Components
         public Simulator Simulator;
         InfoDisplay InfoDisplay;
-        SkyDrawer SkyDrawer;
+        public SkyDrawer SkyDrawer;
+        public PrecipDrawer PrecipDrawer;
         TerrainDrawer TerrainDrawer;
         SceneryDrawer SceneryDrawer;
         TrainDrawer TrainDrawer;
@@ -189,6 +190,7 @@ namespace ORTS
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
             SceneryDrawer = new SceneryDrawer(this);
+            PrecipDrawer = new PrecipDrawer(this);
             TrainDrawer = new TrainDrawer(this);
 
             PlayerLocomotiveViewer =  GetPlayerLocomotiveViewer();
@@ -306,6 +308,7 @@ namespace ORTS
             TerrainDrawer.PrepareFrame(frame, elapsedTime);
             SceneryDrawer.PrepareFrame(frame, elapsedTime);
             TrainDrawer.PrepareFrame(frame, elapsedTime);
+            PrecipDrawer.PrepareFrame(frame, elapsedTime);
             InfoDisplay.PrepareFrame(frame, elapsedTime);
         }
 

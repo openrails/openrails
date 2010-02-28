@@ -133,6 +133,15 @@ namespace ORTS
             int minute = (int)(clockTimeSeconds / 60.0);
             clockTimeSeconds -= minute * 60.0;
             int seconds = (int)clockTimeSeconds;
+            // Reset clock before and after midnight
+            if (hour >= 24)
+                hour -= 24;
+            if (hour < 0)
+                hour += 24;
+            if (minute < 0)
+                minute += 60;
+            if (seconds < 0)
+                seconds += 60;
 
             return string.Format("{0:D2}:{1:D2}:{2:D2}", hour, minute, seconds);
         }
