@@ -33,14 +33,19 @@ A - decellerate
 ' or E - apply brakes 
 ; or Q - release brakes
 G - switch track ahead
-Shift-G - swith track behind
+Shift+G - swith track behind
 X - sander on/off
 V - wipers on/off
 B - bell
 SPACE - horn
 P - pantograph up/down
-Uncoupling - Hold U and mouse click on coupler 
+Uncoupling - Hold U and mouse click on coupler
 
+ENVIRONMENT CONTROLS (TEMPORARY DEMO MODE)
++ (keyboard + key, not number pad +) fast-forward the time clock
+- (keyboard - key, not number pad -) reverse the time clock
+Ctlr+ the above two keys: Adjust amount of cloud overcast
+Alt+P - Toggle between clear, rain and snow
 
 
 GRAPHICS QUALITY
