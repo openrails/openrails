@@ -95,13 +95,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Raindrop.tga">
-      <Name>Raindrop</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="SkyDome1.png">
       <Name>SkyDome1</Name>
       <Importer>TextureImporter</Importer>
@@ -113,11 +106,6 @@
       <Name>SkyShader</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
-    </Compile>
-    <Compile Include="Snowflake.tga">
-      <Name>Snowflake</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +121,20 @@
     </Compile>
     <Compile Include="Starmap_S.png">
       <Name>Starmap_S</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Snowflake.png">
+      <Name>Snowflake</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Raindrop.png">
+      <Name>Raindrop</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

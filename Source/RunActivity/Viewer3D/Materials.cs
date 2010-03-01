@@ -312,7 +312,7 @@ namespace ORTS
                 }
                 else // (Options & 3) == 2)  // dark interiors
                 {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[4];
+                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[3];
                 }
 
                 if ((Options & 0xC) == 0)   // no alpha
@@ -696,10 +696,12 @@ namespace ORTS
             bool AlphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
             Blend DestinationBlend = graphicsDevice.RenderState.DestinationBlend;
             Blend SourceBlend = graphicsDevice.RenderState.SourceBlend;
+            BlendFunction AlphaBlendOperation = graphicsDevice.RenderState.AlphaBlendOperation;
             bool DepthBufferEnable = graphicsDevice.RenderState.DepthBufferEnable;
             // Set render state for drawing precipitation
             graphicsDevice.RenderState.AlphaBlendEnable = true;
-            graphicsDevice.RenderState.SourceBlend = Blend.One;
+            graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
+            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
             graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
             graphicsDevice.RenderState.AlphaTestEnable = false;
             graphicsDevice.RenderState.DepthBufferEnable = true;
@@ -719,6 +721,7 @@ namespace ORTS
             // Restore the pre-existing render state
             graphicsDevice.RenderState.PointSpriteEnable = false;
             graphicsDevice.RenderState.AlphaBlendEnable = AlphaBlendEnable;
+            graphicsDevice.RenderState.AlphaBlendOperation = AlphaBlendOperation;
             graphicsDevice.RenderState.AlphaTestEnable = AlphaTestEnable;
             graphicsDevice.RenderState.DestinationBlend = DestinationBlend;
             graphicsDevice.RenderState.SourceBlend = SourceBlend;
