@@ -162,7 +162,7 @@ namespace ORTS
             graphicsDevice.RenderState.FogColor = Materials.FogColor; // new Color(128, 128, 128, 255);
             graphicsDevice.RenderState.FogDensity = 1.0f;                      // used for exponential fog only, not linear
             graphicsDevice.RenderState.FogEnd = ViewingDistance; // +300;
-            graphicsDevice.RenderState.FogStart = ViewingDistance / 2;
+            graphicsDevice.RenderState.FogStart = 3 * ViewingDistance / 4;
         }
     }
     #endregion
@@ -620,7 +620,7 @@ namespace ORTS
             Vector3 floatColor; // A scratchpad variable
 
             // These should be user defined in the Environment files (future)
-            startColor = new Vector3(0.47f, 0.55f, 0.51f);
+            startColor = new Vector3(0.57f, 0.60f, 0.61f);
             finishColor = new Vector3(0.05f, 0.05f, 0.05f);
 
             if (sunHeight > nightStart)

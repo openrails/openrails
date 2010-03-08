@@ -59,6 +59,7 @@ namespace ORTS
         InfoDisplay InfoDisplay;
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer;
+        public WeatherControl weatherControl;
         TerrainDrawer TerrainDrawer;
         SceneryDrawer SceneryDrawer;
         TrainDrawer TrainDrawer;
@@ -192,6 +193,7 @@ namespace ORTS
             SceneryDrawer = new SceneryDrawer(this);
             PrecipDrawer = new PrecipDrawer(this);
             TrainDrawer = new TrainDrawer(this);
+            weatherControl = new WeatherControl(this);
 
             PlayerLocomotiveViewer =  GetPlayerLocomotiveViewer();
 

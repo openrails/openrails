@@ -57,6 +57,8 @@ namespace ORTS
         public List<Train> Trains = new List<Train>();
         public Signals Signals = null;
         public AI AI = null;
+        public SeasonType Season;
+        public WeatherType Weather;
 
         
         public TrainCar PlayerLocomotive = null;  // Set by the Viewer - TODO there could be more than one player so eliminate this.
@@ -101,6 +103,9 @@ namespace ORTS
             Trains.Clear();
             InitializePlayerTrain();
             InitializeStaticConsists();
+            // Get season and weather
+            Season = Activity.Tr_Activity.Tr_Activity_Header.Season;
+            Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
 
             Signals = new Signals(this);
             AI = new AI(this);

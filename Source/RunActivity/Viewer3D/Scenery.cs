@@ -22,10 +22,16 @@
  * mesh files and textures whereever possible.
  * 
  */
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
+/// 
+/// Principal Author:
+///    Wayne Campbell
+/// Contributors:
+///    Rick Grout
+///     
 
 using System;
 using System.Collections.Generic;
@@ -175,6 +181,12 @@ namespace ORTS
     public class WorldFile: IDisposable
     {
         public int TileX, TileZ;
+        public struct DyntrackParams
+        {
+            public int isCurved;
+            public float param1;
+            public float param2;
+        }
 
         private List<StaticShape> SceneryObjects = new List<StaticShape>();
 
@@ -208,6 +220,9 @@ namespace ORTS
                 string shapeFilePath;
                 if (worldObject.GetType() == typeof(MSTS.TrackObj))
                     shapeFilePath = viewer.Simulator.BasePath + @"\global\shapes\" + worldObject.FileName;
+                // Skip Dynatrack: no shape file
+                else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
+                    shapeFilePath = null;
                 else
                     shapeFilePath = viewer.Simulator.RoutePath + @"\shapes\" + worldObject.FileName;
 
@@ -225,14 +240,21 @@ namespace ORTS
                     if (trackObj.JNodePosn != null)
                     {
                         // switch tracks need a link to the simulator engine so they can animate the points
-                        TrJunctionNode TRJ = viewer.Simulator.TDB.GetTrJunctionNode( TileX, TileZ, (int)trackObj.UID );
-                        SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, TRJ ));
+                        TrJunctionNode TRJ = viewer.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, (int)trackObj.UID);
+                        SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, TRJ));
 
                     }
                     else // its some type of track other than a switch track
                     {
                         SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix));
                     }
+                }
+                else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
+                {
+                    DyntrackObj obj = (DyntrackObj)worldObject;
+                    //SceneryObjects.Add(new StaticShape(viewer, obj, worldMatrix));
+                    // TODO: Define "type" e.g. Dynatrack, loft, forest
+                    continue;
                 }
                 else // its some other type of oject - not a track object
                 {

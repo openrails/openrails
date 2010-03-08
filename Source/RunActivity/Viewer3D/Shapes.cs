@@ -1,7 +1,13 @@
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
+/// 
+/// Principal Author:
+///    Wayne Campbell
+/// Contributors:
+///    Rick Grout
+///   
 
 using System;
 using System.Collections.Generic;
@@ -29,6 +35,7 @@ namespace ORTS
 
         /// <summary>
         /// Construct and initialize the class
+        /// This constructor is for objects described by a MSTS shape file
         /// </summary>
         public StaticShape(Viewer3D viewer, string path, WorldPosition position)
         {
@@ -37,12 +44,25 @@ namespace ORTS
             SharedShape = SharedShapeManager.Get(Viewer, path);
         }
 
+/*       
+        /// <summary>
+        /// Constructor for ORTS procedural shapes
+        /// </summary>
+        //public StaticShape(Viewer3D viewer, WorldFile.DyntrackParams[] dtrack, WorldPosition position)
+        public StaticShape(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position)
+        {
+            Viewer = viewer;
+            Location = position;
+            SharedShape shape = new SharedShape(viewer, dtrack);
+            //SharedShapes.Add(shape);
+        }
+*/        
+
         public virtual void PrepareFrame(RenderFrame frame, float elapsedSeconds )
         {
             SharedShape.PrepareFrame(frame, Location);
         }
     }
-
 
     /// <summary>
     /// Has a heirarchy of objects that can be moved by adjusting the XNAMatrices
@@ -62,7 +82,6 @@ namespace ORTS
             for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
         }
-
 
         public override void PrepareFrame(RenderFrame frame, float elapsedSeconds )
         {
@@ -109,7 +128,6 @@ namespace ORTS
 
                 float amount = (key - frame1) / (frame2 - frame1);
 
-
                 if (position1.GetType() == typeof(slerp_rot))  // rotate the existing matrix
                 {
                     slerp_rot MSTS1 = (slerp_rot)position1;
@@ -142,7 +160,6 @@ namespace ORTS
                     xnaPose.Translation = location;
                 }
             }
-
             XNAMatrices[iMatrix] = xnaPose;  // update the matrix
         }
     }
@@ -182,14 +199,12 @@ namespace ORTS
         }
     }
 
-
     public class SwitchTrackShape : PoseableShape
     {
         TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
         uint MainRoute;                  // 0 or 1 - which route is considered the main route
 
         protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
-
 
         public SwitchTrackShape(Viewer3D viewer, string path, WorldPosition position, TrJunctionNode trj ): base( viewer, path, position )
         {
@@ -251,13 +266,10 @@ namespace ORTS
                 return SharedShapes[path];
             }
         }
-
         private static Dictionary<string, SharedShape> SharedShapes = new Dictionary<string, SharedShape>();
 
         private static SharedShape EmptyShape = null;
     }
-
-
 
     public class ShapePrimitive : RenderPrimitive
     {
@@ -283,10 +295,7 @@ namespace ORTS
             graphicsDevice.Indices = IndexBuffer;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertex, NumVertices, 0, IndexCount / 3);
         }
-
     }
-
-
 
     public class SharedShape
     {
@@ -316,12 +325,27 @@ namespace ORTS
             LodControls = new LodControl[0];
         }
 
-        public SharedShape(Viewer3D viewer, string path )
-            
+        /// <summary>
+        /// MSTS shape from shape file
+        /// </summary>
+        /// <param name="viewer"></param>
+        /// <param name="path">Path to shape's S file</param>
+        public SharedShape(Viewer3D viewer, string path)
         {
             Viewer = viewer;
             FilePath = path;
-            LoadContent( path);
+            LoadContent(path);
+        }
+
+        /// <summary>
+        /// ORTS Dynatrack shape
+        /// </summary>
+        /// <param name="viewer">Viewer3D</param>
+        /// <param name="dtrack">a structure containing all the dynamic track-shape parameters</param>
+        public SharedShape(Viewer3D viewer, DyntrackObj dtrack)
+        {
+            Viewer = viewer;
+           // LoadContent(dtrack);
         }
 
         /// <summary>
@@ -373,7 +397,24 @@ namespace ORTS
             textureFolder = null;  // release it
 
         } // LoadContent
+/*
+        /// <summary>
+        /// Overloaded LoadContent for dynamic track
+        /// </summary>
+        private void LoadContent(DyntrackObj dtrack)
+        {
+            Console.Write("S");
+            textureFolder = Viewer.Simulator.RoutePath + @"\textures";  // TODO, and this shouldn't be hard coded
 
+            ShapePrimitive[] ShapePrimitives;
+            VertexBufferSet[] VertexBufferSets;
+
+            DynatrackMesh mesh = new DynatrackMesh(dtrack);
+
+            textureFolder = null;  // release it
+
+        } // LoadContent ORTS shape
+*/
         public class LodControl
         {
             public DistanceLevel[] DistanceLevels;
@@ -412,7 +453,6 @@ namespace ORTS
 
                 if (SubObjects.Length == 0)
                     throw new System.Exception("Shape file missing sub_object");
-
             }
         }
 
@@ -452,8 +492,6 @@ namespace ORTS
                     VertexBufferSet vertexBufferSet = VertexBufferSets[0]; //TODO temp code uses one big bufferset
                     light_model_cfg light_model_cfg = sFile.shape.light_model_cfgs[vtx_state.LightCfgIdx];
 
-                    
-                    
                     // Select a material
                     int options = 0;
 
@@ -476,10 +514,11 @@ namespace ORTS
                     // alpha translucency
                     else if (sFile.shape.shader_names[prim_state.ishader].StartsWith("BlendA", StringComparison.OrdinalIgnoreCase))
                         options |= 8;
-                    
 
                     if ((options & 0xC) == 8) // alpha translucent
-                        shapePrimitive.Sequence = 1;   
+                        shapePrimitive.Sequence = 0;
+                    // Changed this from 1 to 0 to eliminate conflict with sprite alpha.  rvg 3/4/10
+                    // I don't know if this causes some other problem, but I haven't observed any.
 
                     if (prim_state.tex_idxs.Length == 0)
                     {   // untextured objects get a blank texture
@@ -576,7 +615,6 @@ namespace ORTS
 
             public static VertexPositionTexture XNAVertexPositionTextureFromMSTS(vertex MSTSvertex, shape MSTSshape)
             {
-
                 MSTS.point MSTSPosition = MSTSshape.points[MSTSvertex.ipoint];
                 MSTS.uv_point MSTSTextureCoordinate;
                 if (MSTSvertex.vertex_uvs.Length > 0)  // there are files without UVS points - ie mst-sawmill-wh.s in BECR route
@@ -593,7 +631,6 @@ namespace ORTS
 
             private VertexPositionNormalTexture XNAVertexPositionNormalTextureFromMSTS(vertex MSTSvertex, shape MSTSshape)
             {
-
                 MSTS.point MSTSPosition = MSTSshape.points[MSTSvertex.ipoint];
                 MSTS.vector MSTSNormal = MSTSshape.normals[MSTSvertex.inormal];
                 MSTS.uv_point MSTSTextureCoordinate;
@@ -610,8 +647,6 @@ namespace ORTS
                 return XNAVertex;
             }
         }
-
-
 
         private Matrix XNAMatrixFromMSTS(MSTS.matrix MSTSMatrix)
         {
@@ -655,7 +690,6 @@ namespace ORTS
 
             Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
 
-
             foreach (LodControl lodControl in LodControls)
             {
                 if (Viewer.Camera.InFOV(mstsLocation, lodControl.DistanceLevels[0].ViewSphereRadius))
@@ -682,15 +716,11 @@ namespace ORTS
                                     frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix );
                                 } // for each primitive
                             }
-
                             break; // only draw one distance level.
                         }
                     }
                 }
             }
         }// PrepareFrame()
-
-
     }// class SharedShape
-
 }

@@ -132,7 +132,9 @@ namespace MSTS
                 else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
 			}
 		}
-
+        public Tr_Activity_Header( )
+        {
+        }
 	}
 
 	public class StartTime

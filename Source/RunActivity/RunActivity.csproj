@@ -189,6 +189,9 @@
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Simulator\TDBTraveller.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
+    <Compile Include="Viewer3D\Dynatrack.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Viewer3D\InfoDisplay.cs" />
     <Compile Include="Processes\LoaderProcess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -204,6 +207,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Viewer3D\Water.cs" />
+    <Compile Include="Viewer3D\Weather.cs" />
     <Compile Include="_Main.cs" />
     <Compile Include="Viewer3D\UserInput.cs" />
     <Compile Include="Viewer3D\Materials.cs" />

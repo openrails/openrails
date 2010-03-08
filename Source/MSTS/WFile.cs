@@ -1,7 +1,13 @@
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
+/// 
+/// Principal Author:
+///    Wayne Campbell
+/// Contributors:
+///    Rick Grout
+///     
 
 using System;
 using System.Collections;
@@ -61,7 +67,7 @@ namespace MSTS
                         case TokenID.Siding: subBlock.Skip(); break; // TODO
                         case TokenID.Forest: subBlock.Skip(); break; // TODO
                         case TokenID.LevelCr: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
-                        case TokenID.Dyntrack: subBlock.Skip(); break; // TODO
+                        case TokenID.Dyntrack: Add(new DyntrackObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Transfer: subBlock.Skip(); break; // TODO
                         case TokenID.Gantry: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Pickup: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
@@ -77,7 +83,6 @@ namespace MSTS
 
     public class StaticObj : WorldObject
     {
-
         public StaticObj(SBR block, int detailLevel )
         {
             //f.VerifyID(TokenID.Static); it could be CollideObject or Static object
@@ -144,6 +149,100 @@ namespace MSTS
             // TODO verify that we got all needed parameters otherwise null pointer failures will occur
             // TODO, do this for all objects that iterate using a while loop
         }
+    }
+
+    public class DyntrackObj : WorldObject
+    {
+        public uint SectionIdx;
+        public float Elevation;
+        public uint CollideFlags;
+        //SBR localBlock;
+        public TrackSections trackSections;
+
+        public DyntrackObj(SBR block, int detailLevel)
+        {
+            SBR localBlock = block;
+            localBlock.VerifyID(TokenID.Dyntrack);
+            StaticDetailLevel = detailLevel;
+
+            while (!block.EndOfBlock())
+            {
+                using (SBR subBlock = block.ReadSubBlock())
+                {
+                    switch (subBlock.ID)
+                    {
+                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+                        case TokenID.SectionIdx: SectionIdx = subBlock.ReadUInt(); break;
+                        case TokenID.Elevation: Elevation = subBlock.ReadFloat(); break;
+                        case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
+                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
+                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                        case TokenID.TrackSections: trackSections = new TrackSections(subBlock); break;
+                        default: subBlock.Skip(); break;
+                    }
+                }
+            }
+            // TODO verify that we got all needed parameters otherwise null pointer failures will occur
+            // TODO, do this for all objects that iterate using a while loop
+        }
+
+        // TODO: Move the following two methods to SBR.cs and recompile Reader.dll
+        public class TrackSections : ArrayList
+        {
+            public new TrackSection this[int i]
+            {
+                get { return (TrackSection)base[i]; }
+                set { base[i] = value; }
+            }
+
+            public TrackSections()
+            {
+            }
+
+            public TrackSections(SBR block)
+            {
+                block.VerifyID(TokenID.TrackSections);
+                int count = 5;
+                while (count-- > 0) this.Add(new TrackSection(block.ReadSubBlock()));
+                block.VerifyEndOfBlock();
+            }
+
+        }//TrackSections
+
+        public class TrackSection
+        {   /* TrackSection  ==> :SectionCurve :uint,UiD :float,param1 :float,param2
+               SectionCurve  ==> :int,isCurved
+                eg	TrackSection (
+				       SectionCurve ( 1 ) 40002 -0.3 120
+                    )
+                isCurve = 0 for straight, 1 for curved
+                param1 = length (m) for straight, arc (radians) for curved
+                param2 = 0 for straight, radius (m) for curved
+             */
+
+            public int isCurved;
+            public uint UiD;
+            public float param1;
+            public float param2;
+
+            public TrackSection(SBR block)
+            {
+                block.VerifyID(TokenID.TrackSection);
+
+                { // SectionCurve
+                    SBR subBlock = block.ReadSubBlock();
+                    subBlock.VerifyID(TokenID.SectionCurve);
+            	    isCurved = block.ReadInt();
+                    subBlock.VerifyEndOfBlock();
+                }
+	            UiD = block.ReadUInt();
+                param1 = block.ReadFloat();
+                param2 = block.ReadFloat();
+                block.VerifyEndOfBlock();
+            }
+        }//TrackSection
     }
 
     public abstract class WorldObject

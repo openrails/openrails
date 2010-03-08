@@ -1,0 +1,27 @@
+Version 108 Changes
+
+WFile.cs
+-- Added ability to read Dynamic Track world file objects instead of skipping over them. 
+-- Added new Dynatrack class. Inherits from WorldObject.
+-- Added TrackSections and TrackSection classes for reading dynamic track data. These actually belong in SBR.cs. Wayne will have to move them there and recompile Reader.dll.
+
+Simulator.cs
+-- Added public variables Season (SeasonType) and Weather (WeatherType).
+-- Added ability to read information into the above variables by referencing data in the ACT file.
+
+Weather.cs
+-- New file. Added new class WeatherControl which sets overcast factor to match activity's weather.
+-- This functionality is just the beginning. Eventually this class will handle dynamic weather.
+
+- Viewer3D.cs
+-- Added declaration and instantiation of the WeatherControl object.
+
+Precipitation.cs
+-- Added Reset functions to reinitialize the precipitation "drops" when the game clock is reset as in fast-forward -reverse calls.
+
+Sky.cs
+-- Added calls to the above precipitation Reset function when the user fast-forwards/reverses the time clock.
+
+Shapes.cs
+-- Changed value of draw sequence for primitives using translucent alpha to eliminate sprite alpha conflict.
+

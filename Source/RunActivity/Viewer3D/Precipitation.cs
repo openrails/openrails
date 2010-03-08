@@ -53,8 +53,6 @@ namespace ORTS
         {
             Viewer = viewer;
             precipMaterial = Materials.Load(Viewer.RenderProcess, "PrecipMaterial");
-
-            weatherType = (int)WeatherType.Clear;
             // Instantiate classes
             precipMesh = new PrecipMesh( Viewer.RenderProcess);
 
@@ -64,7 +62,9 @@ namespace ORTS
             precipMesh.windDir = windDir = new Vector2(1, 0); // Westerly.
             windStrength = 2.0f;
             precipMesh.windStrength = windStrength;
+            // Get data for current activity
             startTime = Viewer.Simulator.ClockTime;
+            weatherType = (int)Viewer.Simulator.Weather;
         }
         #endregion
 
@@ -76,8 +76,6 @@ namespace ORTS
             // Set up the positioning matrices
             Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y, -Viewer.Camera.Location.Z);
             Matrix XNAPrecipWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
-
-            precipMesh.Reinitialize(Viewer.Simulator.ClockTime - startTime);
 
 ////////////////////// T E M P O R A R Y ///////////////////////////
 
@@ -105,7 +103,18 @@ namespace ORTS
 
 ////////////////////////////////////////////////////////////////////
 
+            precipMesh.Reinitialize(Viewer.Simulator.ClockTime - startTime);
+
             frame.AddPrimitive(precipMaterial, precipMesh, ref XNAPrecipWorldLocation);
+        }
+
+        /// <summary>
+        /// Reset the particle array upon any event that inerrupts or alters the time clock.
+        /// </summary>
+        public void Reset()
+        {
+            startTime = Viewer.Simulator.ClockTime;
+            precipMesh.Reset( );
         }
     }
     #endregion
@@ -141,6 +150,15 @@ namespace ORTS
             intensity = 3500;
             particleSize = 0.5f;
             lastActiveParticle = -1;
+        }
+
+        /// <summary>
+        /// Reset the particle array upon any event that inerrupts or alters the time clock. 
+        /// </summary>
+        public void Reset( )
+        {
+            lastActiveParticle = -1;
+            Reinitialize(0);
         }
 
         /// <summary>
@@ -187,7 +205,6 @@ namespace ORTS
                     lastActiveParticle++;
                     lastActiveParticle %= drops.Length;
                 }
-            //int a = 0;
             }
         }
 

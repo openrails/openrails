@@ -126,15 +126,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Snowflake.png">
-      <Name>Snowflake</Name>
+    <Compile Include="Raindrop.png">
+      <Name>Raindrop</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Raindrop.png">
-      <Name>Raindrop</Name>
+    <Compile Include="Snowflake.png">
+      <Name>Snowflake</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

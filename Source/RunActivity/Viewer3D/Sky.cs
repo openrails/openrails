@@ -74,6 +74,7 @@ namespace ORTS
         public float windDirection;
         // Overcast factor
         public float overcast;
+        public int seasonType;
 
         // These arrays and vectors define the position of the sun and moon in the world
         Vector3[] solarPosArray = new Vector3[72];
@@ -96,19 +97,18 @@ namespace ORTS
             skyVectors = new SunMoonPos();
 
             // Set default values
-            // TODO: Set these externally from route files
+            seasonType = (int)Viewer.Simulator.Season;
+            date.ordinalDate = 82 + seasonType * 91;
+            // TODO: Set the following three externally from ORTS route files (future)
+            date.month = 1 + date.ordinalDate / 30;
+            date.day = 21;
             date.year = 2010;
-            date.month = 7;
-            date.day = 1;
-            date.ordinalDate = 182; // Around July 1
             sunpeakColor = new Vector4(1.0f, 1.0f, 0.95f, 1.0f);
             sunriseColor = new Vector4(0.93f, 0.89f, 0.75f, 1.0f);
             sunsetColor = new Vector4(0.87f, 0.28f, 0.10f, 1.0f);
             // Default wind speed and direction
             windSpeed = 5.0f; // m/s (approx 11 mph)
             windDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
-            // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
-            overcast = 0.1f;
        }
         #endregion
 
@@ -141,6 +141,8 @@ namespace ORTS
                 moonPhase = random.Next(8);
                 if (moonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
                     moonPhase = 3; // Moon dog only occurs in winter
+                // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
+                overcast = Viewer.weatherControl.overcast;
             }
 
 ////////////////////// T E M P O R A R Y ///////////////////////////
@@ -155,15 +157,20 @@ namespace ORTS
                     overcast += 0.005f;
                 if (UserInput.IsKeyDown(Keys.OemMinus))
                     overcast -= 0.005f;
-                overcast = overcast > 1 ? 1 : overcast;
-                overcast = overcast < 0 ? 0 : overcast;
+                MathHelper.Clamp(overcast, 0, 1);
             }
             else
             {
                 if (UserInput.IsKeyDown(Keys.OemPlus))
+                {
                     Viewer.Simulator.ClockTime += 120; // Two-minute (120 second) increments
+                    Viewer.PrecipDrawer.Reset();
+                }
                 if (UserInput.IsKeyDown(Keys.OemMinus))
+                {
                     Viewer.Simulator.ClockTime -= 120;
+                    Viewer.PrecipDrawer.Reset();
+                }
             }
 
 ////////////////////////////////////////////////////////////////////
