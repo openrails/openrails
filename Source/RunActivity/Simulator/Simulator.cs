@@ -181,7 +181,7 @@ namespace ORTS
                 Train PlayerTrain = PlayerLocomotive.Train;
                 PlayerTrain.Update(elapsedClockSeconds);
                 AlignTrailingPointSwitches(PlayerTrain, PlayerLocomotive.Direction == Direction.Forward);
-                CheckForCoupling(PlayerTrain);
+                CheckForCoupling(PlayerTrain, elapsedClockSeconds);
             }
 
             if( Signals != null ) Signals.Update(elapsedClockSeconds);
@@ -193,12 +193,12 @@ namespace ORTS
         /// Scan other trains
         /// </summary>
         /// <param name="train"></param>
-        public void CheckForCoupling(Train drivenTrain)
+        public void CheckForCoupling(Train drivenTrain, float elapsedClockSeconds)
         {
-            float captureDistance = 0.1f * drivenTrain.SpeedMpS / 5.0f;
+            float captureDistance = drivenTrain.SpeedMpS * elapsedClockSeconds;
             float captureDistanceSquared = captureDistance * captureDistance;
 
-            if (drivenTrain.SpeedMpS < 0.01)
+            if (drivenTrain.SpeedMpS < -0.0001f)
             {
                 foreach (Train train in Trains)
                     if (train != drivenTrain)
@@ -206,8 +206,7 @@ namespace ORTS
                         if (WorldLocation.DistanceSquared(drivenTrain.RearTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
                         {
                             // couple my rear to front of train
-                            if (drivenTrain.SpeedMpS < -0.1f)
-                                drivenTrain.SpeedMpS = -0.1f;  // TODO, make this depend on mass and brake settings on cars coupled to
+                            drivenTrain.SetCoupleSpeed(train,1);
                             foreach (TrainCar car in train.Cars)
                             {
                                 drivenTrain.Cars.Add(car);
@@ -216,13 +215,13 @@ namespace ORTS
                             drivenTrain.RepositionRearTraveller();
                             Trains.Remove(train);
                             drivenTrain.LastCar.SignalEvent(EventID.Couple);
+                            Console.WriteLine("couple rf {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
                         if (WorldLocation.DistanceSquared(drivenTrain.RearTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
                         {
                             // couple my rear to rear of train
-                            if (drivenTrain.SpeedMpS < -0.1f)
-                                drivenTrain.SpeedMpS = -0.1f;
+                            drivenTrain.SetCoupleSpeed(train,-1);
                             for (int i = train.Cars.Count - 1; i >= 0; --i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -233,11 +232,12 @@ namespace ORTS
                             drivenTrain.RepositionRearTraveller();
                             Trains.Remove(train);
                             drivenTrain.LastCar.SignalEvent(EventID.Couple);
+                            Console.WriteLine("couple rr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
                     }
             }
-            else if (drivenTrain.SpeedMpS > 0.01)
+            else if (drivenTrain.SpeedMpS > 0.0001f)
             {
                 foreach (Train train in Trains)
                     if (train != drivenTrain)
@@ -245,8 +245,7 @@ namespace ORTS
                         if (WorldLocation.DistanceSquared(drivenTrain.FrontTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
                         {
                             // couple my front to rear of train
-                            if (drivenTrain.SpeedMpS > 0.1f)
-                                drivenTrain.SpeedMpS = 0.1f;
+                            drivenTrain.SetCoupleSpeed(train,1);
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -256,13 +255,13 @@ namespace ORTS
                             drivenTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
                             drivenTrain.FirstCar.SignalEvent(EventID.Couple);
+                            Console.WriteLine("couple fr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
                         if (WorldLocation.DistanceSquared(drivenTrain.FrontTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
                         {
                             // couple my front to front of train
-                            if (drivenTrain.SpeedMpS > 0.1f)
-                                drivenTrain.SpeedMpS = 0.1f;
+                            drivenTrain.SetCoupleSpeed(train,-1);
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -273,6 +272,7 @@ namespace ORTS
                             drivenTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
                             drivenTrain.FirstCar.SignalEvent(EventID.Couple);
+                            Console.WriteLine("couple ff {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
                     }
@@ -458,7 +458,7 @@ namespace ORTS
                     switch (activityObject.Direction)  // TODO, we don't really understand this
                     {
                         case 0: consistDirection = 0; break;  // reversed ( confirmed on L&PS route )
-                        case 18: consistDirection = 0; break;  // reversed
+                        case 18: consistDirection = 1; break;  // forward ( confirmed on ON route )
                         case 131: consistDirection = 1; break; // forward ( confirmed on L&PS route )
                         default: consistDirection = 1; break;  // forward ( confirmed on L&PS route )
                     }
@@ -595,6 +595,7 @@ namespace ORTS
             while (train.Cars[i] != car) ++i;  // it can't happen that car isn't in car.Train
             if (i == train.Cars.Count - 1) return;  // can't uncouple behind last car
             ++i;
+            Console.WriteLine("uncouple {0}", i);
 
             // move rest of cars to the new train
             Train train2 = new Train();

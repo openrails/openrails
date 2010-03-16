@@ -304,6 +304,17 @@ namespace ORTS
             FrontTDBTraveller = traveller;
         } // CalculatePositionOfCars
 
+        //  Sets this train's speed so that momentum is conserved when otherTrain is coupled to it
+        public void SetCoupleSpeed(Train otherTrain, float otherMult)
+        {
+            float kg1 = 0;
+            foreach (TrainCar car in Cars)
+                kg1+= car.MassKG;
+            float kg2= 0;
+            foreach (TrainCar car in otherTrain.Cars)
+                kg2+= car.MassKG;
+            SpeedMpS= (kg1*SpeedMpS+kg2*otherTrain.SpeedMpS*otherMult)/(kg1+kg2);
+        }
     }// class Train
 
 

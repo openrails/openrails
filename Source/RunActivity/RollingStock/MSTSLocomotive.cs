@@ -196,7 +196,7 @@ namespace ORTS
         public void SetDirection( Direction direction )
         {
             // Direction Control
-            if ( Direction != direction)
+            if ( Direction != direction && ThrottlePercent < 1)
             {
                 Direction = direction;
                 SignalEvent( direction == Direction.Forward ? EventID.Forward : EventID.Reverse);

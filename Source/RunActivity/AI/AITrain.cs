@@ -346,7 +346,7 @@ namespace ORTS
                     SpeedMpS = 20; // speed controls distance threshold which must be larger than our stop threshold
                 else
                     SpeedMpS = -20;
-                AI.Simulator.CheckForCoupling(this);
+                AI.Simulator.CheckForCoupling(this, .1f);
                 SpeedMpS = 0;
                 CalculatePositionOfCars(0);
             }
