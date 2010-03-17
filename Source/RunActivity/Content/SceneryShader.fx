@@ -18,6 +18,7 @@ float Ambient = 0.5;
 float Brightness = 0.7;
 float ZBias = 0.0;  // TODO TESTING
 float overcast;									// Lower saturation & brightness when overcast
+bool isNight_Tex;								// Using night texture
 
 texture imageMap_Tex;
 sampler imageMap = sampler_state
@@ -135,12 +136,14 @@ float4 PSImage(
     float4 surfColor = tex2D( imageMap, uvImageT );
     float alpha = surfColor.a;
     surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
-    
-    // Darken at night
-    surfColor *= Day2Night(); 
-    // Reduce saturaton when overcast
-    float3 color = Overcast(surfColor.xyz, 1-overcast);
-    surfColor = float4(color, 1);
+	
+    if (!isNight_Tex) // Darken at night unless using a night texture
+    {
+		surfColor *= Day2Night(); 
+		// Reduce saturaton when overcast
+		float3 color = Overcast(surfColor.xyz, 1-overcast);
+		surfColor = float4(color, 1);
+    }
     
     surfColor.a = alpha;
     return surfColor;
@@ -157,11 +160,11 @@ float4 PSVegetation(
 	surfColor *= 0.8;  
 	surfColor += 0.03;
 	
-    // Darken at night
-    surfColor *= Day2Night();
-    // Reduce saturaton when overcast
-    float3 color = Overcast(surfColor.xyz, 1-overcast);
-    surfColor = float4(color, 1);
+	// Darken at night
+	surfColor *= Day2Night();
+	// Reduce saturaton when overcast
+	float3 color = Overcast(surfColor.xyz, 1-overcast);
+	surfColor = float4(color, 1);
 
 	surfColor.a = alpha;
 	return surfColor;

@@ -74,6 +74,7 @@ namespace ORTS
         public float windDirection;
         // Overcast factor
         public float overcast;
+        public float fogCoeff;
         public int seasonType;
 
         // These arrays and vectors define the position of the sun and moon in the world
@@ -118,7 +119,7 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // Adjust dome position so the bottom edge is not visible
-            Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y - 200, -Viewer.Camera.Location.Z);
+            Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y, -Viewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
 
             if (worldLoc == null)
@@ -143,6 +144,7 @@ namespace ORTS
                     moonPhase = 3; // Moon dog only occurs in winter
                 // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
                 overcast = Viewer.weatherControl.overcast;
+                fogCoeff = Viewer.weatherControl.fogCoeff;
             }
 
 ////////////////////// T E M P O R A R Y ///////////////////////////

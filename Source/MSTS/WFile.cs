@@ -67,7 +67,12 @@ namespace MSTS
                         case TokenID.Siding: subBlock.Skip(); break; // TODO
                         case TokenID.Forest: subBlock.Skip(); break; // TODO
                         case TokenID.LevelCr: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
-                        case TokenID.Dyntrack: Add(new DyntrackObj(subBlock, currentWatermark)); break; // TODO temp code
+                        case TokenID.Dyntrack: // Unicode
+                            Add(new DyntrackObj(subBlock, currentWatermark, true));
+                            break;
+                        case (TokenID)306: // Binary
+                            Add(new DyntrackObj(subBlock, currentWatermark, false));
+                            break;
                         case TokenID.Transfer: subBlock.Skip(); break; // TODO
                         case TokenID.Gantry: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Pickup: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
@@ -156,13 +161,13 @@ namespace MSTS
         public uint SectionIdx;
         public float Elevation;
         public uint CollideFlags;
-        //SBR localBlock;
         public TrackSections trackSections;
 
-        public DyntrackObj(SBR block, int detailLevel)
+        public DyntrackObj(SBR block, int detailLevel, bool isUnicode)
         {
             SBR localBlock = block;
-            localBlock.VerifyID(TokenID.Dyntrack);
+            if (isUnicode)
+                localBlock.VerifyID(TokenID.Dyntrack);
             StaticDetailLevel = detailLevel;
 
             while (!block.EndOfBlock())
@@ -179,16 +184,14 @@ namespace MSTS
                         case TokenID.Position: Position = new STFPositionItem(subBlock); break;
                         case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
                         case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        case TokenID.TrackSections: trackSections = new TrackSections(subBlock); break;
+                        case TokenID.TrackSections: trackSections = new TrackSections(subBlock, isUnicode); break;
                         default: subBlock.Skip(); break;
                     }
                 }
             }
-            // TODO verify that we got all needed parameters otherwise null pointer failures will occur
-            // TODO, do this for all objects that iterate using a while loop
         }
 
-        // TODO: Move the following two methods to SBR.cs and recompile Reader.dll
+        // TODO: Move this method to SBR.cs and recompile Reader.dll
         public class TrackSections : ArrayList
         {
             public new TrackSection this[int i]
@@ -201,43 +204,52 @@ namespace MSTS
             {
             }
 
-            public TrackSections(SBR block)
+            public TrackSections(SBR block, bool isUnicode)
             {
                 block.VerifyID(TokenID.TrackSections);
                 int count = 5;
-                while (count-- > 0) this.Add(new TrackSection(block.ReadSubBlock()));
+                while (count-- > 0) this.Add(new TrackSection(block.ReadSubBlock(), isUnicode, count));
                 block.VerifyEndOfBlock();
             }
 
         }//TrackSections
 
+        // TODO: Move this method to SBR.cs and recompile Reader.dll
         public class TrackSection
-        {   /* TrackSection  ==> :SectionCurve :uint,UiD :float,param1 :float,param2
-               SectionCurve  ==> :int,isCurved
-                eg	TrackSection (
-				       SectionCurve ( 1 ) 40002 -0.3 120
-                    )
-                isCurve = 0 for straight, 1 for curved
-                param1 = length (m) for straight, arc (radians) for curved
-                param2 = 0 for straight, radius (m) for curved
-             */
+        {
+            // TrackSection  ==> :SectionCurve :uint,UiD :float,param1 :float,param2
+            // SectionCurve  ==> :uint,isCurved
+            // eg:  TrackSection (
+            //	       SectionCurve ( 1 ) 40002 -0.3 120
+            //      )
+            // isCurve = 0 for straight, 1 for curved
+            // param1 = length (m) for straight, arc (radians) for curved
+            // param2 = 0 for straight, radius (m) for curved
 
-            public int isCurved;
+            public uint isCurved;
             public uint UiD;
             public float param1;
             public float param2;
 
-            public TrackSection(SBR block)
+            public TrackSection(SBR block, bool isUnicode, int count)
             {
                 block.VerifyID(TokenID.TrackSection);
-
-                { // SectionCurve
+                 // SectionCurve
+                {
                     SBR subBlock = block.ReadSubBlock();
-                    subBlock.VerifyID(TokenID.SectionCurve);
-            	    isCurved = block.ReadInt();
-                    subBlock.VerifyEndOfBlock();
+                    if (isUnicode)
+                    {
+                        subBlock.VerifyID(TokenID.SectionCurve);
+                        isCurved = block.ReadUInt();
+                        subBlock.VerifyEndOfBlock();
+                    }
+                    else
+                    {
+                        subBlock.Skip();
+                        isCurved = (uint)count % 2;
+                    }
                 }
-	            UiD = block.ReadUInt();
+                UiD = block.ReadUInt();
                 param1 = block.ReadFloat();
                 param2 = block.ReadFloat();
                 block.VerifyEndOfBlock();
@@ -246,16 +258,17 @@ namespace MSTS
     }
 
     public abstract class WorldObject
-	{
-		public string FileName;
-		public uint UID;
-		public STFPositionItem Position;
-		public STFQDirectionItem QDirection;
-		public Matrix3x3 Matrix3x3;
-		public int StaticDetailLevel = 0;
+    {
+        public string FileName;
+        public uint UID;
+        public STFPositionItem Position;
+        public STFQDirectionItem QDirection;
+        public Matrix3x3 Matrix3x3;
+        public int StaticDetailLevel = 0;
         public uint StaticFlags = 0;
         public uint VDbId;
-	}
+    }
+
 
 	public class STFPositionItem: TWorldPosition
 	{

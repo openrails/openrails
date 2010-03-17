@@ -47,6 +47,11 @@ namespace ORTS
             set { normalMap_Tex.SetValue(value); }
         }
 
+        public bool isNightTexture
+        {
+            set { isNight_Tex.SetValue(value); }
+        }
+
         public float Brightness
         {
             get { return brightnessValue; }
@@ -98,6 +103,7 @@ namespace ORTS
         EffectParameter mModelToWorld = null;
         EffectParameter imageMap_Tex = null;
         EffectParameter normalMap_Tex = null;
+        EffectParameter isNight_Tex = null;
         EffectParameter brightness = null;
         EffectParameter saturation = null;
         EffectParameter ambient = null;
@@ -113,6 +119,7 @@ namespace ORTS
             mModelToWorld = Parameters["mModelToWorld"];
             imageMap_Tex = Parameters["imageMap_Tex"];
             normalMap_Tex = Parameters["normalMap_Tex"];
+            isNight_Tex = Parameters["isNight_Tex"];
             brightness = Parameters["Brightness"];
             saturation = Parameters["Saturation"];
             ambient = Parameters["Ambient"];

@@ -1,7 +1,13 @@
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
+/// 
+/// Principal Author:
+///    Wayne Campbell
+/// Contributors:
+///    Rick Grout
+///
 
 using System;
 using System.Collections.Generic;
@@ -245,12 +251,23 @@ namespace ORTS
             PatchZ = z;
             TFile = tFile;
             YFile = yFile;
+            int weather = (int)Viewer.Simulator.Weather;
+            int season = (int)Viewer.Simulator.Season;
 
             terrain_patchset_patch patch = tFile.terrain.terrain_patchsets[0].GetPatch(x, z);
             terrain_shader terrain_shader = (terrain_shader)tFile.terrain.terrain_shaders[patch.iShader];
             string terrtexName = terrain_shader.terrain_texslots[0].Filename;
 
-            PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Viewer.Simulator.RoutePath + @"\terrtex\" + terrtexName);
+            if (weather == (int)WeatherType.Snow || season == (int)SeasonType.Winter)
+            {
+                // Make sure there's a "snow" counterpart to the terrtex. If not, use the regular terrtex.
+                if (File.Exists(Viewer.Simulator.RoutePath + @"\terrtex\snow\" + terrtexName))
+                    PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Viewer.Simulator.RoutePath + @"\terrtex\snow\" + terrtexName);
+                else
+                    PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Viewer.Simulator.RoutePath + @"\terrtex\" + terrtexName);
+            }
+            else
+                PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Viewer.Simulator.RoutePath + @"\terrtex\" + terrtexName);
 
             float cx =  -1024+(int)patch.CenterX;
             float cz =  -1024-(int)patch.CenterZ;

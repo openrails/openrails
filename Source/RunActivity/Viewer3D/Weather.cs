@@ -11,7 +11,9 @@ namespace ORTS
         private int weatherType;
         public int seasonType;
         // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
-        public float overcast;
+        public float overcast = 0.1f;
+        public float intensity = 3500;
+        public float fogCoeff = 0.75f;
 
         public WeatherControl(Viewer3D viewer)
         {
@@ -27,13 +29,18 @@ namespace ORTS
             switch (weatherType)
             {
                 case (int)MSTS.WeatherType.Rain:
-                    overcast = 0.7f;
+                    overcast = 0.6f;
+                    intensity = 3500;
+                    fogCoeff = 0.2f;
                     break;
                 case (int)MSTS.WeatherType.Snow:
-                    overcast = 0.7f;
+                    overcast = 0.6f;
+                    intensity = 3500;
+                    fogCoeff = 0.1f;
                     break;
                 case (int)MSTS.WeatherType.Clear:
                     overcast = 0.1f;
+                    fogCoeff = 1.0f;
                     break;
             }
         }

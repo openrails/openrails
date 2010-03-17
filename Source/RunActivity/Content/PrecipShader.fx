@@ -68,7 +68,10 @@ VS_OUT VSprecip( VS_IN In )
     if (weatherType == 1) // snow
 		velocity = 8.0f;
     if (weatherType == 2) // rain
+    {
 		velocity = 20.0f;
+		In.Size *= 1.4;
+	}
     position.y = position.y - age * velocity;
     
     float4 ProjectedPosition = mul(mul(position, mView), mProjection);

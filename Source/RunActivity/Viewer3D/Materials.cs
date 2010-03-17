@@ -13,9 +13,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 
 namespace ORTS
 {
@@ -29,6 +29,7 @@ namespace ORTS
         private static WaterMaterial WaterMaterial = null;
         private static SkyMaterial SkyMaterial = null;
         private static PrecipMaterial PrecipMaterial = null;
+        private static DynatrackMaterial DynatrackMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
         private static Dictionary<string, ShadowReceivingMaterial> ShadowReceivingMaterials = new Dictionary<string, ShadowReceivingMaterial>();
@@ -37,6 +38,7 @@ namespace ORTS
         private static Material YellowMaterial = null;   // for debug and experiments
         public static ShadowCastingMaterial ShadowMaterial = null;
         public static Color FogColor = new Color(110, 110, 110, 255);
+        public static float FogCoeff = 0.75f;
         public static ShadowMappingShader ShadowMappingShader = null;
 
         /// <summary>
@@ -56,6 +58,7 @@ namespace ORTS
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
+            DynatrackMaterial = new DynatrackMaterial(renderProcess);
             YellowMaterial = new YellowMaterial(renderProcess);
             ShadowMaterial = new ShadowCastingMaterial(renderProcess);
             IsInitialized = true;
@@ -144,12 +147,14 @@ namespace ORTS
                     return SkyMaterial;
                 case "PrecipMaterial":
                     return PrecipMaterial;
+                case "DynatrackMaterial":
+                    return DynatrackMaterial;
                 default:
                     return Load(renderProcess, "SceneryMaterial");
             }
         }
 
-        public static float ViewingDistance = 2000;  // TODO, this is awkward, viewer must set this to control fog
+        public static float ViewingDistance = 3000;  // TODO, this is awkward, viewer must set this to control fog
 
         /// <summary>
         /// Setup the renderstate for fog
@@ -161,8 +166,8 @@ namespace ORTS
             graphicsDevice.RenderState.FogTableMode = FogMode.Linear;     // pixel fog off
             graphicsDevice.RenderState.FogColor = Materials.FogColor; // new Color(128, 128, 128, 255);
             graphicsDevice.RenderState.FogDensity = 1.0f;                      // used for exponential fog only, not linear
-            graphicsDevice.RenderState.FogEnd = ViewingDistance; // +300;
-            graphicsDevice.RenderState.FogStart = 3 * ViewingDistance / 4;
+            graphicsDevice.RenderState.FogEnd = ViewingDistance * FogCoeff;
+            graphicsDevice.RenderState.FogStart = ViewingDistance * 0.5f * FogCoeff;
         }
     }
     #endregion
@@ -268,6 +273,7 @@ namespace ORTS
         public float MipMapBias = 0;
         SceneryShader SceneryShader;
         Texture2D Texture;
+        Texture2D nightTexture = null;
         public RenderProcess RenderProcess;  // for diagnostics only
 
         public SceneryMaterial(RenderProcess renderProcess, string texturePath)
@@ -275,15 +281,28 @@ namespace ORTS
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
             Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
+            int idx = texturePath.LastIndexOf("textures");
+            if (idx > 0)
+            {
+                string strTexname;
+                string nightTexturePath = texturePath.Remove(idx + 9);
+                idx = texturePath.LastIndexOf(@"\");
+                strTexname = texturePath.Remove(0, idx);
+                nightTexturePath += "night";
+                nightTexturePath += strTexname;
+                if (File.Exists(nightTexturePath))
+                    nightTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, nightTexturePath);
+            }
         }
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
 
+            Vector3 sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+            SceneryShader.SunDirection = sunDirection;
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             SceneryShader.ZBias = renderPrimitive.ZBias;
-            SceneryShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
             SceneryShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
 
             int prevOptions = -1;
@@ -304,15 +323,15 @@ namespace ORTS
             {
                 if ((Options & 3) == 0)     // normal lighting
                 {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[0];
+                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
                 }
                 else if ((Options & 3) == 1)  // cruciform vegetation
                 {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[1];
+                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
                 }
                 else // (Options & 3) == 2)  // dark interiors
                 {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques[3];
+                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Dark"];
                 }
 
                 if ((Options & 0xC) == 0)   // no alpha
@@ -360,13 +379,21 @@ namespace ORTS
                         graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
                         break;
                 }
-
             }
 
             if (this != previousMaterial)
             {
                 RenderProcess.ImageChangesCount++;
-                SceneryShader.Texture = Texture;
+                SceneryShader.isNightTexture = false;
+
+                if (sunDirection.Y < 0.0f && nightTexture != null) // Night
+                {
+                    SceneryShader.Texture = nightTexture;
+                    SceneryShader.isNightTexture = true;
+                }
+                else
+                    SceneryShader.Texture = Texture;
+
                 if( MipMapBias < -1 )
                     graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
                 else
@@ -419,7 +446,7 @@ namespace ORTS
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-                SceneryShader.CurrentTechnique = SceneryShader.Techniques[2];
+                SceneryShader.CurrentTechnique = SceneryShader.Techniques["Terrain"];
                 graphicsDevice.RenderState.AlphaTestEnable = false;
                 graphicsDevice.RenderState.AlphaBlendEnable = false;
                 Materials.SetupFog( graphicsDevice );
@@ -469,7 +496,7 @@ namespace ORTS
         Texture2D cloudTexture;
         private Matrix XNAMoonMatrix;
         private Matrix XNAMoonWorldMatrix;
-        public RenderProcess RenderProcess;  // for diagnostics only
+        public RenderProcess RenderProcess;
 
         public SkyMaterial(RenderProcess renderProcess)
         {
@@ -495,6 +522,7 @@ namespace ORTS
             FogDay2Night(
                 RenderProcess.Viewer.SkyDrawer.solarDirection.Y,
                 RenderProcess.Viewer.SkyDrawer.overcast);
+            Materials.FogCoeff = RenderProcess.Viewer.SkyDrawer.fogCoeff;
 
             SkyShader.CurrentTechnique = SkyShader.Techniques["SkyTechnique"];
             SkyShader.SkyTexture = skyTexture;
@@ -597,11 +625,8 @@ namespace ORTS
             graphicsDevice.RenderState.FogEnable = fogEnable;
         }
 
-        // Is this needed? SkyMaterial doesn't change any of these render states.
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
-            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
         }
 
         /// <summary>
@@ -620,7 +645,7 @@ namespace ORTS
             Vector3 floatColor; // A scratchpad variable
 
             // These should be user defined in the Environment files (future)
-            startColor = new Vector3(0.57f, 0.60f, 0.61f);
+            startColor = new Vector3(0.647f, 0.651f, 0.655f);
             finishColor = new Vector3(0.05f, 0.05f, 0.05f);
 
             if (sunHeight > nightStart)
@@ -636,7 +661,7 @@ namespace ORTS
             }
 
             // Adjust fog color for overcast
-            floatColor *= (1 - 0.5f*overcast);
+            floatColor *= (1 - 0.5f * overcast);
 
             // Convert color format
             Materials.FogColor.R = (byte)(floatColor.X * 255);
@@ -652,7 +677,7 @@ namespace ORTS
         PrecipShader PrecipShader;
         Texture2D rainTexture;
         Texture2D snowTexture;
-        public RenderProcess RenderProcess;  // for diagnostics only
+        public RenderProcess RenderProcess;
 
         public PrecipMaterial(RenderProcess renderProcess)
         {
@@ -737,6 +762,122 @@ namespace ORTS
     }
 	#endregion
 
+    #region Dynatrack material
+    public class DynatrackMaterial : Material
+    {
+        SceneryShader sceneryShader;
+        Texture2D image1;
+        Texture2D image1s;
+        Texture2D image2;
+        string texturePath;
+        public RenderProcess RenderProcess;
+
+        public DynatrackMaterial(RenderProcess renderProcess)
+        {
+            RenderProcess = renderProcess;
+            sceneryShader = Materials.SceneryShader;
+            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + "acleantrack1.ace";
+            image1 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
+            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures\snow" + @"\" + "acleantrack1.ace";
+            if (File.Exists(texturePath))
+                image1s = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
+            else // Use file in base texture folder
+                image1s = image1;
+            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + "acleantrack2.ace";
+            image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
+        }
+
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
+                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            sceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+            DynatrackMesh mesh = (DynatrackMesh)renderPrimitive;
+            sceneryShader.isNightTexture = false;
+
+            RenderProcess.RenderStateChangesCount++;
+            RenderProcess.ImageChangesCount++;
+
+            // Save existing render state
+            CullMode cullMode = graphicsDevice.RenderState.CullMode;
+            bool alphaBlendEnable = graphicsDevice.RenderState.AlphaBlendEnable;
+            Blend destinationBlend = graphicsDevice.RenderState.DestinationBlend;
+            Blend sourceBlend = graphicsDevice.RenderState.SourceBlend;
+            bool alphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
+
+            // Ballast
+            graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;
+            sceneryShader.CurrentTechnique = sceneryShader.Techniques["Image"];
+            if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
+                RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
+                sceneryShader.Texture = image1s;
+            else
+                sceneryShader.Texture = image1;
+
+            // Set render state for drawing ballast
+            graphicsDevice.RenderState.AlphaBlendEnable = true;
+            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            graphicsDevice.RenderState.AlphaTestEnable = false;
+            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            //graphicsDevice.RenderState.FillMode = FillMode.WireFrame;
+           
+            mesh.drawIndex = 1;
+            sceneryShader.Begin();
+            foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            sceneryShader.End();
+
+            // Rail tops
+            graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+            sceneryShader.Texture = image2;
+
+            // Set render state for drawing rail sides and tops
+            graphicsDevice.RenderState.AlphaBlendEnable = false;
+            graphicsDevice.RenderState.AlphaTestEnable = false;
+
+            mesh.drawIndex = 3;
+            sceneryShader.Begin();
+            foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            sceneryShader.End();
+
+            // Rail sides
+            mesh.drawIndex = 2;
+            sceneryShader.Begin();
+            foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            sceneryShader.End();
+
+            // Restore the pre-existing render state
+            graphicsDevice.RenderState.AlphaBlendEnable = alphaBlendEnable;
+            graphicsDevice.RenderState.DestinationBlend = destinationBlend;
+            graphicsDevice.RenderState.SourceBlend = sourceBlend;
+            graphicsDevice.RenderState.AlphaTestEnable = alphaTestEnable;
+            graphicsDevice.RenderState.CullMode = cullMode;
+        }
+
+        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        {
+
+        }
+    }
+    #endregion
+
     #region Water material
     public class WaterMaterial : Material
     {
@@ -766,7 +907,7 @@ namespace ORTS
                 graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
 
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-                SceneryShader.CurrentTechnique = SceneryShader.Techniques[0];
+                SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
                 graphicsDevice.RenderState.AlphaTestEnable = false;
                 graphicsDevice.RenderState.AlphaBlendEnable = false;
                 Materials.SetupFog(graphicsDevice);
@@ -792,6 +933,7 @@ namespace ORTS
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
         }
+
     }
     #endregion
 

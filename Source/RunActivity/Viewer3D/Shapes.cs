@@ -7,7 +7,7 @@
 ///    Wayne Campbell
 /// Contributors:
 ///    Rick Grout
-///   
+/// 
 
 using System;
 using System.Collections.Generic;
@@ -42,21 +42,7 @@ namespace ORTS
             Viewer = viewer;
             Location = position;
             SharedShape = SharedShapeManager.Get(Viewer, path);
-        }
-
-/*       
-        /// <summary>
-        /// Constructor for ORTS procedural shapes
-        /// </summary>
-        //public StaticShape(Viewer3D viewer, WorldFile.DyntrackParams[] dtrack, WorldPosition position)
-        public StaticShape(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position)
-        {
-            Viewer = viewer;
-            Location = position;
-            SharedShape shape = new SharedShape(viewer, dtrack);
-            //SharedShapes.Add(shape);
-        }
-*/        
+        }      
 
         public virtual void PrepareFrame(RenderFrame frame, float elapsedSeconds )
         {
@@ -277,7 +263,7 @@ namespace ORTS
 
         public SharedShape.VertexBufferSet VertexBufferSet;
         public IndexBuffer IndexBuffer;
-        public  int IndexCount;         // the number of indexes in the index buffer for each primitive
+        public int IndexCount;          // the number of indexes in the index buffer for each primitive
         public int MinVertex;           // the first vertex index used by this primitive
         public int NumVertices;         // the number of vertex indexes used by this primitive
         public int iHierarchy;          // index into the hiearchy array which provides pose for this primitive
@@ -338,17 +324,6 @@ namespace ORTS
         }
 
         /// <summary>
-        /// ORTS Dynatrack shape
-        /// </summary>
-        /// <param name="viewer">Viewer3D</param>
-        /// <param name="dtrack">a structure containing all the dynamic track-shape parameters</param>
-        public SharedShape(Viewer3D viewer, DyntrackObj dtrack)
-        {
-            Viewer = viewer;
-           // LoadContent(dtrack);
-        }
-
-        /// <summary>
         /// Only one copy of the model is loaded regardless of how many copies are placed in the scene.
         /// </summary>
         private void LoadContent( string FilePath)
@@ -368,13 +343,31 @@ namespace ORTS
             Console.Write( "S" );
             SFile sFile = new SFile(FilePath);
 
-            // determine the correct texture folder, 
-            //    trainsets have their textures in the same folder as the shape, 
-            //    route scenery has their textures in a separate textures folder
+            int season = (int)Viewer.Simulator.Season;
+            int weather = (int)Viewer.Simulator.Weather;
+
+            // Determine the correct texture folder. 
+            // Trainsets have their textures in the same folder as the shape, 
+            // route scenery has their textures in a separate textures folder
             if (FilePath.ToUpper().Contains(@"\TRAINS\TRAINSET\"))   // TODO this is pretty crude
                 textureFolder = Path.GetDirectoryName(FilePath);
             else
-                textureFolder = Viewer.Simulator.RoutePath + @"\textures";  // TODO, and this shouldn't be hard coded
+            {
+                if (season == (int)SeasonType.Spring && weather == (int)WeatherType.Snow)
+                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
+                else if (season == (int)SeasonType.Spring)
+                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\spring";
+                else if (season == (int)SeasonType.Autumn && weather == (int)WeatherType.Snow)
+                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
+                else if (season == (int)SeasonType.Autumn)
+                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\autumn";
+                else if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
+                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
+                else if (season == (int)SeasonType.Winter)
+                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
+                else // Summer
+                    textureFolder = Viewer.Simulator.RoutePath + @"\textures";
+            }
 
             int matrixCount = sFile.shape.matrices.Count;
             MatrixNames = new string[matrixCount];
@@ -397,24 +390,7 @@ namespace ORTS
             textureFolder = null;  // release it
 
         } // LoadContent
-/*
-        /// <summary>
-        /// Overloaded LoadContent for dynamic track
-        /// </summary>
-        private void LoadContent(DyntrackObj dtrack)
-        {
-            Console.Write("S");
-            textureFolder = Viewer.Simulator.RoutePath + @"\textures";  // TODO, and this shouldn't be hard coded
 
-            ShapePrimitive[] ShapePrimitives;
-            VertexBufferSet[] VertexBufferSets;
-
-            DynatrackMesh mesh = new DynatrackMesh(dtrack);
-
-            textureFolder = null;  // release it
-
-        } // LoadContent ORTS shape
-*/
         public class LodControl
         {
             public DistanceLevel[] DistanceLevels;
@@ -460,7 +436,6 @@ namespace ORTS
         {
             public ShapePrimitive[] ShapePrimitives;
             public VertexBufferSet[] VertexBufferSets;
-
             
             public SubObject( ref int dLevelPrimCount, sub_object sub_object, int[] hierarchy, SFile sFile, SharedShape sharedShape )
             {
@@ -491,7 +466,7 @@ namespace ORTS
                     vtx_state vtx_state = sFile.shape.vtx_states[prim_state.ivtx_state];
                     VertexBufferSet vertexBufferSet = VertexBufferSets[0]; //TODO temp code uses one big bufferset
                     light_model_cfg light_model_cfg = sFile.shape.light_model_cfgs[vtx_state.LightCfgIdx];
-
+                    
                     // Select a material
                     int options = 0;
 
@@ -528,8 +503,19 @@ namespace ORTS
                     {
                         texture texture = sFile.shape.textures[prim_state.tex_idxs[0]];
                         string imageName = sFile.shape.images[texture.iImage];
-                        shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
-                            "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options, texture.MipMapLODBias);
+                        string str = null;
+                        if (File.Exists(sharedShape.textureFolder + @"\" + imageName))
+                        {
+                            shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
+                                "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options, texture.MipMapLODBias);
+                        }
+                        else // Use file in base texture folder
+                        {
+                            int i = sharedShape.textureFolder.LastIndexOf(@"\");
+                            str = sharedShape.textureFolder.Remove(i);
+                            shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
+                                "SceneryMaterial", str + @"\" + imageName, options, texture.MipMapLODBias);
+                        }
                     }
 
                     shapePrimitive.ZBias = prim_state.ZBias; // -(float)dLevelPrimCount * 0.00001f;  //Auto zbias causes issues
@@ -722,5 +708,6 @@ namespace ORTS
                 }
             }
         }// PrepareFrame()
+
     }// class SharedShape
 }

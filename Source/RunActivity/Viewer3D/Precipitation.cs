@@ -43,6 +43,7 @@ namespace ORTS
         private float windStrength;
         public int weatherType;
         public double startTime;
+        public float intensity; // Particles per second
         #endregion
 
         #region Constructor
@@ -103,6 +104,8 @@ namespace ORTS
 
 ////////////////////////////////////////////////////////////////////
 
+            // Intensity factor: 1000 light; 3500 average; 6000 heavy
+            // precipMesh.intensity = Viewer.weatherControl.intensity;
             precipMesh.Reinitialize(Viewer.Simulator.ClockTime - startTime);
 
             frame.AddPrimitive(precipMaterial, precipMesh, ref XNAPrecipWorldLocation);
@@ -128,7 +131,8 @@ namespace ORTS
 
         private float width; // Width (and depth) of precipitation box surrounding the viewer
         private float height; // Maximum particl age. In effect, this is the height of the precipitation box
-        private float intensity; // Particles per second
+        // Intensity factor: 1000 light; 3500 average; 6000 heavy
+        public float intensity; // Particles per second
         private float particleSize;
         public Vector2 windDir;
         public float windStrength;
@@ -148,12 +152,12 @@ namespace ORTS
             width = 150;
             height = 10;
             intensity = 3500;
-            particleSize = 0.5f;
+            particleSize = 0.35f;
             lastActiveParticle = -1;
         }
 
         /// <summary>
-        /// Reset the particle array upon any event that inerrupts or alters the time clock. 
+        /// Reset the particle array upon any event that interrupts or alters the time clock. 
         /// </summary>
         public void Reset( )
         {

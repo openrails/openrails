@@ -281,7 +281,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>echo $Revision: 105 $ &gt;revision.txt
+    <PreBuildEvent>echo $Revision: 110 $ &gt;revision.txt
 date /T &gt;&gt;revision.txt
 time /T &gt;&gt;revision.txt</PreBuildEvent>
   </PropertyGroup>

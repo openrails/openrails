@@ -7,11 +7,11 @@
  * 
  * Loaded WFiles are each represented by an instance of the WorldFile class. 
  * 
- * A SceneryDrawer object is created by the Viewer.  Each time SceneryDrawer.Update is 
- * called, it disposes of WorldFile's that have gone out of range, and create's new 
+ * A SceneryDrawer object is created by the Viewer. Each time SceneryDrawer.Update is 
+ * called, it disposes of WorldFiles that have gone out of range, and creates new 
  * WorldFile objects for WFiles that have come into range.
  * 
- * Currently the SceneryDrawer.Update is called 10 times a second from a background 
+ * Currently the SceneryDrawer. Update is called 10 times a second from a background 
  * thread in the Viewer class.
  * 
  * SceneryDrawer loads the WFile in which the viewer is located, and the 8 WFiles 
@@ -19,7 +19,7 @@
  * 
  * When a WorldFile object is created, it creates StaticShape objects for each scenery
  * item.  The StaticShape objects add themselves to the Viewer's content list, sharing
- * mesh files and textures whereever possible.
+ * mesh files and textures wherever possible.
  * 
  */
 /// COPYRIGHT 2010 by the Open Rails project.
@@ -61,7 +61,7 @@ namespace ORTS
         private Viewer3D Viewer;  // the viewer that we are tracking
         private int viewerTileX, viewerTileZ;  // the location of the viewer when the current set of wFiles was loaded
         private int lastViewerTileX, lastViewerTileZ;
-        private WorldFile[] WorldFiles = new WorldFile[9];  // surrounding wFiles, not in any particular order, null when empty
+        public WorldFile[] WorldFiles = new WorldFile[9];  // surrounding wFiles, not in any particular order, null when empty
 
         /// <summary>
         /// Scenery objects will be loaded into this viewer.
@@ -133,7 +133,6 @@ namespace ORTS
                 LoadAt(viewerTileX, viewerTileZ - 1);
                 LoadAt(viewerTileX + 1, viewerTileZ - 1);
             }
-
         }
 
         /// <summary>
@@ -169,9 +168,15 @@ namespace ORTS
             // its OK to iterate through this array because LoaderProcess never changes the size
             foreach (WorldFile wFile in WorldFiles)
                 if (wFile != null)
+                {
                     wFile.PrepareFrame(frame, elapsedTime);
-        }
+                    foreach (DynatrackDrawer dTrack in wFile.dTrackList)
+                    {
+                        dTrack.PrepareFrame(frame, elapsedTime);
+                    }
 
+                }
+        }
     } // SceneryDrawer
 
 
@@ -181,14 +186,17 @@ namespace ORTS
     public class WorldFile: IDisposable
     {
         public int TileX, TileZ;
+
+        private List<StaticShape> SceneryObjects = new List<StaticShape>();
+
+        // Dynamic track objects in the world file
         public struct DyntrackParams
         {
             public int isCurved;
             public float param1;
             public float param2;
         }
-
-        private List<StaticShape> SceneryObjects = new List<StaticShape>();
+        public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
 
         /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
@@ -220,7 +228,7 @@ namespace ORTS
                 string shapeFilePath;
                 if (worldObject.GetType() == typeof(MSTS.TrackObj))
                     shapeFilePath = viewer.Simulator.BasePath + @"\global\shapes\" + worldObject.FileName;
-                // Skip Dynatrack: no shape file
+                // Skip dynamic track: no shape file
                 else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
                     shapeFilePath = null;
                 else
@@ -244,19 +252,17 @@ namespace ORTS
                         SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, TRJ));
 
                     }
-                    else // its some type of track other than a switch track
+                    else // it's some type of track other than a switch track
                     {
                         SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix));
                     }
                 }
                 else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
                 {
-                    DyntrackObj obj = (DyntrackObj)worldObject;
-                    //SceneryObjects.Add(new StaticShape(viewer, obj, worldMatrix));
-                    // TODO: Define "type" e.g. Dynatrack, loft, forest
-                    continue;
+                    DyntrackObj dTrackObj = (DyntrackObj)worldObject;
+                    dTrackList.Add(new DynatrackDrawer(viewer, dTrackObj, worldMatrix));
                 }
-                else // its some other type of oject - not a track object
+                else // It's some other type of object - not one of the above.
                 {
                     SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix));
                 }
@@ -274,7 +280,7 @@ namespace ORTS
         /// MSTS WFiles represent some location with a position, quaternion and tile coordinates
         /// This converts it to the ORTS WorldPosition representation
         /// </summary>
-        private WorldPosition WorldPositionFromMSTSLocation(int tileX, int tileZ, STFPositionItem MSTSPosition, STFQDirectionItem MSTSQuaternion )
+        public WorldPosition WorldPositionFromMSTSLocation(int tileX, int tileZ, STFPositionItem MSTSPosition, STFQDirectionItem MSTSQuaternion )
         {
             Quaternion XNAQuaternion = new Quaternion((float)MSTSQuaternion.A, (float)MSTSQuaternion.B, -(float)MSTSQuaternion.C, (float)MSTSQuaternion.D);
             Vector3 XNAPosition = new Vector3((float)MSTSPosition.X, (float)MSTSPosition.Y, -(float)MSTSPosition.Z);
@@ -295,7 +301,6 @@ namespace ORTS
         /// </summary>
         private WorldPosition WorldPositionFromMSTSLocation(int tileX, int tileZ, STFPositionItem MSTSPosition, Matrix3x3 MSTSMatrix)
         {
-
             Vector3 XNAPosition = new Vector3((float)MSTSPosition.X, (float)MSTSPosition.Y, -(float)MSTSPosition.Z);
             Matrix XNAMatrix = Matrix.Identity;
             XNAMatrix.M11 = MSTSMatrix.AX;
@@ -357,10 +362,5 @@ namespace ORTS
             }
             return sign + tileCoord.ToString("000000");
         }
-
-
     } // class WorldFile
-
-
-
 }

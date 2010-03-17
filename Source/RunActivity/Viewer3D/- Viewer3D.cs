@@ -17,7 +17,7 @@
  * 
  * 
  */
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
@@ -61,7 +61,7 @@ namespace ORTS
         public PrecipDrawer PrecipDrawer;
         public WeatherControl weatherControl;
         TerrainDrawer TerrainDrawer;
-        SceneryDrawer SceneryDrawer;
+        public SceneryDrawer SceneryDrawer;
         TrainDrawer TrainDrawer;
         public ISoundEngine SoundEngine;  // IrrKlang Sound Device
         // Route Information
@@ -133,7 +133,7 @@ namespace ORTS
             // Restore retained settings
             WorldObjectDensity = 10;
             SoundDetailLevel = 5;
-            ViewingDistance = 1500; 
+            ViewingDistance = 2000; 
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
             if (RK != null)
             {

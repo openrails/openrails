@@ -1,0 +1,36 @@
+Version 110 Changes
+
+Scenery.cs
+-- Made the WorldFile[] array public so dynamic track objects (and forest objects in the future) can be read by the viewer.
+-- Added capability in the WorldFile class to check for dynamic tracks and create an instance of DynamictrackDrawer for each one that is found.
+-- Added a dynaTrack List collection to the WorldFile class to store DynamictrackDrawer instances. 
+-- PrepareFrame: Added an iterative search of DynatrackDrawer instances in the dynaTrack List of each member of the WorldFiles[] array.
+
+Materials.cs
+-- Added a Dynatrack material to render each of the three primitives with the proper render states.
+-- Materials class: Added DynatrackMaterial declaration and instantiation. Added DynatrackMaterial to the Load method switch statement.
+-- Added ability to read and display textures from the "night" folder.
+
+Shaders.cs
+-- Added isNightTex flag to SceneryShader class
+
+SceneryShader.fx
+-- Added isNightTex flag and code to skip darkening of night textures.
+
+Dynatrack.cs
+-- New class. Constructor creates an instance of DynatrackMesh using world file dynamic track configuration parameters. 
+-- DynatrackMesh calculates the vertex positions and triangle indices based on the cross-section profile of MSTS "A1t" track.
+-- DynatrackMesh includes a Draw method to separately draw the three track primitives: ballast base, rail sides, and rail tops.
+
+WFile.cs
+-- Added ability to read Dynamic Track world file objects from binary W files (was only reading from Unicode files before). 
+
+Terrain.cs
+-- Added ability to access the "Snow" terrtex when it's winter and/or snowing.
+
+Shapes.cs
+-- Added ability to access the "Snow" and season texture folders.
+
+Weather.cs
+-- Added variable intensity factor for future adjustability.
+-- Added fog coefficient to make rainy or snowy weather more foggy.
