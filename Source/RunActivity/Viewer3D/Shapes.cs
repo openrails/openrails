@@ -287,6 +287,7 @@ namespace ORTS
     {
         Viewer3D Viewer;
         string FilePath;
+        private static int isNightEnabled = 0;
         
         public string textureFolder;  // Temporary
 
@@ -343,30 +344,59 @@ namespace ORTS
             Console.Write( "S" );
             SFile sFile = new SFile(FilePath);
 
-            int season = (int)Viewer.Simulator.Season;
-            int weather = (int)Viewer.Simulator.Weather;
-
             // Determine the correct texture folder. 
             // Trainsets have their textures in the same folder as the shape, 
             // route scenery has their textures in a separate textures folder
+            int season = (int)Viewer.Simulator.Season;
+            int weather = (int)Viewer.Simulator.Weather;
             if (FilePath.ToUpper().Contains(@"\TRAINS\TRAINSET\"))   // TODO this is pretty crude
                 textureFolder = Path.GetDirectoryName(FilePath);
             else
             {
-                if (season == (int)SeasonType.Spring && weather == (int)WeatherType.Snow)
-                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
-                else if (season == (int)SeasonType.Spring)
-                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\spring";
-                else if (season == (int)SeasonType.Autumn && weather == (int)WeatherType.Snow)
-                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
-                else if (season == (int)SeasonType.Autumn)
-                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\autumn";
-                else if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
-                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
-                else if (season == (int)SeasonType.Winter)
-                    textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
-                else // Summer
-                    textureFolder = Viewer.Simulator.RoutePath + @"\textures";
+                // Check the SD file for alternative texture specification
+                int altTex = 0; // Default
+                string SDfilePath = FilePath + "d";
+                SDFile SDFile = new SDFile(SDfilePath);
+                altTex = SDFile.shape.ESD_Alternative_Texture;
+
+                switch (altTex)
+                {
+                    case 0:
+                    default:
+                        textureFolder = Viewer.Simulator.RoutePath + @"\textures";
+                        break;
+                    case 1:
+                    case 2: // Track
+                        if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
+                        else
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures";
+                        break;
+                    case 252: // Vegetation
+                        if (season == (int)SeasonType.Spring && weather != (int)WeatherType.Snow)
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\spring";
+                        else if (season == (int)SeasonType.Spring && weather == (int)WeatherType.Snow)
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\springsnow";
+                        else if (season == (int)SeasonType.Autumn && weather != (int)WeatherType.Snow)
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\autumn";
+                        else if (season == (int)SeasonType.Autumn && weather == (int)WeatherType.Snow)
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\autumnsnow";
+                        else if (season == (int)SeasonType.Winter && weather != (int)WeatherType.Snow)
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\winter";
+                        else if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\wintersnow";
+                        else
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures";
+                        break;
+                    case 256: // Incorrect param in MSTS. In OR we default to 257.
+                    case 257:
+                        if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
+                        else
+                            textureFolder = Viewer.Simulator.RoutePath + @"\textures";
+                        isNightEnabled = 1;
+                        break;
+                }
             }
 
             int matrixCount = sFile.shape.matrices.Count;
@@ -455,6 +485,57 @@ namespace ORTS
                 VertexBufferSets = new VertexBufferSet[1];
                 VertexBufferSets[0] = new VertexBufferSet( sFile, sub_object, sharedShape.Viewer.GraphicsDevice );
 
+                /////////////// MATERIAL OPTIONS //////////////////
+                //
+                // Material options are specified in a 32-bit int named "options"
+                // Following are the bit assignments:
+                // (name, dec value, hex, bits)
+                // 
+                // NAMED SHADERS  bits 0 through 3 (allow for future shaders)
+                // Diffuse            1     0x0001      0000 0000 0000 0001
+                // Tex                2     0x0002      0000 0000 0000 0010
+                // TexDiff            3     0x0003      0000 0000 0000 0011
+                // BlendATex          4     0x0004      0000 0000 0000 0100
+                // AddAtex            5     0x0005      0000 0000 0000 0101
+                // BlendATexDiff      6     0x0006      0000 0000 0000 0110
+                // AddATexDiff        7     0x0007      0000 0000 0000 0111
+                // AND mask          15     0x000f      0000 0000 0000 1111
+                //
+                // LIGHTING  bits 4 through 7 ( << 4 )
+                // DarkShade         16     0x0010      0000 0000 0001 0000
+                // OptHalfBright     32     0x0020      0000 0000 0010 0000
+                // CruciformLong     48     0x0030      0000 0000 0011 0000
+                // Cruciform         64     0x0040      0000 0000 0100 0000
+                // OptFullBright     80     0x0050      0000 0000 0101 0000
+                // OptSpecular750    96     0x0060      0000 0000 0110 0000
+                // OptSpecular25    112     0x0070      0000 0000 0111 0000
+                // OptSpecular0     128     0x0080      0000 0000 1000 0000
+                // AND mask         240     0x00f0      0000 0000 1111 0000 
+                //
+                // ALPHA TEST bit 8 ( << 8 )
+                // None               0     0x0000      0000 0000 0000 0000
+                // Trans            256     0x0100      0000 0001 0000 0000
+                // AND mask         256     0x0100      0000 0001 0000 0000
+                //
+                // Z BUFFER bits 9 and 10 ( << 9 )
+                // None               0     0x0000      0000 0000 0000 0000
+                // Normal           512     0x0200      0000 0010 0000 0000
+                // Write Only      1024     0x0400      0000 0100 0000 0000
+                // Test Only       1536     0x0600      0000 0110 0000 0000
+                // AND mask        1536     0x0600      0000 0110 0000 0000
+                //
+                // TEXTURE ADDRESS MODE bits 11 and 12 ( << 11 )
+                // Wrap               0     0x0000      0000 0000 0000 0000 
+                // Mirror          2048     0x0800      0000 1000 0000 0000
+                // Clamp           4096     0x1000      0001 0000 0000 0000
+                // Border          6144     0x1800      0001 1000 0000 0000
+                // AND mask        6144     0x1800      0001 1000 0000 0000
+                //
+                // NIGHT TEXTURE bit 13 ( << 13 )
+                // Disabled           0     0x0000      0000 0000 0000 0000
+                // Enabled         8192     0x2000      0010 0000 0000 0000
+                //
+
                 // For each primitive, set up an effect and index buffer
                 int iPrim = 0;
                 foreach (primitive primitive in sub_object.primitives)
@@ -466,10 +547,11 @@ namespace ORTS
                     vtx_state vtx_state = sFile.shape.vtx_states[prim_state.ivtx_state];
                     VertexBufferSet vertexBufferSet = VertexBufferSets[0]; //TODO temp code uses one big bufferset
                     light_model_cfg light_model_cfg = sFile.shape.light_model_cfgs[vtx_state.LightCfgIdx];
-                    
+
                     // Select a material
                     int options = 0;
 
+/*                  ORIGINAL CODE THROUGH V110
                     if (light_model_cfg.uv_ops.Count > 0)
                     {
                         uv_op uv_op = light_model_cfg.uv_ops[0];
@@ -492,8 +574,54 @@ namespace ORTS
 
                     if ((options & 0xC) == 8) // alpha translucent
                         shapePrimitive.Sequence = 0;
-                    // Changed this from 1 to 0 to eliminate conflict with sprite alpha.  rvg 3/4/10
-                    // I don't know if this causes some other problem, but I haven't observed any.
+*/
+
+                    // Texture addressing
+                    if (light_model_cfg.uv_ops.Count > 0)
+                    {
+                        uv_op uv_op = light_model_cfg.uv_ops[0];
+                        options |= uv_op.TexAddrMode - 1 << 11; // Zero based
+                    }
+
+                    // Transparency test  
+                    if (prim_state.alphatestmode == 1)
+                        options |= 0x0100;
+
+                    // Named shaders
+                    int namedShader = 3; // Default is TexDiff
+                    switch (sFile.shape.shader_names[prim_state.ishader])
+                    {
+                        case "Diffuse":
+                            namedShader = 1;
+                            break;
+                        case "Tex":
+                            namedShader = 2;
+                            break;
+                        case "TexDiff":
+                        default:
+                            namedShader = 3;
+                            break;
+                        case "BlendATex":
+                            namedShader = 4;
+                            break;
+                        case "AddATex":
+                            namedShader = 5;
+                            break;
+                        case "BlendATexDiff":
+                            namedShader = 6;
+                            break;
+                        case "AddATexDiff":
+                            namedShader = 7;
+                            break;
+                    }
+                    options |= namedShader;
+
+                    // Lighting model
+                    options |= (13 + vtx_state.LightMatIdx) << 4;
+
+                    // Night texture toggle
+                    if (isNightEnabled == 1) // ESD_Alternative_Texture = 257
+                        options |= (isNightEnabled) << 13;
 
                     if (prim_state.tex_idxs.Length == 0)
                     {   // untextured objects get a blank texture
@@ -503,7 +631,7 @@ namespace ORTS
                     {
                         texture texture = sFile.shape.textures[prim_state.tex_idxs[0]];
                         string imageName = sFile.shape.images[texture.iImage];
-                        string str = null;
+                        string str;
                         if (File.Exists(sharedShape.textureFolder + @"\" + imageName))
                         {
                             shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,

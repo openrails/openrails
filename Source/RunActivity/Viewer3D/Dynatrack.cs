@@ -55,8 +55,19 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             Matrix XNAWorldLocation = worldPosition.XNAMatrix;
+            // Locate relative to the camera
+            int dTileX = worldPosition.TileX - Viewer.Camera.TileX;
+            int dTileZ = worldPosition.TileZ - Viewer.Camera.TileZ;
+            Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
+            xnaDTileTranslation = worldPosition.XNAMatrix * xnaDTileTranslation;
+            Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
 
-            frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref XNAWorldLocation);
+            // TODO: Calculate ViewSphere and LOD distances
+            if (Viewer.Camera.InFOV(mstsLocation, 200))
+            {
+                if (Viewer.Camera.InRange(mstsLocation, 700 + 200))
+                    frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref xnaDTileTranslation);
+            }
         }
     }
     #endregion

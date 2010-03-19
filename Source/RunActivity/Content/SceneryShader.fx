@@ -18,6 +18,8 @@ float Ambient = 0.5;
 float Brightness = 0.7;
 float ZBias = 0.0;  // TODO TESTING
 float overcast;									// Lower saturation & brightness when overcast
+float3 viewerPos;								// Viewer's world coordinates.
+float specularPower;							// Exponent -- higher number yields greater specularity
 bool isNight_Tex;								// Using night texture
 
 texture imageMap_Tex;
@@ -129,13 +131,23 @@ float3 Overcast(float3 color, float sat)
 float4 PSImage( 
 		   float light          : TEXCOORD1,
            float2 uvImageT		: TEXCOORD0,	// in texture space
-           float3 vNormalW     : TEXCOORD3 )	// in world space
+           float3 vNormalW      : TEXCOORD3,
+           float4 pPositionP    : TEXCOORD4 )
            : COLOR
 { 
 
     float4 surfColor = tex2D( imageMap, uvImageT );
     float alpha = surfColor.a;
     surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
+    
+	if (specularPower > 0)
+	{
+		float3 eyeVector = normalize(viewerPos - pPositionP);
+		float3 reflectionVector = -reflect(LightVector, vNormalW);
+		float specularity = dot(normalize(reflectionVector), normalize(eyeVector));
+		specularity = pow(specularity, specularPower);        
+		surfColor.rgb += specularity;
+	}
 	
     if (!isNight_Tex) // Darken at night unless using a night texture
     {

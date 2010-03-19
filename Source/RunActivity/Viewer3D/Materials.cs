@@ -274,6 +274,7 @@ namespace ORTS
         SceneryShader SceneryShader;
         Texture2D Texture;
         Texture2D nightTexture = null;
+        bool isNightEnabled = false;
         public RenderProcess RenderProcess;  // for diagnostics only
 
         public SceneryMaterial(RenderProcess renderProcess, string texturePath)
@@ -319,8 +320,62 @@ namespace ORTS
                 prevOptions = ((SceneryMaterial)previousMaterial).Options;
             }
 
-            if ( prevOptions  != Options)  
+            /////////////// MATERIAL OPTIONS //////////////////
+            //
+            // Material options are specified in a 32-bit int named "options"
+            // Following are the bit assignments:
+            // (name, dec value, hex, bits)
+            // 
+            // SHADERS bits 0 through 3 (allow for future shaders)
+            // Diffuse            1     0x0001      0000 0000 0000 0001
+            // Tex                2     0x0002      0000 0000 0000 0010
+            // TexDiff            3     0x0003      0000 0000 0000 0011
+            // BlendATex          4     0x0004      0000 0000 0000 0100
+            // AddAtex            5     0x0005      0000 0000 0000 0101
+            // BlendATexDiff      6     0x0006      0000 0000 0000 0110
+            // AddATexDiff        7     0x0007      0000 0000 0000 0111
+            // AND mask          15     0x000f      0000 0000 0000 1111
+            //
+            // LIGHTING  bits 4 through 7 ( >> 4 )
+            // DarkShade         16     0x0010      0000 0000 0001 0000
+            // OptHalfBright     32     0x0020      0000 0000 0010 0000
+            // CruciformLong     48     0x0030      0000 0000 0011 0000
+            // Cruciform         64     0x0040      0000 0000 0100 0000
+            // OptFullBright     80     0x0050      0000 0000 0101 0000
+            // OptSpecular750    96     0x0060      0000 0000 0110 0000
+            // OptSpecular25    112     0x0070      0000 0000 0111 0000
+            // OptSpecular0     128     0x0080      0000 0000 1000 0000
+            // AND mask         240     0x00f0      0000 0000 1111 0000 
+            //
+            // ALPHA TEST bit 8 ( >> 8 )
+            // None               0     0x0000      0000 0000 0000 0000
+            // Trans            256     0x0100      0000 0001 0000 0000
+            // AND mask         256     0x0100      0000 0001 0000 0000
+            //
+            // Z BUFFER bits 9 and 10 ( >> 9 )
+            // None               0     0x0000      0000 0000 0000 0000
+            // Normal           512     0x0200      0000 0010 0000 0000
+            // Write Only      1024     0x0400      0000 0100 0000 0000
+            // Test Only       1536     0x0600      0000 0110 0000 0000
+            // AND mask        1536     0x0600      0000 0110 0000 0000
+            //
+            // TEXTURE ADDRESS MODE bits 11 and 12 ( >> 11 )
+            // Wrap               0     0x0000      0000 0000 0000 0000             
+            // Mirror          2048     0x0800      0000 1000 0000 0000
+            // Clamp           4096     0x1000      0001 0000 0000 0000
+            // Border          6144     0x1800      0001 1000 0000 0000
+            // AND mask        6144     0x1800      0001 1000 0000 0000
+            //
+            // NIGHT TEXTURE bit 13 ( >> 13 )
+            // Disabled           0     0x0000      0000 0000 0000 0000
+            // Enabled         8192     0x2000      0010 0000 0000 0000
+            //
+
+            if (prevOptions != Options)  
             {
+
+/*              ORIGINAL CODE THROUGH V110
+
                 if ((Options & 3) == 0)     // normal lighting
                 {
                     SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
@@ -362,23 +417,96 @@ namespace ORTS
                 }
 
                 int wrapping = (Options >> 4) & 3;
+*/
+                // Lighting model
+                int lighting = (Options & 0x00f0) >> 4;
+                SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"]; // Default
+                Vector3 viewerPosition = new Vector3(XNAViewMatrix.M41, XNAViewMatrix.M42, XNAViewMatrix.M43);
+                switch (lighting)
+                {
+                    case 1:
+                    case 2: // TODO: OptHalfBright darkening should be less than DarkShade
+                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["Dark"];
+                        break;
+                    case 4:
+                    case 3:
+                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
+                        break;
+                    case 5:
+                        SceneryShader.isNightTexture = true;
+                        break;
+                    case 6:
+                        SceneryShader.SpecularPower = 32;
+                        SceneryShader.ViewerPosition = viewerPosition;
+                        break;
+                    case 7:
+                        SceneryShader.SpecularPower = 64;
+                        SceneryShader.ViewerPosition = viewerPosition;
+                        break;
+                    case 8:
+                    default:
+                        SceneryShader.SpecularPower = 0;
+                        SceneryShader.ViewerPosition = viewerPosition;
+                        break;
+                }
 
+                // Transparency test
+                int alphaTest = (Options & 0x0100) >> 8;
+                if (alphaTest == 0)
+                {
+                    graphicsDevice.RenderState.AlphaBlendEnable = false;
+                    graphicsDevice.RenderState.AlphaTestEnable = false;
+                }
+                else
+                {
+                    graphicsDevice.RenderState.AlphaBlendEnable = false;
+                    graphicsDevice.RenderState.AlphaTestEnable = true;
+                    graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
+                    graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+                }
+
+                // Translucency
+                int shaders = Options & 0x000f;
+                if (alphaTest == 0 && shaders >= 4)
+                {
+                    graphicsDevice.RenderState.AlphaTestEnable = true;
+                    graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
+                    graphicsDevice.RenderState.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
+                    graphicsDevice.RenderState.AlphaBlendEnable = true;
+                    graphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
+                    graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+                    graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+                    graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
+                    graphicsDevice.RenderState.AlphaSourceBlend = Blend.Zero;
+                    graphicsDevice.RenderState.AlphaDestinationBlend = Blend.One;
+                    graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
+                }
+
+                // Texture addressing
+                int wrapping = (Options & 0x1800) >> 11;
                 switch (wrapping)
                 {
-                    case 0:
-                    case 1: // wrap
+                    case 0: // wrap
                         graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
                         graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
                         break;
-                    case 2: // mirror
+                    case 1: // mirror
                         graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Mirror;
                         graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Mirror;
                         break;
-                    case 3: // clamp
+                    case 2: // clamp
                         graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
                         graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
                         break;
+                    case 3: // border
+                        graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Border;
+                        graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Border;
+                        break;
                 }
+
+                // Night texture toggle
+                if ((Options & 0x2000) >> 13 == 1)
+                    isNightEnabled = true;
             }
 
             if (this != previousMaterial)
@@ -386,7 +514,7 @@ namespace ORTS
                 RenderProcess.ImageChangesCount++;
                 SceneryShader.isNightTexture = false;
 
-                if (sunDirection.Y < 0.0f && nightTexture != null) // Night
+                if (sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
                 {
                     SceneryShader.Texture = nightTexture;
                     SceneryShader.isNightTexture = true;
@@ -820,7 +948,8 @@ namespace ORTS
             graphicsDevice.RenderState.AlphaTestEnable = false;
             graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
             //graphicsDevice.RenderState.FillMode = FillMode.WireFrame;
-           
+
+            sceneryShader.SpecularPower = 0;
             mesh.drawIndex = 1;
             sceneryShader.Begin();
             foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
@@ -835,6 +964,7 @@ namespace ORTS
             // Rail tops
             graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
             sceneryShader.Texture = image2;
+            sceneryShader.SpecularPower = 32;
 
             // Set render state for drawing rail sides and tops
             graphicsDevice.RenderState.AlphaBlendEnable = false;
@@ -852,6 +982,7 @@ namespace ORTS
             sceneryShader.End();
 
             // Rail sides
+            sceneryShader.SpecularPower = 0;
             mesh.drawIndex = 2;
             sceneryShader.Begin();
             foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)

@@ -52,6 +52,16 @@ namespace ORTS
             set { isNight_Tex.SetValue(value); }
         }
 
+        public Vector3 ViewerPosition
+        {
+            set { viewerPos.SetValue(value); }
+        }
+
+        public float SpecularPower
+        {
+            set { specularPower.SetValue(value); }
+        }
+
         public float Brightness
         {
             get { return brightnessValue; }
@@ -104,6 +114,8 @@ namespace ORTS
         EffectParameter imageMap_Tex = null;
         EffectParameter normalMap_Tex = null;
         EffectParameter isNight_Tex = null;
+        EffectParameter viewerPos = null;
+        EffectParameter specularPower = null;
         EffectParameter brightness = null;
         EffectParameter saturation = null;
         EffectParameter ambient = null;
@@ -120,6 +132,8 @@ namespace ORTS
             imageMap_Tex = Parameters["imageMap_Tex"];
             normalMap_Tex = Parameters["normalMap_Tex"];
             isNight_Tex = Parameters["isNight_Tex"];
+            viewerPos = Parameters["viewerPos"];
+            specularPower = Parameters["specularPower"];
             brightness = Parameters["Brightness"];
             saturation = Parameters["Saturation"];
             ambient = Parameters["Ambient"];

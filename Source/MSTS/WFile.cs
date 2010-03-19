@@ -191,7 +191,6 @@ namespace MSTS
             }
         }
 
-        // TODO: Move this method to SBR.cs and recompile Reader.dll
         public class TrackSections : ArrayList
         {
             public new TrackSection this[int i]
@@ -214,7 +213,6 @@ namespace MSTS
 
         }//TrackSections
 
-        // TODO: Move this method to SBR.cs and recompile Reader.dll
         public class TrackSection
         {
             // TrackSection  ==> :SectionCurve :uint,UiD :float,param1 :float,param2
