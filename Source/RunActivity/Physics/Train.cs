@@ -41,6 +41,7 @@ namespace ORTS
         public TDBTraveller RearTDBTraveller;   // positioned at the back of the last car in the train
         public TDBTraveller FrontTDBTraveller; // positioned at the front of the train by CalculatePositionOfCars
         public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
+        public Train UncoupledFrom = null;  // train not to coupled back onto
 
         // These signals pass through to all cars and locomotives on the train
         public Direction MUDirection = Direction.Forward; //set by player locomotive to control MU'd locomotives
@@ -314,6 +315,7 @@ namespace ORTS
             foreach (TrainCar car in otherTrain.Cars)
                 kg2+= car.MassKG;
             SpeedMpS= (kg1*SpeedMpS+kg2*otherTrain.SpeedMpS*otherMult)/(kg1+kg2);
+            otherTrain.SpeedMpS = SpeedMpS;
         }
     }// class Train
 

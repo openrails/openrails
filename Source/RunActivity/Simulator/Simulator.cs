@@ -175,14 +175,19 @@ namespace ORTS
             ClockTime += elapsedClockSeconds;
 
             // Represent conditions at the specified clock time.
+            List<Train> movingTrains = new List<Train>();
             if (PlayerLocomotive != null)
+                movingTrains.Add(PlayerLocomotive.Train);
+            foreach (Train train in Trains)
+                if (train.SpeedMpS != 0 && train.GetType() != typeof(AITrain) && (PlayerLocomotive == null || train != PlayerLocomotive.Train))
+                    movingTrains.Add(train);
+            foreach (Train train in movingTrains)
             {
-                // TODO, this shouldn't really be handled this way, ie what if there are more than one players?
-                Train PlayerTrain = PlayerLocomotive.Train;
-                PlayerTrain.Update(elapsedClockSeconds);
-                AlignTrailingPointSwitches(PlayerTrain, PlayerLocomotive.Direction == Direction.Forward);
-                CheckForCoupling(PlayerTrain, elapsedClockSeconds);
+                train.Update(elapsedClockSeconds);
+                AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
             }
+            foreach (Train train in movingTrains)
+                CheckForCoupling(train, elapsedClockSeconds);
 
             if( Signals != null ) Signals.Update(elapsedClockSeconds);
             if( AI != null ) AI.Update( elapsedClockSeconds );
@@ -195,18 +200,24 @@ namespace ORTS
         /// <param name="train"></param>
         public void CheckForCoupling(Train drivenTrain, float elapsedClockSeconds)
         {
-            float captureDistance = drivenTrain.SpeedMpS * elapsedClockSeconds;
-            float captureDistanceSquared = captureDistance * captureDistance;
-
-            if (drivenTrain.SpeedMpS < -0.0001f)
+            if (drivenTrain.SpeedMpS < 0)
             {
                 foreach (Train train in Trains)
                     if (train != drivenTrain)
                     {
-                        if (WorldLocation.DistanceSquared(drivenTrain.RearTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
+                        float d1 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, true);
+                        if (d1 < 0)
                         {
+                            if (train == drivenTrain.UncoupledFrom)
+                            {
+                                //Console.WriteLine("contact rf {0} {1} {2}", d1, drivenTrain.SpeedMpS, train.SpeedMpS);
+                                if (drivenTrain.SpeedMpS < train.SpeedMpS)
+                                    drivenTrain.SetCoupleSpeed(train, 1);
+                                drivenTrain.CalculatePositionOfCars(-d1);
+                                return;
+                            }
                             // couple my rear to front of train
-                            drivenTrain.SetCoupleSpeed(train,1);
+                            drivenTrain.SetCoupleSpeed(train, 1);
                             foreach (TrainCar car in train.Cars)
                             {
                                 drivenTrain.Cars.Add(car);
@@ -214,14 +225,30 @@ namespace ORTS
                             }
                             drivenTrain.RepositionRearTraveller();
                             Trains.Remove(train);
+                            if (train.UncoupledFrom != null)
+                                train.UncoupledFrom.UncoupledFrom = null;
+                            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
+                            {
+                                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
+                                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                            }
                             drivenTrain.LastCar.SignalEvent(EventID.Couple);
-                            Console.WriteLine("couple rf {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
+                            //Console.WriteLine("couple rf {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
-                        if (WorldLocation.DistanceSquared(drivenTrain.RearTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
+                        float d2 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, true);
+                        if (d2 < 0)
                         {
+                            if (train == drivenTrain.UncoupledFrom)
+                            {
+                                //Console.WriteLine("contact rr {0} {1} {2}", d2, drivenTrain.SpeedMpS, train.SpeedMpS);
+                                if (drivenTrain.SpeedMpS < -train.SpeedMpS)
+                                    drivenTrain.SetCoupleSpeed(train, 11);
+                                drivenTrain.CalculatePositionOfCars(-d2);
+                                return;
+                            }
                             // couple my rear to rear of train
-                            drivenTrain.SetCoupleSpeed(train,-1);
+                            drivenTrain.SetCoupleSpeed(train, -1);
                             for (int i = train.Cars.Count - 1; i >= 0; --i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -231,21 +258,48 @@ namespace ORTS
                             }
                             drivenTrain.RepositionRearTraveller();
                             Trains.Remove(train);
+                            if (train.UncoupledFrom != null)
+                                train.UncoupledFrom.UncoupledFrom = null;
+                            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
+                            {
+                                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
+                                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                            }
                             drivenTrain.LastCar.SignalEvent(EventID.Couple);
-                            Console.WriteLine("couple rr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
+                            //Console.WriteLine("couple rr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
+                        }
+                        if (train == drivenTrain.UncoupledFrom && d1 > .5 && d2 > .5)
+                        {
+                            float d3 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, false);
+                            float d4 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, false);
+                            if (d3 > .5 && d4 > .5)
+                            {
+                                train.UncoupledFrom = null;
+                                drivenTrain.UncoupledFrom = null;
+                                //Console.WriteLine("release uncoupledfrom r {0} {1} {2} {3}", d1, d2, d3, d4);
+                            }
                         }
                     }
             }
-            else if (drivenTrain.SpeedMpS > 0.0001f)
+            else if (drivenTrain.SpeedMpS > 0)
             {
                 foreach (Train train in Trains)
                     if (train != drivenTrain)
                     {
-                        if (WorldLocation.DistanceSquared(drivenTrain.FrontTDBTraveller.WorldLocation, train.RearTDBTraveller.WorldLocation) < captureDistanceSquared)
+                        float d1 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, false);
+                        if (d1 < 0)
                         {
+                            if (train == drivenTrain.UncoupledFrom)
+                            {
+                                //Console.WriteLine("contact fr {0} {1} {2} {3}", d1, drivenTrain.SpeedMpS, train.SpeedMpS);
+                                if (drivenTrain.SpeedMpS > train.SpeedMpS)
+                                    drivenTrain.SetCoupleSpeed(train, 1);
+                                drivenTrain.CalculatePositionOfCars(d1);
+                                return;
+                            }
                             // couple my front to rear of train
-                            drivenTrain.SetCoupleSpeed(train,1);
+                            drivenTrain.SetCoupleSpeed(train, 1);
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -254,14 +308,30 @@ namespace ORTS
                             }
                             drivenTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
+                            if (train.UncoupledFrom != null)
+                                train.UncoupledFrom.UncoupledFrom = null;
+                            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
+                            {
+                                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
+                                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                            }
                             drivenTrain.FirstCar.SignalEvent(EventID.Couple);
-                            Console.WriteLine("couple fr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
+                            //Console.WriteLine("couple fr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
-                        if (WorldLocation.DistanceSquared(drivenTrain.FrontTDBTraveller.WorldLocation, train.FrontTDBTraveller.WorldLocation) < captureDistanceSquared)
+                        float d2 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, false);
+                        if (d2 < 0)
                         {
+                            if (train == drivenTrain.UncoupledFrom)
+                            {
+                                //Console.WriteLine("contact ff {0} {1} {2}", d2, drivenTrain.SpeedMpS, train.SpeedMpS);
+                                if (drivenTrain.SpeedMpS > -train.SpeedMpS)
+                                    drivenTrain.SetCoupleSpeed(train, -1);
+                                drivenTrain.CalculatePositionOfCars(d2);
+                                return;
+                            }
                             // couple my front to front of train
-                            drivenTrain.SetCoupleSpeed(train,-1);
+                            drivenTrain.SetCoupleSpeed(train, -1);
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -271,9 +341,27 @@ namespace ORTS
                             }
                             drivenTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
+                            if (train.UncoupledFrom != null)
+                                train.UncoupledFrom.UncoupledFrom = null;
+                            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
+                            {
+                                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
+                                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                            }
                             drivenTrain.FirstCar.SignalEvent(EventID.Couple);
-                            Console.WriteLine("couple ff {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
+                            //Console.WriteLine("couple ff {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
+                        }
+                        if (train == drivenTrain.UncoupledFrom && d1 > .5 && d2 > .5)
+                        {
+                            float d3 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, true);
+                            float d4 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, true);
+                            if (d3 > .5 && d4 > .5)
+                            {
+                                train.UncoupledFrom = null;
+                                drivenTrain.UncoupledFrom = null;
+                                //Console.WriteLine("release uncoupledfrom f {0} {1} {2} {3}",d1,d2,d3,d4);
+                            }
                         }
                     }
             }
@@ -595,7 +683,7 @@ namespace ORTS
             while (train.Cars[i] != car) ++i;  // it can't happen that car isn't in car.Train
             if (i == train.Cars.Count - 1) return;  // can't uncouple behind last car
             ++i;
-            Console.WriteLine("uncouple {0}", i);
+            //Console.WriteLine("uncouple {0}", i);
 
             // move rest of cars to the new train
             Train train2 = new Train();
@@ -618,6 +706,16 @@ namespace ORTS
             train.RepositionRearTraveller();    // fix the rear traveller
 
             Trains.Add(train2);
+            train.UncoupledFrom = train2;
+            train2.UncoupledFrom = train;
+            train2.SpeedMpS = train.SpeedMpS;
+            train2.AITrainBrakePercent = train.AITrainBrakePercent;
+            train2.AITrainDirectionForward = train.AITrainDirectionForward;
+            if (PlayerLocomotive != null && PlayerLocomotive.Train == train2)
+            {
+                train2.AITrainThrottlePercent = train.AITrainThrottlePercent;
+                train.AITrainThrottlePercent = 0;
+            }
 
             train.Update( 0 );   // stop the wheels from moving etc
             train2.Update( 0 );  // stop the wheels from moving etc

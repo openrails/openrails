@@ -873,6 +873,24 @@ namespace ORTS
             }
             return true;
         } // Next Track Node
+
+        /// <summary>
+        /// Returns directed distance between two train ends represented by this traveller and other traveller.
+        /// Returns 1 if the distance is >= 1.
+        /// Returns a positive value if the corresponding trains do not overlap and negative if they do.
+        /// rear should be true if this traveller is the rear end of a train.
+        /// </summary>
+        /// <returns></returns>
+        public float OverlapDistanceM(TDBTraveller other, bool rear)
+        {
+            float dx = X - other.X + 2048 * (TileX - other.TileX);
+            float dz = Z - other.Z + 2048 * (TileZ - other.TileZ);
+            if (dx * dx + dz * dz > 1)
+                return 1;
+            float dot = dx * (float)Math.Sin(AY) + dz * (float)Math.Cos(AY);
+            //Console.WriteLine("overlap {0} {1} {2} {3} {4} {5} {6}", dot, dx, dz, AY, flip, Math.Cos(AY), Math.Sin(AY));
+            return rear ? dot : -dot;
+        }
     }
 
 }
