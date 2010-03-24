@@ -65,7 +65,12 @@ namespace MSTS
                         case TokenID.TrackObj: Add(new TrackObj(subBlock, currentWatermark)); break;
                         case TokenID.CarSpawner: subBlock.Skip(); break; // TODO
                         case TokenID.Siding: subBlock.Skip(); break; // TODO
-                        case TokenID.Forest: subBlock.Skip(); break; // TODO
+                        case TokenID.Forest: // Unicode
+                            Add(new ForestObj(subBlock, currentWatermark)); 
+                            break;
+                        case (TokenID)308: // Binary
+                            Add(new ForestObj(subBlock, currentWatermark));
+                            break;
                         case TokenID.LevelCr: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Dyntrack: // Unicode
                             Add(new DyntrackObj(subBlock, currentWatermark, true));
@@ -125,8 +130,6 @@ namespace MSTS
         public TrackObj(SBR block, int detailLevel )
         {
             block.VerifyID(TokenID.TrackObj);
-
-            StaticDetailLevel = detailLevel;
 
             StaticDetailLevel = detailLevel;
 
@@ -253,7 +256,89 @@ namespace MSTS
                 block.VerifyEndOfBlock();
             }
         }//TrackSection
-    }
+    }//DyntrackObj
+
+    public class ForestObj : WorldObject
+    {
+        // Variables for use by other classes
+        public string TreeTexture;
+        public int Population;
+        public ScaleRange scaleRange;
+        public ForestArea forestArea;
+        public TreeSize treeSize;
+
+        public ForestObj(SBR block, int detailLevel)
+        {
+            SBR localBlock = block;
+            StaticDetailLevel = detailLevel;
+
+            while (!block.EndOfBlock())
+            {
+                using (SBR subBlock = block.ReadSubBlock())
+                {
+                    switch (subBlock.ID)
+                    {
+                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+                        case TokenID.TreeTexture: TreeTexture = subBlock.ReadString(); break;
+                        case TokenID.ScaleRange: scaleRange = new ScaleRange(subBlock); break;
+                        case TokenID.Area: forestArea = new ForestArea(subBlock); break;
+                        case TokenID.Population: Population = subBlock.ReadInt(); break;
+                        case TokenID.TreeSize: treeSize = new TreeSize(subBlock); break;
+                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
+                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                        default: subBlock.Skip(); break;
+                    }
+                }
+            }
+        }
+
+        public class ScaleRange
+        {
+            public float scaleRange1;
+            public float scaleRange2;
+
+            public ScaleRange(SBR block)
+            {
+                block.VerifyID(TokenID.ScaleRange);
+                scaleRange1 = block.ReadFloat();
+                scaleRange2 = block.ReadFloat();
+                block.VerifyEndOfBlock();
+            }
+
+        }//ScaleRange
+
+        public class ForestArea
+        {
+            public float areaDim1;
+            public float areaDim2;
+
+            public ForestArea(SBR block)
+            {
+                block.VerifyID(TokenID.Area);
+                areaDim1 = block.ReadFloat();
+                areaDim2 = block.ReadFloat();
+                block.VerifyEndOfBlock();
+            }
+
+        }//ForestArea
+
+        public class TreeSize
+        {
+            public float treeSize1;
+            public float treeSize2;
+
+            public TreeSize(SBR block)
+            {
+                block.VerifyID(TokenID.TreeSize);
+                treeSize1 = block.ReadFloat();
+                treeSize2 = block.ReadFloat();
+                block.VerifyEndOfBlock();
+            }
+
+        }//TreeSize
+    }//ForestObj
 
     public abstract class WorldObject
     {

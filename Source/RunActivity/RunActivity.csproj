@@ -163,6 +163,7 @@
     <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\enums.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
+    <Compile Include="Common\Helpers.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
     <Compile Include="..\MSTS\SIGCFGFile.cs">
@@ -170,6 +171,7 @@
     </Compile>
     <Compile Include="Common\SunMoonPos.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
+    <Compile Include="MSTS\Forest.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Processes\Profiler.cs" />
@@ -281,7 +283,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>echo $Revision: 113 $ &gt;revision.txt
+    <PreBuildEvent>echo $Revision: 114 $ &gt;revision.txt
 date /T &gt;&gt;revision.txt
 time /T &gt;&gt;revision.txt</PreBuildEvent>
   </PropertyGroup>

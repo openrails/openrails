@@ -89,8 +89,6 @@ namespace ORTS
             }
         }
 
-
-
         private void AddBasicInfo()
         {
             string clockTimeString = FormattedTime(Viewer.Simulator.ClockTime);

@@ -363,4 +363,45 @@ namespace ORTS
     }
     #endregion
 
+    #region Forest shader
+    public class ForestShader : Effect
+    {
+        EffectParameter mView = null;
+        EffectParameter mViewProj = null;
+        EffectParameter forest_Tex = null;
+        EffectParameter sunDirection = null;
+        EffectParameter overcast = null;
+
+        public Texture2D ForestTexture
+        {
+            set { forest_Tex.SetValue(value); }
+        }
+
+        public Vector3 SunDirection
+        {
+            set { sunDirection.SetValue(value); }
+        }
+
+        public float Overcast
+        {
+            set { overcast.SetValue(value); }
+        }
+
+        public ForestShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("ForestShader"))
+        {
+            mView = Parameters["mView"];
+            mViewProj = Parameters["mViewProj"];
+            forest_Tex = Parameters["forest_Tex"];
+            sunDirection = Parameters["LightVector"];
+            overcast = Parameters["overcast"];
+        }
+
+        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+        {
+            mView.SetValue(view);
+            mViewProj.SetValueTranspose(view * projection);
+        }
+    }
+    #endregion
 }

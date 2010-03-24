@@ -358,45 +358,9 @@ namespace ORTS
                 string SDfilePath = FilePath + "d";
                 SDFile SDFile = new SDFile(SDfilePath);
                 altTex = SDFile.shape.ESD_Alternative_Texture;
-
-                switch (altTex)
-                {
-                    case 0:
-                    default:
-                        textureFolder = Viewer.Simulator.RoutePath + @"\textures";
-                        break;
-                    case 1:
-                    case 2: // Track
-                        if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
-                        else
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures";
-                        break;
-                    case 252: // Vegetation
-                        if (season == (int)SeasonType.Spring && weather != (int)WeatherType.Snow)
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\spring";
-                        else if (season == (int)SeasonType.Spring && weather == (int)WeatherType.Snow)
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\springsnow";
-                        else if (season == (int)SeasonType.Autumn && weather != (int)WeatherType.Snow)
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\autumn";
-                        else if (season == (int)SeasonType.Autumn && weather == (int)WeatherType.Snow)
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\autumnsnow";
-                        else if (season == (int)SeasonType.Winter && weather != (int)WeatherType.Snow)
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\winter";
-                        else if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\wintersnow";
-                        else
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures";
-                        break;
-                    case 256: // Incorrect param in MSTS. In OR we default to 257.
-                    case 257:
-                        if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures\snow";
-                        else
-                            textureFolder = Viewer.Simulator.RoutePath + @"\textures";
-                        isNightEnabled = 1;
-                        break;
-                }
+                Helpers helper = new Helpers();
+                textureFolder = helper.GetTextureFolder(Viewer, altTex);
+                if (altTex == 257) isNightEnabled = 1;
             }
 
             int matrixCount = sFile.shape.matrices.Count;
@@ -551,31 +515,6 @@ namespace ORTS
                     // Select a material
                     int options = 0;
 
-/*                  ORIGINAL CODE THROUGH V110
-                    if (light_model_cfg.uv_ops.Count > 0)
-                    {
-                        uv_op uv_op = light_model_cfg.uv_ops[0];
-                        // wrapping
-                        options |= uv_op.TexAddrMode << 4;
-                    }
-
-                    // eliminate diffuse color on trees
-                    if (vtx_state.LightMatIdx == -9 || vtx_state.LightMatIdx == -10)
-                        options |= 1;
-                    else if (vtx_state.LightMatIdx == -12)
-                        options |= 2;
-
-                    // transparency test  
-                    if (prim_state.alphatestmode == 1)
-                        options |= 4;
-                    // alpha translucency
-                    else if (sFile.shape.shader_names[prim_state.ishader].StartsWith("BlendA", StringComparison.OrdinalIgnoreCase))
-                        options |= 8;
-
-                    if ((options & 0xC) == 8) // alpha translucent
-                        shapePrimitive.Sequence = 0;
-*/
-
                     // Texture addressing
                     if (light_model_cfg.uv_ops.Count > 0)
                     {
@@ -631,16 +570,15 @@ namespace ORTS
                     {
                         texture texture = sFile.shape.textures[prim_state.tex_idxs[0]];
                         string imageName = sFile.shape.images[texture.iImage];
-                        string str;
                         if (File.Exists(sharedShape.textureFolder + @"\" + imageName))
                         {
                             shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
                                 "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options, texture.MipMapLODBias);
                         }
-                        else // Use file in base texture folder
-                        {
+                        else 
+                        { // Use file in base texture folder
                             int i = sharedShape.textureFolder.LastIndexOf(@"\");
-                            str = sharedShape.textureFolder.Remove(i);
+                            string str = sharedShape.textureFolder.Remove(i);
                             shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
                                 "SceneryMaterial", str + @"\" + imageName, options, texture.MipMapLODBias);
                         }

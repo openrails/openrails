@@ -25,12 +25,14 @@ namespace ORTS
         public static SceneryShader SceneryShader = null;
         public static SkyShader SkyShader = null;
         public static PrecipShader PrecipShader = null;
+        public static ForestShader ForestShader = null;
         public static SpriteBatchMaterial SpriteBatchMaterial = null;
         private static WaterMaterial WaterMaterial = null;
         private static SkyMaterial SkyMaterial = null;
         private static PrecipMaterial PrecipMaterial = null;
         private static DynatrackMaterial DynatrackMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
+        private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
         private static Dictionary<string, ShadowReceivingMaterial> ShadowReceivingMaterials = new Dictionary<string, ShadowReceivingMaterial>();
         public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
@@ -55,6 +57,7 @@ namespace ORTS
                                                         renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
             SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
+            ForestShader = new ForestShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
@@ -149,6 +152,17 @@ namespace ORTS
                     return PrecipMaterial;
                 case "DynatrackMaterial":
                     return DynatrackMaterial;
+                case "ForestMaterial":
+                    if (!ForestMaterials.ContainsKey(textureName))
+                    {
+                        ForestMaterial material = new ForestMaterial(renderProcess, textureName);
+                        ForestMaterials.Add(textureName, material);
+                        return material;
+                    }
+                    else
+                    {
+                        return ForestMaterials[textureName];
+                    }
                 default:
                     return Load(renderProcess, "SceneryMaterial");
             }
@@ -373,77 +387,32 @@ namespace ORTS
 
             if (prevOptions != Options)  
             {
-
-/*              ORIGINAL CODE THROUGH V110
-
-                if ((Options & 3) == 0)     // normal lighting
-                {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
-                }
-                else if ((Options & 3) == 1)  // cruciform vegetation
-                {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
-                }
-                else // (Options & 3) == 2)  // dark interiors
-                {
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Dark"];
-                }
-
-                if ((Options & 0xC) == 0)   // no alpha
-                {
-                    graphicsDevice.RenderState.AlphaBlendEnable = false;
-                    graphicsDevice.RenderState.AlphaTestEnable = false;
-                }
-                else if ((Options & 0xC) == 4)   // transparancy testing
-                {
-                    graphicsDevice.RenderState.AlphaBlendEnable = false;
-                    graphicsDevice.RenderState.AlphaTestEnable = true;
-                    graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
-                    graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
-                }
-                else  // (Options & 0xC) == 8   alpha translucency
-                {
-                    graphicsDevice.RenderState.AlphaTestEnable = true;
-                    graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
-                    graphicsDevice.RenderState.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
-                    graphicsDevice.RenderState.AlphaBlendEnable = true;
-                    graphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
-                    graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-                    graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-                    graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
-                    graphicsDevice.RenderState.AlphaSourceBlend = Blend.Zero;
-                    graphicsDevice.RenderState.AlphaDestinationBlend = Blend.One;
-                    graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
-                }
-
-                int wrapping = (Options >> 4) & 3;
-*/
                 // Lighting model
                 int lighting = (Options & 0x00f0) >> 4;
                 SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"]; // Default
                 Vector3 viewerPosition = new Vector3(XNAViewMatrix.M41, XNAViewMatrix.M42, XNAViewMatrix.M43);
                 switch (lighting)
                 {
-                    case 1:
-                    case 2: // TODO: OptHalfBright darkening should be less than DarkShade
+                    case 1: // DarkShade (-12)
+                    case 2: // OptHalfBright (-11) TODO: darkening should be less than DarkShade
                         SceneryShader.CurrentTechnique = SceneryShader.Techniques["Dark"];
                         break;
-                    case 4:
-                    case 3:
+                    case 4: // CruciformLong (-10)
+                    case 3: // Cruciform (-9)
                         SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
                         break;
-                    case 5:
+                    case 5: // OptFullBright (-8)
                         SceneryShader.isNightTexture = true;
                         break;
-                    case 6:
-                        SceneryShader.SpecularPower = 32;
-                        SceneryShader.ViewerPosition = viewerPosition;
-                        break;
-                    case 7:
+                    case 6: // OptSpecular750 (-7)
                         SceneryShader.SpecularPower = 64;
                         SceneryShader.ViewerPosition = viewerPosition;
                         break;
-                    case 8:
+                    case 7: // OptSpecular25 (-6)
+                        SceneryShader.SpecularPower = 128;
+                        SceneryShader.ViewerPosition = viewerPosition;
+                        break;
+                    case 8: // OptSpecular0 (-5)
                     default:
                         SceneryShader.SpecularPower = 0;
                         SceneryShader.ViewerPosition = viewerPosition;
@@ -964,7 +933,7 @@ namespace ORTS
             // Rail tops
             graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
             sceneryShader.Texture = image2;
-            sceneryShader.SpecularPower = 32;
+            sceneryShader.SpecularPower = 64;
 
             // Set render state for drawing rail sides and tops
             graphicsDevice.RenderState.AlphaBlendEnable = false;
@@ -1005,6 +974,62 @@ namespace ORTS
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
 
+        }
+    }
+    #endregion
+
+    #region Forest material
+    public class ForestMaterial : Material
+    {
+        ForestShader ForestShader;
+        static Texture2D TreeTexture = null;
+        public RenderProcess RenderProcess;  // for diagnostics only
+        public ForestDrawer drawer;
+
+        public ForestMaterial(RenderProcess renderProcess, string treeTexture)
+        {
+            RenderProcess = renderProcess;
+            ForestShader = Materials.ForestShader;
+            TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
+        }
+
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
+                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
+            {
+                RenderProcess.RenderStateChangesCount++;
+
+                Vector3 sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+                ForestShader.SunDirection = sunDirection;
+                ForestShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
+                ForestShader.CurrentTechnique = ForestShader.Techniques["Forest"];
+                graphicsDevice.RenderState.AlphaBlendEnable = false;
+                graphicsDevice.RenderState.AlphaTestEnable = true;
+                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
+                graphicsDevice.RenderState.ReferenceAlpha = 200;
+            }
+            if (this != previousMaterial)
+            {
+                RenderProcess.ImageChangesCount++;
+                ForestShader.ForestTexture = TreeTexture;
+            }
+
+            ForestShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+
+            ForestShader.Begin();
+            foreach (EffectPass pass in ForestShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            ForestShader.End();
+        }
+
+        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        {
         }
     }
     #endregion

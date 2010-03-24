@@ -174,7 +174,10 @@ namespace ORTS
                     {
                         dTrack.PrepareFrame(frame, elapsedTime);
                     }
-
+                    foreach (ForestDrawer forest in wFile.forestList)
+                    {
+                        forest.PrepareFrame(frame, elapsedTime);
+                    }
                 }
         }
     } // SceneryDrawer
@@ -197,6 +200,7 @@ namespace ORTS
             public float param2;
         }
         public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
+        public List<ForestDrawer> forestList = new List<ForestDrawer>();
 
         /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
@@ -261,6 +265,11 @@ namespace ORTS
                 {
                     DyntrackObj dTrackObj = (DyntrackObj)worldObject;
                     dTrackList.Add(new DynatrackDrawer(viewer, dTrackObj, worldMatrix));
+                }
+                else if (worldObject.GetType() == typeof(MSTS.ForestObj))
+                {
+                    ForestObj forestObj = (ForestObj)worldObject;
+                    forestList.Add(new ForestDrawer(viewer, forestObj, worldMatrix));
                 }
                 else // It's some other type of object - not one of the above.
                 {

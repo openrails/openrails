@@ -143,9 +143,9 @@ float4 PSImage(
 	if (specularPower > 0)
 	{
 		float3 eyeVector = normalize(viewerPos - pPositionP);
-		float3 reflectionVector = -reflect(LightVector, vNormalW);
+		float3 reflectionVector = -reflect(normalize(LightVector), normalize(vNormalW));
 		float specularity = dot(normalize(reflectionVector), normalize(eyeVector));
-		specularity = pow(specularity, specularPower);        
+		specularity = saturate(pow(specularity, specularPower)) * length(surfColor) * 0.5;        
 		surfColor.rgb += specularity;
 	}
 	
