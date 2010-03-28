@@ -42,6 +42,7 @@ namespace ORTS
 
         // TrainCar.Update() must set these variables
         public float MotiveForceN = 0.0f;   // ie motor power in Newtons  - signed relative to direction of car - 
+        public float GravityForceN = 0.0f;   // Newtons  - signed relative to direction of car - 
         public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
@@ -53,10 +54,17 @@ namespace ORTS
         public virtual TrainCarViewer GetViewer(Viewer3D viewer) { return null; }
 
         // called when its time to update the MotiveForce and FrictionForce
-        public virtual void Update(float elapsedClockSeconds) { }
+        public virtual void Update(float elapsedClockSeconds)
+        {
+            // gravity force, M32 is up component of forward vector
+            GravityForceN = MassKG * 9.8f * WorldPosition.XNAMatrix.M32;
+            //Console.WriteLine("mf {0} {1} {2}", MotiveForceN, WorldPosition.XNAMatrix.Forward, WorldPosition.XNAMatrix.M32);
+        }
 
         // Notifications from others of key outside events, ie coupling etc, pantograph up etc
         public virtual void SignalEvent(EventID eventID) { }
+
+        public virtual string GetStatus() { return null; }
 
         public TrainCar(string wagFile)
         {

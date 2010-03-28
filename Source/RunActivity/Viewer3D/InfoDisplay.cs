@@ -95,10 +95,16 @@ namespace ORTS
 
             TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Revision);
             TextBuilder.Append("Time = "); TextBuilder.AppendLine(clockTimeString);
-            TextBuilder.Append("Direction = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.Direction.ToString());
+            TextBuilder.Append("Direction = ");
+            if (Math.Abs(Viewer.PlayerLocomotive.Train.MUReverserPercent) != 100)
+                TextBuilder.Append(string.Format("{0}% ", Math.Abs(Viewer.PlayerLocomotive.Train.MUReverserPercent)));
+            TextBuilder.AppendLine(Viewer.PlayerLocomotive.Direction.ToString());
             TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.ThrottlePercent.ToString());
             TextBuilder.Append("Brake = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.BrakeSystem.GetStatus());
             TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.PlayerLocomotive.SpeedMpS)).ToString("F1"));
+            string status = Viewer.PlayerLocomotive.GetStatus();
+            if (status != null)
+                TextBuilder.AppendLine(status);
             TextBuilder.AppendLine();
             TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString());
         }

@@ -45,7 +45,8 @@ namespace ORTS
 
         // These signals pass through to all cars and locomotives on the train
         public Direction MUDirection = Direction.Forward; //set by player locomotive to control MU'd locomotives
-        public float MUThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives 
+        public float MUThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives
+        public float MUReverserPercent = 100;  // steam engine direction/cutoff control for MU'd locomotives
         public float BrakeLine1PressurePSI = 90;     // set by player locomotive to control entire train brakes
         public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems
         public float BrakeLine3PressurePSI = 0;     // extra line just in case
@@ -64,8 +65,8 @@ namespace ORTS
         }
         public bool AITrainDirectionForward 
         { 
-            get { return MUDirection == Direction.Forward; } 
-            set { MUDirection = value ? Direction.Forward : Direction.Reverse; } 
+            get { return MUDirection == Direction.Forward; }
+            set { MUDirection = value ? Direction.Forward : Direction.Reverse; MUReverserPercent = value ? 100 : -100; } 
         }
 
         public Train()
@@ -139,6 +140,7 @@ namespace ORTS
             {
                 car.Update(elapsedClockSeconds);
                 TrainMotiveForceN += car.MotiveForceN * (car.Flipped ? -1.0f : 1.0f);
+                TrainMotiveForceN += car.GravityForceN;
                 TrainFrictionForceN += car.FrictionForceN;
                 TrainMassKG += car.MassKG;
             }

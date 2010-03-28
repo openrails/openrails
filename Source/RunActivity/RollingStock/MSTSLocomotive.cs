@@ -56,7 +56,10 @@ namespace ORTS
         public bool Horn = false;
         public bool Bell = false;
         public bool Sander = false;  
-        public bool Wiper = false;   
+        public bool Wiper = false;
+        float MaxPowerW;
+        float MaxForceN;
+        float MaxSpeedMpS = 1e3f;
 
         // wag file data
         public string CabSoundFileName = null;
@@ -68,6 +71,7 @@ namespace ORTS
         public MSTSLocomotive(string  wagPath)
             : base(wagPath)
         {
+            //Console.WriteLine("loco {0} {1} {2}", MaxPowerW, MaxForceN, MaxSpeedMpS);
         }
 
         /// <summary>
@@ -111,6 +115,9 @@ namespace ORTS
             {
                 case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
                 case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
+                case "engine(maxpower": MaxPowerW = ParseW(f.ReadStringBlock()); break;
+                case "engine(maxforce": MaxForceN = ParseN(f.ReadStringBlock()); break;
+                case "engine(maxvelocity": MaxSpeedMpS = ParseMpS(f.ReadStringBlock()); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }
@@ -126,6 +133,9 @@ namespace ORTS
             CabSoundFileName = locoCopy.CabSoundFileName;
             CVFFileName = locoCopy.CVFFileName;
             CVFFile = locoCopy.CVFFile;
+            MaxPowerW = locoCopy.MaxPowerW;
+            MaxForceN = locoCopy.MaxForceN;
+            MaxSpeedMpS = locoCopy.MaxSpeedMpS;
 
             IsDriveable = copy.IsDriveable;
 
@@ -142,6 +152,9 @@ namespace ORTS
             outf.Write(Bell);
             outf.Write(Sander);
             outf.Write(Wiper);
+            outf.Write(MaxPowerW);
+            outf.Write(MaxForceN);
+            outf.Write(MaxSpeedMpS);
             base.Save(outf);
         }
 
@@ -154,6 +167,9 @@ namespace ORTS
             if (inf.ReadBoolean()) SignalEvent(EventID.BellOn);
             if (inf.ReadBoolean()) SignalEvent(EventID.SanderOn);
             if (inf.ReadBoolean()) SignalEvent(EventID.WiperOn);
+            MaxPowerW = inf.ReadSingle();
+            MaxForceN = inf.ReadSingle();
+            MaxSpeedMpS = inf.ReadSingle();
             base.Restore(inf);
         }
 
@@ -177,9 +193,12 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             // TODO  this is a wild simplification for electric and diesel electric
-            float maxForceN = 300e3f * ThrottlePercent / 100f;   // TODO pull 300e3 from wag file
-            float maxSpeedMpS = MpS.FromMpH(50) * ThrottlePercent / 100f;  // TODO pull 50 from wag file
+            float maxForceN = MaxForceN * ThrottlePercent / 100f;
+            float maxPowerW = MaxPowerW * ThrottlePercent / 100f;
+            float maxSpeedMpS = MaxSpeedMpS * ThrottlePercent / 100f;
             float currentSpeedMpS = Math.Abs(SpeedMpS);
+            if (maxForceN * currentSpeedMpS > maxPowerW)
+                maxForceN = maxPowerW / currentSpeedMpS;
             float balanceRatio = 1;
             if (maxSpeedMpS > currentSpeedMpS)
                 balanceRatio = currentSpeedMpS / maxSpeedMpS;
@@ -187,7 +206,7 @@ namespace ORTS
             MotiveForceN = ( Direction == Direction.Forward ? 1 : -1) * maxForceN * (1f - balanceRatio);
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
-            Variable2 = Math.Abs(MotiveForceN) / 300e3f;   // force generated
+            Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
 
             base.Update(elapsedClockSeconds);
@@ -199,7 +218,16 @@ namespace ORTS
             if ( Direction != direction && ThrottlePercent < 1)
             {
                 Direction = direction;
-                SignalEvent( direction == Direction.Forward ? EventID.Forward : EventID.Reverse);
+                if (direction == Direction.Forward)
+                {
+                    SignalEvent(EventID.Forward);
+                    Train.MUReverserPercent = 100;
+                }
+                else
+                {
+                    SignalEvent(EventID.Reverse);
+                    Train.MUReverserPercent = -100;
+                }
             }
         }
 

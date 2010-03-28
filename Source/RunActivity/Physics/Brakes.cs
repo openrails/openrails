@@ -67,7 +67,7 @@ namespace ORTS
             switch (lowercasetoken)
             {
                 case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = f.ReadFloatBlock(); break;
-               // case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(); break;
+                case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(); break;
             }
         }
 

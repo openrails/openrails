@@ -525,6 +525,7 @@ namespace ORTS
             train.CalculatePositionOfCars(0);
 
             Trains.Add(train);
+            train.AITrainBrakePercent = 100;
 
 
         }

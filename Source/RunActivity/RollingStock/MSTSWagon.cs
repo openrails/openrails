@@ -56,6 +56,10 @@ namespace ORTS
         public string InteriorSoundFileName = null;
         public float WheelRadiusM = 1;          // provide some defaults in case its missing from the wag
         public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case its missing from the wag
+        public float Friction0N = 0;    // static friction
+        public float DavisAN = 0;       // davis equation constant
+        public float DavisBNSpM = 0;    // davis eqaution constant for speed
+        public float DavisCNSSpMM = 0;  // davis equation constant for speed squared
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
@@ -114,11 +118,17 @@ namespace ORTS
                 case "wagon(wheelradius": WheelRadiusM = f.ReadFloatBlock(); break;
                 case "engine(wheelradius": DriverWheelRadiusM = f.ReadFloatBlock(); break;
                 case "wagon(sound": MainSoundFileName = f.ReadStringBlock(); break;
-                case "wagon(brakesystemtype": brakeSystemType = f.ReadStringBlock(); break;
+                case "wagon(friction": ParseFriction(f); break;
+                case "wagon(brakesystemtype":
+                    brakeSystemType = f.ReadStringBlock();
+                    // TODO parse brakeSystemType to set up the correct type
+                    BrakeSystem = new AirSinglePipe(this);
+                    break;
+                default:
+                    if (MSTSBrakeSystem != null)
+                        MSTSBrakeSystem.Parse(lowercasetoken, f);
+                    break;
             }
-
-            // TODO parse brakeSystemType to set up the correct type
-            BrakeSystem = new AirSinglePipe(this);
         }
 
         /// <summary>
@@ -137,6 +147,10 @@ namespace ORTS
             InteriorSoundFileName = copy.InteriorSoundFileName;
             WheelRadiusM = copy.WheelRadiusM;
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
+            Friction0N = copy.Friction0N;
+            DavisAN = copy.DavisAN;
+            DavisBNSpM = copy.DavisBNSpM;
+            DavisCNSSpMM = copy.DavisCNSSpMM;
             Length = copy.Length;
             MassKG = copy.MassKG;
             foreach (ViewPoint passengerViewPoint in copy.PassengerViewpoints)
@@ -149,6 +163,211 @@ namespace ORTS
             BrakeSystem = new AirSinglePipe(this);  // TODO - select different types
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
         }
+        public void ParseFriction(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            float c1 = f.ReadFloat();
+            float e1 = f.ReadFloat();
+            float v2 = ParseMpS(f.ReadString());
+            float c2 = f.ReadFloat();
+            float e2 = f.ReadFloat();
+            f.ReadString(); f.ReadString(); f.ReadString(); f.ReadString(); f.ReadString();
+            f.VerifyEndOfBlock();
+            if (v2 < 0 || v2 > 4.4407f)
+            {   // not fcalc ignore friction and use default davis equation
+                // Starting Friction 
+                //
+                //                      Above Freezing   Below Freezing
+                //    Journal Bearing      25 lb/ton        35 lb/ton   (short ton)
+                //     Roller Bearing       5 lb/ton        15 lb/ton
+                //
+                // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
+                Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg
+                DavisAN = 6.3743f * MassKG / 1000 + 128.998f * 4;
+                DavisBNSpM = .49358f * MassKG / 1000;
+                DavisCNSSpMM = .11979f * 100 / 10.76f;
+            }
+            else
+            {   // probably fcalc, recover approximate davis equation
+                float mps1 = v2;
+                float mps2 = 80 * .44704f;
+                float s = mps2 - mps1;
+                float x1 = mps1 * mps1;
+                float x2 = mps2 * mps2;
+                float sx = (x2 - x1) / 2;
+                float y0 = c1 * (float)Math.Pow(mps1, e1) + c2 * mps1;
+                float y1 = c2 * (float)Math.Pow(mps1, e2) * mps1;
+                float y2 = c2 * (float)Math.Pow(mps2, e2) * mps2;
+                float sy = y0 * (mps2 - mps1) + (y2 - y1) / (1 + e2);
+                y1 *= mps1;
+                y2 *= mps2;
+                float syx = y0 * (x2 - x1) / 2 + (y2 - y1) / (2 + e2);
+                x1 *= mps1;
+                x2 *= mps2;
+                float sx2 = (x2 - x1) / 3;
+                y1 *= mps1;
+                y2 *= mps2;
+                float syx2 = y0 * (x2 - x1) / 3 + (y2 - y1) / (3 + e2);
+                x1 *= mps1;
+                x2 *= mps2;
+                float sx3 = (x2 - x1) / 4;
+                x1 *= mps1;
+                x2 *= mps2;
+                float sx4 = (x2 - x1) / 5;
+                float s1 = syx - sy * sx / s;
+                float s2 = sx * sx2 / s - sx3;
+                float s3 = sx2 - sx * sx / s;
+                float s4 = syx2 - sy * sx2 / s;
+                float s5 = sx2 * sx2 / s - sx4;
+                float s6 = sx3 - sx * sx2 / s;
+                DavisCNSSpMM = (s1 * s6 - s3 * s4) / (s3 * s5 - s2 * s6);
+                DavisBNSpM = (s1 + DavisCNSSpMM * s2) / s3;
+                DavisAN = (sy - DavisBNSpM * sx - DavisCNSSpMM * sx2) / s;
+                Friction0N = c1;
+                if (e1 < 0)
+                    Friction0N *= (float)Math.Pow(.0025 * .44704, e1);
+            }
+            //Console.WriteLine("friction {0} {1} {2} {3} {4}", c1, e1, v2, c2, e2);
+            //Console.WriteLine("davis {0} {1} {2} {3}", Friction0N, DavisAN, DavisBNSpM, DavisCNSSpMM);
+        }
+        public float ParseN(string token)
+        {
+            token = token.ToLower();
+            float scale = 1;
+            int i = token.IndexOf("kn");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+                scale = 1e3f;
+            }
+            i = token.IndexOf("n");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            i = token.IndexOf("lbf");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+                scale = 4.44822f;
+            }
+            try
+            {
+                return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("invalid force value or units {0}, newtons expected", token);
+                return 0;
+            }
+        }
+        public float ParseW(string token)
+        {
+            token = token.ToLower();
+            float scale = 1;
+            int i = token.IndexOf("kw");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+                scale = 1e3f;
+            }
+            i = token.IndexOf("w");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            i = token.IndexOf("hp");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+                scale = 745.7f;
+            }
+            try
+            {
+                return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("invalid power value or units {0}, watts expected", token);
+                return 0;
+            }
+        }
+        public float ParseMpS(string token)
+        {
+            token = token.ToLower();
+            float scale = 1;
+            int i = token.IndexOf("mph");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+                scale = .44704f;
+            }
+            try
+            {
+                return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("invalid speed value or units {0}, meters per second expected", token);
+                return 0;
+            }
+        }
+        public float ParseFT3(string token)
+        {
+            token = token.ToLower();
+            if (token[0] == '"')
+                token = token.Substring(1);
+            int i = token.IndexOf("*(ft^3)");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            try
+            {
+                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("invalid volume value or units {0}, cubic feet expected", token);
+                return 0;
+            }
+        }
+        public float ParsePSI(string token)
+        {
+            token = token.ToLower();
+            int i = token.IndexOf("psi");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            try
+            {
+                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("invalid pressure value or units {0}, pounds per square inch expected", token);
+                return 0;
+            }
+        }
+        public float ParseLBpH(string token)
+        {
+            token = token.ToLower();
+            int i = token.IndexOf("lb/h");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            try
+            {
+                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("invalid steaming rate value or units {0}, pounds per hour expected", token);
+                return 0;
+            }
+        }
 
         /// <summary>
         /// We are saving the game.  Save anything that we'll need to restore the 
@@ -159,6 +378,10 @@ namespace ORTS
             outf.Write(Variable1);
             outf.Write(Variable2);
             outf.Write(Variable3);
+            outf.Write(Friction0N);
+            outf.Write(DavisAN);
+            outf.Write(DavisBNSpM);
+            outf.Write(DavisCNSSpMM);
             base.Save(outf);
         }
 
@@ -171,6 +394,10 @@ namespace ORTS
             Variable1 = inf.ReadSingle();
             Variable2 = inf.ReadSingle();
             Variable3 = inf.ReadSingle();
+            Friction0N = inf.ReadSingle();
+            DavisAN = inf.ReadSingle();
+            DavisBNSpM = inf.ReadSingle();
+            DavisCNSSpMM = inf.ReadSingle();
             base.Restore(inf);
         }
 
@@ -184,43 +411,12 @@ namespace ORTS
 
         public override void Update( float elapsedClockSeconds )
         {
+            base.Update(elapsedClockSeconds);
+
             if (SpeedMpS < 0.1)
-            {
-                // Starting Friction 
-                //
-                //                      Above Freezing   Below Freezing
-                //    Journal Bearing      25 lb/ton        35 lb/ton   (short ton)
-                //     Roller Bearing       5 lb/ton        15 lb/ton
-                //
-                // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
-
-                float NpKG = 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg
-
-                FrictionForceN = MassKG * NpKG;
-
-                //FrictionForceN *= 2; // for better playability  // TODO why do we need this?
-            }
+                FrictionForceN = Friction0N;
             else
-            {
-                // Davis Formula for rolling friction
-                float Asqft = 100f; // square feet cross sectional area
-                float Wst = 30f / 4f; // short tons per axle weight of the car
-                float Vmph = SpeedMpS * 0.000621371192f /* miles/M */ * 3600f /* sec/hr */; // convert speed to mph
-                float N = 4; // number of axles
-                float RlbPst; // resistance in lbs per ton
-
-                // for friction bearings
-                RlbPst = 1.3f + 29f / Wst + 0.045f * Vmph + 0.0005f * Asqft * Vmph * Vmph / (Wst * N);
-
-                // for roller bearings
-                // R = 0.6f + 20f / W + 0.01f * V + 0.07f * A * V * V / (W * N);
-
-                float NpKG = RlbPst * 4.84e-3f;  // convert lbs/short-ton to N/kg
-
-                FrictionForceN = MassKG * NpKG;
-
-                //FrictionForceN *= 3; // for better playability  // TODO why do we need this
-            }
+                FrictionForceN = DavisAN + SpeedMpS * (DavisBNSpM + SpeedMpS * DavisCNSSpMM);
 
             MSTSBrakeSystem.Update(elapsedClockSeconds);
         }

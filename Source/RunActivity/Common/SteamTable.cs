@@ -1,0 +1,70 @@
+﻿/// COPYRIGHT 2010 by the Open Rails project.
+/// This code is provided to enable you to contribute improvements to the open rails program.  
+/// Use of the code for any other purpose or distribution of the code to anyone else
+/// is prohibited without specific written permission from admin@openrails.org.
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace ORTS
+{
+    class SteamTable
+    {
+        // gauge pressures that match other tables (pounds per square inch)
+        static float[] PressureTable = new float[]
+        {
+            0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+            110, 120, 130, 140, 150, 160, 170, 180, 190, 200,
+            210, 220, 230, 240, 250, 260, 270, 280, 290, 300
+        };
+        // total heat in water at various pressures (BTU per pound)
+        static float[] WaterHeatTable = new float[]
+        {
+            180.15f, 207.83f, 227.51f, 243.08f, 256.09f, 267.34f, 277.31f, 286.30f, 294.49f, 302.05f, 309.08f,
+            315.66f, 321.85f, 327.70f, 333.26f, 338.56f, 343.62f, 348.47f, 353.13f, 357.62f, 361.95f,
+            366.14f, 370.19f, 374.12f, 377.94f, 381.65f, 385.26f, 388.78f, 392.21f, 395.56f, 398.84f
+        };
+        // density of water at various pressures (pounds per cubic foot)
+        static float[] WaterDensityTable = new float[]
+        {
+            59.83f, 59.11f, 58.57f, 58.12f, 57.73f, 57.39f, 57.07f, 56.79f, 56.52f, 56.27f, 56.03f,
+            55.81f, 55.59f, 55.39f, 55.19f, 55.00f, 54.82f, 54.65f, 54.48f, 54.31f, 54.15f,
+            53.99f, 53.84f, 53.69f, 53.54f, 53.40f, 53.26f, 53.12f, 52.99f, 52.86f, 52.73f
+        };
+        // total heat in saturated steam at various pressures (BTU per pound)
+        static float[] SteamHeatTable = new float[]
+        {
+            1150.28f, 1160.31f, 1167.01f, 1172.03f, 1176.00f, 1179.27f, 1182.04f, 1184.42f, 1186.50f, 1188.33f, 1189.95f,
+            1191.41f, 1192.72f, 1193.91f, 1194.99f, 1195.97f, 1196.86f, 1197.68f, 1198.43f, 1199.12f, 1199.75f,
+            1200.33f, 1200.86f, 1201.35f, 1201.79f, 1202.20f, 1202.58f, 1202.92f, 1203.23f, 1203.51f, 1203.77f
+        };
+        // density of saturated steam at various pressures (pounds per cubic foot)
+        static float[] SteamDensityTable = new float[]
+        {
+            0.0373f, 0.0606f, 0.0834f, 0.1057f, 0.1277f, 0.1496f, 0.1713f, 0.1928f, 0.2143f, 0.2356f, 0.2569f,
+            0.2782f, 0.2994f, 0.3205f, 0.3416f, 0.3627f, 0.3838f, 0.4048f, 0.4259f, 0.4469f, 0.4680f,
+            0.4890f, 0.5101f, 0.5312f, 0.5522f, 0.5733f, 0.5944f, 0.6155f, 0.6367f, 0.6578f, 0.6790f
+        };
+        public static Interpolator WaterHeatInterpolator()
+        {
+            return new Interpolator(PressureTable, WaterHeatTable);
+        }
+        public static Interpolator WaterDensityInterpolator()
+        {
+            return new Interpolator(PressureTable, WaterDensityTable);
+        }
+        public static Interpolator SteamHeatInterpolator()
+        {
+            return new Interpolator(PressureTable, SteamHeatTable);
+        }
+        public static Interpolator SteamDensityInterpolator()
+        {
+            return new Interpolator(PressureTable, SteamDensityTable);
+        }
+        public static Interpolator WaterHeat2PressureInterpolator()
+        {
+            return new Interpolator(WaterHeatTable, PressureTable);
+        }
+    }
+}
