@@ -92,6 +92,8 @@ namespace ORTS
                     Parse(f.Tree.ToLower(), f);  // otherwise wagon(inside
             }
             f.Close();
+            if (BrakeSystem == null)
+                    BrakeSystem = new AirSinglePipe(this);
         }
 
         ViewPoint passengerViewPoint = new ViewPoint();
@@ -166,10 +168,10 @@ namespace ORTS
         public void ParseFriction(STFReader f)
         {
             f.VerifyStartOfBlock();
-            float c1 = f.ReadFloat();
+            float c1 = ParseNpMpS(f.ReadString());
             float e1 = f.ReadFloat();
             float v2 = ParseMpS(f.ReadString());
-            float c2 = f.ReadFloat();
+            float c2 = ParseNpMpS(f.ReadString());
             float e2 = f.ReadFloat();
             f.ReadString(); f.ReadString(); f.ReadString(); f.ReadString(); f.ReadString();
             f.VerifyEndOfBlock();
@@ -258,7 +260,7 @@ namespace ORTS
             catch (System.Exception e)
             {
                 Console.WriteLine("invalid force value or units {0}, newtons expected", token);
-                return 0;
+                return ParseFloat(token);
             }
         }
         public float ParseW(string token)
@@ -289,7 +291,7 @@ namespace ORTS
             catch (System.Exception e)
             {
                 Console.WriteLine("invalid power value or units {0}, watts expected", token);
-                return 0;
+                return ParseFloat(token);
             }
         }
         public float ParseMpS(string token)
@@ -309,7 +311,7 @@ namespace ORTS
             catch (System.Exception e)
             {
                 Console.WriteLine("invalid speed value or units {0}, meters per second expected", token);
-                return 0;
+                return ParseFloat(token);
             }
         }
         public float ParseFT3(string token)
@@ -329,7 +331,7 @@ namespace ORTS
             catch (System.Exception e)
             {
                 Console.WriteLine("invalid volume value or units {0}, cubic feet expected", token);
-                return 0;
+                return ParseFloat(token);
             }
         }
         public float ParsePSI(string token)
@@ -347,7 +349,7 @@ namespace ORTS
             catch (System.Exception e)
             {
                 Console.WriteLine("invalid pressure value or units {0}, pounds per square inch expected", token);
-                return 0;
+                return ParseFloat(token);
             }
         }
         public float ParseLBpH(string token)
@@ -365,8 +367,42 @@ namespace ORTS
             catch (System.Exception e)
             {
                 Console.WriteLine("invalid steaming rate value or units {0}, pounds per hour expected", token);
-                return 0;
+                return ParseFloat(token);
             }
+        }
+        public float ParseNpMpS(string token)
+        {
+            token = token.ToLower();
+            float scale = 1;
+            int i = token.IndexOf("n/m/s");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            try
+            {
+                return scale * float.Parse(token);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("invalid friction value or units {0}, Newtons per meters per second expected", token);
+                return ParseFloat(token);
+            }
+        }
+        public float ParseFloat(string token)
+        {   // is there a better way to ignore any suffix?
+            while (token.Length > 0)
+            {
+                try
+                {
+                    return float.Parse(token);
+                }
+                catch (System.Exception e)
+                {
+                    token = token.Substring(0, token.Length - 1);
+                }
+            }
+            return 0;
         }
 
         /// <summary>
