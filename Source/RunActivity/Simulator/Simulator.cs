@@ -397,6 +397,8 @@ namespace ORTS
                     return;   // no more switches
             }
             TrJunctionNode nextSwitchTrack = traveller.TN.TrJunctionNode;
+            if (SwitchIsOccupied(nextSwitchTrack))
+                return;
 
             // if we are facing the points of the switch we don't do anything
             if (traveller.iEntryPIN == 0) return;
@@ -449,6 +451,8 @@ namespace ORTS
         {
             TrJunctionNode nextSwitchTrack;
             nextSwitchTrack = train.RearTDBTraveller.TrJunctionNodeBehind();
+            if (SwitchIsOccupied(nextSwitchTrack))
+                return;
 
             if (nextSwitchTrack != null)
             {
@@ -466,6 +470,8 @@ namespace ORTS
         {
             TrJunctionNode nextSwitchTrack;
             nextSwitchTrack = train.FrontTDBTraveller.TrJunctionNodeAhead();
+            if (SwitchIsOccupied(nextSwitchTrack))
+                return;
 
             if (nextSwitchTrack != null)
             {
@@ -474,6 +480,31 @@ namespace ORTS
                 else
                     nextSwitchTrack.SelectedRoute = 0;
             }
+        }
+
+        public bool SwitchIsOccupied(int junctionIndex)
+        {
+            if (junctionIndex < 0 || TDB.TrackDB.TrackNodes[junctionIndex] == null)
+                return false;
+            return SwitchIsOccupied(TDB.TrackDB.TrackNodes[junctionIndex].TrJunctionNode);
+        }
+
+        public bool SwitchIsOccupied(TrJunctionNode junctionNode)
+        {
+            foreach (Train train in Trains)
+            {
+                if (train.FrontTDBTraveller.TrackNodeIndex == train.RearTDBTraveller.TrackNodeIndex)
+                    continue;
+                TDBTraveller traveller= new TDBTraveller(train.RearTDBTraveller);
+                while (traveller.NextSection())
+                {
+                    if (traveller.TrackNodeIndex == train.FrontTDBTraveller.TrackNodeIndex)
+                        break;
+                    if (traveller.TN.TrJunctionNode == junctionNode)
+                        return true;
+                }
+            }
+            return false;
         }
 
         private void InitializePlayerTrain()

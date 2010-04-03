@@ -24,8 +24,8 @@ namespace ORTS
     public class Dispatcher
     {
         public AI AI;
-        private int[] reservations;
-        public float[] trackLength;
+        private int[] Reservations;
+        public float[] TrackLength;
         private TimeTable TimeTable = null;
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace ORTS
         public Dispatcher(AI ai)
         {
             AI = ai;
-            reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
-            for (int i = 0; i < reservations.Length; i++)
-                reservations[i] = -1;
+            Reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
+            for (int i = 0; i < Reservations.Length; i++)
+                Reservations[i] = -1;
             FindDoubleTrack();
             CalcTrackLength();
             int minPriority = 10;
@@ -58,13 +58,13 @@ namespace ORTS
         {
             AI = ai;
             int n = inf.ReadInt32();
-            reservations = new int[n];
+            Reservations = new int[n];
             for (int i = 0; i < n; i++)
-                reservations[i] = inf.ReadInt32();
+                Reservations[i] = inf.ReadInt32();
             n = inf.ReadInt32();
-            trackLength = new float[n];
+            TrackLength = new float[n];
             for (int i = 0; i < n; i++)
-                trackLength[i] = inf.ReadSingle();
+                TrackLength[i] = inf.ReadSingle();
             n = inf.ReadInt32();
             if (n > 0)
                 TimeTable = new TimeTable(this, n, inf);
@@ -73,12 +73,12 @@ namespace ORTS
         // save game state
         public void Save(BinaryWriter outf)
         {
-            outf.Write(reservations.Length);
-            for (int i = 0; i < reservations.Length; i++)
-                outf.Write(reservations[i]);
-            outf.Write(trackLength.Length);
-            for (int i = 0; i < trackLength.Length; i++)
-                outf.Write(trackLength[i]);
+            outf.Write(Reservations.Length);
+            for (int i = 0; i < Reservations.Length; i++)
+                outf.Write(Reservations[i]);
+            outf.Write(TrackLength.Length);
+            for (int i = 0; i < TrackLength.Length; i++)
+                outf.Write(TrackLength[i]);
             if (TimeTable == null)
                 outf.Write((int)0);
             else
@@ -119,17 +119,17 @@ namespace ORTS
                     continue;
                 int i = train.RearNode.NextMainTVNIndex;
                 //Console.WriteLine("dispatcher update {0} {1}", i, train.UiD);
-                if (i >= 0 && reservations[i] == train.UiD)
-                    reservations[i] = -1;
+                if (i >= 0 && Reservations[i] == train.UiD)
+                    Reservations[i] = -1;
                 else
                 {
                     i = train.RearNode.NextSidingTVNIndex;
                     //Console.WriteLine(" siding {0} {1}", i, train.UiD);
-                    if (i >= 0 && reservations[i] == train.UiD)
-                        reservations[i] = -1;
+                    if (i >= 0 && Reservations[i] == train.UiD)
+                        Reservations[i] = -1;
                 }
-                //for (int j = 0; j < reservations.Length; j++)
-                //    if (reservations[j] == train.UiD)
+                //for (int j = 0; j < Reservations.Length; j++)
+                //    if (Reservations[j] == train.UiD)
                 //        Console.WriteLine(" res {0}", j);
                 if (train.RearNode.IsLastSwitchUse)
                     train.Path.RestoreSwitch(train.RearNode.JunctionIndex);
@@ -173,7 +173,7 @@ namespace ORTS
                 //Console.WriteLine(" node {0} {1}", node.ID, node.Type);
                 if (movingForward && node != train.RearNode && node.Type == AIPathNodeType.SidingStart)
                     break;
-                if (movingForward && node.Type == AIPathNodeType.SidingEnd && node != train.AuthEndNode && reservations[node.NextMainTVNIndex] != train.UiD)
+                if (movingForward && node.Type == AIPathNodeType.SidingEnd && node != train.AuthEndNode && Reservations[node.NextMainTVNIndex] != train.UiD)
                     break;
                 if (node != train.RearNode && node.Type == AIPathNodeType.Reverse)
                 {
@@ -277,9 +277,9 @@ namespace ORTS
         private bool CanReserve(AITrain train, List<int> tnList)
         {
             //foreach (int i in tnList)
-            //    Console.WriteLine("res {0} {1} {2}", i, reservations[i], train.UiD);
+            //    Console.WriteLine("res {0} {1} {2}", i, Reservations[i], train.UiD);
             foreach (int i in tnList)
-                if (reservations[i] >= 0 && reservations[i] != train.UiD)
+                if (Reservations[i] >= 0 && Reservations[i] != train.UiD)
                     return false;
             //Console.WriteLine("can reserve");
             return true;
@@ -291,17 +291,17 @@ namespace ORTS
         private void Reserve(AITrain train, List<int> tnList)
         {
             foreach (int i in tnList)
-                reservations[i] = train.UiD;
+                Reservations[i] = train.UiD;
         }
 
         /// <summary>
-        /// Clears any existing reservations for the specified train.
+        /// Clears any existing Reservations for the specified train.
         /// </summary>
         private void Unreserve(AITrain train)
         {
-            for (int i = 0; i < reservations.Length; i++)
-                if (reservations[i] == train.UiD)
-                    reservations[i] = -1;
+            for (int i = 0; i < Reservations.Length; i++)
+                if (Reservations[i] == train.UiD)
+                    Reservations[i] = -1;
         }
 
         /// <summary>
@@ -324,20 +324,20 @@ namespace ORTS
             {
                 if (node != train.AuthSidingNode && node.NextMainNode != null)
                 {
-                    reservations[node.NextMainTVNIndex] = train.UiD;
+                    Reservations[node.NextMainTVNIndex] = train.UiD;
                     node = node.NextMainNode;
                 }
                 else if (node.NextSidingNode != null)
                 {
-                    reservations[node.NextSidingTVNIndex] = train.UiD;
+                    Reservations[node.NextSidingTVNIndex] = train.UiD;
                     node = node.NextSidingNode;
                 }
                 else
                     break;
             }
             //Console.WriteLine("rereserve {0}", train.UiD);
-            //for (int j = 0; j < reservations.Length; j++)
-            //    if (reservations[j] == train.UiD)
+            //for (int j = 0; j < Reservations.Length; j++)
+            //    if (Reservations[j] == train.UiD)
             //        Console.WriteLine(" res {0}", j);
         }
         AIPathNode FindNextReverseNode(AITrain train)
@@ -413,13 +413,13 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Calculates the length of all track vector nodes and saves it in the trackLength array.
+        /// Calculates the length of all track vector nodes and saves it in the TrackLength array.
         /// This should probably be moved elsewhere if others need this information.
         /// </summary>
         private void CalcTrackLength()
         {
-            trackLength = new float[AI.Simulator.TDB.TrackDB.TrackNodes.Length];
-            for (int i = 0; i < trackLength.Length; i++)
+            TrackLength = new float[AI.Simulator.TDB.TrackDB.TrackNodes.Length];
+            for (int i = 0; i < TrackLength.Length; i++)
             {
                 TrackNode tn = AI.Simulator.TDB.TrackDB.TrackNodes[i];
                 if (tn == null || tn.TrVectorNode == null)
@@ -431,17 +431,26 @@ namespace ORTS
                     if (ts == null)
                         continue;
                     if (ts.SectionCurve == null)
-                        trackLength[i] += ts.SectionSize.Length;
+                        TrackLength[i] += ts.SectionSize.Length;
                     else
                     {
                         float len = ts.SectionCurve.Radius * MSTSMath.M.Radians(ts.SectionCurve.Angle);
                         if (len < 0)
                             len = -len;
-                        trackLength[i] += len;
+                        TrackLength[i] += len;
                     }
                 }
-                //Console.WriteLine("tracklength {0} {1}", i, trackLength[i]);
+                //Console.WriteLine("TrackLength {0} {1}", i, TrackLength[i]);
             }
+        }
+
+        public bool PlayerOverlaps(AITrain train, bool front)
+        {
+            if (AI.Simulator.PlayerLocomotive == null)
+                return false;
+            Train ptrain = AI.Simulator.PlayerLocomotive.Train;
+            int i = front ? ptrain.FrontTDBTraveller.TrackNodeIndex : ptrain.RearTDBTraveller.TrackNodeIndex;
+            return Reservations[i] == train.UiD;
         }
     }
 }

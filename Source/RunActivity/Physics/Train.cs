@@ -140,7 +140,7 @@ namespace ORTS
             {
                 car.Update(elapsedClockSeconds);
                 TrainMotiveForceN += car.MotiveForceN * (car.Flipped ? -1.0f : 1.0f);
-                TrainMotiveForceN += car.GravityForceN;
+                TrainMotiveForceN += car.GravityForceN * (car.Flipped ? -1.0f : 1.0f);
                 TrainFrictionForceN += car.FrictionForceN;
                 TrainMassKG += car.MassKG;
             }

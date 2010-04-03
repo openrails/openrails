@@ -40,6 +40,7 @@ namespace ORTS
         public int StartTime;        // starting time, may be modified by dispatcher
         public int Priority = 0;        // train priority, smaller value is higher priority
         public AI AI;
+        public List<AISwitchInfo> SwitchList = new List<AISwitchInfo>();
 
         public AITrain(int uid, AI ai, AIPath path, int start)
         {
@@ -72,6 +73,16 @@ namespace ORTS
             AuthEndNode = Path.ReadNode(inf);
             AuthSidingNode = Path.ReadNode(inf);
             NReverseNodes = inf.ReadInt32();
+            for (; ; )
+            {
+                AIPathNode node = Path.ReadNode(inf);
+                if (node == null)
+                    break;
+               AISwitchInfo sw = new AISwitchInfo(Path, node);
+                sw.SelectedRoute = inf.ReadInt32();
+                sw.DistanceM = inf.ReadSingle();
+                SwitchList.Add(sw);
+            }
         }
 
         // save game state
@@ -95,6 +106,13 @@ namespace ORTS
             Path.WriteNode(outf, AuthEndNode);
             Path.WriteNode(outf, AuthSidingNode);
             outf.Write(NReverseNodes);
+            foreach (AISwitchInfo sw in SwitchList)
+            {
+                Path.WriteNode(outf,sw.PathNode);
+                outf.Write(sw.SelectedRoute);
+                outf.Write(sw.DistanceM);
+            }
+            Path.WriteNode(outf, null);
         }
 
         /// <summary>
@@ -196,6 +214,12 @@ namespace ORTS
             //    Math.Sqrt(WorldLocation.DistanceSquared(wl,FrontTDBTraveller.WorldLocation)));
             if (NextStopDistanceM < 0 && HandleNodeAction(NextStopNode, clockTime))
                 return false;
+            foreach (AISwitchInfo sw in SwitchList)
+            {
+                wl = sw.PathNode.Location;
+                sw.DistanceM = NextStopDistanceM - traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
+                //Console.WriteLine("switch distance {0} {1}", sw.PathNode.JunctionIndex, sw.DistanceM);
+            }
             if (NextStopNode.Type == AIPathNodeType.Stop || NextStopNode.Type == AIPathNodeType.Reverse || NextStopNode.Type == AIPathNodeType.Uncouple)
             {
                 int index= NextStopNode.NextMainTVNIndex;
@@ -282,6 +306,7 @@ namespace ORTS
         /// </summary>
         private AIPathNode FindStopNode(AIPathNode node, float throwDistance)
         {
+            SwitchList.Clear();
             if (node.NextMainNode == null && node.NextSidingNode == null)
                 return null;
             while (node != AuthEndNode)
@@ -306,10 +331,12 @@ namespace ORTS
                         traveller = RearTDBTraveller;
                     float d= WorldLocation.DistanceSquared(traveller.WorldLocation, node.Location);
                     //Console.WriteLine("throw distance {0}", d);
-                    if (d > throwDistance*throwDistance)
+                    if (d > throwDistance*throwDistance || AI.Simulator.SwitchIsOccupied(node.JunctionIndex))
                         return node;
                     Path.AlignSwitch(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode));
                 }
+                if (node.JunctionIndex >= 0)
+                    SwitchList.Add(new AISwitchInfo(Path,node));
             }
             return node;
         }
@@ -456,6 +483,51 @@ namespace ORTS
             if (!AITrainDirectionForward || CoupleOnNextStop)
                 targetMpS *= .75f;
             float stopDistanceM = NextStopDistanceM;
+            float minStopDistance = 2 * SpeedMpS * SpeedMpS / MaxDecelMpSS + 40;
+            foreach (AISwitchInfo sw in SwitchList)
+            {
+                float d = NextStopDistanceM - sw.DistanceM;
+                if (d > minStopDistance)
+                    break;
+                if (d < 0)
+                {
+                    SwitchList.Remove(sw);
+                    break;
+                }
+                if (sw.JunctionNode.SelectedRoute != sw.SelectedRoute)
+                {
+                    stopDistanceM = d-40;
+                    if (stopDistanceM < 0)
+                        stopDistanceM = 0;
+                    if (d < 40.5f && !AI.Simulator.SwitchIsOccupied(sw.JunctionNode))
+                        sw.JunctionNode.SelectedRoute = sw.SelectedRoute;
+                    break;
+                }
+            }
+            if (AI.Dispatcher.PlayerOverlaps(this, true))
+            {
+                TDBTraveller traveller = FrontTDBTraveller;
+                if (!AITrainDirectionForward)
+                    traveller = RearTDBTraveller;
+                float d= (float) Math.Sqrt(WorldLocation.DistanceSquared(traveller.WorldLocation,AI.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.WorldLocation));
+                d -= SpeedMpS == 0 ? 500 : 50;
+                if (d < 0)
+                    d = 0;
+                if (stopDistanceM > d)
+                    stopDistanceM = d;
+            }
+            if (AI.Dispatcher.PlayerOverlaps(this, false))
+            {
+                TDBTraveller traveller = FrontTDBTraveller;
+                if (!AITrainDirectionForward)
+                    traveller = RearTDBTraveller;
+                float d = (float)Math.Sqrt(WorldLocation.DistanceSquared(traveller.WorldLocation, AI.Simulator.PlayerLocomotive.Train.RearTDBTraveller.WorldLocation));
+                d -= SpeedMpS == 0 ? 500 : 50;
+                if (d < 0)
+                    d = 0;
+                if (stopDistanceM > d)
+                    stopDistanceM = d;
+            }
             // adjust stopDistanceM to account for signals etc.
             float maxSpeedSq = targetMpS * targetMpS;
             if (maxSpeedSq > 2 * stopDistanceM * MaxDecelMpSS)
@@ -577,6 +649,21 @@ namespace ORTS
         public float StopStartTime()
         {
             return .5f * MaxSpeedMpS * (1 / MaxDecelMpSS + 1 / MaxAccelMpSS);
+        }
+    }
+
+    public class AISwitchInfo
+    {
+        public AIPathNode PathNode;
+        public TrJunctionNode JunctionNode;
+        public int SelectedRoute;
+        public float DistanceM;
+        public AISwitchInfo(AIPath path, AIPathNode node)
+        {
+            PathNode = node;
+            JunctionNode = path.TrackDB.TrackNodes[node.JunctionIndex].TrJunctionNode;
+            SelectedRoute= JunctionNode.SelectedRoute;
+            DistanceM= 0;
         }
     }
 }

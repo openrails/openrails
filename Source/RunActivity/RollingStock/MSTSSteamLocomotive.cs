@@ -341,7 +341,7 @@ namespace ORTS
             MotiveForceN = (Direction == Direction.Forward ? 1 : -1) *
                 (backPressure * ForceFactor1[cutoff] + cylinderPressure * ForceFactor2[cutoff]);
             if (speed == 0 && cutoff < .5f)
-                MotiveForceN = 0;   // values assumed to be closed
+                MotiveForceN = 0;   // valves assumed to be closed
             // usage calculated as moving average to minimize chance of oscillation
             SteamUsageLBpS = .6f * SteamUsageLBpS + .4f * speed * SteamUsageFactor * (cutoff + .07f) * (CylinderSteamDensity[cylinderPressure] - CylinderSteamDensity[backPressure]);
 

@@ -13,7 +13,7 @@ using MSTS;
 namespace ORTS
 {
     /// <summary>
-    /// Interpolated table look
+    /// Interpolated table lookup
     /// Supports linear or cubic spline interpolation
     /// </summary>
     class Interpolator

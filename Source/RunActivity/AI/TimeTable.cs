@@ -120,7 +120,7 @@ namespace ORTS
             if (nextIndex != prevIndex)
             {
                 nextATime = nextLTime - times.Train.PassTime();
-                nextLTime += Dispatcher.trackLength[nextIndex] / times.Train.MaxSpeedMpS;
+                nextLTime += Dispatcher.TrackLength[nextIndex] / times.Train.MaxSpeedMpS;
             }
             int delay = CalcTrackTimes(nextATime, nextLTime, nextNode, times, nextIndex);
             if (delay == 0)
@@ -133,7 +133,7 @@ namespace ORTS
                 return delay;
             if (node.Type == AIPathNodeType.SidingStart)
             {
-                double nextSLTime = nextATime + times.Train.PassTime() + Dispatcher.trackLength[node.NextSidingTVNIndex] / times.Train.MaxSpeedMpS;
+                double nextSLTime = nextATime + times.Train.PassTime() + Dispatcher.TrackLength[node.NextSidingTVNIndex] / times.Train.MaxSpeedMpS;
                 int delay1 = CalcTrackTimes(nextATime, nextSLTime, node.NextSidingNode, times, node.NextSidingTVNIndex);
                 if (delay1 == 0)
                 {

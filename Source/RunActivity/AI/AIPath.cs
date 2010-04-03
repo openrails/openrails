@@ -137,6 +137,7 @@ namespace ORTS
             if (tn.TrJunctionNode == null || tn.TrPins[0].Link == vectorIndex)
                 return;
             tn.TrJunctionNode.SelectedRoute = tn.TrPins[1].Link == vectorIndex ? 0 : 1;
+            return;
         }
 
         /// <summary>
