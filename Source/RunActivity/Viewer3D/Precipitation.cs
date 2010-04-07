@@ -66,6 +66,10 @@ namespace ORTS
             // Get data for current activity
             startTime = Viewer.Simulator.ClockTime;
             weatherType = (int)Viewer.Simulator.Weather;
+
+            WeatherControl weather = new WeatherControl(Viewer);
+            precipMesh.intensity = weather.intensity;
+            precipMesh.InitPrecipParticles(0);
         }
         #endregion
 
@@ -81,7 +85,7 @@ namespace ORTS
 ////////////////////// T E M P O R A R Y ///////////////////////////
 
             // The following keyboard commands are used for viewing sky and weather effects in "demo" mode
-            // Use Ctrl+P to toggle precipitation through Clear, Rain and Snow states
+            // Use Alt+P to toggle precipitation through Clear, Rain and Snow states
 
             if (UserInput.IsAltPressed(Keys.P))
             {
@@ -103,9 +107,6 @@ namespace ORTS
             }
 
 ////////////////////////////////////////////////////////////////////
-
-            // Intensity factor: 1000 light; 3500 average; 6000 heavy
-            // precipMesh.intensity = Viewer.weatherControl.intensity;
             precipMesh.Reinitialize(Viewer.Simulator.ClockTime - startTime);
 
             frame.AddPrimitive(precipMaterial, precipMesh, ref XNAPrecipWorldLocation);
@@ -131,7 +132,7 @@ namespace ORTS
 
         private float width; // Width (and depth) of precipitation box surrounding the viewer
         private float height; // Maximum particl age. In effect, this is the height of the precipitation box
-        // Intensity factor: 1000 light; 3500 average; 6000 heavy
+        // Intensity factor: 1000 light; 3500 average; 7000 heavy
         public float intensity; // Particles per second
         private float particleSize;
         public Vector2 windDir;
@@ -151,7 +152,7 @@ namespace ORTS
             // Set default values
             width = 150;
             height = 10;
-            intensity = 3500;
+            intensity = 6000;
             particleSize = 0.35f;
             lastActiveParticle = -1;
         }
@@ -168,7 +169,7 @@ namespace ORTS
         /// <summary>
         /// Precipitation particle intialization. 
         /// </summary>
-        private void InitPrecipParticles(double currentTime)
+        public void InitPrecipParticles(double currentTime)
         {
             // Create the precipitation particles
             drops = new VertexPointSprite[(int)(height * intensity)];

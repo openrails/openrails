@@ -55,7 +55,7 @@ namespace MSTS
                     string token = f.ReadToken();
                     if (token == "(")
                         token = f.ReadToken();
-                    if (token.EndsWith(".s")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
+                    if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
                     {
                         while (token != ")")
                         {

@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Microsoft.Xna.Framework;
 using Microsoft.Win32;
 
 namespace ORTS
@@ -21,8 +22,30 @@ namespace ORTS
         {
             InitializeComponent();
 
+            string[] strContents = 
+            {
+                "1024x768",
+                "1152x864",
+                "1280x720",
+                "1280x768",
+                "1280x800",
+                "1280x960",
+                "1280x1024",
+                "1360x768",
+                "1440x900",
+                "1600x1200",
+                "1680x1050",
+                "1768x992",
+                "1920x1080",
+                "1920x1200"
+            };
+
             this.numericWorldObjectDensity.Value = 10;
             this.numericSoundDetailLevel.Value = 5;
+            this.comboBox1.Items.AddRange(strContents);
+            this.comboBox1.Text = "1024x768";
+
+            
 
             // Restore retained settings
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
@@ -30,7 +53,7 @@ namespace ORTS
             {
                 this.numericWorldObjectDensity.Value = (int)RK.GetValue("WorldObjectDensity", (int)numericWorldObjectDensity.Value);
                 this.numericSoundDetailLevel.Value = (int)RK.GetValue("SoundDetailLevel", (int)numericSoundDetailLevel.Value);
-
+                this.comboBox1.Text = (string)RK.GetValue("WindowSize", (string)comboBox1.Text);
             }
         }
 
@@ -42,6 +65,7 @@ namespace ORTS
             {
                 RK.SetValue("WorldObjectDensity", (int)this.numericWorldObjectDensity.Value);
                 RK.SetValue("SoundDetailLevel", (int)this.numericSoundDetailLevel.Value);
+                RK.SetValue("WindowSize", (string)this.comboBox1.Text);
             }
 
             Close();
@@ -49,6 +73,11 @@ namespace ORTS
         }
 
         private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
         {
 
         }

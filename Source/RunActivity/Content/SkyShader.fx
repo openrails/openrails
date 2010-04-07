@@ -17,6 +17,7 @@ float4 sunsetColor;
 float overcast;
 float windSpeed;
 float windDirection;
+float moonScale;
 
 // "Up" vector for moon billboarding
 #define worldUp cross(float3(-1,0,0),float3(0,0,-1))
@@ -140,11 +141,9 @@ VS_OUT VSmoon( VS_IN In )
     
     int scale;
     if (random == 6) // moon dog
-		scale = 600;
-	else
-		scale = 300;
-    position += (In.vSky.x) * rightVector * scale;
-    position += (In.vSky.y) * upVector * scale;
+		moonScale *= 2;
+    position += (In.vSky.x) * rightVector * moonScale;
+    position += (In.vSky.y) * upVector * moonScale;
    
     Out.Pos = mul( mModelToProjection, float4(position, 1));
 	Out.Normal   = In.Normal;

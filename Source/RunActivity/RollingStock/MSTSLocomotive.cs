@@ -57,6 +57,7 @@ namespace ORTS
         public bool Bell = false;
         public bool Sander = false;  
         public bool Wiper = false;
+        public int  Headlight = 0;
         float MaxPowerW;
         float MaxForceN;
         float MaxSpeedMpS = 1e3f;
@@ -254,6 +255,9 @@ namespace ORTS
                 case EventID.SanderOff: Sander = false; break;
                 case EventID.WiperOn: Wiper = true; break;
                 case EventID.WiperOff: Wiper = false; break;
+                case EventID.HeadlightOff: Headlight = 0; break;
+                case EventID.HeadlightDim: Headlight = 1; break;
+                case EventID.HeadlightOn:  Headlight = 2; break;
             }
 
             base.SignalEvent(eventID );
@@ -315,7 +319,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// A keyboard or mouse click has occured. Read the UserInput
+        /// A keyboard or mouse click has occurred. Read the UserInput
         /// structure to determine what was pressed.
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -330,6 +334,14 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.V)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
             if (UserInput.IsKeyDown(Keys.Space) != Locomotive.Horn) Locomotive.SignalEvent(Locomotive.Horn ? EventID.HornOff : EventID.HornOn);
             if (UserInput.IsAltKeyDown(Keys.B) != Locomotive.Bell) Locomotive.SignalEvent(Locomotive.Bell ? EventID.BellOff : EventID.BellOn);
+            if (UserInput.IsPressed(Keys.H))
+                switch ((Locomotive.Headlight))
+                {
+                    case 0: Locomotive.Headlight = 1; break;
+                    case 1: Locomotive.Headlight = 2; break;
+                    default:
+                    case 2: Locomotive.Headlight = 0; break;
+                }
 
             base.HandleUserInput( elapsedTime );
         }

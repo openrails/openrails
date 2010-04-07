@@ -29,18 +29,18 @@ namespace ORTS
             switch (weatherType)
             {
                 case (int)MSTS.WeatherType.Rain:
-                    overcast = 0.6f;
-                    intensity = 3500;
-                    fogCoeff = 0.2f;
+                    overcast = 0.7f;
+                    intensity = 4500;
+                    fogCoeff = 0.5f;
                     break;
                 case (int)MSTS.WeatherType.Snow:
                     overcast = 0.6f;
-                    intensity = 3500;
+                    intensity = 6500;
                     fogCoeff = 0.1f;
                     break;
                 case (int)MSTS.WeatherType.Clear:
-                    overcast = 0.1f;
-                    fogCoeff = 1.0f;
+                    overcast = 0.05f;
+                    fogCoeff = 0.9f;
                     break;
             }
         }

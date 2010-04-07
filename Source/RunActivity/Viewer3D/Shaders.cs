@@ -88,7 +88,7 @@ namespace ORTS
             get { return zbiasValue; }
             set { zbiasValue = value; zbias.SetValue(zbiasValue); }
         }
-            private float zbiasValue = 0.0f;
+        private float zbiasValue = 0.0f;
 
         public Vector3 SunDirection
         {
@@ -98,6 +98,16 @@ namespace ORTS
         public float Overcast
         {
             set { overcast.SetValue(value); }
+        }
+
+        public Vector3 HeadlightPosition
+        {
+            set { headlightPosition.SetValue(value); }
+        }
+
+        public Vector3 HeadlightDirection
+        {
+            set { headlightDirection.SetValue(value); }
         }
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
@@ -122,6 +132,8 @@ namespace ORTS
         EffectParameter zbias = null;  // TODO TEST
         EffectParameter sunDirection = null;
         EffectParameter overcast = null;
+        EffectParameter headlightPosition = null;
+        EffectParameter headlightDirection = null;
 
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
@@ -140,8 +152,8 @@ namespace ORTS
             zbias = Parameters["ZBias"];  // TODO TEST
             sunDirection = Parameters["LightVector"];
             overcast = Parameters["overcast"];
-
-            //Parameters["LightVector"].SetValue(Vector3.Normalize(new Vector3(1f, .3f, 1f)));
+            headlightPosition = Parameters["headlightPosition"];
+            headlightDirection = Parameters["headlightDirection"];
         }
     }
     #endregion
@@ -204,6 +216,7 @@ namespace ORTS
         EffectParameter overcast = null;
         EffectParameter windSpeed = null;
         EffectParameter windDirection = null;
+        EffectParameter moonScale = null;
 
         public Vector3 SunDirection
         {
@@ -275,6 +288,11 @@ namespace ORTS
             set { windDirection.SetValue(value); }
         }
 
+        public float MoonScale
+        {
+            set { moonScale.SetValue(value); }
+        }
+
         public SkyShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SkyShader"))
         {
@@ -294,6 +312,7 @@ namespace ORTS
             overcast = Parameters["overcast"];
             windSpeed = Parameters["windSpeed"];
             windDirection = Parameters["windDirection"];
+            moonScale = Parameters["moonScale"];
         }
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
@@ -367,10 +386,13 @@ namespace ORTS
     public class ForestShader : Effect
     {
         EffectParameter mView = null;
-        EffectParameter mViewProj = null;
+        EffectParameter mWorld = null;
+        EffectParameter mWorldViewProj = null;
         EffectParameter forest_Tex = null;
         EffectParameter sunDirection = null;
         EffectParameter overcast = null;
+        EffectParameter headlightPosition = null;
+        EffectParameter headlightDirection = null;
 
         public Texture2D ForestTexture
         {
@@ -387,20 +409,59 @@ namespace ORTS
             set { overcast.SetValue(value); }
         }
 
+        public Vector3 HeadlightPosition
+        {
+            set { headlightPosition.SetValue(value); }
+        }
+
+        public Vector3 HeadlightDirection
+        {
+            set { headlightDirection.SetValue(value); }
+        }
+
         public ForestShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("ForestShader"))
         {
             mView = Parameters["mView"];
-            mViewProj = Parameters["mViewProj"];
+            mWorld = Parameters["mWorld"];
+            mWorldViewProj = Parameters["mWorldViewProj"];
             forest_Tex = Parameters["forest_Tex"];
             sunDirection = Parameters["LightVector"];
             overcast = Parameters["overcast"];
+            headlightPosition = Parameters["headlightPosition"];
+            headlightDirection = Parameters["headlightDirection"];
         }
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
             mView.SetValue(view);
-            mViewProj.SetValueTranspose(view * projection);
+            mWorld.SetValue(world);
+            mWorldViewProj.SetValueTranspose(world *view * projection);
+        }
+    }
+    #endregion
+
+    #region LightGlow shader
+    public class LightGlowShader : Effect
+    {
+        EffectParameter mWorldViewProj = null;
+        EffectParameter lightGlow_Tex = null;
+
+        public Texture2D LightGlowTexture
+        {
+            set { lightGlow_Tex.SetValue(value); }
+        }
+
+        public LightGlowShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("LightGlowShader"))
+        {
+            mWorldViewProj = Parameters["mWorldViewProj"];
+            lightGlow_Tex = Parameters["lightGlow_Tex"];
+        }
+
+        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+        {
+            mWorldViewProj.SetValueTranspose(world * view * projection);
         }
     }
     #endregion

@@ -26,11 +26,13 @@ namespace ORTS
         public static SkyShader SkyShader = null;
         public static PrecipShader PrecipShader = null;
         public static ForestShader ForestShader = null;
+        public static LightGlowShader LightGlowShader = null;
         public static SpriteBatchMaterial SpriteBatchMaterial = null;
         private static WaterMaterial WaterMaterial = null;
         private static SkyMaterial SkyMaterial = null;
         private static PrecipMaterial PrecipMaterial = null;
         private static DynatrackMaterial DynatrackMaterial = null;
+        private static LightGlowMaterial LightGlowMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
@@ -42,7 +44,7 @@ namespace ORTS
         public static Color FogColor = new Color(110, 110, 110, 255);
         public static float FogCoeff = 0.75f;
         public static ShadowMappingShader ShadowMappingShader = null;
-
+        
         /// <summary>
         /// THREAD SAFETY:  XNA Content Manager is not thread safe and must only be called from the Game thread.
         /// ( per Shawn Hargreaves )
@@ -58,10 +60,12 @@ namespace ORTS
             SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
             ForestShader = new ForestShader(renderProcess.GraphicsDevice, renderProcess.Content);
+            LightGlowShader = new LightGlowShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
             DynatrackMaterial = new DynatrackMaterial(renderProcess);
+            LightGlowMaterial = new LightGlowMaterial(renderProcess);
             YellowMaterial = new YellowMaterial(renderProcess);
             ShadowMaterial = new ShadowCastingMaterial(renderProcess);
             IsInitialized = true;
@@ -152,6 +156,8 @@ namespace ORTS
                     return PrecipMaterial;
                 case "DynatrackMaterial":
                     return DynatrackMaterial;
+                case "LightGlowMaterial":
+                    return LightGlowMaterial;
                 case "ForestMaterial":
                     if (!ForestMaterials.ContainsKey(textureName))
                     {
@@ -256,16 +262,19 @@ namespace ORTS
         {
             RenderProcess = renderProcess;
             SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
-            DefaultFont =  renderProcess.Content.Load<SpriteFont>("CourierNew");
+            DefaultFont =  renderProcess.Content.Load<SpriteFont>("Arial");
         }
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
+            float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
+            Vector3 screenScaling = new Vector3(scaling);
+            Matrix xForm = Matrix.CreateScale(screenScaling);
             if (previousMaterial != this)
             {
                 RenderProcess.RenderStateChangesCount++;
-                SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
+                SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
             }
             RenderProcess.PrimitiveCount++;
             renderPrimitive.Draw(graphicsDevice);
@@ -288,6 +297,9 @@ namespace ORTS
         SceneryShader SceneryShader;
         Texture2D Texture;
         Texture2D nightTexture = null;
+        Vector3 sunDirection;
+        Vector3 headlightPosition;
+        Vector3 headlightDirection;
         bool isNightEnabled = false;
         public RenderProcess RenderProcess;  // for diagnostics only
 
@@ -313,9 +325,13 @@ namespace ORTS
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-
-            Vector3 sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+            sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
             SceneryShader.SunDirection = sunDirection;
+            headlightPosition = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeLoc;
+            SceneryShader.HeadlightPosition = headlightPosition;
+            headlightDirection = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeDir;
+            SceneryShader.HeadlightDirection = headlightDirection;
+
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             SceneryShader.ZBias = renderPrimitive.ZBias;
             SceneryShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
@@ -394,15 +410,17 @@ namespace ORTS
                 switch (lighting)
                 {
                     case 1: // DarkShade (-12)
-                    case 2: // OptHalfBright (-11) TODO: darkening should be less than DarkShade
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["Dark"];
+                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["DarkShade"];
+                        break;
+                    case 2: // OptHalfBright (-11)
+                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["HalfBright"];
                         break;
                     case 4: // CruciformLong (-10)
                     case 3: // Cruciform (-9)
                         SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
                         break;
                     case 5: // OptFullBright (-8)
-                        SceneryShader.isNightTexture = true;
+                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["FullBright"];
                         break;
                     case 6: // OptSpecular750 (-7)
                         SceneryShader.SpecularPower = 64;
@@ -612,9 +630,6 @@ namespace ORTS
         {
             SkyShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
-            RenderProcess.RenderStateChangesCount++;
-            RenderProcess.ImageChangesCount++;
-
             // Adjust Fog color for day-night conditions and overcast
             FogDay2Night(
                 RenderProcess.Viewer.SkyDrawer.solarDirection.Y,
@@ -635,6 +650,7 @@ namespace ORTS
             SkyShader.SunriseColor = RenderProcess.Viewer.SkyDrawer.sunriseColor;
             SkyShader.SunsetColor = RenderProcess.Viewer.SkyDrawer.sunsetColor;
             SkyShader.Time = (float)RenderProcess.Viewer.Simulator.ClockTime/100000;
+            SkyShader.MoonScale = SkyConstants.skyRadius / 20;
 
             // Save existing render state
             bool fogEnable = graphicsDevice.RenderState.FogEnable;
@@ -644,6 +660,8 @@ namespace ORTS
             graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
             // Sky dome
+            RenderProcess.RenderStateChangesCount++;
+            RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 1;
             SkyShader.Begin();
             foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
@@ -659,7 +677,7 @@ namespace ORTS
             // Send the transform matrices to the shader
             int skyRadius = RenderProcess.Viewer.SkyDrawer.SkyMesh.skyRadius;
             int cloudRadiusDiff = RenderProcess.Viewer.SkyDrawer.SkyMesh.cloudDomeRadiusDiff;
-            XNAMoonMatrix = Matrix.CreateTranslation(RenderProcess.Viewer.SkyDrawer.lunarDirection * (skyRadius - cloudRadiusDiff));
+            XNAMoonMatrix = Matrix.CreateTranslation(RenderProcess.Viewer.SkyDrawer.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
             XNAMoonWorldMatrix = XNAWorldMatrix * XNAMoonMatrix;
             // Shader setup
             SkyShader.SetMatrix(XNAMoonWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
@@ -680,6 +698,8 @@ namespace ORTS
             graphicsDevice.RenderState.AlphaTestEnable = false;
             graphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
 
+            RenderProcess.RenderStateChangesCount++;
+            RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 2;
             SkyShader.Begin();
             foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
@@ -702,6 +722,8 @@ namespace ORTS
             SkyShader.WindDirection = RenderProcess.Viewer.SkyDrawer.windDirection;
             graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
+            RenderProcess.RenderStateChangesCount++;
+            RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 3;
             SkyShader.Begin();
             foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
@@ -901,6 +923,10 @@ namespace ORTS
             Blend sourceBlend = graphicsDevice.RenderState.SourceBlend;
             bool alphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
 
+            // TODO: Test to draw primitives if within "LOD" view distance.
+            // Ballast <= 2000 
+            // Rail tops <= 1200
+            // Rail sides <= 700
             // Ballast
             graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;
             sceneryShader.CurrentTechnique = sceneryShader.Techniques["Image"];
@@ -916,7 +942,6 @@ namespace ORTS
             graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
             graphicsDevice.RenderState.AlphaTestEnable = false;
             graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-            //graphicsDevice.RenderState.FillMode = FillMode.WireFrame;
 
             sceneryShader.SpecularPower = 0;
             mesh.drawIndex = 1;
@@ -985,6 +1010,9 @@ namespace ORTS
         static Texture2D TreeTexture = null;
         public RenderProcess RenderProcess;  // for diagnostics only
         public ForestDrawer drawer;
+        Vector3 sunDirection;
+        Vector3 headlightPosition;
+        Vector3 headlightDirection;
 
         public ForestMaterial(RenderProcess renderProcess, string treeTexture)
         {
@@ -1000,8 +1028,13 @@ namespace ORTS
             {
                 RenderProcess.RenderStateChangesCount++;
 
-                Vector3 sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+                sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
                 ForestShader.SunDirection = sunDirection;
+                headlightPosition = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeLoc;
+                ForestShader.HeadlightPosition = headlightPosition;
+                headlightDirection = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeDir;
+                ForestShader.HeadlightDirection = headlightDirection;
+
                 ForestShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
                 ForestShader.CurrentTechnique = ForestShader.Techniques["Forest"];
                 graphicsDevice.RenderState.AlphaBlendEnable = false;
@@ -1034,6 +1067,56 @@ namespace ORTS
     }
     #endregion
 
+    #region LightGlow material
+    public class LightGlowMaterial : Material
+    {
+        LightGlowShader LightGlowShader;
+        Texture2D lightGlowTexture;
+        public RenderProcess RenderProcess;
+
+        public LightGlowMaterial(RenderProcess renderProcess)
+        {
+            RenderProcess = renderProcess;
+            LightGlowShader = Materials.LightGlowShader;
+            lightGlowTexture = renderProcess.Content.Load<Texture2D>("LightGlow");
+        }
+
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
+                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            LightGlowShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+
+            RenderProcess.RenderStateChangesCount++;
+            RenderProcess.ImageChangesCount++;
+
+            LightGlowShader.CurrentTechnique = LightGlowShader.Techniques["LightGlow"];
+            LightGlowShader.LightGlowTexture = lightGlowTexture;
+
+            // Set render state for drawing lights
+            graphicsDevice.RenderState.AlphaBlendEnable = true;
+            graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
+            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            graphicsDevice.RenderState.AlphaTestEnable = false;
+            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+
+            LightGlowShader.Begin();
+            foreach (EffectPass pass in LightGlowShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            LightGlowShader.End();
+        }
+
+        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        {
+        }
+    }
+    #endregion
+    
     #region Water material
     public class WaterMaterial : Material
     {

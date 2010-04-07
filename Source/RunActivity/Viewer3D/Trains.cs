@@ -1,4 +1,4 @@
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
@@ -18,8 +18,6 @@ using Microsoft.Xna.Framework.Storage;
 using System.Threading;
 using MSTS;
 
-/// The Terrain consists of TerrainTiles 2km square each subdivided 16 x 16 into TerrainPatch's
-/// The TerrainTile class
 
 namespace ORTS
 {
@@ -27,6 +25,7 @@ namespace ORTS
     public class TrainDrawer
     {
         private Viewer3D Viewer;
+        public LightGlowDrawer lightGlowDrawer;
 
         /// THREAD SAFETY WARNING -
         public Dictionary<TrainCar, TrainCarViewer> LoadedCars = new Dictionary<TrainCar, TrainCarViewer>();   // is not written to by LoaderProcess
@@ -76,10 +75,13 @@ namespace ORTS
             ViewableCars.Add(Viewer.PlayerLocomotiveViewer.Car);  // lets make sure its included even if its out of viewing range
             foreach (Train train in Viewer.Simulator.Trains)
                 foreach (TrainCar car in train.Cars)
+                {
                     if (ApproximateDistance(Viewer.Camera.WorldLocation, car.WorldPosition.WorldLocation) < removeDistance
                         && car != Viewer.PlayerLocomotiveViewer.Car)  // don't duplicate the player car
-                          ViewableCars.Add(car);
-            
+                        ViewableCars.Add(car);
+                    if (car.Lights != null)
+                        lightGlowDrawer = new LightGlowDrawer(Viewer, car);
+                }
             // when LoadPrep returns, it launches Load in the background LoaderProcess thread
         }
 
@@ -100,10 +102,8 @@ namespace ORTS
                     TrainCarViewer carViewer = car.GetViewer(Viewer);
                     UpdatedLoadedCars.Add(car, carViewer);
                 }
-
             // next time LoadPrep runs, it will fetch the UpdatedLoadedCars list of viewers.
         }
-
 
         /// <summary>
         /// Executes in the UpdateProcess thread.
@@ -113,7 +113,11 @@ namespace ORTS
             try
             {
                 foreach (TrainCarViewer car in LoadedCars.Values)
+                {
                     car.PrepareFrame(frame, elapsedTime);
+                    if(car.Car.Lights != null)
+                        lightGlowDrawer.PrepareFrame(frame, elapsedTime);
+                }
             }
             catch( System.Exception error )  // possible thread safety violation - try again next time
             {

@@ -24,6 +24,8 @@ namespace ORTS
         public bool IsDriveable = false;
         //public bool HasCabView = false;
 
+        public Lights Lights = null;
+
         // instance variables set by train train physics when it creates the traincar
         public Train Train = null;  // the car is connected to this train
         public bool Flipped = false; // the car is reversed in the consist

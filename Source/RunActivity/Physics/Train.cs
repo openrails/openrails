@@ -10,12 +10,12 @@
  *  - MU signals that are relayed from player locomtive to other locomotives and cars such as:
  *      - direction
  *      - throttle percent
- *      - brack percent  ( TODO, this should be changed to brake pipe pressure )
+ *      - brake percent  ( TODO, this should be changed to brake pipe pressure )
  *      
  *  Individual TrainCars provide information on friction and motive force they are generating.
- *  This is consolidated up by the train class into overall movement for the train.
+ *  This is consolidated by the train class into overall movement for the train.
  * 
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.

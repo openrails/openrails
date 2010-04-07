@@ -47,7 +47,8 @@ namespace ORTS
         // User setups
         public int SoundDetailLevel;        // used to select which sound scaleability group to use.
         public int WorldObjectDensity;
-        public float ViewingDistance;       // used for culling  
+        public float ViewingDistance;       // used for culling
+        public Vector2 WindowSize;
         public UpdaterProcess UpdaterProcess = null;
         public LoaderProcess LoaderProcess;
         public RenderProcess RenderProcess;
@@ -59,10 +60,11 @@ namespace ORTS
         InfoDisplay InfoDisplay;
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer;
+        public LightGlowDrawer LightGlowDrawer;
         public WeatherControl weatherControl;
         TerrainDrawer TerrainDrawer;
         public SceneryDrawer SceneryDrawer;
-        TrainDrawer TrainDrawer;
+        public TrainDrawer TrainDrawer;
         public ISoundEngine SoundEngine;  // IrrKlang Sound Device
         // Route Information
         public Tiles Tiles = null;
@@ -133,13 +135,21 @@ namespace ORTS
             // Restore retained settings
             WorldObjectDensity = 10;
             SoundDetailLevel = 5;
-            ViewingDistance = 2000; 
+            ViewingDistance = 2000;
+            WindowSize = new Vector2(1024, 768);
+            string strWindowSize = "1024x768";
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
             if (RK != null)
             {
                 WorldObjectDensity = (int)RK.GetValue("WorldObjectDensity", WorldObjectDensity);
                 SoundDetailLevel = (int)RK.GetValue("SoundDetailLevel", SoundDetailLevel);
                 ViewingDistance = (int)RK.GetValue("ViewingDistance", (int)ViewingDistance);
+                strWindowSize = (string)RK.GetValue("WindowSize", (string)strWindowSize);
+                // Parse the screen dimensions text
+                char[] delimiterChars = { 'x' };
+                string[] words = strWindowSize.Split(delimiterChars);
+                WindowSize.X = Convert.ToInt32(words[0]);
+                WindowSize.Y = Convert.ToInt32(words[1]);
             }
             ViewingDistance = Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, ViewingDistance);
             Materials.ViewingDistance = ViewingDistance;
@@ -161,15 +171,21 @@ namespace ORTS
 
             // TODO, this may cause problems with video cards not set up to handle these settings
             // do we need to check device capabilities first?
+            //
+            // No. XNA automatically checks capabilities. For example, if the user selects a screen
+            // resolution that is greater than what the hardware can support, XNA adjusts the
+            // resolution to the actual capability. "...the XNA framework automatically selects the 
+            // highest resolution supported by the output device." rvg
             GDM.SynchronizeWithVerticalRetrace = true;
             renderProcess.IsFixedTimeStep = false; // you get smoother animation if we pace to video card retrace setting
-            renderProcess.TargetElapsedTime = TimeSpan.FromMilliseconds(1); // setting this a value near refresh rate, ie 16ms, causes hickups ( beating against refresh rate )
-            GDM.PreferredBackBufferWidth = 1024; // screen.Bounds.Width; // 1680;
-            GDM.PreferredBackBufferHeight = 768; // screen.Bounds.Height; // 1050;
-            GDM.IsFullScreen = false;
+            renderProcess.TargetElapsedTime = TimeSpan.FromMilliseconds(1); // setting this a value near refresh rate, ie 16ms, causes hiccups ( beating against refresh rate )
+            GDM.PreferredBackBufferWidth = (int)WindowSize.X; // screen.Bounds.Width; // 1680;
+            GDM.PreferredBackBufferHeight = (int)WindowSize.Y; // screen.Bounds.Height; // 1050;
+            GDM.IsFullScreen = isFullScreen;
             GDM.PreferMultiSampling = true;
             //GDM.PreferredBackBufferFormat = SurfaceFormat.Bgr32;
             //GDM.PreferredDepthStencilFormat = DepthFormat.Depth32;
+            
         }
 
         /// <summary>
@@ -350,15 +366,15 @@ namespace ORTS
             if (IsFullScreen)
             {
                 System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.PrimaryScreen;
-                GDM.PreferredBackBufferWidth = screen.Bounds.Width; // 1680;
+                GDM.PreferredBackBufferWidth = screen.Bounds.Width;
                 GDM.PreferredBackBufferHeight = screen.Bounds.Height;
                 GDM.PreferredBackBufferFormat = SurfaceFormat.Color;
                 GDM.PreferredDepthStencilFormat = DepthFormat.Depth32;
             }
             else
             {
-                GDM.PreferredBackBufferWidth = 1024;
-                GDM.PreferredBackBufferHeight = 768;
+                GDM.PreferredBackBufferWidth = (int)WindowSize.X;
+                GDM.PreferredBackBufferHeight = (int)WindowSize.Y;
             }
             RenderProcess.ToggleFullScreen();
         }

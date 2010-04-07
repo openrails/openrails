@@ -105,10 +105,31 @@ namespace ORTS
             string status = Viewer.PlayerLocomotive.GetStatus();
             if (status != null)
                 TextBuilder.AppendLine(status);
+
+            // Added by rvg....
+            // Compass
+            string sTemp;
+            Vector2 compassDir;
+            compassDir.X = Viewer.Camera.XNAView.M11;
+            compassDir.Y = Viewer.Camera.XNAView.M13;
+            float direction = MathHelper.ToDegrees((float)Math.Acos(compassDir.X));
+            if (compassDir.Y > 0) direction = 360-direction;
+            sTemp = direction.ToString("N0");
+            sTemp += Convert.ToChar(176);
+            TextBuilder.Append("Compass Hdg: "); TextBuilder.AppendLine(sTemp);
+            // Latitude/Longitude
+            WorldLatLon worldLatLon = new WorldLatLon();
+            double latitude = 0;
+            double longitude = 0; ;
+            worldLatLon.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
+            sTemp = MathHelper.ToDegrees((float)latitude).ToString("F6");
+            sTemp += ", ";
+            sTemp += MathHelper.ToDegrees((float)longitude).ToString("F6");
+            TextBuilder.Append("Lat/Lon: "); TextBuilder.AppendLine(sTemp);
+
             TextBuilder.AppendLine();
             TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString());
         }
-
 
         [Conditional("DEBUG")]
         private void AddDebugInfo()
@@ -128,6 +149,12 @@ namespace ORTS
             TextBuilder.Append("Update Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}", UpdatePercent));
             TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",LoaderPercent));
             TextBuilder.Append("Total Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", LoaderPercent+UpdatePercent+RenderPercent));
+            // Added by rvg....
+            TextBuilder.Append("Tile: "); TextBuilder.Append(Viewer.Camera.TileX.ToString()); // Camera coordinates
+            TextBuilder.Append(" ");
+            TextBuilder.Append(Viewer.Camera.TileZ.ToString());
+            TextBuilder.Append(" ");
+            TextBuilder.AppendLine(Viewer.Camera.Location.ToString());
         }
 
         string FormattedTime(double clockTimeSeconds)

@@ -1,0 +1,77 @@
+Version 119 Changes
+
+/////////////// L I G H T S   A R E    D I S A B L E D ////////////////
+
+Events.cs
+-- Added Headlight handler.
+
+MSTSLocomotive.cs
+-- Added Headlight handlers to SignalEvent and HandleUserInput classes (H key toggles off-dim-on states).
+
+MSTSWagon.cs
+-- Added "lights" item to the parser. Creates a Lights object When a "Lights" block exists in the WAG/ENG file.
+
+TrainCar.cs
+-- Added Lights to its properties.
+
+Trains.cs
+-- Added Lights instantiation to LoadPrep method.
+-- Added Lights to PrepareFrame method.
+
+Lights.cs
+-- New file. 
+-- Reads the Lights block of a WAG or ENG file.
+-- LightGlowDrawer
+-- LightGlowMesh
+
+Materials.cs
+-- Added a LightGlowMaterial.
+-- Added "moonScale" variable (scaled in proportion to the size of the sky hemisphere) for use by the shader effect.
+-- Added handlers for OptHalfBright and OptFullBright lighting options.
+-- Adjusted specular power exponents.
+
+Shaders.cs
+-- Added a LightGlowShader.
+
+LightGlowShader.fx
+-- New file.
+
+Viewer3D
+-- Adjusted info display (F5) font, font range, and font size.
+-- Added capability to view screen in different resolutions.
+-- Added lines to declare LightGlowDrawer type.
+
+Options.cs
+-- Added combo box with various common window sizes.
+-- Added registry key for window size.
+
+InfoDisplay.cs
+-- Revised font (to Arial), font range (to 255), and font size (to 10 pt).
+-- Added compass and GPS to first block, and tile info to second block.
+
+Weather.cs
+-- Minor parameter changes.
+
+Dynatrack.cs
+-- Added calculation of view sphere radius and extended viewing distance.
+-- Then disabled the FOV/distance test.
+
+WFile.cs
+-- Adjusted forest Quaternion to be always vertical so as to avoid billboarding problems.
+
+Forest.cs
+-- Revised vertex position calculations to avoid tile offset and Y position problems.
+
+ForestShader.fx
+-- Revised vertex position calculations to avoid tile offset problems.
+
+Sky.cs
+-- Reduced the radius of the cloud hemisphere by 100 m to hopefully avoid conflict with the moon quad.
+
+SkyShader.fx
+-- Added "moonScale" variable, used to set the size of the moon quad.
+
+SceneryShader.fx
+-- Added HalfBright and FullBright techniques.
+
+

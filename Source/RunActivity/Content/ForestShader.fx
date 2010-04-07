@@ -6,9 +6,16 @@
 
 // Values transferred from the game
 float4x4 mView;
-float4x4 mViewProj;
+float4x4 mWorld;
+float4x4 mWorldViewProj;
 float3 LightVector;
 float overcast;
+
+float3 headlightPosition;
+float3 headlightDirection;
+float lightStrength = 1.5;
+float coneAngle = 0.4;
+float coneDecay = 8.0;
 
 // Textures
 texture forest_Tex;
@@ -41,6 +48,8 @@ struct VS_OUT
 	float4 Position		: POSITION;
 	float2 TexCoords	: TEXCOORD0;
 	float3 Normal       : TEXCOORD1;
+	// Headlight
+	float3 LightDir		: TEXCOORD2;
 };
 
 /////////////////////    V E R T E X     S H A D E R S    /////////////////////////////
@@ -48,21 +57,28 @@ struct VS_OUT
 VS_OUT VSforest( VS_IN In )
 {
 	VS_OUT Out = ( VS_OUT ) 0;
-
+	
     float3 position = In.Position; 
-    float3 eyeVector = mView._m02_m12_m22;
+    float3 eyeVector = normalize(mView._m02_m12_m22);
 
  	float3 upVector = float3(0, -1, 0);
     float3 sideVector = normalize(cross(eyeVector, upVector));    
     
     position += (In.TexCoords.x-0.5f) * sideVector * In.Size.x;
-    position += (In.TexCoords.y-0.98f) * upVector * In.Size.y;
+    position += (In.TexCoords.y-1.0f) * upVector * In.Size.y;
    
-    Out.Position = mul( mViewProj, float4(position, 1));
-	Out.TexCoords = In.TexCoords;	
-	
+    Out.Position = mul( mWorldViewProj, float4(position, 1));
+	Out.TexCoords = In.TexCoords;
+	Out.Normal = eyeVector;
+   
+	// Headlight
+	float3 final3DPos = mul(position, mWorld);
+	Out.LightDir = final3DPos - headlightPosition;
+
 	return Out;
 }
+
+/////////////////////    P I X E L     S H A D E R S    /////////////////////////////
 
 float Day2Night( )
 {
@@ -120,7 +136,23 @@ float4 PSforest( VS_OUT In ) : COLOR
 	// Reduce saturaton when overcast
 	float3 color = Overcast(surfColor.xyz, 1-overcast);
 	surfColor = float4(color, 1);
+/*
+	float4 litColor = surfColor;
 	
+    // Headlight effect
+    float3 normal = normalize(In.Normal);
+    float3 lightDir = normalize(In.LightDir);
+    float coneDot = dot(lightDir, normalize(headlightDirection));
+    float shading = 0;
+    if (coneDot > coneAngle)
+    {
+		float coneAtten = pow(coneDot, coneDecay);
+		shading = dot(normal, -lightDir);
+		shading *= lightStrength;
+		shading *= coneAtten;
+    }
+    surfColor += (litColor + shading) * 0.05;
+*/	
 	surfColor.a = alpha;
 	return surfColor;
 }

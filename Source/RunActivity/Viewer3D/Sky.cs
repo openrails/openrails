@@ -119,7 +119,7 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // Adjust dome position so the bottom edge is not visible
-            Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y, -Viewer.Camera.Location.Z);
+            Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y-100, -Viewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
 
             if (worldLoc == null)
@@ -238,7 +238,7 @@ namespace ORTS
         // Sky dome geometry is based on two global variables: the radius and the number of sides
         public int skyRadius = SkyConstants.skyRadius;
         private static int skySides = SkyConstants.skySides;
-        public int cloudDomeRadiusDiff = 300; // Amount by which cloud dome radius is smaller than sky dome
+        public int cloudDomeRadiusDiff = 600; // Amount by which cloud dome radius is smaller than sky dome
         // skyLevels: Used for iterating vertically through the "levels" of the hemisphere polygon
         private static int skyLevels = ((SkyConstants.skySides / 4) - 1);
         // Number of vertices in the sky hemisphere. (each dome = 145 for 24-sided sky dome: 24 x 6 + 1)
