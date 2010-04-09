@@ -25,7 +25,7 @@ namespace ORTS
     public class TrainDrawer
     {
         private Viewer3D Viewer;
-        public LightGlowDrawer lightGlowDrawer;
+        //public LightGlowDrawer lightGlowDrawer;
 
         /// THREAD SAFETY WARNING -
         public Dictionary<TrainCar, TrainCarViewer> LoadedCars = new Dictionary<TrainCar, TrainCarViewer>();   // is not written to by LoaderProcess
@@ -79,8 +79,8 @@ namespace ORTS
                     if (ApproximateDistance(Viewer.Camera.WorldLocation, car.WorldPosition.WorldLocation) < removeDistance
                         && car != Viewer.PlayerLocomotiveViewer.Car)  // don't duplicate the player car
                         ViewableCars.Add(car);
-                    if (car.Lights != null)
-                        lightGlowDrawer = new LightGlowDrawer(Viewer, car);
+                    //if (car.Lights != null)
+                        //lightGlowDrawer = new LightGlowDrawer(Viewer, car);
                 }
             // when LoadPrep returns, it launches Load in the background LoaderProcess thread
         }
@@ -115,8 +115,8 @@ namespace ORTS
                 foreach (TrainCarViewer car in LoadedCars.Values)
                 {
                     car.PrepareFrame(frame, elapsedTime);
-                    if(car.Car.Lights != null)
-                        lightGlowDrawer.PrepareFrame(frame, elapsedTime);
+                    //if(car.Car.Lights != null)
+                        //lightGlowDrawer.PrepareFrame(frame, elapsedTime);
                 }
             }
             catch( System.Exception error )  // possible thread safety violation - try again next time

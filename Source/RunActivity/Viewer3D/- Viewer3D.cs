@@ -60,7 +60,7 @@ namespace ORTS
         InfoDisplay InfoDisplay;
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer;
-        public LightGlowDrawer LightGlowDrawer;
+        //public LightGlowDrawer LightGlowDrawer;
         public WeatherControl weatherControl;
         TerrainDrawer TerrainDrawer;
         public SceneryDrawer SceneryDrawer;

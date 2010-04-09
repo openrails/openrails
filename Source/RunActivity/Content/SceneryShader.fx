@@ -252,9 +252,9 @@ float4 PSTerrain(
     surfColor *= Day2Night();
     // Reduce saturaton when overcast
     surfColor = Overcast(surfColor, 1-overcast);
+
 /*
     float3 litColor = surfColor;
-    
     // Headlight effect
     float3 normal = normalize(vNormalW);
     float3 lightDir = normalize(LightDir);

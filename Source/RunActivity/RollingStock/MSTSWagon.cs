@@ -130,7 +130,7 @@ namespace ORTS
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, f);
                     break;
-                case "wagon(lights": try {Lights = new Lights(f, this);} catch {Lights = null;} break;
+//                case "wagon(lights": try {Lights = new Lights(f, this);} catch {Lights = null;} break;
             }
         }
 
@@ -156,7 +156,7 @@ namespace ORTS
             DavisCNSSpMM = copy.DavisCNSSpMM;
             Length = copy.Length;
             MassKG = copy.MassKG;
-            Lights = copy.Lights;
+            //Lights = copy.Lights;
             foreach (ViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
             foreach (ViewPoint frontCabViewPoint in copy.FrontCabViewpoints)

@@ -1,3 +1,11 @@
+//--------------------------------------------------------------//
+// LIGHT GLOW SHADER
+// Displays train lights
+//
+// Principal Author: Rick Grout
+//--------------------------------------------------------------//
+
+// Values transferred from the game
 float4x4 mWorldViewProj;
 
 // Textures
@@ -41,7 +49,7 @@ VS_OUT VSlightGlow( VS_IN In )
 {
 	VS_OUT Out = ( VS_OUT ) 0;
 
-    float4 color = (In.Color, In.AlphScaleTex.x);
+    float4 color = float4(In.Color, In.AlphScaleTex.x);
     Out.Color = color;
     
     float2 texCoords = (In.AlphScaleTex.zw);

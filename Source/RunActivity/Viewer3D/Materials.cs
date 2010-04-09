@@ -32,7 +32,7 @@ namespace ORTS
         private static SkyMaterial SkyMaterial = null;
         private static PrecipMaterial PrecipMaterial = null;
         private static DynatrackMaterial DynatrackMaterial = null;
-        private static LightGlowMaterial LightGlowMaterial = null;
+        //private static LightGlowMaterial LightGlowMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
@@ -65,7 +65,7 @@ namespace ORTS
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
             DynatrackMaterial = new DynatrackMaterial(renderProcess);
-            LightGlowMaterial = new LightGlowMaterial(renderProcess);
+            //LightGlowMaterial = new LightGlowMaterial(renderProcess);
             YellowMaterial = new YellowMaterial(renderProcess);
             ShadowMaterial = new ShadowCastingMaterial(renderProcess);
             IsInitialized = true;
@@ -156,8 +156,8 @@ namespace ORTS
                     return PrecipMaterial;
                 case "DynatrackMaterial":
                     return DynatrackMaterial;
-                case "LightGlowMaterial":
-                    return LightGlowMaterial;
+                //case "LightGlowMaterial":
+                    //return LightGlowMaterial;
                 case "ForestMaterial":
                     if (!ForestMaterials.ContainsKey(textureName))
                     {
@@ -327,10 +327,12 @@ namespace ORTS
         {
             sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
             SceneryShader.SunDirection = sunDirection;
+            /*
             headlightPosition = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeLoc;
             SceneryShader.HeadlightPosition = headlightPosition;
             headlightDirection = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeDir;
             SceneryShader.HeadlightDirection = headlightDirection;
+            */
 
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             SceneryShader.ZBias = renderPrimitive.ZBias;
@@ -1011,8 +1013,8 @@ namespace ORTS
         public RenderProcess RenderProcess;  // for diagnostics only
         public ForestDrawer drawer;
         Vector3 sunDirection;
-        Vector3 headlightPosition;
-        Vector3 headlightDirection;
+        //Vector3 headlightPosition;
+        //Vector3 headlightDirection;
 
         public ForestMaterial(RenderProcess renderProcess, string treeTexture)
         {
@@ -1030,10 +1032,12 @@ namespace ORTS
 
                 sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
                 ForestShader.SunDirection = sunDirection;
+                /*
                 headlightPosition = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeLoc;
                 ForestShader.HeadlightPosition = headlightPosition;
                 headlightDirection = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeDir;
                 ForestShader.HeadlightDirection = headlightDirection;
+                */
 
                 ForestShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
                 ForestShader.CurrentTechnique = ForestShader.Techniques["Forest"];
@@ -1068,6 +1072,7 @@ namespace ORTS
     #endregion
 
     #region LightGlow material
+    /*
     public class LightGlowMaterial : Material
     {
         LightGlowShader LightGlowShader;
@@ -1078,7 +1083,8 @@ namespace ORTS
         {
             RenderProcess = renderProcess;
             LightGlowShader = Materials.LightGlowShader;
-            lightGlowTexture = renderProcess.Content.Load<Texture2D>("LightGlow");
+            lightGlowTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice,
+                renderProcess.Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\liteglow.ace");
         }
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
@@ -1115,6 +1121,7 @@ namespace ORTS
         {
         }
     }
+    */
     #endregion
     
     #region Water material
