@@ -55,8 +55,10 @@ namespace ORTS
             for (int i = 0; i < nTrains; i++)
             {
                 int uid = inf.ReadInt32();
-                TTTrainTimes times = new TTTrainTimes(dispatcher.AI.AITrainDictionary[uid], inf);
-                Add(times);
+                if (dispatcher.AI.AITrainDictionary.ContainsKey(uid))
+                    Add(new TTTrainTimes(dispatcher.AI.AITrainDictionary[uid], inf));
+                else
+                    this[uid] = new TTTrainTimes(null, inf);
             }
         }
 

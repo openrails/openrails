@@ -66,6 +66,16 @@ namespace ORTS
                     AITrains.Add(aiTrain);
                     aiTrain.Path.TrackDB = Simulator.TDB.TrackDB;
                     aiTrain.Path.TSectionDat = Simulator.TSectionDat;
+                    for (; ; )
+                    {
+                        AIPathNode node = aiTrain.Path.ReadNode(inf);
+                        if (node == null)
+                            break;
+                        AISwitchInfo sw = new AISwitchInfo(aiTrain.Path, node);
+                        sw.SelectedRoute = inf.ReadInt32();
+                        sw.DistanceM = inf.ReadSingle();
+                        aiTrain.SwitchList.Add(sw);
+                    }
                 }
             }
             int n = inf.ReadInt32();
@@ -85,6 +95,20 @@ namespace ORTS
         // save game state
         public void Save(BinaryWriter outf)
         {
+            foreach (Train train in Simulator.Trains)
+            {
+                if (train.GetType() == typeof(AITrain))
+                {
+                    AITrain aiTrain = (AITrain)train;
+                    foreach (AISwitchInfo sw in aiTrain.SwitchList)
+                    {
+                        aiTrain.Path.WriteNode(outf, sw.PathNode);
+                        outf.Write(sw.SelectedRoute);
+                        outf.Write(sw.DistanceM);
+                    }
+                    aiTrain.Path.WriteNode(outf, null);
+                }
+            }
             outf.Write(StartQueue.GetSize());
             for (int i = 0; i < StartQueue.GetSize(); i++)
             {
@@ -217,7 +241,13 @@ namespace ORTS
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
             }
         }
+
+        public string GetStatus()
+        {
+            return Dispatcher.PlayerStatus();
+        }
     }
+
     public class StartQueue
     {
         List<Service_Definition> List = new List<Service_Definition>();

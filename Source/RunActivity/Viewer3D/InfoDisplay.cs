@@ -127,6 +127,10 @@ namespace ORTS
             sTemp += MathHelper.ToDegrees((float)longitude).ToString("F6");
             TextBuilder.Append("Lat/Lon: "); TextBuilder.AppendLine(sTemp);
 
+            status = Viewer.Simulator.AI.GetStatus();
+            if (status != null)
+                TextBuilder.AppendLine(status);
+
             TextBuilder.AppendLine();
             TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString());
         }

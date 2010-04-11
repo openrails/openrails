@@ -73,16 +73,6 @@ namespace ORTS
             AuthEndNode = Path.ReadNode(inf);
             AuthSidingNode = Path.ReadNode(inf);
             NReverseNodes = inf.ReadInt32();
-            for (; ; )
-            {
-                AIPathNode node = Path.ReadNode(inf);
-                if (node == null)
-                    break;
-               AISwitchInfo sw = new AISwitchInfo(Path, node);
-                sw.SelectedRoute = inf.ReadInt32();
-                sw.DistanceM = inf.ReadSingle();
-                SwitchList.Add(sw);
-            }
         }
 
         // save game state
@@ -106,13 +96,6 @@ namespace ORTS
             Path.WriteNode(outf, AuthEndNode);
             Path.WriteNode(outf, AuthSidingNode);
             outf.Write(NReverseNodes);
-            foreach (AISwitchInfo sw in SwitchList)
-            {
-                Path.WriteNode(outf,sw.PathNode);
-                outf.Write(sw.SelectedRoute);
-                outf.Write(sw.DistanceM);
-            }
-            Path.WriteNode(outf, null);
         }
 
         /// <summary>

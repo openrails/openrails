@@ -177,11 +177,11 @@ namespace ORTS
                 case "engine(numcylinders": NumCylinders = f.ReadIntBlock(); break;
                 case "engine(cylinderstroke": CylinderStrokeM = f.ReadFloatBlock(); break;
                 case "engine(cylinderdiameter": CylinderDiameterM = f.ReadFloatBlock(); break;
-                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(f.ReadStringBlock()); break;
-                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(f.ReadStringBlock()); break;
-                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadStringBlock()); break;
-                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadStringBlock()); break;
-                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadStringBlock())/3600; break;
+                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(f.ReadStringBlock(),f); break;
+                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(f.ReadStringBlock(),f); break;
+                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
+                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
+                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadStringBlock(),f)/3600; break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }
@@ -367,7 +367,7 @@ namespace ORTS
         {
             float evap= Evaporation*3600;
             float usage= (SteamUsageLBpS+BasicSteamUsageLBpS)*3600;
-            return string.Format("Pressure = {0}PSI\nGeneration = {1}\nUsage = {2}\n",
+            return string.Format("Pressure = {0}PSI\nGeneration = {1}\nUsage = {2}",
                 BoilerPressurePSI.ToString("F0"),evap.ToString("F0"),usage.ToString("F0"));
                 //BoilerHeatBTU,BoilerMassLB,WaterFraction.ToString("F2"));
         }

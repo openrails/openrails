@@ -170,10 +170,10 @@ namespace ORTS
         public void ParseFriction(STFReader f)
         {
             f.VerifyStartOfBlock();
-            float c1 = ParseNpMpS(f.ReadString());
+            float c1 = ParseNpMpS(f.ReadString(),f);
             float e1 = f.ReadFloat();
-            float v2 = ParseMpS(f.ReadString());
-            float c2 = ParseNpMpS(f.ReadString());
+            float v2 = ParseMpS(f.ReadString(),f);
+            float c2 = ParseNpMpS(f.ReadString(),f);
             float e2 = f.ReadFloat();
             f.ReadString(); f.ReadString(); f.ReadString(); f.ReadString(); f.ReadString();
             f.VerifyEndOfBlock();
@@ -234,7 +234,7 @@ namespace ORTS
             //Console.WriteLine("friction {0} {1} {2} {3} {4}", c1, e1, v2, c2, e2);
             //Console.WriteLine("davis {0} {1} {2} {3}", Friction0N, DavisAN, DavisBNSpM, DavisCNSSpMM);
         }
-        public float ParseN(string token)
+        public float ParseN(string token, STFReader f)
         {
             token = token.ToLower();
             float scale = 1;
@@ -261,11 +261,12 @@ namespace ORTS
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("invalid force value or units {0}, newtons expected", token);
+                string msg = String.Format("invalid force value or units {0}, newtons expected", token);
+                STFError.Report(f, msg);
                 return ParseFloat(token);
             }
         }
-        public float ParseW(string token)
+        public float ParseW(string token, STFReader f)
         {
             token = token.ToLower();
             float scale = 1;
@@ -292,11 +293,12 @@ namespace ORTS
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("invalid power value or units {0}, watts expected", token);
+                string msg = String.Format("invalid power value or units {0}, watts expected", token);
+                STFError.Report(f, msg);
                 return ParseFloat(token);
             }
         }
-        public float ParseMpS(string token)
+        public float ParseMpS(string token, STFReader f)
         {
             token = token.ToLower();
             float scale = 1;
@@ -312,11 +314,12 @@ namespace ORTS
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("invalid speed value or units {0}, meters per second expected", token);
+                string msg = String.Format("invalid speed value or units {0}, meters per second expected", token);
+                STFError.Report(f, msg);
                 return ParseFloat(token);
             }
         }
-        public float ParseFT3(string token)
+        public float ParseFT3(string token, STFReader f)
         {
             token = token.ToLower();
             if (token[0] == '"')
@@ -332,11 +335,12 @@ namespace ORTS
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("invalid volume value or units {0}, cubic feet expected", token);
+                string msg = String.Format("invalid volume value or units {0}, cubic feet expected", token);
+                STFError.Report(f, msg);
                 return ParseFloat(token);
             }
         }
-        public float ParsePSI(string token)
+        public float ParsePSI(string token, STFReader f)
         {
             token = token.ToLower();
             int i = token.IndexOf("psi");
@@ -350,11 +354,12 @@ namespace ORTS
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("invalid pressure value or units {0}, pounds per square inch expected", token);
+                string msg = String.Format("invalid pressure value or units {0}, pounds per square inch expected", token);
+                STFError.Report(f, msg);
                 return ParseFloat(token);
             }
         }
-        public float ParseLBpH(string token)
+        public float ParseLBpH(string token, STFReader f)
         {
             token = token.ToLower();
             int i = token.IndexOf("lb/h");
@@ -368,11 +373,12 @@ namespace ORTS
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("invalid steaming rate value or units {0}, pounds per hour expected", token);
+                string msg = String.Format("invalid steaming rate value or units {0}, pounds per hour expected", token);
+                STFError.Report(f, msg);
                 return ParseFloat(token);
             }
         }
-        public float ParseNpMpS(string token)
+        public float ParseNpMpS(string token, STFReader f)
         {
             token = token.ToLower();
             float scale = 1;
@@ -387,7 +393,8 @@ namespace ORTS
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("invalid friction value or units {0}, Newtons per meters per second expected", token);
+                string msg= String.Format("invalid friction value or units {0}, Newtons per meters per second expected", token);
+                STFError.Report(f, msg);
                 return ParseFloat(token);
             }
         }

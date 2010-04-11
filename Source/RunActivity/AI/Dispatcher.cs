@@ -27,6 +27,7 @@ namespace ORTS
         private int[] Reservations;
         public float[] TrackLength;
         private TimeTable TimeTable = null;
+        public int PlayerPriority = 0;
 
         /// <summary>
         /// Initializes the dispatcher.
@@ -35,28 +36,32 @@ namespace ORTS
         public Dispatcher(AI ai)
         {
             AI = ai;
+            // make a temporary AITrain for the player
+            string playerServiceFileName = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
+            SRVFile srvFile = new SRVFile(AI.Simulator.RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+            CONFile conFile = new CONFile(AI.Simulator.BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON");
+            PATFile patFile = new PATFile(AI.Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT");
+            AIPath playerPath = new AIPath(patFile, AI.Simulator.TDB, AI.Simulator.TSectionDat);
+            AITrain playerTrain = new AITrain(0, AI, playerPath, (int)AI.Simulator.ClockTime);
+            if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
+                playerTrain.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
+            AI.AITrainDictionary.Add(0, playerTrain);
             Reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
             for (int i = 0; i < Reservations.Length; i++)
                 Reservations[i] = -1;
             FindDoubleTrack();
             CalcTrackLength();
-            int minPriority = 10;
-            int maxPriority = 0;
-            foreach (KeyValuePair<int, AITrain> kvp in AI.AITrainDictionary)
-            {
-                if (minPriority > kvp.Value.Priority)
-                    minPriority= kvp.Value.Priority;
-                if (maxPriority < kvp.Value.Priority)
-                    maxPriority = kvp.Value.Priority;
-            }
-            if (minPriority != maxPriority)
-                TimeTable= new TimeTable(this);
+            PlayerPriority = AI.Simulator.Activity.Tr_Activity.Tr_Activity_Header.StartTime.Second % 10;
+            if (AI.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Briefing.Contains("OR Dispatcher: Priority"))
+                TimeTable = new TimeTable(this);
+            AI.AITrainDictionary.Remove(0);
         }
 
         // restore game state
         public Dispatcher(AI ai, BinaryReader inf)
         {
             AI = ai;
+            PlayerPriority = inf.ReadInt32();
             int n = inf.ReadInt32();
             Reservations = new int[n];
             for (int i = 0; i < n; i++)
@@ -73,6 +78,7 @@ namespace ORTS
         // save game state
         public void Save(BinaryWriter outf)
         {
+            outf.Write(PlayerPriority);
             outf.Write(Reservations.Length);
             for (int i = 0; i < Reservations.Length; i++)
                 outf.Write(Reservations[i]);
@@ -281,6 +287,16 @@ namespace ORTS
             foreach (int i in tnList)
                 if (Reservations[i] >= 0 && Reservations[i] != train.UiD)
                     return false;
+            if (PlayerPriority <= train.Priority && AI.Simulator.PlayerLocomotive != null)
+            {
+                Train playerTrain = AI.Simulator.PlayerLocomotive.Train;
+                foreach (int j in tnList)
+                    if (Reservations[j] != train.UiD && (j == playerTrain.FrontTDBTraveller.TrackNodeIndex || j == playerTrain.RearTDBTraveller.TrackNodeIndex))
+                    {
+                        //Console.WriteLine("player on track {0} {1}", j, Reservations[j]);
+                        return false;
+                    }
+            }
             //Console.WriteLine("can reserve");
             return true;
         }
@@ -428,6 +444,8 @@ namespace ORTS
                 {
                     uint k = tn.TrVectorNode.TrVectorSections[j].SectionIndex;
                     TrackSection ts = AI.Simulator.TSectionDat.TrackSections.Get(k);
+                    //if (ts == null)
+                    //    Console.WriteLine("no tracksection {0} {1} {2}", i, j, k);
                     if (ts == null)
                         continue;
                     if (ts.SectionCurve == null)
@@ -451,6 +469,30 @@ namespace ORTS
             Train ptrain = AI.Simulator.PlayerLocomotive.Train;
             int i = front ? ptrain.FrontTDBTraveller.TrackNodeIndex : ptrain.RearTDBTraveller.TrackNodeIndex;
             return Reservations[i] == train.UiD;
+        }
+
+        public string PlayerStatus()
+        {
+            if (AI.Simulator.PlayerLocomotive == null)
+                return null;
+            Train ptrain = AI.Simulator.PlayerLocomotive.Train;
+            bool reserved = Reservations[ptrain.FrontTDBTraveller.TrackNodeIndex] > 0 || Reservations[ptrain.RearTDBTraveller.TrackNodeIndex] > 0;
+            if (!reserved && TimeTable == null)
+                return null;
+            string result = "";
+            if (reserved)
+                result+= "Warning: track reserved for AI";
+            if (TimeTable != null && TimeTable.ContainsKey(0))
+            {
+                TTTrainTimes playerTT= TimeTable[0];
+                if (playerTT == null || !playerTT.ContainsKey(ptrain.FrontTDBTraveller.TrackNodeIndex))
+                    return result;
+                TimeTableTime ttt= playerTT[ptrain.FrontTDBTraveller.TrackNodeIndex];
+                if (reserved)
+                    result+= "\n";
+                result+= String.Format("Track Time: {0:D2}:{1:D2} to {2:D2}:{3:D2}",ttt.Arrive/3600,ttt.Arrive/60%60,ttt.Leave/3600,ttt.Leave/60%60);
+            }
+            return result;
         }
     }
 }

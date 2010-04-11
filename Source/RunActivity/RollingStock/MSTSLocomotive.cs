@@ -116,9 +116,9 @@ namespace ORTS
             {
                 case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
                 case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
-                case "engine(maxpower": MaxPowerW = ParseW(f.ReadStringBlock()); break;
-                case "engine(maxforce": MaxForceN = ParseN(f.ReadStringBlock()); break;
-                case "engine(maxvelocity": MaxSpeedMpS = ParseMpS(f.ReadStringBlock()); break;
+                case "engine(maxpower": MaxPowerW = ParseW(f.ReadStringBlock(),f); break;
+                case "engine(maxforce": MaxForceN = ParseN(f.ReadStringBlock(),f); break;
+                case "engine(maxvelocity": MaxSpeedMpS = ParseMpS(f.ReadStringBlock(),f); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }

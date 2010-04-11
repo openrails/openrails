@@ -354,6 +354,7 @@ namespace ORTS
         {
             Train train = Viewer.PlayerTrain;
             AttachedToCar = train.FirstCar;
+            RotationYRadians = 0;
             PositionViewer();
         }
 
@@ -361,6 +362,10 @@ namespace ORTS
         {
             Train train = Viewer.PlayerTrain;
             AttachedToCar = train.LastCar;
+            if (AttachedToCar.Flipped)
+                RotationYRadians = 0;
+            else
+                RotationYRadians = (float)Math.PI;
             PositionViewer();
             OnboardLocation.Z *= -1;
         }
@@ -407,9 +412,9 @@ namespace ORTS
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(Keys.Left))
-                ShiftView(-1);
-            else if (UserInput.IsPressed(Keys.Right))
+            if (UserInput.IsPressed(Keys.Left) && !UserInput.IsKeyDown(Keys.LeftControl))
+                    ShiftView(-1);
+            else if (UserInput.IsPressed(Keys.Right) && !UserInput.IsKeyDown(Keys.LeftControl))
                 ShiftView(+1);
             
             base.HandleUserInput(elapsedTime);
