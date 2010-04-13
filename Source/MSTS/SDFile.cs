@@ -100,7 +100,12 @@ namespace MSTS
                 Z = f.ReadFloat();
                 B = new TWorldPosition(X, Y, Z);
                 // JP2indirt.sd has extra parameters
-                while (f.ReadToken() != ")") ;
+                for (; ; )
+                {
+                    string token = f.ReadToken();
+                    if (token == "" || token == ")")
+                        break;
+                }
 
             }
             public TWorldPosition A;

@@ -354,7 +354,10 @@ namespace ORTS
         {
             Train train = Viewer.PlayerTrain;
             AttachedToCar = train.FirstCar;
-            RotationYRadians = 0;
+            if (AttachedToCar.Flipped)
+                RotationYRadians = (float)Math.PI;
+            else
+                RotationYRadians = 0;
             PositionViewer();
         }
 
