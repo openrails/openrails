@@ -58,7 +58,7 @@ namespace ORTS
         public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case its missing from the wag
         public float Friction0N = 0;    // static friction
         public float DavisAN = 0;       // davis equation constant
-        public float DavisBNSpM = 0;    // davis eqaution constant for speed
+        public float DavisBNSpM = 0;    // davis equation constant for speed
         public float DavisCNSSpMM = 0;  // davis equation constant for speed squared
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
@@ -526,32 +526,56 @@ namespace ORTS
             for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Length; ++iMatrix)
             {
                 string matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
-                switch (matrixName)
+                if (matrixName.StartsWith("WHEELS"))
                 {
-                    case "WHEELS11":
-                    case "WHEELS12":
-                    case "WHEELS13":
-                    case "WHEELS21":
-                    case "WHEELS22":
-                    case "WHEELS23":
+                    if (matrixName.Length == 7)
+                    {
+                        if (TrainCarShape.SharedShape.Animations != null
+                                   && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
+                                   && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
+                            RunningGearPartIndexes.Add(iMatrix);
+                        Matrix m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
+                        car.AddWheelSet(m.M43, 0);
+                    }
+                    else if (matrixName.Length == 8)
+                    {
                         WheelPartIndexes.Add(iMatrix);
-                        break;
-                    case "BOGIE1":
-                    case "BOGIE2":
-                        // BOGIES - TODO
-                        break;
-                    default: if (!matrixName.StartsWith("PANTOGRAPH")
-                                && !matrixName.StartsWith("WIPER")
-                                && !matrixName.StartsWith("MIRROR")
-                                && !matrixName.StartsWith("DOOR_")) // don't want to animate every object
-                            if (TrainCarShape.SharedShape.Animations != null
-                                && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
-                                && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
-                                RunningGearPartIndexes.Add(iMatrix);
-                        break;
+                        try
+                        {
+                            int id = Int32.Parse(matrixName.Substring(6, 1));
+                            Matrix m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
+                            car.AddWheelSet(m.M43, id);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+                else if (matrixName.StartsWith("BOGIE") && matrixName.Length == 6)
+                {
+                    try
+                    {
+                        int id = Int32.Parse(matrixName.Substring(5, 1));
+                        Matrix m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
+                        car.AddBogie(m.M43, iMatrix, id);
+                    }
+                    catch
+                    {
+                    }
+                }
+                else if (!matrixName.StartsWith("PANTOGRAPH")
+                     && !matrixName.StartsWith("WIPER")
+                     && !matrixName.StartsWith("MIRROR")
+                     && !matrixName.StartsWith("DOOR_")) // don't want to animate every object
+                {
+                    if (TrainCarShape.SharedShape.Animations != null
+                               && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
+                               && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
+                        RunningGearPartIndexes.Add(iMatrix);
                 }
             }
 
+            car.SetupWheels();
 
         }
 
@@ -613,6 +637,19 @@ namespace ORTS
                 Matrix wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
                 foreach (int iMatrix in WheelPartIndexes)
                     TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
+            }
+
+            // truck angle animation
+            for (int i = 1; i < Car.Parts.Count; i++)
+            {
+                TrainCarPart p = Car.Parts[i];
+                Matrix m = Matrix.Identity;
+                m.Translation= TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
+                m.M11 = p.Cos;
+                m.M13 = p.Sin;
+                m.M31 = -p.Sin;
+                m.M33 = p.Cos;
+                TrainCarShape.XNAMatrices[p.iMatrix] = m;
             }
 
             if (FreightShape != null)

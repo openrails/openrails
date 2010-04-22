@@ -324,30 +324,67 @@ namespace ORTS
         /// </summary>
         public int FindTVNIndex(AIPathNode nextNode, TDBFile TDB, TSectionDatFile tsectiondat)
         {
-            if (JunctionIndex < 0)
+            int i1 = JunctionIndex;
+            int i2 = nextNode.JunctionIndex;
+            if (i1 < 0)
             {
-                TDBTraveller traveller = new TDBTraveller(Location.TileX, Location.TileZ, Location.Location.X, Location.Location.Z, 0, TDB, tsectiondat);
-                return traveller.TrackNodeIndex;
-            }
-            else if (nextNode.JunctionIndex < 0)
-            {
-                TDBTraveller traveller = new TDBTraveller(nextNode.Location.TileX, nextNode.Location.TileZ, nextNode.Location.Location.X, nextNode.Location.Location.Z, 0, TDB, tsectiondat);
-                return traveller.TrackNodeIndex;
-            }
-            else
-            {
-                for (int i = 0; i < TDB.TrackDB.TrackNodes.Count(); i++)
+                try
                 {
-                    TrackNode tn = TDB.TrackDB.TrackNodes[i];
-                    if (tn == null || tn.TrVectorNode == null)
-                        continue;
-                    if (tn.TrPins[0].Link == JunctionIndex && tn.TrPins[1].Link == nextNode.JunctionIndex)
-                        return i;
-                    if (tn.TrPins[1].Link == JunctionIndex && tn.TrPins[0].Link == nextNode.JunctionIndex)
-                        return i;
+                    TDBTraveller traveller = new TDBTraveller(Location.TileX, Location.TileZ, Location.Location.X, Location.Location.Z, 0, TDB, tsectiondat);
+                    return traveller.TrackNodeIndex;
+                }
+                catch
+                {
+                    i1 = FindEndIndex(Location, TDB, tsectiondat);
                 }
             }
+            if (i2 < 0)
+            {
+                try
+                {
+                    TDBTraveller traveller = new TDBTraveller(nextNode.Location.TileX, nextNode.Location.TileZ, nextNode.Location.Location.X, nextNode.Location.Location.Z, 0, TDB, tsectiondat);
+                    return traveller.TrackNodeIndex;
+                }
+                catch
+                {
+                    i2 = FindEndIndex(nextNode.Location, TDB, tsectiondat);
+                }
+            }
+            for (int i = 0; i < TDB.TrackDB.TrackNodes.Count(); i++)
+            {
+                TrackNode tn = TDB.TrackDB.TrackNodes[i];
+                if (tn == null || tn.TrVectorNode == null)
+                    continue;
+                if (tn.TrPins[0].Link == i1 && tn.TrPins[1].Link == i2)
+                    return i;
+                if (tn.TrPins[1].Link == i1 && tn.TrPins[0].Link == i2)
+                    return i;
+            }
             return -1;
+        }
+        public int FindEndIndex(WorldLocation location, TDBFile TDB, TSectionDatFile tsectiondat)
+        {
+            int bestIndex = -1;
+            float best = 1e10f;
+            for (int j = 0; j < TDB.TrackDB.TrackNodes.Count(); j++)
+            {
+                TrackNode tn = TDB.TrackDB.TrackNodes[j];
+                if (tn != null && tn.TrEndNode != null && tn.UiD.WorldTileX == location.TileX && tn.UiD.WorldTileZ == location.TileZ)
+                {
+                    float dx = tn.UiD.X - location.Location.X;
+                    dx += (tn.UiD.TileX - location.TileX) * 2048;
+                    float dz = tn.UiD.Z - location.Location.Z;
+                    dz += (tn.UiD.TileZ - location.TileZ) * 2048;
+                    float dy = tn.UiD.Y - location.Location.Y;
+                    float d = dx * dx + dy * dy + dz * dz;
+                    if (best > d)
+                    {
+                        bestIndex = j;
+                        best = d;
+                    }
+                }
+            }
+            return bestIndex;
         }
     }
 }

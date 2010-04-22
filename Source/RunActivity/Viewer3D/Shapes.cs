@@ -775,5 +775,17 @@ namespace ORTS
             }
         }// PrepareFrame()
 
+        public Matrix GetMatrixProduct(int iNode)
+        {
+            int[] h= LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
+            Matrix matrix = Matrix.Identity;
+            while (iNode != -1)
+            {
+                matrix *= Matrices[iNode];
+                iNode = h[iNode];
+            }
+            return matrix;
+        }
+
     }// class SharedShape
 }

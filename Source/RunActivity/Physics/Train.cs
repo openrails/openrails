@@ -213,6 +213,12 @@ namespace ORTS
                 TrainCar car = Cars[i];
                 car.SpeedMpS = SpeedMpS * ( car.Flipped ? -1: 1 );
 
+                if (car.WheelSetsLoaded)
+                {
+                    car.ComputePosition(traveller, false);
+                    continue;
+                }
+
                 float bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
                 // traveller is positioned at the front of the car
@@ -270,6 +276,12 @@ namespace ORTS
                 car.SpeedMpS = SpeedMpS * (car.Flipped ? -1 : 1 );
                 car.DistanceM += Math.Abs(distance);
 
+                if (car.WheelSetsLoaded)
+                {
+                    car.ComputePosition(traveller, true);
+                    continue;
+                }
+
                 float bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
                 // traveller is positioned at the back of the car
@@ -300,6 +312,7 @@ namespace ORTS
                 car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y + 0.275f, traveller.Z, x, y + 0.275f, z);
                 car.WorldPosition.TileX = traveller.TileX;
                 car.WorldPosition.TileZ = traveller.TileZ;
+                //Console.WriteLine("{0}", car.WorldPosition.XNAMatrix.ToString());
 
                 traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the front of the car 
             }

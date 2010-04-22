@@ -288,9 +288,13 @@ namespace ORTS
 
             if (UserInput.IsPressed(Keys.G) && !UserInput.IsShiftDown()) Simulator.SwitchTrackAhead( PlayerTrain );
             if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );
-
-            // Uncoupling?
-            if (!Simulator.Paused && UserInput.IsKeyDown(Keys.U))
+            if (!Simulator.Paused && UserInput.IsAltKeyDown())
+            {
+                RenderProcess.IsMouseVisible = true;
+                if (UserInput.MouseState.LeftButton == ButtonState.Pressed)
+                    TryThrowSwitchAt(UserInput.MouseState.X, UserInput.MouseState.Y);
+            }
+            else if (!Simulator.Paused && UserInput.IsKeyDown(Keys.U))
             {
                 RenderProcess.IsMouseVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed)
@@ -449,6 +453,41 @@ namespace ORTS
                     break;
                 }
             }
+        }
+        /// <summary>
+        /// The user has left clicked with U pressed.   
+        /// If the mouse was over a coupler, then uncouple the car.
+        /// </summary>
+        /// <param name="mouseX"></param>
+        /// <param name="mouseY"></param>
+        private void TryThrowSwitchAt(int mouseX, int mouseY)
+        {
+            Vector3 nearsource = new Vector3((float)mouseX, (float)mouseY, 0f);
+            Vector3 farsource = new Vector3((float)mouseX, (float)mouseY, 1f);
+            Matrix world = Matrix.CreateTranslation(0, 0, 0);
+            Vector3 nearPoint = GraphicsDevice.Viewport.Unproject(nearsource, Camera.XNAProjection, Camera.XNAView, world);
+            Vector3 farPoint = GraphicsDevice.Viewport.Unproject(farsource, Camera.XNAProjection, Camera.XNAView, world);
+
+            TrJunctionNode bestNode = null;
+            float bestD = 10;
+            // check each switch
+            for (int j = 0; j < Simulator.TDB.TrackDB.TrackNodes.Count(); j++)
+            {
+                TrackNode tn = Simulator.TDB.TrackDB.TrackNodes[j];
+                if (tn != null && tn.TrJunctionNode != null)
+                {
+                        
+                    Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX,tn.UiD.TileZ,tn.UiD.X,tn.UiD.Y,tn.UiD.Z));
+                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter,nearPoint,farPoint);
+                    if (bestD > d && !Simulator.SwitchIsOccupied(j))
+                    {
+                        bestNode = tn.TrJunctionNode;
+                        bestD = d;
+                    }
+                }
+            }
+            if (bestNode != null)
+                bestNode.SelectedRoute = 1 - bestNode.SelectedRoute;
         }
 
         public void SetupBackgroundProcesses()

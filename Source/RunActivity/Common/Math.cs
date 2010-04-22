@@ -50,5 +50,32 @@ namespace ORTS
 
             return result;
         }
+
+        public static float LineSegmentDistanceSq(Vector3 pt, Vector3 end1, Vector3 end2)
+        {
+            float dx = end2.X - end1.X;
+            float dy = end2.Y - end1.Y;
+            float dz = end2.Z - end1.Z;
+            float d = dx * dx + dy * dy + dz * dz;
+            float n = dx * (pt.X - end1.X) + dy * (pt.Y - end1.Y) + dz * (pt.Z - end1.Z);
+            if (d == 0 || n < 0)
+            {
+                dx = end1.X - pt.X;
+                dy = end1.Y - pt.Y;
+                dz = end1.Z - pt.Z;
+            }
+            else if (n > d)
+            {
+                dx = end2.X - pt.X;
+                dy = end2.Y - pt.Y;
+                dz = end2.Z - pt.Z;
+            }
+            else{
+                dx = end1.X + dx * n / d - pt.X;
+                dy = end1.Y + dy * n / d - pt.Y;
+                dz = end1.Z + dz * n / d - pt.Z;
+            }
+            return dx * dx + dy * dy + dz * dz;
+        }
     }
 }
