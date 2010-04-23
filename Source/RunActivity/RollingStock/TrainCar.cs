@@ -117,9 +117,27 @@ namespace ORTS
         {
             if (WheelSets.Count < 2)
                 return;
+            if (Parts.Count == 0)
+                Parts.Add(new TrainCarPart(0, 0));
             foreach (WheelSet w in WheelSets)
+            {
+                if (w.BogieIndex >= Parts.Count)
+                    w.BogieIndex = 0;
                 w.Part = Parts[w.BogieIndex];
+                w.Part.SumWgt++;
+            }
             WheelSets.Sort(WheelSets[0]);
+            for (int i = 1; i < Parts.Count; i++)
+                if (Parts[i].SumWgt > 1.5)
+                    Parts[0].SumWgt++;
+            if (Parts[0].SumWgt < 1.5)
+            {
+                foreach (WheelSet w in WheelSets)
+                {
+                    w.BogieIndex = 0;
+                    w.Part = Parts[0];
+                }
+            }
 #if false
             Console.WriteLine("length {0}", Length);
             foreach (WheelSet w in WheelSets)
@@ -209,8 +227,13 @@ namespace ORTS
             for (int i = 1; i < Parts.Count; i++)
             {
                 TrainCarPart p = Parts[i];
+                if (p.SumWgt < .5)
+                    continue;
                 if (p.SumWgt < 1.5)
                 {   // single axle pony trunk
+                    float d = p.OffsetM - p.SumOffset / p.SumWgt;
+                    if (-.2 < d && d < .2)
+                        continue;
                     p.AddWheelSetLocation(1, p.OffsetM, p0.A[0] + p.OffsetM * p0.B[0], p0.A[1] + p.OffsetM * p0.B[1], p0.A[2] + p.OffsetM * p0.B[2], 0);
                     p.FindCenterLine();
                 }
@@ -257,10 +280,10 @@ namespace ORTS
         public float Sin= 0;       // truck angle sin
         // line fitting variables
         public float SumWgt;
-        float SumOffset;
-        float SumOffsetSq;
-        float[] SumX= new float[4];
-        float[] SumXOffset= new float[4];
+        public float SumOffset;
+        public float SumOffsetSq;
+        public float[] SumX= new float[4];
+        public float[] SumXOffset= new float[4];
         public float[] A= new float[4];
         public float[] B= new float[4];
         public TrainCarPart(float offset, int i)
