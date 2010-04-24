@@ -482,6 +482,8 @@ namespace ORTS
         {
             float elapsedRealSeconds = elapsedTime.RealSeconds;
             float speedMpS = 5;
+            if (UserInput.IsShiftDown())
+                speedMpS = 35;
             float movement = speedMpS * elapsedRealSeconds;
 
 

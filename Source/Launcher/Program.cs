@@ -72,13 +72,16 @@ namespace ORTS
             try
             {
                 // Restore retained settings
-                RegistryKey RK = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\XNA\\Framework\\v3.1");
-                if (RK != null)
-                {
-                    int installed = (int)RK.GetValue("Installed", 0);
-                    if (installed == 1)
-                        return true;
-                }
+                RegistryKey RK = null;
+                RegistryKey RK32 = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\XNA\\Framework\\v3.1");
+                RegistryKey RK64 = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Wow6432Node\\Microsoft\\XNA\\Framework\\v3.1");
+                if (RK32 != null)
+                    RK = RK32;
+                else if (RK64 != null)
+                    RK = RK64;
+                int installed = (int)RK.GetValue("Installed", 0);
+                if (installed == 1)
+                    return true;
             }
             catch (System.Exception)
             {

@@ -199,8 +199,8 @@ namespace MSTS
 		public ActivityFailedSignals ActivityFailedSignals = new ActivityFailedSignals();
 		public Events Events = new Events();
 		public Traffic_Definition Traffic_Definition = null;
-		string PlatformNumPassengersWaiting = null;
-		string ActivityRestrictedSpeedZones = null;
+		//string PlatformNumPassengersWaiting = null; // Commented out to eliminate warning
+        //string ActivityRestrictedSpeedZones = null; // Commented out to eliminate warning
 
 		public Tr_Activity_File( STFReader f )
 		{

@@ -298,8 +298,8 @@ namespace ORTS
         Texture2D Texture;
         Texture2D nightTexture = null;
         Vector3 sunDirection;
-        Vector3 headlightPosition;
-        Vector3 headlightDirection;
+        //Vector3 headlightPosition;
+        //Vector3 headlightDirection;
         bool isNightEnabled = false;
         public RenderProcess RenderProcess;  // for diagnostics only
 
