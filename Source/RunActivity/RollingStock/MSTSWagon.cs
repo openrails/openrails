@@ -259,7 +259,7 @@ namespace ORTS
             {
                 return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 string msg = String.Format("invalid force value or units {0}, newtons expected", token);
                 STFError.Report(f, msg);
@@ -291,7 +291,7 @@ namespace ORTS
             {
                 return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 string msg = String.Format("invalid power value or units {0}, watts expected", token);
                 STFError.Report(f, msg);
@@ -312,7 +312,7 @@ namespace ORTS
             {
                 return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 string msg = String.Format("invalid speed value or units {0}, meters per second expected", token);
                 STFError.Report(f, msg);
@@ -333,7 +333,7 @@ namespace ORTS
             {
                 return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 string msg = String.Format("invalid volume value or units {0}, cubic feet expected", token);
                 STFError.Report(f, msg);
@@ -352,7 +352,7 @@ namespace ORTS
             {
                 return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 string msg = String.Format("invalid pressure value or units {0}, pounds per square inch expected", token);
                 STFError.Report(f, msg);
@@ -371,7 +371,7 @@ namespace ORTS
             {
                 return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 string msg = String.Format("invalid steaming rate value or units {0}, pounds per hour expected", token);
                 STFError.Report(f, msg);
@@ -391,7 +391,7 @@ namespace ORTS
             {
                 return scale * float.Parse(token);
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 string msg= String.Format("invalid friction value or units {0}, Newtons per meters per second expected", token);
                 STFError.Report(f, msg);
@@ -406,7 +406,7 @@ namespace ORTS
                 {
                     return float.Parse(token);
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                     token = token.Substring(0, token.Length - 1);
                 }

@@ -551,7 +551,7 @@ namespace ORTS
 
             }// for each rail car
 
-            if (train.Cars.Count == 0) return;  
+            if (train.Cars.Count == 0) return;
 
             train.CalculatePositionOfCars(0);
 
@@ -609,7 +609,7 @@ namespace ORTS
 
                     }// for each rail car
 
-                    if (train.Cars.Count == 0) return;  
+                    if (train.Cars.Count == 0) return;
 
                     // in static consists, the specified location represents the middle of the last car, 
                     // our TDB traveller is always at the back of the last car so it needs to be repositioned
@@ -731,6 +731,8 @@ namespace ORTS
             {
                 train.Cars.RemoveAt(k);
             }
+
+            train.LastCar.CouplerSlackM = 0;
 
             // and fix up the travellers
             train2.RearTDBTraveller = new TDBTraveller(train.RearTDBTraveller);

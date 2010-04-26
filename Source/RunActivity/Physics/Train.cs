@@ -216,6 +216,7 @@ namespace ORTS
                 if (car.WheelSetsLoaded)
                 {
                     car.ComputePosition(traveller, false);
+                    traveller.Move(car.CouplerSlackM);
                     continue;
                 }
 
@@ -250,7 +251,7 @@ namespace ORTS
                 car.WorldPosition.TileX = traveller.TileX;
                 car.WorldPosition.TileZ = traveller.TileZ;
 
-                traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the rear of the car 
+                traveller.Move((car.Length - bogieSpacing) / 2.0f + car.CouplerSlackM);  // Move to the rear of the car 
             }
 
             traveller.ReverseDirection();
@@ -275,6 +276,8 @@ namespace ORTS
                 TrainCar car = Cars[i];
                 car.SpeedMpS = SpeedMpS * (car.Flipped ? -1 : 1 );
                 car.DistanceM += Math.Abs(distance);
+
+                traveller.Move(car.CouplerSlackM);
 
                 if (car.WheelSetsLoaded)
                 {
@@ -331,6 +334,103 @@ namespace ORTS
                 kg2+= car.MassKG;
             SpeedMpS= (kg1*SpeedMpS+kg2*otherTrain.SpeedMpS*otherMult)/(kg1+kg2);
             otherTrain.SpeedMpS = SpeedMpS;
+        }
+
+        // setups of the left hand side of the coupler force solving equations
+        void SetupCouplerForceEquations()
+        {
+            for (int i = 0; i < Cars.Count - 1; i++)
+            {
+                TrainCar car= Cars[i];
+                if (0 < car.CouplerSlackM && car.CouplerSlackM < car.GetMaximumCouplerSlackM())
+                {
+                    car.CouplerForceB = 10;
+                    car.CouplerForceA = car.CouplerForceC = 0;
+                }
+                else
+                {
+                    car.CouplerForceB = 1 / car.MassKG;
+                    car.CouplerForceA = -car.CouplerForceB;
+                    car.CouplerForceC = -1 / Cars[i + 1].MassKG;
+                    car.CouplerForceB -= car.CouplerForceC;
+                }
+            }
+        }
+
+        // solves coupler force equations
+        // removes equations and recursively calls self if forces don't match faces in contact
+        void SolveCouplerForceEquations()
+        {
+            float b = Cars[0].CouplerForceB;
+            Cars[0].CouplerForceU = Cars[0].CouplerForceR / b;
+            for (int i = 1; i < Cars.Count - 1; i++)
+            {
+                Cars[i].CouplerForceG = Cars[i - 1].CouplerForceC / b;
+                b = Cars[i].CouplerForceB - Cars[i].CouplerForceA * Cars[i].CouplerForceG;
+                Cars[i].CouplerForceU = (Cars[i].CouplerForceR - Cars[i].CouplerForceA * Cars[i - 1].CouplerForceU) / b;
+            }
+            for (int i = Cars.Count - 2; i >= 0; i--)
+                Cars[i].CouplerForceU -= Cars[i + 1].CouplerForceG * Cars[i + 1].CouplerForceU;
+            for (int i = 0; i < Cars.Count - 1; i++)
+            {
+                if (Cars[i].CouplerForceU >= -1e-5 || Cars[i].CouplerSlackM >= Cars[i].GetMaximumCouplerSlackM())
+                    continue;
+                if (Cars[i].CouplerForceB >= 1)
+                    break;
+                Cars[i].CouplerForceB = 1;
+                Cars[i].CouplerForceA = Cars[i].CouplerForceC = Cars[i].CouplerForceR = 0;
+                SolveCouplerForceEquations();
+                break;
+            }
+            for (int i = Cars.Count - 1; i >= 0; i--)
+            {
+                if (Cars[i].CouplerForceU <= 1e-5 || Cars[i].CouplerSlackM <= 0)
+                    continue;
+                if (Cars[i].CouplerForceB >= 1)
+                    break;
+                Cars[i].CouplerForceB = 1;
+                Cars[i].CouplerForceA = Cars[i].CouplerForceC = Cars[i].CouplerForceR = 0;
+                SolveCouplerForceEquations();
+                break;
+            }
+        }
+
+        // computes and applies coupler impulse forces which force speeds to match when no relative movement is possible
+        void AddCouplerImpuseForces()
+        {
+            if (Cars.Count < 2)
+                return;
+            SetupCouplerForceEquations();
+            for (int i = 0; i < Cars.Count - 1; i++)
+                if (Cars[i].CouplerForceB > 1)
+                    Cars[i].CouplerForceR = 0;
+                else
+                    Cars[i].CouplerForceR = Cars[i + 1].SpeedMpS - Cars[i].SpeedMpS;
+            SolveCouplerForceEquations();
+            for (int i = 0; i < Cars.Count - 1; i++)
+            {
+                Cars[i].SpeedMpS += Cars[i].CouplerForceU / Cars[i].MassKG;
+                Cars[i + 1].SpeedMpS -= Cars[i].CouplerForceU / Cars[i + 1].MassKG;
+            }
+        }
+
+        // computes coupler acceleration balancing forces
+        void ComputeCouplerForces()
+        {
+            if (Cars.Count < 2)
+                return;
+            SetupCouplerForceEquations();
+            for (int i = 0; i < Cars.Count - 1; i++)
+                if (Cars[i].CouplerForceB > 1)
+                    Cars[i].CouplerForceR = 0;
+                else
+                    Cars[i].CouplerForceR = Cars[i + 1].MotiveForceN / Cars[i + 1].MassKG - Cars[i].MotiveForceN / Cars[i].MassKG;
+            SolveCouplerForceEquations();
+            for (int i = 0; i < Cars.Count - 1; i++)
+            {
+                Cars[i].MotiveForceN += Cars[i].CouplerForceU;
+                Cars[i + 1].MotiveForceN -= Cars[i].CouplerForceU;
+            }
         }
     }// class Train
 

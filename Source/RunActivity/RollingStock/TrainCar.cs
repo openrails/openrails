@@ -35,6 +35,7 @@ namespace ORTS
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
         public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
         public float SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
+        public float CouplerSlackM = 0f;// extra distance between cars
 
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
@@ -47,6 +48,14 @@ namespace ORTS
         public float MotiveForceN = 0.0f;   // ie motor power in Newtons  - signed relative to direction of car - 
         public float GravityForceN = 0.0f;   // Newtons  - signed relative to direction of car - 
         public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
+
+        // temporary values used to compute coupler forces
+        public float CouplerForceA;
+        public float CouplerForceB;
+        public float CouplerForceC;
+        public float CouplerForceG;
+        public float CouplerForceR;
+        public float CouplerForceU;
 
         // set when model is loaded
         public List<WheelSet> WheelSets = new List<WheelSet>();
@@ -86,6 +95,8 @@ namespace ORTS
             BrakeSystem.Save(outf);
             outf.Write(MotiveForceN);
             outf.Write(FrictionForceN);
+            outf.Write(SpeedMpS);
+            outf.Write(CouplerSlackM);
         }
 
         // Game restore
@@ -95,6 +106,18 @@ namespace ORTS
             BrakeSystem.Restore(inf);
             MotiveForceN = inf.ReadSingle();
             FrictionForceN = inf.ReadSingle();
+            SpeedMpS = inf.ReadSingle();
+            CouplerSlackM = inf.ReadSingle();
+        }
+
+        public virtual float GetMaximumCouplerSlackM()
+        {
+            return 0;
+        }
+
+        public virtual float GetMaximumCouplerForceN()
+        {
+            return 1e10f;
         }
 
         public void AddWheelSet(float offset, int bogie)

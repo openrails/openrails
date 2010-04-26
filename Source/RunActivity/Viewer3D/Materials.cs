@@ -1009,7 +1009,7 @@ namespace ORTS
     public class ForestMaterial : Material
     {
         ForestShader ForestShader;
-        static Texture2D TreeTexture = null;
+        Texture2D TreeTexture = null;
         public RenderProcess RenderProcess;  // for diagnostics only
         public ForestDrawer drawer;
         Vector3 sunDirection;

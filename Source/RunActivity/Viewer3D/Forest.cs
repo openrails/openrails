@@ -143,6 +143,8 @@ namespace ORTS
             Vector3[] treeSize = new Vector3[population];
             // Find out where in the world we are.
             Matrix XNAWorldLocation = Drawer.worldPosition.XNAMatrix;
+            Drawer.worldPosition.XNAMatrix = Matrix.Identity;
+            Drawer.worldPosition.XNAMatrix.Translation = XNAWorldLocation.Translation;
             int YtileX, YtileZ;
             Tile tile = new Tile(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, tileFolderNameSlash);
             // Get the Y elevation of the base object itself. Tree elevations are referenced to this.
@@ -160,6 +162,7 @@ namespace ORTS
                 // Orient each treePosition to its final position on the tile so we can get its Y value.
                 // Do this by transforming a a copy of the object to its final orientation on the terrain.
                 tempPosition[i] = Vector3.Transform(treePosition[i], XNAWorldLocation);
+                treePosition[i] = tempPosition[i] - XNAWorldLocation.Translation;
                 // Get the terrain height at each position and set Y.
                 // First convert to Y file metrics
                 YtileX = (int)MathHelper.Clamp((((int)tempPosition[i].X * 0.125f) + 127.5f), 0, 255);

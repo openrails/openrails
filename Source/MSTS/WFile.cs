@@ -289,7 +289,7 @@ namespace MSTS
                         case TokenID.QDirection: 
                             QDirection = new STFQDirectionItem(subBlock);
                             // Set B to 0 (straight up) to avoid billboarding problems.
-                            QDirection.B = 0; 
+                            //QDirection.B = 0;
                             break;
                         case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
                         default: subBlock.Skip(); break;
