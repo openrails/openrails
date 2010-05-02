@@ -65,6 +65,9 @@
     <Compile Include="..\MSTS\_paths.cs">
       <Link>MSTS\_paths.cs</Link>
     </Compile>
+    <Compile Include="..\MSTS\_STF.cs">
+      <Link>MSTS\_STF.cs</Link>
+    </Compile>
     <Compile Include="FormFolderName.cs">
       <SubType>Form</SubType>
     </Compile>
