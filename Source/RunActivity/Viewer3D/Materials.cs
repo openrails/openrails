@@ -303,22 +303,26 @@ namespace ORTS
         bool isNightEnabled = false;
         public RenderProcess RenderProcess;  // for diagnostics only
 
-        public SceneryMaterial(RenderProcess renderProcess, string texturePath)
+        public SceneryMaterial(RenderProcess renderProcess, string texturePath)  
         {
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
+            // note: texturePath may be null if the object isn't textured, results in default 'blank texture' being loaded.
             Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
-            int idx = texturePath.LastIndexOf("textures");
-            if (idx > 0)
+            if (texturePath != null)
             {
-                string strTexname;
-                string nightTexturePath = texturePath.Remove(idx + 9);
-                idx = texturePath.LastIndexOf(@"\");
-                strTexname = texturePath.Remove(0, idx);
-                nightTexturePath += "night";
-                nightTexturePath += strTexname;
-                if (File.Exists(nightTexturePath))
-                    nightTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, nightTexturePath);
+                int idx = texturePath.LastIndexOf("textures");
+                if (idx > 0)
+                {
+                    string strTexname;
+                    string nightTexturePath = texturePath.Remove(idx + 9);
+                    idx = texturePath.LastIndexOf(@"\");
+                    strTexname = texturePath.Remove(0, idx);
+                    nightTexturePath += "night";
+                    nightTexturePath += strTexname;
+                    if (File.Exists(nightTexturePath))
+                        nightTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, nightTexturePath);
+                }
             }
         }
 
