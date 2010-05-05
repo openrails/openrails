@@ -335,30 +335,33 @@ namespace ORTS
             SceneryShader.SunDirection = sunDirection;
 
             // Headlight illumination
-            currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
-            if (currentLightState != lastLightState)
+            if (RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
             {
-                if (currentLightState == 2 && lastLightState == 1)
+                currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
+                if (currentLightState != lastLightState)
                 {
-                    SceneryShader.StateChange = 1;
-                    // Reset fade timer
-                    fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                    if (currentLightState == 2 && lastLightState == 1)
+                    {
+                        SceneryShader.StateChange = 1;
+                        // Reset fade timer
+                        fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                    }
+                    else if (currentLightState == 1 && lastLightState == 2)
+                    {
+                        SceneryShader.StateChange = 2;
+                        // Reset fade timer
+                        fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                    }
+                    lastLightState = currentLightState;
                 }
-                else if (currentLightState == 1 && lastLightState == 2)
-                {
-                    SceneryShader.StateChange = 2;
-                    // Reset fade timer
-                    fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
-                }
-                lastLightState = currentLightState;
+                headlightPosition = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
+                SceneryShader.HeadlightPosition = headlightPosition;
+                headlightDirection = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
+                SceneryShader.HeadlightDirection = headlightDirection;
+                SceneryShader.FadeInTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
+                SceneryShader.FadeOutTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
+                SceneryShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
             }
-            headlightPosition = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
-            SceneryShader.HeadlightPosition = headlightPosition;
-            headlightDirection = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
-            SceneryShader.HeadlightDirection = headlightDirection;
-            SceneryShader.FadeInTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
-            SceneryShader.FadeOutTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
-            SceneryShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
             // End headlight illumination
 
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
@@ -1063,30 +1066,33 @@ namespace ORTS
                 ForestShader.SunDirection = sunDirection;
 
                 // Headlight illumination
-                currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
-                if (currentLightState != lastLightState)
+                if (RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
                 {
-                    if (currentLightState == 2 && lastLightState == 1)
+                    currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
+                    if (currentLightState != lastLightState)
                     {
-                        ForestShader.StateChange = 1;
-                        // Reset fade timer
-                        fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                        if (currentLightState == 2 && lastLightState == 1)
+                        {
+                            ForestShader.StateChange = 1;
+                            // Reset fade timer
+                            fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                        }
+                        else if (currentLightState == 1 && lastLightState == 2)
+                        {
+                            ForestShader.StateChange = 2;
+                            // Reset fade timer
+                            fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                        }
+                        lastLightState = currentLightState;
                     }
-                    else if (currentLightState == 1 && lastLightState == 2)
-                    {
-                        ForestShader.StateChange = 2;
-                        // Reset fade timer
-                        fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
-                    }
-                    lastLightState = currentLightState;
+                    headlightPosition = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
+                    ForestShader.HeadlightPosition = headlightPosition;
+                    headlightDirection = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
+                    ForestShader.HeadlightDirection = headlightDirection;
+                    ForestShader.FadeInTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
+                    ForestShader.FadeOutTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
+                    ForestShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
                 }
-                headlightPosition = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
-                ForestShader.HeadlightPosition = headlightPosition;
-                headlightDirection = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
-                ForestShader.HeadlightDirection = headlightDirection;
-                ForestShader.FadeInTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
-                ForestShader.FadeOutTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
-                ForestShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
                 // End headlight illumination
 
                 ForestShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
