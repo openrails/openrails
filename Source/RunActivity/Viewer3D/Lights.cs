@@ -81,13 +81,18 @@ namespace ORTS
                 while (token != "") // EOF
                 {
                     if (token == ")") break; // throw ( new STFError( f, "Unexpected )" ) );  we should really throw an exception
-                    // but MSTS just ignores the rest of the file, and will also
+                    // but MSTS just ignores the rest of the file, and we will also
                     else
                     {
                         numLights = f.ReadInt();
                         for (int i = 0; i < numLights; i++)
                         {
                             token = f.ReadToken();
+                            if (0 != String.Compare(token, "Light", true))// Weed out extraneous comments etc.
+                            {
+                                f.SkipBlock();
+                                token = f.ReadToken();
+                            }
                             if (0 == String.Compare(token, "Light", true))
                             {
                                 light = new Light();
