@@ -156,23 +156,22 @@ namespace ORTS
             for (int i = 0; i < population; i++)
             {
                 // Set the XZ position of each tree at random.
-                treePosition[i].X = random.Next(-(int)areaDim1 / 4, (int)areaDim1 / 4);
+                treePosition[i].X = random.Next(-(int)areaDim1 / 2, (int)areaDim1 / 2);
                 treePosition[i].Y = 0;
-                treePosition[i].Z = random.Next(-(int)areaDim2 / 4, (int)areaDim2 / 4);
+                treePosition[i].Z = random.Next(-(int)areaDim2 / 2, (int)areaDim2 / 2);
                 // Orient each treePosition to its final position on the tile so we can get its Y value.
-                // Do this by transforming a a copy of the object to its final orientation on the terrain.
+                // Do this by transforming a copy of the object to its final orientation on the terrain.
                 tempPosition[i] = Vector3.Transform(treePosition[i], XNAWorldLocation);
                 treePosition[i] = tempPosition[i] - XNAWorldLocation.Translation;
                 // Get the terrain height at each position and set Y.
                 // First convert to Y file metrics
                 YtileX = (int)MathHelper.Clamp((((int)tempPosition[i].X * 0.125f) + 127.5f), 0, 255);
                 YtileZ = (int)MathHelper.Clamp((((int)tempPosition[i].Z * 0.125f) + 127.5f), 0, 255);
-                treePosition[i].Y = tile.GetElevation(YtileX, YtileZ) - refElevation;
-                //treePosition[i].Y = GetTerrainHeight(tempPosition[i].X, tempPosition[i].Z) -refElevation;
+                treePosition[i].Y = tile.GetElevation(YtileX, YtileZ) - refElevation - 0.8f;
                 // WVP transformation of the complete object takes place in the vertex shader.
 
                 // Randomize the tree size
-                scale = 0.8f * (float)random.Next((int)(scaleRange1 * 1000), (int)(scaleRange2 * 1000)) / 1000;
+                scale = (float)random.Next((int)(scaleRange1 * 1000), (int)(scaleRange2 * 1000)) / 1000;
                 treeSize[i].X = treeSize1 * scale;
                 treeSize[i].Y = treeSize2 * scale;
                 treeSize[i].Z = 1.0f;
@@ -196,57 +195,6 @@ namespace ORTS
                 trees[i] = new VertexPositionNormalTexture(treePosition[i / 6],
                     treeSize[i / 6], new Vector2(0, 0));
             }
-        }
-
-        public float GetTerrainHeight(float X, float Z)
-        {
-            int YtileX, YtileZ;
-            Tile tile = new Tile(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, tileFolderNameSlash);
-
-            X = X * 0.125f + 127.5f; // 256 / 2048 = 0.125
-            Z = Z * 0.125f + 127.5f;
-
-            int xLower = (int)X;
-            int xHigher = xLower + 1;
-            float xRelative = X - xLower;
-
-            int zLower = (int)Z;
-            int zHigher = zLower + 1;
-            float zRelative = Z - zLower;
-
-            YtileX = xLower;
-            YtileZ = zLower;
-            float heightLxLz = tile.GetElevation(YtileX, YtileZ);
-
-            YtileX = xLower;
-            YtileZ = zHigher;
-            float heightLxHz = tile.GetElevation(YtileX, YtileZ);
-
-            YtileX = xHigher;
-            YtileZ = zLower;
-            float heightHxLz = tile.GetElevation(YtileX, YtileZ);
-
-            YtileX = xHigher;
-            YtileZ = zHigher;
-            float heightHxHz = tile.GetElevation(YtileX, YtileZ);
-
-            bool isAboveLowerTriangle = (xRelative + zRelative < 1);
-
-            float finalHeight;
-            if (isAboveLowerTriangle)
-            {
-                finalHeight = heightLxLz;
-                finalHeight += zRelative * (heightLxHz - heightLxLz);
-                finalHeight += xRelative * (heightHxLz - heightLxLz);
-            }
-            else
-            {
-                finalHeight = heightHxHz;
-                finalHeight += (1.0f - zRelative) * (heightHxLz - heightHxHz);
-                finalHeight += (1.0f - xRelative) * (heightLxHz - heightHxHz);
-            }
-
-            return finalHeight;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)

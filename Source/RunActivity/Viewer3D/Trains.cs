@@ -25,7 +25,6 @@ namespace ORTS
     public class TrainDrawer
     {
         private Viewer3D Viewer;
-        //public LightGlowDrawer lightGlowDrawer;
 
         /// THREAD SAFETY WARNING -
         public Dictionary<TrainCar, TrainCarViewer> LoadedCars = new Dictionary<TrainCar, TrainCarViewer>();   // is not written to by LoaderProcess
@@ -51,6 +50,9 @@ namespace ORTS
             Console.Write("C");
             TrainCarViewer carViewer = car.GetViewer(Viewer);
             LoadedCars.Add(car, carViewer);
+            // Add the player locomotive's lights here
+            if (car.Lights != null)
+                carViewer.lightGlowDrawer = new LightGlowDrawer(Viewer, car, true);
             return carViewer;
         }
 
@@ -79,8 +81,6 @@ namespace ORTS
                     if (ApproximateDistance(Viewer.Camera.WorldLocation, car.WorldPosition.WorldLocation) < removeDistance
                         && car != Viewer.PlayerLocomotiveViewer.Car)  // don't duplicate the player car
                         ViewableCars.Add(car);
-                    //if (car.Lights != null)
-                        //lightGlowDrawer = new LightGlowDrawer(Viewer, car);
                 }
             // when LoadPrep returns, it launches Load in the background LoaderProcess thread
         }
@@ -101,6 +101,9 @@ namespace ORTS
                     Console.Write("C");
                     TrainCarViewer carViewer = car.GetViewer(Viewer);
                     UpdatedLoadedCars.Add(car, carViewer);
+                    // Add all the other car lights here
+                    if (car.Lights != null)
+                        carViewer.lightGlowDrawer = new LightGlowDrawer(Viewer, car, false);
                 }
             // next time LoadPrep runs, it will fetch the UpdatedLoadedCars list of viewers.
         }
@@ -115,8 +118,14 @@ namespace ORTS
                 foreach (TrainCarViewer car in LoadedCars.Values)
                 {
                     car.PrepareFrame(frame, elapsedTime);
-                    //if(car.Car.Lights != null)
-                        //lightGlowDrawer.PrepareFrame(frame, elapsedTime);
+                }
+                // Do the lights separately for proper alpha sorting
+                foreach (TrainCarViewer car in LoadedCars.Values)
+                {
+                    // At this stage of ORTS development, we will only render LightGlowDrawer objects 
+                    // for the player train ( i.e. Trains[0] ).
+                    if (car.Car.Lights != null && Viewer.Simulator.Trains[0].Cars.Contains(car.Car))
+                        car.lightGlowDrawer.PrepareFrame(frame, elapsedTime);
                 }
             }
             catch( System.Exception error )  // possible thread safety violation - try again next time

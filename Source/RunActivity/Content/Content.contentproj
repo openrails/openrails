@@ -157,8 +157,6 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="LightGlowShader.fx">
       <Name>LightGlowShader</Name>
       <Importer>EffectImporter</Importer>

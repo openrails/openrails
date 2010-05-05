@@ -11,11 +11,16 @@ float4x4 mWorldViewProj;
 float3 LightVector;
 float overcast;
 
+// Headlight illumination params
 float3 headlightPosition;
 float3 headlightDirection;
-float lightStrength = 1.5;
-float coneAngle = 0.4;
-float coneDecay = 8.0;
+float lightStrength = 2.0;
+float coneAngle = 0.5;
+float coneDecay = 16.0;
+float fadeinTime;								// Constant, from ENG file
+float fadeoutTime;								// Constant, from ENG file
+float fadeTime;									// Varies, reset on H key press
+int stateChange;								// 1=Off->On; 2=On->Off
 
 // Textures
 texture forest_Tex;
@@ -130,29 +135,32 @@ float4 PSforest( VS_OUT In ) : COLOR
 	// Get the color information for the current pixel
 	float4 surfColor = tex2D(forestMap, In.TexCoords);
 	float alpha = surfColor.a;
+	float4 litColor = surfColor;
 	
 	// Darken at night
 	surfColor *= Day2Night();
 	// Reduce saturaton when overcast
 	float3 color = Overcast(surfColor.xyz, 1-overcast);
 	surfColor = float4(color, 1);
-/*
-	float4 litColor = surfColor;
-	
+
     // Headlight effect
-    float3 normal = normalize(In.Normal);
-    float3 lightDir = normalize(In.LightDir);
-    float coneDot = dot(lightDir, normalize(headlightDirection));
-    float shading = 0;
-    if (coneDot > coneAngle)
-    {
+	float3 lightDir = normalize(In.LightDir);
+	float3 normal = (0, 0, 1);
+	float coneDot = dot(lightDir, normalize(headlightDirection));
+	float shading = 0;
+	if (coneDot > coneAngle)
+	{
 		float coneAtten = pow(coneDot, coneDecay);
-		shading = dot(normal, -lightDir);
-		shading *= lightStrength;
-		shading *= coneAtten;
-    }
-    surfColor += (litColor + shading) * 0.05;
-*/	
+		shading = dot(normal, -lightDir) * lightStrength * coneAtten;
+	}
+	if (stateChange == 0)
+		shading = 0;
+	if (stateChange == 1)
+		shading *= clamp(fadeTime/fadeinTime, 0, 1);
+	if (stateChange == 2)
+		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
+	surfColor += shading * litColor;
+	
 	surfColor.a = alpha;
 	return surfColor;
 }

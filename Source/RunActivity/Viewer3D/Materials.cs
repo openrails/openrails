@@ -32,7 +32,7 @@ namespace ORTS
         private static SkyMaterial SkyMaterial = null;
         private static PrecipMaterial PrecipMaterial = null;
         private static DynatrackMaterial DynatrackMaterial = null;
-        //private static LightGlowMaterial LightGlowMaterial = null;
+        private static LightGlowMaterial LightGlowMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
@@ -65,7 +65,7 @@ namespace ORTS
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
             DynatrackMaterial = new DynatrackMaterial(renderProcess);
-            //LightGlowMaterial = new LightGlowMaterial(renderProcess);
+            LightGlowMaterial = new LightGlowMaterial(renderProcess);
             YellowMaterial = new YellowMaterial(renderProcess);
             ShadowMaterial = new ShadowCastingMaterial(renderProcess);
             IsInitialized = true;
@@ -156,8 +156,8 @@ namespace ORTS
                     return PrecipMaterial;
                 case "DynatrackMaterial":
                     return DynatrackMaterial;
-                //case "LightGlowMaterial":
-                    //return LightGlowMaterial;
+                case "LightGlowMaterial":
+                    return LightGlowMaterial;
                 case "ForestMaterial":
                     if (!ForestMaterials.ContainsKey(textureName))
                     {
@@ -298,8 +298,10 @@ namespace ORTS
         Texture2D Texture;
         Texture2D nightTexture = null;
         Vector3 sunDirection;
-        //Vector3 headlightPosition;
-        //Vector3 headlightDirection;
+        Vector3 headlightPosition;
+        Vector3 headlightDirection;
+        int lastLightState = 0, currentLightState = 0;
+        double fadeTimer = 0;
         bool isNightEnabled = false;
         public RenderProcess RenderProcess;  // for diagnostics only
 
@@ -331,12 +333,33 @@ namespace ORTS
         {
             sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
             SceneryShader.SunDirection = sunDirection;
-            /*
-            headlightPosition = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeLoc;
+
+            // Headlight illumination
+            currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
+            if (currentLightState != lastLightState)
+            {
+                if (currentLightState == 2 && lastLightState == 1)
+                {
+                    SceneryShader.StateChange = 1;
+                    // Reset fade timer
+                    fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                }
+                else if (currentLightState == 1 && lastLightState == 2)
+                {
+                    SceneryShader.StateChange = 2;
+                    // Reset fade timer
+                    fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                }
+                lastLightState = currentLightState;
+            }
+            headlightPosition = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
             SceneryShader.HeadlightPosition = headlightPosition;
-            headlightDirection = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeDir;
+            headlightDirection = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
             SceneryShader.HeadlightDirection = headlightDirection;
-            */
+            SceneryShader.FadeInTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
+            SceneryShader.FadeOutTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
+            SceneryShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
+            // End headlight illumination
 
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             SceneryShader.ZBias = renderPrimitive.ZBias;
@@ -1017,8 +1040,10 @@ namespace ORTS
         public RenderProcess RenderProcess;  // for diagnostics only
         public ForestDrawer drawer;
         Vector3 sunDirection;
-        //Vector3 headlightPosition;
-        //Vector3 headlightDirection;
+        Vector3 headlightPosition;
+        Vector3 headlightDirection;
+        int lastLightState = 0, currentLightState = 0;
+        double fadeTimer = 0;
 
         public ForestMaterial(RenderProcess renderProcess, string treeTexture)
         {
@@ -1036,12 +1061,33 @@ namespace ORTS
 
                 sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
                 ForestShader.SunDirection = sunDirection;
-                /*
-                headlightPosition = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeLoc;
+
+                // Headlight illumination
+                currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
+                if (currentLightState != lastLightState)
+                {
+                    if (currentLightState == 2 && lastLightState == 1)
+                    {
+                        ForestShader.StateChange = 1;
+                        // Reset fade timer
+                        fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                    }
+                    else if (currentLightState == 1 && lastLightState == 2)
+                    {
+                        ForestShader.StateChange = 2;
+                        // Reset fade timer
+                        fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                    }
+                    lastLightState = currentLightState;
+                }
+                headlightPosition = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
                 ForestShader.HeadlightPosition = headlightPosition;
-                headlightDirection = RenderProcess.Viewer.TrainDrawer.lightGlowDrawer.xnaLightconeDir;
+                headlightDirection = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
                 ForestShader.HeadlightDirection = headlightDirection;
-                */
+                ForestShader.FadeInTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
+                ForestShader.FadeOutTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
+                ForestShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
+                // End headlight illumination
 
                 ForestShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
                 ForestShader.CurrentTechnique = ForestShader.Techniques["Forest"];
@@ -1076,19 +1122,19 @@ namespace ORTS
     #endregion
 
     #region LightGlow material
-    /*
     public class LightGlowMaterial : Material
     {
         LightGlowShader LightGlowShader;
         Texture2D lightGlowTexture;
         public RenderProcess RenderProcess;
+        int lastLightState = 0, currentLightState = 0;
+        double fadeTimer = 0;
 
         public LightGlowMaterial(RenderProcess renderProcess)
         {
             RenderProcess = renderProcess;
             LightGlowShader = Materials.LightGlowShader;
-            lightGlowTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice,
-                renderProcess.Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\liteglow.ace");
+            lightGlowTexture = renderProcess.Content.Load<Texture2D>("Lightglow");
         }
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
@@ -1101,6 +1147,24 @@ namespace ORTS
 
             LightGlowShader.CurrentTechnique = LightGlowShader.Techniques["LightGlow"];
             LightGlowShader.LightGlowTexture = lightGlowTexture;
+
+            // Lights fade-in / fade-out
+            currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
+            if (currentLightState != lastLightState)
+            {
+                if (currentLightState == 1 && lastLightState == 0)
+                    LightGlowShader.StateChange = 1;
+                else if (currentLightState == 2 && lastLightState == 1)
+                    LightGlowShader.StateChange = 2;
+                else if (currentLightState == 1 && lastLightState == 2)
+                    LightGlowShader.StateChange = 3;
+                else if (currentLightState == 0 && lastLightState == 1)
+                    LightGlowShader.StateChange = 4;
+                // Reset fade timer
+                fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
+                lastLightState = currentLightState;
+            }
+            LightGlowShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
 
             // Set render state for drawing lights
             graphicsDevice.RenderState.AlphaBlendEnable = true;
@@ -1125,7 +1189,6 @@ namespace ORTS
         {
         }
     }
-    */
     #endregion
     
     #region Water material

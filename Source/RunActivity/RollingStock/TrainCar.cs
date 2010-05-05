@@ -25,7 +25,8 @@ namespace ORTS
         public bool IsDriveable = false;
         //public bool HasCabView = false;
 
-        //public Lights Lights = null;
+        public Lights Lights = null;
+        public int Headlight = 0;
 
         // instance variables set by train train physics when it creates the traincar
         public Train Train = null;  // the car is connected to this train
@@ -376,6 +377,7 @@ namespace ORTS
     {
          // TODO add view location and limits
         public TrainCar Car;
+        public LightGlowDrawer lightGlowDrawer;
 
         protected Viewer3D Viewer;
 

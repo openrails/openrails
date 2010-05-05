@@ -57,7 +57,6 @@ namespace ORTS
         public bool Bell = false;
         public bool Sander = false;  
         public bool Wiper = false;
-        public int  Headlight = 0;
         float MaxPowerW;
         float MaxForceN;
         float MaxSpeedMpS = 1e3f;
@@ -335,13 +334,17 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.V)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
             if (UserInput.IsKeyDown(Keys.Space) != Locomotive.Horn) Locomotive.SignalEvent(Locomotive.Horn ? EventID.HornOff : EventID.HornOn);
             if (UserInput.IsAltKeyDown(Keys.B) != Locomotive.Bell) Locomotive.SignalEvent(Locomotive.Bell ? EventID.BellOff : EventID.BellOn);
-            if (UserInput.IsPressed(Keys.H))
+            if (UserInput.IsPressed(Keys.H) && UserInput.IsCtrlKeyDown())
+                switch ((Locomotive.Headlight))
+                {
+                    case 1: Locomotive.Headlight = 0; break;
+                    case 2: Locomotive.Headlight = 1; break;
+                }
+            else if (UserInput.IsPressed(Keys.H))
                 switch ((Locomotive.Headlight))
                 {
                     case 0: Locomotive.Headlight = 1; break;
                     case 1: Locomotive.Headlight = 2; break;
-                    default:
-                    case 2: Locomotive.Headlight = 0; break;
                 }
 
             base.HandleUserInput( elapsedTime );

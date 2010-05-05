@@ -7,6 +7,8 @@
 
 // Values transferred from the game
 float4x4 mWorldViewProj;
+float fadeTime;
+int stateChange;				// 1=Off->Dim; 2=Dim->Bright; 3=Bright->Dim; 4=Dim->Off
 
 // Textures
 texture lightGlow_Tex;
@@ -32,6 +34,7 @@ struct VS_IN
     float3 Normal : NORMAL;
     float3 Color : TEXCOORD0;
     float4 AlphScaleTex : POSITION1;
+    float4 Flags : COLOR0;
 };
 
 // Vertex Shader Output
@@ -49,7 +52,32 @@ VS_OUT VSlightGlow( VS_IN In )
 {
 	VS_OUT Out = ( VS_OUT ) 0;
 
-    float4 color = float4(In.Color, In.AlphScaleTex.x);
+	// Fade-in / Fade-out	
+    float alpha = In.AlphScaleTex.x;
+	float fadeinTime = In.Flags.z;
+	float fadeoutTime = In.Flags.w;
+	// Dim lights
+	if (In.Flags.x == 2)
+	{
+		if (stateChange == 0)
+			alpha = 0;
+		if (stateChange == 1 || stateChange == 3)
+			alpha *= clamp(fadeTime/fadeinTime, 0, 1);
+		if (stateChange == 4 || stateChange == 2)
+			alpha *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
+	}
+	// Bright lights
+	if (In.Flags.x == 3)
+	{
+		if (stateChange == 0 || stateChange == 1 || stateChange == 4)
+			alpha = 0;
+		if (stateChange == 2)
+			alpha *= clamp(fadeTime/fadeinTime, 0, 1);
+		if (stateChange == 3)
+			alpha *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
+	}
+		
+    float4 color = float4(In.Color, alpha);
     Out.Color = color;
     
     float2 texCoords = (In.AlphScaleTex.zw);
@@ -64,7 +92,7 @@ VS_OUT VSlightGlow( VS_IN In )
     float3 sideVector = normalize(cross(normal, upVector));    
     
     position += (texCoords.x-0.5f) * sideVector * scale;
-    position += (0.5f+texCoords.y) * upVector * scale;
+    position += (0.0f+texCoords.y) * upVector * scale;
    
     Out.Position = mul( mWorldViewProj, float4(position, 1));
 

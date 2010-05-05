@@ -22,11 +22,16 @@ float3 viewerPos;								// Viewer's world coordinates.
 float specularPower;							// Exponent -- lower number yields greater specularity
 bool isNight_Tex;								// Using night texture
 
+// Headlight illumination params
 float3 headlightPosition;
 float3 headlightDirection;
-float lightStrength = 1.5;
-float coneAngle = 0.4;
+float lightStrength = 2.0;
+float coneAngle = 0.5;
 float coneDecay = 8.0;
+float fadeinTime;								// Constant, from ENG file
+float fadeoutTime;								// Constant, from ENG file
+float fadeTime;									// Varies, reset on H key press
+int stateChange;								// 1=Off->On; 2=On->Off
 
 texture imageMap_Tex;
 sampler imageMap = sampler_state
@@ -85,8 +90,8 @@ VS_OUTPUT VS(   float4 pPositionM : POSITION,	// in model space
    Out.light = dot( Out.vNormalW, LightVector ) *0.5 + 0.5;	
    
    // Headlight
-   float3 final3DPos = mul(pPositionM, mModelToWorld);
-   Out.LightDir = final3DPos - headlightPosition;
+   float3 wvpPosition = mul(pPositionM, mModelToWorld);
+   Out.LightDir = wvpPosition - headlightPosition;
 
    return Out;
 }
@@ -100,7 +105,7 @@ float Day2Night( )
 	// The following constants define the beginning and the end conditions of the day-night transition
 	const float startNightTrans = 0.1; // The "NightTrans" values refer to the Y postion of LightVector
 	const float finishNightTrans = -0.1;
-	const float minDarknessCoeff = 0.2;
+	const float minDarknessCoeff = 0.15;
 	
 	// Internal variables
 	// The following two are used to interpoate between day and night lighting (y = mx + b)
@@ -113,7 +118,7 @@ float Day2Night( )
     if (LightVector.y < finishNightTrans)
       adjustment = minDarknessCoeff;
     else if (LightVector.y > startNightTrans)
-      adjustment = 1.0; // Scenery is fully lit during the day
+      adjustment = 0.9; // Scenery is fully lit during the day
     else
       adjustment = slope*LightVector.y + incpt;
 
@@ -152,6 +157,7 @@ float4 PSImage(
     float4 surfColor = tex2D( imageMap, uvImageT );
     float alpha = surfColor.a;
     surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
+	float4 litColor = surfColor;
     
 	if (specularPower > 0)
 	{
@@ -169,23 +175,25 @@ float4 PSImage(
 		float3 color = Overcast(surfColor.xyz, 1-overcast);
 		surfColor = float4(color, 1);
     }
- /*
-    float4 litColor = surfColor;
-    
+
     // Headlight effect
-    float3 normal = normalize(vNormalW);
-    float3 lightDir = normalize(LightDir);
-    float coneDot = dot(lightDir, normalize(headlightDirection));
-    float shading = 0;
-    if (coneDot > coneAngle)
-    {
-		float coneAtten = pow(coneDot, coneDecay);
-		shading = dot(normal, -lightDir);
-		shading *= lightStrength;
-		shading *= coneAtten;
-    }
-    surfColor += (litColor + shading) * 0.2;
-*/    
+	float3 normal = normalize(vNormalW);
+	float3 lightDir = normalize(LightDir);
+	float coneDot = dot(lightDir, normalize(headlightDirection));
+	float shading = 0;
+	if (coneDot > coneAngle)
+	{
+		float coneAtten = pow(coneDot, coneDecay * 1.75);
+		shading = dot(normal, -lightDir) * lightStrength * coneAtten;
+	}
+	if (stateChange == 0)
+		shading = 0;
+	if (stateChange == 1)
+		shading *= clamp(fadeTime/fadeinTime, 0, 1);
+	if (stateChange == 2)
+		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
+	surfColor += shading * litColor;
+
     surfColor.a = alpha;
     return surfColor;
 }
@@ -202,29 +210,32 @@ float4 PSVegetation(
 	float alpha = surfColor.a;
 	surfColor *= 0.8;  
 	surfColor += 0.03;
+	float4 litColor = surfColor;
 	
 	// Darken at night
 	surfColor *= Day2Night();
 	// Reduce saturaton when overcast
 	float3 color = Overcast(surfColor.xyz, 1-overcast);
 	surfColor = float4(color, 1);
-/*
-    float4 litColor = surfColor;
 
     // Headlight effect
-    float3 normal = normalize(vNormalW);
-    float3 lightDir = normalize(LightDir);
-    float coneDot = dot(lightDir, normalize(headlightDirection));
-    float shading = 0;
-    if (coneDot > coneAngle)
-    {
-		float coneAtten = pow(coneDot, coneDecay);
-		shading = dot(normal, -lightDir);
-		shading *= lightStrength;
-		shading *= coneAtten;
-    }
-    surfColor += (litColor + shading) * 0.1;
-*/	
+	float3 normal = normalize(vNormalW);
+	float3 lightDir = normalize(LightDir);
+	float coneDot = dot(lightDir, normalize(headlightDirection));
+	float shading = 0;
+	if (coneDot > coneAngle)
+	{
+		float coneAtten = pow(coneDot, coneDecay * 2.25);
+		shading = dot(normal, -lightDir) * lightStrength * coneAtten;
+	}
+	if (stateChange == 0)
+		shading = 0;
+	if (stateChange == 1)
+		shading *= clamp(fadeTime/fadeinTime, 0, 1);
+	if (stateChange == 2)
+		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
+	surfColor += shading * litColor;
+
 	surfColor.a = alpha;
 	return surfColor;
 }
@@ -247,28 +258,31 @@ float4 PSTerrain(
     bump -= 0.5;
 	surfColor +=  0.5 * bump;
     surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
+	float3 litColor = surfColor;
     
     // Darken at night
     surfColor *= Day2Night();
     // Reduce saturaton when overcast
     surfColor = Overcast(surfColor, 1-overcast);
 
-/*
-    float3 litColor = surfColor;
     // Headlight effect
-    float3 normal = normalize(vNormalW);
-    float3 lightDir = normalize(LightDir);
-    float coneDot = dot(lightDir, normalize(headlightDirection));
-    float shading = 0;
-    if (coneDot > coneAngle)
-    {
-		float coneAtten = pow(coneDot, coneDecay);
-		shading = dot(normal, -lightDir);
-		shading *= lightStrength;
-		shading *= coneAtten;
-    }
-    surfColor += (litColor + shading) * 0.3;
-*/
+	float3 normal = normalize(vNormalW);
+	float3 lightDir = normalize(LightDir);
+	float coneDot = dot(lightDir, normalize(headlightDirection));
+	float shading = 0;
+	if (coneDot > coneAngle)
+	{
+		float coneAtten = pow(coneDot, coneDecay * 3.0);
+		shading = dot(normal, -lightDir) * lightStrength * coneAtten;
+	}
+	if (stateChange == 0)
+		shading = 0;
+	if (stateChange == 1)
+		shading *= clamp(fadeTime/fadeinTime, 0, 1);
+	if (stateChange == 2)
+		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
+	surfColor += shading * litColor;
+
     return float4( surfColor,1);
 }
 

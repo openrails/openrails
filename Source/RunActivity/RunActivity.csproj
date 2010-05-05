@@ -202,6 +202,7 @@
     <Compile Include="Viewer3D\InfoDisplay.cs" />
     <Compile Include="Processes\LoaderProcess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Viewer3D\Lights.cs" />
     <Compile Include="Viewer3D\Precipitation.cs" />
     <Compile Include="Viewer3D\Scenery.cs" />
     <Compile Include="Viewer3D\Shaders.cs" />
@@ -288,7 +289,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>echo $Revision: 126 $ &gt;revision.txt
+    <PreBuildEvent>echo $Revision: 129 $ &gt;revision.txt
 date /T &gt;&gt;revision.txt
 time /T &gt;&gt;revision.txt</PreBuildEvent>
   </PropertyGroup>

@@ -100,6 +100,11 @@ namespace ORTS
             set { overcast.SetValue(value); }
         }
 
+        public bool IsHeadlightBright
+        {
+            set { isHeadlightBright.SetValue(value); }
+        }
+
         public Vector3 HeadlightPosition
         {
             set { headlightPosition.SetValue(value); }
@@ -108,6 +113,26 @@ namespace ORTS
         public Vector3 HeadlightDirection
         {
             set { headlightDirection.SetValue(value); }
+        }
+
+        public int StateChange
+        {
+            set { stateChange.SetValue(value); }
+        }
+
+        public float FadeInTime
+        {
+            set { fadeinTime.SetValue(value); }
+        }
+
+        public float FadeOutTime
+        {
+            set { fadeoutTime.SetValue(value); }
+        }
+
+        public float FadeTime
+        {
+            set { fadeTime.SetValue(value); }
         }
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
@@ -132,8 +157,13 @@ namespace ORTS
         EffectParameter zbias = null;  // TODO TEST
         EffectParameter sunDirection = null;
         EffectParameter overcast = null;
+        EffectParameter isHeadlightBright = null;
         EffectParameter headlightPosition = null;
         EffectParameter headlightDirection = null;
+        EffectParameter stateChange = null;
+        EffectParameter fadeinTime = null;
+        EffectParameter fadeoutTime = null;
+        EffectParameter fadeTime = null;
 
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
@@ -152,8 +182,13 @@ namespace ORTS
             zbias = Parameters["ZBias"];  // TODO TEST
             sunDirection = Parameters["LightVector"];
             overcast = Parameters["overcast"];
+            isHeadlightBright = Parameters["isHeadlightBright"];
             headlightPosition = Parameters["headlightPosition"];
             headlightDirection = Parameters["headlightDirection"];
+            stateChange = Parameters["stateChange"];
+            fadeinTime = Parameters["fadeinTime"];
+            fadeoutTime = Parameters["fadeoutTime"];
+            fadeTime = Parameters["fadeTime"];
         }
     }
     #endregion
@@ -391,8 +426,13 @@ namespace ORTS
         EffectParameter forest_Tex = null;
         EffectParameter sunDirection = null;
         EffectParameter overcast = null;
+        EffectParameter isHeadlightBright = null;
         EffectParameter headlightPosition = null;
         EffectParameter headlightDirection = null;
+        EffectParameter stateChange = null;
+        EffectParameter fadeinTime = null;
+        EffectParameter fadeoutTime = null;
+        EffectParameter fadeTime = null;
 
         public Texture2D ForestTexture
         {
@@ -409,6 +449,11 @@ namespace ORTS
             set { overcast.SetValue(value); }
         }
 
+        public bool IsHeadlightBright
+        {
+            set { isHeadlightBright.SetValue(value); }
+        }
+
         public Vector3 HeadlightPosition
         {
             set { headlightPosition.SetValue(value); }
@@ -417,6 +462,26 @@ namespace ORTS
         public Vector3 HeadlightDirection
         {
             set { headlightDirection.SetValue(value); }
+        }
+
+        public int StateChange
+        {
+            set { stateChange.SetValue(value); }
+        }
+
+        public float FadeInTime
+        {
+            set { fadeinTime.SetValue(value); }
+        }
+
+        public float FadeOutTime
+        {
+            set { fadeoutTime.SetValue(value); }
+        }
+
+        public float FadeTime
+        {
+            set { fadeTime.SetValue(value); }
         }
 
         public ForestShader(GraphicsDevice graphicsDevice, ContentManager content)
@@ -428,8 +493,13 @@ namespace ORTS
             forest_Tex = Parameters["forest_Tex"];
             sunDirection = Parameters["LightVector"];
             overcast = Parameters["overcast"];
+            isHeadlightBright = Parameters["isHeadlightBright"];
             headlightPosition = Parameters["headlightPosition"];
             headlightDirection = Parameters["headlightDirection"];
+            stateChange = Parameters["stateChange"];
+            fadeinTime = Parameters["fadeinTime"];
+            fadeoutTime = Parameters["fadeoutTime"];
+            fadeTime = Parameters["fadeTime"];
         }
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
@@ -446,10 +516,22 @@ namespace ORTS
     {
         EffectParameter mWorldViewProj = null;
         EffectParameter lightGlow_Tex = null;
+        EffectParameter stateChange = null;
+        EffectParameter fadeTime = null;
 
         public Texture2D LightGlowTexture
         {
             set { lightGlow_Tex.SetValue(value); }
+        }
+
+        public int StateChange
+        {
+            set { stateChange.SetValue(value); }
+        }
+
+        public float FadeTime
+        {
+            set { fadeTime.SetValue(value); }
         }
 
         public LightGlowShader(GraphicsDevice graphicsDevice, ContentManager content)
@@ -457,6 +539,8 @@ namespace ORTS
         {
             mWorldViewProj = Parameters["mWorldViewProj"];
             lightGlow_Tex = Parameters["lightGlow_Tex"];
+            stateChange = Parameters["stateChange"];
+            fadeTime = Parameters["fadeTime"];
         }
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
