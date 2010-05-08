@@ -60,7 +60,6 @@ namespace ORTS
 
         public Light light;
         LightState lightState;
-        int numLights = 0;
 
         public Lights(STFReader f, TrainCar railcar)
         {
@@ -84,10 +83,11 @@ namespace ORTS
                     // but MSTS just ignores the rest of the file, and we will also
                     else
                     {
-                        numLights = f.ReadInt();
-                        for (int i = 0; i < numLights; i++)
+                        int numLights = f.ReadInt();// ignore this because its not always correct
+                        for (; ; )
                         {
                             token = f.ReadToken();
+                            if (token == ")") break;
                             if (0 != String.Compare(token, "Light", true))// Weed out extraneous comments etc.
                             {
                                 f.SkipBlock();
@@ -96,6 +96,7 @@ namespace ORTS
                             if (0 == String.Compare(token, "Light", true))
                             {
                                 light = new Light();
+                                LightList.Add(light);
                                 f.VerifyStartOfBlock();
                                 token = f.ReadToken();
                                 while (token != ")")
@@ -202,7 +203,6 @@ namespace ORTS
                                 }// while (token != ")")
                                 token = f.ReadToken();
                             }// if (0 == String.Compare(token, "Light", true))
-                            LightList.Add(light);
                         }// for (int i = 0; i < numLights; i++)
                     }// else file is readable
                 }// while !EOF
