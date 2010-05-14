@@ -334,7 +334,7 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.V)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
             if (UserInput.IsKeyDown(Keys.Space) != Locomotive.Horn) Locomotive.SignalEvent(Locomotive.Horn ? EventID.HornOff : EventID.HornOn);
             if (UserInput.IsAltKeyDown(Keys.B) != Locomotive.Bell) Locomotive.SignalEvent(Locomotive.Bell ? EventID.BellOff : EventID.BellOn);
-            if (UserInput.IsPressed(Keys.H) && UserInput.IsCtrlKeyDown())
+            if (UserInput.IsPressed(Keys.H) && UserInput.IsShiftDown())
                 switch ((Locomotive.Headlight))
                 {
                     case 1: Locomotive.Headlight = 0; break;

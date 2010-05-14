@@ -64,6 +64,8 @@ namespace ORTS
         public Lights(STFReader f, TrainCar railcar)
         {
             ReadWagLights(f);
+            if (LightList.Count == 0)
+                throw new Exception("lights with no lights");
         }
 
         #region ReadWagLights
@@ -76,7 +78,7 @@ namespace ORTS
 
             try
             {
-                string token = f.ReadToken();
+                string token = f.ReadTokenNoComment();
                 while (token != "") // EOF
                 {
                     if (token == ")") break; // throw ( new STFError( f, "Unexpected )" ) );  we should really throw an exception
@@ -86,19 +88,20 @@ namespace ORTS
                         int numLights = f.ReadInt();// ignore this because its not always correct
                         for (; ; )
                         {
-                            token = f.ReadToken();
+                            token = f.ReadTokenNoComment();
                             if (token == ")") break;
+                            if (token == "") throw (new STFError(f, "Missing )"));
                             if (0 != String.Compare(token, "Light", true))// Weed out extraneous comments etc.
                             {
                                 f.SkipBlock();
-                                token = f.ReadToken();
+                                token = f.ReadTokenNoComment();
                             }
                             if (0 == String.Compare(token, "Light", true))
                             {
                                 light = new Light();
                                 LightList.Add(light);
                                 f.VerifyStartOfBlock();
-                                token = f.ReadToken();
+                                token = f.ReadTokenNoComment();
                                 while (token != ")")
                                 {
                                     if (token == "") throw (new STFError(f, "Missing )"));
@@ -115,7 +118,7 @@ namespace ORTS
                                     else if (0 == String.Compare(token, "Conditions", true))
                                     {
                                         f.VerifyStartOfBlock();
-                                        token = f.ReadToken();
+                                        token = f.ReadTokenNoComment();
                                         while (token != ")")
                                         {
                                             if (0 == String.Compare(token, "Headlight", true))
@@ -166,7 +169,7 @@ namespace ORTS
                                                 light.coupling = f.ReadInt();
                                                 f.VerifyEndOfBlock();
                                             }
-                                            token = f.ReadToken();
+                                            token = f.ReadTokenNoComment();
                                         }
                                     }// else if (0 == String.Compare(token, "Conditions", true))
                                     else if (0 == String.Compare(token, "Cycle", true))
@@ -199,17 +202,18 @@ namespace ORTS
                                             light.StateList.Add(lightState);
                                         }
                                     }// else if (0 == String.Compare(token, "States", true))
-                                    token = f.ReadToken();
+                                    token = f.ReadTokenNoComment();
                                 }// while (token != ")")
-                                token = f.ReadToken();
+                                token = f.ReadTokenNoComment();
                             }// if (0 == String.Compare(token, "Light", true))
                         }// for (int i = 0; i < numLights; i++)
                     }// else file is readable
                 }// while !EOF
 
             }
-            catch
+            catch (Exception e)
             {
+                Console.Error.WriteLine("{0}", e.Message);
                 return false;
             }
             return true;

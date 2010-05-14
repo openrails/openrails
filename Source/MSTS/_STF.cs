@@ -136,6 +136,24 @@ namespace MSTS
             return ReadString();
         }
 
+        public string ReadTokenNoComment()
+        {
+            for (; ; )
+            {
+                string token = ReadString();
+                if (token.StartsWith("_") || token.StartsWith("#"))
+                    SkipBlock();
+                else
+                {
+                    string lower = token.ToLower();
+                    if (lower == "skip" || lower == "comment")
+                        SkipBlock();
+                    else
+                        return token;
+                }
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
