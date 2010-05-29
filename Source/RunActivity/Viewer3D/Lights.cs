@@ -1,4 +1,4 @@
-﻿/// COPYRIGHT 2010 by the Open Rails project.
+/// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
@@ -446,7 +446,7 @@ namespace ORTS
                     && isFirstHeadlight && isFrontCar) // Find the first non-penalty light cone on the player locomotive
                 {
                     hasHeadlight = true;
-                    lightconeLoc = light.StateList.ElementAt<LightState>(i).position;
+                    lightconeLoc = light.StateList.ElementAt<LightState>(0).position;
                     lightconeFadein = light.fadein;
                     lightconeFadeout = light.fadeout;
                     isFirstHeadlight = false;
@@ -548,6 +548,8 @@ namespace ORTS
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (lights.Length == 0)
+                return;
             // Place the vertex declaration on the graphics device
             graphicsDevice.VertexDeclaration = lightVertexDeclaration;
             graphicsDevice.DrawUserPrimitives<LightGlowVertex>(PrimitiveType.TriangleList, lights, 0, lights.Length / 3);

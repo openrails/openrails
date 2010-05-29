@@ -36,7 +36,8 @@ namespace ORTS
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
         public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
         public float SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
-        public float CouplerSlackM = 0f;// extra distance between cars
+        public float CouplerSlackM = 0f;// extra distance between cars (calculated based on relative speeds)
+        public float CouplerSlack2M = 0f;// slack calculated using draft gear force
 
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
@@ -51,12 +52,12 @@ namespace ORTS
         public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
 
         // temporary values used to compute coupler forces
-        public float CouplerForceA;
-        public float CouplerForceB;
-        public float CouplerForceC;
-        public float CouplerForceG;
-        public float CouplerForceR;
-        public float CouplerForceU;
+        public float CouplerForceA; // left hand side value below diagonal
+        public float CouplerForceB; // left hand side value on diagonal
+        public float CouplerForceC; // left hand side value above diagonal
+        public float CouplerForceG; // temporary value used by solver
+        public float CouplerForceR; // right hand side value
+        public float CouplerForceU; // result
 
         // set when model is loaded
         public List<WheelSet> WheelSets = new List<WheelSet>();
@@ -83,6 +84,8 @@ namespace ORTS
         public virtual void SignalEvent(EventID eventID) { }
 
         public virtual string GetStatus() { return null; }
+        public virtual string GetTrainBrakeStatus() { return null; }
+        public virtual string GetEngineBrakeStatus() { return null; }
 
         public TrainCar(string wagFile)
         {
@@ -111,9 +114,24 @@ namespace ORTS
             CouplerSlackM = inf.ReadSingle();
         }
 
-        public virtual float GetMaximumCouplerSlackM()
+        public virtual float GetCouplerZeroLengthM()
         {
             return 0;
+        }
+
+        public virtual float GetCouplerStiffnessNpM()
+        {
+            return 2e7f;
+        }
+
+        public virtual float GetMaximumCouplerSlack1M()
+        {
+            return .012f;
+        }
+
+        public virtual float GetMaximumCouplerSlack2M()
+        {
+            return .12f;
         }
 
         public virtual float GetMaximumCouplerForceN()

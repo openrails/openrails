@@ -441,7 +441,8 @@ namespace ORTS
             traveller.ReverseDirection();
             foreach (TrainCar car in PlayerTrain.Cars)
             {
-                traveller.Move(car.Length);
+                float d = (car.CouplerSlackM + car.GetCouplerZeroLengthM()) / 2;
+                traveller.Move(car.Length + d);
 
                 Vector3 xnaCenter = Camera.XNALocation(traveller.WorldLocation);
                 float radius = 2f;  // 2 meter click range
@@ -452,6 +453,7 @@ namespace ORTS
                     Simulator.UncoupleBehind(car);
                     break;
                 }
+                traveller.Move(d);
             }
         }
         /// <summary>

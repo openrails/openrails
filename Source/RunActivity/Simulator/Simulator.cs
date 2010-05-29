@@ -144,6 +144,8 @@ namespace ORTS
                 if (car.IsDriveable)  // first loco is the one the player drives
                 {
                     PlayerLocomotive = car;
+                    playerTrain.LeadLocomotive= car;
+                    playerTrain.InitializeBrakes();
                     break;
                 }
             if (PlayerLocomotive == null)
@@ -217,7 +219,7 @@ namespace ORTS
                                 return;
                             }
                             // couple my rear to front of train
-                            drivenTrain.SetCoupleSpeed(train, 1);
+                            //drivenTrain.SetCoupleSpeed(train, 1);
                             foreach (TrainCar car in train.Cars)
                             {
                                 drivenTrain.Cars.Add(car);
@@ -231,6 +233,7 @@ namespace ORTS
                             {
                                 drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
                                 drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                                drivenTrain.LeadLocomotive = PlayerLocomotive;
                             }
                             drivenTrain.LastCar.SignalEvent(EventID.Couple);
                             //Console.WriteLine("couple rf {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
@@ -248,7 +251,7 @@ namespace ORTS
                                 return;
                             }
                             // couple my rear to rear of train
-                            drivenTrain.SetCoupleSpeed(train, -1);
+                            //drivenTrain.SetCoupleSpeed(train, -1);
                             for (int i = train.Cars.Count - 1; i >= 0; --i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -264,6 +267,7 @@ namespace ORTS
                             {
                                 drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
                                 drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                                drivenTrain.LeadLocomotive = PlayerLocomotive;
                             }
                             drivenTrain.LastCar.SignalEvent(EventID.Couple);
                             //Console.WriteLine("couple rr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
@@ -299,13 +303,15 @@ namespace ORTS
                                 return;
                             }
                             // couple my front to rear of train
-                            drivenTrain.SetCoupleSpeed(train, 1);
+                            //drivenTrain.SetCoupleSpeed(train, 1);
+                            TrainCar lead = drivenTrain.LeadLocomotive;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
                                 TrainCar car = train.Cars[i];
                                 drivenTrain.Cars.Insert(i, car);
                                 car.Train = drivenTrain;
                             }
+                            drivenTrain.LeadLocomotive = lead;
                             drivenTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
                             if (train.UncoupledFrom != null)
@@ -314,6 +320,7 @@ namespace ORTS
                             {
                                 drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
                                 drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                                drivenTrain.LeadLocomotive = PlayerLocomotive;
                             }
                             drivenTrain.FirstCar.SignalEvent(EventID.Couple);
                             //Console.WriteLine("couple fr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
@@ -331,7 +338,8 @@ namespace ORTS
                                 return;
                             }
                             // couple my front to front of train
-                            drivenTrain.SetCoupleSpeed(train, -1);
+                            //drivenTrain.SetCoupleSpeed(train, -1);
+                            TrainCar lead = drivenTrain.LeadLocomotive;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -339,6 +347,7 @@ namespace ORTS
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
                             }
+                            drivenTrain.LeadLocomotive = lead;
                             drivenTrain.CalculatePositionOfCars(0);
                             Trains.Remove(train);
                             if (train.UncoupledFrom != null)
@@ -347,6 +356,7 @@ namespace ORTS
                             {
                                 drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
                                 drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                                drivenTrain.LeadLocomotive = PlayerLocomotive;
                             }
                             drivenTrain.FirstCar.SignalEvent(EventID.Couple);
                             //Console.WriteLine("couple ff {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
@@ -619,6 +629,7 @@ namespace ORTS
                     train.RearTDBTraveller.ReverseDirection();
 
                     train.CalculatePositionOfCars(0);
+                    train.InitializeBrakes();
 
                     Trains.Add(train);
 
@@ -715,8 +726,8 @@ namespace ORTS
             while (train.Cars[i] != car) ++i;  // it can't happen that car isn't in car.Train
             if (i == train.Cars.Count - 1) return;  // can't uncouple behind last car
             ++i;
-            //Console.WriteLine("uncouple {0}", i);
 
+            TrainCar lead = train.LeadLocomotive;
             // move rest of cars to the new train
             Train train2 = new Train();
             for (int k = i; k < train.Cars.Count; ++k)
@@ -740,6 +751,8 @@ namespace ORTS
             train.RepositionRearTraveller();    // fix the rear traveller
 
             Trains.Add(train2);
+            train2.LeadLocomotive = lead;
+            train.LeadLocomotive = lead;
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
             train2.SpeedMpS = train.SpeedMpS;

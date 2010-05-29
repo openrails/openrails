@@ -60,6 +60,7 @@ namespace ORTS
         public float DavisAN = 0;       // davis equation constant
         public float DavisBNSpM = 0;    // davis equation constant for speed
         public float DavisCNSSpMM = 0;  // davis equation constant for speed squared
+        public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
@@ -122,15 +123,29 @@ namespace ORTS
                 case "wagon(sound": MainSoundFileName = f.ReadStringBlock(); break;
                 case "wagon(friction": ParseFriction(f); break;
                 case "wagon(brakesystemtype":
-                    brakeSystemType = f.ReadStringBlock();
-                    // TODO parse brakeSystemType to set up the correct type
-                    BrakeSystem = new AirSinglePipe(this);
+                    brakeSystemType = f.ReadStringBlock().ToLower();
+                    if (brakeSystemType.StartsWith("vacuum"))
+                        BrakeSystem = new VacuumSinglePipe(this);
+                    else
+                        BrakeSystem = new AirSinglePipe(this);
+                    break;
+                case "wagon(coupling": Couplers.Add(new MSTSCoupling()); break;
+                case "wagon(coupling(couplinghasrigidconnection": Couplers[Couplers.Count - 1].Rigid = f.ReadBoolBlock(); break;
+                case "wagon(coupling(spring(stiffness":
+                    f.VerifyStartOfBlock();
+                    Couplers[Couplers.Count - 1].SetStiffness(f.ReadFloat(), f.ReadFloat());
+                    f.VerifyEndOfBlock();
+                    break;
+                case "wagon(coupling(spring(r0":
+                    f.VerifyStartOfBlock();
+                    Couplers[Couplers.Count - 1].SetR0(f.ReadFloat(), f.ReadFloat());
+                    f.VerifyEndOfBlock();
                     break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, f);
                     break;
-                case "wagon(lights": try {Lights = new Lights(f, this);} catch {Lights = null;} break;
+                case "wagon(lights": try { Lights = new Lights(f, this); } catch { Lights = null; } break;
             }
         }
 
@@ -163,8 +178,14 @@ namespace ORTS
                 FrontCabViewpoints.Add(frontCabViewPoint);
             foreach (ViewPoint rearCabViewPoint in copy.RearCabViewpoints)
                 RearCabViewpoints.Add(rearCabViewPoint);
+            foreach (MSTSCoupling coupler in copy.Couplers)
+                Couplers.Add(coupler);
 
-            BrakeSystem = new AirSinglePipe(this);  // TODO - select different types
+            brakeSystemType = copy.brakeSystemType;
+            if (brakeSystemType != null && brakeSystemType.StartsWith("vacuum"))
+                BrakeSystem = new VacuumSinglePipe(this);
+            else
+                BrakeSystem = new AirSinglePipe(this);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
         }
         public void ParseFriction(STFReader f)
@@ -387,6 +408,11 @@ namespace ORTS
             {
                 token = token.Substring(0, i);
             }
+            i = token.IndexOf("/m/s");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
             try
             {
                 return scale * float.Parse(token);
@@ -427,6 +453,9 @@ namespace ORTS
             outf.Write(DavisAN);
             outf.Write(DavisBNSpM);
             outf.Write(DavisCNSSpMM);
+            outf.Write(Couplers.Count);
+            foreach (MSTSCoupling coupler in Couplers)
+                coupler.Save(outf);
             base.Save(outf);
         }
 
@@ -443,6 +472,12 @@ namespace ORTS
             DavisAN = inf.ReadSingle();
             DavisBNSpM = inf.ReadSingle();
             DavisCNSSpMM = inf.ReadSingle();
+            int n = inf.ReadInt32();
+            for (int i = 0; i < n; i++)
+            {
+                Couplers.Add(new MSTSCoupling());
+                Couplers[i].Restore(inf);
+            }
             base.Restore(inf);
         }
 
@@ -478,6 +513,103 @@ namespace ORTS
 
         // sound sources or and viewers can register them selves to get direct notification of an event
         public List<CarEventHandler> EventHandlers = new List<CarEventHandler>();
+
+        public MSTSCoupling Coupler
+        {
+            get
+            {
+                if (Couplers.Count == 0) return null;
+                if (Flipped && Couplers.Count > 1) return Couplers[1];
+                return Couplers[0];
+            }
+        }
+        public override float GetCouplerZeroLengthM()
+        {
+            return Coupler != null ? Coupler.R0 : base.GetCouplerZeroLengthM();
+        }
+
+        public override float GetCouplerStiffnessNpM()
+        {
+            return Coupler != null && Coupler.R0 == 0 ? 7 * (Coupler.Stiffness1NpM + Coupler.Stiffness2NpM) : base.GetCouplerStiffnessNpM();
+        }
+
+        public override float GetMaximumCouplerSlack1M()
+        {
+            if (Coupler == null)
+                return base.GetMaximumCouplerSlack1M();
+            return Coupler.Rigid ? 0.0001f : Coupler.R0Diff;
+        }
+
+        public override float GetMaximumCouplerSlack2M()
+        {
+            if (Coupler == null)
+                return base.GetMaximumCouplerSlack2M();
+            return Coupler.Rigid ? 0.0002f : base.GetMaximumCouplerSlack2M();
+        }
+    }
+
+    public class MSTSCoupling
+    {
+        public bool Rigid = false;
+        public float R0 = 0;
+        public float R0Diff = .012f;
+        public float Stiffness1NpM = 1e7f;
+        public float Stiffness2NpM = 2e7f;
+        public MSTSCoupling()
+        {
+        }
+        public MSTSCoupling(MSTSCoupling copy)
+        {
+            Rigid = copy.Rigid;
+            R0 = copy.R0;
+            R0Diff = copy.R0Diff;
+        }
+        public void SetR0(float a, float b)
+        {
+            R0 = a;
+            if (a == 0)
+                R0Diff = b / 2 * Stiffness2NpM / (Stiffness1NpM + Stiffness2NpM);
+            else
+                R0Diff = .012f;
+            if (R0Diff < .001)
+                R0Diff = .001f;
+            else if (R0Diff > .1)
+                R0Diff = .1f;
+            //Console.WriteLine("setR0 {0} {1} {2} {3} {4} {5}", a, b, R0, R0Diff, Stiffness1NpM, Stiffness2NpM);
+        }
+        public void SetStiffness(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+            Stiffness1NpM = a;
+            Stiffness2NpM = b;
+        }
+
+        /// <summary>
+        /// We are saving the game.  Save anything that we'll need to restore the 
+        /// status later.
+        /// </summary>
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(Rigid);
+            outf.Write(R0);
+            outf.Write(R0Diff);
+            outf.Write(Stiffness1NpM);
+            outf.Write(Stiffness2NpM);
+        }
+
+        /// <summary>
+        /// We are restoring a saved game.  The TrainCar class has already
+        /// been initialized.   Restore the game state.
+        /// </summary>
+        public void Restore(BinaryReader inf)
+        {
+            Rigid = inf.ReadBoolean();
+            R0 = inf.ReadSingle();
+            R0Diff = inf.ReadSingle();
+            Stiffness1NpM = inf.ReadSingle();
+            Stiffness2NpM = inf.ReadSingle();
+        }
     }
 
     ///////////////////////////////////////////////////

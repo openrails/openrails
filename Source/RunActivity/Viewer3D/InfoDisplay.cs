@@ -92,19 +92,27 @@ namespace ORTS
         private void AddBasicInfo()
         {
             string clockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
+            Train playerTrain = Viewer.PlayerLocomotive.Train;
 
             TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Revision);
             TextBuilder.Append("Time = "); TextBuilder.AppendLine(clockTimeString);
             TextBuilder.Append("Direction = ");
             if (Math.Abs(Viewer.PlayerLocomotive.Train.MUReverserPercent) != 100)
-                TextBuilder.Append(string.Format("{0}% ", Math.Abs(Viewer.PlayerLocomotive.Train.MUReverserPercent)));
+                TextBuilder.Append(string.Format("{0:F0}% ", Math.Abs(Viewer.PlayerLocomotive.Train.MUReverserPercent)));
             TextBuilder.AppendLine(Viewer.PlayerLocomotive.Direction.ToString());
-            TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.ThrottlePercent.ToString());
-            TextBuilder.Append("Brake = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.BrakeSystem.GetStatus());
+            TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
+            TextBuilder.Append("Train Brake = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.GetTrainBrakeStatus());
+            string engBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
+            if (engBrakeStatus != null)
+            {
+                TextBuilder.Append("Engine Brake = "); TextBuilder.AppendLine(engBrakeStatus);
+            }
             TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.PlayerLocomotive.SpeedMpS)).ToString("F1"));
             string status = Viewer.PlayerLocomotive.GetStatus();
             if (status != null)
                 TextBuilder.AppendLine(status);
+            TextBuilder.Append("Slack = "); TextBuilder.AppendLine(playerTrain.TotalCouplerSlackM.ToString("F2")+" "+playerTrain.NPull.ToString()+" "+playerTrain.NPush.ToString());
+            TextBuilder.Append("CForce = "); TextBuilder.AppendLine(playerTrain.MaximumCouplerForceN.ToString("F0"));
 
             // Added by rvg....
             // Compass
@@ -126,6 +134,11 @@ namespace ORTS
             sTemp += ", ";
             sTemp += MathHelper.ToDegrees((float)longitude).ToString("F6");
             TextBuilder.Append("Lat/Lon: "); TextBuilder.AppendLine(sTemp);
+
+            if (playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1)
+                TextBuilder.AppendLine("Streched");
+            if (playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1)
+                TextBuilder.AppendLine("Bunched");
 
             status = Viewer.Simulator.AI.GetStatus();
             if (status != null)

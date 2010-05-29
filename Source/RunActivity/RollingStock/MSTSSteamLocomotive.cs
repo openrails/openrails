@@ -35,6 +35,9 @@ namespace ORTS
     /// </summary>
     public class MSTSSteamLocomotive: MSTSLocomotive
     {
+        // user controls
+        MSTSEngineController CutoffController;
+
         // state variables
         float SteamUsageLBpS;       // steam used in cylinders
         float BoilerHeatBTU;        // total heat in water and steam in boiler
@@ -71,6 +74,23 @@ namespace ORTS
         {
             //Console.WriteLine(" {0} {1} {2} {3}", NumCylinders, CylinderDiameterM, CylinderStrokeM, DriverWheelRadiusM);
             //Console.WriteLine(" {0} {1} {2} {3} {4}", MaxBoilerPressurePSI,MaxBoilerOutputLBpH,ExhaustLimitLBpH,BasicSteamUsageLBpS,BoilerVolumeFT3);
+            if (ZeroError(NumCylinders, "NumCylinders", wagFile))
+                NumCylinders= 2;
+            if (ZeroError(CylinderDiameterM, "CylinderDiammeter", wagFile))
+                CylinderDiameterM= 1;
+            if (ZeroError(CylinderStrokeM, "CylinderStroke", wagFile))
+                CylinderStrokeM= 1;
+            if (ZeroError(DriverWheelRadiusM, "WheelRadius", wagFile))
+                DriverWheelRadiusM= 1;
+            if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure", wagFile))
+                MaxBoilerPressurePSI= 1;
+            if (ZeroError(MaxBoilerOutputLBpH, "MaxBoilerOutput", wagFile))
+                MaxBoilerOutputLBpH= 1;
+            if (ZeroError(ExhaustLimitLBpH, "ExhaustLimit", wagFile))
+                ExhaustLimitLBpH = MaxBoilerOutputLBpH;
+            if (ZeroError(BoilerVolumeFT3, "BoilerVolume", wagFile))
+                BoilerVolumeFT3 = 1;
+
             SteamUsageFactor = 2 * NumCylinders * 3.281f * CylinderDiameterM / 2 * 3.281f * CylinderDiameterM / 2 *
                 3.281f * CylinderStrokeM / (2 * DriverWheelRadiusM);
             SteamDensity = SteamTable.SteamDensityInterpolator();
@@ -166,6 +186,13 @@ namespace ORTS
                 EvaporationRate.ScaleY(MaxBoilerOutputLBpH / 775 / 3600);
             }
         }
+        public bool ZeroError(float v, string name, string wagFile)
+        {
+            if (v > 0)
+                return false;
+            Console.Error.WriteLine("Error in " + wagFile + "\r\n   Steam engine value "+name+" must be defined and greater than zero.");
+            return true;
+        }
 
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
@@ -182,6 +209,7 @@ namespace ORTS
                 case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
                 case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
                 case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadStringBlock(),f)/3600; break;
+                case "engine(enginecontrollers(cutoff": CutoffController = new MSTSEngineController(f); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }
@@ -222,6 +250,7 @@ namespace ORTS
             Heat2Pressure = new Interpolator(locoCopy.Heat2Pressure);
             BurnRate = new Interpolator(locoCopy.BurnRate);
             EvaporationRate = new Interpolator(locoCopy.EvaporationRate);
+            CutoffController = MSTSEngineController.Copy(locoCopy.CutoffController);
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
@@ -259,6 +288,7 @@ namespace ORTS
             Heat2Pressure.Save(outf);
             BurnRate.Save(outf);
             EvaporationRate.Save(outf);
+            MSTSEngineController.Save(CutoffController, outf);
             base.Save(outf);
         }
 
@@ -295,6 +325,7 @@ namespace ORTS
             Heat2Pressure = new Interpolator(inf);
             BurnRate = new Interpolator(inf);
             EvaporationRate = new Interpolator(inf);
+            CutoffController = MSTSEngineController.Restore(inf);
             base.Restore(inf);
         }
 
@@ -373,13 +404,20 @@ namespace ORTS
         }
         public void ChangeReverser(float percent)
         {
-            Train.MUReverserPercent += percent;
+            if (CutoffController == null)
+            {
+                Train.MUReverserPercent += percent;
+                if (Train.MUReverserPercent < -90) Train.MUReverserPercent = -90;
+                if (Train.MUReverserPercent > 90) Train.MUReverserPercent = 90;
+            }
+            else if (percent > 0)
+                Train.MUReverserPercent = 100 * CutoffController.Increase();
+            else
+                Train.MUReverserPercent = 100 * CutoffController.Decrease();
             if (Train.MUReverserPercent >= 0)
                 Train.MUDirection = Direction.Forward;
             else
                 Train.MUDirection = Direction.Reverse;
-            if (Train.MUReverserPercent < -90) Train.MUReverserPercent = -90;
-            if (Train.MUReverserPercent > 90) Train.MUReverserPercent = 90;
         }
 
         /// <summary>

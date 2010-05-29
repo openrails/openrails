@@ -57,6 +57,7 @@ namespace ORTS
         public bool Bell = false;
         public bool Sander = false;  
         public bool Wiper = false;
+        public bool BailOff = false;
         float MaxPowerW;
         float MaxForceN;
         float MaxSpeedMpS = 1e3f;
@@ -67,6 +68,9 @@ namespace ORTS
 
         public CVFFile CVFFile = null;
 
+        public MSTSEngineController ThrottleController;
+        public MSTSEngineController TrainBrakeController;
+        public MSTSEngineController EngineBrakeController;
 
         public MSTSLocomotive(string  wagPath)
             : base(wagPath)
@@ -80,6 +84,8 @@ namespace ORTS
         /// </summary>
         public override void InitializeFromWagFile(string wagFilePath)
         {
+            TrainBrakeController = new MSTSEngineController();
+            EngineBrakeController = new MSTSEngineController();
             base.InitializeFromWagFile(wagFilePath);
 
             if (CVFFileName != null)
@@ -104,6 +110,10 @@ namespace ORTS
             }
 
             IsDriveable = true;
+            if (TrainBrakeController.StepSize == 0)
+                TrainBrakeController = null;
+            if (EngineBrakeController.StepSize == 0)
+                EngineBrakeController = null;
         }
 
         /// <summary>
@@ -111,6 +121,10 @@ namespace ORTS
         /// </summary>
         public override void Parse(string lowercasetoken, STFReader f)
         {
+            if (lowercasetoken.StartsWith("engine(trainbrakescontroller"))
+                TrainBrakeController.ParseBrakeValue(lowercasetoken.Substring(28), f);
+            if (lowercasetoken.StartsWith("engine(enginebrakescontroller"))
+                TrainBrakeController.ParseBrakeValue(lowercasetoken.Substring(29), f);
             switch (lowercasetoken)
             {
                 case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
@@ -118,6 +132,10 @@ namespace ORTS
                 case "engine(maxpower": MaxPowerW = ParseW(f.ReadStringBlock(),f); break;
                 case "engine(maxforce": MaxForceN = ParseN(f.ReadStringBlock(),f); break;
                 case "engine(maxvelocity": MaxSpeedMpS = ParseMpS(f.ReadStringBlock(),f); break;
+                case "engine(enginecontrollers(throttle": ThrottleController = new MSTSEngineController(f); break;
+                case "engine(enginecontrollers(regulator": ThrottleController = new MSTSEngineController(f); break;
+                case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(f); break;
+                case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(f); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }
@@ -138,6 +156,9 @@ namespace ORTS
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
 
             IsDriveable = copy.IsDriveable;
+            ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
+            TrainBrakeController = MSTSEngineController.Copy(locoCopy.TrainBrakeController);
+            EngineBrakeController = MSTSEngineController.Copy(locoCopy.EngineBrakeController);
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
@@ -155,6 +176,9 @@ namespace ORTS
             outf.Write(MaxPowerW);
             outf.Write(MaxForceN);
             outf.Write(MaxSpeedMpS);
+            MSTSEngineController.Save(ThrottleController, outf);
+            MSTSEngineController.Save(TrainBrakeController, outf);
+            MSTSEngineController.Save(EngineBrakeController, outf);
             base.Save(outf);
         }
 
@@ -170,6 +194,9 @@ namespace ORTS
             MaxPowerW = inf.ReadSingle();
             MaxForceN = inf.ReadSingle();
             MaxSpeedMpS = inf.ReadSingle();
+            ThrottleController = MSTSEngineController.Restore(inf);
+            TrainBrakeController = MSTSEngineController.Restore(inf);
+            EngineBrakeController = MSTSEngineController.Restore(inf);
             base.Restore(inf);
         }
 
@@ -232,12 +259,70 @@ namespace ORTS
             }
         }
 
-        public void SetThrottle( float percent )
+        public void IncreaseThrottle()
         {
-            if (percent < 0) percent = 0;       // limit the range
-            if (percent > 100) percent = 100;
+            if (ThrottleController == null)
+            {
+                ThrottlePercent += 10;
+                if (ThrottlePercent > 100)
+                    ThrottlePercent = 100;
+            }
+            else
+            {
+                ThrottlePercent = ThrottleController.Increase() * 100;
+            }
+        }
 
-            ThrottlePercent = percent;   
+        public void DecreaseThrottle()
+        {
+            if (ThrottleController == null)
+            {
+                ThrottlePercent -= 10;
+                if (ThrottlePercent < 0)
+                    ThrottlePercent = 0;
+            }
+            else
+            {
+                ThrottlePercent = ThrottleController.Decrease() * 100;
+            }
+        }
+        public void ChangeTrainBrakes(float percent)
+        {
+            if (TrainBrakeController == null)
+            {
+                Train.AITrainBrakePercent += percent;
+                if (Train.AITrainBrakePercent < 0) Train.AITrainBrakePercent = 0;
+                if (Train.AITrainBrakePercent > 100) Train.AITrainBrakePercent = 100;
+            }
+            else if (percent > 0)
+                TrainBrakeController.Increase();
+            else
+                TrainBrakeController.Decrease();
+        }
+        public override string GetTrainBrakeStatus()
+        {
+            if (TrainBrakeController == null)
+                return BrakeSystem.GetStatus(); 
+            return string.Format("{0} {1:F0}",TrainBrakeController.GetStatus(),Train.BrakeLine1PressurePSI) + " " +BrakeSystem.GetStatus();
+        }
+        public void ChangeEngineBrakes(float percent)
+        {
+            if (EngineBrakeController == null)
+                return;
+            if (percent > 0)
+                EngineBrakeController.Increase();
+            else
+                EngineBrakeController.Decrease();
+        }
+        public override string GetEngineBrakeStatus()
+        {
+            if (EngineBrakeController == null)
+                return null;
+            return string.Format("{0}{1}", EngineBrakeController.GetStatus(), BailOff ? " BailOff" : "");
+        }
+        public void ToggleBailOff()
+        {
+            BailOff = !BailOff;
         }
         
         /// <summary>
@@ -326,10 +411,18 @@ namespace ORTS
         {
             if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
             if (UserInput.IsPressed(Keys.S)) Locomotive.SetDirection(Direction.Reverse);
-            if (UserInput.IsPressed(Keys.D)) Locomotive.SetThrottle( Locomotive.ThrottlePercent + 10);
-            if (UserInput.IsPressed(Keys.A)) Locomotive.SetThrottle(Locomotive.ThrottlePercent - 10);
-            if (UserInput.IsPressed(Keys.OemQuotes) || UserInput.IsPressed(Keys.E)) Locomotive.MSTSBrakeSystem.Increase();
-            if (UserInput.IsPressed(Keys.OemSemicolon) || UserInput.IsPressed(Keys.Q)) Locomotive.MSTSBrakeSystem.Decrease();
+            if (UserInput.IsPressed(Keys.D)) Locomotive.IncreaseThrottle();
+            if (UserInput.IsPressed(Keys.A)) Locomotive.DecreaseThrottle();
+            if (UserInput.IsPressed(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(10);
+            if (UserInput.IsPressed(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(-10);
+            if (UserInput.IsPressed(Keys.OemOpenBrackets)) Locomotive.ChangeEngineBrakes(-10);
+            if (UserInput.IsPressed(Keys.OemCloseBrackets)) Locomotive.ChangeEngineBrakes(10);
+            if (UserInput.IsPressed(Keys.OemQuestion) && !UserInput.IsShiftDown()) Locomotive.ToggleBailOff();
+            if (UserInput.IsPressed(Keys.OemQuestion) && UserInput.IsShiftDown()) Locomotive.Train.InitializeBrakes();
+            if (UserInput.IsPressed(Keys.OemSemicolon) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(0);
+            if (UserInput.IsPressed(Keys.OemQuotes) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(100);
+            if (UserInput.IsPressed(Keys.OemPipe) && !UserInput.IsShiftDown()) Locomotive.Train.ConnectBrakeHoses();
+            if (UserInput.IsPressed(Keys.OemPipe) && UserInput.IsShiftDown()) Locomotive.Train.DisconnectBrakes();
             if (UserInput.IsPressed(Keys.X)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn); 
             if (UserInput.IsPressed(Keys.V)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
             if (UserInput.IsKeyDown(Keys.Space) != Locomotive.Horn) Locomotive.SignalEvent(Locomotive.Horn ? EventID.HornOff : EventID.HornOn);

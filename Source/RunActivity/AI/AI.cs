@@ -215,6 +215,9 @@ namespace ORTS
             if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
                 train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
 
+            train.AITrainDirectionForward = true;
+            train.BrakeLine3PressurePSI = 0;
+
             //AITrains.Add(train);
             Simulator.Trains.Add(train);
             return train;

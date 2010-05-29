@@ -343,9 +343,9 @@ namespace MSTS
             }
 
             if (extraTokens != "" 
-                && !extraTokens.StartsWith( "#" ) 
-                && !extraTokens.StartsWith( "comment", StringComparison.OrdinalIgnoreCase ) 
-                && !extraTokens.StartsWith( "skip", StringComparison.OrdinalIgnoreCase ) 
+                && !extraTokens.StartsWith( " #" ) 
+                && !extraTokens.StartsWith( " comment", StringComparison.OrdinalIgnoreCase ) 
+                && !extraTokens.StartsWith( " skip", StringComparison.OrdinalIgnoreCase ) 
                 )
                 STFError.Report(this, "Ignoring extra data: " + extraTokens);
 

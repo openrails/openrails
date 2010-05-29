@@ -42,6 +42,11 @@ namespace ORTS
         public TDBTraveller FrontTDBTraveller; // positioned at the front of the train by CalculatePositionOfCars
         public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
         public Train UncoupledFrom = null;  // train not to coupled back onto
+        public float TotalCouplerSlackM = 0;
+        public float MaximumCouplerForceN = 0;
+        public int NPull = 0;
+        public int NPush = 0;
+        private int LeadLocomotiveIndex = -1;
 
         // These signals pass through to all cars and locomotives on the train
         public Direction MUDirection = Direction.Forward; //set by player locomotive to control MU'd locomotives
@@ -68,6 +73,25 @@ namespace ORTS
             get { return MUDirection == Direction.Forward; }
             set { MUDirection = value ? Direction.Forward : Direction.Reverse; MUReverserPercent = value ? 100 : -100; } 
         }
+        public TrainCar LeadLocomotive
+        {
+            get { return LeadLocomotiveIndex >= 0 ? Cars[LeadLocomotiveIndex] : null; }
+            set
+            {
+                LeadLocomotiveIndex = -1;
+                for (int i = 0; i < Cars.Count; i++)
+                    if (value == Cars[i] && value.IsDriveable)
+                    {
+                        LeadLocomotiveIndex = i;
+                        //MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                        //if (lead.EngineBrakeController != null)
+                        //    lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
+                    }
+                if (LeadLocomotiveIndex < 0)
+                    foreach (TrainCar car in Cars)
+                        car.BrakeSystem.BrakeLine1PressurePSI = -1;
+            }
+        }
 
         public Train()
         {
@@ -84,6 +108,7 @@ namespace ORTS
             BrakeLine2PressurePSI = inf.ReadSingle();
             BrakeLine3PressurePSI = inf.ReadSingle();
             aiBrakePercent = inf.ReadSingle();
+            LeadLocomotiveIndex = inf.ReadInt32();
             RearTDBTraveller = new TDBTraveller( inf );
             CalculatePositionOfCars(0);
 
@@ -100,6 +125,7 @@ namespace ORTS
             outf.Write(BrakeLine2PressurePSI);
             outf.Write(BrakeLine3PressurePSI);
             outf.Write(aiBrakePercent);
+            outf.Write(LeadLocomotiveIndex);
             RearTDBTraveller.Save(outf);
         }
 
@@ -130,70 +156,149 @@ namespace ORTS
 
         public void Update( float elapsedClockSeconds )
         {
-            PropagateBrakePressure();
+            PropagateBrakePressure(elapsedClockSeconds);
 
-            // some extremely simple 'physics'
-            float TrainMotiveForceN = 0;     // newtons relative to forward train direction
-            float TrainFrictionForceN  = 0;   // newtons always positive
-            float TrainMassKG = 0;            // kg 
             foreach (TrainCar car in Cars)
             {
+                car.MotiveForceN = 0;
                 car.Update(elapsedClockSeconds);
-                TrainMotiveForceN += car.MotiveForceN * (car.Flipped ? -1.0f : 1.0f);
-                TrainMotiveForceN += car.GravityForceN * (car.Flipped ? -1.0f : 1.0f);
-                TrainFrictionForceN += car.FrictionForceN;
-                TrainMassKG += car.MassKG;
+                //Console.WriteLine("update {0} {1} {2} {3} {4}", car.SpeedMpS, car.MotiveForceN, car.GravityForceN, car.FrictionForceN, car.BrakeSystem.GetStatus());
+                car.MotiveForceN += car.GravityForceN;
+                if (car.Flipped)
+                {
+                    car.MotiveForceN = -car.MotiveForceN;
+                    car.SpeedMpS = -car.SpeedMpS;
+                }
             }
 
-            // easier to calculate if TrainMotiveForceN is positive
-            bool reversed = TrainMotiveForceN < 0;
-            if( reversed ) TrainMotiveForceN *= -1;
+            AddCouplerImpuseForces();
+            ComputeCouplerForces();
+            UpdateCarSpeeds(elapsedClockSeconds);
+            UpdateCouplerSlack(elapsedClockSeconds);
 
-            if( TrainMotiveForceN > TrainFrictionForceN )
+            float distanceM = LastCar.SpeedMpS * elapsedClockSeconds;
+
+            SpeedMpS = 0;
+            foreach (TrainCar car1 in Cars)
             {
-                TrainMotiveForceN -= TrainFrictionForceN;
-                TrainFrictionForceN = 0;
+                SpeedMpS += car1.SpeedMpS;
+                if (car1.Flipped)
+                    car1.SpeedMpS = -car1.SpeedMpS;
             }
-            else
-            {
-                TrainFrictionForceN -= TrainMotiveForceN;
-                TrainMotiveForceN = 0;
-            }
-            if (reversed)
-                TrainMotiveForceN *= -1;
-
-            float accellerationMpS2 = TrainMotiveForceN / TrainMassKG;
-            float decellerationMpS2 = TrainFrictionForceN / TrainMassKG;
-
-            if (SpeedMpS >= 0)
-            {
-                SpeedMpS -= decellerationMpS2 * elapsedClockSeconds;
-                if (SpeedMpS < 0)
-                    SpeedMpS = 0;
-                SpeedMpS += accellerationMpS2 * elapsedClockSeconds;
-            }
-            else
-            {
-                SpeedMpS += decellerationMpS2 * elapsedClockSeconds;
-                if (SpeedMpS > 0)
-                    SpeedMpS = 0;
-                SpeedMpS += accellerationMpS2 * elapsedClockSeconds;
-            }
-
-            float distanceM = SpeedMpS * elapsedClockSeconds;
+            SpeedMpS /= Cars.Count;
 
             CalculatePositionOfCars( distanceM );
 
         }
 
-        private void PropagateBrakePressure()
+        public void InitializeBrakes()
         {
-            // TODO , finish this
+            if (SpeedMpS != 0)
+                return;
+            if (LeadLocomotiveIndex >= 0)
+            {
+                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                if (lead.TrainBrakeController != null)
+                {
+                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, 1000);
+                    BrakeLine2PressurePSI = lead.TrainBrakeController.MaxPressurePSI;
+                    if (BrakeLine1PressurePSI < BrakeLine2PressurePSI - lead.TrainBrakeController.FullServReductionPSI)
+                        BrakeLine1PressurePSI = BrakeLine2PressurePSI - lead.TrainBrakeController.FullServReductionPSI;
+                }
+                if (lead.EngineBrakeController != null)
+                    lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
+            }
+            else
+            {
+                BrakeLine1PressurePSI = BrakeLine2PressurePSI = BrakeLine3PressurePSI = 0;
+            }
+            //Console.WriteLine("init {0} {1} {2}", BrakeLine1PressurePSI, BrakeLine2PressurePSI, BrakeLine3PressurePSI);
             foreach (TrainCar car in Cars)
             {
                 car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
                 car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
-                car.BrakeSystem.BrakeLine3PressurePSI = BrakeLine3PressurePSI;
+                car.BrakeSystem.BrakeLine3PressurePSI = 0;
+                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0);
+                if (LeadLocomotiveIndex < 0)
+                    car.BrakeSystem.BrakeLine1PressurePSI = -1;
+            }
+        }
+        public void SetHandbrakePercent(float percent)
+        {
+            if (SpeedMpS != 0)
+                return;
+            foreach (TrainCar car in Cars)
+                car.BrakeSystem.SetHandbrakePercent(percent);
+        }
+        public void ConnectBrakeHoses()
+        {
+            if (SpeedMpS != 0)
+                return;
+            foreach (TrainCar car in Cars)
+                car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+        }
+        public void DisconnectBrakes()
+        {
+            if (SpeedMpS != 0)
+                return;
+            int first = -1;
+            int last = -1;
+            FindLeadLocomotives(ref first, ref last);
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                if (first <= i && i <= last)
+                    continue;
+                TrainCar car = Cars[i];
+                car.BrakeSystem.BrakeLine1PressurePSI = 0;
+                car.BrakeSystem.BrakeLine2PressurePSI = 0;
+                car.BrakeSystem.BrakeLine3PressurePSI = 0;
+                car.BrakeSystem.Initialize(false);
+                car.BrakeSystem.BrakeLine1PressurePSI = -1;
+            }
+        }
+        private void FindLeadLocomotives(ref int first, ref int last)
+        {
+            first = last = -1;
+            if (LeadLocomotiveIndex >= 0)
+            {
+                for (int i = LeadLocomotiveIndex; i < Cars.Count && Cars[i].IsDriveable; i++)
+                    last = i;
+                for (int i = LeadLocomotiveIndex; i >= 0 && Cars[i].IsDriveable; i--)
+                    first = i;
+            }
+        }
+
+        private void PropagateBrakePressure(float elapsedClockSeconds)
+        {
+            if (LeadLocomotiveIndex >= 0)
+            {
+                MSTSLocomotive lead = (MSTSLocomotive) Cars[LeadLocomotiveIndex];
+                if (lead.TrainBrakeController != null)
+                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds);
+                if (lead.EngineBrakeController != null)
+                    lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
+            }
+            
+            // TODO , finish this
+            foreach (TrainCar car in Cars)
+            {
+                if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
+                    continue;
+                car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+                car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
+                car.BrakeSystem.BrakeLine3PressurePSI = 0;
+            }
+            if (LeadLocomotiveIndex >= 0)
+            {
+                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                float p = BrakeLine3PressurePSI;
+                if (lead.BailOff)
+                    p += 1000;
+                int first = -1;
+                int last = -1;
+                FindLeadLocomotives(ref first, ref last);
+                for (int i = first; i <= last; i++)
+                    Cars[i].BrakeSystem.BrakeLine3PressurePSI = p;
             }
         }
 
@@ -211,12 +316,12 @@ namespace ORTS
             for (int i = 0; i < Cars.Count; ++i)
             {
                 TrainCar car = Cars[i];
-                car.SpeedMpS = SpeedMpS * ( car.Flipped ? -1: 1 );
 
                 if (car.WheelSetsLoaded)
                 {
                     car.ComputePosition(traveller, false);
-                    traveller.Move(car.CouplerSlackM);
+                    if (i < Cars.Count - 1)
+                        traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
                     continue;
                 }
 
@@ -251,7 +356,9 @@ namespace ORTS
                 car.WorldPosition.TileX = traveller.TileX;
                 car.WorldPosition.TileZ = traveller.TileZ;
 
-                traveller.Move((car.Length - bogieSpacing) / 2.0f + car.CouplerSlackM);  // Move to the rear of the car 
+                traveller.Move((car.Length - bogieSpacing) / 2.0f);
+                if (i < Cars.Count - 1)
+                    traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
             }
 
             traveller.ReverseDirection();
@@ -274,10 +381,9 @@ namespace ORTS
             for (int i = Cars.Count - 1; i >= 0; --i)
             {
                 TrainCar car = Cars[i];
-                car.SpeedMpS = SpeedMpS * (car.Flipped ? -1 : 1 );
-                car.DistanceM += Math.Abs(distance);
 
-                traveller.Move(car.CouplerSlackM);
+                if (i < Cars.Count - 1)
+                    traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
 
                 if (car.WheelSetsLoaded)
                 {
@@ -334,6 +440,10 @@ namespace ORTS
                 kg2+= car.MassKG;
             SpeedMpS= (kg1*SpeedMpS+kg2*otherTrain.SpeedMpS*otherMult)/(kg1+kg2);
             otherTrain.SpeedMpS = SpeedMpS;
+            foreach (TrainCar car1 in Cars)
+                car1.SpeedMpS = car1.Flipped ? -SpeedMpS : SpeedMpS;
+            foreach (TrainCar car2 in otherTrain.Cars)
+                car2.SpeedMpS = car2.Flipped ? -SpeedMpS : SpeedMpS;
         }
 
         // setups of the left hand side of the coupler force solving equations
@@ -342,23 +452,14 @@ namespace ORTS
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 TrainCar car= Cars[i];
-                if (0 < car.CouplerSlackM && car.CouplerSlackM < car.GetMaximumCouplerSlackM())
-                {
-                    car.CouplerForceB = 10;
-                    car.CouplerForceA = car.CouplerForceC = 0;
-                }
-                else
-                {
-                    car.CouplerForceB = 1 / car.MassKG;
-                    car.CouplerForceA = -car.CouplerForceB;
-                    car.CouplerForceC = -1 / Cars[i + 1].MassKG;
-                    car.CouplerForceB -= car.CouplerForceC;
-                }
+                car.CouplerForceB = 1 / car.MassKG;
+                car.CouplerForceA = -car.CouplerForceB;
+                car.CouplerForceC = -1 / Cars[i + 1].MassKG;
+                car.CouplerForceB -= car.CouplerForceC;
             }
         }
 
         // solves coupler force equations
-        // removes equations and recursively calls self if forces don't match faces in contact
         void SolveCouplerForceEquations()
         {
             float b = Cars[0].CouplerForceB;
@@ -369,30 +470,77 @@ namespace ORTS
                 b = Cars[i].CouplerForceB - Cars[i].CouplerForceA * Cars[i].CouplerForceG;
                 Cars[i].CouplerForceU = (Cars[i].CouplerForceR - Cars[i].CouplerForceA * Cars[i - 1].CouplerForceU) / b;
             }
-            for (int i = Cars.Count - 2; i >= 0; i--)
+            for (int i = Cars.Count - 3; i >= 0; i--)
                 Cars[i].CouplerForceU -= Cars[i + 1].CouplerForceG * Cars[i + 1].CouplerForceU;
+        }
+
+        // removes equations if forces don't match faces in contact
+        // returns true if a change is made
+        bool FixCouplerForceEquations()
+        {
             for (int i = 0; i < Cars.Count - 1; i++)
             {
-                if (Cars[i].CouplerForceU >= -1e-5 || Cars[i].CouplerSlackM >= Cars[i].GetMaximumCouplerSlackM())
+                TrainCar car = Cars[i];
+                if (car.CouplerSlackM < 0 || car.CouplerForceB >= 1)
                     continue;
-                if (Cars[i].CouplerForceB >= 1)
-                    break;
-                Cars[i].CouplerForceB = 1;
-                Cars[i].CouplerForceA = Cars[i].CouplerForceC = Cars[i].CouplerForceR = 0;
-                SolveCouplerForceEquations();
-                break;
+                float maxs1 = car.GetMaximumCouplerSlack1M();
+                if (car.CouplerSlackM < maxs1 || car.CouplerForceU > 0)
+                {
+                    SetCouplerForce(car, 0);
+                    return true;
+                }
             }
             for (int i = Cars.Count - 1; i >= 0; i--)
             {
-                if (Cars[i].CouplerForceU <= 1e-5 || Cars[i].CouplerSlackM <= 0)
+                TrainCar car = Cars[i];
+                if (car.CouplerSlackM > 0 || car.CouplerForceB >= 1)
                     continue;
-                if (Cars[i].CouplerForceB >= 1)
-                    break;
-                Cars[i].CouplerForceB = 1;
-                Cars[i].CouplerForceA = Cars[i].CouplerForceC = Cars[i].CouplerForceR = 0;
-                SolveCouplerForceEquations();
-                break;
+                float maxs1 = car.GetMaximumCouplerSlack1M();
+                if (car.CouplerSlackM > -maxs1 || car.CouplerForceU < 0)
+                {
+                    SetCouplerForce(car, 0);
+                    return true;
+                }
             }
+            return false;
+        }
+
+        // changes the coupler force equation for car to make the corresponding force equal to forceN
+        void SetCouplerForce(TrainCar car, float forceN)
+        {
+            car.CouplerForceA = car.CouplerForceC = 0;
+            car.CouplerForceB = 1;
+            car.CouplerForceR = forceN;
+            //Console.WriteLine("setf {0} {1}", forceN, car.CouplerForceU);
+        }
+
+        // removes equations if forces don't match faces in contact
+        // returns true if a change is made
+        bool FixCouplerImpulseForceEquations()
+        {
+            for (int i = 0; i < Cars.Count - 1; i++)
+            {
+                TrainCar car = Cars[i];
+                if (car.CouplerSlackM < 0 || car.CouplerForceB >= 1)
+                    continue;
+                if (car.CouplerSlackM < car.CouplerSlack2M || car.CouplerForceU > 0)
+                {
+                    SetCouplerForce(car, 0);
+                    return true;
+                }
+            }
+            for (int i = Cars.Count - 1; i >= 0; i--)
+            {
+                TrainCar car = Cars[i];
+                if (car.CouplerSlackM > 0 || car.CouplerForceB >= 1)
+                    continue;
+                if (car.CouplerSlackM > -car.CouplerSlack2M || car.CouplerForceU < 0)
+                {
+                    SetCouplerForce(car, 0);
+                    return true;
+                }
+            }
+            return false;
         }
 
         // computes and applies coupler impulse forces which force speeds to match when no relative movement is possible
@@ -402,35 +550,186 @@ namespace ORTS
                 return;
             SetupCouplerForceEquations();
             for (int i = 0; i < Cars.Count - 1; i++)
-                if (Cars[i].CouplerForceB > 1)
-                    Cars[i].CouplerForceR = 0;
+            {
+                TrainCar car = Cars[i];
+                float max = car.CouplerSlack2M;
+                if (-max < car.CouplerSlackM && car.CouplerSlackM < max)
+                {
+                    car.CouplerForceB = 1;
+                    car.CouplerForceA = car.CouplerForceC = car.CouplerForceR = 0;
+                }
                 else
-                    Cars[i].CouplerForceR = Cars[i + 1].SpeedMpS - Cars[i].SpeedMpS;
-            SolveCouplerForceEquations();
+                    car.CouplerForceR = Cars[i + 1].SpeedMpS - car.SpeedMpS;
+            }
+            do
+                SolveCouplerForceEquations();
+            while (FixCouplerImpulseForceEquations());
+            MaximumCouplerForceN = 0;
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 Cars[i].SpeedMpS += Cars[i].CouplerForceU / Cars[i].MassKG;
                 Cars[i + 1].SpeedMpS -= Cars[i].CouplerForceU / Cars[i + 1].MassKG;
+                //if (Cars[i].CouplerForceU != 0)
+                //    Console.WriteLine("impulse {0} {1} {2} {3} {4}", i, Cars[i].CouplerForceU, Cars[i].CouplerSlackM, Cars[i].SpeedMpS, Cars[i+1].SpeedMpS);
+                //if (MaximumCouplerForceN < Math.Abs(Cars[i].CouplerForceU))
+                //    MaximumCouplerForceN = Math.Abs(Cars[i].CouplerForceU);
             }
         }
 
         // computes coupler acceleration balancing forces
         void ComputeCouplerForces()
         {
+            for (int i = 0; i < Cars.Count; i++)
+                if (Cars[i].SpeedMpS > 0)
+                    Cars[i].MotiveForceN -= Cars[i].FrictionForceN;
+                else if (Cars[i].SpeedMpS < 0)
+                    Cars[i].MotiveForceN += Cars[i].FrictionForceN;
             if (Cars.Count < 2)
                 return;
             SetupCouplerForceEquations();
             for (int i = 0; i < Cars.Count - 1; i++)
-                if (Cars[i].CouplerForceB > 1)
-                    Cars[i].CouplerForceR = 0;
+            {
+                TrainCar car = Cars[i];
+                float max = car.GetMaximumCouplerSlack1M();
+                if (-max < car.CouplerSlackM && car.CouplerSlackM < max)
+                {
+                    car.CouplerForceB = 1;
+                    car.CouplerForceA = car.CouplerForceC = car.CouplerForceR = 0;
+                }
                 else
-                    Cars[i].CouplerForceR = Cars[i + 1].MotiveForceN / Cars[i + 1].MassKG - Cars[i].MotiveForceN / Cars[i].MassKG;
-            SolveCouplerForceEquations();
+                    car.CouplerForceR = Cars[i + 1].MotiveForceN / Cars[i + 1].MassKG - car.MotiveForceN / car.MassKG;
+            }
+            do
+                SolveCouplerForceEquations();
+            while (FixCouplerForceEquations());
             for (int i = 0; i < Cars.Count - 1; i++)
             {
-                Cars[i].MotiveForceN += Cars[i].CouplerForceU;
-                Cars[i + 1].MotiveForceN -= Cars[i].CouplerForceU;
+                TrainCar car = Cars[i];
+                //Console.WriteLine("cforce {0} {1} {2}", i, car.CouplerForceU, car.SpeedMpS);
+                car.MotiveForceN += car.CouplerForceU;
+                Cars[i + 1].MotiveForceN -= car.CouplerForceU;
+                if (MaximumCouplerForceN < Math.Abs(car.CouplerForceU))
+                    MaximumCouplerForceN = Math.Abs(car.CouplerForceU);
+                float maxs = car.GetMaximumCouplerSlack2M();
+                if (car.CouplerForceU > 0)
+                {
+                    float f = -(car.CouplerSlackM + car.GetMaximumCouplerSlack1M()) * car.GetCouplerStiffnessNpM();
+                    if (car.CouplerSlackM > -maxs && f > car.CouplerForceU)
+                        car.CouplerSlack2M = -car.CouplerSlackM;
+                    else
+                        car.CouplerSlack2M = maxs;
+                }
+                else if (car.CouplerForceU == 0)
+                    car.CouplerSlack2M = maxs;
+                else
+                {
+                    float f = (car.CouplerSlackM - car.GetMaximumCouplerSlack1M()) * car.GetCouplerStiffnessNpM();
+                    if (car.CouplerSlackM < maxs && f > car.CouplerForceU)
+                        car.CouplerSlack2M = car.CouplerSlackM;
+                    else
+                        car.CouplerSlack2M = maxs;
+                }
+                //Console.WriteLine("{0} {1} {2}", car.CouplerSlackM, car.CouplerSlack2M, car.CouplerForceU);
             }
+        }
+        void UpdateCarSpeeds(float elapsedTime)
+        {
+            int n = 0;
+            foreach (TrainCar car in Cars)
+            {
+                //Console.WriteLine("updatespeed {0} {1} {2} {3}", car.SpeedMpS, car.MotiveForceN, car.MassKG, car.FrictionForceN);
+                if (car.SpeedMpS > 0)
+                {
+                    car.SpeedMpS += car.MotiveForceN / car.MassKG * elapsedTime;
+                    if (car.SpeedMpS < 0)
+                        car.SpeedMpS = 0;
+                }
+                else if (car.SpeedMpS < 0)
+                {
+                    car.SpeedMpS += car.MotiveForceN / car.MassKG * elapsedTime;
+                    if (car.SpeedMpS > 0)
+                        car.SpeedMpS = 0;
+                }
+                else
+                    n++;
+            }
+            if (n == 0)
+                return;
+            // start cars moving forward
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                TrainCar car = Cars[i];
+                if (car.SpeedMpS != 0 || car.MotiveForceN <= car.FrictionForceN)
+                    continue;
+                int j = i;
+                float f = 0;
+                float m = 0;
+                for (; ; )
+                {
+                    f += car.MotiveForceN - car.FrictionForceN;
+                    m += car.MassKG;
+                    if (j == Cars.Count - 1 || car.CouplerSlackM < car.GetMaximumCouplerSlack2M())
+                        break;
+                    j++;
+                    car = Cars[j];
+                }
+                if (f > 0)
+                {
+                    for (int k = i; k <= j; k++)
+                        Cars[k].SpeedMpS = f / m * elapsedTime;
+                    n -= j - i + 1;
+                }
+            }
+            if (n == 0)
+                return;
+            // start cars moving backward
+            for (int i = Cars.Count - 1; i >= 0 ; i--)
+            {
+                TrainCar car = Cars[i];
+                if (car.SpeedMpS != 0 || car.MotiveForceN > -car.FrictionForceN)
+                    continue;
+                int j = i;
+                float f = 0;
+                float m = 0;
+                for (; ; )
+                {
+                    f += car.MotiveForceN + car.FrictionForceN;
+                    m += car.MassKG;
+                    if (j == 0 || car.CouplerSlackM > -car.GetMaximumCouplerSlack2M())
+                        break;
+                    j--;
+                    car = Cars[j];
+                }
+                if (f < 0)
+                {
+                    for (int k = j; k <= i; k++)
+                        Cars[k].SpeedMpS = f / m * elapsedTime;
+                }
+            }
+        }
+        void UpdateCouplerSlack(float elapsedTime)
+        {
+            TotalCouplerSlackM = 0;
+            NPull = NPush = 0;
+            for (int i = 0; i < Cars.Count - 1; i++)
+            {
+                TrainCar car = Cars[i];
+                car.CouplerSlackM += (car.SpeedMpS - Cars[i + 1].SpeedMpS) * elapsedTime;
+                float max = car.GetMaximumCouplerSlack2M();
+                if (car.CouplerSlackM < -max)
+                    car.CouplerSlackM = -max;
+                else if (car.CouplerSlackM > max)
+                    car.CouplerSlackM = max;
+                TotalCouplerSlackM += car.CouplerSlackM;
+                max = car.GetMaximumCouplerSlack1M();
+                if (car.CouplerSlackM >= max)
+                    NPull++;
+                else if (car.CouplerSlackM <= -max)
+                    NPush++;
+                //Console.WriteLine("slack {0} {1} {2}", i, car.CouplerSlackM, car.CouplerSlack2M);
+            }
+            foreach (TrainCar car in Cars)
+                car.DistanceM += Math.Abs(car.SpeedMpS * elapsedTime);
         }
     }// class Train
 

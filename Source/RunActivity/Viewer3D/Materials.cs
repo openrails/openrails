@@ -335,7 +335,8 @@ namespace ORTS
             SceneryShader.SunDirection = sunDirection;
 
             // Headlight illumination
-            if (RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
+            if (RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null &&
+                RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
             {
                 currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
                 if (currentLightState != lastLightState)

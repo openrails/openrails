@@ -571,7 +571,10 @@ namespace ORTS
                 }
                 else
                 {
-                    SpeedMpS += timeS * (targetMpSS - measMpSS);
+                    float ds= timeS * (targetMpSS - measMpSS);
+                    SpeedMpS += ds;
+                    foreach (TrainCar car in Cars)
+                        car.SpeedMpS += ds;
                     //Console.WriteLine("extra {0} {1} {2}", SpeedMpS, targetMpSS, measMpSS);
                 }
                 //Console.WriteLine("down {0} {1}", AITrainThrottlePercent, AITrainBrakePercent);
@@ -592,7 +595,10 @@ namespace ORTS
                 }
                 else
                 {
-                    SpeedMpS += timeS * (targetMpSS - measMpSS);
+                    float ds = timeS * (targetMpSS - measMpSS);
+                    SpeedMpS += ds;
+                    foreach (TrainCar car in Cars)
+                        car.SpeedMpS += ds;
                     //Console.WriteLine("extra {0} {1} {2}", SpeedMpS, targetMpSS, measMpSS);
                 }
                 //Console.WriteLine("up {0} {1}", AITrainThrottlePercent, AITrainBrakePercent);
