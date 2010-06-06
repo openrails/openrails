@@ -89,6 +89,8 @@ namespace ORTS
                     UserInput.Handled();
                 }
 
+                Viewer.HamdleMouseMovement();
+
                 // Prepare the frame for drawing
                 if (Frame != null)
                 {

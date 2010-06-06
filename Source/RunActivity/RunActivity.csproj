@@ -178,6 +178,8 @@
     <Compile Include="Common\WorldLatLon.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
+    <Compile Include="Popups\PopupWindows.cs" />
+    <Compile Include="Popups\TrackMonitor.cs" />
     <Compile Include="Processes\Profiler.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />
     <Compile Include="Physics\Train.cs" />

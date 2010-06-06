@@ -58,6 +58,8 @@ namespace ORTS
         // Components
         public Simulator Simulator;
         InfoDisplay InfoDisplay;
+        public TrackMonitor trackMonitor;
+        public PopupWindows popupWindows = new PopupWindows();
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer;
         public LightGlowDrawer LightGlowDrawer;
@@ -78,6 +80,7 @@ namespace ORTS
         private PassengerCamera PassengerCamera;
         private BrakemanCamera BrakemanCamera;
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
+        private MouseState originalMouseState;      // Current mouse coordinates.
 
         // This is the train we are controlling
         public TrainCar PlayerLocomotive { get { return Simulator.PlayerLocomotive; } set { Simulator.PlayerLocomotive = value; } }
@@ -204,6 +207,14 @@ namespace ORTS
             ambientSound.Volume = 0.2f;
 
             InfoDisplay = new InfoDisplay(this);
+            
+            // Initialse popup winodows
+            PopupWindow.device = GraphicsDevice;
+            trackMonitor = new TrackMonitor(900, 0);
+            trackMonitor.Distance = 1000;
+            trackMonitor.Aspect = 1;
+            popupWindows.Add(trackMonitor);
+
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
             SceneryDrawer = new SceneryDrawer(this);
@@ -275,6 +286,7 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.PageUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
             if (UserInput.IsPressed(Keys.PageDown)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
+            if (UserInput.IsPressed(Keys.F4)) trackMonitor.visible = !trackMonitor.visible;
 
             // Change view point - cab, passenger, outside, etc
             if (UserInput.IsPressed(Keys.D1)) CabCamera.Activate();
@@ -302,9 +314,43 @@ namespace ORTS
             }
             else
             {
-                RenderProcess.IsMouseVisible = false;
+                RenderProcess.IsMouseVisible = popupWindows.isVisble();
+                // RenderProcess.IsMouseVisible = false;
             }
 
+            MouseState currentMouseState = Mouse.GetState();
+
+
+            if (currentMouseState.LeftButton == ButtonState.Pressed)
+            {
+                popupWindows.SelectWindow(currentMouseState.X, currentMouseState.Y);
+            }
+            else
+            {
+                popupWindows.DelselectWindow();
+            }
+        }
+
+
+        //
+        //  This is to enable the user to move popup windows
+        //  Coded as a separate routine as HandleUserInput does not cater for mouse movemenmt.
+        //
+        public void HamdleMouseMovement()
+        {
+            MouseState currentMouseState = Mouse.GetState();
+
+            if (currentMouseState != originalMouseState)
+            {
+                if (currentMouseState.LeftButton == originalMouseState.LeftButton)
+                {
+                    if (currentMouseState.LeftButton == ButtonState.Pressed)
+                    {
+                        popupWindows.MoveWindow(currentMouseState.X - originalMouseState.X, currentMouseState.Y - originalMouseState.Y);
+                    }
+                }
+            }
+            originalMouseState = currentMouseState;
         }
 
         /// <summary>
