@@ -34,7 +34,6 @@ namespace ORTS
         public Matrix XNAView;   // set by the camera class
         public Matrix XNAProjection;
         public static Matrix XNASkyProjection;
-        public static Matrix XNAShadowViewProjection;
         public float RightFrustrumA, RightFrustrumB;  // the right frustrum is precomputed,
         //       represented by this equation 0 = Ax + Bz; where A^2 + B^2 = 1;
 
@@ -98,7 +97,6 @@ namespace ORTS
             float fovWidthRadians = MathHelper.ToRadians(45.0f);
             XNAProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, Viewer.ViewingDistance);
             XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, farPlaneDistance);    // TODO remove? 
-            XNAShadowViewProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, 300);    // TODO remove? 
             RightFrustrumA = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // precompute the right edge of the view frustrum
             RightFrustrumB = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);
         }

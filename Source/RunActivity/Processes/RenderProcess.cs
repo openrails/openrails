@@ -114,8 +114,6 @@ namespace ORTS
         /// </summary>
         protected override void Initialize()
         {
-            // TODO catch errors and disable shadows
-            InitShadows();
             Materials.Initialize(this);
             Viewer.Initialize(this);
             Viewer.LoadPrep();  // Does initial load before 3D window is displayed
@@ -327,56 +325,6 @@ namespace ORTS
                 else
                     SmoothedFrameRate = (SmoothedFrameRate * (rate - 1.0f) / rate) + (frameRate / rate);
             }
-        }
-
-
-        // The shadow map render target, depth buffer, and texture
-        public RenderTarget2D shadowRenderTarget;
-        public DepthStencilBuffer shadowDepthBuffer;
-        public Texture2D shadowMap;
-
-        int shadowMapWidthHeight = 4096;
-
-        public void InitShadows()
-        {
-            SurfaceFormat shadowMapFormat = SurfaceFormat.Unknown;
-
-            GraphicsDeviceCapabilities capabilities = GraphicsAdapter.DefaultAdapter.GetCapabilities(DeviceType.Hardware);
-            if (capabilities.MaxTextureHeight < shadowMapWidthHeight)
-                shadowMapWidthHeight = capabilities.MaxTextureHeight;
-            if (capabilities.MaxTextureWidth < shadowMapWidthHeight)
-                shadowMapWidthHeight = capabilities.MaxTextureWidth;
-
-            // Check to see if the device supports a 32 or 16 bit 
-            // floating point render target
-            if (GraphicsAdapter.DefaultAdapter.CheckDeviceFormat(DeviceType.Hardware,
-                               GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format,
-                               TextureUsage.Linear, QueryUsages.None,
-                               ResourceType.RenderTarget, SurfaceFormat.Single) == true)
-            {
-                shadowMapFormat = SurfaceFormat.Single;
-            }
-            else if (GraphicsAdapter.DefaultAdapter.CheckDeviceFormat(
-                               DeviceType.Hardware,
-                               GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Format,
-                               TextureUsage.Linear, QueryUsages.None,
-                               ResourceType.RenderTarget, SurfaceFormat.HalfSingle)
-                               == true)
-            {
-                shadowMapFormat = SurfaceFormat.HalfSingle;
-            }
-
-            // Create new floating point render target
-            shadowRenderTarget = new RenderTarget2D(GraphicsDevice,
-                                                    shadowMapWidthHeight,
-                                                    shadowMapWidthHeight,
-                                                    1, shadowMapFormat);
-
-            // Create depth buffer to use when rendering to the shadow map
-            shadowDepthBuffer = new DepthStencilBuffer(GraphicsDevice,
-                                                       shadowMapWidthHeight,
-                                                       shadowMapWidthHeight,
-                                                       DepthFormat.Depth24);
         }
 
 
