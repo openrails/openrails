@@ -395,7 +395,7 @@ namespace ORTS
     {
          // TODO add view location and limits
         public TrainCar Car;
-        public LightGlowDrawer lightGlowDrawer;
+        public LightGlowDrawer lightGlowDrawer = null;
 
         protected Viewer3D Viewer;
 

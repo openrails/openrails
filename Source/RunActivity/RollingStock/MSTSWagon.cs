@@ -145,7 +145,13 @@ namespace ORTS
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, f);
                     break;
-                case "wagon(lights": try { Lights = new Lights(f, this); } catch { Lights = null; } break;
+                case "wagon(lights": 
+                    if (Program.TrainLightsEnabled) 
+                    { 
+                        try { Lights = new Lights(f, this); } 
+                        catch { Lights = null; } 
+                    } 
+                    break;
             }
         }
 

@@ -41,6 +41,7 @@ namespace ORTS
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator; 
         private static Viewer3D Viewer;
+        public static bool TrainLightsEnabled = false;  // control parsing and displaying of train lights
 
 
         /// <summary>
@@ -57,6 +58,13 @@ namespace ORTS
             if (IsWarningsOn()) EnableLogging();
 
             if (!ValidateArgs(args)) return;
+
+            RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
+            if (RK != null)
+            {
+                TrainLightsEnabled = ("True" == (string)RK.GetValue("TrainLights", false));
+            }
+
 
             if (args[0] == "-runtest")
 

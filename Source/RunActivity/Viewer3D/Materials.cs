@@ -335,8 +335,9 @@ namespace ORTS
             SceneryShader.SunDirection = sunDirection;
 
             // Headlight illumination
-            if (RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null &&
-                RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
+            if (RenderProcess.Viewer.PlayerLocomotiveViewer != null
+                && RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
+                && RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
             {
                 currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
                 if (currentLightState != lastLightState)
@@ -1066,8 +1067,10 @@ namespace ORTS
                 sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
                 ForestShader.SunDirection = sunDirection;
 
-                // Headlight illumination
-                if (RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
+                if (RenderProcess.Viewer.PlayerLocomotiveViewer != null
+                    && RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
+                    && RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
+
                 {
                     currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
                     if (currentLightState != lastLightState)

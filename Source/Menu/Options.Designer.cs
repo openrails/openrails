@@ -33,8 +33,9 @@
             this.buttonOK = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.comboBoxWindowSize = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.checkBoxTrainLights = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             this.SuspendLayout();
@@ -92,13 +93,13 @@
             this.numericSoundDetailLevel.Size = new System.Drawing.Size(52, 20);
             this.numericSoundDetailLevel.TabIndex = 1;
             // 
-            // comboBox1
+            // comboBoxWindowSize
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(13, 67);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 3;
+            this.comboBoxWindowSize.FormattingEnabled = true;
+            this.comboBoxWindowSize.Location = new System.Drawing.Point(13, 67);
+            this.comboBoxWindowSize.Name = "comboBoxWindowSize";
+            this.comboBoxWindowSize.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxWindowSize.TabIndex = 3;
             // 
             // label3
             // 
@@ -110,6 +111,16 @@
             this.label3.Text = "Window size";
             this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
+            // checkBoxTrainLights
+            // 
+            this.checkBoxTrainLights.AutoSize = true;
+            this.checkBoxTrainLights.Location = new System.Drawing.Point(13, 95);
+            this.checkBoxTrainLights.Name = "checkBoxTrainLights";
+            this.checkBoxTrainLights.Size = new System.Drawing.Size(81, 17);
+            this.checkBoxTrainLights.TabIndex = 5;
+            this.checkBoxTrainLights.Text = "Train Lights";
+            this.checkBoxTrainLights.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -117,8 +128,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 264);
             this.ControlBox = false;
+            this.Controls.Add(this.checkBoxTrainLights);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.comboBoxWindowSize);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.numericSoundDetailLevel);
             this.Controls.Add(this.numericWorldObjectDensity);
@@ -141,7 +153,8 @@
         private System.Windows.Forms.Button buttonOK;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.NumericUpDown numericSoundDetailLevel;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox comboBoxWindowSize;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox checkBoxTrainLights;
     }
 }
