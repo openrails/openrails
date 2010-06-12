@@ -170,12 +170,10 @@
     <Compile Include="Common\Helpers.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
-    <Compile Include="..\MSTS\SIGCFGFile.cs">
-      <Link>MSTS\SIGCFGFile.cs</Link>
-    </Compile>
     <Compile Include="Common\SteamTable.cs" />
     <Compile Include="Common\SunMoonPos.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
+    <Compile Include="MSTS\SIGCFGFile.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\PopupWindows.cs" />

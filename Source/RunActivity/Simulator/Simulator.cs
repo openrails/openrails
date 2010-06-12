@@ -59,6 +59,7 @@ namespace ORTS
         public AI AI = null;
         public SeasonType Season;
         public WeatherType Weather;
+        public SIGCFGFile sigCFGfile;
 
         
         public TrainCar PlayerLocomotive = null;  // Set by the Viewer - TODO there could be more than one player so eliminate this.
@@ -76,6 +77,9 @@ namespace ORTS
 
             Console.Write(" TDB");
             TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
+
+            //Console.Write(" CIGCFG");
+            //sigCFGfile = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
 
             Console.Write(" DAT");
             if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
@@ -107,7 +111,7 @@ namespace ORTS
             Season = Activity.Tr_Activity.Tr_Activity_Header.Season;
             Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
 
-            Signals = new Signals(this);
+            //Signals = new Signals(this);
             AI = new AI(this);
         }
 
