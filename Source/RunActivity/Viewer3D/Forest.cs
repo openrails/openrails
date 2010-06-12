@@ -117,6 +117,14 @@ namespace ORTS
             treeTexture = forest.TreeTexture;
             scaleRange1 = forest.scaleRange.scaleRange1;
             scaleRange2 = forest.scaleRange.scaleRange2;
+            if (scaleRange1 > scaleRange2)
+            {
+                Console.Error.Write("\nForest " + forest.TreeTexture + " in tile " + drawer.worldPosition.TileX + "," + drawer.worldPosition.TileZ + " has scale range with minimum greater than maximum\n");
+                float scaleRangeSwap = scaleRange2;
+                scaleRange2 = scaleRange1;
+                scaleRange1 = scaleRangeSwap;
+            }
+
             areaDim1 = Math.Abs(forest.forestArea.areaDim1);
             areaDim2 = Math.Abs(forest.forestArea.areaDim2);
             population = (int)(0.75f * (float)forest.Population) + 1;
