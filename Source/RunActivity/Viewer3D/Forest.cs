@@ -84,7 +84,8 @@ namespace ORTS
     {
         // Vertex declaration
         public VertexDeclaration treeVertexDeclaration;
-        private VertexPositionNormalTexture[] trees;
+        public VertexBuffer Buffer;
+        public int PrimitiveCount;
 
         // Forest variables
         Random random;
@@ -128,16 +129,20 @@ namespace ORTS
             // to get consistent tree placement between sessions, derive the seed from the location
             int seed = (int)(1000.0*(drawer.worldPosition.Location.X + drawer.worldPosition.Location.Z + drawer.worldPosition.Location.Y));
             random = new Random(seed);
-            trees = new VertexPositionNormalTexture[population * 6];
+            VertexPositionNormalTexture[] trees = new VertexPositionNormalTexture[population * 6];
             treeVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
 
-            InitForestVertices();
+            InitForestVertices(trees);
+
+            PrimitiveCount = trees.Length / 3;
+            Buffer = new VertexBuffer(renderProcess.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * trees.Length, BufferUsage.WriteOnly);
+            Buffer.SetData(trees);
         }
 
         /// <summary>
         /// Forest tree array intialization. 
         /// </summary>
-        private void InitForestVertices()
+        private void InitForestVertices( VertexPositionNormalTexture[] trees)
         {
             // Create the tree position and size arrays.
             Vector3[] treePosition = new Vector3[population];
@@ -201,9 +206,11 @@ namespace ORTS
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            
             // Place the vertex declaration on the graphics device
             graphicsDevice.VertexDeclaration = treeVertexDeclaration;
-            graphicsDevice.DrawUserPrimitives<VertexPositionNormalTexture>(PrimitiveType.TriangleList, trees, 0, trees.Length / 3);
+            graphicsDevice.Vertices[0].SetSource(Buffer, 0, treeVertexDeclaration.GetVertexStrideSize(0));
+            graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, PrimitiveCount);
         }
     }
     #endregion
