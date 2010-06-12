@@ -28,12 +28,13 @@ namespace ORTS
     {
         private List<PopupWindow> WindwsList = new List<PopupWindow>();
         private PopupWindow selectedWindow = null;
+        static SpriteBatch spritebatch = null;
 
         public void Draw(GraphicsDevice device)
         {
             if (WindwsList.Count > 0)
             {
-                SpriteBatch spritebatch = new SpriteBatch(device);
+                if( spritebatch == null ) spritebatch = new SpriteBatch(device); // a new spritebatch is processor expensive and should only be done once
                 spritebatch.Begin(SpriteBlendMode.None, SpriteSortMode.Deferred, SaveStateMode.SaveState);
                 foreach (PopupWindow window in WindwsList)
                 {
