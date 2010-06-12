@@ -125,7 +125,9 @@ namespace ORTS
             objectRadius = Math.Max(areaDim1, areaDim2) / 2;
 
             // Instantiate classes
-            random = new Random();
+            // to get consistent tree placement between sessions, derive the seed from the location
+            int seed = (int)(1000.0*(drawer.worldPosition.Location.X + drawer.worldPosition.Location.Z + drawer.worldPosition.Location.Y));
+            random = new Random(seed);
             trees = new VertexPositionNormalTexture[population * 6];
             treeVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
 
