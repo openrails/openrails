@@ -748,7 +748,10 @@ namespace ORTS
                 {
                     foreach (DistanceLevel distanceLevel in lodControl.DistanceLevels)
                     {
-                        if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewingDistance + distanceLevel.ViewSphereRadius))
+                        float viewingRange = distanceLevel.ViewingDistance + distanceLevel.ViewSphereRadius;
+                        if (Viewer.ViewingDistance < viewingRange)
+                            viewingRange = Viewer.ViewingDistance;
+                        if (Viewer.Camera.InRange(mstsLocation, viewingRange))
                         {
                             foreach (SubObject subObject in distanceLevel.SubObjects)
                             {
