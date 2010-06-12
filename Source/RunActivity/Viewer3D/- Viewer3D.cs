@@ -49,6 +49,7 @@ namespace ORTS
         public int WorldObjectDensity;
         public float ViewingDistance;       // used for culling
         public Vector2 WindowSize;
+        public bool StartFullScreen;        // indicates user want the program to start in full screen mode
         public UpdaterProcess UpdaterProcess = null;
         public LoaderProcess LoaderProcess;
         public RenderProcess RenderProcess;
@@ -148,6 +149,7 @@ namespace ORTS
                 SoundDetailLevel = (int)RK.GetValue("SoundDetailLevel", SoundDetailLevel);
                 ViewingDistance = (int)RK.GetValue("ViewingDistance", (int)ViewingDistance);
                 strWindowSize = (string)RK.GetValue("WindowSize", (string)strWindowSize);
+                StartFullScreen = (1 == (int)RK.GetValue("Fullscreen", 0));
                 // Parse the screen dimensions text
                 char[] delimiterChars = { 'x' };
                 string[] words = strWindowSize.Split(delimiterChars);
@@ -232,6 +234,9 @@ namespace ORTS
             BrakemanCamera = new BrakemanCamera(this);
 
             FrontCamera.Activate();
+
+            if (StartFullScreen)
+                ToggleFullscreen();
         }
 
         /// <summary>
