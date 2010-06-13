@@ -55,6 +55,8 @@ namespace ORTS
         public float BrakeLine1PressurePSI = 90;     // set by player locomotive to control entire train brakes
         public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems
         public float BrakeLine3PressurePSI = 0;     // extra line just in case
+        public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
+        public int RetainerPercent = 100;
 
         // For AI control of the train
         public float AITrainBrakePercent
@@ -109,6 +111,8 @@ namespace ORTS
             BrakeLine3PressurePSI = inf.ReadSingle();
             aiBrakePercent = inf.ReadSingle();
             LeadLocomotiveIndex = inf.ReadInt32();
+            RetainerSetting = (RetainerSetting)inf.ReadInt32();
+            RetainerPercent = inf.ReadInt32();
             RearTDBTraveller = new TDBTraveller( inf );
             CalculatePositionOfCars(0);
 
@@ -126,6 +130,8 @@ namespace ORTS
             outf.Write(BrakeLine3PressurePSI);
             outf.Write(aiBrakePercent);
             outf.Write(LeadLocomotiveIndex);
+            outf.Write((int)RetainerSetting);
+            outf.Write(RetainerPercent);
             RearTDBTraveller.Save(outf);
         }
 
@@ -225,21 +231,21 @@ namespace ORTS
         }
         public void SetHandbrakePercent(float percent)
         {
-            if (SpeedMpS != 0)
+            if (SpeedMpS < -.1 || SpeedMpS > .1)
                 return;
             foreach (TrainCar car in Cars)
                 car.BrakeSystem.SetHandbrakePercent(percent);
         }
         public void ConnectBrakeHoses()
         {
-            if (SpeedMpS != 0)
+            if (SpeedMpS < -.1 || SpeedMpS > .1)
                 return;
             foreach (TrainCar car in Cars)
                 car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
         }
         public void DisconnectBrakes()
         {
-            if (SpeedMpS != 0)
+            if (SpeedMpS < -.1 || SpeedMpS > .1)
                 return;
             int first = -1;
             int last = -1;
@@ -254,6 +260,40 @@ namespace ORTS
                 car.BrakeSystem.BrakeLine3PressurePSI = 0;
                 car.BrakeSystem.Initialize(false);
                 car.BrakeSystem.BrakeLine1PressurePSI = -1;
+            }
+        }
+        public void SetRetainers(bool increase)
+        {
+            if (SpeedMpS < -.1 || SpeedMpS > .1)
+                return;
+            if (!increase)
+            {
+                RetainerSetting = RetainerSetting.Exhaust;
+                RetainerPercent = 100;
+            }
+            else if (RetainerPercent < 100)
+                RetainerPercent*= 2;
+            else if ( RetainerSetting != RetainerSetting.SlowDirect)
+            {
+                RetainerPercent = 25;
+                switch (RetainerSetting)
+                {
+                    case RetainerSetting.Exhaust: RetainerSetting = RetainerSetting.LowPressure; break;
+                    case RetainerSetting.LowPressure: RetainerSetting = RetainerSetting.HighPressure; break;
+                    case RetainerSetting.HighPressure: RetainerSetting = RetainerSetting.SlowDirect; break;
+                }
+            }
+            int first = -1;
+            int last = -1;
+            FindLeadLocomotives(ref first, ref last);
+            int step = 100 / RetainerPercent;
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                int j = Cars.Count - 1 - i;
+                if (j <= last)
+                    break;
+                Cars[j].BrakeSystem.SetRetainer(i % step == 0 ? RetainerSetting : RetainerSetting.Exhaust);
+                //Console.WriteLine("setretainer {0} {1}", j + 1, i % step);
             }
         }
         private void FindLeadLocomotives(ref int first, ref int last)
@@ -272,25 +312,56 @@ namespace ORTS
         {
             if (LeadLocomotiveIndex >= 0)
             {
-                MSTSLocomotive lead = (MSTSLocomotive) Cars[LeadLocomotiveIndex];
+                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                     lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds);
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
-            }
-            
-            // TODO , finish this
-            foreach (TrainCar car in Cars)
-            {
-                if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
-                    continue;
-                car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
-                car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
-                car.BrakeSystem.BrakeLine3PressurePSI = 0;
-            }
-            if (LeadLocomotiveIndex >= 0)
-            {
-                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                if (Program.BrakePipeChargingRatePSIpS < 1000)
+                {
+                    float pipeTimeFactor = .003f;
+                    float serviceTimeFactor = 1.009107f;
+                    if (lead.TrainBrakeController != null && lead.TrainBrakeController.GetIsEmergency())
+                        serviceTimeFactor = .1f;
+                    int nSteps = (int)(elapsedClockSeconds * 2 / pipeTimeFactor + 1);
+                    float dt = elapsedClockSeconds / nSteps;
+                    for (int i = 0; i < nSteps; i++)
+                    {
+                        if (lead.BrakeSystem.BrakeLine1PressurePSI < BrakeLine1PressurePSI)
+                        {
+                            lead.BrakeSystem.BrakeLine1PressurePSI += dt * Program.BrakePipeChargingRatePSIpS;
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI > BrakeLine1PressurePSI)
+                                lead.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+                        }
+                        else if (lead.BrakeSystem.BrakeLine1PressurePSI > BrakeLine1PressurePSI)
+                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
+                        TrainCar car0 = Cars[0];
+                        float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
+                        foreach (TrainCar car in Cars)
+                        {
+                            float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
+                            if (p0 >= 0 && p1 >= 0)
+                            {
+                                float dp = dt * (p1 - p0) / pipeTimeFactor;
+                                car.BrakeSystem.BrakeLine1PressurePSI -= dp;
+                                car0.BrakeSystem.BrakeLine1PressurePSI += dp;
+                            }
+                            p0 = p1;
+                            car0 = car;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (TrainCar car in Cars)
+                        if (car.BrakeSystem.BrakeLine1PressurePSI >= 0)
+                            car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+                }
+                foreach (TrainCar car in Cars)
+                {
+                    car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
+                    car.BrakeSystem.BrakeLine3PressurePSI = 0;
+                }
                 float p = BrakeLine3PressurePSI;
                 if (lead.BailOff)
                     p += 1000;
@@ -299,6 +370,17 @@ namespace ORTS
                 FindLeadLocomotives(ref first, ref last);
                 for (int i = first; i <= last; i++)
                     Cars[i].BrakeSystem.BrakeLine3PressurePSI = p;
+            }
+            else
+            {
+                foreach (TrainCar car in Cars)
+                {
+                    if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
+                        continue;
+                    car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+                    car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
+                    car.BrakeSystem.BrakeLine3PressurePSI = 0;
+                }
             }
         }
 

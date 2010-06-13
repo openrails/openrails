@@ -15,7 +15,7 @@ namespace ORTS
 
         public abstract void AISetPercent(float percent);
 
-        public abstract string GetStatus();
+        public abstract string GetStatus(int detailLevel);
 
         public abstract void Save(BinaryWriter outf);
 
@@ -23,7 +23,10 @@ namespace ORTS
 
         public abstract void Initialize(bool handbrakeOn);
         public abstract void SetHandbrakePercent(float percent);
+        public abstract void SetRetainer(RetainerSetting setting);
     }
+
+    public enum RetainerSetting { Exhaust, HighPressure, LowPressure, SlowDirect };
 
     public abstract class MSTSBrakeSystem: BrakeSystem
     {
@@ -40,8 +43,6 @@ namespace ORTS
 
     }
 
-    public enum RetainerSetting { Exhaust, HighPressure, LowPressure, SlowDirect };
-
     public class AirSinglePipe : MSTSBrakeSystem
     {
         float MaxHandbrakeForceN = 0;
@@ -52,19 +53,18 @@ namespace ORTS
         float CylPressurePSI = 64;
         float AutoCylPressurePSI = 64;
         float AuxResPressurePSI = 64;
+        float EmergResPressurePSI = 64;
         float MaxCylPressurePSI = 64;
         float AuxCylVolumeRatio = 2.5f;
         float AuxBrakeLineVolumeRatio = 3.1f;
-        //float ChargeTimeFactor = 72f;
-        //float ApplyTimeFactor = 85.9f;
-        //float InitApplyTimeFactor = 85.9f;
-        //float InitApplyThresholdPSI = 0;// 9;
         float RetainerPressureThresholdPSI = 0;
-        //float RetainerTimeFactor = 9.99f;
+        float ReleaseRate = 1.86f;
         float MaxReleaseRate = 1.86f;
         float MaxApplicationRate = .9f;
         float MaxAuxilaryChargingRate = 1.684f;
-        public enum ValveState { Lap, Apply, Release };
+        float EmergResChargingRate = 1.684f;
+        float EmergAuxVolumeRatio = 1.4f;
+        public enum ValveState { Lap, Apply, Release, Emergency };
         ValveState TripleValveState = ValveState.Lap;
 
         public AirSinglePipe( TrainCar car )
@@ -78,11 +78,30 @@ namespace ORTS
             MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
             MaxBrakeForceN = thiscopy.MaxBrakeForceN;
             MaxCylPressurePSI = thiscopy.MaxCylPressurePSI;
+            AuxCylVolumeRatio = thiscopy.AuxCylVolumeRatio;
+            AuxBrakeLineVolumeRatio = thiscopy.AuxBrakeLineVolumeRatio;
+            RetainerPressureThresholdPSI = thiscopy.RetainerPressureThresholdPSI;
+            ReleaseRate = thiscopy.ReleaseRate;
+            MaxReleaseRate = thiscopy.MaxReleaseRate;
+            MaxApplicationRate = thiscopy.MaxApplicationRate;
+            MaxAuxilaryChargingRate = thiscopy.MaxAuxilaryChargingRate;
+            EmergResChargingRate = thiscopy.EmergResChargingRate;
+            EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
         }
 
-        public override string GetStatus()
+        public override string GetStatus(int detailLevel)
         {
-            return string.Format("{0:F0} {1:F0}", CylPressurePSI, BrakeLine1PressurePSI) + (HandbrakePercent>0 ? string.Format(" handbrake {0:F0}%",HandbrakePercent):"");
+            if (BrakeLine1PressurePSI < 0)
+                return "";
+            string s = "";
+            if (detailLevel > 0)
+                s = s + string.Format("BC {0:F0} ",CylPressurePSI);
+            s = s + string.Format("BP {0:F0}", BrakeLine1PressurePSI);
+            if (detailLevel > 1)
+                s = s + string.Format(" AR {0:F0} ER {1:F0} State {2}",AuxResPressurePSI, EmergResPressurePSI, TripleValveState);
+            if (detailLevel > 0 && HandbrakePercent > 0)
+                s = s + string.Format(" handbrake {0:F0}%", HandbrakePercent);
+            return s;
         }
 
         public override void Parse(string lowercasetoken, STFReader f)
@@ -93,10 +112,11 @@ namespace ORTS
                 case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(); break;
                 case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = f.ReadFloatBlock(); break;
                 case "wagon(triplevalveratio": AuxCylVolumeRatio = f.ReadFloatBlock(); break;
-                case "wagon(maxreleaserate": MaxReleaseRate = f.ReadFloatBlock(); break;
+                case "wagon(maxreleaserate": MaxReleaseRate = ReleaseRate = f.ReadFloatBlock(); break;
                 case "wagon(maxapplicationrate": MaxApplicationRate = f.ReadFloatBlock(); break;
                 case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRate = f.ReadFloatBlock(); break;
-                case "wagon(emergencyreschargingrate": f.ReadFloatBlock(); break;
+                case "wagon(emergencyreschargingrate": EmergResChargingRate = f.ReadFloatBlock(); break;
+                case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = f.ReadFloatBlock(); break;
             }
         }
 
@@ -107,11 +127,11 @@ namespace ORTS
             outf.Write(BrakeLine3PressurePSI);
             outf.Write(BrakePercent);
             outf.Write(HandbrakePercent);
-            outf.Write(MaxHandbrakeForceN);
-            outf.Write(MaxBrakeForceN);
-            outf.Write(MaxCylPressurePSI);
+            outf.Write(ReleaseRate);
+            outf.Write(RetainerPressureThresholdPSI);
             outf.Write(AutoCylPressurePSI);
             outf.Write(AuxResPressurePSI);
+            outf.Write(EmergResPressurePSI);
             outf.Write((int)TripleValveState);
         }
 
@@ -122,17 +142,17 @@ namespace ORTS
             BrakeLine3PressurePSI = inf.ReadSingle();
             BrakePercent = inf.ReadSingle();
             HandbrakePercent = inf.ReadSingle();
-            MaxHandbrakeForceN = inf.ReadSingle();
-            MaxBrakeForceN = inf.ReadSingle();
-            MaxCylPressurePSI = inf.ReadSingle();
+            ReleaseRate = inf.ReadSingle();
+            RetainerPressureThresholdPSI = inf.ReadSingle();
             AutoCylPressurePSI = inf.ReadSingle();
             AuxResPressurePSI = inf.ReadSingle();
+            EmergResPressurePSI = inf.ReadSingle();
             TripleValveState = (ValveState)inf.ReadInt32();
         }
 
         public override void Initialize(bool handbrakeOn)
         {
-            AuxResPressurePSI = BrakeLine1PressurePSI;
+            AuxResPressurePSI = EmergResPressurePSI = BrakeLine1PressurePSI;
             AutoCylPressurePSI = (BrakeLine2PressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
             if (AutoCylPressurePSI > MaxCylPressurePSI)
                 AutoCylPressurePSI = MaxCylPressurePSI;
@@ -142,74 +162,71 @@ namespace ORTS
         }
         public override void Update(float elapsedClockSeconds)
         {
-            if (BrakeLine1PressurePSI < AuxResPressurePSI - 1)
-                TripleValveState = ValveState.Apply;
+            if (BrakeLine1PressurePSI < AuxResPressurePSI - 10)
+                TripleValveState = ValveState.Emergency;
             else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
                 TripleValveState = ValveState.Release;
+            else if (TripleValveState == ValveState.Emergency && BrakeLine1PressurePSI > AuxResPressurePSI)
+                TripleValveState = ValveState.Release;
+            else if (TripleValveState != ValveState.Emergency && BrakeLine1PressurePSI < AuxResPressurePSI - 1)
+                TripleValveState = ValveState.Apply;
             else if (TripleValveState == ValveState.Apply && BrakeLine1PressurePSI >= AuxResPressurePSI)
                 TripleValveState = ValveState.Lap;
-            else if (TripleValveState == ValveState.Release && BrakeLine1PressurePSI <= AuxResPressurePSI)
-                TripleValveState = ValveState.Lap;
-            if (TripleValveState == ValveState.Apply)
+            if (TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency)
             {
-#if false
-                float dp = elapsedClockSeconds * (AuxResPressurePSI - AutoCylPressurePSI) / ApplyTimeFactor;
-                if (BrakeLine1PressurePSI > AuxResPressurePSI - dp)
-                    dp = AuxResPressurePSI - BrakeLine1PressurePSI;
-                AuxResPressurePSI -= dp;
-                AutoCylPressurePSI += dp * AuxCylVolumeRatio;
-                if (AutoCylPressurePSI < InitApplyThresholdPSI)
-                {
-                    dp = elapsedClockSeconds * (BrakeLine1PressurePSI - AutoCylPressurePSI) / InitApplyTimeFactor;
-                    AutoCylPressurePSI += dp;
-                    if (AutoCylPressurePSI > InitApplyThresholdPSI)
-                    {
-                        dp -= AutoCylPressurePSI - InitApplyThresholdPSI;
-                        AutoCylPressurePSI = InitApplyThresholdPSI;
-                    }
-                    BrakeLine1PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
-                }
-#else
                 float dp = elapsedClockSeconds * MaxApplicationRate;
+                if (AuxResPressurePSI - dp < AutoCylPressurePSI + dp * AuxCylVolumeRatio)
+                    dp = (AuxResPressurePSI - AutoCylPressurePSI) / (1 + AuxCylVolumeRatio);
                 if (BrakeLine1PressurePSI > AuxResPressurePSI - dp)
+                {
                     dp = AuxResPressurePSI - BrakeLine1PressurePSI;
-                if (AuxResPressurePSI - dp < 0)
-                    dp = -AuxResPressurePSI;
+                    TripleValveState = ValveState.Lap;
+                }
                 AuxResPressurePSI -= dp;
                 AutoCylPressurePSI += dp * AuxCylVolumeRatio;
-#endif
+                if (TripleValveState == ValveState.Emergency)
+                {
+                    dp = elapsedClockSeconds * MaxApplicationRate;
+                    if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
+                        dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
+                    EmergResPressurePSI -= dp;
+                    AuxResPressurePSI += dp * EmergAuxVolumeRatio;
+                }
             }
             if (TripleValveState == ValveState.Release)
             {
-#if false
                 if (AutoCylPressurePSI > RetainerPressureThresholdPSI)
                 {
-                    //AutoCylPressurePSI -= elapsedClockSeconds * AutoCylPressurePSI / RetainerTimeFactor;
-                    float pa = AutoCylPressurePSI + 15;
-                    float d = .061474f * pa * 9.99f / RetainerTimeFactor;
-                    float machsq = 1.38348f * (1 - 15 / pa);
-                    if (machsq < 1)
-                        d *= (float)Math.Sqrt(machsq);
-                    AutoCylPressurePSI -= elapsedClockSeconds * d;
+                    AutoCylPressurePSI -= elapsedClockSeconds * ReleaseRate;
+                    if (AutoCylPressurePSI < RetainerPressureThresholdPSI)
+                        AutoCylPressurePSI = RetainerPressureThresholdPSI;
                 }
-                if (AutoCylPressurePSI < RetainerPressureThresholdPSI)
-                    AutoCylPressurePSI = RetainerPressureThresholdPSI;
-                float dp = elapsedClockSeconds * (BrakeLine1PressurePSI - AuxResPressurePSI) / ChargeTimeFactor;
-                if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
-                    dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
-                AuxResPressurePSI += dp;
-                BrakeLine1PressurePSI -= dp * AuxBrakeLineVolumeRatio;
-#else
-                if (AutoCylPressurePSI > RetainerPressureThresholdPSI)
-                    AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRate;
-                if (AutoCylPressurePSI < RetainerPressureThresholdPSI)
-                    AutoCylPressurePSI = RetainerPressureThresholdPSI;
-                float dp = elapsedClockSeconds * MaxAuxilaryChargingRate;
-                if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
-                    dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
-                AuxResPressurePSI += dp;
-                BrakeLine1PressurePSI -= dp * AuxBrakeLineVolumeRatio;
-#endif
+                if (AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
+                {
+                    float dp = elapsedClockSeconds * EmergResChargingRate;
+                    if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
+                        dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
+                    if (BrakeLine1PressurePSI < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
+                        dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / EmergAuxVolumeRatio;
+                    EmergResPressurePSI -= dp;
+                    AuxResPressurePSI += dp * EmergAuxVolumeRatio;
+                }
+                if (AuxResPressurePSI > EmergResPressurePSI)
+                {
+                    float dp = elapsedClockSeconds * EmergResChargingRate;
+                    if (EmergResPressurePSI - dp > AuxResPressurePSI + dp * EmergAuxVolumeRatio)
+                        dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
+                    EmergResPressurePSI += dp;
+                    AuxResPressurePSI -= dp * EmergAuxVolumeRatio;
+                }
+                if (AuxResPressurePSI < BrakeLine1PressurePSI)
+                {
+                    float dp = elapsedClockSeconds * MaxAuxilaryChargingRate;
+                    if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
+                        dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
+                    AuxResPressurePSI += dp;
+                    BrakeLine1PressurePSI -= dp * AuxBrakeLineVolumeRatio;
+                }
             }
             if (BrakeLine3PressurePSI >= 1000)
             {
@@ -228,25 +245,25 @@ namespace ORTS
             Car.FrictionForceN += f;
         }
 
-        public void SetRetainer(RetainerSetting setting)
+        public override void SetRetainer(RetainerSetting setting)
         {
             switch (setting)
             {
                 case RetainerSetting.Exhaust:
                     RetainerPressureThresholdPSI = 0;
-                    //RetainerTimeFactor = 9.99f;         // 50 to 5 in 23 seconds
+                    ReleaseRate = MaxReleaseRate;
                     break;
                 case RetainerSetting.HighPressure:
                     RetainerPressureThresholdPSI = 20;
-                    //RetainerTimeFactor = 98.2f;         // 50 to 20 in 90 seconds
+                    ReleaseRate = (50 - 20) / 90f;
                     break;
                 case RetainerSetting.LowPressure:
                     RetainerPressureThresholdPSI = 10;
-                    //RetainerTimeFactor = 37.3f;         // 50 to 10 in 60 seconds
+                    ReleaseRate = (50 - 10) / 60f;
                     break;
                 case RetainerSetting.SlowDirect:
                     RetainerPressureThresholdPSI = 0;
-                    //RetainerTimeFactor = 53.4f;         // 50 to 10 in 86 seconds
+                    ReleaseRate = (50 - 10) / 86f;
                     break;
             }
         }
@@ -298,7 +315,7 @@ namespace ORTS
             MaxPressurePSI = thiscopy.MaxPressurePSI;
         }
 
-        public override string GetStatus()
+        public override string GetStatus(int detailLevel)
         {
             return string.Format( "{0:F0}", BrakeLine1PressurePSI);
         }
@@ -346,6 +363,9 @@ namespace ORTS
         public override void SetHandbrakePercent(float percent)
         {
             // TODO
+        }
+        public override void SetRetainer(RetainerSetting setting)
+        {
         }
 
         public override void Increase()

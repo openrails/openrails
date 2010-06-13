@@ -299,11 +299,29 @@ namespace ORTS
             else
                 TrainBrakeController.Decrease();
         }
+        public void SetEmergency()
+        {
+            if (TrainBrakeController == null)
+                Train.AITrainBrakePercent = 100;
+            else
+                TrainBrakeController.SetEmergency();
+        }
         public override string GetTrainBrakeStatus()
         {
             if (TrainBrakeController == null)
-                return BrakeSystem.GetStatus(); 
-            return string.Format("{0} {1:F0}",TrainBrakeController.GetStatus(),Train.BrakeLine1PressurePSI) + " " +BrakeSystem.GetStatus();
+                return BrakeSystem.GetStatus(1);
+            string s = TrainBrakeController.GetStatus();
+            if (BrakeSystem.GetType() == typeof(AirSinglePipe))
+                s += string.Format(" EQ {0:F0} ", Train.BrakeLine1PressurePSI);
+            else
+                s += string.Format(" {0:F0} ", Train.BrakeLine1PressurePSI);
+            s += BrakeSystem.GetStatus(1);
+            TrainCar lastCar = Train.Cars[Train.Cars.Count - 1];
+            if (lastCar == this)
+                lastCar = Train.Cars[0];
+            if (lastCar != this)
+                s = s + " " + lastCar.BrakeSystem.GetStatus(0);
+            return s;
         }
         public void ChangeEngineBrakes(float percent)
         {
@@ -415,14 +433,17 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.A)) Locomotive.DecreaseThrottle();
             if (UserInput.IsPressed(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(10);
             if (UserInput.IsPressed(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(-10);
-            if (UserInput.IsPressed(Keys.OemOpenBrackets)) Locomotive.ChangeEngineBrakes(-10);
-            if (UserInput.IsPressed(Keys.OemCloseBrackets)) Locomotive.ChangeEngineBrakes(10);
+            if (UserInput.IsPressed(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(-10);
+            if (UserInput.IsPressed(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(10);
             if (UserInput.IsPressed(Keys.OemQuestion) && !UserInput.IsShiftDown()) Locomotive.ToggleBailOff();
             if (UserInput.IsPressed(Keys.OemQuestion) && UserInput.IsShiftDown()) Locomotive.Train.InitializeBrakes();
             if (UserInput.IsPressed(Keys.OemSemicolon) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(0);
             if (UserInput.IsPressed(Keys.OemQuotes) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(100);
+            if (UserInput.IsPressed(Keys.OemOpenBrackets) && UserInput.IsShiftDown()) Locomotive.Train.SetRetainers(false);
+            if (UserInput.IsPressed(Keys.OemCloseBrackets) && UserInput.IsShiftDown()) Locomotive.Train.SetRetainers(true);
             if (UserInput.IsPressed(Keys.OemPipe) && !UserInput.IsShiftDown()) Locomotive.Train.ConnectBrakeHoses();
             if (UserInput.IsPressed(Keys.OemPipe) && UserInput.IsShiftDown()) Locomotive.Train.DisconnectBrakes();
+            if (UserInput.IsPressed(Keys.Back)) Locomotive.SetEmergency();
             if (UserInput.IsPressed(Keys.X)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn); 
             if (UserInput.IsPressed(Keys.V)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
             if (UserInput.IsKeyDown(Keys.Space) != Locomotive.Horn) Locomotive.SignalEvent(Locomotive.Horn ? EventID.HornOff : EventID.HornOn);

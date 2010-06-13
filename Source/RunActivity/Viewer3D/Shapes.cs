@@ -110,7 +110,7 @@ namespace ORTS
                 KeyPosition position2 = controller[iKey2];
                 float frame2 = position2.Frame;
                 if (iKey2 == 0)
-                    frame2 = controller.Count;
+                    frame2 = SharedShape.Animations[0].FrameCount; //was controller.Count;
 
                 float amount = (key - frame1) / (frame2 - frame1);
 

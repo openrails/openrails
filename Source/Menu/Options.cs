@@ -44,6 +44,7 @@ namespace ORTS
             this.numericSoundDetailLevel.Value = 5;
             this.comboBoxWindowSize.Items.AddRange(strContents);
             this.comboBoxWindowSize.Text = "1024x768";
+            this.numericBrakePipeChargingRatePSIpS.Value = 21;
 
             
 
@@ -55,6 +56,7 @@ namespace ORTS
                 this.numericSoundDetailLevel.Value = (int)RK.GetValue("SoundDetailLevel", (int)numericSoundDetailLevel.Value);
                 this.comboBoxWindowSize.Text = (string)RK.GetValue("WindowSize", (string)comboBoxWindowSize.Text);
                 this.checkBoxTrainLights.Checked = ( "True" ==  (string)RK.GetValue("TrainLights", false));
+                this.numericBrakePipeChargingRatePSIpS.Value = (int)RK.GetValue("BrakePipeChargingRate", (int)numericBrakePipeChargingRatePSIpS.Value);
             }
         }
 
@@ -68,6 +70,7 @@ namespace ORTS
                 RK.SetValue("SoundDetailLevel", (int)this.numericSoundDetailLevel.Value);
                 RK.SetValue("WindowSize", (string)this.comboBoxWindowSize.Text);
                 RK.SetValue("TrainLights", this.checkBoxTrainLights.Checked);
+                RK.SetValue("BrakePipeChargingRate", (int)this.numericBrakePipeChargingRatePSIpS.Value);
             }
 
             Close();
@@ -80,6 +83,11 @@ namespace ORTS
         }
 
         private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
         {
 
         }

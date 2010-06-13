@@ -102,6 +102,10 @@ namespace ORTS
             TextBuilder.AppendLine(Viewer.PlayerLocomotive.Direction.ToString());
             TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
             TextBuilder.Append("Train Brake = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.GetTrainBrakeStatus());
+            if (playerTrain.RetainerSetting != RetainerSetting.Exhaust)
+            {
+                TextBuilder.Append("Retainers = "); TextBuilder.AppendLine(string.Format("{0}% {1}", playerTrain.RetainerPercent, playerTrain.RetainerSetting));
+            }
             string engBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
             if (engBrakeStatus != null)
             {
@@ -172,6 +176,20 @@ namespace ORTS
             TextBuilder.Append(Viewer.Camera.TileZ.ToString());
             TextBuilder.Append(" ");
             TextBuilder.AppendLine(Viewer.Camera.Location.ToString());
+
+            TextBuilder.AppendLine();
+            Train playerTrain = Viewer.PlayerLocomotive.Train;
+            int n = playerTrain.Cars.Count;
+            if (n > 10)
+                n = 11;
+            for (int i = 0; i < n; i++)
+            {
+                int j = i;
+                if (playerTrain.Cars.Count > 10)
+                    j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
+                TextBuilder.Append(string.Format("Car {0:D2} ", j + 1));
+                TextBuilder.AppendLine(playerTrain.Cars[j].BrakeSystem.GetStatus(2));
+            }
         }
 
         string FormattedTime(double clockTimeSeconds)

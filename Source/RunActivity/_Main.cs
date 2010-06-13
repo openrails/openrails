@@ -42,6 +42,7 @@ namespace ORTS
         public static Simulator Simulator; 
         private static Viewer3D Viewer;
         public static bool TrainLightsEnabled = false;  // control parsing and displaying of train lights
+        public static int BrakePipeChargingRatePSIpS = 21; // temporary option to control player train brakes
 
 
         /// <summary>
@@ -63,6 +64,7 @@ namespace ORTS
             if (RK != null)
             {
                 TrainLightsEnabled = ("True" == (string)RK.GetValue("TrainLights", false));
+                BrakePipeChargingRatePSIpS = (int)RK.GetValue("BrakePipeChargingRate", (int)21);
             }
 
 

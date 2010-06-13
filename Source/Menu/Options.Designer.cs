@@ -36,8 +36,11 @@
             this.comboBoxWindowSize = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.checkBoxTrainLights = new System.Windows.Forms.CheckBox();
+            this.numericBrakePipeChargingRatePSIpS = new System.Windows.Forms.NumericUpDown();
+            this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -121,6 +124,38 @@
             this.checkBoxTrainLights.Text = "Train Lights";
             this.checkBoxTrainLights.UseVisualStyleBackColor = true;
             // 
+            // numericBrakePipeChargingRatePSIpS
+            // 
+            this.numericBrakePipeChargingRatePSIpS.Location = new System.Drawing.Point(13, 135);
+            this.numericBrakePipeChargingRatePSIpS.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.numericBrakePipeChargingRatePSIpS.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericBrakePipeChargingRatePSIpS.Name = "numericBrakePipeChargingRatePSIpS";
+            this.numericBrakePipeChargingRatePSIpS.Size = new System.Drawing.Size(52, 20);
+            this.numericBrakePipeChargingRatePSIpS.TabIndex = 6;
+            this.numericBrakePipeChargingRatePSIpS.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(71, 137);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(166, 13);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "Brake Pipe Charging Rate (PSI/s)";
+            this.label4.Click += new System.EventHandler(this.label4_Click);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -128,6 +163,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 264);
             this.ControlBox = false;
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.numericBrakePipeChargingRatePSIpS);
             this.Controls.Add(this.checkBoxTrainLights);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBoxWindowSize);
@@ -141,6 +178,7 @@
             this.Text = "Options";
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -156,5 +194,7 @@
         private System.Windows.Forms.ComboBox comboBoxWindowSize;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.CheckBox checkBoxTrainLights;
+        private System.Windows.Forms.NumericUpDown numericBrakePipeChargingRatePSIpS;
+        private System.Windows.Forms.Label label4;
     }
 }

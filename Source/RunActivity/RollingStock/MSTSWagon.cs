@@ -51,6 +51,7 @@ namespace ORTS
         // wag file data
         public string MainShapeFileName = null;
         public string FreightShapeFileName = null;
+        public float FreightAnimHeight = 0;
         public string InteriorShapeFileName = null; // passenger view shape file name
         public string MainSoundFileName = null;
         public string InteriorSoundFileName = null;
@@ -109,7 +110,7 @@ namespace ORTS
             switch (lowercasetoken)
             {
                 case "wagon(wagonshape": MainShapeFileName = f.ReadStringBlock(); break;
-                case "wagon(freightanim": f.VerifyStartOfBlock(); FreightShapeFileName = f.ReadToken(); f.SkipRestOfBlock(); break; // TODO complete parse
+                case "wagon(freightanim": ParseFreightAnim(f); break;
                 case "wagon(size": f.VerifyStartOfBlock(); f.ReadFloat(); f.ReadFloat(); Length = f.ReadFloat(); f.VerifyEndOfBlock(); break;
                 case "wagon(mass": MassKG = f.ReadFloatBlock(); break;
                 case "wagon(inside(sound": InteriorSoundFileName = f.ReadStringBlock(); break;
@@ -166,6 +167,7 @@ namespace ORTS
         {
             MainShapeFileName = copy.MainShapeFileName;
             FreightShapeFileName = copy.FreightShapeFileName;
+            FreightAnimHeight = copy.FreightAnimHeight;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             MainSoundFileName = copy.MainSoundFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
@@ -193,6 +195,13 @@ namespace ORTS
             else
                 BrakeSystem = new AirSinglePipe(this);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
+        }
+        public void ParseFreightAnim(STFReader f)
+        {
+            f.VerifyStartOfBlock();
+            FreightShapeFileName = f.ReadToken();
+            FreightAnimHeight = f.ReadFloat() - f.ReadFloat();
+            f.VerifyEndOfBlock();
         }
         public void ParseFriction(STFReader f)
         {
@@ -756,7 +765,8 @@ namespace ORTS
             if (RunningGearPartIndexes.Count > 0 && MSTSWagon.DriverWheelRadiusM > 0.001 )  // skip this if there is no running gear and only engines can have running gear
             {
                 float driverWheelCircumferenceM = 3.14159f * 2.0f * MSTSWagon.DriverWheelRadiusM;
-                float framesAdvanced = (float)TrainCarShape.SharedShape.Animations[0].FrameCount * distanceTravelledM / driverWheelCircumferenceM;
+                //float framesAdvanced = (float)TrainCarShape.SharedShape.Animations[0].FrameCount * distanceTravelledM / driverWheelCircumferenceM;
+                float framesAdvanced = (float)TrainCarShape.SharedShape.Animations[0].FrameRate * 8/30f * distanceTravelledM / driverWheelCircumferenceM;
                 DriverRotationKey += framesAdvanced;  // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
                 while (DriverRotationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) DriverRotationKey -= TrainCarShape.SharedShape.Animations[0].FrameCount;
                 while (DriverRotationKey < -0.00001) DriverRotationKey += TrainCarShape.SharedShape.Animations[0].FrameCount;
@@ -791,7 +801,10 @@ namespace ORTS
             }
 
             if (FreightShape != null)
+            {
+                FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimHeight;
                 FreightShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
+            }
 
             // Control visibility of passenger cabin when inside it
             if (Viewer.Camera.AttachedToCar == this.MSTSWagon

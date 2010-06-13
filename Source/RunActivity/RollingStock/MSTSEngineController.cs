@@ -229,6 +229,19 @@ namespace ORTS
                 x = 1 - x;
             return x;
         }
+        public bool GetIsEmergency()
+        {
+            return Notches.Count !=0 && Notches[CurrentNotch].Type == MSTSNotchType.Emergency;
+        }
+        public void SetEmergency()
+        {
+            for (int i = 0; i < Notches.Count; i++)
+                if (Notches[i].Type == MSTSNotchType.Emergency)
+                {
+                    CurrentNotch = i;
+                    CurrentValue = Notches[i].Value;
+                }
+        }
         public void UpdatePressure(ref float pressurePSI, float elapsedClockSeconds)
         {
             if (Notches.Count == 0)
