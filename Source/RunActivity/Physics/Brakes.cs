@@ -214,8 +214,8 @@ namespace ORTS
                 if (AuxResPressurePSI > EmergResPressurePSI)
                 {
                     float dp = elapsedClockSeconds * EmergResChargingRate;
-                    if (EmergResPressurePSI - dp > AuxResPressurePSI + dp * EmergAuxVolumeRatio)
-                        dp = (EmergResPressurePSI - AuxResPressurePSI) / (1 + EmergAuxVolumeRatio);
+                    if (EmergResPressurePSI + dp > AuxResPressurePSI - dp * EmergAuxVolumeRatio)
+                        dp = (AuxResPressurePSI - EmergResPressurePSI) / (1 + EmergAuxVolumeRatio);
                     EmergResPressurePSI += dp;
                     AuxResPressurePSI -= dp * EmergAuxVolumeRatio;
                 }
