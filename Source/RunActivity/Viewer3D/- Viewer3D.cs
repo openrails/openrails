@@ -181,7 +181,7 @@ namespace ORTS
             // resolution that is greater than what the hardware can support, XNA adjusts the
             // resolution to the actual capability. "...the XNA framework automatically selects the 
             // highest resolution supported by the output device." rvg
-            GDM.SynchronizeWithVerticalRetrace = true;
+            GDM.SynchronizeWithVerticalRetrace = false; // true;
             renderProcess.IsFixedTimeStep = false; // you get smoother animation if we pace to video card retrace setting
             renderProcess.TargetElapsedTime = TimeSpan.FromMilliseconds(1); // setting this a value near refresh rate, ie 16ms, causes hiccups ( beating against refresh rate )
             GDM.PreferredBackBufferWidth = (int)WindowSize.X; // screen.Bounds.Width; // 1680;

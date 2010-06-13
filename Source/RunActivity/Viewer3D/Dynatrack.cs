@@ -63,15 +63,11 @@ namespace ORTS
             Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
 
             float objectRadius = dtrackMesh.objectRadius;
-            // This is hopeless! Always a problem no matter what. Wayne, please help!
-            /*
-            if (Viewer.Camera.InFOV(mstsLocation, objectRadius))
+
+            if (Viewer.Camera.CanSee(mstsLocation, objectRadius, 500))
             {
-                if (Viewer.Camera.InRange(mstsLocation, 2000))
-                    frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref xnaDTileTranslation);
+                frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref xnaDTileTranslation);
             }
-            */
-            frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref xnaDTileTranslation);
         }
     }
     #endregion
@@ -147,7 +143,7 @@ namespace ORTS
 
             // Build the mesh and then fill the vertex and triangle index buffers.
             BuildMesh();
-            objectRadius = (float)Math.Pow(Math.Pow(vertexList[numVertices - 1].Position.X, 2) + Math.Pow(vertexList[numVertices - 1].Position.X, 2), 0.5) * 1.05f;
+            objectRadius = (float)Math.Pow(Math.Pow(vertexList[numVertices - 1].Position.X, 2) + Math.Pow(vertexList[numVertices - 1].Position.Z, 2), 0.5) * 1.05f;
             VertexDeclaration = null;
             VertexBuffer = null;
             IndexBuffer = null;
