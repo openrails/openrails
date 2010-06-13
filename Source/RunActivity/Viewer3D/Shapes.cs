@@ -264,8 +264,8 @@ namespace ORTS
         public SharedShape.VertexBufferSet VertexBufferSet;
         public IndexBuffer IndexBuffer;
         public int IndexCount;          // the number of indexes in the index buffer for each primitive
-        public int MinVertex;           // the first vertex index used by this primitive
-        public int NumVertices;         // the number of vertex indexes used by this primitive
+        public int MinVertex = 0;           // the first vertex index used by this primitive
+        public int NumVertices = 0;         // the number of vertex indexes used by this primitive
         public int iHierarchy;          // index into the hiearchy array which provides pose for this primitive
         public int[] Hierarchy;         // the hierarchy from the sub_object
 
@@ -275,11 +275,14 @@ namespace ORTS
         /// </summary>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
-            graphicsDevice.VertexDeclaration = VertexBufferSet.Declaration;
-            graphicsDevice.Vertices[0].SetSource(VertexBufferSet.Buffer, 0, VertexBufferSet.Declaration.GetVertexStrideSize(0));
-            graphicsDevice.Indices = IndexBuffer;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertex, NumVertices, 0, IndexCount / 3);
+            if (NumVertices > 0)
+            {
+                // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
+                graphicsDevice.VertexDeclaration = VertexBufferSet.Declaration;
+                graphicsDevice.Vertices[0].SetSource(VertexBufferSet.Buffer, 0, VertexBufferSet.Declaration.GetVertexStrideSize(0));
+                graphicsDevice.Indices = IndexBuffer;
+                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertex, NumVertices, 0, IndexCount / 3);
+            }
         }
     }
 
@@ -609,18 +612,25 @@ namespace ORTS
                     shapePrimitive.VertexBufferSet = vertexBufferSet;
 
                     // Record range of vertices involved in this primitive as MinVertex and NumVertices
-                    // TODO Extract this from the sub_object header
-                    bool vertex_set_found = false;
+                    bool found = false;
                     foreach (vertex_set vertex_set in sub_object.vertex_sets)
                         if (vertex_set.VtxStateIdx == prim_state.ivtx_state)
                         {
                             shapePrimitive.MinVertex = vertex_set.StartVtxIdx;
                             shapePrimitive.NumVertices = vertex_set.VtxCount;
-                            vertex_set_found = true;
+                            found = true;
                             break;
                         }
-                    if (!vertex_set_found)
-                        throw new System.Exception("vertex_set not found for vtx_state = " + prim_state.ivtx_state.ToString());
+
+                    // Note, we have a sample file Af2_4_25033-Lead.S where vertex_sets and vtx_states mismatch
+                    if (!found)
+                    {
+                        Console.Error.WriteLine("Shape file warning - missing vertex_set in \n" + sharedShape.FilePath);
+                        // so default to loading all vertices, instead of proper vertex_set
+                        shapePrimitive.MinVertex = 0;
+                        shapePrimitive.NumVertices = sub_object.vertices.Count;  // so we default to them all
+                    }
+
                     ShapePrimitives[iPrim] = shapePrimitive;
                     ++iPrim;
                     ++dLevelPrimCount;
