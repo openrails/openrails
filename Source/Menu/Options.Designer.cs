@@ -38,6 +38,7 @@
             this.checkBoxTrainLights = new System.Windows.Forms.CheckBox();
             this.numericBrakePipeChargingRatePSIpS = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
+            this.checkBoxPrecipitation = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -126,7 +127,7 @@
             // 
             // numericBrakePipeChargingRatePSIpS
             // 
-            this.numericBrakePipeChargingRatePSIpS.Location = new System.Drawing.Point(13, 135);
+            this.numericBrakePipeChargingRatePSIpS.Location = new System.Drawing.Point(13, 162);
             this.numericBrakePipeChargingRatePSIpS.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -149,12 +150,22 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(71, 137);
+            this.label4.Location = new System.Drawing.Point(71, 164);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(166, 13);
             this.label4.TabIndex = 7;
             this.label4.Text = "Brake Pipe Charging Rate (PSI/s)";
             this.label4.Click += new System.EventHandler(this.label4_Click);
+            // 
+            // checkBoxPrecipitation
+            // 
+            this.checkBoxPrecipitation.AutoSize = true;
+            this.checkBoxPrecipitation.Location = new System.Drawing.Point(13, 112);
+            this.checkBoxPrecipitation.Name = "checkBoxPrecipitation";
+            this.checkBoxPrecipitation.Size = new System.Drawing.Size(84, 17);
+            this.checkBoxPrecipitation.TabIndex = 8;
+            this.checkBoxPrecipitation.Text = "Precipitation";
+            this.checkBoxPrecipitation.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -163,6 +174,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 264);
             this.ControlBox = false;
+            this.Controls.Add(this.checkBoxPrecipitation);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.numericBrakePipeChargingRatePSIpS);
             this.Controls.Add(this.checkBoxTrainLights);
@@ -196,5 +208,6 @@
         private System.Windows.Forms.CheckBox checkBoxTrainLights;
         private System.Windows.Forms.NumericUpDown numericBrakePipeChargingRatePSIpS;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox checkBoxPrecipitation;
     }
 }

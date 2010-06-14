@@ -55,7 +55,8 @@ namespace ORTS
                 this.numericWorldObjectDensity.Value = (int)RK.GetValue("WorldObjectDensity", (int)numericWorldObjectDensity.Value);
                 this.numericSoundDetailLevel.Value = (int)RK.GetValue("SoundDetailLevel", (int)numericSoundDetailLevel.Value);
                 this.comboBoxWindowSize.Text = (string)RK.GetValue("WindowSize", (string)comboBoxWindowSize.Text);
-                this.checkBoxTrainLights.Checked = ( "True" ==  (string)RK.GetValue("TrainLights", false));
+                this.checkBoxTrainLights.Checked = ( 1 ==  (int)RK.GetValue("TrainLights", 0));
+                this.checkBoxPrecipitation.Checked = ( 1 == (int)RK.GetValue("Precipitation", 0));
                 this.numericBrakePipeChargingRatePSIpS.Value = (int)RK.GetValue("BrakePipeChargingRate", (int)numericBrakePipeChargingRatePSIpS.Value);
             }
         }
@@ -69,7 +70,8 @@ namespace ORTS
                 RK.SetValue("WorldObjectDensity", (int)this.numericWorldObjectDensity.Value);
                 RK.SetValue("SoundDetailLevel", (int)this.numericSoundDetailLevel.Value);
                 RK.SetValue("WindowSize", (string)this.comboBoxWindowSize.Text);
-                RK.SetValue("TrainLights", this.checkBoxTrainLights.Checked);
+                RK.SetValue("TrainLights", this.checkBoxTrainLights.Checked ? 1 : 0);
+                RK.SetValue("Precipitation", this.checkBoxPrecipitation.Checked ? 1 : 0);
                 RK.SetValue("BrakePipeChargingRate", (int)this.numericBrakePipeChargingRatePSIpS.Value);
             }
 

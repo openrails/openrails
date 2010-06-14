@@ -48,6 +48,7 @@ namespace ORTS
         public int SoundDetailLevel;        // used to select which sound scaleability group to use.
         public int WorldObjectDensity;
         public float ViewingDistance;       // used for culling
+        public bool PrecipationEnabled = false;  // control display of rain and snow
         public Vector2 WindowSize;
         public bool StartFullScreen;        // indicates user want the program to start in full screen mode
         public UpdaterProcess UpdaterProcess = null;
@@ -62,7 +63,7 @@ namespace ORTS
         public TrackMonitor trackMonitor;
         public PopupWindows popupWindows = new PopupWindows();
         public SkyDrawer SkyDrawer;
-        public PrecipDrawer PrecipDrawer;
+        public PrecipDrawer PrecipDrawer = null;
         public LightGlowDrawer LightGlowDrawer;
         public WeatherControl weatherControl;
         TerrainDrawer TerrainDrawer;
@@ -142,19 +143,28 @@ namespace ORTS
             ViewingDistance = 2000;
             WindowSize = new Vector2(1024, 768);
             string strWindowSize = "1024x768";
-            RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-            if (RK != null)
+
+            try
             {
-                WorldObjectDensity = (int)RK.GetValue("WorldObjectDensity", WorldObjectDensity);
-                SoundDetailLevel = (int)RK.GetValue("SoundDetailLevel", SoundDetailLevel);
-                ViewingDistance = (int)RK.GetValue("ViewingDistance", (int)ViewingDistance);
-                strWindowSize = (string)RK.GetValue("WindowSize", (string)strWindowSize);
-                StartFullScreen = (1 == (int)RK.GetValue("Fullscreen", 0));
-                // Parse the screen dimensions text
-                char[] delimiterChars = { 'x' };
-                string[] words = strWindowSize.Split(delimiterChars);
-                WindowSize.X = Convert.ToInt32(words[0]);
-                WindowSize.Y = Convert.ToInt32(words[1]);
+                RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
+                if (RK != null)
+                {
+                    WorldObjectDensity = (int)RK.GetValue("WorldObjectDensity", WorldObjectDensity);
+                    SoundDetailLevel = (int)RK.GetValue("SoundDetailLevel", SoundDetailLevel);
+                    ViewingDistance = (int)RK.GetValue("ViewingDistance", (int)ViewingDistance);
+                    strWindowSize = (string)RK.GetValue("WindowSize", (string)strWindowSize);
+                    PrecipationEnabled = (1 == (int)RK.GetValue("Precipitation", 0));
+                    StartFullScreen = (1 == (int)RK.GetValue("Fullscreen", 0));
+                    // Parse the screen dimensions text
+                    char[] delimiterChars = { 'x' };
+                    string[] words = strWindowSize.Split(delimiterChars);
+                    WindowSize.X = Convert.ToInt32(words[0]);
+                    WindowSize.Y = Convert.ToInt32(words[1]);
+                }
+            }
+            catch( System.Exception error )
+            {
+                Console.WriteLine("Registry problem - " + error.Message);
             }
             ViewingDistance = Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, ViewingDistance);
             Materials.ViewingDistance = ViewingDistance;
@@ -220,7 +230,7 @@ namespace ORTS
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
             SceneryDrawer = new SceneryDrawer(this);
-            PrecipDrawer = new PrecipDrawer(this);
+            if( PrecipationEnabled )  PrecipDrawer = new PrecipDrawer(this);
             TrainDrawer = new TrainDrawer(this);
             weatherControl = new WeatherControl(this);
 
@@ -381,7 +391,7 @@ namespace ORTS
             TerrainDrawer.PrepareFrame(frame, elapsedTime);
             SceneryDrawer.PrepareFrame(frame, elapsedTime);
             TrainDrawer.PrepareFrame(frame, elapsedTime);
-            PrecipDrawer.PrepareFrame(frame, elapsedTime);
+            if( PrecipDrawer != null ) PrecipDrawer.PrepareFrame(frame, elapsedTime);
             InfoDisplay.PrepareFrame(frame, elapsedTime);
         }
 

@@ -60,11 +60,18 @@ namespace ORTS
 
             if (!ValidateArgs(args)) return;
 
-            RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-            if (RK != null)
+            try
             {
-                TrainLightsEnabled = ("True" == (string)RK.GetValue("TrainLights", false));
-                BrakePipeChargingRatePSIpS = (int)RK.GetValue("BrakePipeChargingRate", (int)21);
+                RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
+                if (RK != null)
+                {
+                    TrainLightsEnabled = (1 == (int)RK.GetValue("TrainLights", 0));
+                    BrakePipeChargingRatePSIpS = (int)RK.GetValue("BrakePipeChargingRate", (int)21);
+                }
+            }
+            catch (System.Exception error)
+            {
+                Console.WriteLine("Registry problem - " + error.Message);
             }
 
 

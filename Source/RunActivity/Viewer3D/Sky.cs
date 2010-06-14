@@ -166,12 +166,12 @@ namespace ORTS
                 if (UserInput.IsKeyDown(Keys.OemPlus))
                 {
                     Viewer.Simulator.ClockTime += 120; // Two-minute (120 second) increments
-                    Viewer.PrecipDrawer.Reset();
+                    if( Viewer.PrecipDrawer != null ) Viewer.PrecipDrawer.Reset();
                 }
                 if (UserInput.IsKeyDown(Keys.OemMinus))
                 {
                     Viewer.Simulator.ClockTime -= 120;
-                    Viewer.PrecipDrawer.Reset();
+                    if( Viewer.PrecipDrawer != null ) Viewer.PrecipDrawer.Reset();
                 }
             }
 
