@@ -50,28 +50,40 @@ namespace MSTS
 
             public SDShape(STFReader f)
             {
-                while (!f.EOF())
+                try
                 {
-                    string token = f.ReadToken();
-                    if (token == "(")
-                        token = f.ReadToken();
-                    if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
+                    while (!f.EOF())
                     {
-                        while (token != ")")
-                        {
+                        string token = f.ReadToken();
+                        if (token == "(")
                             token = f.ReadToken();
-                            if (token == "") throw (new STFError(f, "Missing )"));
-                            else if (0 == String.Compare(token, "ESD_Detail_Level", true)) ESD_Detail_Level = f.ReadIntBlock();
-                            else if (0 == String.Compare(token, "ESD_Alternative_Texture", true)) ESD_Alternative_Texture = f.ReadIntBlock();
-                            else if (0 == String.Compare(token, "ESD_Bounding_Box", true)) ESD_Bounding_Box = new ESD_Bounding_Box(f);
-                            else if (0 == String.Compare(token, "ESD_No_Visual_Obstruction", true)) ESD_No_Visual_Obstruction = f.ReadBoolBlock();
-                            else if (0 == String.Compare(token, "ESD_Snapable", true)) ESD_Snapable = f.ReadBoolBlock();
-                            else f.SkipBlock();
+                        if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
+                        {
+                            while (token != ")")
+                            {
+                                token = f.ReadToken();
+                                if (token == "") throw (new STFError(f, "Missing )"));
+                                else if (0 == String.Compare(token, "ESD_Detail_Level", true)) ESD_Detail_Level = f.ReadIntBlock();
+                                else if (0 == String.Compare(token, "ESD_Alternative_Texture", true)) ESD_Alternative_Texture = f.ReadIntBlock();
+                                else if (0 == String.Compare(token, "ESD_Bounding_Box", true))
+                                {
+                                    ESD_Bounding_Box = new ESD_Bounding_Box(f);
+                                    if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
+                                        ESD_Bounding_Box = null;
+                                }
+                                else if (0 == String.Compare(token, "ESD_No_Visual_Obstruction", true)) ESD_No_Visual_Obstruction = f.ReadBoolBlock();
+                                else if (0 == String.Compare(token, "ESD_Snapable", true)) ESD_Snapable = f.ReadBoolBlock();
+                                else f.SkipBlock();
+                            }
                         }
                     }
+                    // TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
+                    //if( ESD_Bounding_Box == null )throw( new STFError( f, "Missing ESD_Bound_Box statement" ) );
                 }
-                // TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
-                //if( ESD_Bounding_Box == null )throw( new STFError( f, "Missing ESD_Bound_Box statement" ) );
+                catch( STFError error )
+                {
+                    STFError.Report(f, error.Message);
+                }
             }
             public int ESD_Detail_Level = 0;
             public int ESD_Alternative_Texture = 0;
@@ -91,6 +103,8 @@ namespace MSTS
             public ESD_Bounding_Box(STFReader f)
             {
                 f.VerifyStartOfBlock();
+                if (f.PeekPastWhitespace() == ')')
+                    return;    // quietly return on ESD_Bounding_Box()
                 float X = f.ReadFloat();
                 float Y = f.ReadFloat();
                 float Z = f.ReadFloat();
@@ -108,8 +122,8 @@ namespace MSTS
                 }
 
             }
-            public TWorldPosition A;
-            public TWorldPosition B;
+            public TWorldPosition A = null;
+            public TWorldPosition B = null;
         }
     }
 }
