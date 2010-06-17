@@ -21,7 +21,7 @@ namespace ORTS
 
         public abstract void Restore( BinaryReader inf );
 
-        public abstract void Initialize(bool handbrakeOn);
+        public abstract void Initialize(bool handbrakeOn, float maxPressurePSI);
         public abstract void SetHandbrakePercent(float percent);
         public abstract void SetRetainer(RetainerSetting setting);
     }
@@ -30,6 +30,15 @@ namespace ORTS
 
     public abstract class MSTSBrakeSystem: BrakeSystem
     {
+        public static BrakeSystem Create(string type, TrainCar car)
+        {
+            if (type != null && type.StartsWith("vacuum"))
+                return new VacuumSinglePipe(car);
+            else if (type != null && type == "ep")
+                return new EPBrakeSystem(car);
+            else
+                return new AirSinglePipe(car);
+        }
 
         public abstract void Parse(string lowercasetoken, STFReader f);
 
@@ -45,16 +54,16 @@ namespace ORTS
 
     public class AirSinglePipe : MSTSBrakeSystem
     {
-        float MaxHandbrakeForceN = 0;
-        float MaxBrakeForceN = 89e3f;
+        protected float MaxHandbrakeForceN = 0;
+        protected float MaxBrakeForceN = 89e3f;
         float BrakePercent = 0;  // simplistic system
-        TrainCar Car;
-        float HandbrakePercent = 0;
-        float CylPressurePSI = 64;
+        protected TrainCar Car;
+        protected float HandbrakePercent = 0;
+        protected float CylPressurePSI = 64;
         float AutoCylPressurePSI = 64;
         float AuxResPressurePSI = 64;
         float EmergResPressurePSI = 64;
-        float MaxCylPressurePSI = 64;
+        protected float MaxCylPressurePSI = 64;
         float AuxCylVolumeRatio = 2.5f;
         float AuxBrakeLineVolumeRatio = 3.1f;
         float RetainerPressureThresholdPSI = 0;
@@ -150,10 +159,10 @@ namespace ORTS
             TripleValveState = (ValveState)inf.ReadInt32();
         }
 
-        public override void Initialize(bool handbrakeOn)
+        public override void Initialize(bool handbrakeOn, float maxPressurePSI)
         {
             AuxResPressurePSI = EmergResPressurePSI = BrakeLine1PressurePSI;
-            AutoCylPressurePSI = (BrakeLine2PressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
+            AutoCylPressurePSI = (maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
             if (AutoCylPressurePSI > MaxCylPressurePSI)
                 AutoCylPressurePSI = MaxCylPressurePSI;
             TripleValveState = ValveState.Lap;
@@ -195,13 +204,20 @@ namespace ORTS
             }
             if (TripleValveState == ValveState.Release)
             {
-                if (AutoCylPressurePSI > RetainerPressureThresholdPSI)
+                float threshold = RetainerPressureThresholdPSI;
+                if (Program.GraduatedRelease)
+                {
+                    float t = (EmergResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
+                    if (threshold < t)
+                        threshold = t;
+                }
+                if (AutoCylPressurePSI > threshold)
                 {
                     AutoCylPressurePSI -= elapsedClockSeconds * ReleaseRate;
-                    if (AutoCylPressurePSI < RetainerPressureThresholdPSI)
-                        AutoCylPressurePSI = RetainerPressureThresholdPSI;
+                    if (AutoCylPressurePSI < threshold)
+                        AutoCylPressurePSI = threshold;
                 }
-                if (AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
+                if (!Program.GraduatedRelease && AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
                 {
                     float dp = elapsedClockSeconds * EmergResChargingRate;
                     if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)
@@ -293,6 +309,23 @@ namespace ORTS
             Car.Train.BrakeLine1PressurePSI = 90 - 26 * BrakePercent / 100;
         }
     }
+    public class EPBrakeSystem : AirSinglePipe
+    {
+        public EPBrakeSystem(TrainCar car) : base(car)
+        {
+        }
+
+        public override void Update(float elapsedClockSeconds)
+        {
+            base.Update(elapsedClockSeconds);
+            if (CylPressurePSI < BrakeLine2PressurePSI)
+                CylPressurePSI = BrakeLine2PressurePSI;
+            float f = MaxBrakeForceN * CylPressurePSI / MaxCylPressurePSI;
+            if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
+                f = MaxHandbrakeForceN * HandbrakePercent / 100;
+            Car.FrictionForceN += f;
+        }
+    }
 
     public class VacuumSinglePipe : MSTSBrakeSystem
     {
@@ -346,7 +379,7 @@ namespace ORTS
             BrakePercent = inf.ReadSingle();
         }
 
-        public override void Initialize(bool handbrakeOn)
+        public override void Initialize(bool handbrakeOn, float maxPressurePSI)
         {
         }
         public override void Update(float elapsedClockSeconds)

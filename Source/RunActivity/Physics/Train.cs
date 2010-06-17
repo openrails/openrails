@@ -201,13 +201,14 @@ namespace ORTS
         {
             if (SpeedMpS != 0)
                 return;
+            float maxPressurePSI = 90;
             if (LeadLocomotiveIndex >= 0)
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                 {
-                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, 1000);
-                    BrakeLine2PressurePSI = lead.TrainBrakeController.MaxPressurePSI;
+                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, 1000, ref BrakeLine2PressurePSI);
+                    maxPressurePSI = lead.TrainBrakeController.MaxPressurePSI;
                     if (BrakeLine1PressurePSI < BrakeLine2PressurePSI - lead.TrainBrakeController.FullServReductionPSI)
                         BrakeLine1PressurePSI = BrakeLine2PressurePSI - lead.TrainBrakeController.FullServReductionPSI;
                 }
@@ -224,7 +225,7 @@ namespace ORTS
                 car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
                 car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
                 car.BrakeSystem.BrakeLine3PressurePSI = 0;
-                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0);
+                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI);
                 if (LeadLocomotiveIndex < 0)
                     car.BrakeSystem.BrakeLine1PressurePSI = -1;
             }
@@ -258,7 +259,7 @@ namespace ORTS
                 car.BrakeSystem.BrakeLine1PressurePSI = 0;
                 car.BrakeSystem.BrakeLine2PressurePSI = 0;
                 car.BrakeSystem.BrakeLine3PressurePSI = 0;
-                car.BrakeSystem.Initialize(false);
+                car.BrakeSystem.Initialize(false, 0);
                 car.BrakeSystem.BrakeLine1PressurePSI = -1;
             }
         }
@@ -314,7 +315,7 @@ namespace ORTS
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
-                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds);
+                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds, ref BrakeLine2PressurePSI);
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
                 if (Program.BrakePipeChargingRatePSIpS < 1000)

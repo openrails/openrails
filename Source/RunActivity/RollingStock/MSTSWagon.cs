@@ -125,10 +125,7 @@ namespace ORTS
                 case "wagon(friction": ParseFriction(f); break;
                 case "wagon(brakesystemtype":
                     brakeSystemType = f.ReadStringBlock().ToLower();
-                    if (brakeSystemType.StartsWith("vacuum"))
-                        BrakeSystem = new VacuumSinglePipe(this);
-                    else
-                        BrakeSystem = new AirSinglePipe(this);
+                    BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
                     break;
                 case "wagon(coupling": Couplers.Add(new MSTSCoupling()); break;
                 case "wagon(coupling(couplinghasrigidconnection": Couplers[Couplers.Count - 1].Rigid = f.ReadBoolBlock(); break;
@@ -190,10 +187,7 @@ namespace ORTS
                 Couplers.Add(coupler);
 
             brakeSystemType = copy.brakeSystemType;
-            if (brakeSystemType != null && brakeSystemType.StartsWith("vacuum"))
-                BrakeSystem = new VacuumSinglePipe(this);
-            else
-                BrakeSystem = new AirSinglePipe(this);
+            BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
         }
         public void ParseFreightAnim(STFReader f)

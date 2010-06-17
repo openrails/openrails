@@ -242,7 +242,25 @@ namespace ORTS
                     CurrentValue = Notches[i].Value;
                 }
         }
-        public void UpdatePressure(ref float pressurePSI, float elapsedClockSeconds)
+        private void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
+        {
+            if (pressurePSI < targetPSI)
+            {
+                pressurePSI += ratePSIpS * elapsedSeconds;
+                if (pressurePSI > targetPSI)
+                    pressurePSI = targetPSI;
+            }
+        }
+        private void DecreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
+        {
+            if (pressurePSI > targetPSI)
+            {
+                pressurePSI -= ratePSIpS * elapsedSeconds;
+                if (pressurePSI < targetPSI)
+                    pressurePSI = targetPSI;
+            }
+        }
+        public void UpdatePressure(ref float pressurePSI, float elapsedClockSeconds, ref float epPressurePSI)
         {
             if (Notches.Count == 0)
             {
@@ -256,6 +274,7 @@ namespace ORTS
                 {
                     case MSTSNotchType.Release:
                         pressurePSI += x * ReleaseRatePSIpS * elapsedClockSeconds;
+                        epPressurePSI -= x * ReleaseRatePSIpS * elapsedClockSeconds;
                         break;
                     case MSTSNotchType.Running:
                         if (notch.Smooth)
@@ -266,36 +285,39 @@ namespace ORTS
                     case MSTSNotchType.FullServ:
                         pressurePSI -= x * ApplyRatePSIpS * elapsedClockSeconds;
                         break;
+                    case MSTSNotchType.EPApply:
+                        pressurePSI += x * ReleaseRatePSIpS * elapsedClockSeconds;
+                        if (notch.Smooth)
+                            IncreasePressure(ref epPressurePSI, x * FullServReductionPSI, ApplyRatePSIpS, elapsedClockSeconds);
+                        else
+                            epPressurePSI += x * ApplyRatePSIpS * elapsedClockSeconds;
+                        break;
                     case MSTSNotchType.GSelfLapH:
                     case MSTSNotchType.Suppression:
                     case MSTSNotchType.ContServ:
-                        x = MaxPressurePSI - MinReductionPSI * (1 - x) - FullServReductionPSI * x;
-                        if (pressurePSI > x)
-                            pressurePSI -= ApplyRatePSIpS * elapsedClockSeconds;
-                        break;
                     case MSTSNotchType.GSelfLap:
                         x = MaxPressurePSI - MinReductionPSI * (1 - x) - FullServReductionPSI * x;
-                        if (pressurePSI > x)
-                            pressurePSI -= ApplyRatePSIpS * elapsedClockSeconds;
-                        // disabled until graduated release modeled on cars
-                        //else if (pressurePSI < x)
-                        //    pressurePSI += ReleaseRatePSIpS * elapsedClockSeconds;
+                        DecreasePressure(ref pressurePSI, x, ApplyRatePSIpS, elapsedClockSeconds);
+                        if (Program.GraduatedRelease)
+                            IncreasePressure(ref pressurePSI, x, ReleaseRatePSIpS, elapsedClockSeconds);
                         break;
                     case MSTSNotchType.Emergency:
                         pressurePSI -= EmergencyRatePSIpS * elapsedClockSeconds;
                         break;
                     case MSTSNotchType.Dummy:
                         x *= MaxPressurePSI - FullServReductionPSI;
-                        if (pressurePSI > x)
-                            pressurePSI -= ApplyRatePSIpS * elapsedClockSeconds;
-                        else if (pressurePSI < x)
-                            pressurePSI += ReleaseRatePSIpS * elapsedClockSeconds;
+                        IncreasePressure(ref pressurePSI, x, ReleaseRatePSIpS, elapsedClockSeconds);
+                        DecreasePressure(ref pressurePSI, x, ApplyRatePSIpS, elapsedClockSeconds);
                         break;
                 }
                 if (pressurePSI > MaxPressurePSI)
                     pressurePSI = MaxPressurePSI;
                 if (pressurePSI < 0)
                     pressurePSI = 0;
+                if (epPressurePSI > MaxPressurePSI)
+                    epPressurePSI = MaxPressurePSI;
+                if (epPressurePSI < 0)
+                    epPressurePSI = 0;
             }
         }
         public void UpdateEngineBrakePressure(ref float pressurePSI, float elapsedClockSeconds)
@@ -330,18 +352,8 @@ namespace ORTS
                         break;
                     default:
                         x *= MaxPressurePSI - FullServReductionPSI;
-                        if (pressurePSI < x)
-                        {
-                            pressurePSI += ApplyRatePSIpS * elapsedClockSeconds;
-                            if (pressurePSI > x)
-                                pressurePSI = x;
-                        }
-                        else if (pressurePSI > x)
-                        {
-                            pressurePSI -= ReleaseRatePSIpS * elapsedClockSeconds;
-                            if (pressurePSI < x)
-                                pressurePSI = x;
-                        }
+                        IncreasePressure(ref pressurePSI, x, ApplyRatePSIpS, elapsedClockSeconds);
+                        DecreasePressure(ref pressurePSI, x, ReleaseRatePSIpS, elapsedClockSeconds);
                         break;
                 }
                 if (pressurePSI > MaxPressurePSI)
@@ -353,7 +365,7 @@ namespace ORTS
     
     }
 
-    public enum MSTSNotchType { Dummy, Release, Running, SelfLap, Lap, Apply, GSelfLap, GSelfLapH, Suppression, ContServ, FullServ, Emergency };
+    public enum MSTSNotchType { Dummy, Release, Running, SelfLap, Lap, Apply, EPApply, GSelfLap, GSelfLapH, Suppression, ContServ, FullServ, Emergency };
 
     public class MSTSNotch
     {
@@ -387,8 +399,8 @@ namespace ORTS
                 case "suppressionstart": Type = MSTSNotchType.Suppression; break;
                 case "fullservicestart": Type = MSTSNotchType.FullServ; break;
                 case "emergencystart": Type = MSTSNotchType.Emergency; break;
-                case "epapplystart": Type = MSTSNotchType.Apply; break;
-                case "epholdstart": Type = MSTSNotchType.SelfLap; break;
+                case "epapplystart": Type = MSTSNotchType.EPApply; break;
+                case "epholdstart": Type = MSTSNotchType.Lap; break;
                 case "minimalreductionstart": Type = MSTSNotchType.Lap; break;
                 default:
                     STFError.Report(f, "Unknown notch type: " + type);
@@ -409,6 +421,7 @@ namespace ORTS
                 case MSTSNotchType.Release: return "Release";
                 case MSTSNotchType.Running: return "Running";
                 case MSTSNotchType.Apply: return "Apply";
+                case MSTSNotchType.EPApply: return "EPApply";
                 case MSTSNotchType.Emergency: return "Emergency";
                 case MSTSNotchType.SelfLap: return "Lap";
                 case MSTSNotchType.GSelfLap: return "Service";

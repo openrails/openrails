@@ -39,6 +39,7 @@
             this.numericBrakePipeChargingRatePSIpS = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
             this.checkBoxPrecipitation = new System.Windows.Forms.CheckBox();
+            this.checkBoxGraduatedRelease = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -167,6 +168,16 @@
             this.checkBoxPrecipitation.Text = "Precipitation";
             this.checkBoxPrecipitation.UseVisualStyleBackColor = true;
             // 
+            // checkBoxGraduatedRelease
+            // 
+            this.checkBoxGraduatedRelease.AutoSize = true;
+            this.checkBoxGraduatedRelease.Location = new System.Drawing.Point(13, 144);
+            this.checkBoxGraduatedRelease.Name = "checkBoxGraduatedRelease";
+            this.checkBoxGraduatedRelease.Size = new System.Drawing.Size(169, 17);
+            this.checkBoxGraduatedRelease.TabIndex = 9;
+            this.checkBoxGraduatedRelease.Text = "Graduated Release Air Brakes";
+            this.checkBoxGraduatedRelease.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -174,6 +185,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 264);
             this.ControlBox = false;
+            this.Controls.Add(this.checkBoxGraduatedRelease);
             this.Controls.Add(this.checkBoxPrecipitation);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.numericBrakePipeChargingRatePSIpS);
@@ -209,5 +221,6 @@
         private System.Windows.Forms.NumericUpDown numericBrakePipeChargingRatePSIpS;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox checkBoxPrecipitation;
+        private System.Windows.Forms.CheckBox checkBoxGraduatedRelease;
     }
 }

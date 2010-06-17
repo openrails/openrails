@@ -58,6 +58,7 @@ namespace ORTS
                 this.checkBoxTrainLights.Checked = ( 1 ==  (int)RK.GetValue("TrainLights", 0));
                 this.checkBoxPrecipitation.Checked = ( 1 == (int)RK.GetValue("Precipitation", 0));
                 this.numericBrakePipeChargingRatePSIpS.Value = (int)RK.GetValue("BrakePipeChargingRate", (int)numericBrakePipeChargingRatePSIpS.Value);
+                this.checkBoxGraduatedRelease.Checked = (1 == (int)RK.GetValue("GraduatedRelease", 0));
             }
         }
 
@@ -73,6 +74,7 @@ namespace ORTS
                 RK.SetValue("TrainLights", this.checkBoxTrainLights.Checked ? 1 : 0);
                 RK.SetValue("Precipitation", this.checkBoxPrecipitation.Checked ? 1 : 0);
                 RK.SetValue("BrakePipeChargingRate", (int)this.numericBrakePipeChargingRatePSIpS.Value);
+                RK.SetValue("GraduatedRelease", this.checkBoxGraduatedRelease.Checked ? 1 : 0);
             }
 
             Close();
