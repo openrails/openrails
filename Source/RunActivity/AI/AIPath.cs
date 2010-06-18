@@ -140,6 +140,19 @@ namespace ORTS
             return;
         }
 
+        public void AlignAllSwitches()
+        {
+            AIPathNode prevNode = null;
+            for (AIPathNode node = FirstNode; node != null; node = node.NextMainNode)
+            {
+                if (node.IsFacingPoint)
+                    AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
+                else if (prevNode != null)
+                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
+                prevNode = node;
+            }
+        }
+
         /// <summary>
         /// returns true if the switch for the specified juction node is aligned
         /// so that the specified vector node will be used as the selected route.

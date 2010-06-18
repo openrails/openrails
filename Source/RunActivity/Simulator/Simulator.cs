@@ -541,6 +541,9 @@ namespace ORTS
             patTraveller.NextWaypoint();
             if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
                 train.RearTDBTraveller.ReverseDirection();
+            PATFile patFile = new PATFile(RoutePath + @"\PATHS\" + playerPathFileName + ".PAT");
+            AIPath aiPath = new AIPath(patFile , TDB, TSectionDat);
+            aiPath.AlignAllSwitches();
 
             // add wagons
             foreach (Wagon wagon in conFile.Train.TrainCfg.Wagons)
