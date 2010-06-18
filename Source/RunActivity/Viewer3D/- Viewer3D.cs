@@ -49,6 +49,7 @@ namespace ORTS
         public int WorldObjectDensity;
         public float ViewingDistance;       // used for culling
         public bool PrecipationEnabled = false;  // control display of rain and snow
+        public bool WireEnabled = false; // overhead wire
         public Vector2 WindowSize;
         public bool StartFullScreen;        // indicates user want the program to start in full screen mode
         public UpdaterProcess UpdaterProcess = null;
@@ -64,6 +65,7 @@ namespace ORTS
         public PopupWindows popupWindows = new PopupWindows();
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer = null;
+        public WireDrawer WireDrawer = null;
         public LightGlowDrawer LightGlowDrawer;
         public WeatherControl weatherControl;
         TerrainDrawer TerrainDrawer;
@@ -154,6 +156,7 @@ namespace ORTS
                     ViewingDistance = (int)RK.GetValue("ViewingDistance", (int)ViewingDistance);
                     strWindowSize = (string)RK.GetValue("WindowSize", (string)strWindowSize);
                     PrecipationEnabled = (1 == (int)RK.GetValue("Precipitation", 0));
+                    WireEnabled = (1 == (int)RK.GetValue("Wire", 0));
                     StartFullScreen = (1 == (int)RK.GetValue("Fullscreen", 0));
                     // Parse the screen dimensions text
                     char[] delimiterChars = { 'x' };
@@ -231,6 +234,7 @@ namespace ORTS
             TerrainDrawer = new TerrainDrawer(this);
             SceneryDrawer = new SceneryDrawer(this);
             if( PrecipationEnabled )  PrecipDrawer = new PrecipDrawer(this);
+            if (WireEnabled) WireDrawer = new WireDrawer(this);
             TrainDrawer = new TrainDrawer(this);
             weatherControl = new WeatherControl(this);
 
@@ -261,6 +265,7 @@ namespace ORTS
             TerrainDrawer.LoadPrep();
             SceneryDrawer.LoadPrep();
             TrainDrawer.LoadPrep();
+            if (WireDrawer != null) WireDrawer.LoadPrep();
         }
 
         /// <summary>
@@ -277,6 +282,7 @@ namespace ORTS
             TerrainDrawer.Load(renderProcess);
             SceneryDrawer.Load(renderProcess);
             TrainDrawer.Load(renderProcess);
+            if (WireDrawer != null) WireDrawer.Load(renderProcess);
         }
 
         /// <summary>
@@ -392,6 +398,7 @@ namespace ORTS
             SceneryDrawer.PrepareFrame(frame, elapsedTime);
             TrainDrawer.PrepareFrame(frame, elapsedTime);
             if( PrecipDrawer != null ) PrecipDrawer.PrepareFrame(frame, elapsedTime);
+            if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);
             InfoDisplay.PrepareFrame(frame, elapsedTime);
         }
 

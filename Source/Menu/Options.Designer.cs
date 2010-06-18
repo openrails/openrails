@@ -40,6 +40,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.checkBoxPrecipitation = new System.Windows.Forms.CheckBox();
             this.checkBoxGraduatedRelease = new System.Windows.Forms.CheckBox();
+            this.checkBoxWire = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -128,7 +129,7 @@
             // 
             // numericBrakePipeChargingRatePSIpS
             // 
-            this.numericBrakePipeChargingRatePSIpS.Location = new System.Drawing.Point(13, 162);
+            this.numericBrakePipeChargingRatePSIpS.Location = new System.Drawing.Point(13, 174);
             this.numericBrakePipeChargingRatePSIpS.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -151,7 +152,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(71, 164);
+            this.label4.Location = new System.Drawing.Point(71, 176);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(166, 13);
             this.label4.TabIndex = 7;
@@ -171,12 +172,22 @@
             // checkBoxGraduatedRelease
             // 
             this.checkBoxGraduatedRelease.AutoSize = true;
-            this.checkBoxGraduatedRelease.Location = new System.Drawing.Point(13, 144);
+            this.checkBoxGraduatedRelease.Location = new System.Drawing.Point(13, 156);
             this.checkBoxGraduatedRelease.Name = "checkBoxGraduatedRelease";
             this.checkBoxGraduatedRelease.Size = new System.Drawing.Size(169, 17);
             this.checkBoxGraduatedRelease.TabIndex = 9;
             this.checkBoxGraduatedRelease.Text = "Graduated Release Air Brakes";
             this.checkBoxGraduatedRelease.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxWire
+            // 
+            this.checkBoxWire.AutoSize = true;
+            this.checkBoxWire.Location = new System.Drawing.Point(13, 133);
+            this.checkBoxWire.Name = "checkBoxWire";
+            this.checkBoxWire.Size = new System.Drawing.Size(98, 17);
+            this.checkBoxWire.TabIndex = 8;
+            this.checkBoxWire.Text = "Overhead Wire";
+            this.checkBoxWire.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -186,6 +197,7 @@
             this.ClientSize = new System.Drawing.Size(284, 264);
             this.ControlBox = false;
             this.Controls.Add(this.checkBoxGraduatedRelease);
+            this.Controls.Add(this.checkBoxWire);
             this.Controls.Add(this.checkBoxPrecipitation);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.numericBrakePipeChargingRatePSIpS);
@@ -222,5 +234,6 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox checkBoxPrecipitation;
         private System.Windows.Forms.CheckBox checkBoxGraduatedRelease;
+        private System.Windows.Forms.CheckBox checkBoxWire;
     }
 }

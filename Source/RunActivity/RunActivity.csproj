@@ -198,6 +198,7 @@
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Simulator\TDBTraveller.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
+    <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\Dynatrack.cs">
       <SubType>Code</SubType>
     </Compile>
