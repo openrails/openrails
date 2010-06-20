@@ -76,6 +76,10 @@ namespace ORTS
             if (noSignals > 0)
             {
                 signalObjects = new SignalObject[noSignals];
+                SignalObject.trackNodes = trackNodes;
+                SignalObject.signalObjects = signalObjects;
+                SignalObject.trItems = TrItems;
+
                 for (int i = 1; i < trackNodes.Length; i++)
                 {
                     // Using the track end node as starting point to find signals.
@@ -87,9 +91,6 @@ namespace ORTS
                         ScanPath(nextNode, direction, TrItems, trackNodes);
                     }
                 }
-                SignalObject.trackNodes = trackNodes;
-                SignalObject.signalObjects = signalObjects;
-                SignalObject.trItems = TrItems;
             }
 
         } //BuildSignalList
@@ -148,7 +149,7 @@ namespace ORTS
                                         if ((int)sigItem.revDir == direction)
                                         {
                                             sigItem.sigObj = foundSignals;
-                                            lastSignal = AddSignal(index, i, (int)sigItem.Direction, lastSignal,TrItems);
+                                            lastSignal = AddSignal(index, i, (int)sigItem.Direction, lastSignal, TrItems);
                                         }
                                     }
                                 }
@@ -212,7 +213,7 @@ namespace ORTS
             signalObjects[foundSignals] = new SignalObject();
             signalObjects[foundSignals].direction = direction;
             signalObjects[foundSignals].trackNode = trackNode;
-            signalObjects[foundSignals].trItemIndex = nodeIndx;
+            signalObjects[foundSignals].trRefIndex = nodeIndx;
             signalObjects[foundSignals].prevSignal=prevSignal;
             signalObjects[foundSignals].AddHead(nodeIndx);
             if (prevSignal >= 0) signalObjects[prevSignal].nextSignal = foundSignals;
@@ -493,9 +494,8 @@ namespace ORTS
         public static TrackNode[] trackNodes;
         public static TrItem[] trItems;
         public List<SignalHead> SignalHeads = new List<SignalHead>();
-       // public SignalType signalType = null;    // from sigcfg file
         public int trackNode;                   // Track node which contains this signal
-        public int trItemIndex;                 // Index to trItem within Track Node    
+        public int trRefIndex;                  // Index to TrItemRef within Track Node    
         public int direction;                   // Diection facing on track
         public int draw_state;
         public bool enabled=true;
@@ -527,7 +527,7 @@ namespace ORTS
         public bool route_set(int iLinknode)
         {
             int currentTrackNode = trackNode;
-            int currentIndex = trItemIndex;
+            int currentIndex = trRefIndex;
             int currentDir = this.revDir;
 
             while (currentTrackNode != iLinknode)
@@ -588,10 +588,10 @@ namespace ORTS
         private int NextSignal()
         {
             int currentTrackNode = trackNode;
-            int currentIndex=trItemIndex;
+            int currentIndex=trRefIndex;
             int currentDir = this.revDir;
 
-            // Is the next signal within the cuurent tracknode?
+            // Is the next signal within the current tracknode?
             if (trackNodes[currentTrackNode].TrVectorNode != null)
             {
                 // Only process if there is more than one item within track node
@@ -773,7 +773,7 @@ namespace ORTS
             {
                 if (sigHead.sigFunction == fn_type)
                 {
-                    if (sigHead.state < sigAsp)
+                    if (sigHead.state > sigAsp)
                     {
                         sigAsp = sigHead.state;
                     }
@@ -802,7 +802,7 @@ namespace ORTS
         //
         public float DistanceTo(TDBTraveller tdbTraveller)
         {
-            int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trItemIndex];
+            int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
             return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z);
         }  //DistanceTo
 
@@ -839,7 +839,7 @@ namespace ORTS
         {
             get
             {
-                return trackNodes[trackNode].TrVectorNode.TrItemRefs[trItemIndex];
+                return trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
             }
         }
 
@@ -899,7 +899,8 @@ namespace ORTS
         // This method sets the signal type from the CIGCFG file
         public void SetSignalType(TrItem[] TrItems,SIGCFGFile sigCFG)
         {
-            SignalItem sigItem = (SignalItem)SignalObject.trItems[trItemIndex];
+            //SignalItem sigItem = (SignalItem)SignalObject.trItems[trItemIndex];
+            SignalItem sigItem = (SignalItem)TrItems[SignalObject.trackNodes[mainSignal.trackNode].TrVectorNode.TrItemRefs[trItemIndex]];
             signalType = sigCFG.GetSignalType(sigItem.SignalType);
         }
 
@@ -971,22 +972,23 @@ namespace ORTS
 
         public int route_set()
         {
-            SignalItem sigItem = (SignalItem)SignalObject.trItems[trItemIndex];
-            if (sigItem.noSigDirs > 0)
-            {
-                for (int i = 0; i < sigItem.noSigDirs; i++)
-                {
-                    if (mainSignal.route_set((int)sigItem.TrSignalDirs[i].TrackNode))
-                    {
-                        return i+1;         // route is set
-                    }
-                }
-                return 0;   // No links set
-            }
-            else
-            {
-                return 1;   // Returns 1 if signal does not have link defined
-            }
+            //SignalItem sigItem = (SignalItem)SignalObject.trItems[trItemIndex];
+            //if (sigItem.noSigDirs > 0)
+            //{
+            //    for (int i = 0; i < sigItem.noSigDirs; i++)
+            //    {
+            //        if (mainSignal.route_set((int)sigItem.TrSignalDirs[i].TrackNode))
+            //        {
+            //            return i+1;         // route is set
+            //        }
+            //    }
+            //    return 0;   // No links set
+            //}
+            //else
+            //{
+            //    return 1;   // Returns 1 if signal does not have link defined
+            //}
+            return 1;
         }
         //
         //  Default update process
