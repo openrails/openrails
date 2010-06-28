@@ -9,9 +9,9 @@ namespace ORTS
 {
     public abstract class BrakeSystem
     {
-        public float BrakeLine1PressurePSI = 90;     // main trainline pressure at this car
-        public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems
-        public float BrakeLine3PressurePSI = 0;     // extra line just in case
+        public float BrakeLine1PressurePSI = 90;    // main trainline pressure at this car
+        public float BrakeLine2PressurePSI = 0;     // main reservoir equalization pipe pressure
+        public float BrakeLine3PressurePSI = 0;     // engine brake cylinder equalization pipe pressure
 
         public abstract void AISetPercent(float percent);
 
@@ -36,6 +36,8 @@ namespace ORTS
                 return new VacuumSinglePipe(car);
             else if (type != null && type == "ep")
                 return new EPBrakeSystem(car);
+            else if (type != null && type == "air_twin_pipe")
+                return new AirTwinPipe(car);
             else
                 return new AirSinglePipe(car);
         }
@@ -60,21 +62,21 @@ namespace ORTS
         protected TrainCar Car;
         protected float HandbrakePercent = 0;
         protected float CylPressurePSI = 64;
-        float AutoCylPressurePSI = 64;
-        float AuxResPressurePSI = 64;
-        float EmergResPressurePSI = 64;
+        protected float AutoCylPressurePSI = 64;
+        protected float AuxResPressurePSI = 64;
+        protected float EmergResPressurePSI = 64;
         protected float MaxCylPressurePSI = 64;
-        float AuxCylVolumeRatio = 2.5f;
-        float AuxBrakeLineVolumeRatio = 3.1f;
-        float RetainerPressureThresholdPSI = 0;
-        float ReleaseRate = 1.86f;
-        float MaxReleaseRate = 1.86f;
-        float MaxApplicationRate = .9f;
-        float MaxAuxilaryChargingRate = 1.684f;
-        float EmergResChargingRate = 1.684f;
-        float EmergAuxVolumeRatio = 1.4f;
+        protected float AuxCylVolumeRatio = 2.5f;
+        protected float AuxBrakeLineVolumeRatio = 3.1f;
+        protected float RetainerPressureThresholdPSI = 0;
+        protected float ReleaseRate = 1.86f;
+        protected float MaxReleaseRate = 1.86f;
+        protected float MaxApplicationRate = .9f;
+        protected float MaxAuxilaryChargingRate = 1.684f;
+        protected float EmergResChargingRate = 1.684f;
+        protected float EmergAuxVolumeRatio = 1.4f;
         public enum ValveState { Lap, Apply, Release, Emergency };
-        ValveState TripleValveState = ValveState.Lap;
+        protected ValveState TripleValveState = ValveState.Lap;
 
         public AirSinglePipe( TrainCar car )
         {
@@ -161,7 +163,8 @@ namespace ORTS
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI)
         {
-            AuxResPressurePSI = EmergResPressurePSI = BrakeLine1PressurePSI;
+            AuxResPressurePSI = BrakeLine1PressurePSI;
+            EmergResPressurePSI = maxPressurePSI;
             AutoCylPressurePSI = (maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
             if (AutoCylPressurePSI > MaxCylPressurePSI)
                 AutoCylPressurePSI = MaxCylPressurePSI;
@@ -184,15 +187,15 @@ namespace ORTS
             if (TripleValveState == ValveState.Apply || TripleValveState == ValveState.Emergency)
             {
                 float dp = elapsedClockSeconds * MaxApplicationRate;
-                if (AuxResPressurePSI - dp < AutoCylPressurePSI + dp * AuxCylVolumeRatio)
-                    dp = (AuxResPressurePSI - AutoCylPressurePSI) / (1 + AuxCylVolumeRatio);
-                if (BrakeLine1PressurePSI > AuxResPressurePSI - dp)
+                if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
+                    dp = (AuxResPressurePSI - AutoCylPressurePSI) * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
+                if (BrakeLine1PressurePSI > AuxResPressurePSI - dp / AuxCylVolumeRatio)
                 {
-                    dp = AuxResPressurePSI - BrakeLine1PressurePSI;
+                    dp = (AuxResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
                     TripleValveState = ValveState.Lap;
                 }
-                AuxResPressurePSI -= dp;
-                AutoCylPressurePSI += dp * AuxCylVolumeRatio;
+                AuxResPressurePSI -= dp / AuxCylVolumeRatio;
+                AutoCylPressurePSI += dp;
                 if (TripleValveState == ValveState.Emergency)
                 {
                     dp = elapsedClockSeconds * MaxApplicationRate;
@@ -237,7 +240,10 @@ namespace ORTS
                 }
                 if (AuxResPressurePSI < BrakeLine1PressurePSI)
                 {
-                    float dp = elapsedClockSeconds * MaxAuxilaryChargingRate;
+                    float dp = .1f * (BrakeLine1PressurePSI - AuxResPressurePSI);
+                    if (dp > 1)
+                        dp = .5f;
+                    dp *= elapsedClockSeconds* MaxAuxilaryChargingRate;
                     if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
                         dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
                     AuxResPressurePSI += dp;
@@ -309,6 +315,73 @@ namespace ORTS
             Car.Train.BrakeLine1PressurePSI = 90 - 26 * BrakePercent / 100;
         }
     }
+    public class AirTwinPipe : AirSinglePipe
+    {
+        public AirTwinPipe(TrainCar car)
+            : base(car)
+        {
+        }
+
+        public override void Update(float elapsedClockSeconds)
+        {
+            float threshold = RetainerPressureThresholdPSI;
+            float t = (EmergResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
+            if (threshold < t)
+                threshold = t;
+            if (AutoCylPressurePSI > threshold)
+            {
+                TripleValveState = ValveState.Release;
+                AutoCylPressurePSI -= elapsedClockSeconds * ReleaseRate;
+                if (AutoCylPressurePSI < threshold)
+                    AutoCylPressurePSI = threshold;
+            }
+            else if (AutoCylPressurePSI < threshold)
+            {
+                TripleValveState = ValveState.Apply;
+                float dp = elapsedClockSeconds * MaxApplicationRate;
+                if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
+                    dp = (AuxResPressurePSI - AutoCylPressurePSI) * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
+                if (threshold < AutoCylPressurePSI + dp)
+                    dp = threshold - AutoCylPressurePSI;
+                AuxResPressurePSI -= dp / AuxCylVolumeRatio;
+                AutoCylPressurePSI += dp;
+            }
+            else
+                TripleValveState = ValveState.Lap;
+            if (BrakeLine1PressurePSI > EmergResPressurePSI)
+            {
+                float dp = elapsedClockSeconds * EmergResChargingRate;
+                if (EmergResPressurePSI + dp > BrakeLine1PressurePSI - dp * EmergAuxVolumeRatio * AuxBrakeLineVolumeRatio)
+                    dp = (BrakeLine1PressurePSI - EmergResPressurePSI) / (1 + EmergAuxVolumeRatio * AuxBrakeLineVolumeRatio);
+                EmergResPressurePSI += dp;
+                BrakeLine1PressurePSI -= dp * EmergAuxVolumeRatio * AuxBrakeLineVolumeRatio;
+                TripleValveState = ValveState.Release;
+            }
+            if (AuxResPressurePSI < BrakeLine2PressurePSI)
+            {
+                float dp = elapsedClockSeconds * MaxAuxilaryChargingRate;
+                if (AuxResPressurePSI + dp > BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio)
+                    dp = (BrakeLine2PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
+                AuxResPressurePSI += dp;
+                BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio;
+            }
+            if (BrakeLine3PressurePSI >= 1000)
+            {
+                BrakeLine3PressurePSI -= 1000;
+                AutoCylPressurePSI -= 4 * elapsedClockSeconds;
+            }
+            if (AutoCylPressurePSI < 0)
+                AutoCylPressurePSI = 0;
+            if (AutoCylPressurePSI < BrakeLine3PressurePSI)
+                CylPressurePSI = BrakeLine3PressurePSI;
+            else
+                CylPressurePSI = AutoCylPressurePSI;
+            float f = MaxBrakeForceN * CylPressurePSI / MaxCylPressurePSI;
+            if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
+                f = MaxHandbrakeForceN * HandbrakePercent / 100;
+            Car.FrictionForceN += f;
+        }
+    }
     public class EPBrakeSystem : AirSinglePipe
     {
         public EPBrakeSystem(TrainCar car) : base(car)
@@ -318,8 +391,8 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
-            if (CylPressurePSI < BrakeLine2PressurePSI)
-                CylPressurePSI = BrakeLine2PressurePSI;
+            if (CylPressurePSI < Car.Train.BrakeLine4PressurePSI)
+                CylPressurePSI = Car.Train.BrakeLine4PressurePSI;
             float f = MaxBrakeForceN * CylPressurePSI / MaxCylPressurePSI;
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;

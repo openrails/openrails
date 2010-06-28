@@ -61,10 +61,15 @@ namespace ORTS
         float MaxPowerW;
         float MaxForceN;
         float MaxSpeedMpS = 1e3f;
+        public float MainResPressurePSI = 130;
+        public bool CompressorOn = false;
 
         // wag file data
         public string CabSoundFileName = null;
         public string CVFFileName = null;
+        public float MaxMainResPressurePSI = 130;
+        public float MainResVolumeFT3 = 10;
+        public float CompressorRestartPressurePSI = 110;
 
         public CVFFile CVFFile = null;
 
@@ -136,6 +141,9 @@ namespace ORTS
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSEngineController(f); break;
                 case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(f); break;
                 case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(f); break;
+                case "engine(airbrakesmainresvolume": MainResVolumeFT3 = f.ReadFloatBlock(); break;
+                case "engine(airbrakesmainmaxairpressure": MaxMainResPressurePSI = f.ReadFloatBlock(); break;
+                case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = f.ReadFloatBlock(); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }
@@ -176,6 +184,8 @@ namespace ORTS
             outf.Write(MaxPowerW);
             outf.Write(MaxForceN);
             outf.Write(MaxSpeedMpS);
+            outf.Write(MainResPressurePSI);
+            outf.Write(CompressorOn);
             MSTSEngineController.Save(ThrottleController, outf);
             MSTSEngineController.Save(TrainBrakeController, outf);
             MSTSEngineController.Save(EngineBrakeController, outf);
@@ -194,6 +204,8 @@ namespace ORTS
             MaxPowerW = inf.ReadSingle();
             MaxForceN = inf.ReadSingle();
             MaxSpeedMpS = inf.ReadSingle();
+            MainResPressurePSI = inf.ReadSingle();
+            CompressorOn = inf.ReadBoolean();
             ThrottleController = MSTSEngineController.Restore(inf);
             TrainBrakeController = MSTSEngineController.Restore(inf);
             EngineBrakeController = MSTSEngineController.Restore(inf);
@@ -236,6 +248,13 @@ namespace ORTS
             // Variable1 is wheel rotation in m/sec for steam locomotives
             Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
+
+            if (MainResPressurePSI < CompressorRestartPressurePSI)
+                CompressorOn = true;
+            else if (MainResPressurePSI > MaxMainResPressurePSI)
+                CompressorOn = false;
+            if (CompressorOn)
+                MainResPressurePSI += elapsedClockSeconds * .5f * Program.BrakePipeChargingRatePSIpS * .5f / MainResVolumeFT3;
 
             base.Update(elapsedClockSeconds);
         }

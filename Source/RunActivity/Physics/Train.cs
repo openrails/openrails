@@ -55,6 +55,7 @@ namespace ORTS
         public float BrakeLine1PressurePSI = 90;     // set by player locomotive to control entire train brakes
         public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems
         public float BrakeLine3PressurePSI = 0;     // extra line just in case
+        public float BrakeLine4PressurePSI = 0;     // extra line just in case
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
 
@@ -109,6 +110,7 @@ namespace ORTS
             BrakeLine1PressurePSI = inf.ReadSingle();
             BrakeLine2PressurePSI = inf.ReadSingle();
             BrakeLine3PressurePSI = inf.ReadSingle();
+            BrakeLine4PressurePSI = inf.ReadSingle();
             aiBrakePercent = inf.ReadSingle();
             LeadLocomotiveIndex = inf.ReadInt32();
             RetainerSetting = (RetainerSetting)inf.ReadInt32();
@@ -128,6 +130,7 @@ namespace ORTS
             outf.Write(BrakeLine1PressurePSI);
             outf.Write(BrakeLine2PressurePSI);
             outf.Write(BrakeLine3PressurePSI);
+            outf.Write(BrakeLine4PressurePSI);
             outf.Write(aiBrakePercent);
             outf.Write(LeadLocomotiveIndex);
             outf.Write((int)RetainerSetting);
@@ -207,18 +210,19 @@ namespace ORTS
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                 {
-                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, 1000, ref BrakeLine2PressurePSI);
+                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, 1000, ref BrakeLine4PressurePSI);
                     maxPressurePSI = lead.TrainBrakeController.MaxPressurePSI;
-                    if (BrakeLine1PressurePSI < BrakeLine2PressurePSI - lead.TrainBrakeController.FullServReductionPSI)
-                        BrakeLine1PressurePSI = BrakeLine2PressurePSI - lead.TrainBrakeController.FullServReductionPSI;
+                    if (BrakeLine1PressurePSI < maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI)
+                        BrakeLine1PressurePSI = maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
                 }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
             }
             else
             {
-                BrakeLine1PressurePSI = BrakeLine2PressurePSI = BrakeLine3PressurePSI = 0;
+                BrakeLine1PressurePSI = BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
             }
+            BrakeLine2PressurePSI = maxPressurePSI;
             //Console.WriteLine("init {0} {1} {2}", BrakeLine1PressurePSI, BrakeLine2PressurePSI, BrakeLine3PressurePSI);
             foreach (TrainCar car in Cars)
             {
@@ -315,9 +319,10 @@ namespace ORTS
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
-                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds, ref BrakeLine2PressurePSI);
+                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds, ref BrakeLine4PressurePSI);
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
+                float pipeVolume = .5f;
                 if (Program.BrakePipeChargingRatePSIpS < 1000)
                 {
                     float pipeTimeFactor = .003f;
@@ -330,9 +335,15 @@ namespace ORTS
                     {
                         if (lead.BrakeSystem.BrakeLine1PressurePSI < BrakeLine1PressurePSI)
                         {
-                            lead.BrakeSystem.BrakeLine1PressurePSI += dt * Program.BrakePipeChargingRatePSIpS;
-                            if (lead.BrakeSystem.BrakeLine1PressurePSI > BrakeLine1PressurePSI)
-                                lead.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+                            float dp = dt * Program.BrakePipeChargingRatePSIpS;
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > BrakeLine1PressurePSI)
+                                dp = BrakeLine1PressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > lead.MainResPressurePSI)
+                                dp = lead.MainResPressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
+                            if (dp < 0)
+                                dp = 0;
+                            lead.BrakeSystem.BrakeLine1PressurePSI += dp;
+                            lead.MainResPressurePSI -= dp * pipeVolume / lead.MainResVolumeFT3;
                         }
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI > BrakeLine1PressurePSI)
                             lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
@@ -358,19 +369,70 @@ namespace ORTS
                         if (car.BrakeSystem.BrakeLine1PressurePSI >= 0)
                             car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
                 }
-                foreach (TrainCar car in Cars)
-                {
-                    car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
-                    car.BrakeSystem.BrakeLine3PressurePSI = 0;
-                }
-                float p = BrakeLine3PressurePSI;
-                if (lead.BailOff)
-                    p += 1000;
                 int first = -1;
                 int last = -1;
                 FindLeadLocomotives(ref first, ref last);
-                for (int i = first; i <= last; i++)
-                    Cars[i].BrakeSystem.BrakeLine3PressurePSI = p;
+                float sumpv = 0;
+                float sumv = 0;
+                for (int i = 0; i < Cars.Count; i++)
+                {
+                    if (Cars[i].BrakeSystem.BrakeLine1PressurePSI < 0)
+                        continue;
+                    if (i < first || i > last)
+                    {
+                        Cars[i].BrakeSystem.BrakeLine3PressurePSI = 0;
+                        if (lead.BrakeSystem.GetType() == typeof(AirTwinPipe))
+                        {
+                            sumv += pipeVolume;
+                            sumpv += pipeVolume * Cars[i].BrakeSystem.BrakeLine2PressurePSI;
+                        }
+                    }
+                    else
+                    {
+                        float p = Cars[i].BrakeSystem.BrakeLine3PressurePSI;
+                        if (p > 1000)
+                            p -= 1000;
+                        if (p < BrakeLine3PressurePSI)
+                        {
+                            float dp = elapsedClockSeconds * 12.5f / (last - first + 1);
+                            if (p + dp > BrakeLine3PressurePSI)
+                                dp = BrakeLine3PressurePSI - p;
+                            p += dp;
+                        }
+                        else if (p > BrakeLine3PressurePSI)
+                        {
+                            float dp = elapsedClockSeconds * 12.5f / (last - first + 1);
+                            if (p - dp < BrakeLine3PressurePSI)
+                                dp = p - BrakeLine3PressurePSI;
+                            p -= dp;
+                        }
+                        if (lead.BailOff)
+                            p += 1000;
+                        Cars[i].BrakeSystem.BrakeLine3PressurePSI = p;
+                        sumv += pipeVolume;
+                        sumpv += pipeVolume * Cars[i].BrakeSystem.BrakeLine2PressurePSI;
+                        MSTSLocomotive eng = (MSTSLocomotive)Cars[i];
+                        sumv += eng.MainResVolumeFT3;
+                        sumpv += eng.MainResVolumeFT3 * eng.MainResPressurePSI;
+                    }
+                }
+                if (sumv > 0)
+                    sumpv /= sumv;
+                for (int i = 0; i < Cars.Count; i++)
+                {
+                    if (Cars[i].BrakeSystem.BrakeLine1PressurePSI < 0)
+                        continue;
+                    if (i < first || i > last)
+                    {
+                        Cars[i].BrakeSystem.BrakeLine2PressurePSI = lead.BrakeSystem.GetType() == typeof(AirTwinPipe) ? sumpv : 0;
+                    }
+                    else
+                    {
+                        Cars[i].BrakeSystem.BrakeLine2PressurePSI = sumpv;
+                        MSTSLocomotive eng = (MSTSLocomotive)Cars[i];
+                        eng.MainResPressurePSI = sumpv;
+                    }
+                }
             }
             else
             {

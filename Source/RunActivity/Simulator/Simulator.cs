@@ -121,7 +121,7 @@ namespace ORTS
             ClockTime = inf.ReadDouble();
             RestoreSwitchSettings(inf);
             RestoreTrains(inf);
-            Signals = new Signals(this, inf);
+            //Signals = new Signals(this, inf);
             AI = new AI(this, inf);
 
         }
@@ -132,7 +132,7 @@ namespace ORTS
             outf.Write(ClockTime);
             SaveSwitchSettings(outf);
             SaveTrains(outf);
-            Signals.Save(outf);
+            //Signals.Save(outf);
             AI.Save(outf);
         }
 
