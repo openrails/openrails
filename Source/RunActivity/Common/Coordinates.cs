@@ -45,6 +45,15 @@ namespace ORTS
         public int TileZ;
         public Matrix XNAMatrix = new Matrix();   // relative to center of tile
 
+        public WorldPosition() { }
+        
+        public WorldPosition(WorldPosition copy) // Copy constructor
+        {
+            TileX = copy.TileX;
+            TileZ = copy.TileZ;
+            XNAMatrix = copy.XNAMatrix;
+        }
+        
         public WorldLocation WorldLocation   // provided in MSTS coordinates
         {
             get

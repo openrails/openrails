@@ -9,6 +9,12 @@
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
+///
+/// Principal Author:
+///    ???
+/// Contributors:
+///    Walt Niehoff
+///     
  * 
  */
 
@@ -544,95 +550,97 @@ namespace ORTS
             return true;
         }
 
+        /// <summary>
+        /// MoveInCurvedSegment attempts to move traveler through track section.
+        /// </summary>
+        /// <param name="distanceToGo">Target distance (>0) to move along curve.</param>
+        /// <param name="direction">Forward (1) or reverse (0).</param>
+        /// <param name="TS">Track section object.</param>
+        /// <returns>Remaining distance to go.</returns>
         float MoveInCurvedSegment(float distanceToGo, int direction, TrackSection TS)
-        // code assumes distanctToGo is positive relative to specified direction.
+        // Code assumes distanceToGo is positive relative to specified direction.
+        // This implementation uses the same interpolation methodology as dynamic track visualization.
         {
-            // for curved segments, offset is always positive, 
+            float desiredTurnRadians = distanceToGo / TS.SectionCurve.Radius;
+            float sectionTurnRadians = Math.Abs(TS.SectionCurve.Angle *
+                                                (float)(Math.PI / 180.0));
 
-            if (direction > 0)  // moving forwared
+            bool fwd = direction > 0; // Moving forward
+            // "Handedness" Convention: A right-hand curve (TS.SectionCurve.Angle > 0) curves 
+            // to the right when moving forward.
+            bool rh = TS.SectionCurve.Angle > 0;
+
+            if (fwd) // Moving forward
             {
-                float desiredTurnRadians = M.TurnAngleRadians(TS.SectionCurve.Radius * 2.0f, distanceToGo);
-                float sectionTurnRadians = Math.Abs(MSTSMath.M.Radians(TS.SectionCurve.Angle));
-
+                // Resolve how far (radians) to progress around the curve.
+                // If the total progression is more than sectionTurnRadians, 
+                // back off to end of curve.
+                // Offset, radians from beginning of curve, is positive and increasing. 
                 if (Offset + desiredTurnRadians > sectionTurnRadians)
                     desiredTurnRadians = sectionTurnRadians - Offset;
+                Offset += desiredTurnRadians;   // Update Offset
+            }
+            else // Moving backwards
+            {
+                // Offset, radians from beginning of curve, is positive and decreasing.
+                if (desiredTurnRadians > Offset)  // Can't go back past beginning
+                    desiredTurnRadians = Offset;
+                Offset -= desiredTurnRadians; // Update Offset
+            }
 
-                // for curves ,offset is in radians from beginning of curve.
-                Offset += desiredTurnRadians;
+            float sgn = rh ? -1.0f : 1.0f; // sgn = -1.0f right-hand curve; sgn = 1.0f left-hand curve
+            float radius = TS.SectionCurve.Radius;
+            Vector3 vPC_O = sgn * radius * Vector3.Left; // Vector from PC to O
+            Matrix rot = Matrix.CreateRotationY(sgn * Offset); // Rotate by Offset
+            Matrix XNAMatrix = Matrix.CreateFromYawPitchRoll(-TVS.AY, -TVS.AX, TVS.AZ); // World transform
+            Vector3 dummy; // Not used here
+            // Shared method returns displacement from present world position and, by reference,
+            // local position in x-z plane of end of this section
+            Vector3 displacement = MSTSInterpolateAlongCurve(Vector3.Zero, vPC_O, rot, XNAMatrix,
+                                                                out dummy);
+            X = TVS.X + displacement.X;
+            Y = TVS.Y + displacement.Y;
+            Z = TVS.Z - displacement.Z;
 
-                // TODO - consider using circumference length instead - it is a simpler calculation 
-                float distanceMoved = M.CordLength(TS.SectionCurve.Radius * 2.0f, desiredTurnRadians);
+            float distanceMoved = TS.SectionCurve.Radius * desiredTurnRadians; // Along arc
 
-                TWorldPosition P = new TWorldPosition(X, Y, Z);
-                TWorldDirection D = new TWorldDirection();
-                D.SetBearing(AY);
-
-                if (TS.SectionCurve.Angle < 0)   // turning left
-                    desiredTurnRadians *= -1;
-
-                D.Rotate(desiredTurnRadians / 2.0f);
-                P.Move(D, distanceMoved);
-                D.Rotate(desiredTurnRadians / 2.0f);
-
-                X = P.X;
-                Y = P.Y;
-                Z = P.Z;
-
-                // Normalize 
-                MSTSMath.M.NormalizeRadians(ref AX);
-
-                Y -= AX * (float)distanceMoved;  // equivalent to sin(ax) * distance    when ax is small
-
-                AY += desiredTurnRadians;
-
-                return distanceToGo - distanceMoved;
+            if (fwd)  // moving forward
+            {
+                AY += desiredTurnRadians; // Update orientation of tangent at (X, Y, Z)
             }
             else // moving backward
             {
-
-                float desiredTurnRadians = M.TurnAngleRadians(TS.SectionCurve.Radius * 2.0f, distanceToGo);
-                float sectionTurnRadians = Math.Abs(MSTSMath.M.Radians(TS.SectionCurve.Angle));
-
-                if (desiredTurnRadians > Offset)  // can't go back past beginning
-                    desiredTurnRadians = Offset;
-
-                // for curves ,offset is in radians from beginning of curve.
-                Offset -= desiredTurnRadians;
-
-                // TODO - consider using circumference length instead - it is a simpler calculation 
-                float distanceMoved = M.CordLength(TS.SectionCurve.Radius * 2.0f, desiredTurnRadians);
-
-                TWorldPosition P = new TWorldPosition(X, Y, Z);
-                TWorldDirection D = new TWorldDirection();
-                D.SetBearing(AY);
-
-                if (TS.SectionCurve.Angle < 0)   // turning left
-                    desiredTurnRadians *= -1;
-
-                D.Rotate(-desiredTurnRadians / 2.0f);
-                P.Move(D, distanceMoved);
-                D.Rotate(-desiredTurnRadians / 2.0f);
-
-                X = P.X;
-                Y = P.Y;
-                Z = P.Z;
-
-                // Normalize 
-                MSTSMath.M.NormalizeRadians(ref AX);
-
-                Y -= AX * (float)distanceMoved;  // equivalent to sin(ax) * distance    when ax is small
-
-                AY -= desiredTurnRadians;
-
-                return distanceToGo - distanceMoved;
+                AY -= desiredTurnRadians; // Update orientation of tangent at (X, Y, Z)
             }
-        }
+
+            return distanceToGo - distanceMoved; // Return remainder as new distanceToGo
+        } // end MoveInCurvedSegment
+
+        /// <summary>
+        /// MSTSInterpolateAlongCurve interpolates position along a circular arc.
+        /// (Uses MSTS rigid-body rotation method for curve on a grade.)
+        /// </summary>
+        /// <param name="vPC">Local position vector for Point-of-Curve (PC) in x-z plane.</param>
+        /// <param name="vPC_O">Unit vector in direction from PC to arc center (O).</param>
+        /// <param name="mRotY">Rotation matrix that deflects arc from PC to a point on curve (P).</param>
+        /// <param name="mWorld">Transformation from local to world coordinates.</param>
+        /// <param name="vP">Position vector for desired point on curve (P), returned by reference.</param>
+        /// <returns>Displacement vector from PC to P in world coordinates.</returns>
+        public static Vector3 MSTSInterpolateAlongCurve(Vector3 vPC, Vector3 vPC_O, Matrix mRotY, Matrix mWorld,
+                                    out Vector3 vP)
+        {
+            // Shared method returns displacement from present world position and, by reference,
+            // local position in x-z plane of end of this section
+            Vector3 vO_P = Vector3.Transform(-vPC_O, mRotY); // Rotate O_PC to O_P
+            vP = vPC + vPC_O + vO_P; // Position of P relative to PC
+            return Vector3.Transform(vP, mWorld); // Transform to world coordinates and return as displacement.
+        } // end MSTSInterpolateAlongCurve
 
         float MoveInStraightSegment(float distanceToGo, float direction, TrackSection TS)
-        // code assumes distanctToGo is positive relative to current direction.
+        // Code assumes distanctToGo is positive relative to current direction.
+        // This implementation uses the same interpolation methodology as dynamic track visualization.
         {
             float distance = distanceToGo;
-
             if (direction == 0)
                 distance *= -1;
 
@@ -642,12 +650,13 @@ namespace ORTS
             else if (Offset + distance < 0)
                 distance = -Offset;
 
-            Vector3 p = new Vector3(0f, 0f, distance);
-            p = Vector3.Transform(p, Matrix.CreateFromYawPitchRoll(TVS.AY, TVS.AX, TVS.AZ));
-
-            X += p.X;
-            Y += p.Y;
-            Z += p.Z;
+            Matrix XNAMatrix = Matrix.CreateFromYawPitchRoll(TVS.AY, TVS.AX, TVS.AZ);
+            Vector3 dummy;
+            Vector3 displacement = MSTSInterpolateAlongStraight(Vector3.Zero, Vector3.UnitZ, distance, XNAMatrix,
+                                                                    out dummy);
+            X += displacement.X;
+            Y += displacement.Y;
+            Z += displacement.Z;
 
             Offset += distance;
 
@@ -655,7 +664,23 @@ namespace ORTS
                 distance *= -1;
 
             return distanceToGo - distance;
-        }
+        } // end MoveInStraightSegment
+
+        /// <summary>
+        /// MSTSInterpolateAlongStraight interpolates position along a straight stretch.
+        /// </summary>
+        /// <param name="vP0">Local position vector for starting point P0 in x-z plane.</param>
+        /// <param name="vP0_P">Unit vector in direction from P0 to P.</param>
+        /// <param name="offset">Distance from P0 to P.</param>
+        /// <param name="mWorld">Transformation from local to world coordinates.</param>
+        /// <param name="vP">Position vector for desired point(P), returned by reference.</param>
+        /// <returns>Displacement vector from P0 to P in world coordinates.</returns>
+        public static Vector3 MSTSInterpolateAlongStraight(Vector3 vP0, Vector3 vP0_P, float offset, Matrix mWorld,
+                                                            out Vector3 vP)
+        {
+            vP = vP0 + offset * vP0_P; // Position of desired point in local coordinates.
+            return Vector3.Transform(vP, mWorld);
+        } // end MSTSInterpolateAlongStraight
 
         float MoveInInfiniteSegment(float distanceToGo)
         // temp code used as default at end of track or through dynamic track
