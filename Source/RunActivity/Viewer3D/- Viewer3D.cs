@@ -422,9 +422,7 @@ namespace ORTS
         /// </summary>
         private void ReadENVFile()
         {
-            string envFileName = Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(
-                                        Simulator.Activity.Tr_Activity.Tr_Activity_Header.Season,
-                                        Simulator.Activity.Tr_Activity.Tr_Activity_Header.Weather);
+            string envFileName = Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather);
 
             ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + envFileName);
         }

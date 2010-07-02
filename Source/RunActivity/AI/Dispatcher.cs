@@ -36,6 +36,13 @@ namespace ORTS
         public Dispatcher(AI ai)
         {
             AI = ai;
+            Reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
+            for (int i = 0; i < Reservations.Length; i++)
+                Reservations[i] = -1;
+            FindDoubleTrack();
+            CalcTrackLength();
+            if (ai.Simulator.Activity == null)
+                return;
             // make a temporary AITrain for the player
             string playerServiceFileName = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
             SRVFile srvFile = new SRVFile(AI.Simulator.RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
@@ -46,11 +53,6 @@ namespace ORTS
             if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
                 playerTrain.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
             AI.AITrainDictionary.Add(0, playerTrain);
-            Reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
-            for (int i = 0; i < Reservations.Length; i++)
-                Reservations[i] = -1;
-            FindDoubleTrack();
-            CalcTrackLength();
             PlayerPriority = AI.Simulator.Activity.Tr_Activity.Tr_Activity_Header.StartTime.Second % 10;
             if (AI.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Briefing.Contains("OR Dispatcher: Priority"))
                 TimeTable = new TimeTable(this);

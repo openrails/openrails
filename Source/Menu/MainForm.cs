@@ -21,10 +21,17 @@ namespace ORTS
     {
         public string SelectedRoutePath { get{   return routePaths[listBoxRoutes.SelectedIndex]; } }
         public string SelectedActivityPath { get { return activityPaths[listBoxActivities.SelectedIndex]; } }
+        public string SelectedPath { get { return ExplorePatFile; } }
+        public string SelectedConsist { get { return ExploreConFile; } }
 
         List<string> folderPaths = new List<string>();
         List<string> routePaths = new List<string>();
         List<string> activityPaths;
+        public string ExplorePatFile = null;
+        public string ExploreConFile = null;
+        public int ExploreSeason = 0;
+        public int ExploreWeather = 0;
+        public int ExploreStartHour = 12;
 
         string FolderDataFileName = "folder.dat";
 
@@ -125,6 +132,7 @@ namespace ORTS
             listBoxRoutes.Refresh();
             listBoxActivities.Items.Clear();
             listBoxActivities.Refresh();
+            ExploreConFile = null;
 
             try
             {
@@ -172,6 +180,9 @@ namespace ORTS
                 activityPaths = new List<string>();
                 string[] allActivityPaths = Directory.GetFiles(SelectedRoutePath + @"\ACTIVITIES", "*.act");
 
+                listBoxActivities.Items.Add("Explore Route");
+                activityPaths.Add(null);
+                ExplorePatFile = null;
 
                 // create a list of activities
                 foreach (string activityPath in allActivityPaths)
@@ -202,7 +213,13 @@ namespace ORTS
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            if (listBoxActivities.SelectedIndex >= 0 )
+            if (listBoxActivities.SelectedIndex == 0)
+            {
+                GetExploreInfo();
+                if (ExploreConFile != null && ExplorePatFile != null)
+                    DialogResult = DialogResult.OK;
+            }
+            else if (listBoxActivities.SelectedIndex >= 0 )
             {              
                 DialogResult = DialogResult.OK;
             }
@@ -306,13 +323,29 @@ namespace ORTS
 
         private void DisplayActivityDetails()
         {
-            if (listBoxActivities.SelectedIndex >= 0)
+            if (listBoxActivities.SelectedIndex == 0)
+                GetExploreInfo();
+            else if (listBoxActivities.SelectedIndex > 0)
             {
                 DetailsForm frmDetails = new DetailsForm();
                 if (frmDetails.ActivityDetails(SelectedActivityPath))
                 {
                     frmDetails.ShowDialog();
                 }
+            }
+        }
+
+        private void GetExploreInfo()
+        {
+            ExploreForm form = new ExploreForm();
+            form.LoadData(folderPaths[listBoxFolder.SelectedIndex], SelectedRoutePath, ExplorePatFile, ExploreConFile, ExploreSeason, ExploreWeather, ExploreStartHour);
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                ExplorePatFile = form.SelectedPath;
+                ExploreConFile = form.SelectedConsist;
+                ExploreStartHour = form.SelectedStartHour;
+                ExploreSeason = form.SelectedSeason;
+                ExploreWeather = form.SelectedWeather;
             }
         }
 

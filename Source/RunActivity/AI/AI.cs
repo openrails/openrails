@@ -38,7 +38,7 @@ namespace ORTS
         {
             Simulator = simulator;
             //Console.WriteLine("AI {0} {1} {2} {3}", ClockTime, st.Hour, st.Minute, st.Second);
-            if( simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null )
+            if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
                 foreach (Service_Definition sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition)
                 {
                     if (sd.Time < Simulator.ClockTime)

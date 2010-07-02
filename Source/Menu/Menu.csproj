@@ -68,6 +68,12 @@
     <Compile Include="..\MSTS\_STF.cs">
       <Link>MSTS\_STF.cs</Link>
     </Compile>
+    <Compile Include="ExploreForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExploreForm.Designer.cs">
+      <DependentUpon>ExploreForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormFolderName.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -88,6 +94,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="ExploreForm.resx">
+      <DependentUpon>ExploreForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormFolderName.resx">
       <DependentUpon>FormFolderName.cs</DependentUpon>
     </EmbeddedResource>
@@ -140,7 +149,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>echo $Revision: 139 $ &gt;revision.txt
+    <PreBuildEvent>echo $Revision: 000 $ &gt;revision.txt
 date /T &gt;&gt;revision.txt
 time /T &gt;&gt;revision.txt</PreBuildEvent>
   </PropertyGroup>

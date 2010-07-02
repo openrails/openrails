@@ -46,7 +46,13 @@ namespace ORTS
 
                     switch( MainForm.DialogResult )
                     {
-                        case DialogResult.OK:   parameter = "\"" + MainForm.SelectedActivityPath + "\""; break;
+                        case DialogResult.OK:
+                            if (MainForm.SelectedActivityPath == null)
+                                parameter = "\"" + MainForm.SelectedPath + "\" \"" + MainForm.SelectedConsist + "\"" +
+                                    string.Format(" {0} {1} {2}", MainForm.ExploreStartHour, MainForm.ExploreSeason, MainForm.ExploreWeather);
+                            else
+                                parameter = "\"" + MainForm.SelectedActivityPath + "\"";
+                            break;
                         case DialogResult.Retry: parameter = "-resume"; break;
                         default: return;
                     }

@@ -60,6 +60,8 @@ namespace ORTS
         public SeasonType Season;
         public WeatherType Weather;
         public SIGCFGFile sigCFGfile;
+        public string ExplorePathFile;
+        public string ExploreConFile;
 
         
         public TrainCar PlayerLocomotive = null;  // Set by the Viewer - TODO there could be more than one player so eliminate this.
@@ -90,16 +92,29 @@ namespace ORTS
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
 
             Console.Write(" ACT");
+        }
+        public void SetActivity(string activityPath)
+        {
             Activity = new ACTFile(activityPath);
+            StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
+            TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
+            ClockTime = StartTime.TotalSeconds;
+            Season = Activity.Tr_Activity.Tr_Activity_Header.Season;
+            Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
+        }
+        public void SetExplore(string path, string consist, string start, string season, string weather)
+        {
+                ExplorePathFile = path;
+                ExploreConFile = consist;
+                TimeSpan StartTime = new TimeSpan(int.Parse(start), 0, 0);
+                ClockTime = StartTime.TotalSeconds;
+                Season = (SeasonType)int.Parse(season);
+                Weather = (WeatherType)int.Parse(weather);
         }
 
         // restart the simulator the the beginning of the activity
         public void Start()
         {
-            // Clock time
-            StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
-            TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
-            ClockTime = StartTime.TotalSeconds;
             // Switches
             AlignSwitchesToDefault();  // ie straight through routing
             // Trains
@@ -107,10 +122,6 @@ namespace ORTS
             Trains.Clear();
             InitializePlayerTrain();
             InitializeStaticConsists();
-            // Get season and weather
-            Season = Activity.Tr_Activity.Tr_Activity_Header.Season;
-            Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
-
             //Signals = new Signals(this);
             AI = new AI(this);
         }
@@ -119,6 +130,8 @@ namespace ORTS
         public void Restore(BinaryReader inf)
         {
             ClockTime = inf.ReadDouble();
+            Season = (SeasonType)inf.ReadInt32();
+            Weather = (WeatherType)inf.ReadInt32();
             RestoreSwitchSettings(inf);
             RestoreTrains(inf);
             //Signals = new Signals(this, inf);
@@ -130,6 +143,8 @@ namespace ORTS
         public void Save(BinaryWriter outf)
         {
             outf.Write(ClockTime);
+            outf.Write((int)Season);
+            outf.Write((int)Weather);
             SaveSwitchSettings(outf);
             SaveTrains(outf);
             //Signals.Save(outf);
@@ -526,24 +541,34 @@ namespace ORTS
             // set up the player locomotive
             // first extract the player service definition from the activity file
             // this gives the consist and path
-            string playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
-            SRVFile srvFile = new SRVFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
-            string playerConsistFileName = srvFile.Train_Config;
-            CONFile conFile = new CONFile(BasePath + @"\TRAINS\CONSISTS\" + playerConsistFileName + ".CON");
-            string playerPathFileName = srvFile.PathID;
+            string patFileName;
+            string conFileName;
+            if (Activity == null)
+            {
+                patFileName = ExplorePathFile;
+                conFileName = ExploreConFile;
+            }
+            else
+            {
+                string playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
+                SRVFile srvFile = new SRVFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+                conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+                patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
+            }
 
             Train train = new Train();
 
             // This is the position of the back end of the train in the database.
-            PATTraveller patTraveller = new PATTraveller(RoutePath + @"\PATHS\" + playerPathFileName + ".PAT");
+            PATTraveller patTraveller = new PATTraveller(patFileName);
             train.RearTDBTraveller = new TDBTraveller(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z, 0, TDB, TSectionDat);
             // figure out if the next waypoint is forward or back
             patTraveller.NextWaypoint();
             if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
                 train.RearTDBTraveller.ReverseDirection();
-            PATFile patFile = new PATFile(RoutePath + @"\PATHS\" + playerPathFileName + ".PAT");
+            PATFile patFile = new PATFile(patFileName);
             AIPath aiPath = new AIPath(patFile , TDB, TSectionDat);
             aiPath.AlignAllSwitches();
+            CONFile conFile = new CONFile(conFileName);
 
             // add wagons
             foreach (Wagon wagon in conFile.Train.TrainCfg.Wagons)
@@ -584,6 +609,8 @@ namespace ORTS
         /// </summary>
         private void InitializeStaticConsists()
         {
+            if (Activity == null)
+                return;
             // for each static consist
             foreach (ActivityObject activityObject in Activity.Tr_Activity.Tr_Activity_File.ActivityObjects)
             {

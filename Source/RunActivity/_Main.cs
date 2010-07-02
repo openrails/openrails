@@ -82,16 +82,17 @@ namespace ORTS
                 Testing.Test();
 
             else if (args[0] == "-random")
-
-                Start(Testing.GetRandomActivity());
-
+            {
+                args[0] = Testing.GetRandomActivity();
+                Start(args);
+            }
             else if (args[0] == "-resume")
 
                 Resume();
 
             else
 
-                Start(args[0]);
+                Start(args);
 
         }
 
@@ -99,17 +100,24 @@ namespace ORTS
         /// <summary>
         /// Run the specified activity from the beginning.
         /// </summary>
-        public static void Start(string parameter)
+        public static void Start(string[] args)
         {
             try
             {
-                ActivityPath = parameter;
+                ActivityPath = args[0];
 
-                Console.WriteLine("Starting Activity = " + ActivityPath);
+                if (args.Length == 1)
+                    Console.WriteLine("Starting Activity = " + ActivityPath);
+                else
+                    Console.WriteLine("Starting Explore = " + args[0] + " " + args[1]);
                 Console.WriteLine();
                 Console.WriteLine("------------------------------------------------");
 
                 Simulator = new Simulator(ActivityPath);
+                if (args.Length == 1)
+                    Simulator.SetActivity(args[0]);
+                else
+                    Simulator.SetExplore(args[0],args[1],args[2],args[3],args[4]);
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator);
                 Viewer.Run();
@@ -135,6 +143,9 @@ namespace ORTS
                 using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
                 {
                     outf.Write(ActivityPath);
+                    outf.Write(Simulator.ExploreConFile != null);
+                    if (Simulator.ExploreConFile != null)
+                        outf.Write(Simulator.ExploreConFile);
                     Simulator.Save(outf);
                     Viewer.Save(outf);
                     Console.WriteLine("\nSaved");
@@ -156,12 +167,20 @@ namespace ORTS
                 using( BinaryReader inf = new BinaryReader( new FileStream( UserDataFolder + "\\SAVE.BIN", FileMode.Open, FileAccess.Read )) )
                 {
                     ActivityPath = inf.ReadString();
+                    bool explore = inf.ReadBoolean();
+                    string conFile = null;
+                    if (explore)
+                        conFile = inf.ReadString();
 
                     Console.WriteLine("Restoring Activity = " + ActivityPath);
                     Console.WriteLine();
                     Console.WriteLine("------------------------------------------------");
 
                     Simulator = new Simulator(ActivityPath);
+                    if (explore)
+                        Simulator.SetExplore(ActivityPath, conFile, "12", "0", "0");
+                    else
+                        Simulator.SetActivity(ActivityPath);
                     Simulator.Restore(inf);
                     Viewer = new Viewer3D(Simulator);
                     Viewer.Restore(inf);
