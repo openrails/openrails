@@ -41,6 +41,7 @@ namespace MSTS
 		public string FileName;  // only needed for error reporting purposes
         public int LineNumber = 1;    // current line number for error reporting
         public string Header;
+        private STFReader IncludeReader = null;
        
 		public STFReader( string filename )
         {
@@ -160,6 +161,15 @@ namespace MSTS
         /// <returns></returns>
         public string ReadString()
         {
+            if (IncludeReader != null)
+            {
+                string s = IncludeReader.ReadString();
+                UpdateTree(s);
+                if (s != "" || !IncludeReader.EOF())
+                    return s;
+                IncludeReader = null;
+            }
+
             int c = 0;
 
             StringBuilder stringText = new StringBuilder("", 1000);
@@ -244,8 +254,17 @@ namespace MSTS
                 }
                 while ( !IsWhiteSpace(c) );
             }
-            UpdateTree(stringText.ToString());
-            return stringText.ToString();
+
+            string result= stringText.ToString();
+            if (treeLevel == 0 && result == "include")
+            {
+                string filename = ReadStringBlock();
+                IncludeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename);
+                return ReadString();
+            }
+
+            UpdateTree(result);
+            return result;
         }
 
 
@@ -809,7 +828,7 @@ namespace MSTS
 
 		public string Tree
 		{
-			get{ return tree.ToString(); }
+            get { return tree.ToString(); }
 		}
 
         private int IndexOf(StringBuilder tree, char target, int iStart)

@@ -174,6 +174,7 @@ namespace ORTS
         }
         public override void Update(float elapsedClockSeconds)
         {
+            ValveState prevTripleValueState = TripleValveState;
             if (BrakeLine1PressurePSI < AuxResPressurePSI - 10)
                 TripleValveState = ValveState.Emergency;
             else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
@@ -248,6 +249,15 @@ namespace ORTS
                         dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
                     AuxResPressurePSI += dp;
                     BrakeLine1PressurePSI -= dp * AuxBrakeLineVolumeRatio;
+                }
+            }
+            if (TripleValveState != prevTripleValueState)
+            {
+                switch (TripleValveState)
+                {
+                    case ValveState.Release: Car.SignalEvent(EventID.TrainBrakeRelease); break;
+                    case ValveState.Apply: Car.SignalEvent(EventID.TrainBrakeApply); break;
+                    case ValveState.Emergency: Car.SignalEvent(EventID.TrainBrakeEmergency); break;
                 }
             }
             if (BrakeLine3PressurePSI >= 1000)

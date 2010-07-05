@@ -392,12 +392,14 @@ namespace ORTS
                         float p = Cars[i].BrakeSystem.BrakeLine3PressurePSI;
                         if (p > 1000)
                             p -= 1000;
+                        AirSinglePipe.ValveState prevState = lead.EngineBrakeState;
                         if (p < BrakeLine3PressurePSI)
                         {
                             float dp = elapsedClockSeconds * 12.5f / (last - first + 1);
                             if (p + dp > BrakeLine3PressurePSI)
                                 dp = BrakeLine3PressurePSI - p;
                             p += dp;
+                            lead.EngineBrakeState = AirSinglePipe.ValveState.Apply;
                         }
                         else if (p > BrakeLine3PressurePSI)
                         {
@@ -405,7 +407,16 @@ namespace ORTS
                             if (p - dp < BrakeLine3PressurePSI)
                                 dp = p - BrakeLine3PressurePSI;
                             p -= dp;
+                            lead.EngineBrakeState = AirSinglePipe.ValveState.Release;
                         }
+                        else
+                            lead.EngineBrakeState = AirSinglePipe.ValveState.Lap;
+                        if (lead.EngineBrakeState != prevState)
+                            switch (lead.EngineBrakeState)
+                            {
+                                case AirSinglePipe.ValveState.Release: lead.SignalEvent(EventID.EngineBrakeRelease); break;
+                                case AirSinglePipe.ValveState.Apply: lead.SignalEvent(EventID.EngineBrakeApply); break;
+                            }
                         if (lead.BailOff)
                             p += 1000;
                         Cars[i].BrakeSystem.BrakeLine3PressurePSI = p;

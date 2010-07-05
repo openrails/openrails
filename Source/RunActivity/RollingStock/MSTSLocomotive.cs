@@ -76,6 +76,7 @@ namespace ORTS
         public MSTSEngineController ThrottleController;
         public MSTSEngineController TrainBrakeController;
         public MSTSEngineController EngineBrakeController;
+        public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
 
         public MSTSLocomotive(string  wagPath)
             : base(wagPath)
@@ -249,10 +250,10 @@ namespace ORTS
             Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
 
-            if (MainResPressurePSI < CompressorRestartPressurePSI)
-                CompressorOn = true;
-            else if (MainResPressurePSI > MaxMainResPressurePSI)
-                CompressorOn = false;
+            if (MainResPressurePSI < CompressorRestartPressurePSI && !CompressorOn)
+                SignalEvent(EventID.CompressorOn);
+            else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
+                SignalEvent(EventID.CompressorOff);
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * .5f * Program.BrakePipeChargingRatePSIpS * .5f / MainResVolumeFT3;
 
@@ -324,6 +325,7 @@ namespace ORTS
                 Train.AITrainBrakePercent = 100;
             else
                 TrainBrakeController.SetEmergency();
+            SignalEvent(EventID.TrainBrakeEmergency);
         }
         public override string GetTrainBrakeStatus()
         {
@@ -380,6 +382,8 @@ namespace ORTS
                 case EventID.HeadlightOff: Headlight = 0; break;
                 case EventID.HeadlightDim: Headlight = 1; break;
                 case EventID.HeadlightOn:  Headlight = 2; break;
+                case EventID.CompressorOn: CompressorOn = true; break;
+                case EventID.CompressorOff: CompressorOn = false; break;
             }
 
             base.SignalEvent(eventID );

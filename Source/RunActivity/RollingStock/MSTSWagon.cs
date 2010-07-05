@@ -84,6 +84,11 @@ namespace ORTS
         /// </summary>
         public virtual void InitializeFromWagFile(string wagFilePath)
         {
+            string dir = Path.GetDirectoryName(wagFilePath);
+            string file = Path.GetFileName(wagFilePath);
+            string orFile = dir + @"\openrails\" + file;
+            if (File.Exists(orFile))
+                wagFilePath = orFile;
             STFReader f = new STFReader(wagFilePath);
             while (!f.EOF())
             {
