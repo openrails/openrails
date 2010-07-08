@@ -773,7 +773,10 @@ namespace ORTS
                                     int iNode = shapePrimitive.iHierarchy;
                                     while (iNode != -1)
                                     {
-                                        xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
+                                        if (shapePrimitive.Hierarchy[iNode] != -1) // MSTS ignores root matrix,  ('floating objects problem' )
+                                        {
+                                            xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
+                                        }
                                         iNode = shapePrimitive.Hierarchy[iNode];
                                     }
                                     xnaMatrix *= xnaDTileTranslation;
