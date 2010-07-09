@@ -70,6 +70,13 @@ namespace ORTS
         public float MaxMainResPressurePSI = 130;
         public float MainResVolumeFT3 = 10;
         public float CompressorRestartPressurePSI = 110;
+        public float MainResChargingRatePSIpS = .4f;
+        public float EngineBrakeReleaseRatePSIpS = 12.5f;
+        public float EngineBrakeApplyRatePSIpS = 12.5f;
+        public float BrakePipeTimeFactorS = .003f;
+        public float BrakeServiceTimeFactorS = 1.009f;
+        public float BrakeEmergencyTimeFactorS = .1f;
+        public float BrakePipeChargingRatePSIpS = Program.BrakePipeChargingRatePSIpS;
 
         public CVFFile CVFFile = null;
 
@@ -143,8 +150,15 @@ namespace ORTS
                 case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(f); break;
                 case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(f); break;
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = f.ReadFloatBlock(); break;
-                case "engine(airbrakesmainmaxairpressure": MaxMainResPressurePSI = f.ReadFloatBlock(); break;
+                case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = f.ReadFloatBlock(); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = f.ReadFloatBlock(); break;
+                case "engine(mainreschargingrate": MainResChargingRatePSIpS = f.ReadFloatBlock(); break;
+                case "engine(enginebrakereleaserate": EngineBrakeReleaseRatePSIpS = f.ReadFloatBlock(); break;
+                case "engine(enginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = f.ReadFloatBlock(); break;
+                case "engine(brakepipetimefactor": BrakePipeTimeFactorS = f.ReadFloatBlock(); break;
+                case "engine(brakeservicetimefactor": BrakeServiceTimeFactorS = f.ReadFloatBlock(); break;
+                case "engine(brakeemergencytimefactor": BrakeEmergencyTimeFactorS = f.ReadFloatBlock(); break;
+                case "engine(brakepipechargingrate": BrakePipeChargingRatePSIpS = f.ReadFloatBlock(); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }
@@ -255,7 +269,7 @@ namespace ORTS
             else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
                 SignalEvent(EventID.CompressorOff);
             if (CompressorOn)
-                MainResPressurePSI += elapsedClockSeconds * .5f * Program.BrakePipeChargingRatePSIpS * .5f / MainResVolumeFT3;
+                MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
             base.Update(elapsedClockSeconds);
         }

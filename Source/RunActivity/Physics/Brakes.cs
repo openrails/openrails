@@ -12,6 +12,7 @@ namespace ORTS
         public float BrakeLine1PressurePSI = 90;    // main trainline pressure at this car
         public float BrakeLine2PressurePSI = 0;     // main reservoir equalization pipe pressure
         public float BrakeLine3PressurePSI = 0;     // engine brake cylinder equalization pipe pressure
+        public float BrakePipeVolumeFT3 = .5f;      // volume of a single brake line
 
         public abstract void AISetPercent(float percent);
 
@@ -128,6 +129,7 @@ namespace ORTS
                 case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRate = f.ReadFloatBlock(); break;
                 case "wagon(emergencyreschargingrate": EmergResChargingRate = f.ReadFloatBlock(); break;
                 case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = f.ReadFloatBlock(); break;
+                case "wagon(brakepipevolume": BrakePipeVolumeFT3 = f.ReadFloatBlock(); break;
             }
         }
 
@@ -241,10 +243,14 @@ namespace ORTS
                 }
                 if (AuxResPressurePSI < BrakeLine1PressurePSI)
                 {
+#if false
                     float dp = .1f * (BrakeLine1PressurePSI - AuxResPressurePSI);
                     if (dp > 1)
                         dp = .5f;
-                    dp *= elapsedClockSeconds* MaxAuxilaryChargingRate;
+                    dp *= elapsedClockSeconds * MaxAuxilaryChargingRate;
+#else
+                    float dp = elapsedClockSeconds * MaxAuxilaryChargingRate;
+#endif
                     if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
                         dp = (BrakeLine1PressurePSI - AuxResPressurePSI) / (1 + AuxBrakeLineVolumeRatio);
                     AuxResPressurePSI += dp;
@@ -263,7 +269,7 @@ namespace ORTS
             if (BrakeLine3PressurePSI >= 1000)
             {
                 BrakeLine3PressurePSI -= 1000;
-                AutoCylPressurePSI -= 4 * elapsedClockSeconds;
+                AutoCylPressurePSI -= MaxReleaseRate * elapsedClockSeconds;
             }
             if (AutoCylPressurePSI < 0)
                 AutoCylPressurePSI = 0;
@@ -334,6 +340,7 @@ namespace ORTS
 
         public override void Update(float elapsedClockSeconds)
         {
+            ValveState prevTripleValueState = TripleValveState;
             float threshold = RetainerPressureThresholdPSI;
             float t = (EmergResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
             if (threshold < t)
@@ -375,10 +382,19 @@ namespace ORTS
                 AuxResPressurePSI += dp;
                 BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio;
             }
+            if (TripleValveState != prevTripleValueState)
+            {
+                switch (TripleValveState)
+                {
+                    case ValveState.Release: Car.SignalEvent(EventID.TrainBrakeRelease); break;
+                    case ValveState.Apply: Car.SignalEvent(EventID.TrainBrakeApply); break;
+                    case ValveState.Emergency: Car.SignalEvent(EventID.TrainBrakeEmergency); break;
+                }
+            }
             if (BrakeLine3PressurePSI >= 1000)
             {
                 BrakeLine3PressurePSI -= 1000;
-                AutoCylPressurePSI -= 4 * elapsedClockSeconds;
+                AutoCylPressurePSI -= MaxReleaseRate * elapsedClockSeconds;
             }
             if (AutoCylPressurePSI < 0)
                 AutoCylPressurePSI = 0;
@@ -394,15 +410,53 @@ namespace ORTS
     }
     public class EPBrakeSystem : AirSinglePipe
     {
+        ValveState epState = ValveState.Lap;
+
         public EPBrakeSystem(TrainCar car) : base(car)
         {
         }
 
         public override void Update(float elapsedClockSeconds)
         {
+            ValveState prevState = epState;
+            RetainerPressureThresholdPSI = Car.Train.BrakeLine4PressurePSI;
+            if (AutoCylPressurePSI > RetainerPressureThresholdPSI)
+            {
+                epState = ValveState.Release;
+                if (TripleValveState==ValveState.Lap)
+                    TripleValveState = ValveState.Release;
+            }
             base.Update(elapsedClockSeconds);
-            if (CylPressurePSI < Car.Train.BrakeLine4PressurePSI)
-                CylPressurePSI = Car.Train.BrakeLine4PressurePSI;
+            if (AutoCylPressurePSI < RetainerPressureThresholdPSI)
+            {
+                epState = ValveState.Apply;
+                float dp = elapsedClockSeconds * MaxApplicationRate;
+                if (BrakeLine2PressurePSI - dp < AutoCylPressurePSI + dp)
+                    dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) * .5f;
+                if (RetainerPressureThresholdPSI < AutoCylPressurePSI + dp)
+                    dp = RetainerPressureThresholdPSI - AutoCylPressurePSI;
+                BrakeLine2PressurePSI -= dp;
+                AutoCylPressurePSI += dp;
+            }
+            if (epState != prevState)
+            {
+                switch (epState)
+                {
+                    case ValveState.Release: Car.SignalEvent(EventID.TrainBrakeRelease); break;
+                    case ValveState.Apply: Car.SignalEvent(EventID.TrainBrakeApply); break;
+                }
+            }
+            if (BrakeLine3PressurePSI >= 1000)
+            {
+                BrakeLine3PressurePSI -= 1000;
+                AutoCylPressurePSI -= MaxReleaseRate * elapsedClockSeconds;
+            }
+            if (AutoCylPressurePSI < 0)
+                AutoCylPressurePSI = 0;
+            if (AutoCylPressurePSI < BrakeLine3PressurePSI)
+                CylPressurePSI = BrakeLine3PressurePSI;
+            else
+                CylPressurePSI = AutoCylPressurePSI;
             float f = MaxBrakeForceN * CylPressurePSI / MaxCylPressurePSI;
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;

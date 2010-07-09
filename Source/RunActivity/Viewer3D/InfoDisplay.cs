@@ -179,6 +179,7 @@ namespace ORTS
 
             TextBuilder.AppendLine();
             Train playerTrain = Viewer.PlayerLocomotive.Train;
+            TextBuilder.Append("Main Res = "); TextBuilder.AppendLine(string.Format("{0:F0}", playerTrain.BrakeLine2PressurePSI));
             int n = playerTrain.Cars.Count;
             if (n > 10)
                 n = 11;

@@ -322,20 +322,18 @@ namespace ORTS
                     lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds, ref BrakeLine4PressurePSI);
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
-                float pipeVolume = .5f;
-                if (Program.BrakePipeChargingRatePSIpS < 1000)
+                if (lead.BrakePipeChargingRatePSIpS < 1000)
                 {
-                    float pipeTimeFactor = .003f;
-                    float serviceTimeFactor = 1.009107f;
+                    float serviceTimeFactor = lead.BrakeServiceTimeFactorS;
                     if (lead.TrainBrakeController != null && lead.TrainBrakeController.GetIsEmergency())
-                        serviceTimeFactor = .1f;
-                    int nSteps = (int)(elapsedClockSeconds * 2 / pipeTimeFactor + 1);
+                        serviceTimeFactor = lead.BrakeEmergencyTimeFactorS;
+                    int nSteps = (int)(elapsedClockSeconds * 2 / lead.BrakePipeTimeFactorS + 1);
                     float dt = elapsedClockSeconds / nSteps;
                     for (int i = 0; i < nSteps; i++)
                     {
                         if (lead.BrakeSystem.BrakeLine1PressurePSI < BrakeLine1PressurePSI)
                         {
-                            float dp = dt * Program.BrakePipeChargingRatePSIpS;
+                            float dp = dt * lead.BrakePipeChargingRatePSIpS;
                             if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > BrakeLine1PressurePSI)
                                 dp = BrakeLine1PressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
                             if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > lead.MainResPressurePSI)
@@ -343,7 +341,7 @@ namespace ORTS
                             if (dp < 0)
                                 dp = 0;
                             lead.BrakeSystem.BrakeLine1PressurePSI += dp;
-                            lead.MainResPressurePSI -= dp * pipeVolume / lead.MainResVolumeFT3;
+                            lead.MainResPressurePSI -= dp * lead.BrakeSystem.BrakePipeVolumeFT3 / lead.MainResVolumeFT3;
                         }
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI > BrakeLine1PressurePSI)
                             lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
@@ -354,7 +352,7 @@ namespace ORTS
                             float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                             if (p0 >= 0 && p1 >= 0)
                             {
-                                float dp = dt * (p1 - p0) / pipeTimeFactor;
+                                float dp = dt * (p1 - p0) / lead.BrakePipeTimeFactorS;
                                 car.BrakeSystem.BrakeLine1PressurePSI -= dp;
                                 car0.BrakeSystem.BrakeLine1PressurePSI += dp;
                             }
@@ -369,6 +367,7 @@ namespace ORTS
                         if (car.BrakeSystem.BrakeLine1PressurePSI >= 0)
                             car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
                 }
+                bool twoPipes = lead.BrakeSystem.GetType() == typeof(AirTwinPipe) || lead.BrakeSystem.GetType() == typeof(EPBrakeSystem);
                 int first = -1;
                 int last = -1;
                 FindLeadLocomotives(ref first, ref last);
@@ -376,26 +375,27 @@ namespace ORTS
                 float sumv = 0;
                 for (int i = 0; i < Cars.Count; i++)
                 {
-                    if (Cars[i].BrakeSystem.BrakeLine1PressurePSI < 0)
+                    BrakeSystem brakeSystem = Cars[i].BrakeSystem;
+                    if (brakeSystem.BrakeLine1PressurePSI < 0)
                         continue;
                     if (i < first || i > last)
                     {
-                        Cars[i].BrakeSystem.BrakeLine3PressurePSI = 0;
-                        if (lead.BrakeSystem.GetType() == typeof(AirTwinPipe))
+                        brakeSystem.BrakeLine3PressurePSI = 0;
+                        if (twoPipes)
                         {
-                            sumv += pipeVolume;
-                            sumpv += pipeVolume * Cars[i].BrakeSystem.BrakeLine2PressurePSI;
+                            sumv += brakeSystem.BrakePipeVolumeFT3;
+                            sumpv += brakeSystem.BrakePipeVolumeFT3 * brakeSystem.BrakeLine2PressurePSI;
                         }
                     }
                     else
                     {
-                        float p = Cars[i].BrakeSystem.BrakeLine3PressurePSI;
+                        float p = brakeSystem.BrakeLine3PressurePSI;
                         if (p > 1000)
                             p -= 1000;
                         AirSinglePipe.ValveState prevState = lead.EngineBrakeState;
                         if (p < BrakeLine3PressurePSI)
                         {
-                            float dp = elapsedClockSeconds * 12.5f / (last - first + 1);
+                            float dp = elapsedClockSeconds * lead.EngineBrakeApplyRatePSIpS / (last - first + 1);
                             if (p + dp > BrakeLine3PressurePSI)
                                 dp = BrakeLine3PressurePSI - p;
                             p += dp;
@@ -403,7 +403,7 @@ namespace ORTS
                         }
                         else if (p > BrakeLine3PressurePSI)
                         {
-                            float dp = elapsedClockSeconds * 12.5f / (last - first + 1);
+                            float dp = elapsedClockSeconds * lead.EngineBrakeReleaseRatePSIpS / (last - first + 1);
                             if (p - dp < BrakeLine3PressurePSI)
                                 dp = p - BrakeLine3PressurePSI;
                             p -= dp;
@@ -419,9 +419,9 @@ namespace ORTS
                             }
                         if (lead.BailOff)
                             p += 1000;
-                        Cars[i].BrakeSystem.BrakeLine3PressurePSI = p;
-                        sumv += pipeVolume;
-                        sumpv += pipeVolume * Cars[i].BrakeSystem.BrakeLine2PressurePSI;
+                        brakeSystem.BrakeLine3PressurePSI = p;
+                        sumv += brakeSystem.BrakePipeVolumeFT3;
+                        sumpv += brakeSystem.BrakePipeVolumeFT3 * brakeSystem.BrakeLine2PressurePSI;
                         MSTSLocomotive eng = (MSTSLocomotive)Cars[i];
                         sumv += eng.MainResVolumeFT3;
                         sumpv += eng.MainResVolumeFT3 * eng.MainResPressurePSI;
@@ -429,13 +429,14 @@ namespace ORTS
                 }
                 if (sumv > 0)
                     sumpv /= sumv;
+                BrakeLine2PressurePSI = sumpv;
                 for (int i = 0; i < Cars.Count; i++)
                 {
                     if (Cars[i].BrakeSystem.BrakeLine1PressurePSI < 0)
                         continue;
                     if (i < first || i > last)
                     {
-                        Cars[i].BrakeSystem.BrakeLine2PressurePSI = lead.BrakeSystem.GetType() == typeof(AirTwinPipe) ? sumpv : 0;
+                        Cars[i].BrakeSystem.BrakeLine2PressurePSI = twoPipes ? sumpv : 0;
                     }
                     else
                     {
