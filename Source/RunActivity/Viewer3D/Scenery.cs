@@ -295,7 +295,7 @@ namespace ORTS
             // each subsection.  The rotation component changes only in heading.  The translation 
             // component steps along the path to reflect the root of each subsection.
 
-            // The following vectors represent local positioning:
+            // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
             Vector3 localProjectedV; // Local next position (in x-z plane)
             Vector3 displacement;  // Local displacement (from y=0 plane)
@@ -303,7 +303,11 @@ namespace ORTS
 
             float realRun; // Actual run for subsection based on path
 
+
             WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
+            Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
+            worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
+
             // Iterate through all subsections
             for (int iTkSection = 0; iTkSection < dTrackObj.trackSections.Count; iTkSection++)
             {
@@ -313,13 +317,8 @@ namespace ORTS
                 // Create new DT object copy; has only one meaningful subsection
                 DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
 
-                uint uid = subsection.trackSections[0].UiD; // for testing
-                /*
-                if (uid == 40028 || uid == 40034)
-                {
-                }
-                */
-
+                //uint uid = subsection.trackSections[0].UiD; // for testing
+               
                 // Create a new WorldPosition for this subsection, initialized to nextRoot,
                 // which is the WorldPosition for the end of the last subsection.
                 // In other words, beginning of present subsection is end of previous subsection.
@@ -336,9 +335,8 @@ namespace ORTS
                 {   // Heading stays the same; translation changes in the direction oriented
                     // Rotate Vector3.Forward to orient the displacement vector
                     localProjectedV = localV + length * heading;
-                    //displacement = Vector3.Transform(localProjectedV, nextRoot.XNAMatrix);
                     displacement = TDBTraveller.MSTSInterpolateAlongStraight(localV, heading, length,
-                                                            nextRoot.XNAMatrix, out localProjectedV);
+                                                            worldMatrix.XNAMatrix, out localProjectedV);
                     realRun = length;
                 }
                 else // Curved section
@@ -350,8 +348,8 @@ namespace ORTS
                     Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
                     // Shared method returns displacement from present world position and, by reference,
                     // local position in x-z plane of end of this section
-                    displacement = TDBTraveller.MSTSInterpolateAlongCurve(localV, left, rot, nextRoot.XNAMatrix,
-                                                                 out localProjectedV);
+                    displacement = TDBTraveller.MSTSInterpolateAlongCurve(localV, left, rot, 
+                                            worldMatrix.XNAMatrix, out localProjectedV);
 
                     heading = Vector3.Transform(heading, rot); // Heading change
                     nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
@@ -359,7 +357,7 @@ namespace ORTS
                 }
 
                 // Update nextRoot with new translation component
-                nextRoot.XNAMatrix.Translation = worldMatrix.XNAMatrix.Translation + displacement;
+                nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
 
                 // THE FOLLOWING COMMENTED OUT CODE IS NOT COMPATIBLE WITH THE NEW MESH GENERATION METHOD.
                 // IF deltaY IS STORED AS ANYTHING OTHER THAN 0, THE VALUE WILL GET USED FOR MESH GENERATION,
