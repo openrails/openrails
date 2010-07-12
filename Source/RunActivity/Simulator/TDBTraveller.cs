@@ -137,7 +137,7 @@ namespace ORTS
             pDirection = inf.ReadInt32();
             iTrackNode = inf.ReadInt32();
             iTrVectorSection = inf.ReadInt32();
-            TS = TSectionDat.TrackSections[inf.ReadInt32()];
+            TS = TSectionDat.TrackSections[inf.ReadUInt32()];
             TN = TDB.TrackDB.TrackNodes[inf.ReadInt32()];
             TVS = TN.TrVectorNode.TrVectorSections[inf.ReadInt32()];
         }
@@ -156,7 +156,7 @@ namespace ORTS
             outf.Write(pDirection);
             outf.Write(iTrackNode);
             outf.Write(iTrVectorSection);
-            outf.Write(TSectionDat.TrackSections.IndexOf(TS));
+            outf.Write(TS.SectionIndex);
             outf.Write(TDB.TrackDB.TrackNodesIndexOf(TN));
             outf.Write(TN.TrVectorNode.TrVectorSectionsIndexOf(TVS));
         }

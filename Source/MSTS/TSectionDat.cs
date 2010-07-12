@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using Microsoft.Win32;
@@ -109,14 +110,8 @@ namespace MSTS
 		}
 	}
 
-	public class TrackSections: ArrayList
+	public class TrackSections: Dictionary<uint, TrackSection>
 	{
-        public new TrackSection this[int i]
-        {
-            get { return (TrackSection)base[i]; }
-            set { base[i] = value; }
-        }
-
 		public TrackSections( STFReader f )
 		{
 			f.VerifyStartOfBlock();
@@ -125,8 +120,10 @@ namespace MSTS
 			while( token != ")" ) 
 			{
 				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
-				else if( 0 == String.Compare( token,"TrackSection", true ) ) this.Add( new TrackSection(f) );
-				else f.SkipBlock();
+				else if (0 == String.Compare(token, "TrackSection", true)) {
+					var section = new TrackSection(f);
+					this.Add(section.SectionIndex, section);
+				} else f.SkipBlock();
 				token = f.ReadToken();
 			}
 		}
@@ -138,8 +135,10 @@ namespace MSTS
 			while( token != ")" ) 
 			{
 				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
-				else if( 0 == String.Compare( token,"TrackSection", true ) ) this.Add( new RouteTrackSection(f) );
-				else f.SkipBlock();
+				else if (0 == String.Compare(token, "TrackSection", true)) {
+					var section = new RouteTrackSection(f);
+					this.Add(section.SectionIndex, section);
+				} else f.SkipBlock();
 				token = f.ReadToken();
 			}
 		}
@@ -148,12 +147,8 @@ namespace MSTS
 
 		public TrackSection Get( uint targetSectionIndex )
 		{
-			// TODO - do this better - linear search is pretty slow
-			for( int i = 0; i < this.Count; ++i )
-				if( ((TrackSection)this[i]).SectionIndex == targetSectionIndex )
-				{
-					return (TrackSection)this[i];
-				}
+			if (ContainsKey(targetSectionIndex))
+				return this[targetSectionIndex];
             if( MissingTrackSectionWarnings++ < 5 )
                 Console.Error.WriteLine("TDB references track section not listed in global or dynamic TSECTION.DAT: " + targetSectionIndex.ToString());
             return null;
