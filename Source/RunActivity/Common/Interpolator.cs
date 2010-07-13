@@ -16,7 +16,7 @@ namespace ORTS
     /// Interpolated table lookup
     /// Supports linear or cubic spline interpolation
     /// </summary>
-    class Interpolator
+    public class Interpolator
     {
         float[] X;  // must be in increasing order
         float[] Y;
@@ -40,6 +40,34 @@ namespace ORTS
             Y = other.Y;
             Y2= other.Y2;
             Size = other.Size;
+        }
+        public Interpolator(STFReader reader)
+        {
+            List<float> list = new List<float>();
+            reader.VerifyStartOfBlock();
+            for (; ; )
+            {
+                int c = reader.PeekPastWhitespace();
+                if (reader.EOF() || c == ')')
+                    break;
+                list.Add(reader.ReadFloat());
+            }
+            reader.VerifyEndOfBlock();
+            if (list.Count % 2 == 1)
+                STFError.Report(reader, "Odd number of values in Interpolator list, extra value ignored.");
+            int n = list.Count/2;
+            if (n < 2)
+                STFError.Report(reader, "Interpolator must have at least two value pairs.");
+            X = new float[n];
+            Y = new float[n];
+            Size = n;
+            for (int i = 0; i < n; i++)
+            {
+                X[i] = list[2*i];
+                Y[i] = list[2*i+1];
+                if (i > 0 && X[i - 1] >= X[i])
+                    STFError.Report(reader, " Interpolator x values must be increasing.");
+            }
         }
         public float this[float x]
         {
@@ -83,6 +111,20 @@ namespace ORTS
         }
         public float MinX() { return X[0]; }
         public float MaxX() { return X[Size-1]; }
+        public float MaxY()
+        {
+            float x;
+            return MaxY(out x);
+        }
+        public float MaxY(out float x)
+        {
+            int maxi= 0;
+            for (int i=1; i<Size; i++)
+                if (Y[maxi] < Y[i])
+                    maxi= i;
+            x = X[maxi];
+            return Y[maxi];
+        }
         public void ScaleX(float factor)
         {
             for (int i = 0; i < Size; i++)
@@ -182,6 +224,106 @@ namespace ORTS
                 float y = this[x];
                 Console.WriteLine("{0} {1} {2}", label, x, y);
             }
+        }
+    }
+    /// <summary>
+    /// two dimensional Interpolated table lookup
+    /// </summary>
+    public class Interpolator2D
+    {
+        float[] X;  // must be in increasing order
+        Interpolator[] Y;
+        int Size = 0;       // number of values populated
+        int PrevIndex = 0;  // used to speed up repeated evaluations with similar x values
+        public Interpolator2D(int n)
+        {
+            X = new float[n];
+            Y = new Interpolator[n];
+        }
+        public Interpolator2D(Interpolator2D other)
+        {
+            X = other.X;
+            Size = other.Size;
+            Y = new Interpolator[Size];
+            for (int i = 0; i < Size; i++)
+                Y[i] = new Interpolator(other.Y[i]);
+        }
+        public Interpolator2D(STFReader reader)
+        {
+            List<float> xlist = new List<float>();
+            List<Interpolator> ilist = new List<Interpolator>();
+            reader.VerifyStartOfBlock();
+            for (; ; )
+            {
+                int c = reader.PeekPastWhitespace();
+                if (reader.EOF() || c == ')')
+                    break;
+                xlist.Add(reader.ReadFloat());
+                ilist.Add(new Interpolator(reader));
+            }
+            reader.VerifyEndOfBlock();
+            int n = xlist.Count;
+            if (n < 2)
+                STFError.Report(reader, "Interpolator must have at least two x values.");
+            X = new float[n];
+            Y = new Interpolator[n];
+            Size = n;
+            for (int i = 0; i < n; i++)
+            {
+                X[i] = xlist[i];
+                Y[i] = ilist[i];
+                if (i > 0 && X[i - 1] >= X[i])
+                    STFError.Report(reader, " Interpolator x values must be increasing.");
+            }
+        }
+        public float Get(float x, float y)
+        {
+            if (x < X[PrevIndex] || x > X[PrevIndex + 1])
+            {
+                if (x < X[1])
+                    PrevIndex = 0;
+                else if (x > X[Size - 2])
+                    PrevIndex = Size - 2;
+                else
+                {
+                    int i = 0;
+                    int j = Size - 1;
+                    while (j - i > 1)
+                    {
+                        int k = (i + j) / 2;
+                        if (X[k] > x)
+                            j = k;
+                        else
+                            i = k;
+                    }
+                    PrevIndex = i;
+                }
+            }
+            float d = X[PrevIndex + 1] - X[PrevIndex];
+            float a = (X[PrevIndex + 1] - x) / d;
+            float b = (x - X[PrevIndex]) / d;
+            float z = 0;
+            if (a != 0)
+                z += a * Y[PrevIndex][y];
+            if (b != 0)
+                z += b * Y[PrevIndex + 1][y];
+            return z;
+        }
+        public Interpolator this[float x]
+        {
+            set
+            {
+                X[Size] = x;
+                Y[Size] = value;
+                Size++;
+            }
+        }
+        public float MinX() { return X[0]; }
+        public float MaxX() { return X[Size - 1]; }
+        public void ScaleX(float factor)
+        {
+            for (int i = 0; i < Size; i++)
+                X[i] *= factor;
         }
     }
 }

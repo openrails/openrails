@@ -63,6 +63,7 @@ namespace ORTS
         float MaxSpeedMpS = 1e3f;
         public float MainResPressurePSI = 130;
         public bool CompressorOn = false;
+        public float AverageForceN = 0;
 
         // wag file data
         public string CabSoundFileName = null;
@@ -77,6 +78,9 @@ namespace ORTS
         public float BrakeServiceTimeFactorS = 1.009f;
         public float BrakeEmergencyTimeFactorS = .1f;
         public float BrakePipeChargingRatePSIpS = Program.BrakePipeChargingRatePSIpS;
+        public Interpolator2D TractiveForceCurves = null;
+        public float MaxContinuousForceN;
+        public float ContinuousForceTimeFactor = 1800;
 
         public CVFFile CVFFile = null;
 
@@ -144,6 +148,7 @@ namespace ORTS
                 case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
                 case "engine(maxpower": MaxPowerW = ParseW(f.ReadStringBlock(),f); break;
                 case "engine(maxforce": MaxForceN = ParseN(f.ReadStringBlock(),f); break;
+                case "engine(maxcontinuousforce": MaxContinuousForceN = ParseN(f.ReadStringBlock(), f); break;
                 case "engine(maxvelocity": MaxSpeedMpS = ParseMpS(f.ReadStringBlock(),f); break;
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSEngineController(f); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSEngineController(f); break;
@@ -159,6 +164,8 @@ namespace ORTS
                 case "engine(brakeservicetimefactor": BrakeServiceTimeFactorS = f.ReadFloatBlock(); break;
                 case "engine(brakeemergencytimefactor": BrakeEmergencyTimeFactorS = f.ReadFloatBlock(); break;
                 case "engine(brakepipechargingrate": BrakePipeChargingRatePSIpS = f.ReadFloatBlock(); break;
+                case "engine(maxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(f); break;
+                case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = f.ReadFloatBlock(); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }
@@ -177,6 +184,9 @@ namespace ORTS
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
+            TractiveForceCurves = locoCopy.TractiveForceCurves;
+            MaxContinuousForceN = locoCopy.MaxContinuousForceN;
+            ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
 
             IsDriveable = copy.IsDriveable;
             ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
@@ -201,6 +211,7 @@ namespace ORTS
             outf.Write(MaxSpeedMpS);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorOn);
+            outf.Write(AverageForceN);
             MSTSEngineController.Save(ThrottleController, outf);
             MSTSEngineController.Save(TrainBrakeController, outf);
             MSTSEngineController.Save(EngineBrakeController, outf);
@@ -221,6 +232,7 @@ namespace ORTS
             MaxSpeedMpS = inf.ReadSingle();
             MainResPressurePSI = inf.ReadSingle();
             CompressorOn = inf.ReadBoolean();
+            AverageForceN = inf.ReadSingle();
             ThrottleController = MSTSEngineController.Restore(inf);
             TrainBrakeController = MSTSEngineController.Restore(inf);
             EngineBrakeController = MSTSEngineController.Restore(inf);
@@ -248,17 +260,31 @@ namespace ORTS
         {
             // TODO  this is a wild simplification for electric and diesel electric
             float t = ThrottlePercent / 100f;
-            float maxForceN = MaxForceN * t;
-            float maxPowerW = MaxPowerW * t * t;
-            float maxSpeedMpS = MaxSpeedMpS * t;
             float currentSpeedMpS = Math.Abs(SpeedMpS);
-            if (maxForceN * currentSpeedMpS > maxPowerW)
-                maxForceN = maxPowerW / currentSpeedMpS;
-            float balanceRatio = 1;
-            if (maxSpeedMpS > currentSpeedMpS)
-                balanceRatio = currentSpeedMpS / maxSpeedMpS;
+            if (TractiveForceCurves == null)
+            {
+                float maxForceN = MaxForceN * t;
+                float maxPowerW = MaxPowerW * t * t;
+                if (maxForceN * currentSpeedMpS > maxPowerW)
+                    maxForceN = maxPowerW / currentSpeedMpS;
+                float balanceRatio = 1;
+                if (MaxSpeedMpS > currentSpeedMpS)
+                    balanceRatio = currentSpeedMpS / MaxSpeedMpS;
+                MotiveForceN = maxForceN * (1f - balanceRatio);
+            }
+            else
+            {
+                MotiveForceN = TractiveForceCurves.Get(t, currentSpeedMpS);
+                if (MotiveForceN < 0)
+                    MotiveForceN = 0;
+            }
 
-            MotiveForceN = ( Direction == Direction.Forward ? 1 : -1) * maxForceN * (1f - balanceRatio);
+            MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
+            float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+            if (w < 0)
+                w = 0;
+            AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
+            MotiveForceN *= (Direction == Direction.Forward ? 1 : -1);
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
             Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated

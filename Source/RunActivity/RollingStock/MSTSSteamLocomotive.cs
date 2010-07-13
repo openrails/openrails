@@ -122,9 +122,9 @@ namespace ORTS
                 ForceFactor1[.720f] = -.579431f;
                 ForceFactor1[.785f] = -.593737f;
                 ForceFactor1[.850f] = -.607703f;
-                ForceFactor1.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f *
-                    NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM));
             }
+            ForceFactor1.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f *
+                NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM));
             if (ForceFactor2 == null)
             {
                 ForceFactor2 = new Interpolator(11);
@@ -139,9 +139,9 @@ namespace ORTS
                 ForceFactor2[.720f] = .579257f;
                 ForceFactor2[.785f] = .584714f;
                 ForceFactor2[.850f] = .591967f;
-                ForceFactor2.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f *
-                    NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM));
             }
+            ForceFactor2.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f *
+                NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM));
             if (CylinderPressureDrop == null)
             {   // this table is not based on measurements
                 CylinderPressureDrop = new Interpolator(5);
@@ -150,24 +150,18 @@ namespace ORTS
                 CylinderPressureDrop[.5f] = 2;
                 CylinderPressureDrop[1] = 10;
                 CylinderPressureDrop[2] = 20;
-                CylinderPressureDrop.ScaleX(ExhaustLimitLBpH / 3600);
+                CylinderPressureDrop.ScaleX(ExhaustLimitLBpH);
             }
+            CylinderPressureDrop.ScaleX(1 / 3600f);
             if (BackPressure == null)
             {   // this table is not based on measurements
                 BackPressure = new Interpolator(3);
                 BackPressure[0] = 0;
                 BackPressure[1] = 6;
                 BackPressure[1.2f] = 30;
-                BackPressure.ScaleX(ExhaustLimitLBpH / 3600);
+                BackPressure.ScaleX(ExhaustLimitLBpH);
             }
-            if (BurnRate == null)
-            {
-                BurnRate = new Interpolator(2);
-                BurnRate[0] = 2;
-                BurnRate[775] = 180;    // inverse of maximum EvaporationRate
-                BurnRate.ScaleX(MaxBoilerOutputLBpH / 775 / 3600);
-                BurnRate.ScaleY(MaxBoilerOutputLBpH / 775 / 3600);
-            }
+            BackPressure.ScaleX(1 / 3600f);
             if (EvaporationRate == null)
             {   // this table is from page 112 of The Steam Locomotive by R. P. Johnson (the 13000 BTU line) 
                 EvaporationRate = new Interpolator(11);
@@ -182,9 +176,20 @@ namespace ORTS
                 EvaporationRate[160] = 770;
                 EvaporationRate[180] = 775;
                 EvaporationRate[200] = 760;
-                EvaporationRate.ScaleX(MaxBoilerOutputLBpH / 775 / 3600);
-                EvaporationRate.ScaleY(MaxBoilerOutputLBpH / 775 / 3600);
             }
+            float maxburn;
+            float maxevap= EvaporationRate.MaxY(out maxburn);
+            float grateArea = MaxBoilerOutputLBpH / maxevap;
+            EvaporationRate.ScaleX(grateArea / 3600);
+            EvaporationRate.ScaleY(grateArea / 3600);
+            if (BurnRate == null)
+            {
+                BurnRate = new Interpolator(2);
+                BurnRate[0] = 2;
+                BurnRate[maxevap] = maxburn;    // inverse of maximum EvaporationRate
+            }
+            BurnRate.ScaleX(grateArea / 3600);
+            BurnRate.ScaleY(grateArea / 3600);
         }
         public bool ZeroError(float v, string name, string wagFile)
         {
@@ -210,6 +215,12 @@ namespace ORTS
                 case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
                 case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadStringBlock(),f)/3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController = new MSTSEngineController(f); break;
+                case "engine(forcefactor1": ForceFactor1 = new Interpolator(f); break;
+                case "engine(forcefactor2": ForceFactor2 = new Interpolator(f); break;
+                case "engine(cylinderpressuredrop": CylinderPressureDrop = new Interpolator(f); break;
+                case "engine(backpressure": BackPressure = new Interpolator(f); break;
+                case "engine(burnrate": BurnRate = new Interpolator(f); break;
+                case "engine(evaporationrate": EvaporationRate = new Interpolator(f); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }

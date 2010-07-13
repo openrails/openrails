@@ -82,6 +82,7 @@ namespace ORTS
         public AirSinglePipe( TrainCar car )
         {
             Car = car;
+            BrakePipeVolumeFT3 = .028f * (1 + car.Length);
         }
 
         public override void InitializeFromCopy(BrakeSystem copy)
