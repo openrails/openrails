@@ -121,18 +121,12 @@ namespace MSTS
 			{
 				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
 				else if (0 == String.Compare(token, "TrackSection", true)) {
-					var section = new TrackSection(f);
-					try {
-						this.Add(section.SectionIndex, section);
-					} catch (ArgumentException) {
-						// This occurs when a TSECTION has multiple sections
-						// with the same SectionIndex (invalid data). We're
-						// going to ignore the duplicate sections entirely.
-					}
+					AddSection(f, new TrackSection(f));
 				} else f.SkipBlock();
 				token = f.ReadToken();
 			}
 		}
+
 		public void AddRouteTrackSections( STFReader f )
 		{
 			f.VerifyStartOfBlock();
@@ -142,17 +136,16 @@ namespace MSTS
 			{
 				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
 				else if (0 == String.Compare(token, "TrackSection", true)) {
-					var section = new RouteTrackSection(f);
-					try {
-						this.Add(section.SectionIndex, section);
-					} catch (ArgumentException) {
-						// This occurs when a TSECTION has multiple sections
-						// with the same SectionIndex (invalid data). We're
-						// going to ignore the duplicate sections entirely.
-					}
+					AddSection(f, new RouteTrackSection(f));
 				} else f.SkipBlock();
 				token = f.ReadToken();
 			}
+		}
+		private void AddSection(STFReader f, TrackSection section) {
+			if (ContainsKey(section.SectionIndex)) {
+				STFError.Report(f, "Duplicate SectionIndex of " + section.SectionIndex);
+			}
+			this[section.SectionIndex] = section;
 		}
 
         public static int MissingTrackSectionWarnings = 0;
