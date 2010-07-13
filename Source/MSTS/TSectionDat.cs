@@ -122,7 +122,13 @@ namespace MSTS
 				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
 				else if (0 == String.Compare(token, "TrackSection", true)) {
 					var section = new TrackSection(f);
-					this.Add(section.SectionIndex, section);
+					try {
+						this.Add(section.SectionIndex, section);
+					} catch (ArgumentException) {
+						// This occurs when a TSECTION has multiple sections
+						// with the same SectionIndex (invalid data). We're
+						// going to ignore the duplicate sections entirely.
+					}
 				} else f.SkipBlock();
 				token = f.ReadToken();
 			}
@@ -137,7 +143,13 @@ namespace MSTS
 				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
 				else if (0 == String.Compare(token, "TrackSection", true)) {
 					var section = new RouteTrackSection(f);
-					this.Add(section.SectionIndex, section);
+					try {
+						this.Add(section.SectionIndex, section);
+					} catch (ArgumentException) {
+						// This occurs when a TSECTION has multiple sections
+						// with the same SectionIndex (invalid data). We're
+						// going to ignore the duplicate sections entirely.
+					}
 				} else f.SkipBlock();
 				token = f.ReadToken();
 			}

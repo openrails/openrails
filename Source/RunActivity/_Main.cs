@@ -124,8 +124,8 @@ namespace ORTS
             }
             catch (System.Exception error)
             {
-                Console.Error.WriteLine(error.Message);
-                MessageBox.Show(error.Message);
+                Console.Error.WriteLine(error);
+                MessageBox.Show(error.ToString());
             }
         }
 
