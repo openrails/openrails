@@ -28,11 +28,13 @@ namespace ORTS
     public class InfoDisplay
     {
         StringBuilder TextBuilder = new StringBuilder();
+        DataLogger OutLog = new DataLogger(15,14); //15 frames before dumping, 14 items per frame
         Matrix Matrix = Matrix.Identity;
         SpriteBatchMaterial Material;
         TextPrimitive TextPrimitive = new TextPrimitive();
         Viewer3D Viewer;
         int InfoAmount = 1;
+        bool InfoLog = false;
         private double lastUpdateTime = 0;   // update text message only 10 times per second
 
         int processors = System.Environment.ProcessorCount;
@@ -55,6 +57,10 @@ namespace ORTS
                 if (InfoAmount > 2)
                     InfoAmount = 0;
             }
+            if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F12))
+            {
+                InfoLog = !InfoLog;
+            }
         }
 
         /// <summary>
@@ -69,6 +75,25 @@ namespace ORTS
                 lastUpdateTime = Program.RealTime;
                 Profile( elapsedRealSeconds);
                 UpdateText();
+
+                //Here's where the logger stores the data from each frame
+                if (InfoLog)
+                {
+                    OutLog.Store(Program.Revision); //SVN Revision
+                    OutLog.Store(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString()); //Time
+                    OutLog.Store(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString()); //FPS
+                    OutLog.Store(Viewer.RenderProcess.SmoothJitter.ToString("F4")); //Jitter
+                    OutLog.Store(Viewer.RenderProcess.PrimitivesPerFrame.ToString()); //Primitives
+                    OutLog.Store(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
+                    OutLog.Store(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
+                    OutLog.Store(processors.ToString()); //Processors
+                    OutLog.Store(string.Format("{0,3}", RenderPercent)); //Render Process %
+                    OutLog.Store(string.Format("{0,3}", UpdatePercent)); //Update Process %
+                    OutLog.Store(string.Format("{0,3}", LoaderPercent)); //Loader Process %
+                    OutLog.Store(Viewer.Camera.TileX.ToString());     //
+                    OutLog.Store(Viewer.Camera.TileZ.ToString());     // Camera coordinates
+                    OutLog.Store(Viewer.Camera.Location.ToString());  //
+                }
             }
             TextPrimitive.Text = TextBuilder.ToString();
             frame.AddPrimitive( Material, TextPrimitive, ref Matrix);
@@ -94,7 +119,7 @@ namespace ORTS
             string clockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
             Train playerTrain = Viewer.PlayerLocomotive.Train;
 
-            TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Revision);
+            TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Revision);//this DONE
             TextBuilder.Append("Time = "); TextBuilder.AppendLine(clockTimeString);
             TextBuilder.Append("Direction = ");
             if (Math.Abs(Viewer.PlayerLocomotive.Train.MUReverserPercent) != 100)
@@ -149,7 +174,7 @@ namespace ORTS
                 TextBuilder.AppendLine(status);
 
             TextBuilder.AppendLine();
-            TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString());
+            TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString()); //this DONE
         }
 
         [Conditional("DEBUG")]
@@ -157,25 +182,25 @@ namespace ORTS
         {
             // Memory Useage
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
-
-            TextBuilder.AppendLine();
+            TextBuilder.AppendLine(); //notepad pls.
+            TextBuilder.Append("Logging Enabled = "); TextBuilder.AppendLine(InfoLog.ToString());
             TextBuilder.Append("Build = "); TextBuilder.AppendLine(Program.Build);
             TextBuilder.Append("Memory = "); TextBuilder.AppendLine(memory.ToString());
-            TextBuilder.Append("Jitter = "); TextBuilder.AppendLine(Viewer.RenderProcess.SmoothJitter.ToString("F4"));
+            TextBuilder.Append("Jitter = "); TextBuilder.AppendLine(Viewer.RenderProcess.SmoothJitter.ToString("F4"));//from here
             TextBuilder.Append("Primitives = "); TextBuilder.AppendLine(Viewer.RenderProcess.PrimitivesPerFrame.ToString());
             TextBuilder.Append("StateChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString());
             TextBuilder.Append("ImageChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.ImageChangesPerFrame.ToString());
             TextBuilder.Append("Processors = "); TextBuilder.AppendLine(processors.ToString());
-            TextBuilder.Append("Render Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",RenderPercent ));
-            TextBuilder.Append("Update Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}", UpdatePercent));
-            TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine( string.Format( "{0,3}",LoaderPercent));
+            TextBuilder.Append("Render Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", RenderPercent));
+            TextBuilder.Append("Update Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", UpdatePercent));
+            TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", LoaderPercent));//to here DONE
             TextBuilder.Append("Total Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", LoaderPercent+UpdatePercent+RenderPercent));
             // Added by rvg....
             TextBuilder.Append("Tile: "); TextBuilder.Append(Viewer.Camera.TileX.ToString()); // Camera coordinates
             TextBuilder.Append(" ");
-            TextBuilder.Append(Viewer.Camera.TileZ.ToString());
+            TextBuilder.Append(Viewer.Camera.TileZ.ToString());//this DONE
             TextBuilder.Append(" ");
-            TextBuilder.AppendLine(Viewer.Camera.Location.ToString());
+            TextBuilder.AppendLine(Viewer.Camera.Location.ToString()); //this DONE
 
             TextBuilder.AppendLine();
             Train playerTrain = Viewer.PlayerLocomotive.Train;
@@ -193,7 +218,7 @@ namespace ORTS
             }
         }
 
-        string FormattedTime(double clockTimeSeconds)
+        string FormattedTime(double clockTimeSeconds) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
         {
             int hour = (int)(clockTimeSeconds / (60.0 * 60.0));
             clockTimeSeconds -= hour * 60.0 * 60.0;
