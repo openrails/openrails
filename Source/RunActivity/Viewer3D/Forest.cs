@@ -160,13 +160,12 @@ namespace ORTS
             Matrix XNAWorldLocation = Drawer.worldPosition.XNAMatrix;
             Drawer.worldPosition.XNAMatrix = Matrix.Identity;
             Drawer.worldPosition.XNAMatrix.Translation = XNAWorldLocation.Translation;
-            int YtileX, YtileZ;
+            float YtileX, YtileZ;
             Tile tile = new Tile(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, tileFolderNameSlash);
             // Get the Y elevation of the base object itself. Tree elevations are referenced to this.
-            YtileX = (int)MathHelper.Clamp((((int)XNAWorldLocation.M41 * 0.125f) + 127.5f), 0, 255);
-            YtileZ = (int)MathHelper.Clamp((((int)XNAWorldLocation.M43 * 0.125f) + 127.5f), 0, 255);
-            refElevation = tile.GetElevation(YtileX, YtileZ);
-            //refElevation = GetTerrainHeight(XNAWorldLocation.M41, XNAWorldLocation.M43);
+            YtileX = (XNAWorldLocation.M41 + 1024) / 8;
+            YtileZ = (XNAWorldLocation.M43 + 1024) / 8;
+            refElevation = tile.GetElevation((int)YtileX, (int)YtileZ);
             float scale;
             for (int i = 0; i < population; i++)
             {
@@ -180,9 +179,10 @@ namespace ORTS
                 treePosition[i] = tempPosition[i] - XNAWorldLocation.Translation;
                 // Get the terrain height at each position and set Y.
                 // First convert to Y file metrics
-                YtileX = (int)MathHelper.Clamp((((int)tempPosition[i].X * 0.125f) + 127.5f), 0, 255);
-                YtileZ = (int)MathHelper.Clamp((((int)tempPosition[i].Z * 0.125f) + 127.5f), 0, 255);
-                treePosition[i].Y = tile.GetElevation(YtileX, YtileZ) - refElevation - 0.8f;
+                YtileX = MathHelper.Clamp((tempPosition[i].X + 1024) / 8, 0, 254.9999f);
+                YtileZ = MathHelper.Clamp((tempPosition[i].Z + 1024) / 8, 0, 254.9999f);
+				// TODO: What is this -0.8 here for?
+				treePosition[i].Y = tile.GetElevation(YtileX, YtileZ) - refElevation - 0.8f;
                 // WVP transformation of the complete object takes place in the vertex shader.
 
                 // Randomize the tree size

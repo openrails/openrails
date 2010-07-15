@@ -209,6 +209,49 @@ namespace ORTS
                 return (float)e * TFile.Resolution + TFile.Floor;
             }
         }
+
+        public float GetElevation(float x, float z)
+        {
+            if (IsEmpty)
+            {
+                return 0;
+            }
+            else
+            {
+                // Start with the north west corner.
+                int ux = (int)Math.Floor(x);
+                int uz = (int)Math.Floor(z);
+                int nw = YFile.GetElevationIndex(ux, uz);
+                int ne = YFile.GetElevationIndex(ux + 1, uz);
+                int sw = YFile.GetElevationIndex(ux, uz + 1);
+                int se = YFile.GetElevationIndex(ux + 1, uz + 1);
+                float e;
+
+                // Condition must match TerrainPatch.SetupPatchIndexBuffer's condition.
+                if (((ux & 1) == (uz & 1)))
+                {
+                    // Split NW-SE
+                    if (x > z)
+                        // NE side
+                        e = nw + (ne - nw) * (x - ux) + (se - ne) * (z - uz);
+                    else
+                        // SW side
+                        e = nw + (se - sw) * (x - ux) + (sw - nw) * (z - uz);
+                }
+                else
+                {
+                    // Split NE-SW
+                    if (x + z < 1)
+                        // NW side
+                        e = nw + (ne - nw) * (x - ux) + (sw - nw) * (z - uz);
+                    else
+                        // SE side
+                        e = se + (sw - se) * (1 - x + ux) + (ne - se) * (1 - z + uz);
+                }
+
+                return e * TFile.Resolution + TFile.Floor;
+            }
+        }
     }
 
 }
