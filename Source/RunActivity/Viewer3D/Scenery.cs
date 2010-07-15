@@ -375,6 +375,7 @@ namespace ORTS
                     subsection.trackSections[0].deltaY = nextRoot.XNAMatrix.Translation.Y - root.XNAMatrix.Translation.Y;
                 }
                 */
+                
                 // Create a new DynatrackDrawer for the subsection
                 dTrackList.Add(new DynatrackDrawer(viewer, subsection, root));
                 localV = localProjectedV; // Next subsection

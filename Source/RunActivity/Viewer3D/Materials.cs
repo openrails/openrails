@@ -957,70 +957,90 @@ namespace ORTS
             Blend sourceBlend = graphicsDevice.RenderState.SourceBlend;
             bool alphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
 
-            // TODO: Test to draw primitives if within "LOD" view distance.
-            // Ballast <= 2000 
-            // Rail tops <= 1200
-            // Rail sides <= 700
-            // Ballast
-            graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;
-            sceneryShader.CurrentTechnique = sceneryShader.Techniques["Image"];
-            if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
-                RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
-                sceneryShader.Texture = image1s;
-            else
-                sceneryShader.Texture = image1;
+            uint uid = mesh.UiD; // Used for testing only
 
-            // Set render state for drawing ballast
-            graphicsDevice.RenderState.AlphaBlendEnable = true;
-            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-            graphicsDevice.RenderState.AlphaTestEnable = false;
-            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            // XNAWorldMatrix.Translation is relative to camera tile origin, in MSTS coordinates:
+            Vector3 mstsLocation = new Vector3(XNAWorldMatrix.Translation.X, XNAWorldMatrix.Translation.Y, 
+                                                -XNAWorldMatrix.Translation.Z);
 
-            sceneryShader.SpecularPower = 0;
-            mesh.drawIndex = 1;
-            sceneryShader.Begin();
-            foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+            // Test if object behind camera:
+            if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, mesh.objectRadius))
             {
-                pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
-                pass.End();
-            }
-            sceneryShader.End();
+                // Test to draw primitives if within "LOD" view distance:
+                //      Ballast    <= 2000 
+                //      Rail tops  <= 1200
+                //      Rail sides <=  700
+                
+                // Ballast
+                if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 2000))
+                {
+                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;
+                    sceneryShader.CurrentTechnique = sceneryShader.Techniques["Image"];
+                    if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
+                        RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
+                        sceneryShader.Texture = image1s;
+                    else
+                        sceneryShader.Texture = image1;
 
-            // Rail tops
-            graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
-            sceneryShader.Texture = image2;
-            sceneryShader.SpecularPower = 64;
+                    // Set render state for drawing ballast
+                    graphicsDevice.RenderState.AlphaBlendEnable = true;
+                    graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+                    graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+                    graphicsDevice.RenderState.AlphaTestEnable = false;
+                    graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
-            // Set render state for drawing rail sides and tops
-            graphicsDevice.RenderState.AlphaBlendEnable = false;
-            graphicsDevice.RenderState.AlphaTestEnable = false;
+                    sceneryShader.SpecularPower = 0;
+                    mesh.drawIndex = 1;
+                    sceneryShader.Begin();
+                    foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+                    {
+                        pass.Begin();
+                        RenderProcess.PrimitiveCount++;
+                        renderPrimitive.Draw(graphicsDevice);
+                        pass.End();
+                    }
+                    sceneryShader.End();
+                } // end ballast
 
-            mesh.drawIndex = 3;
-            sceneryShader.Begin();
-            foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
-            {
-                pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
-                pass.End();
-            }
-            sceneryShader.End();
+                // Rail tops
+                if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 1200))
+                {
+                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+                    sceneryShader.Texture = image2;
+                    sceneryShader.SpecularPower = 64;
 
-            // Rail sides
-            sceneryShader.SpecularPower = 0;
-            mesh.drawIndex = 2;
-            sceneryShader.Begin();
-            foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
-            {
-                pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
-                pass.End();
-            }
-            sceneryShader.End();
+                    // Set render state for drawing rail sides and tops
+                    graphicsDevice.RenderState.AlphaBlendEnable = false;
+                    graphicsDevice.RenderState.AlphaTestEnable = false;
+
+                    mesh.drawIndex = 3;
+                    sceneryShader.Begin();
+                    foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+                    {
+                        pass.Begin();
+                        RenderProcess.PrimitiveCount++;
+                        renderPrimitive.Draw(graphicsDevice);
+                        pass.End();
+                    }
+                    sceneryShader.End();
+                } // end rail tops
+
+                // Rail sides
+                if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 700))
+                {
+                    sceneryShader.SpecularPower = 0;
+                    mesh.drawIndex = 2;
+                    sceneryShader.Begin();
+                    foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+                    {
+                        pass.Begin();
+                        RenderProcess.PrimitiveCount++;
+                        renderPrimitive.Draw(graphicsDevice);
+                        pass.End();
+                    }
+                    sceneryShader.End();
+                } // end rail sides
+            } // end if behind camera
 
             // Restore the pre-existing render state
             graphicsDevice.RenderState.AlphaBlendEnable = alphaBlendEnable;

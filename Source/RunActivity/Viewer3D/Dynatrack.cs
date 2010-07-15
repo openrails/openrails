@@ -89,7 +89,7 @@ namespace ORTS
         Vector3 center;             // Center coordinates of curve radius
         Vector3 radius;             // Radius vector to cross section on curve centerline
         Vector3 directionVector;    // The direction each track segment is pointing
-        public float objectRadius;  // For FOV calculation
+        public float objectRadius;  // For LOD
 
         VertexPositionNormalTexture[] vertexList;
         short[] triangleListIndices;    // Trilist buffer.
@@ -113,6 +113,8 @@ namespace ORTS
             public float deltaY;
         }
         DtrackData dtrackData; // Was: DtrackData[] dtrackData;
+
+        public uint UiD; // Used for debugging only
       
         /// <summary>
         /// Constructor.
@@ -122,6 +124,8 @@ namespace ORTS
             // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
             // serve as the beginning of the next subsection.
+
+            UiD = dtrack.trackSections[0].UiD; // Used for debugging only
 
             // The track cross section (profile) vertex coordinates are hard coded.
             // The coordinates listed here are those of default MSTS "A1t" track.
@@ -139,12 +143,9 @@ namespace ORTS
                     "(SectionIdx = " + dtrack.SectionIdx + ")");
             }
             dtrackData = new DtrackData();
-            //dtrackData.Uid = dtrack.trackSections[0].UiD;
             dtrackData.IsCurved = (int)dtrack.trackSections[0].isCurved;
             dtrackData.param1 = dtrack.trackSections[0].param1;
             dtrackData.param2 = dtrack.trackSections[0].param2;
-            //dtrackData.mstsRun = dtrack.trackSections[0].mstsRun;
-            //dtrackData.realRun = dtrack.trackSections[0].realRun;
             dtrackData.deltaY = dtrack.trackSections[0].deltaY;
 
             numVertices = 14;
@@ -158,7 +159,13 @@ namespace ORTS
 
             // Build the mesh and then fill the vertex and triangle index buffers.
             BuildMesh(worldPosition);
-            objectRadius = (float)Math.Pow(Math.Pow(vertexList[numVertices - 1].Position.X, 2) + Math.Pow(vertexList[numVertices - 1].Position.Z, 2), 0.5) * 1.05f;
+
+            // This was the old method, which used the final point in the mesh:
+            //objectRadius = (float)Math.Pow(Math.Pow(vertexList[numVertices - 1].Position.X, 2) + Math.Pow(vertexList[numVertices - 1].Position.Z, 2), 0.5) * 1.05f;
+            // The new method is more straightforward because of single-subsection dynamic track
+            if (dtrackData.IsCurved == 0) objectRadius = dtrackData.param1; // length
+            else objectRadius = 2.0f * dtrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(dtrackData.param1)); // chord length
+
             VertexDeclaration = null;
             VertexBuffer = null;
             IndexBuffer = null;

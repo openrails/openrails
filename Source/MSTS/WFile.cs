@@ -283,15 +283,13 @@ namespace MSTS
                 deltaY = 0;
             }
 
-            // WHN Copy constructor
+            // Copy constructor
             public TrackSection(TrackSection copy)
             {
                 this.UiD = copy.UiD;
                 this.isCurved = copy.isCurved;
                 this.param1 = copy.param1;
                 this.param2 = copy.param2;
-                //this.realRun = copy.realRun;
-                //this.mstsRun = copy.mstsRun;
                 this.deltaY = copy.deltaY;
             }
         }//TrackSection

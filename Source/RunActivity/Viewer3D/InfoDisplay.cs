@@ -163,7 +163,7 @@ namespace ORTS
             sTemp += ", ";
             sTemp += MathHelper.ToDegrees((float)longitude).ToString("F6");
             TextBuilder.Append("Lat/Lon: "); TextBuilder.AppendLine(sTemp);
-
+            
             if (playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1)
                 TextBuilder.AppendLine("Streched");
             if (playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1)

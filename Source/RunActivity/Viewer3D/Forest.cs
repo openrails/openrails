@@ -5,7 +5,8 @@
 /// 
 /// Principal Author:
 ///    Rick Grout
-/// 
+/// Contributor:
+///    Walt Niehoff
 ///     
 using System;
 using System.Collections.Generic;
