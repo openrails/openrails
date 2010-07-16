@@ -189,6 +189,51 @@ namespace ORTS
             graphicsDevice.RenderState.FogEnd = ViewingDistance * FogCoeff;
             graphicsDevice.RenderState.FogStart = ViewingDistance * 0.5f * FogCoeff;
         }
+
+        static internal Vector3 sunDirection;
+        static Vector3 headlightPosition;
+        static Vector3 headlightDirection;
+        static int lastLightState = 0, currentLightState = 0;
+        static double fadeTimer = 0;
+        internal static void UpdateShaders(RenderProcess renderProcess, GraphicsDevice graphicsDevice)
+        {
+            sunDirection = renderProcess.Viewer.SkyDrawer.solarDirection;
+            SceneryShader.SunDirection = sunDirection;
+
+            // Headlight illumination
+            if (renderProcess.Viewer.PlayerLocomotiveViewer != null
+                && renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
+                && renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
+            {
+                currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
+                if (currentLightState != lastLightState)
+                {
+                    if (currentLightState == 2 && lastLightState == 1)
+                    {
+                        SceneryShader.StateChange = 1;
+                        // Reset fade timer
+                        fadeTimer = renderProcess.Viewer.Simulator.ClockTime;
+                    }
+                    else if (currentLightState == 1 && lastLightState == 2)
+                    {
+                        SceneryShader.StateChange = 2;
+                        // Reset fade timer
+                        fadeTimer = renderProcess.Viewer.Simulator.ClockTime;
+                    }
+                    lastLightState = currentLightState;
+                }
+                headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
+                SceneryShader.HeadlightPosition = headlightPosition;
+                headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
+                SceneryShader.HeadlightDirection = headlightDirection;
+                SceneryShader.FadeInTime = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
+                SceneryShader.FadeOutTime = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
+                SceneryShader.FadeTime = (float)(renderProcess.Viewer.Simulator.ClockTime - fadeTimer);
+            }
+            // End headlight illumination
+
+            SceneryShader.Overcast = renderProcess.Viewer.SkyDrawer.overcast;
+        }
     }
     #endregion
 
@@ -230,8 +275,7 @@ namespace ORTS
         /// Have the material shader render the primitive.  Some shaders require multple passes
         /// Use previousMaterial to optimize the state change
         /// </summary>
-        void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix);
+        void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix);
                 
         /// <summary>
         /// Use nextMaterial to optimize the state change
@@ -243,8 +287,7 @@ namespace ORTS
     #region Empty material
     public class EmptyMaterial : Material
     {
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix ) 
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) 
         { 
         }
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial) { }
@@ -265,8 +308,7 @@ namespace ORTS
             DefaultFont =  renderProcess.Content.Load<SpriteFont>("Arial");
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                           ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
             Vector3 screenScaling = new Vector3(scaling);
@@ -297,11 +339,6 @@ namespace ORTS
         SceneryShader SceneryShader;
         Texture2D Texture;
         Texture2D nightTexture = null;
-        Vector3 sunDirection;
-        Vector3 headlightPosition;
-        Vector3 headlightDirection;
-        int lastLightState = 0, currentLightState = 0;
-        double fadeTimer = 0;
         bool isNightEnabled = false;
         public RenderProcess RenderProcess;  // for diagnostics only
 
@@ -328,47 +365,10 @@ namespace ORTS
             }
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                           ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
-            SceneryShader.SunDirection = sunDirection;
-
-            // Headlight illumination
-            if (RenderProcess.Viewer.PlayerLocomotiveViewer != null
-                && RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
-                && RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
-            {
-                currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
-                if (currentLightState != lastLightState)
-                {
-                    if (currentLightState == 2 && lastLightState == 1)
-                    {
-                        SceneryShader.StateChange = 1;
-                        // Reset fade timer
-                        fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
-                    }
-                    else if (currentLightState == 1 && lastLightState == 2)
-                    {
-                        SceneryShader.StateChange = 2;
-                        // Reset fade timer
-                        fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
-                    }
-                    lastLightState = currentLightState;
-                }
-                headlightPosition = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
-                SceneryShader.HeadlightPosition = headlightPosition;
-                headlightDirection = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
-                SceneryShader.HeadlightDirection = headlightDirection;
-                SceneryShader.FadeInTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
-                SceneryShader.FadeOutTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
-                SceneryShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
-            }
-            // End headlight illumination
-
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             SceneryShader.ZBias = renderPrimitive.ZBias;
-            SceneryShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
 
             int prevOptions = -1;
 
@@ -435,7 +435,7 @@ namespace ORTS
             // Enabled         8192     0x2000      0010 0000 0000 0000
             //
 
-            if (prevOptions != Options)  
+            if (prevOptions != Options)
             {
                 // Lighting model
                 int lighting = (Options & 0x00f0) >> 4;
@@ -533,17 +533,19 @@ namespace ORTS
             if (this != previousMaterial)
             {
                 RenderProcess.ImageChangesCount++;
-                SceneryShader.isNightTexture = false;
 
-                if (sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
+                if (Materials.sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
                 {
                     SceneryShader.Texture = nightTexture;
                     SceneryShader.isNightTexture = true;
                 }
                 else
+                {
                     SceneryShader.Texture = Texture;
+                    SceneryShader.isNightTexture = false;
+                }
 
-                if( MipMapBias < -1 )
+                if (MipMapBias < -1)
                     graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
                 else
                     graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = MipMapBias;
@@ -582,8 +584,7 @@ namespace ORTS
             PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, terrainTexture);
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
@@ -659,8 +660,7 @@ namespace ORTS
             cloudTexture = renderProcess.Content.Load<Texture2D>("Clouds01");
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SkyShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
@@ -840,8 +840,7 @@ namespace ORTS
             snowTexture = renderProcess.Content.Load<Texture2D>("Snowflake");
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             int weatherType = RenderProcess.Viewer.PrecipDrawer.weatherType;
             if (weatherType == 0) return; // Clear weather
@@ -940,8 +939,7 @@ namespace ORTS
             image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             sceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             DynatrackMesh mesh = (DynatrackMesh)renderPrimitive;
@@ -1077,8 +1075,7 @@ namespace ORTS
             TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
@@ -1167,8 +1164,7 @@ namespace ORTS
             lightGlowTexture = renderProcess.Content.Load<Texture2D>("Lightglow");
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             LightGlowShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
@@ -1236,8 +1232,7 @@ namespace ORTS
                 WaterTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, waterTexturePath);
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
 
@@ -1309,8 +1304,7 @@ namespace ORTS
             
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             Shader.World = XNAWorldMatrix;
 
@@ -1369,8 +1363,7 @@ namespace ORTS
 
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
                 SetState( graphicsDevice);
@@ -1430,8 +1423,7 @@ namespace ORTS
             }
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             basicEffect.World = XNAWorldMatrix;
             basicEffect.View = XNAViewMatrix;

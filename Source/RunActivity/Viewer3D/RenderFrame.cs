@@ -118,7 +118,8 @@ namespace ORTS
         /// <param name="graphicsDevice"></param>
         public void Draw(GraphicsDevice graphicsDevice)
         {
-              DrawSimple(graphicsDevice);
+            Materials.UpdateShaders(RenderProcess, graphicsDevice);
+            DrawSimple(graphicsDevice);
         }
 
 
@@ -135,7 +136,7 @@ namespace ORTS
 
         }
 
-        public void DrawSequence( GraphicsDevice graphicsDevice, int sequence )
+        public void DrawSequence( GraphicsDevice graphicsDevice, int sequence)
         {
             // Render each material on the specified primitive
             // To minimize renderstate changes, the material is
@@ -149,8 +150,7 @@ namespace ORTS
                 {
                     Material currentMaterial = RenderItems[i].Material;
                     if (prevMaterial != null) prevMaterial.ResetState(graphicsDevice, currentMaterial);
-                    currentMaterial.Render(graphicsDevice, prevMaterial, RenderItems[i].RenderPrimitive,
-                            ref RenderItems[i].XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    currentMaterial.Render(graphicsDevice, prevMaterial, RenderItems[i].RenderPrimitive, ref RenderItems[i].XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     prevMaterial = currentMaterial;
                 }
             }
