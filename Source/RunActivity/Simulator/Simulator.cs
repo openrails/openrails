@@ -571,6 +571,7 @@ namespace ORTS
             CONFile conFile = new CONFile(conFileName);
 
             // add wagons
+            TrainCar previousCar = null;
             foreach (Wagon wagon in conFile.Train.TrainCfg.Wagons)
             {
 
@@ -581,10 +582,11 @@ namespace ORTS
 
                 try
                 {
-                    TrainCar car = RollingStock.Load(wagonFilePath);
+                    TrainCar car = RollingStock.Load(wagonFilePath, previousCar);
                     car.Flipped = wagon.Flip;
                     train.Cars.Add(car);
                     car.Train = train;
+                    previousCar = car;
                 }
                 catch (System.Exception error)
                 {
@@ -632,6 +634,7 @@ namespace ORTS
                     // add wagons in reverse order - ie first wagon is at back of train
                     // static consists are listed back to front in the activities, so we have to reverse the order, and flip the cars
                     // when we add them to ORTS
+                    TrainCar previousCar = null;
                     for (int iWagon = activityObject.Train_Config.TrainCfg.Wagons.Count - 1; iWagon >= 0; --iWagon)
                     {
                         Wagon wagon = (Wagon)activityObject.Train_Config.TrainCfg.Wagons[iWagon];
@@ -641,10 +644,11 @@ namespace ORTS
                             wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
                         try
                         {
-                            TrainCar car = RollingStock.Load(wagonFilePath);
+                            TrainCar car = RollingStock.Load(wagonFilePath, previousCar);
                             car.Flipped = !wagon.Flip;
                             train.Cars.Add(car);
                             car.Train = train;
+                            previousCar = car;
                         }
                         catch (System.Exception error)
                         {

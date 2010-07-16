@@ -35,8 +35,8 @@ namespace ORTS
     /// </summary>
     public class MSTSDieselLocomotive : MSTSLocomotive
     {
-        public MSTSDieselLocomotive(string wagFile)
-            : base(wagFile)
+        public MSTSDieselLocomotive(string wagFile, TrainCar previousCar)
+            : base(wagFile, previousCar)
         {
         }
 

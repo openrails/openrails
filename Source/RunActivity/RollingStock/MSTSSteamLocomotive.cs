@@ -69,8 +69,8 @@ namespace ORTS
         Interpolator BurnRate;      // fuel burn rate given steam usage
         Interpolator EvaporationRate;   // steam generation rate given fuel burn rate
 
-        public MSTSSteamLocomotive(string wagFile)
-            : base(wagFile)
+        public MSTSSteamLocomotive(string wagFile, TrainCar previousCar)
+            : base(wagFile, previousCar)
         {
             //Console.WriteLine(" {0} {1} {2} {3}", NumCylinders, CylinderDiameterM, CylinderStrokeM, DriverWheelRadiusM);
             //Console.WriteLine(" {0} {1} {2} {3} {4}", MaxBoilerPressurePSI,MaxBoilerOutputLBpH,ExhaustLimitLBpH,BasicSteamUsageLBpS,BoilerVolumeFT3);

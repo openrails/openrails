@@ -185,6 +185,7 @@ namespace ORTS
             //train.PATTraveller = patTraveller;
 
             // add wagons
+            TrainCar previousCar = null;
             foreach (Wagon wagon in conFile.Train.TrainCfg.Wagons)
             {
 
@@ -195,11 +196,12 @@ namespace ORTS
 
                 try
                 {
-                    TrainCar car = RollingStock.Load(wagonFilePath);
+                    TrainCar car = RollingStock.Load(wagonFilePath, previousCar);
                     car.Flipped = wagon.Flip;
                     train.Cars.Add(car);
                     car.Train = train;
                     car.SignalEvent(EventID.PantographUp);
+                    previousCar = car;
                 }
                 catch (System.Exception error)
                 {

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
-using System.IO;
 
 namespace ORTS
 {
@@ -24,6 +25,9 @@ namespace ORTS
         public float MassKG = 10000;
         public bool IsDriveable = false;
         //public bool HasCabView = false;
+
+        // This is here so the viewer can see and exploit the car before this one for articulation.
+        public readonly TrainCar PreviousCar;
 
         public Lights Lights = null;
         public int Headlight = 0;
@@ -60,8 +64,9 @@ namespace ORTS
         public float CouplerForceU; // result
 
         // set when model is loaded
-        public List<WheelSet> WheelSets = new List<WheelSet>();
-        public bool WheelSetsLoaded = false;
+        public List<WheelAxle> WheelAxles = new List<WheelAxle>();
+        public bool WheelAxlesLoaded = false;
+        public bool Articulated = false;
         public List<TrainCarPart> Parts = new List<TrainCarPart>();
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
@@ -87,9 +92,10 @@ namespace ORTS
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
 
-        public TrainCar(string wagFile)
+        public TrainCar(string wagFile, TrainCar previousCar)
         {
             WagFilePath = wagFile;
+            PreviousCar = previousCar;
         }
 
         // Game save
@@ -141,54 +147,80 @@ namespace ORTS
 
         public void AddWheelSet(float offset, int bogie)
         {
-            if (WheelSetsLoaded)
+            if (WheelAxlesLoaded)
                 return;
-            WheelSet w = new WheelSet(offset, bogie);
-            WheelSets.Add(w);
+            WheelAxles.Add(new WheelAxle(offset, bogie));
         }
+
         public void AddBogie(float offset, int matrix, int id)
         {
-            if (WheelSetsLoaded)
+            if (WheelAxlesLoaded)
                 return;
             while (Parts.Count <= id)
                 Parts.Add(new TrainCarPart(0, 0));
-            Parts[id].OffsetM= offset;
-            Parts[id].iMatrix= matrix;
+            Parts[id].OffsetM = offset;
+            Parts[id].iMatrix = matrix;
         }
+
         public void SetupWheels()
         {
-            if (WheelSets.Count < 2)
+            // Less that two axles is bad.
+            if (WheelAxles.Count < 2)
                 return;
+            // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(0, 0));
-            foreach (WheelSet w in WheelSets)
+            // Validate the axles' assigned bogies and count up the axles on each bogie.
+            foreach (WheelAxle w in WheelAxles)
             {
                 if (w.BogieIndex >= Parts.Count)
                     w.BogieIndex = 0;
                 w.Part = Parts[w.BogieIndex];
                 w.Part.SumWgt++;
             }
-            WheelSets.Sort(WheelSets[0]);
+            // Make sure the axles are sorted by OffsetM along the car.
+            WheelAxles.Sort(WheelAxles[0]);
+            // If all axles are at the rear of the car, it must be articulated. I hope.
+            Articulated = WheelAxles.All(a => a.OffsetM > 0);
+            // Count up the number of bogies (parts) with at least 2 axles.
             for (int i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
                     Parts[0].SumWgt++;
-            if (Parts[0].SumWgt < 1.5)
+            if (Articulated)
             {
-                foreach (WheelSet w in WheelSets)
+                // Articulated car, so let's steal some wheels from the previous car.
+                var prevPart = PreviousCar.Parts.FirstOrDefault(p => p.OffsetM > 0);
+                var prevPartIndex = PreviousCar.Parts.IndexOf(prevPart);
+                var prevAxles = PreviousCar.WheelAxles.Where(a => a.BogieIndex == prevPartIndex);
+                var offset = PreviousCar.Length / 2 + Length / 2;
+                var part = new TrainCarPart(prevPart.OffsetM - offset, 0) { SumWgt = prevPart.SumWgt };
+                Parts.Add(part);
+                var partIndex = Parts.IndexOf(part);
+                WheelAxles.AddRange(prevAxles.Select(a => new WheelAxle(a.OffsetM - offset, partIndex) { Part = part }));
+            }
+            else if (!Articulated && (Parts[0].SumWgt < 1.5))
+            {
+                // Not articulated, but not enough wheels/bogies attached to the car.
+                // TODO: Does this actually happen with any cars?
+                // Put all the axles directly on the car, ignoring any bogies.
+                foreach (WheelAxle w in WheelAxles)
                 {
                     w.BogieIndex = 0;
                     w.Part = Parts[0];
                 }
             }
 #if false
-            Console.WriteLine("length {0}", Length);
-            foreach (WheelSet w in WheelSets)
-                Console.WriteLine("wheel {0} {1}", w.OffsetM, w.BogieIndex);
+            Console.WriteLine(WagFilePath);
+            Console.WriteLine("  length {0,10:F4}", Length);
+            Console.WriteLine("  articulated {0}", Articulated);
+            foreach (WheelAxle w in WheelAxles)
+                Console.WriteLine("  axle:  bogie  {1,5:F0}  offset {0,10:F4}", w.OffsetM, w.BogieIndex);
             foreach (TrainCarPart p in Parts)
-                Console.WriteLine("part {0} {1}", p.OffsetM, p.iMatrix);
+                Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
-            WheelSetsLoaded = true;
+            WheelAxlesLoaded = true;
         }
+
         public void ComputePosition(TDBTraveller traveler, bool backToFront)
         {
             for (int j = 0; j < Parts.Count; j++)
@@ -198,16 +230,16 @@ namespace ORTS
             if (Flipped == backToFront)
             {
                 float o = -Length / 2;
-                for (int k = 0; k < WheelSets.Count; k++)
+                for (int k = 0; k < WheelAxles.Count; k++)
                 {
-                    float d = WheelSets[k].OffsetM - o;
+                    float d = WheelAxles[k].OffsetM - o;
                     //Console.WriteLine("{0} {1} {2}", d, Length, WheelSets[k].OffsetM);
-                    o = WheelSets[k].OffsetM;
+                    o = WheelAxles[k].OffsetM;
                     traveler.Move(d);
                     float x = traveler.X + 2048 * (traveler.TileX - tileX);
                     float y = traveler.Y;
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
-                    WheelSets[k].Part.AddWheelSetLocation(1, o, x, y, z, 0);
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0);
                 }
                 o = Length / 2 - o;
                 traveler.Move(o);
@@ -216,16 +248,16 @@ namespace ORTS
             else
             {
                 float o = Length / 2;
-                for (int k = WheelSets.Count - 1; k>=0 ; k--)
+                for (int k = WheelAxles.Count - 1; k>=0 ; k--)
                 {
-                    float d = o - WheelSets[k].OffsetM;
+                    float d = o - WheelAxles[k].OffsetM;
                     //Console.WriteLine("{0} {1} {2}", d, Length, WheelSets[k].OffsetM);
-                    o = WheelSets[k].OffsetM;
+                    o = WheelAxles[k].OffsetM;
                     traveler.Move(d);
                     float x = traveler.X + 2048 * (traveler.TileX - tileX);
                     float y = traveler.Y;
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
-                    WheelSets[k].Part.AddWheelSetLocation(1, o, x, y, z, 0);
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0);
                 }
                 o = Length / 2 + o;
                 traveler.Move(o);
@@ -293,26 +325,26 @@ namespace ORTS
                 //Console.WriteLine("cs {0} {1} {2}", i, p.Cos, p.Sin);
             }
         }
-
     }
 
-    public class WheelSet : IComparer<WheelSet>
+    public class WheelAxle : IComparer<WheelAxle>
     {
         public float OffsetM;   // distance from center of model, positive forward
         public int BogieIndex;
         public TrainCarPart Part;
-        public WheelSet(float offset, int bogie)
+        public WheelAxle(float offset, int bogie)
         {
             OffsetM = offset;
             BogieIndex = bogie;
         }
-        int IComparer<WheelSet>.Compare(WheelSet a, WheelSet b)
+        int IComparer<WheelAxle>.Compare(WheelAxle a, WheelAxle b)
         {
             if (a.OffsetM > b.OffsetM) return 1;
             if (a.OffsetM < b.OffsetM) return -1;
             return 0;
         }
     }
+
     // data and methods used to align trucks and models to track
     public class TrainCarPart
     {
@@ -342,7 +374,7 @@ namespace ORTS
         public void AddWheelSetLocation(float w, float o, float x, float y, float z, float t)
         {
             SumWgt += w;
-            SumOffset += w*o;
+            SumOffset += w * o;
             SumOffsetSq += w * o * o;
             SumX[0] += w * x;
             SumXOffset[0] += w * x * o;

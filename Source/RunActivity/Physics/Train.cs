@@ -149,7 +149,7 @@ namespace ORTS
         {
             int count = inf.ReadInt32();
             for (int i = 0; i < count; ++i)
-                Cars.Add( RollingStock.Restore(inf, this));
+                Cars.Add( RollingStock.Restore(inf, this, i == 0 ? null : Cars[i - 1]));
         }
 
         /// <summary>
@@ -474,7 +474,7 @@ namespace ORTS
             {
                 TrainCar car = Cars[i];
 
-                if (car.WheelSetsLoaded)
+                if (car.WheelAxlesLoaded)
                 {
                     car.ComputePosition(traveller, false);
                     if (i < Cars.Count - 1)
@@ -542,7 +542,7 @@ namespace ORTS
                 if (i < Cars.Count - 1)
                     traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
 
-                if (car.WheelSetsLoaded)
+                if (car.WheelAxlesLoaded)
                 {
                     car.ComputePosition(traveller, true);
                     continue;

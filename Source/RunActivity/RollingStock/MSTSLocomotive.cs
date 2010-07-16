@@ -89,8 +89,8 @@ namespace ORTS
         public MSTSEngineController EngineBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
 
-        public MSTSLocomotive(string  wagPath)
-            : base(wagPath)
+        public MSTSLocomotive(string wagPath, TrainCar previousCar)
+            : base(wagPath, previousCar)
         {
             //Console.WriteLine("loco {0} {1} {2}", MaxPowerW, MaxForceN, MaxSpeedMpS);
         }

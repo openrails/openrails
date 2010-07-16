@@ -38,8 +38,8 @@ namespace ORTS
     {
         public bool Pan = false;     // false = down;
 
-        public MSTSElectricLocomotive(string wagFile)
-            : base( wagFile)
+        public MSTSElectricLocomotive(string wagFile, TrainCar previousCar)
+            : base(wagFile, previousCar)
         {
         }
 

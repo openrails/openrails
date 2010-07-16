@@ -65,7 +65,8 @@ namespace ORTS
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
-        public MSTSWagon(string wagFilePath): base( wagFilePath )
+        public MSTSWagon(string wagFilePath, TrainCar previousCar)
+            : base(wagFilePath, previousCar)
         {
             if (CarManager.LoadedCars.ContainsKey(wagFilePath))
             {
@@ -722,7 +723,6 @@ namespace ORTS
             }
 
             car.SetupWheels();
-
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -787,9 +787,10 @@ namespace ORTS
             }
 
             // truck angle animation
-            for (int i = 1; i < Car.Parts.Count; i++)
+            foreach (var p in Car.Parts)
             {
-                TrainCarPart p = Car.Parts[i];
+                if (p.iMatrix <= 0)
+                    continue;
                 Matrix m = Matrix.Identity;
                 m.Translation= TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
                 m.M11 = p.Cos;
