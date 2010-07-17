@@ -25,33 +25,20 @@ namespace ORTS
 
     public struct RenderItem
     {
-        public Material Material;
         public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
-    }
 
-    public class RenderSorter : IComparer
-    {
-        // Group similar types (state changes), then group instance ( images )
-        int IComparer.Compare(Object x, Object y)
+        public RenderItem(RenderPrimitive renderPrimitive, Matrix xnaMatrix)
         {
-            RenderItem a = (RenderItem)x;
-            RenderItem b = (RenderItem)y;
-            if (a.Material.GetType() == typeof(SpriteBatchMaterial)) return 1;
-            if (b.Material.GetType() == typeof(SpriteBatchMaterial)) return -1;
-            if (a.Material.GetType().GetHashCode() > b.Material.GetType().GetHashCode()) return 1;
-            if (a.Material.GetType().GetHashCode() < b.Material.GetType().GetHashCode()) return -1;
-            if (a.Material.GetHashCode() > b.Material.GetHashCode()) return 1;
-            if (a.Material.GetHashCode() < b.Material.GetHashCode()) return -1;
-            return 0;
+            RenderPrimitive = renderPrimitive;
+            XNAMatrix = xnaMatrix;
         }
-
     }
 
     public class RenderFrame
     {
-        private int RenderItemCount = 0;
-        RenderItem[] RenderItems = new RenderItem[10000];
+        Dictionary<Material, List<RenderItem>> RenderItems;
+        int RenderMaxSequence = 0;
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
         RenderProcess RenderProcess;
@@ -59,11 +46,13 @@ namespace ORTS
         public RenderFrame(RenderProcess owner)
         {
             RenderProcess = owner;
+            RenderItems = new Dictionary<Material, List<RenderItem>>();
         }
 
         public void Clear() 
-        { 
-            RenderItemCount = 0;  
+        {
+            foreach (var renderGroup in RenderItems)
+                renderGroup.Value.Clear();
         }
 
         public void SetCamera(ref Matrix xnaViewMatrix, ref Matrix xnaProjectionMatrix)
@@ -75,23 +64,20 @@ namespace ORTS
         /// <summary>
         /// Executed in the UpdateProcess thread
         /// </summary>
-        public void AddPrimitive( Material material, RenderPrimitive primitive, ref Matrix xnaMatrix ) 
+        public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix) 
         {
-            if (RenderItemCount >= RenderItems.Length)
-            {
-                System.Diagnostics.Debug.Assert(false, "RenderItems Overflow");
-                return;
-            }
-            RenderItems[RenderItemCount].Material = material;
-            RenderItems[RenderItemCount].RenderPrimitive = primitive;
-            RenderItems[RenderItemCount].XNAMatrix = xnaMatrix;
-            ++RenderItemCount;
+            if (!RenderItems.ContainsKey(material))
+                RenderItems[material] = new List<RenderItem>();
+
+            RenderItems[material].Add(new RenderItem(primitive, xnaMatrix));
+
+            if (RenderMaxSequence < primitive.Sequence)
+                RenderMaxSequence = primitive.Sequence;
 
             // TODO, enhance this:
             //   - handle overflow by enlarging array etc
             //   - to accomodate separate list of shadow casters, 
         }
-
 
         /// <summary>
         /// Executed in the UpdateProcess thread
@@ -101,9 +87,7 @@ namespace ORTS
             // TODO, enhance this:
             //   - to sort translucent primitives
             //   - and to minimize render state changes ( sorting was taking too long! for this )
-
         }
-
 
         BoundingFrustum cameraFrustum = new BoundingFrustum(Matrix.Identity);
         // Light direction
@@ -122,7 +106,6 @@ namespace ORTS
             DrawSimple(graphicsDevice);
         }
 
-
         /// <summary>
         /// Executed in the RenderProcess thread - simple draw
         /// </summary>
@@ -131,34 +114,35 @@ namespace ORTS
         {
             graphicsDevice.Clear(Materials.FogColor);
 
-            for (int iSequence = 0; iSequence < 2; ++iSequence)
+            for (int iSequence = 0; iSequence <= RenderMaxSequence; ++iSequence)
                 DrawSequence(graphicsDevice, iSequence);
 
         }
 
-        public void DrawSequence( GraphicsDevice graphicsDevice, int sequence)
+        public void DrawSequence(GraphicsDevice graphicsDevice, int sequence)
         {
+            Material prevMaterial = null;
             // Render each material on the specified primitive
             // To minimize renderstate changes, the material is
             // told what material was used previously so it can
             // make a decision on what renderstates need to be
             // changed.
-            Material prevMaterial = null;
-            for (int i = 0; i < RenderItemCount; ++i)
+            foreach (var renderGroup in RenderItems)
             {
-                if (RenderItems[i].RenderPrimitive.Sequence == sequence)
+                foreach (var renderItem in renderGroup.Value)
                 {
-                    Material currentMaterial = RenderItems[i].Material;
-                    if (prevMaterial != null) prevMaterial.ResetState(graphicsDevice, currentMaterial);
-                    currentMaterial.Render(graphicsDevice, prevMaterial, RenderItems[i].RenderPrimitive, ref RenderItems[i].XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                    prevMaterial = currentMaterial;
+                    var ri = renderItem;
+                    if (renderItem.RenderPrimitive.Sequence == sequence)
+                    {
+                        Material currentMaterial = renderGroup.Key;
+                        if (prevMaterial != null) prevMaterial.ResetState(graphicsDevice, currentMaterial);
+                        currentMaterial.Render(graphicsDevice, prevMaterial, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                        prevMaterial = currentMaterial;
+                    }
                 }
             }
             if (prevMaterial != null)
                 prevMaterial.ResetState(graphicsDevice, null);
         }
-
     }
-
-
 }

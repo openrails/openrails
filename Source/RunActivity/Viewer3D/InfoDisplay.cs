@@ -47,6 +47,7 @@ namespace ORTS
             TextPrimitive.Material = Material;
             TextPrimitive.Color = Color.Yellow;
             TextPrimitive.Location = new Vector2(10, 10);
+            TextPrimitive.Sequence = 2;
         }
 
         public void HandleUserInput(ElapsedTime elapsedTime)
@@ -186,6 +187,7 @@ namespace ORTS
             TextBuilder.Append("Logging Enabled = "); TextBuilder.AppendLine(InfoLog.ToString());
             TextBuilder.Append("Build = "); TextBuilder.AppendLine(Program.Build);
             TextBuilder.Append("Memory = "); TextBuilder.AppendLine(memory.ToString());
+            TextBuilder.AppendFormat("Frame Time = {0:F1}ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
             TextBuilder.Append("Jitter = "); TextBuilder.AppendLine(Viewer.RenderProcess.SmoothJitter.ToString("F4"));//from here
             TextBuilder.Append("Primitives = "); TextBuilder.AppendLine(Viewer.RenderProcess.PrimitivesPerFrame.ToString());
             TextBuilder.Append("StateChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString());

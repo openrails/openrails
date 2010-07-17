@@ -153,7 +153,8 @@ namespace ORTS
             }
             catch (System.Exception error)
             {
-                Console.Error.WriteLine("While Saving: " + error.Message);
+                Console.Error.WriteLine("While Saving: " + error);
+                MessageBox.Show(error.ToString());
             }
         }
 
@@ -189,7 +190,8 @@ namespace ORTS
             }
             catch (System.Exception error)
             {
-                Console.Error.WriteLine("While restoring: " + error.Message);
+                Console.Error.WriteLine("While restoring: " + error);
+                MessageBox.Show(error.ToString());
             }
         }
 

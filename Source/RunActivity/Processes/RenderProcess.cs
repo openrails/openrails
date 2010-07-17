@@ -49,6 +49,7 @@ namespace ORTS
 
         // Diagnostic information
         public float SmoothedFrameRate = 1000;     // information displayed by InfoViewer in upper left
+        public float SmoothedFrameTime = 0; // seconds
         public float MinFrameRate = 1000;
         public float SmoothJitter = 0;
         public float Jitter = 0;  // difference between when a frame should be rendered vs when it was rendered
@@ -324,6 +325,11 @@ namespace ORTS
                     SmoothedFrameRate = frameRate;
                 else
                     SmoothedFrameRate = (SmoothedFrameRate * (rate - 1.0f) / rate) + (frameRate / rate);
+
+                if (Math.Abs(elapsedRealTime - SmoothedFrameTime) > 0.01)
+                    SmoothedFrameTime = elapsedRealTime;
+                else
+                    SmoothedFrameTime = (SmoothedFrameTime * (rate - 1.0f) / rate) + (elapsedRealTime / rate);
             }
         }
 
