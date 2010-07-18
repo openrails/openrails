@@ -25,11 +25,13 @@ namespace ORTS
 
     public struct RenderItem
     {
+        public Material Material;
         public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
 
-        public RenderItem(RenderPrimitive renderPrimitive, Matrix xnaMatrix)
+        public RenderItem(Material material, RenderPrimitive renderPrimitive, Matrix xnaMatrix)
         {
+            Material = material;
             RenderPrimitive = renderPrimitive;
             XNAMatrix = xnaMatrix;
         }
@@ -37,7 +39,7 @@ namespace ORTS
 
     public class RenderFrame
     {
-        Dictionary<Material, List<RenderItem>> RenderItems;
+        List<RenderItem> RenderItems;
         int RenderMaxSequence = 0;
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
@@ -46,13 +48,12 @@ namespace ORTS
         public RenderFrame(RenderProcess owner)
         {
             RenderProcess = owner;
-            RenderItems = new Dictionary<Material, List<RenderItem>>();
+            RenderItems = new List<RenderItem>();
         }
 
         public void Clear() 
         {
-            foreach (var renderGroup in RenderItems)
-                renderGroup.Value.Clear();
+            RenderItems.Clear();
         }
 
         public void SetCamera(ref Matrix xnaViewMatrix, ref Matrix xnaProjectionMatrix)
@@ -66,10 +67,7 @@ namespace ORTS
         /// </summary>
         public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix) 
         {
-            if (!RenderItems.ContainsKey(material))
-                RenderItems[material] = new List<RenderItem>();
-
-            RenderItems[material].Add(new RenderItem(primitive, xnaMatrix));
+            RenderItems.Add(new RenderItem(material, primitive, xnaMatrix));
 
             if (RenderMaxSequence < primitive.Sequence)
                 RenderMaxSequence = primitive.Sequence;
@@ -89,12 +87,6 @@ namespace ORTS
             //   - and to minimize render state changes ( sorting was taking too long! for this )
         }
 
-        BoundingFrustum cameraFrustum = new BoundingFrustum(Matrix.Identity);
-        // Light direction
-        public Vector3 lightDir =  new Vector3( 0.4f,.8f,0.4f); 
-        // ViewProjection matrix from the lights perspective
-        public Matrix lightViewProjection;
-
         /// <summary>
         /// Draw 
         /// Executed in the RenderProcess thread 
@@ -103,7 +95,54 @@ namespace ORTS
         public void Draw(GraphicsDevice graphicsDevice)
         {
             Materials.UpdateShaders(RenderProcess, graphicsDevice);
+            if (RenderProcess.Viewer.DynamicShadows)
+                DrawShadows(graphicsDevice);
             DrawSimple(graphicsDevice);
+        }
+
+        RenderTarget2D ShadowMapRenderTarget;
+        DepthStencilBuffer ShadowMapStencilBuffer;
+        Texture2D ShadowMap;
+        Matrix ShadowMapLightView;
+        Matrix ShadowMapLightProj;
+        public void DrawShadows(GraphicsDevice graphicsDevice)
+        {
+            if (ShadowMapRenderTarget == null)
+            {
+                ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, 4096, 4096, 1, SurfaceFormat.Single);
+                ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, 4096, 4096, DepthFormat.Depth16);
+            }
+
+            var cameraLocation = RenderProcess.Viewer.Camera.Location * new Vector3(1, 1, -1);
+            ShadowMapLightView = Matrix.CreateLookAt(cameraLocation + 1000 * RenderProcess.Viewer.SkyDrawer.solarDirection, cameraLocation, Vector3.Up);
+            ShadowMapLightProj = Matrix.CreateOrthographic(512, 512, 0.01f, 2500.0f);
+
+            var oldStencilDepthBuffer = graphicsDevice.DepthStencilBuffer;
+            graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget);
+            graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
+            graphicsDevice.Clear(Color.Black);
+            Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapLightView, ShadowMapLightProj);
+
+            foreach (var renderItem in RenderItems)
+            {
+                var ri = renderItem;
+                if ((renderItem.Material is SceneryMaterial) || (renderItem.Material is ForestMaterial))
+                    Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+            }
+
+            graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
+            graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
+            foreach (var renderItem in RenderItems)
+            {
+                var ri = renderItem;
+                if (renderItem.Material is TerrainMaterial)
+                    Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+            }
+
+            Materials.ShadowMapMaterial.ResetState(graphicsDevice, null);
+            graphicsDevice.DepthStencilBuffer = oldStencilDepthBuffer;
+            graphicsDevice.SetRenderTarget(0, null);
+            ShadowMap = ShadowMapRenderTarget.GetTexture();
         }
 
         /// <summary>
@@ -121,24 +160,30 @@ namespace ORTS
 
         public void DrawSequence(GraphicsDevice graphicsDevice, int sequence)
         {
-            Material prevMaterial = null;
+            if (RenderProcess.Viewer.DynamicShadows)
+            {
+                Materials.SceneryShader.ShadowMap_Tex = ShadowMap;
+                Materials.SceneryShader.LightView = ShadowMapLightView;
+                Materials.SceneryShader.LightProj = ShadowMapLightProj;
+                Materials.SceneryShader.ShadowMapProj = new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
+            }
+
             // Render each material on the specified primitive
             // To minimize renderstate changes, the material is
             // told what material was used previously so it can
             // make a decision on what renderstates need to be
             // changed.
-            foreach (var renderGroup in RenderItems)
+            Material prevMaterial = null;
+            foreach (var renderItem in RenderItems)
             {
-                foreach (var renderItem in renderGroup.Value)
+                Material currentMaterial = renderItem.Material;
+                if (renderItem.RenderPrimitive.Sequence == sequence)
                 {
+                    if (prevMaterial != null)
+                        prevMaterial.ResetState(graphicsDevice, currentMaterial);
                     var ri = renderItem;
-                    if (renderItem.RenderPrimitive.Sequence == sequence)
-                    {
-                        Material currentMaterial = renderGroup.Key;
-                        if (prevMaterial != null) prevMaterial.ResetState(graphicsDevice, currentMaterial);
-                        currentMaterial.Render(graphicsDevice, prevMaterial, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                        prevMaterial = currentMaterial;
-                    }
+                    currentMaterial.Render(graphicsDevice, prevMaterial, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    prevMaterial = currentMaterial;
                 }
             }
             if (prevMaterial != null)

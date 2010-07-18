@@ -34,9 +34,6 @@ namespace ORTS
         public Viewer3D Viewer;
         public GraphicsDeviceManager GraphicsDeviceManager;
 
-        public bool ShadowMappingOn = false;
-        public float ShadowDistanceLimit = 100;  // don't generate shadows beyond this distance
-
         RenderFrame CurrentFrame;   // a frame contains a list of primitives to draw at a specified time
         RenderFrame NextFrame;      // we prepare the next frame in the background while the current one is rendering,
 

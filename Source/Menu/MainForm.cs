@@ -306,7 +306,7 @@ namespace ORTS
 
         private void buttonOptions_Click(object sender, EventArgs e)
         {
-            (new OptionsForm()).ShowDialog();
+            (new OptionsForm()).ShowDialog(this);
         }
 
         private void DisplayRouteDetails()

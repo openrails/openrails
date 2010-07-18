@@ -60,6 +60,7 @@ namespace ORTS
                 this.checkBoxWire.Checked = (1 == (int)RK.GetValue("Wire", 0));
                 this.numericBrakePipeChargingRatePSIpS.Value = (int)RK.GetValue("BrakePipeChargingRate", (int)numericBrakePipeChargingRatePSIpS.Value);
                 this.checkBoxGraduatedRelease.Checked = (1 == (int)RK.GetValue("GraduatedRelease", 0));
+                this.checkBoxShadows.Checked = (1 == (int)RK.GetValue("DynamicShadows", 0));
             }
         }
 
@@ -77,24 +78,10 @@ namespace ORTS
                 RK.SetValue("Wire", this.checkBoxWire.Checked ? 1 : 0);
                 RK.SetValue("BrakePipeChargingRate", (int)this.numericBrakePipeChargingRatePSIpS.Value);
                 RK.SetValue("GraduatedRelease", this.checkBoxGraduatedRelease.Checked ? 1 : 0);
+                RK.SetValue("DynamicShadows", this.checkBoxShadows.Checked ? 1 : 0);
             }
 
             Close();
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
 
         }
     }

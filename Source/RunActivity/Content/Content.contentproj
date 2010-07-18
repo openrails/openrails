@@ -60,13 +60,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DrawModel.fx">
-      <Name>DrawModel</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Clouds01.tga">
       <Name>Clouds01</Name>
       <Importer>TextureImporter</Importer>
@@ -159,6 +152,13 @@
     </Compile>
     <Compile Include="LightGlowShader.fx">
       <Name>LightGlowShader</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ShadowMap.fx">
+      <Name>ShadowMap</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>

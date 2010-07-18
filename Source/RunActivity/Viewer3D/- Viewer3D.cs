@@ -52,6 +52,7 @@ namespace ORTS
         public bool WireEnabled = false; // overhead wire
         public Vector2 WindowSize;
         public bool StartFullScreen;        // indicates user want the program to start in full screen mode
+        public bool DynamicShadows;
         public UpdaterProcess UpdaterProcess = null;
         public LoaderProcess LoaderProcess;
         public RenderProcess RenderProcess;
@@ -158,6 +159,7 @@ namespace ORTS
                     PrecipationEnabled = (1 == (int)RK.GetValue("Precipitation", 0));
                     WireEnabled = (1 == (int)RK.GetValue("Wire", 0));
                     StartFullScreen = (1 == (int)RK.GetValue("Fullscreen", 0));
+                    DynamicShadows = (1 == (int)RK.GetValue("DynamicShadows", 0));
                     // Parse the screen dimensions text
                     char[] delimiterChars = { 'x' };
                     string[] words = strWindowSize.Split(delimiterChars);

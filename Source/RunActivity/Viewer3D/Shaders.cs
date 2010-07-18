@@ -135,6 +135,16 @@ namespace ORTS
             set { fadeTime.SetValue(value); }
         }
 
+        public Texture2D ShadowMap_Tex { set { pShadowMap_Tex.SetValue(value); } } EffectParameter pShadowMap_Tex = null;
+        public Matrix LightView { set { pLightView.SetValue(value); } } EffectParameter pLightView = null;
+        public Matrix LightProj { set { pLightProj.SetValue(value); } } EffectParameter pLightProj = null;
+        public Matrix ShadowMapProj { set { pShadowMapProj.SetValue(value); } } EffectParameter pShadowMapProj = null;
+
+        public bool FogEnabled { set { pFogEnabled.SetValue(value ? 1 : 0); } } EffectParameter pFogEnabled = null;
+        public float FogStart { set { pFogStart.SetValue(value); } } EffectParameter pFogStart = null;
+        public float FogEnd { set { pFogEnd.SetValue(value); } } EffectParameter pFogEnd = null;
+        public Color FogColor { set { pFogColor.SetValue(new Vector3(value.R / 255f, value.G / 255f, value.B / 255f)); } } EffectParameter pFogColor = null;
+
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
             mModelToProjection.SetValueTranspose((world * view) * projection);
@@ -189,45 +199,41 @@ namespace ORTS
             fadeinTime = Parameters["fadeinTime"];
             fadeoutTime = Parameters["fadeoutTime"];
             fadeTime = Parameters["fadeTime"];
+            // FIXME: James Ross
+            pShadowMap_Tex = Parameters["shadowMap_Tex"];
+            pLightView = Parameters["LightView"];
+            pLightProj = Parameters["LightProj"];
+            pShadowMapProj = Parameters["ShadowMapProj"];
+            // FIXME: James Ross
+            pFogEnabled = Parameters["FogEnabled"];
+            pFogStart = Parameters["FogStart"];
+            pFogEnd = Parameters["FogEnd"];
+            pFogColor = Parameters["FogColor"];
         }
     }
     #endregion
 
     #region Shadow mapping shader
     /// <summary>
-    /// Wrapper for DrawModel.fx
+    /// Wrapper for ShadowMap.fx
     /// </summary>
-    public class ShadowMappingShader : Effect
+    public class ShadowMapShader : Effect
     {
         public Matrix World { set { pWorld.SetValue(value); } } EffectParameter pWorld = null;
-        public Matrix View { set { pView.SetValue(value); } } EffectParameter pView = null;
-        public Matrix Projection { set { pProjection.SetValue(value); } } EffectParameter pProjection = null;
-        public Matrix LightViewProj { set { pLightViewProj.SetValue(value); } } EffectParameter pLightViewProj = null;
-        public Color AmbientColor { set { pAmbientColor.SetValue(value.ToVector4()); } } EffectParameter pAmbientColor = null;
-        public Vector3 LightDirection { set { pLightDirection.SetValue(value); } } EffectParameter pLightDirection = null;
-        public float DepthBias { set { pDepthBias.SetValue(value); } } EffectParameter pDepthBias = null;
-        public Texture2D Texture { set { pTexture.SetValue(value); } } EffectParameter pTexture = null;
-        public Texture2D ShadowMap { set { pShadowMap.SetValue(value); } } EffectParameter pShadowMap = null;
+        public Matrix LightView { set { pLightView.SetValue(value); } } EffectParameter pLightView = null;
+        public Matrix LightProj { set { pLightProj.SetValue(value); } } EffectParameter pLightProj = null;
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
             World = world;
-            View = view;
-            Projection = projection;
         }
 
-        public ShadowMappingShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("DrawModel"))
+        public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("ShadowMap"))
         {
             pWorld = Parameters["World"];
-            pView = Parameters["View"];
-            pProjection = Parameters["Projection"];
-            pLightViewProj = Parameters["LightViewProj"];
-            pAmbientColor = Parameters["AmbientColor"];
-            pLightDirection = Parameters["LightDirection"];
-            pDepthBias = Parameters["DepthBias"];
-            pTexture = Parameters["Texture"];
-            pShadowMap = Parameters["ShadowMap"];
+            pLightView = Parameters["LightView"];
+            pLightProj = Parameters["LightProj"];
         }
     }
     #endregion

@@ -36,14 +36,13 @@ namespace ORTS
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
-        private static Dictionary<string, ShadowReceivingMaterial> ShadowReceivingMaterials = new Dictionary<string, ShadowReceivingMaterial>();
         public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
-        private static bool IsInitialized = false;
         private static Material YellowMaterial = null;   // for debug and experiments
-        public static ShadowCastingMaterial ShadowMaterial = null;
+        public static ShadowMapMaterial ShadowMapMaterial = null;
+        public static ShadowMapShader ShadowMapShader = null;
         public static Color FogColor = new Color(110, 110, 110, 255);
         public static float FogCoeff = 0.75f;
-        public static ShadowMappingShader ShadowMappingShader = null;
+        private static bool IsInitialized = false;
         
         /// <summary>
         /// THREAD SAFETY:  XNA Content Manager is not thread safe and must only be called from the Game thread.
@@ -52,8 +51,6 @@ namespace ORTS
         /// <param name="renderProcess"></param>
         public static void Initialize(RenderProcess renderProcess)
         {
-            ShadowMappingShader = new ShadowMappingShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
             SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SceneryShader.BumpTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, 
                                                         renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
@@ -62,12 +59,15 @@ namespace ORTS
             ForestShader = new ForestShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightGlowShader = new LightGlowShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
+            // WaterMaterial here.
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
             DynatrackMaterial = new DynatrackMaterial(renderProcess);
             LightGlowMaterial = new LightGlowMaterial(renderProcess);
+            MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
             YellowMaterial = new YellowMaterial(renderProcess);
-            ShadowMaterial = new ShadowCastingMaterial(renderProcess);
+            ShadowMapMaterial = new ShadowMapMaterial(renderProcess);
+            ShadowMapShader = new ShadowMapShader(renderProcess.GraphicsDevice, renderProcess.Content);
             IsInitialized = true;
         }
 
@@ -102,31 +102,15 @@ namespace ORTS
                 case "SpriteBatch":
                     return SpriteBatchMaterial;
                 case "Terrain":
-                    if (renderProcess.ShadowMappingOn)
+                    if (!TerrainMaterials.ContainsKey(textureName))
                     {
-                        if (!ShadowReceivingMaterials.ContainsKey(textureName))
-                        {
-                            ShadowReceivingMaterial material = new ShadowReceivingMaterial(renderProcess, textureName);
-                            ShadowReceivingMaterials.Add(textureName, material);
-                            return material;
-                        }
-                        else
-                        {
-                            return ShadowReceivingMaterials[textureName];
-                        }
+                        TerrainMaterial material = new TerrainMaterial(renderProcess, textureName);
+                        TerrainMaterials.Add(textureName, material);
+                        return material;
                     }
                     else
                     {
-                        if (!TerrainMaterials.ContainsKey(textureName))
-                        {
-                            TerrainMaterial material = new TerrainMaterial(renderProcess, textureName);
-                            TerrainMaterials.Add(textureName, material);
-                            return material;
-                        }
-                        else
-                        {
-                            return TerrainMaterials[textureName];
-                        }
+                        return TerrainMaterials[textureName];
                     }
                 case "SceneryMaterial":
                     string key;
@@ -233,6 +217,11 @@ namespace ORTS
             // End headlight illumination
 
             SceneryShader.Overcast = renderProcess.Viewer.SkyDrawer.overcast;
+
+            SceneryShader.FogEnabled = graphicsDevice.RenderState.FogEnable;
+            SceneryShader.FogStart = graphicsDevice.RenderState.FogStart;
+            SceneryShader.FogEnd = graphicsDevice.RenderState.FogEnd;
+            SceneryShader.FogColor = graphicsDevice.RenderState.FogColor;
         }
     }
     #endregion
@@ -1275,110 +1264,42 @@ namespace ORTS
     }
     #endregion
 
-    #region Shadow casting material
-    public class ShadowCastingMaterial : Material
+    #region Shadow Map material
+    public class ShadowMapMaterial : Material
     {
-        public ShadowMappingShader Shader;
-        EffectPass pass;
-
-        public ShadowCastingMaterial(RenderProcess renderProcess)
+        public ShadowMapMaterial(RenderProcess renderProcess)
         {
-            Shader = Materials.ShadowMappingShader;
         }
 
-        public void SetState(GraphicsDevice graphicsDevice, Matrix lightViewProjection, Vector3 lightDirection)
+        public void SetState(GraphicsDevice graphicsDevice, Matrix lightView, Matrix lightProj)
         {
-            Shader.CurrentTechnique = Shader.Techniques["CreateShadowMap"];
-            Shader.LightViewProj = lightViewProjection;
+            var shader = Materials.ShadowMapShader;
+            shader.CurrentTechnique = shader.Techniques["ShadowMap"];
+            shader.LightView = lightView;
+            shader.LightProj = lightProj;
 
             RenderState rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
             rs.AlphaTestEnable = false;
-            rs.CullMode = CullMode.CullCounterClockwiseFace; //TODO
+            rs.CullMode = CullMode.None;
             rs.DepthBufferFunction = CompareFunction.LessEqual;
             rs.DepthBufferWriteEnable = true;
             rs.DestinationBlend = Blend.Zero;
             rs.FillMode = FillMode.Solid;
             rs.FogEnable = false;
             rs.RangeFogEnable = false;
-            
         }
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            Shader.World = XNAWorldMatrix;
-
-            Shader.Begin();
-            pass = Shader.CurrentTechnique.Passes[0];
+            var shader = Materials.ShadowMapShader;
+            shader.World = XNAWorldMatrix;
+            shader.Begin();
+            var pass = shader.CurrentTechnique.Passes[0];
             pass.Begin();
-                renderPrimitive.Draw(graphicsDevice);
+            renderPrimitive.Draw(graphicsDevice);
             pass.End();
-            Shader.End();
-        }
-
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
-        {
-        }
-
-    }
-    #endregion
-
-    #region Shadow receiving material
-    public class ShadowReceivingMaterial : Material
-    {
-        public ShadowMappingShader Shader;
-        RenderProcess RenderProcess;
-        Texture2D PatchTexture;
-
-
-        public ShadowReceivingMaterial(RenderProcess renderProcess, string terrainTexture)
-        {
-            Shader = Materials.ShadowMappingShader;
-            RenderProcess = renderProcess;
-            PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, terrainTexture);
-        }
-
-        public void SetState(GraphicsDevice graphicsDevice )
-        {
-            RenderProcess.RenderStateChangesCount++;
-
-            Shader.CurrentTechnique = Shader.Techniques["DrawWithShadowMap"];
-
-            //SceneryShader.ZBias = 0.0001f;  // push terrain back TODO get this working again
-
-            graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-            graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-            graphicsDevice.VertexSamplerStates[0].AddressU = TextureAddressMode.Wrap;
-            graphicsDevice.VertexSamplerStates[0].AddressV = TextureAddressMode.Wrap;
-            RenderState rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.AlphaTestEnable = false;
-            rs.CullMode = CullMode.CullCounterClockwiseFace; 
-            rs.DestinationBlend = Blend.Zero;
-            rs.FillMode = FillMode.Solid;
-            Materials.SetupFog( graphicsDevice );
-
-            graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
-            graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
-
-        }
-
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-        {
-            if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
-                SetState( graphicsDevice);
-
-            Shader.World = XNAWorldMatrix;
-            Shader.View = XNAViewMatrix;
-            Shader.Projection = XNAProjectionMatrix;
-            Shader.Texture = PatchTexture;
-            
-            Shader.Begin();
-            EffectPass pass = Shader.CurrentTechnique.Passes[0];
-            pass.Begin();
-                renderPrimitive.Draw(graphicsDevice);
-            pass.End();
-            Shader.End();
+            shader.End();
         }
 
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)

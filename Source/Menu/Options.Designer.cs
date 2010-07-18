@@ -41,6 +41,7 @@
             this.checkBoxPrecipitation = new System.Windows.Forms.CheckBox();
             this.checkBoxGraduatedRelease = new System.Windows.Forms.CheckBox();
             this.checkBoxWire = new System.Windows.Forms.CheckBox();
+            this.checkBoxShadows = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -49,7 +50,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(71, 15);
+            this.label1.Location = new System.Drawing.Point(70, 14);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(107, 13);
             this.label1.TabIndex = 0;
@@ -57,7 +58,7 @@
             // 
             // numericWorldObjectDensity
             // 
-            this.numericWorldObjectDensity.Location = new System.Drawing.Point(13, 13);
+            this.numericWorldObjectDensity.Location = new System.Drawing.Point(12, 12);
             this.numericWorldObjectDensity.Maximum = new decimal(new int[] {
             10,
             0,
@@ -69,7 +70,8 @@
             // 
             // buttonOK
             // 
-            this.buttonOK.Location = new System.Drawing.Point(197, 229);
+            this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonOK.Location = new System.Drawing.Point(165, 238);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
             this.buttonOK.TabIndex = 2;
@@ -80,16 +82,15 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(71, 42);
+            this.label2.Location = new System.Drawing.Point(70, 40);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(97, 13);
             this.label2.TabIndex = 0;
             this.label2.Text = "Sound Detail Level";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // numericSoundDetailLevel
             // 
-            this.numericSoundDetailLevel.Location = new System.Drawing.Point(13, 40);
+            this.numericSoundDetailLevel.Location = new System.Drawing.Point(12, 38);
             this.numericSoundDetailLevel.Maximum = new decimal(new int[] {
             5,
             0,
@@ -102,7 +103,7 @@
             // comboBoxWindowSize
             // 
             this.comboBoxWindowSize.FormattingEnabled = true;
-            this.comboBoxWindowSize.Location = new System.Drawing.Point(13, 67);
+            this.comboBoxWindowSize.Location = new System.Drawing.Point(12, 64);
             this.comboBoxWindowSize.Name = "comboBoxWindowSize";
             this.comboBoxWindowSize.Size = new System.Drawing.Size(121, 21);
             this.comboBoxWindowSize.TabIndex = 3;
@@ -110,17 +111,16 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(140, 70);
+            this.label3.Location = new System.Drawing.Point(139, 67);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(67, 13);
             this.label3.TabIndex = 4;
             this.label3.Text = "Window size";
-            this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // checkBoxTrainLights
             // 
             this.checkBoxTrainLights.AutoSize = true;
-            this.checkBoxTrainLights.Location = new System.Drawing.Point(13, 95);
+            this.checkBoxTrainLights.Location = new System.Drawing.Point(12, 91);
             this.checkBoxTrainLights.Name = "checkBoxTrainLights";
             this.checkBoxTrainLights.Size = new System.Drawing.Size(81, 17);
             this.checkBoxTrainLights.TabIndex = 5;
@@ -129,7 +129,7 @@
             // 
             // numericBrakePipeChargingRatePSIpS
             // 
-            this.numericBrakePipeChargingRatePSIpS.Location = new System.Drawing.Point(13, 174);
+            this.numericBrakePipeChargingRatePSIpS.Location = new System.Drawing.Point(12, 183);
             this.numericBrakePipeChargingRatePSIpS.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -152,17 +152,16 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(71, 176);
+            this.label4.Location = new System.Drawing.Point(70, 185);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(166, 13);
             this.label4.TabIndex = 7;
             this.label4.Text = "Brake Pipe Charging Rate (PSI/s)";
-            this.label4.Click += new System.EventHandler(this.label4_Click);
             // 
             // checkBoxPrecipitation
             // 
             this.checkBoxPrecipitation.AutoSize = true;
-            this.checkBoxPrecipitation.Location = new System.Drawing.Point(13, 112);
+            this.checkBoxPrecipitation.Location = new System.Drawing.Point(12, 114);
             this.checkBoxPrecipitation.Name = "checkBoxPrecipitation";
             this.checkBoxPrecipitation.Size = new System.Drawing.Size(84, 17);
             this.checkBoxPrecipitation.TabIndex = 8;
@@ -172,7 +171,7 @@
             // checkBoxGraduatedRelease
             // 
             this.checkBoxGraduatedRelease.AutoSize = true;
-            this.checkBoxGraduatedRelease.Location = new System.Drawing.Point(13, 156);
+            this.checkBoxGraduatedRelease.Location = new System.Drawing.Point(12, 160);
             this.checkBoxGraduatedRelease.Name = "checkBoxGraduatedRelease";
             this.checkBoxGraduatedRelease.Size = new System.Drawing.Size(169, 17);
             this.checkBoxGraduatedRelease.TabIndex = 9;
@@ -182,20 +181,31 @@
             // checkBoxWire
             // 
             this.checkBoxWire.AutoSize = true;
-            this.checkBoxWire.Location = new System.Drawing.Point(13, 133);
+            this.checkBoxWire.Location = new System.Drawing.Point(12, 137);
             this.checkBoxWire.Name = "checkBoxWire";
             this.checkBoxWire.Size = new System.Drawing.Size(98, 17);
             this.checkBoxWire.TabIndex = 8;
             this.checkBoxWire.Text = "Overhead Wire";
             this.checkBoxWire.UseVisualStyleBackColor = true;
             // 
+            // checkBoxShadows
+            // 
+            this.checkBoxShadows.AutoSize = true;
+            this.checkBoxShadows.Location = new System.Drawing.Point(12, 209);
+            this.checkBoxShadows.Name = "checkBoxShadows";
+            this.checkBoxShadows.Size = new System.Drawing.Size(114, 17);
+            this.checkBoxShadows.TabIndex = 10;
+            this.checkBoxShadows.Text = "Dynamic Shadows";
+            this.checkBoxShadows.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 264);
+            this.ClientSize = new System.Drawing.Size(252, 273);
             this.ControlBox = false;
+            this.Controls.Add(this.checkBoxShadows);
             this.Controls.Add(this.checkBoxGraduatedRelease);
             this.Controls.Add(this.checkBoxWire);
             this.Controls.Add(this.checkBoxPrecipitation);
@@ -211,6 +221,7 @@
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "OptionsForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Options";
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).EndInit();
@@ -235,5 +246,6 @@
         private System.Windows.Forms.CheckBox checkBoxPrecipitation;
         private System.Windows.Forms.CheckBox checkBoxGraduatedRelease;
         private System.Windows.Forms.CheckBox checkBoxWire;
+        private System.Windows.Forms.CheckBox checkBoxShadows;
     }
 }

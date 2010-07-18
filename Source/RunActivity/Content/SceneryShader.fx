@@ -10,8 +10,21 @@ float4x4 mModelToProjection : ViewProjection;	// SetValueTranspose((world * view
 float4x4 mWorldToView  : ViewInverse;			// SetValue(Matrix.Invert(view));
 float4x4 mModelToWorld : WorldMatrix;			// SetValue(world);
 
+// FIXME: James Ross
+float4x4 LightView : VIEW;
+float4x4 LightProj : PROJECTION;
+float4x4 ShadowMapProj;
+// FIXME END
+
 float3 LightVector;								// Direction vector to sun
 float3 BumpScale = float3( 1.0, -1.0, 1.0 );	// multiply bump map by this  -1 seems to work with Ultimapper sometimes
+
+// Fog settings
+uniform const float FogEnabled;
+uniform const float FogStart;
+uniform const float FogEnd;
+uniform const float3 FogColor;
+
 
 float Saturation = 0.9;
 float Ambient = 0.5;
@@ -56,6 +69,17 @@ sampler normalMap = sampler_state
    AddressV = Wrap;
 };
 
+texture shadowMap_Tex;
+sampler shadowMap = sampler_state
+{
+	Texture = (shadowMap_Tex);
+	MagFilter = Point;
+	MinFilter = Point;
+	MipFilter = Point;
+	AddressU = Border;
+	AddressV = Border;
+};
+
 
 /////////////////////    V E R T E X     S H A D E R    /////////////////////////////////
 
@@ -68,6 +92,8 @@ struct VS_OUTPUT
    float3 vNormalW   : TEXCOORD3;	// in world space
    // Headlight
    float3 LightDir   : TEXCOORD5;
+   float4 ShadowP    : TEXCOORD6;
+   float FogFactor   : TEXCOORD7;
 };
 
 VS_OUTPUT VS(   float4 pPositionM : POSITION,	// in model space
@@ -92,6 +118,9 @@ VS_OUTPUT VS(   float4 pPositionM : POSITION,	// in model space
    // Headlight
    float3 wvpPosition = mul(pPositionM, mModelToWorld);
    Out.LightDir = wvpPosition - headlightPosition;
+
+   Out.ShadowP = mul(pPositionM, mul(mul(mul(mModelToWorld, LightView), LightProj), ShadowMapProj));
+   Out.FogFactor = saturate((length(Out.pPositionP.xyz) - FogStart) / (FogEnd - FogStart)) * FogEnabled;
 
    return Out;
 }
@@ -145,20 +174,49 @@ float3 Overcast(float3 color, float sat)
 	return satColor;
 }
 
+// Take the mapped shadow location (ShadowP) from the vetex shader and return
+// an rgb multiplier for the shadow effect.
+float GetShadowMap(float4 ShadowP)
+{
+	int clip = ((saturate(ShadowP.x) != ShadowP.x) || (saturate(ShadowP.y) != ShadowP.y)) ? 1 : 0;
+	//return tex2Dproj(shadowMap, ShadowP).x < ShadowP.z - 0.0001f ? 0.5f : 1.0f;
+	//return lerp(1.0f, 0.5f, saturate(abs(tex2Dproj(shadowMap, ShadowP).x - ShadowP.z) * 100));
+	const float s = 4096;
+	const float o = 1 / s;
+	float xx = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2(-o, -o)).x);
+	float xm = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2(-o,  0)).x);
+	float xy = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2(-o,  o)).x);
+	float mx = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( 0, -o)).x);
+	float mm = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( 0,  0)).x);
+	float my = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( 0,  o)).x);
+	float yx = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( o, -o)).x);
+	float ym = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( o,  0)).x);
+	float yy = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( o,  o)).x);
+	return saturate(clip + 0.5f + 0.5f * (xx + xm + xy + mx + mm + my + yx + ym + yy) / 9);
+	//float xx = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( 0,  0)).x);
+	//float xy = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( 0,  o)).x);
+	//float yx = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( o,  0)).x);
+	//float yy = step(ShadowP.z - 0.001f, tex2D(shadowMap, ShadowP.xy + float2( o,  o)).x);
+	//return lerp(0.5f, 1.0f, lerp(lerp(xx, yx, frac(ShadowP.x * s)), lerp(xy, yy, frac(ShadowP.x * s)), frac(ShadowP.y * s)));
+}
+
 float4 PSImage( 
 		   float light          : TEXCOORD1,
            float2 uvImageT		: TEXCOORD0,	// in texture space
            float3 vNormalW      : TEXCOORD3,
            float4 pPositionP    : TEXCOORD4,
-           float3 LightDir		: TEXCOORD5 )
+           float3 LightDir		: TEXCOORD5,
+           float4 ShadowP       : TEXCOORD6,
+           float FogFactor      : TEXCOORD7 )
            : COLOR
 { 
+	float4 surfColor = tex2D(imageMap, uvImageT);
 
-    float4 surfColor = tex2D( imageMap, uvImageT );
-    float alpha = surfColor.a;
-    surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
+	surfColor.rgb *= GetShadowMap(ShadowP);
+
+	surfColor.rgb *= light * 0.65 + 0.4; //Brightness + Ambient;
 	float4 litColor = surfColor;
-    
+
 	if (specularPower > 0)
 	{
 		float3 eyeVector = normalize(viewerPos - pPositionP);
@@ -167,16 +225,16 @@ float4 PSImage(
 		specularity = saturate(pow(specularity, specularPower)) * length(surfColor) * 0.5;        
 		surfColor.rgb += specularity;
 	}
-	
-    if (!isNight_Tex) // Darken at night unless using a night texture
-    {
-		surfColor *= Day2Night(); 
-		// Reduce saturaton when overcast
-		float3 color = Overcast(surfColor.xyz, 1-overcast);
-		surfColor = float4(color, 1);
-    }
 
-    // Headlight effect
+	if (!isNight_Tex)
+	{
+		// Darken at night unless using a night texture
+		surfColor.rgb *= Day2Night(); 
+		// Reduce saturaton when overcast
+		surfColor.rgb = Overcast(surfColor.rgb, 1 - overcast);
+	}
+
+	// Headlight effect
 	float3 normal = normalize(vNormalW);
 	float3 lightDir = normalize(LightDir);
 	float coneDot = dot(lightDir, normalize(headlightDirection));
@@ -189,13 +247,12 @@ float4 PSImage(
 	if (stateChange == 0)
 		shading = 0;
 	if (stateChange == 1)
-		shading *= clamp(fadeTime/fadeinTime, 0, 1);
+		shading *= clamp(fadeTime / fadeinTime, 0, 1);
 	if (stateChange == 2)
-		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
-	surfColor += shading * litColor;
+		shading *= clamp(1 - (fadeTime / fadeoutTime), 0, 1);
+	surfColor.rgb += shading * litColor;
 
-    surfColor.a = alpha;
-    return surfColor;
+	return lerp(surfColor, float4(FogColor, 1), FogFactor);
 }
 
 float4 PSVegetation( 
@@ -203,22 +260,26 @@ float4 PSVegetation(
            float2 uvImageT		: TEXCOORD0,	// in texture space
            float3 vNormalW      : TEXCOORD3,	// in world space
            float4 pPositionP    : TEXCOORD4,
-           float3 LightDir		: TEXCOORD5 )
+           float3 LightDir		: TEXCOORD5,
+           float4 ShadowP       : TEXCOORD6,
+           float FogFactor      : TEXCOORD7 )
           : COLOR
 { 
-	float4 surfColor = tex2D( imageMap, uvImageT );
-	float alpha = surfColor.a;
-	surfColor *= 0.8;  
-	surfColor += 0.03;
-	float4 litColor = surfColor;
-	
-	// Darken at night
-	surfColor *= Day2Night();
-	// Reduce saturaton when overcast
-	float3 color = Overcast(surfColor.xyz, 1-overcast);
-	surfColor = float4(color, 1);
+	float4 surfColor = tex2D(imageMap, uvImageT);
 
-    // Headlight effect
+	surfColor.rgb *= GetShadowMap(ShadowP);
+
+	float alpha = surfColor.a;
+	surfColor.rgb *= 0.8;  
+	surfColor.rgb += 0.03;
+	float4 litColor = surfColor;
+
+	// Darken at night
+	surfColor.rgb *= Day2Night();
+	// Reduce saturaton when overcast
+	surfColor.rgb = Overcast(surfColor.rgb, 1 - overcast);
+
+	// Headlight effect
 	float3 normal = normalize(vNormalW);
 	float3 lightDir = normalize(LightDir);
 	float coneDot = dot(lightDir, normalize(headlightDirection));
@@ -234,10 +295,9 @@ float4 PSVegetation(
 		shading *= clamp(fadeTime/fadeinTime, 0, 1);
 	if (stateChange == 2)
 		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
-	surfColor += shading * litColor;
+	surfColor.rgb += shading * litColor;
 
-	surfColor.a = alpha;
-	return surfColor;
+	return lerp(surfColor, float4(FogColor, 1), FogFactor);
 }
 
 float4 PSTerrain( 
@@ -246,26 +306,29 @@ float4 PSTerrain(
            float2 uvImageT		: TEXCOORD0,	// in texture space
            float3 vNormalW      : TEXCOORD3,	// in world space
            float4 pPositionP    : TEXCOORD4,
-           float3 LightDir		: TEXCOORD5 )
+           float3 LightDir		: TEXCOORD5,
+           float4 ShadowP       : TEXCOORD6,
+           float FogFactor      : TEXCOORD7 )
            : COLOR
 { 
+	float3 surfColor = tex2D(imageMap, uvImageT);
 
-    float3 surfColor = tex2D( imageMap, uvImageT );
-    
-    distance = clamp(distance,100,500);
-    float effect = 100/distance;
-    float3 bump = tex2D( normalMap, uvImageT * 50 );
-    bump -= 0.5;
+	surfColor.rgb *= GetShadowMap(ShadowP);
+
+	distance = clamp(distance, 100, 500);
+	float effect = 100 / distance;
+	float3 bump = tex2D(normalMap, uvImageT * 50);
+	bump -= 0.5;
 	surfColor +=  0.5 * bump;
-    surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
+	surfColor *= light * 0.65 + 0.4; //Brightness + Ambient;
 	float3 litColor = surfColor;
-    
-    // Darken at night
-    surfColor *= Day2Night();
-    // Reduce saturaton when overcast
-    surfColor = Overcast(surfColor, 1-overcast);
 
-    // Headlight effect
+	// Darken at night
+	surfColor *= Day2Night();
+	// Reduce saturaton when overcast
+	surfColor = Overcast(surfColor, 1 - overcast);
+
+	// Headlight effect
 	float3 normal = normalize(vNormalW);
 	float3 lightDir = normalize(LightDir);
 	float coneDot = dot(lightDir, normalize(headlightDirection));
@@ -278,63 +341,76 @@ float4 PSTerrain(
 	if (stateChange == 0)
 		shading = 0;
 	if (stateChange == 1)
-		shading *= clamp(fadeTime/fadeinTime, 0, 1);
+		shading *= clamp(fadeTime / fadeinTime, 0, 1);
 	if (stateChange == 2)
-		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
+		shading *= clamp(1 - (fadeTime / fadeoutTime), 0, 1);
 	surfColor += shading * litColor;
 
-    return float4( surfColor,1);
+	return float4(lerp(surfColor, FogColor, FogFactor), 1);
 }
 
 float4 PSDarkShade( 
 		   float light          : TEXCOORD1,
            float2 uvImageT		: TEXCOORD0,	// in texture space
-           float3 vNormalW      : TEXCOORD3 )	// in world space
+           float3 vNormalW      : TEXCOORD3,	// in world space
+           float4 ShadowP       : TEXCOORD6,
+           float FogFactor      : TEXCOORD7 )
            : COLOR
 { 
-	float4 surfColor = tex2D( imageMap, uvImageT );
-	float alpha = surfColor.a;
-	surfColor *= 0.2; 
-    
-    // Darken at night
-	surfColor *= Day2Night(); 
-	// Reduce saturaton when overcast
-	float3 color = Overcast(surfColor.xyz, 1-overcast);
-	surfColor = float4(color, 1);
+	float4 surfColor = tex2D(imageMap, uvImageT);
 
-	surfColor.a = alpha;
-	return surfColor;
+	surfColor.rgb *= GetShadowMap(ShadowP);
+
+	surfColor.rgb *= 0.2;
+
+	// Darken at night
+	surfColor.rgb *= Day2Night();
+
+	// Reduce saturaton when overcast
+	surfColor.rgb = Overcast(surfColor.rgb, 1 - overcast);
+
+	return lerp(surfColor, float4(FogColor, 1), FogFactor);
 }
 
 float4 PSHalfBright( 
 		   float light          : TEXCOORD1,
            float2 uvImageT		: TEXCOORD0,	// in texture space
-           float3 vNormalW      : TEXCOORD3 )	// in world space
+           float3 vNormalW      : TEXCOORD3,	// in world space
+           float4 ShadowP       : TEXCOORD6,
+           float FogFactor      : TEXCOORD7 )
            : COLOR
 { 
-	float4 surfColor = tex2D( imageMap, uvImageT );
-	float alpha = surfColor.a;
-	surfColor *= 0.55; 
-	surfColor.a = alpha;
-	return surfColor;
+	float shadowMult = GetShadowMap(ShadowP);
+	float4 surfColor = tex2D(imageMap, uvImageT);
+
+	surfColor.rgb *= shadowMult;
+	surfColor.rgb *= 0.55;
+
+	return lerp(surfColor, float4(FogColor, 1), FogFactor);
 }
 
 float4 PSFullBright( 
 		   float light          : TEXCOORD1,
            float2 uvImageT		: TEXCOORD0,	// in texture space
-           float3 vNormalW      : TEXCOORD3 )	// in world space
+           float3 vNormalW      : TEXCOORD3,	// in world space
+           float4 ShadowP       : TEXCOORD6,
+           float FogFactor      : TEXCOORD7 )
            : COLOR
 { 
-	float4 surfColor = tex2D( imageMap, uvImageT );
-	return surfColor;
+	float shadowMult = GetShadowMap(ShadowP);
+	float4 surfColor = tex2D(imageMap, uvImageT);
+
+	surfColor.rgb *= shadowMult;
+
+	return lerp(surfColor, float4(FogColor, 1), FogFactor);
 }
 
-technique Image   //0
+technique Image  // 0
 {
    pass Pass_0
    {
       VertexShader = compile vs_2_0 VS ( );
-      PixelShader = compile ps_2_0 PSImage ( );
+      PixelShader = compile ps_3_0 PSImage ( );
    }
 }
 
@@ -343,7 +419,7 @@ technique Vegetation  // 1
    pass Pass_0
    {
       VertexShader = compile vs_2_0 VS ( );
-      PixelShader = compile ps_2_0 PSVegetation ( );
+      PixelShader = compile ps_3_0 PSVegetation ( );
    }
 }
 
@@ -352,7 +428,7 @@ technique Terrain   // 2
    pass Pass_0
    {
       VertexShader = compile vs_2_0 VS ( );
-      PixelShader = compile ps_2_0 PSTerrain ( );
+      PixelShader = compile ps_3_0 PSTerrain ( );
    }
 }
 
@@ -361,7 +437,7 @@ technique DarkShade  // 3
    pass Pass_0
    {
       VertexShader = compile vs_2_0 VS ( );
-      PixelShader = compile ps_2_0 PSDarkShade ( );
+      PixelShader = compile ps_3_0 PSDarkShade ( );
    }
 }
 
@@ -370,15 +446,15 @@ technique HalfBright  // 4
    pass Pass_0
    {
       VertexShader = compile vs_2_0 VS ( );
-      PixelShader = compile ps_2_0 PSHalfBright ( );
+      PixelShader = compile ps_3_0 PSHalfBright ( );
    }
 }
 
-technique FullBright // 5
+technique FullBright  // 5
 {
    pass Pass_0
    {
       VertexShader = compile vs_2_0 VS ( );
-      PixelShader = compile ps_2_0 PSFullBright ( );
+      PixelShader = compile ps_3_0 PSFullBright ( );
    }
 }
