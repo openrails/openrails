@@ -52,6 +52,7 @@ namespace ORTS
         public Direction MUDirection = Direction.Forward; //set by player locomotive to control MU'd locomotives
         public float MUThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives
         public float MUReverserPercent = 100;  // steam engine direction/cutoff control for MU'd locomotives
+        public float MUDynamicBrakePercent = -1;  // dynamic brake control for MU'd locomotives, <0 for off
         public float BrakeLine1PressurePSI = 90;     // set by player locomotive to control entire train brakes
         public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems
         public float BrakeLine3PressurePSI = 0;     // extra line just in case
@@ -107,6 +108,7 @@ namespace ORTS
             SpeedMpS = inf.ReadSingle();
             MUDirection = (Direction)inf.ReadInt32();
             MUThrottlePercent = inf.ReadSingle();
+            MUDynamicBrakePercent = inf.ReadSingle();
             BrakeLine1PressurePSI = inf.ReadSingle();
             BrakeLine2PressurePSI = inf.ReadSingle();
             BrakeLine3PressurePSI = inf.ReadSingle();
@@ -127,6 +129,7 @@ namespace ORTS
             outf.Write(SpeedMpS);
             outf.Write((int)MUDirection);
             outf.Write(MUThrottlePercent);
+            outf.Write(MUDynamicBrakePercent);
             outf.Write(BrakeLine1PressurePSI);
             outf.Write(BrakeLine2PressurePSI);
             outf.Write(BrakeLine3PressurePSI);
@@ -417,7 +420,7 @@ namespace ORTS
                                 case AirSinglePipe.ValveState.Release: lead.SignalEvent(EventID.EngineBrakeRelease); break;
                                 case AirSinglePipe.ValveState.Apply: lead.SignalEvent(EventID.EngineBrakeApply); break;
                             }
-                        if (lead.BailOff)
+                        if (lead.BailOff || (lead.DynamicBrakeAutoBailOff && MUDynamicBrakePercent>0))
                             p += 1000;
                         brakeSystem.BrakeLine3PressurePSI = p;
                         sumv += brakeSystem.BrakePipeVolumeFT3;
@@ -529,7 +532,10 @@ namespace ORTS
         /// <param name="distance"></param>
         public void CalculatePositionOfCars( float distance )
         {
+            TrackNode tn = RearTDBTraveller.TN;
             RearTDBTraveller.Move(distance);
+            if (distance < 0 && tn != RearTDBTraveller.TN)
+                AlignTrailingPointSwitch(tn, RearTDBTraveller.TN);
 
             TDBTraveller traveller = new TDBTraveller(RearTDBTraveller);
             // The traveller location represents the back of the train.
@@ -583,8 +589,46 @@ namespace ORTS
                 traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the front of the car 
             }
 
+            if (distance > 0 && traveller.TN != FrontTDBTraveller.TN)
+                AlignTrailingPointSwitch(FrontTDBTraveller.TN, traveller.TN);
             FrontTDBTraveller = traveller;
         } // CalculatePositionOfCars
+
+        // aligns a trailing point switch that was just moved over to match the track the train is on
+        public void AlignTrailingPointSwitch(TrackNode from, TrackNode to)
+        {
+            if (from.TrJunctionNode != null)
+                return;
+            TrackNode sw = null;
+            if (to.TrJunctionNode != null)
+                sw = to;
+            else
+            {
+                foreach (TrPin fp in from.TrPins)
+                {
+                    foreach (TrPin tp in to.TrPins)
+                    {
+                        if (fp.Link == tp.Link)
+                        {
+                            sw = Program.Simulator.TDB.TrackDB.TrackNodes[fp.Link];
+                            break;
+                        }
+                    }
+                    if (sw != null)
+                        break;
+                }
+            }
+            if (sw == null || sw.TrJunctionNode == null)
+                return;
+            for (int i = 1; i < sw.TrPins.Length; i++)
+            {
+                if (from == Program.Simulator.TDB.TrackDB.TrackNodes[sw.TrPins[i].Link])
+                {
+                    sw.TrJunctionNode.SelectedRoute = i - 1;
+                    return;
+                }
+            }
+        }
 
         //  Sets this train's speed so that momentum is conserved when otherTrain is coupled to it
         public void SetCoupleSpeed(Train otherTrain, float otherMult)

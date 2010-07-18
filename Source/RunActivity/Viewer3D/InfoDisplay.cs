@@ -137,6 +137,11 @@ namespace ORTS
             {
                 TextBuilder.Append("Engine Brake = "); TextBuilder.AppendLine(engBrakeStatus);
             }
+            string dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
+            if (dynamicBrakeStatus != null)
+            {
+                TextBuilder.Append("Dynamic Brake = "); TextBuilder.AppendLine(dynamicBrakeStatus);
+            }
             TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.PlayerLocomotive.SpeedMpS)).ToString("F1"));
             string status = Viewer.PlayerLocomotive.GetStatus();
             if (status != null)

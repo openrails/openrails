@@ -45,7 +45,9 @@ namespace ORTS
 
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
-        public Direction Direction { 
+        public float DynamicBrakePercent { get { return Train.MUDynamicBrakePercent; } set { Train.MUDynamicBrakePercent = value; } }
+        public Direction Direction
+        { 
             get { return Flipped ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection; } 
             set { Train.MUDirection = Flipped ? DirectionControl.Flip( value ) : value; } }
         public BrakeSystem BrakeSystem = null;
@@ -91,6 +93,7 @@ namespace ORTS
         public virtual string GetStatus() { return null; }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
+        public virtual string GetDynamicBrakeStatus() { return null; }
 
         public TrainCar(string wagFile, TrainCar previousCar)
         {

@@ -79,6 +79,13 @@ namespace ORTS
         public float BrakeEmergencyTimeFactorS = .1f;
         public float BrakePipeChargingRatePSIpS = Program.BrakePipeChargingRatePSIpS;
         public Interpolator2D TractiveForceCurves = null;
+        public Interpolator2D DynamicBrakeForceCurves = null;
+        public float DynamicBrakeSpeed1 = 3;
+        public float DynamicBrakeSpeed2 = 18;
+        public float DynamicBrakeSpeed3 = 23;
+        public float DynamicBrakeSpeed4 = 35;
+        public float MaxDynamicBrakeForceN = 0;
+        public bool DynamicBrakeAutoBailOff = false;
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
 
@@ -88,6 +95,7 @@ namespace ORTS
         public MSTSEngineController TrainBrakeController;
         public MSTSEngineController EngineBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
+        public MSTSEngineController DynamicBrakeController;
 
         public MSTSLocomotive(string wagPath, TrainCar previousCar)
             : base(wagPath, previousCar)
@@ -103,6 +111,7 @@ namespace ORTS
         {
             TrainBrakeController = new MSTSEngineController();
             EngineBrakeController = new MSTSEngineController();
+            DynamicBrakeController = new MSTSEngineController();
             base.InitializeFromWagFile(wagFilePath);
 
             if (CVFFileName != null)
@@ -131,6 +140,22 @@ namespace ORTS
                 TrainBrakeController = null;
             if (EngineBrakeController.StepSize == 0)
                 EngineBrakeController = null;
+            if (DynamicBrakeController.StepSize == 0)
+                DynamicBrakeController = null;
+            if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
+            {
+                DynamicBrakeForceCurves = new Interpolator2D(2);
+                Interpolator interp = new Interpolator(2);
+                interp[0] = 0;
+                interp[100] = 0;
+                DynamicBrakeForceCurves[0] = interp;
+                interp = new Interpolator(4);
+                interp[DynamicBrakeSpeed1] = 0;
+                interp[DynamicBrakeSpeed2] = MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed3] = MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed4] = 0;
+                DynamicBrakeForceCurves[1] = interp;
+            }
         }
 
         /// <summary>
@@ -154,6 +179,7 @@ namespace ORTS
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSEngineController(f); break;
                 case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(f); break;
                 case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(f); break;
+                case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(f); break;
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = f.ReadFloatBlock(); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = f.ReadFloatBlock(); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = f.ReadFloatBlock(); break;
@@ -165,6 +191,13 @@ namespace ORTS
                 case "engine(brakeemergencytimefactor": BrakeEmergencyTimeFactorS = f.ReadFloatBlock(); break;
                 case "engine(brakepipechargingrate": BrakePipeChargingRatePSIpS = f.ReadFloatBlock(); break;
                 case "engine(maxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(f); break;
+                case "engine(dynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(f); break;
+                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1 = f.ReadFloatBlock(); break;
+                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2 = f.ReadFloatBlock(); break;
+                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3 = f.ReadFloatBlock(); break;
+                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4 = f.ReadFloatBlock(); break;
+                case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = f.ReadFloatBlock(); break;
+                case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = f.ReadBoolBlock(); break;
                 case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = f.ReadFloatBlock(); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
@@ -187,11 +220,14 @@ namespace ORTS
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
+            DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
+            DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
 
             IsDriveable = copy.IsDriveable;
             ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
             TrainBrakeController = MSTSEngineController.Copy(locoCopy.TrainBrakeController);
             EngineBrakeController = MSTSEngineController.Copy(locoCopy.EngineBrakeController);
+            DynamicBrakeController = MSTSEngineController.Copy(locoCopy.DynamicBrakeController);
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
@@ -206,15 +242,13 @@ namespace ORTS
             outf.Write(Bell);
             outf.Write(Sander);
             outf.Write(Wiper);
-            outf.Write(MaxPowerW);
-            outf.Write(MaxForceN);
-            outf.Write(MaxSpeedMpS);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorOn);
             outf.Write(AverageForceN);
             MSTSEngineController.Save(ThrottleController, outf);
             MSTSEngineController.Save(TrainBrakeController, outf);
             MSTSEngineController.Save(EngineBrakeController, outf);
+            MSTSEngineController.Save(DynamicBrakeController, outf);
             base.Save(outf);
         }
 
@@ -227,15 +261,13 @@ namespace ORTS
             if (inf.ReadBoolean()) SignalEvent(EventID.BellOn);
             if (inf.ReadBoolean()) SignalEvent(EventID.SanderOn);
             if (inf.ReadBoolean()) SignalEvent(EventID.WiperOn);
-            MaxPowerW = inf.ReadSingle();
-            MaxForceN = inf.ReadSingle();
-            MaxSpeedMpS = inf.ReadSingle();
             MainResPressurePSI = inf.ReadSingle();
             CompressorOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
             ThrottleController = MSTSEngineController.Restore(inf);
             TrainBrakeController = MSTSEngineController.Restore(inf);
             EngineBrakeController = MSTSEngineController.Restore(inf);
+            DynamicBrakeController = MSTSEngineController.Restore(inf);
             base.Restore(inf);
         }
 
@@ -267,10 +299,9 @@ namespace ORTS
                 float maxPowerW = MaxPowerW * t * t;
                 if (maxForceN * currentSpeedMpS > maxPowerW)
                     maxForceN = maxPowerW / currentSpeedMpS;
-                float balanceRatio = 1;
-                if (MaxSpeedMpS > currentSpeedMpS)
-                    balanceRatio = currentSpeedMpS / MaxSpeedMpS;
-                MotiveForceN = maxForceN * (1f - balanceRatio);
+                if (currentSpeedMpS > MaxSpeedMpS)
+                    maxForceN= 0;
+                MotiveForceN = maxForceN;
             }
             else
             {
@@ -289,6 +320,13 @@ namespace ORTS
             // Variable1 is wheel rotation in m/sec for steam locomotives
             Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
+
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
+            {
+                float f= DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
+                if (f > 0)
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
+            }
 
             if (MainResPressurePSI < CompressorRestartPressurePSI && !CompressorOn)
                 SignalEvent(EventID.CompressorOn);
@@ -321,7 +359,12 @@ namespace ORTS
 
         public void IncreaseThrottle()
         {
-            if (ThrottleController == null)
+            if (DynamicBrakePercent >= 0)
+            {
+                // signal sound
+                return;
+            }
+            else if (ThrottleController == null)
             {
                 ThrottlePercent += 10;
                 if (ThrottlePercent > 100)
@@ -335,7 +378,12 @@ namespace ORTS
 
         public void DecreaseThrottle()
         {
-            if (ThrottleController == null)
+            if (DynamicBrakePercent >= 0)
+            {
+                // signal sound
+                return;
+            }
+            else if (ThrottleController == null)
             {
                 ThrottlePercent -= 10;
                 if (ThrottlePercent < 0)
@@ -402,6 +450,25 @@ namespace ORTS
         public void ToggleBailOff()
         {
             BailOff = !BailOff;
+        }
+        public void ChangeDynamicBrakes(float percent)
+        {
+            if (DynamicBrakeController == null || DynamicBrakeForceCurves == null || ThrottlePercent > 0)
+                return;
+            if (DynamicBrakePercent < 0 && percent > 0)
+                DynamicBrakePercent = 0;
+            else if (DynamicBrakePercent <= 0 && percent < 0)
+                DynamicBrakePercent = -1;
+            else if (percent > 0)
+                DynamicBrakePercent = 100 * DynamicBrakeController.Increase();
+            else
+                DynamicBrakePercent = 100 * DynamicBrakeController.Decrease();
+        }
+        public override string GetDynamicBrakeStatus()
+        {
+            if (DynamicBrakeController == null || DynamicBrakePercent < 0)
+                return null;
+            return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
         
         /// <summary>
@@ -499,6 +566,8 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(-10);
             if (UserInput.IsPressed(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(10);
             if (UserInput.IsPressed(Keys.OemQuestion) && !UserInput.IsShiftDown()) Locomotive.ToggleBailOff();
+            if (UserInput.IsPressed(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.ChangeDynamicBrakes(-10);
+            if (UserInput.IsPressed(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.ChangeDynamicBrakes(10);
             if (UserInput.IsPressed(Keys.OemQuestion) && UserInput.IsShiftDown()) Locomotive.Train.InitializeBrakes();
             if (UserInput.IsPressed(Keys.OemSemicolon) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(0);
             if (UserInput.IsPressed(Keys.OemQuotes) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(100);
