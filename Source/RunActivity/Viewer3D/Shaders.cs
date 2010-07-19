@@ -147,15 +147,13 @@ namespace ORTS
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
-            mModelToProjection.SetValueTranspose((world * view) * projection);
-            mWorldToView.SetValue(Matrix.Invert(view));
-            mModelToWorld.SetValue(world);
+            Parameters["World"].SetValue(world);
+            Parameters["View"].SetValue(view);
+            //Parameters["Projection"].SetValue(projection);
+            Parameters["WorldViewProjection"].SetValue(world * view * projection);
             XNAMatrix = world;
         }
 
-        EffectParameter mModelToProjection = null;
-        EffectParameter mWorldToView = null;
-        EffectParameter mModelToWorld = null;
         EffectParameter imageMap_Tex = null;
         EffectParameter normalMap_Tex = null;
         EffectParameter isNight_Tex = null;
@@ -178,9 +176,6 @@ namespace ORTS
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
         {
-            mModelToProjection = Parameters["mModelToProjection"];
-            mWorldToView = Parameters["mWorldToView"];
-            mModelToWorld = Parameters["mModelToWorld"];
             imageMap_Tex = Parameters["imageMap_Tex"];
             normalMap_Tex = Parameters["normalMap_Tex"];
             isNight_Tex = Parameters["isNight_Tex"];
@@ -219,21 +214,15 @@ namespace ORTS
     /// </summary>
     public class ShadowMapShader : Effect
     {
-        public Matrix World { set { pWorld.SetValue(value); } } EffectParameter pWorld = null;
-        public Matrix LightView { set { pLightView.SetValue(value); } } EffectParameter pLightView = null;
-        public Matrix LightProj { set { pLightProj.SetValue(value); } } EffectParameter pLightProj = null;
-
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
-            World = world;
+            Parameters["World"].SetValue(world);
+            Parameters["WorldViewProjection"].SetValue(world * view * projection);
         }
 
         public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("ShadowMap"))
         {
-            pWorld = Parameters["World"];
-            pLightView = Parameters["LightView"];
-            pLightProj = Parameters["LightProj"];
         }
     }
     #endregion
@@ -419,100 +408,6 @@ namespace ORTS
             mProjection.SetValue(projection);
             mView.SetValue(view);
             mWorld.SetValue(world);
-        }
-    }
-    #endregion
-
-    #region Forest shader
-    public class ForestShader : Effect
-    {
-        EffectParameter mView = null;
-        EffectParameter mWorld = null;
-        EffectParameter mWorldViewProj = null;
-        EffectParameter forest_Tex = null;
-        EffectParameter sunDirection = null;
-        EffectParameter overcast = null;
-        EffectParameter isHeadlightBright = null;
-        EffectParameter headlightPosition = null;
-        EffectParameter headlightDirection = null;
-        EffectParameter stateChange = null;
-        EffectParameter fadeinTime = null;
-        EffectParameter fadeoutTime = null;
-        EffectParameter fadeTime = null;
-
-        public Texture2D ForestTexture
-        {
-            set { forest_Tex.SetValue(value); }
-        }
-
-        public Vector3 SunDirection
-        {
-            set { sunDirection.SetValue(value); }
-        }
-
-        public float Overcast
-        {
-            set { overcast.SetValue(value); }
-        }
-
-        public bool IsHeadlightBright
-        {
-            set { isHeadlightBright.SetValue(value); }
-        }
-
-        public Vector3 HeadlightPosition
-        {
-            set { headlightPosition.SetValue(value); }
-        }
-
-        public Vector3 HeadlightDirection
-        {
-            set { headlightDirection.SetValue(value); }
-        }
-
-        public int StateChange
-        {
-            set { stateChange.SetValue(value); }
-        }
-
-        public float FadeInTime
-        {
-            set { fadeinTime.SetValue(value); }
-        }
-
-        public float FadeOutTime
-        {
-            set { fadeoutTime.SetValue(value); }
-        }
-
-        public float FadeTime
-        {
-            set { fadeTime.SetValue(value); }
-        }
-
-        public ForestShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("ForestShader"))
-        {
-            mView = Parameters["mView"];
-            mWorld = Parameters["mWorld"];
-            mWorldViewProj = Parameters["mWorldViewProj"];
-            forest_Tex = Parameters["forest_Tex"];
-            sunDirection = Parameters["LightVector"];
-            overcast = Parameters["overcast"];
-            isHeadlightBright = Parameters["isHeadlightBright"];
-            headlightPosition = Parameters["headlightPosition"];
-            headlightDirection = Parameters["headlightDirection"];
-            stateChange = Parameters["stateChange"];
-            fadeinTime = Parameters["fadeinTime"];
-            fadeoutTime = Parameters["fadeoutTime"];
-            fadeTime = Parameters["fadeTime"];
-        }
-
-        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
-        {
-            mView.SetValue(view);
-            mWorld.SetValue(world);
-            mWorldViewProj.SetValueTranspose(world *view * projection);
         }
     }
     #endregion

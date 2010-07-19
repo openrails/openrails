@@ -100,6 +100,7 @@ namespace ORTS
             DrawSimple(graphicsDevice);
         }
 
+        const int ShadowMapSize = 4096;
         RenderTarget2D ShadowMapRenderTarget;
         DepthStencilBuffer ShadowMapStencilBuffer;
         Texture2D ShadowMap;
@@ -109,8 +110,8 @@ namespace ORTS
         {
             if (ShadowMapRenderTarget == null)
             {
-                ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, 4096, 4096, 1, SurfaceFormat.Single);
-                ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, 4096, 4096, DepthFormat.Depth16);
+                ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, SurfaceFormat.Single);
+                ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
             }
 
             var cameraLocation = RenderProcess.Viewer.Camera.Location * new Vector3(1, 1, -1);

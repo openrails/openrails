@@ -1,36 +1,44 @@
-// INCLUDED FOR EXPERIMENTS WITH SHADOW MAPPING
-//-----------------------------------------------------------------------------
-// ShadowMap.fx
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//                     S H A D O W   M A P   S H A D E R                      //
+////////////////////////////////////////////////////////////////////////////////
 
-float4x4 World : WORLD;
-float4x4 LightView : VIEW;
-float4x4 LightProj : PROJECTION;
+////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-struct VSOUTPUT_SHADOW
+// General values
+float4x4 World;               // model -> world
+//float4x4 View;                // world -> view (currently unused)
+//float4x4 Projection;          // view -> projection (currently unused)
+float4x4 WorldViewProjection; // model -> world -> view -> projection
+
+////////////////////    V E R T E X   I N P U T S    ///////////////////////////
+
+struct VERTEX_INPUT
 {
-	float4 position : POSITION;
-	float  depth    : TEXCOORD0;
+	float4 Position : POSITION;
 };
 
-VSOUTPUT_SHADOW VSShadowMap(float4 inPos : POSITION)
+////////////////////    V E R T E X   O U T P U T S    /////////////////////////
+
+struct VERTEX_OUTPUT
 {
-	float4x4 WorldViewProjection = mul(mul(World, LightView), LightProj);
-	
-	VSOUTPUT_SHADOW Out = (VSOUTPUT_SHADOW)0;
-	
-	Out.position = mul(inPos, WorldViewProjection);
-	Out.depth    = Out.position.z;
-	
+	float  Depth : TEXCOORD0;
+};
+
+////////////////////    V E R T E X   S H A D E R S    /////////////////////////
+
+VERTEX_OUTPUT VSShadowMap(VERTEX_INPUT In, out float4 Position : POSITION)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+
+	Position = mul(In.Position, WorldViewProjection);
+	Out.Depth = Position.z;
+
 	return Out;
 }
 
-float4 PSShadowMap(VSOUTPUT_SHADOW In) : COLOR0
+float4 PSShadowMap(VERTEX_OUTPUT In) : COLOR0
 {
-	return float4(In.depth, In.depth, In.depth, 1.0f);
+	return float4(In.Depth, In.Depth, In.Depth, 1.0f);
 }
 
 technique ShadowMap

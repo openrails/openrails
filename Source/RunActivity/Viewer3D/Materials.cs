@@ -25,7 +25,6 @@ namespace ORTS
         public static SceneryShader SceneryShader = null;
         public static SkyShader SkyShader = null;
         public static PrecipShader PrecipShader = null;
-        public static ForestShader ForestShader = null;
         public static LightGlowShader LightGlowShader = null;
         public static SpriteBatchMaterial SpriteBatchMaterial = null;
         private static WaterMaterial WaterMaterial = null;
@@ -56,7 +55,6 @@ namespace ORTS
                                                         renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
             SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            ForestShader = new ForestShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightGlowShader = new LightGlowShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
             // WaterMaterial here.
@@ -542,11 +540,13 @@ namespace ORTS
 
             // With the GPU configured, now we can draw the primitive
             SceneryShader.Begin();
-            EffectPass pass = SceneryShader.CurrentTechnique.Passes[0];  // we know this is a one pass shader
-            pass.Begin();
-            RenderProcess.PrimitiveCount++;
-            renderPrimitive.Draw(graphicsDevice);
-            pass.End();
+            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                RenderProcess.PrimitiveCount++;
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
             SceneryShader.End();
         }
 
@@ -1047,20 +1047,15 @@ namespace ORTS
     #region Forest material
     public class ForestMaterial : Material
     {
-        ForestShader ForestShader;
+        SceneryShader SceneryShader;
         Texture2D TreeTexture = null;
         public RenderProcess RenderProcess;  // for diagnostics only
         public ForestDrawer drawer;
-        Vector3 sunDirection;
-        Vector3 headlightPosition;
-        Vector3 headlightDirection;
-        int lastLightState = 0, currentLightState = 0;
-        double fadeTimer = 0;
 
         public ForestMaterial(RenderProcess renderProcess, string treeTexture)
         {
             RenderProcess = renderProcess;
-            ForestShader = Materials.ForestShader;
+            SceneryShader = Materials.SceneryShader;
             TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
         }
 
@@ -1069,44 +1064,6 @@ namespace ORTS
             if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
                 RenderProcess.RenderStateChangesCount++;
-
-                sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
-                ForestShader.SunDirection = sunDirection;
-
-                if (RenderProcess.Viewer.PlayerLocomotiveViewer != null
-                    && RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
-                    && RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
-
-                {
-                    currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
-                    if (currentLightState != lastLightState)
-                    {
-                        if (currentLightState == 2 && lastLightState == 1)
-                        {
-                            ForestShader.StateChange = 1;
-                            // Reset fade timer
-                            fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
-                        }
-                        else if (currentLightState == 1 && lastLightState == 2)
-                        {
-                            ForestShader.StateChange = 2;
-                            // Reset fade timer
-                            fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
-                        }
-                        lastLightState = currentLightState;
-                    }
-                    headlightPosition = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
-                    ForestShader.HeadlightPosition = headlightPosition;
-                    headlightDirection = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
-                    ForestShader.HeadlightDirection = headlightDirection;
-                    ForestShader.FadeInTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
-                    ForestShader.FadeOutTime = RenderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
-                    ForestShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
-                }
-                // End headlight illumination
-
-                ForestShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
-                ForestShader.CurrentTechnique = ForestShader.Techniques["Forest"];
                 graphicsDevice.RenderState.AlphaBlendEnable = false;
                 graphicsDevice.RenderState.AlphaTestEnable = true;
                 graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
@@ -1115,20 +1072,22 @@ namespace ORTS
             if (this != previousMaterial)
             {
                 RenderProcess.ImageChangesCount++;
-                ForestShader.ForestTexture = TreeTexture;
+                SceneryShader.Texture = TreeTexture;
             }
 
-            ForestShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+            SceneryShader.CurrentTechnique = SceneryShader.Techniques["Forest"];
 
-            ForestShader.Begin();
-            foreach (EffectPass pass in ForestShader.CurrentTechnique.Passes)
+            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+
+            SceneryShader.Begin();
+            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
                 RenderProcess.PrimitiveCount++;
                 renderPrimitive.Draw(graphicsDevice);
                 pass.End();
             }
-            ForestShader.End();
+            SceneryShader.End();
         }
 
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
@@ -1275,8 +1234,6 @@ namespace ORTS
         {
             var shader = Materials.ShadowMapShader;
             shader.CurrentTechnique = shader.Techniques["ShadowMap"];
-            shader.LightView = lightView;
-            shader.LightProj = lightProj;
 
             RenderState rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
@@ -1293,7 +1250,7 @@ namespace ORTS
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Materials.ShadowMapShader;
-            shader.World = XNAWorldMatrix;
+            shader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
             shader.Begin();
             var pass = shader.CurrentTechnique.Passes[0];
             pass.Begin();
