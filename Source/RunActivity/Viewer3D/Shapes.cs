@@ -110,9 +110,13 @@ namespace ORTS
                 KeyPosition position2 = controller[iKey2];
                 float frame2 = position2.Frame;
                 if (iKey2 == 0)
-                    frame2 = SharedShape.Animations[0].FrameCount; //was controller.Count;
+                    frame2 = SharedShape.Animations[0].FrameCount; //changed at V148 by Doug, was controller.Count;
 
-                float amount = (key - frame1) / (frame2 - frame1);
+                float amount;
+                if (Math.Abs(frame2 - frame1) > 0.0001)
+                    amount = (key - frame1) / Math.Abs(frame2 - frame1);
+                else
+                    amount = 0;
 
                 if (position1.GetType() == typeof(slerp_rot))  // rotate the existing matrix
                 {

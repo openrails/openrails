@@ -72,7 +72,7 @@ namespace ORTS
         TerrainDrawer TerrainDrawer;
         public SceneryDrawer SceneryDrawer;
         public TrainDrawer TrainDrawer;
-        public ISoundEngine SoundEngine;  // IrrKlang Sound Device
+        public ISoundEngine SoundEngine = null;  // IrrKlang Sound Device
         // Route Information
         public Tiles Tiles = null;
         public ENVFile ENVFile;
@@ -103,9 +103,12 @@ namespace ORTS
             UserSetup();
 
             Console.WriteLine();
-            SoundEngine = new ISoundEngine();
-            SoundEngine.SetListenerPosition(new IrrKlang.Vector3D(0, 0, 0), new IrrKlang.Vector3D(0, 0, 1));
-            SoundEngine.SoundVolume = 0;  // while loading
+            if (SoundDetailLevel > 0)
+            {
+                SoundEngine = new ISoundEngine();
+                SoundEngine.SetListenerPosition(new IrrKlang.Vector3D(0, 0, 0), new IrrKlang.Vector3D(0, 0, 1));
+                SoundEngine.SoundVolume = 0;  // while loading
+            }
             ReadENVFile();
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
             Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
@@ -220,8 +223,11 @@ namespace ORTS
 
             PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
-            ISound ambientSound = SoundEngine.Play2D(Simulator.BasePath + @"\SOUND\gen_urb1.wav", true);  // TODO temp code
-            ambientSound.Volume = 0.2f;
+            if (SoundDetailLevel > 0)
+            {
+                ISound ambientSound = SoundEngine.Play2D(Simulator.BasePath + @"\SOUND\gen_urb1.wav", true);  // TODO temp code
+                ambientSound.Volume = 0.2f;
+            }
 
             InfoDisplay = new InfoDisplay(this);
             
@@ -387,11 +393,13 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime )
         {
             // Mute sound when paused
-            if (Simulator.Paused)
-                SoundEngine.SoundVolume = 0;
-            else
-                SoundEngine.SoundVolume = 1;
-
+            if (SoundEngine != null)
+            {
+                if (Simulator.Paused)
+                    SoundEngine.SoundVolume = 0;
+                else
+                    SoundEngine.SoundVolume = 1;
+            }
             if (ScreenHasChanged())
                 NotifyCamerasOfScreenChange();
             Camera.PrepareFrame(frame, elapsedTime);
@@ -411,7 +419,8 @@ namespace ORTS
         /// </summary>
         public void Unload(RenderProcess renderProcess)
         {
-            SoundEngine.StopAllSounds();
+            if( SoundEngine != null )
+                SoundEngine.StopAllSounds();
         }
 
         public void Stop()

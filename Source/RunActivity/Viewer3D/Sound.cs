@@ -97,14 +97,26 @@ namespace ORTS
 
             // find correct ScalabiltyGroup
             int iSG = 0;
-            while (smsFile.Tr_SMS.ScalabiltyGroups[iSG].DetailLevel > Viewer.SoundDetailLevel) ++iSG;
-            MSTS.ScalabiltyGroup mstsScalabiltyGroup = smsFile.Tr_SMS.ScalabiltyGroups[iSG];
+            while ( iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count)
+                {
+            
+                if (smsFile.Tr_SMS.ScalabiltyGroups[iSG].DetailLevel <= Viewer.SoundDetailLevel)
+                {
+                    break;
+                }
 
-            ActivationConditions = mstsScalabiltyGroup.Activation;
-            DeactivationConditions = mstsScalabiltyGroup.Deactivation;
+                ++iSG;
+            }
+            if (iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count)  // else we want less sound so don't provide any
+            {
+                MSTS.ScalabiltyGroup mstsScalabiltyGroup = smsFile.Tr_SMS.ScalabiltyGroups[iSG];
 
-            foreach (MSTS.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
-                SoundStreams.Add(new SoundStream(mstsStream, this));
+                ActivationConditions = mstsScalabiltyGroup.Activation;
+                DeactivationConditions = mstsScalabiltyGroup.Deactivation;
+
+                foreach (MSTS.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
+                    SoundStreams.Add(new SoundStream(mstsStream, this));
+            }
         }
 
         public void Update(ElapsedTime elapsedTime)
@@ -400,7 +412,8 @@ namespace ORTS
             location = Vector3.Transform(location, viewer.Camera.XNAView);
 
             SampleRate = iSoundSource.AudioFormat.SampleRate;  // ie 11025
-            ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, repeat, false, false);
+            if( viewer.SoundEngine != null )
+                ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, repeat, false, false);
             Volume = 1.0f;
 
             if (repeat)
@@ -899,7 +912,7 @@ namespace ORTS
             }
 
             string filePath = ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile];
-            if (File.Exists(filePath))
+            if (File.Exists(filePath) && ORTSStream.SoundSource.Viewer.SoundEngine != null )
             {
                 IrrKlang.ISoundSource iSoundSource = ORTSStream.SoundSource.Viewer.SoundEngine.GetSoundSource(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile], true);
                 ORTSStream.Play3D(repeat, iSoundSource);
