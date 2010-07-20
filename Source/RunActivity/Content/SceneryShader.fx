@@ -266,8 +266,8 @@ float4 PSImage(VERTEX_OUTPUT In) : COLOR
 	if (stateChange == 2)
 		shading *= clamp(1 - (fadeTime / fadeoutTime), 0, 1);
 	surfColor.rgb += shading * litColor;
-
-	return lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb = lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	return surfColor;
 }
 
 float4 PSVegetation(VERTEX_OUTPUT In) : COLOR
@@ -303,8 +303,8 @@ float4 PSVegetation(VERTEX_OUTPUT In) : COLOR
 	if (stateChange == 2)
 		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
 	surfColor.rgb += shading * litColor;
-
-	return lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb = lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	return surfColor;
 }
 
 float4 PSTerrain(VERTEX_OUTPUT In) : COLOR
@@ -341,7 +341,7 @@ float4 PSTerrain(VERTEX_OUTPUT In) : COLOR
 	if (stateChange == 2)
 		shading *= clamp(1 - (fadeTime / fadeoutTime), 0, 1);
 	surfColor += shading * litColor;
-
+	
 	return float4(lerp(surfColor, FogColor, In.LightDir_Fog.w), 1);
 }
 
@@ -358,8 +358,9 @@ float4 PSDarkShade(VERTEX_OUTPUT In) : COLOR
 
 	// Reduce saturaton when overcast
 	surfColor.rgb = Overcast(surfColor.rgb, 1 - overcast);
+	surfColor.rgb = lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	return surfColor;
 
-	return lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
 }
 
 float4 PSHalfBright(VERTEX_OUTPUT In) : COLOR
@@ -369,8 +370,8 @@ float4 PSHalfBright(VERTEX_OUTPUT In) : COLOR
 
 	surfColor.rgb *= shadowMult;
 	surfColor.rgb *= 0.55;
-
-	return lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb = lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	return surfColor;	
 }
 
 float4 PSFullBright(VERTEX_OUTPUT In) : COLOR
@@ -379,8 +380,8 @@ float4 PSFullBright(VERTEX_OUTPUT In) : COLOR
 	float4 surfColor = tex2D(imageMap, In.TexCoords);
 
 	surfColor.rgb *= shadowMult;
-
-	return lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb =  lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	return surfColor;	
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
