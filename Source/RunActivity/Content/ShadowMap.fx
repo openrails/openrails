@@ -36,9 +36,9 @@ VERTEX_OUTPUT VSShadowMap(VERTEX_INPUT In, out float4 Position : POSITION)
 	return Out;
 }
 
-float4 PSShadowMap(VERTEX_OUTPUT In) : COLOR0
+float4 PSShadowMap(VERTEX_OUTPUT In) : COLOR
 {
-	return float4(In.Depth, In.Depth, In.Depth, 1.0f);
+	return In.Depth;
 }
 
 technique ShadowMap

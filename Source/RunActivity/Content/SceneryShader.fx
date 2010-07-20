@@ -92,36 +92,38 @@ struct VERTEX_INPUT
 
 struct VERTEX_OUTPUT
 {
+	float4 Position     : POSITION;
 	float2 TexCoords    : TEXCOORD0;
 	float4 Normal_Light : TEXCOORD1;
 	float4 LightDir_Fog : TEXCOORD2;
 	float4 Shadow       : TEXCOORD3;
-	float4 Position     : TEXCOORD4;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-VERTEX_OUTPUT VSCommon(VERTEX_INPUT In, out float4 Position : POSITION)
+VERTEX_OUTPUT VSCommon(VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0; 
 
 	// Project vertex normally.
-	Out.Position = Position = mul(In.Position, WorldViewProjection);
+	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.TexCoords = In.TexCoords;
 	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
 	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
-	Out.TexCoords = In.TexCoords;
 
 	// Headlight
-	float3 wvpPosition = mul(In.Position, World);
-	Out.LightDir_Fog.xyz = wvpPosition - headlightPosition;
+	Out.LightDir_Fog.xyz = mul(In.Position, World) - headlightPosition;
+
+	// Fog
 	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - FogStart) / (FogEnd - FogStart)) * FogEnabled;
 
+	// Shadow map
 	Out.Shadow = mul(mul(mul(mul(In.Position, World), LightView), LightProj), ShadowMapProj);
 
 	return Out;
 }
 
-VERTEX_OUTPUT VSForest(VERTEX_INPUT In, out float4 Position : POSITION)
+VERTEX_OUTPUT VSForest(VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
@@ -136,16 +138,18 @@ VERTEX_OUTPUT VSForest(VERTEX_INPUT In, out float4 Position : POSITION)
 	newPosition += (In.TexCoords.y - 1.0f) * upVector * In.Normal.y;
 
 	// Project vertex with fixed w=1 and normal=eye.
-	Out.Position = Position = mul(float4(newPosition, 1), WorldViewProjection);
+	Out.Position = mul(float4(newPosition, 1), WorldViewProjection);
+	Out.TexCoords = In.TexCoords;
 	Out.Normal_Light.xyz = eyeVector;
 	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
-	Out.TexCoords = In.TexCoords;
 
 	// Headlight
-	float3 final3DPos = mul(newPosition, World);
-	Out.LightDir_Fog.xyz = final3DPos - headlightPosition;
+	Out.LightDir_Fog.xyz = mul(newPosition, World) - headlightPosition;
+
+	// Fog
 	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - FogStart) / (FogEnd - FogStart)) * FogEnabled;
 
+	// Shadow map
 	Out.Shadow = mul(newPosition, mul(mul(mul(World, LightView), LightProj), ShadowMapProj));
 
 	return Out;
@@ -227,7 +231,7 @@ float GetShadowMap(float4 Shadow)
 }
 
 float4 PSImage(VERTEX_OUTPUT In) : COLOR
-{ 
+{
 	float4 surfColor = tex2D(imageMap, In.TexCoords);
 
 	surfColor.rgb *= GetShadowMap(In.Shadow);
@@ -235,14 +239,7 @@ float4 PSImage(VERTEX_OUTPUT In) : COLOR
 	surfColor.rgb *= In.Normal_Light.w * 0.65 + 0.4; //Brightness + Ambient;
 	float4 litColor = surfColor;
 
-	if (specularPower > 0)
-	{
-		float3 eyeVector = normalize(viewerPos - In.Position);
-		float3 reflectionVector = -reflect(normalize(LightVector), normalize(In.Normal_Light.xyz));
-		float specularity = dot(normalize(reflectionVector), normalize(eyeVector));
-		specularity = saturate(pow(specularity, specularPower)) * length(surfColor) * 0.5;        
-		surfColor.rgb += specularity;
-	}
+	// TODO: Specular lighting goes here.
 
 	if (!isNight_Tex)
 	{
