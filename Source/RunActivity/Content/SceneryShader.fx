@@ -234,7 +234,8 @@ float4 PSImage(VERTEX_OUTPUT In) : COLOR
 {
 	float4 surfColor = tex2D(imageMap, In.TexCoords);
 
-	surfColor.rgb *= GetShadowMap(In.Shadow);
+	if( In.Normal_Light.w > 0.5 )   // prevent shadows from casting on dark side ( side facing away from light ) of objects
+		surfColor.rgb *= GetShadowMap(In.Shadow);
 
 	surfColor.rgb *= In.Normal_Light.w * 0.65 + 0.4; //Brightness + Ambient;
 	float4 litColor = surfColor;
@@ -274,7 +275,7 @@ float4 PSVegetation(VERTEX_OUTPUT In) : COLOR
 { 
 	float4 surfColor = tex2D(imageMap, In.TexCoords);
 
-	surfColor.rgb *= GetShadowMap(In.Shadow);
+	// shadows don't cast on cruciform material ( to prevent visibility of billboard panels )
 
 	float alpha = surfColor.a;
 	surfColor.rgb *= 0.8;  
@@ -348,8 +349,8 @@ float4 PSTerrain(VERTEX_OUTPUT In) : COLOR
 float4 PSDarkShade(VERTEX_OUTPUT In) : COLOR
 { 
 	float4 surfColor = tex2D(imageMap, In.TexCoords);
-
-	surfColor.rgb *= GetShadowMap(In.Shadow);
+	
+	// shadows don't cast on dark shade material - it is already dark
 
 	surfColor.rgb *= 0.2;
 
