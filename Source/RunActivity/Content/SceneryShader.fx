@@ -101,25 +101,49 @@ struct VERTEX_OUTPUT
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-VERTEX_OUTPUT VSCommon(VERTEX_INPUT In)
+void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
-	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0; 
-
-	// Project vertex normally.
+	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.TexCoords = In.TexCoords;
 	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
+}
+
+void _VSLightsAndShadows(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
+{
+	// Normal lighting
 	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
 
-	// Headlight
+	// Headlight lighting
 	Out.LightDir_Fog.xyz = mul(In.Position, World) - headlightPosition;
 
-	// Fog
+	// Fog fading
 	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - FogStart) / (FogEnd - FogStart)) * FogEnabled;
 
 	// Shadow map
 	Out.Shadow = mul(mul(mul(mul(In.Position, World), LightView), LightProj), ShadowMapProj);
+}
 
+VERTEX_OUTPUT VSGeneral(VERTEX_INPUT In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	_VSNormalProjection(In, Out);
+	_VSLightsAndShadows(In, Out);
+
+	// Z-bias to reduce and eliminate z-fighting on track ballast:
+	//     In testing, values from 1000 to 10000 worked pretty well, but often
+	//     there was some scenery that went horribly wrong at the lower end,
+	//     so a higher-end value is being used (5000).
+	Out.Position.z -= In.TexCoords.x * (1 - dot(normalize(In.Position.xyz), In.Normal.xyz)) / 5000;
+
+	return Out;
+}
+
+VERTEX_OUTPUT VSTerrain(VERTEX_INPUT In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	_VSNormalProjection(In, Out);
+	_VSLightsAndShadows(In, Out);
 	return Out;
 }
 
@@ -136,21 +160,14 @@ VERTEX_OUTPUT VSForest(VERTEX_INPUT In)
 	float3 newPosition = In.Position;
 	newPosition += (In.TexCoords.x - 0.5f) * sideVector * In.Normal.x;
 	newPosition += (In.TexCoords.y - 1.0f) * upVector * In.Normal.y;
+	In.Position = float4(newPosition, 1);
 
 	// Project vertex with fixed w=1 and normal=eye.
-	Out.Position = mul(float4(newPosition, 1), WorldViewProjection);
+	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.TexCoords = In.TexCoords;
 	Out.Normal_Light.xyz = eyeVector;
-	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
 
-	// Headlight
-	Out.LightDir_Fog.xyz = mul(newPosition, World) - headlightPosition;
-
-	// Fog
-	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - FogStart) / (FogEnd - FogStart)) * FogEnabled;
-
-	// Shadow map
-	Out.Shadow = mul(newPosition, mul(mul(mul(World, LightView), LightProj), ShadowMapProj));
+	_VSLightsAndShadows(In, Out);
 
 	return Out;
 }
@@ -267,7 +284,7 @@ float4 PSImage(VERTEX_OUTPUT In) : COLOR
 	if (stateChange == 2)
 		shading *= clamp(1 - (fadeTime / fadeoutTime), 0, 1);
 	surfColor.rgb += shading * litColor;
-	surfColor.rgb = lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb = lerp(surfColor.rgb, FogColor, In.LightDir_Fog.w);
 	return surfColor;
 }
 
@@ -304,7 +321,7 @@ float4 PSVegetation(VERTEX_OUTPUT In) : COLOR
 	if (stateChange == 2)
 		shading *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
 	surfColor.rgb += shading * litColor;
-	surfColor.rgb = lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb = lerp(surfColor.rgb, FogColor, In.LightDir_Fog.w);
 	return surfColor;
 }
 
@@ -359,7 +376,7 @@ float4 PSDarkShade(VERTEX_OUTPUT In) : COLOR
 
 	// Reduce saturaton when overcast
 	surfColor.rgb = Overcast(surfColor.rgb, 1 - overcast);
-	surfColor.rgb = lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb = lerp(surfColor.rgb, FogColor, In.LightDir_Fog.w);
 	return surfColor;
 
 }
@@ -371,7 +388,7 @@ float4 PSHalfBright(VERTEX_OUTPUT In) : COLOR
 
 	surfColor.rgb *= shadowMult;
 	surfColor.rgb *= 0.55;
-	surfColor.rgb = lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb = lerp(surfColor.rgb, FogColor, In.LightDir_Fog.w);
 	return surfColor;	
 }
 
@@ -381,7 +398,7 @@ float4 PSFullBright(VERTEX_OUTPUT In) : COLOR
 	float4 surfColor = tex2D(imageMap, In.TexCoords);
 
 	surfColor.rgb *= shadowMult;
-	surfColor.rgb =  lerp(surfColor, float4(FogColor, 1), In.LightDir_Fog.w);
+	surfColor.rgb = lerp(surfColor.rgb, FogColor, In.LightDir_Fog.w);
 	return surfColor;	
 }
 
@@ -391,7 +408,7 @@ technique Image
 {
    pass Pass_0
    {
-      VertexShader = compile vs_3_0 VSCommon ( );
+      VertexShader = compile vs_3_0 VSGeneral ( );
       PixelShader = compile ps_3_0 PSImage ( );
    }
 }
@@ -409,7 +426,7 @@ technique Vegetation
 {
    pass Pass_0
    {
-      VertexShader = compile vs_3_0 VSCommon ( );
+      VertexShader = compile vs_3_0 VSGeneral ( );
       PixelShader = compile ps_3_0 PSVegetation ( );
    }
 }
@@ -418,7 +435,7 @@ technique Terrain
 {
    pass Pass_0
    {
-      VertexShader = compile vs_3_0 VSCommon ( );
+      VertexShader = compile vs_3_0 VSTerrain ( );
       PixelShader = compile ps_3_0 PSTerrain ( );
    }
 }
@@ -427,7 +444,7 @@ technique DarkShade
 {
    pass Pass_0
    {
-      VertexShader = compile vs_3_0 VSCommon ( );
+      VertexShader = compile vs_3_0 VSGeneral ( );
       PixelShader = compile ps_3_0 PSDarkShade ( );
    }
 }
@@ -436,7 +453,7 @@ technique HalfBright
 {
    pass Pass_0
    {
-      VertexShader = compile vs_3_0 VSCommon ( );
+      VertexShader = compile vs_3_0 VSGeneral ( );
       PixelShader = compile ps_3_0 PSHalfBright ( );
    }
 }
@@ -445,7 +462,7 @@ technique FullBright
 {
    pass Pass_0
    {
-      VertexShader = compile vs_3_0 VSCommon ( );
+      VertexShader = compile vs_3_0 VSGeneral ( );
       PixelShader = compile ps_3_0 PSFullBright ( );
    }
 }
