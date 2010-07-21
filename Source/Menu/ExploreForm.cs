@@ -59,6 +59,5 @@ namespace ORTS
             weatherListBox.SelectedIndex = weather;
             startHourNumeric.Value = startHour;
         }
-
     }
 }

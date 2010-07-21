@@ -42,6 +42,7 @@
             this.checkBoxGraduatedRelease = new System.Windows.Forms.CheckBox();
             this.checkBoxWire = new System.Windows.Forms.CheckBox();
             this.checkBoxShadows = new System.Windows.Forms.CheckBox();
+            this.buttonCancel = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -53,7 +54,7 @@
             this.label1.Location = new System.Drawing.Point(70, 14);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(107, 13);
-            this.label1.TabIndex = 0;
+            this.label1.TabIndex = 1;
             this.label1.Text = "World Object Density";
             // 
             // numericWorldObjectDensity
@@ -66,15 +67,15 @@
             0});
             this.numericWorldObjectDensity.Name = "numericWorldObjectDensity";
             this.numericWorldObjectDensity.Size = new System.Drawing.Size(52, 20);
-            this.numericWorldObjectDensity.TabIndex = 1;
+            this.numericWorldObjectDensity.TabIndex = 0;
             // 
             // buttonOK
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOK.Location = new System.Drawing.Point(165, 238);
+            this.buttonOK.Location = new System.Drawing.Point(84, 238);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
-            this.buttonOK.TabIndex = 2;
+            this.buttonOK.TabIndex = 13;
             this.buttonOK.Text = "OK";
             this.buttonOK.UseVisualStyleBackColor = true;
             this.buttonOK.Click += new System.EventHandler(this.buttonOK_Click);
@@ -85,7 +86,7 @@
             this.label2.Location = new System.Drawing.Point(70, 40);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(97, 13);
-            this.label2.TabIndex = 0;
+            this.label2.TabIndex = 3;
             this.label2.Text = "Sound Detail Level";
             // 
             // numericSoundDetailLevel
@@ -98,7 +99,7 @@
             0});
             this.numericSoundDetailLevel.Name = "numericSoundDetailLevel";
             this.numericSoundDetailLevel.Size = new System.Drawing.Size(52, 20);
-            this.numericSoundDetailLevel.TabIndex = 1;
+            this.numericSoundDetailLevel.TabIndex = 2;
             // 
             // comboBoxWindowSize
             // 
@@ -106,7 +107,7 @@
             this.comboBoxWindowSize.Location = new System.Drawing.Point(12, 64);
             this.comboBoxWindowSize.Name = "comboBoxWindowSize";
             this.comboBoxWindowSize.Size = new System.Drawing.Size(121, 21);
-            this.comboBoxWindowSize.TabIndex = 3;
+            this.comboBoxWindowSize.TabIndex = 4;
             // 
             // label3
             // 
@@ -114,7 +115,7 @@
             this.label3.Location = new System.Drawing.Point(139, 67);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(67, 13);
-            this.label3.TabIndex = 4;
+            this.label3.TabIndex = 5;
             this.label3.Text = "Window size";
             // 
             // checkBoxTrainLights
@@ -123,7 +124,7 @@
             this.checkBoxTrainLights.Location = new System.Drawing.Point(12, 91);
             this.checkBoxTrainLights.Name = "checkBoxTrainLights";
             this.checkBoxTrainLights.Size = new System.Drawing.Size(81, 17);
-            this.checkBoxTrainLights.TabIndex = 5;
+            this.checkBoxTrainLights.TabIndex = 6;
             this.checkBoxTrainLights.Text = "Train Lights";
             this.checkBoxTrainLights.UseVisualStyleBackColor = true;
             // 
@@ -142,7 +143,7 @@
             0});
             this.numericBrakePipeChargingRatePSIpS.Name = "numericBrakePipeChargingRatePSIpS";
             this.numericBrakePipeChargingRatePSIpS.Size = new System.Drawing.Size(52, 20);
-            this.numericBrakePipeChargingRatePSIpS.TabIndex = 6;
+            this.numericBrakePipeChargingRatePSIpS.TabIndex = 10;
             this.numericBrakePipeChargingRatePSIpS.Value = new decimal(new int[] {
             1,
             0,
@@ -155,7 +156,7 @@
             this.label4.Location = new System.Drawing.Point(70, 185);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(166, 13);
-            this.label4.TabIndex = 7;
+            this.label4.TabIndex = 11;
             this.label4.Text = "Brake Pipe Charging Rate (PSI/s)";
             // 
             // checkBoxPrecipitation
@@ -164,7 +165,7 @@
             this.checkBoxPrecipitation.Location = new System.Drawing.Point(12, 114);
             this.checkBoxPrecipitation.Name = "checkBoxPrecipitation";
             this.checkBoxPrecipitation.Size = new System.Drawing.Size(84, 17);
-            this.checkBoxPrecipitation.TabIndex = 8;
+            this.checkBoxPrecipitation.TabIndex = 7;
             this.checkBoxPrecipitation.Text = "Precipitation";
             this.checkBoxPrecipitation.UseVisualStyleBackColor = true;
             // 
@@ -194,17 +195,29 @@
             this.checkBoxShadows.Location = new System.Drawing.Point(12, 209);
             this.checkBoxShadows.Name = "checkBoxShadows";
             this.checkBoxShadows.Size = new System.Drawing.Size(114, 17);
-            this.checkBoxShadows.TabIndex = 10;
+            this.checkBoxShadows.TabIndex = 12;
             this.checkBoxShadows.Text = "Dynamic Shadows";
             this.checkBoxShadows.UseVisualStyleBackColor = true;
+            // 
+            // buttonCancel
+            // 
+            this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.buttonCancel.Location = new System.Drawing.Point(165, 238);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(75, 23);
+            this.buttonCancel.TabIndex = 14;
+            this.buttonCancel.Text = "Cancel";
+            this.buttonCancel.UseVisualStyleBackColor = true;
+            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(252, 273);
-            this.ControlBox = false;
+            this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.checkBoxShadows);
             this.Controls.Add(this.checkBoxGraduatedRelease);
             this.Controls.Add(this.checkBoxWire);
@@ -219,7 +232,9 @@
             this.Controls.Add(this.numericWorldObjectDensity);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "OptionsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Options";
@@ -247,5 +262,6 @@
         private System.Windows.Forms.CheckBox checkBoxGraduatedRelease;
         private System.Windows.Forms.CheckBox checkBoxWire;
         private System.Windows.Forms.CheckBox checkBoxShadows;
+        private System.Windows.Forms.Button buttonCancel;
     }
 }

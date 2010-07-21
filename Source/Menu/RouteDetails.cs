@@ -49,14 +49,9 @@ namespace ORTS
                 txtName.Text = trkFile.Tr_RouteFile.Name;
                 string Description = trkFile.Tr_RouteFile.Description;
                 txtDescription.Text = Description.Replace("\n", "\r\n");
-                txtBriefing.Visible = false;
-                lblBriefing.Visible = false;
-                groupBox1.Visible = false;
-                this.Height = 300;
-                picLogo.Top = this.Bottom - (picLogo.Height + 40);
-                lblOpen.Top = picLogo.Top;
-                lblRails.Top = picLogo.Top + 26; ;
-                cmdOK.Top = this.Bottom -( cmdOK.Height + 48);
+                grpBriefing.Visible = false;
+                grpEnvironment.Visible = false;
+                this.Height -= grpEnvironment.Bottom - grpDescription.Bottom;
             }
             catch
             {
@@ -99,7 +94,7 @@ namespace ORTS
             return true;
         }
 
-        private void cmdOK_Click(object sender, EventArgs e)
+        private void cmdClose_Click(object sender, EventArgs e)
         {
             this.Close();
         }
