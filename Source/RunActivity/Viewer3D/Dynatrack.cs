@@ -43,32 +43,37 @@ namespace ORTS
         /// <summary>
         /// DynatrackDrawer constructor
         /// </summary>
-        public DynatrackDrawer(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position)
+        public DynatrackDrawer(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
         {
             Viewer = viewer;
             worldPosition = position;
             dtrackMaterial = Materials.Load(Viewer.RenderProcess, "DynatrackMaterial");
 
             // Instantiate classes
-            dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition);
+            dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition, endPosition);
        }
         #endregion
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            Matrix XNAWorldLocation = worldPosition.XNAMatrix;
-            // Locate relative to the camera
+            // Offset relative to the camera-tile origin
             int dTileX = worldPosition.TileX - Viewer.Camera.TileX;
             int dTileZ = worldPosition.TileZ - Viewer.Camera.TileZ;
-            Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-            xnaDTileTranslation = worldPosition.XNAMatrix * xnaDTileTranslation;
-            Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
+            Vector3 tileOffsetWrtCamera = new Vector3(dTileX * 2048, 0, -dTileZ * 2048);
 
-            float objectRadius = dtrackMesh.objectRadius;
+            // Find midpoint between auxpoint and track section root
+            Vector3 xnaLODCenter = 0.5f * (dtrackMesh.XNAEnd + worldPosition.XNAMatrix.Translation +
+                                            2 * tileOffsetWrtCamera);
+            dtrackMesh.MSTSLODCenter = new Vector3(xnaLODCenter.X, xnaLODCenter.Y, -xnaLODCenter.Z);
 
-            if (Viewer.Camera.CanSee(mstsLocation, objectRadius, 500))
+            if (Viewer.Camera.CanSee(dtrackMesh.MSTSLODCenter, dtrackMesh.objectRadius, 500))
             {
-                frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref xnaDTileTranslation);
+                // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
+                Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
+                xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
+                // (Transformation is now with respect to camera-tile origin)
+
+                frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref xnaXfmWrtCamTile);
             }
         }
     }
@@ -89,7 +94,10 @@ namespace ORTS
         Vector3 center;             // Center coordinates of curve radius
         Vector3 radius;             // Radius vector to cross section on curve centerline
         Vector3 directionVector;    // The direction each track segment is pointing
-        public float objectRadius;  // For LOD
+
+        public Vector3 XNAEnd;        // Location of termination-of-section (as opposed to root)
+        public float objectRadius;    // For LOD
+        public Vector3 MSTSLODCenter; // Center of bounding sphere
 
         VertexPositionNormalTexture[] vertexList;
         short[] triangleListIndices;    // Trilist buffer.
@@ -119,7 +127,8 @@ namespace ORTS
         /// <summary>
         /// Constructor.
         /// </summary>
-        public DynatrackMesh(RenderProcess renderProcess, DyntrackObj dtrack, WorldPosition worldPosition)
+        public DynatrackMesh(RenderProcess renderProcess, DyntrackObj dtrack, WorldPosition worldPosition, 
+                                WorldPosition endPosition)
         {
             // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
@@ -147,6 +156,7 @@ namespace ORTS
             dtrackData.param1 = dtrack.trackSections[0].param1;
             dtrackData.param2 = dtrack.trackSections[0].param2;
             dtrackData.deltaY = dtrack.trackSections[0].deltaY;
+            XNAEnd = endPosition.XNAMatrix.Translation;
 
             numVertices = 14;
             indexCount = 0;
@@ -163,8 +173,8 @@ namespace ORTS
             // This was the old method, which used the final point in the mesh:
             //objectRadius = (float)Math.Pow(Math.Pow(vertexList[numVertices - 1].Position.X, 2) + Math.Pow(vertexList[numVertices - 1].Position.Z, 2), 0.5) * 1.05f;
             // The new method is more straightforward because of single-subsection dynamic track
-            if (dtrackData.IsCurved == 0) objectRadius = dtrackData.param1; // length
-            else objectRadius = 2.0f * dtrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(dtrackData.param1)); // chord length
+            if (dtrackData.IsCurved == 0) objectRadius = 0.5f * dtrackData.param1; // half-length
+            else objectRadius = dtrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(dtrackData.param1)); // half chord length
 
             VertexDeclaration = null;
             VertexBuffer = null;

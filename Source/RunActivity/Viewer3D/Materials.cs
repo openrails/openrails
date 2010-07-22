@@ -7,6 +7,7 @@
 ///    Wayne Campbell
 /// Contributors:
 ///    Rick Grout
+///    Walt Niehoff
 ///     
 
 using System;
@@ -944,11 +945,7 @@ namespace ORTS
             Blend sourceBlend = graphicsDevice.RenderState.SourceBlend;
             bool alphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
 
-            uint uid = mesh.UiD; // Used for testing only
-
-            // XNAWorldMatrix.Translation is relative to camera tile origin, in MSTS coordinates:
-            Vector3 mstsLocation = new Vector3(XNAWorldMatrix.Translation.X, XNAWorldMatrix.Translation.Y, 
-                                                -XNAWorldMatrix.Translation.Z);
+            Vector3 mstsLocation = mesh.MSTSLODCenter;
 
             // Test if object behind camera:
             if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, mesh.objectRadius))

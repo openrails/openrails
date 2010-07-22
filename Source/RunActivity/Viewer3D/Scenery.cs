@@ -377,7 +377,7 @@ namespace ORTS
                 */
                 
                 // Create a new DynatrackDrawer for the subsection
-                dTrackList.Add(new DynatrackDrawer(viewer, subsection, root));
+                dTrackList.Add(new DynatrackDrawer(viewer, subsection, root, nextRoot));
                 localV = localProjectedV; // Next subsection
             }
         } // end DyntrackAddAtomic
