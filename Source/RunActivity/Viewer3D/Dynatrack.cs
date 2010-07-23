@@ -96,7 +96,7 @@ namespace ORTS
         Vector3 directionVector;    // The direction each track segment is pointing
 
         public Vector3 XNAEnd;        // Location of termination-of-section (as opposed to root)
-        public float objectRadius;    // For LOD
+        public float objectRadius;    // Radius of bounding sphere
         public Vector3 MSTSLODCenter; // Center of bounding sphere
 
         VertexPositionNormalTexture[] vertexList;
