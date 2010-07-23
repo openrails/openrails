@@ -48,9 +48,10 @@ texture imageMap_Tex;
 sampler imageMap = sampler_state
 {
    Texture = (imageMap_Tex);
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   MIPFILTER = Linear;
+   MagFilter = Anisotropic;
+   MinFilter = Anisotropic;
+   MipFilter = Linear;
+   MaxAnisotropy = 16;
    //AddressU = Wrap;  set in the Materials class
    //AddressV = Wrap;
 };
@@ -59,9 +60,9 @@ texture normalMap_Tex;
 sampler normalMap = sampler_state
 {
    Texture = (normalMap_Tex);
-   MAGFILTER =  Linear;
-   MINFILTER =  Linear;
-   MIPFILTER =  Linear;
+   MagFilter =  Linear;
+   MinFilter =  Linear;
+   MipFilter =  Linear;
    MipMapLodBias = 0;
    AddressU = Wrap;
    AddressV = Wrap;
