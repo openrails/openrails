@@ -18,6 +18,7 @@ using Microsoft.Xna.Framework.Storage;
 using System.Diagnostics;
 using System.Threading;
 using System.Text;
+using System.IO;
 using System.Windows.Forms;
 
 namespace ORTS
@@ -34,6 +35,7 @@ namespace ORTS
         TextPrimitive TextPrimitive = new TextPrimitive();
         Viewer3D Viewer;
         int InfoAmount = 1;
+        int frameNum = 0;
         bool InfoLog = false;
         private double lastUpdateTime = 0;   // update text message only 10 times per second
 
@@ -61,6 +63,16 @@ namespace ORTS
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F12))
             {
                 InfoLog = !InfoLog;
+                if (InfoLog == false)
+                    OutLog.Dump();
+                else
+                {
+                    using (StreamWriter fileout = File.AppendText("dumplog.txt"))
+                    {
+                        fileout.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss"));
+                        fileout.Close();
+                    }
+                }
             }
         }
 
@@ -70,6 +82,7 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            frameNum++;
             if (Program.RealTime - lastUpdateTime > 0.3)
             {
                 double elapsedRealSeconds = Program.RealTime - lastUpdateTime;
@@ -81,7 +94,7 @@ namespace ORTS
                 if (InfoLog)
                 {
                     OutLog.Store(Program.Revision); //SVN Revision
-                    OutLog.Store(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString()); //Time
+                    OutLog.Store(frameNum.ToString()); //Frame Number
                     OutLog.Store(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString()); //FPS
                     OutLog.Store(Viewer.RenderProcess.SmoothJitter.ToString("F4")); //Jitter
                     OutLog.Store(Viewer.RenderProcess.PrimitivesPerFrame.ToString()); //Primitives

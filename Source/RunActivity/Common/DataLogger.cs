@@ -32,26 +32,20 @@ namespace ORTS
                 fieldIter = 0;
                 frameIter++;
                 if (frameIter == MAXFRAMES)
-                {
-                    frameIter = 0;
-                    //The next two lines are for thread safety, in case it tries to store more data into the log while it's dumping.
-                    String[,] dumpLog = tempLog;
-                    tempLog = new String[MAXFRAMES, ARRAYSIZE];
-                    Dump(dumpLog);
-                }
+                    Dump();
             }
         }
 
-        private void Dump(String[,] dumpLog)
+        public void Dump()
         {
             //TODO: this whole function should be in a thread maybe
             using (StreamWriter fileout = File.AppendText("dumplog.txt"))
             {
-                for (int a = 0; a < MAXFRAMES; a++)
+                for (int a = 0; a < frameIter; a++)
                 {
                     for (int b = 0; b < ARRAYSIZE; b++)
                     {
-                        fileout.Write(dumpLog[a, b]);
+                        fileout.Write(tempLog[a, b]);
                         if (b == (ARRAYSIZE - 1))
                             fileout.Write('\n');
                         else
@@ -59,8 +53,8 @@ namespace ORTS
                     }
                 }
                 fileout.Close();
+                frameIter = 0;
             }
-            //TODO: delete dumpLog here for memory conservation
         }
     }
 }
