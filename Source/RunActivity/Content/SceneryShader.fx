@@ -383,10 +383,10 @@ float4 PSDarkShade(VERTEX_OUTPUT In) : COLOR
 
 float4 PSHalfBright(VERTEX_OUTPUT In) : COLOR
 { 
-	float shadowMult = GetShadowMap(In.Shadow);
+	// shadows don't cast on light sources
+
 	float4 surfColor = tex2D(imageMap, In.TexCoords);
 
-	surfColor.rgb *= shadowMult;
 	surfColor.rgb *= 0.55;
 	surfColor.rgb = lerp(surfColor.rgb, FogColor, In.LightDir_Fog.w);
 	return surfColor;	
@@ -394,10 +394,10 @@ float4 PSHalfBright(VERTEX_OUTPUT In) : COLOR
 
 float4 PSFullBright(VERTEX_OUTPUT In) : COLOR
 { 
-	float shadowMult = GetShadowMap(In.Shadow);
+	// shadows don't cast on light sources
+
 	float4 surfColor = tex2D(imageMap, In.TexCoords);
 
-	surfColor.rgb *= shadowMult;
 	surfColor.rgb = lerp(surfColor.rgb, FogColor, In.LightDir_Fog.w);
 	return surfColor;	
 }
@@ -418,7 +418,7 @@ technique Forest
    pass Pass_0
    {
       VertexShader = compile vs_3_0 VSForest ( );
-      PixelShader = compile ps_3_0 PSImage ( );
+      PixelShader = compile ps_3_0 PSVegetation ( );
    }
 }
 
