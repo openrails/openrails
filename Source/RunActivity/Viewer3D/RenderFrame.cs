@@ -28,12 +28,14 @@ namespace ORTS
         public Material Material;
         public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
+        public bool IsShadowCaster;   // true if this render item casts a shadow
 
-        public RenderItem(Material material, RenderPrimitive renderPrimitive, Matrix xnaMatrix)
+        public RenderItem(Material material, RenderPrimitive renderPrimitive, Matrix xnaMatrix, bool shadowCaster)
         {
             Material = material;
             RenderPrimitive = renderPrimitive;
             XNAMatrix = xnaMatrix;
+            IsShadowCaster = shadowCaster;
         }
     }
 
@@ -65,9 +67,14 @@ namespace ORTS
         /// <summary>
         /// Executed in the UpdateProcess thread
         /// </summary>
-        public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix) 
+        public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix)
         {
-            RenderItems.Add(new RenderItem(material, primitive, xnaMatrix));
+            AddPrimitive(material, primitive, ref xnaMatrix, false);
+        }
+
+        public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, bool shadowCaster ) 
+        {
+            RenderItems.Add(new RenderItem(material, primitive, xnaMatrix, shadowCaster ));
 
             if (RenderMaxSequence < primitive.Sequence)
                 RenderMaxSequence = primitive.Sequence;
@@ -127,8 +134,9 @@ namespace ORTS
             foreach (var renderItem in RenderItems)
             {
                 var ri = renderItem;
-                if ((renderItem.Material is SceneryMaterial) || (renderItem.Material is ForestMaterial))
-                    Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+                if( renderItem.IsShadowCaster )
+                    if ((renderItem.Material is SceneryMaterial) || (renderItem.Material is ForestMaterial))
+                        Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
             }
 
             graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;

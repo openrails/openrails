@@ -657,9 +657,12 @@ namespace ORTS
             string shapePath = wagonFolderSlash + car.MainShapeFileName;
 
             TrainCarShape = new PoseableShape(viewer, shapePath, car.WorldPosition);
+            TrainCarShape.IsShadowCaster = true;
+
             if (car.FreightShapeFileName != null)
             {
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName, car.WorldPosition);
+                FreightShape.IsShadowCaster = true;
             }
             if (car.InteriorShapeFileName != null)
             {

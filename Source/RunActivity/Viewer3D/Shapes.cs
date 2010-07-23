@@ -29,7 +29,7 @@ namespace ORTS
     public class StaticShape
     {
         public WorldPosition Location;
-        
+        public bool IsShadowCaster = false;  // true if this shape casts a shadow ( scenery objects according to RE setting, and all train objects )
         public SharedShape SharedShape;
         public Viewer3D Viewer;
 
@@ -46,7 +46,7 @@ namespace ORTS
 
         public virtual void PrepareFrame(RenderFrame frame, float elapsedSeconds )
         {
-            SharedShape.PrepareFrame(frame, Location);
+            SharedShape.PrepareFrame(frame, Location, IsShadowCaster);
         }
     }
 
@@ -71,7 +71,7 @@ namespace ORTS
 
         public override void PrepareFrame(RenderFrame frame, float elapsedSeconds )
         {
-            SharedShape.PrepareFrame( frame, Location, XNAMatrices);
+            SharedShape.PrepareFrame( frame, Location, XNAMatrices, IsShadowCaster);
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace ORTS
                 for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                     AnimateMatrix(iMatrix, AnimationKey);
             }
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, IsShadowCaster);
         }
     }
 
@@ -221,7 +221,7 @@ namespace ORTS
             for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 AnimateMatrix(iMatrix, AnimationKey);
 
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, IsShadowCaster);
         }
     } // class SwitchTrackShape
 
@@ -272,6 +272,7 @@ namespace ORTS
         public int NumVertices = 0;         // the number of vertex indexes used by this primitive
         public int iHierarchy;          // index into the hiearchy array which provides pose for this primitive
         public int[] Hierarchy;         // the hierarchy from the sub_object
+        
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -739,14 +740,19 @@ namespace ORTS
         /// </summary>
         public void PrepareFrame( RenderFrame frame, WorldPosition location)
         {
-            PrepareFrame(frame, location, Matrices);
+            PrepareFrame(frame, location, Matrices, false);
+        }
+
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, bool isShadowCaster)
+        {
+            PrepareFrame(frame, location, Matrices, isShadowCaster);
         }
 
         /// <summary>
         /// This is called by the individual instances of the shape when it should draw itself at the specified location
         /// with individual matrices animated as shown.
         /// </summary>
-        public void PrepareFrame( RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices )
+        public void PrepareFrame( RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool isShadowCaster )
         {
             // Locate relative to the camera
             int dTileX = location.TileX - Viewer.Camera.TileX;
@@ -785,7 +791,9 @@ namespace ORTS
                                     }
                                     xnaMatrix *= xnaDTileTranslation;
 
-                                    frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix );
+                                    // TODO make shadows depend on shape overrides
+
+                                    frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix , isShadowCaster);
                                 } // for each primitive
                             }
                             break; // only draw one distance level.

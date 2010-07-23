@@ -111,6 +111,7 @@ namespace MSTS
                         case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
                         case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
                         case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
                         default: subBlock.Skip(); break;
                     }
                 }
@@ -381,6 +382,18 @@ namespace MSTS
 
         }//TreeSize
     }//ForestObj
+
+    // These relate to the general properties settable for scenery objects in RE
+    public enum StaticFlag
+    {
+        RoundShadow = 0x00002000,
+        RectangularShadow = 0x00004000,
+        TreelineShadow = 0x00008000,
+        DynamicShadow = 0x00010000,
+        AnyShadow = 0x0001E000,
+        Terrain = 0x00040000,
+        Animate = 0x00080000
+    }
 
     public abstract class WorldObject
     {
