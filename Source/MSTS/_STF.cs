@@ -831,18 +831,11 @@ namespace MSTS
             get { return tree.ToString(); }
 		}
 
-        private int IndexOf(StringBuilder tree, char target, int iStart)
-        {
-            for (int i = iStart; i < tree.Length; ++i)
-                if (tree[i] == target)
-                    return i;
-            return -1;
-        }
-
         private void UpdateTree(string delimitedToken)
 		// A delimited token may include leading and trailing whitespace characters
 
 		{
+			// PERFORMANCE NOTE: StringBuilder.ToString() is FAST (zero-copy).
 			string token = delimitedToken.Trim();
 			if( token == "(" )
 			{
@@ -855,7 +848,7 @@ namespace MSTS
 				for( int n = 0; n < treeLevel; ++n )
 				{
 					++i;
-					i = IndexOf(tree,'(',i );
+					i = tree.ToString().IndexOf('(', i);
 				}
 				if( i < 0 )
                     i = 0;  // S/B throw new STFError(this, "Mismatched parenthesis"); but MSTS just ignores these errors so we will also.
@@ -868,7 +861,7 @@ namespace MSTS
 				int i = 0;
 				while( n-- > 0 )
 				{
-					i = IndexOf( tree, '(',i );
+					i = tree.ToString().IndexOf('(', i);
 					++i;
 				}
 				tree.Length = i;
