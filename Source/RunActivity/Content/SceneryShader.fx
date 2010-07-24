@@ -48,7 +48,7 @@ texture imageMap_Tex;
 sampler imageMap = sampler_state
 {
    Texture = (imageMap_Tex);
-   MagFilter = Anisotropic;
+   MagFilter = Linear;
    MinFilter = Anisotropic;
    MipFilter = Linear;
    MaxAnisotropy = 16;
@@ -135,7 +135,7 @@ VERTEX_OUTPUT VSGeneral(VERTEX_INPUT In)
 	//     In testing, values from 1000 to 10000 worked pretty well, but often
 	//     there was some scenery that went horribly wrong at the lower end,
 	//     so a higher-end value is being used (5000).
-	Out.Position.z -= In.TexCoords.x * (1 - dot(normalize(In.Position.xyz), In.Normal.xyz)) / 5000;
+	Out.Position.z -= abs(In.TexCoords.x * (1 - dot(normalize(In.Position.xyz), normalize(In.Normal.xyz)))) / 5000;
 
 	return Out;
 }
