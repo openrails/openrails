@@ -83,13 +83,6 @@ namespace ORTS
         }
             private float ambientValue = 0.5f;
 
-        public float ZBias
-        {
-            get { return zbiasValue; }
-            set { zbiasValue = value; zbias.SetValue(zbiasValue); }
-        }
-        private float zbiasValue = 0.0f;
-
         public Vector3 SunDirection
         {
             set { sunDirection.SetValue(value); }
@@ -145,6 +138,8 @@ namespace ORTS
         public float FogEnd { set { pFogEnd.SetValue(value); } } EffectParameter pFogEnd = null;
         public Color FogColor { set { pFogColor.SetValue(new Vector3(value.R / 255f, value.G / 255f, value.B / 255f)); } } EffectParameter pFogColor = null;
 
+		public float ZBias { set { pZBias.SetValue(value); } } EffectParameter pZBias = null;
+
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
             Parameters["World"].SetValue(world);
@@ -162,7 +157,6 @@ namespace ORTS
         EffectParameter brightness = null;
         EffectParameter saturation = null;
         EffectParameter ambient = null;
-        EffectParameter zbias = null;  // TODO TEST
         EffectParameter sunDirection = null;
         EffectParameter overcast = null;
         EffectParameter isHeadlightBright = null;
@@ -184,7 +178,6 @@ namespace ORTS
             brightness = Parameters["Brightness"];
             saturation = Parameters["Saturation"];
             ambient = Parameters["Ambient"];
-            zbias = Parameters["ZBias"];  // TODO TEST
             sunDirection = Parameters["LightVector"];
             overcast = Parameters["overcast"];
             isHeadlightBright = Parameters["isHeadlightBright"];
@@ -204,6 +197,8 @@ namespace ORTS
             pFogStart = Parameters["FogStart"];
             pFogEnd = Parameters["FogEnd"];
             pFogColor = Parameters["FogColor"];
+			// Z-bias for track objects.
+			pZBias = Parameters["ZBias"];
         }
     }
     #endregion

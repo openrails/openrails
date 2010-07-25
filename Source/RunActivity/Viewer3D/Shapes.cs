@@ -26,29 +26,49 @@ using MSTS;
 
 namespace ORTS
 {
+	[Flags]
+	public enum ShapeFlags
+	{
+		None = 0,
+		// Shape casts a shadow (scenery objects according to RE setting, and all train objects).
+		ShadowCaster = 1,
+		// Shape needs automatic z-bias to keep it out of trouble.
+		AutoZBias = 2,
+		// NOTE: Use powers of 2 for values!
+	}
+
     public class StaticShape
     {
-        public WorldPosition Location;
-        public bool IsShadowCaster = false;  // true if this shape casts a shadow ( scenery objects according to RE setting, and all train objects )
-        public SharedShape SharedShape;
-        public Viewer3D Viewer;
+		public readonly Viewer3D Viewer;
+        public readonly WorldPosition Location;
+		public readonly ShapeFlags Flags;
+		public readonly SharedShape SharedShape;
 
         /// <summary>
         /// Construct and initialize the class
         /// This constructor is for objects described by a MSTS shape file
         /// </summary>
-        public StaticShape(Viewer3D viewer, string path, WorldPosition position)
+        public StaticShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags flags)
         {
             Viewer = viewer;
             Location = position;
+			Flags = flags;
             SharedShape = SharedShapeManager.Get(Viewer, path);
-        }      
+        }
 
-        public virtual void PrepareFrame(RenderFrame frame, float elapsedSeconds )
+        public virtual void PrepareFrame(RenderFrame frame, float elapsedSeconds)
         {
-            SharedShape.PrepareFrame(frame, Location, IsShadowCaster);
+			SharedShape.PrepareFrame(frame, Location, Flags);
         }
     }
+
+	public class StaticTrackShape : StaticShape
+	{
+        public StaticTrackShape(Viewer3D viewer, string path, WorldPosition position)
+			: base(viewer, path, position, ShapeFlags.AutoZBias)
+        {
+        }
+	}
 
     /// <summary>
     /// Has a heirarchy of objects that can be moved by adjusting the XNAMatrices
@@ -61,17 +81,17 @@ namespace ORTS
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition)
-            : base(viewer, path, initialPosition)
+		public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+			: base(viewer, path, initialPosition, flags)
         {
             XNAMatrices = new Matrix[SharedShape.Matrices.Length];
             for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
         }
 
-        public override void PrepareFrame(RenderFrame frame, float elapsedSeconds )
+        public override void PrepareFrame(RenderFrame frame, float elapsedSeconds)
         {
-            SharedShape.PrepareFrame( frame, Location, XNAMatrices, IsShadowCaster);
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
         /// <summary>
@@ -165,12 +185,17 @@ namespace ORTS
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition)
-            : base(viewer, path, initialPosition)
-        {
-        }
+		public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+			: base(viewer, path, initialPosition, flags)
+		{
+		}
 
-        public override void PrepareFrame(RenderFrame frame, float elapsedSeconds )
+		public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition)
+			: this(viewer, path, initialPosition, ShapeFlags.None)
+		{
+		}
+
+		public override void PrepareFrame(RenderFrame frame, float elapsedSeconds)
         {
             // if the shape has animations
             if (SharedShape.Animations != null && SharedShape.Animations[0].FrameCount > 1)
@@ -185,7 +210,7 @@ namespace ORTS
                 for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                     AnimateMatrix(iMatrix, AnimationKey);
             }
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices, IsShadowCaster);
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
@@ -196,12 +221,13 @@ namespace ORTS
 
         protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
 
-        public SwitchTrackShape(Viewer3D viewer, string path, WorldPosition position, TrJunctionNode trj ): base( viewer, path, position )
-        {
-            TrJunctionNode = trj;
-            TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
-            MainRoute = TS.MainRoute;
-        }
+		public SwitchTrackShape(Viewer3D viewer, string path, WorldPosition position, TrJunctionNode trj)
+			: base(viewer, path, position, ShapeFlags.AutoZBias)
+		{
+			TrJunctionNode = trj;
+			TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
+			MainRoute = TS.MainRoute;
+		}
 
         public override void PrepareFrame(RenderFrame frame, float elapsedClockSeconds )
         {
@@ -221,7 +247,7 @@ namespace ORTS
             for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 AnimateMatrix(iMatrix, AnimationKey);
 
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices, IsShadowCaster);
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     } // class SwitchTrackShape
 
@@ -592,8 +618,6 @@ namespace ORTS
                         }
                     }
 
-                    shapePrimitive.ZBias = prim_state.ZBias; // -(float)dLevelPrimCount * 0.00001f;  //Auto zbias causes issues
-
                     int iMatrix = vtx_state.imatrix;
                     shapePrimitive.iHierarchy = iMatrix;
 
@@ -738,21 +762,16 @@ namespace ORTS
         /// <summary>
         /// This is called by the individual instances of the shape when it should draw itself at the specified location
         /// </summary>
-        public void PrepareFrame( RenderFrame frame, WorldPosition location)
+		public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
         {
-            PrepareFrame(frame, location, Matrices, false);
-        }
-
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, bool isShadowCaster)
-        {
-            PrepareFrame(frame, location, Matrices, isShadowCaster);
+            PrepareFrame(frame, location, Matrices, flags);
         }
 
         /// <summary>
         /// This is called by the individual instances of the shape when it should draw itself at the specified location
         /// with individual matrices animated as shown.
         /// </summary>
-        public void PrepareFrame( RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool isShadowCaster )
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags)
         {
             // Locate relative to the camera
             int dTileX = location.TileX - Viewer.Camera.TileX;
@@ -793,7 +812,7 @@ namespace ORTS
 
                                     // TODO make shadows depend on shape overrides
 
-                                    frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix , isShadowCaster);
+									frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix, flags);
                                 } // for each primitive
                             }
                             break; // only draw one distance level.

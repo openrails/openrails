@@ -21,13 +21,15 @@ uniform const float FogStart;   // distance from camera, everything is normal co
 uniform const float FogEnd;     // distance from camera, everything is FogColor
 uniform const float3 FogColor;  // color of fog
 
+// Z-bias setting.
+uniform const float ZBias;
+
 float3 LightVector;								// Direction vector to sun
 float3 BumpScale = float3( 1.0, -1.0, 1.0 );	// multiply bump map by this  -1 seems to work with Ultimapper sometimes
 
 float Saturation = 0.9;
 float Ambient = 0.5;
 float Brightness = 0.7;
-float ZBias = 0.0;  // TODO TESTING
 float overcast;									// Lower saturation & brightness when overcast
 float3 viewerPos;								// Viewer's world coordinates.
 float specularPower;							// Exponent -- lower number yields greater specularity
@@ -131,11 +133,8 @@ VERTEX_OUTPUT VSGeneral(VERTEX_INPUT In)
 	_VSNormalProjection(In, Out);
 	_VSLightsAndShadows(In, Out);
 
-	// Z-bias to reduce and eliminate z-fighting on track ballast:
-	//     In testing, values from 1000 to 10000 worked pretty well, but often
-	//     there was some scenery that went horribly wrong at the lower end,
-	//     so a higher-end value is being used (5000).
-	Out.Position.z -= abs(In.TexCoords.x * (1 - dot(normalize(In.Position.xyz), normalize(In.Normal.xyz)))) / 5000;
+	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
+	Out.Position.z -= ZBias * saturate(In.TexCoords.x * (1 - dot(In.Position.xyz, In.Normal.xyz))) / 1000;
 
 	return Out;
 }

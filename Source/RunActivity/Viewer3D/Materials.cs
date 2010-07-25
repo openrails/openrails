@@ -358,7 +358,7 @@ namespace ORTS
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
-            SceneryShader.ZBias = renderPrimitive.ZBias;
+			SceneryShader.ZBias = renderPrimitive.ZBias;
 
             int prevOptions = -1;
 
@@ -580,6 +580,9 @@ namespace ORTS
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
+            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+			SceneryShader.ZBias = renderPrimitive.ZBias;
+
             if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
                 RenderProcess.RenderStateChangesCount++;
@@ -599,17 +602,11 @@ namespace ORTS
                 graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
             }
 
-            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
-
             if (this != previousMaterial)
             {
                 RenderProcess.ImageChangesCount++;
                 SceneryShader.Texture = PatchTexture;
             }
-
-            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
-
-            SceneryShader.ZBias = 0.00001f;  // push terrain back
 
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
@@ -911,7 +908,7 @@ namespace ORTS
     #region Dynatrack material
     public class DynatrackMaterial : Material
     {
-        SceneryShader sceneryShader;
+        SceneryShader SceneryShader;
         Texture2D image1;
         Texture2D image1s;
         Texture2D image2;
@@ -921,7 +918,7 @@ namespace ORTS
         public DynatrackMaterial(RenderProcess renderProcess)
         {
             RenderProcess = renderProcess;
-            sceneryShader = Materials.SceneryShader;
+            SceneryShader = Materials.SceneryShader;
             texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + "acleantrack1.ace";
             image1 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
             texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures\snow" + @"\" + "acleantrack1.ace";
@@ -935,9 +932,11 @@ namespace ORTS
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            sceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+			SceneryShader.ZBias = renderPrimitive.ZBias;
+
             DynatrackMesh mesh = (DynatrackMesh)renderPrimitive;
-            sceneryShader.isNightTexture = false;
+            SceneryShader.isNightTexture = false;
 
             RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
@@ -963,12 +962,12 @@ namespace ORTS
                 if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 2000))
                 {
                     graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;
-                    sceneryShader.CurrentTechnique = sceneryShader.Techniques["Image"];
+                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
                     if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
                         RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
-                        sceneryShader.Texture = image1s;
+                        SceneryShader.Texture = image1s;
                     else
-                        sceneryShader.Texture = image1;
+                        SceneryShader.Texture = image1;
 
                     // Set render state for drawing ballast
                     graphicsDevice.RenderState.AlphaBlendEnable = true;
@@ -977,56 +976,56 @@ namespace ORTS
                     graphicsDevice.RenderState.AlphaTestEnable = false;
                     graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
-                    sceneryShader.SpecularPower = 0;
+                    SceneryShader.SpecularPower = 0;
                     mesh.drawIndex = 1;
-                    sceneryShader.Begin();
-                    foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+                    SceneryShader.Begin();
+                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
                     {
                         pass.Begin();
                         RenderProcess.PrimitiveCount++;
                         renderPrimitive.Draw(graphicsDevice);
                         pass.End();
                     }
-                    sceneryShader.End();
+                    SceneryShader.End();
                 } // end ballast
 
                 // Rail tops
                 if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 1200))
                 {
                     graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
-                    sceneryShader.Texture = image2;
-                    sceneryShader.SpecularPower = 64;
+                    SceneryShader.Texture = image2;
+                    SceneryShader.SpecularPower = 64;
 
                     // Set render state for drawing rail sides and tops
                     graphicsDevice.RenderState.AlphaBlendEnable = false;
                     graphicsDevice.RenderState.AlphaTestEnable = false;
 
                     mesh.drawIndex = 3;
-                    sceneryShader.Begin();
-                    foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+                    SceneryShader.Begin();
+                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
                     {
                         pass.Begin();
                         RenderProcess.PrimitiveCount++;
                         renderPrimitive.Draw(graphicsDevice);
                         pass.End();
                     }
-                    sceneryShader.End();
+                    SceneryShader.End();
                 } // end rail tops
 
                 // Rail sides
                 if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 700))
                 {
-                    sceneryShader.SpecularPower = 0;
+                    SceneryShader.SpecularPower = 0;
                     mesh.drawIndex = 2;
-                    sceneryShader.Begin();
-                    foreach (EffectPass pass in sceneryShader.CurrentTechnique.Passes)
+                    SceneryShader.Begin();
+                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
                     {
                         pass.Begin();
                         RenderProcess.PrimitiveCount++;
                         renderPrimitive.Draw(graphicsDevice);
                         pass.End();
                     }
-                    sceneryShader.End();
+                    SceneryShader.End();
                 } // end rail sides
             } // end if behind camera
 
@@ -1062,6 +1061,9 @@ namespace ORTS
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
+            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+			SceneryShader.ZBias = renderPrimitive.ZBias;
+
             if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
             {
                 RenderProcess.RenderStateChangesCount++;
@@ -1077,8 +1079,6 @@ namespace ORTS
             }
 
             SceneryShader.CurrentTechnique = SceneryShader.Techniques["Forest"];
-
-            SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
 
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
@@ -1184,27 +1184,27 @@ namespace ORTS
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+			SceneryShader.ZBias = renderPrimitive.ZBias;
 
-            if (previousMaterial != this)
-            {
-                RenderProcess.RenderStateChangesCount++;
+			if (previousMaterial != this)
+			{
+				RenderProcess.RenderStateChangesCount++;
 
-                graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-                graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+				graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+				graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
 
-                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-                SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
-                graphicsDevice.RenderState.AlphaTestEnable = false;
-                graphicsDevice.RenderState.AlphaBlendEnable = false;
-                Materials.SetupFog(graphicsDevice);
+				graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
+				graphicsDevice.RenderState.AlphaTestEnable = false;
+				graphicsDevice.RenderState.AlphaBlendEnable = false;
+				Materials.SetupFog(graphicsDevice);
 
-                RenderProcess.ImageChangesCount++;
-                SceneryShader.Texture = WaterTexture;
+				RenderProcess.ImageChangesCount++;
+				SceneryShader.Texture = WaterTexture;
 
-                graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
-            }
-
+				graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
+			}
 
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)

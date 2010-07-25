@@ -656,13 +656,11 @@ namespace ORTS
             string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
             string shapePath = wagonFolderSlash + car.MainShapeFileName;
 
-            TrainCarShape = new PoseableShape(viewer, shapePath, car.WorldPosition);
-            TrainCarShape.IsShadowCaster = true;
+            TrainCarShape = new PoseableShape(viewer, shapePath, car.WorldPosition, ShapeFlags.ShadowCaster);
 
             if (car.FreightShapeFileName != null)
             {
-                FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName, car.WorldPosition);
-                FreightShape.IsShadowCaster = true;
+                FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName, car.WorldPosition, ShapeFlags.ShadowCaster);
             }
             if (car.InteriorShapeFileName != null)
             {

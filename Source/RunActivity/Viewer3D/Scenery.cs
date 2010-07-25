@@ -259,7 +259,7 @@ namespace ORTS
                     }
                     else // it's some type of track other than a switch track
                     {
-                        SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix));
+                        SceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                     }
                 }
                 else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
@@ -274,12 +274,8 @@ namespace ORTS
                 }
                 else // It's some other type of object - not one of the above.
                 {
-                    StaticShape newStaticShape = new StaticShape(viewer, shapeFilePath, worldMatrix);
-                    if( 0 != ( worldObject.StaticFlags & (uint)StaticFlag.AnyShadow ) )
-                    {
-                        newStaticShape.IsShadowCaster = true;
-                    }
-                    SceneryObjects.Add( newStaticShape );
+					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0;
+					SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                 }
             }
 

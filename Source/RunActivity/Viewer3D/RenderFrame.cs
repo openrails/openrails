@@ -11,8 +11,8 @@ namespace ORTS
 {
     public abstract class RenderPrimitive
     {
-        public float ZBias = 0f;
-        public int Sequence = 0;
+		public float ZBias = 0f;
+		public int Sequence = 0;
 
         /// <summary>
         /// This is when the object actually renders itself onto the screen.
@@ -25,17 +25,17 @@ namespace ORTS
 
     public struct RenderItem
     {
-        public Material Material;
-        public RenderPrimitive RenderPrimitive;
-        public Matrix XNAMatrix;
-        public bool IsShadowCaster;   // true if this render item casts a shadow
+        public readonly Material Material;
+        public readonly RenderPrimitive RenderPrimitive;
+        public readonly Matrix XNAMatrix;
+		public readonly ShapeFlags Flags;
 
-        public RenderItem(Material material, RenderPrimitive renderPrimitive, Matrix xnaMatrix, bool shadowCaster)
+		public RenderItem(Material material, RenderPrimitive renderPrimitive, Matrix xnaMatrix, ShapeFlags flags)
         {
             Material = material;
             RenderPrimitive = renderPrimitive;
             XNAMatrix = xnaMatrix;
-            IsShadowCaster = shadowCaster;
+            Flags = flags;
         }
     }
 
@@ -49,8 +49,8 @@ namespace ORTS
 
         public RenderFrame(RenderProcess owner)
         {
-            RenderProcess = owner;
             RenderItems = new List<RenderItem>();
+            RenderProcess = owner;
         }
 
         public void Clear() 
@@ -67,22 +67,25 @@ namespace ORTS
         /// <summary>
         /// Executed in the UpdateProcess thread
         /// </summary>
-        public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix)
-        {
-            AddPrimitive(material, primitive, ref xnaMatrix, false);
-        }
+		public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix)
+		{
+			AddPrimitive(material, primitive, ref xnaMatrix, ShapeFlags.None);
+		}
 
-        public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, bool shadowCaster ) 
-        {
-            RenderItems.Add(new RenderItem(material, primitive, xnaMatrix, shadowCaster ));
+		public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
+		{
+			RenderItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
 
-            if (RenderMaxSequence < primitive.Sequence)
-                RenderMaxSequence = primitive.Sequence;
+			if (RenderMaxSequence < primitive.Sequence)
+				RenderMaxSequence = primitive.Sequence;
 
-            // TODO, enhance this:
-            //   - handle overflow by enlarging array etc
-            //   - to accomodate separate list of shadow casters, 
-        }
+			if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
+				primitive.ZBias = 1;
+
+			// TODO, enhance this:
+			//   - handle overflow by enlarging array etc
+			//   - to accomodate separate list of shadow casters, 
+		}
 
         /// <summary>
         /// Executed in the UpdateProcess thread
@@ -133,19 +136,19 @@ namespace ORTS
 
             foreach (var renderItem in RenderItems)
             {
-                var ri = renderItem;
-                if( renderItem.IsShadowCaster )
+                var riMatrix = renderItem.XNAMatrix;
+                if ((renderItem.Flags & ShapeFlags.ShadowCaster) != ShapeFlags.None)
                     if ((renderItem.Material is SceneryMaterial) || (renderItem.Material is ForestMaterial))
-                        Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+						Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
             }
 
             graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
             graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
             foreach (var renderItem in RenderItems)
             {
-                var ri = renderItem;
-                if (renderItem.Material is TerrainMaterial)
-                    Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+				var riMatrix = renderItem.XNAMatrix;
+				if (renderItem.Material is TerrainMaterial)
+					Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
             }
 
             Materials.ShadowMapMaterial.ResetState(graphicsDevice, null);
@@ -190,8 +193,8 @@ namespace ORTS
                 {
                     if (prevMaterial != null)
                         prevMaterial.ResetState(graphicsDevice, currentMaterial);
-                    var ri = renderItem;
-                    currentMaterial.Render(graphicsDevice, prevMaterial, renderItem.RenderPrimitive, ref ri.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+					var riMatrix = renderItem.XNAMatrix;
+					currentMaterial.Render(graphicsDevice, prevMaterial, renderItem.RenderPrimitive, ref riMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     prevMaterial = currentMaterial;
                 }
             }
