@@ -84,6 +84,8 @@ namespace ORTS
         private TrackingCamera BackCamera;
         private PassengerCamera PassengerCamera;
         private BrakemanCamera BrakemanCamera;
+        private List<Camera> WellKnownCameras = new List<Camera>(); // Providing Camera save functionality by GeorgeS
+        private int CameraToRestore = 1; // Providing Camera save functionality by GeorgeS
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
         private MouseState originalMouseState;      // Current mouse coordinates.
 
@@ -127,6 +129,16 @@ namespace ORTS
         {
             outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
             outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
+            // Saving Camera by GeorgeS
+            if (WellKnownCameras.Contains(Camera))
+            {
+                CameraToRestore = WellKnownCameras.IndexOf(Camera);
+            }
+            else
+            {
+                CameraToRestore = -1;
+            }
+            outf.Write(CameraToRestore);
         }
 
         /// <summary>
@@ -136,6 +148,8 @@ namespace ORTS
         {
             Train playerTrain = Simulator.Trains[inf.ReadInt32()];
             PlayerLocomotive = playerTrain.Cars[inf.ReadInt32()];
+            // Restoring Camera part I by GeorgeS
+            CameraToRestore = inf.ReadInt32();
         }
 
         public void Run()
@@ -260,7 +274,22 @@ namespace ORTS
             PassengerCamera = new PassengerCamera(this);
             BrakemanCamera = new BrakemanCamera(this);
 
-            FrontCamera.Activate();
+            // Restoring Camera part II by GeorgeS
+            WellKnownCameras.Add(CabCamera);
+            WellKnownCameras.Add(FrontCamera);
+            WellKnownCameras.Add(BackCamera);
+            WellKnownCameras.Add(PassengerCamera);
+            WellKnownCameras.Add(BrakemanCamera);
+
+            if (CameraToRestore != -1)
+            {
+                WellKnownCameras[CameraToRestore].Activate();
+            }
+            else
+            {
+                Camera = new Camera(this, Camera);
+                Camera.Activate();
+            }
 
             if (StartFullScreen)
                 ToggleFullscreen();
