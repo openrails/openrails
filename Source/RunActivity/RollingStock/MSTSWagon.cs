@@ -344,6 +344,17 @@ namespace ORTS
                 token = token.Substring(0, i);
                 scale = .44704f;
             }
+            else
+            {
+                i = token.IndexOf("kph");
+                if (i == -1) i = token.IndexOf("kmh");
+                if (i == -1) i = token.IndexOf("km/h");
+                if (i != -1)
+                {
+                    token = token.Substring(0, i);
+                    scale = .27778f;
+                }
+            }
             try
             {
                 return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
@@ -430,7 +441,7 @@ namespace ORTS
             }
             try
             {
-                return scale * float.Parse(token);
+                return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
             }
             catch (System.Exception)
             {
