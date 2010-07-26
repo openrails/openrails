@@ -91,6 +91,11 @@ namespace ORTS
         public TrainCar PlayerLocomotive { get { return Simulator.PlayerLocomotive; } set { Simulator.PlayerLocomotive = value; } }
         public Train PlayerTrain { get { if (PlayerLocomotive == null) return null; else return PlayerLocomotive.Train; } }
 
+        // Mouse visibility by timer - GeorgeS
+        private bool isMouseShouldVisible = false;
+        private bool isMouseTimerVisible = false;
+        private double MouseShownAt = 0;
+
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
@@ -331,22 +336,27 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );
             if (!Simulator.Paused && UserInput.IsAltKeyDown())
             {
-                RenderProcess.IsMouseVisible = true;
+                //RenderProcess.IsMouseVisible = true;
+                isMouseShouldVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed)
                     TryThrowSwitchAt(UserInput.MouseState.X, UserInput.MouseState.Y);
             }
             else if (!Simulator.Paused && UserInput.IsKeyDown(Keys.U))
             {
-                RenderProcess.IsMouseVisible = true;
+                //RenderProcess.IsMouseVisible = true;
+                isMouseShouldVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed)
                     TryUncoupleAt( UserInput.MouseState.X, UserInput.MouseState.Y);
             }
             else
             {
-                RenderProcess.IsMouseVisible = popupWindows.isVisble();
+                //RenderProcess.IsMouseVisible = popupWindows.isVisble();
+                isMouseShouldVisible = popupWindows.isVisble();
                 // RenderProcess.IsMouseVisible = false;
             }
 
+            RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
+            
             MouseState currentMouseState = Mouse.GetState();
 
 
@@ -379,6 +389,20 @@ namespace ORTS
                     }
                 }
             }
+            // Handling mouse movement and timing - GeorgeS
+            if (currentMouseState.X != originalMouseState.X ||
+                currentMouseState.Y != originalMouseState.Y)
+            {
+                isMouseTimerVisible = true;
+                MouseShownAt = Program.RealTime;
+                RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
+            }
+            else if (isMouseTimerVisible && MouseShownAt + .5 < Program.RealTime)
+            {
+                isMouseTimerVisible = false;
+                RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
+            }
+
             originalMouseState = currentMouseState;
         }
 
