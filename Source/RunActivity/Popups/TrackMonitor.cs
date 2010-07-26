@@ -37,20 +37,16 @@ namespace ORTS
         private float distance;
         private SD.Font font = new SD.Font("Courier", 12, SD.FontStyle.Bold);
 
-        public TrackMonitor( int x, int y)
-            : base(x, y, 70, 150)
+        public TrackMonitor(PopupWindows owner)
+            : base(owner, "Track Monitor")
         {
-            this.UseGraphics();
-            InitialiseWindow(device);
-
-        }
-        private void InitialiseWindow(GraphicsDevice device)
-        {
-            this.Distance = 10000;
-            this.Aspect = 1;
-            this.AlignTop();
-            this.AlignRignt();
-        }
+			SizeTo(150, 300);
+			//this.UseGraphics();
+			this.Distance = 10000;
+			this.Aspect = 1;
+			this.AlignTop();
+			this.AlignRight();
+		}
 
         //  Km to next signal. To do: cater for imperial measure
         public float Distance
@@ -66,27 +62,27 @@ namespace ORTS
         {
             set
             {
-                SD.Graphics GR = this.puGraphics;
-                GR.FillRectangle(SD.Brushes.Black, new SD.Rectangle(0, 0, 70, 150));
-                switch (value)
-                {
-                    case 1:
-                        GR.FillEllipse(brRed, new SD.Rectangle(20, 85, 20, 20));
-                        break;
-                    case 2:
-                        GR.FillEllipse(brAmber, new SD.Rectangle(20, 60, 20, 20));
-                        break;
-                    case 3:
-                        GR.FillEllipse(brAmber, new SD.Rectangle(20, 10, 20, 20));
-                        GR.FillEllipse(brAmber, new SD.Rectangle(20, 60, 20, 20));
-                        break;
-                    case 4:
-                        GR.FillEllipse(brGreen, new SD.Rectangle(20, 35, 20, 20));
-                        break;
-                }
-                string sDist = distance.ToString("F2").PadLeft(5); ;
-                GR.DrawString(sDist, font, SD.Brushes.White, 10, 110);
-                this.UpdateGraphics();
+				//SD.Graphics GR = this.puGraphics;
+				//GR.FillRectangle(SD.Brushes.Black, new SD.Rectangle(0, 0, 70, 150));
+				//switch (value)
+				//{
+				//    case 1:
+				//        GR.FillEllipse(brRed, new SD.Rectangle(20, 85, 20, 20));
+				//        break;
+				//    case 2:
+				//        GR.FillEllipse(brAmber, new SD.Rectangle(20, 60, 20, 20));
+				//        break;
+				//    case 3:
+				//        GR.FillEllipse(brAmber, new SD.Rectangle(20, 10, 20, 20));
+				//        GR.FillEllipse(brAmber, new SD.Rectangle(20, 60, 20, 20));
+				//        break;
+				//    case 4:
+				//        GR.FillEllipse(brGreen, new SD.Rectangle(20, 35, 20, 20));
+				//        break;
+				//}
+				//string sDist = distance.ToString("F2").PadLeft(5); ;
+				//GR.DrawString(sDist, font, SD.Brushes.White, 10, 110);
+				//this.UpdateGraphics();
             }
         }
 

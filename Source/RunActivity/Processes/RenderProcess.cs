@@ -69,7 +69,6 @@ namespace ORTS
         // Profiling
         public Stopwatch RenderTime = new Stopwatch();
         public Stopwatch UpdateTime = new Stopwatch();
-        public PopupWindows popupWindows;
 
         public ElapsedTime GetFrameElapsedTime()
         {
@@ -104,7 +103,6 @@ namespace ORTS
             Viewer = viewer3D;
             GraphicsDeviceManager = new GraphicsDeviceManager(this);
             Viewer.Configure(this);
-            popupWindows = viewer3D.popupWindows;
         }
 
         /// <summary>
@@ -185,7 +183,7 @@ namespace ORTS
              */
 
             CurrentFrame.Draw(GraphicsDevice);
-            popupWindows.Draw(GraphicsDevice);
+            Viewer.PopupWindows.Draw(GraphicsDevice);
 
             // Diagnositics
             // double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;

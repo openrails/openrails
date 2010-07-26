@@ -62,8 +62,8 @@ namespace ORTS
         // Components
         public Simulator Simulator;
         InfoDisplay InfoDisplay;
-        public TrackMonitor trackMonitor;
-        public PopupWindows popupWindows = new PopupWindows();
+		public PopupWindows PopupWindows = null;
+		public TrackMonitor TrackMonitor;
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer = null;
         public WireDrawer WireDrawer = null;
@@ -250,12 +250,11 @@ namespace ORTS
 
             InfoDisplay = new InfoDisplay(this);
             
-            // Initialse popup winodows
-            PopupWindow.device = GraphicsDevice;
-            trackMonitor = new TrackMonitor(900, 0);
-            trackMonitor.Distance = 1000;
-            trackMonitor.Aspect = 1;
-            popupWindows.Add(trackMonitor);
+            // Initialse popup windows.
+			PopupWindows = new PopupWindows(this);
+			TrackMonitor = new TrackMonitor(PopupWindows);
+            TrackMonitor.Distance = 1000;
+            TrackMonitor.Aspect = 1;
 
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
@@ -263,7 +262,7 @@ namespace ORTS
             if( PrecipationEnabled )  PrecipDrawer = new PrecipDrawer(this);
             if (WireEnabled) WireDrawer = new WireDrawer(this);
             TrainDrawer = new TrainDrawer(this);
-            weatherControl = new WeatherControl(this);
+			weatherControl = new WeatherControl(this);
 
             PlayerLocomotiveViewer =  GetPlayerLocomotiveViewer();
 
@@ -349,7 +348,7 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.PageUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
             if (UserInput.IsPressed(Keys.PageDown)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
-            if (UserInput.IsPressed(Keys.F4)) trackMonitor.visible = !trackMonitor.visible;
+            if (UserInput.IsPressed(Keys.F4)) TrackMonitor.Visible = !TrackMonitor.Visible;
 
             // Change view point - cab, passenger, outside, etc
             if (UserInput.IsPressed(Keys.D1)) CabCamera.Activate();
@@ -365,23 +364,19 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );
             if (!Simulator.Paused && UserInput.IsAltKeyDown())
             {
-                //RenderProcess.IsMouseVisible = true;
                 isMouseShouldVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed)
                     TryThrowSwitchAt(UserInput.MouseState.X, UserInput.MouseState.Y);
             }
             else if (!Simulator.Paused && UserInput.IsKeyDown(Keys.U))
             {
-                //RenderProcess.IsMouseVisible = true;
                 isMouseShouldVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed)
                     TryUncoupleAt( UserInput.MouseState.X, UserInput.MouseState.Y);
             }
             else
             {
-                //RenderProcess.IsMouseVisible = popupWindows.isVisble();
-                isMouseShouldVisible = popupWindows.isVisble();
-                // RenderProcess.IsMouseVisible = false;
+                isMouseShouldVisible = PopupWindows.HasVisiblePopupWindows();
             }
 
             RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
@@ -391,11 +386,11 @@ namespace ORTS
 
             if (currentMouseState.LeftButton == ButtonState.Pressed)
             {
-                popupWindows.SelectWindow(currentMouseState.X, currentMouseState.Y);
+                PopupWindows.SelectWindow(currentMouseState.X, currentMouseState.Y);
             }
             else
             {
-                popupWindows.DelselectWindow();
+                PopupWindows.DelselectWindow();
             }
         }
 
@@ -414,7 +409,7 @@ namespace ORTS
                 {
                     if (currentMouseState.LeftButton == ButtonState.Pressed)
                     {
-                        popupWindows.MoveWindow(currentMouseState.X - originalMouseState.X, currentMouseState.Y - originalMouseState.Y);
+                        PopupWindows.MoveWindow(currentMouseState.X - originalMouseState.X, currentMouseState.Y - originalMouseState.Y);
                     }
                 }
             }

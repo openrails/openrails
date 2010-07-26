@@ -127,7 +127,7 @@ void _VSLightsAndShadows(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.Shadow = mul(mul(mul(mul(In.Position, World), LightView), LightProj), ShadowMapProj);
 }
 
-VERTEX_OUTPUT VSGeneral(VERTEX_INPUT In)
+VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSNormalProjection(In, Out);
@@ -139,7 +139,7 @@ VERTEX_OUTPUT VSGeneral(VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT VSTerrain(VERTEX_INPUT In)
+VERTEX_OUTPUT VSTerrain(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSNormalProjection(In, Out);
@@ -147,7 +147,7 @@ VERTEX_OUTPUT VSTerrain(VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT VSForest(VERTEX_INPUT In)
+VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
@@ -278,7 +278,7 @@ void _PSApplyFog(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.rgb = lerp(Color.rgb, FogColor, In.LightDir_Fog.w);
 }
 
-float4 PS2Image(VERTEX_OUTPUT In) : COLOR
+float4 PS2Image(in VERTEX_OUTPUT In) : COLOR
 {
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on dark side (side facing away from light) of objects.
@@ -297,7 +297,7 @@ float4 PS2Image(VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PS3Image(VERTEX_OUTPUT In) : COLOR
+float4 PS3Image(in VERTEX_OUTPUT In) : COLOR
 {
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on dark side (side facing away from light) of objects.
@@ -316,7 +316,7 @@ float4 PS3Image(VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PSVegetation(VERTEX_OUTPUT In) : COLOR
+float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on cruciform material (to prevent visibility of billboard panels).
@@ -333,7 +333,7 @@ float4 PSVegetation(VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PS2Terrain(VERTEX_OUTPUT In) : COLOR
+float4 PS2Terrain(in VERTEX_OUTPUT In) : COLOR
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	_PS2ApplyShadowMap(Color, In);
@@ -352,7 +352,7 @@ float4 PS2Terrain(VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PS3Terrain(VERTEX_OUTPUT In) : COLOR
+float4 PS3Terrain(in VERTEX_OUTPUT In) : COLOR
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	_PS3ApplyShadowMap(Color, In);
@@ -371,7 +371,7 @@ float4 PS3Terrain(VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PSDarkShade(VERTEX_OUTPUT In) : COLOR
+float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on dark shade material - it is already dark.
@@ -386,7 +386,7 @@ float4 PSDarkShade(VERTEX_OUTPUT In) : COLOR
 
 }
 
-float4 PSHalfBright(VERTEX_OUTPUT In) : COLOR
+float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on light sources.
@@ -397,7 +397,7 @@ float4 PSHalfBright(VERTEX_OUTPUT In) : COLOR
 	return Color;	
 }
 
-float4 PSFullBright(VERTEX_OUTPUT In) : COLOR
+float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on light sources.

@@ -21,25 +21,30 @@ struct VERTEX_INPUT
 
 struct VERTEX_OUTPUT
 {
-	float  Depth : TEXCOORD0;
+	float4 Position : POSITION;
+	float  Depth    : TEXCOORD0;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-VERTEX_OUTPUT VSShadowMap(VERTEX_INPUT In, out float4 Position : POSITION)
+VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
-	Position = mul(In.Position, WorldViewProjection);
-	Out.Depth = Position.z;
+	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Depth = Out.Position.z;
 
 	return Out;
 }
 
-float4 PSShadowMap(VERTEX_OUTPUT In) : COLOR
+////////////////////    P I X E L   S H A D E R S    ///////////////////////////
+
+float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR
 {
 	return In.Depth;
 }
+
+////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
 technique ShadowMap
 {

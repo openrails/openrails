@@ -42,7 +42,9 @@ namespace ORTS
         public static ShadowMapShader ShadowMapShader = null;
         public static Color FogColor = new Color(110, 110, 110, 255);
         public static float FogCoeff = 0.75f;
-        private static bool IsInitialized = false;
+		public static PopupWindowMaterial PopupWindowMaterial = null;
+		public static PopupWindowShader PopupWindowShader = null;
+		private static bool IsInitialized = false;
         
         /// <summary>
         /// THREAD SAFETY:  XNA Content Manager is not thread safe and must only be called from the Game thread.
@@ -67,6 +69,8 @@ namespace ORTS
             YellowMaterial = new YellowMaterial(renderProcess);
             ShadowMapMaterial = new ShadowMapMaterial(renderProcess);
             ShadowMapShader = new ShadowMapShader(renderProcess.GraphicsDevice, renderProcess.Content);
+			PopupWindowMaterial = new PopupWindowMaterial(renderProcess);
+			PopupWindowShader = new PopupWindowShader(renderProcess.GraphicsDevice, renderProcess.Content);
             IsInitialized = true;
         }
 
@@ -293,7 +297,7 @@ namespace ORTS
         {
             RenderProcess = renderProcess;
             SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
-            DefaultFont =  renderProcess.Content.Load<SpriteFont>("Arial");
+			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
         }
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1252,13 +1256,15 @@ namespace ORTS
         {
             var shader = Materials.ShadowMapShader;
             shader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
-            shader.Begin();
-            var pass = shader.CurrentTechnique.Passes[0];
-            pass.Begin();
-            renderPrimitive.Draw(graphicsDevice);
-            pass.End();
-            shader.End();
-        }
+			shader.Begin();
+			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+			{
+				pass.Begin();
+				renderPrimitive.Draw(graphicsDevice);
+				pass.End();
+			}
+			shader.End();
+		}
 
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
@@ -1267,7 +1273,56 @@ namespace ORTS
     }
     #endregion
 
-    #region Yellow (testing) material
+	#region Popup Window material
+	public class PopupWindowMaterial : Material
+	{
+		public SpriteFont DefaultFont;
+
+		public PopupWindowMaterial(RenderProcess renderProcess)
+		{
+			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
+		}
+
+		public void SetState(GraphicsDevice graphicsDevice, Texture2D screen)
+		{
+			var shader = Materials.PopupWindowShader;
+			shader.CurrentTechnique = shader.Techniques["PopupWindow"];
+			shader.Screen = screen;
+			shader.GlassColor = Color.Black;
+
+			var rs = graphicsDevice.RenderState;
+			rs.AlphaBlendEnable = true;
+			rs.CullMode = CullMode.None;
+			rs.DepthBufferFunction = CompareFunction.Always;
+			rs.DepthBufferWriteEnable = false;
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		{
+			var shader = Materials.PopupWindowShader;
+			shader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+			shader.Begin();
+			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+			{
+				pass.Begin();
+				renderPrimitive.Draw(graphicsDevice);
+				pass.End();
+			}
+			shader.End();
+		}
+
+		public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+		{
+			var rs = graphicsDevice.RenderState;
+			rs.AlphaBlendEnable = false;
+			rs.CullMode = CullMode.CullCounterClockwiseFace;
+			rs.DepthBufferFunction = CompareFunction.LessEqual;
+			rs.DepthBufferWriteEnable = true;
+		}
+	}
+	#endregion
+
+	#region Yellow (testing) material
     /// <summary>
     /// This material is used for debug and testing.
     /// </summary>

@@ -445,4 +445,41 @@ namespace ORTS
         }
     }
     #endregion
+
+	#region Popup window shader
+	/// <summary>
+	/// Wrapper for PopupWindow.fx
+	/// </summary>
+	public class PopupWindowShader : Effect
+	{
+		public Texture2D Screen
+		{
+			set
+			{
+				Parameters["Screen_Tex"].SetValue(value);
+				Parameters["ScreenSize"].SetValue(new[] { value.Width, value.Height });
+			}
+		}
+
+		public Color GlassColor
+		{
+			set
+			{
+				Parameters["GlassColor"].SetValue(new float[] { value.R / 255, value.G / 255, value.B / 255 });
+			}
+		}
+
+		public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+		{
+			Parameters["WorldViewProjection"].SetValue(world * view * projection);
+		}
+
+		public PopupWindowShader(GraphicsDevice graphicsDevice, ContentManager content)
+			: base(graphicsDevice, content.Load<Effect>("PopupWindow"))
+		{
+			Parameters["PopupWindowImage_Tex"].SetValue(content.Load<Texture2D>("PopupWindowImage"));
+			Parameters["PopupWindowMask_Tex"].SetValue(content.Load<Texture2D>("PopupWindowMask"));
+		}
+	}
+	#endregion
 }
