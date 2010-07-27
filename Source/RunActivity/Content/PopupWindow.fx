@@ -5,10 +5,10 @@
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
 // General values
-//float4x4 World;               // model -> world (currently unused)
+float4x4 World;               // model -> world
 //float4x4 View;                // world -> view (currently unused)
 //float4x4 Projection;          // view -> projection (currently unused)
-float4x4 WorldViewProjection; // model -> world -> view -> projection (currently unused)
+float4x4 WorldViewProjection; // model -> world -> view -> projection
 
 float3 GlassColor;
 
@@ -71,7 +71,7 @@ VERTEX_OUTPUT VSPopupWindow(in VERTEX_INPUT In)
 
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.TexCoords_Pos.xy = In.TexCoords;
-	Out.TexCoords_Pos.zw = (Out.Position.xy + float2(1, -1)) * float2(0.5, -0.5);
+	Out.TexCoords_Pos.zw = mul(In.Position, World).xy / ScreenSize;
 
 	return Out;
 }

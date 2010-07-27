@@ -471,6 +471,7 @@ namespace ORTS
 
 		public void SetMatrix(Matrix world, Matrix view, Matrix projection)
 		{
+			Parameters["World"].SetValue(world);
 			Parameters["WorldViewProjection"].SetValue(world * view * projection);
 		}
 

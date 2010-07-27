@@ -48,7 +48,7 @@ namespace ORTS
 			// Construct a view where (0, 0) is the top-left and (width, height) is
 			// bottom-right, so that popups can act more like normal window things.
 			XNAView = Matrix.CreateTranslation(-graphicsDevice.Viewport.Width / 2, -graphicsDevice.Viewport.Height / 2, 0) *
-				Matrix.CreateTranslation(0.5f / graphicsDevice.Viewport.Width, 0.5f / graphicsDevice.Viewport.Height, 0) *
+				Matrix.CreateTranslation(-0.5f, -0.5f, 0) *
 				Matrix.CreateScale(1, -1, 1);
 			// Project into a flat view of the same size as the viewpoer.
 			XNAProjection = Matrix.CreateOrthographic(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0, 100);
@@ -158,10 +158,10 @@ namespace ORTS
 			graphicsDevice.VertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionTexture.VertexElements);
 			graphicsDevice.DrawUserPrimitives<VertexPositionTexture>(PrimitiveType.TriangleFan,
 				new[] {
-					new VertexPositionTexture(new Vector3(-1, graphicsDevice.Viewport.Height, 0), new Vector2(0, 0)),
+					new VertexPositionTexture(new Vector3(0, graphicsDevice.Viewport.Height, 0), new Vector2(0, 0)),
 					new VertexPositionTexture(new Vector3(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0), new Vector2(0, 0)),
-					new VertexPositionTexture(new Vector3(graphicsDevice.Viewport.Width, -1, 0), new Vector2(0, 0)),
-					new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(0, 0)),
+					new VertexPositionTexture(new Vector3(graphicsDevice.Viewport.Width, 0, 0), new Vector2(0, 0)),
+					new VertexPositionTexture(new Vector3(0, 0, 0), new Vector2(0, 0)),
 				}, 0, 2);
 		}
 	}

@@ -1292,7 +1292,10 @@ namespace ORTS
 
 			var rs = graphicsDevice.RenderState;
 			rs.AlphaBlendEnable = true;
+			rs.AlphaFunction = CompareFunction.Greater;
+			rs.AlphaTestEnable = true;
 			rs.CullMode = CullMode.None;
+			rs.DepthBufferEnable = false;
 			rs.DepthBufferFunction = CompareFunction.Always;
 			rs.DepthBufferWriteEnable = false;
 		}
@@ -1315,7 +1318,10 @@ namespace ORTS
 		{
 			var rs = graphicsDevice.RenderState;
 			rs.AlphaBlendEnable = false;
+			rs.AlphaFunction = CompareFunction.Always;
+			rs.AlphaTestEnable = false;
 			rs.CullMode = CullMode.CullCounterClockwiseFace;
+			rs.DepthBufferEnable = true;
 			rs.DepthBufferFunction = CompareFunction.LessEqual;
 			rs.DepthBufferWriteEnable = true;
 		}
