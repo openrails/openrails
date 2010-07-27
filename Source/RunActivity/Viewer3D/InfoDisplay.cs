@@ -194,6 +194,11 @@ namespace ORTS
 
             TextBuilder.AppendLine();
             TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString()); //this DONE
+/*
+            //WHN:
+            status = Viewer.PlayerTrain.RearTDBTraveller.TNToString();
+            TextBuilder.Append("TN: "); TextBuilder.AppendLine(status);
+*/
         }
 
         [Conditional("DEBUG")]

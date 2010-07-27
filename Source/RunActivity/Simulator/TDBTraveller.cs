@@ -98,8 +98,18 @@ namespace ORTS
         {
             return String.Format("TN={0} TS={1}", iTrackNode, iTrVectorSection);
         }
-
-
+/*
+        public string TNToString() //WHN: for debug
+        {
+            if (TN.TrVectorNode != null) 
+                return (Direction == 0) ? "TrVectorNode(0)" : "TrVectorNode(1)";
+            if (TN.TrEndNode != null) 
+                return (Direction == 0) ? "TrEndNode(0)" : "TrEndNode(1)";
+            if (TN.TrJunctionNode != null)
+                return "TrJunctionNode";
+            return "OTHER";
+        }
+*/
         public TDBTraveller(TDBTraveller copy)
         {
             TDB = copy.TDB;
@@ -739,7 +749,9 @@ namespace ORTS
         /// <returns></returns>
         public bool NextSection()
         {
-
+            if (TN.TrEndNode != null)
+            {
+            }
             if (TN.TrVectorNode != null)  // we were in a track node that contains multiple sections
                 if (NextTrVectorSection())  // try to advance to the next section in the node
                     return true;

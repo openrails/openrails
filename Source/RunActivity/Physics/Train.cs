@@ -201,7 +201,53 @@ namespace ORTS
 
             CalculatePositionOfCars( distanceM );
 
-        }
+            //End-of-route detection
+            if (IsEndOfRoute(MUDirection))// FrontTDBTraveller.Direction))
+            {
+                Stop();
+
+                // TODO - Collision detection: If a train hits an object, there should be a
+                //        realistic response.  This includes a train impacting a bumper/buffer.
+                //        It's possible that collision detection will occur BEFORE end-of-
+                //        route detection and will obsolete this test in this location.
+                //        However, the case of an unterminated section should be kept in mind.
+            }
+        } // end Update
+
+        /// <summary>
+        /// Returns true if (forward == 1) and front of train on TrEndNode
+        /// or if (forward == 0) and rear of train on TrEndNode.
+        /// </summary>
+        private bool IsEndOfRoute(Direction forward)
+        {
+            // This test detects that a TrEndNode has been encountered.  This can occur if a 
+            // train tries to continue through a bumper (buffer).  It can also occur if it
+            // progresses beyond an unterminated section (no bumper).
+
+            // Using FrontTDBTraveller if moving forward or RearTDBTraveller if moving backwards
+            TDBTraveller t = (forward == Direction.Forward) ? FrontTDBTraveller : RearTDBTraveller;
+            if (t.TN.TrEndNode == null) return false;
+            else return true; // Signal end-of-route
+        } // end IsEndOfRoute
+
+        /// <summary>
+        /// Stops the train ASAP
+        /// </summary>
+        private void Stop()
+        {
+            // End of route: Stop ASAP
+            SpeedMpS = 0; // Abrupt stop
+            //SpeedMpS = -0.85f * SpeedMpS;  // Gives a bounce
+            foreach (TrainCar stopping in Cars)
+            {
+                stopping.SpeedMpS = SpeedMpS;
+            }
+            AITrainThrottlePercent = 0;
+            AITrainBrakePercent = 100;
+            // The following does not seem to be essential.  It is commented out because
+            // we don't want emergency brake set if we just touch a bumper.  ...WaltN
+            //if (LeadLocomotive != null) ((MSTSLocomotive)LeadLocomotive).SetEmergency();
+        } // end Stop
 
         public void InitializeBrakes()
         {
