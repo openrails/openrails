@@ -60,8 +60,9 @@ namespace ORTS
                 this.checkBoxWire.Checked = (1 == (int)RK.GetValue("Wire", 0));
                 this.numericBrakePipeChargingRatePSIpS.Value = (int)RK.GetValue("BrakePipeChargingRate", (int)numericBrakePipeChargingRatePSIpS.Value);
                 this.checkBoxGraduatedRelease.Checked = (1 == (int)RK.GetValue("GraduatedRelease", 0));
-                this.checkBoxShadows.Checked = (1 == (int)RK.GetValue("DynamicShadows", 0));
-            }
+				this.checkBoxShadows.Checked = (1 == (int)RK.GetValue("DynamicShadows", 0));
+				this.checkBoxWindowGlass.Checked = (1 == (int)RK.GetValue("WindowGlass", 0));
+			}
         }
 
         private void buttonOK_Click(object sender, EventArgs e)
@@ -79,10 +80,9 @@ namespace ORTS
                 RK.SetValue("BrakePipeChargingRate", (int)this.numericBrakePipeChargingRatePSIpS.Value);
                 RK.SetValue("GraduatedRelease", this.checkBoxGraduatedRelease.Checked ? 1 : 0);
                 RK.SetValue("DynamicShadows", this.checkBoxShadows.Checked ? 1 : 0);
+				RK.SetValue("WindowGlass", this.checkBoxWindowGlass.Checked ? 1 : 0);
             }
-
-            Close();
-
+			Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)

@@ -71,6 +71,14 @@ VERTEX_OUTPUT VSPopupWindow(in VERTEX_INPUT In)
 
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.TexCoords_Pos.xy = In.TexCoords;
+
+	return Out;
+}
+
+VERTEX_OUTPUT VSPopupWindowGlass(in VERTEX_INPUT In)
+{
+	VERTEX_OUTPUT Out = VSPopupWindow(In);
+
 	Out.TexCoords_Pos.zw = mul(In.Position, World).xy / ScreenSize;
 
 	return Out;
@@ -79,6 +87,13 @@ VERTEX_OUTPUT VSPopupWindow(in VERTEX_INPUT In)
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
 float4 PSPopupWindow(in VERTEX_OUTPUT In) : COLOR
+{
+	float4 Color = tex2D(PopupWindowImage, In.TexCoords_Pos.xy);
+	float Mask = tex2D(PopupWindowMask, In.TexCoords_Pos.xy).r;
+	return float4(Color.rgb, Color.a + Mask);
+}
+
+float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
 {
 	float4 Color = tex2D(PopupWindowImage, In.TexCoords_Pos.xy);
 	float Mask = tex2D(PopupWindowMask, In.TexCoords_Pos.xy).r;
@@ -106,5 +121,14 @@ technique PopupWindow
 	{
         VertexShader = compile vs_2_0 VSPopupWindow ( );
         PixelShader = compile ps_2_0 PSPopupWindow ( );
+	}
+}
+
+technique PopupWindowGlass
+{
+	pass Pass_0
+	{
+        VertexShader = compile vs_2_0 VSPopupWindowGlass ( );
+        PixelShader = compile ps_2_0 PSPopupWindowGlass ( );
 	}
 }

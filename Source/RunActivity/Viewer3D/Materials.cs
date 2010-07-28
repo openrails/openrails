@@ -1286,7 +1286,7 @@ namespace ORTS
 		public void SetState(GraphicsDevice graphicsDevice, Texture2D screen)
 		{
 			var shader = Materials.PopupWindowShader;
-			shader.CurrentTechnique = shader.Techniques["PopupWindow"];
+			shader.CurrentTechnique = screen == null ? shader.Techniques["PopupWindow"] : shader.Techniques["PopupWindowGlass"];
 			shader.Screen = screen;
 			shader.GlassColor = Color.Black;
 

@@ -53,6 +53,7 @@ namespace ORTS
         public Vector2 WindowSize;
         public bool StartFullScreen;        // indicates user want the program to start in full screen mode
         public bool DynamicShadows;
+		public bool WindowGlass;
         public UpdaterProcess UpdaterProcess = null;
         public LoaderProcess LoaderProcess;
         public RenderProcess RenderProcess;
@@ -182,6 +183,7 @@ namespace ORTS
                     WireEnabled = (1 == (int)RK.GetValue("Wire", 0));
                     StartFullScreen = (1 == (int)RK.GetValue("Fullscreen", 0));
                     DynamicShadows = (1 == (int)RK.GetValue("DynamicShadows", 0));
+					WindowGlass = (1 == (int)RK.GetValue("WindowGlass", 0));
                     // Parse the screen dimensions text
                     char[] delimiterChars = { 'x' };
                     string[] words = strWindowSize.Split(delimiterChars);

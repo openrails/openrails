@@ -457,7 +457,10 @@ namespace ORTS
 			set
 			{
 				Parameters["Screen_Tex"].SetValue(value);
-				Parameters["ScreenSize"].SetValue(new[] { value.Width, value.Height });
+				if (value == null)
+					Parameters["ScreenSize"].SetValue(new[] { 0, 0 });
+				else
+					Parameters["ScreenSize"].SetValue(new[] { value.Width, value.Height });
 			}
 		}
 

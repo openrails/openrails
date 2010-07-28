@@ -52,21 +52,36 @@ namespace ORTS
 				Matrix.CreateScale(1, -1, 1);
 			// Project into a flat view of the same size as the viewpoer.
 			XNAProjection = Matrix.CreateOrthographic(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0, 100);
-			// Buffer for screen texture, also same size as viewport and using the backbuffer format.
-			var screen = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
-			graphicsDevice.ResolveBackBuffer(screen);
 
-			PopupWindowScreen.PrepareFrame(graphicsDevice);
-
-			var material = Materials.PopupWindowMaterial;
-			material.SetState(graphicsDevice, screen);
-			material.Render(graphicsDevice, null, PopupWindowScreen, ref PopupWindowScreen.XNAWorld, ref XNAView, ref XNAProjection);
-			foreach (PopupWindow window in VisibleWindows)
+			if (Viewer.WindowGlass)
 			{
-				var xnaWorld = window.XNAWorld;
-				material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+				// Buffer for screen texture, also same size as viewport and using the backbuffer format.
+				var screen = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
+				graphicsDevice.ResolveBackBuffer(screen);
+
+				PopupWindowScreen.PrepareFrame(graphicsDevice);
+
+				var material = Materials.PopupWindowMaterial;
+				material.SetState(graphicsDevice, screen);
+				material.Render(graphicsDevice, null, PopupWindowScreen, ref PopupWindowScreen.XNAWorld, ref XNAView, ref XNAProjection);
+				foreach (PopupWindow window in VisibleWindows)
+				{
+					var xnaWorld = window.XNAWorld;
+					material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+				}
+				material.ResetState(graphicsDevice, null);
 			}
-			material.ResetState(graphicsDevice, null);
+			else
+			{
+				var material = Materials.PopupWindowMaterial;
+				material.SetState(graphicsDevice, null);
+				foreach (PopupWindow window in VisibleWindows)
+				{
+					var xnaWorld = window.XNAWorld;
+					material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+				}
+				material.ResetState(graphicsDevice, null);
+			}
 
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
 			foreach (PopupWindow window in VisibleWindows)
