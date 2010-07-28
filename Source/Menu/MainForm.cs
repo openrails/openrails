@@ -209,7 +209,8 @@ namespace ORTS
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            if (listBoxActivities.SelectedIndex == 0)
+			SaveOptions();
+			if (listBoxActivities.SelectedIndex == 0)
             {
                 if (GetExploreInfo() && ExploreConFile != null && ExplorePatFile != null)
                     DialogResult = DialogResult.OK;
@@ -218,8 +219,18 @@ namespace ORTS
             {              
                 DialogResult = DialogResult.OK;
             }
-            
         }
+
+		private void SaveOptions()
+		{
+			// Retain settings for convenience
+			RegistryKey RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey);
+			if (RK != null)
+			{
+				RK.SetValue("Fullscreen", checkBoxFullScreen.Checked ? 1 : 0);
+				RK.SetValue("Warnings", checkBoxWarnings.Checked ? 1 : 0);
+			}
+		}
 
         private void buttonAddFolder_Click(object sender, EventArgs e)
         {
@@ -290,13 +301,7 @@ namespace ORTS
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Retain settings for convenience
-            RegistryKey RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey);
-            if (RK != null)
-            {
-                RK.SetValue("Fullscreen", checkBoxFullScreen.Checked ? 1 : 0);
-                RK.SetValue("Warnings", checkBoxWarnings.Checked ? 1 : 0);
-            }
+			SaveOptions();
         }
 
         private void buttonOptions_Click(object sender, EventArgs e)

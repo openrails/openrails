@@ -45,11 +45,9 @@ namespace ORTS
         public new bool IsMouseVisible = false;  // handles cross thread issues by signalling RenderProcess of a change
 
         // Diagnostic information
-        public float SmoothedFrameRate = 1000;     // information displayed by InfoViewer in upper left
-        public float SmoothedFrameTime = 0; // seconds
-        public float MinFrameRate = 1000;
-        public float SmoothJitter = 0;
-        public float Jitter = 0;  // difference between when a frame should be rendered vs when it was rendered
+        public float SmoothedFrameRate = -1; // frames-per-second, information displayed by InfoViewer in upper left
+        public float SmoothedFrameTime = -1; // seconds
+        public float SmoothedFrameJitter = -1; // seconds
         public bool UpdateSlow = false;  // true if the render loop finishes faster than the update loop.
         public bool LoaderSlow = false;  // true if the loader loop is falling behind
         public int PrimitiveCount = 0;
@@ -290,44 +288,35 @@ namespace ORTS
             base.OnExiting(sender, args);
         }
 
+		float lastElapsedTime = 0;
 
-        float lastElapsedTime = 0;
+		public void ComputeFPS(float elapsedRealTime)
+		{
+			if (elapsedRealTime > 0.00001)
+			{
+				// Smoothing filter length
+				float rate = 3.0f / elapsedRealTime;
 
-        public void ComputeFPS( float elapsedRealTime )
-        {
+				// Calculate current frame rate, time and jitter.
+				float frameRate = 1.0f / elapsedRealTime;
+				float frameTime = elapsedRealTime;
+				float frameJitter = Math.Abs(lastElapsedTime - elapsedRealTime);
+				lastElapsedTime = elapsedRealTime;
 
-            if (elapsedRealTime > 0.00001)
-            {
-                // Smoothing filter length
-                float rate = 3.0f / elapsedRealTime;
-
-                // Jitter
-                float jitter = Math.Abs(lastElapsedTime - elapsedRealTime);
-                lastElapsedTime = elapsedRealTime;
-                if (Math.Abs(jitter - SmoothJitter) > 0.01)
-                    SmoothJitter = jitter;
-                else
-                    SmoothJitter = (SmoothJitter * (rate - 1.0f) / rate) + (jitter / rate);
-
-                // Frame Rate - Min and Smooth
-                float frameRate = 1.0f / elapsedRealTime;
-                if (frameRate < MinFrameRate)
-                    MinFrameRate = frameRate;
-                else
-                    MinFrameRate = (MinFrameRate * (rate - 1.0f) / rate) + (frameRate / rate);
-
-                if (Math.Abs(frameRate - SmoothedFrameRate) > 5.0)
-                    SmoothedFrameRate = frameRate;
-                else
-                    SmoothedFrameRate = (SmoothedFrameRate * (rate - 1.0f) / rate) + (frameRate / rate);
-
-                if (Math.Abs(elapsedRealTime - SmoothedFrameTime) > 0.01)
-                    SmoothedFrameTime = elapsedRealTime;
-                else
-                    SmoothedFrameTime = (SmoothedFrameTime * (rate - 1.0f) / rate) + (elapsedRealTime / rate);
-            }
-        }
-
-
+				// Update smoothed frame rate, time and jitter.
+				if (SmoothedFrameRate < 0)
+					SmoothedFrameRate = frameRate;
+				else
+					SmoothedFrameRate = (SmoothedFrameRate * (rate - 1.0f) + frameRate) / rate;
+				if (SmoothedFrameTime < 0)
+					SmoothedFrameTime = frameTime;
+				else
+					SmoothedFrameTime = (SmoothedFrameTime * (rate - 1.0f) + frameTime) / rate;
+				if (SmoothedFrameJitter < 0)
+					SmoothedFrameJitter = frameJitter;
+				else
+					SmoothedFrameJitter = (SmoothedFrameJitter * (rate - 1.0f) + frameJitter) / rate;
+			}
+		}
     }// RenderProcess
 }

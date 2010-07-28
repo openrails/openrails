@@ -96,7 +96,7 @@ namespace ORTS
                     OutLog.Store(Program.Revision); //SVN Revision
                     OutLog.Store(frameNum.ToString()); //Frame Number
                     OutLog.Store(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString()); //FPS
-                    OutLog.Store(Viewer.RenderProcess.SmoothJitter.ToString("F4")); //Jitter
+                    OutLog.Store(Viewer.RenderProcess.SmoothedFrameJitter.ToString("F4")); //Jitter
                     OutLog.Store(Viewer.RenderProcess.PrimitivesPerFrame.ToString()); //Primitives
                     OutLog.Store(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
                     OutLog.Store(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
@@ -193,7 +193,7 @@ namespace ORTS
                 TextBuilder.AppendLine(status);
 
             TextBuilder.AppendLine();
-            TextBuilder.Append("FPS = "); TextBuilder.AppendLine(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString()); //this DONE
+            TextBuilder.AppendLine(string.Format("FPS = {0:F0}", Viewer.RenderProcess.SmoothedFrameRate)); //this DONE
 /*
             //WHN:
             status = Viewer.PlayerTrain.RearTDBTraveller.TNToString();
@@ -207,19 +207,19 @@ namespace ORTS
             // Memory Useage
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
             TextBuilder.AppendLine(); //notepad pls.
-            TextBuilder.Append("Logging Enabled = "); TextBuilder.AppendLine(InfoLog.ToString());
-            TextBuilder.Append("Build = "); TextBuilder.AppendLine(Program.Build);
-            TextBuilder.Append("Memory = "); TextBuilder.AppendLine(memory.ToString());
-            TextBuilder.AppendFormat("Frame Time = {0:F1}ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
-            TextBuilder.Append("Jitter = "); TextBuilder.AppendLine(Viewer.RenderProcess.SmoothJitter.ToString("F4"));//from here
-            TextBuilder.Append("Primitives = "); TextBuilder.AppendLine(Viewer.RenderProcess.PrimitivesPerFrame.ToString());
-            TextBuilder.Append("StateChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString());
-            TextBuilder.Append("ImageChanges = "); TextBuilder.AppendLine(Viewer.RenderProcess.ImageChangesPerFrame.ToString());
-            TextBuilder.Append("Processors = "); TextBuilder.AppendLine(processors.ToString());
-            TextBuilder.Append("Render Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", RenderPercent));
-            TextBuilder.Append("Update Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", UpdatePercent));
-            TextBuilder.Append("Loader Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", LoaderPercent));//to here DONE
-            TextBuilder.Append("Total Process % = "); TextBuilder.AppendLine(string.Format("{0,3}", LoaderPercent+UpdatePercent+RenderPercent));
+			TextBuilder.AppendFormat("Logging Enabled = {0}", InfoLog); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Memory = {0:N0} KB", memory / 1024); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Frame Time = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Frame Jitter = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Primitives = {0:N0}", Viewer.RenderProcess.PrimitivesPerFrame); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Processors = {0}", processors); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Process = {0} %", RenderPercent); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Update Process = {0} %", UpdatePercent); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Loader Process = {0} %", LoaderPercent); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Total Process = {0} %", LoaderPercent + UpdatePercent + RenderPercent); TextBuilder.AppendLine();
             // Added by rvg....
             TextBuilder.Append("Tile: "); TextBuilder.Append(Viewer.Camera.TileX.ToString()); // Camera coordinates
             TextBuilder.Append(" ");
