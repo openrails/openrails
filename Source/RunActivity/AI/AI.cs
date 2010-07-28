@@ -132,7 +132,7 @@ namespace ORTS
                     Simulator.Trains.Remove(kvp.Value);
                 FirstUpdate = false;
             }
-            Dispatcher.Update(Simulator.ClockTime);
+            Dispatcher.Update(Simulator.ClockTime, elapsedClockSeconds);
             while (StartQueue.GetMinKey() < Simulator.ClockTime)
             {
                 AITrain train = StartQueue.GetMinValue();
@@ -147,7 +147,7 @@ namespace ORTS
             }
             bool remove = false;
             foreach (AITrain train in AITrains)
-                if (train.NextStopNode == null || train.RearNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
+                if (train.NextStopNode == null || train.TrackAuthority.StartNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
                     remove = true;
                 else
                     train.AIUpdate( elapsedClockSeconds, Simulator.ClockTime);
@@ -175,11 +175,11 @@ namespace ORTS
 
             // This is the position of the back end of the train in the database.
             //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
-            WorldLocation wl = train.RearNode.Location;
+            WorldLocation wl = train.Path.FirstNode.Location;
             train.RearTDBTraveller = new TDBTraveller(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Z, 0, Simulator.TDB, Simulator.TSectionDat);
             // figure out if the next waypoint is forward or back
             //patTraveller.NextWaypoint();
-            wl = train.GetNextNode(train.RearNode).Location;
+            wl = train.GetNextNode(train.Path.FirstNode).Location;
             if (train.RearTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z) < 0)
                 train.RearTDBTraveller.ReverseDirection();
             //train.PATTraveller = patTraveller;
@@ -234,7 +234,7 @@ namespace ORTS
         {
             List<AITrain> removeList = new List<AITrain>();
             foreach (AITrain train in AITrains)
-                if (train.NextStopNode == null || train.RearNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
+                if (train.NextStopNode == null || train.TrackAuthority.StartNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
                     removeList.Add(train);
             foreach (AITrain train in removeList)
             {
@@ -247,9 +247,9 @@ namespace ORTS
             }
         }
 
-        public string GetStatus()
+        public string GetStatus(bool distanceDisplay)
         {
-            return Dispatcher.PlayerStatus();
+            return Dispatcher.PlayerStatus(distanceDisplay);
         }
     }
 

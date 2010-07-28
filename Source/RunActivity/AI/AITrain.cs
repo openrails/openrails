@@ -24,11 +24,7 @@ namespace ORTS
     {
         public int UiD;
         public AIPath Path = null;
-        public AIPathNode RearNode = null;      // path node behind rear of train
         public AIPathNode NextStopNode = null;  // next path node train should stop at
-        public AIPathNode AuthEndNode = null;   // end of authorized movement, set by dispatcher 
-        public AIPathNode AuthSidingNode = null;// start of siding, take siding if not null
-        public int NReverseNodes = 0;           // number of reverse nodes before AuthEndNode
         public float AuthUpdateDistanceM = 0;  // distance to next stop node to ask for longer authorization
         public float NextStopDistanceM = 0;  // distance to next stop node
         public float NextStopTimeS = 0;      // seconds to next stop
@@ -39,6 +35,7 @@ namespace ORTS
         public double WaitUntil = 0;    // clock time to wait for before next update
         public int StartTime;        // starting time, may be modified by dispatcher
         public int Priority = 0;        // train priority, smaller value is higher priority
+        public TrackAuthority TrackAuthority = null;  // track authority issued by Dispatcher
         public AI AI;
         public List<AISwitchInfo> SwitchList = new List<AISwitchInfo>();
 
@@ -48,7 +45,6 @@ namespace ORTS
             AI = ai;
             Path = path;
             NextStopNode = Path.FirstNode;
-            RearNode = Path.FirstNode;
             StartTime = start;
             Priority = start % 10;
         }
@@ -68,11 +64,7 @@ namespace ORTS
             StartTime = inf.ReadInt32();
             Priority = inf.ReadInt32();
             Path = new AIPath(inf);
-            RearNode = Path.ReadNode(inf);
             NextStopNode = Path.ReadNode(inf);
-            AuthEndNode = Path.ReadNode(inf);
-            AuthSidingNode = Path.ReadNode(inf);
-            NReverseNodes = inf.ReadInt32();
         }
 
         // save game state
@@ -91,11 +83,7 @@ namespace ORTS
             outf.Write(StartTime);
             outf.Write(Priority);
             Path.Save(outf);
-            Path.WriteNode(outf, RearNode);
             Path.WriteNode(outf, NextStopNode);
-            Path.WriteNode(outf, AuthEndNode);
-            Path.WriteNode(outf, AuthSidingNode);
-            outf.Write(NReverseNodes);
         }
 
         /// <summary>
@@ -126,7 +114,7 @@ namespace ORTS
                     NextStopNode = null;
                     return;
                 }
-                if (NextStopNode == AuthEndNode && !AI.Dispatcher.RequestAuth(this, false))
+                if ((TrackAuthority == null || NextStopNode == TrackAuthority.EndNode) && !AI.Dispatcher.RequestAuth(this, false))
                 {
                     WaitUntil = clockTime + 10;
                     return;
@@ -257,7 +245,7 @@ namespace ORTS
             if (NextStopNode.IsFacingPoint == false && NextStopNode.JunctionIndex >= 0)
             {
                 float clearance = 10;
-                if (NextStopNode == AuthEndNode)
+                if (NextStopNode == TrackAuthority.EndNode)
                 {
                     TrackNode tn = Path.TrackDB.TrackNodes[NextStopNode.JunctionIndex];
                     clearance = 40;
@@ -274,7 +262,7 @@ namespace ORTS
             if (NextStopDistanceM < 0)
                 NextStopDistanceM = 0;
             AuthUpdateDistanceM = -1;
-            if (AITrainDirectionForward && (NextStopNode == AuthEndNode || NextStopNode == AuthSidingNode))
+            if (AITrainDirectionForward && (NextStopNode == TrackAuthority.EndNode || NextStopNode == TrackAuthority.SidingNode))
             {
                 AuthUpdateDistanceM = .5f * MaxSpeedMpS * MaxSpeedMpS / MaxDecelMpSS;
                 if (AuthUpdateDistanceM > .5f * NextStopDistanceM)
@@ -292,7 +280,7 @@ namespace ORTS
             SwitchList.Clear();
             if (node.NextMainNode == null && node.NextSidingNode == null)
                 return null;
-            while (node != AuthEndNode)
+            while (node != TrackAuthority.EndNode)
             {
                 AIPathNode prevNode = node;
                 node = GetNextNode(node);
@@ -329,12 +317,12 @@ namespace ORTS
         /// </summary>
         private AIPathNode FindPrevNode(AIPathNode target)
         {
-            AIPathNode node1 = RearNode;
+            AIPathNode node1 = TrackAuthority.StartNode;
             while (node1 != target)
             {
                 AIPathNode node2= GetNextNode(node1);
                 if (node2 == null)
-                    return RearNode;
+                    return TrackAuthority.StartNode;
                 if (node2 == target)
                     return node1;
                 node1 = node2;
@@ -444,14 +432,14 @@ namespace ORTS
 
         public AIPathNode GetNextNode(AIPathNode node)
         {
-            if (node == AuthSidingNode || node.NextMainNode == null)
+            if ((TrackAuthority != null && node == TrackAuthority.SidingNode) || node.NextMainNode == null)
                 return node.NextSidingNode;
             else
                 return node.NextMainNode;
         }
         public int GetTVNIndex(AIPathNode node)
         {
-            if (node == AuthSidingNode || node.NextMainNode == null)
+            if ((TrackAuthority != null && node == TrackAuthority.SidingNode) || node.NextMainNode == null)
                 return node.NextSidingTVNIndex;
             else
                 return node.NextMainTVNIndex;
@@ -603,25 +591,6 @@ namespace ORTS
                 }
                 //Console.WriteLine("up {0} {1}", AITrainThrottlePercent, AITrainBrakePercent);
             }
-        }
-
-        /// <summary>
-        /// Called by dispatcher to set movement authorization for train.
-        /// end is the path node the train is allowed to move just short of.
-        /// if siding is not null the train should enter the siding at the specified node.
-        /// In the future the dispatcher might change the authorization while a train is moving.
-        /// </summary>
-        public bool SetAuthorization(AIPathNode end, AIPathNode siding, int nRev)
-        {
-            bool result = AuthEndNode != end || AuthSidingNode != siding;
-            AuthEndNode = end;
-            AuthSidingNode = siding;
-            NReverseNodes = nRev;
-            //if (end == null)
-            //    Console.WriteLine("setauth {0} {1} {2} {3} {4}", UiD, result, "null", siding != null, nRev);
-            //else
-            //    Console.WriteLine("setauth {0} {1} {2} {3} {4}", UiD, result, end.ID, siding != null, nRev);
-            return result;
         }
 
         public float Length()

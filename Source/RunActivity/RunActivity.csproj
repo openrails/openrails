@@ -165,6 +165,7 @@
     <Compile Include="AI\Dispatcher.cs" />
     <Compile Include="AI\Heap.cs" />
     <Compile Include="AI\TimeTable.cs" />
+    <Compile Include="AI\TrackAuthority.cs" />
     <Compile Include="Common\Conversions.cs" />
     <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\enums.cs" />

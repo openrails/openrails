@@ -37,6 +37,7 @@ namespace ORTS
         int InfoAmount = 1;
         int frameNum = 0;
         bool InfoLog = false;
+        bool DistanceDisplay = false;
         private double lastUpdateTime = 0;   // update text message only 10 times per second
 
         int processors = System.Environment.ProcessorCount;
@@ -60,6 +61,8 @@ namespace ORTS
                 if (InfoAmount > 2)
                     InfoAmount = 0;
             }
+            if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F10))
+                DistanceDisplay = !DistanceDisplay;
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F12))
             {
                 InfoLog = !InfoLog;
@@ -159,7 +162,13 @@ namespace ORTS
             string status = Viewer.PlayerLocomotive.GetStatus();
             if (status != null)
                 TextBuilder.AppendLine(status);
-            TextBuilder.Append("Slack = "); TextBuilder.AppendLine(playerTrain.TotalCouplerSlackM.ToString("F2")+" "+playerTrain.NPull.ToString()+" "+playerTrain.NPush.ToString());
+            TextBuilder.Append("Slack = "); TextBuilder.Append(playerTrain.TotalCouplerSlackM.ToString("F2")+" "+playerTrain.NPull.ToString()+" "+playerTrain.NPush.ToString());
+            if (playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1)
+                TextBuilder.AppendLine(" Streched");
+            else if (playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1)
+                TextBuilder.AppendLine(" Bunched");
+            else
+                TextBuilder.AppendLine();
             TextBuilder.Append("CForce = "); TextBuilder.AppendLine(playerTrain.MaximumCouplerForceN.ToString("F0"));
 
             // Added by rvg....
@@ -182,15 +191,10 @@ namespace ORTS
             sTemp += ", ";
             sTemp += MathHelper.ToDegrees((float)longitude).ToString("F6");
             TextBuilder.Append("Lat/Lon: "); TextBuilder.AppendLine(sTemp);
-            
-            if (playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1)
-                TextBuilder.AppendLine("Streched");
-            if (playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1)
-                TextBuilder.AppendLine("Bunched");
 
-            status = Viewer.Simulator.AI.GetStatus();
+            status = Viewer.Simulator.AI.GetStatus(DistanceDisplay);
             if (status != null)
-                TextBuilder.AppendLine(status);
+                TextBuilder.Append(status);
 
             TextBuilder.AppendLine();
             TextBuilder.AppendLine(string.Format("FPS = {0:F0}", Viewer.RenderProcess.SmoothedFrameRate)); //this DONE
