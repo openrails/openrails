@@ -58,7 +58,7 @@ namespace ORTS
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F5))
             {
                 ++InfoAmount;
-                if (InfoAmount > 2)
+                if (InfoAmount > 3)
                     InfoAmount = 0;
             }
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F10))
@@ -125,7 +125,11 @@ namespace ORTS
             {
                 AddBasicInfo();
             }
-            if (InfoAmount > 1)
+            if (InfoAmount == 2)
+            {
+                AddBrakeInfo();
+            }
+            if (InfoAmount == 3)
             {
                 AddDebugInfo();
             }
@@ -211,26 +215,29 @@ namespace ORTS
             // Memory Useage
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
             TextBuilder.AppendLine(); //notepad pls.
-			TextBuilder.AppendFormat("Logging Enabled = {0}", InfoLog); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Memory = {0:N0} KB", memory / 1024); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Logging Enabled = {0}", InfoLog); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Memory = {0:N0} KB", memory / 1024); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Frame Time = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Frame Jitter = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Primitives = {0:N0}", Viewer.RenderProcess.PrimitivesPerFrame); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Processors = {0}", processors); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Process = {0} %", RenderPercent); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Update Process = {0} %", UpdatePercent); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Loader Process = {0} %", LoaderPercent); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Total Process = {0} %", LoaderPercent + UpdatePercent + RenderPercent); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Frame Jitter = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Render Primitives = {0:N0}", Viewer.RenderProcess.PrimitivesPerFrame); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Processors = {0}", processors); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Render Process = {0} %", RenderPercent); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Update Process = {0} %", UpdatePercent); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Loader Process = {0} %", LoaderPercent); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Total Process = {0} %", LoaderPercent + UpdatePercent + RenderPercent); TextBuilder.AppendLine();
             // Added by rvg....
             TextBuilder.Append("Tile: "); TextBuilder.Append(Viewer.Camera.TileX.ToString()); // Camera coordinates
             TextBuilder.Append(" ");
             TextBuilder.Append(Viewer.Camera.TileZ.ToString());//this DONE
             TextBuilder.Append(" ");
             TextBuilder.AppendLine(Viewer.Camera.Location.ToString()); //this DONE
+        }
 
+        private void AddBrakeInfo()
+        {
             TextBuilder.AppendLine();
             Train playerTrain = Viewer.PlayerLocomotive.Train;
             TextBuilder.Append("Main Res = "); TextBuilder.AppendLine(string.Format("{0:F0}", playerTrain.BrakeLine2PressurePSI));
