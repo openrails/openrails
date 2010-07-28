@@ -229,8 +229,14 @@ namespace ORTS
             GDM.PreferMultiSampling = true;
             //GDM.PreferredBackBufferFormat = SurfaceFormat.Bgr32;
             //GDM.PreferredDepthStencilFormat = DepthFormat.Depth32;
-            
+			GDM.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
         }
+
+		void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
+		{
+			// This stops ResolveBackBuffer() clearing the back buffer.
+			e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+		}
 
         /// <summary>
         /// Called once after the graphics device is ready

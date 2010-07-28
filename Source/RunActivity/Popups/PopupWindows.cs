@@ -28,7 +28,6 @@ namespace ORTS
 	{
 		public readonly Viewer3D Viewer;
 		readonly List<PopupWindow> Windows = new List<PopupWindow>();
-		readonly PopupWindowsScreen PopupWindowScreen = new PopupWindowsScreen();
 		readonly SpriteBatch SpriteBatch;
 		Matrix XNAView = new Matrix();
 		Matrix XNAProjection = new Matrix();
@@ -53,35 +52,22 @@ namespace ORTS
 			// Project into a flat view of the same size as the viewpoer.
 			XNAProjection = Matrix.CreateOrthographic(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0, 100);
 
+			ResolveTexture2D screen = null;
 			if (Viewer.WindowGlass)
 			{
 				// Buffer for screen texture, also same size as viewport and using the backbuffer format.
-				var screen = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
+				screen = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
 				graphicsDevice.ResolveBackBuffer(screen);
-
-				PopupWindowScreen.PrepareFrame(graphicsDevice);
-
-				var material = Materials.PopupWindowMaterial;
-				material.SetState(graphicsDevice, screen);
-				material.Render(graphicsDevice, null, PopupWindowScreen, ref PopupWindowScreen.XNAWorld, ref XNAView, ref XNAProjection);
-				foreach (PopupWindow window in VisibleWindows)
-				{
-					var xnaWorld = window.XNAWorld;
-					material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-				}
-				material.ResetState(graphicsDevice, null);
 			}
-			else
+
+			var material = Materials.PopupWindowMaterial;
+			material.SetState(graphicsDevice, screen);
+			foreach (PopupWindow window in VisibleWindows)
 			{
-				var material = Materials.PopupWindowMaterial;
-				material.SetState(graphicsDevice, null);
-				foreach (PopupWindow window in VisibleWindows)
-				{
-					var xnaWorld = window.XNAWorld;
-					material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-				}
-				material.ResetState(graphicsDevice, null);
+				var xnaWorld = window.XNAWorld;
+				material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
 			}
+			material.ResetState(graphicsDevice, null);
 
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
 			foreach (PopupWindow window in VisibleWindows)
@@ -156,28 +142,6 @@ namespace ORTS
 			{
 				return Windows.Where(w => w.Visible);
 			}
-		}
-	}
-
-	public class PopupWindowsScreen : RenderPrimitive
-	{
-		public Matrix XNAWorld = Matrix.CreateWorld(new Vector3(0, 0, 0), -Vector3.UnitZ, Vector3.UnitY);
-
-		public void PrepareFrame(GraphicsDevice graphicsDevice)
-		{
-			XNAWorld = Matrix.CreateWorld(new Vector3(0, 0, 0), -Vector3.UnitZ, Vector3.UnitY);
-		}
-
-		public override void Draw(GraphicsDevice graphicsDevice)
-		{
-			graphicsDevice.VertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionTexture.VertexElements);
-			graphicsDevice.DrawUserPrimitives<VertexPositionTexture>(PrimitiveType.TriangleFan,
-				new[] {
-					new VertexPositionTexture(new Vector3(0, graphicsDevice.Viewport.Height, 0), new Vector2(0, 0)),
-					new VertexPositionTexture(new Vector3(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0), new Vector2(0, 0)),
-					new VertexPositionTexture(new Vector3(graphicsDevice.Viewport.Width, 0, 0), new Vector2(0, 0)),
-					new VertexPositionTexture(new Vector3(0, 0, 0), new Vector2(0, 0)),
-				}, 0, 2);
 		}
 	}
 
