@@ -33,7 +33,7 @@ namespace ORTS
         /// First creates all the nodes and then links them together into a main list
         /// with optional parallel siding list.
         /// </summary>
-        public AIPath(PATFile patFile, TDBFile TDB, TSectionDatFile tsectiondat)
+        public AIPath(PATFile patFile, TDBFile TDB, TSectionDatFile tsectiondat, string filename)
         {
             TrackDB = TDB.TrackDB;
             TSectionDat = tsectiondat;
@@ -51,6 +51,11 @@ namespace ORTS
                     node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode, TDB, tsectiondat);
                     if (node.JunctionIndex >= 0)
                         node.IsFacingPoint = TestFacingPoint(node.JunctionIndex, node.NextMainTVNIndex);
+                    if (node.NextMainTVNIndex < 0)
+                    {
+                        node.NextMainNode = null;
+                        Console.Error.WriteLine("Broken path in " + filename + "\r\n  Cannot find main track for path node " + i);
+                    }
                 }
                 if (tpn.C != 0xffffffff)
                 {
@@ -58,6 +63,11 @@ namespace ORTS
                     node.NextSidingTVNIndex = node.FindTVNIndex(node.NextSidingNode, TDB, tsectiondat);
                     if (node.JunctionIndex >= 0)
                         node.IsFacingPoint = TestFacingPoint(node.JunctionIndex, node.NextSidingTVNIndex);
+                    if (node.NextSidingTVNIndex < 0)
+                    {
+                        node.NextSidingNode = null;
+                        Console.Error.WriteLine("Broken path in " + filename + "\r\n  Cannot find siding track for path node " + i);
+                    }
                 }
                 if (node.NextMainNode != null && node.NextSidingNode != null)
                     node.Type = AIPathNodeType.SidingStart;

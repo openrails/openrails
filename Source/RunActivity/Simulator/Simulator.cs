@@ -566,7 +566,7 @@ namespace ORTS
             if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
                 train.RearTDBTraveller.ReverseDirection();
             PATFile patFile = new PATFile(patFileName);
-            AIPath aiPath = new AIPath(patFile , TDB, TSectionDat);
+            AIPath aiPath = new AIPath(patFile , TDB, TSectionDat, patFileName);
             aiPath.AlignAllSwitches();
             CONFile conFile = new CONFile(conFileName);
 

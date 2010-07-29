@@ -48,8 +48,9 @@ namespace ORTS
             string playerServiceFileName = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
             SRVFile srvFile = new SRVFile(AI.Simulator.RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
             CONFile conFile = new CONFile(AI.Simulator.BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON");
-            PATFile patFile = new PATFile(AI.Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT");
-            AIPath playerPath = new AIPath(patFile, AI.Simulator.TDB, AI.Simulator.TSectionDat);
+            string patFilename = AI.Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
+            PATFile patFile = new PATFile(patFilename);
+            AIPath playerPath = new AIPath(patFile, AI.Simulator.TDB, AI.Simulator.TSectionDat,patFilename);
             AITrain playerTrain = new AITrain(0, AI, playerPath, (int)AI.Simulator.ClockTime);
             if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
                 playerTrain.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
@@ -62,6 +63,9 @@ namespace ORTS
             TrackAuthority auth = new TrackAuthority(playerTrain, 0, PlayerPriority, playerPath);
             TrackAuthorities.Add(auth);
             RequestAuth(auth, false, true);
+            Player_Service_Definition psd = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition;
+            //for (int i = 0; i < psd.DistanceDownPath.Count; i++)
+            //    Console.WriteLine("dist {0} {1}", i, psd.DistanceDownPath[i]);
         }
 
         // restore game state

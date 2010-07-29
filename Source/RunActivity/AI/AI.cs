@@ -168,10 +168,10 @@ namespace ORTS
             SRVFile srvFile = new SRVFile(Simulator.RoutePath + @"\SERVICES\" + sd.Service + ".SRV");
             string consistFileName = srvFile.Train_Config;
             CONFile conFile = new CONFile(Simulator.BasePath + @"\TRAINS\CONSISTS\" + consistFileName + ".CON");
-            string pathFileName = srvFile.PathID;
+            string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
-            PATFile patFile = new PATFile(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
-            AITrain train = new AITrain(sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat), sd.Time);
+            PATFile patFile = new PATFile(pathFileName);
+            AITrain train = new AITrain(sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName), sd.Time);
 
             // This is the position of the back end of the train in the database.
             //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");

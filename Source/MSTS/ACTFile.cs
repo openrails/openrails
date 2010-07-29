@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
@@ -627,6 +628,7 @@ namespace MSTS
 	public class Player_Service_Definition
 	{
 		public string Name;
+        public List<float> DistanceDownPath = new List<float>();
 
 		public Player_Service_Definition( STFReader f )
 		{
@@ -634,8 +636,16 @@ namespace MSTS
 
 			f.VerifyStartOfBlock();
 			Name = f.ReadToken();
-            f.SkipRestOfBlock();
-		}
+            while (!f.EndOfBlock())
+            {
+                string token = f.ReadToken().ToLower();
+                switch (token)
+                {
+                    case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock()); break;
+                    default: f.SkipBlock(); break;
+                }
+            }
+        }
 
 	}
 
