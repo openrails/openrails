@@ -776,10 +776,7 @@ namespace ORTS
             // Locate relative to the camera
             int dTileX = location.TileX - Viewer.Camera.TileX;
             int dTileZ = location.TileZ - Viewer.Camera.TileZ;
-            Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-            xnaDTileTranslation = location.XNAMatrix * xnaDTileTranslation;
-
-            Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
+			Vector3 mstsLocation = location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
 
             foreach (LodControl lodControl in LodControls)
             {
@@ -792,7 +789,10 @@ namespace ORTS
                             viewingRange = Viewer.ViewingDistance;
                         if (Viewer.Camera.InRange(mstsLocation, viewingRange))
                         {
-                            foreach (SubObject subObject in distanceLevel.SubObjects)
+							Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
+							xnaDTileTranslation = location.XNAMatrix * xnaDTileTranslation;
+
+							foreach (SubObject subObject in distanceLevel.SubObjects)
                             {
                                 // for each primitive
                                 for (int iPrim = 0; iPrim < subObject.ShapePrimitives.Length; ++iPrim)

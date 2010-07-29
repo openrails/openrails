@@ -302,13 +302,14 @@ namespace ORTS
         {
             int dTileX = TileX - Viewer.Camera.TileX;
             int dTileZ = TileZ - Viewer.Camera.TileZ;
-            Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-            Matrix xnaPatchMatrix = XNAPatchPosition * xnaDTileTranslation;  // defines location and pose for patch
+			Vector3 mstsLocation = new Vector3(dTileX * 2048 + XNAPatchLocation.X, XNAPatchLocation.Y, dTileZ * 2048 - XNAPatchLocation.Z);
 
             // Distance cull
-            if (Viewer.Camera.CanSee(xnaPatchMatrix, 150f, 2000f))
+			if (Viewer.Camera.CanSee(mstsLocation, 150f, 2000f))
             {
-                frame.AddPrimitive(PatchMaterial, this, ref xnaPatchMatrix);
+				Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
+				Matrix xnaPatchMatrix = XNAPatchPosition * xnaDTileTranslation;  // defines location and pose for patch
+				frame.AddPrimitive(PatchMaterial, this, ref xnaPatchMatrix);
             }
         }
 
