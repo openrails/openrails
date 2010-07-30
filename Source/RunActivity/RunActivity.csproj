@@ -184,7 +184,12 @@
     <Compile Include="Processes\Profiler.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />
     <Compile Include="Physics\Train.cs" />
+    <Compile Include="RollingStock\ControllerFactory.cs" />
+    <Compile Include="RollingStock\IBrakeController.cs" />
+    <Compile Include="RollingStock\IController.cs" />
+    <Compile Include="RollingStock\MSTSBrakeController.cs" />
     <Compile Include="RollingStock\MSTSDieselLocomotive.cs" />
+    <Compile Include="RollingStock\MSTSStageController.cs" />
     <Compile Include="RollingStock\MSTSElectricLocomotive.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -192,9 +197,11 @@
     <Compile Include="RollingStock\MSTSLocomotive.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RollingStock\MSTSNotchController.cs" />
     <Compile Include="RollingStock\MSTSSteamLocomotive.cs" />
     <Compile Include="RollingStock\MSTSWagon.cs" />
     <Compile Include="Processes\ProcessState.cs" />
+    <Compile Include="RollingStock\SimpleController.cs" />
     <Compile Include="RollingStock\TrainCar.cs" />
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Simulator\TDBTraveller.cs" />

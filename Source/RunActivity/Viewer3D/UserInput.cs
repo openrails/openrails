@@ -24,7 +24,7 @@ namespace ORTS
     /// </summary>
     public static class UserInput
     {
-        public static bool Ready = false;  // flag UpdaterProcess that its time to handle keyboard input
+        public static bool Changed = false;  // flag UpdaterProcess that its time to handle keyboard input
 
         public static MouseState MouseState;        
         public static KeyboardState KeyboardState;   
@@ -41,12 +41,12 @@ namespace ORTS
                 || lastMouseState.LeftButton != MouseState.LeftButton 
                 || lastMouseState.RightButton != MouseState.RightButton
                 || lastMouseState.MiddleButton != MouseState.MiddleButton )
-                Ready = true;
+                Changed = true;
         }
 
         public static void Handled()
         {
-            Ready = false;
+            Changed = false;
         }
 
         public static bool IsKeyDown(Keys key) { return KeyboardState.IsKeyDown(key); }

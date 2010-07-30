@@ -53,6 +53,7 @@ namespace ORTS
                 // for example
                 //case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
+                case "engine(enginecontrollers(throttle": ThrottleController = new MSTSStageController(f); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }

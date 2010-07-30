@@ -91,11 +91,11 @@ namespace ORTS
 
         public CVFFile CVFFile = null;
 
-        public MSTSEngineController ThrottleController;
-        public MSTSEngineController TrainBrakeController;
-        public MSTSEngineController EngineBrakeController;
+        public IController          ThrottleController;
+        public IBrakeController     TrainBrakeController;
+        public IBrakeController     EngineBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
-        public MSTSEngineController DynamicBrakeController;
+        public IController          DynamicBrakeController;
 
         public MSTSLocomotive(string wagPath, TrainCar previousCar)
             : base(wagPath, previousCar)
@@ -109,10 +109,13 @@ namespace ORTS
         /// </summary>
         public override void InitializeFromWagFile(string wagFilePath)
         {
-            TrainBrakeController = new MSTSEngineController();
-            EngineBrakeController = new MSTSEngineController();
-            DynamicBrakeController = new MSTSEngineController();
+            TrainBrakeController = new MSTSBrakeController();
+            EngineBrakeController = new MSTSBrakeController();
+            DynamicBrakeController = new MSTSStageController();
             base.InitializeFromWagFile(wagFilePath);
+
+            if (ThrottleController == null)
+                ThrottleController = new SimpleController();
 
             if (CVFFileName != null)
             {
@@ -136,11 +139,11 @@ namespace ORTS
             }
 
             IsDriveable = true;
-            if (TrainBrakeController.StepSize == 0)
+            if (!TrainBrakeController.IsValid())
                 TrainBrakeController = null;
-            if (EngineBrakeController.StepSize == 0)
+            if (!EngineBrakeController.IsValid())
                 EngineBrakeController = null;
-            if (DynamicBrakeController.StepSize == 0)
+            if (!DynamicBrakeController.IsValid())
                 DynamicBrakeController = null;
             if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
             {
@@ -166,7 +169,7 @@ namespace ORTS
             if (lowercasetoken.StartsWith("engine(trainbrakescontroller"))
                 TrainBrakeController.ParseBrakeValue(lowercasetoken.Substring(28), f);
             if (lowercasetoken.StartsWith("engine(enginebrakescontroller"))
-                TrainBrakeController.ParseBrakeValue(lowercasetoken.Substring(29), f);
+                EngineBrakeController.ParseBrakeValue(lowercasetoken.Substring(29), f);
             switch (lowercasetoken)
             {
                 case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
@@ -175,8 +178,8 @@ namespace ORTS
                 case "engine(maxforce": MaxForceN = ParseN(f.ReadStringBlock(),f); break;
                 case "engine(maxcontinuousforce": MaxContinuousForceN = ParseN(f.ReadStringBlock(), f); break;
                 case "engine(maxvelocity": MaxSpeedMpS = ParseMpS(f.ReadStringBlock(),f); break;
-                case "engine(enginecontrollers(throttle": ThrottleController = new MSTSEngineController(f); break;
-                case "engine(enginecontrollers(regulator": ThrottleController = new MSTSEngineController(f); break;
+                case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(f); break;
+                case "engine(enginecontrollers(regulator": ThrottleController = new MSTSStageController(f); break;
                 case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(f); break;
                 case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(f); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(f); break;
@@ -224,10 +227,11 @@ namespace ORTS
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
 
             IsDriveable = copy.IsDriveable;
-            ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
-            TrainBrakeController = MSTSEngineController.Copy(locoCopy.TrainBrakeController);
-            EngineBrakeController = MSTSEngineController.Copy(locoCopy.EngineBrakeController);
-            DynamicBrakeController = MSTSEngineController.Copy(locoCopy.DynamicBrakeController);
+            //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
+            ThrottleController = locoCopy.ThrottleController.Clone();
+            TrainBrakeController = (IBrakeController)locoCopy.TrainBrakeController.Clone();
+            EngineBrakeController = (IBrakeController)locoCopy.EngineBrakeController.Clone();
+            DynamicBrakeController = locoCopy.DynamicBrakeController.Clone();
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
@@ -245,10 +249,10 @@ namespace ORTS
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorOn);
             outf.Write(AverageForceN);
-            MSTSEngineController.Save(ThrottleController, outf);
-            MSTSEngineController.Save(TrainBrakeController, outf);
-            MSTSEngineController.Save(EngineBrakeController, outf);
-            MSTSEngineController.Save(DynamicBrakeController, outf);
+            ControllerFactory.Save(ThrottleController, outf);
+            ControllerFactory.Save(TrainBrakeController, outf);
+            ControllerFactory.Save(EngineBrakeController, outf);
+            ControllerFactory.Save(DynamicBrakeController, outf);            
             base.Save(outf);
         }
 
@@ -264,10 +268,10 @@ namespace ORTS
             MainResPressurePSI = inf.ReadSingle();
             CompressorOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
-            ThrottleController = MSTSEngineController.Restore(inf);
-            TrainBrakeController = MSTSEngineController.Restore(inf);
-            EngineBrakeController = MSTSEngineController.Restore(inf);
-            DynamicBrakeController = MSTSEngineController.Restore(inf);
+            ThrottleController = ControllerFactory.Restore(inf);
+            TrainBrakeController = (IBrakeController)ControllerFactory.Restore(inf);
+            EngineBrakeController = (IBrakeController)ControllerFactory.Restore(inf);
+            DynamicBrakeController = ControllerFactory.Restore(inf);
             base.Restore(inf);
         }
 
@@ -357,44 +361,52 @@ namespace ORTS
             }
         }
 
-        public void IncreaseThrottle()
+        public bool IsThrottleControllerNotched()
+        {
+            return ThrottleController.IsNotched();
+        }
+
+        public bool IsTrainBrakeControllerNotched()
+        {
+            return TrainBrakeController.IsNotched();
+        }
+
+        public bool IsEngineBrakeControllerNotched()
+        {
+            return EngineBrakeController != null ? EngineBrakeController.IsNotched() : true;
+        }
+
+        public bool IsDynamicBrakeControllerNotched()
+        {
+            return (DynamicBrakePercent < 0) || (DynamicBrakeController == null) ? true : DynamicBrakeController.IsNotched();
+        }
+
+        public void IncreaseThrottle(float elapsedSeconds)
         {
             if (DynamicBrakePercent >= 0)
             {
                 // signal sound
                 return;
-            }
-            else if (ThrottleController == null)
-            {
-                ThrottlePercent += 10;
-                if (ThrottlePercent > 100)
-                    ThrottlePercent = 100;
-            }
+            }            
             else
             {
-                ThrottlePercent = ThrottleController.Increase() * 100;
+                ThrottlePercent = ThrottleController.Increase(elapsedSeconds) * 100;
             }
         }
 
-        public void DecreaseThrottle()
+        public void DecreaseThrottle(float elapsedSeconds)
         {
             if (DynamicBrakePercent >= 0)
             {
                 // signal sound
                 return;
             }
-            else if (ThrottleController == null)
-            {
-                ThrottlePercent -= 10;
-                if (ThrottlePercent < 0)
-                    ThrottlePercent = 0;
-            }
             else
             {
-                ThrottlePercent = ThrottleController.Decrease() * 100;
+                ThrottlePercent = ThrottleController.Decrease(elapsedSeconds) * 100;
             }
         }
-        public void ChangeTrainBrakes(float percent)
+        public void ChangeTrainBrakes(float elapsedSeconds, float percent)
         {
             if (TrainBrakeController == null)
             {
@@ -403,9 +415,9 @@ namespace ORTS
                 if (Train.AITrainBrakePercent > 100) Train.AITrainBrakePercent = 100;
             }
             else if (percent > 0)
-                TrainBrakeController.Increase();
+                TrainBrakeController.Increase(elapsedSeconds);
             else
-                TrainBrakeController.Decrease();
+                TrainBrakeController.Decrease(elapsedSeconds);
         }
         public void SetEmergency()
         {
@@ -432,14 +444,14 @@ namespace ORTS
                 s = s + " " + lastCar.BrakeSystem.GetStatus(0);
             return s;
         }
-        public void ChangeEngineBrakes(float percent)
+        public void ChangeEngineBrakes(float elapsedSeconds, float percent)
         {
             if (EngineBrakeController == null)
                 return;
             if (percent > 0)
-                EngineBrakeController.Increase();
+                EngineBrakeController.Increase(elapsedSeconds);
             else
-                EngineBrakeController.Decrease();
+                EngineBrakeController.Decrease(elapsedSeconds);
         }
         public override string GetEngineBrakeStatus()
         {
@@ -451,19 +463,32 @@ namespace ORTS
         {
             BailOff = !BailOff;
         }
-        public void ChangeDynamicBrakes(float percent)
+
+        private void ChangeDynamicBrakes(float elapsedSeconds, float percent)
         {
             if (DynamicBrakeController == null || DynamicBrakeForceCurves == null || ThrottlePercent > 0)
                 return;
+
             if (DynamicBrakePercent < 0 && percent > 0)
                 DynamicBrakePercent = 0;
             else if (DynamicBrakePercent <= 0 && percent < 0)
                 DynamicBrakePercent = -1;
             else if (percent > 0)
-                DynamicBrakePercent = 100 * DynamicBrakeController.Increase();
+                DynamicBrakePercent = 100 * DynamicBrakeController.Increase(elapsedSeconds);
             else
-                DynamicBrakePercent = 100 * DynamicBrakeController.Decrease();
+                DynamicBrakePercent = 100 * DynamicBrakeController.Decrease(elapsedSeconds);
         }
+
+        public void IncreaseDynamicBrakes(float elapsedSeconds)
+        {
+            ChangeDynamicBrakes(elapsedSeconds, 1);
+        }
+
+        public void DecreaseDynamicBrakes(float elapsedSeconds)
+        {
+            ChangeDynamicBrakes(elapsedSeconds, -1);
+        }
+
         public override string GetDynamicBrakeStatus()
         {
             if (DynamicBrakeController == null || DynamicBrakePercent < 0)
@@ -559,15 +584,52 @@ namespace ORTS
         {
             if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
             if (UserInput.IsPressed(Keys.S)) Locomotive.SetDirection(Direction.Reverse);
-            if (UserInput.IsPressed(Keys.D)) Locomotive.IncreaseThrottle();
-            if (UserInput.IsPressed(Keys.A)) Locomotive.DecreaseThrottle();
-            if (UserInput.IsPressed(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(10);
-            if (UserInput.IsPressed(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(-10);
-            if (UserInput.IsPressed(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(-10);
-            if (UserInput.IsPressed(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(10);
-            if (UserInput.IsPressed(Keys.OemQuestion) && !UserInput.IsShiftDown()) Locomotive.ToggleBailOff();
-            if (UserInput.IsPressed(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.ChangeDynamicBrakes(-10);
-            if (UserInput.IsPressed(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.ChangeDynamicBrakes(10);
+
+            if (Locomotive.IsThrottleControllerNotched())
+            {
+                if (UserInput.IsPressed(Keys.D)) Locomotive.IncreaseThrottle(elapsedTime.ClockSeconds);
+                if (UserInput.IsPressed(Keys.A)) Locomotive.DecreaseThrottle(elapsedTime.ClockSeconds);
+            }
+            else
+            {
+                if (UserInput.IsKeyDown(Keys.D)) Locomotive.IncreaseThrottle(elapsedTime.ClockSeconds);
+                if (UserInput.IsKeyDown(Keys.A)) Locomotive.DecreaseThrottle(elapsedTime.ClockSeconds);
+            }
+
+            if (Locomotive.IsTrainBrakeControllerNotched())
+            {
+                if (UserInput.IsPressed(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(elapsedTime.ClockSeconds, 10 * elapsedTime.ClockSeconds);
+                if (UserInput.IsPressed(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(elapsedTime.ClockSeconds, -10 * elapsedTime.ClockSeconds);
+            }
+            else
+            {
+                if (UserInput.IsKeyDown(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(elapsedTime.ClockSeconds, 10 * elapsedTime.ClockSeconds);
+                if (UserInput.IsKeyDown(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.ChangeTrainBrakes(elapsedTime.ClockSeconds, -10 * elapsedTime.ClockSeconds);
+            }
+
+            if (Locomotive.IsEngineBrakeControllerNotched())
+            {
+                if (UserInput.IsPressed(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(elapsedTime.ClockSeconds, -10 * elapsedTime.ClockSeconds);
+                if (UserInput.IsPressed(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(elapsedTime.ClockSeconds, 10 * elapsedTime.ClockSeconds);
+            }
+            else
+            {
+                if (UserInput.IsKeyDown(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(elapsedTime.ClockSeconds, -10 * elapsedTime.ClockSeconds);
+                if (UserInput.IsKeyDown(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.ChangeEngineBrakes(elapsedTime.ClockSeconds, 10 * elapsedTime.ClockSeconds);
+            }
+
+            if (Locomotive.IsDynamicBrakeControllerNotched())
+            {
+                if (UserInput.IsPressed(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.IncreaseDynamicBrakes(elapsedTime.ClockSeconds);
+                if (UserInput.IsPressed(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.DecreaseDynamicBrakes(elapsedTime.ClockSeconds);
+            }
+            else
+            {
+                if (UserInput.IsKeyDown(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.IncreaseDynamicBrakes(elapsedTime.ClockSeconds);
+                if (UserInput.IsKeyDown(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.DecreaseDynamicBrakes(elapsedTime.ClockSeconds);
+            }
+
+            if (UserInput.IsPressed(Keys.OemQuestion) && !UserInput.IsShiftDown()) Locomotive.ToggleBailOff();            
             if (UserInput.IsPressed(Keys.OemQuestion) && UserInput.IsShiftDown()) Locomotive.Train.InitializeBrakes();
             if (UserInput.IsPressed(Keys.OemSemicolon) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(0);
             if (UserInput.IsPressed(Keys.OemQuotes) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(100);

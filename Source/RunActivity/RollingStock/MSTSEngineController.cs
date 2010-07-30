@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MSTS;
 using System.IO;
+using Microsoft.Xna.Framework;
 
 namespace ORTS
 {
@@ -32,7 +33,7 @@ namespace ORTS
         {
             Parse(f);
         }
-
+        
         public void Parse(STFReader f)
         {
             f.VerifyStartOfBlock();
@@ -151,11 +152,8 @@ namespace ORTS
         }
         public void SetValue(float v)
         {
-            CurrentValue = v;
-            if (CurrentValue < MinimumValue)
-                CurrentValue = MinimumValue;
-            if (CurrentValue > MaximumValue)
-                CurrentValue = MaximumValue;
+            CurrentValue = MathHelper.Clamp(v, MinimumValue, MaximumValue);
+            
             for (CurrentNotch = Notches.Count - 1; CurrentNotch > 0; CurrentNotch--)
                 if (Notches[CurrentNotch].Value <= CurrentValue)
                     break;
@@ -163,11 +161,11 @@ namespace ORTS
                 CurrentValue = Notches[CurrentNotch].Value;
         }
 
-        public float Increase()
+        public float Increase(float elapsedSeconds)
         {
-            CurrentValue += StepSize;
-            if (CurrentValue > MaximumValue)
-                CurrentValue = MaximumValue;
+            CurrentValue += StepSize * elapsedSeconds;
+            CurrentValue = Math.Min(CurrentValue, MaximumValue);  
+          
             if (Notches.Count > 0)
             {
                 if (CurrentNotch < Notches.Count - 1 && (!Notches[CurrentNotch].Smooth || CurrentValue >= Notches[CurrentNotch + 1].Value))
@@ -183,11 +181,11 @@ namespace ORTS
             return CurrentValue;
         }
 
-        public float Decrease()
+        public float Decrease(float elapsedSeconds)
         {
-            CurrentValue -= StepSize;
-            if (CurrentValue < MinimumValue)
-                CurrentValue = MinimumValue;
+            CurrentValue -= StepSize * elapsedSeconds;
+            CurrentValue = Math.Max(CurrentValue, MinimumValue);
+            
             if (Notches.Count > 0)
             {
                 if (CurrentNotch > 0 && (!Notches[CurrentNotch].Smooth || CurrentValue < Notches[CurrentNotch].Value))
@@ -413,6 +411,26 @@ namespace ORTS
             Smooth = s;
             Type = (MSTSNotchType) t;
         }
+
+        public MSTSNotch(MSTSNotch other)
+        {
+            Value = other.Value;
+            Smooth = other.Smooth;
+            Type = other.Type;
+        }
+
+        public MSTSNotch(BinaryReader inf)
+        {
+            Value = inf.ReadSingle();
+            Smooth = inf.ReadBoolean();
+            Type = (MSTSNotchType)inf.ReadInt32();            
+        }
+
+        public MSTSNotch Clone()
+        {
+            return new MSTSNotch(this);
+        }
+
         public string GetName()
         {
             switch (Type)
@@ -432,6 +450,13 @@ namespace ORTS
                 case MSTSNotchType.FullServ: return "Full Service";
                 default: return "";
             }
+        }
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(Value);
+            outf.Write(Smooth);
+            outf.Write((int)Type);
         }
     }
 }

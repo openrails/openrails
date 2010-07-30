@@ -231,12 +231,10 @@ namespace ORTS
 
                 // Update the simulator
                 Viewer.Simulator.Update( frameElapsedTime.ClockSeconds );
-
-                if ( UserInput.Ready )
-                {
-                    Viewer.HandleUserInput( GetUserInputElapsedTime() );
-                    UserInput.Handled();
-                }
+                
+                Viewer.HandleUserInput( GetUserInputElapsedTime() );
+                UserInput.Handled();
+                
                 Viewer.HamdleMouseMovement();
 
                 // Prepare the frame for drawing

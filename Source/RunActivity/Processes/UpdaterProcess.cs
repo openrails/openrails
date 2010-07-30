@@ -82,12 +82,9 @@ namespace ORTS
                 // Update the simulator 
                 Viewer.Simulator.Update( frameElapsedTime.ClockSeconds );
 
-                // Handle user input, its was read is in RenderProcess thread
-                if (UserInput.Ready)
-                {
-                    Viewer.HandleUserInput( Viewer.RenderProcess.GetUserInputElapsedTime() );
-                    UserInput.Handled();
-                }
+                // Handle user input, its was read is in RenderProcess thread                
+                Viewer.HandleUserInput( Viewer.RenderProcess.GetUserInputElapsedTime() );
+                UserInput.Handled();                
 
                 Viewer.HamdleMouseMovement();
 

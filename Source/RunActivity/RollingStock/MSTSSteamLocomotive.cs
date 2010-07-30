@@ -36,7 +36,7 @@ namespace ORTS
     public class MSTSSteamLocomotive: MSTSLocomotive
     {
         // user controls
-        MSTSEngineController CutoffController;
+        IController CutoffController;
 
         // state variables
         float SteamUsageLBpS;       // steam used in cylinders
@@ -214,7 +214,7 @@ namespace ORTS
                 case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
                 case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
                 case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadStringBlock(),f)/3600; break;
-                case "engine(enginecontrollers(cutoff": CutoffController = new MSTSEngineController(f); break;
+                case "engine(enginecontrollers(cutoff": CutoffController = new MSTSNotchController(f); break;
                 case "engine(forcefactor1": ForceFactor1 = new Interpolator(f); break;
                 case "engine(forcefactor2": ForceFactor2 = new Interpolator(f); break;
                 case "engine(cylinderpressuredrop": CylinderPressureDrop = new Interpolator(f); break;
@@ -261,7 +261,7 @@ namespace ORTS
             Heat2Pressure = new Interpolator(locoCopy.Heat2Pressure);
             BurnRate = new Interpolator(locoCopy.BurnRate);
             EvaporationRate = new Interpolator(locoCopy.EvaporationRate);
-            CutoffController = MSTSEngineController.Copy(locoCopy.CutoffController);
+            CutoffController = locoCopy.CutoffController.Clone();
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
@@ -299,7 +299,7 @@ namespace ORTS
             Heat2Pressure.Save(outf);
             BurnRate.Save(outf);
             EvaporationRate.Save(outf);
-            MSTSEngineController.Save(CutoffController, outf);
+            ControllerFactory.Save(CutoffController, outf);            
             base.Save(outf);
         }
 
@@ -336,7 +336,7 @@ namespace ORTS
             Heat2Pressure = new Interpolator(inf);
             BurnRate = new Interpolator(inf);
             EvaporationRate = new Interpolator(inf);
-            CutoffController = MSTSEngineController.Restore(inf);
+            CutoffController = ControllerFactory.Restore(inf);
             base.Restore(inf);
         }
 
@@ -413,7 +413,7 @@ namespace ORTS
                 BoilerPressurePSI.ToString("F0"),evap.ToString("F0"),usage.ToString("F0"));
                 //BoilerHeatBTU,BoilerMassLB,WaterFraction.ToString("F2"));
         }
-        public void ChangeReverser(float percent)
+        public void ChangeReverser(float elapsedSeconds, float percent)
         {
             if (CutoffController == null)
             {
@@ -422,9 +422,10 @@ namespace ORTS
                 if (Train.MUReverserPercent > 90) Train.MUReverserPercent = 90;
             }
             else if (percent > 0)
-                Train.MUReverserPercent = 100 * CutoffController.Increase();
+                Train.MUReverserPercent = 100 * CutoffController.Increase(elapsedSeconds);
             else
-                Train.MUReverserPercent = 100 * CutoffController.Decrease();
+                Train.MUReverserPercent = 100 * CutoffController.Decrease(elapsedSeconds);
+
             if (Train.MUReverserPercent >= 0)
                 Train.MUDirection = Direction.Forward;
             else
@@ -471,8 +472,8 @@ namespace ORTS
         {
             // for example
             // if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
-            if (UserInput.IsPressed(Keys.W)) SteamLocomotive.ChangeReverser(10);
-            else if (UserInput.IsPressed(Keys.S)) SteamLocomotive.ChangeReverser(-10);
+            if (UserInput.IsKeyDown(Keys.W)) SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds, 10);
+            else if (UserInput.IsKeyDown(Keys.S)) SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds , - 10);
             else base.HandleUserInput(elapsedTime);
         }
 

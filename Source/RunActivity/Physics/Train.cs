@@ -260,9 +260,8 @@ namespace ORTS
                 if (lead.TrainBrakeController != null)
                 {
                     lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, 1000, ref BrakeLine4PressurePSI);
-                    maxPressurePSI = lead.TrainBrakeController.MaxPressurePSI;
-                    if (BrakeLine1PressurePSI < maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI)
-                        BrakeLine1PressurePSI = maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
+                    maxPressurePSI = lead.TrainBrakeController.GetMaxPressurePSI();
+                    BrakeLine1PressurePSI = MathHelper.Max(BrakeLine1PressurePSI, maxPressurePSI - lead.TrainBrakeController.GetFullServReductionPSI());
                 }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
