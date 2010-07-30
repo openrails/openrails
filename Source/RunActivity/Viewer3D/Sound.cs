@@ -435,6 +435,9 @@ namespace ORTS
     {
         public bool Enabled = true;  // set by the DisableTrigger, EnableTrigger sound commands
 
+        // SoundCommand moved here from all descendants in order to support loops - by GeorgeS
+        public ORTSSoundCommand SoundCommand;
+
         public virtual void TryTrigger() { }
 
         public virtual void Initialize() { }
@@ -447,7 +450,6 @@ namespace ORTS
     public class ORTSDiscreteTrigger: ORTSTrigger, CarEventHandler
     {
         public EventID TriggerID;
-        ORTSSoundCommand SoundCommand;
 
         public ORTSDiscreteTrigger(SoundStream soundStream, MSTS.Discrete_Trigger smsData)
         {
@@ -469,7 +471,6 @@ namespace ORTS
     public class ORTSDistanceTravelledTrigger: ORTSTrigger
     {
         MSTS.Dist_Travelled_Trigger SMS;
-        ORTSSoundCommand SoundCommand;
         float triggerDistance;
         TrainCar car;
         SoundStream SoundStream;
@@ -514,8 +515,6 @@ namespace ORTS
     /// </summary>
     public class ORTSInitialTrigger: ORTSTrigger
     {
-        ORTSSoundCommand SoundCommand;
-
         public ORTSInitialTrigger(SoundStream soundStream, MSTS.Initial_Trigger smsData)
         {
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
@@ -534,7 +533,6 @@ namespace ORTS
     /// </summary>
     public class ORTSRandomTrigger: ORTSTrigger
     {
-        ORTSSoundCommand SoundCommand;
         Simulator Simulator;
         MSTS.Random_Trigger SMS;
         double StartSeconds = 0.0;
@@ -585,7 +583,6 @@ namespace ORTS
     {
         MSTS.Variable_Trigger SMS;
         MSTSWagon car;
-        ORTSSoundCommand SoundCommand;
 
         float StartValue;
 
@@ -694,7 +691,23 @@ namespace ORTS
         }
         public override void  Run( )
         {
-            Play3D( true);
+            // Support for Loop functions - by GeorgeS
+            Play3D(false);
+            WAVIrrKlangFileFactory.StartLoop(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+        }
+
+        // Support for Loop functions - by GeorgeS
+        // Must implement here because this class knows which file playing now
+        public void ReleaseLoopRelease()
+        {
+            WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+        }
+
+        // Support for Loop functions - by GeorgeS
+        // Must implement here because this class knows which file playing now
+        public void ReleaseLoopReleaseWithJump()
+        {
+            WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
         }
     } 
 
@@ -707,9 +720,32 @@ namespace ORTS
             : base(ortsStream)
         {
         }
+        // Support for Loop functions - by GeorgeS
         public override void Run()
         {
-            ORTSStream.Stop();
+            // StartLoopRelease trigers
+
+            // Must find the sound triggers in order to control
+            var qstl = from ORTSTrigger t in ORTSStream.Triggers
+                       where t.SoundCommand is ORTSStartLoopRelease
+                       select t.SoundCommand;
+
+            // Release All
+            foreach (ORTSStartLoopRelease sc in qstl)
+            {
+                sc.ReleaseLoopRelease();
+            }
+
+            // Not just the ReleaseLoops may be released
+            var qsl = from ORTSTrigger t in ORTSStream.Triggers
+                    where t.SoundCommand is ORTSStartLoop
+                    select t.SoundCommand;
+
+            // Release All
+            foreach (ORTSStartLoop sc in qsl)
+            {
+                sc.ReleaseLoopRelease();
+            }
         }
     }
 
@@ -723,6 +759,27 @@ namespace ORTS
             : base(ortsStream, mstsStartLoopRelease)
         {
         }
+
+        // Support for Loop functions - by GeorgeS
+        public override void Run()
+        {
+            Play3D(false);
+            WAVIrrKlangFileFactory.StartLoopRelease(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+        }
+
+        // Support for Loop functions - by GeorgeS
+        // Must implement here because this class knows which file playing now
+        public void ReleaseLoopRelease()
+        {
+            WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+        }
+
+        // Support for Loop functions - by GeorgeS
+        // Must implement here because this class knows which file playing now
+        public void ReleaseLoopReleaseWithJump()
+        {
+            WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+        }
     }
 
     /// <summary>
@@ -735,10 +792,32 @@ namespace ORTS
         {
         }
 
+        // Support for Loop functions - by GeorgeS
         public override void Run()
         {
-            // TODO until we implement markers
-            // we just ignore this command since we started as a PlayOneShot type sound it will end on its own
+            // StartLoopRelease trigers
+
+            // Must find the sound triggers in order to control
+            var qstl = from ORTSTrigger t in ORTSStream.Triggers
+                       where t.SoundCommand is ORTSStartLoopRelease
+                       select t.SoundCommand;
+
+            // Release All
+            foreach (ORTSStartLoopRelease sc in qstl)
+            {
+                sc.ReleaseLoopReleaseWithJump();
+            }
+
+            // Not just the ReleaseLoops may be released
+            var qsl = from ORTSTrigger t in ORTSStream.Triggers
+                      where t.SoundCommand is ORTSStartLoop
+                      select t.SoundCommand;
+
+            // Release All
+            foreach (ORTSStartLoop sc in qsl)
+            {
+                sc.ReleaseLoopReleaseWithJump();
+            }
         }
     }
 
@@ -915,6 +994,9 @@ namespace ORTS
             if (File.Exists(filePath) && ORTSStream.SoundSource.Viewer.SoundEngine != null )
             {
                 IrrKlang.ISoundSource iSoundSource = ORTSStream.SoundSource.Viewer.SoundEngine.GetSoundSource(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile], true);
+                // Loop play support - by GeorgeS
+                // Must be set to support looping and not to fail with OutOfMemory
+                iSoundSource.StreamMode = StreamMode.Streaming;
                 ORTSStream.Play3D(repeat, iSoundSource);
             }
         }

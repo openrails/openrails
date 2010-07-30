@@ -116,6 +116,8 @@ namespace ORTS
                 SoundEngine = new ISoundEngine();
                 SoundEngine.SetListenerPosition(new IrrKlang.Vector3D(0, 0, 0), new IrrKlang.Vector3D(0, 0, 1));
                 SoundEngine.SoundVolume = 0;  // while loading
+                // Swap out original file factory to support loops - by GeorgeS
+                SoundEngine.AddFileFactory(new WAVIrrKlangFileFactory());
             }
             ReadENVFile();
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
