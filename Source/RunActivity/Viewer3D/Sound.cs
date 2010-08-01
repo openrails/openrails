@@ -367,25 +367,32 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Clears (already stopped) sound information - by GeorgeS
+        /// </summary>
+        public void StopRepeating()
+        {
+            RepeatingSound = null;
+        }
+
+        /// <summary>
         /// Restore any previously playing sounds
         /// </summary>
         public void Activate()
         {
-            float v = volume;
-            if (RepeatingSound != null)
+            if (ISound != null)
             {
-                Play3D(true, RepeatingSound);
-                volume = v;
-                ISound.Volume = v;
+                ISound.Volume = volume;
             }
         }
 
+        /// <summary>
+        /// Deactivates a previously active sound
+        /// </summary>
         public void Deactivate()
         {
             if (ISound != null)
             {
-                ISound.Stop();
-                ISound = null;
+                ISound.Volume = 0;
             }
         }
 
@@ -413,19 +420,33 @@ namespace ORTS
 
             SampleRate = iSoundSource.AudioFormat.SampleRate;  // ie 11025
             if( viewer.SoundEngine != null )
-                ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, repeat, false, false);
+                // Changed repeat to false, looping implemented with other method - by GeorgeS
+                ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, false, false, false);
             Volume = 1.0f;
 
             if (repeat)
+            {
                 RepeatingSound = iSoundSource;  // remember this so we can reactivate if needed
+                // In order to properly stop the looping - By GeorgeS
+                if (ISound != null)
+                    ISound.setSoundStopEventReceiver(new ORTSSoundStopReceiver(), this);
+            }
             else
                 RepeatingSound = null;
         }
 
-
     } // class ORTSStream
 
-
+    // In order to properly stop the looping - By GeorgeS
+    class ORTSSoundStopReceiver : ISoundStopEventReceiver
+    {
+        public void OnSoundStopped(ISound sound, StopEventCause reason, object userData)
+        {
+            SoundStream ss = userData as SoundStream;
+            if (ss != null)
+                ss.StopRepeating();
+        }
+    }
 
 /////////////////////////////////////////////////////////
 /// SOUND TRIGGERS
@@ -450,17 +471,30 @@ namespace ORTS
     public class ORTSDiscreteTrigger: ORTSTrigger, CarEventHandler
     {
         public EventID TriggerID;
+        // Added in order to check the activeness of the SoundSource - by GeorgeS
+        private SoundStream _soundStream;
 
         public ORTSDiscreteTrigger(SoundStream soundStream, MSTS.Discrete_Trigger smsData)
         {
             TriggerID = (EventID)smsData.TriggerID;
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            // Save SoundStream - by GeorgeS
+            _soundStream = soundStream;
         }
 
         public void HandleCarEvent(EventID eventID)
         {
-            if( Enabled && eventID == TriggerID)
-                 SoundCommand.Run();
+            if (Enabled && eventID == TriggerID)
+            {
+                SoundCommand.Run();
+                // Added in order to check the activeness of the SoundSource - by GeorgeS
+                if (!_soundStream.SoundSource.Active)
+                {
+                    // If the SoundSource is not active, should deactivate the SoundStream also
+                    //   preventing the hearing when not should be audible
+                    _soundStream.Deactivate();
+                }
+            }
         }
 
     } // class ORTSDiscreteTrigger
@@ -692,22 +726,22 @@ namespace ORTS
         public override void  Run( )
         {
             // Support for Loop functions - by GeorgeS
-            Play3D(false);
-            WAVIrrKlangFileFactory.StartLoop(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+            Play3D(true);
+            WAVIrrKlangFileFactory.StartLoop(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
 
         // Support for Loop functions - by GeorgeS
         // Must implement here because this class knows which file playing now
         public void ReleaseLoopRelease()
         {
-            WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+            WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
 
         // Support for Loop functions - by GeorgeS
         // Must implement here because this class knows which file playing now
         public void ReleaseLoopReleaseWithJump()
         {
-            WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+            WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
     } 
 
@@ -763,22 +797,22 @@ namespace ORTS
         // Support for Loop functions - by GeorgeS
         public override void Run()
         {
-            Play3D(false);
-            WAVIrrKlangFileFactory.StartLoopRelease(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+            Play3D(true);
+            WAVIrrKlangFileFactory.StartLoopRelease(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
 
         // Support for Loop functions - by GeorgeS
         // Must implement here because this class knows which file playing now
         public void ReleaseLoopRelease()
         {
-            WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+            WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
 
         // Support for Loop functions - by GeorgeS
         // Must implement here because this class knows which file playing now
         public void ReleaseLoopReleaseWithJump()
         {
-            WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile]);
+            WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
     }
 
@@ -969,6 +1003,8 @@ namespace ORTS
         protected String[] Files;
         protected MSTS.SoundCommand.SelectionMethods SelectionMethod;
         protected int iFile = 0;
+        // This UID identifies the SoundCommand to irrKlang - by GeorgeS
+        protected Guid UID = Guid.NewGuid();
 
         public ORTSSoundPlayCommand(SoundStream ortsStream, MSTS.SoundPlayCommand mstsSoundPlayCommand)
             : base(ortsStream)
@@ -993,11 +1029,14 @@ namespace ORTS
             string filePath = ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile];
             if (File.Exists(filePath) && ORTSStream.SoundSource.Viewer.SoundEngine != null )
             {
-                IrrKlang.ISoundSource iSoundSource = ORTSStream.SoundSource.Viewer.SoundEngine.GetSoundSource(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile], true);
+                IrrKlang.ISoundSource iSoundSource = ORTSStream.SoundSource.Viewer.SoundEngine.GetSoundSource(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString(), true);
                 // Loop play support - by GeorgeS
                 // Must be set to support looping and not to fail with OutOfMemory
-                iSoundSource.StreamMode = StreamMode.Streaming;
-                ORTSStream.Play3D(repeat, iSoundSource);
+                if (iSoundSource != null)
+                {
+                    iSoundSource.StreamMode = StreamMode.Streaming;
+                    ORTSStream.Play3D(repeat, iSoundSource);
+                }
             }
         }
     } // ORTSSoundPlayCommand 

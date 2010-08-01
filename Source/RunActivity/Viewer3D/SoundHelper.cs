@@ -1,4 +1,13 @@
-﻿using System;
+﻿///
+/// Description will come here soon.
+/// GeorgeS
+/// 
+/// COPYRIGHT 2010 by the Open Rails project.
+/// This code is provided to enable you to contribute improvements to the open rails program.  
+/// Use of the code for any other purpose or distribution of the code to anyone else
+/// is prohibited without specific written permission from admin@openrails.org.
+//#define DEBUGSCR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,16 +28,36 @@ namespace ORTS
         /// <returns>The opened stream</returns>
         public System.IO.Stream openFile(String filename)
         {
+            // Separate SoundCommand UID from filename
+            int sep = filename.LastIndexOf('*');
+            WAVFileStream wfs;
+
+            // Don't keep the previous instance, release it
+            if (sep != 0 && FileStreams.Keys.Contains(filename))
+            {
+                wfs = FileStreams[filename];
+#if DEBUGSCR
+                Console.WriteLine("Implicit stopping file: " + filename.Substring(filename.LastIndexOf('\\')));
+#endif
+                wfs.Release();
+            }
+
             // Create the new Stream
-            WAVFileStream wfs = new WAVFileStream(filename);
+            wfs = new WAVFileStream(sep >= 0 ? filename.Substring(0, sep) : filename);
 
             // Add or replace the Stream in our Dictionary
             if (FileStreams.Keys.Contains(filename))
             {
+#if DEBUGSCR
+                Console.WriteLine("Replacing file: " + filename.Substring(filename.LastIndexOf('\\')));
+#endif
                 FileStreams[filename] = wfs;
             }
             else
             {
+#if DEBUGSCR
+                Console.WriteLine("Adding file: " + filename.Substring(filename.LastIndexOf('\\')));
+#endif
                 FileStreams.Add(filename, wfs);
             }
 
@@ -43,6 +72,9 @@ namespace ORTS
         {
             if (FileStreams.Keys.Contains(FileName))
             {
+#if DEBUGSCR
+                Console.WriteLine("Start Loop Release: " + FileName.Substring(FileName.LastIndexOf('\\')));
+#endif
                 FileStreams[FileName].StartLoop();
             }
         }
@@ -55,6 +87,9 @@ namespace ORTS
         {
             if (FileStreams.Keys.Contains(FileName))
             {
+#if DEBUGSCR
+                Console.WriteLine("Start Loop: " + FileName.Substring(FileName.LastIndexOf('\\')));
+#endif
                 FileStreams[FileName].StartLoop();
                 FileStreams[FileName].IsInternalLoop = false;
             }
@@ -68,6 +103,9 @@ namespace ORTS
         {
             if (FileStreams.Keys.Contains(FileName))
             {
+#if DEBUGSCR
+                Console.WriteLine("Release: " + FileName.Substring(FileName.LastIndexOf('\\')));
+#endif
                 FileStreams[FileName].Release();
             }
         }
@@ -80,6 +118,9 @@ namespace ORTS
         {
             if (FileStreams.Keys.Contains(FileName))
             {
+#if DEBUGSCR
+                Console.WriteLine("Release with Jump: " + FileName.Substring(FileName.LastIndexOf('\\')));
+#endif
                 FileStreams[FileName].ReleaseWithJump();
             }
         }
@@ -104,6 +145,10 @@ namespace ORTS
 
         // Bytes per second
         private int _BPS = 2;
+        // Samples per second
+        private int _SPS = 2;
+
+        public bool isClosed = false;
         
         /// <summary>
         /// Contructor, resets loop information, also calls base constructor
@@ -114,6 +159,15 @@ namespace ORTS
         {
             _isShouldFinish = true;
             _isInInternalLoop = false;
+        }
+
+        public override void Close()
+        {
+#if DEBUGSCR
+            Console.WriteLine("(Closing file: " + this.Name.Substring(this.Name.LastIndexOf('\\')) + ")");
+#endif
+            isClosed = true;
+            base.Close();
         }
 
         /// <summary>
@@ -172,7 +226,9 @@ namespace ORTS
             else if (array[0] == 102 && array[1] == 109 && array[2] == 116)
             {
                 long pos = Position;
-                base.Seek(18, SeekOrigin.Current);
+                base.Seek(6, SeekOrigin.Current);
+                _SPS = (int)FromReadArray(2);
+                base.Seek(10, SeekOrigin.Current);
                 _BPS = (int)FromReadArray(2) / 8;
                 base.Seek(pos, SeekOrigin.Begin);
             }
@@ -316,7 +372,7 @@ namespace ORTS
                 // Read all cue
                 while (tmp > 0)
                 {
-                    lc.Add(new CUE(this, _BPS));
+                    lc.Add(new CUE(this, _BPS, _SPS));
 
                     tmp--;
                 }
@@ -350,7 +406,7 @@ namespace ORTS
         public long ID = 0;
         public long Order = 0;
 
-        public CUE(WAVFileStream fs, int BPS)
+        public CUE(WAVFileStream fs, int BPS, int SPS)
         {
             long? tmp;
             long tmpp;
@@ -385,7 +441,7 @@ namespace ORTS
             else
                 return;
 
-            tmpp *= BPS;
+            tmpp *= BPS * SPS;
             Position = tmpp;
         }
     }
