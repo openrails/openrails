@@ -57,32 +57,6 @@ namespace ORTS
             set { viewerPos.SetValue(value); }
         }
 
-        public float SpecularPower
-        {
-            set { specularPower.SetValue(value); }
-        }
-
-        public float Brightness
-        {
-            get { return brightnessValue; }
-            set { brightnessValue = value; brightness.SetValue(brightnessValue); }
-        }
-            private float brightnessValue = 0.7f;
-
-        public float Saturation
-        {
-            get { return saturationValue; }
-            set { saturationValue = value; saturation.SetValue(saturationValue); }
-        }
-            private float saturationValue = 0.9f;
-
-        public float Ambient
-        {
-            get { return ambientValue; }
-            set { ambientValue = value; ambient.SetValue(ambientValue); }
-        }
-            private float ambientValue = 0.5f;
-
         public Vector3 SunDirection
         {
             set { sunDirection.SetValue(value); }
@@ -128,35 +102,10 @@ namespace ORTS
             set { fadeTime.SetValue(value); }
         }
 
-        public Texture2D ShadowMap_Tex { set { pShadowMap_Tex.SetValue(value); } } EffectParameter pShadowMap_Tex = null;
-        public Matrix LightView { set { pLightView.SetValue(value); } } EffectParameter pLightView = null;
-        public Matrix LightProj { set { pLightProj.SetValue(value); } } EffectParameter pLightProj = null;
-        public Matrix ShadowMapProj { set { pShadowMapProj.SetValue(value); } } EffectParameter pShadowMapProj = null;
-
-        public bool FogEnabled { set { pFogEnabled.SetValue(value ? 1 : 0); } } EffectParameter pFogEnabled = null;
-        public float FogStart { set { pFogStart.SetValue(value); } } EffectParameter pFogStart = null;
-        public float FogEnd { set { pFogEnd.SetValue(value); } } EffectParameter pFogEnd = null;
-        public Color FogColor { set { pFogColor.SetValue(new Vector3(value.R / 255f, value.G / 255f, value.B / 255f)); } } EffectParameter pFogColor = null;
-
-		public float ZBias { set { pZBias.SetValue(value); } } EffectParameter pZBias = null;
-
-        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
-        {
-            Parameters["World"].SetValue(world);
-            Parameters["View"].SetValue(view);
-            //Parameters["Projection"].SetValue(projection);
-            Parameters["WorldViewProjection"].SetValue(world * view * projection);
-            XNAMatrix = world;
-        }
-
         EffectParameter imageMap_Tex = null;
         EffectParameter normalMap_Tex = null;
         EffectParameter isNight_Tex = null;
         EffectParameter viewerPos = null;
-        EffectParameter specularPower = null;
-        EffectParameter brightness = null;
-        EffectParameter saturation = null;
-        EffectParameter ambient = null;
         EffectParameter sunDirection = null;
         EffectParameter overcast = null;
         EffectParameter isHeadlightBright = null;
@@ -167,17 +116,50 @@ namespace ORTS
         EffectParameter fadeoutTime = null;
         EffectParameter fadeTime = null;
 
+		public Matrix World { set { world.SetValue(value); } } EffectParameter world = null;
+		public Matrix View { set { view.SetValue(value); } } EffectParameter view = null;
+		//public Matrix Projection { set { projection.SetValue(value); } } EffectParameter projection = null;
+		public Matrix WorldViewProjection { set { worldviewprojection.SetValue(value); } } EffectParameter worldviewprojection = null;
+
+		public Matrix LightViewProjectionShadowProjection { set { lightviewprojectionshadowprojection.SetValue(value); } } EffectParameter lightviewprojectionshadowprojection = null;
+		public Texture2D ShadowMapTexture { set { shadowmaptexture.SetValue(value); } } EffectParameter shadowmaptexture = null;
+
+		public float FogStart { set { fogstart.SetValue(value); } } EffectParameter fogstart = null;
+		public float FogDepth { set { fogdepth.SetValue(value); } } EffectParameter fogdepth = null;
+		public Color FogColor { set { fogcolor.SetValue(new Vector3(value.R / 255f, value.G / 255f, value.B / 255f)); } } EffectParameter fogcolor = null;
+
+		public float ZBias { set { zbias.SetValue(value); } } EffectParameter zbias = null;
+
+        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+        {
+            World = world;
+            View = view;
+            //Projection = projection;
+            WorldViewProjection = world * view * projection;
+            XNAMatrix = world;
+        }
+
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
         {
+			world = Parameters["World"];
+			view = Parameters["View"];
+			//projection = Parameters["Projection"];
+			worldviewprojection = Parameters["WorldViewProjection"];
+
+			lightviewprojectionshadowprojection = Parameters["LightViewProjectionShadowProjection"];
+			shadowmaptexture = Parameters["ShadowMapTexture"];
+
+			fogstart = Parameters["FogStart"];
+			fogdepth = Parameters["FogDepth"];
+			fogcolor = Parameters["FogColor"];
+
+			zbias = Parameters["ZBias"];
+
             imageMap_Tex = Parameters["imageMap_Tex"];
             normalMap_Tex = Parameters["normalMap_Tex"];
             isNight_Tex = Parameters["isNight_Tex"];
             viewerPos = Parameters["viewerPos"];
-            specularPower = Parameters["specularPower"];
-            brightness = Parameters["Brightness"];
-            saturation = Parameters["Saturation"];
-            ambient = Parameters["Ambient"];
             sunDirection = Parameters["LightVector"];
             overcast = Parameters["overcast"];
             isHeadlightBright = Parameters["isHeadlightBright"];
@@ -187,18 +169,6 @@ namespace ORTS
             fadeinTime = Parameters["fadeinTime"];
             fadeoutTime = Parameters["fadeoutTime"];
             fadeTime = Parameters["fadeTime"];
-            // FIXME: James Ross
-            pShadowMap_Tex = Parameters["shadowMap_Tex"];
-            pLightView = Parameters["LightView"];
-            pLightProj = Parameters["LightProj"];
-            pShadowMapProj = Parameters["ShadowMapProj"];
-            // FIXME: James Ross
-            pFogEnabled = Parameters["FogEnabled"];
-            pFogStart = Parameters["FogStart"];
-            pFogEnd = Parameters["FogEnd"];
-            pFogColor = Parameters["FogColor"];
-			// Z-bias for track objects.
-			pZBias = Parameters["ZBias"];
         }
     }
     #endregion

@@ -174,10 +174,8 @@ namespace ORTS
         {
             if (RenderProcess.Viewer.DynamicShadows)
             {
-                Materials.SceneryShader.ShadowMap_Tex = ShadowMap;
-                Materials.SceneryShader.LightView = ShadowMapLightView;
-                Materials.SceneryShader.LightProj = ShadowMapLightProj;
-                Materials.SceneryShader.ShadowMapProj = new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
+                Materials.SceneryShader.ShadowMapTexture = ShadowMap;
+				Materials.SceneryShader.LightViewProjectionShadowProjection = ShadowMapLightView * ShadowMapLightProj * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
             }
 
             // Render each material on the specified primitive

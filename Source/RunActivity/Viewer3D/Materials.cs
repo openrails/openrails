@@ -163,69 +163,53 @@ namespace ORTS
 
         public static float ViewingDistance = 3000;  // TODO, this is awkward, viewer must set this to control fog
 
-        /// <summary>
-        /// Setup the renderstate for fog
-        /// </summary>
-        public static void SetupFog(GraphicsDevice graphicsDevice )
-        {
-            graphicsDevice.RenderState.FogEnable = true;
-            graphicsDevice.RenderState.FogVertexMode = FogMode.None;  // vertex fog
-            graphicsDevice.RenderState.FogTableMode = FogMode.Linear;     // pixel fog off
-            graphicsDevice.RenderState.FogColor = Materials.FogColor; // new Color(128, 128, 128, 255);
-            graphicsDevice.RenderState.FogDensity = 1.0f;                      // used for exponential fog only, not linear
-            graphicsDevice.RenderState.FogEnd = ViewingDistance * FogCoeff;
-            graphicsDevice.RenderState.FogStart = ViewingDistance * 0.5f * FogCoeff;
-        }
-
         static internal Vector3 sunDirection;
         static Vector3 headlightPosition;
         static Vector3 headlightDirection;
         static int lastLightState = 0, currentLightState = 0;
         static double fadeTimer = 0;
-        internal static void UpdateShaders(RenderProcess renderProcess, GraphicsDevice graphicsDevice)
-        {
-            sunDirection = renderProcess.Viewer.SkyDrawer.solarDirection;
-            SceneryShader.SunDirection = sunDirection;
+		internal static void UpdateShaders(RenderProcess renderProcess, GraphicsDevice graphicsDevice)
+		{
+			sunDirection = renderProcess.Viewer.SkyDrawer.solarDirection;
+			SceneryShader.SunDirection = sunDirection;
 
-            // Headlight illumination
-            if (renderProcess.Viewer.PlayerLocomotiveViewer != null
-                && renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
-                && renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
-            {
-                currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
-                if (currentLightState != lastLightState)
-                {
-                    if (currentLightState == 2 && lastLightState == 1)
-                    {
-                        SceneryShader.StateChange = 1;
-                        // Reset fade timer
-                        fadeTimer = renderProcess.Viewer.Simulator.ClockTime;
-                    }
-                    else if (currentLightState == 1 && lastLightState == 2)
-                    {
-                        SceneryShader.StateChange = 2;
-                        // Reset fade timer
-                        fadeTimer = renderProcess.Viewer.Simulator.ClockTime;
-                    }
-                    lastLightState = currentLightState;
-                }
-                headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
-                SceneryShader.HeadlightPosition = headlightPosition;
-                headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
-                SceneryShader.HeadlightDirection = headlightDirection;
-                SceneryShader.FadeInTime = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
-                SceneryShader.FadeOutTime = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
-                SceneryShader.FadeTime = (float)(renderProcess.Viewer.Simulator.ClockTime - fadeTimer);
-            }
-            // End headlight illumination
+			// Headlight illumination
+			if (renderProcess.Viewer.PlayerLocomotiveViewer != null
+				&& renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
+				&& renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
+			{
+				currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
+				if (currentLightState != lastLightState)
+				{
+					if (currentLightState == 2 && lastLightState == 1)
+					{
+						SceneryShader.StateChange = 1;
+						// Reset fade timer
+						fadeTimer = renderProcess.Viewer.Simulator.ClockTime;
+					}
+					else if (currentLightState == 1 && lastLightState == 2)
+					{
+						SceneryShader.StateChange = 2;
+						// Reset fade timer
+						fadeTimer = renderProcess.Viewer.Simulator.ClockTime;
+					}
+					lastLightState = currentLightState;
+				}
+				headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
+				SceneryShader.HeadlightPosition = headlightPosition;
+				headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
+				SceneryShader.HeadlightDirection = headlightDirection;
+				SceneryShader.FadeInTime = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
+				SceneryShader.FadeOutTime = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
+				SceneryShader.FadeTime = (float)(renderProcess.Viewer.Simulator.ClockTime - fadeTimer);
+			}
+			// End headlight illumination
 
-            SceneryShader.Overcast = renderProcess.Viewer.SkyDrawer.overcast;
+			SceneryShader.Overcast = renderProcess.Viewer.SkyDrawer.overcast;
 
-            SceneryShader.FogEnabled = graphicsDevice.RenderState.FogEnable;
-            SceneryShader.FogStart = graphicsDevice.RenderState.FogStart;
-            SceneryShader.FogEnd = graphicsDevice.RenderState.FogEnd;
-            SceneryShader.FogColor = graphicsDevice.RenderState.FogColor;
-        }
+			SceneryShader.FogStart = ViewingDistance * 0.5f * FogCoeff;
+			SceneryShader.FogColor = Materials.FogColor;
+		}
     }
     #endregion
 
@@ -371,7 +355,6 @@ namespace ORTS
                 RenderProcess.RenderStateChangesCount++;
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
                 graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
-                Materials.SetupFog(graphicsDevice);
             }
             else
             {
@@ -451,16 +434,16 @@ namespace ORTS
                         SceneryShader.CurrentTechnique = SceneryShader.Techniques["FullBright"];
                         break;
                     case 6: // OptSpecular750 (-7)
-                        SceneryShader.SpecularPower = 64;
+                        // TODO: SceneryShader.SpecularPower = 64;
                         SceneryShader.ViewerPosition = viewerPosition;
                         break;
                     case 7: // OptSpecular25 (-6)
-                        SceneryShader.SpecularPower = 128;
+                        // TODO: SceneryShader.SpecularPower = 128;
                         SceneryShader.ViewerPosition = viewerPosition;
                         break;
                     case 8: // OptSpecular0 (-5)
                     default:
-                        SceneryShader.SpecularPower = 0;
+                        // TODO: SceneryShader.SpecularPower = 0;
                         SceneryShader.ViewerPosition = viewerPosition;
                         break;
                 }
@@ -600,7 +583,6 @@ namespace ORTS
 				SceneryShader.CurrentTechnique = SceneryShader.Techniques[SceneryShaderTechnique];
                 graphicsDevice.RenderState.AlphaTestEnable = false;
                 graphicsDevice.RenderState.AlphaBlendEnable = false;
-                Materials.SetupFog( graphicsDevice );
 
                 graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
                 graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
@@ -980,7 +962,7 @@ namespace ORTS
                     graphicsDevice.RenderState.AlphaTestEnable = false;
                     graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
-                    SceneryShader.SpecularPower = 0;
+                    // TODO: SceneryShader.SpecularPower = 0;
                     mesh.drawIndex = 1;
                     SceneryShader.Begin();
                     foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
@@ -998,7 +980,7 @@ namespace ORTS
                 {
                     graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
                     SceneryShader.Texture = image2;
-                    SceneryShader.SpecularPower = 64;
+                    // TODO: SceneryShader.SpecularPower = 64;
 
                     // Set render state for drawing rail sides and tops
                     graphicsDevice.RenderState.AlphaBlendEnable = false;
@@ -1019,7 +1001,7 @@ namespace ORTS
                 // Rail sides
                 if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 700))
                 {
-                    SceneryShader.SpecularPower = 0;
+                    // TODO: SceneryShader.SpecularPower = 0;
                     mesh.drawIndex = 2;
                     SceneryShader.Begin();
                     foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
@@ -1202,7 +1184,6 @@ namespace ORTS
 				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
 				graphicsDevice.RenderState.AlphaTestEnable = false;
 				graphicsDevice.RenderState.AlphaBlendEnable = false;
-				Materials.SetupFog(graphicsDevice);
 
 				RenderProcess.ImageChangesCount++;
 				SceneryShader.Texture = WaterTexture;

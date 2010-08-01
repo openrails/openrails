@@ -5,46 +5,36 @@
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
 // General values
-float4x4 World;               // model -> world
-float4x4 View;                // world -> view
-//float4x4 Projection;          // view -> projection (currently unused)
-float4x4 WorldViewProjection; // model -> world -> view -> projection
+float4x4 World;                // model -> world
+float4x4 View;                 // world -> view
+//float4x4 Projection;           // view -> projection (currently unused)
+float4x4 WorldViewProjection;  // model -> world -> view -> projection
 
 // Shadow map values
-float4x4 LightView;
-float4x4 LightProj;
-float4x4 ShadowMapProj;
+float4x4 LightViewProjectionShadowProjection;  // world -> light view -> light projection -> shadow map projection
+texture  ShadowMapTexture;
 
-// Fog values (unchanging)
-uniform const float FogEnabled; // 0 for off, 1 for on
-uniform const float FogStart;   // distance from camera, everything is normal color
-uniform const float FogEnd;     // distance from camera, everything is FogColor
-uniform const float3 FogColor;  // color of fog
+// Fog values
+float  FogStart;  // distance from camera, everything is normal color
+                  // FogDepth = FogStart, i.e. FogEnd = 2 * FogStart
+float3 FogColor;  // color of fog
 
-// Z-bias setting.
-uniform const float ZBias;
+// Z-bias value
+float ZBias;
 
-float3 LightVector;								// Direction vector to sun
-float3 BumpScale = float3( 1.0, -1.0, 1.0 );	// multiply bump map by this  -1 seems to work with Ultimapper sometimes
+float3 LightVector;  // Direction vector to sun
 
-float Saturation = 0.9;
-float Ambient = 0.5;
-float Brightness = 0.7;
-float overcast;									// Lower saturation & brightness when overcast
-float3 viewerPos;								// Viewer's world coordinates.
-float specularPower;							// Exponent -- lower number yields greater specularity
-bool isNight_Tex;								// Using night texture
+float  overcast;       // Lower saturation & brightness when overcast
+float3 viewerPos;      // Viewer's world coordinates.
+bool   isNight_Tex;    // Using night texture
 
 // Headlight illumination params
 float3 headlightPosition;
 float3 headlightDirection;
-float lightStrength = 2.0;
-float coneAngle = 0.5;
-float coneDecay = 8.0;
-float fadeinTime;								// Constant, from ENG file
-float fadeoutTime;								// Constant, from ENG file
-float fadeTime;									// Varies, reset on H key press
-int stateChange;								// 1=Off->On; 2=On->Off
+float  fadeinTime;								// Constant, from ENG file
+float  fadeoutTime;								// Constant, from ENG file
+float  fadeTime;									// Varies, reset on H key press
+int    stateChange;								// 1=Off->On; 2=On->Off
 
 texture imageMap_Tex;
 sampler imageMap = sampler_state
@@ -62,25 +52,23 @@ texture normalMap_Tex;
 sampler normalMap = sampler_state
 {
    Texture = (normalMap_Tex);
-   MagFilter =  Linear;
-   MinFilter =  Linear;
-   MipFilter =  Linear;
+   MagFilter = Linear;
+   MinFilter = Linear;
+   MipFilter = Linear;
    MipMapLodBias = 0;
    AddressU = Wrap;
    AddressV = Wrap;
 };
 
-texture shadowMap_Tex;
-sampler shadowMap = sampler_state
+sampler ShadowMap = sampler_state
 {
-	Texture = (shadowMap_Tex);
+	Texture = (ShadowMapTexture);
 	MagFilter = Point;
 	MinFilter = Point;
 	MipFilter = Point;
 	AddressU = Border;
 	AddressV = Border;
 };
-
 
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////
 
@@ -121,10 +109,10 @@ void _VSLightsAndShadows(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.LightDir_Fog.xyz = mul(In.Position, World) - headlightPosition;
 
 	// Fog fading
-	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - FogStart) / (FogEnd - FogStart)) * FogEnabled;
+	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - FogStart) / FogStart);
 
 	// Shadow map
-	Out.Shadow = mul(mul(mul(mul(In.Position, World), LightView), LightProj), ShadowMapProj);
+	Out.Shadow = mul(mul(In.Position, World), LightViewProjectionShadowProjection);
 }
 
 VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
@@ -177,7 +165,7 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 // Applies the shadow map to the pixel using single texture look-up.
 void _PS2ApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
 {
-	Color.rgb *= (saturate(In.Shadow.x) != In.Shadow.x) || (saturate(In.Shadow.y) != In.Shadow.y) ? 1 : (tex2D(shadowMap, In.Shadow.xy).x < In.Shadow.z - 0.001f ? 0.5f : 1.0f);
+	Color.rgb *= (saturate(In.Shadow.x) != In.Shadow.x) || (saturate(In.Shadow.y) != In.Shadow.y) ? 1 : (tex2D(ShadowMap, In.Shadow.xy).x < In.Shadow.z - 0.001f ? 0.5f : 1.0f);
 }
 
 // Applies the shadow map to the pixel using multiple texture look-ups.
@@ -186,15 +174,15 @@ void _PS3ApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
 	int clip = ((saturate(In.Shadow.x) != In.Shadow.x) || (saturate(In.Shadow.y) != In.Shadow.y)) ? 1 : 0;
 	const float o = 1.0 / 4096;
 	float x = 0;
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2(-o, -o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2(-o,  0)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2(-o,  o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2( 0, -o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2( 0,  0)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2( 0,  o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2( o, -o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2( o,  0)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(shadowMap, In.Shadow.xy + float2( o,  o)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2(-o, -o)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2(-o,  0)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2(-o,  o)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( 0, -o)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( 0,  0)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( 0,  o)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( o, -o)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( o,  0)).x);
+	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( o,  o)).x);
 	Color.rgb *= saturate(clip + 0.5f + x / 18);
 }
 
@@ -234,15 +222,12 @@ void _PSApplyDay2Night(inout float4 Color)
 // Adapted from an algorithm by Romain Dura aka Romz.
 void _PSApplyOvercast(inout float4 Color)
 {
-	// This value limits desaturation amount:
-	const float satLower = 0.8; 
 	// Values used to determine equivalent grayscale color:
 	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
 	
 	float sat = 1 - overcast;
 	float intensityf = dot(Color, LumCoeff);
-	float3 intensity = float3(intensityf, intensityf, intensityf);
-	Color.rgb = lerp(intensity, Color.rgb, clamp(sat, satLower, 1.0));
+	Color.rgb = lerp(intensityf, Color.rgb, clamp(sat, 0.8, 1.0));
 	
 	// Reduce brightness slightly
 	// Default overcast=0.2 and sat=1-0.2, so this equation yields a default brightness of 1.0 
@@ -256,10 +241,10 @@ void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_O
 	float coneDot = dot(lightDir, normalize(headlightDirection));
 	float shading = 0;
 
-	if (coneDot > coneAngle)
+	if (coneDot > 0.5/*cone angle*/)
 	{
-		float coneAtten = pow(coneDot, coneDecay * 1.75);
-		shading = dot(normal, -lightDir) * lightStrength * coneAtten;
+		float coneAtten = pow(coneDot, 8.0/*cone decay*/ * 1.75);
+		shading = dot(normal, -lightDir) * 2.0/*light strength*/ * coneAtten;
 	}
 
 	if (stateChange == 0)
@@ -278,7 +263,7 @@ void _PSApplyFog(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.rgb = lerp(Color.rgb, FogColor, In.LightDir_Fog.w);
 }
 
-float4 PS2Image(in VERTEX_OUTPUT In) : COLOR
+float4 PS2Image(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on dark side (side facing away from light) of objects.
@@ -297,7 +282,7 @@ float4 PS2Image(in VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PS3Image(in VERTEX_OUTPUT In) : COLOR
+float4 PS3Image(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on dark side (side facing away from light) of objects.
@@ -316,7 +301,7 @@ float4 PS3Image(in VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR
+float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on cruciform material (to prevent visibility of billboard panels).
@@ -333,7 +318,7 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PS2Terrain(in VERTEX_OUTPUT In) : COLOR
+float4 PS2Terrain(in VERTEX_OUTPUT In) : COLOR0
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	_PS2ApplyShadowMap(Color, In);
@@ -352,7 +337,7 @@ float4 PS2Terrain(in VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PS3Terrain(in VERTEX_OUTPUT In) : COLOR
+float4 PS3Terrain(in VERTEX_OUTPUT In) : COLOR0
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	_PS3ApplyShadowMap(Color, In);
@@ -371,7 +356,7 @@ float4 PS3Terrain(in VERTEX_OUTPUT In) : COLOR
 	return Color;
 }
 
-float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR
+float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on dark shade material - it is already dark.
@@ -386,7 +371,7 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR
 
 }
 
-float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR
+float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on light sources.
@@ -397,7 +382,7 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR
 	return Color;	
 }
 
-float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR
+float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on light sources.
