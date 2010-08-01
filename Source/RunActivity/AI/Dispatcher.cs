@@ -64,8 +64,8 @@ namespace ORTS
             TrackAuthorities.Add(auth);
             RequestAuth(auth, false, true);
             Player_Service_Definition psd = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition;
-            //for (int i = 0; i < psd.DistanceDownPath.Count; i++)
-            //    Console.WriteLine("dist {0} {1}", i, psd.DistanceDownPath[i]);
+            if (psd.DistanceDownPath.Count > 0)
+                auth.StationDistanceM = psd.DistanceDownPath;
         }
 
         // restore game state
@@ -122,6 +122,7 @@ namespace ORTS
                 if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
                 {
                     auth.Train = AI.Simulator.PlayerLocomotive.Train;// this can change due to uncoupling
+                    auth.DistanceDownPathM += elapsedClockSeconds * auth.Train.SpeedMpS;
                     if (auth.StopNode == auth.StartNode)
                     {
                         auth.AdvanceStopNode(true);
@@ -142,7 +143,11 @@ namespace ORTS
                     {
                         auth.StopDistanceM -= elapsedClockSeconds * auth.Train.SpeedMpS;
                     }
-                    if (auth.StopDistanceM < 0 && auth.StopNode.Type == AIPathNodeType.Reverse && auth.NReverseNodes>0)
+                    if (auth.StopDistanceM < 0 && auth.StationStop)
+                    {
+                        auth.CalcStopDistance();
+                    }
+                    else if (auth.StopDistanceM < 0 && auth.StopNode.Type == AIPathNodeType.Reverse && auth.NReverseNodes>0)
                     {
                         auth.StartNode = auth.StopNode;
                         auth.NReverseNodes--;
@@ -160,6 +165,7 @@ namespace ORTS
                 }
                 else
                 {
+                    auth.DistanceDownPathM += elapsedClockSeconds * auth.Train.SpeedMpS;
                     if (!auth.Train.AITrainDirectionForward)
                     {
                         if (auth.NReverseNodes > 0 && auth.NReverseNodes % 2 == 0)
@@ -596,7 +602,9 @@ namespace ORTS
                     result += string.Format(" {0:F0}", auth.StopDistanceM);
                     if (auth.NReverseNodes % 2 == 1)
                         result += " Backward";
-                    if (auth.EndNode == auth.StopNode)
+                    if (auth.StationStop)
+                        result += " to Station Stop";
+                    else if (auth.EndNode == auth.StopNode)
                         result += " to End of Authorization";
                     else if (auth.StopNode.Type == AIPathNodeType.Reverse)
                         result += " to Reverse Point";

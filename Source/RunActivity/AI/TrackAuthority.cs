@@ -28,6 +28,9 @@ namespace ORTS
         public int NReverseNodes;
         public int Priority;
         public float StopDistanceM;
+        public float DistanceDownPathM = 0;
+        public bool StationStop = false;
+        public List<float> StationDistanceM = null;
 
         public TrackAuthority(Train train, int id, int priority, AIPath path)
         {
@@ -46,10 +49,21 @@ namespace ORTS
             Priority = inf.ReadInt32();
             NReverseNodes = inf.ReadInt32();
             StopDistanceM = inf.ReadSingle();
+            DistanceDownPathM = inf.ReadSingle();
+            StationStop = inf.ReadBoolean();
+            int n = inf.ReadInt32();
+            if (n > 0)
+            {
+                StationDistanceM = new List<float>();
+                for (int i = 0; i < n; i++)
+                    StationDistanceM.Add(inf.ReadSingle());
+            }
             if (TrainID == 0)
             {
-                Train = ai.Simulator.PlayerLocomotive.Train;
+                //Train set on first update
                 Path = new AIPath(inf);
+                Path.TrackDB = Program.Simulator.TDB.TrackDB;
+                Path.TSectionDat = Program.Simulator.TSectionDat;
             }
             else
             {
@@ -71,6 +85,12 @@ namespace ORTS
             outf.Write(Priority);
             outf.Write(NReverseNodes);
             outf.Write(StopDistanceM);
+            outf.Write(DistanceDownPathM);
+            outf.Write(StationStop);
+            int n = StationDistanceM != null ? StationDistanceM.Count : 0;
+            outf.Write(n);
+            for (int i = 0; i < n; i++)
+                outf.Write(StationDistanceM[i]);
             if (TrainID == 0)
                 Path.Save(outf);
             Path.WriteNode(outf,StartNode);
@@ -116,6 +136,27 @@ namespace ORTS
                 traveller.ReverseDirection();
             }
             StopDistanceM = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
+            StationStop = false;
+            float len = 0;
+            foreach (TrainCar car in Train.Cars)
+                len+= car.Length;
+            if (StationDistanceM != null && StationDistanceM.Count > 0)
+            {
+                while (StationDistanceM.Count > 0)
+                {
+                    float d = StationDistanceM[0] - DistanceDownPathM - len;
+                    if (d < 0)
+                    {
+                        StationDistanceM.RemoveAt(0);
+                        continue;
+                    }
+                    if (StopDistanceM < d)
+                        break;
+                    StationStop = true;
+                    StopDistanceM = d;
+                    return;
+                }
+            }
             //Console.WriteLine("nextstopdist {0} {1} {2} {3}", StopDistanceM, FrontTDBTraveller.Direction, RearTDBTraveller.Direction,
             //    Math.Sqrt(WorldLocation.DistanceSquared(wl,FrontTDBTraveller.WorldLocation)));
             if (StopNode.Type == AIPathNodeType.Reverse)
