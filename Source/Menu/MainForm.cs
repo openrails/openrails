@@ -74,9 +74,6 @@ namespace ORTS
             {
                 checkBoxFullScreen.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? true : false;
                 checkBoxWarnings.Checked = (int)RK.GetValue("Warnings", 1) == 1 ? true : false;
-                // TODO remove this when lights are debugged
-                // for now this ensures trainlights are off by default when the program starts
-                RK.SetValue("TrainLights", 0);
             }
 
 
