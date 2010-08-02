@@ -239,6 +239,7 @@ namespace ORTS
 
         protected MSTS.SMSStream MSTSStream;
 
+        private ORTSInitialTrigger _InitialTrigger = null;
         private ISound ISound = null;
         private float SampleRate; // ie 11025 - set by play command
         private  ISoundSource RepeatingSound = null; // allows us to reactivate
@@ -261,7 +262,8 @@ namespace ORTS
                     }
                     else if (trigger.GetType() == typeof(MSTS.Initial_Trigger))
                     {
-                        Triggers.Add(new ORTSInitialTrigger(this, (MSTS.Initial_Trigger)trigger));
+                        _InitialTrigger = new ORTSInitialTrigger(this, (MSTS.Initial_Trigger)trigger);
+                        Triggers.Add(_InitialTrigger);
                     }
                     else if (trigger.GetType() == typeof(MSTS.Random_Trigger))
                     {
@@ -289,6 +291,26 @@ namespace ORTS
             foreach (ORTSTrigger trigger in Triggers)
                 trigger.TryTrigger();
 
+            // Run Initial if no other is Signaled
+            var qt = from t in Triggers
+                     where t.Signaled
+                     select t;
+
+            // If exists an InitialTrigger at all
+            if (_InitialTrigger != null)
+            {
+                int stc = qt.Count();
+                // If no triggers active, Initialize the Initial
+                if (stc == 0)
+                {
+                    _InitialTrigger.Initialize();
+                }
+                // If triggers are active, reset the Initial
+                else if (stc > 1 && _InitialTrigger.Signaled)
+                {
+                    _InitialTrigger.Signaled = false;
+                }
+            }
 
             if (ISound != null)
             {
@@ -455,6 +477,7 @@ namespace ORTS
     public class ORTSTrigger
     {
         public bool Enabled = true;  // set by the DisableTrigger, EnableTrigger sound commands
+        public bool Signaled = false;
 
         // SoundCommand moved here from all descendants in order to support loops - by GeorgeS
         public ORTSSoundCommand SoundCommand;
@@ -525,8 +548,9 @@ namespace ORTS
 
         public override void TryTrigger()
         {
-            if( car.DistanceM > triggerDistance )
+            if (car.DistanceM > triggerDistance)
             {
+                Signaled = true;
                 if (Enabled)
                 {
                     SoundCommand.Run();
@@ -534,6 +558,10 @@ namespace ORTS
                     SoundStream.Volume = volume;
                 }
                 UpdateTriggerDistance();
+            }
+            else
+            {
+                Signaled = false;
             }
         }
 
@@ -558,6 +586,8 @@ namespace ORTS
         {
             if( Enabled )
                 SoundCommand.Run();
+
+            Signaled = true;
         }
 
     }
@@ -592,6 +622,7 @@ namespace ORTS
         {
             if (Simulator.ClockTime > triggerAtSeconds)
             {
+                Signaled = true;
                 if (Enabled)
                 {
                     SoundCommand.Run();
@@ -599,6 +630,10 @@ namespace ORTS
                     SoundStream.Volume = volume;
                 }
                 UpdateTriggerAtSeconds();
+            }
+            else
+            {
+                Signaled = false;
             }
         }
 
@@ -659,6 +694,8 @@ namespace ORTS
                         triggered = true;
                     break;
             }
+
+            Signaled = triggered;
 
             StartValue = newValue;
             if (triggered && Enabled )
