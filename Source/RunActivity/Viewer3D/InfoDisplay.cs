@@ -133,6 +133,10 @@ namespace ORTS
             {
                 AddDebugInfo();
             }
+            if (InfoAmount == 4)
+            {
+                AddDispatcherInfo();
+            }
         }
 
         private void AddBasicInfo()
@@ -251,6 +255,14 @@ namespace ORTS
                     j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
                 TextBuilder.Append(string.Format("Car {0:D2} ", j + 1));
                 TextBuilder.AppendLine(playerTrain.Cars[j].BrakeSystem.GetStatus(2));
+            }
+        }
+        private void AddDispatcherInfo()
+        {
+            TextBuilder.AppendLine();
+            foreach (TrackAuthority auth in Program.Simulator.AI.Dispatcher.TrackAuthorities)
+            {
+                TextBuilder.AppendLine(auth.GetStatus());
             }
         }
 

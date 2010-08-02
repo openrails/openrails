@@ -62,10 +62,18 @@ namespace ORTS
             AI.AITrainDictionary.Remove(0);
             TrackAuthority auth = new TrackAuthority(playerTrain, 0, PlayerPriority, playerPath);
             TrackAuthorities.Add(auth);
-            RequestAuth(auth, false, true);
+            RequestAuth(auth, true, true);
             Player_Service_Definition psd = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition;
             if (psd.DistanceDownPath.Count > 0)
                 auth.StationDistanceM = psd.DistanceDownPath;
+            //foreach (TrItem item in AI.Simulator.TDB.TrackDB.TrItemTable)
+            //{
+            //    if (item.ItemType == TrItem.trItemType.trPLATFORM)
+            //    {
+            //        PlatformItem platform = (PlatformItem)item;
+            //        //Console.WriteLine("{0} {1} {2}", item.TrItemId, platform.PlatformName, platform.Station);
+            //    }
+            //}
         }
 
         // restore game state
@@ -130,7 +138,7 @@ namespace ORTS
                     }
                     else if (auth.EndNode == auth.StopNode && UpdateTimerS < 0)
                     {
-                        RequestAuth(auth, auth.StopDistanceM < 2000, auth.NReverseNodes % 2 == 0);
+                        RequestAuth(auth, true, auth.NReverseNodes % 2 == 0);
                         if (auth.EndNode != auth.StopNode)
                             auth.AdvanceStopNode(true);
                         auth.CalcStopDistance();
@@ -193,6 +201,22 @@ namespace ORTS
                     continue;
                 if (auth.TrainID == 0 && Reservations[auth.Train.RearTDBTraveller.TrackNodeIndex] != auth.TrainID)
                     continue;
+                AIPathNode nextNode = auth.Path.FindTrackNode(auth.StartNode, auth.Train.RearTDBTraveller.TrackNodeIndex);
+                if (nextNode.IsFacingPoint == true && nextNode.JunctionIndex >= 0)
+                {
+                    float clearance = 40;
+                    TrackNode tn = auth.Path.TrackDB.TrackNodes[nextNode.JunctionIndex];
+                    if (tn != null && tn.TrJunctionNode != null)
+                    {
+                        TrackShape shape = auth.Path.TSectionDat.TrackShapes.Get(tn.TrJunctionNode.ShapeIndex);
+                        if (shape != null)
+                            clearance = 1.5f * (float)shape.ClearanceDistance;
+                    }
+                    float d = WorldLocation.DistanceSquared(nextNode.Location, auth.Train.RearTDBTraveller.WorldLocation);
+                    //Console.WriteLine("{0} {1}", d, clearance);
+                    if (d < clearance * clearance)
+                        continue;
+                }
                 int i = auth.StartNode.NextMainTVNIndex;
                 //Console.WriteLine("dispatcher update {0} {1} {2}", auth.TrainID, i, auth.Train.RearTDBTraveller.TrackNodeIndex);
                 if (i >= 0 && Reservations[i] == auth.TrainID)
@@ -211,7 +235,7 @@ namespace ORTS
                 //Console.WriteLine(" nres {0}", n);
                 if (auth.StartNode.IsLastSwitchUse)
                     auth.Path.RestoreSwitch(auth.StartNode.JunctionIndex);
-                auth.StartNode = auth.Path.FindTrackNode(auth.StartNode, auth.Train.RearTDBTraveller.TrackNodeIndex);
+                auth.StartNode = nextNode;
             }
             if (UpdateTimerS < 0)
                 UpdateTimerS = 60;
@@ -372,7 +396,7 @@ namespace ORTS
             bool result = auth.EndNode != end || auth.SidingNode != siding;
             auth.EndNode = end;
             auth.SidingNode = siding;
-            auth.NReverseNodes = nRev;
+            auth.NReverseNodes = nRev % 2 == 1 ? nRev + 1 : nRev;
             int n = 0;
             for (int j = 0; j < Reservations.Length; j++)
                 if (Reservations[j] == auth.TrainID)
@@ -533,6 +557,8 @@ namespace ORTS
                             node.Type = AIPathNodeType.SidingEnd;
                         //Console.WriteLine("junction {0} {1} {2} {3}", train.UiD, node.JunctionIndex, f, node.Type);
                     }
+                    //if (node.Type == AIPathNodeType.SidingEnd)
+                    //    Console.WriteLine("meet point {0} {1} {2}", train.UiD, node.JunctionIndex, node.Type);
                 }
             }
         }
