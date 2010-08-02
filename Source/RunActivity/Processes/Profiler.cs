@@ -3,55 +3,64 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-
+using System.Threading;
 
 namespace ORTS
 {
-    class Profiler
-    {
-        public static List<Profiler> AllProfilers = new List<Profiler>();
+	public class Profiler
+	{
+		public readonly string Name;
+		public double Wall { get; private set; }
+		public double CPU { get; private set; }
+		public double Wait { get { return Wall > CPU ? Wall - CPU : 0; } }
+		readonly Stopwatch TimeTotal;
+		readonly Stopwatch TimeRunning;
+		TimeSpan TimeCPU;
+		TimeSpan LastCPU;
+		readonly ProcessThread ProcessThread;
 
-        string name;
-        public double elapsedTime;
-        Stopwatch stopwatch;
+		public Profiler(string name)
+		{
+			Name = name;
+			TimeTotal = new Stopwatch();
+			TimeRunning = new Stopwatch();
+			foreach (ProcessThread thread in Process.GetCurrentProcess().Threads)
+			{
+				if (thread.Id == AppDomain.GetCurrentThreadId())
+				{
+					ProcessThread = thread;
+					break;
+				}
+			}
+			TimeTotal.Start();
+		}
 
-        public Profiler(string name)
-        {
-            this.name = name;
-            AllProfilers.Add(this);
-        }
+		public void Start()
+		{
+			TimeRunning.Start();
+			LastCPU = ProcessThread.TotalProcessorTime;
+		}
 
-        public void Start()
-        {
-            stopwatch = Stopwatch.StartNew();
-        }
+		public void Stop()
+		{
+			TimeRunning.Stop();
+			TimeCPU += ProcessThread.TotalProcessorTime - LastCPU;
+		}
 
-        public void Stop()
-        {
-            elapsedTime += stopwatch.Elapsed.TotalSeconds;
-            elapsedTime -= 0.00035;
-        }
-
-        public void Print(double totalTime)
-        {
-            Trace.WriteLine(string.Format("{0}: {1:F2}%", name, elapsedTime * 100 / totalTime));
-            elapsedTime = 0;
-        }
-    }
-
-    struct ProfileMarker : IDisposable
-    {
-        public ProfileMarker(Profiler profiler)
-        {
-            this.profiler = profiler;
-            profiler.Start();
-        }
-
-        public void Dispose()
-        {
-            profiler.Stop();
-        }
-
-        Profiler profiler;
-    }
+		public void Mark()
+		{
+			var running = TimeRunning.IsRunning;
+			TimeTotal.Stop();
+			TimeRunning.Stop();
+			var rate = 1000d / TimeTotal.ElapsedMilliseconds;
+			Wall = (Wall * (rate - 1) + 100d * (double)TimeRunning.ElapsedMilliseconds / (double)TimeTotal.ElapsedMilliseconds) / rate;
+			CPU = (CPU * (rate - 1) + 100d * (double)TimeCPU.TotalMilliseconds / (double)TimeTotal.ElapsedMilliseconds) / rate;
+			TimeTotal.Reset();
+			TimeRunning.Reset();
+			TimeCPU = TimeSpan.Zero;
+			TimeTotal.Start();
+			if (running) TimeRunning.Start();
+			LastCPU = ProcessThread.TotalProcessorTime;
+		}
+	}
 }

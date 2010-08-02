@@ -99,7 +99,11 @@ namespace ORTS
         private bool isMouseTimerVisible = false;
         private double MouseShownAt = 0;
 
-        /// <summary>
+		public Profiler RenderProfiler;
+		public Profiler UpdaterProfiler;
+		public Profiler LoaderProfiler;
+
+		/// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
         /// </summary>

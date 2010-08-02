@@ -64,10 +64,6 @@ namespace ORTS
         private ElapsedTime FrameElapsedTime = new ElapsedTime();
         private ElapsedTime UserInputElapsedTime = new ElapsedTime();
 
-        // Profiling
-        public Stopwatch RenderTime = new Stopwatch();
-        public Stopwatch UpdateTime = new Stopwatch();
-
         public ElapsedTime GetFrameElapsedTime()
         {
             if (LastFrameTime != 0)
@@ -101,7 +97,10 @@ namespace ORTS
             Viewer = viewer3D;
             GraphicsDeviceManager = new GraphicsDeviceManager(this);
             Viewer.Configure(this);
-        }
+			Viewer.RenderProfiler = new Profiler("Render");
+			// The UpdaterProcess, started after us, will replace this.
+			Viewer.UpdaterProfiler = new Profiler("Updater");
+		}
 
         /// <summary>
         /// Allows the game to perform any initialization it needs after the graphics device has started
@@ -164,21 +163,21 @@ namespace ORTS
         /// </summary>
         protected override void Draw(GameTime gameTime)
         {
-            RenderTime.Start();
-
             if (gameTime.ElapsedRealTime.TotalSeconds > 0.001)
             {  // a zero elapsed time indicates the window needs to be redrawn with the same content
                 // ie after restoring from minimized, or uncovering a window
                 FrameUpdate(gameTime);
             }
 
-            /* When using SynchronizeWithVerticalRetrace = true, then this isn't required
-            // if the loader is running slow, limit render's frame rates to give loader some GPU time
-            if (LoaderSlow )
-            {
-                Thread.Sleep(10);
-            }
-             */
+			Viewer.RenderProfiler.Start();
+
+			/* When using SynchronizeWithVerticalRetrace = true, then this isn't required
+			// if the loader is running slow, limit render's frame rates to give loader some GPU time
+			if (LoaderSlow )
+			{
+				Thread.Sleep(10);
+			}
+			 */
 
             CurrentFrame.Draw(GraphicsDevice);
             Viewer.PopupWindows.Draw(GraphicsDevice);
@@ -195,7 +194,7 @@ namespace ORTS
 
             base.Draw(gameTime);
 
-            RenderTime.Stop();
+			Viewer.RenderProfiler.Stop();
         }
 
         private void FrameUpdate(GameTime gameTime)
@@ -223,7 +222,7 @@ namespace ORTS
             {   // single processor machine
                 UserInput.Update();
 
-                UpdateTime.Start();
+				Viewer.UpdaterProfiler.Start();
                 Program.RealTime = actualRealTime;
                 ElapsedTime frameElapsedTime = GetFrameElapsedTime();
 
@@ -246,9 +245,8 @@ namespace ORTS
                 if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
                     Viewer.LoaderProcess.StartUpdate();
 
-                UpdateTime.Stop();
-
-            }
+				Viewer.UpdaterProfiler.Stop();
+			}
 
         }
 

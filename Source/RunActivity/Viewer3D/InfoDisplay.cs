@@ -86,11 +86,11 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             frameNum++;
-            if (Program.RealTime - lastUpdateTime > 0.3)
+            if (Program.RealTime - lastUpdateTime >= 0.25)
             {
                 double elapsedRealSeconds = Program.RealTime - lastUpdateTime;
                 lastUpdateTime = Program.RealTime;
-                Profile( elapsedRealSeconds);
+                Profile(elapsedRealSeconds);
                 UpdateText();
 
                 //Here's where the logger stores the data from each frame
@@ -104,9 +104,9 @@ namespace ORTS
                     OutLog.Store(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
                     OutLog.Store(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
                     OutLog.Store(processors.ToString()); //Processors
-                    OutLog.Store(string.Format("{0,3}", RenderPercent)); //Render Process %
-                    OutLog.Store(string.Format("{0,3}", UpdatePercent)); //Update Process %
-                    OutLog.Store(string.Format("{0,3}", LoaderPercent)); //Loader Process %
+					OutLog.Store(string.Format("{0,3:F0}", Viewer.RenderProfiler.Wall)); //Render Process %
+					OutLog.Store(string.Format("{0,3:F0}", Viewer.UpdaterProfiler.Wall)); //Update Process %
+					OutLog.Store(string.Format("{0,3:F0}", Viewer.LoaderProfiler.Wall)); //Loader Process %
                     OutLog.Store(Viewer.Camera.TileX.ToString());     //
                     OutLog.Store(Viewer.Camera.TileZ.ToString());     // Camera coordinates
                     OutLog.Store(Viewer.Camera.Location.ToString());  //
@@ -224,10 +224,10 @@ namespace ORTS
             TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Processors = {0}", processors); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Render Process = {0} %", RenderPercent); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Update Process = {0} %", UpdatePercent); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Loader Process = {0} %", LoaderPercent); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Total Process = {0} %", LoaderPercent + UpdatePercent + RenderPercent); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.Wall, Viewer.RenderProfiler.Wait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Update Process = {0:F0}% ({1:F0}% wait)", Viewer.UpdaterProfiler.Wall, Viewer.UpdaterProfiler.Wait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait)", Viewer.LoaderProfiler.Wall, Viewer.LoaderProfiler.Wait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.Wall + Viewer.UpdaterProfiler.Wall + Viewer.LoaderProfiler.Wall, Viewer.RenderProfiler.Wait + Viewer.UpdaterProfiler.Wait + Viewer.LoaderProfiler.Wait); TextBuilder.AppendLine();
             // Added by rvg....
             TextBuilder.Append("Tile: "); TextBuilder.Append(Viewer.Camera.TileX.ToString()); // Camera coordinates
             TextBuilder.Append(" ");
@@ -274,46 +274,14 @@ namespace ORTS
             return string.Format("{0:D2}:{1:D2}:{2:D2}", hour, minute, seconds);
         }
 
-        // Profiling
-        int RenderPercent = 0;
-        int UpdatePercent = 0;
-        int LoaderPercent = 0;
-        double lastRender = 0;        // render work  ( seconds )
-        double lastRenderUpdate = 0;  // the update work done by the render process
-        double lastUpdater = 0;        // update work done by the update process
-        double lastLoader = 0;        // loader work
         public void Profile(double elapsedRealSeconds) // should be called every 100mS
         {
-            if( elapsedRealSeconds < 0.01 ) return;  // just in case
+            if (elapsedRealSeconds < 0.01)  // just in case
+				return;
 
-            // capture time
-            double render = Viewer.RenderProcess.RenderTime.Elapsed.TotalSeconds;
-            double renderupdate = Viewer.RenderProcess.UpdateTime.Elapsed.TotalSeconds;
-            double update = Viewer.UpdaterProcess == null ? 0 :  Viewer.UpdaterProcess.UpdateTimer.Elapsed.TotalSeconds;
-            double loader = Viewer.LoaderProcess.LoaderTimer.Elapsed.TotalSeconds;
-
-            // determine elapsed times
-            //    note - these processing times are approximate and assume the task had the processor for the full time
-            //           in reality the processor could have been interupted to service other tasks
-            double elapsedRender = render - lastRender;
-            double elapsedRenderUpdate = renderupdate - lastRenderUpdate;
-            double elapsedLoader = loader - lastLoader;
-            double elapsedUpdater = update - lastUpdater; 
-
-            // save last times
-            lastRender = render;
-            lastRenderUpdate = renderupdate;
-            lastUpdater = update;
-            lastLoader = loader;
-
-            // computer percentages
-            elapsedRender -= elapsedRenderUpdate;
-            elapsedUpdater += elapsedRenderUpdate;
-
-            RenderPercent = (int)(elapsedRender * 100.0 / elapsedRealSeconds);
-            UpdatePercent = (int)(elapsedUpdater * 100.0 / elapsedRealSeconds);
-            LoaderPercent = (int)(elapsedLoader * 100.0 / elapsedRealSeconds);
-           
+			Viewer.RenderProfiler.Mark();
+			Viewer.UpdaterProfiler.Mark();
+			Viewer.LoaderProfiler.Mark();
         }
 
     } // Class Info Display
