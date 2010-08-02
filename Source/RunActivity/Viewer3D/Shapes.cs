@@ -291,14 +291,27 @@ namespace ORTS
     {
         public Material Material;
 
-        public SharedShape.VertexBufferSet VertexBufferSet;
+        SharedShape.VertexBufferSet vertexBufferSet;
+		int vertexBufferSetStrideSize;
         public IndexBuffer IndexBuffer;
         public int IndexCount;          // the number of indexes in the index buffer for each primitive
         public int MinVertex = 0;           // the first vertex index used by this primitive
         public int NumVertices = 0;         // the number of vertex indexes used by this primitive
         public int iHierarchy;          // index into the hiearchy array which provides pose for this primitive
         public int[] Hierarchy;         // the hierarchy from the sub_object
-        
+
+		public SharedShape.VertexBufferSet VertexBufferSet
+		{
+			get
+			{
+				return vertexBufferSet;
+			}
+			set
+			{
+				vertexBufferSet = value;
+				vertexBufferSetStrideSize = vertexBufferSet.Declaration.GetVertexStrideSize(0);
+			}
+		}
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -310,7 +323,7 @@ namespace ORTS
             {
                 // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
                 graphicsDevice.VertexDeclaration = VertexBufferSet.Declaration;
-                graphicsDevice.Vertices[0].SetSource(VertexBufferSet.Buffer, 0, VertexBufferSet.Declaration.GetVertexStrideSize(0));
+				graphicsDevice.Vertices[0].SetSource(VertexBufferSet.Buffer, 0, vertexBufferSetStrideSize);
                 graphicsDevice.Indices = IndexBuffer;
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertex, NumVertices, 0, IndexCount / 3);
             }

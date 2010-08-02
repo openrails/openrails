@@ -8,17 +8,10 @@
 /// 
 ///     
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 using MSTS;
 
 namespace ORTS
@@ -42,7 +35,6 @@ namespace ORTS
         private Vector2 windDir;
         private float windStrength;
         public int weatherType;
-        public double startTime;
         public float intensity; // Particles per second
         #endregion
 
@@ -64,12 +56,11 @@ namespace ORTS
             windStrength = 2.0f;
             precipMesh.windStrength = windStrength;
             // Get data for current activity
-            startTime = Viewer.Simulator.ClockTime;
             weatherType = (int)Viewer.Simulator.Weather;
 
             WeatherControl weather = new WeatherControl(Viewer);
             precipMesh.intensity = weather.intensity;
-            precipMesh.InitPrecipParticles(0);
+			precipMesh.Initialize(Viewer.Simulator.ClockTime);
         }
         #endregion
 
@@ -104,10 +95,12 @@ namespace ORTS
                         weatherType = (int)WeatherType.Clear;
                         break;
                 }
+				precipMesh.Initialize(Viewer.Simulator.ClockTime);
             }
 
 ////////////////////////////////////////////////////////////////////
-            precipMesh.Reinitialize(Viewer.Simulator.ClockTime - startTime);
+
+            precipMesh.Update(Viewer.Simulator.ClockTime);
 
             frame.AddPrimitive(precipMaterial, precipMesh, ref XNAPrecipWorldLocation);
         }
@@ -117,8 +110,7 @@ namespace ORTS
         /// </summary>
         public void Reset()
         {
-            startTime = Viewer.Simulator.ClockTime;
-            precipMesh.Reset( );
+			precipMesh.Initialize(Viewer.Simulator.ClockTime);
         }
     }
     #endregion
@@ -126,99 +118,99 @@ namespace ORTS
     #region PrecipMesh
     public class PrecipMesh: RenderPrimitive 
     {
-        // Vertex declaration
-        private VertexDeclaration pointSpriteVertexDeclaration;
-        private VertexPointSprite[] drops;
+		const int MaxParticleCount = 100000;
 
-        private float width; // Width (and depth) of precipitation box surrounding the viewer
-        private float height; // Maximum particl age. In effect, this is the height of the precipitation box
-        // Intensity factor: 1000 light; 3500 average; 7000 heavy
-        public float intensity; // Particles per second
-        private float particleSize;
-        public Vector2 windDir;
-        public float windStrength;
-        int lastActiveParticle;
-        Random random;
+        Random Random;
+		VertexDeclaration VertexDeclaration;
+		DynamicVertexBuffer VertexBuffer;
+		VertexPointSprite[] Particles;
+		int ParticleStartIndex; // INCLUSIVE
+		int ParticleEndIndex; // EXCLUSIVE
+		double LastNewParticleTime;
+
+		private float width; // Width (and depth) of precipitation box surrounding the viewer
+		private float height; // Maximum particl age. In effect, this is the height of the precipitation box
+		// Intensity factor: 1000 light; 3500 average; 7000 heavy
+		public float intensity; // Particles per second
+		private float particleSize;
+		public Vector2 windDir;
+		public float windStrength;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         public PrecipMesh(RenderProcess renderProcess)
         {
-            // Instantiate classes
-            random = new Random();
-            pointSpriteVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPointSprite.VertexElements);
+            Random = new Random();
+			VertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPointSprite.VertexElements);
+			VertexBuffer = new DynamicVertexBuffer(renderProcess.GraphicsDevice, MaxParticleCount * VertexPointSprite.SizeInBytes, BufferUsage.Points | BufferUsage.WriteOnly);
+			Particles = new VertexPointSprite[MaxParticleCount];
 
-            // Set default values
-            width = 150;
-            height = 10;
-            intensity = 6000;
-            particleSize = 0.35f;
-            lastActiveParticle = -1;
+			// Set default values
+			width = 150;
+			height = 10;
+			intensity = 6000;
+			particleSize = 0.35f;
         }
 
-        /// <summary>
-        /// Reset the particle array upon any event that interrupts or alters the time clock. 
-        /// </summary>
-        public void Reset( )
-        {
-            lastActiveParticle = -1;
-            Reinitialize(0);
-        }
+		public void Initialize(double currentTime)
+		{
+			var particleCount = (int)(intensity * height);
+			Debug.Assert(particleCount < MaxParticleCount, "PrecipMesh MaxParticleCount exceeded.");
+			ParticleStartIndex = 0;
+			ParticleEndIndex = particleCount;
+			for (var i = 0; i < particleCount; i++)
+				InitializeParticle(ref Particles[i], currentTime - height * (particleCount - i) / particleCount);
+			VertexBuffer.SetData(Particles, 0, MaxParticleCount, SetDataOptions.NoOverwrite);
+			LastNewParticleTime = currentTime;
+		}
 
-        /// <summary>
-        /// Precipitation particle intialization. 
-        /// </summary>
-        public void InitPrecipParticles(double currentTime)
-        {
-            // Create the precipitation particles
-            drops = new VertexPointSprite[(int)(height * intensity)];
-            float timeStep = height / drops.Length;
-            
-            // Initialize particles
-            for (int i = 0; i < drops.Length; i++)
-            {
-                drops[i] = new VertexPointSprite(new Vector3(
-                        random.Next((int)width * 1000) / 1000f - width / 2f,
-                        width / 2,
-                        random.Next((int)width * 1000) / 1000f - width / 2f),
-                    particleSize,
-                    // Particles are uniformly diffused in time
-                    (float)currentTime - (drops.Length - i)*timeStep,
-                    windStrength * windDir);
-            }
-        }
+		public void Update(double currentTime)
+		{
+			while (((ParticleEndIndex - ParticleStartIndex + MaxParticleCount) % MaxParticleCount > 0) && (currentTime >= Particles[ParticleStartIndex].time + height))
+			{
+				ParticleStartIndex++;
+				ParticleStartIndex %= MaxParticleCount;
+			}
 
-        public void Reinitialize(double currentTime)
-        {
-            // If particles haven't been initialized...
-            if (lastActiveParticle == -1)
-            {
-                InitPrecipParticles(currentTime);
-                lastActiveParticle = 0;
-            }
-            else
-            {
-               // Reinitialize old particles
-                while (currentTime - drops[lastActiveParticle].time >= height)
-                {
-                    drops[lastActiveParticle].position = new Vector3(
-                        random.Next((int)width * 1000) / 1000f - width / 2f,
-                        width / 2,
-                        random.Next((int)width * 1000) / 1000f - width / 2f);
-                    drops[lastActiveParticle].time = (float)currentTime;
-                    lastActiveParticle++;
-                    lastActiveParticle %= drops.Length;
-                }
-            }
-        }
+			var newParticles = (int)Math.Min((currentTime - LastNewParticleTime) * intensity, (ParticleStartIndex - ParticleEndIndex + MaxParticleCount) % MaxParticleCount);
+			if (newParticles > 0)
+			{
+				for (var i = 0; i < newParticles; i++)
+				{
+					InitializeParticle(ref Particles[ParticleEndIndex], currentTime - (currentTime - LastNewParticleTime) * (newParticles - i) / newParticles);
+					VertexBuffer.SetData(ParticleEndIndex * VertexPointSprite.SizeInBytes, Particles, ParticleEndIndex, 1, VertexPointSprite.SizeInBytes, SetDataOptions.NoOverwrite);
+					ParticleEndIndex++;
+					ParticleEndIndex %= MaxParticleCount;
+				}
+				LastNewParticleTime = currentTime;
+			}
+		}
+
+		void InitializeParticle(ref VertexPointSprite particle, double currentTime)
+		{
+			particle.position.X = (float)Random.NextDouble() * width - width / 2;
+			particle.position.Y = width / 2;
+			particle.position.Z = (float)Random.NextDouble() * width - width / 2;
+			particle.pointSize = particleSize;
+			particle.time = (float)currentTime;
+			particle.wind = windStrength * windDir;
+		}
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            // Place the vertex declaration on the graphics device
-            graphicsDevice.VertexDeclaration = pointSpriteVertexDeclaration;
-
-            graphicsDevice.DrawUserPrimitives(PrimitiveType.PointList, drops, 0, drops.Length);
+			graphicsDevice.VertexDeclaration = VertexDeclaration;
+			graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPointSprite.SizeInBytes);
+			if (ParticleStartIndex > ParticleEndIndex)
+			{
+				graphicsDevice.DrawPrimitives(PrimitiveType.PointList, ParticleStartIndex, MaxParticleCount - ParticleStartIndex);
+				if (ParticleEndIndex > 0)
+					graphicsDevice.DrawPrimitives(PrimitiveType.PointList, 0, ParticleEndIndex);
+			}
+			else if (ParticleStartIndex < ParticleEndIndex)
+			{
+				graphicsDevice.DrawPrimitives(PrimitiveType.PointList, ParticleStartIndex, ParticleEndIndex - ParticleStartIndex);
+			}
         }
 
         #region VertexPointSprite definition
