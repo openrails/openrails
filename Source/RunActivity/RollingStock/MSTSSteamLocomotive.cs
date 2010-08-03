@@ -431,6 +431,10 @@ namespace ORTS
             else
                 Train.MUDirection = Direction.Reverse;
         }
+        public bool IsCutoffControllerNotched()
+        {
+            return CutoffController.IsNotched();
+        }
 
         /// <summary>
         /// Used when someone want to notify us of an event
@@ -472,9 +476,24 @@ namespace ORTS
         {
             // for example
             // if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
-            if (UserInput.IsKeyDown(Keys.W)) SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds, 10);
-            else if (UserInput.IsKeyDown(Keys.S)) SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds , - 10);
-            else base.HandleUserInput(elapsedTime);
+            if (SteamLocomotive.IsCutoffControllerNotched())
+            {
+                if (UserInput.IsPressed(Keys.W))
+                    SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds, 10);
+                else if (UserInput.IsPressed(Keys.S))
+                    SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds , - 10);
+                else
+                    base.HandleUserInput(elapsedTime);
+            }
+            else
+            {
+                if (UserInput.IsKeyDown(Keys.W))
+                    SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds, 10);
+                else if (UserInput.IsKeyDown(Keys.S))
+                    SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds , - 10);
+                else
+                    base.HandleUserInput(elapsedTime);
+            }
         }
 
         /// <summary>

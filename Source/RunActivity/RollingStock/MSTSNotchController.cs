@@ -60,7 +60,7 @@ namespace ORTS
 
         public virtual bool IsNotched()
         {
-            return true;
+            return Notches.Count > 0 && !Notches[CurrentNotch].Smooth;
         }
 
         public virtual bool IsValid()

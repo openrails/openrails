@@ -43,7 +43,7 @@ namespace ORTS
 
         public new bool IsNotched()
         {
-            return false;
+            return Notches.Count>0 && !Notches[CurrentNotch].Smooth;
         }
 
         public float GetFullServReductionPSI()

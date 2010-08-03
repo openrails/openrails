@@ -39,7 +39,7 @@ namespace ORTS
 
         public override bool IsNotched()
         {
-            return false;
+            return Notches.Count > 0 && !Notches[CurrentNotch].Smooth;
         }
 
         public override void Save(BinaryWriter outf)

@@ -76,14 +76,18 @@ namespace ORTS
             Player_Service_Definition psd = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition;
             if (psd.DistanceDownPath.Count > 0)
                 auth.StationDistanceM = psd.DistanceDownPath;
-            //foreach (TrItem item in AI.Simulator.TDB.TrackDB.TrItemTable)
-            //{
-            //    if (item.ItemType == TrItem.trItemType.trPLATFORM)
-            //    {
-            //        PlatformItem platform = (PlatformItem)item;
-            //        //Console.WriteLine("{0} {1} {2}", item.TrItemId, platform.PlatformName, platform.Station);
-            //    }
-            //}
+#if false
+            if (AI.Simulator.TDB.TrackDB.TrItemTable != null)
+            foreach (TrItem item in AI.Simulator.TDB.TrackDB.TrItemTable)
+            {
+                if (item.ItemType == TrItem.trItemType.trPLATFORM)
+                {
+                    PlatformItem platform = (PlatformItem)item;
+                    Console.WriteLine("{0} {1} {2} {3} {4} {5} {6}", item.TrItemId, platform.Station, platform.TileX, platform.TileZ,
+                        platform.X, platform.Y,platform.Z);
+                }
+            }
+#endif
         }
 
         // restore game state
