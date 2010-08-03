@@ -247,9 +247,9 @@ namespace ORTS
             }
         }
 
-        public string GetStatus(bool distanceDisplay)
+        public string GetStatus()
         {
-            return Dispatcher.PlayerStatus(distanceDisplay);
+            return Dispatcher.PlayerStatus();
         }
     }
 

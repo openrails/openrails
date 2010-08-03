@@ -152,6 +152,7 @@ namespace ORTS
 		bool visible = false;
 		Rectangle location = new Rectangle(0, 0, 100, 100);
 		string Caption;
+		PopupControlLayout PopupWindowLayout;
 
 		//private Texture2D backgroundTexture;
 		//private Texture2D closeTexture;
@@ -166,9 +167,10 @@ namespace ORTS
 
 		//private int spriteX, spriteY, spriteW, spriteH;   //  coordinates relative to main display.
 
-		public PopupWindow(PopupWindows owner, string caption)
+		public PopupWindow(PopupWindows owner, int width, int height, string caption)
 		{
 			Owner = owner;
+			location = new Rectangle(0, 0, width, height);
 			Caption = caption;
 			Owner.Add(this);
 			VisibilityChanged();
@@ -187,6 +189,7 @@ namespace ORTS
 
 		protected virtual void SizeChanged()
 		{
+			Layout();
 		}
 
 		internal virtual void ActiveChanged()
@@ -287,6 +290,21 @@ namespace ORTS
 			{
 				return Owner.ActiveWindow == this;
 			}
+		}
+
+		protected void Layout()
+		{
+			PopupWindowLayout = new PopupControlLayout(0, 0, location.Width, location.Height);
+			Layout(PopupWindowLayout);
+		}
+
+		protected virtual PopupControlLayout Layout(PopupControlLayout layout)
+		{
+			// Pad window by 4px, add caption and space between to content area.
+			var content = layout.AddLayoutOffset(4, 4, 4, 4).AddLayoutVertical();
+			content.Add(new PopupLabel(content.RemainingWidth, 16, Caption, PopupLabelAlignment.Center));
+			content.AddSpace(0, 5);
+			return content;
 		}
 
 		////////////////////////////////////////////////////////////////////////
@@ -405,28 +423,28 @@ namespace ORTS
 
 		public override void Draw(GraphicsDevice graphicsDevice)
 		{
-			// Edges/corners are 16px (1/8th image size).
+			// Edges/corners are 32px (1/4th image size).
 			var vertexData = new[] {
 				//  0  1  2  3
-				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 00, 0), new Vector2(0.000f, 0.000f)),
-				new VertexPositionTexture(new Vector3(0 * location.Width + 16, 1 * location.Height - 00, 0), new Vector2(0.000f, 0.125f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 16, 1 * location.Height - 00, 0), new Vector2(0.000f, 0.875f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 00, 0), new Vector2(0.000f, 1.000f)),
-				//  4  5  6  7
-				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 16, 0), new Vector2(0.125f, 0.000f)),
-				new VertexPositionTexture(new Vector3(0 * location.Width + 16, 1 * location.Height - 16, 0), new Vector2(0.125f, 0.125f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 16, 1 * location.Height - 16, 0), new Vector2(0.125f, 0.875f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 16, 0), new Vector2(0.125f, 1.000f)),
-				//  8  9 10 11
-				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 16, 0), new Vector2(0.875f, 0.000f)),
-				new VertexPositionTexture(new Vector3(0 * location.Width + 16, 0 * location.Height + 16, 0), new Vector2(0.875f, 0.125f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 16, 0 * location.Height + 16, 0), new Vector2(0.875f, 0.875f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 16, 0), new Vector2(0.875f, 1.000f)),
-				// 12 13 14 15
-				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 00, 0), new Vector2(1.000f, 0.000f)),
-				new VertexPositionTexture(new Vector3(0 * location.Width + 16, 0 * location.Height + 00, 0), new Vector2(1.000f, 0.125f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 16, 0 * location.Height + 00, 0), new Vector2(1.000f, 0.875f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 00, 0), new Vector2(1.000f, 1.000f)),
+				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 00, 0), new Vector2(0.00f, 0.00f)),
+				new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 00, 0), new Vector2(0.25f, 0.00f)),
+				new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 00, 0), new Vector2(0.75f, 0.00f)),
+				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 00, 0), new Vector2(1.00f, 0.00f)),
+				//  4  5  6  7																								  	
+				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 32, 0), new Vector2(0.00f, 0.25f)),
+				new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 32, 0), new Vector2(0.25f, 0.25f)),
+				new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 32, 0), new Vector2(0.75f, 0.25f)),
+				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 32, 0), new Vector2(1.00f, 0.25f)),
+				//  8  9 10 11																								  	
+				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 32, 0), new Vector2(0.00f, 0.75f)),
+				new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 32, 0), new Vector2(0.25f, 0.75f)),
+				new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 32, 0), new Vector2(0.75f, 0.75f)),
+				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 32, 0), new Vector2(1.00f, 0.75f)),
+				// 12 13 14 15																								  	
+				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 00, 0), new Vector2(0.00f, 1.00f)),
+				new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 00, 0), new Vector2(0.25f, 1.00f)),
+				new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 00, 0), new Vector2(0.75f, 1.00f)),
+				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 00, 0), new Vector2(1.00f, 1.00f)),
 			};
 			var vertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionTexture), vertexData.Length, BufferUsage.WriteOnly);
 			vertexBuffer.SetData(vertexData);
@@ -449,7 +467,8 @@ namespace ORTS
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, Caption, new Vector2(location.X + 8, location.Y + 8), Color.White);
+			PopupWindowLayout.Draw(spriteBatch, Location.Location);
+			//spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, Caption, new Vector2(location.X + 8, location.Y + 8), Color.White);
 			//Rectangle rect = new Rectangle(spriteX, spriteY, spriteW, spriteH);
 			//spritebatch.Draw(backgroundTexture, rect, Color.White);
 			//spritebatch.Draw(closeTexture, new Rectangle(spriteX + spriteW - closeTexture.Width, spriteY, closeTexture.Width, closeTexture.Height), Color.White);
@@ -552,9 +571,8 @@ namespace ORTS
 		TextBox tbText;
 
 		public PopupMessage(PopupWindows owner, string text, SpriteFont f, double displayTime)
-			: base(owner, "")
+			: base(owner, text.Length * 10 + 50, 150, "")
 		{
-			this.SizeTo(text.Length * 10 + 50, 150);
 			this.AlignCenter();
 			tbText = new TextBox(25, 100, f);
 			tbText.text = text;

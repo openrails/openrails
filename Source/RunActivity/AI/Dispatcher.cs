@@ -21,6 +21,16 @@ using MSTS;
 
 namespace ORTS
 {
+	public enum DispatcherPOIType
+	{
+		Unknown,
+		OffPath, // also kind of "unknown"
+		StationStop,
+		ReversePoint,
+		EndOfAuthorization,
+		Stop, // what is this?
+	}
+
     public class Dispatcher
     {
         public AI AI;
@@ -606,39 +616,43 @@ namespace ORTS
             return Reservations[i] == train.UiD;
         }
 
-        public string PlayerStatus(bool distanceDisplay)
+		public DispatcherPOIType GetPlayerNextPOI(out float distance, out bool backwards)
+		{
+			distance = 0;
+			backwards = false;
+
+			if (AI.Simulator.PlayerLocomotive == null)
+				return DispatcherPOIType.Unknown;
+
+			Train ptrain = AI.Simulator.PlayerLocomotive.Train;
+			bool reserved = Reservations[ptrain.FrontTDBTraveller.TrackNodeIndex] > 0 || Reservations[ptrain.RearTDBTraveller.TrackNodeIndex] > 0;
+			if (TrackAuthorities.Count == 0)
+				return DispatcherPOIType.Unknown;
+
+			TrackAuthority auth = TrackAuthorities[0];
+			if (auth.StopNode == null || ptrain.FrontTDBTraveller.TrackNodeIndex < 0 || Reservations[ptrain.FrontTDBTraveller.TrackNodeIndex] != 0 || ptrain.RearTDBTraveller.TrackNodeIndex < 0 || Reservations[ptrain.RearTDBTraveller.TrackNodeIndex] != 0)
+				return DispatcherPOIType.OffPath;
+
+			distance = auth.StopDistanceM;
+			backwards = auth.NReverseNodes % 2 == 1;
+			if (auth.StationStop)
+				return DispatcherPOIType.StationStop;
+			if (auth.EndNode == auth.StopNode)
+				return DispatcherPOIType.EndOfAuthorization;
+			if (auth.StopNode.Type == AIPathNodeType.Reverse)
+				return DispatcherPOIType.ReversePoint;
+			return DispatcherPOIType.Stop;
+		}
+
+        public string PlayerStatus()
         {
             if (AI.Simulator.PlayerLocomotive == null)
                 return null;
             Train ptrain = AI.Simulator.PlayerLocomotive.Train;
             bool reserved = Reservations[ptrain.FrontTDBTraveller.TrackNodeIndex] > 0 || Reservations[ptrain.RearTDBTraveller.TrackNodeIndex] > 0;
-            if (!reserved && TimeTable == null && !distanceDisplay)
+            if (!reserved && TimeTable == null)
                 return null;
             string result = "";
-            if (distanceDisplay && TrackAuthorities.Count > 0)
-            {
-                result += "\nDistance =";
-                TrackAuthority auth = TrackAuthorities[0];
-                if (auth.StopNode == null || 
-                  ptrain.FrontTDBTraveller.TrackNodeIndex < 0 || Reservations[ptrain.FrontTDBTraveller.TrackNodeIndex] != 0 ||
-                  ptrain.RearTDBTraveller.TrackNodeIndex < 0 || Reservations[ptrain.RearTDBTraveller.TrackNodeIndex] != 0)
-                    result += " Off Path";
-                else
-                {
-                    result += string.Format(" {0:F0}", auth.StopDistanceM);
-                    if (auth.NReverseNodes % 2 == 1)
-                        result += " Backward";
-                    if (auth.StationStop)
-                        result += " to Station Stop";
-                    else if (auth.EndNode == auth.StopNode)
-                        result += " to End of Authorization";
-                    else if (auth.StopNode.Type == AIPathNodeType.Reverse)
-                        result += " to Reverse Point";
-                    else
-                        result += " to Stop";
-                }
-                result += "\n";
-            }
             if (reserved)
                 result+= "Warning: track reserved for AI\n";
             if (TimeTable != null && TimeTable.ContainsKey(0))

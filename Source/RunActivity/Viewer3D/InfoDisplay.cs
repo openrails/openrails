@@ -37,7 +37,6 @@ namespace ORTS
         int InfoAmount = 1;
         int frameNum = 0;
         bool InfoLog = false;
-        bool DistanceDisplay = false;
         private double lastUpdateTime = 0;   // update text message only 10 times per second
 
         int processors = System.Environment.ProcessorCount;
@@ -61,8 +60,6 @@ namespace ORTS
                 if (InfoAmount > 3)
                     InfoAmount = 0;
             }
-            if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F10))
-                DistanceDisplay = !DistanceDisplay;
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F12))
             {
                 InfoLog = !InfoLog;
@@ -91,6 +88,7 @@ namespace ORTS
                 double elapsedRealSeconds = Program.RealTime - lastUpdateTime;
                 lastUpdateTime = Program.RealTime;
                 Profile(elapsedRealSeconds);
+				UpdateDialogs();
                 UpdateText();
 
                 //Here's where the logger stores the data from each frame
@@ -116,6 +114,13 @@ namespace ORTS
             frame.AddPrimitive( Material, TextPrimitive, ref Matrix);
         }
 
+		void UpdateDialogs()
+		{
+			var poiDistance = 0f;
+			var poiBackwards = false;
+			var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
+			Viewer.TrackMonitor.Update(0, 0, poiType, poiDistance);
+		}
 
         public void UpdateText()
         {
@@ -200,7 +205,7 @@ namespace ORTS
             sTemp += MathHelper.ToDegrees((float)longitude).ToString("F6");
             TextBuilder.Append("Lat/Lon: "); TextBuilder.AppendLine(sTemp);
 
-            status = Viewer.Simulator.AI.GetStatus(DistanceDisplay);
+            status = Viewer.Simulator.AI.GetStatus();
             if (status != null)
                 TextBuilder.Append(status);
 

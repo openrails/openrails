@@ -267,8 +267,6 @@ namespace ORTS
             // Initialse popup windows.
 			PopupWindows = new PopupWindows(this);
 			TrackMonitor = new TrackMonitor(PopupWindows);
-            TrackMonitor.Distance = 1000;
-            TrackMonitor.Aspect = 1;
 
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
