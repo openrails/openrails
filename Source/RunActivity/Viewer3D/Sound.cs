@@ -82,6 +82,7 @@ namespace ORTS
 
         public string SMSFolder;              // the wave files will be relative to this folder
         public bool Active = false;
+        public bool setDeactivate = true;     // For initially mute sounds - by GeorgeS
         private MSTS.Activation ActivationConditions;
         private MSTS.Deactivation DeactivationConditions;
 
@@ -121,11 +122,13 @@ namespace ORTS
 
         public void Update(ElapsedTime elapsedTime)
         {
+
             if (!Active)
             {
                 if (Activate())
                 {
                     Active = true;
+                    setDeactivate = false;
 
                     // run the initial triggers
                     foreach( SoundStream stream in SoundStreams )
@@ -141,6 +144,8 @@ namespace ORTS
             {
                 if (DeActivate())
                 {
+                    setDeactivate = true;
+
                     foreach (SoundStream stream in SoundStreams)
                         stream.Deactivate();
 
@@ -153,7 +158,8 @@ namespace ORTS
                 WorldLocation = Car.WorldPosition.WorldLocation;
             }
 
-            if (Active)
+            // Must start and stop by triggers - by GeorgeS
+            //if (Active)
             {
                 // update the sound position relative to the listener
                 Vector3 RelativePosition = WorldLocation.Location;
@@ -164,7 +170,12 @@ namespace ORTS
                 XNARelativePosition = Vector3.Transform(XNARelativePosition, Viewer.Camera.XNAView);
 
                 foreach (SoundStream stream in SoundStreams)
-                    stream.Update( new Vector3D(XNARelativePosition.X / 10, XNARelativePosition.Y / 10, XNARelativePosition.Z / 10));
+                {
+                    stream.Update(new Vector3D(XNARelativePosition.X / 10, XNARelativePosition.Y / 10, XNARelativePosition.Z / 10));
+                    // If initially not active, Deactivate it - by GeorgeS
+                    if (setDeactivate)
+                        stream.Deactivate();
+                }
             }
         } // Update
 
@@ -317,6 +328,14 @@ namespace ORTS
                 ISound.Position = IRRposition;
             }
 
+            SetFreqAndVolume();
+        }
+
+        /// <summary>
+        /// Separated Frequency and Volume calculations to prevent glitches - by GeorgeS
+        /// </summary>
+        private void SetFreqAndVolume()
+        {
             MSTSWagon car = SoundSource.Car;
             if (car != null && ISound != null)
             {
@@ -328,9 +347,16 @@ namespace ORTS
                 }
                 if (MSTSStream.VolumeCurve != null)
                 {
-                    float x = ReadValue(MSTSStream.VolumeCurve.Control, car);
-                    float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
-                    Volume = y;
+                    if (SoundSource.setDeactivate)
+                    {
+                        Volume = 0;
+                    }
+                    else
+                    {
+                        float x = ReadValue(MSTSStream.VolumeCurve.Control, car);
+                        float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
+                        Volume = y;
+                    }
                 }
             }
         }
@@ -403,6 +429,8 @@ namespace ORTS
         {
             if (ISound != null)
             {
+                // Precalc volume to avoid glitches
+                SetFreqAndVolume();
                 ISound.Volume = volume;
             }
         }
@@ -443,8 +471,22 @@ namespace ORTS
             SampleRate = iSoundSource.AudioFormat.SampleRate;  // ie 11025
             if( viewer.SoundEngine != null )
                 // Changed repeat to false, looping implemented with other method - by GeorgeS
-                ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, false, false, false);
-            Volume = 1.0f;
+                // Changed paused to true - to prevent volume glitches
+                ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, false, true, false);
+            
+            // If an unsupported sound found do nothing else
+            if (ISound == null)
+            {
+                return;
+            }
+
+            // Prevent volume glitches - by GeorgeS
+            //Volume = 1.0f;
+            SetFreqAndVolume();
+            if (ISound.Paused)
+            {
+                ISound.Paused = false;
+            }
 
             if (repeat)
             {

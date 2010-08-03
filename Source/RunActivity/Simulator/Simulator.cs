@@ -590,7 +590,7 @@ namespace ORTS
                 }
                 catch (System.Exception error)
                 {
-                    Console.Error.WriteLine("Couldn't open " + wagonFilePath + "\n" + error.Message);
+                    Console.Error.WriteLine("Couldn't open " + wagonFilePath + "\n" + error.Message + "\n" + error.StackTrace);
                 }
 
             }// for each rail car
@@ -652,7 +652,7 @@ namespace ORTS
                         }
                         catch (System.Exception error)
                         {
-                            Console.Error.WriteLine("Couldn't open " + wagonFilePath + "\n" + error.Message);
+                            Console.Error.WriteLine("Couldn't open " + wagonFilePath + "\n" + error.Message + "\n" + error.StackTrace);
                         }
 
                     }// for each rail car
