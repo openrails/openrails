@@ -109,34 +109,25 @@ namespace ORTS
 		}
 	}
 
-	public class PopupImage : PopupControl
+	public class PopupTexture : PopupControl
 	{
 		public Texture2D Texture;
+		public Rectangle Source;
 
-		public PopupImage(int x, int y, int width, int height, System.Drawing.Bitmap image)
+		public PopupTexture(int x, int y, int width, int height)
 			: base(x, y, width, height)
 		{
-			Image = image;
+			Source = Rectangle.Empty;
 		}
 
-		public PopupImage(int width, int height, System.Drawing.Bitmap image)
-			: this(0, 0, width, height, image)
+		public PopupTexture(int width, int height)
+			: this(0, 0, width, height)
 		{
-		}
-
-		public System.Drawing.Bitmap Image
-		{
-			set
-			{
-				//Texture = new Texture2D(null, Texture.Width, Texture.Height);
-			}
 		}
 
 		internal override void Draw(SpriteBatch spriteBatch, Point offset)
 		{
-			var redTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-			redTexture.SetData(new[] { Color.Red });
-			spriteBatch.Draw(redTexture, new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width, Position.Height), Color.White);
+			spriteBatch.Draw(Texture, new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width, Position.Height), Source, Color.White);
 		}
 	}
 

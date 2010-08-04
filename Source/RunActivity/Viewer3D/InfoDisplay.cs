@@ -124,7 +124,7 @@ namespace ORTS
 			var poiDistance = 0f;
 			var poiBackwards = false;
 			var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
-			Viewer.TrackMonitor.Update(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, 0, poiType, poiDistance);
+			Viewer.TrackMonitor.Update(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, TrackMonitorSignalAspect.Stop, poiType, poiDistance);
 		}
 
         public void UpdateText()

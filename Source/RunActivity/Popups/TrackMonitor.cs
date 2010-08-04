@@ -28,16 +28,35 @@ using MSTS;
 
 namespace ORTS
 {
+	public enum TrackMonitorSignalAspect
+	{
+		None,
+		Clear,
+		Warning,
+		Stop,
+	}
+
 	public class TrackMonitor : PopupWindow
 	{
 		PopupLabel SpeedCurrent;
 		PopupLabel SpeedProjected;
 		PopupLabel SignalDistance;
-		PopupImage SignalAspect;
+		PopupTexture SignalAspect;
 		PopupLabel POILabel;
 		PopupLabel POIDistance;
 
 		float LastSpeedMpS;
+
+		static readonly Dictionary<TrackMonitorSignalAspect, Rectangle> SignalAspectSources = InitSignalAspectSources();
+		static Dictionary<TrackMonitorSignalAspect, Rectangle> InitSignalAspectSources()
+		{
+			return new Dictionary<TrackMonitorSignalAspect,Rectangle> {
+				{ TrackMonitorSignalAspect.None, new Rectangle(0, 0, 16, 16) },
+				{ TrackMonitorSignalAspect.Clear, new Rectangle(16, 0, 16, 16) },
+				{ TrackMonitorSignalAspect.Warning, new Rectangle(0, 16, 16, 16) },
+				{ TrackMonitorSignalAspect.Stop, new Rectangle(16, 16, 16, 16) },
+			};
+		}
 
 		static readonly Dictionary<DispatcherPOIType, string> DispatcherPOILabels = InitDispatcherPOILabels();
 		static Dictionary<DispatcherPOIType, string> InitDispatcherPOILabels()
@@ -57,6 +76,7 @@ namespace ORTS
 		{
 			AlignTop();
 			AlignRight();
+			SignalAspect.Texture = owner.Viewer.RenderProcess.Content.Load<Texture2D>("SignalAspects");
 		}
 
 		protected override PopupControlLayout Layout(PopupControlLayout layout)
@@ -78,7 +98,7 @@ namespace ORTS
 				hbox.Add(new PopupLabel(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Signal:"));
 				hbox.Add(SignalDistance = new PopupLabel(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", PopupLabelAlignment.Right));
 				hbox.AddSpace(2, 0);
-				hbox.Add(SignalAspect = new PopupImage(hbox.RemainingWidth, hbox.RemainingHeight, null));
+				hbox.Add(SignalAspect = new PopupTexture(hbox.RemainingWidth, hbox.RemainingHeight));
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
@@ -88,7 +108,7 @@ namespace ORTS
 			return vbox;
 		}
 
-		public void Update(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, int signalAspect, DispatcherPOIType poiType, float poiDistance)
+		public void Update(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, TrackMonitorSignalAspect signalAspect, DispatcherPOIType poiType, float poiDistance)
 		{
 			var speedFormat = milepostUnitsMetric ? "{0:F1}kph" : "{0:F1}mph";
 			var speedProjectedMpS = Math.Max(0, speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds);
@@ -97,6 +117,8 @@ namespace ORTS
 			LastSpeedMpS = speedMpS;
 
 			SignalDistance.Text = String.Format("{0:N0}m", signalDistance);
+			SignalAspect.Source = SignalAspectSources[signalAspect];
+
 			POILabel.Text = DispatcherPOILabels[poiType];
 			POIDistance.Text = poiType == DispatcherPOIType.Unknown || poiType == DispatcherPOIType.OffPath ? "" : String.Format("{0:N0}m", poiDistance);
 		}
