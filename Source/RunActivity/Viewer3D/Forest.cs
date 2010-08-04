@@ -27,14 +27,14 @@ namespace ORTS
     #region ForestDrawer
     public class ForestDrawer
     {
-        Viewer3D Viewer;
-        Material forestMaterial;
+        readonly Viewer3D Viewer;
+        readonly Material forestMaterial;
 
         // Classes reqiring instantiation
         public ForestMesh forestMesh;
 
         #region Class variables
-        public WorldPosition worldPosition;
+        public readonly WorldPosition worldPosition;
         #endregion
 
         #region Constructor
@@ -64,18 +64,11 @@ namespace ORTS
             // Locate relative to the camera
             int dTileX = worldPosition.TileX - Viewer.Camera.TileX;
             int dTileZ = worldPosition.TileZ - Viewer.Camera.TileZ;
-            Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-            xnaDTileTranslation = worldPosition.XNAMatrix * xnaDTileTranslation;
-            xnaDTileTranslation.M42 = forestMesh.refElevation;
-            Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
-            
-            float objectRadius = forestMesh.objectRadius;
+			var xnaTranslation = worldPosition.XNAMatrix.Translation;
+			Vector3 mstsLocation = new Vector3(xnaTranslation.X + dTileX * 2048, forestMesh.refElevation, -xnaTranslation.Z + dTileZ * 2048);
+			Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             float viewingDistance = 2000; // Arbitrary, but historically in MSTS it was only 1000.
-            if (Viewer.Camera.InFOV(mstsLocation, objectRadius))
-            {
-                if (Viewer.Camera.InRange(mstsLocation, viewingDistance + objectRadius))
-                    frame.AddPrimitive(forestMaterial, forestMesh, ref xnaDTileTranslation);
-            }
+			frame.AddAutoPrimitive(mstsLocation, forestMesh.objectRadius, viewingDistance + forestMesh.objectRadius, forestMaterial, forestMesh, ref xnaPatchMatrix, ShapeFlags.None);
         }
     }
     #endregion

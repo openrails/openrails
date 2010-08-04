@@ -1212,8 +1212,11 @@ namespace ORTS
     #region Shadow Map material
     public class ShadowMapMaterial : Material
     {
+		readonly public RenderProcess RenderProcess;  // for diagnostics only
+
         public ShadowMapMaterial(RenderProcess renderProcess)
         {
+			RenderProcess = renderProcess;
         }
 
         public void SetState(GraphicsDevice graphicsDevice, Matrix lightView, Matrix lightProj)
@@ -1241,6 +1244,7 @@ namespace ORTS
 			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
 			{
 				pass.Begin();
+				RenderProcess.PrimitiveCount++;
 				renderPrimitive.Draw(graphicsDevice);
 				pass.End();
 			}

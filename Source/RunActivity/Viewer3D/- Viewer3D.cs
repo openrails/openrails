@@ -465,7 +465,8 @@ namespace ORTS
             if (ScreenHasChanged())
                 NotifyCamerasOfScreenChange();
             Camera.PrepareFrame(frame, elapsedTime);
-            SkyDrawer.PrepareFrame(frame, elapsedTime);
+			frame.PrepareFrame(elapsedTime);
+			SkyDrawer.PrepareFrame(frame, elapsedTime);
             TerrainDrawer.PrepareFrame(frame, elapsedTime);
             SceneryDrawer.PrepareFrame(frame, elapsedTime);
             TrainDrawer.PrepareFrame(frame, elapsedTime);

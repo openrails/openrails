@@ -791,49 +791,43 @@ namespace ORTS
             int dTileZ = location.TileZ - Viewer.Camera.TileZ;
 			Vector3 mstsLocation = location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
 
-            foreach (LodControl lodControl in LodControls)
-            {
-                if (Viewer.Camera.InFOV(mstsLocation, lodControl.DistanceLevels[0].ViewSphereRadius))
-                {
-                    foreach (DistanceLevel distanceLevel in lodControl.DistanceLevels)
-                    {
-                        float viewingRange = distanceLevel.ViewingDistance + distanceLevel.ViewSphereRadius;
-                        if (Viewer.ViewingDistance < viewingRange)
-                            viewingRange = Viewer.ViewingDistance;
-                        if (Viewer.Camera.InRange(mstsLocation, viewingRange))
-                        {
-							Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-							xnaDTileTranslation = location.XNAMatrix * xnaDTileTranslation;
+			foreach (var lodControl in LodControls)
+			{
+				// Start with the furthest away distance, then look for a nearer one in range of the camera.
+				var chosenDistanceLevel = lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1];
+				foreach (var distanceLevel in lodControl.DistanceLevels)
+				{
+					if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewSphereRadius + distanceLevel.ViewingDistance))
+					{
+						chosenDistanceLevel = distanceLevel;
+						break;
+					}
+				}
 
-							foreach (SubObject subObject in distanceLevel.SubObjects)
-                            {
-                                // for each primitive
-                                for (int iPrim = 0; iPrim < subObject.ShapePrimitives.Length; ++iPrim)
-                                {
-                                    ShapePrimitive shapePrimitive = subObject.ShapePrimitives[iPrim];
-                                    Matrix xnaMatrix = Matrix.Identity;
-                                    int iNode = shapePrimitive.iHierarchy;
-                                    while (iNode != -1)
-                                    {
-                                        if (shapePrimitive.Hierarchy[iNode] != -1) // MSTS ignores root matrix,  ('floating objects problem' )
-                                        {
-                                            xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
-                                        }
-                                        iNode = shapePrimitive.Hierarchy[iNode];
-                                    }
-                                    xnaMatrix *= xnaDTileTranslation;
+				Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
+				xnaDTileTranslation = location.XNAMatrix * xnaDTileTranslation;
 
-                                    // TODO make shadows depend on shape overrides
+				foreach (var subObject in chosenDistanceLevel.SubObjects)
+				{
+					foreach (var shapePrimitive in subObject.ShapePrimitives)
+					{
+						Matrix xnaMatrix = Matrix.Identity;
+						int iNode = shapePrimitive.iHierarchy;
+						while (iNode != -1)
+						{
+							if (shapePrimitive.Hierarchy[iNode] != -1) // MSTS ignores root matrix,  ('floating objects problem' )
+								xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
+							iNode = shapePrimitive.Hierarchy[iNode];
+						}
+						xnaMatrix *= xnaDTileTranslation;
 
-									frame.AddPrimitive(shapePrimitive.Material, shapePrimitive, ref xnaMatrix, flags);
-                                } // for each primitive
-                            }
-                            break; // only draw one distance level.
-                        }
-                    }
-                }
-            }
-        }// PrepareFrame()
+						// TODO make shadows depend on shape overrides
+
+						frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance, shapePrimitive.Material, shapePrimitive, ref xnaMatrix, flags);
+					}
+				}
+			}
+		}// PrepareFrame()
 
         public Matrix GetMatrixProduct(int iNode)
         {

@@ -225,7 +225,6 @@ namespace ORTS
 
         private int TileX, TileZ;               
         private Vector3 XNAPatchLocation;      // in XNA world coordinates relative to the center of the tile
-        private Matrix XNAPatchPosition;       // computed from above to save time in the Draw routine
         private VertexBuffer PatchVertexBuffer;  // separate vertex buffer for each patch
 
         public Material PatchMaterial;
@@ -272,7 +271,6 @@ namespace ORTS
             float cx =  -1024+(int)patch.CenterX;
             float cz =  -1024-(int)patch.CenterZ;
             XNAPatchLocation = new Vector3(cx, 0, cz);
-            XNAPatchPosition = Matrix.CreateTranslation(XNAPatchLocation);
             X = patch.X;
             Y = patch.Y;
             W = patch.W;
@@ -298,22 +296,14 @@ namespace ORTS
             YFile = null;
         }
 
-        public void PrepareFrame(  RenderFrame frame )
-        {
-            int dTileX = TileX - Viewer.Camera.TileX;
-            int dTileZ = TileZ - Viewer.Camera.TileZ;
-			Vector3 mstsLocation = new Vector3(dTileX * 2048 + XNAPatchLocation.X, XNAPatchLocation.Y, dTileZ * 2048 - XNAPatchLocation.Z);
-
-            // Distance cull
-			if (Viewer.Camera.CanSee(mstsLocation, 150f, 2000f))
-            {
-				Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-				Matrix xnaPatchMatrix = XNAPatchPosition * xnaDTileTranslation;  // defines location and pose for patch
-				frame.AddPrimitive(PatchMaterial, this, ref xnaPatchMatrix);
-            }
-        }
-
-
+		public void PrepareFrame(RenderFrame frame)
+		{
+			int dTileX = TileX - Viewer.Camera.TileX;
+			int dTileZ = TileZ - Viewer.Camera.TileZ;
+			Vector3 mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
+			Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
+			frame.AddAutoPrimitive(mstsLocation, 150f, 2000f, PatchMaterial, this, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
+		}
 
         /// <summary>
         /// This is called when the game should draw itself.

@@ -41,21 +41,24 @@ namespace ORTS
 
     public class RenderFrame
     {
-        List<RenderItem> RenderItems;
+        readonly RenderProcess RenderProcess;
+        readonly List<RenderItem> RenderItems;
+		readonly List<RenderItem> RenderShadowItems;
         int RenderMaxSequence = 0;
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
-        RenderProcess RenderProcess;
 
         public RenderFrame(RenderProcess owner)
         {
-            RenderItems = new List<RenderItem>();
             RenderProcess = owner;
+            RenderItems = new List<RenderItem>();
+			RenderShadowItems = new List<RenderItem>();
         }
 
         public void Clear() 
         {
             RenderItems.Clear();
+			RenderShadowItems.Clear();
         }
 
         public void SetCamera(ref Matrix xnaViewMatrix, ref Matrix xnaProjectionMatrix)
@@ -63,8 +66,37 @@ namespace ORTS
             XNAViewMatrix = xnaViewMatrix;
             XNAProjectionMatrix = xnaProjectionMatrix;
         }
-        
-        /// <summary>
+
+		public void PrepareFrame(ElapsedTime elapsedTime)
+		{
+			var cameraLocation = RenderProcess.Viewer.Camera.Location * new Vector3(1, 1, -1);
+			ShadowMapLightView = Matrix.CreateLookAt(cameraLocation + 1000 * RenderProcess.Viewer.SkyDrawer.solarDirection, cameraLocation, Vector3.Up);
+			ShadowMapLightProj = Matrix.CreateOrthographic(ShadowMapViewSize, ShadowMapViewSize, ShadowMapViewNear, ShadowMapViewFar);
+			ShadowMapBound = new BoundingFrustum(ShadowMapLightView * ShadowMapLightProj);
+		}
+
+		/// <summary>
+		/// Automatically adds or culls a <see cref="RenderPrimitive"/> based on a location, radius and max viewing distance.
+		/// </summary>
+		/// <remarks>
+		/// Must be called from the UpdateProcess thread.
+		/// </remarks>
+		/// <param name="mstsLocation">Center location of the <see cref="RenderPrimitive"/> in MSTS coordinates.</param>
+		/// <param name="objectRadius">Radius of a sphere containing the whole <see cref="RenderPrimitive"/>, centered on <paramref name="mstsLocation"/>.</param>
+		/// <param name="objectViewingDistance">Maximum distance from which the <see cref="RenderPrimitive"/> should be viewable.</param>
+		/// <param name="material"></param>
+		/// <param name="primitive"></param>
+		/// <param name="xnaMatrix"></param>
+		/// <param name="flags"></param>
+		public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
+		{
+			if (RenderProcess.Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
+				AddPrimitive(material, primitive, ref xnaMatrix, flags);
+			if (((flags & ShapeFlags.ShadowCaster) != 0) && IsInShadowMap(mstsLocation, objectRadius, objectViewingDistance))
+				AddShadowPrimitive(material, primitive, ref xnaMatrix, flags);
+		}
+
+		/// <summary>
         /// Executed in the UpdateProcess thread
         /// </summary>
 		public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix)
@@ -72,6 +104,9 @@ namespace ORTS
 			AddPrimitive(material, primitive, ref xnaMatrix, ShapeFlags.None);
 		}
 
+		/// <summary>
+		/// Executed in the UpdateProcess thread
+		/// </summary>
 		public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
 			RenderItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
@@ -81,10 +116,14 @@ namespace ORTS
 
 			if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
 				primitive.ZBias = 1;
+		}
 
-			// TODO, enhance this:
-			//   - handle overflow by enlarging array etc
-			//   - to accomodate separate list of shadow casters, 
+		/// <summary>
+		/// Executed in the UpdateProcess thread
+		/// </summary>
+		public void AddShadowPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
+		{
+			RenderShadowItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
 		}
 
         /// <summary>
@@ -96,6 +135,19 @@ namespace ORTS
             //   - to sort translucent primitives
             //   - and to minimize render state changes ( sorting was taking too long! for this )
         }
+
+        const int ShadowMapSize = 4096;
+		const int ShadowMapViewSize = 512;
+		const float ShadowMapViewNear = 0.01f;
+		const float ShadowMapViewFar = 2500.0f;
+		public bool IsInShadowMap(Vector3 mstsLocation, float objectRadius, float objectViewingDistance)
+		{
+			if (ShadowMapRenderTarget == null)
+				return false;
+
+			var xnaLocation = mstsLocation * new Vector3(1, 1, -1);
+			return ShadowMapBound.Intersects(new BoundingSphere(xnaLocation, objectRadius));
+		}
 
         /// <summary>
         /// Draw 
@@ -110,52 +162,47 @@ namespace ORTS
             DrawSimple(graphicsDevice);
         }
 
-        const int ShadowMapSize = 4096;
         RenderTarget2D ShadowMapRenderTarget;
         DepthStencilBuffer ShadowMapStencilBuffer;
         Texture2D ShadowMap;
         Matrix ShadowMapLightView;
         Matrix ShadowMapLightProj;
-        public void DrawShadows(GraphicsDevice graphicsDevice)
-        {
-            if (ShadowMapRenderTarget == null)
-            {
-                ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, SurfaceFormat.Single);
-                ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
-            }
+		BoundingFrustum ShadowMapBound;
+		public void DrawShadows(GraphicsDevice graphicsDevice)
+		{
+			if (ShadowMapRenderTarget == null)
+			{
+				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, SurfaceFormat.Single);
+				ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
+			}
 
-            var cameraLocation = RenderProcess.Viewer.Camera.Location * new Vector3(1, 1, -1);
-            ShadowMapLightView = Matrix.CreateLookAt(cameraLocation + 1000 * RenderProcess.Viewer.SkyDrawer.solarDirection, cameraLocation, Vector3.Up);
-            ShadowMapLightProj = Matrix.CreateOrthographic(512, 512, 0.01f, 2500.0f);
+			var oldStencilDepthBuffer = graphicsDevice.DepthStencilBuffer;
+			graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget);
+			graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
+			graphicsDevice.Clear(Color.Black);
+			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapLightView, ShadowMapLightProj);
 
-            var oldStencilDepthBuffer = graphicsDevice.DepthStencilBuffer;
-            graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget);
-            graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
-            graphicsDevice.Clear(Color.Black);
-            Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapLightView, ShadowMapLightProj);
+			foreach (var renderItem in RenderShadowItems)
+			{
+				var riMatrix = renderItem.XNAMatrix;
+				if (!(renderItem.Material is TerrainMaterial))
+					Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+			}
 
-            foreach (var renderItem in RenderItems)
-            {
-                var riMatrix = renderItem.XNAMatrix;
-                if ((renderItem.Flags & ShapeFlags.ShadowCaster) != ShapeFlags.None)
-                    if ((renderItem.Material is SceneryMaterial) || (renderItem.Material is ForestMaterial))
-						Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
-            }
-
-            graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
-            graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
-            foreach (var renderItem in RenderItems)
-            {
+			graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
+			graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
+			foreach (var renderItem in RenderShadowItems)
+			{
 				var riMatrix = renderItem.XNAMatrix;
 				if (renderItem.Material is TerrainMaterial)
 					Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
-            }
+			}
 
-            Materials.ShadowMapMaterial.ResetState(graphicsDevice, null);
-            graphicsDevice.DepthStencilBuffer = oldStencilDepthBuffer;
-            graphicsDevice.SetRenderTarget(0, null);
-            ShadowMap = ShadowMapRenderTarget.GetTexture();
-        }
+			Materials.ShadowMapMaterial.ResetState(graphicsDevice, null);
+			graphicsDevice.DepthStencilBuffer = oldStencilDepthBuffer;
+			graphicsDevice.SetRenderTarget(0, null);
+			ShadowMap = ShadowMapRenderTarget.GetTexture();
+		}
 
         /// <summary>
         /// Executed in the RenderProcess thread - simple draw
