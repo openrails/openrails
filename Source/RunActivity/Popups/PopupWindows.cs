@@ -29,8 +29,9 @@ namespace ORTS
 		public readonly Viewer3D Viewer;
 		readonly List<PopupWindow> Windows = new List<PopupWindow>();
 		readonly SpriteBatch SpriteBatch;
-		Matrix XNAView = new Matrix();
-		Matrix XNAProjection = new Matrix();
+		Matrix XNAView = Matrix.Identity;
+		Matrix XNAProjection = Matrix.Identity;
+		ResolveTexture2D Screen;
 		PopupWindow activeWindow = null;
 
 		public PopupWindows(Viewer3D viewer)
@@ -52,16 +53,16 @@ namespace ORTS
 			// Project into a flat view of the same size as the viewpoer.
 			XNAProjection = Matrix.CreateOrthographic(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0, 100);
 
-			ResolveTexture2D screen = null;
 			if (Viewer.WindowGlass)
 			{
 				// Buffer for screen texture, also same size as viewport and using the backbuffer format.
-				screen = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
-				graphicsDevice.ResolveBackBuffer(screen);
+				if (Screen == null)
+					Screen = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
+				graphicsDevice.ResolveBackBuffer(Screen);
 			}
 
 			var material = Materials.PopupWindowMaterial;
-			material.SetState(graphicsDevice, screen);
+			material.SetState(graphicsDevice, Screen);
 			foreach (PopupWindow window in VisibleWindows)
 			{
 				var xnaWorld = window.XNAWorld;
