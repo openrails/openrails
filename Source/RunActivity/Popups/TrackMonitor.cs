@@ -108,48 +108,38 @@ namespace ORTS
 			return vbox;
 		}
 
+		string FormatSpeed(float speed, bool metric)
+		{
+			return String.Format(metric ? "{0:F1}kph" : "{0:F1}mph", MpS.FromMpS(speed, metric));
+		}
+
+		string FormatDistance(float distance, bool metric)
+		{
+			if (metric)
+			{
+				// <0.1 kilometers, show meters.
+				if (distance < 100)
+					return String.Format("{0:N0}m", distance);
+				return String.Format("{0:F1}km", distance / 1000.000);
+			}
+			// <0.1 miles, show yards.
+			if (distance < 160.9344)
+				return String.Format("{0:N0}yd", distance * 1.093613298337708);
+			return String.Format("{0:F1}mi", distance / 1609.344);
+		}
+
 		public void Update(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, TrackMonitorSignalAspect signalAspect, DispatcherPOIType poiType, float poiDistance)
 		{
-			var speedFormat = milepostUnitsMetric ? "{0:F1}kph" : "{0:F1}mph";
 			var speedProjectedMpS = Math.Max(0, speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds);
-			SpeedCurrent.Text = String.Format(speedFormat, MpS.FromMpS(speedMpS, milepostUnitsMetric));
-			SpeedProjected.Text = String.Format(speedFormat, MpS.FromMpS(speedProjectedMpS, milepostUnitsMetric));
+			SpeedCurrent.Text = FormatSpeed(speedMpS, milepostUnitsMetric);
+			SpeedProjected.Text = FormatSpeed(speedProjectedMpS, milepostUnitsMetric);
 			LastSpeedMpS = speedMpS;
 
-			SignalDistance.Text = String.Format("{0:N0}m", signalDistance);
+			SignalDistance.Text = signalAspect == TrackMonitorSignalAspect.None ? "" : FormatDistance(signalDistance, milepostUnitsMetric);
 			SignalAspect.Source = SignalAspectSources[signalAspect];
 
 			POILabel.Text = DispatcherPOILabels[poiType];
-			POIDistance.Text = poiType == DispatcherPOIType.Unknown || poiType == DispatcherPOIType.OffPath ? "" : String.Format("{0:N0}m", poiDistance);
+			POIDistance.Text = poiType == DispatcherPOIType.Unknown || poiType == DispatcherPOIType.OffPath ? "" : FormatDistance(poiDistance, milepostUnitsMetric);
 		}
-
-		// Displays aspect.
-		//public int Aspect
-		//{
-		//    set
-		//    {
-		//        //SD.Graphics GR = this.puGraphics;
-		//        //GR.FillRectangle(SD.Brushes.Black, new SD.Rectangle(0, 0, 70, 150));
-		//        //switch (value)
-		//        //{
-		//        //    case 1:
-		//        //        GR.FillEllipse(brRed, new SD.Rectangle(20, 85, 20, 20));
-		//        //        break;
-		//        //    case 2:
-		//        //        GR.FillEllipse(brAmber, new SD.Rectangle(20, 60, 20, 20));
-		//        //        break;
-		//        //    case 3:
-		//        //        GR.FillEllipse(brAmber, new SD.Rectangle(20, 10, 20, 20));
-		//        //        GR.FillEllipse(brAmber, new SD.Rectangle(20, 60, 20, 20));
-		//        //        break;
-		//        //    case 4:
-		//        //        GR.FillEllipse(brGreen, new SD.Rectangle(20, 35, 20, 20));
-		//        //        break;
-		//        //}
-		//        //string sDist = distance.ToString("F2").PadLeft(5); ;
-		//        //GR.DrawString(sDist, font, SD.Brushes.White, 10, 110);
-		//        //this.UpdateGraphics();
-		//    }
-		//}
 	}
 }
