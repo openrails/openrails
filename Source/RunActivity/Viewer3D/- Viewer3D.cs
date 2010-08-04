@@ -78,6 +78,7 @@ namespace ORTS
         public Tiles Tiles = null;
         public ENVFile ENVFile;
         public TTypeDatFile TTypeDatFile;
+		public bool MilepostUnitsMetric;
         // Cameras
         public Camera Camera;   // Current Camera
         private CabCamera CabCamera;
@@ -126,6 +127,7 @@ namespace ORTS
             ReadENVFile();
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
             Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
+			MilepostUnitsMetric = simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
             SetupBackgroundProcesses( );
         }
 

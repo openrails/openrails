@@ -22,7 +22,15 @@ namespace ORTS
         public float RealSeconds;
 
         public static ElapsedTime Zero = new ElapsedTime();
-    }
+
+		public static ElapsedTime operator +(ElapsedTime a, ElapsedTime b) { return new ElapsedTime() { ClockSeconds = a.ClockSeconds + b.ClockSeconds, RealSeconds = a.RealSeconds + b.RealSeconds }; }
+
+		public void Reset()
+		{
+			ClockSeconds = 0;
+			RealSeconds = 0;
+		}
+	}
 
 
     /// <summary>

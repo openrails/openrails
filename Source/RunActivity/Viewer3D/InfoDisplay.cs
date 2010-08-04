@@ -38,6 +38,7 @@ namespace ORTS
         int frameNum = 0;
         bool InfoLog = false;
         private double lastUpdateTime = 0;   // update text message only 10 times per second
+		ElapsedTime ElapsedTime = new ElapsedTime();
 
         int processors = System.Environment.ProcessorCount;
 
@@ -57,7 +58,7 @@ namespace ORTS
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F5))
             {
                 ++InfoAmount;
-                if (InfoAmount > 3)
+                if (InfoAmount > 4)
                     InfoAmount = 0;
             }
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F12))
@@ -83,12 +84,14 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             frameNum++;
+			ElapsedTime += elapsedTime;
+
             if (Program.RealTime - lastUpdateTime >= 0.25)
             {
                 double elapsedRealSeconds = Program.RealTime - lastUpdateTime;
                 lastUpdateTime = Program.RealTime;
                 Profile(elapsedRealSeconds);
-				UpdateDialogs();
+				UpdateDialogs(ElapsedTime);
                 UpdateText();
 
                 //Here's where the logger stores the data from each frame
@@ -109,17 +112,19 @@ namespace ORTS
                     OutLog.Store(Viewer.Camera.TileZ.ToString());     // Camera coordinates
                     OutLog.Store(Viewer.Camera.Location.ToString());  //
                 }
+
+				ElapsedTime.Reset();
             }
             TextPrimitive.Text = TextBuilder.ToString();
             frame.AddPrimitive( Material, TextPrimitive, ref Matrix);
         }
 
-		void UpdateDialogs()
+		void UpdateDialogs(ElapsedTime elapsedTime)
 		{
 			var poiDistance = 0f;
 			var poiBackwards = false;
 			var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
-			Viewer.TrackMonitor.Update(0, 0, poiType, poiDistance);
+			Viewer.TrackMonitor.Update(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, 0, poiType, poiDistance);
 		}
 
         public void UpdateText()
@@ -136,11 +141,11 @@ namespace ORTS
             }
             if (InfoAmount == 3)
             {
-                AddDebugInfo();
+                AddDispatcherInfo();
             }
             if (InfoAmount == 4)
             {
-                AddDispatcherInfo();
+                AddDebugInfo();
             }
         }
 
@@ -224,6 +229,7 @@ namespace ORTS
             // Memory Useage
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
             TextBuilder.AppendLine(); //notepad pls.
+			TextBuilder.AppendLine("DEBUG INFORMATION");
             TextBuilder.AppendFormat("Logging Enabled = {0}", InfoLog); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Memory = {0:N0} KB", memory / 1024); TextBuilder.AppendLine();
@@ -248,7 +254,8 @@ namespace ORTS
         private void AddBrakeInfo()
         {
             TextBuilder.AppendLine();
-            Train playerTrain = Viewer.PlayerLocomotive.Train;
+			TextBuilder.AppendLine("BRAKE INFORMATION");
+			Train playerTrain = Viewer.PlayerLocomotive.Train;
             TextBuilder.Append("Main Res = "); TextBuilder.AppendLine(string.Format("{0:F0}", playerTrain.BrakeLine2PressurePSI));
             int n = playerTrain.Cars.Count;
             if (n > 10)
@@ -265,7 +272,8 @@ namespace ORTS
         private void AddDispatcherInfo()
         {
             TextBuilder.AppendLine();
-            foreach (TrackAuthority auth in Program.Simulator.AI.Dispatcher.TrackAuthorities)
+			TextBuilder.AppendLine("DISPATCHER INFORMATION");
+			foreach (TrackAuthority auth in Program.Simulator.AI.Dispatcher.TrackAuthorities)
             {
                 TextBuilder.AppendLine(auth.GetStatus());
             }

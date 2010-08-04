@@ -10,19 +10,42 @@ using System.Text;
 
 namespace ORTS
 {
-    public class MpH
+	public class MpH
     {
-        public static float FromMpS(float MpS)
-        {
-            return MpS * (0.000621371192f /* mile/M */ * 3600f /* sec/hr */ );
-        }
-    }
+		public static float FromMpS(float MpS)
+		{
+			return MpS * (0.000621371192f /* mile/M */ * 3600f /* sec/hr */ );
+		}
 
-    public class MpS
+		public static float ToMpS(float MpH)
+		{
+			return MpH / (0.000621371192f /* mile/M */ * 3600f /* sec/hr */ );
+		}
+	}
+
+	public class KpH
+	{
+		public static float FromMpS(float MpS)
+		{
+			return MpS * (0.001f /* kilometer/M */ * 3600f /* sec/hr */ );
+		}
+
+		public static float ToMpS(float MpH)
+		{
+			return MpH / (0.001f /* kilometer/M */ * 3600f /* sec/hr */ );
+		}
+	}
+
+	public class MpS
     {
-        public static float FromMpH(float MpH)
-        {
-            return MpH / (0.000621371192f /* mile/M */ * 3600f /* sec/hr */ );
-        }
-    }
+		public static float FromMpS(float speed, bool metric)
+		{
+			return metric ? KpH.FromMpS(speed) : MpH.FromMpS(speed);
+		}
+
+		public static float ToMpS(float speed, bool metric)
+		{
+			return metric ? KpH.ToMpS(speed) : MpH.ToMpS(speed);
+		}
+	}
 }

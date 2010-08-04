@@ -70,14 +70,15 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
-                else if (0 == String.Compare(token, "RouteID", true)) RouteID = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "Name", true)) Name = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "FileName", true)) FileName = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "Description", true)) Description = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "RouteStart", true) && RouteStart == null) RouteStart = new RouteStart(f); // take only the first - ignore any others
-                else if (0 == String.Compare(token, "Environment", true)) Environment = new TRKEnvironment(f);
-                else f.SkipBlock();
+				if (token == "") throw (new STFError(f, "Missing )"));
+				else if (0 == String.Compare(token, "RouteID", true)) RouteID = f.ReadStringBlock();
+				else if (0 == String.Compare(token, "Name", true)) Name = f.ReadStringBlock();
+				else if (0 == String.Compare(token, "FileName", true)) FileName = f.ReadStringBlock();
+				else if (0 == String.Compare(token, "Description", true)) Description = f.ReadStringBlock();
+				else if (0 == String.Compare(token, "RouteStart", true) && RouteStart == null) RouteStart = new RouteStart(f); // take only the first - ignore any others
+				else if (0 == String.Compare(token, "Environment", true)) Environment = new TRKEnvironment(f);
+				else if (0 == String.Compare(token, "MilepostUnitsKilometers", true)) MilepostUnitsMetric = true;
+				else f.SkipBlock();
                 token = f.ReadToken();
             }
             if (RouteID == null) throw (new STFError(f, "Missing RouteID"));
@@ -91,6 +92,7 @@ namespace MSTS
         public string Description;
         public RouteStart RouteStart;
         public TRKEnvironment Environment;
+		public bool MilepostUnitsMetric = false;
     }
 
 

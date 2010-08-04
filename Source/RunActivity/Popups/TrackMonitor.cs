@@ -30,10 +30,14 @@ namespace ORTS
 {
 	public class TrackMonitor : PopupWindow
 	{
+		PopupLabel SpeedCurrent;
+		PopupLabel SpeedProjected;
 		PopupLabel SignalDistance;
 		PopupImage SignalAspect;
 		PopupLabel POILabel;
 		PopupLabel POIDistance;
+
+		float LastSpeedMpS;
 
 		static readonly Dictionary<DispatcherPOIType, string> DispatcherPOILabels = InitDispatcherPOILabels();
 		static Dictionary<DispatcherPOIType, string> InitDispatcherPOILabels()
@@ -60,6 +64,17 @@ namespace ORTS
 			var vbox = base.Layout(layout).AddLayoutVertical();
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
+				hbox.Add(new PopupLabel(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Speed:"));
+				hbox.Add(SpeedCurrent = new PopupLabel(hbox.RemainingWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+			}
+			{
+				var hbox = vbox.AddLayoutHorizontal(16);
+				hbox.Add(new PopupLabel(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Projected:"));
+				hbox.Add(SpeedProjected= new PopupLabel(hbox.RemainingWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+			}
+			vbox.AddHorizontalSeparator();
+			{
+				var hbox = vbox.AddLayoutHorizontal(16);
 				hbox.Add(new PopupLabel(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Signal:"));
 				hbox.Add(SignalDistance = new PopupLabel(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", PopupLabelAlignment.Right));
 				hbox.AddSpace(2, 0);
@@ -73,8 +88,14 @@ namespace ORTS
 			return vbox;
 		}
 
-		public void Update(float signalDistance, int signalAspect, DispatcherPOIType poiType, float poiDistance)
+		public void Update(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, int signalAspect, DispatcherPOIType poiType, float poiDistance)
 		{
+			var speedFormat = milepostUnitsMetric ? "{0:F1}kph" : "{0:F1}mph";
+			var speedProjectedMpS = Math.Max(0, speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds);
+			SpeedCurrent.Text = String.Format(speedFormat, MpS.FromMpS(speedMpS, milepostUnitsMetric));
+			SpeedProjected.Text = String.Format(speedFormat, MpS.FromMpS(speedProjectedMpS, milepostUnitsMetric));
+			LastSpeedMpS = speedMpS;
+
 			SignalDistance.Text = String.Format("{0:N0}m", signalDistance);
 			POILabel.Text = DispatcherPOILabels[poiType];
 			POIDistance.Text = poiType == DispatcherPOIType.Unknown || poiType == DispatcherPOIType.OffPath ? "" : String.Format("{0:N0}m", poiDistance);

@@ -38,7 +38,30 @@ namespace ORTS
 		}
 	}
 
-	public enum PopupLabelAlignment {
+	public class PopupSeparator : PopupControl
+	{
+		static Texture2D WhiteTexture;
+		public int Padding;
+
+		public PopupSeparator(int width, int height, int padding)
+			: base(0, 0, width, height)
+		{
+			Padding = padding;
+		}
+
+		internal override void Draw(SpriteBatch spriteBatch, Point offset)
+		{
+			if (WhiteTexture == null)
+			{
+				WhiteTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+				WhiteTexture.SetData(new[] { Color.White });
+			}
+			spriteBatch.Draw(WhiteTexture, new Rectangle(offset.X + Position.X + Padding, offset.Y + Position.Y + Padding, Position.Width - 2 * Padding, Position.Height - 2 * Padding), Color.White);
+		}
+	}
+
+	public enum PopupLabelAlignment
+	{
 		Left,
 		Center,
 		Right,
@@ -175,6 +198,16 @@ namespace ORTS
 		public void AddSpace(int width, int height)
 		{
 			Add(new PopupSpacer(width, height));
+		}
+
+		public void AddHorizontalSeparator()
+		{
+			Add(new PopupSeparator(RemainingWidth, 5, 2));
+		}
+
+		public void AddVerticalSeparator()
+		{
+			Add(new PopupSeparator(5, RemainingHeight, 2));
 		}
 
 		public PopupControlLayoutOffset AddLayoutOffset(int left, int top, int right, int bottom)
