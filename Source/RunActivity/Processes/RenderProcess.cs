@@ -53,10 +53,13 @@ namespace ORTS
         public new bool IsMouseVisible = false;  // handles cross thread issues by signalling RenderProcess of a change
 
         // Diagnostic information
-        public float SmoothedFrameRate = -1; // frames-per-second, information displayed by InfoViewer in upper left
-        public float SmoothedFrameTime = -1; // seconds
-        public float SmoothedFrameJitter = -1; // seconds
-        public bool UpdateSlow = false;  // true if the render loop finishes faster than the update loop.
+        public float FrameRate = -1; // frames-per-second, information displayed by InfoViewer in upper left
+        public float FrameTime = -1; // seconds
+        public float FrameJitter = -1; // seconds
+		public float SmoothedFrameRate = -1;
+		public float SmoothedFrameTime = -1;
+		public float SmoothedFrameJitter = -1;
+		public bool UpdateSlow = false;  // true if the render loop finishes faster than the update loop.
         public bool LoaderSlow = false;  // true if the loader loop is falling behind
 		public int PrimitiveCount = 0;
 		public int PrimitivesPerFrame = 0;
@@ -303,24 +306,24 @@ namespace ORTS
 				float rate = 3.0f / elapsedRealTime;
 
 				// Calculate current frame rate, time and jitter.
-				float frameRate = 1.0f / elapsedRealTime;
-				float frameTime = elapsedRealTime;
-				float frameJitter = Math.Abs(lastElapsedTime - elapsedRealTime);
+				FrameRate = 1.0f / elapsedRealTime;
+				FrameTime = elapsedRealTime;
+				FrameJitter = Math.Abs(lastElapsedTime - elapsedRealTime);
 				lastElapsedTime = elapsedRealTime;
 
 				// Update smoothed frame rate, time and jitter.
 				if (SmoothedFrameRate < 0)
-					SmoothedFrameRate = frameRate;
+					SmoothedFrameRate = FrameRate;
 				else
-					SmoothedFrameRate = (SmoothedFrameRate * (rate - 1.0f) + frameRate) / rate;
+					SmoothedFrameRate = (SmoothedFrameRate * (rate - 1.0f) + FrameRate) / rate;
 				if (SmoothedFrameTime < 0)
-					SmoothedFrameTime = frameTime;
+					SmoothedFrameTime = FrameTime;
 				else
-					SmoothedFrameTime = (SmoothedFrameTime * (rate - 1.0f) + frameTime) / rate;
+					SmoothedFrameTime = (SmoothedFrameTime * (rate - 1.0f) + FrameTime) / rate;
 				if (SmoothedFrameJitter < 0)
-					SmoothedFrameJitter = frameJitter;
+					SmoothedFrameJitter = FrameJitter;
 				else
-					SmoothedFrameJitter = (SmoothedFrameJitter * (rate - 1.0f) + frameJitter) / rate;
+					SmoothedFrameJitter = (SmoothedFrameJitter * (rate - 1.0f) + FrameJitter) / rate;
 			}
 		}
     }// RenderProcess

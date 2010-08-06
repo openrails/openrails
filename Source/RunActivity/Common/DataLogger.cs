@@ -8,53 +8,42 @@ namespace ORTS
 {
     class DataLogger
     {
-        private int MAXFRAMES;
-        private int ARRAYSIZE;
-        private String[,] tempLog;
-        private int frameIter;
-        private int fieldIter;
+		readonly int CacheSize;
+		readonly StringBuilder Cache = new StringBuilder();
+		int CacheCount = 0;
+		bool FirstItem = true;
 
-        public DataLogger(int MaxFrames, int ArraySize)
+        public DataLogger(int cacheSize)
         {
-            MAXFRAMES = MaxFrames;
-            ARRAYSIZE = ArraySize;
-            tempLog = new String[MAXFRAMES, ARRAYSIZE];
-            frameIter = 0;
-            fieldIter = 0;
+			CacheSize = cacheSize;
         }
 
-        public void Store(String data)
+        public void Data(string data)
         {
-            tempLog[frameIter, fieldIter] = data;
-            fieldIter++;
-            if (fieldIter == ARRAYSIZE)
-            {
-                fieldIter = 0;
-                frameIter++;
-                if (frameIter == MAXFRAMES)
-                    Dump();
-            }
-        }
+			if (!FirstItem)
+				Cache.Append(',');
+			Cache.Append(data);
+			FirstItem = false;
+		}
 
-        public void Dump()
+		public void End()
+		{
+			Cache.AppendLine();
+			if (++CacheCount >= CacheSize)
+				Flush();
+			FirstItem = true;
+		}
+
+        public void Flush()
         {
-            //TODO: this whole function should be in a thread maybe
-            using (StreamWriter fileout = File.AppendText("dumplog.txt"))
-            {
-                for (int a = 0; a < frameIter; a++)
-                {
-                    for (int b = 0; b < ARRAYSIZE; b++)
-                    {
-                        fileout.Write(tempLog[a, b]);
-                        if (b == (ARRAYSIZE - 1))
-                            fileout.Write('\n');
-                        else
-                            fileout.Write(", ");
-                    }
-                }
-                fileout.Close();
-                frameIter = 0;
-            }
-        }
+			//TODO: this whole function should be in a thread maybe
+			using (StreamWriter file = File.AppendText("dump.csv"))
+			{
+				file.Write(Cache);
+			    file.Close();
+			}
+			Cache.Length = 0;
+			CacheCount = 0;
+		}
     }
 }

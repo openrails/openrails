@@ -13,6 +13,9 @@ namespace ORTS
 		public double Wall { get; private set; }
 		public double CPU { get; private set; }
 		public double Wait { get { return Wall > CPU ? Wall - CPU : 0; } }
+		public double SmoothedWall { get; private set; }
+		public double SmoothedCPU { get; private set; }
+		public double SmoothedWait { get { return SmoothedWall > SmoothedCPU ? SmoothedWall - SmoothedCPU : 0; } }
 		readonly Stopwatch TimeTotal;
 		readonly Stopwatch TimeRunning;
 		TimeSpan TimeCPU;
@@ -49,12 +52,17 @@ namespace ORTS
 
 		public void Mark()
 		{
+			// Stop timers.
 			var running = TimeRunning.IsRunning;
 			TimeTotal.Stop();
 			TimeRunning.Stop();
+			// Calculate the Wall and CPU times from timers.
+			Wall = 100d * (double)TimeRunning.ElapsedMilliseconds / (double)TimeTotal.ElapsedMilliseconds;
+			CPU = 100d * (double)TimeCPU.TotalMilliseconds / (double)TimeTotal.ElapsedMilliseconds;
 			var rate = 1000d / TimeTotal.ElapsedMilliseconds;
-			Wall = (Wall * (rate - 1) + 100d * (double)TimeRunning.ElapsedMilliseconds / (double)TimeTotal.ElapsedMilliseconds) / rate;
-			CPU = (CPU * (rate - 1) + 100d * (double)TimeCPU.TotalMilliseconds / (double)TimeTotal.ElapsedMilliseconds) / rate;
+			SmoothedWall = (SmoothedWall * (rate - 1) + Wall) / rate;
+			SmoothedCPU = (SmoothedCPU * (rate - 1) + CPU) / rate;
+			// Resume timers.
 			TimeTotal.Reset();
 			TimeRunning.Reset();
 			TimeCPU = TimeSpan.Zero;

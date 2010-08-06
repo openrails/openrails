@@ -28,16 +28,16 @@ namespace ORTS
     /// </summary>
     public class InfoDisplay
     {
-        StringBuilder TextBuilder = new StringBuilder();
-        DataLogger OutLog = new DataLogger(15,14); //15 frames before dumping, 14 items per frame
-        Matrix Matrix = Matrix.Identity;
-        SpriteBatchMaterial Material;
-        TextPrimitive TextPrimitive = new TextPrimitive();
-        Viewer3D Viewer;
-        int InfoAmount = 1;
+        readonly StringBuilder TextBuilder = new StringBuilder();
+        readonly DataLogger Logger = new DataLogger(15); //15 frames before dumping
+        readonly TextPrimitive TextPrimitive = new TextPrimitive();
+        readonly SpriteBatchMaterial Material;
+        readonly Viewer3D Viewer;
+		Matrix Matrix = Matrix.Identity;
+		int InfoAmount = 1;
         int frameNum = 0;
-        bool InfoLog = false;
-        private double lastUpdateTime = 0;   // update text message only 10 times per second
+        bool LoggerEnabled = false;
+        double lastUpdateTime = 0;   // update text message only 10 times per second
 		ElapsedTime ElapsedTime = new ElapsedTime();
 
         int processors = System.Environment.ProcessorCount;
@@ -63,17 +63,19 @@ namespace ORTS
             }
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F12))
             {
-                InfoLog = !InfoLog;
-                if (InfoLog == false)
-                    OutLog.Dump();
-                else
-                {
-                    using (StreamWriter fileout = File.AppendText("dumplog.txt"))
-                    {
-                        fileout.WriteLine(DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss"));
-                        fileout.Close();
-                    }
-                }
+                LoggerEnabled = !LoggerEnabled;
+				if (LoggerEnabled == false)
+				{
+					Logger.Flush();
+				}
+				else
+				{
+					using (StreamWriter file = File.AppendText("dump.csv"))
+					{
+						file.WriteLine("SVN,Frame,FPS,Frame Time,Frame Jitter,Primitives,Shadow Primitives,State Changes,Image Changes,Processors,Render Process,Updater Process,Loader Process,Camera TileX, Camera TileZ, Camera Location");
+						file.Close();
+					}
+				}
             }
         }
 
@@ -83,7 +85,7 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            frameNum++;
+			frameNum++;
 			ElapsedTime += elapsedTime;
 
             if (Program.RealTime - lastUpdateTime >= 0.25)
@@ -94,30 +96,34 @@ namespace ORTS
 				UpdateDialogs(ElapsedTime);
                 UpdateText();
 
-                //Here's where the logger stores the data from each frame
-                if (InfoLog)
-                {
-                    OutLog.Store(Program.Revision); //SVN Revision
-                    OutLog.Store(frameNum.ToString()); //Frame Number
-                    OutLog.Store(Math.Round(Viewer.RenderProcess.SmoothedFrameRate).ToString()); //FPS
-                    OutLog.Store(Viewer.RenderProcess.SmoothedFrameJitter.ToString("F4")); //Jitter
-                    OutLog.Store(Viewer.RenderProcess.PrimitivesPerFrame.ToString()); //Primitives
-                    OutLog.Store(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
-                    OutLog.Store(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
-                    OutLog.Store(processors.ToString()); //Processors
-					OutLog.Store(string.Format("{0,3:F0}", Viewer.RenderProfiler.Wall)); //Render Process %
-					OutLog.Store(string.Format("{0,3:F0}", Viewer.UpdaterProfiler.Wall)); //Update Process %
-					OutLog.Store(string.Format("{0,3:F0}", Viewer.LoaderProfiler.Wall)); //Loader Process %
-                    OutLog.Store(Viewer.Camera.TileX.ToString());     //
-                    OutLog.Store(Viewer.Camera.TileZ.ToString());     // Camera coordinates
-                    OutLog.Store(Viewer.Camera.Location.ToString());  //
-                }
-
 				ElapsedTime.Reset();
             }
+
             TextPrimitive.Text = TextBuilder.ToString();
-            frame.AddPrimitive( Material, TextPrimitive, ref Matrix);
-        }
+            frame.AddPrimitive(Material, TextPrimitive, ref Matrix);
+
+			//Here's where the logger stores the data from each frame
+			if (LoggerEnabled)
+			{
+				Logger.Data(Program.Revision); //SVN Revision
+				Logger.Data(frameNum.ToString()); //Frame Number
+				Logger.Data(Viewer.RenderProcess.FrameRate.ToString("F0")); //FPS
+				Logger.Data(Viewer.RenderProcess.FrameTime.ToString("F4")); //Frame Time
+				Logger.Data(Viewer.RenderProcess.FrameJitter.ToString("F4")); //Frame Jitter
+				Logger.Data(Viewer.RenderProcess.PrimitivesPerFrame.ToString()); //Primitives
+				Logger.Data(Viewer.RenderProcess.ShadowPrimitivesPerFrame.ToString()); //Shadow Primitives
+				Logger.Data(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
+				Logger.Data(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
+				Logger.Data(processors.ToString()); //Processors
+				Logger.Data(Viewer.RenderProfiler.Wall.ToString("F0")); //Render Process %
+				Logger.Data(Viewer.UpdaterProfiler.Wall.ToString("F0")); //Updater Process %
+				Logger.Data(Viewer.LoaderProfiler.Wall.ToString("F0")); //Loader Process %
+				Logger.Data(Viewer.Camera.TileX.ToString());     //
+				Logger.Data(Viewer.Camera.TileZ.ToString());     // Camera coordinates
+				Logger.Data(Viewer.Camera.Location.ToString());  //
+				Logger.End();
+			}
+		}
 
 		void UpdateDialogs(ElapsedTime elapsedTime)
 		{
@@ -230,7 +236,7 @@ namespace ORTS
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
             TextBuilder.AppendLine(); //notepad pls.
 			TextBuilder.AppendLine("DEBUG INFORMATION");
-            TextBuilder.AppendFormat("Logging Enabled = {0}", InfoLog); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Logging Enabled = {0}", LoggerEnabled); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Memory = {0:N0} KB", memory / 1024); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Frame Time = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
@@ -240,10 +246,10 @@ namespace ORTS
 			TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Processors = {0}", processors); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.Wall, Viewer.RenderProfiler.Wait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Update Process = {0:F0}% ({1:F0}% wait)", Viewer.UpdaterProfiler.Wall, Viewer.UpdaterProfiler.Wait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait)", Viewer.LoaderProfiler.Wall, Viewer.LoaderProfiler.Wait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.Wall + Viewer.UpdaterProfiler.Wall + Viewer.LoaderProfiler.Wall, Viewer.RenderProfiler.Wait + Viewer.UpdaterProfiler.Wait + Viewer.LoaderProfiler.Wait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.SmoothedWall, Viewer.RenderProfiler.SmoothedWait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Update Process = {0:F0}% ({1:F0}% wait)", Viewer.UpdaterProfiler.SmoothedWall, Viewer.UpdaterProfiler.SmoothedWait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait)", Viewer.LoaderProfiler.SmoothedWall, Viewer.LoaderProfiler.SmoothedWait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.SmoothedWall + Viewer.UpdaterProfiler.SmoothedWall + Viewer.LoaderProfiler.SmoothedWall, Viewer.RenderProfiler.SmoothedWait + Viewer.UpdaterProfiler.SmoothedWait + Viewer.LoaderProfiler.SmoothedWait); TextBuilder.AppendLine();
             // Added by rvg....
             TextBuilder.Append("Tile: "); TextBuilder.Append(Viewer.Camera.TileX.ToString()); // Camera coordinates
             TextBuilder.Append(" ");
