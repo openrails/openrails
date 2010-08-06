@@ -127,10 +127,26 @@ namespace ORTS
 
 		void UpdateDialogs(ElapsedTime elapsedTime)
 		{
-			var poiDistance = 0f;
-			var poiBackwards = false;
-			var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
-			Viewer.TrackMonitor.Update(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, TrackMonitorSignalAspect.None, poiType, poiDistance);
+			if (Viewer.TrackMonitor.Visible)
+			{
+				var poiDistance = 0f;
+				var poiBackwards = false;
+				var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
+				Viewer.TrackMonitor.Update(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, TrackMonitorSignalAspect.None, poiType, poiDistance);
+			}
+			if (Viewer.CompassWindow.Visible)
+			{
+				Vector2 compassDir;
+				compassDir.X = Viewer.Camera.XNAView.M11;
+				compassDir.Y = Viewer.Camera.XNAView.M13;
+				var heading = Math.Acos(compassDir.X);
+				if (compassDir.Y > 0) heading = 2 * Math.PI - heading;
+
+				double latitude = 0;
+				double longitude = 0;
+				new WorldLatLon().ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
+				Viewer.CompassWindow.Update((float)heading, (float)latitude, (float)longitude);
+			}
 		}
 
         public void UpdateText()

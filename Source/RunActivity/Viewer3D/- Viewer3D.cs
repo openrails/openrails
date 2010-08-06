@@ -65,6 +65,7 @@ namespace ORTS
         InfoDisplay InfoDisplay;
 		public PopupWindows PopupWindows = null;
 		public TrackMonitor TrackMonitor;
+		public CompassWindow CompassWindow;
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer = null;
         public WireDrawer WireDrawer = null;
@@ -269,6 +270,7 @@ namespace ORTS
             // Initialse popup windows.
 			PopupWindows = new PopupWindows(this);
 			TrackMonitor = new TrackMonitor(PopupWindows);
+			CompassWindow = new CompassWindow(PopupWindows);
 
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
@@ -362,7 +364,8 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.PageUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
             if (UserInput.IsPressed(Keys.PageDown)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
-            if (UserInput.IsPressed(Keys.F4)) TrackMonitor.Visible = !TrackMonitor.Visible;
+			if (UserInput.IsPressed(Keys.F4)) TrackMonitor.Visible = !TrackMonitor.Visible;
+			if (UserInput.IsPressed(Keys.D0)) CompassWindow.Visible = !CompassWindow.Visible;
 
             // Change view point - cab, passenger, outside, etc
             if (UserInput.IsPressed(Keys.D1)) CabCamera.Activate();
