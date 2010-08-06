@@ -248,6 +248,10 @@ namespace ORTS
 
         public List<ORTSTrigger> Triggers = new List<ORTSTrigger>();
 
+        private Queue<KeyValuePair<ISoundSource, bool>> _qPlay = new Queue<KeyValuePair<ISoundSource, bool>>();
+        public ISoundSource _playingSound = null;
+        private double _stoppedAt = 0;
+
         protected MSTS.SMSStream MSTSStream;
 
         private ORTSInitialTrigger _InitialTrigger = null;
@@ -328,6 +332,8 @@ namespace ORTS
                 ISound.Position = IRRposition;
             }
 
+            CheckSoundQueue();
+
             SetFreqAndVolume();
         }
 
@@ -347,16 +353,24 @@ namespace ORTS
                 }
                 if (MSTSStream.VolumeCurve != null)
                 {
-                    if (SoundSource.setDeactivate)
-                    {
-                        Volume = 0;
-                    }
-                    else
-                    {
-                        float x = ReadValue(MSTSStream.VolumeCurve.Control, car);
-                        float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
-                        Volume = y;
-                    }
+                    float x = ReadValue(MSTSStream.VolumeCurve.Control, car);
+                    float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
+                    Volume = y;
+                }
+
+                // By GeorgeS
+                // No volume curve, set Volume to 1, it will set volume
+                // This is for a sound which was initially deactivated
+                else
+                {
+                    Volume = 1;
+                }
+
+                // By GeorgeS
+                // BTW, if the sound must be deactivated, set it's volume to 0
+                if (SoundSource.setDeactivate)
+                {
+                    Volume = 0;
                 }
             }
         }
@@ -408,10 +422,13 @@ namespace ORTS
         {
             if (ISound != null)
             {
+                Console.WriteLine("Stopping: " + _playingSound.Name.Substring(_playingSound.Name.LastIndexOf('\\')));
                 ISound.Stop();
                 ISound = null;
-                RepeatingSound = null;
             }
+
+            RepeatingSound = null;
+            _playingSound = null;
         }
 
         /// <summary>
@@ -420,6 +437,7 @@ namespace ORTS
         public void StopRepeating()
         {
             RepeatingSound = null;
+            _playingSound = null;
         }
 
         /// <summary>
@@ -447,6 +465,41 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Check the playable sound queue. If the previous stopped and available a next sound
+        /// it begins to play. Timed solution!
+        /// </summary>
+        public void CheckSoundQueue()
+        {
+            if (_playingSound != null)
+            {
+                if (!WAVIrrKlangFileFactory.isPlaying(_playingSound.Name))
+                {
+                    if (_stoppedAt == 0)
+                    {
+                        _stoppedAt = Program.RealTime;
+                        _stoppedAt += WAVIrrKlangFileFactory.Weigth(_playingSound.Name) * .02;
+
+                    }
+                    else if (_stoppedAt + .5 < Program.RealTime)
+                    {
+                        _stoppedAt = 0;
+                        Stop();
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (_qPlay.Count > 0)
+            {
+                KeyValuePair<ISoundSource, bool> kvp = _qPlay.Dequeue();
+                Play3D(kvp.Value, kvp.Key);
+            }
+        }
+
+        /// <summary>
         /// Play the specified sound 
         /// at the default volume.
         /// </summary>
@@ -455,8 +508,19 @@ namespace ORTS
         public void Play3D( bool repeat, IrrKlang.ISoundSource iSoundSource )
         {
 
+            // Queue instead of stopping
             if (ISound != null)
-                Stop();
+            {
+                //Stop();
+                // Queue only if different from current or the last
+                if (_playingSound.Name != iSoundSource.Name && (
+                        _qPlay.Count == 0 ||
+                        _qPlay.ElementAt(_qPlay.Count - 1).Key.Name != iSoundSource.Name))
+                {
+                    _qPlay.Enqueue(new KeyValuePair<ISoundSource, bool>(iSoundSource, repeat));
+                }
+                return;
+            }
 
             Viewer3D viewer = SoundSource.Viewer;
 
@@ -480,9 +544,14 @@ namespace ORTS
                 return;
             }
 
+            _playingSound = iSoundSource;
+
             // Prevent volume glitches - by GeorgeS
             //Volume = 1.0f;
             SetFreqAndVolume();
+            // It is unnecessary - never fired.
+            //ISound.setSoundStopEventReceiver(new ORTSSoundStopReceiver(), this);
+
             if (ISound.Paused)
             {
                 ISound.Paused = false;
@@ -492,8 +561,6 @@ namespace ORTS
             {
                 RepeatingSound = iSoundSource;  // remember this so we can reactivate if needed
                 // In order to properly stop the looping - By GeorgeS
-                if (ISound != null)
-                    ISound.setSoundStopEventReceiver(new ORTSSoundStopReceiver(), this);
             }
             else
                 RepeatingSound = null;
@@ -508,7 +575,11 @@ namespace ORTS
         {
             SoundStream ss = userData as SoundStream;
             if (ss != null)
+            {
                 ss.StopRepeating();
+                ss.CheckSoundQueue();
+                Console.WriteLine("Sound stopped: " + ss._playingSound.Name);
+            }
         }
     }
 

@@ -65,6 +65,45 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Check if a sound file is still playing
+        /// </summary>
+        /// <param name="FileName">Name of the file</param>
+        /// <returns>True if still playing</returns>
+        public static bool isPlaying(string FileName)
+        {
+            if (FileStreams.Keys.Contains(FileName))
+            {
+                return FileStreams[FileName].isPlaying;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tries to find a suitable number to represent the Length
+        /// </summary>
+        /// <param name="FileName">Name of the file</param>
+        /// <returns>The relative weight</returns>
+        public static int Weigth(string FileName)
+        {
+            if (FileStreams.Keys.Contains(FileName))
+            {
+                WAVFileStream wfs = FileStreams[FileName];
+                int x = (int)Math.Log10(wfs.LoopCount * wfs.LoopedLength);
+#if DEBUGSCR
+                Console.WriteLine("Stopping X is: " + x.ToString());
+#endif
+                return x;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
         /// Provide error free call to BeginLoop on Stream
         /// </summary>
         /// <param name="FileName">Name of the file, also key in dictionary</param>
@@ -149,6 +188,9 @@ namespace ORTS
         private int _SPS = 2;
 
         public bool isClosed = false;
+        public bool isPlaying = true;
+
+        public int LoopCount;
         
         /// <summary>
         /// Contructor, resets loop information, also calls base constructor
@@ -159,6 +201,7 @@ namespace ORTS
         {
             _isShouldFinish = true;
             _isInInternalLoop = false;
+            LoopCount = 1;
         }
 
         public override void Close()
@@ -167,7 +210,19 @@ namespace ORTS
             Console.WriteLine("(Closing file: " + this.Name.Substring(this.Name.LastIndexOf('\\')) + ")");
 #endif
             isClosed = true;
+            isPlaying = false;
             base.Close();
+        }
+
+        /// <summary>
+        /// Gets looped length
+        /// </summary>
+        public long LoopedLength
+        {
+            get
+            {
+                return _InternalLength;
+            }
         }
 
         /// <summary>
@@ -238,9 +293,12 @@ namespace ORTS
             // If not, it is the end of the loop, so no more data
             if (count > rdb && !_isShouldFinish)
             {
+                LoopCount++;
                 Seek(BeginPosition, SeekOrigin.Begin);
                 rdb += base.Read(array, offset + rdb, count - rdb);
             }
+
+            isPlaying = rdb != 0;
 
             // return the read bytes number, if less than expected, it will indicate the end of the stream
             return rdb;
