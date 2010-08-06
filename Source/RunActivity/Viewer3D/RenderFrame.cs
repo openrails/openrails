@@ -41,7 +41,13 @@ namespace ORTS
 
     public class RenderFrame
     {
-        readonly RenderProcess RenderProcess;
+		const int ShadowMapSunDistance = 1000;
+		const int ShadowMapSize = 4096;
+		const int ShadowMapViewSize = 512;
+		const float ShadowMapViewNear = 0f;
+		const float ShadowMapViewFar = 2000f;
+	
+		readonly RenderProcess RenderProcess;
         readonly List<RenderItem> RenderItems;
 		readonly List<RenderItem> RenderShadowItems;
         int RenderMaxSequence = 0;
@@ -70,7 +76,8 @@ namespace ORTS
 		public void PrepareFrame(ElapsedTime elapsedTime)
 		{
 			var cameraLocation = RenderProcess.Viewer.Camera.Location * new Vector3(1, 1, -1);
-			ShadowMapLightView = Matrix.CreateLookAt(cameraLocation + 1000 * RenderProcess.Viewer.SkyDrawer.solarDirection, cameraLocation, Vector3.Up);
+			var sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+			ShadowMapLightView = Matrix.CreateLookAt(cameraLocation + ShadowMapSunDistance * sunDirection, cameraLocation, Vector3.Up);
 			ShadowMapLightProj = Matrix.CreateOrthographic(ShadowMapViewSize, ShadowMapViewSize, ShadowMapViewNear, ShadowMapViewFar);
 			ShadowMapBound = new BoundingFrustum(ShadowMapLightView * ShadowMapLightProj);
 		}
@@ -136,10 +143,6 @@ namespace ORTS
             //   - and to minimize render state changes ( sorting was taking too long! for this )
         }
 
-        const int ShadowMapSize = 4096;
-		const int ShadowMapViewSize = 512;
-		const float ShadowMapViewNear = 0.01f;
-		const float ShadowMapViewFar = 2500.0f;
 		public bool IsInShadowMap(Vector3 mstsLocation, float objectRadius, float objectViewingDistance)
 		{
 			if (ShadowMapRenderTarget == null)

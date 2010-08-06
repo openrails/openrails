@@ -235,8 +235,9 @@ namespace ORTS
             TextBuilder.AppendFormat("Memory = {0:N0} KB", memory / 1024); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Frame Time = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Frame Jitter = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Render Primitives = {0:N0}", Viewer.RenderProcess.PrimitivesPerFrame); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Primitives = {0:N0}", Viewer.RenderProcess.PrimitivesPerFrame); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Shadow Primitives = {0:N0}", Viewer.RenderProcess.ShadowPrimitivesPerFrame); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Processors = {0}", processors); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.Wall, Viewer.RenderProfiler.Wait); TextBuilder.AppendLine();

@@ -58,9 +58,11 @@ namespace ORTS
         public float SmoothedFrameJitter = -1; // seconds
         public bool UpdateSlow = false;  // true if the render loop finishes faster than the update loop.
         public bool LoaderSlow = false;  // true if the loader loop is falling behind
-        public int PrimitiveCount = 0;
-        public int PrimitivesPerFrame = 0;
-        public int RenderStateChangesCount = 0;
+		public int PrimitiveCount = 0;
+		public int PrimitivesPerFrame = 0;
+		public int ShadowPrimitiveCount = 0;
+		public int ShadowPrimitivesPerFrame = 0;
+		public int RenderStateChangesCount = 0;
         public int RenderStateChangesPerFrame = 0;
         public int ImageChangesCount = 0;
         public int ImageChangesPerFrame = 0;
@@ -190,11 +192,10 @@ namespace ORTS
             CurrentFrame.Draw(GraphicsDevice);
             Viewer.PopupWindows.Draw(GraphicsDevice);
 
-            // Diagnositics
-            // double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;
-            // TODO - compute Jitter = totalRealSeconds - CurrentFrame.TargetRenderTimeS;
             PrimitivesPerFrame = PrimitiveCount;
             PrimitiveCount = 0;
+			ShadowPrimitivesPerFrame = ShadowPrimitiveCount;
+			ShadowPrimitiveCount = 0;
             RenderStateChangesPerFrame = RenderStateChangesCount;
             RenderStateChangesCount = 0;
             ImageChangesPerFrame = ImageChangesCount;

@@ -1244,7 +1244,7 @@ namespace ORTS
 			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
 			{
 				pass.Begin();
-				RenderProcess.PrimitiveCount++;
+				RenderProcess.ShadowPrimitiveCount++;
 				renderPrimitive.Draw(graphicsDevice);
 				pass.End();
 			}

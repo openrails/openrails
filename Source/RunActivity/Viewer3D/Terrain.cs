@@ -226,6 +226,7 @@ namespace ORTS
         private int TileX, TileZ;               
         private Vector3 XNAPatchLocation;      // in XNA world coordinates relative to the center of the tile
         private VertexBuffer PatchVertexBuffer;  // separate vertex buffer for each patch
+		private float AverageElevation;
 
         public Material PatchMaterial;
 
@@ -270,7 +271,7 @@ namespace ORTS
 
             float cx =  -1024+(int)patch.CenterX;
             float cz =  -1024-(int)patch.CenterZ;
-            XNAPatchLocation = new Vector3(cx, 0, cz);
+			XNAPatchLocation = new Vector3(cx, TFile.Floor, cz);
             X = patch.X;
             Y = patch.Y;
             W = patch.W;
@@ -302,6 +303,7 @@ namespace ORTS
 			int dTileZ = TileZ - Viewer.Camera.TileZ;
 			Vector3 mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
 			Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
+			mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
 			frame.AddAutoPrimitive(mstsLocation, 150f, 2000f, PatchMaterial, this, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
 		}
 
@@ -418,7 +420,7 @@ namespace ORTS
 
         private void SetupVertexBuffer()
         {
-
+			var totalElevation = 0f;
             VertexPositionNormalTexture[] vertexData = new VertexPositionNormalTexture[17 * 17];
             int iV = 0;
             // for each vertex
@@ -439,7 +441,8 @@ namespace ORTS
 
                     // V represents the north/south shift
 
-                    float y = Elevation(x, z);
+                    float y = Elevation(x, z) - TFile.Floor;
+					totalElevation += y;
 
                     vertexData[iV].Position = new Vector3(w, y, n);
                     vertexData[iV].TextureCoordinate = new Vector2(U, V);
@@ -448,6 +451,7 @@ namespace ORTS
                 }
             PatchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Length, BufferUsage.WriteOnly);
             PatchVertexBuffer.SetData(vertexData);
+			AverageElevation = totalElevation / 289;
         }
 
 

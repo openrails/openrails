@@ -5,7 +5,7 @@
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
 // General values
-float4x4 World;               // model -> world
+//float4x4 World;               // model -> world (currently unused)
 //float4x4 View;                // world -> view (currently unused)
 //float4x4 Projection;          // view -> projection (currently unused)
 float4x4 WorldViewProjection; // model -> world -> view -> projection
