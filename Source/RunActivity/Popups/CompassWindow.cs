@@ -44,9 +44,13 @@ namespace ORTS
 			return vbox;
 		}
 
-		public void Update(float heading, float latitude, float longitude)
+		public void Update(float heading)
 		{
 			Compass.Heading = MathHelper.ToDegrees(heading);
+		}
+
+		public void UpdateText(float latitude, float longitude)
+		{
 			Latitude.Text = MathHelper.ToDegrees(latitude).ToString("F6");
 			Longitude.Text = MathHelper.ToDegrees(longitude).ToString("F6");
 		}
@@ -55,6 +59,7 @@ namespace ORTS
 	public class PopupCompass : PopupControl
 	{
 		static Texture2D CompassTexture;
+		static int[] HeadingHalfWidths;
 		public float Heading;
 
 		public PopupCompass(int width, int height)
@@ -69,17 +74,23 @@ namespace ORTS
 				CompassTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
 				CompassTexture.SetData(new[] { Color.White });
 			}
+			if (HeadingHalfWidths == null)
+			{
+				HeadingHalfWidths = new int[12];
+				for (var i = 0; i < 12; i++)
+					HeadingHalfWidths[i] = (int)(Materials.PopupWindowMaterial.DefaultFont.MeasureString((i * 30).ToString()).X / 2);
+			}
 			const int headingScale = 2;
 			var height = (int)((Position.Height - 16) / 3);
 			for (float heading = 0; heading < 360; heading += 10)
 			{
 				var x = Position.Width / 2 + (int)(((heading - Heading + 360 + 180) % 360 - 180) * headingScale);
-				if ((x >= 0) && (x <= Position.Width))
+				if ((x >= 0) && (x < Position.Width))
 				{
 					if (heading % 30 == 0)
 					{
-						var textHalfWidth = (int)(Materials.PopupWindowMaterial.DefaultFont.MeasureString(heading.ToString()).X / 2);
-						if ((x - textHalfWidth >= 0) && (x + textHalfWidth <= Position.Width))
+						var textHalfWidth = HeadingHalfWidths[(int)heading / 30];
+						if ((x - textHalfWidth >= 0) && (x + textHalfWidth < Position.Width))
 							spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, heading.ToString(), new Vector2(offset.X + Position.X + x - textHalfWidth, offset.Y + Position.Y), Color.White);
 						spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + 16, 1, height * 2), Color.White);
 					}

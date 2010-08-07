@@ -87,13 +87,14 @@ namespace ORTS
         {
 			frameNum++;
 			ElapsedTime += elapsedTime;
+			UpdateDialogs(elapsedTime);
 
             if (Program.RealTime - lastUpdateTime >= 0.25)
             {
                 double elapsedRealSeconds = Program.RealTime - lastUpdateTime;
                 lastUpdateTime = Program.RealTime;
                 Profile(elapsedRealSeconds);
-				UpdateDialogs(ElapsedTime);
+				UpdateDialogsText(ElapsedTime);
                 UpdateText();
 
 				ElapsedTime.Reset();
@@ -127,13 +128,6 @@ namespace ORTS
 
 		void UpdateDialogs(ElapsedTime elapsedTime)
 		{
-			if (Viewer.TrackMonitor.Visible)
-			{
-				var poiDistance = 0f;
-				var poiBackwards = false;
-				var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
-				Viewer.TrackMonitor.Update(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, TrackMonitorSignalAspect.None, poiType, poiDistance);
-			}
 			if (Viewer.CompassWindow.Visible)
 			{
 				Vector2 compassDir;
@@ -141,11 +135,25 @@ namespace ORTS
 				compassDir.Y = Viewer.Camera.XNAView.M13;
 				var heading = Math.Acos(compassDir.X);
 				if (compassDir.Y > 0) heading = 2 * Math.PI - heading;
+				Viewer.CompassWindow.Update((float)heading);
+			}
+		}
 
+		void UpdateDialogsText(ElapsedTime elapsedTime)
+		{
+			if (Viewer.TrackMonitor.Visible)
+			{
+				var poiDistance = 0f;
+				var poiBackwards = false;
+				var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
+				Viewer.TrackMonitor.UpdateText(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, TrackMonitorSignalAspect.None, poiType, poiDistance);
+			}
+			if (Viewer.CompassWindow.Visible)
+			{
 				double latitude = 0;
 				double longitude = 0;
 				new WorldLatLon().ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
-				Viewer.CompassWindow.Update((float)heading, (float)latitude, (float)longitude);
+				Viewer.CompassWindow.UpdateText((float)latitude, (float)longitude);
 			}
 		}
 

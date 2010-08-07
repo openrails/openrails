@@ -128,7 +128,7 @@ namespace ORTS
 			return String.Format("{0:F1}mi", distance / 1609.344);
 		}
 
-		public void Update(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, TrackMonitorSignalAspect signalAspect, DispatcherPOIType poiType, float poiDistance)
+		public void UpdateText(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, TrackMonitorSignalAspect signalAspect, DispatcherPOIType poiType, float poiDistance)
 		{
 			var speedProjectedMpS = Math.Max(0, speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds);
 			SpeedCurrent.Text = FormatSpeed(speedMpS, milepostUnitsMetric);

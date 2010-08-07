@@ -56,7 +56,7 @@ namespace ORTS
 			if (Viewer.WindowGlass)
 			{
 				// Buffer for screen texture, also same size as viewport and using the backbuffer format.
-				if (Screen == null)
+				if ((Screen == null) || (Screen.Width != graphicsDevice.PresentationParameters.BackBufferWidth) || (Screen.Height != graphicsDevice.PresentationParameters.BackBufferHeight))
 					Screen = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
 				graphicsDevice.ResolveBackBuffer(Screen);
 			}

@@ -20,13 +20,13 @@
 
 
 using System;
-using System.Windows.Forms;
-using System.IO;
-using MSTS;
-using System.Threading;
-using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+using Microsoft.Win32;
+using MSTS;
 
 namespace ORTS
 {
@@ -49,85 +49,104 @@ namespace ORTS
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static void Main(string[] args)
-        {
-            SetBuildRevision();
+		static void Main(string[] args)
+		{
+			SetBuildRevision();
 
-            UserDataFolder = Path.GetDirectoryName( Path.GetDirectoryName(Application.UserAppDataPath));
+			UserDataFolder = Path.GetDirectoryName(Path.GetDirectoryName(Application.UserAppDataPath));
 
-            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+			RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
 
-            if (IsWarningsOn()) EnableLogging();
+			if (IsWarningsOn())
+				EnableLogging();
 
-            if (!ValidateArgs(args)) return;
+			try
+			{
+				RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
+				if (RK != null)
+				{
+					TrainLightsEnabled = (1 == (int)RK.GetValue("TrainLights", 0));
+					BrakePipeChargingRatePSIpS = (int)RK.GetValue("BrakePipeChargingRate", (int)21);
+					GraduatedRelease = (1 == (int)RK.GetValue("GraduatedRelease", 0));
+				}
+			}
+			catch (Exception error)
+			{
+				Console.Error.WriteLine(error);
+			}
 
-            try
-            {
-                RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-                if (RK != null)
-                {
-                    TrainLightsEnabled = (1 == (int)RK.GetValue("TrainLights", 0));
-                    BrakePipeChargingRatePSIpS = (int)RK.GetValue("BrakePipeChargingRate", (int)21);
-                    GraduatedRelease = (1 == (int)RK.GetValue("GraduatedRelease", 0));
-                }
-            }
-            catch (System.Exception error)
-            {
-                Console.WriteLine("Registry problem - " + error.Message);
-            }
+			// Look for an action to perform.
+			var action = "";
+			foreach (var possibleAction in new[] { "start", "start-profile", "resume", "random", "runtest" })
+				if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction))
+					action = possibleAction;
 
+			// Collect all non-options as data.
+			var actionData = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
 
-            if (args[0] == "-runtest")
+			// No action, check for data; for now assume any data is good data.
+			if ((action.Length == 0) && (actionData.Length > 0))
+				action = "start";
 
-                Testing.Test();
-
-            else if (args[0] == "-random")
-            {
-                args[0] = Testing.GetRandomActivity();
-                Start(args);
-            }
-            else if (args[0] == "-resume")
-
-                Resume();
-
-            else
-
-                Start(args);
-
-        }
+			// Do the action specified or write out some help.
+			switch (action)
+			{
+				case "start":
+				case "start-profile":
+					Start(actionData, action == "start-profile");
+					break;
+				case "resume":
+					Resume();
+					break;
+				case "random":
+					Start(new[] { Testing.GetRandomActivity() }, false);
+					break;
+				case "runtest":
+					Testing.Test();
+					break;
+				default:
+					Console.WriteLine("Missing activity file name");
+					Console.WriteLine("   ie RunActivity \"c:\\program files\\microsoft games\\train simulator\\routes\\usa1\\activites\\xxx.act\"");
+					Console.WriteLine();
+					Console.WriteLine("Or launch the OpenRails program and select from the menu.");
+					Console.ReadKey();
+					break;
+			}
+		}
 
 
         /// <summary>
         /// Run the specified activity from the beginning.
         /// </summary>
-        public static void Start(string[] args)
-        {
-            try
-            {
-                ActivityPath = args[0];
+		public static void Start(string[] args, bool enableProfiling)
+		{
+			try
+			{
+				ActivityPath = args[0];
 
-                if (args.Length == 1)
-                    Console.WriteLine("Starting Activity = " + ActivityPath);
-                else
-                    Console.WriteLine("Starting Explore = " + args[0] + " " + args[1]);
-                Console.WriteLine();
-                Console.WriteLine("------------------------------------------------");
+				if (args.Length == 1)
+					Console.WriteLine("Starting Activity = " + args[0]);
+				else
+					Console.WriteLine("Starting Explore = " + args[0] + " " + args[1]);
+				Console.WriteLine();
+				Console.WriteLine("------------------------------------------------");
 
-                Simulator = new Simulator(ActivityPath);
-                if (args.Length == 1)
-                    Simulator.SetActivity(args[0]);
-                else
-                    Simulator.SetExplore(args[0],args[1],args[2],args[3],args[4]);
-                Simulator.Start();
-                Viewer = new Viewer3D(Simulator);
-                Viewer.Run();
-            }
-            catch (System.Exception error)
-            {
-                Console.Error.WriteLine(error);
-                MessageBox.Show(error.ToString());
-            }
-        }
+				Simulator = new Simulator(args[0]);
+				if (args.Length == 1)
+					Simulator.SetActivity(args[0]);
+				else
+					Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+				Simulator.Start();
+				Viewer = new Viewer3D(Simulator);
+				Viewer.Profiling = enableProfiling;
+				Viewer.Run();
+			}
+			catch (Exception error)
+			{
+				Console.Error.WriteLine(error);
+				MessageBox.Show(error.ToString());
+			}
+		}
 
 
         /// <summary>
@@ -151,9 +170,9 @@ namespace ORTS
                     Console.WriteLine("\nSaved");
                 }
             }
-            catch (System.Exception error)
+            catch (Exception error)
             {
-                Console.Error.WriteLine("While Saving: " + error);
+                Console.Error.WriteLine(error);
                 MessageBox.Show(error.ToString());
             }
         }
@@ -188,29 +207,13 @@ namespace ORTS
                 }
                 Viewer.Run();
             }
-            catch (System.Exception error)
+            catch (Exception error)
             {
-                Console.Error.WriteLine("While restoring: " + error);
+                Console.Error.WriteLine(error);
                 MessageBox.Show(error.ToString());
             }
         }
 
-
-        /// <summary>
-        /// If the command line arguments are invalid, 
-        /// display an error message and return false.
-        /// </summary>
-        /// <param name="args"></param>
-        public static bool ValidateArgs(string[] args)
-        {
-            if (args.Length == 0)
-            {
-                Console.WriteLine("Missing activity file name\r\n   ie RunActivity \"c:\\program files\\microsoft games\\train simulator\\routes\\usa1\\activites\\xxx.act\"\r\n\r\nOr launch the OpenRails program and select from the menu.");
-                Console.ReadKey();
-                return false;
-            }
-            return true;
-        }
 
         /// <summary>
         /// Check the registry and return true if the OpenRailsLog.TXT
@@ -341,9 +344,10 @@ namespace ORTS
                     {
                         WFile file = new WFile(filename);
                     }
-                    catch (System.Exception error)
+                    catch (Exception error)
                     {
-                        Console.Error.WriteLine("While testing " + filename + "\r\n   " + error.Message );
+                        Console.Error.WriteLine("While testing " + filename);
+						Console.Error.WriteLine(error);
                     }
 
             } // TestAll
