@@ -154,19 +154,8 @@ namespace ORTS
 		Rectangle location = new Rectangle(0, 0, 100, 100);
 		string Caption;
 		PopupControlLayout PopupWindowLayout;
-
-		//private Texture2D backgroundTexture;
-		//private Texture2D closeTexture;
-		//private Color[] backgroundColours;
-		//private bool isVisible = false;
-		//private bool isDown = false;
-		//private bool isGraphics = false;
-		//private bool isSelected = false;
-		//private SD.Graphics GR;
-		//private SD.Bitmap bmpBackground;
-		//private List<TextBox> textBoxes = new List<TextBox>();  // List of text fields
-
-		//private int spriteX, spriteY, spriteW, spriteH;   //  coordinates relative to main display.
+		VertexBuffer WindowVertexBuffer;
+		IndexBuffer WindowIndexBuffer;
 
 		public PopupWindow(PopupWindows owner, int width, int height, string caption)
 		{
@@ -191,6 +180,7 @@ namespace ORTS
 		protected virtual void SizeChanged()
 		{
 			Layout();
+			WindowVertexBuffer = null;
 		}
 
 		internal virtual void ActiveChanged()
@@ -308,103 +298,61 @@ namespace ORTS
 			return content;
 		}
 
-		////////////////////////////////////////////////////////////////////////
-
-		public virtual void Initialize(PopupWindows popupWindows)
+		public override void Draw(GraphicsDevice graphicsDevice)
 		{
-			//graphicsDevice = popupWindows.Viewer.GraphicsDevice;
-			//backgroundColours = new Color[spriteW * spriteH];
-			//backgroundTexture = new Texture2D(graphicsDevice, spriteW, spriteH, 1, TextureUsage.None, SurfaceFormat.Color);
+			if (WindowVertexBuffer == null)
+			{
+				// Edges/corners are 32px (1/4th image size).
+				var vertexData = new[] {
+					//  0  1  2  3
+					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 00, 0), new Vector2(0.00f, 0.00f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 00, 0), new Vector2(0.25f, 0.00f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 00, 0), new Vector2(0.75f, 0.00f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 00, 0), new Vector2(1.00f, 0.00f)),
+					//  4  5  6  7
+					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 32, 0), new Vector2(0.00f, 0.25f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 32, 0), new Vector2(0.25f, 0.25f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 32, 0), new Vector2(0.75f, 0.25f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 32, 0), new Vector2(1.00f, 0.25f)),
+					//  8  9 10 11
+					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 32, 0), new Vector2(0.00f, 0.75f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 32, 0), new Vector2(0.25f, 0.75f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 32, 0), new Vector2(0.75f, 0.75f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 32, 0), new Vector2(1.00f, 0.75f)),
+					// 12 13 14 15
+					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 00, 0), new Vector2(0.00f, 1.00f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 00, 0), new Vector2(0.25f, 1.00f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 00, 0), new Vector2(0.75f, 1.00f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 00, 0), new Vector2(1.00f, 1.00f)),
+				};
+				WindowVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionTexture), vertexData.Length, BufferUsage.WriteOnly);
+				WindowVertexBuffer.SetData(vertexData);
+			}
+			if (WindowIndexBuffer == null)
+			{
+				var indexData = new int[] {
+					0, 4, 1, 5, 2, 6, 3, 7,
+					4, 8, 5, 9, 6, 10, 7, 11,
+					8, 12, 9, 13, 10, 14, 11, 15,
+				};
+				WindowIndexBuffer = new IndexBuffer(graphicsDevice, typeof(int), indexData.Length, BufferUsage.WriteOnly);
+				WindowIndexBuffer.SetData(indexData);
+			}
 
-			//for (int i = 0; i < backgroundColours.Length; i++)
-			//{
-			//    backgroundColours[i] = Color.TransparentBlack;
-			//}
-			//backgroundTexture.SetData(backgroundColours);
-			//CreateCloseIcon(graphicsDevice);
+			graphicsDevice.VertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionTexture.VertexElements);
+			graphicsDevice.Vertices[0].SetSource(WindowVertexBuffer, 0, VertexPositionTexture.SizeInBytes);
+			graphicsDevice.Indices = WindowIndexBuffer;
+			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 0, 6);
+			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 8, 6);
+			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 16, 6);
 		}
 
-		//
-		//      Creates a close icon for the window in the top right hand corner
-		//
-		//public void CreateCloseIcon(GraphicsDevice device)
-		//{
-		//    int w = 12;
-		//    int h = 12;
-		//    Color[] data = new Color[w * h];
-		//    int[,] icondata = new int[,]
-		//    {
-		//         {1,1,1,1,1,1,1,1,1,1,1,1},
-		//         {1,0,0,0,0,0,0,0,0,0,0,1},
-		//         {1,0,2,0,0,0,0,0,0,2,0,1},
-		//         {1,0,0,2,0,0,0,0,2,0,0,1},
-		//         {1,0,0,0,2,0,0,2,0,0,0,1},
-		//         {1,0,0,0,0,2,2,0,0,0,0,1},
-		//         {1,0,0,0,0,2,2,0,0,0,0,1},
-		//         {1,0,0,0,2,0,0,2,0,0,0,1},
-		//         {1,0,0,2,0,0,0,0,2,0,0,1},
-		//         {1,0,2,0,0,0,0,0,0,2,0,1},
-		//         {1,0,0,0,0,0,0,0,0,0,0,1},
-		//         {1,1,1,1,1,1,1,1,1,1,1,1},
-		//    };
+		public void Draw(SpriteBatch spriteBatch)
+		{
+			PopupWindowLayout.Draw(spriteBatch, Location.Location);
+		}
 
-		//    int i = 0;
-		//    for (int x = 0; x < w; x++)
-		//    {
-		//        for (int y = 0; y < h; y++)
-		//        {
-		//            switch (icondata[x, y])
-		//            {
-		//                case 1:
-		//                    data[i] = Color.Gray;
-		//                    break;
-		//                case 2:
-		//                    data[i] = Color.Red;
-		//                    break;
-
-		//                default:
-		//                    data[i] = Color.TransparentBlack;
-		//                    break;
-		//            }
-		//            i++;
-		//        }
-		//    }
-
-		//    closeTexture = new Texture2D(device, w, h, 1, TextureUsage.None, SurfaceFormat.Color);
-		//    closeTexture.SetData(data);
-
-		//}
-
-		//
-		//  This method is invoked if bitmap is used to display the information
-		//
-		//private void SetupGrahics()
-		//{
-		//    bmpBackground = new SD.Bitmap(spriteW, spriteH);
-		//    GR = SD.Graphics.FromImage(bmpBackground);
-		//    GR.Clear(SD.Color.FromArgb(0, 0, 0, 0));
-		//}
-
-		//
-		//  This method copies the bitmap to the texture
-		//  Indebted to Florian Block for this code snippet.
-		//
-		//public void UpdateGraphics()
-		//{
-		//    SDI.BitmapData bmpData = bmpBackground.LockBits(new System.Drawing.Rectangle(0, 0, bmpBackground.Width, bmpBackground.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, bmpBackground.PixelFormat);
-		//    int bufferSize = bmpData.Height * bmpData.Stride;
-		//    byte[] texBytes = new byte[bufferSize];
-		//    Marshal.Copy(bmpData.Scan0, texBytes, 0, texBytes.Length);
-		//    backgroundTexture.SetData<Byte>(texBytes);
-		//    bmpBackground.UnlockBits(bmpData);
-		//}
-
-		//public void UseGraphics()
-		//{
-		//    SetupGrahics();
-		//    UpdateGraphics();
-		//    isGraphics = true;
-		//}
+		////////////////////////////////////////////////////////////////////////
 
 		//
 		//  Make winow invisible if close icon clicked
@@ -421,109 +369,6 @@ namespace ORTS
 			//}
 			return false;
 		}
-
-		public override void Draw(GraphicsDevice graphicsDevice)
-		{
-			// Edges/corners are 32px (1/4th image size).
-			var vertexData = new[] {
-				//  0  1  2  3
-				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 00, 0), new Vector2(0.00f, 0.00f)),
-				new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 00, 0), new Vector2(0.25f, 0.00f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 00, 0), new Vector2(0.75f, 0.00f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 00, 0), new Vector2(1.00f, 0.00f)),
-				//  4  5  6  7																								  	
-				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 32, 0), new Vector2(0.00f, 0.25f)),
-				new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 32, 0), new Vector2(0.25f, 0.25f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 32, 0), new Vector2(0.75f, 0.25f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 32, 0), new Vector2(1.00f, 0.25f)),
-				//  8  9 10 11																								  	
-				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 32, 0), new Vector2(0.00f, 0.75f)),
-				new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 32, 0), new Vector2(0.25f, 0.75f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 32, 0), new Vector2(0.75f, 0.75f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 32, 0), new Vector2(1.00f, 0.75f)),
-				// 12 13 14 15																								  	
-				new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 00, 0), new Vector2(0.00f, 1.00f)),
-				new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 00, 0), new Vector2(0.25f, 1.00f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 00, 0), new Vector2(0.75f, 1.00f)),
-				new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 00, 0), new Vector2(1.00f, 1.00f)),
-			};
-			var vertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionTexture), vertexData.Length, BufferUsage.WriteOnly);
-			vertexBuffer.SetData(vertexData);
-
-			var indexData = new int[] {
-				0, 4, 1, 5, 2, 6, 3, 7,
-				4, 8, 5, 9, 6, 10, 7, 11,
-				8, 12, 9, 13, 10, 14, 11, 15,
-			};
-			var indexBuffer = new IndexBuffer(graphicsDevice, typeof(int), indexData.Length, BufferUsage.WriteOnly);
-			indexBuffer.SetData(indexData);
-
-			graphicsDevice.VertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionTexture.VertexElements);
-			graphicsDevice.Vertices[0].SetSource(vertexBuffer, 0, VertexPositionTexture.SizeInBytes);
-			graphicsDevice.Indices = indexBuffer;
-			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, vertexData.Length, 0, 6);
-			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, vertexData.Length, 8, 6);
-			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, vertexData.Length, 16, 6);
-		}
-
-		public void Draw(SpriteBatch spriteBatch)
-		{
-			PopupWindowLayout.Draw(spriteBatch, Location.Location);
-			//spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, Caption, new Vector2(location.X + 8, location.Y + 8), Color.White);
-			//Rectangle rect = new Rectangle(spriteX, spriteY, spriteW, spriteH);
-			//spritebatch.Draw(backgroundTexture, rect, Color.White);
-			//spritebatch.Draw(closeTexture, new Rectangle(spriteX + spriteW - closeTexture.Width, spriteY, closeTexture.Width, closeTexture.Height), Color.White);
-			//if (textBoxes.Count > 0)
-			//{
-			//    foreach (TextBox tb in textBoxes)
-			//    {
-			//        tb.Draw(spriteBatch, spriteX, spriteY);
-			//    }
-			//}
-		}
-
-		//public void AddTextbox(TextBox tb)
-		//{
-		//    textBoxes.Add(tb);
-		//}
-
-		//
-		//      Sets the background clour for the window
-		//
-		public Color backgroundColour
-		{
-			set
-			{
-				//Color[] colData = new Color[spriteW * spriteH];
-				//backgroundTexture.GetData<Color>(colData);
-				//for (int i = 0; i < colData.Length; i++)
-				//{
-				//    colData[i] = value;
-				//}
-				//backgroundTexture.SetData<Color>(colData);
-			}
-		}
-
-
-		//public SD.Graphics puGraphics
-		//{
-		//    get
-		//    {
-		//        return GR;
-		//    }
-		//}
-
-		//public bool Selected
-		//{
-		//    get
-		//    {
-		//        return isSelected;
-		//    }
-		//    set
-		//    {
-		//        isSelected = value;
-		//    }
-		//}
 	}
 
 	//
