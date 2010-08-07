@@ -67,7 +67,7 @@ namespace ORTS
 				{ DispatcherPOIType.StationStop, "Station:" },
 				{ DispatcherPOIType.ReversePoint, "Reverser:" },
 				{ DispatcherPOIType.EndOfAuthorization, "End of Auth:" },
-				{ DispatcherPOIType.Stop, "???" },
+				{ DispatcherPOIType.Stop, "Stop:" },
 			};
 		}
 
@@ -130,7 +130,8 @@ namespace ORTS
 
 		public void UpdateText(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, TrackMonitorSignalAspect signalAspect, DispatcherPOIType poiType, float poiDistance)
 		{
-			var speedProjectedMpS = Math.Max(0, speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds);
+			var speedProjectedMpS = speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds;
+			speedProjectedMpS = speedMpS > 0 ? Math.Max(0, speedProjectedMpS) : Math.Min(0, speedProjectedMpS);
 			SpeedCurrent.Text = FormatSpeed(speedMpS, milepostUnitsMetric);
 			SpeedProjected.Text = FormatSpeed(speedProjectedMpS, milepostUnitsMetric);
 			LastSpeedMpS = speedMpS;

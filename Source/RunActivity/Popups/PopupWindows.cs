@@ -31,6 +31,7 @@ namespace ORTS
 		readonly SpriteBatch SpriteBatch;
 		Matrix XNAView = Matrix.Identity;
 		Matrix XNAProjection = Matrix.Identity;
+		internal Point ScreenSize = Point.Zero;
 		ResolveTexture2D Screen;
 		PopupWindow activeWindow = null;
 
@@ -38,32 +39,50 @@ namespace ORTS
 		{
 			Viewer = viewer;
 			SpriteBatch = new SpriteBatch(viewer.GraphicsDevice);
+			ScreenSize = new Point(viewer.GraphicsDevice.PresentationParameters.BackBufferWidth, viewer.GraphicsDevice.PresentationParameters.BackBufferHeight);
 		}
 
 		public void Draw(GraphicsDevice graphicsDevice)
 		{
+			if ((ScreenSize.X != graphicsDevice.PresentationParameters.BackBufferWidth) || (ScreenSize.Y != graphicsDevice.PresentationParameters.BackBufferHeight))
+			{
+				var oldScreenSize = ScreenSize;
+				ScreenSize.X = graphicsDevice.PresentationParameters.BackBufferWidth;
+				ScreenSize.Y = graphicsDevice.PresentationParameters.BackBufferHeight;
+
+				// Reset the screen buffer for glass rendering if necessary.
+				if (Screen != null)
+					Screen.Dispose();
+				Screen = null;
+
+				// Reposition all the windows.
+				foreach (var window in Windows)
+					window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
+			}
+
+			// Nothing visible? Nothing more to do!
 			if (Windows.All(w => !w.Visible))
 				return;
 
 			// Construct a view where (0, 0) is the top-left and (width, height) is
 			// bottom-right, so that popups can act more like normal window things.
-			XNAView = Matrix.CreateTranslation(-graphicsDevice.Viewport.Width / 2, -graphicsDevice.Viewport.Height / 2, 0) *
+			XNAView = Matrix.CreateTranslation(-ScreenSize.X / 2, -ScreenSize.Y / 2, 0) *
 				Matrix.CreateTranslation(-0.5f, -0.5f, 0) *
 				Matrix.CreateScale(1, -1, 1);
-			// Project into a flat view of the same size as the viewpoer.
-			XNAProjection = Matrix.CreateOrthographic(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0, 100);
+			// Project into a flat view of the same size as the viewport.
+			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
 			if (Viewer.WindowGlass)
 			{
 				// Buffer for screen texture, also same size as viewport and using the backbuffer format.
-				if ((Screen == null) || (Screen.Width != graphicsDevice.PresentationParameters.BackBufferWidth) || (Screen.Height != graphicsDevice.PresentationParameters.BackBufferHeight))
-					Screen = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
+				if (Screen == null)
+					Screen = new ResolveTexture2D(graphicsDevice, ScreenSize.X, ScreenSize.Y, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
 				graphicsDevice.ResolveBackBuffer(Screen);
 			}
 
 			var material = Materials.PopupWindowMaterial;
 			material.SetState(graphicsDevice, Screen);
-			foreach (PopupWindow window in VisibleWindows)
+			foreach (var window in VisibleWindows)
 			{
 				var xnaWorld = window.XNAWorld;
 				material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
@@ -71,7 +90,7 @@ namespace ORTS
 			material.ResetState(graphicsDevice, null);
 
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
-			foreach (PopupWindow window in VisibleWindows)
+			foreach (var window in VisibleWindows)
 				window.Draw(SpriteBatch);
 			SpriteBatch.End();
 		}
@@ -83,7 +102,7 @@ namespace ORTS
 
 		public void SelectWindow(int x, int y)
 		{
-			foreach (PopupWindow window in Windows)
+			foreach (var window in Windows)
 			{
 				if (window.Visible)
 				{
@@ -213,8 +232,8 @@ namespace ORTS
 
 		public void MoveTo(int x, int y)
 		{
-			x = (int)MathHelper.Clamp(x, 0, Owner.Viewer.GraphicsDevice.Viewport.Width - location.Width);
-			y = (int)MathHelper.Clamp(y, 0, Owner.Viewer.GraphicsDevice.Viewport.Height - location.Height);
+			x = (int)MathHelper.Clamp(x, 0, Owner.ScreenSize.X - location.Width);
+			y = (int)MathHelper.Clamp(y, 0, Owner.ScreenSize.Y - location.Height);
 
 			if ((location.X != x) || (location.Y != y))
 			{
@@ -247,7 +266,7 @@ namespace ORTS
 
 		public void AlignBottom()
 		{
-			MoveTo(location.X, Owner.Viewer.GraphicsDevice.Viewport.Height);
+			MoveTo(location.X, Owner.ScreenSize.Y);
 		}
 
 		public void AlignLeft()
@@ -257,22 +276,22 @@ namespace ORTS
 
 		public void AlignRight()
 		{
-			MoveTo(Owner.Viewer.GraphicsDevice.Viewport.Width, location.Y);
+			MoveTo(Owner.ScreenSize.X, location.Y);
 		}
 
 		public void AlignCenterV()
 		{
-			MoveTo(location.X, (Owner.Viewer.GraphicsDevice.Viewport.Height - location.Height) / 2);
+			MoveTo(location.X, (Owner.ScreenSize.Y - location.Height) / 2);
 		}
 
 		public void AlignCenterH()
 		{
-			MoveTo((Owner.Viewer.GraphicsDevice.Viewport.Width - location.Width) / 2, location.Y);
+			MoveTo((Owner.ScreenSize.X - location.Width) / 2, location.Y);
 		}
 
 		public void AlignCenter()
 		{
-			MoveTo((Owner.Viewer.GraphicsDevice.Viewport.Width - location.Width) / 2, (Owner.Viewer.GraphicsDevice.Viewport.Height - location.Height) / 2);
+			MoveTo((Owner.ScreenSize.X - location.Width) / 2, (Owner.ScreenSize.Y - location.Height) / 2);
 		}
 
 		public bool Selected
