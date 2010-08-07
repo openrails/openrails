@@ -118,12 +118,12 @@ namespace ORTS
 			if (metric)
 			{
 				// <0.1 kilometers, show meters.
-				if (distance < 100)
+				if (Math.Abs(distance) < 100)
 					return String.Format("{0:N0}m", distance);
 				return String.Format("{0:F1}km", distance / 1000.000);
 			}
 			// <0.1 miles, show yards.
-			if (distance < 160.9344)
+			if (Math.Abs(distance) < 160.9344)
 				return String.Format("{0:N0}yd", distance * 1.093613298337708);
 			return String.Format("{0:F1}mi", distance / 1609.344);
 		}
