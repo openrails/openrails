@@ -101,26 +101,47 @@ namespace ORTS
 
         public string GetStatus()
         {
-            string s = string.Format("{0} {1} {2} {3:F1}", TrainID, Train.FrontTDBTraveller.TrackNodeIndex, 
-                Train.RearTDBTraveller.TrackNodeIndex, Train.SpeedMpS);
-            s += string.Format(" {0} {1}", NReverseNodes, StopDistanceM);
-            if (StartNode == null)
-                s += " -S";
-            else
-                s += string.Format(" {0}", StartNode.NextMainTVNIndex);
-            if (EndNode == null)
-                s += " -E";
-            else
-                s += string.Format(" {0}", EndNode.NextMainTVNIndex);
-            if (SidingNode == null)
-                s += " |";
-            else
-                s += string.Format(" {0}", SidingNode.NextMainTVNIndex);
-            if (StopNode == null)
-                s += " |";
-            else
-                s += string.Format(" {0} {1}", StopNode.NextMainTVNIndex,StopNode.Type);
-            return s;
+            StringBuilder s = new StringBuilder();
+            s.Append(string.Format("{0} {1:F1} ", TrainID, Train.SpeedMpS));
+            int tvnIndex = -1;
+            for (AIPathNode node = Path.FirstNode; node != null; node = node.NextMainNode)
+            {
+                switch (node.Type)
+                {
+                    case AIPathNodeType.Reverse: s.Append("?"); break;
+                    case AIPathNodeType.SidingStart: s.Append("\\"); break;
+                    case AIPathNodeType.SidingEnd: s.Append("/"); break;
+                }
+                for (AIPathNode snode = node.NextSidingNode; snode != null; snode = snode.NextSidingNode)
+                {
+                    if (snode.NextSidingTVNIndex == tvnIndex)
+                        continue;
+                    tvnIndex = snode.NextSidingTVNIndex;
+                    int sres= Program.Simulator.AI.Dispatcher.GetReservation(tvnIndex);
+                    if (Train.FrontTDBTraveller.TrackNodeIndex == tvnIndex || Train.RearTDBTraveller.TrackNodeIndex == tvnIndex)
+                        s.Append("@");
+                    else if (sres >= 0 && sres < 9)
+                        s.Append((char)('0' + sres));
+                    else if (sres >= 10 && sres < 36)
+                        s.Append((char)('A' + sres - 10));
+                    else if (tvnIndex >= 0)
+                        s.Append("_");
+
+                }
+                if (node.NextMainTVNIndex == tvnIndex)
+                    continue;
+                tvnIndex = node.NextMainTVNIndex;
+                int res = Program.Simulator.AI.Dispatcher.GetReservation(tvnIndex);
+                if (Train.FrontTDBTraveller.TrackNodeIndex == tvnIndex || Train.RearTDBTraveller.TrackNodeIndex == tvnIndex)
+                    s.Append("@");
+                else if (res >= 0 && res < 9)
+                    s.Append((char)('0' + res));
+                else if (res >= 10 && res < 36)
+                    s.Append((char)('A' + res - 10));
+                else if (tvnIndex >= 0)
+                    s.Append("=");
+            }
+            return s.ToString();
         }
 
         /// <summary>

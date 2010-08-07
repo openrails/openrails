@@ -58,7 +58,7 @@ namespace ORTS
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F5))
             {
                 ++InfoAmount;
-                if (InfoAmount > 4)
+                if (InfoAmount > 5)
                     InfoAmount = 0;
             }
             if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F12))
@@ -176,6 +176,10 @@ namespace ORTS
             if (InfoAmount == 4)
             {
                 AddDebugInfo();
+            }
+            if (InfoAmount == 5)
+            {
+                AddForceInfo();
             }
         }
 
@@ -298,6 +302,25 @@ namespace ORTS
                     j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
                 TextBuilder.Append(string.Format("Car {0:D2} ", j + 1));
                 TextBuilder.AppendLine(playerTrain.Cars[j].BrakeSystem.GetStatus(2));
+            }
+        }
+
+        private void AddForceInfo()
+        {
+            TextBuilder.AppendLine();
+            TextBuilder.AppendLine("FORCE INFORMATION");
+            Train playerTrain = Viewer.PlayerLocomotive.Train;
+            int n = playerTrain.Cars.Count;
+            if (n > 10)
+                n = 11;
+            for (int i = 0; i < n; i++)
+            {
+                int j = i;
+                if (playerTrain.Cars.Count > 10)
+                    j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
+                TrainCar car= playerTrain.Cars[j];
+                TextBuilder.Append(string.Format("Car {0:D2} ", j + 1));
+                TextBuilder.AppendLine(string.Format("{0:F0} {1:F0} {2:F0} {3:F0} {4:F0} {5:F0}", car.MotiveForceN, car.FrictionForceN, car.GravityForceN, car.CouplerForceU, car.MassKG, car.Flipped));
             }
         }
         private void AddDispatcherInfo()

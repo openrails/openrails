@@ -150,7 +150,7 @@ namespace ORTS
                         auth.AdvanceStopNode(true);
                         auth.CalcStopDistance();
                     }
-                    else if (auth.EndNode == auth.StopNode && UpdateTimerS < 0)
+                    else if (auth.EndNode == auth.StopNode && UpdateTimerS < 0 && auth.StopDistanceM < 4*auth.Train.SpeedMpS*auth.Train.SpeedMpS + 500)
                     {
                         RequestAuth(auth, true, auth.NReverseNodes % 2 == 0);
                         if (auth.EndNode != auth.StopNode)
@@ -176,6 +176,8 @@ namespace ORTS
                         Rereserve(auth);
                         auth.AdvanceStopNode(true);
                         auth.CalcStopDistance();
+                        if (auth.NReverseNodes == 0)
+                            UpdateTimerS = 0;
                     }
                     else if (auth.StopDistanceM < 0 && auth.StopNode != auth.EndNode)
                     {
@@ -252,7 +254,19 @@ namespace ORTS
                 auth.StartNode = nextNode;
             }
             if (UpdateTimerS < 0)
-                UpdateTimerS = 60;
+                UpdateTimerS = 10;
+        }
+        public void ExtendPlayerPath()
+        {
+            TrackAuthority auth = TrackAuthorities[0];
+            if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
+            {
+                auth.Train = AI.Simulator.PlayerLocomotive.Train;// this can change due to uncoupling
+                RequestAuth(auth, true, auth.NReverseNodes % 2 == 0);
+                if (auth.EndNode != auth.StopNode)
+                    auth.AdvanceStopNode(true);
+                auth.CalcStopDistance();
+            }
         }
 
         /// <summary>
@@ -419,6 +433,13 @@ namespace ORTS
             return result;
         }
 
+        public int GetReservation(int tvnIndex)
+        {
+            if (tvnIndex < 0 || tvnIndex >= Reservations.Length)
+                return -1;
+            return Reservations[tvnIndex];
+        }
+
         /// <summary>
         /// Checks to see is the listed track nodes can be reserved for the specified train.
         /// return true if none of the nodes are already reserved for another train.
@@ -430,7 +451,7 @@ namespace ORTS
             foreach (int i in tnList)
                 if (Reservations[i] >= 0 && Reservations[i] != trainID)
                     return false;
-            if (PlayerPriority <= priority && AI.Simulator.PlayerLocomotive != null)
+            if (trainID != 0 && PlayerPriority <= priority && AI.Simulator.PlayerLocomotive != null)
             {
                 Train playerTrain = AI.Simulator.PlayerLocomotive.Train;
                 foreach (int j in tnList)

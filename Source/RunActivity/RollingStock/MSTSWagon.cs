@@ -519,10 +519,11 @@ namespace ORTS
         {
             base.Update(elapsedClockSeconds);
 
-            if (SpeedMpS < 0.1)
+            float s = Math.Abs(SpeedMpS);
+            if (s < 0.1)
                 FrictionForceN = Friction0N;
             else
-                FrictionForceN = DavisAN + SpeedMpS * (DavisBNSpM + SpeedMpS * DavisCNSSpMM);
+                FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM);
 
             MSTSBrakeSystem.Update(elapsedClockSeconds);
         }

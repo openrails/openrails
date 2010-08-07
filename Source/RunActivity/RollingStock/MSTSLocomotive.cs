@@ -620,13 +620,13 @@ namespace ORTS
 
             if (Locomotive.IsDynamicBrakeControllerNotched())
             {
-                if (UserInput.IsPressed(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.IncreaseDynamicBrakes(elapsedTime.ClockSeconds);
-                if (UserInput.IsPressed(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.DecreaseDynamicBrakes(elapsedTime.ClockSeconds);
+                if (UserInput.IsPressed(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.IncreaseDynamicBrakes(elapsedTime.ClockSeconds);
+                if (UserInput.IsPressed(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.DecreaseDynamicBrakes(elapsedTime.ClockSeconds);
             }
             else
             {
-                if (UserInput.IsKeyDown(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.IncreaseDynamicBrakes(elapsedTime.ClockSeconds);
-                if (UserInput.IsKeyDown(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.DecreaseDynamicBrakes(elapsedTime.ClockSeconds);
+                if (UserInput.IsKeyDown(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.IncreaseDynamicBrakes(elapsedTime.ClockSeconds);
+                if (UserInput.IsKeyDown(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.DecreaseDynamicBrakes(elapsedTime.ClockSeconds);
             }
 
             if (UserInput.IsPressed(Keys.OemQuestion) && !UserInput.IsShiftDown()) Locomotive.ToggleBailOff();            
@@ -654,6 +654,8 @@ namespace ORTS
                     case 0: Locomotive.Headlight = 1; break;
                     case 1: Locomotive.Headlight = 2; break;
                 }
+            if (UserInput.IsPressed(Keys.Tab))
+                Program.Simulator.AI.Dispatcher.ExtendPlayerPath();
 
             base.HandleUserInput( elapsedTime );
         }
