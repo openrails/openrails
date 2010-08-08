@@ -50,6 +50,7 @@ namespace ORTS
         }
 
         public static bool IsKeyDown(Keys key) { return KeyboardState.IsKeyDown(key); }
+        public static bool IsKeyUp(Keys key) { return KeyboardState.IsKeyUp(key); }
 
         public static bool IsShiftDown() { return IsKeyDown(Keys.LeftShift) || IsKeyDown(Keys.RightShift); }
 
@@ -62,6 +63,7 @@ namespace ORTS
         public static bool IsAltKeyDown() { return IsKeyDown(Keys.LeftAlt) || IsKeyDown(Keys.RightAlt); }
 
         public static bool IsPressed(Keys key) { return KeyboardState.IsKeyDown(key) && !lastKeyboardState.IsKeyDown(key); }
+        public static bool IsReleased(Keys key) { return KeyboardState.IsKeyUp(key) && lastKeyboardState.IsKeyDown(key); }
 
         public static bool IsAltPressed(Keys key) { return IsPressed(key) && (IsKeyDown(Keys.LeftAlt) || IsKeyDown(Keys.RightAlt)); }
     }
