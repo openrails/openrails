@@ -258,6 +258,8 @@ namespace ORTS
         public void Initialize(RenderProcess renderProcess)
         {
             GraphicsDevice = renderProcess.GraphicsDevice;
+			DisplaySize.X = GraphicsDevice.Viewport.Width;
+			DisplaySize.Y = GraphicsDevice.Viewport.Height;
 
             PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
