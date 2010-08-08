@@ -25,10 +25,10 @@ namespace ORTS
 	{
 		Unknown,
 		OffPath, // also kind of "unknown"
-		StationStop,
-		ReversePoint,
-		EndOfAuthorization,
-		Stop, // what is this?
+		StationStop, // timetabled stop at station
+		ReversePoint, // change of train direction point
+		EndOfAuthorization, // end of the reserved path
+		Stop, // non-station timetabled stop
 	}
 
     public class Dispatcher

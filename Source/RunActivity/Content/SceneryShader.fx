@@ -39,33 +39,34 @@ int    stateChange;								// 1=Off->On; 2=On->Off
 texture imageMap_Tex;
 sampler imageMap = sampler_state
 {
-   Texture = (imageMap_Tex);
-   MagFilter = Linear;
-   MinFilter = Anisotropic;
-   MipFilter = Linear;
-   MaxAnisotropy = 16;
-   //AddressU = Wrap;  set in the Materials class
-   //AddressV = Wrap;
+	Texture = (imageMap_Tex);
+	MagFilter = Linear;
+	MinFilter = Anisotropic;
+	MipFilter = Linear;
+	MaxAnisotropy = 16;
+	//AddressU = Wrap;  set in the Materials class
+	//AddressV = Wrap;
 };
 
 texture normalMap_Tex;
 sampler normalMap = sampler_state
 {
-   Texture = (normalMap_Tex);
-   MagFilter = Linear;
-   MinFilter = Linear;
-   MipFilter = Linear;
-   MipMapLodBias = 0;
-   AddressU = Wrap;
-   AddressV = Wrap;
+	Texture = (normalMap_Tex);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+	MipMapLodBias = 0;
+	AddressU = Wrap;
+	AddressV = Wrap;
 };
 
 sampler ShadowMap = sampler_state
 {
 	Texture = (ShadowMapTexture);
-	MagFilter = Point;
-	MinFilter = Point;
-	MipFilter = Point;
+	MagFilter = Linear;
+	MinFilter = Anisotropic;
+	MipFilter = Linear;
+	MaxAnisotropy = 16;
 	AddressU = Border;
 	AddressV = Border;
 };
@@ -162,28 +163,18 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
-// Applies the shadow map to the pixel using single texture look-up.
-void _PS2ApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
-{
-	Color.rgb *= (saturate(In.Shadow.x) != In.Shadow.x) || (saturate(In.Shadow.y) != In.Shadow.y) ? 1 : (tex2D(ShadowMap, In.Shadow.xy).x < In.Shadow.z - 0.001f ? 0.5f : 1.0f);
-}
-
-// Applies the shadow map to the pixel using multiple texture look-ups.
-void _PS3ApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
+// Applies the Variance Shadow Map to the pixel.
+void _PSApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
 {
 	int clip = ((saturate(In.Shadow.x) != In.Shadow.x) || (saturate(In.Shadow.y) != In.Shadow.y)) ? 1 : 0;
-	const float o = 1.0 / 4096;
-	float x = 0;
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2(-o, -o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2(-o,  0)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2(-o,  o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( 0, -o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( 0,  0)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( 0,  o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( o, -o)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( o,  0)).x);
-	x += step(In.Shadow.z - 0.001f, tex2D(ShadowMap, In.Shadow.xy + float2( o,  o)).x);
-	Color.rgb *= saturate(clip + 0.5f + x / 18);
+	float2 moments = tex2D(ShadowMap, In.Shadow.xy);
+	float lit_factor = (In.Shadow.z <= moments.x);
+	float E_x2 = moments.y;
+	float Ex_2 = moments.x * moments.x;
+	float variance = min(max(E_x2 - Ex_2, 0.0) + 0.0000001, 1.0);
+	float m_d = (moments.x - In.Shadow.z);
+	float p = variance / (variance + m_d * m_d);
+	Color.rgb *= saturate(clip + 0.5f + max(lit_factor, p) / 2);
 }
 
 // Apply lighting with brightness and ambient modifiers.
@@ -263,31 +254,12 @@ void _PSApplyFog(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.rgb = lerp(Color.rgb, FogColor, In.LightDir_Fog.w);
 }
 
-float4 PS2Image(in VERTEX_OUTPUT In) : COLOR0
+float4 PSImage(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on dark side (side facing away from light) of objects.
 	if (In.Normal_Light.w > 0.5)
-		_PS2ApplyShadowMap(Color, In);
-	_PSApplyBrightnessAndAmbient(Color, In);
-	float4 OriginalColor = Color;
-	// TODO: Specular lighting goes here.
-	if (!isNight_Tex)
-	{
-		_PSApplyDay2Night(Color);
-		_PSApplyOvercast(Color);
-	}
-	_PSApplyHeadlights(Color, OriginalColor, In);
-	_PSApplyFog(Color, In);
-	return Color;
-}
-
-float4 PS3Image(in VERTEX_OUTPUT In) : COLOR0
-{
-	float4 Color = tex2D(imageMap, In.TexCoords);
-	// No shadows cast on dark side (side facing away from light) of objects.
-	if (In.Normal_Light.w > 0.5)
-		_PS3ApplyShadowMap(Color, In);
+		_PSApplyShadowMap(Color, In);
 	_PSApplyBrightnessAndAmbient(Color, In);
 	float4 OriginalColor = Color;
 	// TODO: Specular lighting goes here.
@@ -318,29 +290,10 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 	return Color;
 }
 
-float4 PS2Terrain(in VERTEX_OUTPUT In) : COLOR0
+float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
-	_PS2ApplyShadowMap(Color, In);
-
-	// TODO: What are these values for?
-	float3 bump = tex2D(normalMap, In.TexCoords * 50);
-	bump -= 0.5;
-	Color.rgb +=  0.5 * bump;
-
-	_PSApplyBrightnessAndAmbient(Color, In);
-	float4 OriginalColor = Color;
-	_PSApplyDay2Night(Color);
-	_PSApplyOvercast(Color);
-	_PSApplyHeadlights(Color, OriginalColor, In);
-	_PSApplyFog(Color, In);
-	return Color;
-}
-
-float4 PS3Terrain(in VERTEX_OUTPUT In) : COLOR0
-{ 
-	float4 Color = tex2D(imageMap, In.TexCoords);
-	_PS3ApplyShadowMap(Color, In);
+	_PSApplyShadowMap(Color, In);
 
 	// TODO: What are these values for?
 	float3 bump = tex2D(normalMap, In.TexCoords * 50);
@@ -397,16 +350,7 @@ technique Image
    pass Pass_0
    {
       VertexShader = compile vs_2_0 VSGeneral ( );
-      PixelShader = compile ps_2_0 PS2Image ( );
-   }
-}
-
-technique Image_PS3
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSGeneral ( );
-      PixelShader = compile ps_3_0 PS3Image ( );
+      PixelShader = compile ps_2_0 PSImage ( );
    }
 }
 
@@ -433,16 +377,7 @@ technique Terrain
    pass Pass_0
    {
       VertexShader = compile vs_2_0 VSTerrain ( );
-      PixelShader = compile ps_2_0 PS2Terrain ( );
-   }
-}
-
-technique Terrain_PS3
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSTerrain ( );
-      PixelShader = compile ps_3_0 PS3Terrain ( );
+      PixelShader = compile ps_2_0 PSTerrain ( );
    }
 }
 

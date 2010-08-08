@@ -39,9 +39,9 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
-float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR
+float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
 {
-	return In.Depth;
+	return float4(In.Depth, In.Depth * In.Depth, 0, 0);
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////

@@ -46,7 +46,7 @@ namespace ORTS
 		const int ShadowMapViewSize = 512;
 		const float ShadowMapViewNear = 0f;
 		const float ShadowMapViewFar = 2000f;
-	
+
 		readonly RenderProcess RenderProcess;
         readonly List<RenderItem> RenderItems;
 		readonly List<RenderItem> RenderShadowItems;
@@ -175,7 +175,7 @@ namespace ORTS
 		{
 			if (ShadowMapRenderTarget == null)
 			{
-				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, SurfaceFormat.Single);
+				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 0, SurfaceFormat.Vector2);
 				ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
 			}
 

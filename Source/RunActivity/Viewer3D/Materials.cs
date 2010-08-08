@@ -313,7 +313,6 @@ namespace ORTS
 		public int Options = 0;
 		public float MipMapBias = 0;
         readonly SceneryShader SceneryShader;
-		readonly string SceneryShaderImageTechnique;
 		readonly Texture2D Texture;
 		readonly Texture2D nightTexture = null;
 		bool isNightEnabled = false;
@@ -323,7 +322,6 @@ namespace ORTS
         {
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
-			SceneryShaderImageTechnique = renderProcess.GraphicsDevice.GraphicsDeviceCapabilities.MaxPixelShaderProfile >= ShaderProfile.PS_3_0 ? "Image_PS3" : "Image";
 			// note: texturePath may be null if the object isn't textured, results in default 'blank texture' being loaded.
             Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
             if (texturePath != null)
@@ -416,7 +414,7 @@ namespace ORTS
             {
                 // Lighting model
                 int lighting = (Options & 0x00f0) >> 4;
-				SceneryShader.CurrentTechnique = SceneryShader.Techniques[SceneryShaderImageTechnique]; // Default
+				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"]; // Default
                 Vector3 viewerPosition = new Vector3(XNAViewMatrix.M41, XNAViewMatrix.M42, XNAViewMatrix.M43);
                 switch (lighting)
                 {
@@ -553,14 +551,12 @@ namespace ORTS
     public class TerrainMaterial : Material
     {
         readonly SceneryShader SceneryShader;
-		readonly string SceneryShaderTechnique;
         readonly Texture2D PatchTexture;
         readonly public RenderProcess RenderProcess;  // for diagnostics only
 
         public TerrainMaterial(RenderProcess renderProcess, string terrainTexture )
         {
             SceneryShader = Materials.SceneryShader;
-			SceneryShaderTechnique = renderProcess.GraphicsDevice.GraphicsDeviceCapabilities.MaxPixelShaderProfile >= ShaderProfile.PS_3_0 ? "Terrain_PS3" : "Terrain";
             PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, terrainTexture);
             RenderProcess = renderProcess;
         }
@@ -580,7 +576,7 @@ namespace ORTS
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-				SceneryShader.CurrentTechnique = SceneryShader.Techniques[SceneryShaderTechnique];
+				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Terrain"];
                 graphicsDevice.RenderState.AlphaTestEnable = false;
                 graphicsDevice.RenderState.AlphaBlendEnable = false;
 
