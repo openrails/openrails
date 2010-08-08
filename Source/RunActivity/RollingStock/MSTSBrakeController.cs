@@ -41,11 +41,6 @@ namespace ORTS
             return new MSTSBrakeController(this);
         }
 
-        public new bool IsNotched()
-        {
-            return Notches.Count>0 && !Notches[CurrentNotch].Smooth;
-        }
-
         public float GetFullServReductionPSI()
         {
             return FullServReductionPSI;
@@ -58,13 +53,13 @@ namespace ORTS
 
         public void UpdatePressure(ref float pressurePSI, float elapsedClockSeconds, ref float epPressurePSI)
         {
-            if (Notches.Count == 0)
+            MSTSNotch notch = this.GetCurrentNotch();
+            if (notch == null)
             {
                 pressurePSI = MaxPressurePSI - FullServReductionPSI * CurrentValue;
             }
             else
-            {
-                MSTSNotch notch = Notches[CurrentNotch];
+            {                
                 float x = GetNotchFraction();
                 switch (notch.Type)
                 {
@@ -119,13 +114,13 @@ namespace ORTS
 
         public void UpdateEngineBrakePressure(ref float pressurePSI, float elapsedClockSeconds)
         {
-            if (Notches.Count == 0)
+            MSTSNotch notch = this.GetCurrentNotch();
+            if (notch == null)
             {
                 pressurePSI = (MaxPressurePSI - FullServReductionPSI) * CurrentValue;
             }
             else
-            {
-                MSTSNotch notch = Notches[CurrentNotch];
+            {                
                 float x = GetNotchFraction();
                 switch (notch.Type)
                 {
@@ -176,17 +171,14 @@ namespace ORTS
 
         public bool GetIsEmergency()
         {
-            return Notches.Count != 0 && Notches[CurrentNotch].Type == MSTSNotchType.Emergency;
+            MSTSNotch notch = this.GetCurrentNotch();
+
+            return notch != null && notch.Type == MSTSNotchType.Emergency;            
         }
 
         public void SetEmergency()
         {
-            for (int i = 0; i < Notches.Count; i++)
-                if (Notches[i].Type == MSTSNotchType.Emergency)
-                {
-                    CurrentNotch = i;
-                    CurrentValue = Notches[i].Value;
-                }
+            SetCurrentNotch(MSTSNotchType.Emergency);            
         }        
 
         private void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)

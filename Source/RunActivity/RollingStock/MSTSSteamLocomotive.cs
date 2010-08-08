@@ -35,8 +35,9 @@ namespace ORTS
     /// </summary>
     public class MSTSSteamLocomotive: MSTSLocomotive
     {
-        // user controls
-        IController CutoffController;
+        //Configure a default cutoff controller
+        //IF none is specified, this will be used, otherwise those values will be overwritten
+        MSTSNotchController CutoffController = new MSTSNotchController(-0.9f, 0.9f, 0.1f);
 
         // state variables
         float SteamUsageLBpS;       // steam used in cylinders
@@ -189,7 +190,7 @@ namespace ORTS
                 BurnRate[maxevap] = maxburn;    // inverse of maximum EvaporationRate
             }
             BurnRate.ScaleX(grateArea / 3600);
-            BurnRate.ScaleY(grateArea / 3600);
+            BurnRate.ScaleY(grateArea / 3600);                    
         }
         public bool ZeroError(float v, string name, string wagFile)
         {
@@ -214,7 +215,7 @@ namespace ORTS
                 case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
                 case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
                 case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadStringBlock(),f)/3600; break;
-                case "engine(enginecontrollers(cutoff": CutoffController = new MSTSNotchController(f); break;
+                case "engine(enginecontrollers(cutoff": CutoffController.Parse(f); break;
                 case "engine(forcefactor1": ForceFactor1 = new Interpolator(f); break;
                 case "engine(forcefactor2": ForceFactor2 = new Interpolator(f); break;
                 case "engine(cylinderpressuredrop": CylinderPressureDrop = new Interpolator(f); break;
@@ -261,7 +262,7 @@ namespace ORTS
             Heat2Pressure = new Interpolator(locoCopy.Heat2Pressure);
             BurnRate = new Interpolator(locoCopy.BurnRate);
             EvaporationRate = new Interpolator(locoCopy.EvaporationRate);
-            CutoffController = locoCopy.CutoffController.Clone();
+            CutoffController = (MSTSNotchController)locoCopy.CutoffController.Clone();
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
@@ -336,7 +337,7 @@ namespace ORTS
             Heat2Pressure = new Interpolator(inf);
             BurnRate = new Interpolator(inf);
             EvaporationRate = new Interpolator(inf);
-            CutoffController = ControllerFactory.Restore(inf);
+            CutoffController = (MSTSNotchController)ControllerFactory.Restore(inf);
             base.Restore(inf);
         }
 
@@ -357,7 +358,14 @@ namespace ORTS
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
+            if (Train.MUReverserPercent >= 0)
+                Train.MUDirection = Direction.Forward;
+            else
+                Train.MUDirection = Direction.Reverse;
+
             base.Update(elapsedClockSeconds);
+
             Variable1 = Math.Abs(SpeedMpS);   // Steam loco's seem to need this.
             Variable2 = 50;   // not sure what this ones for ie in an SMS file
 
@@ -413,28 +421,27 @@ namespace ORTS
                 BoilerPressurePSI.ToString("F0"),evap.ToString("F0"),usage.ToString("F0"));
                 //BoilerHeatBTU,BoilerMassLB,WaterFraction.ToString("F2"));
         }
-        public void ChangeReverser(float elapsedSeconds, float percent)
-        {
-            if (CutoffController == null)
-            {
-                Train.MUReverserPercent += percent;
-                if (Train.MUReverserPercent < -90) Train.MUReverserPercent = -90;
-                if (Train.MUReverserPercent > 90) Train.MUReverserPercent = 90;
-            }
-            else if (percent > 0)
-                Train.MUReverserPercent = 100 * CutoffController.Increase(elapsedSeconds);
-            else
-                Train.MUReverserPercent = 100 * CutoffController.Decrease(elapsedSeconds);
 
-            if (Train.MUReverserPercent >= 0)
-                Train.MUDirection = Direction.Forward;
-            else
-                Train.MUDirection = Direction.Reverse;
-        }
-        public bool IsCutoffControllerNotched()
+        public void StartReverseIncrease()
         {
-            return CutoffController.IsNotched();
+            CutoffController.StartIncrease();
         }
+
+        public void StopReverseIncrease()
+        {
+            CutoffController.StopIncrease();
+        }
+
+        public void StartReverseDecrease()
+        {
+            CutoffController.StartDecrease();
+        }
+
+        public void StopReverseDecrease()
+        {
+            CutoffController.StopDecrease();
+        }
+
 
         /// <summary>
         /// Used when someone want to notify us of an event
@@ -474,26 +481,16 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // for example
-            // if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
-            if (SteamLocomotive.IsCutoffControllerNotched())
-            {
-                if (UserInput.IsPressed(Keys.W))
-                    SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds, 10);
-                else if (UserInput.IsPressed(Keys.S))
-                    SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds , - 10);
-                else
-                    base.HandleUserInput(elapsedTime);
-            }
+            if (UserInput.IsPressed(Keys.W))
+                SteamLocomotive.StartReverseIncrease();
+            else if (UserInput.IsReleased(Keys.W))
+                SteamLocomotive.StopReverseIncrease();
+            else if (UserInput.IsPressed(Keys.S))
+                SteamLocomotive.StartReverseDecrease();
+            else if (UserInput.IsReleased(Keys.S))
+                SteamLocomotive.StopReverseDecrease();
             else
-            {
-                if (UserInput.IsKeyDown(Keys.W))
-                    SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds, 10);
-                else if (UserInput.IsKeyDown(Keys.S))
-                    SteamLocomotive.ChangeReverser(elapsedTime.ClockSeconds , - 10);
-                else
-                    base.HandleUserInput(elapsedTime);
-            }
+                base.HandleUserInput(elapsedTime);
         }
 
         /// <summary>

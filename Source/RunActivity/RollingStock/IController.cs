@@ -16,16 +16,15 @@ namespace ORTS
         //Create a new controller exactly like this one
         IController Clone();
 
-        //Increase the throttle, return the power % (number from 0 to 1)
-        float Increase(float elapsedSeconds);
-        float Decrease(float elapsedSeconds);
+        float Update(float elapsedSeconds);
+
+        void StartIncrease();
+        void StopIncrease();
+        void StartDecrease();
+        void StopDecrease();        
 
         //Loads the controller from a stream
-        void Parse(STFReader f);
-
-        //Return true is the throttle has notches
-        //Or false when it is a continuous value (like a steam locomotive regulator)
-        bool IsNotched();
+        void Parse(STFReader f);        
 
         //returns true if this controller was loaded and can be used
         //Some notched controllers will have stepSize == 0, those are invalid

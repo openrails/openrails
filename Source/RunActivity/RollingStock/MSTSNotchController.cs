@@ -16,11 +16,16 @@ namespace ORTS
     public class MSTSNotchController: IController
     {
         public float CurrentValue = 0;
+        public float IntermediateValue = 0;
         public float MinimumValue = 0;
         public float MaximumValue = 1;
-        private float StepSize = 0;
-        public List<MSTSNotch> Notches = new List<MSTSNotch>();
+        public float StepSize = 0;
+        private List<MSTSNotch> Notches = new List<MSTSNotch>();
         public int CurrentNotch = 0;
+
+        //Does not need to persist
+        //this indicates if the controller is increasing or decreasing, 0 no changes
+        public float UpdateValue = 0;        
 
         #region CONSTRUCTORS
 
@@ -28,9 +33,17 @@ namespace ORTS
         {
         }
 
+        public MSTSNotchController(float min, float max, float stepSize)
+        {
+            MinimumValue = min;
+            MaximumValue = max;
+            StepSize = stepSize;
+        }
+
         public MSTSNotchController(MSTSNotchController other)
         {
             CurrentValue = other.CurrentValue;
+            IntermediateValue = other.IntermediateValue;
             MinimumValue = other.MinimumValue;
             MaximumValue = other.MaximumValue;
             StepSize = other.StepSize;
@@ -58,11 +71,6 @@ namespace ORTS
             return new MSTSNotchController(this);
         }
 
-        public virtual bool IsNotched()
-        {
-            return Notches.Count > 0 && !Notches[CurrentNotch].Smooth;
-        }
-
         public virtual bool IsValid()
         {
             return StepSize != 0;
@@ -74,7 +82,7 @@ namespace ORTS
             MinimumValue = f.ReadFloat();
             MaximumValue = f.ReadFloat();
             StepSize = f.ReadFloat();
-            CurrentValue = f.ReadFloat();
+            IntermediateValue = CurrentValue = f.ReadFloat();
             //Console.WriteLine("controller {0} {1} {2} {3}", MinimumValue, MaximumValue, StepSize, CurrentValue);
             f.ReadTokenNoComment(); // numnotches
             f.VerifyStartOfBlock();
@@ -99,9 +107,8 @@ namespace ORTS
         }
 
         private float GetNotchBoost()
-        {
-            //Allow the full range to change in 10 seconds
-            return (Math.Abs(MaximumValue - MinimumValue) / StepSize) / 10;
+        {            
+            return 5;
         }
 
         public void SetValue(float v)
@@ -116,46 +123,90 @@ namespace ORTS
 
             if (CurrentNotch >= 0 && !Notches[CurrentNotch].Smooth)
                 CurrentValue = Notches[CurrentNotch].Value;
+
+            IntermediateValue = CurrentValue;
         }
 
-        public float Increase(float elapsedSeconds)
+        public void StartIncrease()
         {
-            CurrentValue += StepSize * elapsedSeconds * GetNotchBoost();
-            CurrentValue = Math.Min(CurrentValue, MaximumValue);
+            UpdateValue = 1;
 
-            if (Notches.Count > 0)
+            //If we have notches and the current Notch does not require smooth, we go directly to the next notch
+            if ((Notches.Count > 0) && (CurrentNotch < Notches.Count - 1) && (!Notches[CurrentNotch].Smooth))
             {
-                if (CurrentNotch < Notches.Count - 1 && (!Notches[CurrentNotch].Smooth || CurrentValue >= Notches[CurrentNotch + 1].Value))
-                {
-                    CurrentNotch++;
-                    CurrentValue = Notches[CurrentNotch].Value;
-                }
-                else if (CurrentNotch == Notches.Count - 1 && !Notches[CurrentNotch].Smooth)
-                {
-                    CurrentValue = Notches[CurrentNotch].Value;
-                }
+                ++CurrentNotch;
+                IntermediateValue = CurrentValue = Notches[CurrentNotch].Value;
             }
-            return CurrentValue;
         }
 
-        public float Decrease(float elapsedSeconds)
+        public void StopIncrease()
         {
-            CurrentValue -= StepSize * elapsedSeconds * GetNotchBoost();
-            CurrentValue = Math.Max(CurrentValue, MinimumValue);
+            UpdateValue = 0;
+        }
 
+        public void StartDecrease()
+        {
+            UpdateValue = -1;
+
+            //If we have notches and the current Notch does not require smooth, we go directly to the next notch
+            if ((Notches.Count > 0) && (CurrentNotch > 0) && (!Notches[CurrentNotch].Smooth))
+            {
+                //Keep intermediate value with the "previous" notch, so it will take a while to change notches
+                //again if the user keep holding the key
+                IntermediateValue = Notches[CurrentNotch].Value;
+                CurrentNotch--;                
+                CurrentValue = Notches[CurrentNotch].Value;
+            }
+        }
+
+        public void StopDecrease()
+        {
+            UpdateValue = 0;
+        }
+
+        public float Update(float elapsedSeconds)
+        {
+            if (UpdateValue > 0)
+                return this.UpdateValues(elapsedSeconds, 1);
+            else if (UpdateValue < 0)
+                return this.UpdateValues(elapsedSeconds, -1);
+            else 
+                return this.CurrentValue;
+        }
+
+        private float UpdateValues(float elapsedSeconds, float direction)
+        {
+            //We increment the intermediate value first
+            IntermediateValue += StepSize * elapsedSeconds * GetNotchBoost() * direction;
+            IntermediateValue = MathHelper.Clamp(IntermediateValue, MinimumValue, MaximumValue);
+
+            //Do we have nothces
             if (Notches.Count > 0)
             {
-                if (CurrentNotch > 0 && (!Notches[CurrentNotch].Smooth || CurrentValue < Notches[CurrentNotch].Value))
+                //Increasing, check if the notche has changed
+                if ((direction > 0) && (CurrentNotch < Notches.Count - 1) && (IntermediateValue >= Notches[CurrentNotch + 1].Value))
+                {
+                    //update notch
+                    CurrentNotch++;
+                }
+                //decreasing, again check if the current notch has changed
+                else if((direction < 0) && (CurrentNotch > 0) && (IntermediateValue < Notches[CurrentNotch].Value))
                 {
                     CurrentNotch--;
-                    if (!Notches[CurrentNotch].Smooth)
-                        CurrentValue = Notches[CurrentNotch].Value;
                 }
-                else if (CurrentNotch == 0 && !Notches[CurrentNotch].Smooth)
-                {
+
+                //If the notch is smooth, we use intermediate value that is being update smooth thought the frames
+                if (Notches[CurrentNotch].Smooth)
+                    CurrentValue = IntermediateValue;
+                else
                     CurrentValue = Notches[CurrentNotch].Value;
-                }
             }
+            else
+            {
+                //if no notches, we just keep updating the current value directly
+                CurrentValue = IntermediateValue;
+            }
+
             return CurrentValue;
         }
 
@@ -196,7 +247,7 @@ namespace ORTS
 
         protected virtual void SaveData(BinaryWriter outf)
         {            
-            outf.Write(CurrentValue);
+            outf.Write(CurrentValue);            
             outf.Write(MinimumValue);
             outf.Write(MaximumValue);
             outf.Write(StepSize);
@@ -211,11 +262,13 @@ namespace ORTS
 
         protected virtual void Restore(BinaryReader inf)
         {
-            CurrentValue = inf.ReadSingle();
+            IntermediateValue = CurrentValue = inf.ReadSingle();            
             MinimumValue = inf.ReadSingle();
             MaximumValue = inf.ReadSingle();
             StepSize = inf.ReadSingle();
             CurrentNotch = inf.ReadInt32();
+
+            UpdateValue = 0;
 
             int count = inf.ReadInt32();
 
@@ -223,6 +276,25 @@ namespace ORTS
             {
                 Notches.Add(new MSTSNotch(inf));
             }           
+        }
+
+        protected MSTSNotch GetCurrentNotch()
+        {
+            return Notches.Count == 0 ? null : Notches[CurrentNotch];
+        }
+
+        protected void SetCurrentNotch(MSTSNotchType type)
+        {
+            for (int i = 0; i < Notches.Count; i++)
+            {
+                if (Notches[i].Type == type)
+                {
+                    CurrentNotch = i;
+                    CurrentValue = Notches[i].Value;
+
+                    break;
+                }
+            }
         }
 
     }

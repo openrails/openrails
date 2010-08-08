@@ -4,10 +4,8 @@ using System.IO;
 namespace ORTS
 {
     public enum ControllerTypes
-    {
-        SimpleController = 1,
-        MSTSNotchController,
-        MSTSStageController,
+    {        
+        MSTSNotchController = 1,        
         MSTSBrakeController
     }
 
@@ -27,15 +25,9 @@ namespace ORTS
                 return null;
 
             switch ((ControllerTypes)inf.ReadInt32())
-            {
-                case ControllerTypes.SimpleController:
-                    return new SimpleController(inf);
-
+            {                
                 case ControllerTypes.MSTSNotchController:
-                    return new MSTSNotchController(inf);
-
-                case ControllerTypes.MSTSStageController:
-                    return new MSTSStageController(inf);
+                    return new MSTSNotchController(inf);                
 
                 case ControllerTypes.MSTSBrakeController:
                     return new MSTSBrakeController(inf);
