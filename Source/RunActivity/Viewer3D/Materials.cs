@@ -828,7 +828,7 @@ namespace ORTS
             // Variables passed from PrecipDrawer
             PrecipShader.WeatherType = weatherType;
             PrecipShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
-            PrecipShader.ViewportHeight = graphicsDevice.Viewport.Height;
+            PrecipShader.ViewportHeight = (int)RenderProcess.Viewer.DisplaySize.Y;
             PrecipShader.CurrentTime = (float)RenderProcess.Viewer.Simulator.ClockTime;
             switch (weatherType)
             {

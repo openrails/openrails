@@ -61,6 +61,7 @@ namespace ORTS
         // Access to the XNA Game class
         public GraphicsDeviceManager GDM;  
         public GraphicsDevice GraphicsDevice;
+		public Vector2 DisplaySize;
         // Components
         public Simulator Simulator;
         InfoDisplay InfoDisplay;

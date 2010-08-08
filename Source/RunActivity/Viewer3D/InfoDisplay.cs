@@ -130,9 +130,7 @@ namespace ORTS
 		{
 			if (Viewer.CompassWindow.Visible)
 			{
-				Vector2 compassDir;
-				compassDir.X = Viewer.Camera.XNAView.M11;
-				compassDir.Y = Viewer.Camera.XNAView.M13;
+				var compassDir = new Vector2(Viewer.Camera.XNAView.M11, Viewer.Camera.XNAView.M13);
 				var heading = Math.Acos(compassDir.X);
 				if (compassDir.Y > 0) heading = 2 * Math.PI - heading;
 				Viewer.CompassWindow.Update((float)heading);

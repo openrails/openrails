@@ -43,7 +43,8 @@ namespace ORTS
     {
 		const int ShadowMapSunDistance = 1000;
 		const int ShadowMapSize = 4096;
-		const int ShadowMapViewSize = 512;
+		const int ShadowMapViewMin = 512;
+		const int ShadowMapViewMax = 2048;
 		const float ShadowMapViewNear = 0f;
 		const float ShadowMapViewFar = 2000f;
 
@@ -75,10 +76,28 @@ namespace ORTS
 
 		public void PrepareFrame(ElapsedTime elapsedTime)
 		{
-			var cameraLocation = RenderProcess.Viewer.Camera.Location * new Vector3(1, 1, -1);
 			var sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
-			ShadowMapLightView = Matrix.CreateLookAt(cameraLocation + ShadowMapSunDistance * sunDirection, cameraLocation, Vector3.Up);
-			ShadowMapLightProj = Matrix.CreateOrthographic(ShadowMapViewSize, ShadowMapViewSize, ShadowMapViewNear, ShadowMapViewFar);
+			var cameraLocation = RenderProcess.Viewer.Camera.Location * new Vector3(1, 1, -1);
+			var terrainAltitude = RenderProcess.Viewer.Tiles.GetElevation(RenderProcess.Viewer.Camera.TileX, RenderProcess.Viewer.Camera.TileZ, (cameraLocation.X + 1024) / 8, (cameraLocation.Z + 1024) / 8);
+			var cameraAltitudeFromTerrain = terrainAltitude != 0 ? cameraLocation.Y - terrainAltitude : ShadowMapViewMax;
+
+			// Project the center-bottom of the screen onto the world.
+			var reverseCameraProjection = Matrix.Invert(RenderProcess.Viewer.Camera.XNAView * RenderProcess.Viewer.Camera.XNAProjection);
+			var cameraBottomVector = Vector3.Transform(-Vector3.UnitY, reverseCameraProjection) / (-reverseCameraProjection.M24 + reverseCameraProjection.M44);
+			var cameraBottomRay = new Ray(cameraLocation, cameraBottomVector - cameraLocation);
+			cameraBottomRay.Direction.Normalize();
+
+			// Find the place where the center-bottom of the screen intersects with the terrain.
+			var terrain = new Plane(-Vector3.UnitY, terrainAltitude);
+			var terrainDistance = cameraBottomRay.Intersects(terrain);
+			var terrainIntersection = cameraBottomRay.Position + terrainDistance.GetValueOrDefault() * cameraBottomRay.Direction;
+
+			var viewingWidth = RenderProcess.Viewer.Camera.RightFrustrumA * terrainDistance.GetValueOrDefault() * 2;
+			var shadowMapSize = MathHelper.Clamp(viewingWidth * 4 * ShadowMapSize / RenderProcess.Viewer.DisplaySize.X, ShadowMapViewMin, ShadowMapViewMax);
+			var shadowMapLocation = terrainIntersection;
+
+			ShadowMapLightView = Matrix.CreateLookAt(shadowMapLocation + ShadowMapSunDistance * sunDirection, shadowMapLocation, Vector3.Up);
+			ShadowMapLightProj = Matrix.CreateOrthographic(shadowMapSize, shadowMapSize, ShadowMapViewNear, ShadowMapViewFar);
 			ShadowMapBound = new BoundingFrustum(ShadowMapLightView * ShadowMapLightProj);
 		}
 

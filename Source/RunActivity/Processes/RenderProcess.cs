@@ -189,6 +189,9 @@ namespace ORTS
 
 			Viewer.RenderProfiler.Start();
 
+			Viewer.DisplaySize.X = GraphicsDevice.Viewport.Width;
+			Viewer.DisplaySize.Y = GraphicsDevice.Viewport.Height;
+
 			/* When using SynchronizeWithVerticalRetrace = true, then this isn't required
 			// if the loader is running slow, limit render's frame rates to give loader some GPU time
 			if (LoaderSlow )

@@ -55,7 +55,7 @@ namespace ORTS
             forestMaterial = Materials.Load(Viewer.RenderProcess, "ForestMaterial", texturePath, 0, 0);
 
             // Instantiate classes
-            forestMesh = new ForestMesh(Viewer.RenderProcess, this, forest);
+            forestMesh = new ForestMesh(Viewer.RenderProcess, Viewer.Tiles, this, forest);
         }
         #endregion
 
@@ -84,7 +84,6 @@ namespace ORTS
         // Forest variables
         Random random;
         ForestDrawer Drawer;
-        string tileFolderNameSlash;
         public float objectRadius;
         public float refElevation;
 
@@ -101,11 +100,9 @@ namespace ORTS
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ForestMesh(RenderProcess renderProcess, ForestDrawer drawer, ForestObj forest)
+        public ForestMesh(RenderProcess renderProcess, Tiles tiles, ForestDrawer drawer, ForestObj forest)
         {
             Drawer = drawer;
-            string path = renderProcess.Viewer.Simulator.RoutePath;
-            tileFolderNameSlash = path + @"\tiles\";
 
             // Initialize local variables from WFile data
             treeTexture = forest.TreeTexture;
@@ -134,7 +131,7 @@ namespace ORTS
             VertexPositionNormalTexture[] trees = new VertexPositionNormalTexture[population * 6];
             treeVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
 
-            InitForestVertices(trees);
+            InitForestVertices(tiles, trees);
 
             PrimitiveCount = trees.Length / 3;
             Buffer = new VertexBuffer(renderProcess.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * trees.Length, BufferUsage.WriteOnly);
@@ -144,7 +141,7 @@ namespace ORTS
         /// <summary>
         /// Forest tree array intialization. 
         /// </summary>
-        private void InitForestVertices( VertexPositionNormalTexture[] trees)
+        private void InitForestVertices(Tiles tiles, VertexPositionNormalTexture[] trees)
         {
             // Create the tree position and size arrays.
             Vector3[] treePosition = new Vector3[population];
@@ -155,11 +152,10 @@ namespace ORTS
             Drawer.worldPosition.XNAMatrix = Matrix.Identity;
             Drawer.worldPosition.XNAMatrix.Translation = XNAWorldLocation.Translation;
             float YtileX, YtileZ;
-            Tile tile = new Tile(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, tileFolderNameSlash);
             // Get the Y elevation of the base object itself. Tree elevations are referenced to this.
             YtileX = (XNAWorldLocation.M41 + 1024) / 8;
             YtileZ = (XNAWorldLocation.M43 + 1024) / 8;
-            refElevation = tile.GetElevation((int)YtileX, (int)YtileZ);
+            refElevation = tiles.GetElevation(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, (int)YtileX, (int)YtileZ);
             float scale;
             for (int i = 0; i < population; i++)
             {
@@ -176,7 +172,7 @@ namespace ORTS
                 YtileX = MathHelper.Clamp((tempPosition[i].X + 1024) / 8, 0, 254.9999f);
                 YtileZ = MathHelper.Clamp((tempPosition[i].Z + 1024) / 8, 0, 254.9999f);
 				// TODO: What is this -0.8 here for?
-				treePosition[i].Y = tile.GetElevation(YtileX, YtileZ) - refElevation - 0.8f;
+				treePosition[i].Y = tiles.GetElevation(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, YtileX, YtileZ) - refElevation - 0.8f;
                 // WVP transformation of the complete object takes place in the vertex shader.
 
                 // Randomize the tree size

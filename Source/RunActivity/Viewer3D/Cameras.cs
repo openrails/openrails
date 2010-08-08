@@ -92,7 +92,7 @@ namespace ORTS
         /// </summary>
         public virtual void ScreenChanged()
         {
-            float aspectRatio = (float)Viewer.GraphicsDevice.Viewport.Width / (float)Viewer.GraphicsDevice.Viewport.Height;
+            float aspectRatio = Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
             float farPlaneDistance =  SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
             float fovWidthRadians = MathHelper.ToRadians(45.0f);
             XNAProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, Viewer.ViewingDistance);
