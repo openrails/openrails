@@ -145,7 +145,8 @@ namespace ORTS
         }
 
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial) { }
-    }
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive) { return null; }
+	}
 
     public class WirePrimitive : RenderPrimitive
     {

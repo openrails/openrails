@@ -212,7 +212,7 @@ namespace ORTS
 			{
 				var riMatrix = renderItem.XNAMatrix;
 				if (!(renderItem.Material is TerrainMaterial))
-					Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+					Materials.ShadowMapMaterial.Render(graphicsDevice, renderItem.Material, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
 			}
 
 			graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
@@ -221,7 +221,7 @@ namespace ORTS
 			{
 				var riMatrix = renderItem.XNAMatrix;
 				if (renderItem.Material is TerrainMaterial)
-					Materials.ShadowMapMaterial.Render(graphicsDevice, null, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+					Materials.ShadowMapMaterial.Render(graphicsDevice, renderItem.Material, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
 			}
 
 			Materials.ShadowMapMaterial.ResetState(graphicsDevice, null);

@@ -179,15 +179,20 @@ namespace ORTS
     /// </summary>
     public class ShadowMapShader : Effect
     {
-        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+		public Texture2D ImageTexture { set { imagetexture.SetValue(value); } } EffectParameter imagetexture = null;
+		public Matrix WorldViewProjection { set { worldviewprojection.SetValue(value); } } EffectParameter worldviewprojection = null;
+	
+		public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
-            Parameters["WorldViewProjection"].SetValue(world * view * projection);
+            WorldViewProjection = world * view * projection;
         }
 
         public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("ShadowMap"))
         {
-        }
+			imagetexture = Parameters["ImageTexture"];
+			worldviewprojection = Parameters["WorldViewProjection"];
+		}
     }
     #endregion
 

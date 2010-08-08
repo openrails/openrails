@@ -257,17 +257,27 @@ namespace ORTS
         /// Use nextMaterial to optimize the state change
         /// </summary>
         void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial);
+
+		Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive);
     }
     #endregion
 
     #region Empty material
-    public class EmptyMaterial : Material
-    {
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) 
-        { 
-        }
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial) { }
-    }
+	public class EmptyMaterial : Material
+	{
+		public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		{
+		}
+
+		public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+		{
+		}
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
     #endregion
 
     #region Sprite batch material
@@ -304,7 +314,12 @@ namespace ORTS
             if( nextMaterial != this )
                 SpriteBatch.End();
         }
-    }
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
     #endregion
 
     #region Scenery material
@@ -544,7 +559,41 @@ namespace ORTS
             {
             }
         }
-    }
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			// Texture addressing
+			int wrapping = (Options & 0x1800) >> 11;
+			switch (wrapping)
+			{
+				case 0: // wrap
+					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+					break;
+				case 1: // mirror
+					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Mirror;
+					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Mirror;
+					break;
+				case 2: // clamp
+					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
+					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
+					break;
+				case 3: // border
+					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Border;
+					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Border;
+					break;
+			}
+
+			if (Materials.sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
+			{
+				return nightTexture;
+			}
+			else
+			{
+				return Texture;
+			}
+		}
+	}
     #endregion
 
     #region Terrain material
@@ -604,7 +653,12 @@ namespace ORTS
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
         }
-    }
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
     #endregion
 
     #region Sky material
@@ -755,6 +809,11 @@ namespace ORTS
         {
         }
 
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+
         /// <summary>
         /// This function darkens the fog color as night begins to fall
         /// as well as with increasing overcast.
@@ -884,7 +943,12 @@ namespace ORTS
             graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
             graphicsDevice.RenderState.DepthBufferWriteEnable = true;
         }
-    }
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
 	#endregion
 
     #region Dynatrack material
@@ -1021,8 +1085,12 @@ namespace ORTS
 
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
-
         }
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
     }
     #endregion
 
@@ -1076,7 +1144,12 @@ namespace ORTS
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
         }
-    }
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
     #endregion
 
     #region LightGlow material
@@ -1145,7 +1218,12 @@ namespace ORTS
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
         }
-    }
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
     #endregion
     
     #region Water material
@@ -1202,7 +1280,11 @@ namespace ORTS
         {
         }
 
-    }
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
     #endregion
 
     #region Shadow Map material
@@ -1232,10 +1314,11 @@ namespace ORTS
             rs.RangeFogEnable = false;
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, Material originalMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Materials.ShadowMapShader;
             shader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, XNAProjectionMatrix);
+			shader.ImageTexture = originalMaterial.GetShadowTexture(graphicsDevice, renderPrimitive);
 			shader.Begin();
 			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
 			{
@@ -1251,7 +1334,11 @@ namespace ORTS
         {
         }
 
-    }
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
     #endregion
 
 	#region Popup Window material
@@ -1305,6 +1392,11 @@ namespace ORTS
 			rs.DepthBufferEnable = true;
 			rs.DepthBufferFunction = CompareFunction.LessEqual;
 			rs.DepthBufferWriteEnable = true;
+		}
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
 		}
 	}
 	#endregion
@@ -1375,6 +1467,11 @@ namespace ORTS
         public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
         {
         }
-    }
+
+		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return null;
+		}
+	}
     #endregion
 }
