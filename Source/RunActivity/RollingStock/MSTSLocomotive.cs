@@ -666,10 +666,10 @@ namespace ORTS
             if (UserInput.IsKeyDown(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.StartTrainBrakeDecrease();
             if (UserInput.IsReleased(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.StopTrainBrakeDecrease();
 
-            if (UserInput.IsPressed(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeIncrease();
-            if (UserInput.IsReleased(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.StopEngineBrakeIncrease();
-            if (UserInput.IsPressed(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeDecrease();
-            if (UserInput.IsReleased(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeDecrease();
+            if (UserInput.IsPressed(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeIncrease();
+            if (UserInput.IsReleased(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.StopEngineBrakeIncrease();
+            if (UserInput.IsPressed(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeDecrease();
+            if (UserInput.IsReleased(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeDecrease();
 
             if (UserInput.IsPressed(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.StartDynamicBrakeIncrease();
             if (UserInput.IsReleased(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.StopDynamicBrakeIncrease();
