@@ -358,11 +358,16 @@ namespace ORTS
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
-            Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
-            if (Train.MUReverserPercent >= 0)
-                Train.MUDirection = Direction.Forward;
+            if (this.IsLeadLocomotive())
+            {
+                Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
+                if (Train.MUReverserPercent >= 0)
+                    Train.MUDirection = Direction.Forward;
+                else
+                    Train.MUDirection = Direction.Reverse;
+            }
             else
-                Train.MUDirection = Direction.Reverse;
+                CutoffController.Update(elapsedClockSeconds);
 
             base.Update(elapsedClockSeconds);
 

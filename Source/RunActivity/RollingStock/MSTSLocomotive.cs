@@ -305,8 +305,14 @@ namespace ORTS
             TrainBrakeController.Update(elapsedClockSeconds);
             if (EngineBrakeController != null)
                 EngineBrakeController.Update(elapsedClockSeconds);
+
             if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
-                DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+            {
+                if (this.IsLeadLocomotive())
+                    DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+                else
+                    DynamicBrakeController.Update(elapsedClockSeconds);
+            }
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
