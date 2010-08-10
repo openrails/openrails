@@ -170,7 +170,7 @@ void _PSApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
 	float lit_factor = (In.Shadow.z <= moments.x);
 	float E_x2 = moments.y;
 	float Ex_2 = moments.x * moments.x;
-	float variance = min(max(E_x2 - Ex_2, 0.0) + 0.0000001, 1.0);
+	float variance = min(max(E_x2 - Ex_2, 0.0) + 0.00001, 1.0);
 	float m_d = (moments.x - In.Shadow.z);
 	float p = variance / (variance + m_d * m_d);
 	Color.rgb *= saturate(clip + 0.5f + max(lit_factor, p) / 2);
