@@ -64,9 +64,8 @@ sampler ShadowMap = sampler_state
 {
 	Texture = (ShadowMapTexture);
 	MagFilter = Linear;
-	MinFilter = Anisotropic;
+	MinFilter = Linear;
 	MipFilter = Linear;
-	MaxAnisotropy = 2;
 	AddressU = Border;
 	AddressV = Border;
 };
