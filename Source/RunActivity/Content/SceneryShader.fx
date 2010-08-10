@@ -66,7 +66,7 @@ sampler ShadowMap = sampler_state
 	MagFilter = Linear;
 	MinFilter = Anisotropic;
 	MipFilter = Linear;
-	MaxAnisotropy = 16;
+	MaxAnisotropy = 2;
 	AddressU = Border;
 	AddressV = Border;
 };
