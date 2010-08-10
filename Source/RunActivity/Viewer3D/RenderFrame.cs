@@ -198,7 +198,7 @@ namespace ORTS
 		{
 			if (ShadowMapRenderTarget == null)
 			{
-				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 0, SurfaceFormat.Vector2);
+				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, SurfaceFormat.Vector2);
 				ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
 			}
 
