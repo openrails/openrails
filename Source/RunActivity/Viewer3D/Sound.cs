@@ -308,7 +308,8 @@ namespace ORTS
 
             // Run Initial if no other is Signaled
             var qt = from t in Triggers
-                     where t.Signaled
+                     where t.Signaled &&
+                     (t.SoundCommand is ORTSStartLoop || t.SoundCommand is ORTSStartLoopRelease)
                      select t;
 
             // If exists an InitialTrigger at all
@@ -422,7 +423,7 @@ namespace ORTS
         {
             if (ISound != null)
             {
-                Console.WriteLine("Stopping: " + _playingSound.Name.Substring(_playingSound.Name.LastIndexOf('\\')));
+                //Console.WriteLine("Stopping: " + _playingSound.Name.Substring(_playingSound.Name.LastIndexOf('\\')));
                 ISound.Stop();
                 ISound = null;
             }
@@ -499,6 +500,13 @@ namespace ORTS
             }
         }
 
+        public bool isInQueueOrPlaying(string Name)
+        {
+            return (_playingSound != null && _playingSound.Name == Name) || (
+                        _qPlay.Count != 0 &&
+                        _qPlay.ElementAt(_qPlay.Count - 1).Key.Name == Name);
+        }
+        
         /// <summary>
         /// Play the specified sound 
         /// at the default volume.
@@ -785,6 +793,7 @@ namespace ORTS
         {
             float newValue = ReadValue();
             bool triggered = false;
+            Signaled = false;
 
             switch (SMS.Event)
             {
@@ -796,6 +805,8 @@ namespace ORTS
                     if (newValue < SMS.Threshold
                         && StartValue >= SMS.Threshold)
                         triggered = true;
+                    if (newValue < SMS.Threshold)
+                        Signaled = true;
                     break;
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
                 case MSTS.Variable_Trigger.Events.Speed_Inc_Past:
@@ -805,10 +816,12 @@ namespace ORTS
                     if (newValue > SMS.Threshold
                         && StartValue <= SMS.Threshold)
                         triggered = true;
+                    if (newValue > SMS.Threshold)
+                        Signaled = true;
                     break;
             }
 
-            Signaled = triggered;
+            //Signaled = triggered;
 
             StartValue = newValue;
             if (triggered && Enabled )
@@ -1179,13 +1192,17 @@ namespace ORTS
             string filePath = ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile];
             if (File.Exists(filePath) && ORTSStream.SoundSource.Viewer.SoundEngine != null )
             {
-                IrrKlang.ISoundSource iSoundSource = ORTSStream.SoundSource.Viewer.SoundEngine.GetSoundSource(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString(), true);
-                // Loop play support - by GeorgeS
-                // Must be set to support looping and not to fail with OutOfMemory
-                if (iSoundSource != null)
+                filePath += '*' + UID.ToString();
+                if (!ORTSStream.isInQueueOrPlaying(filePath))
                 {
-                    iSoundSource.StreamMode = StreamMode.Streaming;
-                    ORTSStream.Play3D(repeat, iSoundSource);
+                    IrrKlang.ISoundSource iSoundSource = ORTSStream.SoundSource.Viewer.SoundEngine.GetSoundSource(filePath, true);
+                    // Loop play support - by GeorgeS
+                    // Must be set to support looping and not to fail with OutOfMemory
+                    if (iSoundSource != null)
+                    {
+                        iSoundSource.StreamMode = StreamMode.Streaming;
+                        ORTSStream.Play3D(repeat, iSoundSource);
+                    }
                 }
             }
         }

@@ -32,10 +32,15 @@ namespace ORTS
             int sep = filename.LastIndexOf('*');
             WAVFileStream wfs;
 
+            bool isLooping = false;
+            bool isInternalLoop = false;
+
             // Don't keep the previous instance, release it
             if (sep != 0 && FileStreams.Keys.Contains(filename))
             {
                 wfs = FileStreams[filename];
+                isLooping = wfs.IsLooping;
+                isInternalLoop = wfs.IsInternalLoop;
 #if DEBUGSCR
                 Console.WriteLine("Implicit stopping file: " + filename.Substring(filename.LastIndexOf('\\')));
 #endif
@@ -44,6 +49,9 @@ namespace ORTS
 
             // Create the new Stream
             wfs = new WAVFileStream(sep >= 0 ? filename.Substring(0, sep) : filename);
+
+            wfs.IsLooping = isLooping;
+            wfs.IsInternalLoop = isInternalLoop;
 
             // Add or replace the Stream in our Dictionary
             if (FileStreams.Keys.Contains(filename))
@@ -109,6 +117,13 @@ namespace ORTS
         /// <param name="FileName">Name of the file, also key in dictionary</param>
         public static void StartLoopRelease(string FileName)
         {
+            if (!FileStreams.Keys.Contains(FileName))
+            {
+                int sep = FileName.LastIndexOf('*');
+                WAVFileStream wfs = new WAVFileStream(sep >= 0 ? FileName.Substring(0, sep) : FileName);
+                FileStreams.Add(FileName, wfs);
+            }
+
             if (FileStreams.Keys.Contains(FileName))
             {
 #if DEBUGSCR
@@ -124,6 +139,13 @@ namespace ORTS
         /// <param name="FileName">Name of the file, also key in dictionary</param>
         public static void StartLoop(string FileName)
         {
+            if (!FileStreams.Keys.Contains(FileName))
+            {
+                int sep = FileName.LastIndexOf('*');
+                WAVFileStream wfs = new WAVFileStream(sep >= 0 ? FileName.Substring(0, sep) : FileName);
+                FileStreams.Add(FileName, wfs);
+            }
+
             if (FileStreams.Keys.Contains(FileName))
             {
 #if DEBUGSCR
@@ -316,6 +338,18 @@ namespace ORTS
             set
             {
                 _isInInternalLoop = value;
+            }
+        }
+
+        public bool IsLooping
+        {
+            get
+            {
+                return !_isShouldFinish;
+            }
+            set
+            {
+                _isShouldFinish = !value;
             }
         }
 
