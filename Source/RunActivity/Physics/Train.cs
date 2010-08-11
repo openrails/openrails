@@ -175,10 +175,10 @@ namespace ORTS
                 car.MotiveForceN = 0;
                 car.Update(elapsedClockSeconds);
                 //Console.WriteLine("update {0} {1} {2} {3} {4}", car.SpeedMpS, car.MotiveForceN, car.GravityForceN, car.FrictionForceN, car.BrakeSystem.GetStatus());
-                car.MotiveForceN += car.GravityForceN;
+                car.TotalForceN= car.MotiveForceN + car.GravityForceN;
                 if (car.Flipped)
                 {
-                    car.MotiveForceN = -car.MotiveForceN;
+                    car.TotalForceN = -car.TotalForceN;
                     car.SpeedMpS = -car.SpeedMpS;
                 }
             }
@@ -827,9 +827,9 @@ namespace ORTS
         {
             for (int i = 0; i < Cars.Count; i++)
                 if (Cars[i].SpeedMpS > 0)
-                    Cars[i].MotiveForceN -= Cars[i].FrictionForceN;
+                    Cars[i].TotalForceN -= Cars[i].FrictionForceN;
                 else if (Cars[i].SpeedMpS < 0)
-                    Cars[i].MotiveForceN += Cars[i].FrictionForceN;
+                    Cars[i].TotalForceN += Cars[i].FrictionForceN;
             if (Cars.Count < 2)
                 return;
             SetupCouplerForceEquations();
@@ -843,7 +843,7 @@ namespace ORTS
                     car.CouplerForceA = car.CouplerForceC = car.CouplerForceR = 0;
                 }
                 else
-                    car.CouplerForceR = Cars[i + 1].MotiveForceN / Cars[i + 1].MassKG - car.MotiveForceN / car.MassKG;
+                    car.CouplerForceR = Cars[i + 1].TotalForceN / Cars[i + 1].MassKG - car.TotalForceN / car.MassKG;
             }
             do
                 SolveCouplerForceEquations();
@@ -852,8 +852,8 @@ namespace ORTS
             {
                 TrainCar car = Cars[i];
                 //Console.WriteLine("cforce {0} {1} {2}", i, car.CouplerForceU, car.SpeedMpS);
-                car.MotiveForceN += car.CouplerForceU;
-                Cars[i + 1].MotiveForceN -= car.CouplerForceU;
+                car.TotalForceN += car.CouplerForceU;
+                Cars[i + 1].TotalForceN -= car.CouplerForceU;
                 if (MaximumCouplerForceN < Math.Abs(car.CouplerForceU))
                     MaximumCouplerForceN = Math.Abs(car.CouplerForceU);
                 float maxs = car.GetMaximumCouplerSlack2M();
@@ -883,16 +883,16 @@ namespace ORTS
             int n = 0;
             foreach (TrainCar car in Cars)
             {
-                //Console.WriteLine("updatespeed {0} {1} {2} {3}", car.SpeedMpS, car.MotiveForceN, car.MassKG, car.FrictionForceN);
+                //Console.WriteLine("updatespeed {0} {1} {2} {3}", car.SpeedMpS, car.TotalForceN, car.MassKG, car.FrictionForceN);
                 if (car.SpeedMpS > 0)
                 {
-                    car.SpeedMpS += car.MotiveForceN / car.MassKG * elapsedTime;
+                    car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
                 }
                 else if (car.SpeedMpS < 0)
                 {
-                    car.SpeedMpS += car.MotiveForceN / car.MassKG * elapsedTime;
+                    car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
                 }
@@ -905,14 +905,14 @@ namespace ORTS
             for (int i = 0; i < Cars.Count; i++)
             {
                 TrainCar car = Cars[i];
-                if (car.SpeedMpS != 0 || car.MotiveForceN <= car.FrictionForceN)
+                if (car.SpeedMpS != 0 || car.TotalForceN <= car.FrictionForceN)
                     continue;
                 int j = i;
                 float f = 0;
                 float m = 0;
                 for (; ; )
                 {
-                    f += car.MotiveForceN - car.FrictionForceN;
+                    f += car.TotalForceN - car.FrictionForceN;
                     m += car.MassKG;
                     if (j == Cars.Count - 1 || car.CouplerSlackM < car.GetMaximumCouplerSlack2M())
                         break;
@@ -932,14 +932,14 @@ namespace ORTS
             for (int i = Cars.Count - 1; i >= 0 ; i--)
             {
                 TrainCar car = Cars[i];
-                if (car.SpeedMpS != 0 || car.MotiveForceN > -car.FrictionForceN)
+                if (car.SpeedMpS != 0 || car.TotalForceN > -car.FrictionForceN)
                     continue;
                 int j = i;
                 float f = 0;
                 float m = 0;
                 for (; ; )
                 {
-                    f += car.MotiveForceN + car.FrictionForceN;
+                    f += car.TotalForceN + car.FrictionForceN;
                     m += car.MassKG;
                     if (j == 0 || car.CouplerSlackM > -car.GetMaximumCouplerSlack2M())
                         break;

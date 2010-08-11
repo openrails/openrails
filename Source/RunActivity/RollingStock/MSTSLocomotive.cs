@@ -58,9 +58,9 @@ namespace ORTS
         public bool Sander = false;  
         public bool Wiper = false;
         public bool BailOff = false;
-        float MaxPowerW;
-        float MaxForceN;
-        float MaxSpeedMpS = 1e3f;
+        public float MaxPowerW;
+        public float MaxForceN;
+        public float MaxSpeedMpS = 1e3f;
         public float MainResPressurePSI = 130;
         public bool CompressorOn = false;
         public float AverageForceN = 0;
@@ -731,8 +731,10 @@ namespace ORTS
                 if (EventID.IsMSTSBin)
                     Locomotive.SignalEvent(EventID.LightSwitchToggle);
             }
-            if (UserInput.IsPressed(Keys.Tab))
-                Program.Simulator.AI.Dispatcher.ExtendPlayerPath();
+            if (UserInput.IsPressed(Keys.Tab) && !UserInput.IsCtrlKeyDown())
+                Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization();
+            if (UserInput.IsPressed(Keys.Tab) && UserInput.IsCtrlKeyDown())
+                Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
 
             base.HandleUserInput( elapsedTime );
         }

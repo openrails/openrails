@@ -256,7 +256,7 @@ namespace ORTS
             if (UpdateTimerS < 0)
                 UpdateTimerS = 10;
         }
-        public void ExtendPlayerPath()
+        public void ExtendPlayerAuthorization()
         {
             TrackAuthority auth = TrackAuthorities[0];
             if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
@@ -266,6 +266,16 @@ namespace ORTS
                 if (auth.EndNode != auth.StopNode)
                     auth.AdvanceStopNode(true);
                 auth.CalcStopDistance();
+            }
+        }
+        public void ReleasePlayerAuthorization()
+        {
+            TrackAuthority auth = TrackAuthorities[0];
+            if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
+            {
+                auth.Train = AI.Simulator.PlayerLocomotive.Train;// this can change due to uncoupling
+                SetAuthorization(auth, null, null, 0);
+                Unreserve(0);
             }
         }
 
@@ -588,7 +598,7 @@ namespace ORTS
                     if (node.Type == AIPathNodeType.Other && node.JunctionIndex >= 0 && !node.IsFacingPoint)
                     {
                         int f = flags[node.JunctionIndex];
-                        if ((f & 0x9) == 0x9 || (f & 0x6) == 0x6)
+                        if ((f & 0x9) == 0x9 || (f & 0x6) == 0x6 || (f & 0xc) == 0xc)
                             node.Type = AIPathNodeType.SidingEnd;
                         //Console.WriteLine("junction {0} {1} {2} {3}", train.UiD, node.JunctionIndex, f, node.Type);
                     }

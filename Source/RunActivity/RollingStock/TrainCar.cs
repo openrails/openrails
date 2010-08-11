@@ -56,6 +56,7 @@ namespace ORTS
         public float MotiveForceN = 0.0f;   // ie motor power in Newtons  - signed relative to direction of car - 
         public float GravityForceN = 0.0f;   // Newtons  - signed relative to direction of car - 
         public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
+        public float TotalForceN; // sum of all the forces active on car relative train direction
 
         // temporary values used to compute coupler forces
         public float CouplerForceA; // left hand side value below diagonal

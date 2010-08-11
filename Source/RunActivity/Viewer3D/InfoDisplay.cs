@@ -214,7 +214,7 @@ namespace ORTS
                 TextBuilder.AppendLine(status);
             TextBuilder.Append("Slack = "); TextBuilder.Append(playerTrain.TotalCouplerSlackM.ToString("F2")+" "+playerTrain.NPull.ToString()+" "+playerTrain.NPush.ToString());
             if (playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1)
-                TextBuilder.AppendLine(" Streched");
+                TextBuilder.AppendLine(" Stretched");
             else if (playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1)
                 TextBuilder.AppendLine(" Bunched");
             else
@@ -318,7 +318,7 @@ namespace ORTS
                     j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
                 TrainCar car= playerTrain.Cars[j];
                 TextBuilder.Append(string.Format("Car {0:D2} ", j + 1));
-                TextBuilder.AppendLine(string.Format("{0:F0} {1:F0} {2:F0} {3:F0} {4:F0} {5:F0}", car.MotiveForceN, car.FrictionForceN, car.GravityForceN, car.CouplerForceU, car.MassKG, car.Flipped));
+                TextBuilder.AppendLine(string.Format("{0:F0} {1:F0} {2:F0} {3:F0} {4:F0} {5:F0} {6}", car.TotalForceN, car.MotiveForceN, car.FrictionForceN, car.GravityForceN, car.CouplerForceU, car.MassKG, car.Flipped));
             }
         }
         private void AddDispatcherInfo()
