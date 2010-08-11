@@ -395,8 +395,11 @@ namespace ORTS
                 // signal sound
                 return;
             }
-
             ThrottleController.StartIncrease();
+
+            // By GeorgeS
+            if (EventID.IsMSTSBin)
+                SignalEvent(EventID.PowerHandler);
         }
 
         public void StopThrottleIncrease()
@@ -417,8 +420,11 @@ namespace ORTS
                 // signal sound
                 return;
             }
-
             ThrottleController.StartDecrease();
+
+            // By GeorgeS
+            if (EventID.IsMSTSBin)
+                SignalEvent(EventID.PowerHandler);
         }
 
         public void StopThrottleDecrease()
@@ -435,6 +441,9 @@ namespace ORTS
         public void StartTrainBrakeIncrease()
         {
             TrainBrakeController.StartIncrease();
+            // By GeorgeS
+            if (EventID.IsMSTSBin)
+                SignalEvent(EventID.TrainBrakeSet);
         }
 
         public void StopTrainBrakeIncrease()
@@ -445,6 +454,9 @@ namespace ORTS
         public void StartTrainBrakeDecrease()
         {
             TrainBrakeController.StartDecrease();
+            // By GeorgeS
+            if (EventID.IsMSTSBin)
+                SignalEvent(EventID.TrainBrakeSet);
         }
 
         public void StopTrainBrakeDecrease()
@@ -578,22 +590,24 @@ namespace ORTS
         /// </summary>
         public override void SignalEvent(EventID eventID)
         {
-            switch (eventID)
+            // Modified according to replacable IDs - by GeorgeS
+            //switch (eventID)
+            do
             {
-                case EventID.BellOn: Bell = true; break;
-                case EventID.BellOff: Bell = false; break;
-                case EventID.HornOn: Horn = true; break;
-                case EventID.HornOff: Horn = false; break;
-                case EventID.SanderOn: Sander = true; break;
-                case EventID.SanderOff: Sander = false; break;
-                case EventID.WiperOn: Wiper = true; break;
-                case EventID.WiperOff: Wiper = false; break;
-                case EventID.HeadlightOff: Headlight = 0; break;
-                case EventID.HeadlightDim: Headlight = 1; break;
-                case EventID.HeadlightOn:  Headlight = 2; break;
-                case EventID.CompressorOn: CompressorOn = true; break;
-                case EventID.CompressorOff: CompressorOn = false; break;
-            }
+                if (eventID == EventID.BellOn) { Bell = true; break; }
+                if (eventID == EventID.BellOff) {  Bell = false; break; }
+                if (eventID == EventID.HornOn) { Horn = true; break; }
+                if (eventID == EventID.HornOff) { Horn = false; break; }
+                if (eventID == EventID.SanderOn) { Sander = true; break; }
+                if (eventID == EventID.SanderOff) { Sander = false; break; }
+                if (eventID == EventID.WiperOn) { Wiper = true; break; }
+                if (eventID == EventID.WiperOff) { Wiper = false; break; }
+                if (eventID == EventID.HeadlightOff) { Headlight = 0; break; }
+                if (eventID == EventID.HeadlightDim) { Headlight = 1; break; }
+                if (eventID == EventID.HeadlightOn) {  Headlight = 2; break; }
+                if (eventID == EventID.CompressorOn) { CompressorOn = true; break; }
+                if (eventID == EventID.CompressorOff) { CompressorOn = false; break; }
+            } while (false);
 
             base.SignalEvent(eventID );
         }
@@ -696,17 +710,27 @@ namespace ORTS
             if (UserInput.IsKeyDown(Keys.Space) != Locomotive.Horn) Locomotive.SignalEvent(Locomotive.Horn ? EventID.HornOff : EventID.HornOn);
             if (UserInput.IsPressed(Keys.B) != Locomotive.Bell) Locomotive.SignalEvent(Locomotive.Bell ? EventID.BellOff : EventID.BellOn);
             if (UserInput.IsPressed(Keys.H) && UserInput.IsShiftDown())
+            {
                 switch ((Locomotive.Headlight))
                 {
                     case 1: Locomotive.Headlight = 0; break;
                     case 2: Locomotive.Headlight = 1; break;
                 }
+                // By GeorgeS
+                if (EventID.IsMSTSBin)
+                    Locomotive.SignalEvent(EventID.LightSwitchToggle);
+            }
             else if (UserInput.IsPressed(Keys.H))
+            {
                 switch ((Locomotive.Headlight))
                 {
                     case 0: Locomotive.Headlight = 1; break;
                     case 1: Locomotive.Headlight = 2; break;
                 }
+                // By GeorgeS
+                if (EventID.IsMSTSBin)
+                    Locomotive.SignalEvent(EventID.LightSwitchToggle);
+            }
             if (UserInput.IsPressed(Keys.Tab))
                 Program.Simulator.AI.Dispatcher.ExtendPlayerPath();
 

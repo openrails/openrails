@@ -118,12 +118,14 @@ namespace ORTS
         /// </summary>
         public override void SignalEvent( EventID eventID)
         {
-            switch (eventID)
+            // Modified according to replacable IDs - by GeorgeS
+            //switch (eventID)
+            do
             {
-                case EventID.PantographUp: Pan = true; break;  // pan up
-                case EventID.PantographDown : Pan = false; break; // pan down
-                case EventID.PantographToggle: Pan = !Pan; break;  // pan toggle
-            }
+                if (eventID == EventID.PantographUp) { Pan = true; break; }  // pan up
+                if (eventID == EventID.PantographDown) { Pan = false; break; } // pan down
+                if (eventID == EventID.PantographToggle) { Pan = !Pan; break; } // pan toggle
+            } while (false) ;
             base.SignalEvent(eventID);
         }
 

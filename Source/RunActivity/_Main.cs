@@ -68,6 +68,8 @@ namespace ORTS
 					TrainLightsEnabled = (1 == (int)RK.GetValue("TrainLights", 0));
 					BrakePipeChargingRatePSIpS = (int)RK.GetValue("BrakePipeChargingRate", (int)21);
 					GraduatedRelease = (1 == (int)RK.GetValue("GraduatedRelease", 0));
+                    if ((1 == (int)RK.GetValue("MSTSBINSound", 0)))
+                        EventID.SetMSTSBINCompatible();
 				}
 			}
 			catch (Exception error)
