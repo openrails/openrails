@@ -547,8 +547,8 @@ namespace MSTS
 		public MaxVelocity( STFReader f )
 		{
 			f.VerifyStartOfBlock();
-			A = (float)f.ReadDouble();
-			B = (float)f.ReadDouble();
+			A = f.ReadFloat();
+			B = f.ReadFloat();
 			f.VerifyEndOfBlock();
 		}
 	}

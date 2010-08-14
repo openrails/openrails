@@ -11,10 +11,10 @@
 
 
 using System;
-using System.Collections;
-using System.IO;
+using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Win32;
+using System.Globalization;
+using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework;
 
@@ -172,7 +172,7 @@ namespace MSTS
 
             int c = 0;
 
-            StringBuilder stringText = new StringBuilder("", 1000);
+            var stringText = new StringBuilder();
 
             // Read leading whitespace 
             while (true)
@@ -424,142 +424,114 @@ namespace MSTS
         }
 
 		public int ReadInt()
-			// Note:  end of file should return FormatException.
-			/* Throws:
-				IOException An I/O error occurs. 
-				STFError			
-			*/
 		{
-			try
-			{
-                double value = ReadDouble();
-				return (int) value;
-			}
-			catch( System.Exception e )
-			{
-				STFError.Report( this, e.Message ) ;
-                return 0;
-			}
-
+			return (int)ReadDouble();
 		}
-		public uint ReadUInt()
-			// Note:  end of file should return FormatException.
-			/* Throws:
-				IOException An I/O error occurs. 
-				STFError
-			*/
-		{
-			try
-			{
-                double value = ReadDouble();
-				return (uint) value;
-			}
-			catch( System.Exception e )
-			{
-				STFError.Report( this, e.Message );
-                return 0;
-			}
 
+		public uint ReadUInt()
+		{
+			return (uint)ReadDouble();
 		}
 
         public float ReadFloat()
-        {
-            return (float)ReadDouble();
-        }
+		{
+			return (float)ReadDouble();
+		}
 
 		/// <summary>
 		/// Return double, scaled to meters, grams, newtons if needed
 		/// </summary>
 		/// <returns></returns>
 		public double ReadDouble()
-			// Note:  end of file should return FormatException.
-			/* Throws:
-				IOException An I/O error occurs. 
-				STFError
-			*/
-			// TODO, complete parsing of units ie, km, etc - some are done but not all
+		// Note:  end of file should return FormatException.
+		/* Throws:
+			IOException An I/O error occurs. 
+			STFError
+		*/
 		{
 			double scale = 1.0;
 			string token = ReadToken();
-            token = token.ToLower();
+
+			// TODO complete parsing of units ie, km, etc - some are done but not all.
+			token = token.ToLower();
 			int i;
 			// Add handling of units
-			i = token.IndexOf( "/2" );
-			if( i != -1 )
+			i = token.IndexOf("/2", StringComparison.Ordinal);
+			if (i != -1)
 			{
 				scale /= 2;
-				token = token.Substring( 0,i );
+				token = token.Substring(0, i);
 			}
-			i = token.IndexOf( "cm" );
-			if( i != -1 )
+			i = token.IndexOf("cm", StringComparison.Ordinal);
+			if (i != -1)
 			{
 				scale *= 0.01;
-				token = token.Substring( 0,i );
+				token = token.Substring(0, i);
 			}
-			i = token.IndexOf( "mm" );
-			if( i != -1 )
+			i = token.IndexOf("mm", StringComparison.Ordinal);
+			if (i != -1)
 			{
 				scale *= 0.001;
-				token = token.Substring( 0,i );
+				token = token.Substring(0, i);
 			}
-			i = token.IndexOf( "ft" );
-			if( i != -1 )
+			i = token.IndexOf("ft", StringComparison.Ordinal);
+			if (i != -1)
 			{
 				scale *= 0.3048;
-				token = token.Substring( 0,i );
+				token = token.Substring(0, i);
 			}
-			i = token.IndexOf( "in" );
-			if( i != -1 )
+			i = token.IndexOf("in", StringComparison.Ordinal);
+			if (i != -1)
 			{
 				scale *= 0.0254;
-				token = token.Substring( 0,i );
+				token = token.Substring(0, i);
 			}
-			i = token.IndexOf( "kn" );
-			if( i != -1 )
+			i = token.IndexOf("kn", StringComparison.Ordinal);
+			if (i != -1)
 			{
 				scale *= 1e3;
-				token = token.Substring( 0,i );
+				token = token.Substring(0, i);
 			}
-            i = token.IndexOf("n");
-            if (i != -1)
-            {
-                scale *= 1e0;
-                token = token.Substring(0, i);
-            }
-            i = token.IndexOf("t");
-			if( i != -1 )
+			i = token.IndexOf("n", StringComparison.Ordinal);
+			if (i != -1)
+			{
+				scale *= 1e0;
+				token = token.Substring(0, i);
+			}
+			i = token.IndexOf("t", StringComparison.Ordinal);
+			if (i != -1)
 			{
 				scale *= 1e3;
-				token = token.Substring( 0,i ); // return kg
+				token = token.Substring(0, i); // return kg
 			}
-			i = token.IndexOf( "kg" );
-			if( i != -1 )
+			i = token.IndexOf("kg", StringComparison.Ordinal);
+			if (i != -1)
 			{
 				scale *= 1;
-				token = token.Substring( 0,i ); // return kg
+				token = token.Substring(0, i); // return kg
 			}
-            i = token.IndexOf("lb");
-            if (i != -1)
-            {
-                scale *= 0.00045359237;  
-                token = token.Substring(0, i); // return kg
-            }
-            i = token.IndexOf('m');
-			if( i != -1 )
-				token = token.Substring(0,i );
+			i = token.IndexOf("lb", StringComparison.Ordinal);
+			if (i != -1)
+			{
+				scale *= 0.00045359237;
+				token = token.Substring(0, i); // return kg
+			}
+			i = token.IndexOf("m", StringComparison.Ordinal);
+			if (i != -1)
+				token = token.Substring(0, i);
 
-            i = token.IndexOf(',');   // MSTS ignores a comma at the end of the number
-            if (i != -1)
-                token = token.Substring(0, i); 
-			
+			i = token.IndexOf(",", StringComparison.Ordinal);   // MSTS ignores a comma at the end of the number
+			if (i != -1)
+				token = token.Substring(0, i);
+
 			try
 			{
-				return double.Parse( token, new System.Globalization.CultureInfo( "en-US") ) * scale;
+				return double.Parse(token, CultureInfo.InvariantCulture) * scale;
 			}
-			catch( System.Exception e )
+			catch (Exception e)
 			{
-				STFError.Report( this, e.Message );
-                return 0;
+				STFError.Report(this, e.Message);
+				return 0;
 			}
 		}
 
@@ -727,7 +699,7 @@ namespace MSTS
         {
             int c = 0;
 
-            StringBuilder tokenText = new StringBuilder("", 1000);
+            var tokenText = new StringBuilder();
 
             // Read leading whitespace 
             while (true)
@@ -823,52 +795,35 @@ namespace MSTS
 
 		// HIERARCHICAL TREE VIEW OF FILE POSITION
 
-		private StringBuilder tree = new StringBuilder( "", 1000 );
+		private List<string> tree = new List<string>();
 		private int treeLevel = 0;
 
 		public string Tree
 		{
-            get { return tree.ToString(); }
+			get { return String.Join("", tree.ToArray()); }
 		}
 
-        private void UpdateTree(string delimitedToken)
+		private void UpdateTree(string delimitedToken)
 		// A delimited token may include leading and trailing whitespace characters
-
 		{
-			// PERFORMANCE NOTE: StringBuilder.ToString() is FAST (zero-copy).
 			string token = delimitedToken.Trim();
-			if( token == "(" )
+			if (token == "(")
 			{
-				tree.Append( "(" );
 				++treeLevel;
+				tree.Add("(");
 			}
-			else if( token ==  ")"  )
+			else if (token == ")")
 			{
-				int i = -1;
-				for( int n = 0; n < treeLevel; ++n )
-				{
-					++i;
-					i = tree.ToString().IndexOf('(', i);
-				}
-				if( i < 0 )
-                    i = 0;  // S/B throw new STFError(this, "Mismatched parenthesis"); but MSTS just ignores these errors so we will also.
-				tree.Length = i;       // remove (
-				-- treeLevel;
+				--treeLevel;
+				tree.RemoveRange(treeLevel * 2 + 1, tree.Count - treeLevel * 2 - 1);
 			}
 			else
 			{
-				int n = treeLevel;
-				int i = 0;
-				while( n-- > 0 )
-				{
-					i = tree.ToString().IndexOf('(', i);
-					++i;
-				}
-				tree.Length = i;
-				tree.Append( token );
+				if (tree.Count > treeLevel * 2)
+					tree[treeLevel * 2] = token;
+				else
+					tree.Add(token);
 			}
 		}
 	}
-
-
 }

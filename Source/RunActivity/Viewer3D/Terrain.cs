@@ -170,7 +170,6 @@ namespace ORTS
                     {
                         if (!tile.IsEmpty && TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
                         {
-                            Thread.Sleep(5);
                             TerrainPatch patch = new TerrainPatch(viewer, TFile, tile.YFile, x, z, tileX, tileZ);
                             TerrainPatches[x, z] = patch;
                         }
