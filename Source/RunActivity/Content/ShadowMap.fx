@@ -58,6 +58,11 @@ float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
 	return float4(In.TexCoord_Depth.z, In.TexCoord_Depth.z * In.TexCoord_Depth.z, 0, 0);
 }
 
+float4 PSShadowMapBlocker(in VERTEX_OUTPUT In) : COLOR0
+{
+	return 0;
+}
+
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
 technique ShadowMap
@@ -66,5 +71,14 @@ technique ShadowMap
 	{
         VertexShader = compile vs_2_0 VSShadowMap ( );
         PixelShader = compile ps_2_0 PSShadowMap ( );
+	}
+}
+
+technique ShadowMapBlocker
+{
+	pass Pass_0
+	{
+		VertexShader = compile vs_2_0 VSShadowMap ( );
+		PixelShader = compile ps_2_0 PSShadowMapBlocker ( );
 	}
 }

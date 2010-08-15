@@ -202,12 +202,16 @@ namespace ORTS
 				ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
 			}
 
+			// Prepare renderer for drawing the shadow map.
 			var oldStencilDepthBuffer = graphicsDevice.DepthStencilBuffer;
 			graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget);
 			graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
 			graphicsDevice.Clear(Color.Black);
-			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapLightView, ShadowMapLightProj);
 
+			// Prepare for normal (non-blocking) rendering of scenery and terrain.
+			Materials.ShadowMapMaterial.SetState(graphicsDevice, false);
+
+			// Render non-terrain shadow items first.
 			foreach (var renderItem in RenderShadowItems)
 			{
 				var riMatrix = renderItem.XNAMatrix;
@@ -215,6 +219,7 @@ namespace ORTS
 					Materials.ShadowMapMaterial.Render(graphicsDevice, renderItem.Material, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
 			}
 
+			// Render terrain shadow items now, with their magic.
 			graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
 			graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
 			foreach (var renderItem in RenderShadowItems)
@@ -224,6 +229,18 @@ namespace ORTS
 					Materials.ShadowMapMaterial.Render(graphicsDevice, renderItem.Material, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
 			}
 
+			// Prepare for blocking rendering of terrain.
+			Materials.ShadowMapMaterial.SetState(graphicsDevice, true);
+
+			// Render terrain shadow items in blocking mode.
+			foreach (var renderItem in RenderShadowItems)
+			{
+				var riMatrix = renderItem.XNAMatrix;
+				if (renderItem.Material is TerrainMaterial)
+					Materials.ShadowMapMaterial.Render(graphicsDevice, renderItem.Material, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
+			}
+
+			// All done.
 			Materials.ShadowMapMaterial.ResetState(graphicsDevice, null);
 			graphicsDevice.DepthStencilBuffer = oldStencilDepthBuffer;
 			graphicsDevice.SetRenderTarget(0, null);

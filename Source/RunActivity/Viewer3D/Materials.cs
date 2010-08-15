@@ -1297,15 +1297,15 @@ namespace ORTS
 			RenderProcess = renderProcess;
         }
 
-        public void SetState(GraphicsDevice graphicsDevice, Matrix lightView, Matrix lightProj)
+        public void SetState(GraphicsDevice graphicsDevice, bool blocker)
         {
             var shader = Materials.ShadowMapShader;
-            shader.CurrentTechnique = shader.Techniques["ShadowMap"];
+            shader.CurrentTechnique = shader.Techniques[blocker ? "ShadowMapBlocker" : "ShadowMap"];
 
             RenderState rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
             rs.AlphaTestEnable = false;
-            rs.CullMode = CullMode.None;
+            rs.CullMode = blocker ? CullMode.CullClockwiseFace : CullMode.CullCounterClockwiseFace;
             rs.DepthBufferFunction = CompareFunction.LessEqual;
             rs.DepthBufferWriteEnable = true;
             rs.DestinationBlend = Blend.Zero;
