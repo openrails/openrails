@@ -814,7 +814,8 @@ namespace MSTS
 			}
 			else if (token == ")")
 			{
-				--treeLevel;
+				if (treeLevel > 0)
+					--treeLevel;
 				tree.RemoveRange(treeLevel * 2 + 1, tree.Count - treeLevel * 2 - 1);
 			}
 			else
