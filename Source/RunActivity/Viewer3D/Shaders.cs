@@ -67,54 +67,12 @@ namespace ORTS
             set { overcast.SetValue(value); }
         }
 
-        public bool IsHeadlightBright
-        {
-            set { isHeadlightBright.SetValue(value); }
-        }
-
-        public Vector3 HeadlightPosition
-        {
-            set { headlightPosition.SetValue(value); }
-        }
-
-        public Vector3 HeadlightDirection
-        {
-            set { headlightDirection.SetValue(value); }
-        }
-
-        public int StateChange
-        {
-            set { stateChange.SetValue(value); }
-        }
-
-        public float FadeInTime
-        {
-            set { fadeinTime.SetValue(value); }
-        }
-
-        public float FadeOutTime
-        {
-            set { fadeoutTime.SetValue(value); }
-        }
-
-        public float FadeTime
-        {
-            set { fadeTime.SetValue(value); }
-        }
-
         EffectParameter imageMap_Tex = null;
         EffectParameter normalMap_Tex = null;
         EffectParameter isNight_Tex = null;
         EffectParameter viewerPos = null;
         EffectParameter sunDirection = null;
         EffectParameter overcast = null;
-        EffectParameter isHeadlightBright = null;
-        EffectParameter headlightPosition = null;
-        EffectParameter headlightDirection = null;
-        EffectParameter stateChange = null;
-        EffectParameter fadeinTime = null;
-        EffectParameter fadeoutTime = null;
-        EffectParameter fadeTime = null;
 
 		public Matrix World { set { world.SetValue(value); } } EffectParameter world = null;
 		public Matrix View { set { view.SetValue(value); } } EffectParameter view = null;
@@ -124,11 +82,23 @@ namespace ORTS
 		public Matrix LightViewProjectionShadowProjection { set { lightviewprojectionshadowprojection.SetValue(value); } } EffectParameter lightviewprojectionshadowprojection = null;
 		public Texture2D ShadowMapTexture { set { shadowmaptexture.SetValue(value); } } EffectParameter shadowmaptexture = null;
 
-		public float FogStart { set { fogstart.SetValue(value); } } EffectParameter fogstart = null;
-		public float FogDepth { set { fogdepth.SetValue(value); } } EffectParameter fogdepth = null;
-		public Color FogColor { set { fogcolor.SetValue(new Vector3(value.R / 255f, value.G / 255f, value.B / 255f)); } } EffectParameter fogcolor = null;
+		public void SetFog(float depth, Color color)
+		{
+			fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, depth));
+		}
+		EffectParameter fog = null;
 
 		public float ZBias { set { zbias.SetValue(value); } } EffectParameter zbias = null;
+
+		public void SetHeadlight(Vector3 position, Vector3 direction, float fadeTime, float fadeDuration)
+		{
+			var lighting = fadeTime / fadeDuration;
+			if (lighting < 0) lighting = 1 + lighting;
+			headlightposition.SetValue(new Vector4(position, lighting));
+			headlightdirection.SetValue(direction);
+		}
+		EffectParameter headlightposition = null;
+		EffectParameter headlightdirection = null;
 
         public void SetMatrix(Matrix world, Matrix view, Matrix projection)
         {
@@ -150,11 +120,12 @@ namespace ORTS
 			lightviewprojectionshadowprojection = Parameters["LightViewProjectionShadowProjection"];
 			shadowmaptexture = Parameters["ShadowMapTexture"];
 
-			fogstart = Parameters["FogStart"];
-			fogdepth = Parameters["FogDepth"];
-			fogcolor = Parameters["FogColor"];
+			fog = Parameters["Fog"];
 
 			zbias = Parameters["ZBias"];
+
+			headlightposition = Parameters["HeadlightPosition"];
+			headlightdirection = Parameters["HeadlightDirection"];
 
             imageMap_Tex = Parameters["imageMap_Tex"];
             normalMap_Tex = Parameters["normalMap_Tex"];
@@ -162,13 +133,6 @@ namespace ORTS
             viewerPos = Parameters["viewerPos"];
             sunDirection = Parameters["LightVector"];
             overcast = Parameters["overcast"];
-            isHeadlightBright = Parameters["isHeadlightBright"];
-            headlightPosition = Parameters["headlightPosition"];
-            headlightDirection = Parameters["headlightDirection"];
-            stateChange = Parameters["stateChange"];
-            fadeinTime = Parameters["fadeinTime"];
-            fadeoutTime = Parameters["fadeoutTime"];
-            fadeTime = Parameters["fadeTime"];
         }
     }
     #endregion

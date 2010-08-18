@@ -15,26 +15,21 @@ float4x4 LightViewProjectionShadowProjection;  // world -> light view -> light p
 texture  ShadowMapTexture;
 
 // Fog values
-float  FogStart;  // distance from camera, everything is normal color
-                  // FogDepth = FogStart, i.e. FogEnd = 2 * FogStart
-float3 FogColor;  // color of fog
+float4 Fog;  // rgb = color of fog; a = distance from camera, everything is
+             // normal color; FogDepth = FogStart, i.e. FogEnd = 2 * FogStart.
 
 // Z-bias value
 float ZBias;
 
 float3 LightVector;  // Direction vector to sun
 
+// Headlight values
+float4 HeadlightPosition;   // xyz = position; w = lighting scaling.
+float3 HeadlightDirection;  // xyz = direction.
+
 float  overcast;       // Lower saturation & brightness when overcast
 float3 viewerPos;      // Viewer's world coordinates.
 bool   isNight_Tex;    // Using night texture
-
-// Headlight illumination params
-float3 headlightPosition;
-float3 headlightDirection;
-float  fadeinTime;								// Constant, from ENG file
-float  fadeoutTime;								// Constant, from ENG file
-float  fadeTime;									// Varies, reset on H key press
-int    stateChange;								// 1=Off->On; 2=On->Off
 
 texture imageMap_Tex;
 sampler imageMap = sampler_state
@@ -106,10 +101,10 @@ void _VSLightsAndShadows(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
 
 	// Headlight lighting
-	Out.LightDir_Fog.xyz = mul(In.Position, World) - headlightPosition;
+	Out.LightDir_Fog.xyz = mul(In.Position, World) - HeadlightPosition.xyz;
 
 	// Fog fading
-	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - FogStart) / FogStart);
+	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - Fog.a) / Fog.a);
 
 	// Shadow map
 	Out.Shadow = mul(mul(In.Position, World), LightViewProjectionShadowProjection);
@@ -162,10 +157,20 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
+// Calculate the day2night fading position; 0 for night, 1 for day.
+float _PSGetDay2Night(inout float4 Color)
+{
+	// The following constants define the beginning and the end conditions of
+	// the day-night transition. Values refer to the Y postion of LightVector.
+	const float startNightTrans = 0.1;
+	const float finishNightTrans = -0.1;
+	return saturate((LightVector.y - finishNightTrans) / (startNightTrans - finishNightTrans));
+}
+
 // Applies the Variance Shadow Map to the pixel.
 void _PSApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
 {
-	int clip = ((saturate(In.Shadow.x) != In.Shadow.x) || (saturate(In.Shadow.y) != In.Shadow.y)) ? 1 : 0;
+	float clip = ((saturate(In.Shadow.x) != In.Shadow.x) || (saturate(In.Shadow.y) != In.Shadow.y));
 	float2 moments = tex2D(ShadowMap, In.Shadow.xy);
 	float lit_factor = (In.Shadow.z <= moments.x);
 	float E_x2 = moments.y;
@@ -173,7 +178,7 @@ void _PSApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
 	float variance = min(max(E_x2 - Ex_2, 0.0) + 0.00001, 1.0);
 	float m_d = (moments.x - In.Shadow.z);
 	float p = variance / (variance + m_d * m_d);
-	Color.rgb *= saturate(clip + 0.5f + max(lit_factor, p) / 2);
+	Color.rgb *= lerp(1.0, lerp(0.5, 1.0, saturate(clip + max(lit_factor, p))), _PSGetDay2Night(Color));
 }
 
 // Apply lighting with brightness and ambient modifiers.
@@ -185,27 +190,9 @@ void _PSApplyBrightnessAndAmbient(inout float4 Color, in VERTEX_OUTPUT In)
 // This function dims the lighting at night, with a transition period as the sun rises/sets.
 void _PSApplyDay2Night(inout float4 Color)
 {
-	// The following constants define the beginning and the end conditions of the day-night transition
-	const float startNightTrans = 0.1; // The "NightTrans" values refer to the Y postion of LightVector
-	const float finishNightTrans = -0.1;
-	const float minDarknessCoeff = 0.15;
-
-	// Internal variables
-	// The following two are used to interpoate between day and night lighting (y = mx + b)
-	// Can't use lerp() here, as overall dimming action is too complex
-	float slope = (1.0 - minDarknessCoeff) / (startNightTrans - finishNightTrans); // "m"
-	float incpt = 1.0 - slope * startNightTrans; // "b"
-	// This is the return value used to darken scenery
-	float adjustment;
-
-    if (LightVector.y < finishNightTrans)
-      adjustment = minDarknessCoeff;
-    else if (LightVector.y > startNightTrans)
-      adjustment = 0.9; // Scenery is fully lit during the day
-    else
-      adjustment = slope * LightVector.y + incpt;
-
-	Color.rgb *= adjustment;
+	const float nightCoeff = 0.15;
+	const float dayCoeff = 0.9;
+	Color.rgb *= lerp(nightCoeff, dayCoeff, _PSGetDay2Night(Color));
 }
 
 // This function reduces color saturation and brightness as overcast increases.
@@ -224,11 +211,13 @@ void _PSApplyOvercast(inout float4 Color)
 	Color.rgb *= 0.6 * (0.867 + sat); 
 }
 
+// Applies the lighting effect of the train's headlights, including
+// fade-in/fade-out animations.
 void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_OUTPUT In)
 {
 	float3 normal = normalize(In.Normal_Light.xyz);
 	float3 lightDir = normalize(In.LightDir_Fog.xyz);
-	float coneDot = dot(lightDir, normalize(headlightDirection));
+	float coneDot = dot(lightDir, normalize(HeadlightDirection));
 	float shading = 0;
 
 	if (coneDot > 0.5/*cone angle*/)
@@ -237,12 +226,11 @@ void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_O
 		shading = dot(normal, -lightDir) * 2.0/*light strength*/ * coneAtten;
 	}
 
-	if (stateChange == 0)
-		shading = 0;
-	if (stateChange == 1)
-		shading *= clamp(fadeTime / fadeinTime, 0, 1);
-	if (stateChange == 2)
-		shading *= clamp(1 - (fadeTime / fadeoutTime), 0, 1);
+	// Light fades out to nothing at 100m, it's not infinitely powerful!
+	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / 100);
+
+	// Animation fading is controlled here via C# code.
+	shading *= saturate(HeadlightPosition.w);
 
 	Color.rgb += OriginalColor.rgb * shading;
 }
@@ -250,7 +238,7 @@ void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_O
 // Applies distance fog to the pixel.
 void _PSApplyFog(inout float4 Color, in VERTEX_OUTPUT In)
 {
-	Color.rgb = lerp(Color.rgb, FogColor, In.LightDir_Fog.w);
+	Color.rgb = lerp(Color.rgb, Fog.rgb, In.LightDir_Fog.w);
 }
 
 float4 PSImage(in VERTEX_OUTPUT In) : COLOR0
@@ -316,8 +304,10 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 	// TODO: What is this value for?
 	Color.rgb *= 0.2;
 
+	float4 OriginalColor = Color;
 	_PSApplyDay2Night(Color);
 	_PSApplyOvercast(Color);
+	_PSApplyHeadlights(Color, OriginalColor, In);
 	_PSApplyFog(Color, In);
 	return Color;
 
@@ -328,8 +318,10 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on light sources.
 
+	// TODO: What is this value for?
 	Color.rgb *= 0.55;
 
+	_PSApplyHeadlights(Color, Color, In);
 	_PSApplyFog(Color, In);
 	return Color;	
 }
@@ -338,6 +330,8 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 { 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// No shadows cast on light sources.
+
+	_PSApplyHeadlights(Color, Color, In);
 	_PSApplyFog(Color, In);
 	return Color;	
 }

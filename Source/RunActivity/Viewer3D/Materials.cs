@@ -167,7 +167,8 @@ namespace ORTS
         static Vector3 headlightPosition;
         static Vector3 headlightDirection;
         static int lastLightState = 0, currentLightState = 0;
-        static double fadeTimer = 0;
+		static double fadeStartTimer = 0;
+		static float fadeDuration = -1;
 		internal static void UpdateShaders(RenderProcess renderProcess, GraphicsDevice graphicsDevice)
 		{
 			sunDirection = renderProcess.Viewer.SkyDrawer.solarDirection;
@@ -183,32 +184,26 @@ namespace ORTS
 				{
 					if (currentLightState == 2 && lastLightState == 1)
 					{
-						SceneryShader.StateChange = 1;
-						// Reset fade timer
-						fadeTimer = renderProcess.Viewer.Simulator.ClockTime;
+						fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
+						fadeDuration = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
 					}
 					else if (currentLightState == 1 && lastLightState == 2)
 					{
-						SceneryShader.StateChange = 2;
-						// Reset fade timer
-						fadeTimer = renderProcess.Viewer.Simulator.ClockTime;
+						fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
+						fadeDuration = -renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
 					}
 					lastLightState = currentLightState;
 				}
 				headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
-				SceneryShader.HeadlightPosition = headlightPosition;
 				headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
-				SceneryShader.HeadlightDirection = headlightDirection;
-				SceneryShader.FadeInTime = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
-				SceneryShader.FadeOutTime = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
-				SceneryShader.FadeTime = (float)(renderProcess.Viewer.Simulator.ClockTime - fadeTimer);
+
+				SceneryShader.SetHeadlight(headlightPosition, headlightDirection, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration);
 			}
 			// End headlight illumination
 
 			SceneryShader.Overcast = renderProcess.Viewer.SkyDrawer.overcast;
 
-			SceneryShader.FogStart = ViewingDistance * 0.5f * FogCoeff;
-			SceneryShader.FogColor = Materials.FogColor;
+			SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, Materials.FogColor);
 		}
     }
     #endregion
