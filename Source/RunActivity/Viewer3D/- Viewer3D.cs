@@ -39,6 +39,7 @@ using System.Threading;
 using IrrKlang;
 using System.IO;
 using Microsoft.Win32;
+using System.Management;
 
 namespace ORTS
 {
@@ -247,6 +248,7 @@ namespace ORTS
 		{
 			// This stops ResolveBackBuffer() clearing the back buffer.
 			e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+			UpdateAdapterInformation(e.GraphicsDeviceInformation.Adapter);
 		}
 
         /// <summary>
@@ -345,6 +347,23 @@ namespace ORTS
             TrainDrawer.Load(renderProcess);
             if (WireDrawer != null) WireDrawer.Load(renderProcess);
         }
+
+		string adapterDescription;
+		public string AdapterDescription { get { return adapterDescription; } }
+
+		uint adapterMemory = 0;
+		public uint AdapterMemory { get { return adapterMemory; } }
+
+		public void UpdateAdapterInformation(GraphicsAdapter graphicsAdapter)
+		{
+			adapterDescription = graphicsAdapter.Description;
+			// Note that we might find multiple adapters with the same
+			// description; however, the chance of such adapters not having
+			// the same amount of video memory is very slim.
+			foreach (ManagementObject videoController in new ManagementClass("Win32_VideoController").GetInstances())
+				if ((string)videoController["Description"] == adapterDescription)
+					adapterMemory = (uint)videoController["AdapterRAM"];
+		}
 
         /// <summary>
         /// Called whenever a key or mouse buttin is pressed for handling user input

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -46,6 +42,7 @@ namespace ORTS
 		const int ShadowMapViewMax = 2048; // maximum width/height of shadow map projection
 		const int ShadowMapTexelSize = 4; // number of screen pixel to scale 1 shadow map texel to
 		const int ShadowMapSize = 4096; // shadow map texture width/height
+		const SurfaceFormat ShadowMapFormat = SurfaceFormat.Rg32; // shadow map texture format
 		const float ShadowMapViewNear = 0f; // near plane for shadow map camera
 		const float ShadowMapViewFar = 2000f; // far plane for shadow map camera
 
@@ -188,9 +185,9 @@ namespace ORTS
             DrawSimple(graphicsDevice);
         }
 
-        RenderTarget2D ShadowMapRenderTarget;
-        DepthStencilBuffer ShadowMapStencilBuffer;
-        Texture2D ShadowMap;
+        static RenderTarget2D ShadowMapRenderTarget;
+        static DepthStencilBuffer ShadowMapStencilBuffer;
+        static Texture2D ShadowMap;
         Matrix ShadowMapLightView;
         Matrix ShadowMapLightProj;
 		BoundingFrustum ShadowMapBound;
@@ -198,7 +195,7 @@ namespace ORTS
 		{
 			if (ShadowMapRenderTarget == null)
 			{
-				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, SurfaceFormat.Rg32);
+				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, ShadowMapFormat, RenderTargetUsage.PreserveContents);
 				ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
 			}
 

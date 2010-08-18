@@ -4,22 +4,11 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 using System.Diagnostics;
-using System.Threading;
-using System.Text;
 using System.IO;
-using System.Windows.Forms;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS
 {
@@ -264,7 +253,8 @@ namespace ORTS
 			TextBuilder.AppendLine("DEBUG INFORMATION");
             TextBuilder.AppendFormat("Logging Enabled = {0}", LoggerEnabled); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Memory = {0:N0} KB", memory / 1024); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Memory = {0:N0} MB", memory / 1024 / 1024); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Adapter = {0} ({1:N0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Frame Time = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Frame Jitter = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render Primitives = {0:N0}", Viewer.RenderProcess.PrimitivesPerFrame); TextBuilder.AppendLine();
