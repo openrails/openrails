@@ -75,8 +75,8 @@ namespace ORTS
         {
             //Console.WriteLine(" {0} {1} {2} {3}", NumCylinders, CylinderDiameterM, CylinderStrokeM, DriverWheelRadiusM);
             //Console.WriteLine(" {0} {1} {2} {3} {4}", MaxBoilerPressurePSI,MaxBoilerOutputLBpH,ExhaustLimitLBpH,BasicSteamUsageLBpS,BoilerVolumeFT3);
-            if (ZeroError(NumCylinders, "NumCylinders", wagFile))
-                NumCylinders= 2;
+            if (NumCylinders < 0 && ZeroError(NumCylinders, "NumCylinders", wagFile))
+                NumCylinders = 0;
             if (ZeroError(CylinderDiameterM, "CylinderDiammeter", wagFile))
                 CylinderDiameterM= 1;
             if (ZeroError(CylinderStrokeM, "CylinderStroke", wagFile))
