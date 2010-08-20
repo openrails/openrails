@@ -123,9 +123,7 @@ namespace ORTS
                         key = options.ToString() + ":";
                     if (!SceneryMaterials.ContainsKey(key))
                     {
-                        SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName);
-                        sceneryMaterial.Options = options;
-                        sceneryMaterial.MipMapBias = mipMapBias;
+                        SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName, options, mipMapBias);
                         SceneryMaterials.Add(key, sceneryMaterial);
                         return sceneryMaterial;
                     }
@@ -320,18 +318,31 @@ namespace ORTS
     #region Scenery material
     public class SceneryMaterial : Material
     {
-		public int Options = 0;
-		public float MipMapBias = 0;
+		readonly public RenderProcess RenderProcess;  // for diagnostics only
         readonly SceneryShader SceneryShader;
+		readonly EffectTechnique SceneryShaderTechniqueImage;
+		readonly EffectTechnique SceneryShaderTechniqueDarkShade;
+		readonly EffectTechnique SceneryShaderTechniqueHalfBright;
+		readonly EffectTechnique SceneryShaderTechniqueVegetation;
+		readonly EffectTechnique SceneryShaderTechniqueFullBright;
+		readonly int Options = 0;
+		readonly float MipMapBias = 0;
 		readonly Texture2D Texture;
 		readonly Texture2D nightTexture = null;
+		EffectTechnique SceneryShaderTechnique;
 		bool isNightEnabled = false;
-		readonly public RenderProcess RenderProcess;  // for diagnostics only
 
-        public SceneryMaterial(RenderProcess renderProcess, string texturePath)  
+        public SceneryMaterial(RenderProcess renderProcess, string texturePath, int options, float mipMapBias)  
         {
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
+			SceneryShaderTechniqueImage = SceneryShader.Techniques["Image"];
+			SceneryShaderTechniqueDarkShade = SceneryShader.Techniques["DarkShade"];
+			SceneryShaderTechniqueHalfBright = SceneryShader.Techniques["HalfBright"];
+			SceneryShaderTechniqueVegetation = SceneryShader.Techniques["Vegetation"];
+			SceneryShaderTechniqueFullBright = SceneryShader.Techniques["FullBright"];
+			Options = options;
+			MipMapBias = mipMapBias;
 			// note: texturePath may be null if the object isn't textured, results in default 'blank texture' being loaded.
             Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
             if (texturePath != null)
@@ -349,7 +360,8 @@ namespace ORTS
                         nightTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, nightTexturePath);
                 }
             }
-        }
+			SceneryShaderTechnique = SceneryShaderTechniqueImage;
+		}
 
         public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
@@ -424,36 +436,36 @@ namespace ORTS
             {
                 // Lighting model
                 int lighting = (Options & 0x00f0) >> 4;
-				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"]; // Default
-                Vector3 viewerPosition = new Vector3(XNAViewMatrix.M41, XNAViewMatrix.M42, XNAViewMatrix.M43);
+				SceneryShaderTechnique = SceneryShaderTechniqueImage; // Default
+				var viewerPosition = new Vector3(XNAViewMatrix.M41, XNAViewMatrix.M42, XNAViewMatrix.M43);
                 switch (lighting)
                 {
                     case 1: // DarkShade (-12)
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["DarkShade"];
+						SceneryShaderTechnique = SceneryShaderTechniqueDarkShade;
                         break;
                     case 2: // OptHalfBright (-11)
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["HalfBright"];
+						SceneryShaderTechnique = SceneryShaderTechniqueHalfBright;
                         break;
                     case 4: // CruciformLong (-10)
                     case 3: // Cruciform (-9)
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
+						SceneryShaderTechnique = SceneryShaderTechniqueVegetation;
                         break;
                     case 5: // OptFullBright (-8)
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["FullBright"];
+						SceneryShaderTechnique = SceneryShaderTechniqueFullBright;
                         break;
-                    case 6: // OptSpecular750 (-7)
-                        // TODO: SceneryShader.SpecularPower = 64;
-                        SceneryShader.ViewerPos = viewerPosition;
-                        break;
-                    case 7: // OptSpecular25 (-6)
-                        // TODO: SceneryShader.SpecularPower = 128;
-                        SceneryShader.ViewerPos = viewerPosition;
-                        break;
-                    case 8: // OptSpecular0 (-5)
-                    default:
-                        // TODO: SceneryShader.SpecularPower = 0;
-                        SceneryShader.ViewerPos = viewerPosition;
-                        break;
+					case 6: // OptSpecular750 (-7)
+						// TODO: SceneryShader.SpecularPower = 64;
+						SceneryShader.ViewerPos = viewerPosition;
+						break;
+					case 7: // OptSpecular25 (-6)
+						// TODO: SceneryShader.SpecularPower = 128;
+						SceneryShader.ViewerPos = viewerPosition;
+						break;
+					case 8: // OptSpecular0 (-5)
+					default:
+						// TODO: SceneryShader.SpecularPower = 0;
+						SceneryShader.ViewerPos = viewerPosition;
+						break;
                 }
 
                 // Transparency test
@@ -538,7 +550,7 @@ namespace ORTS
 
             // With the GPU configured, now we can draw the primitive
             SceneryShader.Begin();
-            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+			foreach (EffectPass pass in SceneryShaderTechniqueImage.Passes)
             {
                 pass.Begin();
                 RenderProcess.PrimitiveCount++;
@@ -595,12 +607,14 @@ namespace ORTS
     public class TerrainMaterial : Material
     {
         readonly SceneryShader SceneryShader;
+		readonly EffectTechnique SceneryShaderTechniqueTerrain;
         readonly Texture2D PatchTexture;
         readonly public RenderProcess RenderProcess;  // for diagnostics only
 
         public TerrainMaterial(RenderProcess renderProcess, string terrainTexture )
         {
             SceneryShader = Materials.SceneryShader;
+			SceneryShaderTechniqueTerrain = SceneryShader.Techniques["Terrain"];
             PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, terrainTexture);
             RenderProcess = renderProcess;
         }
@@ -620,7 +634,6 @@ namespace ORTS
                 graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 
                 graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Terrain"];
                 graphicsDevice.RenderState.AlphaTestEnable = false;
                 graphicsDevice.RenderState.AlphaBlendEnable = false;
 
@@ -635,7 +648,7 @@ namespace ORTS
             }
 
             SceneryShader.Begin();
-            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+			foreach (EffectPass pass in SceneryShaderTechniqueTerrain.Passes)
             {
                 pass.Begin();
                 RenderProcess.PrimitiveCount++;
@@ -949,7 +962,8 @@ namespace ORTS
     #region Dynatrack material
     public class DynatrackMaterial : Material
     {
-        SceneryShader SceneryShader;
+        readonly SceneryShader SceneryShader;
+		readonly EffectTechnique SceneryShaderTechniqueImage;
         Texture2D image1;
         Texture2D image1s;
         Texture2D image2;
@@ -960,6 +974,7 @@ namespace ORTS
         {
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
+			SceneryShaderTechniqueImage = SceneryShader.Techniques["Image"];
             texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + "acleantrack1.ace";
             image1 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
             texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures\snow" + @"\" + "acleantrack1.ace";
@@ -1003,7 +1018,6 @@ namespace ORTS
                 if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 2000))
                 {
                     graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
                     if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
                         RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
                         SceneryShader.ImageMap_Tex = image1s;
@@ -1020,7 +1034,7 @@ namespace ORTS
                     // TODO: SceneryShader.SpecularPower = 0;
                     mesh.drawIndex = 1;
                     SceneryShader.Begin();
-                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+					foreach (EffectPass pass in SceneryShaderTechniqueImage.Passes)
                     {
                         pass.Begin();
                         RenderProcess.PrimitiveCount++;
@@ -1043,7 +1057,7 @@ namespace ORTS
 
                     mesh.drawIndex = 3;
                     SceneryShader.Begin();
-                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+					foreach (EffectPass pass in SceneryShaderTechniqueImage.Passes)
                     {
                         pass.Begin();
                         RenderProcess.PrimitiveCount++;
@@ -1059,7 +1073,7 @@ namespace ORTS
                     // TODO: SceneryShader.SpecularPower = 0;
                     mesh.drawIndex = 2;
                     SceneryShader.Begin();
-                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+					foreach (EffectPass pass in SceneryShaderTechniqueImage.Passes)
                     {
                         pass.Begin();
                         RenderProcess.PrimitiveCount++;
@@ -1092,7 +1106,8 @@ namespace ORTS
     #region Forest material
     public class ForestMaterial : Material
     {
-        SceneryShader SceneryShader;
+        readonly SceneryShader SceneryShader;
+		readonly EffectTechnique SceneryShaderTechniqueForest;
         Texture2D TreeTexture = null;
         public RenderProcess RenderProcess;  // for diagnostics only
         public ForestDrawer drawer;
@@ -1101,6 +1116,7 @@ namespace ORTS
         {
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
+			SceneryShaderTechniqueForest = SceneryShader.Techniques["Forest"];
             TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
         }
 
@@ -1123,10 +1139,8 @@ namespace ORTS
                 SceneryShader.ImageMap_Tex = TreeTexture;
             }
 
-            SceneryShader.CurrentTechnique = SceneryShader.Techniques["Forest"];
-
             SceneryShader.Begin();
-            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+			foreach (EffectPass pass in SceneryShaderTechniqueForest.Passes)
             {
                 pass.Begin();
                 RenderProcess.PrimitiveCount++;
@@ -1224,7 +1238,8 @@ namespace ORTS
     #region Water material
     public class WaterMaterial : Material
     {
-        SceneryShader SceneryShader;
+        readonly SceneryShader SceneryShader;
+		readonly EffectTechnique SceneryShaderTechniqueImage;
         static Texture2D WaterTexture = null;
         public RenderProcess RenderProcess;  // for diagnostics only
 
@@ -1232,6 +1247,7 @@ namespace ORTS
         {
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
+			SceneryShaderTechniqueImage = SceneryShader.Techniques["Image"];
             if( WaterTexture == null )
                 WaterTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, waterTexturePath);
         }
@@ -1250,7 +1266,6 @@ namespace ORTS
 				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
 
 				graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
 				graphicsDevice.RenderState.AlphaTestEnable = false;
 				graphicsDevice.RenderState.AlphaBlendEnable = false;
 
@@ -1261,7 +1276,7 @@ namespace ORTS
 			}
 
             SceneryShader.Begin();
-            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+			foreach (EffectPass pass in SceneryShaderTechniqueImage.Passes)
             {
                 pass.Begin();
                 RenderProcess.PrimitiveCount++;
