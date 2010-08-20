@@ -219,20 +219,19 @@ void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_O
 	float3 normal = normalize(In.Normal_Light.xyz);
 	float3 lightDir = normalize(In.LightDir_Fog.xyz);
 	float coneDot = dot(lightDir, normalize(HeadlightDirection));
-	float shading = 0;
+	float coneAtten = pow(coneDot, 8.0/*cone decay*/ * 1.75);
+	float shading = step(coneDot, 0.5);
 
-	if (coneDot > 0.5/*cone angle*/)
-	{
-		float coneAtten = pow(coneDot, 8.0/*cone decay*/ * 1.75);
-		shading = dot(normal, -lightDir) * 2.0/*light strength*/ * coneAtten;
-	}
+	// Light fades out away from lightDir.
+	shading *= dot(normal, -lightDir) * 2.0/*light strength*/ * coneAtten;
 
 	// Light fades out to nothing at 100m, it's not infinitely powerful!
 	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / 100);
 
 	// Animation fading is controlled here via C# code.
-	shading *= saturate(HeadlightPosition.w);
+	shading *= HeadlightPosition.w;
 
+	// Apply the final lighting to the color.
 	Color.rgb += OriginalColor.rgb * shading;
 }
 

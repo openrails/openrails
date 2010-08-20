@@ -69,7 +69,7 @@ namespace ORTS
 		{
 			var lighting = fadeTime / fadeDuration;
 			if (lighting < 0) lighting = 1 + lighting;
-			HeadlightPosition.SetValue(new Vector4(position, lighting));
+			HeadlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, 1)));
 			HeadlightDirection.SetValue(direction);
 		}
 
