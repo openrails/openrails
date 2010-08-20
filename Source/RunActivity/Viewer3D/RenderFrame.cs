@@ -187,6 +187,7 @@ namespace ORTS
 
         static RenderTarget2D ShadowMapRenderTarget;
         static DepthStencilBuffer ShadowMapStencilBuffer;
+		static DepthStencilBuffer NormalStencilBuffer;
         static Texture2D ShadowMap;
         Matrix ShadowMapLightView;
         Matrix ShadowMapLightProj;
@@ -197,13 +198,13 @@ namespace ORTS
 			{
 				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, ShadowMapFormat, RenderTargetUsage.PreserveContents);
 				ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
+				NormalStencilBuffer = graphicsDevice.DepthStencilBuffer;
 			}
 
 			// Prepare renderer for drawing the shadow map.
-			var oldStencilDepthBuffer = graphicsDevice.DepthStencilBuffer;
 			graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget);
 			graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
-			graphicsDevice.Clear(Color.Black);
+			graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
 
 			// Prepare for normal (non-blocking) rendering of scenery and terrain.
 			Materials.ShadowMapMaterial.SetState(graphicsDevice, false);
@@ -239,7 +240,7 @@ namespace ORTS
 
 			// All done.
 			Materials.ShadowMapMaterial.ResetState(graphicsDevice, null);
-			graphicsDevice.DepthStencilBuffer = oldStencilDepthBuffer;
+			graphicsDevice.DepthStencilBuffer = NormalStencilBuffer;
 			graphicsDevice.SetRenderTarget(0, null);
 			ShadowMap = ShadowMapRenderTarget.GetTexture();
 		}
@@ -261,8 +262,8 @@ namespace ORTS
         {
             if (RenderProcess.Viewer.DynamicShadows)
             {
-                Materials.SceneryShader.ShadowMapTexture = ShadowMap;
-				Materials.SceneryShader.LightViewProjectionShadowProjection = ShadowMapLightView * ShadowMapLightProj * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
+				var shadowMapMatrix = ShadowMapLightView * ShadowMapLightProj * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
+				Materials.SceneryShader.SetShadowMap(ref shadowMapMatrix, ShadowMap);
             }
 
             // Render each material on the specified primitive

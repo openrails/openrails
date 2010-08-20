@@ -31,108 +31,88 @@ namespace ORTS
     /// </summary>
     public class SceneryShader : Effect
     {
-        public Matrix XNAWorld
-        {
-            get { return XNAMatrix; }
-        }
-            Matrix XNAMatrix;
-
-        public Texture2D Texture
-        {
-            set { imageMap_Tex.SetValue(value); }
-        }
-
-        public Texture2D BumpTexture
-        {
-            set { normalMap_Tex.SetValue(value); }
-        }
-
-        public bool isNightTexture
-        {
-            set { isNight_Tex.SetValue(value); }
-        }
-
-        public Vector3 ViewerPosition
-        {
-            set { viewerPos.SetValue(value); }
-        }
-
-        public Vector3 SunDirection
-        {
-            set { sunDirection.SetValue(value); }
-        }
-
-        public float Overcast
-        {
-            set { overcast.SetValue(value); }
-        }
-
-        EffectParameter imageMap_Tex = null;
-        EffectParameter normalMap_Tex = null;
-        EffectParameter isNight_Tex = null;
-        EffectParameter viewerPos = null;
-        EffectParameter sunDirection = null;
-        EffectParameter overcast = null;
-
-		public Matrix World { set { world.SetValue(value); } } EffectParameter world = null;
-		public Matrix View { set { view.SetValue(value); } } EffectParameter view = null;
-		//public Matrix Projection { set { projection.SetValue(value); } } EffectParameter projection = null;
-		public Matrix WorldViewProjection { set { worldviewprojection.SetValue(value); } } EffectParameter worldviewprojection = null;
-
-		public Matrix LightViewProjectionShadowProjection { set { lightviewprojectionshadowprojection.SetValue(value); } } EffectParameter lightviewprojectionshadowprojection = null;
-		public Texture2D ShadowMapTexture { set { shadowmaptexture.SetValue(value); } } EffectParameter shadowmaptexture = null;
-
-		public void SetFog(float depth, Color color)
+		EffectParameter World;
+		EffectParameter View;
+		//EffectParameter Projection;
+		EffectParameter WorldViewProjection;
+		public void SetMatrix(ref Matrix world, ref Matrix view, ref Matrix projection)
 		{
-			fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, depth));
+			World.SetValue(world);
+			View.SetValue(view);
+			//Projection.SetValue(projection);
+			WorldViewProjection.SetValue(world * view * projection);
 		}
-		EffectParameter fog = null;
 
-		public float ZBias { set { zbias.SetValue(value); } } EffectParameter zbias = null;
+		EffectParameter LightViewProjectionShadowProjection;
+		EffectParameter ShadowMapTexture;
+		public void SetShadowMap(ref Matrix lightViewProjectionShadowProjection, Texture2D shadowMapTexture)
+		{
+			LightViewProjectionShadowProjection.SetValue(lightViewProjectionShadowProjection);
+			ShadowMapTexture.SetValue(shadowMapTexture);
+		}
 
-		public void SetHeadlight(Vector3 position, Vector3 direction, float fadeTime, float fadeDuration)
+		EffectParameter Fog;
+		public void SetFog(float depth, ref Color color)
+		{
+			Fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, depth));
+		}
+
+		EffectParameter zbias;
+		public float ZBias { set { zbias.SetValue(value); } }
+
+        EffectParameter lightVector;
+        public Vector3 LightVector { set { lightVector.SetValue(value); } }
+
+		EffectParameter HeadlightPosition;
+		EffectParameter HeadlightDirection;
+		public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float fadeTime, float fadeDuration)
 		{
 			var lighting = fadeTime / fadeDuration;
 			if (lighting < 0) lighting = 1 + lighting;
-			headlightposition.SetValue(new Vector4(position, lighting));
-			headlightdirection.SetValue(direction);
+			HeadlightPosition.SetValue(new Vector4(position, lighting));
+			HeadlightDirection.SetValue(direction);
 		}
-		EffectParameter headlightposition = null;
-		EffectParameter headlightdirection = null;
 
-        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
-        {
-            World = world;
-            View = view;
-            //Projection = projection;
-            WorldViewProjection = world * view * projection;
-            XNAMatrix = world;
-        }
+        EffectParameter overcast;
+        public float Overcast { set { overcast.SetValue(value); } }
+
+        EffectParameter viewerPos;
+        public Vector3 ViewerPos { set { viewerPos.SetValue(value); } }
+
+        EffectParameter isNight_Tex;
+        public bool IsNight_Tex { set { isNight_Tex.SetValue(value); } }
+
+        EffectParameter imageMap_Tex;
+        public Texture2D ImageMap_Tex { set { imageMap_Tex.SetValue(value); } }
+
+        EffectParameter normalMap_Tex;
+        public Texture2D NormalMap_Tex { set { normalMap_Tex.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
         {
-			world = Parameters["World"];
-			view = Parameters["View"];
-			//projection = Parameters["Projection"];
-			worldviewprojection = Parameters["WorldViewProjection"];
+			World = Parameters["World"];
+			View = Parameters["View"];
+			//Projection = Parameters["Projection"];
+			WorldViewProjection = Parameters["WorldViewProjection"];
 
-			lightviewprojectionshadowprojection = Parameters["LightViewProjectionShadowProjection"];
-			shadowmaptexture = Parameters["ShadowMapTexture"];
+			LightViewProjectionShadowProjection = Parameters["LightViewProjectionShadowProjection"];
+			ShadowMapTexture = Parameters["ShadowMapTexture"];
 
-			fog = Parameters["Fog"];
+			Fog = Parameters["Fog"];
 
 			zbias = Parameters["ZBias"];
 
-			headlightposition = Parameters["HeadlightPosition"];
-			headlightdirection = Parameters["HeadlightDirection"];
+            lightVector = Parameters["LightVector"];
 
+			HeadlightPosition = Parameters["HeadlightPosition"];
+			HeadlightDirection = Parameters["HeadlightDirection"];
+
+            overcast = Parameters["overcast"];
+            viewerPos = Parameters["viewerPos"];
+            isNight_Tex = Parameters["isNight_Tex"];
             imageMap_Tex = Parameters["imageMap_Tex"];
             normalMap_Tex = Parameters["normalMap_Tex"];
-            isNight_Tex = Parameters["isNight_Tex"];
-            viewerPos = Parameters["viewerPos"];
-            sunDirection = Parameters["LightVector"];
-            overcast = Parameters["overcast"];
         }
     }
     #endregion
@@ -141,23 +121,24 @@ namespace ORTS
     /// <summary>
     /// Wrapper for ShadowMap.fx
     /// </summary>
-    public class ShadowMapShader : Effect
-    {
-		public Texture2D ImageTexture { set { imagetexture.SetValue(value); } } EffectParameter imagetexture = null;
-		public Matrix WorldViewProjection { set { worldviewprojection.SetValue(value); } } EffectParameter worldviewprojection = null;
-	
-		public void SetMatrix(Matrix world, Matrix view, Matrix projection)
-        {
-            WorldViewProjection = world * view * projection;
-        }
+	public class ShadowMapShader : Effect
+	{
+		EffectParameter WorldViewProjection = null;
+		EffectParameter ImageTexture = null;
 
-        public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("ShadowMap"))
-        {
-			imagetexture = Parameters["ImageTexture"];
-			worldviewprojection = Parameters["WorldViewProjection"];
+		public void SetData(ref Matrix world, ref Matrix view, ref Matrix projection, Texture2D imageTexture)
+		{
+			WorldViewProjection.SetValue(world * view * projection);
+			ImageTexture.SetValue(imageTexture);
 		}
-    }
+
+		public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
+			: base(graphicsDevice, content.Load<Effect>("ShadowMap"))
+		{
+			WorldViewProjection = Parameters["WorldViewProjection"];
+			ImageTexture = Parameters["ImageTexture"];
+		}
+	}
     #endregion
 
     #region Sky shader
@@ -390,15 +371,21 @@ namespace ORTS
 	/// </summary>
 	public class PopupWindowShader : Effect
 	{
+		EffectParameter World;
+		EffectParameter WorldViewProjection;
+		EffectParameter glassColor;
+		EffectParameter ScreenSize;
+		EffectParameter Screen_Tex;
+
 		public Texture2D Screen
 		{
 			set
 			{
-				Parameters["Screen_Tex"].SetValue(value);
+				Screen_Tex.SetValue(value);
 				if (value == null)
-					Parameters["ScreenSize"].SetValue(new[] { 0, 0 });
+					ScreenSize.SetValue(new[] { 0, 0 });
 				else
-					Parameters["ScreenSize"].SetValue(new[] { value.Width, value.Height });
+					ScreenSize.SetValue(new[] { value.Width, value.Height });
 			}
 		}
 
@@ -406,19 +393,24 @@ namespace ORTS
 		{
 			set
 			{
-				Parameters["GlassColor"].SetValue(new float[] { value.R / 255, value.G / 255, value.B / 255 });
+				glassColor.SetValue(new float[] { value.R / 255, value.G / 255, value.B / 255 });
 			}
 		}
 
-		public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+		public void SetMatrix(ref Matrix world, ref Matrix view, ref Matrix projection)
 		{
-			Parameters["World"].SetValue(world);
-			Parameters["WorldViewProjection"].SetValue(world * view * projection);
+			World.SetValue(world);
+			WorldViewProjection.SetValue(world * view * projection);
 		}
 
 		public PopupWindowShader(GraphicsDevice graphicsDevice, ContentManager content)
 			: base(graphicsDevice, content.Load<Effect>("PopupWindow"))
 		{
+			World = Parameters["World"];
+			WorldViewProjection = Parameters["WorldViewProjection"];
+			glassColor = Parameters["GlassColor"];
+			ScreenSize = Parameters["ScreenSize"];
+			Screen_Tex = Parameters["Screen_Tex"];
 			Parameters["PopupWindowImage_Tex"].SetValue(content.Load<Texture2D>("PopupWindowImage"));
 			Parameters["PopupWindowMask_Tex"].SetValue(content.Load<Texture2D>("PopupWindowMask"));
 		}
