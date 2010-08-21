@@ -181,6 +181,7 @@
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
+    <Compile Include="Popups\NextStation.cs" />
     <Compile Include="Popups\PopupControls.cs" />
     <Compile Include="Popups\PopupWindows.cs" />
     <Compile Include="Popups\TrackMonitor.cs" />

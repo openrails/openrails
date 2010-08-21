@@ -33,7 +33,6 @@ namespace ORTS
 		Matrix XNAProjection = Matrix.Identity;
 		internal Point ScreenSize = Point.Zero;
 		ResolveTexture2D Screen;
-		PopupWindow activeWindow = null;
 
 		public PopupWindows(Viewer3D viewer)
 		{
@@ -72,83 +71,47 @@ namespace ORTS
 			// Project into a flat view of the same size as the viewport.
 			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
+			var material = Materials.PopupWindowMaterial;
 			if (Viewer.WindowGlass)
 			{
 				// Buffer for screen texture, also same size as viewport and using the backbuffer format.
 				if (Screen == null)
 					Screen = new ResolveTexture2D(graphicsDevice, ScreenSize.X, ScreenSize.Y, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
-				graphicsDevice.ResolveBackBuffer(Screen);
-			}
 
-			var material = Materials.PopupWindowMaterial;
-			material.SetState(graphicsDevice, Screen);
-			foreach (var window in VisibleWindows)
+				foreach (var window in VisibleWindows)
+				{
+					var xnaWorld = window.XNAWorld;
+
+					graphicsDevice.ResolveBackBuffer(Screen);
+					material.SetState(graphicsDevice, Screen);
+					material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+					material.ResetState(graphicsDevice, null);
+
+					SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
+					window.Draw(SpriteBatch);
+					SpriteBatch.End();
+				}
+			}
+			else
 			{
-				var xnaWorld = window.XNAWorld;
-				material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-			}
-			material.ResetState(graphicsDevice, null);
+				foreach (var window in VisibleWindows)
+				{
+					var xnaWorld = window.XNAWorld;
 
-			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
-			foreach (var window in VisibleWindows)
-				window.Draw(SpriteBatch);
-			SpriteBatch.End();
+					material.SetState(graphicsDevice, null);
+					material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+					material.ResetState(graphicsDevice, null);
+
+					SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
+					window.Draw(SpriteBatch);
+					SpriteBatch.End();
+				}
+			}
 		}
 
 		internal void Add(PopupWindow window)
 		{
 			Windows.Add(window);
-		}
-
-		public void SelectWindow(int x, int y)
-		{
-			foreach (var window in Windows)
-			{
-				if (window.Visible)
-				{
-					if (window.Location.Contains(x, y))
-					{
-						if (!window.isCloseClicked(x, y))
-						{
-							activeWindow = window;
-						}
-						return;
-					}
-				}
-			}
-		}
-
-		public void DelselectWindow()
-		{
-			if (activeWindow != null)
-			{
-				activeWindow.ActiveChanged();
-				activeWindow = null;
-			}
-		}
-
-		public PopupWindow ActiveWindow
-		{
-			get
-			{
-				return activeWindow;
-			}
-		}
-
-		public void MoveWindow(int dx, int dy)
-		{
-			if (ActiveWindow != null)
-			{
-				if (ActiveWindow.Selected) ActiveWindow.MoveBy(dx, dy);
-			}
-		}
-
-		public void PopupMessage(string text, SpriteFont f)
-		{
-			PopupMessage popMsgbox;
-
-			popMsgbox = new PopupMessage(this, text, f, 5.0);
-			// Add(popMsgbox);
 		}
 
 		public bool HasVisiblePopupWindows()
@@ -161,6 +124,34 @@ namespace ORTS
 			get
 			{
 				return Windows.Where(w => w.Visible);
+			}
+		}
+
+		bool Dragging;
+		PopupWindow DragWindow;
+		Point DragStart;
+		public void HandleMouseMovement(MouseState mouseState)
+		{
+			if (!Dragging && (mouseState.LeftButton == ButtonState.Pressed))
+			{
+				var mousePoint = new Point(mouseState.X, mouseState.Y);
+				Dragging = true;
+				DragWindow = VisibleWindows.Reverse().FirstOrDefault(w => w.Location.Contains(mousePoint));
+				if (DragWindow != null)
+				{
+					DragStart = new Point(mouseState.X - DragWindow.Location.X, mouseState.Y - DragWindow.Location.Y);
+					Windows.Remove(DragWindow);
+					Windows.Add(DragWindow);
+				}
+			}
+			else if (Dragging && (mouseState.LeftButton == ButtonState.Released))
+			{
+				Dragging = false;
+				DragWindow = null;
+			}
+			else if (Dragging && (DragWindow != null) && (mouseState.LeftButton == ButtonState.Pressed))
+			{
+				DragWindow.MoveTo(mouseState.X - DragStart.X, mouseState.Y - DragStart.Y);
 			}
 		}
 	}
@@ -292,14 +283,6 @@ namespace ORTS
 		public void AlignCenter()
 		{
 			MoveTo((Owner.ScreenSize.X - location.Width) / 2, (Owner.ScreenSize.Y - location.Height) / 2);
-		}
-
-		public bool Selected
-		{
-			get
-			{
-				return Owner.ActiveWindow == this;
-			}
 		}
 
 		protected void Layout()

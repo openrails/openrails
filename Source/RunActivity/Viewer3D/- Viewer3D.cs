@@ -68,6 +68,7 @@ namespace ORTS
         InfoDisplay InfoDisplay;
 		public PopupWindows PopupWindows = null;
 		public TrackMonitor TrackMonitor;
+		public NextStation NextStation;
 		public CompassWindow CompassWindow;
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer = null;
@@ -276,6 +277,7 @@ namespace ORTS
             // Initialse popup windows.
 			PopupWindows = new PopupWindows(this);
 			TrackMonitor = new TrackMonitor(PopupWindows);
+			NextStation = new NextStation(PopupWindows);
 			CompassWindow = new CompassWindow(PopupWindows);
 
             SkyDrawer = new SkyDrawer(this);
@@ -388,6 +390,7 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.PageDown)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
 			if (UserInput.IsPressed(Keys.F4)) TrackMonitor.Visible = !TrackMonitor.Visible;
+			if (UserInput.IsPressed(Keys.F10)) NextStation.Visible = !NextStation.Visible;
 			if (UserInput.IsPressed(Keys.D0)) CompassWindow.Visible = !CompassWindow.Visible;
 
             // Change view point - cab, passenger, outside, etc
@@ -420,18 +423,6 @@ namespace ORTS
             }
 
             RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
-            
-            MouseState currentMouseState = Mouse.GetState();
-
-
-            if (currentMouseState.LeftButton == ButtonState.Pressed)
-            {
-                PopupWindows.SelectWindow(currentMouseState.X, currentMouseState.Y);
-            }
-            else
-            {
-                PopupWindows.DelselectWindow();
-            }
         }
 
 
@@ -439,20 +430,11 @@ namespace ORTS
         //  This is to enable the user to move popup windows
         //  Coded as a separate routine as HandleUserInput does not cater for mouse movemenmt.
         //
-        public void HamdleMouseMovement()
+        public void HandleMouseMovement()
         {
             MouseState currentMouseState = Mouse.GetState();
+			PopupWindows.HandleMouseMovement(currentMouseState);
 
-            if (currentMouseState != originalMouseState)
-            {
-                if (currentMouseState.LeftButton == originalMouseState.LeftButton)
-                {
-                    if (currentMouseState.LeftButton == ButtonState.Pressed)
-                    {
-                        PopupWindows.MoveWindow(currentMouseState.X - originalMouseState.X, currentMouseState.Y - originalMouseState.Y);
-                    }
-                }
-            }
             // Handling mouse movement and timing - GeorgeS
             if (currentMouseState.X != originalMouseState.X ||
                 currentMouseState.Y != originalMouseState.Y)

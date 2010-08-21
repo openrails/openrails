@@ -135,6 +135,10 @@ namespace ORTS
 				var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
 				Viewer.TrackMonitor.UpdateText(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, TrackMonitorSignalAspect.None, poiType, poiDistance);
 			}
+			if (Viewer.NextStation.Visible)
+			{
+				Viewer.NextStation.UpdateText(elapsedTime, Viewer.Simulator.ClockTime, FormattedTime);
+			}
 			if (Viewer.CompassWindow.Visible)
 			{
 				double latitude = 0;

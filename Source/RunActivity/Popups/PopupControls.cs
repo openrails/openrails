@@ -71,12 +71,14 @@ namespace ORTS
 	{
 		public string Text;
 		public PopupLabelAlignment Align;
+		public Color Color;
 
 		public PopupLabel(int x, int y, int width, int height, string text, PopupLabelAlignment align)
 			: base(x, y, width, height)
 		{
 			Text = text;
 			Align = align;
+			Color = Color.White;
 		}
 
 		public PopupLabel(int x, int y, int width, int height, string text)
@@ -105,7 +107,7 @@ namespace ORTS
 				else
 					pos.X += (int)(Position.Width - size.X) / 2;
 			}
-			spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, Text, pos, Color.White);
+			spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, Text, pos, Color);
 		}
 	}
 

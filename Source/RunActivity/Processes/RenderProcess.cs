@@ -254,7 +254,7 @@ namespace ORTS
                 Viewer.HandleUserInput( GetUserInputElapsedTime() );
                 UserInput.Handled();
                 
-                Viewer.HamdleMouseMovement();
+                Viewer.HandleMouseMovement();
 
                 // Prepare the frame for drawing
                 CurrentFrame.Clear();
