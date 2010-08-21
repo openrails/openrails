@@ -84,8 +84,8 @@ namespace ORTS
 
 					graphicsDevice.ResolveBackBuffer(Screen);
 					material.SetState(graphicsDevice, Screen);
-					material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-					material.ResetState(graphicsDevice, null);
+					material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+					material.ResetState(graphicsDevice);
 
 					SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
 					window.Draw(SpriteBatch);
@@ -98,9 +98,9 @@ namespace ORTS
 				{
 					var xnaWorld = window.XNAWorld;
 
-					material.SetState(graphicsDevice, null);
-					material.Render(graphicsDevice, null, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-					material.ResetState(graphicsDevice, null);
+					material.SetState(graphicsDevice, Screen);
+					material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+					material.ResetState(graphicsDevice);
 
 					SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
 					window.Draw(SpriteBatch);

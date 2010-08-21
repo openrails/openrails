@@ -238,32 +238,35 @@ namespace ORTS
     #endregion
 
     #region Material interface
-    public interface Material
-    {
-        /// <summary>
-        /// Have the material shader render the primitive.  Some shaders require multple passes
-        /// Use previousMaterial to optimize the state change
-        /// </summary>
-        void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix);
-                
-        /// <summary>
-        /// Use nextMaterial to optimize the state change
-        /// </summary>
-        void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial);
+	public interface Material
+	{
+		void SetState(GraphicsDevice graphicsDevice, Material previousMaterial);
+		void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix);
+		void ResetState(GraphicsDevice graphicsDevice);
 
+		bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive);
 		Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive);
-    }
+	}
     #endregion
 
     #region Empty material
 	public class EmptyMaterial : Material
 	{
-		public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
 		}
 
-		public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
+		}
+
+		public void ResetState(GraphicsDevice graphicsDevice)
+		{
+		}
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
 		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
@@ -274,39 +277,43 @@ namespace ORTS
     #endregion
 
     #region Sprite batch material
-    public class SpriteBatchMaterial:  Material
-    {
-        public SpriteBatch SpriteBatch;
-        public SpriteFont DefaultFont;
-        public RenderProcess RenderProcess;  // for diagnostics only
+	public class SpriteBatchMaterial : Material
+	{
+		public SpriteBatch SpriteBatch;
+		public SpriteFont DefaultFont;
+		public RenderProcess RenderProcess;  // for diagnostics only
 
-        public SpriteBatchMaterial( RenderProcess renderProcess )
-        {
-            RenderProcess = renderProcess;
-            SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
+		public SpriteBatchMaterial(RenderProcess renderProcess)
+		{
+			RenderProcess = renderProcess;
+			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
 			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
-        }
+		}
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-        {
-            float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
-            Vector3 screenScaling = new Vector3(scaling);
-            Matrix xForm = Matrix.CreateScale(screenScaling);
-            if (previousMaterial != this)
-            {
-                RenderProcess.RenderStateChangesCount++;
-                SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
-            }
-            RenderProcess.PrimitiveCount++;
-            renderPrimitive.Draw(graphicsDevice);
-        }              
-        
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
+			Vector3 screenScaling = new Vector3(scaling);
+			Matrix xForm = Matrix.CreateScale(screenScaling);
+			RenderProcess.RenderStateChangesCount++;
+			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
+		}
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial )
-        {
-            if( nextMaterial != this )
-                SpriteBatch.End();
-        }
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		{
+			RenderProcess.PrimitiveCount++;
+			renderPrimitive.Draw(graphicsDevice);
+		}
+
+		public void ResetState(GraphicsDevice graphicsDevice)
+		{
+			SpriteBatch.End();
+		}
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -351,190 +358,203 @@ namespace ORTS
             }
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			int prevOptions = -1;
+
+			if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
+			{
+				RenderProcess.RenderStateChangesCount++;
+				graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+			}
+			else
+			{
+				prevOptions = ((SceneryMaterial)previousMaterial).Options;
+			}
+
+			/////////////// MATERIAL OPTIONS //////////////////
+			//
+			// Material options are specified in a 32-bit int named "options"
+			// Following are the bit assignments:
+			// (name, dec value, hex, bits)
+			// 
+			// SHADERS bits 0 through 3 (allow for future shaders)
+			// Diffuse            1     0x0001      0000 0000 0000 0001
+			// Tex                2     0x0002      0000 0000 0000 0010
+			// TexDiff            3     0x0003      0000 0000 0000 0011
+			// BlendATex          4     0x0004      0000 0000 0000 0100
+			// AddAtex            5     0x0005      0000 0000 0000 0101
+			// BlendATexDiff      6     0x0006      0000 0000 0000 0110
+			// AddATexDiff        7     0x0007      0000 0000 0000 0111
+			// AND mask          15     0x000f      0000 0000 0000 1111
+			//
+			// LIGHTING  bits 4 through 7 ( >> 4 )
+			// DarkShade         16     0x0010      0000 0000 0001 0000
+			// OptHalfBright     32     0x0020      0000 0000 0010 0000
+			// CruciformLong     48     0x0030      0000 0000 0011 0000
+			// Cruciform         64     0x0040      0000 0000 0100 0000
+			// OptFullBright     80     0x0050      0000 0000 0101 0000
+			// OptSpecular750    96     0x0060      0000 0000 0110 0000
+			// OptSpecular25    112     0x0070      0000 0000 0111 0000
+			// OptSpecular0     128     0x0080      0000 0000 1000 0000
+			// AND mask         240     0x00f0      0000 0000 1111 0000 
+			//
+			// ALPHA TEST bit 8 ( >> 8 )
+			// None               0     0x0000      0000 0000 0000 0000
+			// Trans            256     0x0100      0000 0001 0000 0000
+			// AND mask         256     0x0100      0000 0001 0000 0000
+			//
+			// Z BUFFER bits 9 and 10 ( >> 9 )
+			// None               0     0x0000      0000 0000 0000 0000
+			// Normal           512     0x0200      0000 0010 0000 0000
+			// Write Only      1024     0x0400      0000 0100 0000 0000
+			// Test Only       1536     0x0600      0000 0110 0000 0000
+			// AND mask        1536     0x0600      0000 0110 0000 0000
+			//
+			// TEXTURE ADDRESS MODE bits 11 and 12 ( >> 11 )
+			// Wrap               0     0x0000      0000 0000 0000 0000             
+			// Mirror          2048     0x0800      0000 1000 0000 0000
+			// Clamp           4096     0x1000      0001 0000 0000 0000
+			// Border          6144     0x1800      0001 1000 0000 0000
+			// AND mask        6144     0x1800      0001 1000 0000 0000
+			//
+			// NIGHT TEXTURE bit 13 ( >> 13 )
+			// Disabled           0     0x0000      0000 0000 0000 0000
+			// Enabled         8192     0x2000      0010 0000 0000 0000
+			//
+
+			if (prevOptions != Options)
+			{
+				// Lighting model
+				int lighting = (Options & 0x00f0) >> 4;
+				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"]; // Default
+				switch (lighting)
+				{
+					case 1: // DarkShade (-12)
+						SceneryShader.CurrentTechnique = SceneryShader.Techniques["DarkShade"];
+						break;
+					case 2: // OptHalfBright (-11)
+						SceneryShader.CurrentTechnique = SceneryShader.Techniques["HalfBright"];
+						break;
+					case 4: // CruciformLong (-10)
+					case 3: // Cruciform (-9)
+						SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
+						break;
+					case 5: // OptFullBright (-8)
+						SceneryShader.CurrentTechnique = SceneryShader.Techniques["FullBright"];
+						break;
+					case 6: // OptSpecular750 (-7)
+						// TODO: SceneryShader.SpecularPower = 64;
+						break;
+					case 7: // OptSpecular25 (-6)
+						// TODO: SceneryShader.SpecularPower = 128;
+						break;
+					case 8: // OptSpecular0 (-5)
+					default:
+						// TODO: SceneryShader.SpecularPower = 0;
+						break;
+				}
+
+				// Transparency test
+				int alphaTest = (Options & 0x0100) >> 8;
+				if (alphaTest == 0)
+				{
+					graphicsDevice.RenderState.AlphaBlendEnable = false;
+					graphicsDevice.RenderState.AlphaTestEnable = false;
+				}
+				else
+				{
+					graphicsDevice.RenderState.AlphaBlendEnable = false;
+					graphicsDevice.RenderState.AlphaTestEnable = true;
+					graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
+					graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+				}
+
+				// Translucency
+				int shaders = Options & 0x000f;
+				if (alphaTest == 0 && shaders >= 4)
+				{
+					graphicsDevice.RenderState.AlphaTestEnable = true;
+					graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
+					graphicsDevice.RenderState.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
+					graphicsDevice.RenderState.AlphaBlendEnable = true;
+					graphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
+					graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+					graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+					graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
+					graphicsDevice.RenderState.AlphaSourceBlend = Blend.Zero;
+					graphicsDevice.RenderState.AlphaDestinationBlend = Blend.One;
+					graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
+				}
+
+				// Texture addressing
+				int wrapping = (Options & 0x1800) >> 11;
+				switch (wrapping)
+				{
+					case 0: // wrap
+						graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+						graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+						break;
+					case 1: // mirror
+						graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Mirror;
+						graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Mirror;
+						break;
+					case 2: // clamp
+						graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
+						graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
+						break;
+					case 3: // border
+						graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Border;
+						graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Border;
+						break;
+				}
+
+				// Night texture toggle
+				if ((Options & 0x2000) >> 13 == 1)
+					isNightEnabled = true;
+			}
+
+			RenderProcess.ImageChangesCount++;
+
+			if (Materials.sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
+			{
+				SceneryShader.ImageMap_Tex = nightTexture;
+				SceneryShader.IsNight_Tex = true;
+			}
+			else
+			{
+				SceneryShader.ImageMap_Tex = Texture;
+				SceneryShader.IsNight_Tex = false;
+			}
+
+			if (MipMapBias < -1)
+				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
+			else
+				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = MipMapBias;
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
 
-            int prevOptions = -1;
-
-            if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
-            {
-                RenderProcess.RenderStateChangesCount++;
-                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-                graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
-            }
-            else
-            {
-                prevOptions = ((SceneryMaterial)previousMaterial).Options;
-            }
-
-            /////////////// MATERIAL OPTIONS //////////////////
-            //
-            // Material options are specified in a 32-bit int named "options"
-            // Following are the bit assignments:
-            // (name, dec value, hex, bits)
-            // 
-            // SHADERS bits 0 through 3 (allow for future shaders)
-            // Diffuse            1     0x0001      0000 0000 0000 0001
-            // Tex                2     0x0002      0000 0000 0000 0010
-            // TexDiff            3     0x0003      0000 0000 0000 0011
-            // BlendATex          4     0x0004      0000 0000 0000 0100
-            // AddAtex            5     0x0005      0000 0000 0000 0101
-            // BlendATexDiff      6     0x0006      0000 0000 0000 0110
-            // AddATexDiff        7     0x0007      0000 0000 0000 0111
-            // AND mask          15     0x000f      0000 0000 0000 1111
-            //
-            // LIGHTING  bits 4 through 7 ( >> 4 )
-            // DarkShade         16     0x0010      0000 0000 0001 0000
-            // OptHalfBright     32     0x0020      0000 0000 0010 0000
-            // CruciformLong     48     0x0030      0000 0000 0011 0000
-            // Cruciform         64     0x0040      0000 0000 0100 0000
-            // OptFullBright     80     0x0050      0000 0000 0101 0000
-            // OptSpecular750    96     0x0060      0000 0000 0110 0000
-            // OptSpecular25    112     0x0070      0000 0000 0111 0000
-            // OptSpecular0     128     0x0080      0000 0000 1000 0000
-            // AND mask         240     0x00f0      0000 0000 1111 0000 
-            //
-            // ALPHA TEST bit 8 ( >> 8 )
-            // None               0     0x0000      0000 0000 0000 0000
-            // Trans            256     0x0100      0000 0001 0000 0000
-            // AND mask         256     0x0100      0000 0001 0000 0000
-            //
-            // Z BUFFER bits 9 and 10 ( >> 9 )
-            // None               0     0x0000      0000 0000 0000 0000
-            // Normal           512     0x0200      0000 0010 0000 0000
-            // Write Only      1024     0x0400      0000 0100 0000 0000
-            // Test Only       1536     0x0600      0000 0110 0000 0000
-            // AND mask        1536     0x0600      0000 0110 0000 0000
-            //
-            // TEXTURE ADDRESS MODE bits 11 and 12 ( >> 11 )
-            // Wrap               0     0x0000      0000 0000 0000 0000             
-            // Mirror          2048     0x0800      0000 1000 0000 0000
-            // Clamp           4096     0x1000      0001 0000 0000 0000
-            // Border          6144     0x1800      0001 1000 0000 0000
-            // AND mask        6144     0x1800      0001 1000 0000 0000
-            //
-            // NIGHT TEXTURE bit 13 ( >> 13 )
-            // Disabled           0     0x0000      0000 0000 0000 0000
-            // Enabled         8192     0x2000      0010 0000 0000 0000
-            //
-
-            if (prevOptions != Options)
-            {
-                // Lighting model
-                int lighting = (Options & 0x00f0) >> 4;
-				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"]; // Default
-                var viewerPosition = new Vector3(XNAViewMatrix.M41, XNAViewMatrix.M42, XNAViewMatrix.M43);
-                switch (lighting)
-                {
-                    case 1: // DarkShade (-12)
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["DarkShade"];
-                        break;
-                    case 2: // OptHalfBright (-11)
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["HalfBright"];
-                        break;
-                    case 4: // CruciformLong (-10)
-                    case 3: // Cruciform (-9)
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
-                        break;
-                    case 5: // OptFullBright (-8)
-                        SceneryShader.CurrentTechnique = SceneryShader.Techniques["FullBright"];
-                        break;
-                    case 6: // OptSpecular750 (-7)
-                        // TODO: SceneryShader.SpecularPower = 64;
-                        SceneryShader.ViewerPos = viewerPosition;
-                        break;
-                    case 7: // OptSpecular25 (-6)
-                        // TODO: SceneryShader.SpecularPower = 128;
-                        SceneryShader.ViewerPos = viewerPosition;
-                        break;
-                    case 8: // OptSpecular0 (-5)
-                    default:
-                        // TODO: SceneryShader.SpecularPower = 0;
-                        SceneryShader.ViewerPos = viewerPosition;
-                        break;
-                }
-
-                // Transparency test
-                int alphaTest = (Options & 0x0100) >> 8;
-                if (alphaTest == 0)
-                {
-                    graphicsDevice.RenderState.AlphaBlendEnable = false;
-                    graphicsDevice.RenderState.AlphaTestEnable = false;
-                }
-                else
-                {
-                    graphicsDevice.RenderState.AlphaBlendEnable = false;
-                    graphicsDevice.RenderState.AlphaTestEnable = true;
-                    graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
-                    graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
-                }
-
-                // Translucency
-                int shaders = Options & 0x000f;
-                if (alphaTest == 0 && shaders >= 4)
-                {
-                    graphicsDevice.RenderState.AlphaTestEnable = true;
-                    graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
-                    graphicsDevice.RenderState.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
-                    graphicsDevice.RenderState.AlphaBlendEnable = true;
-                    graphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
-                    graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-                    graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-                    graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
-                    graphicsDevice.RenderState.AlphaSourceBlend = Blend.Zero;
-                    graphicsDevice.RenderState.AlphaDestinationBlend = Blend.One;
-                    graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
-                }
-
-                // Texture addressing
-                int wrapping = (Options & 0x1800) >> 11;
-                switch (wrapping)
-                {
-                    case 0: // wrap
-                        graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-                        graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-                        break;
-                    case 1: // mirror
-                        graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Mirror;
-                        graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Mirror;
-                        break;
-                    case 2: // clamp
-                        graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
-                        graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
-                        break;
-                    case 3: // border
-                        graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Border;
-                        graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Border;
-                        break;
-                }
-
-                // Night texture toggle
-                if ((Options & 0x2000) >> 13 == 1)
-                    isNightEnabled = true;
-            }
-
-            if (this != previousMaterial)
-            {
-                RenderProcess.ImageChangesCount++;
-
-                if (Materials.sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
-                {
-                    SceneryShader.ImageMap_Tex = nightTexture;
-                    SceneryShader.IsNight_Tex = true;
-                }
-                else
-                {
-                    SceneryShader.ImageMap_Tex = Texture;
-                    SceneryShader.IsNight_Tex = false;
-                }
-
-                if (MipMapBias < -1)
-                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
-                else
-                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = MipMapBias;
-            }
+			var lighting = (Options & 0x00f0) >> 4;
+			switch (lighting)
+			{
+				case 1: // DarkShade (-12)
+				case 2: // OptHalfBright (-11)
+				case 4: // CruciformLong (-10)
+				case 3: // Cruciform (-9)
+				case 5: // OptFullBright (-8)
+					break;
+				case 6: // OptSpecular750 (-7)
+				case 7: // OptSpecular25 (-6)
+				case 8: // OptSpecular0 (-5)
+				default:
+					SceneryShader.ViewerPos = new Vector3(XNAViewMatrix.M41, XNAViewMatrix.M42, XNAViewMatrix.M43);
+					break;
+			}
 
             // With the GPU configured, now we can draw the primitive
             SceneryShader.Begin();
@@ -548,12 +568,14 @@ namespace ORTS
             SceneryShader.End();
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
-            if (this != nextMaterial)
-            {
-            }
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -605,34 +627,34 @@ namespace ORTS
             RenderProcess = renderProcess;
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
+			{
+				RenderProcess.RenderStateChangesCount++;
+
+				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+
+				graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+				graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+
+				graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Terrain"];
+				graphicsDevice.RenderState.AlphaTestEnable = false;
+				graphicsDevice.RenderState.AlphaBlendEnable = false;
+
+				graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
+				graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
+			}
+
+			RenderProcess.ImageChangesCount++;
+			SceneryShader.ImageMap_Tex = PatchTexture;
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
-
-            if ( previousMaterial == null || this.GetType() != previousMaterial.GetType())
-            {
-                RenderProcess.RenderStateChangesCount++;
-
-                graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
-
-                graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-                graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-
-                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Terrain"];
-                graphicsDevice.RenderState.AlphaTestEnable = false;
-                graphicsDevice.RenderState.AlphaBlendEnable = false;
-
-                graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
-                graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
-            }
-
-            if (this != previousMaterial)
-            {
-                RenderProcess.ImageChangesCount++;
-                SceneryShader.ImageMap_Tex = PatchTexture;
-            }
 
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
@@ -645,9 +667,14 @@ namespace ORTS
             SceneryShader.End();
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -682,7 +709,11 @@ namespace ORTS
             cloudTexture = renderProcess.Content.Load<Texture2D>("Clouds01");
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SkyShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
@@ -800,9 +831,14 @@ namespace ORTS
             graphicsDevice.RenderState.FogEnable = fogEnable;
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -867,7 +903,11 @@ namespace ORTS
             snowTexture = renderProcess.Content.Load<Texture2D>("Snowflake");
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             int weatherType = RenderProcess.Viewer.PrecipDrawer.weatherType;
             if (weatherType == 0) return; // Clear weather
@@ -933,11 +973,16 @@ namespace ORTS
         }
 
         // Is this needed? PrecipMaterial doesn't change any of these render states.
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
             graphicsDevice.RenderState.DepthBufferWriteEnable = true;
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -971,7 +1016,11 @@ namespace ORTS
             image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+		}
+
+        public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
@@ -1078,9 +1127,14 @@ namespace ORTS
             graphicsDevice.RenderState.CullMode = cullMode;
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -1104,24 +1158,25 @@ namespace ORTS
             TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
+			{
+				RenderProcess.RenderStateChangesCount++;
+				graphicsDevice.RenderState.AlphaBlendEnable = false;
+				graphicsDevice.RenderState.AlphaTestEnable = true;
+				graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
+				graphicsDevice.RenderState.ReferenceAlpha = 200;
+			}
+
+			RenderProcess.ImageChangesCount++;
+			SceneryShader.ImageMap_Tex = TreeTexture;
+		}
+
+        public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
-
-            if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
-            {
-                RenderProcess.RenderStateChangesCount++;
-                graphicsDevice.RenderState.AlphaBlendEnable = false;
-                graphicsDevice.RenderState.AlphaTestEnable = true;
-                graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
-                graphicsDevice.RenderState.ReferenceAlpha = 200;
-            }
-            if (this != previousMaterial)
-            {
-                RenderProcess.ImageChangesCount++;
-                SceneryShader.ImageMap_Tex = TreeTexture;
-            }
 
             SceneryShader.CurrentTechnique = SceneryShader.Techniques["Forest"];
 
@@ -1136,9 +1191,14 @@ namespace ORTS
             SceneryShader.End();
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -1163,7 +1223,11 @@ namespace ORTS
             lightGlowTexture = renderProcess.Content.Load<Texture2D>("Lightglow");
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             LightGlowShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
@@ -1210,9 +1274,14 @@ namespace ORTS
             LightGlowShader.End();
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -1236,29 +1305,29 @@ namespace ORTS
                 WaterTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, waterTexturePath);
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			RenderProcess.RenderStateChangesCount++;
+
+			graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+			graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+			graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+
+			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+			SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
+			graphicsDevice.RenderState.AlphaTestEnable = false;
+			graphicsDevice.RenderState.AlphaBlendEnable = false;
+
+			RenderProcess.ImageChangesCount++;
+			SceneryShader.ImageMap_Tex = WaterTexture;
+
+			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
-
-			if (previousMaterial != this)
-			{
-				RenderProcess.RenderStateChangesCount++;
-
-				graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-				graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
-
-				graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-				SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
-				graphicsDevice.RenderState.AlphaTestEnable = false;
-				graphicsDevice.RenderState.AlphaBlendEnable = false;
-
-				RenderProcess.ImageChangesCount++;
-				SceneryShader.ImageMap_Tex = WaterTexture;
-
-				graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
-			}
 
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
@@ -1271,9 +1340,14 @@ namespace ORTS
             SceneryShader.End();
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
@@ -1309,7 +1383,17 @@ namespace ORTS
             rs.RangeFogEnable = false;
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material originalMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, Material originalMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Materials.ShadowMapShader;
             shader.SetData(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix, originalMaterial.GetShadowTexture(graphicsDevice, renderPrimitive));
@@ -1324,13 +1408,19 @@ namespace ORTS
 			shader.End();
 		}
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
-        }
+			throw new NotImplementedException();
+		}
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			throw new NotImplementedException();
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{
-			return null;
+			throw new NotImplementedException();
 		}
 	}
     #endregion
@@ -1362,7 +1452,11 @@ namespace ORTS
 			rs.DepthBufferWriteEnable = false;
 		}
 
-		public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
 			var shader = Materials.PopupWindowShader;
 			shader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
@@ -1376,7 +1470,7 @@ namespace ORTS
 			shader.End();
 		}
 
-		public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+		public void ResetState(GraphicsDevice graphicsDevice)
 		{
 			var rs = graphicsDevice.RenderState;
 			rs.AlphaBlendEnable = false;
@@ -1386,6 +1480,11 @@ namespace ORTS
 			rs.DepthBufferEnable = true;
 			rs.DepthBufferFunction = CompareFunction.LessEqual;
 			rs.DepthBufferWriteEnable = true;
+		}
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
 		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
@@ -1430,22 +1529,21 @@ namespace ORTS
             }
         }
 
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			RenderProcess.RenderStateChangesCount++;
+
+			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+			//Materials.SetupFog(graphicsDevice);
+
+			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
+		}
+
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             basicEffect.World = XNAWorldMatrix;
             basicEffect.View = XNAViewMatrix;
             basicEffect.Projection = XNAProjectionMatrix;
-
-            if (previousMaterial != this)
-            {
-                RenderProcess.RenderStateChangesCount++;
-
-                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-                //Materials.SetupFog(graphicsDevice);
-
-                graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
-            }
-
 
             basicEffect.Begin();
             foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
@@ -1458,9 +1556,14 @@ namespace ORTS
             basicEffect.End();
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial)
+        public void ResetState(GraphicsDevice graphicsDevice)
         {
         }
+
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		{
+			return false;
+		}
 
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
 		{

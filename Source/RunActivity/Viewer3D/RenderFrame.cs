@@ -239,7 +239,7 @@ namespace ORTS
 			}
 
 			// All done.
-			Materials.ShadowMapMaterial.ResetState(graphicsDevice, null);
+			//Materials.ShadowMapMaterial.ResetState(graphicsDevice);
 			graphicsDevice.DepthStencilBuffer = NormalStencilBuffer;
 			graphicsDevice.SetRenderTarget(0, null);
 			ShadowMap = ShadowMapRenderTarget.GetTexture();
@@ -278,14 +278,18 @@ namespace ORTS
                 if (renderItem.RenderPrimitive.Sequence == sequence)
                 {
                     if (prevMaterial != null)
-                        prevMaterial.ResetState(graphicsDevice, currentMaterial);
+                        prevMaterial.ResetState(graphicsDevice);
+					if (prevMaterial != currentMaterial)
+						currentMaterial.SetState(graphicsDevice, prevMaterial);
+
 					var riMatrix = renderItem.XNAMatrix;
-					currentMaterial.Render(graphicsDevice, prevMaterial, renderItem.RenderPrimitive, ref riMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+					currentMaterial.Render(graphicsDevice, renderItem.RenderPrimitive, ref riMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+
                     prevMaterial = currentMaterial;
                 }
             }
             if (prevMaterial != null)
-                prevMaterial.ResetState(graphicsDevice, null);
+                prevMaterial.ResetState(graphicsDevice);
         }
     }
 }

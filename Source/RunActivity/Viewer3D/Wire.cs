@@ -117,34 +117,31 @@ namespace ORTS
     /// <summary>
     /// This encapsulates any shaders, sprites, etc needed by the material.
     /// </summary>
-    public class WireMaterial : Material
-    {
-        public WireMaterial(RenderProcess renderProcess)
-        {
-            // create a shader if necessary
-            // load any static textures etc
-        }
+	public class WireMaterial : Material
+	{
+		public WireMaterial(RenderProcess renderProcess)
+		{
+			// create a shader if necessary
+			// load any static textures etc
+		}
 
-        /// <summary>
-        /// Called by RenderFrame.Draw() in the RenderProcess thread for each primitive
-        /// that was loaded by PrepareFrame
-        /// </summary>
-        public void Render(GraphicsDevice graphicsDevice, Material previousMaterial, RenderPrimitive renderPrimitive,
-                            ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-        {
-            if (previousMaterial != this)
-            {
-                // set up render states
-                // set up shader params etc
-            }
+		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial) { }
 
-            // set up the shader
+		/// <summary>
+		/// Called by RenderFrame.Draw() in the RenderProcess thread for each primitive
+		/// that was loaded by PrepareFrame
+		/// </summary>
+		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive,
+							ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		{
+			// set up the shader
 
-            // for each pass through the shader
-            renderPrimitive.Draw(graphicsDevice);
-        }
+			// for each pass through the shader
+			renderPrimitive.Draw(graphicsDevice);
+		}
 
-        public void ResetState(GraphicsDevice graphicsDevice, Material nextMaterial) { }
+		public void ResetState(GraphicsDevice graphicsDevice) { }
+		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive) { return false; }
 		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive) { return null; }
 	}
 
