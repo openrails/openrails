@@ -220,7 +220,7 @@ void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_O
 	float3 lightDir = normalize(In.LightDir_Fog.xyz);
 	float coneDot = dot(lightDir, normalize(HeadlightDirection));
 	float coneAtten = pow(coneDot, 8.0/*cone decay*/ * 1.75);
-	float shading = step(coneDot, 0.5);
+	float shading = step(0.5, coneDot);
 
 	// Light fades out away from lightDir.
 	shading *= dot(normal, -lightDir) * 2.0/*light strength*/ * coneAtten;
