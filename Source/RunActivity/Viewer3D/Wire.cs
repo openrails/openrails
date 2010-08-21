@@ -125,24 +125,17 @@ namespace ORTS
 			// load any static textures etc
 		}
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial) { }
-
 		/// <summary>
 		/// Called by RenderFrame.Draw() in the RenderProcess thread for each primitive
 		/// that was loaded by PrepareFrame
 		/// </summary>
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive,
-							ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
 			// set up the shader
 
 			// for each pass through the shader
 			renderPrimitive.Draw(graphicsDevice);
 		}
-
-		public void ResetState(GraphicsDevice graphicsDevice) { }
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive) { return false; }
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive) { return null; }
 	}
 
     public class WirePrimitive : RenderPrimitive

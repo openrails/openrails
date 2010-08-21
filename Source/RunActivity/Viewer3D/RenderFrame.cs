@@ -48,6 +48,7 @@ namespace ORTS
 
 		readonly RenderProcess RenderProcess;
         readonly List<RenderItem> RenderItems;
+		readonly List<RenderItem> RenderBlendedItems;
 		readonly List<RenderItem> RenderShadowItems;
         int RenderMaxSequence = 0;
         Matrix XNAViewMatrix;
@@ -57,12 +58,14 @@ namespace ORTS
         {
             RenderProcess = owner;
             RenderItems = new List<RenderItem>();
+			RenderBlendedItems = new List<RenderItem>();
 			RenderShadowItems = new List<RenderItem>();
         }
 
         public void Clear() 
         {
             RenderItems.Clear();
+			RenderBlendedItems.Clear();
 			RenderShadowItems.Clear();
         }
 
@@ -136,7 +139,10 @@ namespace ORTS
 		/// </summary>
 		public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
-			RenderItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
+			if (!material.GetBlending(primitive))
+				RenderItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
+			else
+				RenderBlendedItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
 
 			if (RenderMaxSequence < primitive.Sequence)
 				RenderMaxSequence = primitive.Sequence;
@@ -288,7 +294,23 @@ namespace ORTS
                     prevMaterial = currentMaterial;
                 }
             }
-            if (prevMaterial != null)
+			foreach (var renderItem in RenderBlendedItems)
+			{
+				Material currentMaterial = renderItem.Material;
+				if (renderItem.RenderPrimitive.Sequence == sequence)
+				{
+					if (prevMaterial != null)
+						prevMaterial.ResetState(graphicsDevice);
+					if (prevMaterial != currentMaterial)
+						currentMaterial.SetState(graphicsDevice, prevMaterial);
+
+					var riMatrix = renderItem.XNAMatrix;
+					currentMaterial.Render(graphicsDevice, renderItem.RenderPrimitive, ref riMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+
+					prevMaterial = currentMaterial;
+				}
+			}
+			if (prevMaterial != null)
                 prevMaterial.ResetState(graphicsDevice);
         }
     }

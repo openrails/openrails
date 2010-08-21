@@ -238,41 +238,20 @@ namespace ORTS
     #endregion
 
     #region Material interface
-	public interface Material
+	public abstract class Material
 	{
-		void SetState(GraphicsDevice graphicsDevice, Material previousMaterial);
-		void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix);
-		void ResetState(GraphicsDevice graphicsDevice);
+		public virtual void SetState(GraphicsDevice graphicsDevice, Material previousMaterial) { }
+		public virtual void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
+		public virtual void ResetState(GraphicsDevice graphicsDevice) { }
 
-		bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive);
-		Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive);
+		public virtual bool GetBlending(RenderPrimitive renderPrimitive) { return false; }
+		public virtual Texture2D GetShadowTexture(RenderPrimitive renderPrimitive) { return null; }
 	}
     #endregion
 
     #region Empty material
 	public class EmptyMaterial : Material
 	{
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-		}
-
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-		{
-		}
-
-		public void ResetState(GraphicsDevice graphicsDevice)
-		{
-		}
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
-		}
 	}
     #endregion
 
@@ -290,7 +269,7 @@ namespace ORTS
 			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
 		}
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
 			float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
 			Vector3 screenScaling = new Vector3(scaling);
@@ -299,25 +278,15 @@ namespace ORTS
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
 		}
 
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
 			RenderProcess.PrimitiveCount++;
 			renderPrimitive.Draw(graphicsDevice);
 		}
 
-		public void ResetState(GraphicsDevice graphicsDevice)
+		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
 			SpriteBatch.End();
-		}
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
 		}
 	}
     #endregion
@@ -358,7 +327,7 @@ namespace ORTS
             }
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
 			int prevOptions = -1;
 
@@ -534,7 +503,7 @@ namespace ORTS
 				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = MipMapBias;
 		}
 
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
@@ -568,47 +537,27 @@ namespace ORTS
             SceneryShader.End();
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-        }
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
+			// Transparency test
+			int alphaTest = (Options & 0x0100) >> 8;
+			if (alphaTest != 0)
+				return true;
+
+			// Translucency
+			int shaders = Options & 0x000f;
+			if (alphaTest == 0 && shaders >= 4)
+				return true;
+
 			return false;
 		}
 
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		public override Texture2D GetShadowTexture(RenderPrimitive renderPrimitive)
 		{
-			// Texture addressing
-			int wrapping = (Options & 0x1800) >> 11;
-			switch (wrapping)
-			{
-				case 0: // wrap
-					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-					break;
-				case 1: // mirror
-					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Mirror;
-					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Mirror;
-					break;
-				case 2: // clamp
-					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
-					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
-					break;
-				case 3: // border
-					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Border;
-					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Border;
-					break;
-			}
-
 			if (Materials.sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
-			{
 				return nightTexture;
-			}
-			else
-			{
-				return Texture;
-			}
+			
+			return Texture;
 		}
 	}
     #endregion
@@ -627,7 +576,7 @@ namespace ORTS
             RenderProcess = renderProcess;
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
 			if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
 			{
@@ -651,7 +600,7 @@ namespace ORTS
 			SceneryShader.ImageMap_Tex = PatchTexture;
 		}
 
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
@@ -666,20 +615,6 @@ namespace ORTS
             }
             SceneryShader.End();
         }
-
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-        }
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
-		}
 	}
     #endregion
 
@@ -709,11 +644,7 @@ namespace ORTS
             cloudTexture = renderProcess.Content.Load<Texture2D>("Clouds01");
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-		}
-
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SkyShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
@@ -831,18 +762,9 @@ namespace ORTS
             graphicsDevice.RenderState.FogEnable = fogEnable;
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-        }
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
+			return true;
 		}
 
         /// <summary>
@@ -903,11 +825,7 @@ namespace ORTS
             snowTexture = renderProcess.Content.Load<Texture2D>("Snowflake");
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-		}
-
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             int weatherType = RenderProcess.Viewer.PrecipDrawer.weatherType;
             if (weatherType == 0) return; // Clear weather
@@ -973,20 +891,15 @@ namespace ORTS
         }
 
         // Is this needed? PrecipMaterial doesn't change any of these render states.
-        public void ResetState(GraphicsDevice graphicsDevice)
+		public override void ResetState(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
             graphicsDevice.RenderState.DepthBufferWriteEnable = true;
         }
 
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
+			return true;
 		}
 	}
 	#endregion
@@ -1016,11 +929,7 @@ namespace ORTS
             image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-		}
-
-        public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
@@ -1127,18 +1036,9 @@ namespace ORTS
             graphicsDevice.RenderState.CullMode = cullMode;
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-        }
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
+			return true;
 		}
     }
     #endregion
@@ -1158,7 +1058,7 @@ namespace ORTS
             TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
 			if (previousMaterial == null || this.GetType() != previousMaterial.GetType())
 			{
@@ -1173,7 +1073,7 @@ namespace ORTS
 			SceneryShader.ImageMap_Tex = TreeTexture;
 		}
 
-        public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
@@ -1190,20 +1090,6 @@ namespace ORTS
             }
             SceneryShader.End();
         }
-
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-        }
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
-		}
 	}
     #endregion
 
@@ -1223,11 +1109,7 @@ namespace ORTS
             lightGlowTexture = renderProcess.Content.Load<Texture2D>("Lightglow");
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-		}
-
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             LightGlowShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
 
@@ -1274,18 +1156,9 @@ namespace ORTS
             LightGlowShader.End();
         }
 
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-        }
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
+			return true;
 		}
 	}
     #endregion
@@ -1305,7 +1178,7 @@ namespace ORTS
                 WaterTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, waterTexturePath);
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
 			RenderProcess.RenderStateChangesCount++;
 
@@ -1324,7 +1197,7 @@ namespace ORTS
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
 
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
 			SceneryShader.ZBias = renderPrimitive.ZBias;
@@ -1339,20 +1212,6 @@ namespace ORTS
             }
             SceneryShader.End();
         }
-
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-        }
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
-		}
 	}
     #endregion
 
@@ -1383,20 +1242,10 @@ namespace ORTS
             rs.RangeFogEnable = false;
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-		{
-			throw new NotImplementedException();
-		}
-
 		public void Render(GraphicsDevice graphicsDevice, Material originalMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Materials.ShadowMapShader;
-            shader.SetData(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix, originalMaterial.GetShadowTexture(graphicsDevice, renderPrimitive));
+			shader.SetData(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix, originalMaterial.GetShadowTexture(renderPrimitive));
 			shader.Begin();
 			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
 			{
@@ -1406,21 +1255,6 @@ namespace ORTS
 				pass.End();
 			}
 			shader.End();
-		}
-
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-			throw new NotImplementedException();
-		}
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			throw new NotImplementedException();
 		}
 	}
     #endregion
@@ -1452,11 +1286,7 @@ namespace ORTS
 			rs.DepthBufferWriteEnable = false;
 		}
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-		}
-
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
 			var shader = Materials.PopupWindowShader;
 			shader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
@@ -1470,7 +1300,7 @@ namespace ORTS
 			shader.End();
 		}
 
-		public void ResetState(GraphicsDevice graphicsDevice)
+		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
 			var rs = graphicsDevice.RenderState;
 			rs.AlphaBlendEnable = false;
@@ -1482,14 +1312,9 @@ namespace ORTS
 			rs.DepthBufferWriteEnable = true;
 		}
 
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
+			return true;
 		}
 	}
 	#endregion
@@ -1529,7 +1354,7 @@ namespace ORTS
             }
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
 			RenderProcess.RenderStateChangesCount++;
 
@@ -1539,7 +1364,7 @@ namespace ORTS
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
 
-		public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             basicEffect.World = XNAWorldMatrix;
             basicEffect.View = XNAViewMatrix;
@@ -1555,20 +1380,6 @@ namespace ORTS
             }
             basicEffect.End();
         }
-
-        public void ResetState(GraphicsDevice graphicsDevice)
-        {
-        }
-
-		public bool GetBlending(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return false;
-		}
-
-		public Texture2D GetShadowTexture(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive)
-		{
-			return null;
-		}
 	}
     #endregion
 }
