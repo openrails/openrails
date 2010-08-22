@@ -833,6 +833,11 @@ namespace ORTS
             }
             else
             {
+                // Skip drawing if CAB view - draw 2D view instead - by GeorgeS
+                if (Viewer.Camera.AttachedToCar == this.MSTSWagon &&
+                    Viewer.Camera.ViewPoint == Camera.ViewPoints.Cab)
+                    return;
+                
                 // We are outside the passenger cabin
                 TrainCarShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
             }

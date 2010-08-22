@@ -397,6 +397,18 @@ namespace ORTS
             base.Activate();
         }
 
+        // Added to support the side CAB views - by GeorgeS
+        /// <summary>
+        /// Gets the current camera location in CAB
+        /// </summary>
+        public int SideLocation
+        {
+            get
+            {
+                return iLocation;
+            }
+        }
+
         private void ShiftView(int index)
         {
             iLocation += index;
@@ -408,15 +420,18 @@ namespace ORTS
 
             RotationYRadians = MSTSMath.M.Radians(AttachedToCar.FrontCabViewpoints[iLocation].StartDirection.Y);
             // TODO add X rotation and Z rotation
+            // Added X rotation in order to support 2D CAB views - by GeorgeS
+            RotationXRadians = MSTSMath.M.Radians(AttachedToCar.FrontCabViewpoints[iLocation].StartDirection.X);
             OnboardLocation = AttachedToCar.FrontCabViewpoints[iLocation].Location;
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
+            // Switched shift number to select the right cab view - by GeorgeS
             if (UserInput.IsPressed(Keys.Left) && !UserInput.IsKeyDown(Keys.LeftControl))
-                    ShiftView(-1);
-            else if (UserInput.IsPressed(Keys.Right) && !UserInput.IsKeyDown(Keys.LeftControl))
                 ShiftView(+1);
+            else if (UserInput.IsPressed(Keys.Right) && !UserInput.IsKeyDown(Keys.LeftControl))
+                ShiftView(-1);
             
             base.HandleUserInput(elapsedTime);
         }

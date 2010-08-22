@@ -34,6 +34,7 @@ using MSTS;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 using System.IO;
+using Microsoft.Xna.Framework.Graphics;
 
 
 
@@ -64,6 +65,9 @@ namespace ORTS
         public float MainResPressurePSI = 130;
         public bool CompressorOn = false;
         public float AverageForceN = 0;
+        // by GeorgeS
+        public bool CabLightOn = false;
+        public bool ShowCab = true;
 
         // wag file data
         public string CabSoundFileName = null;
@@ -607,6 +611,7 @@ namespace ORTS
                 if (eventID == EventID.HeadlightOn) {  Headlight = 2; break; }
                 if (eventID == EventID.CompressorOn) { CompressorOn = true; break; }
                 if (eventID == EventID.CompressorOff) { CompressorOn = false; break; }
+                if (eventID == EventID.LightSwitchToggle) { CabLightOn = !CabLightOn; break; }
             } while (false);
 
             base.SignalEvent(eventID );
@@ -631,11 +636,14 @@ namespace ORTS
 
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
+        private CabRenderer _CabRenderer;
+
         public MSTSLocomotiveViewer(Viewer3D viewer, MSTSLocomotive car)
             : base(viewer, car)
         {
             Locomotive = car;
 
+            _CabRenderer = new CabRenderer(viewer, Locomotive);
 
             // Find the animated parts
             if (TrainCarShape.SharedShape.Animations != null)
@@ -736,6 +744,9 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.Tab) && UserInput.IsCtrlKeyDown())
                 Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
 
+            // By GeorgeS
+            if (UserInput.IsPressed(Keys.L)) Locomotive.SignalEvent(EventID.LightSwitchToggle);
+            if (UserInput.IsPressed(Keys.D1) && UserInput.IsShiftDown()) Locomotive.ShowCab = !Locomotive.ShowCab;
             base.HandleUserInput( elapsedTime );
         }
 
@@ -772,6 +783,11 @@ namespace ORTS
                 }
             }
 
+            // Draw 2D CAB View - by GeorgeS
+            if (Viewer.Camera.AttachedToCar == this.MSTSWagon &&
+                Viewer.Camera.ViewPoint == Camera.ViewPoints.Cab)
+                _CabRenderer.PrepareFrame(frame);
+            
             base.PrepareFrame( frame, elapsedTime );
         }
 
@@ -787,5 +803,100 @@ namespace ORTS
     } // Class LocomotiveViewer
 
 
+    // By GeorgeS
+    public class CabRenderer : RenderPrimitive
+    {
+        private SpriteBatchMaterial _Sprite2DCabView;
+        private List<Texture2D> _CabViews = new List<Texture2D>();
+        private List<Texture2D> _NightViews = new List<Texture2D>();
+        private List<Texture2D> _LightViews = new List<Texture2D>();
+        private Rectangle _CabRect;
+        private Matrix _Scale = Matrix.Identity;
+
+        private Viewer3D _Viewer;
+        private MSTSLocomotive _Locomotive;
+        private int _Location;
+        private bool _Dark = false;
+        private bool _CabLight = false;
+
+        public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
+        {
+            _Sprite2DCabView = new SpriteBatchMaterial(viewer.RenderProcess);
+
+            // Loading ACE files, skip displaying ERROR messages
+            foreach (string cabfile in car.CVFFile.TwoDViews)
+            {
+                if (File.Exists(cabfile))
+                    _CabViews.Add(SharedTextureManager.Get(viewer.GraphicsDevice, cabfile));
+                else
+                    _CabViews.Add(Materials.MissingTexture);
+            }
+
+            foreach (string cabfile in car.CVFFile.NightViews)
+                if (File.Exists(cabfile))
+                    _NightViews.Add(SharedTextureManager.Get(viewer.GraphicsDevice, cabfile));
+                else
+                    _NightViews.Add(Materials.MissingTexture);
+
+            foreach (string cabfile in car.CVFFile.LightViews)
+                if (File.Exists(cabfile))
+                    _LightViews.Add(SharedTextureManager.Get(viewer.GraphicsDevice, cabfile));
+                else
+                    _LightViews.Add(Materials.MissingTexture);
+
+            _Viewer = viewer;
+            _Locomotive = car;
+        }
+
+        public void PrepareFrame(RenderFrame frame)
+        {
+            if (!_Locomotive.ShowCab)
+                return;
+
+            CabCamera cbc = _Viewer.Camera as CabCamera;
+            if (cbc != null)
+            {
+                _Location = cbc.SideLocation;
+            }
+            else
+            {
+                _Location = 0;
+            }
+
+            // Night
+            // TODO set tunnels
+            _Dark = Materials.sunDirection.Y <= 0f;
+            _CabLight = _Locomotive.CabLightOn;
+
+            _CabRect = new Rectangle(0, 0, (int)_Viewer.DisplaySize.X, (int)_Viewer.DisplaySize.Y);
+            frame.AddPrimitive(_Sprite2DCabView, this, ref _Scale);
+        }
+        
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            Texture2D cabv = Materials.MissingTexture;
+
+            // Try to find the right texture to draw
+            if (_Dark)
+            {
+                if (_CabLight)
+                {
+                    cabv = _LightViews[_Location];
+                }
+                
+                if (cabv == Materials.MissingTexture)
+                {
+                    cabv = _NightViews[_Location];
+                }
+            }
+            
+            if (cabv == Materials.MissingTexture)
+            {
+                cabv = _CabViews[_Location];
+            }
+
+            _Sprite2DCabView.SpriteBatch.Draw(cabv, _CabRect, Color.White);
+        }
+    }
 
 }

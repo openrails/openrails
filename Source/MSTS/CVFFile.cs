@@ -8,6 +8,7 @@ using System.Collections;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace MSTS
 {
@@ -17,10 +18,14 @@ namespace MSTS
 	{
         public List<Vector3> Locations = new List<Vector3>();   // Head locations for front, left and right views
         public List<Vector3> Directions = new List<Vector3>();  // Head directions for each view
+        public List<string> TwoDViews = new List<string>();     // 2D CAB Views - by GeorgeS
+        public List<string> NightViews = new List<string>();    // Night CAB Views - by GeorgeS
+        public List<string> LightViews = new List<string>();    // Light CAB Views - by GeorgeS
 
         public CVFFile(string filePath)
 		{
             STFReader inf = new STFReader( filePath );
+            string Path = filePath.Substring(0, filePath.LastIndexOf('\\') + 1);
             try
             {
                 inf.MustMatch( "Tr_CabViewFile" );
@@ -33,6 +38,15 @@ namespace MSTS
 
                     else if (0 == string.Compare(token, "Direction", true))
                         Directions.Add(inf.ReadVector3Block());
+
+                    // Read CAB View files for 2D cab views - by GeorgeS
+                    else if (0 == string.Compare(token, "CabViewFile", true))
+                    {
+                        string fName = inf.ReadStringBlock();
+                        TwoDViews.Add(Path + fName);
+                        NightViews.Add(Path + "night\\" + fName);
+                        LightViews.Add(Path + "cablight\\" + fName);
+                    }
 
                     else
                         inf.SkipBlock();  // TODO, complete parse
