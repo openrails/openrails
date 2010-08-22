@@ -216,22 +216,25 @@ void _PSApplyOvercast(inout float4 Color)
 // fade-in/fade-out animations.
 void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_OUTPUT In)
 {
-	float3 normal = normalize(In.Normal_Light.xyz);
-	float3 lightDir = normalize(In.LightDir_Fog.xyz);
-	float coneDot = dot(lightDir, normalize(HeadlightDirection));
-	float coneAtten = pow(coneDot, 8.0/*cone decay*/ * 1.75);
-	float shading = step(0.5, coneDot);
+	// Decides the width of the lit cone (larger number = wider lit cone).
+	const float headlightWidth = 0.12;
+	// Speed of fade at edge of lit cone (larger number = narrower fade at cone edge).
+	const float headlightSideFade = 5;
+	// Overall strength of headlights (larger number = brighter everywhere in lit cone).
+	const float headlightStrength = 2.0;
+	// Max distance of lit cone (larger number = longer, slower distance fade of lit cone).
+	const float headlightDepth = 500;
 
-	// Light fades out away from lightDir.
-	shading *= dot(normal, -lightDir) * 2.0/*light strength*/ * coneAtten;
+	float3 surfaceNormal = normalize(In.Normal_Light.xyz);
+	float3 headlightToSurface = normalize(In.LightDir_Fog.xyz);
+	float coneDot = dot(headlightToSurface, normalize(HeadlightDirection));
 
-	// Light fades out to nothing at 100m, it's not infinitely powerful!
-	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / 100);
-
-	// Animation fading is controlled here via C# code.
+	float shading = step(0, coneDot);
+	shading *= step(0, dot(surfaceNormal, -headlightToSurface));
+	shading *= saturate((coneDot - 1 + headlightWidth) * headlightSideFade);
+	shading *= headlightStrength;
+	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / headlightDepth);
 	shading *= HeadlightPosition.w;
-
-	// Apply the final lighting to the color.
 	Color.rgb += OriginalColor.rgb * shading;
 }
 
