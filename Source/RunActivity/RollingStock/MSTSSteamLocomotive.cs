@@ -123,9 +123,9 @@ namespace ORTS
                 ForceFactor1[.720f] = -.579431f;
                 ForceFactor1[.785f] = -.593737f;
                 ForceFactor1[.850f] = -.607703f;
+                ForceFactor1.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f *
+                    NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM));
             }
-            ForceFactor1.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f *
-                NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM));
             if (ForceFactor2 == null)
             {
                 ForceFactor2 = new Interpolator(11);
@@ -140,9 +140,9 @@ namespace ORTS
                 ForceFactor2[.720f] = .579257f;
                 ForceFactor2[.785f] = .584714f;
                 ForceFactor2[.850f] = .591967f;
+                ForceFactor2.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f *
+                    NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM));
             }
-            ForceFactor2.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f *
-                NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM));
             if (CylinderPressureDrop == null)
             {   // this table is not based on measurements
                 CylinderPressureDrop = new Interpolator(5);
@@ -152,8 +152,8 @@ namespace ORTS
                 CylinderPressureDrop[1] = 10;
                 CylinderPressureDrop[2] = 20;
                 CylinderPressureDrop.ScaleX(ExhaustLimitLBpH);
+                CylinderPressureDrop.ScaleX(1 / 3600f);
             }
-            CylinderPressureDrop.ScaleX(1 / 3600f);
             if (BackPressure == null)
             {   // this table is not based on measurements
                 BackPressure = new Interpolator(3);
@@ -161,8 +161,11 @@ namespace ORTS
                 BackPressure[1] = 6;
                 BackPressure[1.2f] = 30;
                 BackPressure.ScaleX(ExhaustLimitLBpH);
+                BackPressure.ScaleX(1 / 3600f);
             }
-            BackPressure.ScaleX(1 / 3600f);
+            float maxevap = 775;
+            float maxburn = 180;
+            float grateArea = MaxBoilerOutputLBpH / maxevap;
             if (EvaporationRate == null)
             {   // this table is from page 112 of The Steam Locomotive by R. P. Johnson (the 13000 BTU line) 
                 EvaporationRate = new Interpolator(11);
@@ -177,20 +180,17 @@ namespace ORTS
                 EvaporationRate[160] = 770;
                 EvaporationRate[180] = 775;
                 EvaporationRate[200] = 760;
+                EvaporationRate.ScaleX(grateArea / 3600);
+                EvaporationRate.ScaleY(grateArea / 3600);
             }
-            float maxburn;
-            float maxevap= EvaporationRate.MaxY(out maxburn);
-            float grateArea = MaxBoilerOutputLBpH / maxevap;
-            EvaporationRate.ScaleX(grateArea / 3600);
-            EvaporationRate.ScaleY(grateArea / 3600);
             if (BurnRate == null)
             {
                 BurnRate = new Interpolator(2);
                 BurnRate[0] = 2;
                 BurnRate[maxevap] = maxburn;    // inverse of maximum EvaporationRate
+                BurnRate.ScaleX(grateArea / 3600);
+                BurnRate.ScaleY(grateArea / 3600);
             }
-            BurnRate.ScaleX(grateArea / 3600);
-            BurnRate.ScaleY(grateArea / 3600);                    
         }
         public bool ZeroError(float v, string name, string wagFile)
         {
