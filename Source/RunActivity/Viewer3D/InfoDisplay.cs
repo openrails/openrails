@@ -39,7 +39,7 @@ namespace ORTS
             TextPrimitive.Material = Material;
             TextPrimitive.Color = Color.Yellow;
             TextPrimitive.Location = new Vector2(10, 10);
-            TextPrimitive.Sequence = 2;
+            TextPrimitive.Sequence = RenderPrimitiveSequence.TextOverlay;
         }
 
         public void HandleUserInput(ElapsedTime elapsedTime)

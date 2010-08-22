@@ -5,10 +5,17 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS
 {
+	public enum RenderPrimitiveSequence
+	{
+		Default = 0,
+		CabView = 1,
+		TextOverlay = 2,
+	}
+
     public abstract class RenderPrimitive
     {
 		public float ZBias = 0f;
-		public int Sequence = 0;
+		public RenderPrimitiveSequence Sequence = RenderPrimitiveSequence.Default;
 
         /// <summary>
         /// This is when the object actually renders itself onto the screen.
@@ -144,8 +151,8 @@ namespace ORTS
 			else
 				RenderBlendedItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
 
-			if (RenderMaxSequence < primitive.Sequence)
-				RenderMaxSequence = primitive.Sequence;
+			if (RenderMaxSequence < (int)primitive.Sequence)
+				RenderMaxSequence = (int)primitive.Sequence;
 
 			if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
 				primitive.ZBias = 1;
@@ -281,7 +288,7 @@ namespace ORTS
             foreach (var renderItem in RenderItems)
             {
                 Material currentMaterial = renderItem.Material;
-                if (renderItem.RenderPrimitive.Sequence == sequence)
+                if ((int)renderItem.RenderPrimitive.Sequence == sequence)
                 {
                     if (prevMaterial != null)
                         prevMaterial.ResetState(graphicsDevice);
@@ -297,7 +304,7 @@ namespace ORTS
 			foreach (var renderItem in RenderBlendedItems)
 			{
 				Material currentMaterial = renderItem.Material;
-				if (renderItem.RenderPrimitive.Sequence == sequence)
+				if ((int)renderItem.RenderPrimitive.Sequence == sequence)
 				{
 					if (prevMaterial != null)
 						prevMaterial.ResetState(graphicsDevice);

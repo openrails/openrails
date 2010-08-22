@@ -821,6 +821,7 @@ namespace ORTS
 
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
+			Sequence = RenderPrimitiveSequence.CabView;
             _Sprite2DCabView = new SpriteBatchMaterial(viewer.RenderProcess);
 
             // Loading ACE files, skip displaying ERROR messages
