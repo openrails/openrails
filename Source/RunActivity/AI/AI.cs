@@ -41,10 +41,8 @@ namespace ORTS
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
                 foreach (Service_Definition sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition)
                 {
-                    if (sd.Time < Simulator.ClockTime)
-                        continue;
                     AITrainDictionary.Add(sd.UiD, CreateAITrain(sd));
-                    //Console.WriteLine("AIQ {0} {1} {2}", sd.Service, sd.Time, sd.UiD);
+                    //Console.WriteLine("AIQ {0} {1} {2} {3}", sd.Service, sd.Time, sd.UiD, Simulator.ClockTime);
                 }
             Dispatcher = new Dispatcher(this);
             foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
@@ -173,6 +171,10 @@ namespace ORTS
             PATFile patFile = new PATFile(pathFileName);
             AITrain train = new AITrain(sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName), sd.Time);
 
+            if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
+                train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
+
+            train.Path.AlignAllSwitches();
             // This is the position of the back end of the train in the database.
             //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
             WorldLocation wl = train.Path.FirstNode.Location;
@@ -183,6 +185,17 @@ namespace ORTS
             if (train.RearTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z) < 0)
                 train.RearTDBTraveller.ReverseDirection();
             //train.PATTraveller = patTraveller;
+            if (sd.Time < Simulator.ClockTime)
+            {
+                float dtS = (float)(Simulator.ClockTime - sd.Time);
+                train.RearTDBTraveller.Move(dtS * train.MaxSpeedMpS);
+                //Console.WriteLine("initial move {0} {1}", dtS * train.MaxSpeedMpS, train.MaxSpeedMpS);
+                AIPathNode node = train.Path.FirstNode;
+                while (node != null && node.NextMainTVNIndex != train.RearTDBTraveller.TrackNodeIndex)
+                    node = node.NextMainNode;
+                if (node != null)
+                    train.Path.FirstNode = node;
+            }
 
             // add wagons
             TrainCar previousCar = null;
@@ -213,9 +226,6 @@ namespace ORTS
             train.CalculatePositionOfCars(0);
             for (int i = 0; i < train.Cars.Count; i++)
                 train.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
-
-            if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
-                train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
 
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
