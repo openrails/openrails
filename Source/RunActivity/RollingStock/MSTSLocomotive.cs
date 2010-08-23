@@ -636,14 +636,15 @@ namespace ORTS
 
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
-        private CabRenderer _CabRenderer;
+        private CabRenderer _CabRenderer = null;
 
         public MSTSLocomotiveViewer(Viewer3D viewer, MSTSLocomotive car)
             : base(viewer, car)
         {
             Locomotive = car;
 
-            _CabRenderer = new CabRenderer(viewer, Locomotive);
+            if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
+                _CabRenderer = new CabRenderer(viewer, Locomotive);
 
             // Find the animated parts
             if (TrainCarShape.SharedShape.Animations != null)
@@ -785,7 +786,8 @@ namespace ORTS
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedToCar == this.MSTSWagon &&
-                Viewer.Camera.ViewPoint == Camera.ViewPoints.Cab)
+                Viewer.Camera.ViewPoint == Camera.ViewPoints.Cab &&
+                _CabRenderer != null)
                 _CabRenderer.PrepareFrame(frame);
             
             base.PrepareFrame( frame, elapsedTime );
