@@ -54,25 +54,28 @@ namespace ORTS
                     throw new Exception("Invalid Player Traffice Definition in ACT file!");
                 }
 
-                PlatformItem Platform;
-                ActivityTask task = null;
-                for (int i = 0; i < sd.Player_Traffic_Definition.ArrivalTime.Count; i++)
+                if (sd.Player_Traffic_Definition.ArrivalTime.Count > 0)
                 {
-                    if (startPosition == -1) startPosition = sd.Player_Traffic_Definition.DistanceDownPath[i];
-                    Platform = Program.Simulator.TDB.TrackDB.TrItemTable[sd.Player_Traffic_Definition.PlatformStartID[i]] as PlatformItem;
-                    
-                    if (Platform != null)
+                    PlatformItem Platform;
+                    ActivityTask task = null;
+                    for (int i = 0; i < sd.Player_Traffic_Definition.ArrivalTime.Count; i++)
                     {
-                        Tasks.Add(new ActivityTaskPassengerStopAt(task,
-                            sd.Player_Traffic_Definition.ArrivalTime[i],
-                            sd.Player_Traffic_Definition.DepartTime[i],
-                            Platform, Program.Simulator.TDB.TrackDB.TrItemTable[Platform.Flags2] as PlatformItem,
-                            sd.Player_Traffic_Definition.DistanceDownPath[i]));
-                        task = Tasks[i];
-                    }
-                }
+                        if (startPosition == -1) startPosition = sd.Player_Traffic_Definition.DistanceDownPath[i];
+                        Platform = Program.Simulator.TDB.TrackDB.TrItemTable[sd.Player_Traffic_Definition.PlatformStartID[i]] as PlatformItem;
 
-                Current = Tasks[0];
+                        if (Platform != null)
+                        {
+                            Tasks.Add(new ActivityTaskPassengerStopAt(task,
+                                sd.Player_Traffic_Definition.ArrivalTime[i],
+                                sd.Player_Traffic_Definition.DepartTime[i],
+                                Platform, Program.Simulator.TDB.TrackDB.TrItemTable[Platform.Flags2] as PlatformItem,
+                                sd.Player_Traffic_Definition.DistanceDownPath[i]));
+                            task = Tasks[i];
+                        }
+                    }
+
+                    Current = Tasks[0];
+                }
             }
         }
 
@@ -81,6 +84,10 @@ namespace ORTS
             if (Current == null) return;
 
             Current.NotifyEvent(ActivityEvent.Timer);
+            if (Current.IsCompleted != null)
+            {
+                Current = Current.NextTask;
+            }
 
             if (Program.Simulator.PlayerLocomotive.SpeedMpS == 0)
             {
@@ -117,8 +124,10 @@ namespace ORTS
         public DateTime? ActDepart = null;
         public PlatformItem PlatformEnd1;
         public PlatformItem PlatformEnd2;
+
         double LoadUnload;
         double Position;
+        int TimerChk = 0;
         bool arrived = false;
         bool maydepart = false;
 
@@ -137,16 +146,20 @@ namespace ORTS
 
         public override void NotifyEvent(ActivityEvent EventType)
         {
+            // The train is stopped.
             if (EventType == ActivityEvent.TrainStop)
             {
+                // Checking if the stopping is occuread at the scheduled platform.
                 double dist1 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd1.TileX,
                     PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
                 double dist2 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd2.TileX,
                     PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
                 if ( (dist1 >= 0 && dist2 <= 0) || (dist1 <= 0 && dist2 >= 0))
                 {
+                    // If yes, we arrived
                     ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
 
+                    // Figure out the load/unload time
                     if (SchDepart > ActArrive)
                     {
                         LoadUnload = (SchDepart - ActArrive).Value.TotalSeconds;
@@ -159,28 +172,51 @@ namespace ORTS
             }
             else if (EventType == ActivityEvent.TrainStart)
             {
+                // Train has started, we have things to do if we arrived before
                 if (arrived)
                 {
                     ActDepart = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
                     CompletedAt = ActDepart.Value;
-                    IsCompleted = true;
+                    // Completeness is depend on the elapsed waiting time
+                    IsCompleted = maydepart;
                 }
             }
             else if (EventType == ActivityEvent.Timer)
             {
+                // Waiting at a station
                 if (arrived)
                 {
-                    double remaining = LoadUnload -  Program.Simulator.ClockTime;
+                    double remaining = LoadUnload - Program.Simulator.ClockTime;
+                    // Still have to wait
                     if (remaining > 0)
                     {
                         DisplayMessage = string.Format("Passenger load/unload completes in {0:D2}:{1:D2}",
                             (int)(remaining / 60), (int)(remaining % 60));
                     }
+                    // May depart
                     else if (!maydepart)
                     {
                         maydepart = true;
                         DisplayMessage = "Passenger load/unload completed. You may depart now.";
                         SoundNotify = 60;
+                    }
+                }
+                else
+                {
+                    // Checking missed station
+                    int tmp = (int)(Program.Simulator.ClockTime % 10);
+                    if (tmp != TimerChk)
+                    {
+                        double dist1 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd1.TileX,
+                            PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+                        double dist2 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd2.TileX,
+                            PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
+
+                        // If both less than zero, station is missed
+                        if (dist1 < 0 && dist2 < 0)
+                        {
+                            IsCompleted = false;
+                        }
                     }
                 }
             }

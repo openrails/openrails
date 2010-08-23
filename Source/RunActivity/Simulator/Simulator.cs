@@ -98,6 +98,9 @@ namespace ORTS
         {
             Activity = new ACTFile(activityPath);
             ActivityRun = new Activity(Activity);
+            if (ActivityRun.Current == null)
+                ActivityRun = null;
+
             StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
             TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
             ClockTime = StartTime.TotalSeconds;
