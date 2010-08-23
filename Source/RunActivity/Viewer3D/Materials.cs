@@ -916,16 +916,18 @@ namespace ORTS
 
         public DynatrackMaterial(RenderProcess renderProcess)
         {
+            TrProfile profile = renderProcess.Viewer.Simulator.TrackProfile;
+            
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
-            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + "acleantrack1.ace";
+            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + profile.Image1Name; 
             image1 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
-            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures\snow" + @"\" + "acleantrack1.ace";
+            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures\snow" + @"\" + profile.Image1sName; 
             if (File.Exists(texturePath))
                 image1s = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
             else // Use file in base texture folder
                 image1s = image1;
-            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + "acleantrack2.ace";
+            texturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + profile.Image2Name; 
             image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
         }
 
@@ -950,33 +952,56 @@ namespace ORTS
             Vector3 mstsLocation = mesh.MSTSLODCenter;
 
             // Test if object behind camera:
-            if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, mesh.objectRadius))
+            if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, mesh.ObjectRadius))
             {
-                // Test to draw primitives if within "LOD" view distance:
-                //      Ballast    <= 2000 
-                //      Rail tops  <= 1200
-                //      Rail sides <=  700
-                
-                // Ballast
-                if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 2000))
+                for (uint i = 0; i < mesh.LODGrid.Length; i++)
                 {
-                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;
-                    SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
-                    if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
-                        RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
-                        SceneryShader.ImageMap_Tex = image1s;
-                    else
-                        SceneryShader.ImageMap_Tex = image1;
+                    bool test = RenderProcess.Viewer.Camera.InRange(mstsLocation,
+                                        mesh.TrProfile.TrProfileLODItems[i].CutoffRadius);
+                    if (!test) continue;
+                    //TODO: All of the content of the switch block below needs to be
+                    //      replaced by general state handling, driven from track profile.
+                    //      BUT I'LL DEFER TO THE DEMANDS OF TRACK DESIGNERS FOR NOW.
 
-                    // Set render state for drawing ballast
-                    graphicsDevice.RenderState.AlphaBlendEnable = true;
-                    graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-                    graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-                    graphicsDevice.RenderState.AlphaTestEnable = false;
-                    graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+                    // The following switch block serves pro tempore to get the job done
+                    switch (i)
+                    {
+                        case 0: // Ballast
+                            SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
 
-                    // TODO: SceneryShader.SpecularPower = 0;
-                    mesh.drawIndex = 1;
+                            if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
+                                RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
+                                SceneryShader.ImageMap_Tex = image1s;
+                            else
+                                SceneryShader.ImageMap_Tex = image1;
+
+                            // Set render state for drawing ballast
+                            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+                            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+                            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+
+                            // TODO: SceneryShader.SpecularPower = 0;
+                            break;
+                        case 1: // Rail tops
+                            SceneryShader.ImageMap_Tex = image2;
+                            // TODO: SceneryShader.SpecularPower = 64;
+                            break;
+                        case 2: // Rail sides
+                            // TODO: SceneryShader.SpecularPower = 0;
+                            break;
+
+                        default: continue;
+                    } // end switch i
+
+                    // The following are controlled by options in the track profile
+                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias =
+                                mesh.TrProfile.TrProfileLODItems[i].MipMapLevelOfDetailBias;
+                    graphicsDevice.RenderState.AlphaBlendEnable =
+                        mesh.TrProfile.TrProfileLODItems[i].AlphaBlendEnable;
+                    graphicsDevice.RenderState.AlphaTestEnable =
+                        mesh.TrProfile.TrProfileLODItems[i].AlphaTestEnable;
+
+                    mesh.DrawIndex = (int)i;
                     SceneryShader.Begin();
                     foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
                     {
@@ -986,48 +1011,9 @@ namespace ORTS
                         pass.End();
                     }
                     SceneryShader.End();
-                } // end ballast
-
-                // Rail tops
-                if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 1200))
-                {
-                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
-                    SceneryShader.ImageMap_Tex = image2;
-                    // TODO: SceneryShader.SpecularPower = 64;
-
-                    // Set render state for drawing rail sides and tops
-                    graphicsDevice.RenderState.AlphaBlendEnable = false;
-                    graphicsDevice.RenderState.AlphaTestEnable = false;
-
-                    mesh.drawIndex = 3;
-                    SceneryShader.Begin();
-                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
-                    {
-                        pass.Begin();
-                        RenderProcess.PrimitiveCount++;
-                        renderPrimitive.Draw(graphicsDevice);
-                        pass.End();
-                    }
-                    SceneryShader.End();
-                } // end rail tops
-
-                // Rail sides
-                if (RenderProcess.Viewer.Camera.InRange(mstsLocation, 700))
-                {
-                    // TODO: SceneryShader.SpecularPower = 0;
-                    mesh.drawIndex = 2;
-                    SceneryShader.Begin();
-                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
-                    {
-                        pass.Begin();
-                        RenderProcess.PrimitiveCount++;
-                        renderPrimitive.Draw(graphicsDevice);
-                        pass.End();
-                    }
-                    SceneryShader.End();
-                } // end rail sides
-            } // end if behind camera
-
+                } // end for i
+            } // end if not behind camera
+               
             // Restore the pre-existing render state
             graphicsDevice.RenderState.AlphaBlendEnable = alphaBlendEnable;
             graphicsDevice.RenderState.DestinationBlend = destinationBlend;

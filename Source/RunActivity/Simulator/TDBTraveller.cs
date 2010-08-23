@@ -57,7 +57,7 @@ namespace ORTS
         // TDB database location of the traveller
         // these must be updated with each change of segment
         int iTrackNode;
-        int iTrVectorSection;
+        int iTrVectorSection;  
         TrackSection TS;
         public TrackNode TN;
         public int iEntryPIN;   // We entered this node on this PIN

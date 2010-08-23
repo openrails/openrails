@@ -54,6 +54,7 @@ namespace ORTS
         public Activity ActivityRun;
         public TDBFile TDB;
         public TRKFile TRK;
+        public TrProfile TrackProfile;
         public TSectionDatFile TSectionDat;
         public List<Train> Trains = new List<Train>();
         public Signals Signals = null;
@@ -77,7 +78,11 @@ namespace ORTS
 
             Console.Write(" TRK");
             TRK = new TRKFile(MSTSPath.GetTRKFileName(RoutePath));
-
+            
+            //WHN: Establish default track profile
+            Console.Write(" TRP");
+            TrackProfile = new TrProfile();
+            
             Console.Write(" TDB");
             TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
@@ -567,6 +572,7 @@ namespace ORTS
             // This is the position of the back end of the train in the database.
             PATTraveller patTraveller = new PATTraveller(patFileName);
             train.RearTDBTraveller = new TDBTraveller(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z, 0, TDB, TSectionDat);
+
             // figure out if the next waypoint is forward or back
             patTraveller.NextWaypoint();
             if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)

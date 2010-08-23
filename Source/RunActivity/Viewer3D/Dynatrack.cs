@@ -51,7 +51,7 @@ namespace ORTS
 
             // Instantiate classes
             dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition, endPosition);
-       }
+       } // end DynatrackDrawer constructor
         #endregion
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -66,7 +66,7 @@ namespace ORTS
                                             2 * tileOffsetWrtCamera);
             dtrackMesh.MSTSLODCenter = new Vector3(xnaLODCenter.X, xnaLODCenter.Y, -xnaLODCenter.Z);
 
-            if (Viewer.Camera.CanSee(dtrackMesh.MSTSLODCenter, dtrackMesh.objectRadius, 500))
+            if (Viewer.Camera.CanSee(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius, 500))
             {
                 // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
                 Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
@@ -75,55 +75,226 @@ namespace ORTS
 
                 frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
             }
-        }
-    }
+        } // end PrepareFrame
+    } // end DynatrackDrawer
+    #endregion
+
+    #region DynatrackProfile
+    // A track profile consists of a number of groups used for LOD considerations.  Here, these groups
+    // are called "TrProfileLODItems."  Each group consists of one of more "polylines".  A polyline is a 
+    // chain of line segments successively interconnected. A polyline of n segments is defined by n+1 vertices.
+    // (Use of a polyline allows for use of more than single segments.  For example, ballast could be defined
+    // as left slope, level, right slope - a total of four vertices.)
+    public class TrProfile
+    {
+        public string Name;                            // e.g., "Default track profile"
+        public uint NumLODItems;                       // e.g., 4 for embankment, ballast, railtops, railsides
+        public uint NumVertices;                       // Total independent vertices in profile
+        public uint NumSegments;                       // Total line segment count in profile
+        public TrProfileLODItem[] TrProfileLODItems;   // Array of profile items corresponding to levels-of-detail
+
+        public string Image1Name = ""; // For primary texture image file name
+        public string Image1sName = "";// For wintertime alternate
+        public string Image2Name = ""; // For secondary texture image file name
+
+        /// <summary>
+        /// TrProfile constructor
+        /// </summary>
+        public TrProfile() // Nasty: void return type is not allowed. (See MSDN for compiler error CS0542.)
+        {
+            // Default TrProfile constructor (possibly temporary)
+            TrProfileVertex[] v;
+            // We're going to be counting vertices and segments as we create them; so intialize:
+            NumVertices = 0;
+            NumSegments = 0;
+
+            Name = "Default Dynatrack profile";
+            Image1Name = "acleantrack1.ace";
+            Image1sName = "acleantrack1.ace";
+            Image2Name = "acleantrack2.ace";
+            NumLODItems = 3; // Ballast, railtops, railsides
+            TrProfileLODItems = new TrProfileLODItem[NumLODItems];
+
+            // Make ballast
+            TrProfileLODItems[0] = new TrProfileLODItem("Ballast", 1);
+            TrProfileLODItems[0].CutoffRadius = 2000.0f;
+            TrProfileLODItems[0].MipMapLevelOfDetailBias = -1;
+            TrProfileLODItems[0].AlphaBlendEnable = true;
+            TrProfileLODItems[0].AlphaTestEnable = false;
+
+            TrProfileLODItems[0].Polylines[0] = new Polyline(this, "ballast", 2, out v);
+            TrProfileLODItems[0].Polylines[0].DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
+            v[0] = new TrProfileVertex(-2.5f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f);
+            v[1] = new TrProfileVertex(2.5f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f);
+            TrProfileLODItems[0].Polylines[0].TrProfileVertices = v;
+            
+            // make railtops
+            TrProfileLODItems[1] = new TrProfileLODItem("Railtops", 2);
+            TrProfileLODItems[1].CutoffRadius = 1200.0f;
+            TrProfileLODItems[1].MipMapLevelOfDetailBias = 0;
+            TrProfileLODItems[1].AlphaBlendEnable = false;
+            TrProfileLODItems[1].AlphaTestEnable = false;
+
+            TrProfileLODItems[1].Polylines[0] = new Polyline(this, "right", 2, out v);
+            TrProfileLODItems[1].Polylines[0].DeltaTexCoord = new Vector2(.0744726f, 0f);
+            v[0] = new TrProfileVertex(-.8675f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f);
+            v[1] = new TrProfileVertex(-.7175f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f);
+            TrProfileLODItems[1].Polylines[0].TrProfileVertices = v; 
+   
+            TrProfileLODItems[1].Polylines[1] = new Polyline(this, "left", 2, out v);
+            TrProfileLODItems[1].Polylines[1].DeltaTexCoord = new Vector2(.0744726f, 0f);
+            v[0] = new TrProfileVertex(.7175f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f);
+            v[1] = new TrProfileVertex(.8675f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f);
+            TrProfileLODItems[1].Polylines[1].TrProfileVertices = v;
+
+            // make railsides
+            TrProfileLODItems[2] = new TrProfileLODItem("Railsides", 4);
+            TrProfileLODItems[2].CutoffRadius = 700.0f;
+            TrProfileLODItems[2].MipMapLevelOfDetailBias = 0;
+            TrProfileLODItems[2].AlphaBlendEnable = false;
+            TrProfileLODItems[2].AlphaTestEnable = false;
+
+            TrProfileLODItems[2].Polylines[0] = new Polyline(this, "left_outer", 2, out v);
+            TrProfileLODItems[2].Polylines[0].DeltaTexCoord = new Vector2(.1673372f, 0f);
+            v[0] = new TrProfileVertex(-.8675f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f);
+            v[1] = new TrProfileVertex(-.8675f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f);
+            TrProfileLODItems[2].Polylines[0].TrProfileVertices = v;
+
+            TrProfileLODItems[2].Polylines[1] = new Polyline(this, "left_inner", 2, out v);
+            TrProfileLODItems[2].Polylines[1].DeltaTexCoord = new Vector2(.1673372f, 0f);
+            v[1] = new TrProfileVertex(-.7175f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f);
+            v[0] = new TrProfileVertex(-.7175f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f);
+            TrProfileLODItems[2].Polylines[1].TrProfileVertices = v;
+
+            TrProfileLODItems[2].Polylines[2] = new Polyline(this, "right_inner", 2, out v);
+            TrProfileLODItems[2].Polylines[2].DeltaTexCoord = new Vector2(.1673372f, 0f);
+            v[0] = new TrProfileVertex(.7175f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f);
+            v[1] = new TrProfileVertex(.7175f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f);
+            TrProfileLODItems[2].Polylines[2].TrProfileVertices = v;
+            
+            TrProfileLODItems[2].Polylines[3] = new Polyline(this, "right_outer", 2, out v);
+            TrProfileLODItems[2].Polylines[3].DeltaTexCoord = new Vector2(.1673372f, 0f);
+            v[1] = new TrProfileVertex(.8675f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f);
+            v[0] = new TrProfileVertex(.8675f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f);
+            TrProfileLODItems[2].Polylines[3].TrProfileVertices = v;
+        } // end TrProfile() constructor
+    } // end TrProfile
+
+    public class TrProfileLODItem
+    {
+        public string Name;                            // e.g., "Rail sides"
+        public uint NumPolylines;                      // e.g., 4 for left-outer, left-inner, right-inner, right-outer
+        public Polyline[] Polylines;                   // Array of arrays of vertices
+        public float CutoffRadius;                     // Distance beyond which LOD is not seen
+
+        public float MipMapLevelOfDetailBias;
+        public bool AlphaBlendEnable;
+        public bool AlphaTestEnable;
+
+        /// <summary>
+        /// TrProfileLODITem constructor
+        /// </summary>
+        public TrProfileLODItem(string name, uint num)
+        {
+            Name = name;
+            NumPolylines = num;
+            Polylines = new Polyline[NumPolylines];
+        } // end TrProfileLODItem() constructor
+    } // end TrProfileLODItem
+
+    public class Polyline
+    {
+        public string Name;                            // e.g., "1:1 embankment"
+        private uint NumVertices;                      // e.g., 4 for left-bottom, left-top, right-top, right-bottom
+
+        public TrProfileVertex[] TrProfileVertices;     // Array of vertices
+        public Vector2 DeltaTexCoord;                   // Incremental change in (u, v) from one cross section to the next
+
+        /// <summary>
+        /// Polyline constructor
+        /// </summary>
+        public Polyline(TrProfile parent, string name, uint num, out TrProfileVertex[] vertices)
+        {
+            Name = name;
+            this.NumVertices = num;
+            parent.NumVertices += num;
+            parent.NumSegments += num - 1;
+            TrProfileVertices = new TrProfileVertex[num];
+            vertices = TrProfileVertices;
+        } // end Polyline() constructor
+    } // end Polyline
+
+    public struct TrProfileVertex
+    {
+        public Vector3 Position;                           // Position vector (x, y, z)
+        public Vector3 Normal;                             // Normal vector (nx, ny, nz)
+        public Vector2 TexCoord;                           // Texture coordinate (u, v)
+
+        public TrProfileVertex(float x, float y, float z, float nx, float ny, float nz, float u, float v)
+        {
+            Position = new Vector3(x, y, z);
+            Normal = new Vector3(nx, ny, nz);
+            TexCoord = new Vector2(u, v);
+        } // end TrProfileVertex() constructor
+    } // end TrProfileVertex
     #endregion
 
     #region DynatrackMesh
     public class DynatrackMesh : RenderPrimitive
     {
-        VertexBuffer VertexBuffer;
         VertexDeclaration VertexDeclaration;
+        VertexBuffer VertexBuffer;
         IndexBuffer IndexBuffer;
+
+        VertexPositionNormalTexture[] VertexList; // Array of vertices
+        short[] TriangleListIndices;// Array of indices to vertices for triangles
+        uint VertexIndex = 0;       // Index of current position in VertexList
+        uint IndexIndex = 0;        // Index of current position in TriangleListIndices
         int VertexStride;           // in bytes
-        public int drawIndex;       // Used by Draw to determine which primitive to draw.
-        float[,] section;           // Contains the track section profile coordinates.
-        int numSections;            // Number of straight sections needed to make up a curved section.
+        int NumVertices;            // Number of vertices in the track profile
+        short NumIndices;           // Number of triangle indices
+
+        // LOD member variables:
+        public int DrawIndex;       // Used by Draw to determine which primitive to draw.
+        public Vector3 XNAEnd;      // Location of termination-of-section (as opposed to root)
+        public float ObjectRadius;  // Radius of bounding sphere
+        public Vector3 MSTSLODCenter; // Center of bounding sphere
+        public struct GridItem
+        {
+            public uint VertexOrigin;// Start index for first vertex in LOD
+            public uint VertexLength;// Number of vertices in LOD
+            public uint IndexOrigin; // Start index for first triangle in LOD
+            public uint IndexLength; // Number of triangle vertex indicies in LOD
+            //public float CutoffRadius; // Distance beyond which LOD is not seen
+        }
+        public GridItem[] LODGrid;   // Grid matrix
+
+        // Geometry member variables:
+        int NumSections;            // Number of cross sections needed to make up a track section.
+        float SegmentLength;        // meters if straight; radians if circular arc
+        Vector3 DDY;                // Elevation (y) change from one cross section to next
+        Vector3 OldV;               // Deviation from centerline for previous cross section
+        Vector3 OldRadius;          // Radius vector to centerline for previous cross section
+
+        //TODO: Candidates for re-packaging:
         Matrix sectionRotation;     // Rotates previous profile into next profile position on curve.
-        //Matrix displacement;      // For translating and rotating the starting profile vertices.
         Vector3 center;             // Center coordinates of curve radius
         Vector3 radius;             // Radius vector to cross section on curve centerline
-        Vector3 directionVector;    // The direction each track segment is pointing
-
-        public Vector3 XNAEnd;        // Location of termination-of-section (as opposed to root)
-        public float objectRadius;    // Radius of bounding sphere
-        public Vector3 MSTSLODCenter; // Center of bounding sphere
-
-        VertexPositionNormalTexture[] vertexList;
-        short[] triangleListIndices;    // Trilist buffer.
-        int numVertices;                // Number of vertices in the track profile
-        short indexCount;               // Number of triangle indices
-        int vertexIndex;
-        short iIndex;
-
-        // These four are used to establish the start points for each Draw call
-        int railsideStartVertex;
-        int railtopStartVertex;
-        short railsideStartIndex;
-        short railtopStartIndex;
 
         // This structure holds the basic geometric parameters of a DT section.
         public struct DtrackData
         {
-            public int IsCurved;
-            public float param1;
-            public float param2;
-            public float deltaY;
+            public int IsCurved;    // Straight (0) or circular arc (1)
+            public float param1;    // Length in meters (straight) or radians (circular arc)
+            public float param2;    // Radius for circular arc
+            public float deltaY;    // Change in elevation (y) from beginning to end of section
         }
-        DtrackData dtrackData; // Was: DtrackData[] dtrackData;
+        DtrackData DTrackData;      // Was: DtrackData[] dtrackData;
 
         public uint UiD; // Used for debugging only
-      
+
+        public TrProfile TrProfile;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -139,11 +310,7 @@ namespace ORTS
             // The track cross section (profile) vertex coordinates are hard coded.
             // The coordinates listed here are those of default MSTS "A1t" track.
             // TODO: Read this stuff from a file. Provide the ability to use alternative profiles.
-            section = new float[10, 2] { { 2.5f, 0.2f }, { -2.5f, 0.2f }, // Ballast
-                { 0.7175f, 0.2f }, { 0.8675f, 0.2f }, { -0.7175f, 0.2f }, { -0.8675f, 0.2f }, // Rail sides, lower
-                { 0.7175f, 0.325f }, { 0.8675f, 0.325f }, { -0.7175f, 0.325f }, { -0.8675f, 0.325f }}; // Rail sides, upper and rail tops
 
-            // Initialize a DtrackData object
             // In this implementation dtrack has only 1 DT subsection.
             if (dtrack.trackSections.Count != 1)
             {
@@ -151,700 +318,207 @@ namespace ORTS
                     "DynatrackMesh Constructor detected a multiple-subsection dynamic track section. " +
                     "(SectionIdx = " + dtrack.SectionIdx + ")");
             }
-            dtrackData = new DtrackData();
-            dtrackData.IsCurved = (int)dtrack.trackSections[0].isCurved;
-            dtrackData.param1 = dtrack.trackSections[0].param1;
-            dtrackData.param2 = dtrack.trackSections[0].param2;
-            dtrackData.deltaY = dtrack.trackSections[0].deltaY;
+            // Initialize a scalar DtrackData object
+            DTrackData = new DtrackData();
+            DTrackData.IsCurved = (int)dtrack.trackSections[0].isCurved;
+            DTrackData.param1 = dtrack.trackSections[0].param1;
+            DTrackData.param2 = dtrack.trackSections[0].param2;
+            DTrackData.deltaY = dtrack.trackSections[0].deltaY;
             XNAEnd = endPosition.XNAMatrix.Translation;
 
-            numVertices = 14;
-            indexCount = 0;
-            vertexIndex = 0;
-            iIndex = 0;
-            CountVerticesAndIndices(); // Could be simplified a little
-            // Knowing the counts, we can specify the size of the vertex and index buffers.
-            vertexList = new VertexPositionNormalTexture[numVertices]; // numVertices is now aggregate
-            triangleListIndices = new short[indexCount]; // as is indexCount
+            TrProfile = renderProcess.Viewer.Simulator.TrackProfile;
 
-            // Build the mesh and then fill the vertex and triangle index buffers.
-            BuildMesh(worldPosition);
+            // Build the mesh, filling the vertex and triangle index buffers.
+            BuildMesh(worldPosition); // Build vertexList and triangleListIndices
 
-            // This was the old method, which used the final point in the mesh:
-            //objectRadius = (float)Math.Pow(Math.Pow(vertexList[numVertices - 1].Position.X, 2) + Math.Pow(vertexList[numVertices - 1].Position.Z, 2), 0.5) * 1.05f;
-            // The new method is more straightforward because of single-subsection dynamic track
-            if (dtrackData.IsCurved == 0) objectRadius = 0.5f * dtrackData.param1; // half-length
-            else objectRadius = dtrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(dtrackData.param1)); // half chord length
+            if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
+            else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
 
             VertexDeclaration = null;
             VertexBuffer = null;
             IndexBuffer = null;
             InitializeVertexBuffers(renderProcess.GraphicsDevice);
-        } // end DynatrackMesh
+        } // end DynatrackMesh constructor
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (DrawIndex < 0 || DrawIndex >= TrProfile.NumLODItems) return;
+
             graphicsDevice.VertexDeclaration = VertexDeclaration;
             graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexStride);
             graphicsDevice.Indices = IndexBuffer;
 
-            switch (drawIndex)
-            {
-                case 1: // Ballast
-                    graphicsDevice.DrawIndexedPrimitives(
+            graphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
                         0,
-                        0,
-                        railsideStartVertex,
-                        0,
-                        railsideStartIndex / 3);
-                    break;
-                case 2: // Rail sides
-                    graphicsDevice.DrawIndexedPrimitives(
-                        PrimitiveType.TriangleList,
-                        0,
-                        railsideStartVertex,
-                        (railtopStartVertex - railsideStartVertex),
-                        railsideStartIndex,
-                        (railtopStartIndex - railsideStartIndex) / 3);
-                    break;
-                case 3: // Rail tops
-                    graphicsDevice.DrawIndexedPrimitives(
-                        PrimitiveType.TriangleList,
-                        0,
-                        railtopStartVertex,
-                        (numVertices - railtopStartVertex),
-                        railtopStartIndex,
-                        (indexCount - railtopStartIndex) / 3);
-                    break;
-                default:
-                    break;
-            }
-        }
+                        (int)LODGrid[DrawIndex].VertexOrigin,
+                        (int)LODGrid[DrawIndex].VertexLength,
+                        (int)LODGrid[DrawIndex].IndexOrigin,
+                        (int)LODGrid[DrawIndex].IndexLength / 3);
+        } // end Draw
 
         #region Vertex and triangle index generators
         /// <summary>
-        /// The DT mesh is built with three primitives. Rather than create a single, large
-        /// method to build all the vertices and triangle indices, we split the process
-        /// into a series of separate calls.
+        /// Builds a section of Dynatrack to TrProfile specifications as one vertex buffer and one index buffer.
+        /// The order the buffers are built in reflects the nesting in the TrProfile.  The nesting order is:
+        /// (LOD items (Polylines (Vertices))).  All vertices and indices are built contiguously for an LOD.
         /// </summary>
         public void BuildMesh(WorldPosition worldPosition)
         {
-            // Create three primitives: ballast, rail sides and rail tops. Each primitive
-            // has a unique texture and/or shader. Eventually, when LODs are implemented, we will shed
-            // these primitives in the same way as MSTS. All primitives are visible to 700 m.
-            // Between 700 m and 1200 m, the rail sides are not drawn. Beyond 1200 m
-            // only the ballast plane remains.
+            LODGrid = new GridItem[TrProfile.TrProfileLODItems.Length];
 
-            // Split this up for clarity, otherwise the code gets too cumbersome to read
-            BallastVertices();
-            railsideStartVertex = vertexIndex;
-            RailSideVertices();
-            railtopStartVertex = vertexIndex;
-            RailTopVertices();
+            // Call for track section to initialize itself
+            if (DTrackData.IsCurved == 0) LinearGen(); else CircArcGen();
+            // Count vertices and indices
+            NumVertices = (int)(TrProfile.NumVertices * NumSections + TrProfile.NumVertices);
+            NumIndices = (short)(TrProfile.NumSegments * NumSections * 6);
+            // (Cells x 2 triangles/cell x 3 indices/triangle)
 
-            BallastIndices();
-            railsideStartIndex = iIndex;
-            RailSideIndices();
-            railtopStartIndex = iIndex;
-            RailTopIndices();
+            // Allocate memory for vertices and indices
+            VertexList = new VertexPositionNormalTexture[NumVertices]; // numVertices is now aggregate
+            TriangleListIndices = new short[NumIndices]; // as is NumIndices
+
+            uint iLOD = 0;
+            foreach (TrProfileLODItem lod in TrProfile.TrProfileLODItems) 
+            {
+                LODGrid[iLOD].VertexOrigin = VertexIndex;   // Initial vertex index for this LOD
+                LODGrid[iLOD].IndexOrigin = IndexIndex;     // Initial index index for this LOD
+                //LODGrid[iLOD].CutoffRadius = TrProfile.TrProfileLODItems[iLOD].CutoffRadius;
+
+                // Initial load of baseline cross section polylines for this LOD only:
+                foreach (Polyline pl in lod.Polylines)
+                {
+                    foreach (TrProfileVertex v in pl.TrProfileVertices)
+                    {
+                        VertexList[VertexIndex].Position = v.Position;
+                        VertexList[VertexIndex].Normal = v.Normal;
+                        VertexList[VertexIndex].TextureCoordinate = v.TexCoord;
+                        VertexIndex++;
+                    }
+                }
+                // Number of vertices and indicies for this LOD only
+                LODGrid[iLOD].VertexLength = VertexIndex - LODGrid[iLOD].VertexOrigin;  
+                LODGrid[iLOD].IndexLength = IndexIndex - LODGrid[iLOD].IndexOrigin;
+                // Initial load of base cross section complete
+
+                // Now generate and load subsequent cross sections
+                OldRadius = -center;
+                uint stride = LODGrid[iLOD].VertexLength;
+                for (uint i = 0; i < NumSections; i++)
+                {
+                    foreach (Polyline pl in lod.Polylines)
+                    {
+                        uint plv = 0; // Polyline vertex index
+                        foreach (TrProfileVertex v in pl.TrProfileVertices)
+                        {
+                            if (DTrackData.IsCurved == 0) LinearGen(stride, pl); // Generation call
+                            else CircArcGen(stride, pl);
+
+                            if (plv > 0)
+                            {
+                                // Sense for triangles is clockwise
+                                // First triangle:
+                                TriangleListIndices[IndexIndex++] = (short)VertexIndex;
+                                TriangleListIndices[IndexIndex++] = (short)(VertexIndex - 1 - stride);
+                                TriangleListIndices[IndexIndex++] = (short)(VertexIndex - 1);
+                                // Second triangle:
+                                TriangleListIndices[IndexIndex++] = (short)VertexIndex;
+                                TriangleListIndices[IndexIndex++] = (short)(VertexIndex - stride);
+                                TriangleListIndices[IndexIndex++] = (short)(VertexIndex - 1 - stride);
+                            }
+                            VertexIndex++;
+                            plv++;
+                        } // end foreach v  
+                    } // end foreach pl
+                    OldRadius = radius; // Get ready for next segment
+                } // end for i
+                LODGrid[iLOD].VertexLength = VertexIndex - LODGrid[iLOD].VertexOrigin;
+                LODGrid[iLOD].IndexLength = IndexIndex - LODGrid[iLOD].IndexOrigin;
+                iLOD++; // Step LOD index
+            } // end foreach lod
+        } // end BuildMesh
+
+        /// <summary>
+        /// Initializes member variables for straight track sections.
+        /// </summary>
+        void LinearGen()
+        {
+            // Define the number of track cross sections in addition to the base.
+            NumSections = 1;
+            //numSections = 10; //TESTING
+            // TODO: Generalize count to profile file specification
+
+            SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (meters)
+            DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
+        } // end LinearGen
+
+        /// <summary>
+        /// Initializes member variables for circular arc track sections.
+        /// </summary>
+        void CircArcGen()
+        {
+            // Define the number of track cross sections in addition to the base.
+            // Assume one skewed straight section per degree of curvature
+            NumSections = (int)Math.Abs(MathHelper.ToDegrees(DTrackData.param1));
+            if (NumSections == 0) NumSections++; // Very small radius track - zero avoidance
+            //numSections = 10; //TESTING
+            // TODO: Generalize count to profile file specification
+
+            SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (radians)
+            DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
+
+            // The approach here is to replicate the previous cross section, 
+            // rotated into its position on the curve and vertically displaced if on grade.
+            // The local center for the curve lies to the left or right of the local origin and ON THE BASE PLANE
+            center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
+            sectionRotation = Matrix.CreateRotationY(-SegmentLength); // Rotation per iteration (constant)
+        } // end CircArcGen
+
+        /// <summary>
+        /// Generates vertices for a succeeding cross section (straight track).
+        /// </summary>
+        /// <param name="stride">Index increment between section-to-section vertices.</param>
+        void LinearGen(uint stride, Polyline pl)
+        {
+            Vector3 displacement = new Vector3(0, 0, -SegmentLength) + DDY;
+            float wrapLength = displacement.Length();
+            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
+
+            Vector3 p = VertexList[VertexIndex - stride].Position + displacement;
+            Vector3 n = VertexList[VertexIndex - stride].Normal;
+            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement; 
+
+            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
+            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
+            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
         }
 
-        // VERTICES
-        //
-        // I'VE LEFT MOST (IF NOT ALL) OF RICK'S STATEMENTS IN THE VERTEX GENERATION METHODS BELOW. (WHN)
-        public void BallastVertices()
+        /// <summary>
+        /// /// Generates vertices for a succeeding cross section (circular arc track).
+        /// </summary>
+        /// <param name="stride">Index increment between section-to-section vertices.</param>
+        void CircArcGen(uint stride, Polyline pl)
         {
-            // Ballast
-            // The following are hard coded to match with MSTS ballast texture mapping
-            float uv_vStart = -0.280582f; // Initial V-coordinate value.
-            float uv_vIncrement = 0.2088545f; // V-coordinate increment per one meter of track
-            float uv_uRight = -0.153916f; // Right-side U coordinate.
-            float uv_uLeft = 0.862105f; // Left-side U coordinate.
-            float uv_vDisplacement = 0;
-            float segmentAngle = 0;
-            float segmentLength = 0;
+            // Get the previous vertex about the local coordinate system
+            OldV = VertexList[VertexIndex - stride].Position - center - OldRadius;
+            // Rotate the old radius vector to become the new radius vector
+            radius = Vector3.Transform(OldRadius, sectionRotation);
+            float wrapLength = (radius - OldRadius).Length(); // Wrap length is centerline chord
+            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
 
-            // Vertices for the starting cross section
-            vertexList[vertexIndex].Position = new Vector3(section[0, 0], section[0, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uLeft, uv_vStart);
-            vertexIndex++;
-            vertexList[vertexIndex].Position = new Vector3(section[1, 0], section[1, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uRight, uv_vStart);
-            vertexIndex++;
+            // Rotate the point about local origin and reposition it (including elevation change)
+            Vector3 p = DDY + center + radius + Vector3.Transform(OldV, sectionRotation);
+            Vector3 n = VertexList[VertexIndex - stride].Normal;
+            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement; 
 
-            if (dtrackData.IsCurved == 0) // Straight track section
-            {
-                segmentLength = dtrackData.param1;
-                uv_vDisplacement = uv_vIncrement * segmentLength;
-                directionVector = new Vector3(0, dtrackData.deltaY, -segmentLength);
-                //displacement = Matrix.CreateTranslation(directionVector);
-                //directionVector.Normalize();
-                // Vertices for the end cross section
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 2].Position, displacement) + directionVector;
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 2].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uLeft, vertexList[vertexIndex - 2].TextureCoordinate.Y + uv_vDisplacement);
-                vertexIndex++;
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 2].Position, displacement) + directionVector;
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 2].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uRight, vertexList[vertexIndex - 2].TextureCoordinate.Y + uv_vDisplacement);
-                vertexIndex++;
-            } // end if straight
-            else // Curved track section
-            {
-                numSections = (int)Math.Abs(MathHelper.ToDegrees(dtrackData.param1)); // See above for explanation (~1 degree increments).
-                if (numSections == 0) numSections++;
-                segmentAngle = (dtrackData.param1) / numSections; // Angle in radians by which each successive section of the curved track is rotated.
-                segmentLength = Math.Abs(dtrackData.param2 * 2 * (float)Math.Sin(segmentAngle / 2)); // Formula: Chord of a circle.               
-                Vector3 ddy = new Vector3(0, dtrackData.deltaY / numSections, 0); // Incremental elevation change
+            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
+            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
+            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
+        }
 
-                uv_vDisplacement = uv_vIncrement * segmentLength;
-
-                /*
-                // Find the coordinates of the center of curvature.
-                center = dtrackData.param2 * Vector3.Cross(Vector3.Up, directionVector);
-                // Find the midpoint of the previous ballast face.
-                Vector3 midpoint = new Vector3(
-                    (vertexList[vertexIndex - 1].Position.X + vertexList[vertexIndex - 2].Position.X)/2,
-                    (vertexList[vertexIndex - 1].Position.Y + vertexList[vertexIndex - 2].Position.Y)/2,
-                    (vertexList[vertexIndex - 1].Position.Z + vertexList[vertexIndex - 2].Position.Z)/2);
-                // Move the center point to align with the previous ballast face. This is where the curve begins.
-                displacement = Matrix.CreateTranslation(midpoint);
-                center = Vector3.Transform(center, displacement);
-                */
-
-                // The approach here is to replicate the previous cross section, 
-                // rotated into its position on the curve and vertically displaced if on grade.
-
-                // The local center for the curve lies to the left or right of the local origin and ON THE BASE PLANE
-                center = dtrackData.param2 * (dtrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
-                // Unit vector giving the "heading" of the current segment (no vertical deflection)
-                //directionVector = Vector3.Forward; // Points along the centerline, initially forward
-                sectionRotation = Matrix.CreateRotationY(-segmentAngle); // Rotation per iteration (constant)
-                Vector3 oldRadius = -center;
-                Vector3 oldV; // Vector between new radius vector and old radius vector
-
-                // Generate vertices for the numSections cross sections
-                for (int j = 0; j < numSections; j++)
-                {
-                    // Rotate the direction vector along the curve.
-                    //directionVector = Vector3.Transform(directionVector, displacement); // Update orientation
-                    radius = Vector3.Transform(oldRadius, sectionRotation);
-
-                    // Calculate the radius vector for the right edge of the ballast.
-                    // Get the previous vertex about the local coordinate system
-                    oldV = vertexList[vertexIndex - 2].Position - center - oldRadius;
-                    // Rotate the point about local origin and reposition it (including elevation change)
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 2].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uLeft, vertexList[vertexIndex - 2].TextureCoordinate.Y + uv_vDisplacement);
-                    vertexIndex++;
-
-                    // Calculate the radius vector for the left edge of the ballast.
-                    oldV = vertexList[vertexIndex - 2].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 2].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-
-                    vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uRight, vertexList[vertexIndex - 2].TextureCoordinate.Y + uv_vDisplacement);
-                    vertexIndex++;
-
-                    oldRadius = radius; // Get ready for next iteration
-                }
-            } // end else curved
-        } // BallastVertices
-
-        public void RailSideVertices()
-        {
-            // Rail Sides
-            // The following are hard coded to match MSTS rail side texture mapping
-            // Note: Rail sides are mapped horizontally vs. vertically for ballast
-            // Refer to comments in BallastVertices().
-            float uv_uIncrement = 0.1673372f; // U-coordinate increment per one meter of track
-            float uv_uStart = -0.139362f; // Initial U-coordinate value.
-            float uv_vUpper = 0.003906f; // Upper edge V coordinate.
-            float uv_vLower = 0.101563f; // Lower edge V coordinate.
-            float uv_uDisplacement = 0;
-            float segmentAngle = 0;
-            float segmentLength = 0;
-
-            // Set the origin vertices
-            // Right, outer side
-            vertexList[vertexIndex].Position = new Vector3(section[3, 0], section[3, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vLower);
-            vertexIndex++;
-            vertexList[vertexIndex].Position = new Vector3(section[7, 0], section[7, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vUpper);
-            vertexIndex++;
-            // Right, inner side
-            vertexList[vertexIndex].Position = new Vector3(section[2, 0], section[2, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vLower);
-            vertexIndex++;
-            vertexList[vertexIndex].Position = new Vector3(section[6, 0], section[6, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vUpper);
-            vertexIndex++;
-            // Left, inner side
-            vertexList[vertexIndex].Position = new Vector3(section[4, 0], section[4, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vLower);
-            vertexIndex++;
-            vertexList[vertexIndex].Position = new Vector3(section[8, 0], section[8, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vUpper);
-            vertexIndex++;
-            // Left, outer side
-            vertexList[vertexIndex].Position = new Vector3(section[5, 0], section[5, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vLower);
-            vertexIndex++;
-            vertexList[vertexIndex].Position = new Vector3(section[9, 0], section[9, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vUpper);
-            vertexIndex++;
-
-
-            if (dtrackData.IsCurved == 0) // Straight track section
-            {
-                segmentLength = dtrackData.param1;
-                uv_uDisplacement = uv_uIncrement * segmentLength;
-                directionVector = new Vector3(0, dtrackData.deltaY, -segmentLength);
-                //displacement = Matrix.CreateTranslation(directionVector);
-                //directionVector.Normalize();
-
-                // Right, outer side
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 8].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 8].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vLower);
-                vertexIndex++;
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 8].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 8].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vUpper);
-                vertexIndex++;
-                // Right, inner side
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 8].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 8].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vLower);
-                vertexIndex++;
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 8].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 8].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vUpper);
-                vertexIndex++;
-                // Left, inner side
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 8].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 8].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vLower);
-                vertexIndex++;
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 8].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 8].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vUpper);
-                vertexIndex++;
-                // Left, outer side
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 8].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 8].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vLower);
-                vertexIndex++;
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 8].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 8].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vUpper);
-                vertexIndex++;
-            } // end if it's straight
-            else // Curved track section.
-            {
-                numSections = (int)Math.Abs(MathHelper.ToDegrees(dtrackData.param1)); // See above for explanation
-                if (numSections == 0) numSections++;
-                segmentAngle = (dtrackData.param1) / numSections; // Angle in radians by which each successive section of the curved track is rotated.
-                segmentLength = Math.Abs(dtrackData.param2 * 2 * (float)Math.Sin(segmentAngle / 2)); // Formula: Chord of a circle.
-                Vector3 ddy = new Vector3(0, dtrackData.deltaY / numSections, 0);
-                uv_uDisplacement = uv_uIncrement * segmentLength;
-                /*
-                center = dtrackData.param2 * Vector3.Cross(Vector3.Up, directionVector);
-                Vector3 midpoint = new Vector3(
-                    (vertexList[vertexIndex - 2].Position.X + vertexList[vertexIndex - 8].Position.X) / 2,
-                    (vertexList[vertexIndex - 2].Position.Y + vertexList[vertexIndex - 8].Position.Y) / 2,
-                    (vertexList[vertexIndex - 2].Position.Z + vertexList[vertexIndex - 8].Position.Z) / 2);
-                displacement = Matrix.CreateTranslation(midpoint);
-                center = Vector3.Transform(center, displacement);
-                */
-                // The approach here is to replicate the previous cross section, but rotating it and displacing
-                // it to its new position
-                // The local center for the curve lies to the left or right of the local origin
-                // and ON THE BASE PLANE.
-                center = dtrackData.param2 * (dtrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
-                // Create rotation matrix (about Y) for per-cross section incremental angle
-                sectionRotation = Matrix.CreateRotationY(-segmentAngle); // Rotation per iteration (constant)
-                Vector3 oldRadius = -center; // Starting radius vector in x-z plane
-                Vector3 oldV; // Vector between new radius vector and old radius vector
-
-                // Generate vertices for the numSections cross sections
-                for (int j = 0; j < numSections; j++)
-                {
-                    //displacement = Matrix.CreateRotationY(-segmentAngle);
-                    //directionVector = Vector3.Transform(directionVector, displacement);
-                    radius = Vector3.Transform(oldRadius, sectionRotation); // Rotate oldRadius vector to get new
-
-                    // Right, outer side
-                    //radius = vertexList[vertexIndex - 8].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    oldV = vertexList[vertexIndex - 8].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vLower);
-                    vertexIndex++;
-                    oldV = vertexList[vertexIndex - 8].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    //vertexList[vertexIndex].Position.Y += 0.125f; // WHAT IS THIS FOR ?????
-                    vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vUpper);
-                    vertexIndex++;
-                    // Right, inner side
-                    oldV = vertexList[vertexIndex - 8].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 8].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vLower);
-                    vertexIndex++;
-                    oldV = vertexList[vertexIndex - 8].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    //vertexList[vertexIndex].Position.Y += 0.125f;
-                    vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vUpper);
-                    vertexIndex++;
-                    // Left, inner side
-                    oldV = vertexList[vertexIndex - 8].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 8].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vLower);
-                    vertexIndex++;
-                    oldV = vertexList[vertexIndex - 8].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    //vertexList[vertexIndex].Position.Y += 0.125f;
-                    vertexList[vertexIndex].Normal = new Vector3(1, 0, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vUpper);
-                    vertexIndex++;
-                    // Left, outer side
-                    oldV = vertexList[vertexIndex - 8].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 8].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vLower);
-                    vertexIndex++;
-                    oldV = vertexList[vertexIndex - 8].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    //vertexList[vertexIndex].Position.Y += 0.125f;
-                    vertexList[vertexIndex].Normal = new Vector3(-1, 0, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 8].TextureCoordinate.X + uv_uDisplacement, uv_vUpper);
-                    vertexIndex++;
-
-                    oldRadius = radius; // Get ready for next iteration
-                } // end for
-            } // end else it's a curve
-        } // RailSideVertices
-
-        public void RailTopVertices()
-        {
-            // Rail Tops
-            // The following are hard coded to match MSTS rail top texture mapping
-            // Note: Rail tops are mapped horizontally vs. vertically for ballast
-            float uv_uIncrement = 0.0744726f; // U-coordinate increment per one meter of track
-            float uv_uStart = 0.232067f; // Initial U-coordinate value.
-            float uv_vInner = 0.126953f; // Inner edge V coordinate.
-            float uv_vOuter = 0.224609f; // Outer edge V coordinate.
-            float uv_uDisplacement = 0;
-            float segmentAngle = 0;
-            float segmentLength = 0;
-            //directionVector = Vector3.Forward; // Unit vector giving the "heading" of the current segment
-            // Set the origin vertices
-            // Right top
-            vertexList[vertexIndex].Position = new Vector3(section[7, 0], section[7, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vOuter);
-            vertexIndex++;
-            vertexList[vertexIndex].Position = new Vector3(section[6, 0], section[6, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vInner);
-            vertexIndex++;
-            // Left top
-            vertexList[vertexIndex].Position = new Vector3(section[8, 0], section[8, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vOuter);
-            vertexIndex++;
-            vertexList[vertexIndex].Position = new Vector3(section[9, 0], section[9, 1], 0);
-            vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(uv_uStart, uv_vInner);
-            vertexIndex++;
-
-            if (dtrackData.IsCurved == 0) // Straight track section
-            {
-                segmentLength = dtrackData.param1;
-                uv_uDisplacement = uv_uIncrement * segmentLength;
-                directionVector = new Vector3(0, dtrackData.deltaY, -segmentLength);
-                //displacement = Matrix.CreateTranslation(directionVector);
-                //directionVector.Normalize();
-
-                // Right top
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 4].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 4].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 4].TextureCoordinate.X + uv_uDisplacement, uv_vOuter);
-                vertexIndex++;
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 4].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 4].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 4].TextureCoordinate.X + uv_uDisplacement, uv_vInner);
-                vertexIndex++;
-                // Left top
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 4].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 4].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 4].TextureCoordinate.X + uv_uDisplacement, uv_vOuter);
-                vertexIndex++;
-                //vertexList[vertexIndex].Position = Vector3.Transform(vertexList[vertexIndex - 4].Position, displacement);
-                vertexList[vertexIndex].Position = vertexList[vertexIndex - 4].Position + directionVector;
-                vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 4].TextureCoordinate.X + uv_uDisplacement, uv_vInner);
-                vertexIndex++;
-            }
-            else // Curved track section
-            {
-                numSections = (int)Math.Abs(MathHelper.ToDegrees(dtrackData.param1)); // See above for explanation
-                if (numSections == 0) numSections++;
-                segmentAngle = dtrackData.param1 / numSections; // Angle in radians by which each successive section of the curved track is rotated.
-                segmentLength = Math.Abs(dtrackData.param2 * 2 * (float)Math.Sin(segmentAngle / 2)); // Formula: Chord of a circle.
-                Vector3 ddy = new Vector3(0, dtrackData.deltaY / numSections, 0); // Incremental elevation change
-                uv_uDisplacement = uv_uIncrement * segmentLength;
-
-                /*
-                center = dtrackData.param2 * Vector3.Cross(Vector3.Up, directionVector);
-                Vector3 midpoint = new Vector3(
-                    (vertexList[vertexIndex - 1].Position.X + vertexList[vertexIndex - 4].Position.X) / 2,
-                    (vertexList[vertexIndex - 1].Position.Y + vertexList[vertexIndex - 4].Position.Y) / 2,
-                    (vertexList[vertexIndex - 1].Position.Z + vertexList[vertexIndex - 4].Position.Z) / 2);
-                displacement = Matrix.CreateTranslation(midpoint);
-                center = Vector3.Transform(center, displacement);
-                */
-                // The approach here is to replicate the previous cross section, but rotated and positioned to the next
-
-                // The local center for the curve lies to the left or right of the local origin
-                // and ON THE BASE PLANE.
-                center = dtrackData.param2 * (dtrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
-                // Unit vector giving the "heading" of the current segment (no vertical deflection)
-                // directionVector = Vector3.Forward; // Points along the centerline, initially forward
-                sectionRotation = Matrix.CreateRotationY(-segmentAngle); // Rotation per iteration (constant)
-                Vector3 oldRadius = -center; // Initial old radius vector
-                Vector3 oldV; // Vector between new radius vector and old
-
-                // Generate vertices for the numSections cross sections
-                for (int j = 0; j < numSections; j++)
-                {
-                    //displacement = Matrix.CreateRotationY(-segmentAngle);
-                    //directionVector = Vector3.Transform(directionVector, displacement);
-                    radius = Vector3.Transform(oldRadius, sectionRotation);
-
-                    // Right top
-                    // Get the local position vector on the centerline for the previous cross section;
-                    // then rotate it about the local origin and reposition it (including elevation change).
-                    oldV = vertexList[vertexIndex - 4].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 4].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 4].TextureCoordinate.X + uv_uDisplacement, uv_vOuter);
-                    vertexIndex++;
-                    oldV = vertexList[vertexIndex - 4].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 4].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 4].TextureCoordinate.X + uv_uDisplacement, uv_vInner);
-                    vertexIndex++;
-                    // Right top
-                    oldV = vertexList[vertexIndex - 4].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 4].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 4].TextureCoordinate.X + uv_uDisplacement, uv_vOuter);
-                    vertexIndex++;
-                    oldV = vertexList[vertexIndex - 4].Position - center - oldRadius;
-                    vertexList[vertexIndex].Position = ddy + center + radius + Vector3.Transform(oldV, sectionRotation);
-                    //radius = vertexList[vertexIndex - 4].Position - center;
-                    //radius = Vector3.Transform(radius, displacement);
-                    //vertexList[vertexIndex].Position = center + radius;
-                    vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-                    vertexList[vertexIndex].TextureCoordinate = new Vector2(vertexList[vertexIndex - 4].TextureCoordinate.X + uv_uDisplacement, uv_vInner);
-                    vertexIndex++;
-
-                    oldRadius = radius; // Get ready for next iteration
-                }
-            }
-        } // RailTopVertices
-
-        // TRIANGLE INDICES                 |/ |
-        //                                5 o--o 6
-        //                                  |\ |
-        // All track primitives are         | \|
-        // built up with clockwise        3 o--o 2
-        // winding, like this:              | /|
-        //                                  |/ |
-        //                                1 o--o 0
-        public void BallastIndices()
-        {
-            for (int i = 0; i < railsideStartVertex - 2; i += 2)
-            {
-                if (i % 4 == 0)
-                {
-                    triangleListIndices[iIndex++] = (short)i;
-                    triangleListIndices[iIndex++] = (short)(i + 1);
-                    triangleListIndices[iIndex++] = (short)(i + 2);
-                    triangleListIndices[iIndex++] = (short)(i + 1);
-                    triangleListIndices[iIndex++] = (short)(i + 3);
-                    triangleListIndices[iIndex++] = (short)(i + 2);
-                }
-                else
-                {
-                    triangleListIndices[iIndex++] = (short)i;
-                    triangleListIndices[iIndex++] = (short)(i + 3);
-                    triangleListIndices[iIndex++] = (short)(i + 2);
-                    triangleListIndices[iIndex++] = (short)(i + 1);
-                    triangleListIndices[iIndex++] = (short)(i + 3);
-                    triangleListIndices[iIndex++] = (short)i;
-                }
-            }
-        }// BallastIndices
-
-        public void RailSideIndices()
-        {
-            for (int i = 0; i < (railtopStartVertex - railsideStartVertex - 8); i += 8)
-            {
-                for (int j = 0; j < 8; j += 4)
-                {
-                    if (i % 16 == 0)
-                    {
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 1);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 8);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 1);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 9);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 8);
-
-                        // "Left-facing" triangles must be reverse wound
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 2);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 10);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 3);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 3);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 10);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 11);
-                    }
-                    else
-                    {
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 9);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 8);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 1);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 9);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j);
-
-                        // "Left-facing" triangles must be reverse wound
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 2);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 10);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 11);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 3);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 2);
-                        triangleListIndices[iIndex++] = (short)(railsideStartVertex + i + j + 11);
-                    }
-                }
-            }
-        }// RailSideIndices
-
-        public void RailTopIndices()
-        {
-            for (int i = 0; i < numVertices - railtopStartVertex - 4; i += 4)
-            {
-                for (int j = 0; j < 4; j += 2)
-                {
-                    if (i % 8 == 0)
-                    {
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 1);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 4);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 1);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 5);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 4);
-                    }
-                    else
-                    {
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 5);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 4);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 1);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j + 5);
-                        triangleListIndices[iIndex++] = (short)(railtopStartVertex + i + j);
-                    }
-                }
-            }
-        }// RailTopIndices
         #endregion
 
         #region Helpers
-        /// <summary>
-        /// Get the total vertex and index count for the current DT instance.
-        /// </summary>
-        public void CountVerticesAndIndices()
-        {
-            // Check for unused sections
-            if (dtrackData.param1 == 0 && dtrackData.param2 == 0)
-                return;
-
-            if (dtrackData.IsCurved == 0) // Straight track section
-            {
-                numVertices += 14;
-                indexCount += 21 * 2;
-            }
-            else
-            {
-                // Assume one skewed straight section per degree of curvature
-                numSections = (int)Math.Abs(MathHelper.ToDegrees(dtrackData.param1));
-                if (numSections == 0) numSections++; // Very small radius track - zero avoidance
-                numVertices += 14 * numSections; // 14 vertices per cross section
-                indexCount += (short)(21 * numSections * 2); // 7 line seg. x 3 seg./tri. x 2 tri.
-            }
-        } // end CountVerticesAndIndices
 
         /// <summary>
         /// Initializes the vertex and triangle index list buffers.
@@ -857,12 +531,12 @@ namespace ORTS
                 VertexStride = VertexPositionNormalTexture.SizeInBytes;
             }
             // Initialize the vertex and index buffers, allocating memory for each vertex and index
-            VertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
-            VertexBuffer.SetData(vertexList);
+            VertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * VertexList.Length, BufferUsage.WriteOnly);
+            VertexBuffer.SetData(VertexList);
             if (IndexBuffer == null)
             {
-                IndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * indexCount, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
-                IndexBuffer.SetData<short>(triangleListIndices);
+                IndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * NumIndices, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+                IndexBuffer.SetData<short>(TriangleListIndices);
             }
         }
         #endregion
