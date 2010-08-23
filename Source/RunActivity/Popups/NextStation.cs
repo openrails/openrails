@@ -14,29 +14,33 @@ namespace ORTS
 {
 	public class NextStation : PopupWindow
 	{
+		readonly Viewer3D Viewer;
+
 		PopupLabel CurrentTime;
-        Viewer3D Viewer;
+		PopupLabel StationPlatform;
 
-        PopupLabel lblPlatform;
-        PopupLabel lblMessage;
+		PopupLabel StationPreviousName;
+		PopupLabel StationPreviousArriveScheduled;
+		PopupLabel StationPreviousArriveActual;
+		PopupLabel StationPreviousDepartScheduled;
+		PopupLabel StationPreviousDepartActual;
 
-        PopupLabel lblPrevSchArrive;
-        PopupLabel lblPrevSchDepart;
-        PopupLabel lblPrevActArrive;
-        PopupLabel lblPrevActDepart;
+		PopupLabel StationCurrentName;
+		PopupLabel StationCurrentArriveScheduled;
+		PopupLabel StationCurrentArriveActual;
+		PopupLabel StationCurrentDepartScheduled;
 
-        PopupLabel lblActSchArrive;
-        PopupLabel lblActSchDepart;
-        PopupLabel lblActActArrive;
+		PopupLabel StationNextName;
+		PopupLabel StationNextArriveScheduled;
+		PopupLabel StationNextDepartScheduled;
 
-        PopupLabel lblNxtSchArrive;
-        PopupLabel lblNxtSchDepart;
+		PopupLabel Message;
 
-        public NextStation(PopupWindows owner)
+		public NextStation(PopupWindows owner)
 			: base(owner, 400, 135, "Next Station")
 		{
-            Viewer = owner.Viewer;
-            AlignBottom();
+			Viewer = owner.Viewer;
+			AlignBottom();
 			AlignLeft();
 		}
 
@@ -46,12 +50,11 @@ namespace ORTS
 			var boxWidth = vbox.RemainingWidth / 6;
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-                lblPlatform = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
 				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Time:"));
-				hbox.Add(CurrentTime = new PopupLabel(boxWidth, hbox.RemainingHeight, "00:00:00", PopupLabelAlignment.Right));
-				hbox.AddSpace(boxWidth * 2, hbox.RemainingHeight);
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Next Station:"));
-				hbox.Add(lblPlatform);
+				hbox.Add(CurrentTime = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
+				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Next:"));
+				hbox.Add(StationPlatform = new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
 			}
 			vbox.AddHorizontalSeparator();
 			{
@@ -64,43 +67,32 @@ namespace ORTS
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-                lblPrevSchArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-                lblPrevSchDepart = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-                lblPrevActArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-                lblPrevActDepart = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-				hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "<previous station>"));
-				hbox.Add(lblPrevSchArrive);
-				hbox.Add(lblPrevActArrive);
-				hbox.Add(lblPrevSchDepart);
-				hbox.Add(lblPrevActDepart);
+				hbox.Add(StationPreviousName = new PopupLabel(boxWidth * 2, hbox.RemainingHeight, ""));
+				hbox.Add(StationPreviousArriveScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationPreviousArriveActual = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationPreviousDepartScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationPreviousDepartActual = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-                lblActSchArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-                lblActSchDepart = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-                lblActActArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-                hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "<next station>"));
-				hbox.Add(lblActSchArrive);
-				hbox.Add(lblActActArrive);
-				hbox.Add(lblActSchDepart);
+				hbox.Add(StationCurrentName = new PopupLabel(boxWidth * 2, hbox.RemainingHeight, ""));
+				hbox.Add(StationCurrentArriveScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationCurrentArriveActual = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationCurrentDepartScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-                lblNxtSchArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-                lblNxtSchDepart = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
-                hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "<further station>"));
-				hbox.Add(lblNxtSchArrive);
+				hbox.Add(StationNextName = new PopupLabel(boxWidth * 2, hbox.RemainingHeight, ""));
+				hbox.Add(StationNextArriveScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
-				hbox.Add(lblNxtSchDepart);
+				hbox.Add(StationNextDepartScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
 			}
 			vbox.AddHorizontalSeparator();
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-                lblMessage = new PopupLabel(boxWidth * 5, hbox.RemainingHeight, "?", PopupLabelAlignment.Left);
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Message:"));
-				hbox.Add(lblMessage);
+				hbox.Add(Message = new PopupLabel(boxWidth * 6, hbox.RemainingHeight, ""));
 			}
 			return vbox;
 		}
@@ -108,88 +100,79 @@ namespace ORTS
 		public void UpdateText(ElapsedTime elapsedTime, double clockTime, Func<double, string> timeFormatter)
 		{
 			CurrentTime.Text = timeFormatter(clockTime);
-            Activity act = Viewer.Simulator.ActivityRun;
-            if (act != null)
-            {
-                ActivityTaskPassengerStopAt at = null;
-                at = act.Current.PrevTask as ActivityTaskPassengerStopAt;
-                if (at != null)
-                {
-                    lblPrevSchArrive.Text = at.SchArrive.ToString("HH:mm:ss");
+			Activity act = Viewer.Simulator.ActivityRun;
+			if (act != null)
+			{
+				ActivityTaskPassengerStopAt at = null;
+				at = act.Current != null ? act.Current.PrevTask as ActivityTaskPassengerStopAt : null;
+				if (at != null)
+				{
+					StationPreviousName.Text = at.PlatformEnd1.Station;
+					StationPreviousArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
+					StationPreviousArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "???";
+					StationPreviousDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
+					StationPreviousDepartActual.Text = at.ActDepart.HasValue ? at.ActDepart.Value.ToString("HH:mm:ss") : "???";
+				}
+				else
+				{
+					StationPreviousName.Text = "";
+					StationPreviousArriveScheduled.Text = "";
+					StationPreviousArriveActual.Text = "";
+					StationPreviousDepartScheduled.Text = "";
+					StationPreviousDepartActual.Text = "";
+				}
 
-                    if (at.ActArrive.HasValue)
-                        lblPrevActArrive.Text = at.ActArrive.Value.ToString("HH:mm:ss");
-                    else
-                        lblPrevActArrive.Text = "-";
+				at = act.Current as ActivityTaskPassengerStopAt;
+				if (at != null)
+				{
+					StationPlatform.Text = at.PlatformEnd1.PlatformName;
+					StationCurrentName.Text = at.PlatformEnd1.Station;
+					StationCurrentArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
+					StationCurrentArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "???";
+					StationCurrentDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
+					Message.Text = at.DisplayMessage;
+				}
+				else
+				{
+					StationPlatform.Text = "";
+					StationCurrentName.Text = "";
+					StationCurrentArriveScheduled.Text = "";
+					StationCurrentArriveActual.Text = "";
+					StationCurrentDepartScheduled.Text = "";
+					Message.Text = "";
+				}
 
-                    lblPrevSchDepart.Text = at.SchDepart.ToString("HH:mm:ss");
-
-                    if (at.ActDepart.HasValue)
-                        lblPrevActDepart.Text = at.ActDepart.Value.ToString("HH:mm:ss");
-                    else
-                        lblPrevActDepart.Text = "-";
-                }
-                else
-                {
-                    lblPrevSchArrive.Text = "-";
-                    lblPrevActArrive.Text = "-";
-                    lblPrevSchDepart.Text = "-";
-                    lblPrevActDepart.Text = "-";
-                }
-
-                at = act.Current as ActivityTaskPassengerStopAt;
-                if (at != null)
-                {
-                    lblActSchArrive.Text = at.SchArrive.ToString("HH:mm:ss");
-
-                    if (at.ActArrive.HasValue)
-                        lblActActArrive.Text = at.ActArrive.Value.ToString("HH:mm:ss");
-                    else
-                        lblActActArrive.Text = "-";
-
-                    lblActSchDepart.Text = at.SchDepart.ToString("HH:mm:ss");
-
-                    lblPlatform.Text = at.PlatformEnd1.PlatformName;
-                    lblMessage.Text = at.DisplayMessage;
-                }
-                else
-                {
-                    lblActSchArrive.Text = "-";
-                    lblActActArrive.Text = "-";
-                    lblActSchDepart.Text = "-";
-                    lblPlatform.Text = "-";
-                    lblMessage.Text = "";
-                }
-
-                at = act.Current.NextTask as ActivityTaskPassengerStopAt;
-                if (at != null)
-                {
-                    lblNxtSchArrive.Text = at.SchArrive.ToString("HH:mm:ss");
-                    lblNxtSchDepart.Text = at.SchDepart.ToString("HH:mm:ss");
-                }
-                else
-                {
-                    lblNxtSchArrive.Text = "-";
-                    lblNxtSchDepart.Text = "-";
-                }
-            }
+				at = act.Current != null ? act.Current.NextTask as ActivityTaskPassengerStopAt : null;
+				if (at != null)
+				{
+					StationNextName.Text = at.PlatformEnd1.Station;
+					StationNextArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
+					StationNextDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
+				}
+				else
+				{
+					StationNextName.Text = "";
+					StationNextArriveScheduled.Text = "";
+					StationNextDepartScheduled.Text = "";
+				}
+			}
 		}
 
-        public void UpdateSound()
-        {
-            Activity act = Viewer.Simulator.ActivityRun;
-            if (act != null)
-            {
-                ActivityTask at = act.Current;
-                if (at != null)
-                {
-                    if (at.SoundNotify != -1)
-                    {
-                        Viewer.IngameSounds.HandleEvent(at.SoundNotify);
-                        at.SoundNotify = -1;
-                    }
-                }
-            }
-        }
+		public void UpdateSound()
+		{
+			Activity act = Viewer.Simulator.ActivityRun;
+			if (act != null)
+			{
+				ActivityTask at = act.Current;
+				if (at != null)
+				{
+					if (at.SoundNotify != -1)
+					{
+						Viewer.IngameSounds.HandleEvent(at.SoundNotify);
+						at.SoundNotify = -1;
+					}
+				}
+			}
+		}
 	}
 }
