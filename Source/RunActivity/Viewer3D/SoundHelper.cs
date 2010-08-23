@@ -120,8 +120,12 @@ namespace ORTS
             if (!FileStreams.Keys.Contains(FileName))
             {
                 int sep = FileName.LastIndexOf('*');
-                WAVFileStream wfs = new WAVFileStream(sep >= 0 ? FileName.Substring(0, sep) : FileName);
-                FileStreams.Add(FileName, wfs);
+                string PureName = sep >= 0 ? FileName.Substring(0, sep) : FileName;
+                if (File.Exists(PureName))
+                {
+                    WAVFileStream wfs = new WAVFileStream(PureName);
+                    FileStreams.Add(FileName, wfs);
+                }
             }
 
             if (FileStreams.Keys.Contains(FileName))
@@ -142,8 +146,12 @@ namespace ORTS
             if (!FileStreams.Keys.Contains(FileName))
             {
                 int sep = FileName.LastIndexOf('*');
-                WAVFileStream wfs = new WAVFileStream(sep >= 0 ? FileName.Substring(0, sep) : FileName);
-                FileStreams.Add(FileName, wfs);
+                string PureName = sep >= 0 ? FileName.Substring(0, sep) : FileName;
+                if (File.Exists(PureName))
+                {
+                    WAVFileStream wfs = new WAVFileStream(PureName);
+                    FileStreams.Add(FileName, wfs);
+                }
             }
 
             if (FileStreams.Keys.Contains(FileName))

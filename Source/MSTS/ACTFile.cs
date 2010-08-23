@@ -625,29 +625,61 @@ namespace MSTS
 
 	}
 
-	public class Player_Service_Definition
-	{
-		public string Name;
+    public class Player_Service_Definition
+    {
+        public string Name;
         public List<float> DistanceDownPath = new List<float>();
+        public Player_Traffic_Definition Player_Traffic_Definition;
 
-		public Player_Service_Definition( STFReader f )
-		{
-			StringBuilder s = new StringBuilder();
+        public Player_Service_Definition(STFReader f)
+        {
+            StringBuilder s = new StringBuilder();
 
-			f.VerifyStartOfBlock();
-			Name = f.ReadToken();
+            f.VerifyStartOfBlock();
+            Name = f.ReadToken();
             while (!f.EndOfBlock())
             {
                 string token = f.ReadToken().ToLower();
                 switch (token)
                 {
                     case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock()); break;
+                    case "player_traffic_definition": Player_Traffic_Definition = new Player_Traffic_Definition(f); break;
                     default: f.SkipBlock(); break;
                 }
             }
         }
 
-	}
+    }
 
+    public class Player_Traffic_Definition
+    {
+        public List<DateTime> ArrivalTime = new List<DateTime>();
+        public List<DateTime> DepartTime = new List<DateTime>();
+        public List<float> DistanceDownPath = new List<float>();
+        public List<int> PlatformStartID = new List<int>();
+
+        public string Name;
+
+        public Player_Traffic_Definition(STFReader f)
+        {
+            StringBuilder s = new StringBuilder();
+            DateTime basedt = new DateTime();
+
+            f.VerifyStartOfBlock();
+            Name = f.ReadToken();
+            while (!f.EndOfBlock())
+            {
+                string token = f.ReadToken().ToLower();
+                switch (token)
+                {
+                    case "arrivaltime": ArrivalTime.Add(basedt.AddSeconds(f.ReadFloatBlock())); break;
+                    case "departtime": DepartTime.Add(basedt.AddSeconds(f.ReadFloatBlock())); break;
+                    case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock()); break;
+                    case "platformstartid": PlatformStartID.Add(f.ReadIntBlock()); break;
+                    default: f.SkipBlock(); break;
+                }
+            }
+        }
+    }
 
 }

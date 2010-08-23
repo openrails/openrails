@@ -79,6 +79,7 @@ namespace ORTS
         public SceneryDrawer SceneryDrawer;
         public TrainDrawer TrainDrawer;
         public ISoundEngine SoundEngine = null;  // IrrKlang Sound Device
+        public SoundSource IngameSounds = null;
         // Route Information
         public Tiles Tiles = null;
         public ENVFile ENVFile;
@@ -128,6 +129,7 @@ namespace ORTS
                 SoundEngine.SoundVolume = 0;  // while loading
                 // Swap out original file factory to support loops - by GeorgeS
                 SoundEngine.AddFileFactory(new WAVIrrKlangFileFactory());
+                IngameSounds = new SoundSource(this, Simulator.RoutePath + "\\Sound\\ingame.sms");
             }
             ReadENVFile();
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
@@ -481,6 +483,7 @@ namespace ORTS
             if( PrecipDrawer != null ) PrecipDrawer.PrepareFrame(frame, elapsedTime);
             if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);
             InfoDisplay.PrepareFrame(frame, elapsedTime);
+            IngameSounds.Update(elapsedTime);
         }
 
 

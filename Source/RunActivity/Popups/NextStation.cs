@@ -15,11 +15,28 @@ namespace ORTS
 	public class NextStation : PopupWindow
 	{
 		PopupLabel CurrentTime;
+        Viewer3D Viewer;
 
-		public NextStation(PopupWindows owner)
+        PopupLabel lblPlatform;
+        PopupLabel lblMessage;
+
+        PopupLabel lblPrevSchArrive;
+        PopupLabel lblPrevSchDepart;
+        PopupLabel lblPrevActArrive;
+        PopupLabel lblPrevActDepart;
+
+        PopupLabel lblActSchArrive;
+        PopupLabel lblActSchDepart;
+        PopupLabel lblActActArrive;
+
+        PopupLabel lblNxtSchArrive;
+        PopupLabel lblNxtSchDepart;
+
+        public NextStation(PopupWindows owner)
 			: base(owner, 400, 135, "Next Station")
 		{
-			AlignBottom();
+            Viewer = owner.Viewer;
+            AlignBottom();
 			AlignLeft();
 		}
 
@@ -29,11 +46,12 @@ namespace ORTS
 			var boxWidth = vbox.RemainingWidth / 6;
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
+                lblPlatform = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
 				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Time:"));
 				hbox.Add(CurrentTime = new PopupLabel(boxWidth, hbox.RemainingHeight, "00:00:00", PopupLabelAlignment.Right));
 				hbox.AddSpace(boxWidth * 2, hbox.RemainingHeight);
 				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Next Station:"));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
+				hbox.Add(lblPlatform);
 			}
 			vbox.AddHorizontalSeparator();
 			{
@@ -46,33 +64,43 @@ namespace ORTS
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
+                lblPrevSchArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
+                lblPrevSchDepart = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
+                lblPrevActArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
+                lblPrevActDepart = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
 				hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "<previous station>"));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
+				hbox.Add(lblPrevSchArrive);
+				hbox.Add(lblPrevActArrive);
+				hbox.Add(lblPrevSchDepart);
+				hbox.Add(lblPrevActDepart);
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "<next station>"));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
+                lblActSchArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
+                lblActSchDepart = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
+                lblActActArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
+                hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "<next station>"));
+				hbox.Add(lblActSchArrive);
+				hbox.Add(lblActActArrive);
+				hbox.Add(lblActSchDepart);
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "<further station>"));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
+                lblNxtSchArrive = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
+                lblNxtSchDepart = new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right);
+                hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "<further station>"));
+				hbox.Add(lblNxtSchArrive);
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
+				hbox.Add(lblNxtSchDepart);
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
 			}
 			vbox.AddHorizontalSeparator();
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Loading Time:"));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "?", PopupLabelAlignment.Right));
+                lblMessage = new PopupLabel(boxWidth * 5, hbox.RemainingHeight, "?", PopupLabelAlignment.Left);
+				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Message:"));
+				hbox.Add(lblMessage);
 			}
 			return vbox;
 		}
@@ -80,6 +108,88 @@ namespace ORTS
 		public void UpdateText(ElapsedTime elapsedTime, double clockTime, Func<double, string> timeFormatter)
 		{
 			CurrentTime.Text = timeFormatter(clockTime);
+            Activity act = Viewer.Simulator.ActivityRun;
+            if (act != null)
+            {
+                ActivityTaskPassengerStopAt at = null;
+                at = act.Current.PrevTask as ActivityTaskPassengerStopAt;
+                if (at != null)
+                {
+                    lblPrevSchArrive.Text = at.SchArrive.ToString("HH:mm:ss");
+
+                    if (at.ActArrive.HasValue)
+                        lblPrevActArrive.Text = at.ActArrive.Value.ToString("HH:mm:ss");
+                    else
+                        lblPrevActArrive.Text = "-";
+
+                    lblPrevSchDepart.Text = at.SchDepart.ToString("HH:mm:ss");
+
+                    if (at.ActDepart.HasValue)
+                        lblPrevActDepart.Text = at.ActDepart.Value.ToString("HH:mm:ss");
+                    else
+                        lblPrevActDepart.Text = "-";
+                }
+                else
+                {
+                    lblPrevSchArrive.Text = "-";
+                    lblPrevActArrive.Text = "-";
+                    lblPrevSchDepart.Text = "-";
+                    lblPrevActDepart.Text = "-";
+                }
+
+                at = act.Current as ActivityTaskPassengerStopAt;
+                if (at != null)
+                {
+                    lblActSchArrive.Text = at.SchArrive.ToString("HH:mm:ss");
+
+                    if (at.ActArrive.HasValue)
+                        lblActActArrive.Text = at.ActArrive.Value.ToString("HH:mm:ss");
+                    else
+                        lblActActArrive.Text = "-";
+
+                    lblActSchDepart.Text = at.SchDepart.ToString("HH:mm:ss");
+
+                    lblPlatform.Text = at.PlatformEnd1.PlatformName;
+                    lblMessage.Text = at.DisplayMessage;
+                }
+                else
+                {
+                    lblActSchArrive.Text = "-";
+                    lblActActArrive.Text = "-";
+                    lblActSchDepart.Text = "-";
+                    lblPlatform.Text = "-";
+                    lblMessage.Text = "";
+                }
+
+                at = act.Current.NextTask as ActivityTaskPassengerStopAt;
+                if (at != null)
+                {
+                    lblNxtSchArrive.Text = at.SchArrive.ToString("HH:mm:ss");
+                    lblNxtSchDepart.Text = at.SchDepart.ToString("HH:mm:ss");
+                }
+                else
+                {
+                    lblNxtSchArrive.Text = "-";
+                    lblNxtSchDepart.Text = "-";
+                }
+            }
 		}
+
+        public void UpdateSound()
+        {
+            Activity act = Viewer.Simulator.ActivityRun;
+            if (act != null)
+            {
+                ActivityTask at = act.Current;
+                if (at != null)
+                {
+                    if (at.SoundNotify != -1)
+                    {
+                        Viewer.IngameSounds.HandleEvent(at.SoundNotify);
+                        at.SoundNotify = -1;
+                    }
+                }
+            }
+        }
 	}
 }

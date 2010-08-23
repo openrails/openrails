@@ -51,6 +51,7 @@ namespace ORTS
         // These items are what are saved and loaded in a game save.
         public string RouteName;    // ie LPS, USA1  represents the folder name
         public ACTFile Activity;
+        public Activity ActivityRun;
         public TDBFile TDB;
         public TRKFile TRK;
         public TSectionDatFile TSectionDat;
@@ -96,6 +97,7 @@ namespace ORTS
         public void SetActivity(string activityPath)
         {
             Activity = new ACTFile(activityPath);
+            ActivityRun = new Activity(Activity);
             StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
             TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
             ClockTime = StartTime.TotalSeconds;
@@ -213,6 +215,7 @@ namespace ORTS
             if( Signals != null ) Signals.Update(elapsedClockSeconds);
             if( AI != null ) AI.Update( elapsedClockSeconds );
 
+            if (ActivityRun != null) ActivityRun.Update();
         }
 
         /// <summary>

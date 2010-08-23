@@ -64,6 +64,16 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Initializes a SoundSource which has no specifis loaction - like ingame.sms
+        /// </summary>
+        /// <param name="viewer"></param>
+        /// <param name="smsFilePath"></param>
+        public SoundSource(Viewer3D viewer, string smsFilePath)
+        {
+            Initialize(viewer, null, smsFilePath);
+        }
+
+        /// <summary>
         /// Construct a SoundSource stationary at the specified worldLocation
         /// </summary>
         /// <param name="viewer"></param>
@@ -74,7 +84,14 @@ namespace ORTS
             Initialize(viewer, worldLocation, smsFilePath);
         }
 
-
+        /// <summary>
+        /// No need to play the sounds, stop them
+        /// </summary>
+        public void Uninitialize()
+        {
+            foreach (SoundStream ss in SoundStreams)
+                ss.Stop();
+        }
         
         public WorldLocation WorldLocation;   // current location for the sound source
         public Viewer3D Viewer;                 // the listener is connected to this viewer
@@ -120,6 +137,19 @@ namespace ORTS
             }
         }
 
+        public void HandleEvent(EventID eventID)
+        {
+            foreach (SoundStream ss in SoundStreams)
+            {
+                foreach (ORTSTrigger trg in ss.Triggers)
+                {
+                    ORTSDiscreteTrigger dt = trg as ORTSDiscreteTrigger;
+                    if (dt != null)
+                        dt.HandleCarEvent(eventID);
+                }
+            }
+        }
+
         public void Update(ElapsedTime elapsedTime)
         {
 
@@ -160,6 +190,7 @@ namespace ORTS
 
             // Must start and stop by triggers - by GeorgeS
             //if (Active)
+            if (WorldLocation != null)
             {
                 // update the sound position relative to the listener
                 Vector3 RelativePosition = WorldLocation.Location;
@@ -177,6 +208,16 @@ namespace ORTS
                         stream.Deactivate();
                 }
             }
+            else
+            {
+                foreach (SoundStream stream in SoundStreams)
+                {
+                    stream.Update(new Vector3D(0, 0, 0));
+                    // If initially not active, Deactivate it - by GeorgeS
+                    if (setDeactivate)
+                        stream.Deactivate();
+                }
+            }
         } // Update
 
         /// <summary>
@@ -188,8 +229,13 @@ namespace ORTS
         {
             if (ConditionsMet(ActivationConditions))
             {
-                float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.WorldLocation);
-                if (distanceSquared < ActivationConditions.Distance * ActivationConditions.Distance)
+                if (WorldLocation != null)
+                {
+                    float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.WorldLocation);
+                    if (distanceSquared < ActivationConditions.Distance * ActivationConditions.Distance)
+                        return true;
+                }
+                else
                     return true;
             }
             return false;
@@ -205,9 +251,12 @@ namespace ORTS
             if (ConditionsMet(DeactivationConditions))
                 return true;
 
-            float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.WorldLocation);
-            if (distanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance)
-                return true;
+            if (WorldLocation != null)
+            {
+                float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.WorldLocation);
+                if (distanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance)
+                    return true;
+            }
 
             return false;
         }
@@ -293,6 +342,11 @@ namespace ORTS
                         ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, (MSTS.Discrete_Trigger)trigger);
                         Triggers.Add( ortsTrigger );  // list them here so we can enable and disable 
                         SoundSource.Car.EventHandlers.Add(ortsTrigger);  // tell the simulator to call us when the event occurs
+                    }
+                    else if (trigger.GetType() == typeof(MSTS.Discrete_Trigger))
+                    {
+                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, (MSTS.Discrete_Trigger)trigger);
+                        Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                     }
                 }  // for each mstsStream.Trigger
         }
@@ -534,12 +588,19 @@ namespace ORTS
 
             // position relative to camera
             WorldLocation worldLocation = SoundSource.WorldLocation;
-            Vector3 location = worldLocation.Location;
-            location.X += 2048 * (worldLocation.TileX - viewer.Camera.TileX);
-            location.Z += 2048 * (worldLocation.TileZ - viewer.Camera.TileZ);
-            location.Z *= -1;
-            location = Vector3.Transform(location, viewer.Camera.XNAView);
-
+            Vector3 location;
+            if (worldLocation != null)
+            {
+                location = worldLocation.Location;
+                location.X += 2048 * (worldLocation.TileX - viewer.Camera.TileX);
+                location.Z += 2048 * (worldLocation.TileZ - viewer.Camera.TileZ);
+                location.Z *= -1;
+                location = Vector3.Transform(location, viewer.Camera.XNAView);
+            }
+            else
+            {
+                location = new Vector3(0, 0, 0);
+            }
             SampleRate = iSoundSource.AudioFormat.SampleRate;  // ie 11025
             if( viewer.SoundEngine != null )
                 // Changed repeat to false, looping implemented with other method - by GeorgeS

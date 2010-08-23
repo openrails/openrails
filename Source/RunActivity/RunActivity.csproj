@@ -206,6 +206,7 @@
     <Compile Include="Processes\ProcessState.cs" />
     <Compile Include="RollingStock\TrainCar.cs" />
     <Compile Include="Signals\Signals.cs" />
+    <Compile Include="Simulator\Activity.cs" />
     <Compile Include="Simulator\TDBTraveller.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Common\DataLogger.cs" />

@@ -139,6 +139,7 @@ namespace ORTS
 			{
 				Viewer.NextStation.UpdateText(elapsedTime, Viewer.Simulator.ClockTime, FormattedTime);
 			}
+            Viewer.NextStation.UpdateSound();
 			if (Viewer.CompassWindow.Visible)
 			{
 				double latitude = 0;
