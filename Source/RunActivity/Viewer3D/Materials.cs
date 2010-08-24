@@ -241,7 +241,7 @@ namespace ORTS
 	public abstract class Material
 	{
 		public virtual void SetState(GraphicsDevice graphicsDevice, Material previousMaterial) { }
-		public virtual void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
+		public virtual void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
 		public virtual void ResetState(GraphicsDevice graphicsDevice) { }
 
 		public virtual bool GetBlending(RenderPrimitive renderPrimitive) { return false; }
@@ -278,10 +278,13 @@ namespace ORTS
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
-			RenderProcess.PrimitiveCount++;
-			renderPrimitive.Draw(graphicsDevice);
+            foreach (var item in renderItems)
+            {
+                RenderProcess.PrimitiveCount++;
+                item.RenderPrimitive.Draw(graphicsDevice);
+            }
 		}
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
@@ -503,11 +506,8 @@ namespace ORTS
 				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = MipMapBias;
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-			SceneryShader.ZBias = renderPrimitive.ZBias;
-
 			var lighting = (Options & 0x00f0) >> 4;
 			switch (lighting)
 			{
@@ -525,13 +525,24 @@ namespace ORTS
 					break;
 			}
 
+            Matrix viewProj = XNAViewMatrix * XNAProjectionMatrix;
+
             // With the GPU configured, now we can draw the primitive
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach(RenderItem item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewProj);
+                    SceneryShader.ZBias = item.RenderPrimitive.ZBias;
+                    SceneryShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+
                 pass.End();
             }
             SceneryShader.End();
@@ -600,17 +611,26 @@ namespace ORTS
 			SceneryShader.ImageMap_Tex = PatchTexture;
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-			SceneryShader.ZBias = renderPrimitive.ZBias;
+            Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (RenderItem item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+                    SceneryShader.ZBias = item.RenderPrimitive.ZBias;
+                    SceneryShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+
+
                 pass.End();
             }
             SceneryShader.End();
@@ -644,9 +664,9 @@ namespace ORTS
             cloudTexture = renderProcess.Content.Load<Texture2D>("Clouds01");
         }
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SkyShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+            
 
             // Adjust Fog color for day-night conditions and overcast
             FogDay2Night(
@@ -681,12 +701,22 @@ namespace ORTS
             RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 1;
+
+            Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
+
             SkyShader.Begin();
             foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
+                    SkyShader.SetMatrix(ref wvp, ref XNAViewMatrix);
+                    SkyShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
                 pass.End();
             }
             SkyShader.End();
@@ -696,9 +726,9 @@ namespace ORTS
             int skyRadius = RenderProcess.Viewer.SkyDrawer.SkyMesh.skyRadius;
             int cloudRadiusDiff = RenderProcess.Viewer.SkyDrawer.SkyMesh.cloudDomeRadiusDiff;
             XNAMoonMatrix = Matrix.CreateTranslation(RenderProcess.Viewer.SkyDrawer.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
-            XNAMoonWorldMatrix = XNAWorldMatrix * XNAMoonMatrix;
+            Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
+
             // Shader setup
-            SkyShader.SetMatrix(XNAMoonWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
             SkyShader.CurrentTechnique = SkyShader.Techniques["MoonTechnique"];
             SkyShader.MoonTexture = moonTexture;
             SkyShader.MoonMaskTexture = moonMask;
@@ -723,15 +753,23 @@ namespace ORTS
             foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+
+                    Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
+                    SkyShader.SetMatrix(ref wvp, ref XNAViewMatrix);
+                    SkyShader.CommitChanges();
+
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
                 pass.End();
             }
             SkyShader.End();
 
             // Clouds
-            // Send the transform matrices to the shader
-            SkyShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+           
             // Shader setup
             SkyShader.CurrentTechnique = SkyShader.Techniques["CloudTechnique"];
             SkyShader.CloudTexture = cloudTexture;
@@ -747,8 +785,16 @@ namespace ORTS
             foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
+                    SkyShader.SetMatrix(ref wvp, ref XNAViewMatrix);
+                    SkyShader.CommitChanges();
+
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
                 pass.End();
             }
             SkyShader.End();
@@ -825,12 +871,12 @@ namespace ORTS
             snowTexture = renderProcess.Content.Load<Texture2D>("Snowflake");
         }
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             int weatherType = RenderProcess.Viewer.PrecipDrawer.weatherType;
             if (weatherType == 0) return; // Clear weather
 
-            PrecipShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+            
 
             RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
@@ -874,8 +920,14 @@ namespace ORTS
             foreach (EffectPass pass in PrecipShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+                    PrecipShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref Camera.XNASkyProjection);
+                    PrecipShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
                 pass.End();
             }
             PrecipShader.End();
@@ -931,12 +983,8 @@ namespace ORTS
             image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
         }
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-			SceneryShader.ZBias = renderPrimitive.ZBias;
-
-            DynatrackMesh mesh = (DynatrackMesh)renderPrimitive;
             SceneryShader.IsNight_Tex = false;
 
             RenderProcess.RenderStateChangesCount++;
@@ -949,70 +997,81 @@ namespace ORTS
             Blend sourceBlend = graphicsDevice.RenderState.SourceBlend;
             bool alphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
 
-            Vector3 mstsLocation = mesh.MSTSLODCenter;
+            Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
-            // Test if object behind camera:
-            if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, mesh.ObjectRadius))
+            // This is BAD BAD BAD, visibility testing shouldn't be in here.
+            foreach (var item in renderItems)
             {
-                for (uint i = 0; i < mesh.LODGrid.Length; i++)
+
+                DynatrackMesh mesh = (DynatrackMesh)item.RenderPrimitive;
+                Vector3 mstsLocation = mesh.MSTSLODCenter;
+
+                // Test if object behind camera:
+                if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, mesh.ObjectRadius))
                 {
-                    bool test = RenderProcess.Viewer.Camera.InRange(mstsLocation,
-                                        mesh.TrProfile.TrProfileLODItems[i].CutoffRadius);
-                    if (!test) continue;
-                    //TODO: All of the content of the switch block below needs to be
-                    //      replaced by general state handling, driven from track profile.
-                    //      BUT I'LL DEFER TO THE DEMANDS OF TRACK DESIGNERS FOR NOW.
-
-                    // The following switch block serves pro tempore to get the job done
-                    switch (i)
+                    for (uint i = 0; i < mesh.LODGrid.Length; i++)
                     {
-                        case 0: // Ballast
-                            SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
+                        bool test = RenderProcess.Viewer.Camera.InRange(mstsLocation,
+                                            mesh.TrProfile.TrProfileLODItems[i].CutoffRadius);
+                        if (!test) continue;
+                        //TODO: All of the content of the switch block below needs to be
+                        //      replaced by general state handling, driven from track profile.
+                        //      BUT I'LL DEFER TO THE DEMANDS OF TRACK DESIGNERS FOR NOW.
 
-                            if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
-                                RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
-                                SceneryShader.ImageMap_Tex = image1s;
-                            else
-                                SceneryShader.ImageMap_Tex = image1;
+                        // The following switch block serves pro tempore to get the job done
+                        switch (i)
+                        {
+                            case 0: // Ballast
+                                SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
 
-                            // Set render state for drawing ballast
-                            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-                            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-                            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+                                if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
+                                    RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
+                                    SceneryShader.ImageMap_Tex = image1s;
+                                else
+                                    SceneryShader.ImageMap_Tex = image1;
 
-                            // TODO: SceneryShader.SpecularPower = 0;
-                            break;
-                        case 1: // Rail tops
-                            SceneryShader.ImageMap_Tex = image2;
-                            // TODO: SceneryShader.SpecularPower = 64;
-                            break;
-                        case 2: // Rail sides
-                            // TODO: SceneryShader.SpecularPower = 0;
-                            break;
+                                // Set render state for drawing ballast
+                                graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+                                graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+                                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
-                        default: continue;
-                    } // end switch i
+                                // TODO: SceneryShader.SpecularPower = 0;
+                                break;
+                            case 1: // Rail tops
+                                SceneryShader.ImageMap_Tex = image2;
+                                // TODO: SceneryShader.SpecularPower = 64;
+                                break;
+                            case 2: // Rail sides
+                                // TODO: SceneryShader.SpecularPower = 0;
+                                break;
 
-                    // The following are controlled by options in the track profile
-                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias =
-                                mesh.TrProfile.TrProfileLODItems[i].MipMapLevelOfDetailBias;
-                    graphicsDevice.RenderState.AlphaBlendEnable =
-                        mesh.TrProfile.TrProfileLODItems[i].AlphaBlendEnable;
-                    graphicsDevice.RenderState.AlphaTestEnable =
-                        mesh.TrProfile.TrProfileLODItems[i].AlphaTestEnable;
+                            default: continue;
+                        } // end switch i
 
-                    mesh.DrawIndex = (int)i;
-                    SceneryShader.Begin();
-                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
-                    {
-                        pass.Begin();
-                        RenderProcess.PrimitiveCount++;
-                        renderPrimitive.Draw(graphicsDevice);
-                        pass.End();
-                    }
-                    SceneryShader.End();
-                } // end for i
-            } // end if not behind camera
+                        // The following are controlled by options in the track profile
+                        graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias =
+                                    mesh.TrProfile.TrProfileLODItems[i].MipMapLevelOfDetailBias;
+                        graphicsDevice.RenderState.AlphaBlendEnable =
+                            mesh.TrProfile.TrProfileLODItems[i].AlphaBlendEnable;
+                        graphicsDevice.RenderState.AlphaTestEnable =
+                            mesh.TrProfile.TrProfileLODItems[i].AlphaTestEnable;
+
+                        SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+                        SceneryShader.ZBias = item.RenderPrimitive.ZBias;
+
+                        mesh.DrawIndex = (int)i;
+                        SceneryShader.Begin();
+                        foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+                        {
+                            pass.Begin();
+                            RenderProcess.PrimitiveCount++;
+                            item.RenderPrimitive.Draw(graphicsDevice);
+                            pass.End();
+                        }
+                        SceneryShader.End();
+                    } // end for i
+                } // end if not behind camera
+            }
                
             // Restore the pre-existing render state
             graphicsDevice.RenderState.AlphaBlendEnable = alphaBlendEnable;
@@ -1059,10 +1118,9 @@ namespace ORTS
 			SceneryShader.ImageMap_Tex = TreeTexture;
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-			SceneryShader.ZBias = renderPrimitive.ZBias;
+            Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             SceneryShader.CurrentTechnique = SceneryShader.Techniques["Forest"];
 
@@ -1070,8 +1128,15 @@ namespace ORTS
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+                    SceneryShader.ZBias = item.RenderPrimitive.ZBias;
+                    SceneryShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
                 pass.End();
             }
             SceneryShader.End();
@@ -1095,9 +1160,9 @@ namespace ORTS
             lightGlowTexture = renderProcess.Content.Load<Texture2D>("Lightglow");
         }
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            LightGlowShader.SetMatrix(XNAWorldMatrix, XNAViewMatrix, Camera.XNASkyProjection);
+            
 
             RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
@@ -1135,8 +1200,15 @@ namespace ORTS
             foreach (EffectPass pass in LightGlowShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+                    Matrix wvp = item.XNAMatrix * XNAViewMatrix * Camera.XNASkyProjection;
+                    LightGlowShader.SetMatrix(ref wvp);
+                    LightGlowShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
                 pass.End();
             }
             LightGlowShader.End();
@@ -1183,17 +1255,23 @@ namespace ORTS
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SceneryShader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-			SceneryShader.ZBias = renderPrimitive.ZBias;
+            Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+                    SceneryShader.ZBias = item.RenderPrimitive.ZBias;
+                    SceneryShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
                 pass.End();
             }
             SceneryShader.End();
@@ -1228,16 +1306,25 @@ namespace ORTS
             rs.RangeFogEnable = false;
         }
 
-		public void Render(GraphicsDevice graphicsDevice, Material originalMaterial, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Materials.ShadowMapShader;
-			shader.SetData(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix, originalMaterial.GetShadowTexture(renderPrimitive));
+
+            Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
+			
 			shader.Begin();
 			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
 			{
 				pass.Begin();
-				RenderProcess.ShadowPrimitiveCount++;
-				renderPrimitive.Draw(graphicsDevice);
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.ShadowPrimitiveCount++;
+
+                    Matrix wvp = item.XNAMatrix * viewproj;
+                    shader.SetData(ref wvp, item.Material.GetShadowTexture(item.RenderPrimitive));
+                    shader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
 				pass.End();
 			}
 			shader.End();
@@ -1272,19 +1359,22 @@ namespace ORTS
 			rs.DepthBufferWriteEnable = false;
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-		{
-			var shader = Materials.PopupWindowShader;
-			shader.SetMatrix(ref XNAWorldMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-			shader.Begin();
-			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
-			{
-				pass.Begin();
-				renderPrimitive.Draw(graphicsDevice);
-				pass.End();
-			}
-			shader.End();
-		}
+        public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            var shader = Materials.PopupWindowShader;
+
+            Matrix wvp = XNAWorldMatrix * XNAViewMatrix * XNAProjectionMatrix;
+            shader.SetMatrix(XNAWorldMatrix, ref wvp);
+
+            shader.Begin();
+            foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                renderPrimitive.Draw(graphicsDevice);
+                pass.End();
+            }
+            shader.End();
+        }
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
@@ -1350,9 +1440,9 @@ namespace ORTS
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            basicEffect.World = XNAWorldMatrix;
+            
             basicEffect.View = XNAViewMatrix;
             basicEffect.Projection = XNAProjectionMatrix;
 
@@ -1360,8 +1450,14 @@ namespace ORTS
             foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Begin();
-                RenderProcess.PrimitiveCount++;
-                renderPrimitive.Draw(graphicsDevice);
+
+                foreach (var item in renderItems)
+                {
+                    RenderProcess.PrimitiveCount++;
+                    basicEffect.World = item.XNAMatrix;
+                    basicEffect.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
                 pass.End();
             }
             basicEffect.End();

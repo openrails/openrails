@@ -68,7 +68,8 @@ namespace ORTS
 			Vector3 mstsLocation = new Vector3(xnaTranslation.X + dTileX * 2048, forestMesh.refElevation, -xnaTranslation.Z + dTileZ * 2048);
 			Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             float viewingDistance = 2000; // Arbitrary, but historically in MSTS it was only 1000.
-			frame.AddAutoPrimitive(mstsLocation, forestMesh.objectRadius, viewingDistance + forestMesh.objectRadius, forestMaterial, forestMesh, ref xnaPatchMatrix, ShapeFlags.None);
+			frame.AddAutoPrimitive(mstsLocation, forestMesh.objectRadius, viewingDistance + forestMesh.objectRadius, forestMaterial, forestMesh, 
+                RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.None);
         }
     }
     #endregion

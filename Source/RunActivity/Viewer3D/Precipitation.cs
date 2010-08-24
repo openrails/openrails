@@ -102,7 +102,7 @@ namespace ORTS
 
             precipMesh.Update(Viewer.Simulator.ClockTime);
 
-            frame.AddPrimitive(precipMaterial, precipMesh, ref XNAPrecipWorldLocation);
+            frame.AddPrimitive(precipMaterial, precipMesh, RenderPrimitiveGroup.World, ref XNAPrecipWorldLocation);
         }
 
         /// <summary>

@@ -39,7 +39,7 @@ namespace ORTS
             TextPrimitive.Material = Material;
             TextPrimitive.Color = Color.Yellow;
             TextPrimitive.Location = new Vector2(10, 10);
-            TextPrimitive.Sequence = RenderPrimitiveSequence.TextOverlay;
+            //TextPrimitive.Sequence = RenderPrimitiveSequence.TextOverlay;
         }
 
         public void HandleUserInput(ElapsedTime elapsedTime)
@@ -90,7 +90,7 @@ namespace ORTS
             }
 
             TextPrimitive.Text = TextBuilder.ToString();
-            frame.AddPrimitive(Material, TextPrimitive, ref Matrix);
+            frame.AddPrimitive(Material, TextPrimitive, RenderPrimitiveGroup.Overlay, ref Matrix);
 
 			//Here's where the logger stores the data from each frame
 			if (LoggerEnabled)

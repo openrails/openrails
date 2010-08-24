@@ -1,21 +1,63 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 
 namespace ORTS
 {
 	public enum RenderPrimitiveSequence
 	{
-		Default = 0,
-		CabView = 1,
-		TextOverlay = 2,
+        Shadows,
+        CabOpaque,
+        WorldOpaque,
+        WorldBlended,
+        CabBlended,
+        TextOverlayOpaque,
+		TextOverlayBlended,
 	}
+
+    public enum RenderPrimitiveGroup
+    {
+        Shadows,
+        Cab,
+        World,
+        Overlay
+    }
+
+    struct DrawOrderLookup
+    {
+        DrawOrderLookup(RenderPrimitiveSequence o, RenderPrimitiveSequence b)
+        {
+            opaque = o;
+            blended = b;
+        }
+
+        RenderPrimitiveSequence opaque, blended;
+
+        public static RenderPrimitiveSequence GetSequence(RenderPrimitive primitive, RenderPrimitiveGroup group, Material material)
+        {
+            if (material.GetBlending(primitive))
+                return lookupTable[(int)group].blended;
+            else
+                return lookupTable[(int)group].opaque;
+        }
+
+        private static DrawOrderLookup[] lookupTable = new DrawOrderLookup[]
+        {
+            new DrawOrderLookup(RenderPrimitiveSequence.Shadows, RenderPrimitiveSequence.Shadows),      // Shadows
+            new DrawOrderLookup(RenderPrimitiveSequence.CabOpaque, RenderPrimitiveSequence.CabBlended), // Cab
+            new DrawOrderLookup(RenderPrimitiveSequence.WorldOpaque, RenderPrimitiveSequence.WorldBlended), //World
+            new DrawOrderLookup(RenderPrimitiveSequence.TextOverlayOpaque, RenderPrimitiveSequence.TextOverlayBlended) // Overlay
+        };
+    }
+
+    
 
     public abstract class RenderPrimitive
     {
 		public float ZBias = 0f;
-		public RenderPrimitiveSequence Sequence = RenderPrimitiveSequence.Default;
+		//public RenderPrimitiveSequence Sequence = RenderPrimitiveSequence.Default;
 
         /// <summary>
         /// This is when the object actually renders itself onto the screen.
@@ -30,7 +72,7 @@ namespace ORTS
     {
         public readonly Material Material;
         public readonly RenderPrimitive RenderPrimitive;
-        public readonly Matrix XNAMatrix;
+        public Matrix XNAMatrix;
 		public readonly ShapeFlags Flags;
 
 		public RenderItem(Material material, RenderPrimitive renderPrimitive, Matrix xnaMatrix, ShapeFlags flags)
@@ -54,26 +96,31 @@ namespace ORTS
 		const float ShadowMapViewFar = 2000f; // far plane for shadow map camera
 
 		readonly RenderProcess RenderProcess;
-        readonly List<RenderItem> RenderItems;
-		readonly List<RenderItem> RenderBlendedItems;
-		readonly List<RenderItem> RenderShadowItems;
-        int RenderMaxSequence = 0;
+        readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[Enum.GetValues(typeof(RenderPrimitiveSequence)).Length];
+
+        //int RenderMaxSequence = 0;
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
 
         public RenderFrame(RenderProcess owner)
         {
             RenderProcess = owner;
-            RenderItems = new List<RenderItem>();
-			RenderBlendedItems = new List<RenderItem>();
-			RenderShadowItems = new List<RenderItem>();
+
+            for (int i = 0; i < RenderItems.Length; i++)
+            {
+                RenderItems[i] = new Dictionary<Material, List<RenderItem>>();
+            }
         }
 
         public void Clear() 
         {
-            RenderItems.Clear();
-			RenderBlendedItems.Clear();
-			RenderShadowItems.Clear();
+            for (int i = 0; i < RenderItems.Length; i++)
+            {
+                foreach (Material mat in RenderItems[i].Keys)
+                {
+                    RenderItems[i][mat].Clear();
+                }
+            }
         }
 
         public void SetCamera(ref Matrix xnaViewMatrix, ref Matrix xnaProjectionMatrix)
@@ -125,10 +172,12 @@ namespace ORTS
 		/// <param name="primitive"></param>
 		/// <param name="xnaMatrix"></param>
 		/// <param name="flags"></param>
-		public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
+		public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, 
+            Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
 			if (RenderProcess.Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
-				AddPrimitive(material, primitive, ref xnaMatrix, flags);
+                AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
+
 			if (((flags & ShapeFlags.ShadowCaster) != 0) && IsInShadowMap(mstsLocation, objectRadius, objectViewingDistance))
 				AddShadowPrimitive(material, primitive, ref xnaMatrix, flags);
 		}
@@ -136,24 +185,26 @@ namespace ORTS
 		/// <summary>
         /// Executed in the UpdateProcess thread
         /// </summary>
-		public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix)
+        public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix)
 		{
-			AddPrimitive(material, primitive, ref xnaMatrix, ShapeFlags.None);
+            AddPrimitive(material, primitive, group, ref xnaMatrix, ShapeFlags.None);
 		}
 
 		/// <summary>
 		/// Executed in the UpdateProcess thread
 		/// </summary>
-		public void AddPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
+        public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
-			if (!material.GetBlending(primitive))
-				RenderItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
-			else
-				RenderBlendedItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
+            RenderPrimitiveSequence sequence = DrawOrderLookup.GetSequence(primitive, group, material);
+            Dictionary<Material, List<RenderItem>> sequenceDict = RenderItems[(int)sequence];
 
-			if (RenderMaxSequence < (int)primitive.Sequence)
-				RenderMaxSequence = (int)primitive.Sequence;
+            if (!sequenceDict.ContainsKey(material))
+            {
+                sequenceDict.Add(material, new List<RenderItem>());
+            }
 
+            sequenceDict[material].Add(new RenderItem(material, primitive, xnaMatrix, flags));
+            
 			if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
 				primitive.ZBias = 1;
 		}
@@ -163,7 +214,7 @@ namespace ORTS
 		/// </summary>
 		public void AddShadowPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
-			RenderShadowItems.Add(new RenderItem(material, primitive, xnaMatrix, flags));
+            AddPrimitive(material, primitive, RenderPrimitiveGroup.Shadows, ref xnaMatrix, flags);
 		}
 
         /// <summary>
@@ -223,33 +274,31 @@ namespace ORTS
 			Materials.ShadowMapMaterial.SetState(graphicsDevice, false);
 
 			// Render non-terrain shadow items first.
-			foreach (var renderItem in RenderShadowItems)
-			{
-				var riMatrix = renderItem.XNAMatrix;
-				if (!(renderItem.Material is TerrainMaterial))
-					Materials.ShadowMapMaterial.Render(graphicsDevice, renderItem.Material, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
-			}
+            foreach (var pair in RenderItems[(int)RenderPrimitiveSequence.Shadows])
+            {
+                if (!(pair.Key is TerrainMaterial))
+                    Materials.ShadowMapMaterial.Render(graphicsDevice, pair.Value, ref ShadowMapLightView, ref ShadowMapLightProj);
+            }
 
 			// Render terrain shadow items now, with their magic.
 			graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
 			graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
-			foreach (var renderItem in RenderShadowItems)
-			{
-				var riMatrix = renderItem.XNAMatrix;
-				if (renderItem.Material is TerrainMaterial)
-					Materials.ShadowMapMaterial.Render(graphicsDevice, renderItem.Material, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
-			}
+
+            foreach (var pair in RenderItems[(int)RenderPrimitiveSequence.Shadows])
+            {
+                if (pair.Key is TerrainMaterial)
+                    Materials.ShadowMapMaterial.Render(graphicsDevice, pair.Value, ref ShadowMapLightView, ref ShadowMapLightProj);
+            }
 
 			// Prepare for blocking rendering of terrain.
 			Materials.ShadowMapMaterial.SetState(graphicsDevice, true);
 
 			// Render terrain shadow items in blocking mode.
-			foreach (var renderItem in RenderShadowItems)
-			{
-				var riMatrix = renderItem.XNAMatrix;
-				if (renderItem.Material is TerrainMaterial)
-					Materials.ShadowMapMaterial.Render(graphicsDevice, renderItem.Material, renderItem.RenderPrimitive, ref riMatrix, ref ShadowMapLightView, ref ShadowMapLightProj);
-			}
+            foreach (var pair in RenderItems[(int)RenderPrimitiveSequence.Shadows])
+            {
+                if (pair.Key is TerrainMaterial)
+                    Materials.ShadowMapMaterial.Render(graphicsDevice, pair.Value, ref ShadowMapLightView, ref ShadowMapLightProj);
+            }
 
 			// All done.
 			//Materials.ShadowMapMaterial.ResetState(graphicsDevice);
@@ -266,12 +315,10 @@ namespace ORTS
         {
             graphicsDevice.Clear(Materials.FogColor);
 
-            for (int iSequence = 0; iSequence <= RenderMaxSequence; ++iSequence)
-                DrawSequence(graphicsDevice, iSequence);
-
+            DrawSequences(graphicsDevice);
         }
 
-        public void DrawSequence(GraphicsDevice graphicsDevice, int sequence)
+        public void DrawSequences(GraphicsDevice graphicsDevice)
         {
             if (RenderProcess.Viewer.DynamicShadows)
             {
@@ -279,46 +326,14 @@ namespace ORTS
 				Materials.SceneryShader.SetShadowMap(ref shadowMapMatrix, ShadowMap);
             }
 
-            // Render each material on the specified primitive
-            // To minimize renderstate changes, the material is
-            // told what material was used previously so it can
-            // make a decision on what renderstates need to be
-            // changed.
-            Material prevMaterial = null;
-            foreach (var renderItem in RenderItems)
-            {
-                Material currentMaterial = renderItem.Material;
-                if ((int)renderItem.RenderPrimitive.Sequence == sequence)
-                {
-                    if (prevMaterial != null)
-                        prevMaterial.ResetState(graphicsDevice);
-					if (prevMaterial != currentMaterial)
-						currentMaterial.SetState(graphicsDevice, prevMaterial);
-
-					var riMatrix = renderItem.XNAMatrix;
-					currentMaterial.Render(graphicsDevice, renderItem.RenderPrimitive, ref riMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-
-                    prevMaterial = currentMaterial;
-                }
-            }
-			foreach (var renderItem in RenderBlendedItems)
-			{
-				Material currentMaterial = renderItem.Material;
-				if ((int)renderItem.RenderPrimitive.Sequence == sequence)
-				{
-					if (prevMaterial != null)
-						prevMaterial.ResetState(graphicsDevice);
-					if (prevMaterial != currentMaterial)
-						currentMaterial.SetState(graphicsDevice, prevMaterial);
-
-					var riMatrix = renderItem.XNAMatrix;
-					currentMaterial.Render(graphicsDevice, renderItem.RenderPrimitive, ref riMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-
-					prevMaterial = currentMaterial;
-				}
-			}
-			if (prevMaterial != null)
-                prevMaterial.ResetState(graphicsDevice);
+            foreach (var sequence in RenderItems)
+                if(sequence != RenderItems[(int)RenderPrimitiveSequence.Shadows])
+                    foreach (var pair in sequence)
+                    {
+                        pair.Key.SetState(graphicsDevice, null);
+                        pair.Key.Render(graphicsDevice, pair.Value, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                        pair.Key.ResetState(graphicsDevice);
+                    }
         }
     }
 }

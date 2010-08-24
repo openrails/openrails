@@ -823,7 +823,7 @@ namespace ORTS
 
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
-			Sequence = RenderPrimitiveSequence.CabView;
+			//Sequence = RenderPrimitiveSequence.CabView;
             _Sprite2DCabView = new SpriteBatchMaterial(viewer.RenderProcess);
 
             // Loading ACE files, skip displaying ERROR messages
@@ -872,7 +872,7 @@ namespace ORTS
             _CabLight = _Locomotive.CabLightOn;
 
             _CabRect = new Rectangle(0, 0, (int)_Viewer.DisplaySize.X, (int)_Viewer.DisplaySize.Y);
-            frame.AddPrimitive(_Sprite2DCabView, this, ref _Scale);
+            frame.AddPrimitive(_Sprite2DCabView, this, RenderPrimitiveGroup.Cab, ref _Scale);
         }
         
         public override void Draw(GraphicsDevice graphicsDevice)

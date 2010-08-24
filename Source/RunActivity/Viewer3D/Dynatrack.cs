@@ -73,7 +73,7 @@ namespace ORTS
                 xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
                 // (Transformation is now with respect to camera-tile origin)
 
-                frame.AddPrimitive(dtrackMaterial, dtrackMesh, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                frame.AddPrimitive(dtrackMaterial, dtrackMesh, RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
             }
         } // end PrepareFrame
     } // end DynatrackDrawer

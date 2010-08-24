@@ -823,7 +823,8 @@ namespace ORTS
 
 						// TODO make shadows depend on shape overrides
 
-						frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance, shapePrimitive.Material, shapePrimitive, ref xnaMatrix, flags);
+						frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance, 
+                            shapePrimitive.Material, shapePrimitive, RenderPrimitiveGroup.World, ref xnaMatrix, flags);
 					}
 				}
 			}

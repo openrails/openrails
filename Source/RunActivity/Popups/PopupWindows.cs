@@ -78,34 +78,34 @@ namespace ORTS
 				if (Screen == null)
 					Screen = new ResolveTexture2D(graphicsDevice, ScreenSize.X, ScreenSize.Y, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
 
-				foreach (var window in VisibleWindows)
-				{
-					var xnaWorld = window.XNAWorld;
+                foreach (var window in VisibleWindows)
+                {
+                    var xnaWorld = window.XNAWorld;
 
-					graphicsDevice.ResolveBackBuffer(Screen);
-					material.SetState(graphicsDevice, Screen);
-					material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-					material.ResetState(graphicsDevice);
+                    graphicsDevice.ResolveBackBuffer(Screen);
+                    material.SetState(graphicsDevice, Screen);
+                    material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+                    material.ResetState(graphicsDevice);
 
-					SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
-					window.Draw(SpriteBatch);
-					SpriteBatch.End();
-				}
+                    SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
+                    window.Draw(SpriteBatch);
+                    SpriteBatch.End();
+                }
 			}
 			else
 			{
-				foreach (var window in VisibleWindows)
-				{
-					var xnaWorld = window.XNAWorld;
+                foreach (var window in VisibleWindows)
+                {
+                    var xnaWorld = window.XNAWorld;
 
-					material.SetState(graphicsDevice, Screen);
-					material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-					material.ResetState(graphicsDevice);
+                    material.SetState(graphicsDevice, Screen);
+                    material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+                    material.ResetState(graphicsDevice);
 
-					SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
-					window.Draw(SpriteBatch);
-					SpriteBatch.End();
-				}
+                    SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState);
+                    window.Draw(SpriteBatch);
+                    SpriteBatch.End();
+                }
 			}
 		}
 

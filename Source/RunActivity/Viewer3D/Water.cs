@@ -93,7 +93,7 @@ namespace ORTS
             if (Viewer.Camera.CanSee(xnaTileLocation, 3500f, 2000f))
             {
                 xnaMatrix.Translation = xnaTileLocation;
-                frame.AddPrimitive(WaterMaterial, this, ref xnaMatrix);
+                frame.AddPrimitive(WaterMaterial, this, RenderPrimitiveGroup.World, ref xnaMatrix);
             }
         }
 

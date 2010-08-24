@@ -35,12 +35,11 @@ namespace ORTS
 		EffectParameter View;
 		//EffectParameter Projection;
 		EffectParameter WorldViewProjection;
-		public void SetMatrix(ref Matrix world, ref Matrix view, ref Matrix projection)
+		public void SetMatrix(Matrix world, ref Matrix view, ref Matrix viewProj)
 		{
 			World.SetValue(world);
 			View.SetValue(view);
-			//Projection.SetValue(projection);
-			WorldViewProjection.SetValue(world * view * projection);
+			WorldViewProjection.SetValue(world * viewProj);
 		}
 
 		EffectParameter LightViewProjectionShadowProjection;
@@ -126,9 +125,9 @@ namespace ORTS
 		EffectParameter WorldViewProjection = null;
 		EffectParameter ImageTexture = null;
 
-		public void SetData(ref Matrix world, ref Matrix view, ref Matrix projection, Texture2D imageTexture)
+		public void SetData(ref Matrix wvp, Texture2D imageTexture)
 		{
-			WorldViewProjection.SetValue(world * view * projection);
+			WorldViewProjection.SetValue(wvp);
 			ImageTexture.SetValue(imageTexture);
 		}
 
@@ -259,9 +258,9 @@ namespace ORTS
             moonScale = Parameters["moonScale"];
         }
 
-        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+        public void SetMatrix(ref Matrix worldViewProj, ref Matrix view)
         {
-            mModelToProjection.SetValueTranspose((world * view) * projection);
+            mModelToProjection.SetValueTranspose(worldViewProj);
             View.SetValue(view);
         }
     }
@@ -317,7 +316,7 @@ namespace ORTS
             precip_Tex = Parameters["precip_Tex"];
         }
 
-        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+        public void SetMatrix(Matrix world, ref Matrix view, ref Matrix projection)
         {
             mProjection.SetValue(projection);
             mView.SetValue(view);
@@ -358,9 +357,9 @@ namespace ORTS
             fadeTime = Parameters["fadeTime"];
         }
 
-        public void SetMatrix(Matrix world, Matrix view, Matrix projection)
+        public void SetMatrix(ref Matrix wvp)
         {
-            mWorldViewProj.SetValueTranspose(world * view * projection);
+            mWorldViewProj.SetValueTranspose(wvp);
         }
     }
     #endregion
@@ -397,10 +396,10 @@ namespace ORTS
 			}
 		}
 
-		public void SetMatrix(ref Matrix world, ref Matrix view, ref Matrix projection)
+		public void SetMatrix(Matrix world, ref Matrix wvp)
 		{
 			World.SetValue(world);
-			WorldViewProjection.SetValue(world * view * projection);
+            WorldViewProjection.SetValue(wvp);
 		}
 
 		public PopupWindowShader(GraphicsDevice graphicsDevice, ContentManager content)

@@ -303,7 +303,7 @@ namespace ORTS
 			Vector3 mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
 			Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
 			mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-			frame.AddAutoPrimitive(mstsLocation, 150f, 2000f, PatchMaterial, this, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
+			frame.AddAutoPrimitive(mstsLocation, 150f, 2000f, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
 		}
 
         /// <summary>
