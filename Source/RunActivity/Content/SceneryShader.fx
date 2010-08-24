@@ -171,15 +171,15 @@ float _PSGetDay2Night(inout float4 Color)
 // Applies the Variance Shadow Map to the pixel.
 void _PSApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
 {
-	float clip = ((saturate(In.Shadow.x) != In.Shadow.x) || (saturate(In.Shadow.y) != In.Shadow.y));
 	float2 moments = tex2D(ShadowMap, In.Shadow.xy);
-	float lit_factor = (In.Shadow.z <= moments.x);
+	bool outside_shadowmap = any(floor(In.Shadow.xy));
+	bool not_shadowed = (In.Shadow.z <= moments.x);
 	float E_x2 = moments.y;
 	float Ex_2 = moments.x * moments.x;
 	float variance = clamp(E_x2 - Ex_2, 0.00001, 1.0);
-	float m_d = (moments.x - In.Shadow.z);
+	float m_d = moments.x - In.Shadow.z;
 	float p = variance / (variance + m_d * m_d);
-	Color.rgb *= lerp(1.0, lerp(0.5, 1.0, saturate(clip + max(lit_factor, p))), _PSGetDay2Night(Color));
+	Color.rgb *= lerp(1.0, lerp(0.5, 1.0, saturate(outside_shadowmap + not_shadowed + p)), _PSGetDay2Night(Color));
 }
 
 // Apply lighting with brightness and ambient modifiers.
