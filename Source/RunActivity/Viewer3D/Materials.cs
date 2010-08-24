@@ -291,6 +291,11 @@ namespace ORTS
 		{
 			SpriteBatch.End();
 		}
+
+        public override bool GetBlending(RenderPrimitive renderPrimitive)
+        {
+            return true;
+        }
 	}
     #endregion
 
