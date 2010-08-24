@@ -41,7 +41,10 @@ namespace ORTS
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
                 foreach (Service_Definition sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition)
                 {
-                    AITrainDictionary.Add(sd.UiD, CreateAITrain(sd));
+                    AITrain train = CreateAITrain(sd);
+                    if (train == null)
+                        continue;
+                    AITrainDictionary.Add(sd.UiD, train);
                     //Console.WriteLine("AIQ {0} {1} {2} {3}", sd.Service, sd.Time, sd.UiD, Simulator.ClockTime);
                 }
             Dispatcher = new Dispatcher(this);
@@ -188,7 +191,8 @@ namespace ORTS
             if (sd.Time < Simulator.ClockTime)
             {
                 float dtS = (float)(Simulator.ClockTime - sd.Time);
-                train.RearTDBTraveller.Move(dtS * train.MaxSpeedMpS);
+                if (train.RearTDBTraveller.Move(dtS * train.MaxSpeedMpS) > 0.01 || train.RearTDBTraveller.TN.TrEndNode != null)
+                    return null;
                 //Console.WriteLine("initial move {0} {1}", dtS * train.MaxSpeedMpS, train.MaxSpeedMpS);
                 AIPathNode node = train.Path.FirstNode;
                 while (node != null && node.NextMainTVNIndex != train.RearTDBTraveller.TrackNodeIndex)
@@ -226,6 +230,8 @@ namespace ORTS
             train.CalculatePositionOfCars(0);
             for (int i = 0; i < train.Cars.Count; i++)
                 train.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
+            if (train.FrontTDBTraveller.TN.TrEndNode != null)
+                return null;
 
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
