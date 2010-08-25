@@ -148,6 +148,9 @@
     <Compile Include="..\MSTS\WFile.cs">
       <Link>MSTS\WFile.cs</Link>
     </Compile>
+    <Compile Include="..\MSTS\WSFile.cs">
+      <Link>MSTS\WSFile.cs</Link>
+    </Compile>
     <Compile Include="..\MSTS\YFile.cs">
       <Link>MSTS\YFile.cs</Link>
     </Compile>

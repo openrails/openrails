@@ -79,7 +79,8 @@ namespace ORTS
         public SceneryDrawer SceneryDrawer;
         public TrainDrawer TrainDrawer;
         public ISoundEngine SoundEngine = null;  // IrrKlang Sound Device
-        public SoundSource IngameSounds = null;
+        public SoundSource IngameSounds = null;  // By GeorgeS
+        public WorldSounds WorldSounds = null;   // By GeorgeS
         // Route Information
         public Tiles Tiles = null;
         public ENVFile ENVFile;
@@ -133,6 +134,8 @@ namespace ORTS
                 SoundEngine.AddFileFactory(new WAVIrrKlangFileFactory());
                 IngameSounds = new SoundSource(this, Simulator.RoutePath + "\\Sound\\ingame.sms");
             }
+            // By GeorgeS
+            WorldSounds = new WorldSounds(this);
             ReadENVFile();
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
             Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
@@ -490,9 +493,12 @@ namespace ORTS
             TerrainDrawer.PrepareFrame(frame, elapsedTime);
             SceneryDrawer.PrepareFrame(frame, elapsedTime);
             TrainDrawer.PrepareFrame(frame, elapsedTime);
-            if( PrecipDrawer != null ) PrecipDrawer.PrepareFrame(frame, elapsedTime);
+            // By GeorgeS
+            WorldSounds.Update(elapsedTime);
+            if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
             if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);
             InfoDisplay.PrepareFrame(frame, elapsedTime);
+            // By GeorgeS
             IngameSounds.Update(elapsedTime);
         }
 

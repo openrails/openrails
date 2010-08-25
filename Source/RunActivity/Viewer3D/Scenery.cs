@@ -119,6 +119,8 @@ namespace ORTS
                             // if not, unload the wFile
                             Console.Write("w");
                             WorldFiles[i] = null;
+                            // World sounds - By GeorgeS
+                            Viewer.WorldSounds.RemoveByTile(tile.TileX, tile.TileZ);
                         }
                     }
                 }
@@ -156,6 +158,8 @@ namespace ORTS
                 {
                     Console.Write("W");
                     WorldFiles[i] = new WorldFile(Viewer, tileX, tileZ);
+                    // Load world sounds - By GeorgeS
+                    Viewer.WorldSounds.AddByTile(tileX, tileZ);
                     return;
                 }
 

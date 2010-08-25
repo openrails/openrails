@@ -64,7 +64,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Initializes a SoundSource which has no specifis loaction - like ingame.sms
+        /// Initializes a SoundSource which has no specific loaction - like ingame.sms
         /// </summary>
         /// <param name="viewer"></param>
         /// <param name="smsFilePath"></param>
@@ -81,6 +81,7 @@ namespace ORTS
         /// <param name="smsFilePath"></param>
         public SoundSource(Viewer3D viewer, WorldLocation worldLocation, string smsFilePath)
         {
+            IsEnvSound = true;
             Initialize(viewer, worldLocation, smsFilePath);
         }
 
@@ -102,6 +103,7 @@ namespace ORTS
         public bool setDeactivate = true;     // For initially mute sounds - by GeorgeS
         private MSTS.Activation ActivationConditions;
         private MSTS.Deactivation DeactivationConditions;
+        public bool IsEnvSound = false;
 
         List<SoundStream> SoundStreams = new List<SoundStream>();
 
@@ -337,10 +339,14 @@ namespace ORTS
                     {
                         Triggers.Add(new ORTSVariableTrigger(this, (MSTS.Variable_Trigger)trigger));
                     }
-                    else if (trigger.GetType() == typeof(MSTS.Discrete_Trigger) && soundSource.Car != null )
+                    else if (trigger.GetType() == typeof(MSTS.Variable_Trigger) && soundSource.IsEnvSound)
+                    {
+                        Triggers.Add (new ORTSDistanceTrigger (this, (MSTS.Variable_Trigger)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(MSTS.Discrete_Trigger) && soundSource.Car != null)
                     {
                         ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, (MSTS.Discrete_Trigger)trigger);
-                        Triggers.Add( ortsTrigger );  // list them here so we can enable and disable 
+                        Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                         SoundSource.Car.EventHandlers.Add(ortsTrigger);  // tell the simulator to call us when the event occurs
                     }
                     else if (trigger.GetType() == typeof(MSTS.Discrete_Trigger))
@@ -426,6 +432,15 @@ namespace ORTS
                 if (SoundSource.setDeactivate)
                 {
                     Volume = 0;
+                }
+            }
+            else if (ISound != null && SoundSource.IsEnvSound)
+            {
+                if (MSTSStream.VolumeCurve != null)
+                {
+                    float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.WorldLocation) / 500;
+                    float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
+                    Volume = y;
                 }
             }
         }
@@ -611,6 +626,12 @@ namespace ORTS
             if (ISound == null)
             {
                 return;
+            }
+
+            if (SoundSource.IsEnvSound)
+            {
+                ISound.MinDistance = 50;
+                ISound.MaxDistance = 200;
             }
 
             _playingSound = iSoundSource;
@@ -826,6 +847,76 @@ namespace ORTS
         }
 
     }  // class RandomTrigger
+
+    /// <summary>
+    /// Control sounds based on TrainCar variables in the simulator 
+    /// </summary>
+    public class ORTSDistanceTrigger : ORTSTrigger
+    {
+        MSTS.Variable_Trigger SMS;
+        SoundStream _SoundStream;
+
+        float StartValue;
+
+        public ORTSDistanceTrigger(SoundStream soundStream, MSTS.Variable_Trigger smsData)
+        {
+            SMS = smsData;
+            _SoundStream = soundStream;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            StartValue = 100000;
+        }
+
+        public override void TryTrigger()
+        {
+            float newValue = ReadValue();
+            bool triggered = false;
+            Signaled = false;
+
+            switch (SMS.Event)
+            {
+                case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
+                    if (newValue < SMS.Threshold
+                        && StartValue >= SMS.Threshold)
+                        triggered = true;
+                    if (newValue < SMS.Threshold)
+                        Signaled = true;
+                    break;
+                case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
+                    if (newValue > SMS.Threshold
+                        && StartValue <= SMS.Threshold)
+                        triggered = true;
+                    if (newValue > SMS.Threshold)
+                        Signaled = true;
+                    break;
+            }
+
+            //Signaled = triggered;
+
+            StartValue = newValue;
+            if (triggered && Enabled)
+            {
+                SoundCommand.Run();
+            }
+        } // TryTrigger
+
+        private float ReadValue()
+        {
+            switch (SMS.Event)
+            {
+                case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
+                case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
+                    return WorldLocation.DistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.WorldLocation) / 500;
+                default:
+                    return 100000;
+            }
+        }
+
+    }  // class DistanceTrigger
 
     /// <summary>
     /// Control sounds based on TrainCar variables in the simulator 
@@ -1268,6 +1359,99 @@ namespace ORTS
             }
         }
     } // ORTSSoundPlayCommand 
+
+    public class WorldSounds
+    {
+        List<WSFile> Files = new List<WSFile>();
+        Dictionary<string, List<SoundSource>> Sounds = new Dictionary<string, List<SoundSource>>();
+        private Viewer3D Viewer;
+
+        public WorldSounds(Viewer3D viewer)
+        {
+            Viewer = viewer;
+        }
+
+        public void Update(ElapsedTime elapsedTime)
+        {
+            lock (Sounds)
+            {
+                foreach (List<SoundSource> ls in Sounds.Values)
+                {
+                    foreach (SoundSource ss in ls)
+                        ss.Update(elapsedTime);
+                }
+            }
+        }
+
+        public void AddByTile(int TileX, int TileZ)
+        {
+            string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
+            string soundfolder = Program.Simulator.RoutePath + "\\sound\\";
+            lock (Sounds)
+            {
+                if (!Sounds.ContainsKey(name))
+                {
+                    WSFile wf = new WSFile(name);
+                    List<SoundSource> ls = new List<SoundSource>();
+                    if (wf.TR_WorldSoundFile != null)
+                    {
+                        foreach (WorldSoundSource fss in wf.TR_WorldSoundFile.SoundSources)
+                        {
+                            WorldLocation wl = new WorldLocation(TileX, TileZ, fss.X, fss.Y, fss.Z);
+                            SoundSource ss = null;
+                            if (File.Exists(soundfolder + fss.SoundSourceFileName))
+                                ss = new SoundSource(Viewer, wl, soundfolder + fss.SoundSourceFileName);
+                            if (ss != null)
+                                ls.Add(ss);
+                        }
+                    }
+                    Sounds.Add(name, ls);
+                }
+            }
+        }
+
+        public void RemoveByTile(int TileX, int TileZ)
+        {
+            string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
+            lock (Sounds)
+            {
+                if (Sounds.ContainsKey(name))
+                {
+                    List<SoundSource> ls = Sounds[name];
+                    Sounds.Remove(name);
+                    foreach (SoundSource ss in ls)
+                        ss.Uninitialize();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Build a w filename from tile X and Z coordinates.
+        /// Returns a string eg "w-011283+014482.w"
+        /// </summary>
+        private string WorldFileNameFromTileCoordinates(int tileX, int tileZ)
+        {
+            string filename = Viewer.Simulator.RoutePath + @"\WORLD\";
+            filename += "w" + FormatTileCoordinate(tileX) + FormatTileCoordinate(tileZ) + ".ws";
+            return filename;
+        }
+
+        /// <summary>
+        /// For building a filename from tile X and Z coordinates.
+        /// Returns the string representation of a coordinate
+        /// eg "+014482"
+        /// </summary>
+        private string FormatTileCoordinate(int tileCoord)
+        {
+            string sign = "+";
+            if (tileCoord < 0)
+            {
+                sign = "-";
+                tileCoord *= -1;
+            }
+            return sign + tileCoord.ToString("000000");
+        }
+    }
 
 }
 
