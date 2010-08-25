@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MSTS;
+using System.IO;
 
 namespace ORTS
 {
@@ -24,12 +25,27 @@ namespace ORTS
         public string DisplayMessage { get; internal set; }
         public int SoundNotify = -1;
 
-        internal double X1, X2;
-        internal double Y1, Y2;
-        internal double Z1, Z2;
-
         public virtual void NotifyEvent(ActivityEvent EventType)
         {
+        }
+
+        public virtual void Save(BinaryWriter outf)
+        {
+            Int32 noval = -1;
+            if (IsCompleted == null) outf.Write(noval); else outf.Write(IsCompleted.Value ? (Int32)1 : (Int32)0);
+            outf.Write((Int64)CompletedAt.Ticks);
+            outf.Write(DisplayMessage);
+            outf.Write((Int32)SoundNotify);
+        }
+
+        public virtual void Restore(BinaryReader inf)
+        {
+            Int64 rdval;
+            rdval = inf.ReadInt32();
+            IsCompleted = rdval == -1 ? (bool?)null : rdval == 0 ? false : true;
+            CompletedAt = new DateTime(inf.ReadInt64());
+            DisplayMessage = inf.ReadString();
+            SoundNotify = inf.ReadInt32();
         }
     }
 
@@ -39,8 +55,12 @@ namespace ORTS
         List<ActivityTask> Tasks = new List<ActivityTask>();
         public ActivityTask Current = null;
         double prevTrainSpeed = -1;
-        double startPosition = -1;
 
+        private Activity(BinaryReader inf)
+        {
+            RestoreThis(inf);
+        }
+        
         public Activity(ACTFile actFile)
         {
             Player_Service_Definition sd;
@@ -60,7 +80,6 @@ namespace ORTS
                     ActivityTask task = null;
                     for (int i = 0; i < sd.Player_Traffic_Definition.ArrivalTime.Count; i++)
                     {
-                        if (startPosition == -1) startPosition = sd.Player_Traffic_Definition.DistanceDownPath[i];
                         Platform = Program.Simulator.TDB.TrackDB.TrItemTable[sd.Player_Traffic_Definition.PlatformStartID[i]] as PlatformItem;
 
                         if (Platform != null)
@@ -68,14 +87,29 @@ namespace ORTS
                             Tasks.Add(new ActivityTaskPassengerStopAt(task,
                                 sd.Player_Traffic_Definition.ArrivalTime[i],
                                 sd.Player_Traffic_Definition.DepartTime[i],
-                                Platform, Program.Simulator.TDB.TrackDB.TrItemTable[Platform.Flags2] as PlatformItem,
-                                sd.Player_Traffic_Definition.DistanceDownPath[i]));
+                                Platform, Program.Simulator.TDB.TrackDB.TrItemTable[Platform.Flags2] as PlatformItem));
                             task = Tasks[i];
                         }
                     }
 
                     Current = Tasks[0];
                 }
+            }
+        }
+
+        public ActivityTask Last
+        {
+            get
+            {
+                return Tasks.Count == 0 ? null : Tasks[Tasks.Count - 1];
+            }
+        }
+
+        public bool IsFinished
+        {
+            get
+            {
+                return Tasks.Count == 0 ? false : Last.IsCompleted != null;
             }
         }
 
@@ -114,6 +148,85 @@ namespace ORTS
                 }
             }
         }
+
+        public static void Save(BinaryWriter outf, Activity act)
+        {
+            Int32 noval = -1;
+            if (act == null)
+            {
+                outf.Write(noval);
+            }
+            else
+            {
+                noval = 1;
+                outf.Write(noval);
+                act.Save(outf);
+            }
+        }
+
+        public static Activity Restore(BinaryReader inf)
+        {
+            Int32 rdval;
+            rdval = inf.ReadInt32();
+            if (rdval == -1)
+            {
+                return null;
+            }
+            else
+            {
+                Activity act = new Activity(inf);
+                return act;
+            }
+        }
+        
+        public void Save(BinaryWriter outf)
+        {
+            Int32 noval = -1;
+            outf.Write((Int64)StartTime.Ticks);
+            outf.Write((Int32)Tasks.Count);
+            foreach(ActivityTask task in Tasks)
+            {
+                task.Save(outf);
+            }
+            if (Current == null) outf.Write(noval); else outf.Write((Int32)(Tasks.IndexOf(Current)));
+            outf.Write(prevTrainSpeed);
+        }
+
+        private ActivityTask GetTask(BinaryReader inf)
+        {
+            Int32 rdval;
+            rdval = inf.ReadInt32();
+            if (rdval == 1)
+                return new ActivityTaskPassengerStopAt();
+            else
+                return null;
+        }
+        
+        public void RestoreThis(BinaryReader inf)
+        {
+            Int32 rdval;
+            ActivityTask task;
+
+            StartTime = new DateTime(inf.ReadInt64());
+            rdval = inf.ReadInt32();
+            for (int i = 0; i < rdval; i++)
+            {
+                task = GetTask(inf);
+                task.Restore(inf);
+                Tasks.Add(task);
+            }
+            rdval = inf.ReadInt32();
+            Current = rdval == -1 ? null : Tasks[rdval];
+            prevTrainSpeed = inf.ReadDouble();
+
+            task = null;
+            for (int i = 0; i < Tasks.Count; i++)
+            {
+                Tasks[i].PrevTask = task;
+                if (task != null) task.NextTask = Tasks[i];
+                task = Tasks[i];
+            }
+        }
     }
 
     public class ActivityTaskPassengerStopAt : ActivityTask
@@ -124,14 +237,13 @@ namespace ORTS
         public DateTime? ActDepart = null;
         public PlatformItem PlatformEnd1;
         public PlatformItem PlatformEnd2;
-
+        
         double LoadUnload;
-        double Position;
         int TimerChk = 0;
         bool arrived = false;
         bool maydepart = false;
 
-        public ActivityTaskPassengerStopAt(ActivityTask prev, DateTime Arrive, DateTime Depart, PlatformItem Platformend1, PlatformItem Platformend2, double Position)
+        public ActivityTaskPassengerStopAt(ActivityTask prev, DateTime Arrive, DateTime Depart, PlatformItem Platformend1, PlatformItem Platformend2)
         {
             SchArrive = Arrive;
             SchDepart = Depart;
@@ -140,8 +252,11 @@ namespace ORTS
             PrevTask = prev;
             if (prev != null)
                 prev.NextTask = this;
-            this.Position = Position;
             DisplayMessage = "";
+        }
+
+        internal ActivityTaskPassengerStopAt()
+        {
         }
 
         public override void NotifyEvent(ActivityEvent EventType)
@@ -158,6 +273,14 @@ namespace ORTS
                 {
                     // If yes, we arrived
                     ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
+                    arrived = true;
+
+                    // Chekck if this is the last task in activity, then it is complete
+                    if (NextTask == null)
+                    {
+                        IsCompleted = true;
+                        return;
+                    }
 
                     // Figure out the load/unload time
                     if (SchDepart > ActArrive)
@@ -167,7 +290,6 @@ namespace ORTS
                     
                     if (LoadUnload < PlatformEnd1.PlatformMinWaitingTime) LoadUnload = PlatformEnd1.PlatformMinWaitingTime;
                     LoadUnload += Program.Simulator.ClockTime;
-                    arrived = true;
                 }
             }
             else if (EventType == ActivityEvent.TrainStart)
@@ -220,6 +342,45 @@ namespace ORTS
                     }
                 }
             }
+        }
+
+        public override void Save(BinaryWriter outf)
+        {
+            Int64 noval = -1;
+            outf.Write((Int32)1);
+
+            base.Save(outf);
+
+            outf.Write((Int64)SchArrive.Ticks);
+            outf.Write((Int64)SchDepart.Ticks);
+            if (ActArrive == null) outf.Write(noval); else outf.Write((Int64)ActArrive.Value.Ticks);
+            if (ActDepart == null) outf.Write(noval); else outf.Write((Int64)ActDepart.Value.Ticks);
+            outf.Write((Int32)PlatformEnd1.TrItemId);
+            outf.Write((Int32)PlatformEnd2.TrItemId);
+            outf.Write((double)LoadUnload);
+            outf.Write((Int32)TimerChk);
+            outf.Write(arrived);
+            outf.Write(maydepart);
+        }
+
+        public override void Restore(BinaryReader inf)
+        {
+            Int64 rdval;
+            
+            base.Restore(inf);
+
+            SchArrive = new DateTime(inf.ReadInt64());
+            SchDepart = new DateTime(inf.ReadInt64());
+            rdval = inf.ReadInt64();
+            ActArrive = rdval == -1 ? (DateTime?)null : new DateTime(rdval);
+            rdval = inf.ReadInt64();
+            ActDepart = rdval == -1 ? (DateTime?)null : new DateTime(rdval);
+            PlatformEnd1 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
+            PlatformEnd2 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
+            LoadUnload = inf.ReadDouble();
+            TimerChk = inf.ReadInt32();
+            arrived = inf.ReadBoolean();
+            maydepart = inf.ReadBoolean();
         }
     }
 }

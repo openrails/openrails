@@ -146,7 +146,7 @@ namespace ORTS
             RestoreTrains(inf);
             //Signals = new Signals(this, inf);
             AI = new AI(this, inf);
-
+            ActivityRun = ORTS.Activity.Restore(inf);
         }
 
         // save game state so we can resume later
@@ -159,6 +159,7 @@ namespace ORTS
             SaveTrains(outf);
             //Signals.Save(outf);
             AI.Save(outf);
+            ORTS.Activity.Save(outf, ActivityRun);
         }
 
 

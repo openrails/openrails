@@ -104,7 +104,10 @@ namespace ORTS
 			if (act != null)
 			{
 				ActivityTaskPassengerStopAt at = null;
-				at = act.Current != null ? act.Current.PrevTask as ActivityTaskPassengerStopAt : null;
+
+                ActivityTaskPassengerStopAt Current = act.Current == null ? act.Last as ActivityTaskPassengerStopAt : act.Current as ActivityTaskPassengerStopAt;
+
+                at = Current != null ? Current.PrevTask as ActivityTaskPassengerStopAt : null;
 				if (at != null)
 				{
 					StationPreviousName.Text = at.PlatformEnd1.Station;
@@ -122,7 +125,7 @@ namespace ORTS
 					StationPreviousDepartActual.Text = "";
 				}
 
-				at = act.Current as ActivityTaskPassengerStopAt;
+				at = Current;
 				if (at != null)
 				{
 					StationPlatform.Text = at.PlatformEnd1.PlatformName;
@@ -142,7 +145,7 @@ namespace ORTS
 					Message.Text = "";
 				}
 
-				at = act.Current != null ? act.Current.NextTask as ActivityTaskPassengerStopAt : null;
+				at = Current != null ? Current.NextTask as ActivityTaskPassengerStopAt : null;
 				if (at != null)
 				{
 					StationNextName.Text = at.PlatformEnd1.Station;
@@ -155,6 +158,11 @@ namespace ORTS
 					StationNextArriveScheduled.Text = "";
 					StationNextDepartScheduled.Text = "";
 				}
+
+                if (act.IsFinished)
+                {
+                    Message.Text = "Activity completed.";
+                }
 			}
 		}
 
