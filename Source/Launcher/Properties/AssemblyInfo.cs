@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ORTS")]
+[assembly: AssemblyTitle("Open Rails")]
 [assembly: AssemblyDescription("Open Rails Transport Simulator")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Open Rails")]
-[assembly: AssemblyProduct("ORTS")]
-[assembly: AssemblyCopyright("Copyright ©  2010")]
+[assembly: AssemblyProduct("Open Rails")]
+[assembly: AssemblyCopyright("Copyright © 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
