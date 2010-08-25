@@ -92,6 +92,8 @@ namespace ORTS
         private TrackingCamera BackCamera;
         private PassengerCamera PassengerCamera;
         private BrakemanCamera BrakemanCamera;
+        private HeadOutCamera HeadOutFwdCamera;
+        private HeadOutCamera HeadOutBackCamera;
         private List<Camera> WellKnownCameras = new List<Camera>(); // Providing Camera save functionality by GeorgeS
         private int CameraToRestore = 1; // Providing Camera save functionality by GeorgeS
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
@@ -298,6 +300,8 @@ namespace ORTS
             BackCamera = new TrackingCamera(this, Tether.ToRear);
             PassengerCamera = new PassengerCamera(this);
             BrakemanCamera = new BrakemanCamera(this);
+            HeadOutFwdCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirections.Forward);
+            HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirections.Backward);
 
             // Restoring Camera part II by GeorgeS
             WellKnownCameras.Add(CabCamera);
@@ -305,6 +309,8 @@ namespace ORTS
             WellKnownCameras.Add(BackCamera);
             WellKnownCameras.Add(PassengerCamera);
             WellKnownCameras.Add(BrakemanCamera);
+            WellKnownCameras.Add(HeadOutFwdCamera);
+            WellKnownCameras.Add(HeadOutBackCamera);
 
             if (CameraToRestore != -1)
             {
@@ -404,6 +410,10 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.D4)
               || UserInput.IsPressed(Keys.D7)
               || UserInput.IsPressed(Keys.D8)) (new Camera(this, Camera)).Activate();
+
+            bool mayheadout = (Camera == CabCamera) || (Camera == HeadOutFwdCamera) || (Camera == HeadOutBackCamera);
+            if (UserInput.IsPressed(Keys.Up) && mayheadout) HeadOutFwdCamera.Activate();
+            if (UserInput.IsPressed(Keys.Down) && mayheadout) HeadOutBackCamera.Activate();
 
             if (UserInput.IsPressed(Keys.G) && !UserInput.IsShiftDown()) Simulator.SwitchTrackAhead( PlayerTrain );
             if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );

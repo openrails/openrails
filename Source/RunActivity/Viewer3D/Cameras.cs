@@ -373,6 +373,121 @@ namespace ORTS
 
     }
 
+    /// <summary>
+    /// The brakeman is on the car at the front or back
+    /// TODO, allow brakeman to jump on or off cars
+    /// </summary>
+    public class HeadOutCamera : AttachedCamera
+    {
+        public enum HeadDirections
+        {
+            Forward,
+            Backward
+        }
+
+        HeadDirections HeadDirection = HeadDirections.Forward;
+
+        public HeadOutCamera(Viewer3D viewer, HeadDirections headdirs)
+            : base(viewer)
+        {
+            HeadDirection = headdirs;
+        }
+
+        public override void Activate()
+        {
+            Train playerTrain = Viewer.PlayerTrain;
+            if (AttachedToCar == null || playerTrain != AttachedToCar.Train)
+            {
+                if (playerTrain.MUDirection == Direction.Forward)
+                    GotoFront();
+                else
+                    GotoBack();
+            }
+            base.Activate();
+        }
+
+        public override void HandleUserInput(ElapsedTime elapsedTime)
+        {
+            float elapsedRealMilliseconds = elapsedTime.RealSeconds * 1000;
+            float speed = 1.0f;
+
+            if (UserInput.IsKeyDown(Keys.RightShift) || UserInput.IsKeyDown(Keys.LeftShift))
+                speed = 10.0f;
+            if (UserInput.IsKeyDown(Keys.End))
+                speed = 0.05f;
+
+            if (UserInput.IsKeyDown(Keys.Left))
+                RotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
+            if (UserInput.IsKeyDown(Keys.Right))
+                RotationYRadians += speed * elapsedRealMilliseconds / 1000f;
+
+            if (HeadDirection == HeadDirections.Forward)
+            {
+                if (RotationYRadians < 0) RotationYRadians = 0;
+                else if (RotationYRadians > Math.PI) RotationYRadians = (float)Math.PI;
+            }
+            else
+            {
+                if (RotationYRadians > 0) RotationYRadians = 0;
+                else if (RotationYRadians < -Math.PI) RotationYRadians = -(float)Math.PI;
+            }
+
+            base.HandleUserInput(elapsedTime);
+        }
+
+        public void PositionViewer()
+        {
+            float x = 1.8f;
+            float y;
+            float z;
+
+            if (AttachedToCar != null && AttachedToCar.FrontCabViewpoints.Count > 0 && AttachedToCar.FrontCabViewpoints[0].Location != null)
+                y = AttachedToCar.FrontCabViewpoints[0].Location.Y;
+            else
+                y = 3.3f;
+
+            if (AttachedToCar != null && AttachedToCar.FrontCabViewpoints.Count > 0 && AttachedToCar.FrontCabViewpoints[0].Location != null)
+                z = AttachedToCar.FrontCabViewpoints[0].Location.Z;
+            else
+                z = AttachedToCar.Length / 2 - 1;
+            
+            if (AttachedToCar.Flipped)
+                z *= -1;
+
+            if (HeadDirection == HeadDirections.Backward)
+            {
+                x *= -1;
+                RotationYRadians = -(float)Math.PI;
+            }
+            
+            OnboardLocation = new Vector3(x, y, z);
+        }
+
+        public void GotoFront()
+        {
+            Train train = Viewer.PlayerTrain;
+            AttachedToCar = train.FirstCar;
+            if (AttachedToCar.Flipped)
+                RotationYRadians = (float)Math.PI;
+            else
+                RotationYRadians = 0;
+            PositionViewer();
+        }
+
+        public void GotoBack()
+        {
+            Train train = Viewer.PlayerTrain;
+            AttachedToCar = train.LastCar;
+            if (AttachedToCar.Flipped)
+                RotationYRadians = 0;
+            else
+                RotationYRadians = (float)Math.PI;
+            PositionViewer();
+            OnboardLocation.Z *= -1;
+        }
+
+    }
+
     public class CabCamera : AttachedCamera
     {
         int iLocation = 0; // handle left and right side views in cab
