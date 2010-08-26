@@ -144,7 +144,10 @@ namespace ORTS
                 if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
                 {
                     auth.Train = AI.Simulator.PlayerLocomotive.Train;// this can change due to uncoupling
-                    auth.DistanceDownPathM += elapsedClockSeconds * auth.Train.SpeedMpS;
+                    if (auth.NReverseNodes % 2 == 0)
+                        auth.DistanceDownPathM += elapsedClockSeconds * auth.Train.SpeedMpS;
+                    else
+                        auth.DistanceDownPathM -= elapsedClockSeconds * auth.Train.SpeedMpS;
                     if (auth.StopNode == auth.StartNode)
                     {
                         auth.AdvanceStopNode(true);
