@@ -6,6 +6,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -61,7 +62,7 @@ namespace ORTS
 				{
 					using (StreamWriter file = File.AppendText("dump.csv"))
 					{
-						file.WriteLine("SVN,Frame,FPS,Frame Time,Frame Jitter,Primitives,Shadow Primitives,State Changes,Image Changes,Processors,Render Process,Updater Process,Loader Process,Camera TileX, Camera TileZ, Camera Location");
+						file.WriteLine("SVN,Frame,FPS,Frame Time,Frame Jitter,Primitives,State Changes,Image Changes,Processors,Render Process,Updater Process,Loader Process,Camera TileX, Camera TileZ, Camera Location");
 						file.Close();
 					}
 				}
@@ -100,8 +101,7 @@ namespace ORTS
 				Logger.Data(Viewer.RenderProcess.FrameRate.ToString("F0")); //FPS
 				Logger.Data(Viewer.RenderProcess.FrameTime.ToString("F4")); //Frame Time
 				Logger.Data(Viewer.RenderProcess.FrameJitter.ToString("F4")); //Frame Jitter
-				Logger.Data(Viewer.RenderProcess.PrimitivesPerFrame.ToString()); //Primitives
-				Logger.Data(Viewer.RenderProcess.ShadowPrimitivesPerFrame.ToString()); //Shadow Primitives
+				Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString()); //Primitives
 				Logger.Data(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
 				Logger.Data(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
 				Logger.Data(processors.ToString()); //Processors
@@ -262,8 +262,7 @@ namespace ORTS
 			TextBuilder.AppendFormat("Adapter = {0} ({1:N0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Frame Time = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Frame Jitter = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Primitives = {0:N0}", Viewer.RenderProcess.PrimitivesPerFrame); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Shadow Primitives = {0:N0}", Viewer.RenderProcess.ShadowPrimitivesPerFrame); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Primitives = {0:N0} ({1})", Viewer.RenderProcess.PrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("N0")).ToArray())); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Processors = {0}", processors); TextBuilder.AppendLine();

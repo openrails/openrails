@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 
 
 namespace ORTS
@@ -15,6 +16,8 @@ namespace ORTS
         CabBlended,
         TextOverlayOpaque,
 		TextOverlayBlended,
+		// This value must be last.
+		Sentinel
 	}
 
     public enum RenderPrimitiveGroup
@@ -96,7 +99,7 @@ namespace ORTS
 		const float ShadowMapViewFar = 2000f; // far plane for shadow map camera
 
 		readonly RenderProcess RenderProcess;
-        readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[Enum.GetValues(typeof(RenderPrimitiveSequence)).Length];
+        readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[(int)RenderPrimitiveSequence.Sentinel];
 
         //int RenderMaxSequence = 0;
         Matrix XNAViewMatrix;
@@ -247,7 +250,10 @@ namespace ORTS
             if (RenderProcess.Viewer.DynamicShadows)
                 DrawShadows(graphicsDevice);
             DrawSimple(graphicsDevice);
-        }
+
+			for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
+				RenderProcess.PrimitiveCount[i] = RenderItems[i].Values.Sum(l => l.Count);
+		}
 
         static RenderTarget2D ShadowMapRenderTarget;
         static DepthStencilBuffer ShadowMapStencilBuffer;

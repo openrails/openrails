@@ -282,7 +282,6 @@ namespace ORTS
 		{
             foreach (var item in renderItems)
             {
-                RenderProcess.PrimitiveCount++;
                 item.RenderPrimitive.Draw(graphicsDevice);
             }
 		}
@@ -540,8 +539,6 @@ namespace ORTS
 
                 foreach(RenderItem item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
-
                     SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewProj);
                     SceneryShader.ZBias = item.RenderPrimitive.ZBias;
                     SceneryShader.CommitChanges();
@@ -627,8 +624,6 @@ namespace ORTS
 
                 foreach (RenderItem item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
-
                     SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
                     SceneryShader.ZBias = item.RenderPrimitive.ZBias;
                     SceneryShader.CommitChanges();
@@ -716,7 +711,6 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     SkyShader.SetMatrix(ref wvp, ref XNAViewMatrix);
                     SkyShader.CommitChanges();
@@ -761,8 +755,6 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
-
                     Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
                     SkyShader.SetMatrix(ref wvp, ref XNAViewMatrix);
                     SkyShader.CommitChanges();
@@ -793,7 +785,6 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     SkyShader.SetMatrix(ref wvp, ref XNAViewMatrix);
                     SkyShader.CommitChanges();
@@ -928,7 +919,6 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
                     PrecipShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref Camera.XNASkyProjection);
                     PrecipShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -1069,7 +1059,6 @@ namespace ORTS
                         foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
                         {
                             pass.Begin();
-                            RenderProcess.PrimitiveCount++;
                             item.RenderPrimitive.Draw(graphicsDevice);
                             pass.End();
                         }
@@ -1136,7 +1125,6 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
                     SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
                     SceneryShader.ZBias = item.RenderPrimitive.ZBias;
                     SceneryShader.CommitChanges();
@@ -1208,7 +1196,6 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
                     Matrix wvp = item.XNAMatrix * XNAViewMatrix * Camera.XNASkyProjection;
                     LightGlowShader.SetMatrix(ref wvp);
                     LightGlowShader.CommitChanges();
@@ -1271,7 +1258,6 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
                     SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
                     SceneryShader.ZBias = item.RenderPrimitive.ZBias;
                     SceneryShader.CommitChanges();
@@ -1323,8 +1309,6 @@ namespace ORTS
 				pass.Begin();
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.ShadowPrimitiveCount++;
-
                     Matrix wvp = item.XNAMatrix * viewproj;
                     shader.SetData(ref wvp, item.Material.GetShadowTexture(item.RenderPrimitive));
                     shader.CommitChanges();
@@ -1458,7 +1442,6 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    RenderProcess.PrimitiveCount++;
                     basicEffect.World = item.XNAMatrix;
                     basicEffect.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
