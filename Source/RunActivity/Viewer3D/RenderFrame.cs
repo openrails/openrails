@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -27,35 +28,6 @@ namespace ORTS
         World,
         Overlay
     }
-
-    struct DrawOrderLookup
-    {
-        DrawOrderLookup(RenderPrimitiveSequence o, RenderPrimitiveSequence b)
-        {
-            opaque = o;
-            blended = b;
-        }
-
-        RenderPrimitiveSequence opaque, blended;
-
-        public static RenderPrimitiveSequence GetSequence(RenderPrimitive primitive, RenderPrimitiveGroup group, Material material)
-        {
-            if (material.GetBlending(primitive))
-                return lookupTable[(int)group].blended;
-            else
-                return lookupTable[(int)group].opaque;
-        }
-
-        private static DrawOrderLookup[] lookupTable = new DrawOrderLookup[]
-        {
-            new DrawOrderLookup(RenderPrimitiveSequence.Shadows, RenderPrimitiveSequence.Shadows),      // Shadows
-            new DrawOrderLookup(RenderPrimitiveSequence.CabOpaque, RenderPrimitiveSequence.CabBlended), // Cab
-            new DrawOrderLookup(RenderPrimitiveSequence.WorldOpaque, RenderPrimitiveSequence.WorldBlended), //World
-            new DrawOrderLookup(RenderPrimitiveSequence.TextOverlayOpaque, RenderPrimitiveSequence.TextOverlayBlended) // Overlay
-        };
-    }
-
-    
 
     public abstract class RenderPrimitive
     {
@@ -85,6 +57,28 @@ namespace ORTS
             XNAMatrix = xnaMatrix;
             Flags = flags;
         }
+
+		public class Comparer : IComparer<RenderItem>
+		{
+			readonly Vector3 XNAViewerPos;
+
+			public Comparer(Vector3 viewerPos)
+			{
+				XNAViewerPos = viewerPos;
+				XNAViewerPos.Z *= -1;
+			}
+
+			#region IComparer<RenderItem> Members
+
+			public int Compare(RenderItem x, RenderItem y)
+			{
+				var xd = (x.XNAMatrix.Translation - XNAViewerPos).Length();
+				var yd = (y.XNAMatrix.Translation - XNAViewerPos).Length();
+				return Math.Sign(xd - yd);
+			}
+
+			#endregion
+		}
     }
 
     public class RenderFrame
@@ -98,10 +92,11 @@ namespace ORTS
 		const float ShadowMapViewNear = 0f; // near plane for shadow map camera
 		const float ShadowMapViewFar = 2000f; // far plane for shadow map camera
 
+		static readonly Material DummyBlendedMaterial = new EmptyMaterial();
+
 		readonly RenderProcess RenderProcess;
         readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[(int)RenderPrimitiveSequence.Sentinel];
 
-        //int RenderMaxSequence = 0;
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
 
@@ -175,8 +170,7 @@ namespace ORTS
 		/// <param name="primitive"></param>
 		/// <param name="xnaMatrix"></param>
 		/// <param name="flags"></param>
-		public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, 
-            Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
+		public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
 			if (RenderProcess.Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
                 AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
@@ -198,15 +192,16 @@ namespace ORTS
 		/// </summary>
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
-            RenderPrimitiveSequence sequence = DrawOrderLookup.GetSequence(primitive, group, material);
-            Dictionary<Material, List<RenderItem>> sequenceDict = RenderItems[(int)sequence];
+			var blended = material.GetBlending(primitive);
+			// TODO: Alpha sorting code
+			//var sortingMaterial = blended ? DummyBlendedMaterial : material;
+			var sortingMaterial = material;
+			var sequence = RenderItems[(int)GetRenderSequence(group, blended)];
 
-            if (!sequenceDict.ContainsKey(material))
-            {
-                sequenceDict.Add(material, new List<RenderItem>());
-            }
+			if (!sequence.ContainsKey(sortingMaterial))
+				sequence.Add(sortingMaterial, new List<RenderItem>());
 
-            sequenceDict[material].Add(new RenderItem(material, primitive, xnaMatrix, flags));
+			sequence[sortingMaterial].Add(new RenderItem(material, primitive, xnaMatrix, flags));
             
 			if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
 				primitive.ZBias = 1;
@@ -225,9 +220,17 @@ namespace ORTS
         /// </summary>
         public void Sort()
         {
-            // TODO, enhance this:
-            //   - to sort translucent primitives
-            //   - and to minimize render state changes ( sorting was taking too long! for this )
+			// TODO: Alpha sorting code
+			//var renderItemComparer = new RenderItem.Comparer(RenderProcess.Viewer.Camera.Location);
+			//foreach (var sequence in RenderItems.Where((d, i) => i != (int)RenderPrimitiveSequence.Shadows))
+			//{
+			//    foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
+			//    {
+			//        if (sequenceMaterial.Key != DummyBlendedMaterial)
+			//            continue;
+			//        sequenceMaterial.Value.Sort(renderItemComparer);
+			//    }
+			//}
         }
 
 		public bool IsInShadowMap(Vector3 mstsLocation, float objectRadius, float objectViewingDistance)
@@ -237,6 +240,13 @@ namespace ORTS
 
 			var xnaLocation = mstsLocation * new Vector3(1, 1, -1);
 			return ShadowMapBound.Intersects(new BoundingSphere(xnaLocation, objectRadius));
+		}
+
+		public static RenderPrimitiveSequence GetRenderSequence(RenderPrimitiveGroup group, bool blended)
+		{
+			if (blended)
+				return new[] { RenderPrimitiveSequence.Shadows, RenderPrimitiveSequence.CabBlended, RenderPrimitiveSequence.WorldBlended, RenderPrimitiveSequence.TextOverlayBlended }[(int)group];
+			return new[] { RenderPrimitiveSequence.Shadows, RenderPrimitiveSequence.CabOpaque, RenderPrimitiveSequence.WorldOpaque, RenderPrimitiveSequence.TextOverlayOpaque }[(int)group];
 		}
 
         /// <summary>
@@ -332,14 +342,43 @@ namespace ORTS
 				Materials.SceneryShader.SetShadowMap(ref shadowMapMatrix, ShadowMap);
             }
 
-            foreach (var sequence in RenderItems)
-                if(sequence != RenderItems[(int)RenderPrimitiveSequence.Shadows])
-                    foreach (var pair in sequence)
-                    {
-                        pair.Key.SetState(graphicsDevice, null);
-                        pair.Key.Render(graphicsDevice, pair.Value, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                        pair.Key.ResetState(graphicsDevice);
-                    }
+			foreach (var sequence in RenderItems.Where((d, i) => i != (int)RenderPrimitiveSequence.Shadows))
+			{
+				foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
+				{
+					if (sequenceMaterial.Key == DummyBlendedMaterial)
+					{
+						// Blended: multiple materials, group by material as much as possible without destroying ordering.
+					    Material lastMaterial = null;
+					    var renderItems = new List<RenderItem>();
+					    foreach (var renderItem in sequenceMaterial.Value)
+					    {
+					        if (lastMaterial != renderItem.Material)
+					        {
+					            if (renderItems.Count > 0)
+					                lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
+					            if (lastMaterial != null)
+					                lastMaterial.ResetState(graphicsDevice);
+					            renderItems.Clear();
+					            renderItem.Material.SetState(graphicsDevice, lastMaterial);
+					            lastMaterial = renderItem.Material;
+					        }
+					        renderItems.Add(renderItem);
+					    }
+					    if (renderItems.Count > 0)
+					        lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
+					    if (lastMaterial != null)
+					        lastMaterial.ResetState(graphicsDevice);
+					}
+					else
+					{
+						// Opaque: single material, render in one go.
+						sequenceMaterial.Key.SetState(graphicsDevice, null);
+						sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref XNAProjectionMatrix);
+						sequenceMaterial.Key.ResetState(graphicsDevice);
+					}
+				}
+			}
         }
     }
 }
