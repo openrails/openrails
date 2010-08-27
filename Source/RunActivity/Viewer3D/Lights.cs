@@ -372,7 +372,7 @@ namespace ORTS
             float viewingDistance = 1500; // Arbitrary.
             if (Viewer.Camera.InFOV(mstsLocation, objectRadius))
                 if (Viewer.Camera.InRange(mstsLocation, viewingDistance + objectRadius))
-                    frame.AddPrimitive(lightMaterial, lightMesh, RenderPrimitiveGroup.World, ref xnaDTileTranslation);
+                    frame.AddPrimitive(lightMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
 
             // Set the headlight cone location and direction vectors
             if (lightMesh.hasHeadlight)

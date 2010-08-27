@@ -14,6 +14,8 @@ namespace ORTS
         CabOpaque,
         WorldOpaque,
         WorldBlended,
+		Lights, // TODO: May not be needed once alpha sorting works.
+		Precipitation, // TODO: May not be needed once alpha sorting works.
         CabBlended,
         TextOverlayOpaque,
 		TextOverlayBlended,
@@ -26,13 +28,31 @@ namespace ORTS
         Shadows,
         Cab,
         World,
+		Lights, // TODO: May not be needed once alpha sorting works.
+		Precipitation, // TODO: May not be needed once alpha sorting works.
         Overlay
     }
 
     public abstract class RenderPrimitive
     {
+		public static readonly RenderPrimitiveSequence[] SequenceForBlended = new[] {
+			RenderPrimitiveSequence.Shadows,
+			RenderPrimitiveSequence.CabBlended,
+			RenderPrimitiveSequence.WorldBlended,
+			RenderPrimitiveSequence.Lights,
+			RenderPrimitiveSequence.Precipitation,
+			RenderPrimitiveSequence.TextOverlayBlended,
+		};
+		public static readonly RenderPrimitiveSequence[] SequenceForOpaque = new[] {
+			RenderPrimitiveSequence.Shadows,
+			RenderPrimitiveSequence.CabOpaque,
+			RenderPrimitiveSequence.WorldOpaque,
+			RenderPrimitiveSequence.Lights,
+			RenderPrimitiveSequence.Precipitation,
+			RenderPrimitiveSequence.TextOverlayOpaque,
+		};
+		
 		public float ZBias = 0f;
-		//public RenderPrimitiveSequence Sequence = RenderPrimitiveSequence.Default;
 
         /// <summary>
         /// This is when the object actually renders itself onto the screen.
@@ -245,8 +265,8 @@ namespace ORTS
 		public static RenderPrimitiveSequence GetRenderSequence(RenderPrimitiveGroup group, bool blended)
 		{
 			if (blended)
-				return new[] { RenderPrimitiveSequence.Shadows, RenderPrimitiveSequence.CabBlended, RenderPrimitiveSequence.WorldBlended, RenderPrimitiveSequence.TextOverlayBlended }[(int)group];
-			return new[] { RenderPrimitiveSequence.Shadows, RenderPrimitiveSequence.CabOpaque, RenderPrimitiveSequence.WorldOpaque, RenderPrimitiveSequence.TextOverlayOpaque }[(int)group];
+				return RenderPrimitive.SequenceForBlended[(int)group];
+			return RenderPrimitive.SequenceForOpaque[(int)group];
 		}
 
         /// <summary>
