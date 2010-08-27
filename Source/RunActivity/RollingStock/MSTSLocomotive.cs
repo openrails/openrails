@@ -692,7 +692,7 @@ namespace ORTS
 
             if (UserInput.IsPressed(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.StartTrainBrakeIncrease();
             if (UserInput.IsReleased(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.StopTrainBrakeIncrease();
-            if (UserInput.IsKeyDown(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.StartTrainBrakeDecrease();
+            if (UserInput.IsPressed(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.StartTrainBrakeDecrease();
             if (UserInput.IsReleased(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.StopTrainBrakeDecrease();
 
             if (UserInput.IsPressed(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeIncrease();
