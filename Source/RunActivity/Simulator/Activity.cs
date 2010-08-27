@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MSTS;
 using System.IO;
+using System.Reflection;
 
 namespace ORTS
 {
@@ -229,6 +230,60 @@ namespace ORTS
         }
     }
 
+    /// <summary>
+    /// Helper class to calculate distances along the path
+    /// </summary>
+    public class TDBTravellerDistanceCalculatorHelper
+    {
+        // Result of calculation
+        public enum DistanceResult
+        {
+            Valid,
+            Behind,
+            OffPath
+        }
+
+        // We use this traveller as the base of the calulations
+        TDBTraveller refTraveller;
+        float Distance;
+
+        public TDBTravellerDistanceCalculatorHelper(TDBTraveller traveller)
+        {
+            refTraveller = traveller;
+        }
+
+        public DistanceResult CalculateToPoint (int TileX, int TileZ, float X, float Y, float Z)
+        {
+            TDBTraveller poiTraveller;
+            poiTraveller = new TDBTraveller(refTraveller);
+
+            // Find distance once
+            Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z, ref poiTraveller);
+
+            // If valid
+            if (Distance > 0)
+            {
+                return DistanceResult.Valid;
+            }
+            else
+            {
+                // Go to opposite direction
+                poiTraveller = new TDBTraveller(refTraveller);
+                poiTraveller.ReverseDirection();
+
+                Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z, ref poiTraveller);
+                // If valid, it is behind us
+                if (Distance > 0)
+                {
+                    return DistanceResult.Behind;
+                }
+            }
+
+            // Otherwise off path
+            return DistanceResult.OffPath;
+        }
+    }
+
     public class ActivityTaskPassengerStopAt : ActivityTask
     {
         public DateTime SchArrive;
@@ -259,17 +314,94 @@ namespace ORTS
         {
         }
 
+        /// <summary>
+        /// Determines if the train is at station
+        /// </summary>
+        /// <returns></returns>
+        public bool IsAtStation()
+        {
+            // Front calcs
+            TDBTravellerDistanceCalculatorHelper helper =
+                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
+
+            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
+                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
+                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
+
+            // If front between the ends of the platform
+            if ( (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
+                distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
+                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind) )
+                return true;
+
+            // Rear calcs
+            helper =
+                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller);
+
+            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
+                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
+                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
+
+            // If rear between the ends of the platform
+            if ((distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
+                distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
+                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))
+                return true;
+
+            // Otherwise not
+            return false;
+        }
+
+        public bool IsMissedStation()
+        {
+            // Calc all distances
+            TDBTravellerDistanceCalculatorHelper helper =
+                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
+
+            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
+                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
+                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
+
+            helper =
+                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller);
+
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
+            distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
+                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+            distanceend4 = helper.CalculateToPoint(PlatformEnd2.TileX,
+                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
+
+            // If all behind then missed
+            return (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind);
+        }
+
         public override void NotifyEvent(ActivityEvent EventType)
         {
             // The train is stopped.
             if (EventType == ActivityEvent.TrainStop)
             {
                 // Checking if the stopping is occuread at the scheduled platform.
+                /*
                 double dist1 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd1.TileX,
                     PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
                 double dist2 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd2.TileX,
                     PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
                 if ( (dist1 >= 0 && dist2 <= 0) || (dist1 <= 0 && dist2 >= 0))
+                */
+                if (IsAtStation())
                 {
                     // If yes, we arrived
                     ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
@@ -329,6 +461,7 @@ namespace ORTS
                     int tmp = (int)(Program.Simulator.ClockTime % 10);
                     if (tmp != TimerChk)
                     {
+                        /*
                         double dist1 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd1.TileX,
                             PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
                         double dist2 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd2.TileX,
@@ -336,6 +469,8 @@ namespace ORTS
 
                         // If both less than zero, station is missed
                         if (dist1 < 0 && dist2 < 0)
+                        */
+                        if (IsMissedStation())
                         {
                             IsCompleted = false;
                         }
