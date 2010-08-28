@@ -334,8 +334,8 @@ namespace ORTS
 			{
 				var indexData = new int[] {
 					0, 4, 1, 5, 2, 6, 3, 7,
-					4, 8, 5, 9, 6, 10, 7, 11,
-					8, 12, 9, 13, 10, 14, 11, 15,
+					11, 6, 10, 5, 9, 4, 8,
+					12, 9, 13, 10, 14, 11, 15,
 				};
 				WindowIndexBuffer = new IndexBuffer(graphicsDevice, typeof(int), indexData.Length, BufferUsage.WriteOnly);
 				WindowIndexBuffer.SetData(indexData);
@@ -344,9 +344,7 @@ namespace ORTS
 			graphicsDevice.VertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionTexture.VertexElements);
 			graphicsDevice.Vertices[0].SetSource(WindowVertexBuffer, 0, VertexPositionTexture.SizeInBytes);
 			graphicsDevice.Indices = WindowIndexBuffer;
-			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 0, 6);
-			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 8, 6);
-			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 16, 6);
+			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 0, 20);
 		}
 
 		public void Draw(SpriteBatch spriteBatch)

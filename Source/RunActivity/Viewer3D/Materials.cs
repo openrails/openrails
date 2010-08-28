@@ -806,7 +806,7 @@ namespace ORTS
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
-			return true;
+			return false;
 		}
 
         /// <summary>
