@@ -152,7 +152,7 @@ namespace MSTS
                             subBlock.Skip();
                             break;
                         default:
-                            throw new System.Exception("Unknown token " + subBlock.ID.ToString());
+                            throw new InvalidDataException("Unknown token " + subBlock.ID.ToString());
                     }
                 }
             }

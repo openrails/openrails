@@ -33,7 +33,7 @@ namespace ORTS
                     return new MSTSBrakeController(inf);
 
                 default:
-                    throw new Exception("Invalid controller type");
+					throw new InvalidDataException("Invalid controller type");
             }
         }
     }

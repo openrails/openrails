@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace MSTS
 {
@@ -57,7 +58,7 @@ namespace MSTS
                         && UiD == tn.UiD.WorldID )
                         return tn.TrJunctionNode;
                 }
-            throw new System.Exception("TDB Error, could not find junction.");
+            throw new InvalidDataException("TDB Error, could not find junction.");
         }
 
         public TrackDB TrackDB;  // Warning, the first TDB entry is always null
@@ -161,7 +162,7 @@ namespace MSTS
             for (int i = 0; i < TrackNodes.Length; ++i)
                 if (TrackNodes[i] == targetTN)
                     return i;
-            throw new System.Exception("Program Bug: Can't Find Track Node");
+            throw new InvalidOperationException("Program Bug: Can't Find Track Node");
         }
     }
 

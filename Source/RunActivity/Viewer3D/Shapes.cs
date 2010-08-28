@@ -378,7 +378,7 @@ namespace ORTS
                 {
                     globalPath = Viewer.Simulator.BasePath + @"\GLOBAL\SHAPES\" + Path.GetFileName(FilePath);
                     if (!File.Exists(globalPath))
-                        throw new System.Exception("Can't find file " + FilePath);
+                        throw new FileNotFoundException("Shape file '" + FilePath + "' does not exist.", FilePath);
                 }
                 FilePath = globalPath;
             }
@@ -420,7 +420,7 @@ namespace ORTS
                 LodControls[i] = new LodControl( sFile.shape.lod_controls[i], sFile , this );
 
             if (LodControls.Length == 0)
-                throw new System.Exception("Shape file missing lod_control section");
+				throw new InvalidDataException("Shape file missing lod_control section");
 
             textureFolder = null;  // release it
 
@@ -438,7 +438,7 @@ namespace ORTS
                     DistanceLevels[i] = new DistanceLevel( MSTSlod_control.distance_levels[i], sFile, sharedShape );
 
                 if (DistanceLevels.Length == 0)
-                    throw new System.Exception("Shape file missing distance_level");
+					throw new InvalidDataException("Shape file missing distance_level");
             }
         }
 
@@ -463,7 +463,7 @@ namespace ORTS
                     SubObjects[i] = new SubObject( ref PrimCount, MSTSdistance_level.sub_objects[i], Hierarchy, sFile , sharedShape);
 
                 if (SubObjects.Length == 0)
-                    throw new System.Exception("Shape file missing sub_object");
+					throw new InvalidDataException("Shape file missing sub_object");
             }
         }
 

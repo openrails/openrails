@@ -1295,7 +1295,7 @@ namespace ORTS
             {
                 return new ORTSEnableTrigger(soundStream, (MSTS.EnableTrigger)mstsSoundCommand);
             }
-            throw new System.Exception("Unexpected soundCommand type " + mstsSoundCommand.GetType().ToString() + " in " + soundStream.SoundSource.SMSFolder );
+			throw new ArgumentException("Unexpected soundCommand type " + mstsSoundCommand.GetType().ToString() + " in " + soundStream.SoundSource.SMSFolder, "mstsSoundCommand");
         }
 
     }// ORTSSoundCommand

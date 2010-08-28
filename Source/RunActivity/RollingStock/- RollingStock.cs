@@ -41,7 +41,7 @@ namespace ORTS
             {   
                 // its an ordinary MSTS engine of some type.
                 if (wagFile.Engine.Type == null)
-                    throw new System.Exception(wagFilePath + "\r\n\r\nEngine type missing");
+                    throw new InvalidDataException(wagFilePath + "\r\n\r\nEngine type missing");
 
                 switch (wagFile.Engine.Type.ToLower())
                 {
@@ -49,7 +49,7 @@ namespace ORTS
                     case "electric": car = new MSTSElectricLocomotive(wagFilePath, previousCar); break;
                     case "steam": car = new MSTSSteamLocomotive(wagFilePath, previousCar); break;
                     case "diesel": car = new MSTSDieselLocomotive(wagFilePath, previousCar); break;
-                    default: throw new System.Exception(wagFilePath + "\r\n\r\nUnknown engine type: " + wagFile.Engine.Type);
+					default: throw new InvalidDataException(wagFilePath + "\r\n\r\nUnknown engine type: " + wagFile.Engine.Type);
                 }
             }
             return car;

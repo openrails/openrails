@@ -400,7 +400,7 @@ namespace ORTS
                     }
                 }
             }
-            throw (new System.Exception("The car is on a track section that could not be found in the TDB file."));
+            throw new InvalidDataException("The car is on a track section that could not be found in the TDB file.");
         }
 
 

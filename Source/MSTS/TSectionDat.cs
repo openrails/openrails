@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using MSTSMath;
 
 namespace MSTS
@@ -257,7 +258,7 @@ namespace MSTS
 				{
 					return (TrackShape)this[i];
 				}
-			throw( new System.Exception( "ShapeIndex not found" ) );
+			throw new InvalidDataException("ShapeIndex not found");
 		}
 		public uint MaxShapeIndex;
 	}

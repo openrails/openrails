@@ -34,29 +34,18 @@ namespace MSTS
          */
         {
 
-            if (DefaultLocation == null)
-            {
-                DefaultLocation = "c:\\program files\\microsoft games\\train simulator";
+			if (DefaultLocation == null)
+			{
+				DefaultLocation = "c:\\program files\\microsoft games\\train simulator";
 
-                try
-                {
-                    RegistryKey RK = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Microsoft Games\\Train Simulator\\1.0");
-                    if (RK != null)
-                        DefaultLocation = (string)RK.GetValue("Path", DefaultLocation);
-                }
-                catch (System.Exception e)
-                /* We are catching one of these registry problems
-                        ObjectDisposedException The RegistryKey on which this method is being called, is closed (closed keys cannot be accessed). 
-                        SecurityException The user does not have RegistryPermission.SetInclude(delete, currentKey) access. 
-                */
-                {
-                    throw (new System.Exception("Can't find MSTS, registry access denied.\n\n" + e.Message));
-                }
+				RegistryKey RK = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Microsoft Games\\Train Simulator\\1.0");
+				if (RK != null)
+					DefaultLocation = (string)RK.GetValue("Path", DefaultLocation);
 
-                // Verify installation at this location
-                if (!Directory.Exists(DefaultLocation))
-                    throw (new System.Exception("Can't find MSTS at\n\n" + DefaultLocation));
-            }
+				// Verify installation at this location
+				if (!Directory.Exists(DefaultLocation))
+					throw new FileNotFoundException("MSTS directory '" + DefaultLocation + "' does not exist.", DefaultLocation);
+			}
 
             return DefaultLocation;
         }  //
@@ -95,7 +84,7 @@ namespace MSTS
         public static string GetTRKFileName(string routeFolderPath)
         {
             string[] TRKFileNames = Directory.GetFiles(routeFolderPath,"*.trk");
-            if( TRKFileNames.Length == 0 ) throw new System.Exception( "Missing TRK file in " + routeFolderPath );
+			if (TRKFileNames.Length == 0) throw new FileNotFoundException("TRK file not found in '" + routeFolderPath + "'.", routeFolderPath);
             return TRKFileNames[0];
         }
 

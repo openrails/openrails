@@ -79,7 +79,7 @@ namespace MSTS
             {
                 c = f.Read();
                 if( c != -1 )
-                    throw new System.Exception("Problem peeking eof in compressed file.");
+                    throw new InvalidDataException("Problem peeking eof in compressed file.");
             }
             return c; 
         }

@@ -6,10 +6,11 @@
 /// Principal Author:
 ///    Rick Grout
 /// 
-    
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -62,7 +63,7 @@ namespace ORTS
         {
             ReadWagLights(f);
             if (LightList.Count == 0)
-                throw new Exception("lights with no lights");
+				throw new InvalidDataException("lights with no lights");
         }
 
         #region ReadWagLights

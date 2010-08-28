@@ -72,7 +72,7 @@ namespace ORTS
                     sd.Player_Traffic_Definition.DepartTime.Count != sd.Player_Traffic_Definition.DistanceDownPath.Count ||
                     sd.Player_Traffic_Definition.DistanceDownPath.Count != sd.Player_Traffic_Definition.PlatformStartID.Count)
                 {
-                    throw new Exception("Invalid Player Traffice Definition in ACT file!");
+					throw new InvalidDataException("Invalid Player Traffice Definition in ACT file!");
                 }
 
                 if (sd.Player_Traffic_Definition.ArrivalTime.Count > 0)

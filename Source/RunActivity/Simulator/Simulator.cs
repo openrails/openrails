@@ -176,7 +176,7 @@ namespace ORTS
                     break;
                 }
             if (PlayerLocomotive == null)
-                throw new System.Exception("Can't find player locomotive in activity");
+				throw new InvalidDataException("Can't find player locomotive in activity");
             return PlayerLocomotive;
         }
 

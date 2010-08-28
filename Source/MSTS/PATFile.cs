@@ -54,8 +54,8 @@ namespace MSTS
 
         public void NextWaypoint()
         {
-            if( IsLastWaypoint() )
-                throw new System.Exception( "Attempt to read past end of path" );
+			if (IsLastWaypoint())
+				throw new InvalidOperationException("Attempt to read past end of path");
             CurrentTrPathNode = PATFile.TrPathNodes[(int)CurrentTrPathNode.NextNode];
             CurrentTrackPDP = PATFile.TrackPDPs[(int)CurrentTrPathNode.FromPDP];
         }
