@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace ORTS
@@ -46,6 +48,73 @@ namespace ORTS
 		public override void Write(char[] buffer, int index, int count)
 		{
 			Write(new String(buffer, index, count));
+		}
+	}
+
+	public class ORTraceListener : TraceListener
+	{
+		public readonly TextWriter Writer;
+
+		public ORTraceListener(TextWriter writer)
+		{
+			Writer = writer;
+		}
+
+		public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, params object[] args)
+		{
+			if ((Filter == null) || Filter.ShouldTrace(eventCache, source, eventType, id, format, args, null, null))
+			{
+				var output = new StringBuilder();
+				output.AppendLine();
+				output.AppendLine();
+				output.AppendFormat("{0} : {1} : {2} : ", source, eventType, id);
+				output.AppendFormat(format, args);
+				if (eventCache.LogicalOperationStack.Contains(LogicalOperationWriteException))
+				{
+					var error = (Exception)args[0];
+					output.AppendLine(error.ToString());
+					output.AppendLine();
+				}
+				else
+				{
+					output.AppendLine();
+					if ((TraceOutputOptions & TraceOptions.Callstack) != 0)
+						output.Append(new StackTrace(true).ToString());
+					else
+						output.AppendLine();
+				}
+				Write(output);
+			}
+		}
+
+		public override void Write(string message)
+		{
+			Writer.Write(message);
+		}
+
+		public override void WriteLine(string message)
+		{
+			Writer.WriteLine(message);
+		}
+
+		public override void WriteLine(object o)
+		{
+			if (o is Exception)
+			{
+				Trace.CorrelationManager.StartLogicalOperation(LogicalOperationWriteException);
+				Trace.TraceError("", o);
+				Trace.CorrelationManager.StopLogicalOperation();
+			}
+			else
+			{
+				base.WriteLine(o);
+			}
+		}
+
+		static readonly LogicalOperation LogicalOperationWriteException = new LogicalOperation();
+
+		class LogicalOperation
+		{
 		}
 	}
 }

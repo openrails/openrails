@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Runtime.CompilerServices;
 using IrrKlang;
 using Microsoft.Win32;
 using Microsoft.Xna.Framework;
@@ -183,7 +184,7 @@ namespace ORTS
 			}
 			catch (Exception error)
 			{
-				Trace.WriteLine(error.ToString());
+				Trace.WriteLine(error);
 			}
         }
 
@@ -495,7 +496,7 @@ namespace ORTS
             InfoDisplay.PrepareFrame(frame, elapsedTime);
             // By GeorgeS
             IngameSounds.Update(elapsedTime);
-        }
+		}
 
 
         /// <summary>
@@ -512,6 +513,20 @@ namespace ORTS
         {
             RenderProcess.Stop();
         }
+
+		/// <summary>
+		/// Report an Exception from a background process (e.g. loader).
+		/// </summary>
+		/// <param name="error"></param>
+		public void ProcessReportError(Exception error)
+		{
+			// Better pause things to avoid stacking more problems on top.
+			Simulator.Paused = true;
+			Trace.WriteLine(error);
+			System.Windows.Forms.MessageBox.Show(error.ToString());
+			// User has seen error, time for the game to quit.
+			Stop();
+		}
 
         /// <summary>
         /// Determine the correct environment files for this activity and read it in.

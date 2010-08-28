@@ -76,24 +76,32 @@ namespace ORTS
                 Program.RealTime = NewRealTime;
                 ElapsedTime frameElapsedTime = Viewer.RenderProcess.GetFrameElapsedTime();
 
-                Viewer.RenderProcess.ComputeFPS( frameElapsedTime.RealSeconds );
+				try
+				{
+					Viewer.RenderProcess.ComputeFPS(frameElapsedTime.RealSeconds);
 
-                // Update the simulator 
-                Viewer.Simulator.Update( frameElapsedTime.ClockSeconds );
+					// Update the simulator 
+					Viewer.Simulator.Update(frameElapsedTime.ClockSeconds);
 
-                // Handle user input, its was read is in RenderProcess thread                
-                Viewer.HandleUserInput( Viewer.RenderProcess.GetUserInputElapsedTime() );
-                UserInput.Handled();                
+					// Handle user input, its was read is in RenderProcess thread                
+					Viewer.HandleUserInput(Viewer.RenderProcess.GetUserInputElapsedTime());
+					UserInput.Handled();
 
-                Viewer.HandleMouseMovement();
+					Viewer.HandleMouseMovement();
 
-                // Prepare the frame for drawing
-                if (Frame != null)
-                {
-                    Frame.Clear();
-                    Viewer.PrepareFrame(Frame, frameElapsedTime );
-                    Frame.Sort();
-                }
+					// Prepare the frame for drawing
+					if (Frame != null)
+					{
+						Frame.Clear();
+						Viewer.PrepareFrame(Frame, frameElapsedTime);
+						Frame.Sort();
+					}
+				}
+				catch (Exception error)
+				{
+					if (!(error is ThreadAbortException))
+						Viewer.ProcessReportError(error);
+				}
 
                 // Signal finished so RenderProcess can start drawing
                 State.SignalFinish();

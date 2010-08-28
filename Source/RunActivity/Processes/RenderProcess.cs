@@ -198,20 +198,27 @@ namespace ORTS
 			}
 			 */
 
-            CurrentFrame.Draw(GraphicsDevice);
-            Viewer.PopupWindows.Draw(GraphicsDevice);
-
-			for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
+			try
 			{
-				PrimitivePerFrame[i] = PrimitiveCount[i];
-				PrimitiveCount[i] = 0;
-			}
-            RenderStateChangesPerFrame = RenderStateChangesCount;
-            RenderStateChangesCount = 0;
-            ImageChangesPerFrame = ImageChangesCount;
-            ImageChangesCount = 0;
+				CurrentFrame.Draw(GraphicsDevice);
+				Viewer.PopupWindows.Draw(GraphicsDevice);
 
-            base.Draw(gameTime);
+				for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
+				{
+					PrimitivePerFrame[i] = PrimitiveCount[i];
+					PrimitiveCount[i] = 0;
+				}
+				RenderStateChangesPerFrame = RenderStateChangesCount;
+				RenderStateChangesCount = 0;
+				ImageChangesPerFrame = ImageChangesCount;
+				ImageChangesCount = 0;
+
+				base.Draw(gameTime);
+			}
+			catch (Exception error)
+			{
+				Viewer.ProcessReportError(error);
+			}
 
 			Viewer.RenderProfiler.Stop();
         }
@@ -245,20 +252,27 @@ namespace ORTS
                 Program.RealTime = actualRealTime;
                 ElapsedTime frameElapsedTime = GetFrameElapsedTime();
 
-                ComputeFPS( frameElapsedTime.RealSeconds );
+				try
+				{
+					ComputeFPS(frameElapsedTime.RealSeconds);
 
-                // Update the simulator
-                Viewer.Simulator.Update( frameElapsedTime.ClockSeconds );
-                
-                Viewer.HandleUserInput( GetUserInputElapsedTime() );
-                UserInput.Handled();
-                
-                Viewer.HandleMouseMovement();
+					// Update the simulator
+					Viewer.Simulator.Update(frameElapsedTime.ClockSeconds);
 
-                // Prepare the frame for drawing
-                CurrentFrame.Clear();
-                Viewer.PrepareFrame(CurrentFrame, frameElapsedTime );
-                CurrentFrame.Sort();
+					Viewer.HandleUserInput(GetUserInputElapsedTime());
+					UserInput.Handled();
+
+					Viewer.HandleMouseMovement();
+
+					// Prepare the frame for drawing
+					CurrentFrame.Clear();
+					Viewer.PrepareFrame(CurrentFrame, frameElapsedTime);
+					CurrentFrame.Sort();
+				}
+				catch (Exception error)
+				{
+					Viewer.ProcessReportError(error);
+				}
 
                 // Update the loader - it should only copy volatile data and return
                 if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)

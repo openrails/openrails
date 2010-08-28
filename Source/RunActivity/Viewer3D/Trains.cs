@@ -119,7 +119,7 @@ namespace ORTS
 			}
 			catch (Exception error)  // possible thread safety violation - try again next time
 			{
-				Trace.WriteLine(error.ToString());
+				Trace.WriteLine(error);
 			}
         }
 

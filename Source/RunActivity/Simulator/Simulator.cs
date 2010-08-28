@@ -601,7 +601,7 @@ namespace ORTS
                 catch (Exception error)
                 {
 					Trace.WriteLine(wagonFilePath);
-					Trace.WriteLine(error.ToString());
+					Trace.WriteLine(error);
                 }
 
             }// for each rail car
@@ -664,7 +664,7 @@ namespace ORTS
                         catch (Exception error)
                         {
 							Trace.WriteLine(wagonFilePath);
-							Trace.WriteLine(error.ToString());
+							Trace.WriteLine(error);
 						}
 
                     }// for each rail car
@@ -686,7 +686,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-					Trace.WriteLine(error.ToString());
+					Trace.WriteLine(error);
 				}
             }// for each train
 

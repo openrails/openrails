@@ -28,7 +28,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    Trace.WriteLine(error.ToString());
+                    Trace.WriteLine(error);
                     // on error, fall through and try loading without the custom dll
                 }
             }

@@ -73,7 +73,7 @@ namespace ORTS
 			}
 			catch (Exception error)
 			{
-				Trace.WriteLine(error.ToString());
+				Trace.WriteLine(error);
 			}
 
 			// Look for an action to perform.
@@ -146,7 +146,7 @@ namespace ORTS
 			}
 			catch (Exception error)
 			{
-				Trace.WriteLine(error.ToString());
+				Trace.WriteLine(error);
 				MessageBox.Show(error.ToString());
 			}
 		}
@@ -175,7 +175,7 @@ namespace ORTS
             }
             catch (Exception error)
             {
-				Trace.WriteLine(error.ToString());
+				Trace.WriteLine(error);
                 MessageBox.Show(error.ToString());
             }
         }
@@ -214,7 +214,7 @@ namespace ORTS
             }
             catch (Exception error)
             {
-				Trace.WriteLine(error.ToString());
+				Trace.WriteLine(error);
                 MessageBox.Show(error.ToString());
             }
         }
@@ -248,7 +248,7 @@ namespace ORTS
 			}
 
 			// Captures Trace.Trace* calls and others and formats.
-			var traceListener = new ConsoleTraceListener();
+			var traceListener = new ORTraceListener(Console.Out);
 			traceListener.TraceOutputOptions = TraceOptions.Callstack;
 			// Trace.Listeners and Debug.Listeners are the same list.
 			Trace.Listeners.Add(traceListener);
@@ -361,7 +361,7 @@ namespace ORTS
                     catch (Exception error)
                     {
                         Trace.WriteLine(filename);
-						Trace.WriteLine(error.ToString());
+						Trace.WriteLine(error);
                     }
 
             } // TestAll

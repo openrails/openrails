@@ -73,7 +73,15 @@ namespace ORTS
                 State.WaitTillStarted();
 				Viewer.LoaderProfiler.Start();
 
-                Viewer.Load(Viewer.RenderProcess);  // complete scan and load as necessary
+				try
+				{
+					Viewer.Load(Viewer.RenderProcess);  // complete scan and load as necessary
+				}
+				catch (Exception error)
+				{
+					if (!(error is ThreadAbortException))
+						Viewer.ProcessReportError(error);
+				}
 
                 State.SignalFinish();
 				Viewer.LoaderProfiler.Stop();

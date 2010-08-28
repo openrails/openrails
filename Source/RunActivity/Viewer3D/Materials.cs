@@ -225,7 +225,7 @@ namespace ORTS
                 catch (Exception error)
                 {
 					Trace.WriteLine(path);
-					Trace.WriteLine(error.ToString());
+					Trace.WriteLine(error);
                     return Materials.MissingTexture;
                 }
             }

@@ -756,7 +756,7 @@ namespace ORTS
 			}
 			catch (Exception error)
 			{
-				Trace.WriteLine(error.ToString());
+				Trace.WriteLine(error);
 			}
         }
 

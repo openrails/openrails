@@ -263,7 +263,7 @@ namespace ORTS
 				catch (Exception error)
 				{
 					Trace.WriteLine(path);
-					Trace.WriteLine(error.ToString());
+					Trace.WriteLine(error);
 					if (EmptyShape == null)
 						EmptyShape = new SharedShape(viewer);
 					SharedShapes.Add(path, EmptyShape);

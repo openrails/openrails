@@ -39,7 +39,7 @@ namespace MSTS
             catch (Exception error)
             {
 				Trace.WriteLine(filename);
-				Trace.WriteLine(error.ToString());
+				Trace.WriteLine(error);
             }
 			finally
 			{

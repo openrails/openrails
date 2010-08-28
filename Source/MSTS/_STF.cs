@@ -26,7 +26,7 @@ namespace MSTS
 		public static void Report(STFReader reader, Exception error)
 		{
 			Trace.TraceError("STF error in {0}:line {1}", reader.FileName, reader.LineNumber);
-			Trace.WriteLine(error.ToString());
+			Trace.WriteLine(error);
 		}
 
 		public static void Report(STFReader reader, string message)
