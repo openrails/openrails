@@ -95,7 +95,7 @@ namespace ORTS
             float aspectRatio = Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
             float farPlaneDistance =  SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
             float fovWidthRadians = MathHelper.ToRadians(45.0f);
-            XNAProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, Viewer.ViewingDistance);
+			XNAProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, Viewer.SettingsInt["ViewingDistance"]);
             XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, farPlaneDistance);    // TODO remove? 
             RightFrustrumA = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // precompute the right edge of the view frustrum
             RightFrustrumB = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);
@@ -228,8 +228,8 @@ namespace ORTS
         public bool CanSee(Vector3 mstsObjectCenter, float objectRadius, float objectViewingDistance)
         {
             // whichever is less, camera or object
-            if (Viewer.ViewingDistance < objectViewingDistance)
-                objectViewingDistance = Viewer.ViewingDistance;
+			if (Viewer.SettingsInt["ViewingDistance"] < objectViewingDistance)
+				objectViewingDistance = Viewer.SettingsInt["ViewingDistance"];
 
             // account for the object's size
             float minDistance = objectViewingDistance + objectRadius;

@@ -3,19 +3,8 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
-using System.Threading;
 using MSTS;
 
 namespace ORTS
@@ -56,25 +45,17 @@ namespace ORTS
             LoadGeometry();
         }
 
-        private void LoadWaterMaterial()
-        {
-            try
-            {
-                // TODO, for now, top layer only
-                if (Viewer.ENVFile.WaterTextureNames.Count > 0)
-                {
-                    string waterTextureName = Viewer.ENVFile.WaterTextureNames[Viewer.ENVFile.WaterTextureNames.Count - 1];  
-                    // TODO, render lower water layers
-                    WaterMaterial = Materials.Load( Viewer.RenderProcess, "WaterMaterial", 
-                        Viewer.Simulator.RoutePath + @"\envfiles\textures\" + waterTextureName);
-                }
-            }
-            catch (System.Exception error)
-            {
-                Console.Error.WriteLine("Problem creating water: " + error.Message);
-                throw new System.Exception("Can't create water");
-            }
-        }
+		private void LoadWaterMaterial()
+		{
+			// TODO, for now, top layer only
+			if (Viewer.ENVFile.WaterTextureNames.Count > 0)
+			{
+				string waterTextureName = Viewer.ENVFile.WaterTextureNames[Viewer.ENVFile.WaterTextureNames.Count - 1];
+				// TODO, render lower water layers
+				WaterMaterial = Materials.Load(Viewer.RenderProcess, "WaterMaterial",
+					Viewer.Simulator.RoutePath + @"\envfiles\textures\" + waterTextureName);
+			}
+		}
 
         private Matrix xnaMatrix = Matrix.Identity;
 

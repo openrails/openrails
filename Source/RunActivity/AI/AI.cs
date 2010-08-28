@@ -12,10 +12,8 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.IO;
-using Microsoft.Xna.Framework;
 using MSTS;
 
 namespace ORTS
@@ -220,9 +218,10 @@ namespace ORTS
                     car.SignalEvent(EventID.PantographUp);
                     previousCar = car;
                 }
-                catch (System.Exception error)
+                catch (Exception error)
                 {
-                    Console.Error.WriteLine("Couldn't open " + wagonFilePath + "\n" + error.Message + "\n" + error.StackTrace);
+					Trace.WriteLine(wagonFilePath);
+					Trace.WriteLine(error.ToString());
                 }
 
             }// for each rail car

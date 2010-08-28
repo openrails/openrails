@@ -4,8 +4,8 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Collections.Generic;
 
 
 namespace MSTS
@@ -36,9 +36,10 @@ namespace MSTS
                     for (int x = 0; x < 256; ++x)
                         A[y, x] = f.ReadUInt16();
             }
-            catch (System.Exception error)
+            catch (Exception error)
             {
-                Console.Error.WriteLine(error.Message + " while reading " + filename);
+				Trace.WriteLine(filename);
+				Trace.WriteLine(error.ToString());
             }
 			finally
 			{

@@ -16,13 +16,10 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MSTS;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework;
+using System.Diagnostics;
 using System.IO;
+using Microsoft.Xna.Framework.Input;
+using MSTS;
 
 namespace ORTS
 {
@@ -196,7 +193,7 @@ namespace ORTS
         {
             if (v > 0)
                 return false;
-            Console.Error.WriteLine("Error in " + wagFile + "\r\n   Steam engine value "+name+" must be defined and greater than zero.");
+            Trace.TraceError("Error in " + wagFile + "\r\n   Steam engine value "+name+" must be defined and greater than zero.");
             return true;
         }
 

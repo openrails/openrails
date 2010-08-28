@@ -57,8 +57,7 @@ namespace ORTS
 
 			RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
 
-			if (IsWarningsOn())
-				EnableLogging();
+			EnableLogging();
 
 			try
 			{
@@ -74,7 +73,7 @@ namespace ORTS
 			}
 			catch (Exception error)
 			{
-				Console.Error.WriteLine(error);
+				Trace.WriteLine(error.ToString());
 			}
 
 			// Look for an action to perform.
@@ -140,12 +139,14 @@ namespace ORTS
 					Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
 				Simulator.Start();
 				Viewer = new Viewer3D(Simulator);
+				Viewer.LoadUserSettings();
+				Viewer.Initialize();
 				Viewer.Profiling = enableProfiling;
 				Viewer.Run();
 			}
 			catch (Exception error)
 			{
-				Console.Error.WriteLine(error);
+				Trace.WriteLine(error.ToString());
 				MessageBox.Show(error.ToString());
 			}
 		}
@@ -174,7 +175,7 @@ namespace ORTS
             }
             catch (Exception error)
             {
-                Console.Error.WriteLine(error);
+				Trace.WriteLine(error.ToString());
                 MessageBox.Show(error.ToString());
             }
         }
@@ -205,13 +206,15 @@ namespace ORTS
                         Simulator.SetActivity(ActivityPath);
                     Simulator.Restore(inf);
                     Viewer = new Viewer3D(Simulator);
-                    Viewer.Restore(inf);
+					Viewer.LoadUserSettings();
+					Viewer.Initialize();
+					Viewer.Restore(inf);
                 }
                 Viewer.Run();
             }
             catch (Exception error)
             {
-                Console.Error.WriteLine(error);
+				Trace.WriteLine(error.ToString());
                 MessageBox.Show(error.ToString());
             }
         }
@@ -233,17 +236,26 @@ namespace ORTS
         /// </summary>
         public static void EnableLogging()
         {
-            string warningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
-            File.Delete(warningLogFileName);
-            ErrorLogger errorLogger = new ErrorLogger(warningLogFileName);
-            TraceListener traceListener = new System.Diagnostics.TextWriterTraceListener(errorLogger);
-            System.Diagnostics.Debug.Listeners.Insert(0, traceListener);
-            System.Diagnostics.Trace.Listeners.Insert(0, traceListener);
-            Console.SetError(errorLogger);
-            Console.SetOut(new Logger(warningLogFileName));
-            Console.WriteLine("SVN V = " + Revision);
-            Console.WriteLine("BUILD = " + Build);
-            Console.WriteLine();
+			if (IsWarningsOn())
+			{
+				string logFileName = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
+				File.Delete(logFileName);
+
+				// Make Console.Out go to the log file AND the output stream.
+				Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
+				// Make Console.Error go to the new Console.Out.
+				Console.SetError(Console.Out);
+			}
+
+			// Captures Trace.Trace* calls and others and formats.
+			var traceListener = new ConsoleTraceListener();
+			traceListener.TraceOutputOptions = TraceOptions.Callstack;
+			// Trace.Listeners and Debug.Listeners are the same list.
+			Trace.Listeners.Add(traceListener);
+
+			Console.WriteLine("SVN V = " + Revision);
+			Console.WriteLine("BUILD = " + Build);
+			Console.WriteLine();
         }
 
         /// <summary>
@@ -348,8 +360,8 @@ namespace ORTS
                     }
                     catch (Exception error)
                     {
-                        Console.Error.WriteLine("While testing " + filename);
-						Console.Error.WriteLine(error);
+                        Trace.WriteLine(filename);
+						Trace.WriteLine(error.ToString());
                     }
 
             } // TestAll

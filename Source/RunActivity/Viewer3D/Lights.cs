@@ -9,11 +9,8 @@
     
 using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.IO;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
@@ -90,7 +87,7 @@ namespace ORTS
                         {
                             token = f.ReadTokenNoComment();
                             if (token == ")") break;
-                            if (token == "") throw (new STFError(f, "Missing )"));
+                            if (token == "") throw (new STFException(f, "Missing )"));
                             if (0 != String.Compare(token, "Light", true))// Weed out extraneous comments etc.
                             {
                                 f.SkipBlock();
@@ -104,7 +101,7 @@ namespace ORTS
                                 token = f.ReadTokenNoComment();
                                 while (token != ")")
                                 {
-                                    if (token == "") throw (new STFError(f, "Missing )"));
+                                    if (token == "") throw (new STFException(f, "Missing )"));
                                     else if (0 == String.Compare(token, "comment", true))
                                     {
                                         f.SkipBlock(); // Ignore the comment
@@ -211,9 +208,9 @@ namespace ORTS
                 }// while !EOF
 
             }
-            catch (Exception e)
+            catch (Exception error)
             {
-                Console.Error.WriteLine("{0}", e.Message);
+				Trace.WriteLine(error.ToString());
                 return false;
             }
             return true;
@@ -254,7 +251,7 @@ namespace ORTS
                 token = f.ReadToken();
                 while (token != ")")
                 {
-                    if (token == "") throw (new STFError(f, "Missing )"));
+                    if (token == "") throw (new STFException(f, "Missing )"));
                     else if (0 == String.Compare(token, "Duration", true))
                     {
                         f.VerifyStartOfBlock();

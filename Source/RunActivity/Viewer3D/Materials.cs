@@ -12,8 +12,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -93,7 +92,7 @@ namespace ORTS
             System.Diagnostics.Debug.Assert(IsInitialized, "Must initialize Materials before using.");
             if (!IsInitialized)             // this shouldn't happen, but if it does
             {
-                Console.Error.WriteLine("Program Bug: Must initialize Materials before using.");
+                Trace.TraceWarning("Program Bug: Must initialize Materials before using.");
                 Initialize(renderProcess);  // warn, and do it now rather than fail
             }
 
@@ -223,9 +222,10 @@ namespace ORTS
                     SharedTextures.Add(path, texture);
                     return texture;
                 }
-                catch (System.Exception error)
+                catch (Exception error)
                 {
-                    Console.Error.WriteLine("While loading " + path + " " + error.Message);
+					Trace.WriteLine(path);
+					Trace.WriteLine(error.ToString());
                     return Materials.MissingTexture;
                 }
             }

@@ -277,7 +277,7 @@ namespace ORTS
         public void Draw(GraphicsDevice graphicsDevice)
         {
             Materials.UpdateShaders(RenderProcess, graphicsDevice);
-            if (RenderProcess.Viewer.DynamicShadows)
+            if (RenderProcess.Viewer.SettingsBool["DynamicShadows"])
                 DrawShadows(graphicsDevice);
             DrawSimple(graphicsDevice);
 
@@ -356,7 +356,7 @@ namespace ORTS
 
         public void DrawSequences(GraphicsDevice graphicsDevice)
         {
-            if (RenderProcess.Viewer.DynamicShadows)
+            if (RenderProcess.Viewer.SettingsBool["DynamicShadows"])
             {
 				var shadowMapMatrix = ShadowMapLightView * ShadowMapLightProj * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
 				Materials.SceneryShader.SetShadowMap(ref shadowMapMatrix, ShadowMap);

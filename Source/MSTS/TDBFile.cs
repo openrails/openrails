@@ -4,10 +4,7 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
-using System.Collections;
 using System.Diagnostics;
-using MSTSMath;
-using Microsoft.Xna.Framework;
 
 namespace MSTS
 {
@@ -27,7 +24,7 @@ namespace MSTS
                 string token = f.ReadToken();
                 while (token != "") // EOF
                 {
-                    if (token == ")") throw (new STFError(f, "Unexpected )"));
+                    if (token == ")") throw (new STFException(f, "Unexpected )"));
                     else if (token == "(") f.SkipBlock();
                     else if (0 == String.Compare(token, "TrackDB", true)) TrackDB = new TrackDB(f);
                     else f.SkipBlock();
@@ -76,7 +73,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrackNodes", true))
                 {
                     f.VerifyStartOfBlock();
@@ -86,7 +83,7 @@ namespace MSTS
                     token = f.ReadToken();
                     while (token != ")")
                     {
-                        if (token == "") throw (new STFError(f, "Missing )"));
+                        if (token == "") throw (new STFException(f, "Missing )"));
                         else if (0 == String.Compare(token, "TrackNode", true))
                         {
                             TrackNodes[count] = new TrackNode(f, count);
@@ -105,7 +102,7 @@ namespace MSTS
                     token = f.ReadToken();
                     while (token != ")")
                     {
-                        if (token == "") throw (new STFError(f, "Missing )"));
+                        if (token == "") throw (new STFException(f, "Missing )"));
                         else if (0 == String.Compare(token, "CrossoverItem", true))
                         {
                             TrItemTable[count]=new CrossoverItem(f,count);
@@ -179,7 +176,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrJunctionNode", true)) TrJunctionNode = new TrJunctionNode(f);
                 else if (0 == String.Compare(token, "TrVectorNode", true)) TrVectorNode = new TrVectorNode(f);
                 else if (0 == String.Compare(token, "UiD", true)) UiD = new UiD(f);
@@ -202,7 +199,7 @@ namespace MSTS
             }
             // TODO We assume there is only 2 outputs to each junction
             if (TrVectorNode != null && TrPins.Length != 2)
-                Console.Error.WriteLine("TDB DEBUG TVN={0} has {1} pins.", UiD, TrPins.Length);
+                Trace.TraceError("TDB DEBUG TVN={0} has {1} pins.", UiD, TrPins.Length);
         }
         public TrJunctionNode TrJunctionNode = null;
         public TrVectorNode TrVectorNode = null;
@@ -279,7 +276,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrVectorSections", true))
                 {
                     f.VerifyStartOfBlock();
@@ -305,7 +302,7 @@ namespace MSTS
             for (int i = 0; i < TrVectorSections.Length; ++i)
                 if (TrVectorSections[i] == targetTVS)
                     return i;
-            throw new System.Exception("Program Bug: Can't Find TVS");
+            throw new InvalidOperationException("Program Bug: Can't Find TVS");
         }
 
         // Build a list of track items associated with this node
@@ -319,7 +316,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemRef", true))
                 {
                     if (count < noItemRefs)
@@ -329,13 +326,13 @@ namespace MSTS
                     }
                     else
                     {
-                        throw (new STFError(f, "TrItemRef Count Mismatch"));
+                        throw (new STFException(f, "TrItemRef Count Mismatch"));
                     }
                 }
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
-            if (count != noItemRefs) throw (new STFError(f, "TrItemRef Count Mismatch"));
+            if (count != noItemRefs) throw (new STFException(f, "TrItemRef Count Mismatch"));
         }
     }
 
@@ -452,7 +449,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -504,7 +501,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -539,7 +536,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrSignalDir", true)) 
                 {
                     if(count<noSigDirs)
@@ -555,13 +552,13 @@ namespace MSTS
                     }
                     else
                     {
-                        throw (new STFError(f, "TrSignalDirs count mismatch"));
+                        throw (new STFException(f, "TrSignalDirs count mismatch"));
                     }
                 }
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
-            if(count!=noSigDirs)throw (new STFError(f, "TrSignalDirs count mismatch"));
+            if(count!=noSigDirs)throw (new STFException(f, "TrSignalDirs count mismatch"));
         }
     }
 
@@ -577,7 +574,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -622,7 +619,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -681,7 +678,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -714,7 +711,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -737,7 +734,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -767,7 +764,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -807,7 +804,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();
@@ -833,7 +830,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-                if (token == "") throw (new STFError(f, "Missing )"));
+                if (token == "") throw (new STFException(f, "Missing )"));
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.VerifyStartOfBlock();

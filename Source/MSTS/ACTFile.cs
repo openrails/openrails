@@ -49,7 +49,7 @@ namespace MSTS
                     }
                 }
                 if (Tr_Activity == null)
-                    throw (new STFError(f, "Missing Tr_Activity statement"));
+                    throw (new STFException(f, "Missing Tr_Activity statement"));
             }
             finally
             {
@@ -79,7 +79,7 @@ namespace MSTS
 
             }
 			if( Tr_Activity_File == null )
-				throw( new STFError( f, "Missing Tr_Activity_File statement" ) );
+				throw( new STFException( f, "Missing Tr_Activity_File statement" ) );
 		}
 	}
 

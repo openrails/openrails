@@ -11,17 +11,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.Text;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 using MSTS;
 
 namespace ORTS
@@ -261,20 +254,21 @@ namespace ORTS
             if (  !SharedShapes.ContainsKey(path))
             {
                 // We haven't set up this shape yet, so go ahead and add it
-                try
-                {
-                    SharedShape shape = new SharedShape(viewer, path);
-                    SharedShapes.Add(path, shape);
-                    return shape;
-                }
-                catch (System.Exception error)
-                {
-                    Console.Error.WriteLine("Error loading shape: " + path + "\r\n   " + error.Message);
-                    if (EmptyShape == null)
-                        EmptyShape = new SharedShape(viewer);
-                    SharedShapes.Add(path, EmptyShape);
-                    return EmptyShape;
-                }
+				try
+				{
+					SharedShape shape = new SharedShape(viewer, path);
+					SharedShapes.Add(path, shape);
+					return shape;
+				}
+				catch (Exception error)
+				{
+					Trace.WriteLine(path);
+					Trace.WriteLine(error.ToString());
+					if (EmptyShape == null)
+						EmptyShape = new SharedShape(viewer);
+					SharedShapes.Add(path, EmptyShape);
+					return EmptyShape;
+				}
             }
             else
             {
@@ -388,7 +382,7 @@ namespace ORTS
                 }
                 FilePath = globalPath;
             }
-            Console.Write( "S" );
+            Trace.Write("S");
             SFile sFile = new SFile(FilePath);
 
             // Determine the correct texture folder. 
@@ -667,7 +661,7 @@ namespace ORTS
                     // Note, we have a sample file Af2_4_25033-Lead.S where vertex_sets and vtx_states mismatch
                     if (!found)
                     {
-                        Console.Error.WriteLine("Shape file warning - missing vertex_set in \n" + sharedShape.FilePath);
+                        Trace.TraceWarning("Shape file missing vertex_set in {0}", sharedShape.FilePath);
                         // so default to loading all vertices, instead of proper vertex_set
                         shapePrimitive.MinVertex = 0;
                         shapePrimitive.NumVertices = sub_object.vertices.Count;  // so we default to them all

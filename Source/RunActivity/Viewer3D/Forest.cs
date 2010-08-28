@@ -9,17 +9,9 @@
 ///    
 ///     
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 using MSTS;
 
 namespace ORTS
@@ -111,7 +103,7 @@ namespace ORTS
             scaleRange2 = forest.scaleRange.scaleRange2;
             if (scaleRange1 > scaleRange2)
             {
-                Console.Error.Write("\nForest " + forest.TreeTexture + " in tile " + drawer.worldPosition.TileX + "," + drawer.worldPosition.TileZ + " has scale range with minimum greater than maximum\n");
+                Trace.TraceWarning("Forest " + forest.TreeTexture + " in tile " + drawer.worldPosition.TileX + "," + drawer.worldPosition.TileZ + " has scale range with minimum greater than maximum");
                 float scaleRangeSwap = scaleRange2;
                 scaleRange2 = scaleRange1;
                 scaleRange1 = scaleRangeSwap;

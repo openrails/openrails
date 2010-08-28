@@ -24,37 +24,38 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Management;
+using IrrKlang;
+using Microsoft.Win32;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 using MSTS;
-using System.Threading;
-using IrrKlang;
-using System.IO;
-using Microsoft.Win32;
-using System.Management;
 
 namespace ORTS
 {
     public class Viewer3D
     {
         // User setups
-        public int SoundDetailLevel;        // used to select which sound scaleability group to use.
-        public int WorldObjectDensity;
-        public float ViewingDistance;       // used for culling
-        public bool PrecipationEnabled = false;  // control display of rain and snow
-        public bool WireEnabled = false; // overhead wire
+		public readonly Dictionary<string, bool> SettingsBool = new Dictionary<string, bool>
+		{
+			{ "Precipitation", false },
+			{ "Wire", false },
+			{ "FullScreen", false },
+			{ "DynamicShadows", false },
+			{ "WindowGlass", false },
+		};
+		public readonly Dictionary<string, int> SettingsInt = new Dictionary<string, int>
+		{
+			{ "WorldObjectDensity", 10 },
+			{ "SoundDetailLevel", 5 },
+			{ "ViewingDistance", 2000 },
+		};
         public Vector2 WindowSize;
-        public bool StartFullScreen;        // indicates user want the program to start in full screen mode
-        public bool DynamicShadows;
-		public bool WindowGlass;
+		// Multi-threaded processes
         public UpdaterProcess UpdaterProcess = null;
         public LoaderProcess LoaderProcess;
         public RenderProcess RenderProcess;
@@ -118,108 +119,102 @@ namespace ORTS
         /// and the graphics device is not ready to accept content.
         /// </summary>
         /// <param name="simulator"></param>
-        public Viewer3D(Simulator simulator )
-        {
-            Simulator = simulator;
-
-            UserSetup();
-
-            Console.WriteLine();
-            if (SoundDetailLevel > 0)
-            {
-                SoundEngine = new ISoundEngine();
-                SoundEngine.SetListenerPosition(new IrrKlang.Vector3D(0, 0, 0), new IrrKlang.Vector3D(0, 0, 1));
-                SoundEngine.SoundVolume = 0;  // while loading
-                // Swap out original file factory to support loops - by GeorgeS
-                SoundEngine.AddFileFactory(new WAVIrrKlangFileFactory());
-                IngameSounds = new SoundSource(this, Simulator.RoutePath + "\\Sound\\ingame.sms");
-            }
-            // By GeorgeS
-            WorldSounds = new WorldSounds(this);
-            ReadENVFile();
-            TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
-            Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
-			MilepostUnitsMetric = simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
-            SetupBackgroundProcesses( );
-        }
+		public Viewer3D(Simulator simulator)
+		{
+			Simulator = simulator;
+		}
 
         /// <summary>
         /// Save game
         /// </summary>
-        public void Save( BinaryWriter outf)
-        {
-            outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
-            outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
-            // Saving Camera by GeorgeS
-            if (WellKnownCameras.Contains(Camera))
-            {
-                CameraToRestore = WellKnownCameras.IndexOf(Camera);
-            }
-            else
-            {
-                CameraToRestore = -1;
-            }
-            outf.Write(CameraToRestore);
-        }
+		public void Save(BinaryWriter outf)
+		{
+			outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
+			outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
+			// Saving Camera by GeorgeS
+			if (WellKnownCameras.Contains(Camera))
+			{
+				CameraToRestore = WellKnownCameras.IndexOf(Camera);
+			}
+			else
+			{
+				CameraToRestore = -1;
+			}
+			outf.Write(CameraToRestore);
+		}
 
         /// <summary>
         /// Restore after game resumes
         /// </summary>
-        public void Restore( BinaryReader inf )
-        {
-            Train playerTrain = Simulator.Trains[inf.ReadInt32()];
-            PlayerLocomotive = playerTrain.Cars[inf.ReadInt32()];
-            // Restoring Camera part I by GeorgeS
-            CameraToRestore = inf.ReadInt32();
-        }
-
-        public void Run()
-        {
-            RenderProcess.Run();
-        }
+		public void Restore(BinaryReader inf)
+		{
+			Train playerTrain = Simulator.Trains[inf.ReadInt32()];
+			PlayerLocomotive = playerTrain.Cars[inf.ReadInt32()];
+			// Restoring Camera part I by GeorgeS
+			CameraToRestore = inf.ReadInt32();
+		}
 
         /// <summary>
         /// Setup the game settings provided by the user in the main menu screen.
         /// </summary>
-        public void UserSetup()
+        public void LoadUserSettings()
         {
             // Restore retained settings
-            WorldObjectDensity = 10;
-            SoundDetailLevel = 5;
-            ViewingDistance = 2000;
             WindowSize = new Vector2(1024, 768);
             string strWindowSize = "1024x768";
 
-            try
-            {
-                RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-                if (RK != null)
-                {
-                    WorldObjectDensity = (int)RK.GetValue("WorldObjectDensity", WorldObjectDensity);
-                    SoundDetailLevel = (int)RK.GetValue("SoundDetailLevel", SoundDetailLevel);
-                    ViewingDistance = (int)RK.GetValue("ViewingDistance", (int)ViewingDistance);
-                    strWindowSize = (string)RK.GetValue("WindowSize", (string)strWindowSize);
-                    PrecipationEnabled = (1 == (int)RK.GetValue("Precipitation", 0));
-                    WireEnabled = (1 == (int)RK.GetValue("Wire", 0));
-                    StartFullScreen = (1 == (int)RK.GetValue("Fullscreen", 0));
-                    DynamicShadows = (1 == (int)RK.GetValue("DynamicShadows", 0));
-					WindowGlass = (1 == (int)RK.GetValue("WindowGlass", 0));
-                    // Parse the screen dimensions text
-                    char[] delimiterChars = { 'x' };
-                    string[] words = strWindowSize.Split(delimiterChars);
-                    WindowSize.X = Convert.ToInt32(words[0]);
-                    WindowSize.Y = Convert.ToInt32(words[1]);
-                }
-            }
-            catch( System.Exception error )
-            {
-                Console.WriteLine("Registry problem - " + error.Message);
-            }
-            ViewingDistance = Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, ViewingDistance);
-            Materials.ViewingDistance = ViewingDistance;
+			try
+			{
+				RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
+				if (RK != null)
+				{
+					foreach (var key in SettingsBool.Keys.ToArray())
+						SettingsBool[key] = (1 == (int)RK.GetValue(key, SettingsBool[key] ? 1 : 0));
+					foreach (var key in SettingsInt.Keys.ToArray())
+						SettingsInt[key] = (int)RK.GetValue(key, SettingsInt[key]);
+
+					strWindowSize = (string)RK.GetValue("WindowSize", (string)strWindowSize);
+					// Parse the screen dimensions text
+					char[] delimiterChars = { 'x' };
+					string[] words = strWindowSize.Split(delimiterChars);
+					WindowSize.X = Convert.ToInt32(words[0]);
+					WindowSize.Y = Convert.ToInt32(words[1]);
+				}
+			}
+			catch (Exception error)
+			{
+				Trace.WriteLine(error.ToString());
+			}
         }
 
-        /// <summary>
+		public void Initialize()
+		{
+			Console.WriteLine();
+			Materials.ViewingDistance = SettingsInt["ViewingDistance"] = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, SettingsInt["ViewingDistance"]);
+			if (SettingsInt["SoundDetailLevel"] > 0)
+			{
+				SoundEngine = new ISoundEngine();
+				SoundEngine.SetListenerPosition(new IrrKlang.Vector3D(0, 0, 0), new IrrKlang.Vector3D(0, 0, 1));
+				SoundEngine.SoundVolume = 0;  // while loading
+				// Swap out original file factory to support loops - by GeorgeS
+				SoundEngine.AddFileFactory(new WAVIrrKlangFileFactory());
+				IngameSounds = new SoundSource(this, Simulator.RoutePath + "\\Sound\\ingame.sms");
+			}
+			// By GeorgeS
+			WorldSounds = new WorldSounds(this);
+			ReadENVFile();
+			TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
+			Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
+			MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
+			SetupBackgroundProcesses();
+		}
+
+		public void Run()
+		{
+			RenderProcess.Run();
+		}
+
+		/// <summary>
         /// Called once before the graphics device is started to configure the 
         /// graphics card and XNA game engine.
         /// Executes in the RenderProcess thread.
@@ -273,7 +268,7 @@ namespace ORTS
 
             PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
-            if (SoundDetailLevel > 0)
+			if (SettingsInt["SoundDetailLevel"] > 0)
             {
                 ISound ambientSound = SoundEngine.Play2D(Simulator.BasePath + @"\SOUND\gen_urb1.wav", true);  // TODO temp code
                 ambientSound.Volume = 0.2f;
@@ -290,8 +285,8 @@ namespace ORTS
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
             SceneryDrawer = new SceneryDrawer(this);
-            if( PrecipationEnabled )  PrecipDrawer = new PrecipDrawer(this);
-            if (WireEnabled) WireDrawer = new WireDrawer(this);
+			if (SettingsBool["Precipitation"]) PrecipDrawer = new PrecipDrawer(this);
+			if (SettingsBool["Wire"]) WireDrawer = new WireDrawer(this);
             TrainDrawer = new TrainDrawer(this);
 			weatherControl = new WeatherControl(this);
 
@@ -325,8 +320,8 @@ namespace ORTS
                 Camera.Activate();
             }
 
-            if (StartFullScreen)
-                ToggleFullscreen();
+			if (SettingsBool["FullScreen"])
+				ToggleFullscreen();
         }
 
         /// <summary>

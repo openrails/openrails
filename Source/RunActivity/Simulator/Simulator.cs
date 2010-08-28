@@ -23,12 +23,9 @@
 /// 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+using System.Diagnostics;
 using System.IO;
-using System.Net;
-using System.Net.Sockets;
+using Microsoft.Xna.Framework;
 using MSTS;
 
 
@@ -74,22 +71,22 @@ namespace ORTS
             RouteName = Path.GetFileName(RoutePath);
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
 
-            Console.Write("Loading ");
+            Trace.Write("Loading ");
 
-            Console.Write(" TRK");
+			Trace.Write(" TRK");
             TRK = new TRKFile(MSTSPath.GetTRKFileName(RoutePath));
             
             //WHN: Establish default track profile
-            Console.Write(" TRP");
+			Trace.Write(" TRP");
             TrackProfile = new TrProfile();
-            
-            Console.Write(" TDB");
+
+			Trace.Write(" TDB");
             TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
-            //Console.Write(" CIGCFG");
+			//Trace.Write(" SIGCFG");
             //sigCFGfile = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
 
-            Console.Write(" DAT");
+			Trace.Write(" DAT");
             if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
                 TSectionDat = new TSectionDatFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
             else
@@ -97,7 +94,7 @@ namespace ORTS
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
 
-            Console.Write(" ACT");
+			Trace.Write(" ACT");
         }
         public void SetActivity(string activityPath)
         {
@@ -128,7 +125,7 @@ namespace ORTS
             // Switches
             AlignSwitchesToDefault();  // ie straight through routing
             // Trains
-            Console.Write(" CON");
+			Trace.Write(" CON");
             Trains.Clear();
             InitializePlayerTrain();
             InitializeStaticConsists();
@@ -601,9 +598,10 @@ namespace ORTS
                     car.Train = train;
                     previousCar = car;
                 }
-                catch (System.Exception error)
+                catch (Exception error)
                 {
-                    Console.Error.WriteLine("Couldn't open " + wagonFilePath + "\n" + error.Message + "\n" + error.StackTrace);
+					Trace.WriteLine(wagonFilePath);
+					Trace.WriteLine(error.ToString());
                 }
 
             }// for each rail car
@@ -663,10 +661,11 @@ namespace ORTS
                             car.Train = train;
                             previousCar = car;
                         }
-                        catch (System.Exception error)
+                        catch (Exception error)
                         {
-                            Console.Error.WriteLine("Couldn't open " + wagonFilePath + "\n" + error.Message + "\n" + error.StackTrace);
-                        }
+							Trace.WriteLine(wagonFilePath);
+							Trace.WriteLine(error.ToString());
+						}
 
                     }// for each rail car
 
@@ -685,10 +684,10 @@ namespace ORTS
                     Trains.Add(train);
 
                 }
-                catch (System.Exception error)
+                catch (Exception error)
                 {
-                    Console.Error.WriteLine(error);
-                }
+					Trace.WriteLine(error.ToString());
+				}
             }// for each train
 
         }
@@ -704,8 +703,8 @@ namespace ORTS
                     outf.Write(1);
                 else
                 {
-                    Console.Error.WriteLine( "Don't know how to save train type: " + train.GetType().ToString() );
-                    System.Diagnostics.Debug.Assert( false );  // in debug mode, halt on this error
+                    Trace.TraceError("Don't know how to save train type: " + train.GetType().ToString());
+                    Debug.Fail("Don't know how to save train type: " + train.GetType().ToString());  // in debug mode, halt on this error
                     outf.Write(1);  // for release version, we'll try to press on anyway
                 }
                 train.Save(outf);
@@ -725,8 +724,8 @@ namespace ORTS
                     Trains.Add(new AITrain(inf));
                 else
                 {
-                    Console.Error.WriteLine("Don't know how to restore train type: " + trainType.ToString());
-                    System.Diagnostics.Debug.Assert(false);  // in debug mode, halt on this error
+                    Trace.TraceWarning("Don't know how to restore train type: " + trainType.ToString());
+                    Debug.Fail("Don't know how to restore train type: " + trainType.ToString());  // in debug mode, halt on this error
                     Trains.Add(new Train(inf)); // for release version, we'll try to press on anyway
                 }
             }

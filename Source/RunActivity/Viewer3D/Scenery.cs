@@ -36,18 +36,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 using MSTS;
-using System.Threading;
 
 namespace ORTS
 {
@@ -117,7 +109,7 @@ namespace ORTS
                           || Math.Abs(tile.TileZ - viewerTileZ) > 1)
                         {
                             // if not, unload the wFile
-                            Console.Write("w");
+                            Trace.Write("w");
                             WorldFiles[i] = null;
                             // World sounds - By GeorgeS
                             Viewer.WorldSounds.RemoveByTile(tile.TileX, tile.TileZ);
@@ -156,7 +148,7 @@ namespace ORTS
             for (int i = 0; i < WorldFiles.Length; ++i)
                 if (WorldFiles[i] == null)  // we found one
                 {
-                    Console.Write("W");
+                    Trace.Write("W");
                     WorldFiles[i] = new WorldFile(Viewer, tileX, tileZ);
                     // Load world sounds - By GeorgeS
                     Viewer.WorldSounds.AddByTile(tileX, tileZ);
@@ -164,7 +156,7 @@ namespace ORTS
                 }
 
             // otherwise we didn't find an available spot - this shouldn't happen
-            System.Diagnostics.Debug.Assert(false, "Program Bug - didn't expect TerrainTiles array to be full.");
+            Debug.Fail("Program Bug - didn't expect TerrainTiles array to be full.");
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -230,7 +222,7 @@ namespace ORTS
             // create all the individual scenery objects specified in the WFile
             foreach (WorldObject worldObject in WFile.Tr_Worldfile)
             {
-                if (worldObject.StaticDetailLevel > viewer.WorldObjectDensity)
+                if (worldObject.StaticDetailLevel > viewer.SettingsInt["WorldObjectDensity"])
                     continue;
 
                 // determine the full file path to the shape file for this scenery object 

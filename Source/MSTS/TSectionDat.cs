@@ -6,9 +6,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Diagnostics;
-using Microsoft.Win32;
 using MSTSMath;
 
 namespace MSTS
@@ -64,7 +62,7 @@ namespace MSTS
 			string token = f.ReadToken();
 			while( token != ")" )
 			{
-				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
+				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
 				else if( 0 == String.Compare( token,"SectionSize",true ) )  SectionSize = new SectionSize( f );
 				else if( 0 == String.Compare( token,"SectionCurve", true ) ) SectionCurve = new SectionCurve( f );
 				else f.SkipBlock();
@@ -119,7 +117,7 @@ namespace MSTS
 			string token = f.ReadToken();
 			while( token != ")" ) 
 			{
-				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
+				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
 				else if (0 == String.Compare(token, "TrackSection", true)) {
 					AddSection(f, new TrackSection(f));
 				} else f.SkipBlock();
@@ -134,7 +132,7 @@ namespace MSTS
 			string token = f.ReadToken();
 			while( token != ")" ) 
 			{
-				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
+				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
 				else if (0 == String.Compare(token, "TrackSection", true)) {
 					AddSection(f, new RouteTrackSection(f));
 				} else f.SkipBlock();
@@ -143,7 +141,7 @@ namespace MSTS
 		}
 		private void AddSection(STFReader f, TrackSection section) {
 			if (ContainsKey(section.SectionIndex)) {
-				STFError.Report(f, "Duplicate SectionIndex of " + section.SectionIndex);
+				STFException.Report(f, "Duplicate SectionIndex of " + section.SectionIndex);
 			}
 			this[section.SectionIndex] = section;
 		}
@@ -155,7 +153,7 @@ namespace MSTS
 			if (ContainsKey(targetSectionIndex))
 				return this[targetSectionIndex];
             if( MissingTrackSectionWarnings++ < 5 )
-                Console.Error.WriteLine("TDB references track section not listed in global or dynamic TSECTION.DAT: " + targetSectionIndex.ToString());
+				Trace.TraceError("TDB references track section not listed in global or dynamic TSECTION.DAT: " + targetSectionIndex.ToString());
             return null;
 		}
 		public uint MaxSectionIndex;
@@ -176,16 +174,16 @@ namespace MSTS
        			string token = f.ReadToken();
                 if( token == ")" ) 
                 {
-                    STFError.Report( f, "Missing track section" );
+                    STFException.Report( f, "Missing track section" );
                     return;   // there are many TSECTION.DAT's with missing sections so we will accept this error
                 }
-    			try
-	    		{
-                    TrackSections[i] = uint.Parse(token);
-				}
-				catch( STFError error )  
+				try
 				{
-                    STFError.Report(f, error.Message);
+					TrackSections[i] = uint.Parse(token);
+				}
+				catch (STFException error)
+				{
+					STFException.Report(f, error.Message);
 				}
 			}
 			f.VerifyEndOfBlock();
@@ -206,7 +204,7 @@ namespace MSTS
 			int nextPath = 0;
 			while( token != ")" )
 			{
-				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
+				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
 				else if( 0 == String.Compare( token,"FileName", true ) )  FileName = f.ReadStringBlock();
 				else if( 0 == String.Compare( token,"NumPaths", true ) ) 
 				{
@@ -245,7 +243,7 @@ namespace MSTS
 			string token = f.ReadToken();
 			while( token != ")" ) 
 			{
-				if( token == "" ) throw ( new STFError( f, "Missing )" ) );
+				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
 				else if( 0 == String.Compare( token,"TrackShape",true ) ) this.Add( new TrackShape(f) );
 				else f.SkipBlock();
 				token = f.ReadToken();
@@ -271,7 +269,7 @@ namespace MSTS
 			STFReader f = new STFReader( pathNameExt );
             if (f.Header != "SIMISA@@@@@@@@@@JINX0T0t______")
             {
-                Console.Error.WriteLine("Ignoring invalid TSECTION.DAT in route folder.");
+				Trace.TraceError("Ignoring invalid TSECTION.DAT in route folder.");
                 return;
             }
 			try
@@ -279,8 +277,8 @@ namespace MSTS
 				string token = f.ReadToken();
 				while( token != "" ) // EOF
 				{
-					if( token == "(" ) throw ( new STFError( f, "Unexpected (" ) );
-					else if( token == ")" ) throw ( new STFError( f, "Unexpected )" ) );
+					if( token == "(" ) throw ( new STFException( f, "Unexpected (" ) );
+					else if( token == ")" ) throw ( new STFException( f, "Unexpected )" ) );
 					else if( 0 == String.Compare( token,"TrackSections",true ) ) TrackSections.AddRouteTrackSections(f);
 						// todo read in SectionIdx part of RouteTSectionDat
 					else f.SkipBlock();
@@ -300,15 +298,15 @@ namespace MSTS
 				string token = f.ReadToken();
 				while( token != "" ) // EOF
 				{
-					if( token == "(" ) throw ( new STFError( f, "Unexpected (" ) );
-					else if( token == ")" ) throw ( new STFError( f, "Unexpected )" ) );
+					if( token == "(" ) throw ( new STFException( f, "Unexpected (" ) );
+					else if( token == ")" ) throw ( new STFException( f, "Unexpected )" ) );
 					else if( 0 == String.Compare( token,"TrackSections",true ) ) TrackSections = new TrackSections(f);
 					else if( 0 == String.Compare( token,"TrackShapes", true ) ) TrackShapes = new TrackShapes(f);
 					else f.SkipBlock();
 					token = f.ReadToken();
 				}
-				if( TrackSections == null ) throw( new STFError( f, "Missing TrackSections" ) );
-				if( TrackShapes == null ) throw ( new STFError( f, "Missing TrackShapes" ) );
+				if( TrackSections == null ) throw( new STFException( f, "Missing TrackSections" ) );
+				if( TrackShapes == null ) throw ( new STFException( f, "Missing TrackShapes" ) );
 			}
 			finally
 			{

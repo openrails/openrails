@@ -20,18 +20,24 @@ using Microsoft.Xna.Framework;
 
 namespace MSTS
 {
-	public class STFError: System.Exception
-		// STF errors display the last few lines of the STF file when reporting errors.
+	public class STFException : Exception
+	// STF errors display the last few lines of the STF file when reporting errors.
 	{
-        public static void Report(STFReader f, string message) { Console.Error.WriteLine("STF Error in " + f.FileName + "\r\n   Line " + f.LineNumber.ToString() + ": " + message); }
-
-        
-		public STFError( STFReader f, string message ): base( "STF Error in " + f.FileName + "\r\n   Line " + f.LineNumber.ToString() + ": " + message )
+		public static void Report(STFReader reader, Exception error)
 		{
-			ProblemFile = f;
+			Trace.TraceError("STF error in {0}:line {1}", reader.FileName, reader.LineNumber);
+			Trace.WriteLine(error.ToString());
 		}
-		STFReader ProblemFile;
-         
+
+		public static void Report(STFReader reader, string message)
+		{
+			Trace.TraceError("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
+		}
+
+		public STFException(STFReader reader, string message)
+			: base(String.Format("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message))
+		{
+		}
 	}
 
 
@@ -325,7 +331,7 @@ namespace MSTS
                 case "comment": SkipBlock(); break;
                 default: 
                     if (!token.StartsWith("#"))
-                        STFError.Report(this, "Unexpected " + token);
+                        STFException.Report(this, "Unexpected " + token);
                     SkipBlock();
                     break;
             }
@@ -366,7 +372,7 @@ namespace MSTS
                 && !extraTokens.StartsWith( "comment", StringComparison.OrdinalIgnoreCase ) 
                 && !extraTokens.StartsWith( "skip", StringComparison.OrdinalIgnoreCase ) 
                 )
-                STFError.Report(this, "Ignoring extra data: " + extraTokens);
+                STFException.Report(this, "Ignoring extra data: " + extraTokens);
 
         }
 		
@@ -381,47 +387,46 @@ namespace MSTS
             if (s != target)
             {
                 if (s == "")
-                    STFError.Report(this, "Unexpected end of file");
+                    STFException.Report(this, "Unexpected end of file");
                 else
-                    STFError.Report(this, target + " Not Found - instead found " + s);
+                    STFException.Report(this, target + " Not Found - instead found " + s);
             }
 		}
 
 
 
 		public int ReadHex()
-			// Note:  end of file should return FormatException.
-			/* Throws:
-				IOException An I/O error occurs. 
-				STFError			
-			*/
+		// Note:  end of file should return FormatException.
+		/* Throws:
+			IOException An I/O error occurs. 
+			STFError			
+		*/
 		{
 			string token = ReadToken();
 			try
 			{
-				return int.Parse( token, System.Globalization.NumberStyles.HexNumber );
+				return int.Parse(token, System.Globalization.NumberStyles.HexNumber);
 			}
-			catch( System.Exception e )
+			catch (Exception e)
 			{
-				STFError.Report( this, e.Message ) ;
-                return 0;
+				STFException.Report(this, e);
+				return 0;
 			}
-
 		}
 
-        public uint ReadFlags()
-        {
-            string token = ReadToken();
-            try
-            {
-                return uint.Parse(token, System.Globalization.NumberStyles.HexNumber);
-            }
-            catch (System.Exception e)
-            {
-                STFError.Report(this, e.Message);
-                return 0;
-            }
-        }
+		public uint ReadFlags()
+		{
+			string token = ReadToken();
+			try
+			{
+				return uint.Parse(token, System.Globalization.NumberStyles.HexNumber);
+			}
+			catch (Exception e)
+			{
+				STFException.Report(this, e);
+				return 0;
+			}
+		}
 
 		public int ReadInt()
 		{
@@ -530,7 +535,7 @@ namespace MSTS
 			}
 			catch (Exception e)
 			{
-				STFError.Report(this, e.Message);
+				STFException.Report(this, e);
 				return 0;
 			}
 		}
@@ -549,40 +554,40 @@ namespace MSTS
 			return s;
 		}
 		public uint ReadUIntBlock()
-			// Reads a () enclosed int
-			/* Throws
-					STFError( this, "( Not Found" )
-					IOException An I/O error occurs. 
-			*/
+		// Reads a () enclosed int
+		/* Throws
+				STFError( this, "( Not Found" )
+				IOException An I/O error occurs. 
+		*/
 		{
 			try
 			{
-                double value = ReadDoubleBlock();                
+				double value = ReadDoubleBlock();
 				return (uint)value;
 			}
-			catch( System.Exception e )
+			catch (Exception e)
 			{
-				STFError.Report( this, e.Message );
-                return 0;
+				STFException.Report(this, e);
+				return 0;
 			}
 		}
 
 		public int ReadIntBlock()
-			// Reads a () enclosed int
-			/* Throws
-					STFError( this, ") Not Found" )
-					IOException An I/O error occurs. 
-			*/
+		// Reads a () enclosed int
+		/* Throws
+				STFError( this, ") Not Found" )
+				IOException An I/O error occurs. 
+		*/
 		{
 			try
 			{
-                double value = ReadDoubleBlock();
-                return (int)value;
+				double value = ReadDoubleBlock();
+				return (int)value;
 			}
-			catch( System.Exception e )
+			catch (Exception e)
 			{
-				STFError.Report( this, e.Message );
-                return 0;
+				STFException.Report(this, e);
+				return 0;
 			}
 		}
 
@@ -605,27 +610,27 @@ namespace MSTS
 		}
 
 		public bool ReadBoolBlock()
-			// Reads a () enclosed bool block
-			/* Throws
-					STFError - syntax or numeric conversion
-					IOException An I/O error occurs. 
-			*/
+		// Reads a () enclosed bool block
+		/* Throws
+				STFError - syntax or numeric conversion
+				IOException An I/O error occurs. 
+		*/
 		{
-            VerifyStartOfBlock();
+			VerifyStartOfBlock();
 			string s = ReadToken();
-			if( s == ")" )
+			if (s == ")")
 				return true;  // assume a null block is true
 			int i;
 			try
 			{
 				i = int.Parse(s);
 			}
-			catch( System.Exception e )
+			catch (Exception e)
 			{
-				STFError.Report( this, e.Message );
-                return false;
+				STFException.Report(this, e);
+				return false;
 			}
-            VerifyEndOfBlock();
+			VerifyEndOfBlock();
 			return i != 0;
 		}
 
@@ -680,7 +685,7 @@ namespace MSTS
                 string token = this.ReadDelimitedToken();
                 s += token;
                 if (token.Trim() == "")
-                    throw (new STFError(this, "Missing )"));
+                    throw (new STFException(this, "Missing )"));
                 if (token.Trim() == "(")
                     ++depth;
                 if (token.Trim() == ")")
@@ -789,7 +794,7 @@ namespace MSTS
         /// <param name="token"></param>
         public void ThrowUnknownToken(string token)
         {
-            throw new STFError(this, "Unknown token " + token);
+            throw new STFException(this, "Unknown token " + token);
         }
 
 

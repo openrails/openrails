@@ -26,19 +26,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
-using IrrKlang;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using IrrKlang;
+using Microsoft.Xna.Framework;
 
 
 namespace ORTS
@@ -120,7 +112,7 @@ namespace ORTS
             while ( iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count)
                 {
             
-                if (smsFile.Tr_SMS.ScalabiltyGroups[iSG].DetailLevel <= Viewer.SoundDetailLevel)
+                if (smsFile.Tr_SMS.ScalabiltyGroups[iSG].DetailLevel <= Viewer.SettingsInt["SoundDetailLevel"])
                 {
                     break;
                 }
@@ -668,7 +660,7 @@ namespace ORTS
             {
                 ss.StopRepeating();
                 ss.CheckSoundQueue();
-                Console.WriteLine("Sound stopped: " + ss._playingSound.Name);
+                Trace.TraceInformation("Sound stopped: " + ss._playingSound.Name);
             }
         }
     }

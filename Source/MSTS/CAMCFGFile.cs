@@ -27,7 +27,7 @@ namespace MSTS
                 string token = f.ReadToken();
                 while (!f.EndOfBlock())
                 {
-                    if (token == ")") throw (new STFError(f, "Unexpected )"));
+                    if (token == ")") throw (new STFException(f, "Unexpected )"));
                     else if (token == "(") f.SkipBlock();
                         
                     else if (0 == String.Compare(token, "camera", true))

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MSTS;
+using System.Diagnostics;
 using System.IO;
-using Microsoft.Xna.Framework;
 using System.Reflection;
+using MSTS;
 
 namespace ORTS
 {
@@ -28,9 +26,9 @@ namespace ORTS
                     car = (TrainCar)customDLL.CreateInstance("ORTS.CustomCar", true, BindingFlags.CreateInstance, null, args, null, null);
                     return car;
                 }
-                catch (System.Exception error)
+                catch (Exception error)
                 {
-                    Console.Error.WriteLine(error.Message);
+                    Trace.WriteLine(error.ToString());
                     // on error, fall through and try loading without the custom dll
                 }
             }

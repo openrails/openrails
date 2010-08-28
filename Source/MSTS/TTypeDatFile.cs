@@ -34,7 +34,7 @@ namespace MSTS
                 }
             }
             if (count != this.Count)
-                STFError.Report( f,"Count mismatch." );
+                STFException.Report( f,"Count mismatch." );
             f.Close();
 		}
 

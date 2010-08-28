@@ -4,8 +4,6 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
-using System.IO;
-using System.Collections;
 
 namespace MSTS
 {
@@ -26,14 +24,14 @@ namespace MSTS
                 string token = f.ReadToken();
                 while (token != "") // EOF
                 {
-                    if (token == ")") throw (new STFError(f, "Unexpected )"));
+                    if (token == ")") throw (new STFException(f, "Unexpected )"));
                     else if (token == "(") f.SkipBlock();
                     else if (0 == String.Compare(token, "shape", true)) shape = new SDShape(f);
                     else f.SkipBlock();
                     token = f.ReadToken();
                 }
                 if (shape == null)
-                    throw (new STFError(f, "Missing shape statement"));
+                    throw (new STFException(f, "Missing shape statement"));
             }
             finally
             {
@@ -50,40 +48,40 @@ namespace MSTS
 
             public SDShape(STFReader f)
             {
-                try
-                {
-                    while (!f.EOF())
-                    {
-                        string token = f.ReadToken();
-                        if (token == "(")
-                            token = f.ReadToken();
-                        if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
-                        {
-                            while (token != ")")
-                            {
-                                token = f.ReadToken();
-                                if (token == "") throw (new STFError(f, "Missing )"));
-                                else if (0 == String.Compare(token, "ESD_Detail_Level", true)) ESD_Detail_Level = f.ReadIntBlock();
-                                else if (0 == String.Compare(token, "ESD_Alternative_Texture", true)) ESD_Alternative_Texture = f.ReadIntBlock();
-                                else if (0 == String.Compare(token, "ESD_Bounding_Box", true))
-                                {
-                                    ESD_Bounding_Box = new ESD_Bounding_Box(f);
-                                    if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
-                                        ESD_Bounding_Box = null;
-                                }
-                                else if (0 == String.Compare(token, "ESD_No_Visual_Obstruction", true)) ESD_No_Visual_Obstruction = f.ReadBoolBlock();
-                                else if (0 == String.Compare(token, "ESD_Snapable", true)) ESD_Snapable = f.ReadBoolBlock();
-                                else f.SkipBlock();
-                            }
-                        }
-                    }
-                    // TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
-                    //if( ESD_Bounding_Box == null )throw( new STFError( f, "Missing ESD_Bound_Box statement" ) );
-                }
-                catch( STFError error )
-                {
-                    STFError.Report(f, error.Message);
-                }
+				try
+				{
+					while (!f.EOF())
+					{
+						string token = f.ReadToken();
+						if (token == "(")
+							token = f.ReadToken();
+						if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
+						{
+							while (token != ")")
+							{
+								token = f.ReadToken();
+								if (token == "") throw (new STFException(f, "Missing )"));
+								else if (0 == String.Compare(token, "ESD_Detail_Level", true)) ESD_Detail_Level = f.ReadIntBlock();
+								else if (0 == String.Compare(token, "ESD_Alternative_Texture", true)) ESD_Alternative_Texture = f.ReadIntBlock();
+								else if (0 == String.Compare(token, "ESD_Bounding_Box", true))
+								{
+									ESD_Bounding_Box = new ESD_Bounding_Box(f);
+									if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
+										ESD_Bounding_Box = null;
+								}
+								else if (0 == String.Compare(token, "ESD_No_Visual_Obstruction", true)) ESD_No_Visual_Obstruction = f.ReadBoolBlock();
+								else if (0 == String.Compare(token, "ESD_Snapable", true)) ESD_Snapable = f.ReadBoolBlock();
+								else f.SkipBlock();
+							}
+						}
+					}
+					// TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
+					//if( ESD_Bounding_Box == null )throw( new STFError( f, "Missing ESD_Bound_Box statement" ) );
+				}
+				catch (STFException error)
+				{
+					STFException.Report(f, error.Message);
+				}
             }
             public int ESD_Detail_Level = 0;
             public int ESD_Alternative_Texture = 0;

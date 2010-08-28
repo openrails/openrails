@@ -5,9 +5,7 @@
 
 /// Autor James Ross
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -178,7 +176,7 @@ namespace ORTS
 		{
 			// Offset control by our location. Don't touch its size!
 			control.Position.Location = new Point(control.Position.Location.X + Position.Location.X + CurrentLeft, control.Position.Location.Y + Position.Location.Y + CurrentTop);
-			//Debug.WriteLine(String.Format("{0} added {1} at {2}", GetType().Name, control.GetType().Name, control.Position));
+			//Console.WriteLine(String.Format("{0} added {1} at {2}", GetType().Name, control.GetType().Name, control.Position));
 			Controls.Add(control);
 			return control;
 		}

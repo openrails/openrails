@@ -86,8 +86,8 @@ namespace MSTS
                 string token = f.ReadToken();
                 while (token != "") // EOF
                 {
-                    if (token == "(") throw (new STFError(f, "Unexpected ("));
-                    else if (token == ")") throw (new STFError(f, "Unexpected )"));
+                    if (token == "(") throw (new STFException(f, "Unexpected ("));
+                    else if (token == ")") throw (new STFException(f, "Unexpected )"));
                     else if (0 == String.Compare(token, "TrackPDPs", true)) ReadTrackPDPs(f);
                     else if (0 == String.Compare(token, "TrackPath", true)) ReadTrackPath(f);
                     else f.SkipBlock();  // TODO for now we are skipping unknown items
@@ -112,7 +112,7 @@ namespace MSTS
                 }
                 else
                 {
-                    throw (new STFError(f, "Unexpected " + token + "in TrackPDBs"));
+                    throw (new STFException(f, "Unexpected " + token + "in TrackPDBs"));
                 }
                 token = f.ReadToken();
             }
@@ -124,7 +124,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")") 
             {
-                if (token == "(") throw (new STFError(f, "Unexpected ("));
+                if (token == "(") throw (new STFException(f, "Unexpected ("));
                 else if (0 == String.Compare(token, "TrPathNodes", true)) ReadTrPathNodes(f);
                 else f.SkipBlock();  // TODO for now we are skipping unknown items
                 token = f.ReadToken();
@@ -145,12 +145,12 @@ namespace MSTS
                 }
                 else
                 {
-                    throw (new STFError(f, "Unexpected " + token + "in TrPathNodes"));
+                    throw (new STFException(f, "Unexpected " + token + "in TrPathNodes"));
                 }
                 token = f.ReadToken();
             }
             if (count != 0)
-                throw new STFError(f, "TrPathNodes count incorrect");
+                throw new STFException(f, "TrPathNodes count incorrect");
         }
 
 

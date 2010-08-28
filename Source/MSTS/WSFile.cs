@@ -3,11 +3,8 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.IO;
 using MSTS;
 
@@ -26,7 +23,7 @@ namespace ORTS
         {
             if (File.Exists(wsfilename))
             {
-                Console.Write("$");
+				Trace.Write("$");
                 STFReader reader = new STFReader(wsfilename);
                 try
                 {
@@ -37,7 +34,7 @@ namespace ORTS
                         else reader.SkipBlock();
                     }
                     if (TR_WorldSoundFile == null)
-                        throw (new STFError(reader, "Missing TR_WorldSoundFile statement"));
+                        throw (new STFException(reader, "Missing TR_WorldSoundFile statement"));
                 }
                 finally
                 {

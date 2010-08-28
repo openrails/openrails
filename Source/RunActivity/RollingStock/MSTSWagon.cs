@@ -16,18 +16,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
+using System.Diagnostics;
 using System.IO;
+using Microsoft.Xna.Framework;
 using MSTS;
 
 namespace ORTS
@@ -298,7 +289,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid force value or units {0}, newtons expected", token);
-                STFError.Report(f, msg);
+                STFException.Report(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -330,7 +321,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid power value or units {0}, watts expected", token);
-                STFError.Report(f, msg);
+                STFException.Report(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -362,7 +353,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid speed value or units {0}, meters per second expected", token);
-                STFError.Report(f, msg);
+                STFException.Report(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -383,7 +374,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid volume value or units {0}, cubic feet expected", token);
-                STFError.Report(f, msg);
+                STFException.Report(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -402,7 +393,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid pressure value or units {0}, pounds per square inch expected", token);
-                STFError.Report(f, msg);
+                STFException.Report(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -421,7 +412,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid steaming rate value or units {0}, pounds per hour expected", token);
-                STFError.Report(f, msg);
+                STFException.Report(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -446,7 +437,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg= String.Format("invalid friction value or units {0}, Newtons per meters per second expected", token);
-                STFError.Report(f, msg);
+                STFException.Report(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -750,23 +741,23 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if( Viewer.SoundDetailLevel > 0 )
-                UpdateSound(elapsedTime);
+			if (Viewer.SettingsInt["SoundDetailLevel"] > 0)
+				UpdateSound(elapsedTime);
             UpdateAnimation(frame, elapsedTime);
         }
 
 
         public void UpdateSound(ElapsedTime elapsedTime)
         {
-            try
-            {
-                foreach (SoundSource soundSource in SoundSources)
-                    soundSource.Update(elapsedTime);
-            }
-            catch( System.Exception error )
-            {
-                Console.Error.WriteLine("Updating Sound: " + error.Message);
-            }
+			try
+			{
+				foreach (SoundSource soundSource in SoundSources)
+					soundSource.Update(elapsedTime);
+			}
+			catch (Exception error)
+			{
+				Trace.WriteLine(error.ToString());
+			}
         }
 
 
@@ -882,7 +873,7 @@ namespace ORTS
                 smsFilePath = Viewer.Simulator.BasePath + @"\sound\" + filename;
             if (!File.Exists(smsFilePath))
             {
-                Console.Error.WriteLine(wagonFolderSlash + " - can't find " + filename);
+                Trace.TraceError(wagonFolderSlash + " - can't find " + filename);
                 return;
             }
 
@@ -915,7 +906,7 @@ namespace ORTS
                 path = Viewer.Simulator.BasePath + @"\SOUND\" + filename;
             if (!File.Exists(path))
             {
-                Console.Error.WriteLine("ttype.dat - can't find " + filename);
+                Trace.TraceError("ttype.dat - can't find " + filename);
                 return;
             }
             SoundSources.Add(new SoundSource(Viewer, MSTSWagon, path));

@@ -5,18 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
-using System.Threading;
-using MSTS;
+using System.Diagnostics;
 
 
 namespace ORTS
@@ -47,7 +36,7 @@ namespace ORTS
             if (LoadedCars.ContainsKey(car))
                 return LoadedCars[car];
 
-            Console.Write("C");
+            Trace.Write("C");
             TrainCarViewer carViewer = car.GetViewer(Viewer);
             LoadedCars.Add(car, carViewer);
             // Add the player locomotive's lights here
@@ -72,7 +61,7 @@ namespace ORTS
                 Swap(ref LoadedCars, ref UpdatedLoadedCars);
             }
             // build a list of cars in viewing range for loader to ensure are loaded
-            float removeDistance = Viewer.ViewingDistance * 1.5f;  
+			float removeDistance = Viewer.SettingsInt["ViewingDistance"] * 1.5f;  
             ViewableCars.Clear();
             ViewableCars.Add(Viewer.PlayerLocomotiveViewer.Car);  // lets make sure its included even if its out of viewing range
             foreach (Train train in Viewer.Simulator.Trains)
@@ -98,7 +87,7 @@ namespace ORTS
                 }
                 else
                 {
-                    Console.Write("C");
+                    Trace.Write("C");
                     TrainCarViewer carViewer = car.GetViewer(Viewer);
                     UpdatedLoadedCars.Add(car, carViewer);
                     // Add all the other car lights here
@@ -113,26 +102,25 @@ namespace ORTS
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            try
-            {
-                foreach (TrainCarViewer car in LoadedCars.Values)
-                {
-                    car.PrepareFrame(frame, elapsedTime);
-                }
-                // Do the lights separately for proper alpha sorting
-                foreach (TrainCarViewer car in LoadedCars.Values)
-                {
-                    // At this stage of ORTS development, we will only render LightGlowDrawer objects 
-                    // for the player train ( i.e. Trains[0] ).
-                    if (car.Car.Lights != null && Viewer.Simulator.Trains[0].Cars.Contains(car.Car))
-                        car.lightGlowDrawer.PrepareFrame(frame, elapsedTime);
-                }
-            }
-            catch( System.Exception error )  // possible thread safety violation - try again next time
-            {
-                Console.Error.WriteLine("Trains.PrepareFrame() \r\n   " + error.Message);
-            }
-
+			try
+			{
+				foreach (TrainCarViewer car in LoadedCars.Values)
+				{
+					car.PrepareFrame(frame, elapsedTime);
+				}
+				// Do the lights separately for proper alpha sorting
+				foreach (TrainCarViewer car in LoadedCars.Values)
+				{
+					// At this stage of ORTS development, we will only render LightGlowDrawer objects 
+					// for the player train ( i.e. Trains[0] ).
+					if (car.Car.Lights != null && Viewer.Simulator.Trains[0].Cars.Contains(car.Car))
+						car.lightGlowDrawer.PrepareFrame(frame, elapsedTime);
+				}
+			}
+			catch (Exception error)  // possible thread safety violation - try again next time
+			{
+				Trace.WriteLine(error.ToString());
+			}
         }
 
         public void Swap(ref Dictionary<TrainCar, TrainCarViewer> a, ref Dictionary<TrainCar, TrainCarViewer> b)

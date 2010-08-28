@@ -28,13 +28,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MSTS;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework;
+using System.Diagnostics;
 using System.IO;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using MSTS;
 
 
 
@@ -135,7 +134,7 @@ namespace ORTS
                 {
                     if (i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count)
                     {
-                        Console.Error.WriteLine("Position or Direction missing in " + CVFFilePath);
+                        Trace.TraceError("Position or Direction missing in " + CVFFilePath);
                         break;
                     }
                     ViewPoint viewPoint = new ViewPoint();

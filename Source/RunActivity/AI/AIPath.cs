@@ -9,12 +9,10 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
  */
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.IO;
-using Microsoft.Xna.Framework;
+using System.Linq;
 using MSTS;
 
 namespace ORTS
@@ -54,7 +52,7 @@ namespace ORTS
                     if (node.NextMainTVNIndex < 0)
                     {
                         node.NextMainNode = null;
-                        Console.Error.WriteLine("Broken path in " + filename + "\r\n  Cannot find main track for path node " + i);
+                        Trace.TraceWarning("Broken path in " + filename + "\r\n  Cannot find main track for path node " + i);
                     }
                 }
                 if (tpn.C != 0xffffffff)
@@ -66,7 +64,7 @@ namespace ORTS
                     if (node.NextSidingTVNIndex < 0)
                     {
                         node.NextSidingNode = null;
-                        Console.Error.WriteLine("Broken path in " + filename + "\r\n  Cannot find siding track for path node " + i);
+						Trace.TraceWarning("Broken path in " + filename + "\r\n  Cannot find siding track for path node " + i);
                     }
                 }
                 if (node.NextMainNode != null && node.NextSidingNode != null)

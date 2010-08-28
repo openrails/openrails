@@ -26,7 +26,7 @@ namespace MSTS
                     else f.SkipBlock();
                     token = f.ReadToken();
                 }
-                if (Tr_RouteFile == null) throw (new STFError(f, "Missing Tr_RouteFile"));
+                if (Tr_RouteFile == null) throw (new STFException(f, "Missing Tr_RouteFile"));
             }
             finally
             {
@@ -70,7 +70,7 @@ namespace MSTS
             string token = f.ReadToken();
             while (token != ")")
             {
-				if (token == "") throw (new STFError(f, "Missing )"));
+				if (token == "") throw (new STFException(f, "Missing )"));
 				else if (0 == String.Compare(token, "RouteID", true)) RouteID = f.ReadStringBlock();
 				else if (0 == String.Compare(token, "Name", true)) Name = f.ReadStringBlock();
 				else if (0 == String.Compare(token, "FileName", true)) FileName = f.ReadStringBlock();
@@ -81,10 +81,10 @@ namespace MSTS
 				else f.SkipBlock();
                 token = f.ReadToken();
             }
-            if (RouteID == null) throw (new STFError(f, "Missing RouteID"));
-            if (Name == null) throw (new STFError(f, "Missing Name"));
-            if (Description == null) throw (new STFError(f, "Missing Description"));
-            if (RouteStart == null) throw (new STFError(f, "Missing RouteStart"));
+            if (RouteID == null) throw (new STFException(f, "Missing RouteID"));
+            if (Name == null) throw (new STFException(f, "Missing Name"));
+            if (Description == null) throw (new STFException(f, "Missing Description"));
+            if (RouteStart == null) throw (new STFException(f, "Missing RouteStart"));
         }
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name
         public string FileName; // ie OdakyuSE - used for MKR,RDB,REF,RIT,TDB,TIT

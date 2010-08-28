@@ -10,18 +10,10 @@
 ///
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
-using System.Threading;
 using MSTS;
 
 /// The Terrain consists of TerrainTiles 2km square each subdivided 16 x 16 into TerrainPatch's
@@ -83,7 +75,7 @@ namespace ORTS
                         if (Math.Abs(tile.TileX - viewerTileX) > 1
                           || Math.Abs(tile.TileZ - viewerTileZ) > 1)
                         {
-                            Console.Write("t");
+                            Trace.Write("t");
                             TerrainTiles[i] = null;  // make it invisible to UpdateProcess
                         }
                     }
@@ -125,7 +117,7 @@ namespace ORTS
             for( int i = 0; i < TerrainTiles.Length; ++i )
                 if ( TerrainTiles[i] == null)  // we found one
                 {
-                    Console.Write("T");
+                    Trace.Write("T");
                     TerrainTiles[i] = new TerrainTile( Viewer, tileX, tileZ);
                     return;
                 }
