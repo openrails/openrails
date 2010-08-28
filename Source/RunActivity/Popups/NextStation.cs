@@ -112,9 +112,9 @@ namespace ORTS
 				{
 					StationPreviousName.Text = at.PlatformEnd1.Station;
 					StationPreviousArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
-					StationPreviousArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "???";
+					StationPreviousArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "(missed)";
 					StationPreviousDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
-					StationPreviousDepartActual.Text = at.ActDepart.HasValue ? at.ActDepart.Value.ToString("HH:mm:ss") : "???";
+					StationPreviousDepartActual.Text = at.ActDepart.HasValue ? at.ActDepart.Value.ToString("HH:mm:ss") : "(missed)";
 				}
 				else
 				{
@@ -131,7 +131,7 @@ namespace ORTS
 					StationPlatform.Text = at.PlatformEnd1.PlatformName;
 					StationCurrentName.Text = at.PlatformEnd1.Station;
 					StationCurrentArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
-					StationCurrentArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "???";
+					StationCurrentArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "";
 					StationCurrentDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
 					Message.Text = at.DisplayMessage;
 				}
