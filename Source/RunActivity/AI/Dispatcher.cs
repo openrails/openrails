@@ -221,7 +221,7 @@ namespace ORTS
                 if (auth.TrainID == 0 && Reservations[auth.Train.RearTDBTraveller.TrackNodeIndex] != auth.TrainID)
                     continue;
                 AIPathNode nextNode = auth.Path.FindTrackNode(auth.StartNode, auth.Train.RearTDBTraveller.TrackNodeIndex);
-                if (nextNode.IsFacingPoint == true && nextNode.JunctionIndex >= 0)
+                if (nextNode != null && nextNode.IsFacingPoint == true && nextNode.JunctionIndex >= 0)
                 {
                     float clearance = 40;
                     TrackNode tn = auth.Path.TrackDB.TrackNodes[nextNode.JunctionIndex];
@@ -261,6 +261,9 @@ namespace ORTS
         }
         public void ExtendPlayerAuthorization()
         {
+            if (TrackAuthorities.Count == 0)
+                return;            
+
             TrackAuthority auth = TrackAuthorities[0];
             if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
             {
@@ -273,6 +276,9 @@ namespace ORTS
         }
         public void ReleasePlayerAuthorization()
         {
+            if (TrackAuthorities.Count == 0)
+                return;
+
             TrackAuthority auth = TrackAuthorities[0];
             if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
             {
