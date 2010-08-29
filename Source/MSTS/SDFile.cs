@@ -80,7 +80,7 @@ namespace MSTS
 				}
 				catch (STFException error)
 				{
-					STFException.Report(f, error.Message);
+					STFException.ReportError(f, error.Message);
 				}
             }
             public int ESD_Detail_Level = 0;

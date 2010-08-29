@@ -29,9 +29,14 @@ namespace MSTS
 			Trace.WriteLine(error);
 		}
 
-		public static void Report(STFReader reader, string message)
+		public static void ReportError(STFReader reader, string message)
 		{
 			Trace.TraceError("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
+		}
+
+		public static void ReportWarning(STFReader reader, string message)
+		{
+			Trace.TraceWarning("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
 		}
 
 		public STFException(STFReader reader, string message)
@@ -331,7 +336,7 @@ namespace MSTS
                 case "comment": SkipBlock(); break;
                 default: 
                     if (!token.StartsWith("#"))
-                        STFException.Report(this, "Unexpected " + token);
+                        STFException.ReportError(this, "Unexpected " + token);
                     SkipBlock();
                     break;
             }
@@ -372,7 +377,7 @@ namespace MSTS
                 && !extraTokens.StartsWith( "comment", StringComparison.OrdinalIgnoreCase ) 
                 && !extraTokens.StartsWith( "skip", StringComparison.OrdinalIgnoreCase ) 
                 )
-                STFException.Report(this, "Ignoring extra data: " + extraTokens);
+                STFException.ReportWarning(this, "Ignoring extra data: " + extraTokens);
 
         }
 		
@@ -387,9 +392,9 @@ namespace MSTS
             if (s != target)
             {
                 if (s == "")
-                    STFException.Report(this, "Unexpected end of file");
+                    STFException.ReportError(this, "Unexpected end of file");
                 else
-                    STFException.Report(this, target + " Not Found - instead found " + s);
+                    STFException.ReportError(this, target + " Not Found - instead found " + s);
             }
 		}
 

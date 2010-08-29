@@ -168,7 +168,7 @@ namespace MSTS
             }
 
             if (count != this.Count)
-                STFException.Report(f,"Stream count mismatch");  
+                STFException.ReportError(f,"Stream count mismatch");  
         }
     }
 
@@ -225,7 +225,7 @@ namespace MSTS
                 case "variable1controlled": Control = Controls.Variable1Controlled; break;
                 case "variable2controlled": Control = Controls.Variable2Controlled; break;
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
-                default: STFException.Report(f, "Unexpected " + controlString); break; 
+                default: STFException.ReportError(f, "Unexpected " + controlString); break; 
             }
             while (!f.EndOfBlock())
             {
@@ -283,7 +283,7 @@ namespace MSTS
 
             foreach (Trigger trigger in this)
                 if (trigger.SoundCommand == null)
-                    STFException.Report( f, "Trigger lacks a sound command");
+                    STFException.ReportError( f, "Trigger lacks a sound command");
         }
     }
 
@@ -307,7 +307,7 @@ namespace MSTS
                 case "setstreamvolume":
                     ++playcommandcount;
                     if (playcommandcount > 1)
-                        STFException.Report( f, "MultiplePlayCommands");
+                        STFException.ReportError( f, "MultiplePlayCommands");
                     break;
                 default:
                     break;
@@ -388,7 +388,7 @@ namespace MSTS
                 case "variable3_inc_past": Event = Events.Variable3_Inc_Past; break;
                 case "variable3_dec_past": Event = Events.Variable3_Dec_Past; break;
                 default:
-                    STFException.Report(f, "Unexpected " + eventString);
+                    STFException.ReportError(f, "Unexpected " + eventString);
                     break;  // MSTS ignores unrecognized tokens
             }
 
@@ -532,7 +532,7 @@ namespace MSTS
                         }
                         else  // MSTS skips extra files
                         {
-                            STFException.Report(f, "File count mismatch");
+                            STFException.ReportError(f, "File count mismatch");
                             f.SkipBlock();
                         }
                         break;
@@ -543,7 +543,7 @@ namespace MSTS
                         {
                             case "randomselection": SelectionMethod = SelectionMethods.RandomSelection; break;
                             case "sequentialselection": SelectionMethod = SelectionMethods.SequentialSelection; break;
-                            default: STFException.Report(f, "Unknown selection method " + s); break;
+                            default: STFException.ReportError(f, "Unknown selection method " + s); break;
                         }
                         f.VerifyEndOfBlock(); 
                         break;

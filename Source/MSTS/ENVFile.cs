@@ -39,7 +39,7 @@ namespace MSTS
 					if (waterLayers.Count < waterLayerCount)
 						waterLayers.Add(new ENVFileWaterLayer(reader));
 					else
-						Trace.TraceInformation("Ignored extra world_water_layer in {0}:line {1}", reader.FileName, reader.LineNumber);
+						Trace.TraceWarning("Ignoring extra world_water_layer in {0}:line {1}", reader.FileName, reader.LineNumber);
 				}
             }
             reader.Close();

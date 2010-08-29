@@ -142,7 +142,7 @@ namespace MSTS
 		}
 		private void AddSection(STFReader f, TrackSection section) {
 			if (ContainsKey(section.SectionIndex)) {
-				STFException.Report(f, "Duplicate SectionIndex of " + section.SectionIndex);
+				STFException.ReportError(f, "Duplicate SectionIndex of " + section.SectionIndex);
 			}
 			this[section.SectionIndex] = section;
 		}
@@ -153,8 +153,8 @@ namespace MSTS
 		{
 			if (ContainsKey(targetSectionIndex))
 				return this[targetSectionIndex];
-            if( MissingTrackSectionWarnings++ < 5 )
-				Trace.TraceError("TDB references track section not listed in global or dynamic TSECTION.DAT: " + targetSectionIndex.ToString());
+			if (MissingTrackSectionWarnings++ < 5)
+				Trace.TraceWarning("TDB references track section not listed in global or dynamic TSECTION.DAT: " + targetSectionIndex.ToString());
             return null;
 		}
 		public uint MaxSectionIndex;
@@ -175,7 +175,7 @@ namespace MSTS
        			string token = f.ReadToken();
                 if( token == ")" ) 
                 {
-                    STFException.Report( f, "Missing track section" );
+                    STFException.ReportError( f, "Missing track section" );
                     return;   // there are many TSECTION.DAT's with missing sections so we will accept this error
                 }
 				try
@@ -184,7 +184,7 @@ namespace MSTS
 				}
 				catch (STFException error)
 				{
-					STFException.Report(f, error.Message);
+					STFException.ReportError(f, error.Message);
 				}
 			}
 			f.VerifyEndOfBlock();
@@ -270,7 +270,7 @@ namespace MSTS
 			STFReader f = new STFReader( pathNameExt );
             if (f.Header != "SIMISA@@@@@@@@@@JINX0T0t______")
             {
-				Trace.TraceError("Ignoring invalid TSECTION.DAT in route folder.");
+				Trace.TraceWarning("Ignoring invalid TSECTION.DAT in route folder.");
                 return;
             }
 			try

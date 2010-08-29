@@ -79,7 +79,7 @@ namespace ORTS
 				{
 					output.AppendLine();
 					if ((TraceOutputOptions & TraceOptions.Callstack) != 0)
-						output.Append(new StackTrace(true).ToString());
+						output.AppendLine(new StackTrace(true).ToString());
 					else
 						output.AppendLine();
 				}

@@ -109,7 +109,7 @@ namespace MSTS
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
-            if (count != noTextures) STFException.Report(f, "LightTextures count mismatch");
+            if (count != noTextures) STFException.ReportError(f, "LightTextures count mismatch");
         }
 
         private void LightsTab(STFReader f)
@@ -141,7 +141,7 @@ namespace MSTS
                         }
                         else
                         {
-                            STFException.Report(f, "'Colour' Expected");
+                            STFException.ReportError(f, "'Colour' Expected");
                         }
                         f.MustMatch(")");
                         count++;
@@ -154,7 +154,7 @@ namespace MSTS
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
-            if (count != noLights) STFException.Report(f, "LightsTab count mismatch");
+            if (count != noLights) STFException.ReportError(f, "LightsTab count mismatch");
         }
 
         private void SigTypes(STFReader f)
@@ -202,7 +202,7 @@ namespace MSTS
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
-            if (count != noSigShapes) STFException.Report(f, "SigShapes count mismatch");
+            if (count != noSigShapes) STFException.ReportError(f, "SigShapes count mismatch");
         }
 
         private void SignalScripts(STFReader f)
@@ -470,7 +470,7 @@ namespace MSTS
                     }
                     else
                     {
-                        STFException.Report(f, "Unrecognised signal flag " + signalFlag);
+                        STFException.ReportError(f, "Unrecognised signal flag " + signalFlag);
                     }
                 }
                 else f.SkipBlock();
@@ -590,7 +590,7 @@ namespace MSTS
                                 }
                                 else
                                 {
-                                    STFException.Report(f, "Unrecognised TRLIGHT flag " + trLightFlags);
+                                    STFException.ReportError(f, "Unrecognised TRLIGHT flag " + trLightFlags);
                                 }
                             }
                         }
@@ -602,7 +602,7 @@ namespace MSTS
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
-            if(count!=noDrawLights) STFException.Report(f, "DrawLights count mismatch");
+            if(count!=noDrawLights) STFException.ReportError(f, "DrawLights count mismatch");
         }
     }
 

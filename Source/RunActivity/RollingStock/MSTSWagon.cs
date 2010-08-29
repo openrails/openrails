@@ -289,7 +289,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid force value or units {0}, newtons expected", token);
-                STFException.Report(f, msg);
+                STFException.ReportError(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -321,7 +321,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid power value or units {0}, watts expected", token);
-                STFException.Report(f, msg);
+                STFException.ReportError(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -353,7 +353,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid speed value or units {0}, meters per second expected", token);
-                STFException.Report(f, msg);
+                STFException.ReportError(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -374,7 +374,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid volume value or units {0}, cubic feet expected", token);
-                STFException.Report(f, msg);
+                STFException.ReportError(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -393,7 +393,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid pressure value or units {0}, pounds per square inch expected", token);
-                STFException.Report(f, msg);
+                STFException.ReportError(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -412,7 +412,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg = String.Format("invalid steaming rate value or units {0}, pounds per hour expected", token);
-                STFException.Report(f, msg);
+                STFException.ReportError(f, msg);
                 return ParseFloat(token);
             }
         }
@@ -437,7 +437,7 @@ namespace ORTS
             catch (System.Exception)
             {
                 string msg= String.Format("invalid friction value or units {0}, Newtons per meters per second expected", token);
-                STFException.Report(f, msg);
+                STFException.ReportError(f, msg);
                 return ParseFloat(token);
             }
         }
