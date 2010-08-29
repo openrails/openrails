@@ -699,6 +699,13 @@ namespace ORTS
 		const int MaximumDistance = 100;
 		const int MaximumDistanceSquared = MaximumDistance * MaximumDistance;
 		const float SidewaysScale = MaximumDistance / 10;
+		// Heights above the terrain for the camera.
+		const float CameraNormalAltitude = 2;
+		const float CameraBridgeAltitude = 8;
+		// Height above the coordinate center of train car.
+		const float TargetAltitude = 2;
+		// Max altitude of terrain below coordinate center of train car before bridge-mode.
+		const float BridgeCutoffAltitude = 1;
 		readonly Random Random;
 
 		public TracksideCamera(Viewer3D viewer)
@@ -739,30 +746,26 @@ namespace ORTS
 				newLocation.Normalize();
 
 				var newLocationElevation = Viewer.Tiles.GetElevation(newLocation);
-				if (newLocationElevation > newLocation.Location.Y - 1)
+				if (newLocationElevation > newLocation.Location.Y - BridgeCutoffAltitude)
 				{
 					Location = newLocation.Location;
-					Location.Y = newLocationElevation;
+					Location.Y = newLocationElevation + CameraNormalAltitude;
 					TileX = newLocation.TileX;
 					TileZ = newLocation.TileZ;
 				}
 				else
 				{
 					Location.X = tdb.X;
-					Location.Y = tdb.Y + 6;
+					Location.Y = tdb.Y + CameraBridgeAltitude;
 					Location.Z = tdb.Z;
 					TileX = tdb.TileX;
 					TileZ = tdb.TileZ;
 				}
 			}
 
-			var cameraLocation = XNALocation(WorldLocation);
-			cameraLocation.Y += 2;
+			trainCarLocation.Location.Y += TargetAltitude;
 
-			var targetLocation = XNALocation(trainCarLocation);
-			targetLocation.Y += 2;
-
-			XNAView = Matrix.CreateLookAt(cameraLocation, targetLocation, Vector3.Up);
+			XNAView = Matrix.CreateLookAt(XNALocation(WorldLocation), XNALocation(trainCarLocation), Vector3.Up);
 		}
 	}
 } // namespace ORTS

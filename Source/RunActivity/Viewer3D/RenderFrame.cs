@@ -214,8 +214,8 @@ namespace ORTS
 		{
 			var blended = material.GetBlending(primitive);
 			// TODO: Alpha sorting code
-			//var sortingMaterial = blended ? DummyBlendedMaterial : material;
-			var sortingMaterial = material;
+			var sortingMaterial = blended ? DummyBlendedMaterial : material;
+			//var sortingMaterial = material;
 			var sequence = RenderItems[(int)GetRenderSequence(group, blended)];
 
 			if (!sequence.ContainsKey(sortingMaterial))
