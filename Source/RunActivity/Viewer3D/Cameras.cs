@@ -27,7 +27,7 @@ namespace ORTS
     /// </summary>
     public class Camera
     {
-        protected Viewer3D Viewer;
+        protected readonly Viewer3D Viewer;
         protected float RotationYRadians = 0f;
         protected float RotationXRadians = 0;
 
@@ -694,4 +694,75 @@ namespace ORTS
 
     } // Class PassengerCamera
 
+	public class TracksideCamera : Camera
+	{
+		const int MaximumDistance = 100;
+		const int MaximumDistanceSquared = MaximumDistance * MaximumDistance;
+		const float SidewaysScale = MaximumDistance / 10;
+		readonly Random Random;
+
+		public TracksideCamera(Viewer3D viewer)
+			: base(viewer)
+		{
+			Random = new Random();
+		}
+
+		public override void Update(ElapsedTime elapsedTime)
+		{
+			if (Viewer.PlayerLocomotive == null)
+			{
+				base.Update(elapsedTime);
+				return;
+			}
+
+			var trainForwards = Viewer.PlayerLocomotive.SpeedMpS >= 0;
+			var trainCar = trainForwards ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
+			var trainCarLocation = trainCar.WorldPosition.WorldLocation;
+			if (WorldLocation.DistanceSquared(trainCarLocation, WorldLocation) > MaximumDistanceSquared)
+			{
+				var tdb = new TDBTraveller(trainForwards ? Viewer.PlayerTrain.FrontTDBTraveller : Viewer.PlayerTrain.RearTDBTraveller);
+				if (!trainForwards)
+					tdb.ReverseDirection();
+				tdb.Move(MaximumDistance * 0.75f);
+				var newLocation = tdb.WorldLocation;
+				var directionForward = WorldLocation.GetDistance(trainCarLocation, newLocation);
+				if (Random.Next(2) == 0)
+				{
+					newLocation.Location.X += -directionForward.Z / SidewaysScale; // Use swaped -X and Z to move to the left of the track.
+					newLocation.Location.Z += directionForward.X / SidewaysScale;
+				}
+				else
+				{
+					newLocation.Location.X += directionForward.Z / SidewaysScale; // Use swaped X and -Z to move to the right of the track.
+					newLocation.Location.Z += -directionForward.X / SidewaysScale;
+				}
+				newLocation.Normalize();
+
+				var newLocationElevation = Viewer.Tiles.GetElevation(newLocation);
+				if (newLocationElevation > newLocation.Location.Y - 1)
+				{
+					Location = newLocation.Location;
+					Location.Y = newLocationElevation;
+					TileX = newLocation.TileX;
+					TileZ = newLocation.TileZ;
+				}
+				else
+				{
+					Location.X = tdb.X;
+					Location.Y = tdb.Y + 6;
+					Location.Z = tdb.Z;
+					TileX = tdb.TileX;
+					TileZ = tdb.TileZ;
+				}
+			}
+
+			var cameraLocation = XNALocation(WorldLocation);
+			cameraLocation.Y += 2;
+
+			var targetLocation = XNALocation(trainCarLocation);
+			targetLocation.Y += 2;
+
+			XNAView = Matrix.CreateLookAt(cameraLocation, targetLocation, Vector3.Up);
+		}
+	}
 } // namespace ORTS

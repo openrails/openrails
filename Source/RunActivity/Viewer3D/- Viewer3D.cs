@@ -97,6 +97,7 @@ namespace ORTS
         private BrakemanCamera BrakemanCamera;
         private HeadOutCamera HeadOutFwdCamera;
         private HeadOutCamera HeadOutBackCamera;
+		private TracksideCamera TracksideCamera;
         private List<Camera> WellKnownCameras = new List<Camera>(); // Providing Camera save functionality by GeorgeS
         private int CameraToRestore = 1; // Providing Camera save functionality by GeorgeS
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
@@ -301,6 +302,7 @@ namespace ORTS
             BrakemanCamera = new BrakemanCamera(this);
             HeadOutFwdCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirections.Forward);
             HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirections.Backward);
+			TracksideCamera = new TracksideCamera(this);
 
             // Restoring Camera part II by GeorgeS
             WellKnownCameras.Add(CabCamera);
@@ -310,6 +312,7 @@ namespace ORTS
             WellKnownCameras.Add(BrakemanCamera);
             WellKnownCameras.Add(HeadOutFwdCamera);
             WellKnownCameras.Add(HeadOutBackCamera);
+			WellKnownCameras.Add(TracksideCamera);
 
             if (CameraToRestore != -1)
             {
@@ -403,12 +406,11 @@ namespace ORTS
             // Change view point - cab, passenger, outside, etc
             if (UserInput.IsPressed(Keys.D1)) CabCamera.Activate();
             if (UserInput.IsPressed(Keys.D2)) FrontCamera.Activate();
-            if (UserInput.IsPressed(Keys.D3)) BackCamera.Activate();
-            if (UserInput.IsPressed(Keys.D6)) BrakemanCamera.Activate();
+			if (UserInput.IsPressed(Keys.D3)) BackCamera.Activate();
+			if (UserInput.IsPressed(Keys.D4)) TracksideCamera.Activate();
+			if (UserInput.IsPressed(Keys.D6)) BrakemanCamera.Activate();
             if (UserInput.IsPressed(Keys.D5)) PassengerCamera.Activate();
-            if (UserInput.IsPressed(Keys.D4)
-              || UserInput.IsPressed(Keys.D7)
-              || UserInput.IsPressed(Keys.D8)) (new Camera(this, Camera)).Activate();
+            if (UserInput.IsPressed(Keys.D7) || UserInput.IsPressed(Keys.D8)) (new Camera(this, Camera)).Activate();
 
             bool mayheadout = (Camera == CabCamera) || (Camera == HeadOutFwdCamera) || (Camera == HeadOutBackCamera);
             if (UserInput.IsPressed(Keys.Up) && mayheadout) HeadOutFwdCamera.Activate();

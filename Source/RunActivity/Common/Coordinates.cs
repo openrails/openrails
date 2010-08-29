@@ -91,22 +91,22 @@ namespace ORTS
 
             while (TileLocation.X > 1024)
             {
-                TileLocation.X -= 1024;
+                TileLocation.X -= 2048;
                 TileX++;
             }
             while (TileLocation.X < -1024)
             {
-                TileLocation.X += 1024;
+				TileLocation.X += 2048;
                 TileX--;
             }
             while (TileLocation.Z > 1024)
             {
-                TileLocation.Z -= 1024;
+				TileLocation.Z -= 2048;
                 TileZ++;
             }
             while (TileLocation.Z < -1024)
             {
-                TileLocation.Z += 1024;
+				TileLocation.Z += 2048;
                 TileZ--;
             }
 
@@ -148,22 +148,22 @@ namespace ORTS
         {
             while (Location.X > 1024)
             {
-                Location.X -= 1024;
+				Location.X -= 2048;
                 TileX++;
             }
             while (Location.X < -1024)
             {
-                Location.X += 1024;
+				Location.X += 2048;
                 TileX--;
             }
             while (Location.Z > 1024)
             {
-                Location.Z -= 1024;
+				Location.Z -= 2048;
                 TileZ++;
             }
             while (Location.Z < -1024)
             {
-                Location.Z += 1024;
+				Location.Z += 2048;
                 TileZ--;
             }
         }
@@ -178,5 +178,10 @@ namespace ORTS
 
             return dx * dx + dy * dy + dz * dz;
         }
+
+		public static Vector3 GetDistance(WorldLocation location1, WorldLocation location2)
+		{
+			return new Vector3(location2.Location.X - location1.Location.X + (location2.TileX - location1.TileX) * 2048, location2.Location.Y - location1.Location.Y, location2.Location.Z - location1.Location.Z + (location2.TileZ - location1.TileZ) * 2048);
+		}
     }
 }

@@ -25,6 +25,11 @@ namespace ORTS
 			TileBuffer = new TileBuffer(folderNameSlash);
 		}
 
+		public float GetElevation(WorldLocation location)
+		{
+			return GetElevation(location.TileX, location.TileZ, (1024 + location.Location.X) / 8, (1024 - location.Location.Z) / 8);
+		}
+
 		public float GetElevation(int tileX, int tileZ, int x, int z)
 		{
 			// normalize x,y coordinates
