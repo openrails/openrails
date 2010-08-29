@@ -78,15 +78,19 @@ namespace ORTS
 
 			// Look for an action to perform.
 			var action = "";
-			foreach (var possibleAction in new[] { "start", "start-profile", "resume", "random", "runtest" })
+			var actions = new[] { "start", "resume", "random", "runtest" };
+			foreach (var possibleAction in actions)
 				if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction))
 					action = possibleAction;
 
+			// Collect all non-action settings.
+			var settings = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a)).Select(a => a.Substring(1));
+
 			// Collect all non-options as data.
-			var actionData = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
+			var data = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
 
 			// No action, check for data; for now assume any data is good data.
-			if ((action.Length == 0) && (actionData.Length > 0))
+			if ((action.Length == 0) && (data.Length > 0))
 				action = "start";
 
 			// Do the action specified or write out some help.
@@ -94,13 +98,13 @@ namespace ORTS
 			{
 				case "start":
 				case "start-profile":
-					Start(actionData, action == "start-profile");
+					Start(settings, data);
 					break;
 				case "resume":
-					Resume();
+					Resume(settings);
 					break;
 				case "random":
-					Start(new[] { Testing.GetRandomActivity() }, false);
+					Start(settings, new[] { Testing.GetRandomActivity() });
 					break;
 				case "runtest":
 					Testing.Test();
@@ -119,7 +123,7 @@ namespace ORTS
         /// <summary>
         /// Run the specified activity from the beginning.
         /// </summary>
-		public static void Start(string[] args, bool enableProfiling)
+		static void Start(IEnumerable<string> settings, string[] args)
 		{
 			try
 			{
@@ -139,9 +143,10 @@ namespace ORTS
 					Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
 				Simulator.Start();
 				Viewer = new Viewer3D(Simulator);
-				Viewer.LoadUserSettings();
+				if (!settings.Contains("skip-user-settings"))
+					Viewer.LoadUserSettings();
+				SetViewerSettings(Viewer, settings);
 				Viewer.Initialize();
-				Viewer.Profiling = enableProfiling;
 				Viewer.Run();
 			}
 			catch (Exception error)
@@ -183,7 +188,7 @@ namespace ORTS
         /// <summary>
         /// Resume a saved game.
         /// </summary>
-        public static void Resume()
+		static void Resume(IEnumerable<string> settings)
         {
             try
             {
@@ -206,7 +211,9 @@ namespace ORTS
                         Simulator.SetActivity(ActivityPath);
                     Simulator.Restore(inf);
                     Viewer = new Viewer3D(Simulator);
-					Viewer.LoadUserSettings();
+					if (!settings.Contains("skip-user-settings"))
+						Viewer.LoadUserSettings();
+					SetViewerSettings(Viewer, settings);
 					Viewer.Initialize();
 					Viewer.Restore(inf);
                 }
@@ -224,7 +231,7 @@ namespace ORTS
         /// Check the registry and return true if the OpenRailsLog.TXT
         /// file should be created.
         /// </summary>
-        public static bool IsWarningsOn()
+        static bool IsWarningsOn()
         {
             // TODO Read from Registry
             return true;
@@ -234,7 +241,7 @@ namespace ORTS
         /// <summary>
         /// Set up to capture all console and error I/O into a  log file.
         /// </summary>
-        public static void EnableLogging()
+        static void EnableLogging()
         {
 			if (IsWarningsOn())
 			{
@@ -258,11 +265,30 @@ namespace ORTS
 			Console.WriteLine();
         }
 
+		static void SetViewerSettings(Viewer3D viewer, IEnumerable<string> settings)
+		{
+			foreach (var setting in settings)
+			{
+				var data = setting.ToLowerInvariant().Split('=', ':');
+				if (viewer.SettingsBool.ContainsKey(data[0]))
+				{
+					viewer.SettingsBool[data[0]] = (data.Length == 1) || new[] { "true", "yes", "on", "1" }.Contains(data[1]);
+				}
+				else if (viewer.SettingsInt.ContainsKey(data[0]))
+				{
+					if (data.Length < 2)
+						Console.WriteLine("Option '" + setting + "' missing value.");
+					else
+						viewer.SettingsInt[data[0]] = int.Parse(data[1]);
+				}
+			}
+		}
+
         /// <summary>
         /// Set up the global Build and Revision variables
         /// from assembly data and the revision.txt file.
         /// </summary>
-        public static void SetBuildRevision()
+        static void SetBuildRevision()
         {
             try
             {

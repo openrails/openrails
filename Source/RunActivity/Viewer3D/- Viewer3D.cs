@@ -41,26 +41,27 @@ namespace ORTS
     public class Viewer3D
     {
         // User setups
-		public readonly Dictionary<string, bool> SettingsBool = new Dictionary<string, bool>
+		public readonly Dictionary<string, bool> SettingsBool = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
 		{
-			{ "Precipitation", false },
-			{ "Wire", false },
-			{ "FullScreen", false },
 			{ "DynamicShadows", false },
+			{ "FullScreen", false },
+			{ "Precipitation", false },
+			{ "Profiling", false },
+			{ "VerticalSync", false },
 			{ "WindowGlass", false },
+			{ "Wire", false },
 		};
-		public readonly Dictionary<string, int> SettingsInt = new Dictionary<string, int>
+		public readonly Dictionary<string, int> SettingsInt = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
 		{
 			{ "WorldObjectDensity", 10 },
 			{ "SoundDetailLevel", 5 },
 			{ "ViewingDistance", 2000 },
 		};
-        public Vector2 WindowSize;
+        public Vector2 WindowSize = new Vector2(1024, 768);
 		// Multi-threaded processes
         public UpdaterProcess UpdaterProcess = null;
         public LoaderProcess LoaderProcess;
         public RenderProcess RenderProcess;
-		public bool Profiling = false;
         // Access to the XNA Game class
         public GraphicsDeviceManager GDM;  
         public GraphicsDevice GraphicsDevice;
@@ -162,7 +163,6 @@ namespace ORTS
         public void LoadUserSettings()
         {
             // Restore retained settings
-            WindowSize = new Vector2(1024, 768);
             string strWindowSize = "1024x768";
 
 			try
@@ -237,7 +237,7 @@ namespace ORTS
             // resolution that is greater than what the hardware can support, XNA adjusts the
             // resolution to the actual capability. "...the XNA framework automatically selects the 
             // highest resolution supported by the output device." rvg
-            GDM.SynchronizeWithVerticalRetrace = false; // true;
+			GDM.SynchronizeWithVerticalRetrace = SettingsBool["VerticalSync"];
             renderProcess.IsFixedTimeStep = false; // you get smoother animation if we pace to video card retrace setting
             renderProcess.TargetElapsedTime = TimeSpan.FromMilliseconds(1); // setting this a value near refresh rate, ie 16ms, causes hiccups ( beating against refresh rate )
             GDM.PreferredBackBufferWidth = (int)WindowSize.X; // screen.Bounds.Width; // 1680;
