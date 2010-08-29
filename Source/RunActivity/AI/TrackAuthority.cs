@@ -29,6 +29,7 @@ namespace ORTS
         public int Priority;
         public float StopDistanceM;
         public float DistanceDownPathM = 0;
+        public float PathDistReverseAdjustmentM = 0;
         public bool StationStop = false;
         public List<float> StationDistanceM = null;
 
@@ -158,6 +159,7 @@ namespace ORTS
             }
             StopDistanceM = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
             StationStop = false;
+            PathDistReverseAdjustmentM = 0;
             float len = 0;
             foreach (TrainCar car in Train.Cars)
                 len+= car.Length;
@@ -199,7 +201,10 @@ namespace ORTS
                         }
                         float d = rtraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
                         if (d > 0 && d + 1 < StopDistanceM)
+                        {
+                            PathDistReverseAdjustmentM = StopDistanceM - d - 1;
                             StopDistanceM = d + 1;
+                        }
                         break;
                     }
                 }

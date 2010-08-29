@@ -174,6 +174,7 @@ namespace ORTS
                     }
                     else if (auth.StopDistanceM < 0 && auth.StopNode.Type == AIPathNodeType.Reverse && auth.NReverseNodes>0)
                     {
+                        auth.DistanceDownPathM += 2 * auth.PathDistReverseAdjustmentM;
                         auth.StartNode = auth.StopNode;
                         auth.NReverseNodes--;
                         Rereserve(auth);
