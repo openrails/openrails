@@ -319,10 +319,10 @@ namespace MSTS
 	{
 		public float Floor{ get{ return terrain.terrain_samples.terrain_sample_floor;}}		  // in meters
 		public float Resolution{ get{ return terrain.terrain_samples.terrain_sample_scale; }}  // in meters per( number in Y-file )
-		public float WaterNE{ get{ return terrain.terrain_water_height_offset.NE; } } // in meters
-		public float WaterNW{ get{ return terrain.terrain_water_height_offset.NW; } }
-		public float WaterSE{ get{ return terrain.terrain_water_height_offset.SE; } }
-		public float WaterSW{ get{ return terrain.terrain_water_height_offset.SW; } }
+		public float WaterNE { get { return terrain.terrain_water_height_offset.NE != 0 ? terrain.terrain_water_height_offset.NE : terrain.terrain_water_height_offset.SW; } } // in meters
+		public float WaterNW { get { return terrain.terrain_water_height_offset.NW != 0 ? terrain.terrain_water_height_offset.NW : terrain.terrain_water_height_offset.SW; } }
+		public float WaterSE { get { return terrain.terrain_water_height_offset.SE != 0 ? terrain.terrain_water_height_offset.SE : terrain.terrain_water_height_offset.SW; } }
+		public float WaterSW { get { return terrain.terrain_water_height_offset.SW != 0 ? terrain.terrain_water_height_offset.SW : terrain.terrain_water_height_offset.SW; } }
 		string FileName;
 		public bool OK() { return terrain.terrain_samples != null; }
 		public float MaxElevation {	get	{	return Floor + (ushort.MaxValue-1) * Resolution;}	}
