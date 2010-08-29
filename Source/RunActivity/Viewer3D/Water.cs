@@ -3,6 +3,8 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
@@ -11,12 +13,11 @@ namespace ORTS
 {
     public class WaterTile: RenderPrimitive
     {
-
-        public int TileX, TileZ;
-        public Viewer3D Viewer;
+        public readonly Viewer3D Viewer;
+        public readonly int TileX, TileZ;
 
         // these can be shared since they are the same for all patches
-        private static Material WaterMaterial = null;
+		static IEnumerable<KeyValuePair<float, Material>> WaterLayers;
         public static VertexDeclaration PatchVertexDeclaration = null;
 
         // these change per tile
@@ -27,34 +28,31 @@ namespace ORTS
         private WorldLocation TileWorldLocation;
 
 
-        public WaterTile(Viewer3D viewer, int tileX, int tileZ)
-        {
-            Viewer = viewer;
-            TileX = tileX;
-            TileZ = tileZ;
+		public WaterTile(Viewer3D viewer, int tileX, int tileZ)
+		{
+			Viewer = viewer;
+			TileX = tileX;
+			TileZ = tileZ;
 
-            if( viewer.Tiles.GetTile( tileX, tileZ ) == null )
-                return;
+			if (viewer.Tiles.GetTile(tileX, tileZ) == null)
+				return;
 
-            if (WaterMaterial == null)
-                LoadWaterMaterial();
+			if (WaterLayers == null)
+				LoadWaterMaterial();
 
-            if (PatchVertexDeclaration == null)
-                LoadPatchVertexDeclaration();
+			if (PatchVertexDeclaration == null)
+				LoadPatchVertexDeclaration();
 
-            LoadGeometry();
-        }
+			LoadGeometry();
+		}
 
 		private void LoadWaterMaterial()
 		{
 			// TODO, for now, top layer only
-			if (Viewer.ENVFile.WaterTextureNames.Count > 0)
+			WaterLayers = Viewer.ENVFile.WaterLayers.Select(layer =>
 			{
-				string waterTextureName = Viewer.ENVFile.WaterTextureNames[Viewer.ENVFile.WaterTextureNames.Count - 1];
-				// TODO, render lower water layers
-				WaterMaterial = Materials.Load(Viewer.RenderProcess, "WaterMaterial",
-					Viewer.Simulator.RoutePath + @"\envfiles\textures\" + waterTextureName);
-			}
+				return new KeyValuePair<float, Material>(layer.Height, Materials.Load(Viewer.RenderProcess, "WaterMaterial", Viewer.Simulator.RoutePath + @"\envfiles\textures\" + layer.TextureName));
+			});
 		}
 
         private Matrix xnaMatrix = Matrix.Identity;
@@ -65,7 +63,7 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void PrepareFrame(RenderFrame frame)
         {
-            if (WaterMaterial == null)  // if there was a problem loading the water texture
+            if (WaterLayers == null)  // if there was a problem loading the water texture
                 return;
 
             Vector3 xnaTileLocation = Viewer.Camera.XNALocation(TileWorldLocation);
@@ -73,8 +71,11 @@ namespace ORTS
             // Distance cull
             if (Viewer.Camera.CanSee(xnaTileLocation, 3500f, 2000f))
             {
-                xnaMatrix.Translation = xnaTileLocation;
-                frame.AddPrimitive(WaterMaterial, this, RenderPrimitiveGroup.World, ref xnaMatrix);
+				foreach (var waterLayer in WaterLayers)
+				{
+					xnaMatrix.Translation = new Vector3(xnaTileLocation.X, xnaTileLocation.Y + waterLayer.Key, xnaTileLocation.Z);
+					frame.AddPrimitive(waterLayer.Value, this, RenderPrimitiveGroup.World, ref xnaMatrix);
+				}
             }
         }
 

@@ -27,8 +27,8 @@ namespace ORTS
         public static PrecipShader PrecipShader = null;
         public static LightGlowShader LightGlowShader = null;
         public static SpriteBatchMaterial SpriteBatchMaterial = null;
-        private static WaterMaterial WaterMaterial = null;
-        private static SkyMaterial SkyMaterial = null;
+		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
+		private static SkyMaterial SkyMaterial = null;
         private static PrecipMaterial PrecipMaterial = null;
         private static DynatrackMaterial DynatrackMaterial = null;
         private static LightGlowMaterial LightGlowMaterial = null;
@@ -131,9 +131,16 @@ namespace ORTS
                         return SceneryMaterials[key];
                     }
                 case "WaterMaterial":
-                    if (WaterMaterial == null)
-                        WaterMaterial = new WaterMaterial(renderProcess, textureName);
-                    return WaterMaterial;
+					if (!WaterMaterials.ContainsKey(textureName))
+					{
+						WaterMaterial material = new WaterMaterial(renderProcess, textureName);
+						WaterMaterials.Add(textureName, material);
+						return material;
+					}
+					else
+					{
+						return WaterMaterials[textureName];
+					}
                 case "SkyMaterial":
                     return SkyMaterial;
                 case "PrecipMaterial":
@@ -1216,17 +1223,16 @@ namespace ORTS
     #region Water material
     public class WaterMaterial : Material
     {
-        SceneryShader SceneryShader;
-        static Texture2D WaterTexture = null;
-        public RenderProcess RenderProcess;  // for diagnostics only
+        public readonly RenderProcess RenderProcess;  // for diagnostics only
+        readonly SceneryShader SceneryShader;
+        readonly Texture2D WaterTexture;
 
-        public WaterMaterial(RenderProcess renderProcess, string waterTexturePath )
-        {
-            RenderProcess = renderProcess;
-            SceneryShader = Materials.SceneryShader;
-            if( WaterTexture == null )
-                WaterTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, waterTexturePath);
-        }
+		public WaterMaterial(RenderProcess renderProcess, string waterTexturePath)
+		{
+			RenderProcess = renderProcess;
+			SceneryShader = Materials.SceneryShader;
+			WaterTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, waterTexturePath);
+		}
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
@@ -1239,7 +1245,10 @@ namespace ORTS
 			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 			SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
 			graphicsDevice.RenderState.AlphaTestEnable = false;
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
+			graphicsDevice.RenderState.AlphaBlendEnable = true;
+			graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
+			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
 
 			RenderProcess.ImageChangesCount++;
 			SceneryShader.ImageMap_Tex = WaterTexture;
@@ -1249,13 +1258,12 @@ namespace ORTS
 
         public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
+			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             SceneryShader.Begin();
-            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+            foreach (var pass in SceneryShader.CurrentTechnique.Passes)
             {
                 pass.Begin();
-
                 foreach (var item in renderItems)
                 {
                     SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
@@ -1267,6 +1275,11 @@ namespace ORTS
             }
             SceneryShader.End();
         }
+
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
+		{
+			return true;
+		}
 	}
     #endregion
 
