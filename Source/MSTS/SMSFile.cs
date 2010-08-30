@@ -247,6 +247,14 @@ namespace MSTS
                     default: f.SkipUnknownBlock(token); break;
                 }
             }
+
+            if (Control == Controls.Variable2Controlled && CurvePoints[CurvePoints.Length - 1].X <= 1)
+            {
+                for (int i = 0; i < CurvePoints.Length; i++)
+                {
+                    CurvePoints[i].X *= 100f;
+                }
+            }
         }
     }
 

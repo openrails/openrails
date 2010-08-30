@@ -352,8 +352,9 @@ namespace ORTS
             MotiveForceN *= (Direction == Direction.Forward ? 1 : -1);
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
-            Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
+            //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
+            Variable2 = ThrottlePercent / 100f;   // throttle setting
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {

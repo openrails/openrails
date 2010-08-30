@@ -263,16 +263,22 @@ namespace ORTS
         /// <returns></returns>
         private bool ConditionsMet(MSTS.Activation conditions)
         {
-            if (conditions.CabCam && Viewer.Camera.ViewPoint == Camera.ViewPoints.Cab)
+            Camera.ViewPoints viewpoint = Viewer.Camera.ViewPoint;
+
+            if ( (viewpoint == Camera.ViewPoints.Cab) && (Viewer.Camera.AttachedToCar != Car) )
+            {
+                viewpoint = Camera.ViewPoints.External;
+            }
+
+            if (conditions.CabCam && viewpoint == Camera.ViewPoints.Cab)
                 return true;
-            if (conditions.PassengerCam && Viewer.Camera.ViewPoint == Camera.ViewPoints.Passenger)
+            if (conditions.PassengerCam && viewpoint == Camera.ViewPoints.Passenger)
                 return true;
-            if (conditions.ExternalCam && Viewer.Camera.ViewPoint == Camera.ViewPoints.External)
+            if (conditions.ExternalCam && viewpoint == Camera.ViewPoints.External)
                 return true;
 
             return false;
         }
-
     }
 
 /////////////////////////////////////////////////////////
@@ -403,6 +409,10 @@ namespace ORTS
                     float x = ReadValue(MSTSStream.FrequencyCurve.Control, car);
                     float y = Interpolate(x, MSTSStream.FrequencyCurve.CurvePoints);
                     ISound.PlaybackSpeed = y / SampleRate;
+                    if (y > 16000)
+                    {
+                        Console.Write("");
+                    }
                 }
                 if (MSTSStream.VolumeCurve != null)
                 {
@@ -474,7 +484,7 @@ namespace ORTS
                 case MSTS.VolumeCurve.Controls.DistanceControlled: return car.DistanceM;
                 case MSTS.VolumeCurve.Controls.SpeedControlled: return Math.Abs(car.SpeedMpS);
                 case MSTS.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
-                case MSTS.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
+                case MSTS.VolumeCurve.Controls.Variable2Controlled: return car.Variable2 * 100F;
                 case MSTS.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
                 default: return 0;
             }
