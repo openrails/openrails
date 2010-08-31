@@ -458,8 +458,8 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "CrossoverItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "CrossoverTrItemData", true)) CrossoverTrItemData(f);
                 else f.SkipBlock();
                 token = f.ReadToken();
@@ -479,7 +479,7 @@ namespace MSTS
         public struct strTrSignalDir
         {
             public uint TrackNode;                  // Index to the junction track node
-            public uint sd1, sd2, sd3;              // Used with junction signals (appears to be either 1 or 0
+            public uint sd1, linkLRPath, sd3;              // Used with junction signals (appears to be either 1 or 0
         }
 
         public string Flags1;                 // Set to  00000001 if junction link set 
@@ -510,8 +510,8 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "SignalItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "TrSignalType", true)) this.TrSignalType(f);
                 else if (0 == String.Compare(token, "TrSignalDirs", true)) this.TrSigDirs(f);
                 else f.SkipBlock();
@@ -546,7 +546,7 @@ namespace MSTS
                         f.VerifyStartOfBlock();
                         TrSignalDirs[count].TrackNode=f.ReadUInt();
                         TrSignalDirs[count].sd1=f.ReadUInt();
-                        TrSignalDirs[count].sd2=f.ReadUInt();
+                        TrSignalDirs[count].linkLRPath = f.ReadUInt(); 
                         TrSignalDirs[count].sd3=f.ReadUInt();
                         f.MustMatch(")");
                         count++;
@@ -583,8 +583,8 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "SpeedPostItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                //else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                //else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                //else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                //else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 //else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
                 //else if (0 == String.Compare(token, "SpeedpostTrItemData", true)) SpeedpostTrItemData(f);
                 else f.SkipBlock();
@@ -628,8 +628,8 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "PlatformItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "PlatformName", true))
                 {
                     f.VerifyStartOfBlock();
@@ -687,9 +687,9 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "SoundRegionItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
-                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) base.TrItemPData(f);
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
@@ -743,9 +743,9 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "LevelCrItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
-                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) base.TrItemPData(f);
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
@@ -773,8 +773,8 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "SidingItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "SidingTrItemData", true)) SidingTrItemData(f);
                 else if (0 == String.Compare(token, "SidingName", true))
                 {
@@ -813,9 +813,9 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "HazzardItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
-                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) base.TrItemPData(f);
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
@@ -839,9 +839,9 @@ namespace MSTS
                     Debug.Assert(count == this.TrItemId, "PickupItem Index Mismatch");
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "TrItemRData", true)) this.TrItemRData(f);
-                else if (0 == String.Compare(token, "TrItemSData", true)) this.TrItemSData(f);
-                else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
+                else if (0 == String.Compare(token, "TrItemRData", true)) base.TrItemRData(f);
+                else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
+                else if (0 == String.Compare(token, "TrItemPData", true)) base.TrItemPData(f);
                 else f.SkipBlock();
                 token = f.ReadToken();
             }

@@ -35,6 +35,7 @@ namespace ORTS
 {
     public class Train
     {
+        public static Signals Signals;
         public List<TrainCar> Cars = new List<TrainCar>();  // listed front to back
         public TrainCar FirstCar { get { return Cars[0]; } }
         public TrainCar LastCar { get { return Cars[Cars.Count - 1]; } }
@@ -59,6 +60,10 @@ namespace ORTS
         public float BrakeLine4PressurePSI = 0;     // extra line just in case
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
+
+        private int nextSignal = -1;
+        public float distanceToSignal = 0.1f;
+        public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
 
         // For AI control of the train
         public float AITrainBrakePercent
@@ -211,6 +216,24 @@ namespace ORTS
                 //        It's possible that collision detection will occur BEFORE end-of-
                 //        route detection and will obsolete this test in this location.
                 //        However, the case of an unterminated section should be kept in mind.
+            }
+
+            //
+            //  Update the distance to and aspect of next signal
+            //
+            if (nextSignal >= 0)
+            {
+                float dist = Signals.DistanceToNextSignal(nextSignal, FrontTDBTraveller);
+                //
+                //  If the signal has been passed then find the next one
+                //
+                if (dist <= 0.0f)
+                {
+                    nextSignal = Signals.GetNextSignal(nextSignal);
+                    if (nextSignal >= 0) dist = Signals.DistanceToNextSignal(nextSignal, FrontTDBTraveller);
+                }
+                TMaspect = nextSignal >= 0 ? Signals.GetMonitorAspect(nextSignal) : TrackMonitorSignalAspect.None;
+                distanceToSignal = dist;
             }
         } // end Update
 

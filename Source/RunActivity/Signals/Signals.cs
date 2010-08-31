@@ -10,10 +10,18 @@ namespace ORTS
 {
     public class Signals
     {
+
+        public enum SIGNALSTATE
+        {
+            STOP,
+            CLEAR,
+            UNKNOWN
+        }
+
         private TrackDB trackDB;
 
         private int[,] visited;
-        public SignalObject[] signalObjects;
+        private SignalObject[] signalObjects;
         public int noSignals = 0;
         private int foundSignals = 0;
 
@@ -21,7 +29,7 @@ namespace ORTS
         {
             trackDB = simulator.TDB.TrackDB;
             BuildSignalList(simulator.TDB.TrackDB.TrItemTable, simulator.TDB.TrackDB.TrackNodes);
-            AddCFG(simulator.sigCFGfile);
+            AddCFG(simulator.sigCFGfile);  // Add links to the sigcfg.dat file
         }
 
         // Restore state to resume a saved game
@@ -106,9 +114,16 @@ namespace ORTS
             do
             {
                 // Return if this track node has already been processed.
+                if (index == 0) return;
                 if (visited[index, direction] > 0) return;
                 visited[index, direction] = 1;      //  Mark track node as processed
                 //  If another TrEndNode then end of path
+                //if (index == 1810)
+                //{
+                //    TrackNode tn = trackNodes[index];
+                //    Console.WriteLine(index);
+                //}
+
                 if (trackNodes[index].TrEndNode != null) return;
                 //  Is it a vector node then it may contain objects.
                 if (trackNodes[index].TrVectorNode != null)
@@ -130,7 +145,7 @@ namespace ORTS
                                         if ((int)sigItem.revDir == direction)
                                         {
                                             sigItem.sigObj = foundSignals;
-                                            lastSignal = AddSignal(index, i, (int)sigItem.Direction, lastSignal,TrItems);
+                                            lastSignal = AddSignal(index, i, (int)sigItem.Direction, lastSignal,TrItems,trackNodes);
                                         }
                                     }
                                 }
@@ -149,7 +164,7 @@ namespace ORTS
                                         if ((int)sigItem.revDir == direction)
                                         {
                                             sigItem.sigObj = foundSignals;
-                                            lastSignal = AddSignal(index, i, (int)sigItem.Direction, lastSignal, TrItems);
+                                            lastSignal = AddSignal(index, i, (int)sigItem.Direction, lastSignal, TrItems,trackNodes);
                                         }
                                     }
                                 }
@@ -167,7 +182,7 @@ namespace ORTS
                             {
                                 ScanPath(trackNodes[index].TrPins[i].Link, trackNodes[index].TrPins[i].Direction, TrItems, trackNodes);
                             }
-                            if(lastSignal>=0) signalObjects[lastSignal].isJuction=true;
+                            if(lastSignal>=0) signalObjects[lastSignal].isJunction=true;
                             return;
                         }
                     }
@@ -179,7 +194,7 @@ namespace ORTS
                             {
                                 ScanPath(trackNodes[index].TrPins[i + trackNodes[index].Inpins].Link, trackNodes[index].TrPins[i + trackNodes[index].Inpins].Direction, TrItems, trackNodes);
                             }
-                            if (lastSignal >= 0) signalObjects[lastSignal].isJuction = true;
+                            if (lastSignal >= 0) signalObjects[lastSignal].isJunction = true;
                             return;
                         }
                     }
@@ -200,11 +215,11 @@ namespace ORTS
 
 
         // This method adds a new Signal to the list
-        private int AddSignal(int trackNode,int nodeIndx, int direction,int prevSignal,TrItem[] TrItems)
+        private int AddSignal(int trackNode, int nodeIndx, int direction, int prevSignal, TrItem[] TrItems, TrackNode[] trackNodes)
         {
             if (prevSignal >= 0)
             {
-                if (signalObjects[prevSignal].isSignalHead((SignalItem)TrItems[nodeIndx]))
+                if (signalObjects[prevSignal].isSignalHead((SignalItem)TrItems[trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx]]))
                 {
                     signalObjects[prevSignal].AddHead(nodeIndx);
                     return prevSignal;
@@ -216,7 +231,8 @@ namespace ORTS
             signalObjects[foundSignals].trRefIndex = nodeIndx;
             signalObjects[foundSignals].prevSignal=prevSignal;
             signalObjects[foundSignals].AddHead(nodeIndx);
-            if (prevSignal >= 0) signalObjects[prevSignal].nextSignal = foundSignals;
+            signalObjects[foundSignals].thisRef = foundSignals;
+            //if (prevSignal >= 0) signalObjects[prevSignal].nextSignal = foundSignals;
             foundSignals++;
             return foundSignals - 1;
         } // AddSignal
@@ -334,58 +350,7 @@ namespace ORTS
             } while (true);
         }
 
-        //
-        // Get the nearest (NORMAL)signal to the current point in the tdbtraveller
-        // Returns -1 if one cannot be found.
-        //
-        public int FindNearestSignal(TDBTraveller tdbtraveller)
-        {
-            int startNode = tdbtraveller.TrackNodeIndex;
-            int currenNode = startNode;
-            int currDir = tdbtraveller.Direction;
-            int sigIndex = -1;
-            float distance = 999999.0f;
-            TrackNode[] trackNodes=trackDB.TrackNodes;
-            TrItem[] trItems=trackDB.TrItemTable;
-            //currDir = trackNodes[startNode].TrPins[tdbtraveller.iEntryPIN].Direction;
-            //currDir = 0;
-            do
-            {
-                if (trackNodes[currenNode].TrEndNode != null) return -1;  // End of track reached no signals found.
-                if (trackNodes[currenNode].TrVectorNode != null)
-                {
-                    if (trackNodes[currenNode].TrVectorNode.noItemRefs > 0)
-                    {
-                        for (int i = 0; i < trackNodes[currenNode].TrVectorNode.noItemRefs; i++)
-                        {
-                            if (trItems[trackNodes[currenNode].TrVectorNode.TrItemRefs[i]].ItemType == TrItem.trItemType.trSIGNAL)
-                            {
-                                SignalItem sigItem = (SignalItem)trItems[trackNodes[currenNode].TrVectorNode.TrItemRefs[i]];
-                                if (sigItem.revDir == currDir)
-                                {
-                                    int sigObj = sigItem.sigObj;
-                                    if (signalObjects[sigObj].isSignalNormal())
-                                    {
-                                        float dist = signalObjects[sigObj].DistanceTo(tdbtraveller);
-                                        if (dist < distance)
-                                        {
-                                            distance = dist;
-                                            sigIndex = sigObj;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (sigIndex >= 0) return sigIndex; // Signal found in this node.
-                    }
-
-                }
-                NextNode(trackNodes,ref currenNode, ref currDir);
-                if (currenNode == startNode) return -1; // back to where we started !
-            } while (true);
-
-        } //FindNearestSignal
+        
 
         private void NextNode(TrackNode[] trackNodes,  ref int node, ref int direction)
         {
@@ -473,9 +438,112 @@ namespace ORTS
             {
                 if (signal != null)
                 {
-                    if (signal.isJuction) signal.nextSignal = -2;
+                    if (signal.isJunction) signal.nextSignal = -2;
                 }
             }
+        }
+
+        //
+        //  Interface Routines: Used by Dispatcher, Virtual Signal Box etc. 
+        //
+
+        //
+        // Get the nearest (NORMAL)signal to the current point in the tdbtraveller
+        // Returns -1 if one cannot be found.
+        //
+        public int FindNearestSignal(TDBTraveller tdbtraveller)
+        {
+            int startNode = tdbtraveller.TrackNodeIndex;
+            int currenNode = startNode;
+            int currDir = tdbtraveller.Direction;
+            int sigIndex = -1;
+            float distance = 999999.0f;
+            TrackNode[] trackNodes = trackDB.TrackNodes;
+            TrItem[] trItems = trackDB.TrItemTable;
+
+            if (noSignals < 1) return -1;   // No Signals on route
+
+            do
+            {
+                if (trackNodes[currenNode].TrEndNode != null) return -1;  // End of track reached no signals found.
+                if (trackNodes[currenNode].TrVectorNode != null)
+                {
+                    if (trackNodes[currenNode].TrVectorNode.noItemRefs > 0)
+                    {
+                        for (int i = 0; i < trackNodes[currenNode].TrVectorNode.noItemRefs; i++)
+                        {
+                            if (trItems[trackNodes[currenNode].TrVectorNode.TrItemRefs[i]].ItemType == TrItem.trItemType.trSIGNAL)
+                            {
+                                SignalItem sigItem = (SignalItem)trItems[trackNodes[currenNode].TrVectorNode.TrItemRefs[i]];
+                                if (sigItem.revDir == currDir)
+                                {
+                                    int sigObj = sigItem.sigObj;
+                                    if (signalObjects[sigObj].isSignalNormal())
+                                    {
+                                        float dist = signalObjects[sigObj].DistanceTo(tdbtraveller);
+                                        if (dist > 0)
+                                        {
+                                            if (dist < distance)
+                                            {
+                                                distance = dist;
+                                                sigIndex = sigObj;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (sigIndex >= 0) return sigIndex; // Signal found in this node.
+                    }
+
+                }
+                NextNode(trackNodes, ref currenNode, ref currDir);
+                if (currenNode == startNode) return -1; // back to where we started !
+            } while (true);
+
+        } //FindNearestSignal
+
+        //
+        //  Next Signal along the line. Returns -1 if no signal found
+        //
+        public int GetNextSignal(int sigRef)
+        {
+            return sigRef>=0 ? signalObjects[sigRef].GetNextSignal() : -1;
+        } // NextSignal
+
+        //
+        //  Returns Distance to next signal from current TDBTraveller position.
+        //
+        public float DistanceToNextSignal(int sigRef ,TDBTraveller tdbTraverler)
+        {
+            return sigRef>=0? signalObjects[sigRef].DistanceTo(tdbTraverler):0F;
+        }  // DistanceToNextSignal
+
+        //
+        //   Returns the signal aspect. Least restricting if Multiple head.
+        //
+        public SignalHead.SIGASP GetAspect(int sigRef)
+        {
+            return sigRef >= 0 ? signalObjects[sigRef].this_sig_lr(SignalHead.SIGFN.NORMAL) : SignalHead.SIGASP.UNKNOWN;
+        }
+
+        //
+        //   Returns the signal aspect for the track monitor. Least restricting if Multiple head.
+        //
+        public TrackMonitorSignalAspect GetMonitorAspect(int sigRef)
+        {
+            return sigRef >= 0 ? signalObjects[sigRef].GetMonitorAspect() : TrackMonitorSignalAspect.None;
+        }
+
+        public void SetSignalState(int sigref, Signals.SIGNALSTATE state)
+        {
+            signalObjects[sigref].SetSignalState(state);
+        }
+
+        public void TrackStateChanged(int sigref)
+        {
+            signalObjects[sigref].TrackStateChanged();
         }
     }
 
@@ -495,12 +563,13 @@ namespace ORTS
         public static TrItem[] trItems;
         public List<SignalHead> SignalHeads = new List<SignalHead>();
         public int trackNode;                   // Track node which contains this signal
-        public int trRefIndex;                  // Index to TrItemRef within Track Node    
+        public int trRefIndex;                  // Index to TrItemRef within Track Node 
+        public int thisRef;                     // This signal's reference.
         public int direction;                   // Diection facing on track
         public int draw_state;
         public bool enabled=true;
-        public bool isJuction = false;          // Indicates whether the signal controls a junction.
-        public bool isUpdatable = true;         // Signal can be updated automatically
+        public bool isJunction = false;          // Indicates whether the signal controls a junction.
+        public bool canUpdate = true;           // Signal can be updated automatically
         public bool isAuto = true;
         public bool useScript = false;
         public int blockState;
@@ -508,7 +577,7 @@ namespace ORTS
         public int prevSignal = -2;             // Index to previous signal -1 if none -2 indeterminate
 
         //
-        //  Needed because siganl faces train!
+        //  Needed because signal faces train!
         //
         public int revDir
         {
@@ -597,7 +666,7 @@ namespace ORTS
                 // Only process if there is more than one item within track node
                 if (trackNodes[currentTrackNode].TrVectorNode.noItemRefs > 1)
                 {
-                    if (currentDir == 0)
+                    if (currentDir == 1)
                     {
                         while(++currentIndex<trackNodes[currentTrackNode].TrVectorNode.noItemRefs)
                         {
@@ -606,7 +675,10 @@ namespace ORTS
                             {
                                 SignalItem signalItem=(SignalItem)trItems[index];
                                 int sigIndex = signalItem.sigObj;
-                                if (signalObjects[sigIndex].isSignalNormal() && signalObjects[sigIndex].revDir==currentDir) return sigIndex;
+                                if (signalObjects[sigIndex].thisRef != thisRef) // Not a signal head for this signal
+                                {
+                                    if (signalObjects[sigIndex].isSignalNormal() && signalObjects[sigIndex].revDir == currentDir) return sigIndex;
+                                }
                             }
                         }
                     }
@@ -619,7 +691,10 @@ namespace ORTS
                             {
                                 SignalItem signalItem = (SignalItem)trItems[index];
                                 int sigIndex = signalItem.sigObj;
-                                if (signalObjects[sigIndex].isSignalNormal() && signalObjects[sigIndex].revDir == currentDir) return sigIndex;
+                                if (signalObjects[sigIndex].thisRef != thisRef) // Not a signal head for this signal
+                                {
+                                    if (signalObjects[sigIndex].isSignalNormal() && signalObjects[sigIndex].revDir == currentDir) return sigIndex;
+                                }
                             }
                         }
                     }
@@ -665,7 +740,7 @@ namespace ORTS
                                     SignalItem signalItem = (SignalItem)trItems[trackNodes[currentTrackNode].TrVectorNode.TrItemRefs[i]];
                                     if ((int)signalItem.revDir == currentDir)
                                     {
-                                        int sigIndex = signalItem.sigObj;
+                                        int sigIndex = signalItem.sigObj;   // Signal reference for this item
                                         if (signalObjects[sigIndex].isSignalNormal()) return sigIndex;
                                     }
                                 }
@@ -787,7 +862,7 @@ namespace ORTS
         //
         public void Update()
          {
-             if (isUpdatable)        
+             if (canUpdate)        
              {
                  foreach (SignalHead sigHead in SignalHeads)
                  {
@@ -842,7 +917,9 @@ namespace ORTS
                 return trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
             }
         }
-
+        //
+        //  Sets the signal type from the sigcfg file for each signal head
+        //
         public void SetSignalType(SIGCFGFile sigCFG)
         {
              foreach (SignalHead sigHead in SignalHeads)
@@ -850,6 +927,68 @@ namespace ORTS
                  sigHead.SetSignalType(trItems, sigCFG);
              }
         }
+
+        public void SetSignalState(Signals.SIGNALSTATE state)
+        {
+            switch (state)
+            {
+                case Signals.SIGNALSTATE.STOP:
+                    canUpdate = false;
+                    foreach (SignalHead sigHead in SignalHeads)
+                    {
+                        sigHead.state = SignalHead.SIGASP.STOP;
+                    }
+                    break;
+                case Signals.SIGNALSTATE.CLEAR:
+                    canUpdate = true;
+                    break;
+                case Signals.SIGNALSTATE.UNKNOWN:
+                    break;
+                default:
+                    break;
+            }
+        } // SetSignalState
+
+        public int GetNextSignal()
+        {
+           if (nextSignal < -1)
+            {
+                nextSignal = NextSignal();
+            }
+            return nextSignal;
+        }
+
+        public void TrackStateChanged()
+        {
+            if(isJunction) nextSignal=-2;
+        }
+
+        public TrackMonitorSignalAspect GetMonitorAspect()
+        {
+            switch (this_sig_lr(SignalHead.SIGFN.NORMAL))
+            {
+                case SignalHead.SIGASP.STOP:
+                case SignalHead.SIGASP.STOP_AND_PROCEED:
+                    return TrackMonitorSignalAspect.Stop;
+                    break;
+                case SignalHead.SIGASP.RESTRICTING:
+                case SignalHead.SIGASP.APPROACH_1:
+                case SignalHead.SIGASP.APPROACH_2:
+                case SignalHead.SIGASP.APPROACH_3:
+                case SignalHead.SIGASP.APPROACH_4:
+                    return TrackMonitorSignalAspect.Warning;
+                    break;
+                case SignalHead.SIGASP.CLEAR_1:
+                case SignalHead.SIGASP.CLEAR_2:
+                case SignalHead.SIGASP.CLEAR_3:
+                case SignalHead.SIGASP.CLEAR_4:
+                    return TrackMonitorSignalAspect.Clear;
+                    break;
+                default:
+                    return TrackMonitorSignalAspect.None;
+                    break;
+            }
+        } // GetMonitorAspect
 
     }  // SignalOnbject
 
@@ -899,7 +1038,6 @@ namespace ORTS
         // This method sets the signal type from the CIGCFG file
         public void SetSignalType(TrItem[] TrItems,SIGCFGFile sigCFG)
         {
-            //SignalItem sigItem = (SignalItem)SignalObject.trItems[trItemIndex];
             SignalItem sigItem = (SignalItem)TrItems[SignalObject.trackNodes[mainSignal.trackNode].TrVectorNode.TrItemRefs[trItemIndex]];
             signalType = sigCFG.GetSignalType(sigItem.SignalType);
         }
@@ -913,7 +1051,7 @@ namespace ORTS
         }
 
         //
-        //  The type nam from CFG Signal type
+        //  The type name from CFG Signal type
         //
         public String SignalTypeName
         {
