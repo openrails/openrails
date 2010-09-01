@@ -696,6 +696,18 @@ namespace ORTS
 
         private void SaveTrains(BinaryWriter outf)
         {
+            if (PlayerLocomotive.Train != Trains[0])
+            {
+                for (int i = 1; i < Trains.Count; i++)
+                {
+                    if (PlayerLocomotive.Train == Trains[i])
+                    {
+                        Trains[i] = Trains[0];
+                        Trains[0] = PlayerLocomotive.Train;
+                        break;
+                    }
+                }
+            }
             outf.Write(Trains.Count);
             foreach (Train train in Trains)
             {
