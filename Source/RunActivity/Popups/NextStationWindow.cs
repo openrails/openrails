@@ -3,40 +3,40 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-/// Autor James Ross
+/// Author: James Ross
 /// 
 /// Next Station; used to display the current and next timetable entries.
 /// 
 
-
 using System;
-namespace ORTS
+
+namespace ORTS.Popups
 {
-	public class NextStation : PopupWindow
+	public class NextStationWindow : Window
 	{
 		readonly Viewer3D Viewer;
 
-		PopupLabel CurrentTime;
-		PopupLabel StationPlatform;
+		Label CurrentTime;
+		Label StationPlatform;
 
-		PopupLabel StationPreviousName;
-		PopupLabel StationPreviousArriveScheduled;
-		PopupLabel StationPreviousArriveActual;
-		PopupLabel StationPreviousDepartScheduled;
-		PopupLabel StationPreviousDepartActual;
+		Label StationPreviousName;
+		Label StationPreviousArriveScheduled;
+		Label StationPreviousArriveActual;
+		Label StationPreviousDepartScheduled;
+		Label StationPreviousDepartActual;
 
-		PopupLabel StationCurrentName;
-		PopupLabel StationCurrentArriveScheduled;
-		PopupLabel StationCurrentArriveActual;
-		PopupLabel StationCurrentDepartScheduled;
+		Label StationCurrentName;
+		Label StationCurrentArriveScheduled;
+		Label StationCurrentArriveActual;
+		Label StationCurrentDepartScheduled;
 
-		PopupLabel StationNextName;
-		PopupLabel StationNextArriveScheduled;
-		PopupLabel StationNextDepartScheduled;
+		Label StationNextName;
+		Label StationNextArriveScheduled;
+		Label StationNextDepartScheduled;
 
-		PopupLabel Message;
+		Label Message;
 
-		public NextStation(PopupWindows owner)
+		public NextStationWindow(WindowManager owner)
 			: base(owner, 400, 135, "Next Station")
 		{
 			Viewer = owner.Viewer;
@@ -44,55 +44,52 @@ namespace ORTS
 			AlignLeft();
 		}
 
-		protected override PopupControlLayout Layout(PopupControlLayout layout)
+		protected override ControlLayout Layout(ControlLayout layout)
 		{
 			var vbox = base.Layout(layout).AddLayoutVertical();
-			var boxWidth = vbox.RemainingWidth / 6;
+			var boxWidth = vbox.RemainingWidth / 7;
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Time:"));
-				hbox.Add(CurrentTime = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
-				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Next:"));
-				hbox.Add(StationPlatform = new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationPlatform = new Label(boxWidth * 6, hbox.RemainingHeight, ""));
+				hbox.Add(CurrentTime = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
 			}
 			vbox.AddHorizontalSeparator();
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new PopupLabel(boxWidth * 2, hbox.RemainingHeight, "Station"));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Arrive", PopupLabelAlignment.Right));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Actual", PopupLabelAlignment.Right));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Depart", PopupLabelAlignment.Right));
-				hbox.Add(new PopupLabel(boxWidth, hbox.RemainingHeight, "Actual", PopupLabelAlignment.Right));
+				hbox.Add(new Label(boxWidth * 3, hbox.RemainingHeight, "Station"));
+				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Arrive", LabelAlignment.Center));
+				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Actual", LabelAlignment.Center));
+				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Depart", LabelAlignment.Center));
+				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Actual", LabelAlignment.Center));
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(StationPreviousName = new PopupLabel(boxWidth * 2, hbox.RemainingHeight, ""));
-				hbox.Add(StationPreviousArriveScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
-				hbox.Add(StationPreviousArriveActual = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
-				hbox.Add(StationPreviousDepartScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
-				hbox.Add(StationPreviousDepartActual = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationPreviousName = new Label(boxWidth * 3, hbox.RemainingHeight, ""));
+				hbox.Add(StationPreviousArriveScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
+				hbox.Add(StationPreviousArriveActual = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
+				hbox.Add(StationPreviousDepartScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
+				hbox.Add(StationPreviousDepartActual = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(StationCurrentName = new PopupLabel(boxWidth * 2, hbox.RemainingHeight, ""));
-				hbox.Add(StationCurrentArriveScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
-				hbox.Add(StationCurrentArriveActual = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
-				hbox.Add(StationCurrentDepartScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationCurrentName = new Label(boxWidth * 3, hbox.RemainingHeight, ""));
+				hbox.Add(StationCurrentArriveScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
+				hbox.Add(StationCurrentArriveActual = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
+				hbox.Add(StationCurrentDepartScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(StationNextName = new PopupLabel(boxWidth * 2, hbox.RemainingHeight, ""));
-				hbox.Add(StationNextArriveScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationNextName = new Label(boxWidth * 3, hbox.RemainingHeight, ""));
+				hbox.Add(StationNextArriveScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
-				hbox.Add(StationNextDepartScheduled = new PopupLabel(boxWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(StationNextDepartScheduled = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
 				hbox.AddSpace(boxWidth, hbox.RemainingHeight);
 			}
 			vbox.AddHorizontalSeparator();
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(Message = new PopupLabel(boxWidth * 6, hbox.RemainingHeight, ""));
+				hbox.Add(Message = new Label(boxWidth * 7, hbox.RemainingHeight, ""));
 			}
 			return vbox;
 		}

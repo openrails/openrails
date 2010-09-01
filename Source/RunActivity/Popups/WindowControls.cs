@@ -1,0 +1,486 @@
+﻿/// COPYRIGHT 2010 by the Open Rails project.
+/// This code is provided to enable you to contribute improvements to the open rails program.  
+/// Use of the code for any other purpose or distribution of the code to anyone else
+/// is prohibited without specific written permission from admin@openrails.org.
+
+/// Author: James Ross
+
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
+
+namespace ORTS.Popups
+{
+	public abstract class Control
+	{
+		public Rectangle Position;
+		public event Action<Control, Point> Click;
+
+		protected Control(int x, int y, int width, int height)
+		{
+			Position = new Rectangle(x, y, width, height);
+		}
+
+		protected void OnClick(Point mouseControlLocation)
+		{
+			var click = Click;
+			if (click != null)
+				click(this, mouseControlLocation);
+		}
+
+		internal abstract void Draw(SpriteBatch spriteBatch, Point offset);
+
+		internal virtual bool HandleMouseDown(WindowMouseEvent e)
+		{
+			return false;
+		}
+
+		internal virtual bool HandleMouseUp(WindowMouseEvent e)
+		{
+			MouseClick(e);
+			return false;
+		}
+
+		internal virtual bool HandleMouseMove(WindowMouseEvent e)
+		{
+			return false;
+		}
+
+		internal virtual bool HandleUserInput(WindowMouseEvent e)
+		{
+			return false;
+		}
+
+		internal virtual void MoveBy(int x, int y)
+		{
+			Position.X += x;
+			Position.Y += y;
+		}
+
+		internal virtual void MouseClick(WindowMouseEvent e)
+		{
+			OnClick(new Point(e.MouseDownPosition.X - Position.X, e.MouseDownPosition.Y - Position.Y));
+		}
+	}
+
+	public class Spacer : Control
+	{
+		public Spacer(int width, int height)
+			: base(0, 0, width, height)
+		{
+		}
+
+		internal override void Draw(SpriteBatch spriteBatch, Point offset)
+		{
+		}
+	}
+
+	public class Separator : Control
+	{
+		public int Padding;
+
+		public Separator(int width, int height, int padding)
+			: base(0, 0, width, height)
+		{
+			Padding = padding;
+		}
+
+		internal override void Draw(SpriteBatch spriteBatch, Point offset)
+		{
+			spriteBatch.Draw(WindowManager.WhiteTexture, new Rectangle(offset.X + Position.X + Padding, offset.Y + Position.Y + Padding, Position.Width - 2 * Padding, Position.Height - 2 * Padding), Color.White);
+		}
+	}
+
+	public enum LabelAlignment
+	{
+		Left,
+		Center,
+		Right,
+	}
+
+	public class Label : Control
+	{
+		public string Text;
+		public LabelAlignment Align;
+		public Color Color;
+
+		public Label(int x, int y, int width, int height, string text, LabelAlignment align)
+			: base(x, y, width, height)
+		{
+			Text = text;
+			Align = align;
+			Color = Color.White;
+		}
+
+		public Label(int x, int y, int width, int height, string text)
+			: this(x, y, width, height, text, LabelAlignment.Left)
+		{
+		}
+
+		public Label(int width, int height, string text, LabelAlignment align)
+			: this(0, 0, width, height, text, align)
+		{
+		}
+
+		public Label(int width, int height, string text)
+			: this(0, 0, width, height, text, LabelAlignment.Left)
+		{
+		}
+
+		internal override void Draw(SpriteBatch spriteBatch, Point offset)
+		{
+			var pos = new Vector2(offset.X + Position.X, offset.Y + Position.Y);
+			if (Align != LabelAlignment.Left)
+			{
+				var size = Materials.PopupWindowMaterial.DefaultFont.MeasureString(Text);
+				if (Align == LabelAlignment.Right)
+					pos.X += Position.Width - size.X;
+				else
+					pos.X += (int)(Position.Width - size.X) / 2;
+			}
+			spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, Text, pos, Color);
+		}
+	}
+
+	public class Image : Control
+	{
+		public Texture2D Texture;
+		public Rectangle Source;
+
+		public Image(int x, int y, int width, int height)
+			: base(x, y, width, height)
+		{
+			Source = Rectangle.Empty;
+		}
+
+		public Image(int width, int height)
+			: this(0, 0, width, height)
+		{
+		}
+
+		internal override void Draw(SpriteBatch spriteBatch, Point offset)
+		{
+			var destinationRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width, Position.Height);
+			if (Texture == null)
+				spriteBatch.Draw(WindowManager.WhiteTexture, destinationRectangle, Color.White);
+			else
+				spriteBatch.Draw(Texture, destinationRectangle, Source, Color.White);
+		}
+	}
+
+	public abstract class ControlLayout : Control
+	{
+		protected readonly List<Control> controls = new List<Control>();
+		public IEnumerable<Control> Controls { get { return controls; } }
+
+		public ControlLayout(int x, int y, int width, int height)
+			: base(x, y, width, height)
+		{
+		}
+
+		public virtual int RemainingWidth
+		{
+			get
+			{
+				return Position.Width;
+			}
+		}
+
+		public virtual int RemainingHeight
+		{
+			get
+			{
+				return Position.Height;
+			}
+		}
+
+		public virtual int CurrentLeft
+		{
+			get
+			{
+				return 0;
+			}
+		}
+
+		public virtual int CurrentTop
+		{
+			get
+			{
+				return 0;
+			}
+		}
+
+		protected T InternalAdd<T>(T control) where T : Control
+		{
+			// Offset control by our location. Don't touch its size!
+			control.Position.X += Position.X + CurrentLeft;
+			control.Position.Y += Position.Y + CurrentTop;
+			//Console.WriteLine(String.Format("{0} added {1} at {2}", GetType().Name, control.GetType().Name, control.Position));
+			controls.Add(control);
+			return control;
+		}
+
+		public void Add(Control control)
+		{
+			InternalAdd(control);
+		}
+
+		public void AddSpace(int width, int height)
+		{
+			Add(new Spacer(width, height));
+		}
+
+		public void AddHorizontalSeparator()
+		{
+			Add(new Separator(RemainingWidth, 5, 2));
+		}
+
+		public void AddVerticalSeparator()
+		{
+			Add(new Separator(5, RemainingHeight, 2));
+		}
+
+		public ControlLayoutOffset AddLayoutOffset(int left, int top, int right, int bottom)
+		{
+			return InternalAdd(new ControlLayoutOffset(RemainingWidth, RemainingHeight, left, top, right, bottom));
+		}
+
+		public ControlLayoutHorizontal AddLayoutHorizontal()
+		{
+			return AddLayoutHorizontal(RemainingHeight);
+		}
+
+		public ControlLayoutHorizontal AddLayoutHorizontal(int height)
+		{
+			return InternalAdd(new ControlLayoutHorizontal(RemainingWidth, height));
+		}
+
+		public ControlLayoutVertical AddLayoutVertical()
+		{
+			return AddLayoutVertical(RemainingWidth);
+		}
+
+		public ControlLayoutVertical AddLayoutVertical(int width)
+		{
+			return InternalAdd(new ControlLayoutVertical(width, RemainingHeight));
+		}
+
+		public ControlLayout AddLayoutScrollboxHorizontal(int height)
+		{
+			var sb = InternalAdd(new ControlLayoutScrollboxHorizontal(RemainingWidth, height));
+			sb.Initialize();
+			return sb.Client;
+		}
+
+		internal override void Draw(SpriteBatch spriteBatch, Point offset)
+		{
+			foreach (var control in controls)
+				control.Draw(spriteBatch, offset);
+		}
+
+		internal override bool HandleMouseDown(WindowMouseEvent e)
+		{
+			foreach (var control in controls.Where(c => c.Position.Contains(e.MouseDownPosition)))
+				if (control.HandleMouseDown(e))
+					return true;
+			return base.HandleMouseDown(e);
+		}
+
+		internal override bool HandleMouseUp(WindowMouseEvent e)
+		{
+			foreach (var control in controls.Where(c => c.Position.Contains(e.MouseDownPosition)))
+				if (control.HandleMouseUp(e))
+					return true;
+			return base.HandleMouseUp(e);
+		}
+
+		internal override bool HandleMouseMove(WindowMouseEvent e)
+		{
+			foreach (var control in controls.Where(c => c.Position.Contains(e.MouseDownPosition)))
+				if (control.HandleMouseMove(e))
+					return true;
+			return base.HandleMouseMove(e);
+		}
+
+		internal override bool HandleUserInput(WindowMouseEvent e)
+		{
+			foreach (var control in controls.Where(c => c.Position.Contains(e.MouseDownPosition)))
+				if (control.HandleUserInput(e))
+					return true;
+			return base.HandleUserInput(e);
+		}
+
+		internal override void MoveBy(int x, int y)
+		{
+			foreach (var control in controls)
+				control.MoveBy(x, y);
+			base.MoveBy(x, y);
+		}
+	}
+
+	public class ControlLayoutOffset : ControlLayout
+	{
+		readonly int PadLeft;
+		readonly int PadTop;
+		readonly int PadRight;
+		readonly int PadBottom;
+
+		internal ControlLayoutOffset(int width, int height, int left, int top, int right, int bottom)
+			: base(left, top, width - left - right, height - top - bottom)
+		{
+			PadLeft = left;
+			PadTop = top;
+			PadRight = right;
+			PadBottom = bottom;
+		}
+	}
+
+	public class ControlLayoutHorizontal : ControlLayout
+	{
+		internal ControlLayoutHorizontal(int width, int height)
+			: base(0, 0, width, height)
+		{
+		}
+
+		public override int RemainingWidth
+		{
+			get
+			{
+				return base.RemainingWidth - CurrentLeft;
+			}
+		}
+
+		public override int CurrentLeft
+		{
+			get
+			{
+				return controls.Sum(c => c.Position.Width);
+			}
+		}
+	}
+
+	public class ControlLayoutVertical : ControlLayout
+	{
+		internal ControlLayoutVertical(int width, int height)
+			: base(0, 0, width, height)
+		{
+		}
+
+		public override int RemainingHeight
+		{
+			get
+			{
+				return base.RemainingHeight - CurrentTop;
+			}
+		}
+
+		public override int CurrentTop
+		{
+			get
+			{
+				return controls.Sum(c => c.Position.Height);
+			}
+		}
+	}
+
+	public abstract class ControlLayoutScrollbox : ControlLayout
+	{
+		public const int ScrollbarSize = 16;
+		public ControlLayout Client;
+		protected int ScrollPosition;
+
+		protected ControlLayoutScrollbox(int width, int height)
+			: base(0, 0, width, height)
+		{
+		}
+
+		internal void Initialize()
+		{
+			Client = InternalAdd(new ControlLayoutHorizontal(RemainingWidth, RemainingHeight));
+		}
+
+		public abstract int ScrollSize { get; }
+	}
+
+	public class ControlLayoutScrollboxHorizontal : ControlLayoutScrollbox
+	{
+		internal ControlLayoutScrollboxHorizontal(int width, int height)
+			: base(width, height)
+		{
+		}
+
+		internal override void Draw(SpriteBatch spriteBatch, Point offset)
+		{
+			var scrollSize = ScrollSize;
+			var thumbOffset = (int)((float)(Position.Width - 3 * ScrollbarSize) * (float)ScrollPosition / (float)scrollSize);
+
+			// Left button
+			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X, offset.Y + Position.Y + Position.Height - ScrollbarSize, ScrollbarSize, ScrollbarSize), new Rectangle(0, 0, ScrollbarSize, ScrollbarSize), Color.White);
+			// Left gutter
+			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + ScrollbarSize, offset.Y + Position.Y + Position.Height - ScrollbarSize, thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
+			// Thumb
+			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + ScrollbarSize + thumbOffset, offset.Y + Position.Y + Position.Height - ScrollbarSize, ScrollbarSize, ScrollbarSize), new Rectangle(ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
+			// Right gutter
+			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + 2 * ScrollbarSize + thumbOffset, offset.Y + Position.Y + Position.Height - ScrollbarSize, Position.Width - 3 * ScrollbarSize - thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
+			// Right button
+			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + Position.Height - ScrollbarSize, ScrollbarSize, ScrollbarSize), new Rectangle(3 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
+
+			// Draw contents inside a scissor rectangle (so they're clipped to the client area).
+			spriteBatch.End();
+			var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
+			spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width, Position.Height - ScrollbarSize);
+			spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = true;
+			spriteBatch.Begin(WindowManager.BeginSpriteBlendMode, WindowManager.BeginSpriteSortMode, WindowManager.BeginSaveStateMode);
+			base.Draw(spriteBatch, offset);
+			spriteBatch.End();
+			spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
+			spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = false;
+			spriteBatch.Begin(WindowManager.BeginSpriteBlendMode, WindowManager.BeginSpriteSortMode, WindowManager.BeginSaveStateMode);
+		}
+
+		internal override bool HandleUserInput(WindowMouseEvent e)
+		{
+			if (UserInput.IsMouseLeftButtonDown())
+			{
+				Client.Position.Width = Client.CurrentLeft;
+				if (e.MouseDownPosition.Y > Position.Bottom - ScrollbarSize)
+				{
+					// Mouse down occured within the scrollbar.
+					if (e.MouseDownPosition.X < Position.Left + ScrollbarSize)
+					{
+						// Mouse down occured on left button.
+						var newScrollPosition = Math.Max(0, ScrollPosition - 10);
+						Client.MoveBy(ScrollPosition - newScrollPosition, 0);
+						ScrollPosition = newScrollPosition;
+					}
+					else if (e.MouseDownPosition.X > Position.Right - ScrollbarSize)
+					{
+						// Mouse down occured on right button.
+						var newScrollPosition = Math.Min(ScrollPosition + 10, ScrollSize);
+						Client.MoveBy(ScrollPosition - newScrollPosition, 0);
+						ScrollPosition = newScrollPosition;
+					}
+					return true;
+				}
+			}
+			return base.HandleUserInput(e);
+		}
+
+		public override int RemainingHeight
+		{
+			get
+			{
+				return base.RemainingHeight - ScrollbarSize;
+			}
+		}
+
+		public override int ScrollSize
+		{
+			get {
+				return Client.CurrentLeft - Position.Width;
+			}
+		}
+	}
+}

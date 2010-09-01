@@ -35,6 +35,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MSTS;
+using ORTS.Popups;
 
 namespace ORTS
 {
@@ -69,9 +70,10 @@ namespace ORTS
         // Components
         public Simulator Simulator;
         InfoDisplay InfoDisplay;
-		public PopupWindows PopupWindows = null;
-		public TrackMonitor TrackMonitor;
-		public NextStation NextStation;
+		public WindowManager PopupWindows = null;
+		public TrackMonitorWindow TrackMonitor;
+		public TrainOperationsWindow TrainOperations;
+		public NextStationWindow NextStation;
 		public CompassWindow CompassWindow;
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer = null;
@@ -279,9 +281,10 @@ namespace ORTS
             InfoDisplay = new InfoDisplay(this);
             
             // Initialse popup windows.
-			PopupWindows = new PopupWindows(this);
-			TrackMonitor = new TrackMonitor(PopupWindows);
-			NextStation = new NextStation(PopupWindows);
+			PopupWindows = new WindowManager(this);
+			TrackMonitor = new TrackMonitorWindow(PopupWindows);
+			TrainOperations = new TrainOperationsWindow(PopupWindows);
+			NextStation = new NextStationWindow(PopupWindows);
 			CompassWindow = new CompassWindow(PopupWindows);
 
             SkyDrawer = new SkyDrawer(this);
@@ -391,6 +394,7 @@ namespace ORTS
                 PlayerLocomotiveViewer.HandleUserInput( elapsedTime);
 
             InfoDisplay.HandleUserInput(elapsedTime);
+			PopupWindows.HandleUserInput();
 
             // Check for game control keys
             if (UserInput.IsKeyDown(Keys.Escape)) {  Stop(); return; }
@@ -400,6 +404,7 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.PageDown)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
 			if (UserInput.IsPressed(Keys.F4)) TrackMonitor.Visible = !TrackMonitor.Visible;
+			if (UserInput.IsPressed(Keys.F9)) TrainOperations.Visible = !TrainOperations.Visible;
 			if (UserInput.IsPressed(Keys.F10)) NextStation.Visible = !NextStation.Visible;
 			if (UserInput.IsPressed(Keys.D0)) CompassWindow.Visible = !CompassWindow.Visible;
 
@@ -436,7 +441,7 @@ namespace ORTS
             }
 
             RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
-        }
+		}
 
 
         //
@@ -446,7 +451,6 @@ namespace ORTS
         public void HandleMouseMovement()
         {
             MouseState currentMouseState = Mouse.GetState();
-			PopupWindows.HandleMouseMovement(currentMouseState);
 
             // Handling mouse movement and timing - GeorgeS
             if (currentMouseState.X != originalMouseState.X ||

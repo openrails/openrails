@@ -3,43 +3,39 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-/// Author James Ross
+/// Author: James Ross
 /// 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ORTS
+namespace ORTS.Popups
 {
-	public class CompassWindow : PopupWindow
+	public class CompassWindow : Window
 	{
 		PopupCompass Compass;
-		PopupLabel Latitude;
-		PopupLabel Longitude;
+		Label Latitude;
+		Label Longitude;
 
-		public CompassWindow(PopupWindows owner)
+		public CompassWindow(WindowManager owner)
 			: base(owner, 250, 95, "Compass")
 		{
 			AlignTop();
 			AlignCenterH();
 		}
 
-		protected override PopupControlLayout Layout(PopupControlLayout layout)
+		protected override ControlLayout Layout(ControlLayout layout)
 		{
 			var vbox = base.Layout(layout).AddLayoutVertical();
 			vbox.Add(Compass = new PopupCompass(vbox.RemainingWidth, 50));
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
 				var w = hbox.RemainingWidth / 9;
-				hbox.Add(new PopupLabel(1 * w, hbox.RemainingHeight, "Lat:", PopupLabelAlignment.Right));
-				hbox.Add(Latitude = new PopupLabel(3 * w, hbox.RemainingHeight, "000.000000", PopupLabelAlignment.Right));
+				hbox.Add(new Label(1 * w, hbox.RemainingHeight, "Lat:", LabelAlignment.Right));
+				hbox.Add(Latitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
 				hbox.AddSpace(w, hbox.RemainingHeight);
-				hbox.Add(new PopupLabel(1 * w, hbox.RemainingHeight, "Lon:", PopupLabelAlignment.Right));
-				hbox.Add(Longitude = new PopupLabel(3 * w, hbox.RemainingHeight, "000.000000", PopupLabelAlignment.Right));
+				hbox.Add(new Label(1 * w, hbox.RemainingHeight, "Lon:", LabelAlignment.Right));
+				hbox.Add(Longitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
 			}
 			return vbox;
 		}
@@ -56,7 +52,7 @@ namespace ORTS
 		}
 	}
 
-	public class PopupCompass : PopupControl
+	public class PopupCompass : Control
 	{
 		static Texture2D CompassTexture;
 		static int[] HeadingHalfWidths;

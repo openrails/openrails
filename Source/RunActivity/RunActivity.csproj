@@ -184,10 +184,12 @@
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
-    <Compile Include="Popups\NextStation.cs" />
-    <Compile Include="Popups\PopupControls.cs" />
-    <Compile Include="Popups\PopupWindows.cs" />
-    <Compile Include="Popups\TrackMonitor.cs" />
+    <Compile Include="Popups\NextStationWindow.cs" />
+    <Compile Include="Popups\WindowControls.cs" />
+    <Compile Include="Popups\WindowManager.cs" />
+    <Compile Include="Popups\TrackMonitorWindow.cs" />
+    <Compile Include="Popups\TrainOperationsWindow.cs" />
+    <Compile Include="Popups\Window.cs" />
     <Compile Include="Processes\Profiler.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />
     <Compile Include="Physics\Train.cs" />

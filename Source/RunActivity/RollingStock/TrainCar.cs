@@ -35,6 +35,7 @@ namespace ORTS
         // instance variables set by train train physics when it creates the traincar
         public Train Train = null;  // the car is connected to this train
         public bool Flipped = false; // the car is reversed in the consist
+		public int UiD;
 
         // status of the traincar - set by the train physics after it call calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
@@ -106,6 +107,7 @@ namespace ORTS
         public virtual void Save(BinaryWriter outf)
         {
             outf.Write(Flipped);
+			outf.Write(UiD);
             BrakeSystem.Save(outf);
             outf.Write(MotiveForceN);
             outf.Write(FrictionForceN);
@@ -117,6 +119,7 @@ namespace ORTS
         public virtual void Restore(BinaryReader inf)
         {
             Flipped = inf.ReadBoolean();
+			UiD = inf.ReadInt32();
             BrakeSystem.Restore(inf);
             MotiveForceN = inf.ReadSingle();
             FrictionForceN = inf.ReadSingle();

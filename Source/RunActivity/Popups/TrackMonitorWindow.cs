@@ -3,7 +3,7 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-/// Autor Laurie Heath
+/// Author: Laurie Heath
 /// 
 /// Track Monitor; used to display signal aspects speed limits etc.
 /// 
@@ -11,22 +11,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
-using SD = System.Drawing;
-using SDI = System.Drawing.Imaging;
-using MSTS;
 
-namespace ORTS
+namespace ORTS.Popups
 {
 	public enum TrackMonitorSignalAspect
 	{
@@ -36,14 +24,14 @@ namespace ORTS
 		Stop,
 	}
 
-	public class TrackMonitor : PopupWindow
+	public class TrackMonitorWindow : Window
 	{
-		PopupLabel SpeedCurrent;
-		PopupLabel SpeedProjected;
-		PopupLabel SignalDistance;
-		PopupTexture SignalAspect;
-		PopupLabel POILabel;
-		PopupLabel POIDistance;
+		Label SpeedCurrent;
+		Label SpeedProjected;
+		Label SignalDistance;
+		Image SignalAspect;
+		Label POILabel;
+		Label POIDistance;
 
 		float LastSpeedMpS;
 
@@ -71,7 +59,7 @@ namespace ORTS
 			};
 		}
 
-		public TrackMonitor(PopupWindows owner)
+		public TrackMonitorWindow(WindowManager owner)
 			: base(owner, 150, 300, "Track Monitor")
 		{
 			AlignTop();
@@ -79,31 +67,31 @@ namespace ORTS
 			SignalAspect.Texture = owner.Viewer.RenderProcess.Content.Load<Texture2D>("SignalAspects");
 		}
 
-		protected override PopupControlLayout Layout(PopupControlLayout layout)
+		protected override ControlLayout Layout(ControlLayout layout)
 		{
 			var vbox = base.Layout(layout).AddLayoutVertical();
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new PopupLabel(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Speed:"));
-				hbox.Add(SpeedCurrent = new PopupLabel(hbox.RemainingWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Speed:"));
+				hbox.Add(SpeedCurrent = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new PopupLabel(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Projected:"));
-				hbox.Add(SpeedProjected= new PopupLabel(hbox.RemainingWidth, hbox.RemainingHeight, "", PopupLabelAlignment.Right));
+				hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Projected:"));
+				hbox.Add(SpeedProjected= new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
 			}
 			vbox.AddHorizontalSeparator();
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new PopupLabel(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Signal:"));
-				hbox.Add(SignalDistance = new PopupLabel(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", PopupLabelAlignment.Right));
+				hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Signal:"));
+				hbox.Add(SignalDistance = new Label(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", LabelAlignment.Right));
 				hbox.AddSpace(2, 0);
-				hbox.Add(SignalAspect = new PopupTexture(hbox.RemainingWidth, hbox.RemainingHeight));
+				hbox.Add(SignalAspect = new Image(hbox.RemainingWidth, hbox.RemainingHeight));
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(POILabel = new PopupLabel(hbox.RemainingWidth / 2, hbox.RemainingHeight, "POI:"));
-				hbox.Add(POIDistance = new PopupLabel(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", PopupLabelAlignment.Right));
+				hbox.Add(POILabel = new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "POI:"));
+				hbox.Add(POIDistance = new Label(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", LabelAlignment.Right));
 			}
 			return vbox;
 		}

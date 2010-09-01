@@ -594,6 +594,7 @@ namespace ORTS
                 {
                     TrainCar car = RollingStock.Load(wagonFilePath, previousCar);
                     car.Flipped = wagon.Flip;
+					car.UiD = wagon.UiD;
                     train.Cars.Add(car);
                     car.Train = train;
                     previousCar = car;
@@ -657,7 +658,8 @@ namespace ORTS
                         {
                             TrainCar car = RollingStock.Load(wagonFilePath, previousCar);
                             car.Flipped = !wagon.Flip;
-                            train.Cars.Add(car);
+							car.UiD = wagon.UiD;
+							train.Cars.Add(car);
                             car.Train = train;
                             previousCar = car;
                         }
