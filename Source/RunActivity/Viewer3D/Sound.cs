@@ -549,10 +549,10 @@ namespace ORTS
                     if (_stoppedAt == 0)
                     {
                         _stoppedAt = Program.RealTime;
-                        _stoppedAt += WAVIrrKlangFileFactory.Weigth(_playingSound.Name) * .02;
+                        //_stoppedAt += WAVIrrKlangFileFactory.Weigth(_playingSound.Name) * .025;
 
                     }
-                    else if (_stoppedAt + .5 < Program.RealTime)
+                    else if (_stoppedAt + .1 < Program.RealTime)
                     {
                         _stoppedAt = 0;
                         Stop();
@@ -1114,8 +1114,8 @@ namespace ORTS
         // Support for Loop functions - by GeorgeS
         public override void Run()
         {
-            Play3D(true);
             WAVIrrKlangFileFactory.StartLoopRelease(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
+            Play3D(true);
         }
 
         // Support for Loop functions - by GeorgeS

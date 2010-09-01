@@ -100,6 +100,7 @@ namespace ORTS
             {
                 WAVFileStream wfs = FileStreams[FileName];
                 int x = (int)Math.Log10(wfs.LoopCount * wfs.LoopedLength);
+                x += 5;
 #if DEBUGSCR
                 Console.WriteLine("Stopping X is: " + x.ToString());
 #endif
@@ -321,11 +322,28 @@ namespace ORTS
 
             // Check if loop, if is, read the rest to the buffer from the begining
             // If not, it is the end of the loop, so no more data
-            if (count > rdb && !_isShouldFinish)
+            while (count > rdb && !_isShouldFinish)
             {
                 LoopCount++;
                 Seek(BeginPosition, SeekOrigin.Begin);
-                rdb += base.Read(array, offset + rdb, count - rdb);
+                //rdb += base.Read(array, offset + rdb, count - rdb);
+                // Check the overread case, if trying to read after the second marker or the end of the file
+                if (LoopedEndPosition != 0 && (Position + (count - rdb) > LoopedEndPosition))
+                {
+                    // Just for sure, reverse check, if already overrun
+                    if (LoopedEndPosition - Position > 0)
+                        rdb += base.Read(array, offset + rdb, (int)(LoopedEndPosition - Position));
+                }
+                else
+                {
+                    // May read without problems
+                    rdb += base.Read(array, offset + rdb, count - rdb);
+                }
+            }
+
+            if (count > rdb && _isShouldFinish && Position < LoopedEndPosition)
+            {
+                rdb += base.Read(array, offset + rdb, (int)(LoopedEndPosition - Position));
             }
 
             isPlaying = rdb != 0;
