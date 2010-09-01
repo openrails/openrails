@@ -376,7 +376,7 @@ namespace ORTS
 			// description; however, the chance of such adapters not having
 			// the same amount of video memory is very slim.
 			foreach (ManagementObject videoController in new ManagementClass("Win32_VideoController").GetInstances())
-				if ((string)videoController["Description"] == adapterDescription)
+				if (((string)videoController["Description"] == adapterDescription) && (videoController["AdapterRAM"] != null))
 					adapterMemory = (uint)videoController["AdapterRAM"];
 		}
 
