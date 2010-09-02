@@ -224,6 +224,56 @@ namespace ORTS
             if (ActivityRun != null) ActivityRun.Update();
         }
 
+        private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead)
+        {
+            drivenTrain.LeadLocomotive = lead;
+            drivenTrain.CalculatePositionOfCars(0);
+
+            FinishCoupling(drivenTrain, train);
+
+            drivenTrain.FirstCar.SignalEvent(EventID.Couple);
+        }
+
+        private void FinishRearCoupling(Train drivenTrain, Train train)
+        {
+            drivenTrain.RepositionRearTraveller();
+            FinishCoupling(drivenTrain, train);
+            drivenTrain.LastCar.SignalEvent(EventID.Couple);
+        }
+                                                
+        private void FinishCoupling(Train drivenTrain, Train train)
+        {            
+            Trains.Remove(train);        
+
+            if(train.UncoupledFrom != null)
+                train.UncoupledFrom.UncoupledFrom = null;
+
+            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
+            {
+                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
+                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                drivenTrain.LeadLocomotive = PlayerLocomotive;
+            }            
+        }                         
+                
+                                         
+
+        private void UpdateUncoupled(Train drivenTrain, Train train, float d1, float d2, bool rear)
+        {
+            if (train == drivenTrain.UncoupledFrom && d1 > .5 && d2 > .5)
+            {
+                TDBTraveller traveller = rear ? drivenTrain.RearTDBTraveller : drivenTrain.FrontTDBTraveller;
+                float d3 = traveller.OverlapDistanceM(train.FrontTDBTraveller, rear);
+                float d4 = traveller.OverlapDistanceM(train.RearTDBTraveller, rear);
+                if (d3 > .5 && d4 > .5)
+                {
+                    train.UncoupledFrom = null;
+                    drivenTrain.UncoupledFrom = null;
+                    //Console.WriteLine("release uncoupledfrom f {0} {1} {2} {3}",d1,d2,d3,d4);
+                }
+            }
+        }
+
         /// <summary>
         /// Scan other trains
         /// </summary>
@@ -252,18 +302,10 @@ namespace ORTS
                             {
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
-                            }
-                            drivenTrain.RepositionRearTraveller();
-                            Trains.Remove(train);
-                            if (train.UncoupledFrom != null)
-                                train.UncoupledFrom.UncoupledFrom = null;
-                            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
-                            {
-                                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
-                                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
-                                drivenTrain.LeadLocomotive = PlayerLocomotive;
-                            }
-                            drivenTrain.LastCar.SignalEvent(EventID.Couple);
+                                if ((car.BrakeSystem != null) && (car.BrakeSystem.BrakeLine1PressurePSI < 0))
+                                    car.BrakeSystem.BrakeLine1PressurePSI = 0;
+                            }                            
+                            FinishRearCoupling(drivenTrain, train);                            
                             //Console.WriteLine("couple rf {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
@@ -286,32 +328,14 @@ namespace ORTS
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
+                                if ((car.BrakeSystem != null) && (car.BrakeSystem.BrakeLine1PressurePSI < 0))
+                                    car.BrakeSystem.BrakeLine1PressurePSI = 0;
                             }
-                            drivenTrain.RepositionRearTraveller();
-                            Trains.Remove(train);
-                            if (train.UncoupledFrom != null)
-                                train.UncoupledFrom.UncoupledFrom = null;
-                            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
-                            {
-                                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
-                                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
-                                drivenTrain.LeadLocomotive = PlayerLocomotive;
-                            }
-                            drivenTrain.LastCar.SignalEvent(EventID.Couple);
+                            FinishRearCoupling(drivenTrain, train);
                             //Console.WriteLine("couple rr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
-                        if (train == drivenTrain.UncoupledFrom && d1 > .5 && d2 > .5)
-                        {
-                            float d3 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, false);
-                            float d4 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, false);
-                            if (d3 > .5 && d4 > .5)
-                            {
-                                train.UncoupledFrom = null;
-                                drivenTrain.UncoupledFrom = null;
-                                //Console.WriteLine("release uncoupledfrom r {0} {1} {2} {3}", d1, d2, d3, d4);
-                            }
-                        }
+                        UpdateUncoupled(drivenTrain, train, d1, d2, false);                        
                     }
             }
             else if (drivenTrain.SpeedMpS > 0)
@@ -338,19 +362,10 @@ namespace ORTS
                                 TrainCar car = train.Cars[i];
                                 drivenTrain.Cars.Insert(i, car);
                                 car.Train = drivenTrain;
-                            }
-                            drivenTrain.LeadLocomotive = lead;
-                            drivenTrain.CalculatePositionOfCars(0);
-                            Trains.Remove(train);
-                            if (train.UncoupledFrom != null)
-                                train.UncoupledFrom.UncoupledFrom = null;
-                            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
-                            {
-                                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
-                                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
-                                drivenTrain.LeadLocomotive = PlayerLocomotive;
-                            }
-                            drivenTrain.FirstCar.SignalEvent(EventID.Couple);
+                                if ((car.BrakeSystem != null) && (car.BrakeSystem.BrakeLine1PressurePSI < 0))
+                                    car.BrakeSystem.BrakeLine1PressurePSI = 0;
+                            }                            
+                            FinishFrontCoupling(drivenTrain, train, lead);                                                        
                             //Console.WriteLine("couple fr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
@@ -374,33 +389,16 @@ namespace ORTS
                                 drivenTrain.Cars.Insert(0, car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
-                            }
-                            drivenTrain.LeadLocomotive = lead;
-                            drivenTrain.CalculatePositionOfCars(0);
-                            Trains.Remove(train);
-                            if (train.UncoupledFrom != null)
-                                train.UncoupledFrom.UncoupledFrom = null;
-                            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
-                            {
-                                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
-                                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
-                                drivenTrain.LeadLocomotive = PlayerLocomotive;
-                            }
-                            drivenTrain.FirstCar.SignalEvent(EventID.Couple);
+                                if ((car.BrakeSystem != null) && (car.BrakeSystem.BrakeLine1PressurePSI < 0))
+                                    car.BrakeSystem.BrakeLine1PressurePSI = 0;
+                            }                            
+                            FinishFrontCoupling(drivenTrain, train, lead);
+                                                        
                             //Console.WriteLine("couple ff {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
                             return;
                         }
-                        if (train == drivenTrain.UncoupledFrom && d1 > .5 && d2 > .5)
-                        {
-                            float d3 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, true);
-                            float d4 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, true);
-                            if (d3 > .5 && d4 > .5)
-                            {
-                                train.UncoupledFrom = null;
-                                drivenTrain.UncoupledFrom = null;
-                                //Console.WriteLine("release uncoupledfrom f {0} {1} {2} {3}",d1,d2,d3,d4);
-                            }
-                        }
+
+                        UpdateUncoupled(drivenTrain, train, d1, d2, true);                        
                     }
             }
         }
