@@ -301,9 +301,7 @@ namespace ORTS
                             foreach (TrainCar car in train.Cars)
                             {
                                 drivenTrain.Cars.Add(car);
-                                car.Train = drivenTrain;
-                                if ((car.BrakeSystem != null) && (car.BrakeSystem.BrakeLine1PressurePSI < 0))
-                                    car.BrakeSystem.BrakeLine1PressurePSI = 0;
+                                car.Train = drivenTrain;                                
                             }                            
                             FinishRearCoupling(drivenTrain, train);                            
                             //Console.WriteLine("couple rf {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
@@ -327,9 +325,7 @@ namespace ORTS
                                 TrainCar car = train.Cars[i];
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
-                                car.Flipped = !car.Flipped;
-                                if ((car.BrakeSystem != null) && (car.BrakeSystem.BrakeLine1PressurePSI < 0))
-                                    car.BrakeSystem.BrakeLine1PressurePSI = 0;
+                                car.Flipped = !car.Flipped;                                
                             }
                             FinishRearCoupling(drivenTrain, train);
                             //Console.WriteLine("couple rr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
@@ -362,8 +358,6 @@ namespace ORTS
                                 TrainCar car = train.Cars[i];
                                 drivenTrain.Cars.Insert(i, car);
                                 car.Train = drivenTrain;
-                                if ((car.BrakeSystem != null) && (car.BrakeSystem.BrakeLine1PressurePSI < 0))
-                                    car.BrakeSystem.BrakeLine1PressurePSI = 0;
                             }                            
                             FinishFrontCoupling(drivenTrain, train, lead);                                                        
                             //Console.WriteLine("couple fr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
@@ -389,8 +383,6 @@ namespace ORTS
                                 drivenTrain.Cars.Insert(0, car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
-                                if ((car.BrakeSystem != null) && (car.BrakeSystem.BrakeLine1PressurePSI < 0))
-                                    car.BrakeSystem.BrakeLine1PressurePSI = 0;
                             }                            
                             FinishFrontCoupling(drivenTrain, train, lead);
                                                         
