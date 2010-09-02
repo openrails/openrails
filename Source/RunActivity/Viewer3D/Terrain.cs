@@ -9,6 +9,8 @@
 ///    Rick Grout
 ///
 
+//#define SUPERSMOOTHNORMALS
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -305,13 +307,12 @@ namespace ORTS
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             // TODO ADD THESE LINES USING EXPERIMENTAL FAST MATERIALS
-            // graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
-            // graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
+             //graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
+             //graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
 
             graphicsDevice.Vertices[0].SetSource(this.PatchVertexBuffer, 0, PatchVertexStride);
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList,0, 0, 17 * 17, 0, 16 * 16 * 2 );
         }
-
 
         /// <summary>
         /// Return the terrain elevation in meters above sea level 
@@ -334,6 +335,45 @@ namespace ORTS
             return (float)e * TFile.Resolution + TFile.Floor;
         }
 
+        private Vector3 TerrainNormal(int x, int z)
+        {
+            Vector3 ourNormal = SpecificTerrainNormal(x, z);
+
+#if !SUPERSMOOTHNORMALS
+            return ourNormal;
+#else           
+            float centerWeight = 0.4f;
+
+            Vector3 n = SpecificTerrainNormal(x, z - 1);
+            Vector3 e = SpecificTerrainNormal(x + 1, z);
+            Vector3 s = SpecificTerrainNormal(x, z + 1);
+            Vector3 w = SpecificTerrainNormal(x - 1, z);
+            
+            if (x % 2 == z % 2)
+            {                
+                Vector3 ne = SpecificTerrainNormal(x + 1, z - 1);                
+                Vector3 se = SpecificTerrainNormal(x + 1, z + 1);                
+                Vector3 sw = SpecificTerrainNormal(x - 1, z + 1);                
+                Vector3 nw = SpecificTerrainNormal(x - 1, z - 1);
+
+                float restWeight = 1 - centerWeight;
+                float neswWeight = restWeight * 0.66f;
+
+                Vector3 neswAverage = Vector3.Normalize(n + e + s + w) * neswWeight;
+                Vector3 othersAverage = Vector3.Normalize(ne + se + sw + nw) * (restWeight - neswWeight);
+                Vector3 weighted = Vector3.Normalize((ourNormal * centerWeight) + neswAverage + othersAverage);
+                return weighted;
+            }
+            else
+            {
+                float restWeight = 1 - centerWeight;
+                Vector3 neswAverage = Vector3.Normalize(n + e + s + w) * restWeight;
+                Vector3 weighted = Vector3.Normalize((ourNormal * centerWeight) + neswAverage);
+                return weighted;
+            }
+#endif
+        }
+
         /// <summary>
         /// Return the vertex normal at the specified 
         /// terrain vertex indices
@@ -343,26 +383,51 @@ namespace ORTS
         /// <param name="x"></param>
         /// <param name="z"></param>
         /// <returns></returns>
-        private Vector3 TerrainNormal(int x, int z)
+        private Vector3 SpecificTerrainNormal(int x, int z)
         {
             // TODO, decode this from the _N.RAW TILE
             // until I figure out this file, I'll compute normals from the terrain
 
-            float y = Elevation(x, z);
+            const float t = 8;
 
-            float ynw = Elevation(x - 1, z - 1);
-            float yw = Elevation(x - 1, z);
-            float ysw = Elevation(x - 1, z + 1);
-            float ys = Elevation(x, z + 1);
-            float yse = Elevation(x + 1, z + 1);
-            float ye = Elevation(x + 1, z);
-            float yne = Elevation(x + 1, z - 1);
-            float yn = Elevation(x, z - 1);
+            float vx = x;
+            float vz = z;
 
-            float dyx = ynw + yw + ysw - yne - ye - yse;
-            float dyz = ysw + ys + yse - ynw - yn - yne;
+            Vector3 center = new Vector3(vx, Elevation(x, z), vz);
 
-            return Vector3.Normalize(new Vector3(dyx, 6, -dyz));
+            Vector3 n =     new Vector3(vx,         Elevation(x, z - 1),  vz - t);    Vector3 toN = Vector3.Normalize(n - center);
+            Vector3 e =     new Vector3(vx + t,     Elevation(x + 1, z),  vz);        Vector3 toE = Vector3.Normalize(e - center);
+            Vector3 s =     new Vector3(vx,         Elevation(x, z + 1),  vz + t);    Vector3 toS = Vector3.Normalize(s - center);
+            Vector3 w =     new Vector3(vx - t,     Elevation(x - 1, z),  vz);        Vector3 toW = Vector3.Normalize(w - center);
+                        
+            if (x % 2 == z % 2)
+            {
+                Vector3 ne = new Vector3(vx + t, Elevation(x + 1, z - 1), vz - t); Vector3 toNE = Vector3.Normalize(ne - center);
+                Vector3 se = new Vector3(vx + t, Elevation(x + 1, z + 1), vz + t); Vector3 toSE = Vector3.Normalize(se - center);
+                Vector3 sw = new Vector3(vx - t, Elevation(x - 1, z + 1), vz + t); Vector3 toSW = Vector3.Normalize(sw - center);
+                Vector3 nw = new Vector3(vx - t, Elevation(x - 1, z - 1), vz - t); Vector3 toNW = Vector3.Normalize(nw - center);
+
+                Vector3 nneFaceNormal = Vector3.Normalize(Vector3.Cross(toNE, toN));
+                Vector3 eneFaceNormal = Vector3.Normalize(Vector3.Cross(toE, toNE));
+                Vector3 eseFaceNormal = Vector3.Normalize(Vector3.Cross(toSE, toE));
+                Vector3 sseFaceNormal = Vector3.Normalize(Vector3.Cross(toS, toSE));
+                Vector3 sswFaceNormal = Vector3.Normalize(Vector3.Cross(toSW, toS));
+                Vector3 wswFaceNormal = Vector3.Normalize(Vector3.Cross(toW, toSW));
+                Vector3 wnwFaceNormal = Vector3.Normalize(Vector3.Cross(toNW, toW));
+                Vector3 nnwFaceNormal = Vector3.Normalize(Vector3.Cross(toN, toNW));
+
+                Vector3 normal = Vector3.Normalize((nneFaceNormal + eneFaceNormal + eseFaceNormal + sseFaceNormal + sswFaceNormal + wswFaceNormal + wnwFaceNormal + nnwFaceNormal));
+                return normal;
+            }
+            else
+            {                
+                Vector3 neFaceNormal = Vector3.Normalize(Vector3.Cross(toE, toN));
+                Vector3 seFaceNormal = Vector3.Normalize(Vector3.Cross(toS, toE));
+                Vector3 swFaceNormal = Vector3.Normalize(Vector3.Cross(toW, toS));
+                Vector3 nwFaceNormal = Vector3.Normalize(Vector3.Cross(toN, toW));
+
+                return Vector3.Normalize((neFaceNormal + seFaceNormal + swFaceNormal + nwFaceNormal));
+            }
         }
 
         private void SetupPatchVertexDeclaration()
@@ -414,6 +479,7 @@ namespace ORTS
 			var totalElevation = 0f;
             VertexPositionNormalTexture[] vertexData = new VertexPositionNormalTexture[17 * 17];
             int iV = 0;
+
             // for each vertex
             for (int x = 0; x < 17; ++x)
                 for (int z = 0; z < 17; ++z)
@@ -438,8 +504,10 @@ namespace ORTS
                     vertexData[iV].Position = new Vector3(w, y, n);
                     vertexData[iV].TextureCoordinate = new Vector2(U, V);
                     vertexData[iV].Normal = TerrainNormal(x, z);
+                    
                     iV++;
                 }
+
             PatchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Length, BufferUsage.WriteOnly);
             PatchVertexBuffer.SetData(vertexData);
 			AverageElevation = totalElevation / 289;
