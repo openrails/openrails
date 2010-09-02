@@ -139,7 +139,7 @@ namespace ORTS
             UpdateTimerS -= elapsedClockSeconds;
             foreach (TrackAuthority auth in TrackAuthorities)
             {
-                if (auth.EndNode == null)
+                if (auth.EndNode == null || auth.StartNode == null)
                     continue;
                 if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
                 {

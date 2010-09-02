@@ -213,7 +213,7 @@ namespace ORTS
                 if (node.NextMainTVNIndex == trackNodeIndex || node.NextSidingTVNIndex == trackNodeIndex)
                     return node;
                 for (AIPathNode node1 = node.NextSidingNode; node1 != null; node1 = node1.NextSidingNode)
-                    if (node.NextMainTVNIndex == trackNodeIndex || node.NextSidingTVNIndex == trackNodeIndex)
+                    if (node1.NextMainTVNIndex == trackNodeIndex || node1.NextSidingTVNIndex == trackNodeIndex)
                         return node1;
             }
             return null;
