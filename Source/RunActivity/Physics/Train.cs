@@ -107,6 +107,43 @@ namespace ORTS
         {
         }
 
+        // Sets the Lead locomotive to the next in the consist
+        public void LeadNextLocomotive()
+        {
+            // First driveable
+            int firstLead = -1;
+            // Next driveale to the current
+            int nextLead = -1;
+            // Count of driveable locos
+            int coud = 0;
+
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                if (Cars[i].IsDriveable)
+                {
+                    // Count the driveables
+                    coud++;
+
+                    // Get the first driveable
+                    if (firstLead == -1)
+                        firstLead = i;
+
+                    // If later than current select the next
+                    if (LeadLocomotiveIndex < i && nextLead == -1)
+                    {
+                        nextLead = i;
+                    }
+                }
+            }
+
+            // If found one after the current
+            if (nextLead != -1)
+                LeadLocomotiveIndex = nextLead;
+            // If not, and have more than one, set the first
+            else if (coud > 1)
+                LeadLocomotiveIndex = firstLead;
+        }
+
         // restore game state
         public Train(BinaryReader inf)
         {

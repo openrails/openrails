@@ -408,6 +408,15 @@ namespace ORTS
 			if (UserInput.IsPressed(Keys.F10)) NextStation.Visible = !NextStation.Visible;
 			if (UserInput.IsPressed(Keys.D0)) CompassWindow.Visible = !CompassWindow.Visible;
 
+            if (UserInput.IsPressed(Keys.E) && UserInput.IsCtrlKeyDown())
+            {
+                Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
+                Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
+                Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
+                Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
+                Camera.Activate();
+            }
+
             // Change view point - cab, passenger, outside, etc
             if (UserInput.IsPressed(Keys.D1)) CabCamera.Activate();
             if (UserInput.IsPressed(Keys.D2)) FrontCamera.Activate();
@@ -423,6 +432,7 @@ namespace ORTS
 
             if (UserInput.IsPressed(Keys.G) && !UserInput.IsShiftDown()) Simulator.SwitchTrackAhead( PlayerTrain );
             if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );
+            if (UserInput.IsPressed(Keys.F) && UserInput.IsShiftDown() && UserInput.IsCtrlKeyDown()) Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped;
             if (!Simulator.Paused && UserInput.IsAltKeyDown())
             {
                 isMouseShouldVisible = true;
