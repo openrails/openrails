@@ -266,89 +266,124 @@ namespace ORTS
         public override int Read(byte[] array, int offset, int count)
         {
             int rdb = 0;
+            byte[] preread = new byte[4];
 
-            // Check the overread case, if trying to read after the second marker or the end of the file
-            if (LoopedEndPosition != 0 && (Position + count > LoopedEndPosition))
+            try
             {
-                // Just for sure, reverse check, if already overrun
-                if (LoopedEndPosition - Position > 0)
-                    rdb = base.Read(array, offset, (int)(LoopedEndPosition - Position));
-            }
-            else
-            {
-                // May read without problems
-                rdb = base.Read(array, offset, count);
-            }
 
-            // Length operation functions and CUE read
-            #region Length and CUE operations
-            // Previously set flag if the length of the wav will be the next info
-            if (_isNextLength)
-            {
-                // Store the original legth
-                _InternalLength = FromArray(array);
-
-                // Set the provided length to an enough high number - it's more than six hours
-                array[0] = 0;
-                array[1] = 0;
-                array[2] = 0;
-                array[3] = 0xF0;
-                // Reset flag and store the positions
-                // Also set markers to default
-                _isNextLength = false;
-                _AbsoluteBeginPosition = Position;
-                _Marker1Position = _AbsoluteBeginPosition;
-                _Marker2Position = _InternalLength;
-
-                // Load cue info
-                FindCUE();
-            }
-            // data, nex is length
-            else if (count == 4 && array[0] == 100 && array[1] == 97 && array[2] == 116 && array[3] == 97)
-            {
-                _isNextLength = true;
-            }
-            // fmt, may read the BPS
-            else if (array[0] == 102 && array[1] == 109 && array[2] == 116)
-            {
-                long pos = Position;
-                base.Seek(6, SeekOrigin.Current);
-                _SPS = (int)FromReadArray(2);
-                base.Seek(10, SeekOrigin.Current);
-                _BPS = (int)FromReadArray(2) / 8;
-                base.Seek(pos, SeekOrigin.Begin);
-            }
-            #endregion
-
-            // Check if loop, if is, read the rest to the buffer from the begining
-            // If not, it is the end of the loop, so no more data
-            while (count > rdb && !_isShouldFinish)
-            {
-                LoopCount++;
-                Seek(BeginPosition, SeekOrigin.Begin);
-                //rdb += base.Read(array, offset + rdb, count - rdb);
                 // Check the overread case, if trying to read after the second marker or the end of the file
-                if (LoopedEndPosition != 0 && (Position + (count - rdb) > LoopedEndPosition))
+                if (LoopedEndPosition != 0 && (Position + count > LoopedEndPosition))
                 {
                     // Just for sure, reverse check, if already overrun
                     if (LoopedEndPosition - Position > 0)
-                        rdb += base.Read(array, offset + rdb, (int)(LoopedEndPosition - Position));
+                        rdb = base.Read(array, offset, (int)(LoopedEndPosition - Position));
                 }
                 else
                 {
-                    // May read without problems
-                    rdb += base.Read(array, offset + rdb, count - rdb);
+                    if (count < 4)
+                    {
+#if DEBUGSCR
+                        Console.WriteLine("(Now using preread on file {0})", this.Name.Substring(this.Name.LastIndexOf('\\')));
+#endif
+                        rdb = base.Read(preread, 0, 4);
+                        Seek(4 - count, SeekOrigin.Current);
+                        for (int i = 0; i < count; i++)
+                        {
+                            array[i] = preread[i];
+                        }
+                    }
+                    else
+                    {
+                        // May read without problems
+                        rdb = base.Read(array, offset, count);
+                        for (int i = 0; i < (rdb >= 4 ? 4 : count); i++)
+                        {
+                            preread[i] = array[i];
+                        }
+                    }
                 }
-            }
 
-            if (count > rdb && _isShouldFinish && Position < LoopedEndPosition)
+                // Length operation functions and CUE read
+                #region Length and CUE operations
+                // Previously set flag if the length of the wav will be the next info
+                if (_isNextLength)
+                {
+                    // Store the original legth
+                    _InternalLength = FromArray(array);
+
+                    // Set the provided length to an enough high number - it's more than six hours
+                    array[0] = 0;
+                    array[1] = 0;
+                    array[2] = 0;
+                    array[3] = 0xF0;
+                    // Reset flag and store the positions
+                    // Also set markers to default
+                    _isNextLength = false;
+                    _AbsoluteBeginPosition = Position;
+                    _Marker1Position = _AbsoluteBeginPosition;
+                    _Marker2Position = _InternalLength;
+
+                    // Load cue info
+                    FindCUE();
+                }
+                // data, nex is length
+                //else if (count == 4 && array[0] == 100 && array[1] == 97 && array[2] == 116 && array[3] == 97)
+                else if (preread[0] == 100 && preread[1] == 97 && preread[2] == 116 && preread[3] == 97)
+                {
+                    _isNextLength = true;
+                }
+                // fmt, may read the BPS
+                else if (preread[0] == 102 && preread[1] == 109 && preread[2] == 116)
+                {
+                    long pos = Position;
+                    base.Seek(6, SeekOrigin.Current);
+                    _SPS = (int)FromReadArray(2);
+                    base.Seek(10, SeekOrigin.Current);
+                    _BPS = (int)FromReadArray(2) / 8;
+                    base.Seek(pos, SeekOrigin.Begin);
+                }
+                #endregion
+
+                // Check if loop, if is, read the rest to the buffer from the begining
+                // If not, it is the end of the loop, so no more data
+                while (count > rdb && !_isShouldFinish)
+                {
+                    LoopCount++;
+                    Seek(BeginPosition, SeekOrigin.Begin);
+                    //rdb += base.Read(array, offset + rdb, count - rdb);
+                    // Check the overread case, if trying to read after the second marker or the end of the file
+                    if (LoopedEndPosition != 0 && (Position + (count - rdb) > LoopedEndPosition))
+                    {
+                        // Just for sure, reverse check, if already overrun
+                        if (LoopedEndPosition - Position > 0)
+                            rdb += base.Read(array, offset + rdb, (int)(LoopedEndPosition - Position));
+                    }
+                    else
+                    {
+                        // May read without problems
+                        rdb += base.Read(array, offset + rdb, count - rdb);
+                    }
+                }
+
+                if (count > rdb && _isShouldFinish && Position < LoopedEndPosition)
+                {
+                    rdb += base.Read(array, offset + rdb, (int)(LoopedEndPosition - Position));
+                }
+
+                isPlaying = rdb != 0;
+
+                // return the read bytes number, if less than expected, it will indicate the end of the stream
+                return rdb;
+            }
+            catch (Exception e)
             {
-                rdb += base.Read(array, offset + rdb, (int)(LoopedEndPosition - Position));
+#if DEBUGSCR
+                Console.WriteLine("Exception caught on file {0}.", this.Name.Substring(this.Name.LastIndexOf('\\')));
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+#endif
             }
 
-            isPlaying = rdb != 0;
-
-            // return the read bytes number, if less than expected, it will indicate the end of the stream
             return rdb;
         }
 

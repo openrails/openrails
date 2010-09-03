@@ -414,6 +414,7 @@ namespace ORTS
                 Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
                 Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
                 Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
+                PlayerLocomotiveViewer = Simulator.PlayerLocomotive.GetViewer(this);
                 Camera.Activate();
             }
 
@@ -432,7 +433,7 @@ namespace ORTS
 
             if (UserInput.IsPressed(Keys.G) && !UserInput.IsShiftDown()) Simulator.SwitchTrackAhead( PlayerTrain );
             if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );
-            if (UserInput.IsPressed(Keys.F) && UserInput.IsShiftDown() && UserInput.IsCtrlKeyDown()) Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped;
+            if (UserInput.IsPressed(Keys.F) && UserInput.IsShiftDown() && UserInput.IsCtrlKeyDown()) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
             if (!Simulator.Paused && UserInput.IsAltKeyDown())
             {
                 isMouseShouldVisible = true;
