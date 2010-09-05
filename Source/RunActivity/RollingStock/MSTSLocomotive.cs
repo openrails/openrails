@@ -785,8 +785,8 @@ namespace ORTS
             }
 
             // Draw 2D CAB View - by GeorgeS
-            if (Viewer.Camera.AttachedToCar == this.MSTSWagon &&
-                Viewer.Camera.ViewPoint == Camera.ViewPoints.Cab &&
+            if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
+                Viewer.Camera.Style == Camera.Styles.Cab &&
                 _CabRenderer != null)
                 _CabRenderer.PrepareFrame(frame);
             

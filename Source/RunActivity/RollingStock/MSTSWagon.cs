@@ -812,9 +812,9 @@ namespace ORTS
             }
 
             // Control visibility of passenger cabin when inside it
-            if (Viewer.Camera.AttachedToCar == this.MSTSWagon
+            if (Viewer.Camera.AttachedCar == this.MSTSWagon
                  && //( Viewer.ViewPoint == Viewer.ViewPoints.Cab ||  // TODO, restore when we complete cab views - 
-                     Viewer.Camera.ViewPoint == Camera.ViewPoints.Passenger)
+                     Viewer.Camera.Style == Camera.Styles.Passenger)
             {
                 // We are in the passenger cabin
                 if (InteriorShape != null)
@@ -825,8 +825,8 @@ namespace ORTS
             else
             {
                 // Skip drawing if CAB view - draw 2D view instead - by GeorgeS
-                if (Viewer.Camera.AttachedToCar == this.MSTSWagon &&
-                    Viewer.Camera.ViewPoint == Camera.ViewPoints.Cab)
+                if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
+                    Viewer.Camera.Style == Camera.Styles.Cab)
                     return;
                 
                 // We are outside the passenger cabin

@@ -225,7 +225,7 @@ namespace ORTS
             {
                 if (WorldLocation != null)
                 {
-                    float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.WorldLocation);
+                    float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
                     if (distanceSquared < ActivationConditions.Distance * ActivationConditions.Distance)
                         return true;
                 }
@@ -247,7 +247,7 @@ namespace ORTS
 
             if (WorldLocation != null)
             {
-                float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.WorldLocation);
+                float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
                 if (distanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance)
                     return true;
             }
@@ -263,18 +263,18 @@ namespace ORTS
         /// <returns></returns>
         private bool ConditionsMet(MSTS.Activation conditions)
         {
-            Camera.ViewPoints viewpoint = Viewer.Camera.ViewPoint;
+            Camera.Styles viewpoint = Viewer.Camera.Style;
 
-            if ( (viewpoint == Camera.ViewPoints.Cab) && (Viewer.Camera.AttachedToCar != Car) )
+            if ( (viewpoint == Camera.Styles.Cab) && (Viewer.Camera.AttachedCar != Car) )
             {
-                viewpoint = Camera.ViewPoints.External;
+                viewpoint = Camera.Styles.External;
             }
 
-            if (conditions.CabCam && viewpoint == Camera.ViewPoints.Cab)
+            if (conditions.CabCam && viewpoint == Camera.Styles.Cab)
                 return true;
-            if (conditions.PassengerCam && viewpoint == Camera.ViewPoints.Passenger)
+            if (conditions.PassengerCam && viewpoint == Camera.Styles.Passenger)
                 return true;
-            if (conditions.ExternalCam && viewpoint == Camera.ViewPoints.External)
+            if (conditions.ExternalCam && viewpoint == Camera.Styles.External)
                 return true;
 
             return false;
@@ -440,7 +440,7 @@ namespace ORTS
             {
                 if (MSTSStream.VolumeCurve != null)
                 {
-                    float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.WorldLocation) / 500;
+                    float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
                     float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
                     Volume = y;
                 }
@@ -912,7 +912,7 @@ namespace ORTS
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    return WorldLocation.DistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.WorldLocation) / 500;
+                    return WorldLocation.DistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
                 default:
                     return 100000;
             }

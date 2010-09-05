@@ -67,7 +67,7 @@ namespace ORTS
             foreach (Train train in Viewer.Simulator.Trains)
                 foreach (TrainCar car in train.Cars)
                 {
-                    if (ApproximateDistance(Viewer.Camera.WorldLocation, car.WorldPosition.WorldLocation) < removeDistance
+                    if (ApproximateDistance(Viewer.Camera.CameraWorldLocation, car.WorldPosition.WorldLocation) < removeDistance
                         && car != Viewer.PlayerLocomotiveViewer.Car)  // don't duplicate the player car
                         ViewableCars.Add(car);
                 }

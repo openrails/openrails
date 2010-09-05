@@ -66,10 +66,19 @@ namespace ORTS
         public static bool IsAltPressed(Keys key) { return IsPressed(key) && IsAltKeyDown(); }
 
 		public static bool IsMouseMoved() { return MouseState.X != LastMouseState.X || MouseState.Y != LastMouseState.Y; }
+		public static int MouseMoveX() { return MouseState.X - LastMouseState.X; }
+		public static int MouseMoveY() { return MouseState.Y - LastMouseState.Y; }
 
 		public static bool IsMouseLeftButtonDown() { return MouseState.LeftButton == ButtonState.Pressed; }
-
 		public static bool IsMouseLeftButtonPressed() { return MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released; }
 		public static bool IsMouseLeftButtonReleased() { return MouseState.LeftButton == ButtonState.Released && LastMouseState.LeftButton == ButtonState.Pressed; }
+
+		public static bool IsMouseMiddleButtonDown() { return MouseState.MiddleButton == ButtonState.Pressed; }
+		public static bool IsMouseMiddleButtonPressed() { return MouseState.MiddleButton == ButtonState.Pressed && LastMouseState.MiddleButton == ButtonState.Released; }
+		public static bool IsMouseMiddleButtonReleased() { return MouseState.MiddleButton == ButtonState.Released && LastMouseState.MiddleButton == ButtonState.Pressed; }
+
+		public static bool IsMouseRightButtonDown() { return MouseState.RightButton == ButtonState.Pressed; }
+		public static bool IsMouseRightButtonPressed() { return MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released; }
+		public static bool IsMouseRightButtonReleased() { return MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed; }
 	}
 }

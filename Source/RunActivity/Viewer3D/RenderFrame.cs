@@ -150,7 +150,7 @@ namespace ORTS
 		public void PrepareFrame(ElapsedTime elapsedTime)
 		{
 			var sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
-			var cameraLocation = RenderProcess.Viewer.Camera.Location * new Vector3(1, 1, -1);
+			var cameraLocation = new Vector3(RenderProcess.Viewer.Camera.Location.X, RenderProcess.Viewer.Camera.Location.Y, -RenderProcess.Viewer.Camera.Location.Z);
 			var terrainAltitude = RenderProcess.Viewer.Tiles.GetElevation(RenderProcess.Viewer.Camera.TileX, RenderProcess.Viewer.Camera.TileZ, (cameraLocation.X + 1024) / 8, (cameraLocation.Z + 1024) / 8);
 
 			// Project the center-bottom of the screen onto the world.
@@ -258,7 +258,7 @@ namespace ORTS
 			if (ShadowMapRenderTarget == null)
 				return false;
 
-			var xnaLocation = mstsLocation * new Vector3(1, 1, -1);
+			var xnaLocation = new Vector3(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
 			return ShadowMapBound.Intersects(new BoundingSphere(xnaLocation, objectRadius));
 		}
 

@@ -92,16 +92,17 @@ namespace ORTS
         public TTypeDatFile TTypeDatFile;
 		public bool MilepostUnitsMetric;
         // Cameras
-        public Camera Camera;   // Current Camera
-        private CabCamera CabCamera;
-        private TrackingCamera FrontCamera;
-        private TrackingCamera BackCamera;
-        private PassengerCamera PassengerCamera;
-        private BrakemanCamera BrakemanCamera;
-        private HeadOutCamera HeadOutFwdCamera;
-        private HeadOutCamera HeadOutBackCamera;
-		private TracksideCamera TracksideCamera;
-        private List<Camera> WellKnownCameras = new List<Camera>(); // Providing Camera save functionality by GeorgeS
+        public Camera Camera; // Current camera
+		Camera AboveGroundCamera; // Previous camera for when automatically switching to cab.
+		private CabCamera CabCamera; // Camera 1
+		private HeadOutCamera HeadOutFwdCamera; // Camera 1+Up
+		private HeadOutCamera HeadOutBackCamera; // Camera 2+Down
+		private TrackingCamera FrontCamera; // Camera 2
+		private TrackingCamera BackCamera; // Camera 3
+		private TracksideCamera TracksideCamera; // Camera 4
+		private PassengerCamera PassengerCamera; // Camera 5
+		private BrakemanCamera BrakemanCamera; // Camera 6
+        private List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
         private int CameraToRestore = 1; // Providing Camera save functionality by GeorgeS
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
         private MouseState originalMouseState;      // Current mouse coordinates.
@@ -137,14 +138,7 @@ namespace ORTS
 			outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
 			outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
 			// Saving Camera by GeorgeS
-			if (WellKnownCameras.Contains(Camera))
-			{
-				CameraToRestore = WellKnownCameras.IndexOf(Camera);
-			}
-			else
-			{
-				CameraToRestore = -1;
-			}
+			CameraToRestore = WellKnownCameras.IndexOf(Camera);
 			outf.Write(CameraToRestore);
 		}
 
@@ -297,35 +291,21 @@ namespace ORTS
 
             PlayerLocomotiveViewer =  GetPlayerLocomotiveViewer();
 
-            // Set up cameras
-            CabCamera = new CabCamera(this);
-            FrontCamera = new TrackingCamera(this, Tether.ToFront);
-            BackCamera = new TrackingCamera(this, Tether.ToRear);
-            PassengerCamera = new PassengerCamera(this);
-            BrakemanCamera = new BrakemanCamera(this);
-            HeadOutFwdCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirections.Forward);
-            HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirections.Backward);
-			TracksideCamera = new TracksideCamera(this);
-
-            // Restoring Camera part II by GeorgeS
-            WellKnownCameras.Add(CabCamera);
-            WellKnownCameras.Add(FrontCamera);
-            WellKnownCameras.Add(BackCamera);
-            WellKnownCameras.Add(PassengerCamera);
-            WellKnownCameras.Add(BrakemanCamera);
-            WellKnownCameras.Add(HeadOutFwdCamera);
-            WellKnownCameras.Add(HeadOutBackCamera);
-			WellKnownCameras.Add(TracksideCamera);
-
-            if (CameraToRestore != -1)
-            {
+			// Set up cameras.
+			WellKnownCameras = new List<Camera>();
+			WellKnownCameras.Add(CabCamera = new CabCamera(this));
+			WellKnownCameras.Add(FrontCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Front));
+			WellKnownCameras.Add(BackCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Rear));
+			WellKnownCameras.Add(PassengerCamera = new PassengerCamera(this));
+			WellKnownCameras.Add(BrakemanCamera = new BrakemanCamera(this));
+			WellKnownCameras.Add(HeadOutFwdCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
+			WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
+			WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
+		
+			if (CameraToRestore != -1)
                 WellKnownCameras[CameraToRestore].Activate();
-            }
             else
-            {
-                Camera = new Camera(this, Camera);
-                Camera.Activate();
-            }
+               new FreeRoamCamera(this, Camera).Activate();
 
 			if (SettingsBool["FullScreen"])
 				ToggleFullscreen();
@@ -386,12 +366,12 @@ namespace ORTS
         /// Examine the static class UserInput for mouse and keyboard status
         /// Executes in the UpdaterProcess thread.
         /// </summary>
-        public void HandleUserInput( ElapsedTime elapsedTime )
+        public void HandleUserInput(ElapsedTime elapsedTime)
         {
-            Camera.HandleUserInput( elapsedTime );
+            Camera.HandleUserInput(elapsedTime);
 
-            if( PlayerLocomotiveViewer != null )
-                PlayerLocomotiveViewer.HandleUserInput( elapsedTime);
+			if (PlayerLocomotiveViewer != null)
+				PlayerLocomotiveViewer.HandleUserInput(elapsedTime);
 
             InfoDisplay.HandleUserInput(elapsedTime);
 			PopupWindows.HandleUserInput();
@@ -423,9 +403,9 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.D2)) FrontCamera.Activate();
 			if (UserInput.IsPressed(Keys.D3)) BackCamera.Activate();
 			if (UserInput.IsPressed(Keys.D4)) TracksideCamera.Activate();
+			if (UserInput.IsPressed(Keys.D5)) PassengerCamera.Activate();
 			if (UserInput.IsPressed(Keys.D6)) BrakemanCamera.Activate();
-            if (UserInput.IsPressed(Keys.D5)) PassengerCamera.Activate();
-            if (UserInput.IsPressed(Keys.D7) || UserInput.IsPressed(Keys.D8)) (new Camera(this, Camera)).Activate();
+            if (UserInput.IsPressed(Keys.D7) || UserInput.IsPressed(Keys.D8)) new FreeRoamCamera(this, Camera).Activate();
 
             bool mayheadout = (Camera == CabCamera) || (Camera == HeadOutFwdCamera) || (Camera == HeadOutBackCamera);
             if (UserInput.IsPressed(Keys.Up) && mayheadout) HeadOutFwdCamera.Activate();
@@ -488,31 +468,56 @@ namespace ORTS
         /// elapsedTime represents the the time since the last call to PrepareFrame
         /// Executes in the UpdaterProcess thread.
         /// </summary>
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime )
-        {
-            // Mute sound when paused
-            if (SoundEngine != null)
-            {
-                if (Simulator.Paused)
-                    SoundEngine.SoundVolume = 0;
-                else
-                    SoundEngine.SoundVolume = 1;
-            }
-            if (ScreenHasChanged())
-                NotifyCamerasOfScreenChange();
-            Camera.PrepareFrame(frame, elapsedTime);
+		public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		{
+			// Mute sound when paused
+			if (SoundEngine != null)
+			{
+				if (Simulator.Paused)
+					SoundEngine.SoundVolume = 0;
+				else
+					SoundEngine.SoundVolume = 1;
+			}
+
+			if (ScreenHasChanged())
+				NotifyCamerasOfScreenChange();
+
+			// Update camera first...
+			Camera.Update(elapsedTime);
+			// No above camera means we're allowed to auto-switch to cab view.
+			if ((AboveGroundCamera == null) && Camera.IsUnderground)
+			{
+				AboveGroundCamera = Camera;
+				CabCamera.Activate();
+			}
+			else if (AboveGroundCamera != null)
+			{
+				// Make sure to keep the old camera updated...
+				AboveGroundCamera.Update(elapsedTime);
+				// ...so we can tell when to come back to it.
+				if (!AboveGroundCamera.IsUnderground)
+				{
+					// But only if the user hasn't selected another camera!
+					if (Camera == CabCamera)
+						AboveGroundCamera.Activate();
+					AboveGroundCamera = null;
+				}
+			}
+			// We're now ready to prepare frame for the camera.
+			Camera.PrepareFrame(frame, elapsedTime);
+
 			frame.PrepareFrame(elapsedTime);
 			SkyDrawer.PrepareFrame(frame, elapsedTime);
-            TerrainDrawer.PrepareFrame(frame, elapsedTime);
-            SceneryDrawer.PrepareFrame(frame, elapsedTime);
-            TrainDrawer.PrepareFrame(frame, elapsedTime);
-            // By GeorgeS
-            WorldSounds.Update(elapsedTime);
-            if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
-            if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);
-            InfoDisplay.PrepareFrame(frame, elapsedTime);
-            // By GeorgeS
-            IngameSounds.Update(elapsedTime);
+			TerrainDrawer.PrepareFrame(frame, elapsedTime);
+			SceneryDrawer.PrepareFrame(frame, elapsedTime);
+			TrainDrawer.PrepareFrame(frame, elapsedTime);
+			// By GeorgeS
+			WorldSounds.Update(elapsedTime);
+			if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
+			if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);
+			InfoDisplay.PrepareFrame(frame, elapsedTime);
+			// By GeorgeS
+			IngameSounds.Update(elapsedTime);
 		}
 
 
