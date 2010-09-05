@@ -124,12 +124,12 @@ namespace ORTS
         {
             // Switches
             AlignSwitchesToDefault();  // ie straight through routing
+            //Signals = new Signals(this);
             // Trains
 			Trace.Write(" CON");
             Trains.Clear();
             InitializePlayerTrain();
             InitializeStaticConsists();
-            //Signals = new Signals(this);
             AI = new AI(this);
         }
 
@@ -603,8 +603,7 @@ namespace ORTS
 
             Trains.Add(train);
             train.AITrainBrakePercent = 100;
-
-
+            //train.InitSignals(this);
         }
 
 

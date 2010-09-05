@@ -1,24 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using System.IO;
 using MSTS;
 using ORTS.Popups;
+
 
 namespace ORTS
 {
     public class Signals
     {
 
-        public enum SIGNALSTATE
-        {
-            STOP,
-            CLEAR,
-            UNKNOWN
-        }
-
+       
         private TrackDB trackDB;
 
         private int[,] visited;
@@ -452,7 +447,7 @@ namespace ORTS
         // Get the nearest (NORMAL)signal to the current point in the tdbtraveller
         // Returns -1 if one cannot be found.
         //
-        public int FindNearestSignal(TDBTraveller tdbtraveller)
+        public Signal FindNearestSignal(TDBTraveller tdbtraveller)
         {
             int startNode = tdbtraveller.TrackNodeIndex;
             int currenNode = startNode;
@@ -462,11 +457,11 @@ namespace ORTS
             TrackNode[] trackNodes = trackDB.TrackNodes;
             TrItem[] trItems = trackDB.TrItemTable;
 
-            if (noSignals < 1) return -1;   // No Signals on route
+            if (noSignals < 1) return new Signal(signalObjects, -1); ;   // No Signals on route
 
             do
             {
-                if (trackNodes[currenNode].TrEndNode != null) return -1;  // End of track reached no signals found.
+                if (trackNodes[currenNode].TrEndNode != null) return new Signal(signalObjects, -1);  // End of track reached no signals found.
                 if (trackNodes[currenNode].TrVectorNode != null)
                 {
                     if (trackNodes[currenNode].TrVectorNode.noItemRefs > 0)
@@ -495,57 +490,16 @@ namespace ORTS
                             }
                         }
 
-                        if (sigIndex >= 0) return sigIndex; // Signal found in this node.
+                        if (sigIndex >= 0) return new Signal(signalObjects,sigIndex); // Signal found in this node.
                     }
 
                 }
                 NextNode(trackNodes, ref currenNode, ref currDir);
-                if (currenNode == startNode) return -1; // back to where we started !
+                if (currenNode == startNode) return new Signal(signalObjects, -1); // back to where we started !
             } while (true);
 
         } //FindNearestSignal
 
-        //
-        //  Next Signal along the line. Returns -1 if no signal found
-        //
-        public int GetNextSignal(int sigRef)
-        {
-            return sigRef>=0 ? signalObjects[sigRef].GetNextSignal() : -1;
-        } // NextSignal
-
-        //
-        //  Returns Distance to next signal from current TDBTraveller position.
-        //
-        public float DistanceToNextSignal(int sigRef ,TDBTraveller tdbTraverler)
-        {
-            return sigRef>=0? signalObjects[sigRef].DistanceTo(tdbTraverler):0F;
-        }  // DistanceToNextSignal
-
-        //
-        //   Returns the signal aspect. Least restricting if Multiple head.
-        //
-        public SignalHead.SIGASP GetAspect(int sigRef)
-        {
-            return sigRef >= 0 ? signalObjects[sigRef].this_sig_lr(SignalHead.SIGFN.NORMAL) : SignalHead.SIGASP.UNKNOWN;
-        }
-
-        //
-        //   Returns the signal aspect for the track monitor. Least restricting if Multiple head.
-        //
-        public TrackMonitorSignalAspect GetMonitorAspect(int sigRef)
-        {
-            return sigRef >= 0 ? signalObjects[sigRef].GetMonitorAspect() : TrackMonitorSignalAspect.None;
-        }
-
-        public void SetSignalState(int sigref, Signals.SIGNALSTATE state)
-        {
-            signalObjects[sigref].SetSignalState(state);
-        }
-
-        public void TrackStateChanged(int sigref)
-        {
-            signalObjects[sigref].TrackStateChanged();
-        }
     }
 
 
@@ -929,21 +883,21 @@ namespace ORTS
              }
         }
 
-        public void SetSignalState(Signals.SIGNALSTATE state)
+        public void SetSignalState(Signal.SIGNALSTATE state)
         {
             switch (state)
             {
-                case Signals.SIGNALSTATE.STOP:
+                case Signal.SIGNALSTATE.STOP:
                     canUpdate = false;
                     foreach (SignalHead sigHead in SignalHeads)
                     {
                         sigHead.state = SignalHead.SIGASP.STOP;
                     }
                     break;
-                case Signals.SIGNALSTATE.CLEAR:
+                case Signal.SIGNALSTATE.CLEAR:
                     canUpdate = true;
                     break;
-                case Signals.SIGNALSTATE.UNKNOWN:
+                case Signal.SIGNALSTATE.UNKNOWN:
                     break;
                 default:
                     break;
@@ -1156,5 +1110,66 @@ namespace ORTS
         }
 
     } // SignalHead
+
+    public class Signal
+    {
+        public enum SIGNALSTATE
+        {
+            STOP,
+            CLEAR,
+            UNKNOWN
+        }
+        
+        private static SignalObject[] signalObjects;
+        private int sigReference;
+
+        public Signal(SignalObject[] sigObjects,int sigRef)
+        {
+            sigReference = sigRef;
+            if(signalObjects==null) signalObjects = sigObjects;
+        }
+
+        //
+        //  Next Signal along the line. Returns -1 if no signal found
+        //
+        public void NextSignal()
+        {
+            if (sigReference >= 0) sigReference = signalObjects[sigReference].GetNextSignal();
+        } // NextSignal
+
+        //
+        //  Returns Distance to next signal from current TDBTraveller position.
+        //
+        public float DistanceToSignal(TDBTraveller tdbTraverler)
+        {
+            return sigReference >= 0 ? signalObjects[sigReference].DistanceTo(tdbTraverler) : 0.01F;
+        }  // DistanceToSignal
+
+        //
+        //   Returns the signal aspect. Least restricting if Multiple head.
+        //
+        public SignalHead.SIGASP GetAspect()
+        {
+            return sigReference >= 0 ? signalObjects[sigReference].this_sig_lr(SignalHead.SIGFN.NORMAL) : SignalHead.SIGASP.UNKNOWN;
+        }
+
+        //
+        //   Returns the signal aspect for the track monitor. Least restricting if Multiple head.
+        //
+        public TrackMonitorSignalAspect GetMonitorAspect()
+        {
+            return sigReference >= 0 ? signalObjects[sigReference].GetMonitorAspect() : TrackMonitorSignalAspect.None;
+        }
+
+        public void SetSignalState(Signal.SIGNALSTATE state)
+        {
+            if(sigReference>=0) signalObjects[sigReference].SetSignalState(state);
+        }
+
+        public void TrackStateChanged()
+        {
+            if(sigReference>=0) signalObjects[sigReference].TrackStateChanged();
+        }
+    }
 
 }

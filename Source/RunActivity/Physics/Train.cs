@@ -36,7 +36,7 @@ namespace ORTS
 {
     public class Train
     {
-        public static Signals Signals;
+        // public static Signals Signals;
         public List<TrainCar> Cars = new List<TrainCar>();  // listed front to back
         public TrainCar FirstCar { get { return Cars[0]; } }
         public TrainCar LastCar { get { return Cars[Cars.Count - 1]; } }
@@ -62,7 +62,7 @@ namespace ORTS
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
 
-        private int nextSignal = -1;
+        private Signal nextSignal = new Signal(null, -1);
         public float distanceToSignal = 0.1f;
         public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
 
@@ -105,6 +105,23 @@ namespace ORTS
 
         public Train()
         {
+        }
+
+
+        public void InitSignals(Simulator simulator)
+        {
+            nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
+            distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
+        }
+
+        //
+        //  This method is invoked whenever the train direction has changed or 'G' key pressed 
+        //
+        public void ResetSignal(Simulator simulator)
+        {
+            nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
+            nextSignal.TrackStateChanged();
+            distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
         }
 
         // Sets the Lead locomotive to the next in the consist
@@ -259,20 +276,14 @@ namespace ORTS
             //
             //  Update the distance to and aspect of next signal
             //
-            if (nextSignal >= 0)
+            float dist = nextSignal.DistanceToSignal(FrontTDBTraveller);
+            if (dist <= 0.0f)
             {
-                float dist = Signals.DistanceToNextSignal(nextSignal, FrontTDBTraveller);
-                //
-                //  If the signal has been passed then find the next one
-                //
-                if (dist <= 0.0f)
-                {
-                    nextSignal = Signals.GetNextSignal(nextSignal);
-                    if (nextSignal >= 0) dist = Signals.DistanceToNextSignal(nextSignal, FrontTDBTraveller);
-                }
-                TMaspect = nextSignal >= 0 ? Signals.GetMonitorAspect(nextSignal) : TrackMonitorSignalAspect.None;
-                distanceToSignal = dist;
+                nextSignal.NextSignal();
+                dist = nextSignal.DistanceToSignal(FrontTDBTraveller);
             }
+            distanceToSignal = dist;
+            TMaspect = nextSignal.GetMonitorAspect();
         } // end Update
 
         /// <summary>
