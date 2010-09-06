@@ -112,8 +112,8 @@ namespace ORTS
 				foreach (TrainCarViewer car in LoadedCars.Values)
 				{
 					// At this stage of ORTS development, we will only render LightGlowDrawer objects 
-					// for the player train ( i.e. Trains[0] ).
-					if (car.Car.Lights != null && Viewer.Simulator.Trains[0].Cars.Contains(car.Car))
+					// for the player train.
+					if (car.Car.Lights != null && Viewer.PlayerTrain.Cars.Contains(car.Car))
 						car.lightGlowDrawer.PrepareFrame(frame, elapsedTime);
 				}
 			}
