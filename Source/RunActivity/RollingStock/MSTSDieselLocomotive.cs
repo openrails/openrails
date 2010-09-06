@@ -110,6 +110,28 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds );
+
+            // Refined Variable2 setting to graduate
+            if (Variable2 != Variable1)
+            {
+                // It is an assumption only
+                // Must read DieselEngineIdleRMP, DieselEngineMaxRMP, DieselEngineMaxRMPChangeRate to calculate correctly
+                float addition = .2f;
+                bool neg = false;
+
+                if (Variable1 < Variable2)
+                {
+                    addition *= -1;
+                    neg = true;
+                }
+
+                addition *= elapsedClockSeconds;
+
+                Variable2 += addition;
+
+                if ((neg && Variable2 < Variable1) || (!neg && Variable2 > Variable1))
+                    Variable2 = Variable1;
+            }
         }
 
         /// <summary>

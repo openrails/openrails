@@ -320,7 +320,7 @@ namespace ORTS
                     // Also set markers to default
                     _isNextLength = false;
                     _AbsoluteBeginPosition = Position;
-                    _Marker1Position = _AbsoluteBeginPosition;
+                    _Marker1Position = 0;
                     _Marker2Position = _InternalLength;
 
                     // Load cue info
@@ -534,8 +534,8 @@ namespace ORTS
                 if (lc.Count > 1)
                 {
                     var q = (from CUE cue in lc
-                            orderby cue.Order ascending, cue.Position ascending
-                            select cue).ToList();
+                             orderby cue.Order ascending, cue.Position ascending
+                             select cue).ToList();
 
                     //_Marker1Position = q[q.Count - 2].Position;
                     //_Marker2Position = q[q.Count - 1].Position;
