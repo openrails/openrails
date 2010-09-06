@@ -80,7 +80,7 @@ namespace ORTS
 		{
 			OnActivate();
 			Viewer.Camera = this;
-			// TODO: Is this next line needed?
+			Update(ElapsedTime.Zero);
 			xnaView = GetCameraView();
 		}
 
