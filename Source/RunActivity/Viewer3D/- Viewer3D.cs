@@ -70,11 +70,12 @@ namespace ORTS
         // Components
         public Simulator Simulator;
         InfoDisplay InfoDisplay;
-		public WindowManager PopupWindows = null;
-		public TrackMonitorWindow TrackMonitor;
-		public TrainOperationsWindow TrainOperations;
-		public NextStationWindow NextStation;
-		public CompassWindow CompassWindow;
+		public WindowManager WindowManager = null;
+		public TrackMonitorWindow TrackMonitorWindow; // F4 window
+		public SwitchWindow SwitchWindow; // F8 window
+		public TrainOperationsWindow TrainOperationsWindow; // F9 window
+		public NextStationWindow NextStationWindow; // F10 window
+		public CompassWindow CompassWindow; // 0 window
         public SkyDrawer SkyDrawer;
         public PrecipDrawer PrecipDrawer = null;
         public WireDrawer WireDrawer = null;
@@ -275,11 +276,12 @@ namespace ORTS
             InfoDisplay = new InfoDisplay(this);
             
             // Initialse popup windows.
-			PopupWindows = new WindowManager(this);
-			TrackMonitor = new TrackMonitorWindow(PopupWindows);
-			TrainOperations = new TrainOperationsWindow(PopupWindows);
-			NextStation = new NextStationWindow(PopupWindows);
-			CompassWindow = new CompassWindow(PopupWindows);
+			WindowManager = new WindowManager(this);
+			TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
+			SwitchWindow = new SwitchWindow(WindowManager);
+			TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
+			NextStationWindow = new NextStationWindow(WindowManager);
+			CompassWindow = new CompassWindow(WindowManager);
 
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
@@ -374,7 +376,7 @@ namespace ORTS
 				PlayerLocomotiveViewer.HandleUserInput(elapsedTime);
 
             InfoDisplay.HandleUserInput(elapsedTime);
-			PopupWindows.HandleUserInput();
+			WindowManager.HandleUserInput();
 
             // Check for game control keys
             if (UserInput.IsKeyDown(Keys.Escape)) {  Stop(); return; }
@@ -383,9 +385,10 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.PageUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
             if (UserInput.IsPressed(Keys.PageDown)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
-			if (UserInput.IsPressed(Keys.F4)) TrackMonitor.Visible = !TrackMonitor.Visible;
-			if (UserInput.IsPressed(Keys.F9)) TrainOperations.Visible = !TrainOperations.Visible;
-			if (UserInput.IsPressed(Keys.F10)) NextStation.Visible = !NextStation.Visible;
+			if (UserInput.IsPressed(Keys.F4)) TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
+			if (UserInput.IsPressed(Keys.F8)) SwitchWindow.Visible = !SwitchWindow.Visible;
+			if (UserInput.IsPressed(Keys.F9)) TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;
+			if (UserInput.IsPressed(Keys.F10)) NextStationWindow.Visible = !NextStationWindow.Visible;
 			if (UserInput.IsPressed(Keys.D0)) CompassWindow.Visible = !CompassWindow.Visible;
 
             if (UserInput.IsPressed(Keys.E) && UserInput.IsCtrlKeyDown())
@@ -428,7 +431,7 @@ namespace ORTS
             }
             else
             {
-                isMouseShouldVisible = PopupWindows.HasVisiblePopupWindows();
+                isMouseShouldVisible = WindowManager.HasVisiblePopupWindows();
             }
 
             RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;

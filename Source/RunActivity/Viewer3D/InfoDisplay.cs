@@ -129,23 +129,27 @@ namespace ORTS
 
 		void UpdateDialogsText(ElapsedTime elapsedTime)
 		{
-			if (Viewer.TrackMonitor.Visible)
+			if (Viewer.TrackMonitorWindow.Visible)
 			{
 				var poiDistance = 0f;
 				var poiBackwards = false;
 				var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
 				//Viewer.TrackMonitor.UpdateText(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, 0, TrackMonitorSignalAspect.None, poiType, poiDistance);
-                Viewer.TrackMonitor.UpdateText(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, Viewer.PlayerTrain.distanceToSignal, Viewer.PlayerTrain.TMaspect, poiType, poiDistance);
+                Viewer.TrackMonitorWindow.UpdateText(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, Viewer.PlayerTrain.distanceToSignal, Viewer.PlayerTrain.TMaspect, poiType, poiDistance);
 			}
-			if (Viewer.TrainOperations.Visible)
+			if (Viewer.SwitchWindow.Visible)
 			{
-				Viewer.TrainOperations.UpdateText(elapsedTime, Viewer.PlayerTrain);
+				Viewer.SwitchWindow.UpdateText(elapsedTime, Viewer.PlayerTrain);
 			}
-			if (Viewer.NextStation.Visible)
+			if (Viewer.TrainOperationsWindow.Visible)
 			{
-				Viewer.NextStation.UpdateText(elapsedTime, Viewer.Simulator.ClockTime, FormattedTime);
+				Viewer.TrainOperationsWindow.UpdateText(elapsedTime, Viewer.PlayerTrain);
 			}
-            Viewer.NextStation.UpdateSound();
+			if (Viewer.NextStationWindow.Visible)
+			{
+				Viewer.NextStationWindow.UpdateText(elapsedTime, Viewer.Simulator.ClockTime, FormattedTime);
+			}
+            Viewer.NextStationWindow.UpdateSound();
 			if (Viewer.CompassWindow.Visible)
 			{
 				double latitude = 0;
