@@ -420,14 +420,20 @@ namespace ORTS
             if (!Simulator.Paused && UserInput.IsAltKeyDown())
             {
                 isMouseShouldVisible = true;
-                if (UserInput.MouseState.LeftButton == ButtonState.Pressed)
+                if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
+                {
                     TryThrowSwitchAt(UserInput.MouseState.X, UserInput.MouseState.Y);
+                    UserInput.Handled();
+                }
             }
             else if (!Simulator.Paused && UserInput.IsKeyDown(Keys.U))
             {
                 isMouseShouldVisible = true;
-                if (UserInput.MouseState.LeftButton == ButtonState.Pressed)
-                    TryUncoupleAt( UserInput.MouseState.X, UserInput.MouseState.Y);
+                if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
+                {
+                    TryUncoupleAt(UserInput.MouseState.X, UserInput.MouseState.Y);
+                    UserInput.Handled();
+                }
             }
             else
             {
@@ -671,6 +677,10 @@ namespace ORTS
             Matrix world = Matrix.CreateTranslation(0, 0, 0);
             Vector3 nearPoint = GraphicsDevice.Viewport.Unproject(nearsource, Camera.XNAProjection, Camera.XNAView, world);
             Vector3 farPoint = GraphicsDevice.Viewport.Unproject(farsource, Camera.XNAProjection, Camera.XNAView, world);
+            //Console.WriteLine();
+            //Console.WriteLine("near {0}", nearPoint);
+            //Console.WriteLine("far {0}", farPoint);
+            //Console.WriteLine("far1 {0}", GraphicsDevice.Viewport.Unproject(farsource, Camera.XNAProjection, Camera.XNAView, world));
 
             TrJunctionNode bestNode = null;
             float bestD = 10;

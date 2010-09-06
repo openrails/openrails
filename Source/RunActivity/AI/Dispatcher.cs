@@ -172,7 +172,7 @@ namespace ORTS
                     {
                         auth.CalcStopDistance();
                     }
-                    else if (auth.StopDistanceM < 0 && auth.StopNode.Type == AIPathNodeType.Reverse && auth.NReverseNodes>0)
+                    else if (auth.StopNode.Type == AIPathNodeType.Reverse && auth.NReverseNodes>0 && (auth.StopDistanceM < 0 || (auth.Train.SpeedMpS==0 && auth.StopDistanceM-auth.PathDistReverseAdjustmentM<0)))
                     {
                         auth.DistanceDownPathM += 2 * auth.PathDistReverseAdjustmentM;
                         auth.StartNode = auth.StopNode;

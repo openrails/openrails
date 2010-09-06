@@ -119,7 +119,7 @@ namespace ORTS
 
                 ++iSG;
             }
-            if (iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count)  // else we want less sound so don't provide any
+            if (iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count && smsFile.Tr_SMS.ScalabiltyGroups[iSG].Streams != null)  // else we want less sound so don't provide any
             {
                 MSTS.ScalabiltyGroup mstsScalabiltyGroup = smsFile.Tr_SMS.ScalabiltyGroups[iSG];
 
@@ -263,6 +263,9 @@ namespace ORTS
         /// <returns></returns>
         private bool ConditionsMet(MSTS.Activation conditions)
         {
+            if (conditions == null)
+                return false;
+
             Camera.Styles viewpoint = Viewer.Camera.Style;
 
             if ( (viewpoint == Camera.Styles.Cab) && (Viewer.Camera.AttachedCar != Car) )

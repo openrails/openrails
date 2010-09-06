@@ -177,7 +177,7 @@ namespace ORTS
                         break;
                     StationStop = true;
                     StopDistanceM = d;
-                    return;
+                    break;
                 }
             }
             //Console.WriteLine("nextstopdist {0} {1} {2} {3}", StopDistanceM, FrontTDBTraveller.Direction, RearTDBTraveller.Direction,
@@ -201,10 +201,7 @@ namespace ORTS
                         }
                         float d = rtraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
                         if (d > 0 && d + 1 < StopDistanceM)
-                        {
                             PathDistReverseAdjustmentM = StopDistanceM - d - 1;
-                            StopDistanceM = d + 1;
-                        }
                         break;
                     }
                 }
