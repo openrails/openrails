@@ -557,6 +557,11 @@ namespace ORTS
             SceneryShader.End();
         }
 
+		public override void ResetState(GraphicsDevice graphicsDevice)
+		{
+			SceneryShader.IsNight_Tex = false;
+		}
+
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
 			// Transparency test
@@ -987,8 +992,6 @@ namespace ORTS
 
         public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            SceneryShader.IsNight_Tex = false;
-
             RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
 
