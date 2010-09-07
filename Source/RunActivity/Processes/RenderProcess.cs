@@ -238,7 +238,7 @@ namespace ORTS
                 Viewer.UpdaterProcess.WaitTillFinished();
 
                 // Time to read the keyboard - must be done in XNA Game thread
-                UserInput.Update();
+                UserInput.Update(Viewer);
 
                 // launch updater to prepare the next frame
                 SwapFrames(ref CurrentFrame, ref NextFrame);
@@ -246,7 +246,7 @@ namespace ORTS
             }
             else
             {   // single processor machine
-                UserInput.Update();
+                UserInput.Update(Viewer);
 
 				Viewer.UpdaterProfiler.Start();
                 Program.RealTime = actualRealTime;

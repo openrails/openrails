@@ -422,7 +422,7 @@ namespace ORTS
                 isMouseShouldVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
                 {
-                    TryThrowSwitchAt(UserInput.MouseState.X, UserInput.MouseState.Y);
+                    TryThrowSwitchAt();
                     UserInput.Handled();
                 }
             }
@@ -431,7 +431,7 @@ namespace ORTS
                 isMouseShouldVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
                 {
-                    TryUncoupleAt(UserInput.MouseState.X, UserInput.MouseState.Y);
+                    TryUncoupleAt();
                     UserInput.Handled();
                 }
             }
@@ -631,18 +631,12 @@ namespace ORTS
         /// </summary>
         /// <param name="mouseX"></param>
         /// <param name="mouseY"></param>
-        private void TryUncoupleAt(int mouseX, int mouseY)
+        private void TryUncoupleAt()
         {
-            Vector3 nearsource = new Vector3((float)mouseX, (float)mouseY, 0f);
-            Vector3 farsource = new Vector3((float)mouseX, (float)mouseY, 1f);
-            Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 nearPoint = GraphicsDevice.Viewport.Unproject(nearsource, Camera.XNAProjection, Camera.XNAView, world);
-            Vector3 farPoint = GraphicsDevice.Viewport.Unproject(farsource, Camera.XNAProjection, Camera.XNAView, world);
-
             // Create a ray from the near clip plane to the far clip plane.
-            Vector3 direction = farPoint - nearPoint;
+            Vector3 direction = UserInput.FarPoint - UserInput.NearPoint;
             direction.Normalize();
-            Ray pickRay = new Ray(nearPoint, direction);
+            Ray pickRay = new Ray(UserInput.NearPoint, direction);
 
             // check each car
             TDBTraveller traveller = new TDBTraveller(PlayerTrain.FrontTDBTraveller);
@@ -670,18 +664,8 @@ namespace ORTS
         /// </summary>
         /// <param name="mouseX"></param>
         /// <param name="mouseY"></param>
-        private void TryThrowSwitchAt(int mouseX, int mouseY)
+        private void TryThrowSwitchAt()
         {
-            Vector3 nearsource = new Vector3((float)mouseX, (float)mouseY, 0f);
-            Vector3 farsource = new Vector3((float)mouseX, (float)mouseY, 1f);
-            Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 nearPoint = GraphicsDevice.Viewport.Unproject(nearsource, Camera.XNAProjection, Camera.XNAView, world);
-            Vector3 farPoint = GraphicsDevice.Viewport.Unproject(farsource, Camera.XNAProjection, Camera.XNAView, world);
-            //Console.WriteLine();
-            //Console.WriteLine("near {0}", nearPoint);
-            //Console.WriteLine("far {0}", farPoint);
-            //Console.WriteLine("far1 {0}", GraphicsDevice.Viewport.Unproject(farsource, Camera.XNAProjection, Camera.XNAView, world));
-
             TrJunctionNode bestNode = null;
             float bestD = 10;
             // check each switch
@@ -690,9 +674,9 @@ namespace ORTS
                 TrackNode tn = Simulator.TDB.TrackDB.TrackNodes[j];
                 if (tn != null && tn.TrJunctionNode != null)
                 {
-                        
-                    Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX,tn.UiD.TileZ,tn.UiD.X,tn.UiD.Y,tn.UiD.Z));
-                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter,nearPoint,farPoint);
+
+                    Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z));
+                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, UserInput.NearPoint, UserInput.FarPoint);
                     if (bestD > d && !Simulator.SwitchIsOccupied(j))
                     {
                         bestNode = tn.TrJunctionNode;

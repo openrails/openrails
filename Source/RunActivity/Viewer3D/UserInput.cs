@@ -30,18 +30,30 @@ namespace ORTS
 		public static MouseState MouseState;        
         static KeyboardState LastKeyboardState;
         static MouseState LastMouseState;
+        public static Vector3 NearPoint;
+        public static Vector3 FarPoint;
 
-        public static void Update()
+        public static void Update(Viewer3D viewer)
         {
             LastKeyboardState = KeyboardState;
             KeyboardState = Keyboard.GetState();
             LastMouseState = MouseState;
             MouseState = Mouse.GetState();
             if (LastKeyboardState != KeyboardState
-                || LastMouseState.LeftButton != MouseState.LeftButton 
+                || LastMouseState.LeftButton != MouseState.LeftButton
                 || LastMouseState.RightButton != MouseState.RightButton
-                || LastMouseState.MiddleButton != MouseState.MiddleButton )
+                || LastMouseState.MiddleButton != MouseState.MiddleButton)
+            {
                 Changed = true;
+                if (MouseState.LeftButton == ButtonState.Pressed)
+                {
+                    Vector3 nearsource = new Vector3((float)MouseState.X, (float)MouseState.Y, 0f);
+                    Vector3 farsource = new Vector3((float)MouseState.X, (float)MouseState.Y, 1f);
+                    Matrix world = Matrix.CreateTranslation(0, 0, 0);
+                    NearPoint = viewer.GraphicsDevice.Viewport.Unproject(nearsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
+                    FarPoint = viewer.GraphicsDevice.Viewport.Unproject(farsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
+                }
+            }
         }
 
         public static void Handled()
