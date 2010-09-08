@@ -24,6 +24,7 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 //#define DEBUGSCR
+#define STEREOCAB
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -144,6 +145,14 @@ namespace ORTS
                     if (dt != null)
                         dt.HandleCarEvent(eventID);
                 }
+            }
+        }
+
+        public bool IsCABSound
+        {
+            get
+            {
+                return ActivationConditions.CabCam;
             }
         }
 
@@ -308,6 +317,9 @@ namespace ORTS
         private Queue<KeyValuePair<ISoundSource, bool>> _qPlay = new Queue<KeyValuePair<ISoundSource, bool>>();
         public ISoundSource _playingSound = null;
         private double _stoppedAt = 0;
+        private int DiscreteTriggers = 0;
+        private int VariableTriggers = 0;
+        private bool DiscreteVariableTrigger = false;
 
         protected MSTS.SMSStream MSTSStream;
 
@@ -318,6 +330,7 @@ namespace ORTS
         
         public SoundStream( MSTS.SMSStream mstsStream, SoundSource soundSource, int index )
         {
+            float Threshold = float.NaN;
             Index = index;
             SoundSource = soundSource;
             MSTSStream = mstsStream;
@@ -344,7 +357,19 @@ namespace ORTS
                     }
                     else if (trigger.GetType() == typeof(MSTS.Variable_Trigger) && soundSource.Car != null )
                     {
-                        Triggers.Add(new ORTSVariableTrigger(this, (MSTS.Variable_Trigger)trigger));
+                        MSTS.Variable_Trigger vt = (MSTS.Variable_Trigger)trigger;
+                        Triggers.Add(new ORTSVariableTrigger(this, vt));
+                        VariableTriggers++;
+                        if (float.IsNaN(Threshold))
+                        {
+                            Threshold = vt.Threshold;
+                            DiscreteVariableTrigger = true;
+                        }
+                        else
+                        {
+                            DiscreteVariableTrigger &= Threshold == vt.Threshold;
+                            Threshold = vt.Threshold;
+                        }
                     }
                     else if (trigger.GetType() == typeof(MSTS.Variable_Trigger) && soundSource.IsEnvSound)
                     {
@@ -360,6 +385,7 @@ namespace ORTS
                     {
                         ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, (MSTS.Discrete_Trigger)trigger);
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
+                        DiscreteTriggers++;
                     }
                 }  // for each mstsStream.Trigger
         }
@@ -579,7 +605,7 @@ namespace ORTS
                         //_stoppedAt += WAVIrrKlangFileFactory.Weigth(_playingSound.Name) * .025;
 
                     }
-                    else if (_stoppedAt + .1 < Program.RealTime)
+                    else if (_stoppedAt + .8 < Program.RealTime)
                     {
                         _stoppedAt = 0;
                         Stop();
@@ -617,15 +643,21 @@ namespace ORTS
             // Queue instead of stopping
             if (ISound != null)
             {
-                //Stop();
-                // Queue only if different from current or the last
-                if (_playingSound.Name != iSoundSource.Name && (
-                        _qPlay.Count == 0 ||
-                        _qPlay.ElementAt(_qPlay.Count - 1).Key.Name != iSoundSource.Name))
+                if ( (VariableTriggers > DiscreteTriggers) && !DiscreteVariableTrigger)
                 {
-                    _qPlay.Enqueue(new KeyValuePair<ISoundSource, bool>(iSoundSource, repeat));
+                    Stop();
                 }
-                return;
+                else
+                {
+                    // Queue only if different from current or the last
+                    if (_playingSound.Name != iSoundSource.Name && (
+                            _qPlay.Count == 0 ||
+                            _qPlay.ElementAt(_qPlay.Count - 1).Key.Name != iSoundSource.Name))
+                    {
+                        _qPlay.Enqueue(new KeyValuePair<ISoundSource, bool>(iSoundSource, repeat));
+                    }
+                    return;
+                }
             }
 
             Viewer3D viewer = SoundSource.Viewer;
@@ -646,10 +678,23 @@ namespace ORTS
                 location = new Vector3(0, 0, 0);
             }
             SampleRate = iSoundSource.AudioFormat.SampleRate;  // ie 11025
-            if( viewer.SoundEngine != null )
+            if (viewer.SoundEngine != null)
+            {
                 // Changed repeat to false, looping implemented with other method - by GeorgeS
                 // Changed paused to true - to prevent volume glitches
-                ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, false, true, false);
+#if STEREOCAB
+                if (SoundSource.IsCABSound)
+                {
+                    ISound = viewer.SoundEngine.Play2D(iSoundSource, false, true, false);
+                }
+                else
+                {
+#endif
+                    ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, false, true, false);
+#if STEREOCAB
+                }
+#endif
+            }
             
             // If an unsupported sound found do nothing else
             if (ISound == null)
