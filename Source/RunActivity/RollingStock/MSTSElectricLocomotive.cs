@@ -111,6 +111,7 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
+            Variable2 = Variable1;
         }
 
         /// <summary>

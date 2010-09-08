@@ -23,7 +23,7 @@
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
-
+//#define DEBUGSCR
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -126,8 +126,11 @@ namespace ORTS
                 ActivationConditions = mstsScalabiltyGroup.Activation;
                 DeactivationConditions = mstsScalabiltyGroup.Deactivation;
 
+                int cou = 1;
                 foreach (MSTS.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
-                    SoundStreams.Add(new SoundStream(mstsStream, this));
+                {
+                    SoundStreams.Add(new SoundStream(mstsStream, this, cou++));
+                }
             }
         }
 
@@ -291,6 +294,7 @@ namespace ORTS
     public class SoundStream
     {
         public SoundSource SoundSource;
+        public int Index = 0;
         public float Volume
         {
             get { return volume / MSTSStream.Volume; }
@@ -299,6 +303,7 @@ namespace ORTS
         private float volume = 1;
 
         public List<ORTSTrigger> Triggers = new List<ORTSTrigger>();
+        public bool IsPlaying = false;
 
         private Queue<KeyValuePair<ISoundSource, bool>> _qPlay = new Queue<KeyValuePair<ISoundSource, bool>>();
         public ISoundSource _playingSound = null;
@@ -311,8 +316,9 @@ namespace ORTS
         private float SampleRate; // ie 11025 - set by play command
         private  ISoundSource RepeatingSound = null; // allows us to reactivate
         
-        public SoundStream( MSTS.SMSStream mstsStream, SoundSource soundSource )
+        public SoundStream( MSTS.SMSStream mstsStream, SoundSource soundSource, int index )
         {
+            Index = index;
             SoundSource = soundSource;
             MSTSStream = mstsStream;
 
@@ -367,6 +373,7 @@ namespace ORTS
             foreach (ORTSTrigger trigger in Triggers)
                 trigger.TryTrigger();
 
+            
             // Run Initial if no other is Signaled
             var qt = from t in Triggers
                      where t.Signaled &&
@@ -378,9 +385,26 @@ namespace ORTS
             {
                 int stc = qt.Count();
                 // If no triggers active, Initialize the Initial
-                if (stc == 0)
+                if (!IsPlaying)
                 {
-                    _InitialTrigger.Initialize();
+                    var vtq = (from t in Triggers
+                               where t is ORTSVariableTrigger
+                               select t).ToList();
+
+                    if (vtq.Count > 0)
+                    {
+                        var vtqb = from ORTSVariableTrigger t in vtq
+                                   where t.IsBellow
+                                   select t;
+                        if (vtqb.Count() == vtq.Count)
+                        {
+#if DEBUGSCR
+                            if (!string.IsNullOrEmpty(_InitialTrigger.SoundCommand.FileName))
+                                Console.WriteLine("({0})InitialTrigger: {1}", Index, _InitialTrigger.SoundCommand.FileName);
+#endif
+                            _InitialTrigger.Initialize();
+                        }
+                    }
                 }
                 // If triggers are active, reset the Initial
                 else if (stc > 1 && _InitialTrigger.Signaled)
@@ -930,13 +954,16 @@ namespace ORTS
     {
         MSTS.Variable_Trigger SMS;
         MSTSWagon car;
+        SoundStream _SoundStream;
 
         float StartValue;
+        public bool IsBellow = false;
 
         public ORTSVariableTrigger(SoundStream soundStream, MSTS.Variable_Trigger smsData)
         {
             SMS = smsData;
             car = soundStream.SoundSource.Car;
+            _SoundStream = soundStream;
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
             Initialize();
         }
@@ -944,6 +971,7 @@ namespace ORTS
         public override void  Initialize()
         {
  	        StartValue = 0;
+            IsBellow = StartValue < SMS.Threshold;
         }
 
         public override void TryTrigger( )
@@ -981,9 +1009,34 @@ namespace ORTS
             //Signaled = triggered;
 
             StartValue = newValue;
-            if (triggered && Enabled )
+            IsBellow = StartValue < SMS.Threshold;
+
+            if (triggered && Enabled)
             {
                 SoundCommand.Run();
+
+#if DEBUGSCR
+                ORTSStartLoop sl = SoundCommand as ORTSStartLoop;
+                if (sl != null)
+                {
+                    Console.WriteLine("({0})StartLoop ({1} {2}): {3} ", _SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), sl.FileName);
+                }
+                ORTSStartLoopRelease slr = SoundCommand as ORTSStartLoopRelease;
+                if (slr != null)
+                {
+                    Console.WriteLine("({0})StartLoopRelease ({1} {2}): {3} ", _SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), slr.FileName);
+                }
+                ORTSReleaseLoopRelease rlr = SoundCommand as ORTSReleaseLoopRelease;
+                if (rlr != null)
+                {
+                    Console.WriteLine("({0})ReleaseLoopRelease ({1} {2}): {3} ", _SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), rlr.FileName);
+                }
+                ORTSReleaseLoopReleaseWithJump rlrwj = SoundCommand as ORTSReleaseLoopReleaseWithJump;
+                if (rlrwj != null)
+                {
+                    Console.WriteLine("({0})ReleaseLoopReleaseWithJump ({1} {2}): {3} ", _SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), rlrwj.FileName);
+                }
+#endif
             }
         } // TryTrigger
 
@@ -1039,14 +1092,18 @@ namespace ORTS
     /// </summary>
     public class ORTSStartLoop : ORTSSoundPlayCommand
     {
+        SoundStream _SoundStream;
         public ORTSStartLoop( SoundStream ortsStream, MSTS.SoundPlayCommand mstsSoundPlayCommand )
             : base( ortsStream, mstsSoundPlayCommand )
         {
+            _SoundStream = ortsStream;
         }
         public override void  Run( )
         {
             // Support for Loop functions - by GeorgeS
             Play3D(true);
+            IsPlaying = true;
+            _SoundStream.IsPlaying = true;
             WAVIrrKlangFileFactory.StartLoop(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
 
@@ -1054,6 +1111,8 @@ namespace ORTS
         // Must implement here because this class knows which file playing now
         public void ReleaseLoopRelease()
         {
+            _SoundStream.IsPlaying = false;
+            IsPlaying = false;
             WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
 
@@ -1061,7 +1120,17 @@ namespace ORTS
         // Must implement here because this class knows which file playing now
         public void ReleaseLoopReleaseWithJump()
         {
+            _SoundStream.IsPlaying = false;
+            IsPlaying = false;
             WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
+        }
+
+        public override string FileName
+        {
+            get
+            {
+                return Files[iFile];
+            }
         }
     } 
 
@@ -1070,6 +1139,8 @@ namespace ORTS
     /// </summary>
     public class ORTSReleaseLoopRelease : ORTSSoundCommand
     {
+        public override string FileName { get;  set; }
+
         public ORTSReleaseLoopRelease(SoundStream ortsStream)
             : base(ortsStream)
         {
@@ -1079,26 +1150,32 @@ namespace ORTS
         {
             // StartLoopRelease trigers
 
+            FileName = "";
+
             // Must find the sound triggers in order to control
             var qstl = from ORTSTrigger t in ORTSStream.Triggers
-                       where t.SoundCommand is ORTSStartLoopRelease
+                       where t.SoundCommand is ORTSStartLoopRelease &&
+                       t.SoundCommand.IsPlaying
                        select t.SoundCommand;
 
             // Release All
             foreach (ORTSStartLoopRelease sc in qstl)
             {
                 sc.ReleaseLoopRelease();
+                FileName += sc.FileName + " ";
             }
 
             // Not just the ReleaseLoops may be released
             var qsl = from ORTSTrigger t in ORTSStream.Triggers
-                    where t.SoundCommand is ORTSStartLoop
+                    where t.SoundCommand is ORTSStartLoop &&
+                    t.SoundCommand.IsPlaying
                     select t.SoundCommand;
 
             // Release All
             foreach (ORTSStartLoop sc in qsl)
             {
                 sc.ReleaseLoopRelease();
+                FileName += sc.FileName + " ";
             }
         }
     }
@@ -1107,16 +1184,21 @@ namespace ORTS
     /// Start a looping sound that uses repeat markers
     /// TODO - until we implement markers, this will start the sound as a simple one shot
     /// </summary>
-    public class ORTSStartLoopRelease : ORTSPlayOneShot  
+    public class ORTSStartLoopRelease : ORTSSoundPlayCommand
     {
+        SoundStream _SoundStream;
+
         public ORTSStartLoopRelease(SoundStream ortsStream, MSTS.PlayOneShot mstsStartLoopRelease)
             : base(ortsStream, mstsStartLoopRelease)
         {
+            _SoundStream = ortsStream;
         }
 
         // Support for Loop functions - by GeorgeS
         public override void Run()
         {
+            _SoundStream.IsPlaying = true;
+            IsPlaying = true;
             WAVIrrKlangFileFactory.StartLoopRelease(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
             Play3D(true);
         }
@@ -1125,6 +1207,8 @@ namespace ORTS
         // Must implement here because this class knows which file playing now
         public void ReleaseLoopRelease()
         {
+            _SoundStream.IsPlaying = false;
+            IsPlaying = false;
             WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
         }
 
@@ -1132,7 +1216,17 @@ namespace ORTS
         // Must implement here because this class knows which file playing now
         public void ReleaseLoopReleaseWithJump()
         {
+            _SoundStream.IsPlaying = false;
+            IsPlaying = false;
             WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
+        }
+
+        public override string FileName
+        {
+            get
+            {
+                return Files[iFile];
+            }
         }
     }
 
@@ -1141,6 +1235,7 @@ namespace ORTS
     /// </summary>
     public class ORTSReleaseLoopReleaseWithJump : ORTSSoundCommand
     {
+        public override string FileName { get; set; }
         public ORTSReleaseLoopReleaseWithJump(SoundStream ortsStream)
             : base(ortsStream)
         {
@@ -1151,26 +1246,32 @@ namespace ORTS
         {
             // StartLoopRelease trigers
 
+            FileName = "";
+
             // Must find the sound triggers in order to control
             var qstl = from ORTSTrigger t in ORTSStream.Triggers
-                       where t.SoundCommand is ORTSStartLoopRelease
+                       where t.SoundCommand is ORTSStartLoopRelease &&
+                       t.SoundCommand.IsPlaying
                        select t.SoundCommand;
 
             // Release All
             foreach (ORTSStartLoopRelease sc in qstl)
             {
                 sc.ReleaseLoopReleaseWithJump();
+                FileName = sc.FileName + " ";
             }
 
             // Not just the ReleaseLoops may be released
             var qsl = from ORTSTrigger t in ORTSStream.Triggers
-                      where t.SoundCommand is ORTSStartLoop
+                      where t.SoundCommand is ORTSStartLoop &&
+                      t.SoundCommand.IsPlaying
                       select t.SoundCommand;
 
             // Release All
             foreach (ORTSStartLoop sc in qsl)
             {
                 sc.ReleaseLoopReleaseWithJump();
+                FileName = sc.FileName + " ";
             }
         }
     }
@@ -1254,12 +1355,15 @@ namespace ORTS
     /// </summary>
     public abstract class ORTSSoundCommand
     {
+        public bool IsPlaying;
         protected SoundStream ORTSStream;
 
         public ORTSSoundCommand(SoundStream ortsStream)
         {
             ORTSStream = ortsStream;
         }
+
+        public virtual string FileName { get; set; }
 
         public abstract void Run();
 
@@ -1361,6 +1465,14 @@ namespace ORTS
                         ORTSStream.Play3D(repeat, iSoundSource);
                     }
                 }
+            }
+        }
+
+        public override string FileName
+        {
+            get
+            {
+                return Files[iFile];
             }
         }
     } // ORTSSoundPlayCommand 

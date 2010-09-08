@@ -308,6 +308,9 @@ namespace ORTS
                 // Previously set flag if the length of the wav will be the next info
                 if (_isNextLength)
                 {
+#if DEBUGSCR
+                    Console.WriteLine("Using file: " + Name.Substring(Name.LastIndexOf('\\')));
+#endif
                     // Store the original legth
                     _InternalLength = FromArray(array);
 

@@ -35,6 +35,11 @@ namespace ORTS
     /// </summary>
     public class MSTSDieselLocomotive : MSTSLocomotive
     {
+        float IdleRPM = 0;
+        float MaxRPM = 0;
+        float MaxRPMChangeRate = 0;
+        float PercentChangePerSec = .2f;
+
         public MSTSDieselLocomotive(string wagFile, TrainCar previousCar)
             : base(wagFile, previousCar)
         {
@@ -47,10 +52,18 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
+                case "engine(dieselengineidlerpm": IdleRPM = ParseW(f.ReadStringBlock(), f); break;
+                case "engine(dieselenginemaxrpm": MaxRPM = ParseN(f.ReadStringBlock(), f); break;
+                case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = ParseN(f.ReadStringBlock(), f); break;
                 // for example
                 //case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
                 default: base.Parse(lowercasetoken, f); break;
+            }
+
+            if (IdleRPM != 0 && MaxRPM != 0 && MaxRPMChangeRate != 0)
+            {
+                PercentChangePerSec = MaxRPMChangeRate / (MaxRPM - IdleRPM);
             }
         }
 
@@ -114,9 +127,8 @@ namespace ORTS
             // Refined Variable2 setting to graduate
             if (Variable2 != Variable1)
             {
-                // It is an assumption only
-                // Must read DieselEngineIdleRMP, DieselEngineMaxRMP, DieselEngineMaxRMPChangeRate to calculate correctly
-                float addition = .2f;
+                // Calculated value
+                float addition = PercentChangePerSec;
                 bool neg = false;
 
                 if (Variable1 < Variable2)
