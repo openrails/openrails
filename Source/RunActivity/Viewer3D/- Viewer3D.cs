@@ -402,7 +402,7 @@ namespace ORTS
             }
 
             // Change view point - cab, passenger, outside, etc
-            if (UserInput.IsPressed(Keys.D1)) CabCamera.Activate();
+            if (UserInput.IsPressed(Keys.D1)) { if (CabCamera.HasCABViews) CabCamera.Activate(); }
             if (UserInput.IsPressed(Keys.D2)) FrontCamera.Activate();
 			if (UserInput.IsPressed(Keys.D3)) BackCamera.Activate();
 			if (UserInput.IsPressed(Keys.D4)) TracksideCamera.Activate();

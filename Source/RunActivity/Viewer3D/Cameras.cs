@@ -501,6 +501,14 @@ namespace ORTS
 
 		public override Camera.Styles Style { get { return Styles.Cab; } }
 
+        public bool HasCABViews
+        {
+            get
+            {
+                return attachedCar != null && attachedCar.FrontCabViewpoints != null && attachedCar.FrontCabViewpoints.Count != 0;
+            }
+        }
+
 		/// <summary>
 		/// Make this the viewer's current camera.
 		/// If the locomotive has no cab view, then do nothing.
