@@ -406,7 +406,7 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.D2)) FrontCamera.Activate();
 			if (UserInput.IsPressed(Keys.D3)) BackCamera.Activate();
 			if (UserInput.IsPressed(Keys.D4)) TracksideCamera.Activate();
-			if (UserInput.IsPressed(Keys.D5)) PassengerCamera.Activate();
+            if (UserInput.IsPressed(Keys.D5)) { if (PassengerCamera.HasPassengerCamera) PassengerCamera.Activate(); }
 			if (UserInput.IsPressed(Keys.D6)) BrakemanCamera.Activate();
             if (UserInput.IsPressed(Keys.D7) || UserInput.IsPressed(Keys.D8)) new FreeRoamCamera(this, Camera).Activate();
 

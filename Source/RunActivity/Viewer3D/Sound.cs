@@ -156,6 +156,14 @@ namespace ORTS
             }
         }
 
+        public bool IsPassengerSound
+        {
+            get
+            {
+                return ActivationConditions.PassengerCam;
+            }
+        }
+
         public void Update(ElapsedTime elapsedTime)
         {
 
@@ -683,7 +691,7 @@ namespace ORTS
                 // Changed repeat to false, looping implemented with other method - by GeorgeS
                 // Changed paused to true - to prevent volume glitches
 #if STEREOCAB
-                if (SoundSource.IsCABSound)
+                if (SoundSource.IsCABSound || SoundSource.IsPassengerSound)
                 {
                     ISound = viewer.SoundEngine.Play2D(iSoundSource, false, true, false);
                 }

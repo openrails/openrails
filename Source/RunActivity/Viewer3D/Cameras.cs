@@ -348,24 +348,27 @@ namespace ORTS
 
 		public override void Update(ElapsedTime elapsedTime)
 		{
-			cameraLocation.TileX = attachedCar.WorldPosition.TileX;
-			cameraLocation.TileZ = attachedCar.WorldPosition.TileZ;
-			cameraLocation.Location = onboardLocation;
-			cameraLocation.Location.Z *= -1;
-			cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
-			cameraLocation.Location.Z *= -1;
+            if (attachedCar != null)
+            {
+                cameraLocation.TileX = attachedCar.WorldPosition.TileX;
+                cameraLocation.TileZ = attachedCar.WorldPosition.TileZ;
+                cameraLocation.Location = onboardLocation;
+                cameraLocation.Location.Z *= -1;
+                cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
+                cameraLocation.Location.Z *= -1;
+            }
 			base.Update(elapsedTime);
 		}
 
 		protected override Matrix GetCameraView()
 		{
-			var lookAtPosition = Vector3.UnitZ;
-			lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationX(rotationXRadians));
-			lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationY(rotationYRadians));
-			lookAtPosition += onboardLocation;
-			lookAtPosition.Z *= -1;
-			lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
-			return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
+            var lookAtPosition = Vector3.UnitZ;
+            lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationX(rotationXRadians));
+            lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationY(rotationYRadians));
+            lookAtPosition += onboardLocation;
+            lookAtPosition.Z *= -1;
+            lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
+            return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
 		}
 	}
 
@@ -505,6 +508,8 @@ namespace ORTS
         {
             get
             {
+                if (Viewer.PlayerLocomotive != null)
+                    attachedCar = Viewer.PlayerLocomotive;
                 return attachedCar != null && attachedCar.FrontCabViewpoints != null && attachedCar.FrontCabViewpoints.Count != 0;
             }
         }
@@ -676,6 +681,24 @@ namespace ORTS
 			: base(viewer)
 		{
 		}
+
+        public bool HasPassengerCamera
+        {
+            get
+            {
+                var train = Viewer.PlayerTrain;
+
+                // find first car with a passenger view
+                attachedCar = null;
+                foreach (TrainCar car in train.Cars)
+                    if (car.PassengerViewpoints.Count > 0)
+                    {
+                        attachedCar = car;
+                        break;
+                    }
+                return attachedCar != null;
+            }
+        }
 
 		public override Camera.Styles Style { get { return Styles.Passenger; } }
 
