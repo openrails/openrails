@@ -152,7 +152,7 @@ namespace ORTS
         {
             get
             {
-                return ActivationConditions.CabCam;
+                return ActivationConditions.CabCam && !ActivationConditions.ExternalCam;
             }
         }
 
@@ -160,7 +160,7 @@ namespace ORTS
         {
             get
             {
-                return ActivationConditions.PassengerCam;
+                return ActivationConditions.PassengerCam && !ActivationConditions.ExternalCam;
             }
         }
 

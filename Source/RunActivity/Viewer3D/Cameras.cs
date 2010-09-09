@@ -702,7 +702,28 @@ namespace ORTS
 
 		public override Camera.Styles Style { get { return Styles.Passenger; } }
 
-		protected override void OnActivate()
+        public override void HandleUserInput(ElapsedTime elapsedTime)
+        {
+            var elapsedRealMilliseconds = elapsedTime.RealSeconds * 1000;
+            var speed = 1.0f;
+
+            if (UserInput.IsKeyDown(Keys.RightShift) || UserInput.IsKeyDown(Keys.LeftShift))
+                speed = 10.0f;
+            if (UserInput.IsKeyDown(Keys.End))
+                speed = 0.05f;
+
+            if (UserInput.IsKeyDown(Keys.Left))
+                rotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
+            if (UserInput.IsKeyDown(Keys.Right))
+                rotationYRadians += speed * elapsedRealMilliseconds / 1000f;
+
+            // Do this here so we can clamp the angles below.
+            base.HandleUserInput(elapsedTime);
+
+            rotationYRadians = MathHelper.Clamp(rotationYRadians, -(float)Math.PI / 2, (float)Math.PI / 2);
+        }
+
+        protected override void OnActivate()
 		{
 			var train = Viewer.PlayerTrain;
 
