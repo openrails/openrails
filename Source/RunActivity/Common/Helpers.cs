@@ -28,7 +28,7 @@ namespace ORTS
                     break;
                 case 1:
                 case 2: // Track
-                    if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
+                    if (season == (int)SeasonType.Winter || weather == (int)WeatherType.Snow)
                         textureFolder = viewer.Simulator.RoutePath + @"\textures\snow";
                     else
                         textureFolder = viewer.Simulator.RoutePath + @"\textures";
@@ -51,7 +51,7 @@ namespace ORTS
                     break;
                 case 256: // Incorrect param in MSTS. In OR we default to 257.
                 case 257:
-                    if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
+                    if (season == (int)SeasonType.Winter || weather == (int)WeatherType.Snow)
                         textureFolder = viewer.Simulator.RoutePath + @"\textures\snow";
                     else
                         textureFolder = viewer.Simulator.RoutePath + @"\textures";
