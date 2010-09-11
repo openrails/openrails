@@ -354,12 +354,19 @@ namespace ORTS
 		public void UpdateAdapterInformation(GraphicsAdapter graphicsAdapter)
 		{
 			adapterDescription = graphicsAdapter.Description;
-			// Note that we might find multiple adapters with the same
-			// description; however, the chance of such adapters not having
-			// the same amount of video memory is very slim.
-			foreach (ManagementObject videoController in new ManagementClass("Win32_VideoController").GetInstances())
-				if (((string)videoController["Description"] == adapterDescription) && (videoController["AdapterRAM"] != null))
-					adapterMemory = (uint)videoController["AdapterRAM"];
+			try
+			{
+				// Note that we might find multiple adapters with the same
+				// description; however, the chance of such adapters not having
+				// the same amount of video memory is very slim.
+				foreach (ManagementObject videoController in new ManagementClass("Win32_VideoController").GetInstances())
+					if (((string)videoController["Description"] == adapterDescription) && (videoController["AdapterRAM"] != null))
+						adapterMemory = (uint)videoController["AdapterRAM"];
+			}
+			catch (ManagementException error)
+			{
+				Trace.WriteLine(error);
+			}
 		}
 
         /// <summary>
