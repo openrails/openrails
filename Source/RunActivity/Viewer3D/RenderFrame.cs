@@ -106,6 +106,7 @@ namespace ORTS
 		const int ShadowMapSunDistance = 1000; // distance from shadow map center to put camera
 		const int ShadowMapViewMin = 256; // minimum width/height of shadow map projection
 		const int ShadowMapViewMax = 2048; // maximum width/height of shadow map projection
+		const int ShadowMapViewStep = 16; // step size for shadow view to stop it fluctuating too much
 		const int ShadowMapTexelSize = 4; // number of screen pixel to scale 1 shadow map texel to
 		const int ShadowMapSize = 4096; // shadow map texture width/height
 		const SurfaceFormat ShadowMapFormat = SurfaceFormat.Rg32; // shadow map texture format
@@ -166,11 +167,29 @@ namespace ORTS
 			// Calculate the size of the bottom of the screen in world units.
 			var cameraBottomWidthAtTerrain = RenderProcess.Viewer.Camera.RightFrustrumA * terrainDistance.GetValueOrDefault() * 2;
 			// Shadow map is scaled so that one shadow map texel is ShadowMapTexelSize pixels at the bottom of the screen.
-			var shadowMapSize = MathHelper.Clamp(cameraBottomWidthAtTerrain * ShadowMapTexelSize * ShadowMapSize / RenderProcess.Viewer.DisplaySize.X, ShadowMapViewMin, ShadowMapViewMax);
+			var shadowMapSize = (float)Math.Round(MathHelper.Clamp(cameraBottomWidthAtTerrain * ShadowMapTexelSize * ShadowMapSize / RenderProcess.Viewer.DisplaySize.X, ShadowMapViewMin, ShadowMapViewMax) / ShadowMapViewStep) * ShadowMapViewStep;
 			// Get vector pointing directly across the ground from camera,
 			var cameraFront = new Vector3(cameraBottomRay.Direction.X, 0, cameraBottomRay.Direction.Z);
 			// and shift shadow map as far forward as we can (just under half its size) to get the most in front of the camera.
 			var shadowMapLocation = terrainIntersection + shadowMapSize / 2.1f * cameraFront / cameraFront.Length();
+			// Align shadow map location to grid so it doesn't "flutter" so much. this basically means aligning it along a
+			// grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
+			// and up/left.
+			var shadowMapAlignmentGrid = shadowMapSize / shadowMapSize;
+			var shadowMapAlignAxisX = Vector3.Cross(sunDirection, Vector3.UnitY);
+			var shadowMapAlignAxisY = Vector3.Cross(shadowMapAlignAxisX, sunDirection);
+			var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
+			var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
+			var adjustZ = (float)Math.IEEERemainder(Vector3.Dot(sunDirection, shadowMapLocation), shadowMapAlignmentGrid);
+			shadowMapLocation.X -= shadowMapAlignAxisX.X * adjustX;
+			shadowMapLocation.Y -= shadowMapAlignAxisX.Y * adjustX;
+			shadowMapLocation.Z -= shadowMapAlignAxisX.Z * adjustX;
+			shadowMapLocation.X -= shadowMapAlignAxisY.X * adjustY;
+			shadowMapLocation.Y -= shadowMapAlignAxisY.Y * adjustY;
+			shadowMapLocation.Z -= shadowMapAlignAxisY.Z * adjustY;
+			shadowMapLocation.X -= sunDirection.X * adjustZ;
+			shadowMapLocation.Y -= sunDirection.Y * adjustZ;
+			shadowMapLocation.Z -= sunDirection.Z * adjustZ;
 
 			ShadowMapLightView = Matrix.CreateLookAt(shadowMapLocation + ShadowMapSunDistance * sunDirection, shadowMapLocation, Vector3.Up);
 			ShadowMapLightProj = Matrix.CreateOrthographic(shadowMapSize, shadowMapSize, ShadowMapViewNear, ShadowMapViewFar);
