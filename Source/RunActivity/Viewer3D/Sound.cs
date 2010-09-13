@@ -23,8 +23,10 @@
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
+#define PLAYSOUNDS
+#define PLAYENVSOUNDS
 //#define DEBUGSCR
-#define STEREOCAB
+//#define STEREOCAB
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -690,6 +692,7 @@ namespace ORTS
             {
                 // Changed repeat to false, looping implemented with other method - by GeorgeS
                 // Changed paused to true - to prevent volume glitches
+#if PLAYSOUNDS
 #if STEREOCAB
                 if (SoundSource.IsCABSound || SoundSource.IsPassengerSound)
                 {
@@ -701,6 +704,7 @@ namespace ORTS
                     ISound = viewer.SoundEngine.Play3D(iSoundSource, location.X / 10, location.Y / 10, location.Z / 10, false, true, false);
 #if STEREOCAB
                 }
+#endif
 #endif
             }
             
@@ -1503,6 +1507,7 @@ namespace ORTS
                 iFile = Program.Random.Next(Files.Length);
             }
 
+#if PLAYSOUNDS
             string filePath = ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile];
             if (File.Exists(filePath) && ORTSStream.SoundSource.Viewer.SoundEngine != null )
             {
@@ -1519,6 +1524,7 @@ namespace ORTS
                     }
                 }
             }
+#endif
         }
 
         public override string FileName
@@ -1557,6 +1563,7 @@ namespace ORTS
         {
             string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
             string soundfolder = Program.Simulator.RoutePath + "\\sound\\";
+#if PLAYENVSOUNDS
             lock (Sounds)
             {
                 if (!Sounds.ContainsKey(name))
@@ -1578,6 +1585,7 @@ namespace ORTS
                     Sounds.Add(name, ls);
                 }
             }
+#endif
         }
 
         public void RemoveByTile(int TileX, int TileZ)

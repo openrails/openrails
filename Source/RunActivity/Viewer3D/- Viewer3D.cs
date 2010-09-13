@@ -270,7 +270,8 @@ namespace ORTS
 			if (SettingsInt["SoundDetailLevel"] > 0)
             {
                 ISound ambientSound = SoundEngine.Play2D(Simulator.BasePath + @"\SOUND\gen_urb1.wav", true);  // TODO temp code
-                ambientSound.Volume = 0.2f;
+                if (ambientSound != null)
+                    ambientSound.Volume = 0.2f;
             }
 
             InfoDisplay = new InfoDisplay(this);

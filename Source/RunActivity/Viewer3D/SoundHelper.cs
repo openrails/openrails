@@ -7,6 +7,7 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 //#define DEBUGSCR
+//#define DEBUGOPENCLOSE
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,9 @@ namespace ORTS
     {
         // Place to store our streams, needed to control the behavior of the looping
         public static Dictionary<string, WAVFileStream> FileStreams = new Dictionary<string, WAVFileStream>();
+
+        private static Dictionary<string, MemoryStream> _Streams = new Dictionary<string, MemoryStream>();
+        private static Dictionary<long, long> _Positions = new Dictionary<long, long>();
 
         /// <summary>
         /// IFileFactory Interface memeber to open the given file
@@ -194,13 +198,71 @@ namespace ORTS
                 FileStreams[FileName].ReleaseWithJump();
             }
         }
+
+        public static void EnsureStream(string FileName)
+        {
+            if (!_Streams.Keys.Contains(FileName))
+            {
+#if DEBUGOPENCLOSE
+                Console.WriteLine("(Opening file: " + FileName.Substring(FileName.LastIndexOf('\\')) + ")");
+#endif
+                FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                MemoryStream ms = new MemoryStream();
+                ms.SetLength(fs.Length);
+                fs.Read(ms.GetBuffer(), 0, (int)fs.Length);
+                ms.Flush();
+                fs.Close();
+                ms.Seek(0, SeekOrigin.Begin);
+                _Streams.Add(FileName, ms);
+            }
+        }
+
+        public static MemoryStream PrepareStream(string FileName, long hndl)
+        {
+            MemoryStream s;
+            if (_Positions.Keys.Contains(hndl))
+            {
+                s = _Streams[FileName];
+                long p = _Positions[hndl];
+                s.Seek(p, SeekOrigin.Begin);
+                return s;
+            }
+            else
+            {
+                EnsureStream(FileName);
+                _Positions.Add(hndl, 0);
+                s = _Streams[FileName];
+                s.Seek(0, SeekOrigin.Begin);
+                return s;
+            }
+        }
+
+        public static void SavePos(string FileName, long hndl)
+        {
+            MemoryStream s;
+            if (_Positions.Keys.Contains(hndl))
+            {
+                s = _Streams[FileName];
+                long p = s.Position;
+                _Positions[hndl] = p;
+            }
+            else
+            {
+                _Positions.Add(hndl, 0);
+            }
+        }
     }
     
     /// <summary>
     /// File Stream implementation to provide CUE markers and looping functionality
     /// </summary>
-    public class WAVFileStream : FileStream
+    public class WAVFileStream : Stream
     {
+        private string Name;
+        private MemoryStream _ms;
+        private long ID;
+        private static long lastID = 0;
+
         // Stored positions, may handle just two markers
         private long _AbsoluteBeginPosition = 0;
         private long _Marker1Position = 0;
@@ -228,17 +290,24 @@ namespace ORTS
         /// </summary>
         /// <param name="filename">Name of the file to be streamed</param>
         public WAVFileStream(String filename)
-            : base(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+//            : base(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
         {
+            Name = filename;
+#if DEBUGOPENCLOSE1
+            Console.WriteLine("(Using file: " + this.Name.Substring(this.Name.LastIndexOf('\\')) + ")");
+#endif
             _isShouldFinish = true;
             _isInInternalLoop = false;
             LoopCount = 1;
+            WAVIrrKlangFileFactory.EnsureStream(Name);
+            ID = lastID++;
+            WAVIrrKlangFileFactory.SavePos(Name, ID);
         }
 
         public override void Close()
         {
-#if DEBUGSCR
-            Console.WriteLine("(Closing file: " + this.Name.Substring(this.Name.LastIndexOf('\\')) + ")");
+#if DEBUGOPENCLOSE1
+            Console.WriteLine("(Deusing file: " + this.Name.Substring(this.Name.LastIndexOf('\\')) + ")");
 #endif
             isClosed = true;
             isPlaying = false;
@@ -265,6 +334,7 @@ namespace ORTS
         /// <returns></returns>
         public override int Read(byte[] array, int offset, int count)
         {
+            _ms = WAVIrrKlangFileFactory.PrepareStream(Name, ID);
             int rdb = 0;
             byte[] preread = new byte[4];
 
@@ -272,11 +342,11 @@ namespace ORTS
             {
 
                 // Check the overread case, if trying to read after the second marker or the end of the file
-                if (LoopedEndPosition != 0 && (Position + count > LoopedEndPosition))
+                if (LoopedEndPosition != 0 && (_ms.Position + count > LoopedEndPosition))
                 {
                     // Just for sure, reverse check, if already overrun
-                    if (LoopedEndPosition - Position > 0)
-                        rdb = base.Read(array, offset, (int)(LoopedEndPosition - Position));
+                    if (LoopedEndPosition - _ms.Position > 0)
+                        rdb = _ms.Read(array, offset, (int)(LoopedEndPosition - _ms.Position));
                 }
                 else
                 {
@@ -285,8 +355,8 @@ namespace ORTS
 #if DEBUGSCR
                         Console.WriteLine("(Now using preread on file {0})", this.Name.Substring(this.Name.LastIndexOf('\\')));
 #endif
-                        rdb = base.Read(preread, 0, 4);
-                        Seek(4 - count, SeekOrigin.Current);
+                        rdb = _ms.Read(preread, 0, 4);
+                        _ms.Seek(4 - count, SeekOrigin.Current);
                         for (int i = 0; i < count; i++)
                         {
                             array[i] = preread[i];
@@ -295,7 +365,7 @@ namespace ORTS
                     else
                     {
                         // May read without problems
-                        rdb = base.Read(array, offset, count);
+                        rdb = _ms.Read(array, offset, count);
                         for (int i = 0; i < (rdb >= 4 ? 4 : count); i++)
                         {
                             preread[i] = array[i];
@@ -322,7 +392,7 @@ namespace ORTS
                     // Reset flag and store the positions
                     // Also set markers to default
                     _isNextLength = false;
-                    _AbsoluteBeginPosition = Position;
+                    _AbsoluteBeginPosition = _ms.Position;
                     _Marker1Position = 0;
                     _Marker2Position = _InternalLength;
 
@@ -338,12 +408,12 @@ namespace ORTS
                 // fmt, may read the BPS
                 else if (preread[0] == 102 && preread[1] == 109 && preread[2] == 116)
                 {
-                    long pos = Position;
-                    base.Seek(6, SeekOrigin.Current);
+                    long pos = _ms.Position;
+                    _ms.Seek(6, SeekOrigin.Current);
                     _SPS = (int)FromReadArray(2);
-                    base.Seek(10, SeekOrigin.Current);
+                    _ms.Seek(10, SeekOrigin.Current);
                     _BPS = (int)FromReadArray(2) / 8;
-                    base.Seek(pos, SeekOrigin.Begin);
+                    _ms.Seek(pos, SeekOrigin.Begin);
                 }
                 #endregion
 
@@ -352,25 +422,25 @@ namespace ORTS
                 while (count > rdb && !_isShouldFinish)
                 {
                     LoopCount++;
-                    Seek(BeginPosition, SeekOrigin.Begin);
+                    _ms.Seek(BeginPosition, SeekOrigin.Begin);
                     //rdb += base.Read(array, offset + rdb, count - rdb);
                     // Check the overread case, if trying to read after the second marker or the end of the file
-                    if (LoopedEndPosition != 0 && (Position + (count - rdb) > LoopedEndPosition))
+                    if (LoopedEndPosition != 0 && (_ms.Position + (count - rdb) > LoopedEndPosition))
                     {
                         // Just for sure, reverse check, if already overrun
-                        if (LoopedEndPosition - Position > 0)
-                            rdb += base.Read(array, offset + rdb, (int)(LoopedEndPosition - Position));
+                        if (LoopedEndPosition - _ms.Position > 0)
+                            rdb += _ms.Read(array, offset + rdb, (int)(LoopedEndPosition - _ms.Position));
                     }
                     else
                     {
                         // May read without problems
-                        rdb += base.Read(array, offset + rdb, count - rdb);
+                        rdb += _ms.Read(array, offset + rdb, count - rdb);
                     }
                 }
 
-                if (count > rdb && _isShouldFinish && Position < LoopedEndPosition)
+                if (count > rdb && _isShouldFinish && _ms.Position < LoopedEndPosition)
                 {
-                    rdb += base.Read(array, offset + rdb, (int)(LoopedEndPosition - Position));
+                    rdb += _ms.Read(array, offset + rdb, (int)(LoopedEndPosition - _ms.Position));
                 }
 
                 isPlaying = rdb != 0;
@@ -385,9 +455,12 @@ namespace ORTS
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
 #endif
+                return rdb;
             }
-
-            return rdb;
+            finally
+            {
+                WAVIrrKlangFileFactory.SavePos(Name, ID);
+            }
         }
 
         /// <summary>
@@ -483,7 +556,7 @@ namespace ORTS
         protected internal long? FromReadArray(int len)
         {
             byte[] array = new byte[4];
-            int rd = base.Read(array, 0, len);
+            int rd = _ms.Read(array, 0, len);
             if (rd == -1)
                 return null;
             return FromArray(array);
@@ -500,8 +573,8 @@ namespace ORTS
             long? tmp;
 
             // Seek to end of the data chunk
-            base.Seek(_InternalLength + _AbsoluteBeginPosition, SeekOrigin.Begin);
-            rd = base.Read(array, 0, 4);
+            _ms.Seek(_InternalLength + _AbsoluteBeginPosition, SeekOrigin.Begin);
+            rd = _ms.Read(array, 0, 4);
 
             // Read until find cue chunk or eof
             while (rd != 0 && !(array[0] == 99 && array[1] == 117 && array[2] == 101) )
@@ -512,15 +585,15 @@ namespace ORTS
                     rd = 0;
                     break;
                 }
-                base.Seek(tmp.Value, SeekOrigin.Current);
-                rd = base.Read(array, 0, 4);
+                _ms.Seek(tmp.Value, SeekOrigin.Current);
+                rd = _ms.Read(array, 0, 4);
             }
 
             // cue chunk found
             if (rd != 0)
             {
                 // Read cue point number
-                base.Seek(4, SeekOrigin.Current);
+                _ms.Seek(4, SeekOrigin.Current);
                 tmp = FromReadArray(4);
 
                 List<CUE> lc = new List<CUE>();
@@ -548,7 +621,69 @@ namespace ORTS
             }
 
             // Return to the saved position, the irr wants load from there
-            base.Seek(curpos, SeekOrigin.Begin);
+            _ms.Seek(curpos, SeekOrigin.Begin);
+        }
+
+        public override bool CanRead
+        {
+            get { return WAVIrrKlangFileFactory.PrepareStream(Name, ID).CanRead; }
+        }
+
+        public override bool CanSeek
+        {
+            get { return WAVIrrKlangFileFactory.PrepareStream(Name, ID).CanSeek; }
+        }
+
+        public override bool CanWrite
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override void Flush()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override long Length
+        {
+            get
+            {
+                MemoryStream ms = WAVIrrKlangFileFactory.PrepareStream(Name, ID);
+                return ms.Length;
+            }
+        }
+
+        public override long Position
+        {
+            get
+            {
+                MemoryStream ms = WAVIrrKlangFileFactory.PrepareStream(Name, ID);
+                return ms.Position;
+            }
+            set
+            {
+                MemoryStream ms = WAVIrrKlangFileFactory.PrepareStream(Name, ID);
+                ms.Position = value;
+                WAVIrrKlangFileFactory.SavePos(Name, ID);
+            }
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            MemoryStream ms = WAVIrrKlangFileFactory.PrepareStream(Name, ID);
+            long p = ms.Seek(offset, origin);
+            WAVIrrKlangFileFactory.SavePos(Name, ID);
+            return p;
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -580,7 +715,8 @@ namespace ORTS
             else
                 return;
 
-            fs.Seek(4, SeekOrigin.Current);
+            //fs.Seek(4, SeekOrigin.Current);
+            fs.FromReadArray(4);
             tmp = fs.FromReadArray(4);
             if (tmp.HasValue)
                 tmpp = tmp.Value;
