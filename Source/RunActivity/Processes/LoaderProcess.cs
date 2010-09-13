@@ -80,7 +80,12 @@ namespace ORTS
 				catch (Exception error)
 				{
 					if (!(error is ThreadAbortException))
+					{
+						// Unblock anyone waiting for us, report error and die.
+						State.SignalFinish();
 						Viewer.ProcessReportError(error);
+						return;
+					}
 				}
 
                 State.SignalFinish();

@@ -61,8 +61,6 @@ namespace ORTS
             State.SignalStart();   
         }
 
-
-
         public void UpdateLoop()
         {
 			Viewer.UpdaterProfiler = new Profiler("Updater");
@@ -100,7 +98,12 @@ namespace ORTS
 				catch (Exception error)
 				{
 					if (!(error is ThreadAbortException))
+					{
+						// Unblock anyone waiting for us, report error and die.
+						State.SignalFinish();
 						Viewer.ProcessReportError(error);
+						return;
+					}
 				}
 
                 // Signal finished so RenderProcess can start drawing

@@ -559,12 +559,12 @@ namespace ORTS
 		/// <param name="error"></param>
 		public void ProcessReportError(Exception error)
 		{
-			// Better pause things to avoid stacking more problems on top.
-			Simulator.Paused = true;
+			// Log the error first in case we're burning.
 			Trace.WriteLine(error);
-			System.Windows.Forms.MessageBox.Show(error.ToString());
-			// User has seen error, time for the game to quit.
+			// Stop the world!
 			Stop();
+			// Show the user that it's all gone horribly wrong.
+			System.Windows.Forms.MessageBox.Show(error.ToString());
 		}
 
         /// <summary>
