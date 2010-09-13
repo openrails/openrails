@@ -402,6 +402,8 @@ namespace ORTS
                 MotiveForceN = 0;   // valves assumed to be closed
             // usage calculated as moving average to minimize chance of oscillation
             SteamUsageLBpS = .6f * SteamUsageLBpS + .4f * speed * SteamUsageFactor * (cutoff + .07f) * (CylinderSteamDensity[cylinderPressure] - CylinderSteamDensity[backPressure]);
+            if (SteamUsageLBpS < BasicSteamUsageLBpS)
+                SteamUsageLBpS = BasicSteamUsageLBpS; // automatic blower
 
             float burnRate = BurnRate[SteamUsageLBpS];
             Evaporation = EvaporationRate[burnRate];
