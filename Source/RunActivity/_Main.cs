@@ -84,7 +84,7 @@ namespace ORTS
 					action = possibleAction;
 
 			// Collect all non-action settings.
-			var settings = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a)).Select(a => a.Substring(1));
+			var settings = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1))).Select(a => a.Substring(1));
 
 			// Collect all non-options as data.
 			var data = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
@@ -270,16 +270,20 @@ namespace ORTS
 			foreach (var setting in settings)
 			{
 				var data = setting.ToLowerInvariant().Split('=', ':');
-				if (viewer.SettingsBool.ContainsKey(data[0]))
+				if (Enum.GetNames(typeof(BoolSettings)).Contains(data[0], StringComparer.OrdinalIgnoreCase))
 				{
-					viewer.SettingsBool[data[0]] = (data.Length == 1) || new[] { "true", "yes", "on", "1" }.Contains(data[1]);
+					viewer.SettingsBool[(int)Enum.Parse(typeof(BoolSettings), data[0], true)] = (data.Length == 1) || new[] { "true", "yes", "on", "1" }.Contains(data[1]);
 				}
-				else if (viewer.SettingsInt.ContainsKey(data[0]))
+				else if (Enum.GetNames(typeof(IntSettings)).Contains(data[0], StringComparer.OrdinalIgnoreCase))
 				{
 					if (data.Length < 2)
 						Console.WriteLine("Option '" + setting + "' missing value.");
 					else
-						viewer.SettingsInt[data[0]] = int.Parse(data[1]);
+						viewer.SettingsInt[(int)Enum.Parse(typeof(IntSettings), data[0], true)] = int.Parse(data[1]);
+				}
+				else if (data[0] != "skip-user-settings")
+				{
+					Console.WriteLine("Option '" + data[0] + "' is unknown.");
 				}
 			}
 		}

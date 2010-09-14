@@ -741,7 +741,7 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-			if (Viewer.SettingsInt["SoundDetailLevel"] > 0)
+			if (Viewer.SettingsInt[(int)IntSettings.SoundDetailLevel] > 0)
 				UpdateSound(elapsedTime);
             UpdateAnimation(frame, elapsedTime);
         }

@@ -175,7 +175,7 @@ namespace ORTS
 		int ProfileFrames = 1000;
         protected override void Draw(GameTime gameTime)
         {
-			if (Viewer.SettingsBool["Profiling"])
+			if (Viewer.SettingsBool[(int)BoolSettings.Profiling])
 				if (--ProfileFrames == 0)
 					Viewer.Stop();
 

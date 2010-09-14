@@ -79,7 +79,7 @@ namespace ORTS.Popups
 			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
 			var material = Materials.PopupWindowMaterial;
-			if (Viewer.SettingsBool["WindowGlass"])
+			if (Viewer.SettingsBool[(int)BoolSettings.WindowGlass])
 			{
 				// Buffer for screen texture, also same size as viewport and using the backbuffer format.
 				if (Screen == null)
