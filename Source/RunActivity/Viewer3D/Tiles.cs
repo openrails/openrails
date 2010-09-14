@@ -61,7 +61,7 @@ namespace ORTS
 			if (((ux & 1) == (uz & 1)))
 			{
 				// Split NW-SE
-				if (x > z)
+				if ((x - ux) > (z - uz))
 					// NE side
 					e = nw + (ne - nw) * (x - ux) + (se - ne) * (z - uz);
 				else
@@ -71,7 +71,7 @@ namespace ORTS
 			else
 			{
 				// Split NE-SW
-				if (x + z < 1)
+				if ((x - ux) + (z - uz) < 1)
 					// NW side
 					e = nw + (ne - nw) * (x - ux) + (sw - nw) * (z - uz);
 				else
