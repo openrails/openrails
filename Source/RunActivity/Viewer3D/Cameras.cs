@@ -78,6 +78,7 @@ namespace ORTS
 		/// </summary>
 		public void Activate()
 		{
+			ScreenChanged();
 			OnActivate();
 			Viewer.Camera = this;
 			Update(ElapsedTime.Zero);

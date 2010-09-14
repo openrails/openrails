@@ -497,7 +497,7 @@ namespace ORTS
 			}
 
 			if (ScreenHasChanged())
-				NotifyCamerasOfScreenChange();
+				Camera.ScreenChanged();
 
 			// Update camera first...
 			Camera.Update(elapsedTime);
@@ -613,20 +613,6 @@ namespace ORTS
             return false;
         }
         private bool isFullScreen = false;
-
-        /// <summary>
-        /// Called when we detect that the screen size has changed
-        /// </summary>
-        private void NotifyCamerasOfScreenChange()
-        {
-            // since each camera has its own projection matrix, they all have to be notified
-            Camera.ScreenChanged();
-            CabCamera.ScreenChanged();
-            FrontCamera.ScreenChanged();
-            BackCamera.ScreenChanged();
-            PassengerCamera.ScreenChanged();
-            BrakemanCamera.ScreenChanged();
-        }
 
         private TrainCarViewer GetPlayerLocomotiveViewer()
         {
