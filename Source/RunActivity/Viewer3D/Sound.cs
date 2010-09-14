@@ -170,10 +170,10 @@ namespace ORTS
 
         public void Update(ElapsedTime elapsedTime)
         {
-            if (Viewer.Simulator.ClockTime < LastUpdate + .2)
+            if (Program.RealTime < LastUpdate + .2)
                 return;
 
-            LastUpdate = Viewer.Simulator.ClockTime;
+            LastUpdate = Program.RealTime;
             
             if (!Active)
             {
