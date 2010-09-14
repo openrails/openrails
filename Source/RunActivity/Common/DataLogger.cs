@@ -8,16 +8,12 @@ namespace ORTS
 {
     class DataLogger
     {
-        readonly int CacheSize;
-        const int LargeCacheSize = 2048 * 1024;  // 2 Megs
-        readonly StringBuilder Cache = new StringBuilder();
-        int CacheCount = 0;
+        const int CacheSize = 2048 * 1024;  // 2 Megs
+        readonly StringBuilder Cache = new StringBuilder(CacheSize);
         bool FirstItem = true;
 
-        public DataLogger(int cacheSize)
+        public DataLogger()
         {
-            CacheSize = cacheSize;
-            Cache.EnsureCapacity(LargeCacheSize);
         }
 
         public void Data(string data)
@@ -31,12 +27,8 @@ namespace ORTS
         public void End()
         {
             Cache.AppendLine();
-            /*
-			if (++CacheCount >= CacheSize)
+			if (Cache.Length >= CacheSize)
 				Flush();
-             */
-            if (Cache.Length > LargeCacheSize)
-                Flush();
             FirstItem = true;
         }
 
@@ -49,13 +41,6 @@ namespace ORTS
                 file.Close();
             }
             Cache.Length = 0;
-            CacheCount = 0;
-            Cache.EnsureCapacity(LargeCacheSize);
-        }
-
-        ~DataLogger()
-        {
-            Flush();
         }
     }
 }

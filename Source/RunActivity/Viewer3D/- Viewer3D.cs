@@ -574,6 +574,7 @@ namespace ORTS
 
         public void Stop()
         {
+			InfoDisplay.Stop();
             RenderProcess.Stop();
         }
 

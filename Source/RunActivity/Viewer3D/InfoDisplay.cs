@@ -20,7 +20,7 @@ namespace ORTS
     public class InfoDisplay
     {
         readonly StringBuilder TextBuilder = new StringBuilder();
-        readonly DataLogger Logger = new DataLogger(15); //15 frames before dumping
+        readonly DataLogger Logger = new DataLogger();
         readonly TextPrimitive TextPrimitive = new TextPrimitive();
         readonly SpriteBatchMaterial Material;
         readonly Viewer3D Viewer;
@@ -43,6 +43,14 @@ namespace ORTS
             TextPrimitive.Location = new Vector2(10, 10);
             //TextPrimitive.Sequence = RenderPrimitiveSequence.TextOverlay;
         }
+
+		public void Stop()
+		{
+			if (LoggerEnabled)
+			{
+				Logger.Flush();
+			}
+		}
 
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
