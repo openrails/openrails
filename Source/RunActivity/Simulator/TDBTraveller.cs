@@ -222,7 +222,7 @@ namespace ORTS
             while (true)  // we will exit this loop when we find the waypoint or run out of track
             {
                 float initialOffset = traveller.Offset;
-                if (traveller.Direction > 0)  // moving forward
+                if (traveller.TS != null && traveller.Direction > 0)  // moving forward
                 {
                     if (traveller.TS.SectionCurve != null) // If we are moving forward in a curve
                     {
@@ -260,7 +260,7 @@ namespace ORTS
 
                     }
                 }
-                else // we are moving backwards
+                else if (traveller.TS != null) // we are moving backwards
                 {
                     if (traveller.TS.SectionCurve != null) // If we are moving backward in a curve
                     {
