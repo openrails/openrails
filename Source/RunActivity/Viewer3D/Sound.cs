@@ -1515,6 +1515,14 @@ namespace ORTS
 
 #if PLAYSOUNDS
             string filePath = ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile];
+            if (!File.Exists(filePath))
+            {
+                filePath = Program.Simulator.RoutePath + @"\Sound\" + Files[iFile];
+                if (!File.Exists(filePath))
+                {
+                    filePath = Program.Simulator.BasePath + @"\Sound\" + Files[iFile];
+                }
+            }
             if (File.Exists(filePath) && ORTSStream.SoundSource.Viewer.SoundEngine != null )
             {
                 filePath += '*' + UID.ToString();
