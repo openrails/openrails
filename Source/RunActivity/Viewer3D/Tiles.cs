@@ -98,6 +98,7 @@ namespace ORTS
 		private int bufferTileX, bufferTileZ;  // coordinates of Tile[0,0]
 		private const int bufferSize = 8;
 		private Tile[,] tileBuffer = new Tile[bufferSize, bufferSize];  // null means we haven't read it yet
+        private System.Threading.Mutex Mutex = new System.Threading.Mutex(false);
 
 		string TileFolderNameSlash;
 
@@ -126,18 +127,24 @@ namespace ORTS
 		/// <returns></returns>
 		public Tile GetTile(int tileX, int tileZ)
 		{
+            Mutex.WaitOne();
 			// Reposition the buffer if necessary to include these coordinates
 			if (!Contains(tileX, tileZ))
 				Reposition(tileX, tileZ);
 
 			// If we haven't read the tile yet, then read it.
 			Tile tile = GetBuffer(tileX, tileZ);
+            Mutex.ReleaseMutex();
 			if (tile == null)
 			{
 				tile = new Tile(tileX, tileZ, TileFolderNameSlash);
-				int x = tileX - bufferTileX;
+                Mutex.WaitOne();
+                if (!Contains(tileX, tileZ))
+                    Reposition(tileX, tileZ);
+                int x = tileX - bufferTileX;
 				int z = tileZ - bufferTileZ;
 				tileBuffer[x, z] = tile;
+                Mutex.ReleaseMutex();
 			}
 
 			return tile;
@@ -214,7 +221,6 @@ namespace ORTS
 			for (int x = 0; x < bufferSize; ++x)
 				for (int z = 0; z < bufferSize; ++z)
 					tileBuffer[x, z] = newTileBuffer[x, z];
-
 		}
 	}
 
