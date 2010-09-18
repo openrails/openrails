@@ -7,7 +7,6 @@ using System.IO;
 using MSTS;
 using ORTS.Popups;
 
-
 namespace ORTS
 {
     public class Signals
@@ -21,11 +20,11 @@ namespace ORTS
         public int noSignals = 0;
         private int foundSignals = 0;
 
-        public Signals(Simulator simulator/*,TDBFile tdbFile*/)
+        public Signals(Simulator simulator)
         {
             trackDB = simulator.TDB.TrackDB;
             BuildSignalList(simulator.TDB.TrackDB.TrItemTable, simulator.TDB.TrackDB.TrackNodes);
-            AddCFG(simulator.sigCFGfile);  // Add links to the sigcfg.dat file
+            if (foundSignals>0) AddCFG(simulator.sigCFGfile);  // Add links to the sigcfg.dat file
         }
 
         // Restore state to resume a saved game
@@ -64,6 +63,7 @@ namespace ORTS
             //  Determaine the number of signals in the track Objects list
             //
             noSignals = 0;
+            if (TrItems == null) return;                // No track Objects in route.
             foreach (TrItem trItem in TrItems)
             {
                 if (trItem != null)
@@ -113,12 +113,6 @@ namespace ORTS
                 if (index == 0) return;
                 if (visited[index, direction] > 0) return;
                 visited[index, direction] = 1;      //  Mark track node as processed
-                //  If another TrEndNode then end of path
-                //if (index == 1810)
-                //{
-                //    TrackNode tn = trackNodes[index];
-                //    Console.WriteLine(index);
-                //}
 
                 if (trackNodes[index].TrEndNode != null) return;
                 //  Is it a vector node then it may contain objects.
@@ -439,29 +433,46 @@ namespace ORTS
             }
         }
 
-        //
-        //  Interface Routines: Used by Dispatcher, Virtual Signal Box etc. 
-        //
 
         //
         // Get the nearest (NORMAL)signal to the current point in the tdbtraveller
         // Returns -1 if one cannot be found.
         //
+
+        public int FindNextSignal(TDBTraveller tdbtraveller)
+        {
+            return FindSignal(tdbtraveller, tdbtraveller.Direction);   
+        }
+
         public Signal FindNearestSignal(TDBTraveller tdbtraveller)
+        {
+            int sigRef = FindNextSignal(tdbtraveller);
+            return new Signal(this, signalObjects, sigRef);
+        }
+
+        public int FindPrevSignal(TDBTraveller tdbtraveller)
+        {
+            TDBTraveller revTDBtraveller = new TDBTraveller(tdbtraveller);
+            revTDBtraveller.ReverseDirection();
+            int direction = tdbtraveller.Direction; 
+            return FindSignal(revTDBtraveller, direction);
+        }
+
+        public int FindSignal(TDBTraveller tdbtraveller,int Direction)
         {
             int startNode = tdbtraveller.TrackNodeIndex;
             int currenNode = startNode;
-            int currDir = tdbtraveller.Direction;
+            int currDir = Direction;
             int sigIndex = -1;
             float distance = 999999.0f;
             TrackNode[] trackNodes = trackDB.TrackNodes;
             TrItem[] trItems = trackDB.TrItemTable;
 
-            if (noSignals < 1) return new Signal(signalObjects, -1); ;   // No Signals on route
+            if (noSignals < 1) return -1; ;   // No Signals on route
 
             do
             {
-                if (trackNodes[currenNode].TrEndNode != null) return new Signal(signalObjects, -1);  // End of track reached no signals found.
+                if (trackNodes[currenNode].TrEndNode != null) return -1;  // End of track reached no signals found.
                 if (trackNodes[currenNode].TrVectorNode != null)
                 {
                     if (trackNodes[currenNode].TrVectorNode.noItemRefs > 0)
@@ -490,23 +501,22 @@ namespace ORTS
                             }
                         }
 
-                        if (sigIndex >= 0) return new Signal(signalObjects,sigIndex); // Signal found in this node.
+                        if (sigIndex >= 0) return sigIndex; // Signal found in this node.
                     }
 
                 }
                 NextNode(trackNodes, ref currenNode, ref currDir);
-                if (currenNode == startNode) return new Signal(signalObjects, -1); // back to where we started !
+                if (currenNode == startNode) return -1; // back to where we started !
             } while (true);
 
         } //FindNearestSignal
-
     }
 
 
     public class SignalObject
     {
 
-        public enum BLOCK
+        public enum BLOCKSTATE
         {
             CLEAR,					// Block ahead is clear
 	        OCCUPIED,				// Block ahead is occupied by one or more wagons/locos
@@ -527,7 +537,8 @@ namespace ORTS
         public bool canUpdate = true;           // Signal can be updated automatically
         public bool isAuto = true;
         public bool useScript = false;
-        public int blockState;
+        public BLOCKSTATE blockState=BLOCKSTATE.CLEAR;
+        public Signal.PERMISSION hasPermission = Signal.PERMISSION.DENIED;  // Permission to pass red signal
         public int nextSignal = -2;             // Index to next signal. -1 if none -2 indeterminate
         public int prevSignal = -2;             // Index to previous signal -1 if none -2 indeterminate
 
@@ -539,9 +550,9 @@ namespace ORTS
             get { return direction == 0 ? 1 : 0; }
         }
 
-        public BLOCK block_state()
+        public BLOCKSTATE block_state()
         {
-            return BLOCK.CLEAR;
+            return blockState;
         }
 
         //
@@ -915,16 +926,27 @@ namespace ORTS
 
         public void TrackStateChanged()
         {
-            if(isJunction) nextSignal=-2;
+            //if(isJunction) nextSignal=-2;
+            nextSignal = -2;
         }
 
+        //
+        // Gets the display aspect for the track monitor
+        //
         public TrackMonitorSignalAspect GetMonitorAspect()
         {
             switch (this_sig_lr(SignalHead.SIGFN.NORMAL))
             {
                 case SignalHead.SIGASP.STOP:
                 case SignalHead.SIGASP.STOP_AND_PROCEED:
-                    return TrackMonitorSignalAspect.Stop;
+                    if(hasPermission==Signal.PERMISSION.GRANTED)
+                    {
+                        return TrackMonitorSignalAspect.Warning;
+                    }
+                    else
+                    {
+                        return TrackMonitorSignalAspect.Stop;
+                    }
                     break;
                 case SignalHead.SIGASP.RESTRICTING:
                 case SignalHead.SIGASP.APPROACH_1:
@@ -990,7 +1012,7 @@ namespace ORTS
             trItemIndex = trItem;
         }
 
-        // This method sets the signal type from the CIGCFG file
+        // This method sets the signal type object from the CIGCFG file
         public void SetSignalType(TrItem[] TrItems,SIGCFGFile sigCFG)
         {
             SignalItem sigItem = (SignalItem)TrItems[SignalObject.trackNodes[mainSignal.trackNode].TrVectorNode.TrItemRefs[trItemIndex]];
@@ -1091,7 +1113,7 @@ namespace ORTS
         {
             if (mainSignal.enabled)
             {
-                if (route_set() == 1 && mainSignal.block_state()==SignalObject.BLOCK.CLEAR)
+                if (route_set() == 1 && mainSignal.block_state()==SignalObject.BLOCKSTATE.CLEAR)
                 {
                     switch (this.sigFunction)
                     {
@@ -1119,14 +1141,80 @@ namespace ORTS
             CLEAR,
             UNKNOWN
         }
-        
-        private static SignalObject[] signalObjects;
-        private int sigReference;
 
-        public Signal(SignalObject[] sigObjects,int sigRef)
+        public enum PERMISSION
         {
-            sigReference = sigRef;
+            GRANTED,
+            DENIED
+        }
+        
+        private static SignalObject[] signalObjects=null;
+        private static Signals signals = null;
+        private int nextSigRef = -1;                          // Index to next signal from front TDB. -1 if none.         
+        private int rearSigRef = -2;                          // Index to next signal from rear TDB. -1 if none -2 indeterminate.
+        private int prevSigRef = -2;                          // Index to Signal behind train. -1 if none -2 indeterminate.
+
+        public Signal(Signals sigNals,SignalObject[] sigObjects,int sigRef)
+        {
+            nextSigRef = sigRef;
             if(signalObjects==null) signalObjects = sigObjects;
+            if (signals == null) signals = sigNals;
+        }
+
+        //
+        //   This method is invoked if the train has changed direction or the switch ahead has changed ('G' pressed.)
+        //   Ensures that the train 'sees' the correct signal.
+        //
+        public void Reset(TDBTraveller tdbTraveller,bool askPermisiion)
+        {
+            if (signals != null)
+            {
+                nextSigRef = signals.FindNextSignal(tdbTraveller);
+                SetSignalState(SIGNALSTATE.CLEAR);
+                TrackStateChanged();
+                rearSigRef = -2;
+                prevSigRef = -2;
+                if (nextSigRef >= 0 && askPermisiion) signalObjects[nextSigRef].hasPermission = Signal.PERMISSION.GRANTED;
+            }
+        }
+
+        public void UpdateTrackOcupancy(TDBTraveller rearTDBTraveller)
+        {
+            if (rearSigRef < -1)
+            {
+                if (signals != null)
+                {
+                    rearSigRef = signals.FindNextSignal(rearTDBTraveller);
+                    if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
+                    {
+                        signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
+                    }
+                }
+            }
+            if (prevSigRef < -1)
+            {
+                if (signals != null)
+                {
+                    prevSigRef = signals.FindPrevSignal(rearTDBTraveller);
+                    if (prevSigRef >= 0) signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
+                }
+            }
+            if (rearSigRef >= 0)
+            {
+                float dist = signalObjects[rearSigRef].DistanceTo(rearTDBTraveller);
+                // The rear of the train has passed this signal so set previous signal to BLOCKSTATE.CLEAR
+                if (dist <= 0)
+                {
+                    if (prevSigRef >= 0) signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.CLEAR;
+                    prevSigRef = rearSigRef;
+                    rearSigRef = signals.FindNextSignal(rearTDBTraveller);
+                    if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
+                    {
+                        signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
+                    }
+                }
+
+            }
         }
 
         //
@@ -1134,7 +1222,13 @@ namespace ORTS
         //
         public void NextSignal()
         {
-            if (sigReference >= 0) sigReference = signalObjects[sigReference].GetNextSignal();
+            if (nextSigRef >= 0)
+            {
+                // Train has entered block controled by this signal
+                signalObjects[nextSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
+                signalObjects[nextSigRef].hasPermission = PERMISSION.DENIED;
+                nextSigRef = signalObjects[nextSigRef].GetNextSignal();
+            }
         } // NextSignal
 
         //
@@ -1142,7 +1236,7 @@ namespace ORTS
         //
         public float DistanceToSignal(TDBTraveller tdbTraverler)
         {
-            return sigReference >= 0 ? signalObjects[sigReference].DistanceTo(tdbTraverler) : 0.01F;
+            return nextSigRef >= 0 ? signalObjects[nextSigRef].DistanceTo(tdbTraverler) : 0.01F;
         }  // DistanceToSignal
 
         //
@@ -1150,7 +1244,7 @@ namespace ORTS
         //
         public SignalHead.SIGASP GetAspect()
         {
-            return sigReference >= 0 ? signalObjects[sigReference].this_sig_lr(SignalHead.SIGFN.NORMAL) : SignalHead.SIGASP.UNKNOWN;
+            return nextSigRef >= 0 ? signalObjects[nextSigRef].this_sig_lr(SignalHead.SIGFN.NORMAL) : SignalHead.SIGASP.UNKNOWN;
         }
 
         //
@@ -1158,18 +1252,28 @@ namespace ORTS
         //
         public TrackMonitorSignalAspect GetMonitorAspect()
         {
-            return sigReference >= 0 ? signalObjects[sigReference].GetMonitorAspect() : TrackMonitorSignalAspect.None;
+            return nextSigRef >= 0 ? signalObjects[nextSigRef].GetMonitorAspect() : TrackMonitorSignalAspect.None;
         }
 
         public void SetSignalState(Signal.SIGNALSTATE state)
         {
-            if(sigReference>=0) signalObjects[sigReference].SetSignalState(state);
+            if (nextSigRef >= 0) signalObjects[nextSigRef].SetSignalState(state);
         }
 
         public void TrackStateChanged()
         {
-            if(sigReference>=0) signalObjects[sigReference].TrackStateChanged();
+            if (nextSigRef >= 0) signalObjects[nextSigRef].TrackStateChanged();
         }
+
+        public PERMISSION HasPermissionToProceed()
+        {
+            if (nextSigRef > 0) return signalObjects[nextSigRef].hasPermission; else return PERMISSION.DENIED;
+        }
+
+        //public TDBTraveller FrontTDBTraveler
+        //{
+        //    set { frontTDBTraveler = value; }
+        //}
     }
 
 }

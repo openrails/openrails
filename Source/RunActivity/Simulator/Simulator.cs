@@ -83,8 +83,8 @@ namespace ORTS
 			Trace.Write(" TDB");
             TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
-			//Trace.Write(" SIGCFG");
-            //sigCFGfile = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
+			Trace.Write(" SIGCFG");
+            sigCFGfile = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
 
 			Trace.Write(" DAT");
             if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
@@ -124,7 +124,7 @@ namespace ORTS
         {
             // Switches
             AlignSwitchesToDefault();  // ie straight through routing
-            //Signals = new Signals(this);
+            Signals = new Signals(this);
             // Trains
 			Trace.Write(" CON");
             Trains.Clear();
@@ -508,6 +508,7 @@ namespace ORTS
                 else
                     nextSwitchTrack.SelectedRoute = 0;
             }
+            train.ResetSignal(false);
         }
 
         public bool SwitchIsOccupied(int junctionIndex)
@@ -603,7 +604,7 @@ namespace ORTS
 
             Trains.Add(train);
             train.AITrainBrakePercent = 100;
-            //train.InitSignals(this);
+            train.InitializeSignals(this, true);
         }
 
 
@@ -671,6 +672,7 @@ namespace ORTS
 
                     train.CalculatePositionOfCars(0);
                     train.InitializeBrakes();
+                    train.InitializeSignals(this, false);
 
                     Trains.Add(train);
 

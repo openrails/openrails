@@ -234,6 +234,7 @@ namespace ORTS
 
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
+            train.InitializeSignals(Simulator, false);
 
             //AITrains.Add(train);
             Simulator.Trains.Add(train);

@@ -62,9 +62,10 @@ namespace ORTS
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
 
-        private Signal nextSignal = new Signal(null, -1);
+        private Signal nextSignal = new Signal(null,null, -1);
         public float distanceToSignal = 0.1f;
         public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
+        private bool spad = false;      // Signal Passed At Danger
 
         // For AI control of the train
         public float AITrainBrakePercent
@@ -108,20 +109,25 @@ namespace ORTS
         }
 
 
-        public void InitSignals(Simulator simulator)
+        public void InitializeSignals(Simulator simulator, bool isPlayerTrain)
         {
-            nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
-            distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
+            if (simulator.Signals != null)
+            {
+                nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
+                distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
+                nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+                if (isPlayerTrain) nextSignal.SetSignalState(Signal.SIGNALSTATE.STOP);
+            }
         }
 
         //
         //  This method is invoked whenever the train direction has changed or 'G' key pressed 
         //
-        public void ResetSignal(Simulator simulator)
+        public void ResetSignal(bool askPermisiion)
         {
-            nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
-            nextSignal.TrackStateChanged();
-            distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
+            nextSignal.Reset(FrontTDBTraveller, askPermisiion);
+            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+            spad = false;
         }
 
         // Sets the Lead locomotive to the next in the consist
@@ -273,19 +279,33 @@ namespace ORTS
                 //        However, the case of an unterminated section should be kept in mind.
             }
 
-            //
-            //  Update the distance to and aspect of next signal
-            //
+            if (!spad) UpdateSignalState();
+
+        } // end Update
+
+
+        //
+        //  Update the distance to and aspect of next signal
+        //
+        private void UpdateSignalState()
+        {
             float dist = nextSignal.DistanceToSignal(FrontTDBTraveller);
             if (dist <= 0.0f)
             {
+                if (nextSignal.GetAspect() == SignalHead.SIGASP.STOP && nextSignal.HasPermissionToProceed() == Signal.PERMISSION.DENIED)
+                {
+                    spad = true;
+                    Stop();             // Signal Passed At Danger so Stop train!
+                    return;
+                }
                 nextSignal.NextSignal();
                 dist = nextSignal.DistanceToSignal(FrontTDBTraveller);
             }
+            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
             distanceToSignal = dist;
             TMaspect = nextSignal.GetMonitorAspect();
-        } // end Update
 
+        }
         /// <summary>
         /// Returns true if (forward == 1) and front of train on TrEndNode
         /// or if (forward == 0) and rear of train on TrEndNode.
