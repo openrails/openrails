@@ -739,9 +739,9 @@ namespace ORTS
                 if (EventID.IsMSTSBin)
                     Locomotive.SignalEvent(EventID.LightSwitchToggle);
             }
-            if (UserInput.IsPressed(Keys.Tab) && !UserInput.IsCtrlKeyDown())
+            if (UserInput.IsPressed(Keys.Tab) && !UserInput.IsCtrlKeyDown() && UserInput.IsShiftDown())
                 Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization();
-            if (UserInput.IsPressed(Keys.Tab) && UserInput.IsCtrlKeyDown())
+            if (UserInput.IsPressed(Keys.Tab) && UserInput.IsCtrlKeyDown() && UserInput.IsShiftDown())
                 Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
 
             // By GeorgeS

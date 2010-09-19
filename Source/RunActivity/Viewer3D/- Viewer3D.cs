@@ -449,7 +449,7 @@ namespace ORTS
             if (UserInput.IsPressed(Keys.G) && !UserInput.IsShiftDown()) Simulator.SwitchTrackAhead( PlayerTrain );
             if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );
             if (UserInput.IsPressed(Keys.F) && UserInput.IsShiftDown() && UserInput.IsCtrlKeyDown()) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
-            if (UserInput.IsPressed(Keys.Tab)) PlayerTrain.ResetSignal(true);
+            if (UserInput.IsPressed(Keys.Tab) && !UserInput.IsShiftDown()) PlayerTrain.ResetSignal(true);
             if (!Simulator.Paused && UserInput.IsAltKeyDown())
             {
                 isMouseShouldVisible = true;
