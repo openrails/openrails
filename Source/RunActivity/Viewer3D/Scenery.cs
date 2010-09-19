@@ -237,10 +237,15 @@ namespace ORTS
 
                 // get the position of the scenery object into ORTS coordinate space
                 WorldPosition worldMatrix;
-                if( worldObject.QDirection == null )
-                    worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX,WFile.TileZ, worldObject.Position, worldObject.Matrix3x3);
-                else
-                    worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX,WFile.TileZ,worldObject.Position, worldObject.QDirection);
+				if (worldObject.Matrix3x3 != null)
+					worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.Matrix3x3);
+				else if (worldObject.QDirection != null)
+					worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.QDirection);
+				else
+				{
+					Trace.TraceError("Object {1} is missing Matrix3x3 and QDirection in {0}", WFileName, worldObject.UID);
+					continue;
+				}
 
 
                 if (worldObject.GetType() == typeof(MSTS.TrackObj))
