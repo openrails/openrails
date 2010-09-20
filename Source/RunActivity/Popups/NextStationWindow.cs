@@ -173,7 +173,7 @@ namespace ORTS.Popups
 				{
 					if (at.SoundNotify != -1)
 					{
-						Viewer.IngameSounds.HandleEvent(at.SoundNotify);
+						if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(at.SoundNotify);
 						at.SoundNotify = -1;
 					}
 				}

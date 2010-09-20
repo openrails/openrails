@@ -112,7 +112,7 @@ namespace ORTS
                             Trace.Write("w");
                             WorldFiles[i] = null;
                             // World sounds - By GeorgeS
-                            Viewer.WorldSounds.RemoveByTile(tile.TileX, tile.TileZ);
+                            if (Viewer.WorldSounds != null) Viewer.WorldSounds.RemoveByTile(tile.TileX, tile.TileZ);
                         }
                     }
                 }
@@ -151,7 +151,7 @@ namespace ORTS
                     Trace.Write("W");
                     WorldFiles[i] = new WorldFile(Viewer, tileX, tileZ);
                     // Load world sounds - By GeorgeS
-                    Viewer.WorldSounds.AddByTile(tileX, tileZ);
+					if (Viewer.WorldSounds != null) Viewer.WorldSounds.AddByTile(tileX, tileZ);
                     return;
                 }
 

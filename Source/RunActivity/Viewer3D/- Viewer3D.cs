@@ -221,10 +221,10 @@ namespace ORTS
 				SoundEngine.SoundVolume = 0;  // while loading
 				// Swap out original file factory to support loops - by GeorgeS
 				SoundEngine.AddFileFactory(new WAVIrrKlangFileFactory());
+				// By GeorgeS
+				WorldSounds = new WorldSounds(this);
 				IngameSounds = new SoundSource(this, Simulator.RoutePath + "\\Sound\\ingame.sms");
 			}
-			// By GeorgeS
-			WorldSounds = new WorldSounds(this);
 			ReadENVFile();
 			TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
 			Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
@@ -554,12 +554,12 @@ namespace ORTS
 			SceneryDrawer.PrepareFrame(frame, elapsedTime);
 			TrainDrawer.PrepareFrame(frame, elapsedTime);
 			// By GeorgeS
-			WorldSounds.Update(elapsedTime);
+			if (WorldSounds != null) WorldSounds.Update(elapsedTime);
 			if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
 			if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);
 			InfoDisplay.PrepareFrame(frame, elapsedTime);
 			// By GeorgeS
-			IngameSounds.Update(elapsedTime);
+			if (IngameSounds != null) IngameSounds.Update(elapsedTime);
 		}
 
 
