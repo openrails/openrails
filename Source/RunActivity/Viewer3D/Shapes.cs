@@ -781,39 +781,32 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags)
         {
             // Locate relative to the camera
-            int dTileX = location.TileX - Viewer.Camera.TileX;
-            int dTileZ = location.TileZ - Viewer.Camera.TileZ;
-			Vector3 mstsLocation = location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
+			var dTileX = location.TileX - Viewer.Camera.TileX;
+			var dTileZ = location.TileZ - Viewer.Camera.TileZ;
+			var mstsLocation = location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
+			var xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
+			Matrix.Multiply(ref location.XNAMatrix, ref xnaDTileTranslation, out xnaDTileTranslation);
 
 			foreach (var lodControl in LodControls)
 			{
 				// Start with the furthest away distance, then look for a nearer one in range of the camera.
-				var chosenDistanceLevel = lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1];
-				foreach (var distanceLevel in lodControl.DistanceLevels)
-				{
-					if (Viewer.Camera.InRange(mstsLocation, distanceLevel.ViewSphereRadius + distanceLevel.ViewingDistance))
-					{
-						chosenDistanceLevel = distanceLevel;
-						break;
-					}
-				}
-
-				Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-				xnaDTileTranslation = location.XNAMatrix * xnaDTileTranslation;
-
+				var chosenDistanceLevelIndex = lodControl.DistanceLevels.Length - 1;
+				while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius + lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
+					chosenDistanceLevelIndex--;
+				var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
 				foreach (var subObject in chosenDistanceLevel.SubObjects)
 				{
 					foreach (var shapePrimitive in subObject.ShapePrimitives)
 					{
-						Matrix xnaMatrix = Matrix.Identity;
-						int iNode = shapePrimitive.iHierarchy;
+						var xnaMatrix = Matrix.Identity;
+						var iNode = shapePrimitive.iHierarchy;
 						while (iNode != -1)
 						{
 							if (shapePrimitive.Hierarchy[iNode] != -1) // MSTS ignores root matrix,  ('floating objects problem' )
-								xnaMatrix *= animatedXNAMatrices[iNode];         // TODO, can we reduce memory allocations during this matrix math
+								Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[iNode], out xnaMatrix);
 							iNode = shapePrimitive.Hierarchy[iNode];
 						}
-						xnaMatrix *= xnaDTileTranslation;
+						Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
 
 						// TODO make shadows depend on shape overrides
 

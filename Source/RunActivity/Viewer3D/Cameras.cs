@@ -142,11 +142,15 @@ namespace ORTS
 		// Cull for fov
 		public bool InFOV(Vector3 mstsObjectCenter, float objectRadius)
 		{
-			Vector3 xnaObjectCenter = new Vector3(mstsObjectCenter.X, mstsObjectCenter.Y, -mstsObjectCenter.Z);
-			Vector3.Transform(ref xnaObjectCenter, ref xnaView, out xnaObjectCenter);
+			Vector3 xnaObjectCenter;
+			// X is not used until later.
+			// Y is unused: xnaObjectCenter.Y = xnaView.M12 * mstsObjectCenter.X + xnaView.M22 * mstsObjectCenter.Y - xnaView.M32 * mstsObjectCenter.Z + xnaView.M42;
+			xnaObjectCenter.Z = xnaView.M13 * mstsObjectCenter.X + xnaView.M23 * mstsObjectCenter.Y - xnaView.M33 * mstsObjectCenter.Z + xnaView.M43;
 
 			if (xnaObjectCenter.Z > objectRadius * 2)
 				return false;  // behind camera
+
+			xnaObjectCenter.X = xnaView.M11 * mstsObjectCenter.X + xnaView.M21 * mstsObjectCenter.Y - xnaView.M31 * mstsObjectCenter.Z + xnaView.M41;
 
 			// Cull for left and right
 			var d = MSTSMath.M.DistanceToLine(RightFrustrumA, RightFrustrumB, 0, xnaObjectCenter.X, xnaObjectCenter.Z);
