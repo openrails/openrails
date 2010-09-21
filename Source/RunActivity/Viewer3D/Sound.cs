@@ -805,6 +805,9 @@ namespace ORTS
             if (Enabled && eventID == TriggerID)
             {
                 SoundCommand.Run();
+#if DEBUGSCR
+                Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", _soundStream.Index, (int)eventID, SoundCommand.FileName);
+#endif
                 // Added in order to check the activeness of the SoundSource - by GeorgeS
                 if (!_soundStream.SoundSource.Active)
                 {
@@ -853,6 +856,10 @@ namespace ORTS
                     SoundStream.Volume = volume;
                 }
                 UpdateTriggerDistance();
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.Index, car.DistanceM, triggerDistance);
+#endif
+
             }
             else
             {
@@ -862,7 +869,14 @@ namespace ORTS
 
         private void UpdateTriggerDistance()
         {
-                triggerDistance = car.DistanceM + ( (float)Program.Random.NextDouble() * (SMS.Dist_Max - SMS.Dist_Min) + SMS.Dist_Min );
+            if (SMS.Dist_Max != SMS.Dist_Min)
+            {
+                triggerDistance = car.DistanceM + ((float)Program.Random.NextDouble() * (SMS.Dist_Max - SMS.Dist_Min) + SMS.Dist_Min);
+            }
+            else
+            {
+                triggerDistance = car.DistanceM + ((float)Program.Random.NextDouble() * (SMS.Dist_Min) + SMS.Dist_Min);
+            }
         }
 
     } // class ORTSDistanceTravelledTrigger
