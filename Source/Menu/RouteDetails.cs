@@ -62,5 +62,6 @@ namespace ORTS
 			txtWeather.Text = Weathers[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Weather)];
 			txtDifficulty.Text = Difficulties[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty)];
         }
+
     }
 }
