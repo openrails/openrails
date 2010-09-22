@@ -38,7 +38,9 @@ namespace MSTS
 			{
 				DefaultLocation = "c:\\program files\\microsoft games\\train simulator";
 
-				RegistryKey RK = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Microsoft Games\\Train Simulator\\1.0");
+				RegistryKey RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Microsoft Games\Train Simulator\1.0");
+				if (RK == null)
+					RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Wow6432Node\Microsoft\Microsoft Games\Train Simulator\1.0");
 				if (RK != null)
 					DefaultLocation = (string)RK.GetValue("Path", DefaultLocation);
 

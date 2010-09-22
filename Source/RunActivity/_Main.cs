@@ -152,7 +152,7 @@ namespace ORTS
 			catch (Exception error)
 			{
 				Trace.WriteLine(error);
-				MessageBox.Show(error.ToString());
+				MessageBox.Show(error.ToString(), Application.ProductName);
 			}
 		}
 
@@ -181,7 +181,7 @@ namespace ORTS
             catch (Exception error)
             {
 				Trace.WriteLine(error);
-                MessageBox.Show(error.ToString());
+                MessageBox.Show(error.ToString(), Application.ProductName);
             }
         }
 
@@ -222,7 +222,7 @@ namespace ORTS
             catch (Exception error)
             {
 				Trace.WriteLine(error);
-                MessageBox.Show(error.ToString());
+				MessageBox.Show(error.ToString(), Application.ProductName);
             }
         }
 

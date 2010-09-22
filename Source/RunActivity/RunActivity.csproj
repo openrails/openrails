@@ -12,8 +12,7 @@
     <XnaFrameworkVersion>v3.1</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
     <XnaCrossPlatformGroupID>eb141fe4-4e10-4725-a470-8c1fd1c119ca</XnaCrossPlatformGroupID>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>..\openrails.ico</ApplicationIcon>
     <Thumbnail>
     </Thumbnail>
     <PublishUrl>publish\</PublishUrl>

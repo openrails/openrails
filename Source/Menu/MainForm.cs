@@ -17,350 +17,439 @@ using Microsoft.Win32;
 
 namespace ORTS
 {
-    public partial class MainForm : Form
-    {
-        public string SelectedRoutePath { get{   return routePaths[listBoxRoutes.SelectedIndex]; } }
-        public string SelectedActivityPath { get { return activityPaths[listBoxActivities.SelectedIndex]; } }
-        public string SelectedPath { get { return ExplorePatFile; } }
-        public string SelectedConsist { get { return ExploreConFile; } }
+	public partial class MainForm : Form
+	{
+		public const string FolderDataFileName = "folder.dat";
 
-        List<string> folderPaths = new List<string>();
-        List<string> routePaths = new List<string>();
-        List<string> activityPaths;
-        public string ExplorePatFile = null;
-        public string ExploreConFile = null;
-        public int ExploreSeason = 0;
-        public int ExploreWeather = 0;
-        public int ExploreStartHour = 12;
+		string FolderDataFile;
+		List<Folder> Folders;
+		List<Route> Routes;
+		List<Activity> Activities;
 
-        string FolderDataFileName = "folder.dat";
+		public Folder SelectedFolder { get { return listBoxFolders.SelectedIndex < 0 ? null : Folders[listBoxFolders.SelectedIndex]; } }
+		public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
+		public Activity SelectedActivity { get { return listBoxActivities.SelectedIndex < 0 ? null : Activities[listBoxActivities.SelectedIndex]; } set { if (listBoxActivities.SelectedIndex >= 0) Activities[listBoxActivities.SelectedIndex] = value; } }
 
-
-        public MainForm()
-        {
-            string UserDataFolder = Path.GetDirectoryName( Path.GetDirectoryName(Application.UserAppDataPath));
-            FolderDataFileName = UserDataFolder + @"\" + FolderDataFileName;
-
-            InitializeComponent();
-
-            listBoxActivities.DoubleClick += new EventHandler(listBoxActivities_DoubleClick);
-            listBoxRoutes.DoubleClick += new EventHandler(listBoxRoutes_DoubleClick);
-
-            // Handle cleanup from pre version 0021
-            if( null != Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
-                Registry.CurrentUser.DeleteSubKeyTree("SOFTWARE\\ORTS");
-
-            if (!File.Exists(FolderDataFileName))
-            {
-                // Handle name change that occured at version 0021
-                string oldFolderDataFileName = UserDataFolder + @"\..\ORTS\folder.dat";
-                try
-                {
-                    if (File.Exists(oldFolderDataFileName))
-                    {
-                        File.Copy(oldFolderDataFileName, FolderDataFileName);
-                        Directory.Delete(Path.GetDirectoryName(oldFolderDataFileName), true);
-                    }
-                }
-                catch
-                {
-                }
-            }
-
-
-            // Restore retained settings
-            RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey, true);
-            if (RK != null)
-            {
-                checkBoxFullScreen.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? true : false;
-                checkBoxWarnings.Checked = (int)RK.GetValue("Warnings", 1) == 1 ? true : false;
-            }
-
-
-            listBoxFolders.Items.Clear();
-
-
-            if (File.Exists(FolderDataFileName))
-            {
-                try
-                {
-                    ReadFolderDat();
-                }
-                catch (System.Exception error)
-                {
-                    MessageBox.Show(error.Message);
-                }
-            }
-            if (folderPaths.Count == 0)
-            {
-                try
-                {
-                    folderPaths.Add(MSTSPath.Base());
-                    listBoxFolders.Items.Add("- Default -");
-                }
-                catch (System.Exception)
-                {
-                    MessageBox.Show("MSTS doesn't seem to be installed.\nClick on 'Add Folder' to point ORTS at your MSTS installation folder");
-                }
-            }
-            if (folderPaths.Count > 0)
-                listBoxFolders.SelectedIndex = 0;
-            else
-                listBoxFolders.ClearSelected();
-        }
-
-        void listBoxRoutes_DoubleClick(object sender, EventArgs e)
-        {
-            DisplayRouteDetails();
-        }
-
-        void listBoxActivities_DoubleClick(object sender, EventArgs e)
-        {
-            DisplayActivityDetails();
-        }
-
-        private void listBoxFolder_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            listBoxRoutes.Items.Clear();
-            listBoxRoutes.Refresh();
-            listBoxActivities.Items.Clear();
-            listBoxActivities.Refresh();
-            ExploreConFile = null;
-
-            try
-            {
-                if (listBoxFolders.SelectedIndex < 0) return;
-                string folderPath = folderPaths[listBoxFolders.SelectedIndex];
-                routePaths.Clear();
-                string[] directories = Directory.GetDirectories(folderPath + @"\ROUTES");
-
-
-                // create a list of routes
-                foreach (string routePath in directories)
-                {
-                    string routeFolder = Path.GetFileName(routePath);
-                    try
-                    {
-                        TRKFile trkFile = new TRKFile(MSTSPath.GetTRKFileName(routePath));
-                        listBoxRoutes.Items.Add(trkFile.Tr_RouteFile.Name);
-                        routePaths.Add(routePath);
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                if (listBoxRoutes.Items.Count > 0)
-                    listBoxRoutes.SelectedIndex = 0;
-                else
-                    listBoxRoutes.ClearSelected();
-            }
-            catch (System.Exception error)
-            {
-                MessageBox.Show(error.Message);
-            }
-        }
-
-        private void listBoxRoutes_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            listBoxActivities.Items.Clear();
-            listBoxActivities.Refresh();
-
-            try
-            {
-                if (listBoxRoutes.SelectedIndex < 0) return;
-
-                activityPaths = new List<string>();
-                string[] allActivityPaths = Directory.GetFiles(SelectedRoutePath + @"\ACTIVITIES", "*.act");
-
-                listBoxActivities.Items.Add("Explore Route");
-                activityPaths.Add(null);
-                ExplorePatFile = null;
-
-                // create a list of activities
-                foreach (string activityPath in allActivityPaths)
-                {
-                    if (0 != string.Compare(Path.GetFileNameWithoutExtension(activityPath), "ITR_e1_s1_w1_t1", true))  // ignore these, seems to be some sort of internal function
-                    {
-                        try
-                        {
-                            ACTFile actFile = new ACTFile(activityPath, true);
-                            listBoxActivities.Items.Add(actFile.Tr_Activity.Tr_Activity_Header.Name);
-                            activityPaths.Add(activityPath);
-                        }
-                        catch 
-                        {
-                        }
-                    }
-                }
-                if (listBoxActivities.Items.Count > 0)
-                    listBoxActivities.SelectedIndex = 0;
-                else
-                    listBoxActivities.ClearSelected();
-            }
-            catch (System.Exception error)
-            {
-                MessageBox.Show(error.Message);
-            }
-        }
-
-        private void buttonStart_Click(object sender, EventArgs e)
-        {
-			SaveOptions();
-			if (listBoxActivities.SelectedIndex == 0)
-            {
-                if (GetExploreInfo() && ExploreConFile != null && ExplorePatFile != null)
-                    DialogResult = DialogResult.OK;
-            }
-            else if (listBoxActivities.SelectedIndex >= 0 )
-            {              
-                DialogResult = DialogResult.OK;
-            }
-        }
-
-		private void SaveOptions()
+		public class Folder
 		{
-			// Retain settings for convenience
-			RegistryKey RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey);
-			if (RK != null)
+			public readonly string Name;
+			public readonly string Path;
+
+			public Folder(string name, string path)
 			{
-				RK.SetValue("Fullscreen", checkBoxFullScreen.Checked ? 1 : 0);
-				RK.SetValue("Warnings", checkBoxWarnings.Checked ? 1 : 0);
+				Name = name;
+				Path = path;
 			}
 		}
 
-        private void buttonAddFolder_Click(object sender, EventArgs e)
-        {
-            string folderPath = "";
-            if( listBoxFolders.SelectedIndex >= 0 )
-                folderPath = folderPaths[listBoxFolders.SelectedIndex];
-            FolderBrowserDialog f = new FolderBrowserDialog();
-            f.SelectedPath = folderPath;
-            f.Description = "Navigate to your alternate MSTS installation folder.";
-            f.ShowNewFolderButton = false;
-            if (f.ShowDialog(this) == DialogResult.OK)
-            {
-                FormFolderName form = new FormFolderName();
-                if (form.ShowDialog(this) == DialogResult.OK)
-                {
-                    listBoxFolders.Items.Add(form.Description);
-                    folderPaths.Add(f.SelectedPath);
-                    if (listBoxFolders.SelectedIndex < 0 && listBoxFolders.Items.Count > 0 )
-                        listBoxFolders.SelectedIndex = 0;
-                    SaveFolderDat();
-                }
-            }
-        }
+		public class Route
+		{
+			public readonly string Name;
+			public readonly string Path;
+			public readonly TRKFile TRKFile;
 
-        private void SaveFolderDat()
-        {
-            // save the file
-            using (BinaryWriter outf = new BinaryWriter(File.Open(FolderDataFileName, FileMode.Create)))
-            {
-                outf.Write(folderPaths.Count);
+			public Route(string name, string path, TRKFile trkFile)
+			{
+				Name = name;
+				Path = path;
+				TRKFile = trkFile;
+			}
+		}
 
-                for (int i = 0; i < folderPaths.Count; ++i)
-                {
-                    outf.Write(folderPaths[i]);
-                    outf.Write((string)listBoxFolders.Items[i]);
-                }
-            }
-        }
+		public class Activity
+		{
+			public readonly string Name;
+			public readonly string FileName;
+			public readonly ACTFile ACTFile;
 
-        private void ReadFolderDat()
-        {
-            // save the file
-            using (BinaryReader inf = new BinaryReader(File.Open(FolderDataFileName, FileMode.Open)))
-            {
-                int count = inf.ReadInt32();
+			public Activity(string name, string fileName, ACTFile actFile)
+			{
+				Name = name;
+				FileName = fileName;
+				ACTFile = actFile;
+			}
+		}
 
-                for (int i = 0; i < count; ++i)
-                {
-                    folderPaths.Add(inf.ReadString());
-                    listBoxFolders.Items.Add(inf.ReadString());
-                }
-            }
-        }
+		public class ExploreActivity : Activity
+		{
+			public readonly string Path;
+			public readonly string Consist;
+			public readonly int StartHour;
+			public readonly int Season;
+			public readonly int Weather;
 
-        private void buttonRemove_Click(object sender, EventArgs e)
-        {
-            if (listBoxFolders.SelectedIndex >= 0)
-            {
-                int i = listBoxFolders.SelectedIndex;
-                listBoxFolders.ClearSelected();
-                listBoxFolders.Items.RemoveAt(i);
-                folderPaths.RemoveAt(i);
-                SaveFolderDat();
-                if( listBoxFolders.Items.Count > 0 )
-                    listBoxFolders.SelectedIndex = 0;
-            }
-        }
+			public ExploreActivity(string path, string consist, int season, int weather, int startHour)
+				: base("- Explore Route -", null, null)
+			{
+				Path = path;
+				Consist = consist;
+				Season = season;
+				Weather = weather;
+				StartHour = startHour;
+			}
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
+			public ExploreActivity()
+				: this("", "", 0, 0, 12)
+			{
+			}
+		}
+
+		#region Main Form
+		public MainForm()
+		{
+			InitializeComponent();
+
+			// Windows 2000 and XP should use 8.25pt Tahoma, while Windows
+			// Vista and later should use 9pt "Segoe UI". We'll use the
+			// Message Box font to allow for user-customizations, though.
+			Font = SystemFonts.MessageBoxFont;
+
+			// Set title to show revision or build info.
+			Text = String.Format(Program.Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", Application.ProductName, Program.Revision, Program.Build);
+
+			FolderDataFile = Program.UserDataFolder + @"\" + FolderDataFileName;
+
+			CleanupPre021();
+
+			LoadOptions();
+
+			LoadFolders();
+		}
+
+		void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
 			SaveOptions();
-        }
+		}
+		#endregion
 
-        private void buttonOptions_Click(object sender, EventArgs e)
-        {
-            (new OptionsForm()).ShowDialog(this);
-        }
+		#region Folders
+		void listBoxFolder_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			LoadRoutes();
+		}
 
-        private void DisplayRouteDetails()
-        {
-            if (listBoxRoutes.SelectedIndex >= 0)
-            {
-                DetailsForm frmDetails = new DetailsForm();
-                if (frmDetails.RouteDetails(SelectedRoutePath))
-                {
-                    frmDetails.ShowDialog(this);
-                }
-            }
-        }
+		void buttonFolderAdd_Click(object sender, EventArgs e)
+		{
+			using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
+			{
+				folderBrowser.SelectedPath = SelectedFolder != null ? SelectedFolder.Path : "";
+				folderBrowser.Description = "Navigate to your alternate MSTS installation folder.";
+				folderBrowser.ShowNewFolderButton = false;
+				if (folderBrowser.ShowDialog(this) == DialogResult.OK)
+				{
+					using (FormFolderName form = new FormFolderName())
+					{
+						if (form.ShowDialog(this) == DialogResult.OK)
+						{
+							var folder = new Folder(form.textBoxDescription.Text, folderBrowser.SelectedPath);
+							Folders.Add(folder);
+							listBoxFolders.Items.Add(folder.Name);
+							if (listBoxFolders.SelectedIndex < 0 && listBoxFolders.Items.Count > 0)
+								listBoxFolders.SelectedIndex = 0;
+							SaveFolders();
+						}
+					}
+				}
+			}
+		}
 
-        private void DisplayActivityDetails()
-        {
-            if (listBoxActivities.SelectedIndex == 0)
-                GetExploreInfo();
-            else if (listBoxActivities.SelectedIndex > 0)
-            {
-                DetailsForm frmDetails = new DetailsForm();
-                if (frmDetails.ActivityDetails(SelectedActivityPath))
-                {
-                    frmDetails.ShowDialog(this);
-                }
-            }
-        }
+		void buttonFolderRemove_Click(object sender, EventArgs e)
+		{
+			int index = listBoxFolders.SelectedIndex;
+			if (index >= 0)
+			{
+				listBoxFolders.ClearSelected();
+				listBoxFolders.Items.RemoveAt(index);
+				Folders.RemoveAt(index);
+				SaveFolders();
+				if (listBoxFolders.Items.Count > 0)
+					listBoxFolders.SelectedIndex = 0;
+			}
+		}
+		#endregion
 
-        private bool GetExploreInfo()
-        {
-            ExploreForm form = new ExploreForm();
-            form.LoadData(folderPaths[listBoxFolders.SelectedIndex], SelectedRoutePath, ExplorePatFile, ExploreConFile, ExploreSeason, ExploreWeather, ExploreStartHour);
-            if (form.ShowDialog(this) == DialogResult.OK)
-            {
-                ExplorePatFile = form.SelectedPath;
-                ExploreConFile = form.SelectedConsist;
-                ExploreStartHour = form.SelectedStartHour;
-                ExploreSeason = form.SelectedSeason;
-                ExploreWeather = form.SelectedWeather;
-                return true;
-            }
-            return false;
-        }
+		#region Routes
+		void listBoxRoutes_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			LoadActivities();
+		}
 
-        private void buttonRouteDtls_Click(object sender, EventArgs e)
-        {
-            DisplayRouteDetails();
-        }
+		void listBoxRoutes_DoubleClick(object sender, EventArgs e)
+		{
+			DisplayRouteDetails();
+		}
 
-        private void buttonActivityDtls_Click_1(object sender, EventArgs e)
-        {
-            DisplayActivityDetails();
-        }
+		void buttonRouteDetails_Click(object sender, EventArgs e)
+		{
+			DisplayRouteDetails();
+		}
+		#endregion
 
-        private void buttonResume_Click(object sender, EventArgs e)
-        {
-            DialogResult = DialogResult.Retry;
-        }
-    }
+		#region Activities
+		void listBoxActivities_DoubleClick(object sender, EventArgs e)
+		{
+			DisplayActivityDetails();
+		}
+
+		void buttonActivityDetails_Click(object sender, EventArgs e)
+		{
+			DisplayActivityDetails();
+		}
+		#endregion
+
+		#region Misc. buttons and options
+		void buttonOptions_Click(object sender, EventArgs e)
+		{
+			using (var form = new OptionsForm())
+			{
+				form.ShowDialog(this);
+			}
+		}
+
+		void buttonStart_Click(object sender, EventArgs e)
+		{
+			SaveOptions();
+			if (SelectedActivity != null && SelectedActivity.FileName != null)
+			{
+				DialogResult = DialogResult.OK;
+			}
+			else if (SelectedActivity != null && SelectedActivity.FileName == null)
+			{
+				if (GetExploreInfo())
+					DialogResult = DialogResult.OK;
+			}
+		}
+		#endregion
+
+		void CleanupPre021()
+		{
+			// Handle cleanup from pre version 0021
+			if (null != Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
+				Registry.CurrentUser.DeleteSubKeyTree("SOFTWARE\\ORTS");
+
+			if (!File.Exists(FolderDataFile))
+			{
+				// Handle name change that occured at version 0021
+				string oldFolderDataFileName = Program.UserDataFolder + @"\..\ORTS\folder.dat";
+				try
+				{
+					if (File.Exists(oldFolderDataFileName))
+					{
+						File.Copy(oldFolderDataFileName, FolderDataFile);
+						Directory.Delete(Path.GetDirectoryName(oldFolderDataFileName), true);
+					}
+				}
+				catch
+				{
+				}
+			}
+		}
+
+		void LoadOptions()
+		{
+			// Restore retained settings
+			using (RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey, true))
+			{
+				if (RK != null)
+				{
+					checkBoxFullScreen.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? true : false;
+					checkBoxWarnings.Checked = (int)RK.GetValue("Warnings", 1) == 1 ? true : false;
+				}
+			}
+		}
+
+		void SaveOptions()
+		{
+			// Retain settings for convenience
+			using (RegistryKey RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
+			{
+				if (RK != null)
+				{
+					RK.SetValue("Fullscreen", checkBoxFullScreen.Checked ? 1 : 0);
+					RK.SetValue("Warnings", checkBoxWarnings.Checked ? 1 : 0);
+				}
+			}
+		}
+
+		void LoadFolders()
+		{
+			Folders = new List<Folder>();
+
+			if (File.Exists(FolderDataFile))
+			{
+				try
+				{
+					using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
+					{
+						var count = inf.ReadInt32();
+						for (var i = 0; i < count; ++i)
+						{
+							var path = inf.ReadString();
+							var name = inf.ReadString();
+							Folders.Add(new Folder(name, path));
+						}
+					}
+				}
+				catch (Exception error)
+				{
+					MessageBox.Show(error.ToString());
+				}
+			}
+
+			if (Folders.Count == 0)
+			{
+				try
+				{
+					Folders.Add(new Folder("- Default -", MSTSPath.Base()));
+				}
+				catch (Exception)
+				{
+					MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", Application.ProductName);
+				}
+			}
+
+			Folders = Folders.OrderBy(f => f.Name).ToList();
+
+			listBoxFolders.Items.Clear();
+			foreach (var folder in Folders)
+				listBoxFolders.Items.Add(folder.Name);
+
+			if (Folders.Count > 0)
+				listBoxFolders.SelectedIndex = 0;
+			else
+				listBoxFolders.ClearSelected();
+		}
+
+		void SaveFolders()
+		{
+			using (BinaryWriter outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
+			{
+				outf.Write(Folders.Count);
+				foreach (var folder in Folders)
+				{
+					outf.Write(folder.Path);
+					outf.Write(folder.Name);
+				}
+			}
+		}
+
+		void LoadRoutes()
+		{
+			Routes = new List<Route>();
+
+			if (SelectedFolder != null)
+			{
+				try
+				{
+					foreach (var directory in Directory.GetDirectories(SelectedFolder.Path + @"\ROUTES"))
+					{
+						try
+						{
+							var trkFile = new TRKFile(MSTSPath.GetTRKFileName(directory));
+							Routes.Add(new Route(trkFile.Tr_RouteFile.Name, directory, trkFile));
+						}
+						catch
+						{
+						}
+					}
+				}
+				catch (Exception error)
+				{
+					MessageBox.Show(error.ToString(), Application.ProductName);
+				}
+			}
+
+			Routes = Routes.OrderBy(r => r.Name).ToList();
+
+			listBoxRoutes.Items.Clear();
+			foreach (var route in Routes)
+				listBoxRoutes.Items.Add(route.Name);
+
+			if (Routes.Count > 0)
+				listBoxRoutes.SelectedIndex = 0;
+			else
+				listBoxRoutes.ClearSelected();
+
+			if (Routes.Count == 0)
+				LoadActivities();
+		}
+
+		void LoadActivities()
+		{
+			Activities = new List<Activity>();
+
+			if (SelectedRoute != null)
+			{
+				try
+				{
+					Activities.Add(new ExploreActivity());
+					foreach (var file in Directory.GetFiles(SelectedRoute.Path + @"\ACTIVITIES", "*.act"))
+					{
+						if (Path.GetFileName(file).StartsWith("ITR_e1_s1_w1_t1", StringComparison.OrdinalIgnoreCase))
+							continue;
+						try
+						{
+							var actFile = new ACTFile(file, true);
+							Activities.Add(new Activity(actFile.Tr_Activity.Tr_Activity_Header.Name, file, actFile));
+						}
+						catch
+						{
+						}
+					}
+				}
+				catch (Exception error)
+				{
+					MessageBox.Show(error.ToString(), Application.ProductName);
+				}
+			}
+
+			Activities = Activities.OrderBy(a => a.Name).ToList();
+
+			listBoxActivities.Items.Clear();
+			foreach (var activity in Activities)
+				listBoxActivities.Items.Add(activity.Name);
+
+			if (Activities.Count > 0)
+				listBoxActivities.SelectedIndex = 0;
+			else
+				listBoxActivities.ClearSelected();
+		}
+
+		void DisplayRouteDetails()
+		{
+			if (listBoxRoutes.SelectedIndex >= 0)
+			{
+				using (DetailsForm form = new DetailsForm(SelectedRoute))
+				{
+					form.ShowDialog(this);
+				}
+			}
+		}
+
+		void DisplayActivityDetails()
+		{
+			if (listBoxActivities.SelectedIndex == 0)
+				GetExploreInfo();
+			else if (listBoxActivities.SelectedIndex > 0)
+			{
+				using (DetailsForm form = new DetailsForm(SelectedActivity))
+				{
+					form.ShowDialog(this);
+				}
+			}
+		}
+
+		bool GetExploreInfo()
+		{
+			using (ExploreForm form = new ExploreForm(SelectedFolder, SelectedRoute, (ExploreActivity)SelectedActivity))
+			{
+				if (form.ShowDialog(this) == DialogResult.OK)
+				{
+					SelectedActivity = form.ExploreActivity;
+					return true;
+				}
+				return false;
+			}
+		}
+	}
 }

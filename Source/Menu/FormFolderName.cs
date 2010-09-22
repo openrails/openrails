@@ -16,17 +16,14 @@ namespace ORTS
 {
     public partial class FormFolderName : Form
     {
-        public string Description; 
-
         public FormFolderName()
         {
             InitializeComponent();
-        }
 
-        private void buttonOK_Click(object sender, EventArgs e)
-        {
-            Description =  this.textBoxDescription.Text; 
-            DialogResult = DialogResult.OK;
-        }
+			// Windows 2000 and XP should use 8.25pt Tahoma, while Windows
+			// Vista and later should use 9pt "Segoe UI". We'll use the
+			// Message Box font to allow for user-customizations, though.
+			Font = SystemFonts.MessageBoxFont;
+		}
     }
 }

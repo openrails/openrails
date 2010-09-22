@@ -24,79 +24,43 @@ namespace ORTS
 {
     public partial class DetailsForm : Form
     {
-        private String[] Seasons = { "Spring", "Summer", "Autumn", "Winter", "Unknown" };
-        private String[] Weathers = { "Clear", "Snow", "Rain", "Unknown" };
-        private String[] Difficulties = {"Easy", "Medium", "Hard", "Unknown"};
+		string[] Seasons = { "Spring", "Summer", "Autumn", "Winter", "Unknown" };
+		string[] Weathers = { "Clear", "Snow", "Rain", "Unknown" };
+		string[] Difficulties = { "Easy", "Medium", "Hard", "Unknown" };
 
-        public DetailsForm()
+        DetailsForm()
         {
             InitializeComponent();
+
+			// Windows 2000 and XP should use 8.25pt Tahoma, while Windows
+			// Vista and later should use 9pt "Segoe UI". We'll use the
+			// Message Box font to allow for user-customizations, though.
+			Font = SystemFonts.MessageBoxFont;
+		}
+
+		public DetailsForm(MainForm.Route route)
+			: this()
+        {
+            Text = "Route Details";
+			lblName.Text = route.TRKFile.Tr_RouteFile.Name;
+			txtDescription.Text = route.TRKFile.Tr_RouteFile.Description.Replace("\n", "\r\n");
+			grpBriefing.Visible = false;
+			grpEnvironment.Visible = false;
+			this.Height -= grpEnvironment.Bottom - grpDescription.Bottom;
         }
 
-        public bool RouteDetails(String strRoutePath)
-        {
-            this.Text = "Route Details";
-
-            try
-            {
-                string[] RouteTRK = Directory.GetFiles(strRoutePath, "*.trk", SearchOption.TopDirectoryOnly);
-                if (RouteTRK.Length == 0)
-                {
-                    Console.Error.WriteLine("No .trk file found for route.");
-                    return false;       // .trk file not found.
-                }
-                TRKFile trkFile = new TRKFile(RouteTRK[0]);
-                txtName.Text = trkFile.Tr_RouteFile.Name;
-                string Description = trkFile.Tr_RouteFile.Description;
-                txtDescription.Text = Description.Replace("\n", "\r\n");
-                grpBriefing.Visible = false;
-                grpEnvironment.Visible = false;
-                this.Height -= grpEnvironment.Bottom - grpDescription.Bottom;
-            }
-            catch
-            {
-                Console.Error.WriteLine("Failed to read: .trk file");
-                return false;
-            }
-            return true;
-        }
-
-        public bool ActivityDetails(String strActiviyPath)
-        {
-            this.Text = "Activity Details";
-            try
-            {
-                int i;
-                ACTFile actFile=new ACTFile(strActiviyPath,true);
-                txtName.Text=actFile.Tr_Activity.Tr_Activity_Header.Name;
-                string Description = actFile.Tr_Activity.Tr_Activity_Header.Description;
-                txtDescription.Text=Description.Replace("\n","\r\n");
-                string Briefing = actFile.Tr_Activity.Tr_Activity_Header.Briefing;
-                txtBriefing.Text=Briefing.Replace("\n","\r\n");
-                StartTime startTime = actFile.Tr_Activity.Tr_Activity_Header.StartTime;
-                txtStartTime.Text = actFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
-                txtDuration.Text = actFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
-                i=(int)actFile.Tr_Activity.Tr_Activity_Header.Season;
-                if(i>3) i=4;
-                txtSeason.Text = Seasons[i];
-                i=(int)actFile.Tr_Activity.Tr_Activity_Header.Weather;
-                if (i > 2) i = 3;
-                txtWeather.Text = Weathers[i];
-                if (i > 2) i = 3;
-                i = (int)actFile.Tr_Activity.Tr_Activity_Header.Difficulty;
-                txtDifficulty.Text = Difficulties[i];
-            }
-            catch
-            {
-                Console.Error.WriteLine("Failed to read: " + strActiviyPath);
-                return false;
-            }
-            return true;
-        }
-
-        private void cmdClose_Click(object sender, EventArgs e)
-        {
-            this.Close();
+		public DetailsForm(MainForm.Activity activity)
+			: this()
+		{
+            Text = "Activity Details";
+			lblName.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Name;
+			txtDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Description.Replace("\n", "\r\n");
+			txtBriefing.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Briefing.Replace("\n", "\r\n");
+			txtStartTime.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
+			txtDuration.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
+			txtSeason.Text = Seasons[Math.Min(4, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Season)];
+			txtWeather.Text = Weathers[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Weather)];
+			txtDifficulty.Text = Difficulties[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty)];
         }
     }
 }

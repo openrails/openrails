@@ -12,124 +12,99 @@ using Microsoft.Win32;
 
 namespace ORTS
 {
-    static class Program
-    {
-        const string RunActivityProgram = "runactivity.exe";
-        static string WarningLogFileName;
-        public static string RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-        public static string Build;
-        public static string Revision;
+	static class Program
+	{
+		const string RunActivityProgram = "runactivity.exe";
 
+		public static string Revision;        // ie 078
+		public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
+		public static string RegistryKey;     // ie "SOFTWARE\\OpenRails\\ORTS"
+		public static string UserDataFolder;  // ie "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS"
 
-        [STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
-        static void Main(string[] args)
-        {
-            SetBuildRevision();
-            WarningLogFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
-            File.Delete(WarningLogFileName);
+		[STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
+		static void Main(string[] args)
+		{
+			Application.EnableVisualStyles();
 
-            try
-            {
+			SetBuildRevision();
 
-                MainForm MainForm = new MainForm();
-                if (Revision != "000")
-                    MainForm.Text = "Open Rails V " + Revision;
-                else
-                    MainForm.Text = "Open Rails   BUILD = " +  Build;
+			UserDataFolder = Path.GetDirectoryName(Path.GetDirectoryName(Application.UserAppDataPath));
 
-                while (true)
-                {
+			RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
 
-                    MainForm.ShowDialog();
+			try
+			{
+				var MainForm = new MainForm();
 
-                    string parameter;
+				while (true)
+				{
+					string parameter;
 
-                    switch( MainForm.DialogResult )
-                    {
-                        case DialogResult.OK:
-                            if (MainForm.SelectedActivityPath == null)
-                                parameter = "\"" + MainForm.SelectedPath + "\" \"" + MainForm.SelectedConsist + "\"" +
-                                    string.Format(" {0} {1} {2}", MainForm.ExploreStartHour, MainForm.ExploreSeason, MainForm.ExploreWeather);
-                            else
-                                parameter = "\"" + MainForm.SelectedActivityPath + "\"";
-                            break;
-                        case DialogResult.Retry: parameter = "-resume"; break;
-                        default: return;
-                    }
+					switch (MainForm.ShowDialog())
+					{
+						case DialogResult.OK:
+							var exploreActivity = MainForm.SelectedActivity as MainForm.ExploreActivity;
+							if (exploreActivity != null)
+								parameter = String.Format("\"{0}\" \"{1}\" {2} {3} {4}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.Season, exploreActivity.Weather);
+							else
+								parameter = String.Format("\"{0}\"", MainForm.SelectedActivity.FileName);
+							break;
+						case DialogResult.Retry:
+							parameter = "-resume";
+							break;
+						default:
+							return;
+					}
 
-                    // find the RunActivity program, normally in the startup path, 
-                    //  but while debugging it will be in an adjacent directory
-                    string RunActivityFolder = Application.StartupPath.ToLower();
+					// find the RunActivity program, normally in the startup path, 
+					//  but while debugging it will be in an adjacent directory
+					string RunActivityFolder = Application.StartupPath.ToLower();
 
-                    System.Diagnostics.ProcessStartInfo objPSI = new System.Diagnostics.ProcessStartInfo();
-                    objPSI.FileName = RunActivityFolder + @"\" + RunActivityProgram ;
-                    objPSI.Arguments = parameter;
-                    objPSI.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal; // or Hidden, Maximized or Normal 
-                    objPSI.WorkingDirectory = RunActivityFolder;
+					System.Diagnostics.ProcessStartInfo objPSI = new System.Diagnostics.ProcessStartInfo();
+					objPSI.FileName = RunActivityFolder + @"\" + RunActivityProgram;
+					objPSI.Arguments = parameter;
+					objPSI.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal; // or Hidden, Maximized or Normal 
+					objPSI.WorkingDirectory = RunActivityFolder;
 
-                    System.Diagnostics.Process objProcess = System.Diagnostics.Process.Start(objPSI);
+					System.Diagnostics.Process objProcess = System.Diagnostics.Process.Start(objPSI);
 
-                    while (objProcess.HasExited == false)
-                        System.Threading.Thread.Sleep(100);
+					while (objProcess.HasExited == false)
+						System.Threading.Thread.Sleep(100);
 
-                    int retVal = objProcess.ExitCode;
-                }
-            }
-            catch (System.Exception error)
-            {
-                Warn(error.Message);
-                MessageBox.Show(error.Message);
-            }
-        }
+					int retVal = objProcess.ExitCode;
+				}
+			}
+			catch (Exception error)
+			{
+				MessageBox.Show(error.ToString());
+			}
+		}
 
+		/// <summary>
+		/// Set up the global Build and Revision variables
+		/// from assembly data and the revision.txt file.
+		/// </summary>
+		static void SetBuildRevision()
+		{
+			try
+			{
+				using (StreamReader f = new StreamReader("Revision.txt"))
+				{
+					string line = f.ReadLine();
+					string rev = line.Substring(11);
+					int i = rev.IndexOf('$');
+					Revision = rev.Substring(0, i).Trim();
 
-        public static void Warn(string s)
-        {
-            StreamWriter f;
-            if (!File.Exists(WarningLogFileName))
-            {
-                f = new StreamWriter(WarningLogFileName);
-                f.WriteLine("ORTS WARNING LOG");
-                f.WriteLine();
-                f.WriteLine("Launching Menu");
-                f.WriteLine();
-                f.WriteLine("------------------------------------------------");
-            }
-            else
-            {
-                f = new StreamWriter(WarningLogFileName, true); // append
-            }
-
-            f.WriteLine(s);
-            f.WriteLine();
-            f.WriteLine("------------------------------------------------");
-            f.Close();
-        }
-
-        public static void SetBuildRevision()
-        {
-            try
-            {
-                using (StreamReader f = new StreamReader("Revision.txt"))
-                {
-                    string line = f.ReadLine();
-                    string rev = line.Substring(11);
-                    int i = rev.IndexOf('$');
-                    Revision = rev.Substring(0, i).Trim();
-
-                    Build = Application.ProductVersion;  // from assembly
-                    Build = Build + " " + f.ReadLine();  // date
-                    Build = Build + " " + f.ReadLine(); // time
-                }
-            }
-            catch
-            {
-                Revision = "000";
-                Build = Application.ProductVersion;
-            }
-        }
-
-    } // class Program
-
+					Build = Application.ProductVersion;  // from assembly
+					Build = Build + " " + f.ReadLine();  // date
+					Build = Build + " " + f.ReadLine(); // time
+				}
+			}
+			catch
+			{
+				Revision = "";
+				Build = Application.ProductVersion;
+			}
+		}
+	} // class Program
 }
-

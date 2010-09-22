@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			this.listBoxRoutes = new System.Windows.Forms.ListBox();
 			this.listBoxActivities = new System.Windows.Forms.ListBox();
@@ -38,16 +37,15 @@
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
 			this.label4 = new System.Windows.Forms.Label();
 			this.listBoxFolders = new System.Windows.Forms.ListBox();
-			this.buttonAddFolder = new System.Windows.Forms.Button();
+			this.buttonFolderAdd = new System.Windows.Forms.Button();
 			this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-			this.buttonRemove = new System.Windows.Forms.Button();
-			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this.buttonFolderRemove = new System.Windows.Forms.Button();
 			this.checkBoxWarnings = new System.Windows.Forms.CheckBox();
 			this.buttonJoin = new System.Windows.Forms.Button();
 			this.checkBoxHost = new System.Windows.Forms.CheckBox();
 			this.buttonOptions = new System.Windows.Forms.Button();
-			this.buttonRouteDtls = new System.Windows.Forms.Button();
-			this.buttonActivityDtls = new System.Windows.Forms.Button();
+			this.buttonRouteDetails = new System.Windows.Forms.Button();
+			this.buttonActivityDetails = new System.Windows.Forms.Button();
 			this.buttonResume = new System.Windows.Forms.Button();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -60,20 +58,28 @@
 			// 
 			// listBoxRoutes
 			// 
-			this.listBoxRoutes.FormattingEnabled = true;
+			this.listBoxRoutes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.listBoxRoutes.IntegralHeight = false;
 			this.listBoxRoutes.Location = new System.Drawing.Point(6, 19);
 			this.listBoxRoutes.Name = "listBoxRoutes";
 			this.listBoxRoutes.Size = new System.Drawing.Size(199, 225);
 			this.listBoxRoutes.TabIndex = 0;
 			this.listBoxRoutes.SelectedIndexChanged += new System.EventHandler(this.listBoxRoutes_SelectedIndexChanged);
+			this.listBoxRoutes.DoubleClick += new System.EventHandler(this.listBoxRoutes_DoubleClick);
 			// 
 			// listBoxActivities
 			// 
-			this.listBoxActivities.FormattingEnabled = true;
+			this.listBoxActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.listBoxActivities.IntegralHeight = false;
 			this.listBoxActivities.Location = new System.Drawing.Point(6, 19);
 			this.listBoxActivities.Name = "listBoxActivities";
 			this.listBoxActivities.Size = new System.Drawing.Size(199, 225);
 			this.listBoxActivities.TabIndex = 0;
+			this.listBoxActivities.DoubleClick += new System.EventHandler(this.listBoxActivities_DoubleClick);
 			// 
 			// checkBoxFullScreen
 			// 
@@ -130,39 +136,40 @@
 			// 
 			// listBoxFolders
 			// 
-			this.listBoxFolders.FormattingEnabled = true;
+			this.listBoxFolders.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.listBoxFolders.IntegralHeight = false;
 			this.listBoxFolders.Location = new System.Drawing.Point(6, 19);
 			this.listBoxFolders.Name = "listBoxFolders";
 			this.listBoxFolders.Size = new System.Drawing.Size(199, 225);
 			this.listBoxFolders.TabIndex = 0;
 			this.listBoxFolders.SelectedIndexChanged += new System.EventHandler(this.listBoxFolder_SelectedIndexChanged);
 			// 
-			// buttonAddFolder
+			// buttonFolderAdd
 			// 
-			this.buttonAddFolder.Location = new System.Drawing.Point(6, 250);
-			this.buttonAddFolder.Name = "buttonAddFolder";
-			this.buttonAddFolder.Size = new System.Drawing.Size(75, 23);
-			this.buttonAddFolder.TabIndex = 1;
-			this.buttonAddFolder.Text = "Add...";
-			this.toolTip1.SetToolTip(this.buttonAddFolder, "List an alternate MSTS folder.");
-			this.buttonAddFolder.UseVisualStyleBackColor = true;
-			this.buttonAddFolder.Click += new System.EventHandler(this.buttonAddFolder_Click);
+			this.buttonFolderAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.buttonFolderAdd.Location = new System.Drawing.Point(6, 250);
+			this.buttonFolderAdd.Name = "buttonFolderAdd";
+			this.buttonFolderAdd.Size = new System.Drawing.Size(75, 23);
+			this.buttonFolderAdd.TabIndex = 1;
+			this.buttonFolderAdd.Text = "Add...";
+			this.buttonFolderAdd.Click += new System.EventHandler(this.buttonFolderAdd_Click);
 			// 
 			// folderBrowserDialog
 			// 
 			this.folderBrowserDialog.Description = "Navigate to your alternate MSTS installation folder.";
 			this.folderBrowserDialog.ShowNewFolderButton = false;
 			// 
-			// buttonRemove
+			// buttonFolderRemove
 			// 
-			this.buttonRemove.Location = new System.Drawing.Point(87, 250);
-			this.buttonRemove.Name = "buttonRemove";
-			this.buttonRemove.Size = new System.Drawing.Size(75, 23);
-			this.buttonRemove.TabIndex = 2;
-			this.buttonRemove.Text = "Remove";
-			this.toolTip1.SetToolTip(this.buttonRemove, "Remove this entry from the list.  It doesn\'t actually delete the folder.");
-			this.buttonRemove.UseVisualStyleBackColor = true;
-			this.buttonRemove.Click += new System.EventHandler(this.buttonRemove_Click);
+			this.buttonFolderRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.buttonFolderRemove.Location = new System.Drawing.Point(87, 250);
+			this.buttonFolderRemove.Name = "buttonFolderRemove";
+			this.buttonFolderRemove.Size = new System.Drawing.Size(75, 23);
+			this.buttonFolderRemove.TabIndex = 2;
+			this.buttonFolderRemove.Text = "Remove";
+			this.buttonFolderRemove.Click += new System.EventHandler(this.buttonFolderRemove_Click);
 			// 
 			// checkBoxWarnings
 			// 
@@ -183,7 +190,6 @@
 			this.buttonJoin.Size = new System.Drawing.Size(75, 23);
 			this.buttonJoin.TabIndex = 7;
 			this.buttonJoin.Text = "Join";
-			this.buttonJoin.UseVisualStyleBackColor = true;
 			// 
 			// checkBoxHost
 			// 
@@ -202,44 +208,42 @@
 			this.buttonOptions.Size = new System.Drawing.Size(75, 23);
 			this.buttonOptions.TabIndex = 6;
 			this.buttonOptions.Text = "Options";
-			this.buttonOptions.UseVisualStyleBackColor = true;
 			this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
 			// 
-			// buttonRouteDtls
+			// buttonRouteDetails
 			// 
-			this.buttonRouteDtls.Location = new System.Drawing.Point(6, 250);
-			this.buttonRouteDtls.Name = "buttonRouteDtls";
-			this.buttonRouteDtls.Size = new System.Drawing.Size(75, 23);
-			this.buttonRouteDtls.TabIndex = 1;
-			this.buttonRouteDtls.Text = "Details";
-			this.buttonRouteDtls.UseVisualStyleBackColor = true;
-			this.buttonRouteDtls.Click += new System.EventHandler(this.buttonRouteDtls_Click);
+			this.buttonRouteDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.buttonRouteDetails.Location = new System.Drawing.Point(6, 250);
+			this.buttonRouteDetails.Name = "buttonRouteDetails";
+			this.buttonRouteDetails.Size = new System.Drawing.Size(75, 23);
+			this.buttonRouteDetails.TabIndex = 1;
+			this.buttonRouteDetails.Text = "Details";
+			this.buttonRouteDetails.Click += new System.EventHandler(this.buttonRouteDetails_Click);
 			// 
-			// buttonActivityDtls
+			// buttonActivityDetails
 			// 
-			this.buttonActivityDtls.Location = new System.Drawing.Point(6, 250);
-			this.buttonActivityDtls.Name = "buttonActivityDtls";
-			this.buttonActivityDtls.Size = new System.Drawing.Size(75, 23);
-			this.buttonActivityDtls.TabIndex = 1;
-			this.buttonActivityDtls.Text = "Details";
-			this.buttonActivityDtls.UseVisualStyleBackColor = true;
-			this.buttonActivityDtls.Click += new System.EventHandler(this.buttonActivityDtls_Click_1);
+			this.buttonActivityDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.buttonActivityDetails.Location = new System.Drawing.Point(6, 250);
+			this.buttonActivityDetails.Name = "buttonActivityDetails";
+			this.buttonActivityDetails.Size = new System.Drawing.Size(75, 23);
+			this.buttonActivityDetails.TabIndex = 1;
+			this.buttonActivityDetails.Text = "Details";
+			this.buttonActivityDetails.Click += new System.EventHandler(this.buttonActivityDetails_Click);
 			// 
 			// buttonResume
 			// 
+			this.buttonResume.DialogResult = System.Windows.Forms.DialogResult.Retry;
 			this.buttonResume.Location = new System.Drawing.Point(501, 297);
 			this.buttonResume.Name = "buttonResume";
 			this.buttonResume.Size = new System.Drawing.Size(75, 23);
 			this.buttonResume.TabIndex = 10;
 			this.buttonResume.Text = "Resume";
-			this.buttonResume.UseVisualStyleBackColor = true;
-			this.buttonResume.Click += new System.EventHandler(this.buttonResume_Click);
 			// 
 			// groupBox1
 			// 
 			this.groupBox1.Controls.Add(this.listBoxFolders);
-			this.groupBox1.Controls.Add(this.buttonAddFolder);
-			this.groupBox1.Controls.Add(this.buttonRemove);
+			this.groupBox1.Controls.Add(this.buttonFolderAdd);
+			this.groupBox1.Controls.Add(this.buttonFolderRemove);
 			this.groupBox1.Location = new System.Drawing.Point(12, 12);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.Size = new System.Drawing.Size(211, 279);
@@ -250,7 +254,7 @@
 			// groupBox2
 			// 
 			this.groupBox2.Controls.Add(this.listBoxRoutes);
-			this.groupBox2.Controls.Add(this.buttonRouteDtls);
+			this.groupBox2.Controls.Add(this.buttonRouteDetails);
 			this.groupBox2.Location = new System.Drawing.Point(229, 12);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.Size = new System.Drawing.Size(211, 279);
@@ -261,7 +265,7 @@
 			// groupBox3
 			// 
 			this.groupBox3.Controls.Add(this.listBoxActivities);
-			this.groupBox3.Controls.Add(this.buttonActivityDtls);
+			this.groupBox3.Controls.Add(this.buttonActivityDetails);
 			this.groupBox3.Location = new System.Drawing.Point(446, 12);
 			this.groupBox3.Name = "groupBox3";
 			this.groupBox3.Size = new System.Drawing.Size(211, 279);
@@ -271,8 +275,8 @@
 			// 
 			// MainForm
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.ClientSize = new System.Drawing.Size(669, 366);
 			this.Controls.Add(this.groupBox3);
 			this.Controls.Add(this.groupBox2);
@@ -313,16 +317,15 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ListBox listBoxFolders;
-        private System.Windows.Forms.Button buttonAddFolder;
+        private System.Windows.Forms.Button buttonFolderAdd;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
-        private System.Windows.Forms.Button buttonRemove;
-        private System.Windows.Forms.ToolTip toolTip1;
+		private System.Windows.Forms.Button buttonFolderRemove;
         private System.Windows.Forms.CheckBox checkBoxWarnings;
         private System.Windows.Forms.Button buttonJoin;
         private System.Windows.Forms.CheckBox checkBoxHost;
         private System.Windows.Forms.Button buttonOptions;
-        private System.Windows.Forms.Button buttonRouteDtls;
-        private System.Windows.Forms.Button buttonActivityDtls;
+        private System.Windows.Forms.Button buttonRouteDetails;
+        private System.Windows.Forms.Button buttonActivityDetails;
         private System.Windows.Forms.Button buttonResume;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
