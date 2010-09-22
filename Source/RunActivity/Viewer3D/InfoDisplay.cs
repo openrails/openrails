@@ -54,13 +54,13 @@ namespace ORTS
 
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F5))
+            if (UserInput.IsPressed(UserCommands.GameODS))
             {
                 ++InfoAmount;
                 if (InfoAmount > 5)
                     InfoAmount = 0;
             }
-            if (UserInput.IsPressed(Microsoft.Xna.Framework.Input.Keys.F12))
+            if (UserInput.IsPressed(UserCommands.GameLogger))
             {
                 LoggerEnabled = !LoggerEnabled;
 				if (LoggerEnabled == false)

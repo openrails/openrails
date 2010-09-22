@@ -411,19 +411,19 @@ namespace ORTS
 			WindowManager.HandleUserInput();
 
             // Check for game control keys
-            if (UserInput.IsKeyDown(Keys.Escape)) {  Stop(); return; }
-            if (UserInput.IsAltPressed(Keys.Enter)) { ToggleFullscreen(); }
-            if (UserInput.IsPressed(Keys.Pause) ) Simulator.Paused = !Simulator.Paused;
-            if (UserInput.IsPressed(Keys.PageUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
-            if (UserInput.IsPressed(Keys.PageDown)) Simulator.GameSpeed = 1; 
-            if (UserInput.IsPressed(Keys.F2)) { Program.Save(); }
-			if (UserInput.IsPressed(Keys.F4)) TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
-			if (UserInput.IsPressed(Keys.F8)) SwitchWindow.Visible = !SwitchWindow.Visible;
-			if (UserInput.IsPressed(Keys.F9)) TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;
-			if (UserInput.IsPressed(Keys.F10)) NextStationWindow.Visible = !NextStationWindow.Visible;
-			if (UserInput.IsPressed(Keys.D0)) CompassWindow.Visible = !CompassWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.GameQuit)) {  Stop(); return; }
+            if (UserInput.IsPressed(UserCommands.GameFullscreen)) { ToggleFullscreen(); }
+            if (UserInput.IsPressed(UserCommands.GamePause) ) Simulator.Paused = !Simulator.Paused;
+            if (UserInput.IsPressed(UserCommands.GameSpeedUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
+            if (UserInput.IsPressed(UserCommands.GameSpeedReset)) Simulator.GameSpeed = 1; 
+            if (UserInput.IsPressed(UserCommands.GameSave)) { Program.Save(); }
+			if (UserInput.IsPressed(UserCommands.WindowTrackMonitor)) TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
+			if (UserInput.IsPressed(UserCommands.WindowSwitch)) SwitchWindow.Visible = !SwitchWindow.Visible;
+			if (UserInput.IsPressed(UserCommands.WindowTrainOperations)) TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;
+			if (UserInput.IsPressed(UserCommands.WindowNextStation)) NextStationWindow.Visible = !NextStationWindow.Visible;
+			if (UserInput.IsPressed(UserCommands.WindowCompass)) CompassWindow.Visible = !CompassWindow.Visible;
 
-            if (UserInput.IsPressed(Keys.E) && UserInput.IsCtrlKeyDown())
+			if (UserInput.IsPressed(UserCommands.LocomotiveSwitch))
             {
                 Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
                 Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
@@ -434,22 +434,22 @@ namespace ORTS
             }
 
             // Change view point - cab, passenger, outside, etc
-            if (UserInput.IsPressed(Keys.D1)) { if (CabCamera.HasCABViews) CabCamera.Activate(); }
-            if (UserInput.IsPressed(Keys.D2)) FrontCamera.Activate();
-			if (UserInput.IsPressed(Keys.D3)) BackCamera.Activate();
-			if (UserInput.IsPressed(Keys.D4)) TracksideCamera.Activate();
-            if (UserInput.IsPressed(Keys.D5)) { if (PassengerCamera.HasPassengerCamera) PassengerCamera.Activate(); }
-			if (UserInput.IsPressed(Keys.D6)) BrakemanCamera.Activate();
-            if (UserInput.IsPressed(Keys.D7) || UserInput.IsPressed(Keys.D8)) new FreeRoamCamera(this, Camera).Activate();
+			if (UserInput.IsPressed(UserCommands.CameraCab)) { if (CabCamera.HasCABViews) CabCamera.Activate(); }
+			if (UserInput.IsPressed(UserCommands.CameraOutsideFront)) FrontCamera.Activate();
+			if (UserInput.IsPressed(UserCommands.CameraOutsideRear)) BackCamera.Activate();
+			if (UserInput.IsPressed(UserCommands.CameraTrackside)) TracksideCamera.Activate();
+			if (UserInput.IsPressed(UserCommands.CameraPassenger)) { if (PassengerCamera.HasPassengerCamera) PassengerCamera.Activate(); }
+			if (UserInput.IsPressed(UserCommands.CameraBrakeman)) BrakemanCamera.Activate();
+			if (UserInput.IsPressed(UserCommands.CameraFree)) new FreeRoamCamera(this, Camera).Activate();
 
             bool mayheadout = (Camera == CabCamera) || (Camera == HeadOutFwdCamera) || (Camera == HeadOutBackCamera);
-            if (UserInput.IsPressed(Keys.Up) && mayheadout) HeadOutFwdCamera.Activate();
-            if (UserInput.IsPressed(Keys.Down) && mayheadout) HeadOutBackCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraHeadOutForwards) && mayheadout) HeadOutFwdCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraHeadOutBackwards) && mayheadout) HeadOutBackCamera.Activate();
 
-            if (UserInput.IsPressed(Keys.G) && !UserInput.IsShiftDown()) Simulator.SwitchTrackAhead( PlayerTrain );
-            if (UserInput.IsPressed(Keys.G) && UserInput.IsShiftDown()) Simulator.SwitchTrackBehind( PlayerTrain );
-            if (UserInput.IsPressed(Keys.F) && UserInput.IsShiftDown() && UserInput.IsCtrlKeyDown()) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
-            if (UserInput.IsPressed(Keys.Tab) && !UserInput.IsShiftDown()) PlayerTrain.ResetSignal(true);
+			if (UserInput.IsPressed(UserCommands.SwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);
+			if (UserInput.IsPressed(UserCommands.SwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
+            if (UserInput.IsPressed(UserCommands.LocomotiveFlip)) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
+			if (UserInput.IsPressed(UserCommands.ResetSignal)) PlayerTrain.ResetSignal(true);
             if (!Simulator.Paused && UserInput.IsAltKeyDown())
             {
                 isMouseShouldVisible = true;

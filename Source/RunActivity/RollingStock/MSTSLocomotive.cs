@@ -681,43 +681,45 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
-            if (UserInput.IsPressed(Keys.S)) Locomotive.SetDirection(Direction.Reverse);
-    
-            if (UserInput.IsPressed(Keys.D)) Locomotive.StartThrottleIncrease();
-            if (UserInput.IsReleased(Keys.D)) Locomotive.StopThrottleIncrease();
-            if (UserInput.IsPressed(Keys.A)) Locomotive.StartThrottleDecrease();
-            if (UserInput.IsReleased(Keys.A)) Locomotive.StopThrottleDecrease();
+            if (UserInput.IsPressed(UserCommands.ControlForwards)) Locomotive.SetDirection(Direction.Forward);
+			if (UserInput.IsPressed(UserCommands.ControlBackwards)) Locomotive.SetDirection(Direction.Reverse);
 
-            if (UserInput.IsPressed(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.StartTrainBrakeIncrease();
-            if (UserInput.IsReleased(Keys.OemQuotes) && !UserInput.IsShiftDown()) Locomotive.StopTrainBrakeIncrease();
-            if (UserInput.IsPressed(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.StartTrainBrakeDecrease();
-            if (UserInput.IsReleased(Keys.OemSemicolon) && !UserInput.IsShiftDown()) Locomotive.StopTrainBrakeDecrease();
+			if (UserInput.IsPressed(UserCommands.ControlThrottleIncrease)) Locomotive.StartThrottleIncrease();
+			if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) Locomotive.StopThrottleIncrease();
+			if (UserInput.IsPressed(UserCommands.ControlThrottleDecrease)) Locomotive.StartThrottleDecrease();
+			if (UserInput.IsReleased(UserCommands.ControlThrottleDecrease)) Locomotive.StopThrottleDecrease();
 
-            if (UserInput.IsPressed(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeIncrease();
-            if (UserInput.IsReleased(Keys.OemCloseBrackets) && !UserInput.IsShiftDown()) Locomotive.StopEngineBrakeIncrease();
-            if (UserInput.IsPressed(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.StartEngineBrakeDecrease();
-            if (UserInput.IsReleased(Keys.OemOpenBrackets) && !UserInput.IsShiftDown()) Locomotive.StopEngineBrakeDecrease();
+			if (UserInput.IsPressed(UserCommands.ControlTrainBrakeIncrease)) Locomotive.StartTrainBrakeIncrease();
+			if (UserInput.IsReleased(UserCommands.ControlTrainBrakeIncrease)) Locomotive.StopTrainBrakeIncrease();
+			if (UserInput.IsPressed(UserCommands.ControlTrainBrakeDecrease)) Locomotive.StartTrainBrakeDecrease();
+			if (UserInput.IsReleased(UserCommands.ControlTrainBrakeDecrease)) Locomotive.StopTrainBrakeDecrease();
 
-            if (UserInput.IsPressed(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.StartDynamicBrakeIncrease();
-            if (UserInput.IsReleased(Keys.OemComma) && !UserInput.IsShiftDown()) Locomotive.StopDynamicBrakeIncrease();
-            if (UserInput.IsPressed(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.StartDynamicBrakeDecrease();
-            if (UserInput.IsReleased(Keys.OemPeriod) && !UserInput.IsShiftDown()) Locomotive.StopDynamicBrakeDecrease();            
+			if (UserInput.IsPressed(UserCommands.ControlEngineBrakeIncrease)) Locomotive.StartEngineBrakeIncrease();
+			if (UserInput.IsReleased(UserCommands.ControlEngineBrakeIncrease)) Locomotive.StopEngineBrakeIncrease();
+			if (UserInput.IsPressed(UserCommands.ControlEngineBrakeDecrease)) Locomotive.StartEngineBrakeDecrease();
+			if (UserInput.IsReleased(UserCommands.ControlEngineBrakeDecrease)) Locomotive.StopEngineBrakeDecrease();
 
-            if (UserInput.IsPressed(Keys.OemQuestion) && !UserInput.IsShiftDown()) Locomotive.ToggleBailOff();            
-            if (UserInput.IsPressed(Keys.OemQuestion) && UserInput.IsShiftDown()) Locomotive.Train.InitializeBrakes();
-            if (UserInput.IsPressed(Keys.OemSemicolon) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(0);
-            if (UserInput.IsPressed(Keys.OemQuotes) && UserInput.IsShiftDown()) Locomotive.Train.SetHandbrakePercent(100);
-            if (UserInput.IsPressed(Keys.OemOpenBrackets) && UserInput.IsShiftDown()) Locomotive.Train.SetRetainers(false);
-            if (UserInput.IsPressed(Keys.OemCloseBrackets) && UserInput.IsShiftDown()) Locomotive.Train.SetRetainers(true);
-            if (UserInput.IsPressed(Keys.OemPipe) && !UserInput.IsShiftDown()) Locomotive.Train.ConnectBrakeHoses();
-            if (UserInput.IsPressed(Keys.OemPipe) && UserInput.IsShiftDown()) Locomotive.Train.DisconnectBrakes();
-            if (UserInput.IsPressed(Keys.Back)) Locomotive.SetEmergency();
-            if (UserInput.IsPressed(Keys.X)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn); 
-            if (UserInput.IsPressed(Keys.V)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
-            if (UserInput.IsKeyDown(Keys.Space) != Locomotive.Horn) Locomotive.SignalEvent(Locomotive.Horn ? EventID.HornOff : EventID.HornOn);
-            if (UserInput.IsPressed(Keys.B) != Locomotive.Bell) Locomotive.SignalEvent(Locomotive.Bell ? EventID.BellOff : EventID.BellOn);
-            if (UserInput.IsPressed(Keys.H) && UserInput.IsShiftDown())
+			if (UserInput.IsPressed(UserCommands.ControlDynamicBrakeIncrease)) Locomotive.StartDynamicBrakeIncrease();
+			if (UserInput.IsReleased(UserCommands.ControlDynamicBrakeIncrease)) Locomotive.StopDynamicBrakeIncrease();
+			if (UserInput.IsPressed(UserCommands.ControlDynamicBrakeDecrease)) Locomotive.StartDynamicBrakeDecrease();
+			if (UserInput.IsReleased(UserCommands.ControlDynamicBrakeDecrease)) Locomotive.StopDynamicBrakeDecrease();
+
+			if (UserInput.IsPressed(UserCommands.ControlBailOff)) Locomotive.ToggleBailOff();
+			if (UserInput.IsPressed(UserCommands.ControlInitializeBrakes)) Locomotive.Train.InitializeBrakes();
+			if (UserInput.IsPressed(UserCommands.ControlHandbrakeNone)) Locomotive.Train.SetHandbrakePercent(0);
+			if (UserInput.IsPressed(UserCommands.ControlHandbrakeFull)) Locomotive.Train.SetHandbrakePercent(100);
+			if (UserInput.IsPressed(UserCommands.ControlRetainersOff)) Locomotive.Train.SetRetainers(false);
+			if (UserInput.IsPressed(UserCommands.ControlRetainersOn)) Locomotive.Train.SetRetainers(true);
+			if (UserInput.IsPressed(UserCommands.ControlBrakeHoseConnect)) Locomotive.Train.ConnectBrakeHoses();
+			if (UserInput.IsPressed(UserCommands.ControlBrakeHoseDisconnect)) Locomotive.Train.DisconnectBrakes();
+			if (UserInput.IsPressed(UserCommands.ControlEmergency)) Locomotive.SetEmergency();
+			if (UserInput.IsPressed(UserCommands.ControlSander)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn);
+			if (UserInput.IsPressed(UserCommands.ControlWiper)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
+			if (UserInput.IsPressed(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOn);
+			if (UserInput.IsReleased(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOff);
+			if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOn);
+			if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOff);
+			if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
             {
                 switch ((Locomotive.Headlight))
                 {
@@ -728,7 +730,7 @@ namespace ORTS
                 if (EventID.IsMSTSBin)
                     Locomotive.SignalEvent(EventID.LightSwitchToggle);
             }
-            else if (UserInput.IsPressed(Keys.H))
+			else if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
             {
                 switch ((Locomotive.Headlight))
                 {
@@ -739,15 +741,15 @@ namespace ORTS
                 if (EventID.IsMSTSBin)
                     Locomotive.SignalEvent(EventID.LightSwitchToggle);
             }
-            if (UserInput.IsPressed(Keys.Tab) && !UserInput.IsCtrlKeyDown() && UserInput.IsShiftDown())
+			if (UserInput.IsPressed(UserCommands.ControlDispatcherExtend))
                 Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization();
-            if (UserInput.IsPressed(Keys.Tab) && UserInput.IsCtrlKeyDown() && UserInput.IsShiftDown())
+			if (UserInput.IsPressed(UserCommands.ControlDispatcherRelease))
                 Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
 
             // By GeorgeS
-            if (UserInput.IsPressed(Keys.L)) Locomotive.SignalEvent(EventID.LightSwitchToggle);
-            if (UserInput.IsPressed(Keys.D1) && UserInput.IsShiftDown()) Locomotive.ShowCab = !Locomotive.ShowCab;
-            base.HandleUserInput( elapsedTime );
+			if (UserInput.IsPressed(UserCommands.ControlLight)) Locomotive.SignalEvent(EventID.LightSwitchToggle);
+            if (UserInput.IsPressed(UserCommands.CameraShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
+			base.HandleUserInput(elapsedTime);
         }
 
         /// <summary>

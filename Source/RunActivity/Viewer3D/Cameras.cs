@@ -280,29 +280,29 @@ namespace ORTS
 
 			// Movement
 			var speed = 1.0f;
-			if (UserInput.IsKeyDown(Keys.RightShift) || UserInput.IsKeyDown(Keys.LeftShift))
+			if (UserInput.IsShiftKeyDown())
 				speed = 10.0f;
 			if (UserInput.IsKeyDown(Keys.End))
 				speed = 0.05f;
 			Vector3 movement = new Vector3(0, 0, 0);
 
 			if (UserInput.IsKeyDown(Keys.Left))
-				if (UserInput.IsKeyDown(Keys.LeftControl))
+				if (UserInput.IsControlKeyDown())
 					rotationYRadians += speed * elapsedRealMilliseconds / 1000f;
 				else
 					movement.X -= speed * elapsedRealMilliseconds / 10f;
 			if (UserInput.IsKeyDown(Keys.Right))
-				if (UserInput.IsKeyDown(Keys.LeftControl))
+				if (UserInput.IsControlKeyDown())
 					rotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
 				else
 					movement.X += speed * elapsedRealMilliseconds / 10f;
 			if (UserInput.IsKeyDown(Keys.Up))
-				if (UserInput.IsKeyDown(Keys.LeftControl))
+				if (UserInput.IsControlKeyDown())
 					movement.Y += speed * elapsedRealMilliseconds / 10f;
 				else
 					movement.Z += speed * elapsedRealMilliseconds / 10f;
 			if (UserInput.IsKeyDown(Keys.Down))
-				if (UserInput.IsKeyDown(Keys.LeftControl))
+				if (UserInput.IsControlKeyDown())
 					movement.Y -= speed * elapsedRealMilliseconds / 10f;
 				else
 					movement.Z -= speed * elapsedRealMilliseconds / 10f;
@@ -451,7 +451,7 @@ namespace ORTS
 			var elapsedRealMilliseconds = elapsedTime.RealSeconds * 1000;
 			var speed = 1.0f;
 
-			if (UserInput.IsKeyDown(Keys.RightShift) || UserInput.IsKeyDown(Keys.LeftShift))
+			if (UserInput.IsShiftKeyDown())
 				speed = 10.0f;
 			if (UserInput.IsKeyDown(Keys.End))
 				speed = 0.05f;
@@ -631,7 +631,7 @@ namespace ORTS
 		{
 			var elapsedRealSeconds = elapsedTime.RealSeconds;
 			var speedMpS = 5f;
-			if (UserInput.IsShiftDown())
+			if (UserInput.IsShiftKeyDown())
 				speedMpS = 35;
 			float movement = speedMpS * elapsedRealSeconds;
 
@@ -648,14 +648,14 @@ namespace ORTS
 				UpdateOnboardLocation();
 			}
 
-			if (UserInput.IsCtrlKeyDown(Keys.Down))
+			if (UserInput.IsControlKeyDown(Keys.Down))
 			{
 				positionXRadians -= movement / 10f;
 				rotationXRadians -= movement / 10f;
 				if (positionXRadians < -1.5f) positionXRadians = -1.5f;
 				UpdateOnboardLocation();
 			}
-			else if (UserInput.IsCtrlKeyDown(Keys.Up))
+			else if (UserInput.IsControlKeyDown(Keys.Up))
 			{
 				positionXRadians += movement / 10f;
 				rotationXRadians += movement / 10f;
@@ -663,13 +663,13 @@ namespace ORTS
 				UpdateOnboardLocation();
 			}
 
-			if (UserInput.IsKeyDown(Keys.Down) && !UserInput.IsCtrlKeyDown())
+			if (UserInput.IsKeyDown(Keys.Down) && !UserInput.IsControlKeyDown())
 			{
 				positionDistance += movement * positionDistance / 10;
 				if (positionDistance < 1) positionDistance = 1;
 				UpdateOnboardLocation();
 			}
-			else if (UserInput.IsKeyDown(Keys.Up) && !UserInput.IsCtrlKeyDown())
+			else if (UserInput.IsKeyDown(Keys.Up) && !UserInput.IsControlKeyDown())
 			{
 				positionDistance -= movement * positionDistance / 10;
 				if (positionDistance > 100) positionDistance = 100;
@@ -712,7 +712,7 @@ namespace ORTS
             var elapsedRealMilliseconds = elapsedTime.RealSeconds * 1000;
             var speed = 1.0f;
 
-            if (UserInput.IsKeyDown(Keys.RightShift) || UserInput.IsKeyDown(Keys.LeftShift))
+            if (UserInput.IsShiftKeyDown())
                 speed = 10.0f;
             if (UserInput.IsKeyDown(Keys.End))
                 speed = 0.05f;

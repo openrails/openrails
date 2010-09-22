@@ -198,7 +198,7 @@ namespace ORTS
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             // Pantograph
-            if (UserInput.IsPressed(Keys.P) && !UserInput.IsShiftDown())
+            if (UserInput.IsPressed(UserCommands.ControlPantograph))
                 ElectricLocomotive.Train.SignalEvent(ElectricLocomotive.Pan ? EventID.PantographDown : EventID.PantographUp);
 
             base.HandleUserInput( elapsedTime);

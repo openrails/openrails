@@ -491,13 +491,13 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(Keys.W))
+			if (UserInput.IsPressed(UserCommands.ControlReverserForward))
                 SteamLocomotive.StartReverseIncrease();
-            else if (UserInput.IsReleased(Keys.W))
+			else if (UserInput.IsReleased(UserCommands.ControlReverserForward))
                 SteamLocomotive.StopReverseIncrease();
-            else if (UserInput.IsPressed(Keys.S))
+			else if (UserInput.IsPressed(UserCommands.ControlReverserBackwards))
                 SteamLocomotive.StartReverseDecrease();
-            else if (UserInput.IsReleased(Keys.S))
+			else if (UserInput.IsReleased(UserCommands.ControlReverserBackwards))
                 SteamLocomotive.StopReverseDecrease();
             else
                 base.HandleUserInput(elapsedTime);
