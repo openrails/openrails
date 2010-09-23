@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -15,35 +16,36 @@ using Microsoft.Xna.Framework.Input;
 
 namespace ORTS
 {
-    /// <summary>
-    /// This class adds ability to detect a key click ( press and release )
-    /// to the basic XNA keyboard handling functionality.
-    /// And forms the starting point for a customizable input scenario
-    /// where keyboard and mouse input is converted to symbolic commands and
-    /// its these commands that the viewer class responds to.
-    /// NOTE - I found the keyboard could only be read in the XNA Game Loop (RenderProcess) thread.
-    /// </summary>
-    public static class UserInput
-    {
-        public static bool Changed = false;  // flag UpdaterProcess that its time to handle keyboard input
+	/// <summary>
+	/// This class adds ability to detect a key click ( press and release )
+	/// to the basic XNA keyboard handling functionality.
+	/// And forms the starting point for a customizable input scenario
+	/// where keyboard and mouse input is converted to symbolic commands and
+	/// its these commands that the viewer class responds to.
+	/// NOTE - I found the keyboard could only be read in the XNA Game Loop (RenderProcess) thread.
+	/// </summary>
+	public static class UserInput
+	{
+		public static bool Changed = false;  // flag UpdaterProcess that its time to handle keyboard input
 
-		static UserCommandInput[] Commands = new UserCommandInput[(int)UserCommands.SENTINAL];
+		public static UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
 
 		public static KeyboardState KeyboardState;
-		public static MouseState MouseState;        
-        static KeyboardState LastKeyboardState;
-        static MouseState LastMouseState;
-        public static Vector3 NearPoint;
-        public static Vector3 FarPoint;
+		public static MouseState MouseState;
+		static KeyboardState LastKeyboardState;
+		static MouseState LastMouseState;
+		public static Vector3 NearPoint;
+		public static Vector3 FarPoint;
 
 		public static void Initialize()
 		{
 			Commands[(int)UserCommands.GameQuit] = new UserCommandInput(Keys.Escape);
 			Commands[(int)UserCommands.GameFullscreen] = new UserCommandInput(Keys.Enter, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GamePause] = new UserCommandInput(Keys.Pause);
+			Commands[(int)UserCommands.GameHelp] = new UserCommandInput(Keys.F1);
+			Commands[(int)UserCommands.GameSave] = new UserCommandInput(Keys.F2);
 			Commands[(int)UserCommands.GameSpeedUp] = new UserCommandInput(Keys.PageUp);
 			Commands[(int)UserCommands.GameSpeedReset] = new UserCommandInput(Keys.PageDown);
-			Commands[(int)UserCommands.GameSave] = new UserCommandInput(Keys.F2);
 			Commands[(int)UserCommands.GameOvercastIncrease] = new UserCommandInput(Keys.OemPlus, KeyModifiers.Control);
 			Commands[(int)UserCommands.GameOvercastDecrease] = new UserCommandInput(Keys.OemMinus, KeyModifiers.Control);
 			Commands[(int)UserCommands.GameClockForwards] = new UserCommandInput(Keys.OemPlus);
@@ -82,14 +84,14 @@ namespace ORTS
 			Commands[(int)UserCommands.ControlEngineBrakeDecrease] = new UserCommandInput('[');
 			Commands[(int)UserCommands.ControlDynamicBrakeIncrease] = new UserCommandInput(',');
 			Commands[(int)UserCommands.ControlDynamicBrakeDecrease] = new UserCommandInput('.');
-			Commands[(int)UserCommands.ControlBailOff] = new UserCommandInput('?');
-			Commands[(int)UserCommands.ControlInitializeBrakes] = new UserCommandInput('?', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlBailOff] = new UserCommandInput('/');
+			Commands[(int)UserCommands.ControlInitializeBrakes] = new UserCommandInput('?');
 			Commands[(int)UserCommands.ControlHandbrakeFull] = new UserCommandInput('\'', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlHandbrakeNone] = new UserCommandInput(';', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandInput(']');
 			Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandInput('[');
-			Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandInput('|');
-			Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandInput('|', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandInput('\\');
+			Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandInput('\\', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlEmergency] = new UserCommandInput(Keys.Back);
 			Commands[(int)UserCommands.ControlSander] = new UserCommandInput('x');
 			Commands[(int)UserCommands.ControlWiper] = new UserCommandInput('v');
@@ -103,33 +105,33 @@ namespace ORTS
 			Commands[(int)UserCommands.ControlDispatcherRelease] = new UserCommandInput(Keys.Tab, KeyModifiers.Shift | KeyModifiers.Control);
 		}
 
-        public static void Update(Viewer3D viewer)
-        {
-            LastKeyboardState = KeyboardState;
-            KeyboardState = Keyboard.GetState();
-            LastMouseState = MouseState;
-            MouseState = Mouse.GetState();
-            if (LastKeyboardState != KeyboardState
-                || LastMouseState.LeftButton != MouseState.LeftButton
-                || LastMouseState.RightButton != MouseState.RightButton
-                || LastMouseState.MiddleButton != MouseState.MiddleButton)
-            {
-                Changed = true;
-                if (MouseState.LeftButton == ButtonState.Pressed)
-                {
-                    Vector3 nearsource = new Vector3((float)MouseState.X, (float)MouseState.Y, 0f);
-                    Vector3 farsource = new Vector3((float)MouseState.X, (float)MouseState.Y, 1f);
-                    Matrix world = Matrix.CreateTranslation(0, 0, 0);
-                    NearPoint = viewer.GraphicsDevice.Viewport.Unproject(nearsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
-                    FarPoint = viewer.GraphicsDevice.Viewport.Unproject(farsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
-                }
-            }
-        }
+		public static void Update(Viewer3D viewer)
+		{
+			LastKeyboardState = KeyboardState;
+			KeyboardState = Keyboard.GetState();
+			LastMouseState = MouseState;
+			MouseState = Mouse.GetState();
+			if (LastKeyboardState != KeyboardState
+				|| LastMouseState.LeftButton != MouseState.LeftButton
+				|| LastMouseState.RightButton != MouseState.RightButton
+				|| LastMouseState.MiddleButton != MouseState.MiddleButton)
+			{
+				Changed = true;
+				if (MouseState.LeftButton == ButtonState.Pressed)
+				{
+					Vector3 nearsource = new Vector3((float)MouseState.X, (float)MouseState.Y, 0f);
+					Vector3 farsource = new Vector3((float)MouseState.X, (float)MouseState.Y, 1f);
+					Matrix world = Matrix.CreateTranslation(0, 0, 0);
+					NearPoint = viewer.GraphicsDevice.Viewport.Unproject(nearsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
+					FarPoint = viewer.GraphicsDevice.Viewport.Unproject(farsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
+				}
+			}
+		}
 
-        public static void Handled()
-        {
-            Changed = false;
-        }
+		public static void Handled()
+		{
+			Changed = false;
+		}
 
 		static bool IsKeyState(UserCommandInput setting)
 		{
@@ -166,7 +168,7 @@ namespace ORTS
 		}
 
 		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-        public static bool IsKeyDown(Keys key) { return KeyboardState.IsKeyDown(key); }
+		public static bool IsKeyDown(Keys key) { return KeyboardState.IsKeyDown(key); }
 		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
 		public static bool IsKeyUp(Keys key) { return KeyboardState.IsKeyUp(key); }
 
@@ -213,9 +215,10 @@ namespace ORTS
 		GameQuit,
 		GameFullscreen,
 		GamePause,
+		GameHelp,
+		GameSave,
 		GameSpeedUp,
 		GameSpeedReset,
-		GameSave,
 		GameOvercastIncrease,
 		GameOvercastDecrease,
 		GameClockForwards,
@@ -273,11 +276,10 @@ namespace ORTS
 		ControlHeadlightDecrease,
 		ControlDispatcherExtend,
 		ControlDispatcherRelease,
-		SENTINAL // THIS MUST BE THE LAST VALUE
 	}
 
 	[Flags]
-	enum KeyModifiers
+	public enum KeyModifiers
 	{
 		None = 0,
 		Shift = 1,
@@ -285,15 +287,21 @@ namespace ORTS
 		Alt = 4
 	}
 
-	class UserCommandInput
+	public class UserCommandInput
 	{
 		public readonly Keys Key;
 		public readonly bool Shift;
 		public readonly bool Control;
 		public readonly bool Alt;
 
-		[DllImport("user32.dll")]
+		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		static extern short VkKeyScan(char ch);
+
+		[DllImport("user32.dll")]
+		static extern int MapVirtualKey(int uCode, int uMapType);
+
+		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		static extern int GetKeyNameText(int lParam, [Out] string lpString, int nSize);
 
 		UserCommandInput(Keys key, bool shift, bool control, bool alt)
 		{
@@ -314,14 +322,58 @@ namespace ORTS
 		{
 		}
 
-		public UserCommandInput(char key, KeyModifiers modifiers)
-			: this((Keys)(VkKeyScan(key) & 0xFF), modifiers)
+		public UserCommandInput(char key)
+			: this((Keys)(VkKeyScan(key) & 0xFF), (KeyModifiers)((VkKeyScan(key) & 0xFF00) >> 8))
 		{
 		}
 
-		public UserCommandInput(char key)
-			: this(key, KeyModifiers.None)
+		public UserCommandInput(char key, KeyModifiers modifiers)
+			: this(key)
 		{
+			var keyModifiers = (KeyModifiers)((VkKeyScan(key) & 0xFF00) >> 8);
+			if ((modifiers & keyModifiers) != 0)
+				Trace.TraceWarning(String.Format("UserCommandInput character '{0}' has conflicting modifier(s) {1}. Modifiers will be inverted from intended state.", key, modifiers & keyModifiers));
+			if ((modifiers & KeyModifiers.Shift) != 0) Shift = !Shift;
+			if ((modifiers & KeyModifiers.Control) != 0) Control = !Control;
+			if ((modifiers & KeyModifiers.Alt) != 0) Alt = !Alt;
+		}
+
+		public override string ToString()
+		{
+			var key = new StringBuilder();
+			if (Shift) key = key.Append("Shift + ");
+			if (Control) key = key.Append("Control + ");
+			if (Alt) key = key.Append("Alt + ");
+
+			var xnaName = Enum.GetName(typeof(Keys), Key);
+			var scanCode = MapVirtualKey((int)Key, 0) << 16;
+			if (scanCode != 0)
+			{
+				var keyName = new String('\0', 32);
+				var keyNameLength = GetKeyNameText(scanCode, keyName, keyName.Length);
+				keyName = keyName.Substring(0, keyNameLength);
+				if (keyName.Length > 0)
+				{
+					// GetKeyNameText prefers "NUM 9" to "PAGE UP" and so on. Sucks.
+					if (keyName.StartsWith("NUM ") || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase))
+						key.Append(xnaName);
+					else
+						key.Append(keyName);
+				}
+				else
+				{
+					// If we failed to convert the scan code to a name, include the scan code for debugging.
+					key.Append(" [sc=");
+					key.Append(scanCode);
+					key.Append("]");
+				}
+			}
+			else
+			{
+				key.Append(xnaName);
+			}
+
+			return key.ToString();
 		}
 	}
 }

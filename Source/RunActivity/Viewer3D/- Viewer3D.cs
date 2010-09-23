@@ -95,6 +95,7 @@ namespace ORTS
         public Simulator Simulator;
         InfoDisplay InfoDisplay;
 		public WindowManager WindowManager = null;
+		public HelpWindow HelpWindow; // F1 window
 		public TrackMonitorWindow TrackMonitorWindow; // F4 window
 		public SwitchWindow SwitchWindow; // F8 window
 		public TrainOperationsWindow TrainOperationsWindow; // F9 window
@@ -299,9 +300,11 @@ namespace ORTS
             }
 
             InfoDisplay = new InfoDisplay(this);
+			UserInput.Initialize();
             
             // Initialse popup windows.
 			WindowManager = new WindowManager(this);
+			HelpWindow = new HelpWindow(WindowManager);
 			TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
 			SwitchWindow = new SwitchWindow(WindowManager);
 			TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
@@ -417,6 +420,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.GameSpeedUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
             if (UserInput.IsPressed(UserCommands.GameSpeedReset)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(UserCommands.GameSave)) { Program.Save(); }
+			if (UserInput.IsPressed(UserCommands.GameHelp)) HelpWindow.Visible = !HelpWindow.Visible;
 			if (UserInput.IsPressed(UserCommands.WindowTrackMonitor)) TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
 			if (UserInput.IsPressed(UserCommands.WindowSwitch)) SwitchWindow.Visible = !SwitchWindow.Visible;
 			if (UserInput.IsPressed(UserCommands.WindowTrainOperations)) TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;

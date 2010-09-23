@@ -129,7 +129,6 @@ namespace ORTS
                 NextFrame = new RenderFrame( this );
                 Viewer.UpdaterProcess.Run();
             }
-			UserInput.Initialize();
             base.Initialize();
             Viewer.Simulator.Paused = false;
         }
