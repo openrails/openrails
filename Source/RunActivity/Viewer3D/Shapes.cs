@@ -49,7 +49,7 @@ namespace ORTS
             SharedShape = SharedShapeManager.Get(Viewer, path);
         }
 
-        public virtual void PrepareFrame(RenderFrame frame, float elapsedSeconds)
+		public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
 			SharedShape.PrepareFrame(frame, Location, Flags);
         }
@@ -57,13 +57,13 @@ namespace ORTS
 
 	public class StaticTrackShape : StaticShape
 	{
-        public StaticTrackShape(Viewer3D viewer, string path, WorldPosition position)
+		public StaticTrackShape(Viewer3D viewer, string path, WorldPosition position)
 			: base(viewer, path, position, ShapeFlags.AutoZBias)
-        {
-        }
+		{
+		}
 	}
 
-    /// <summary>
+	/// <summary>
     /// Has a heirarchy of objects that can be moved by adjusting the XNAMatrices
     /// at each node.
     /// </summary>
@@ -82,7 +82,7 @@ namespace ORTS
                 XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
         }
 
-        public override void PrepareFrame(RenderFrame frame, float elapsedSeconds)
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
 			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -188,14 +188,14 @@ namespace ORTS
 		{
 		}
 
-		public override void PrepareFrame(RenderFrame frame, float elapsedSeconds)
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // if the shape has animations
             if (SharedShape.Animations != null && SharedShape.Animations[0].FrameCount > 1)
             {
                 // Compute the animation key based on framerate etc
                 // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                AnimationKey += ((float)SharedShape.Animations[0].FrameRate / 10f) * elapsedSeconds;
+                AnimationKey += ((float)SharedShape.Animations[0].FrameRate / 10f) * elapsedTime.ClockSeconds;
                 while (AnimationKey >= SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
                 while (AnimationKey < -0.00001) AnimationKey += SharedShape.Animations[0].FrameCount;
 
@@ -222,17 +222,17 @@ namespace ORTS
 			MainRoute = TS.MainRoute;
 		}
 
-        public override void PrepareFrame(RenderFrame frame, float elapsedClockSeconds )
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // ie, with 2 frames of animation, the key will advance from 0 to 1
             if (TrJunctionNode.SelectedRoute == MainRoute)
             {
-                if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedClockSeconds*1000.0f;
+				if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedTime.ClockSeconds * 1000.0f;
                 if (AnimationKey < 0.001) AnimationKey = 0;
             }
             else
             {
-                if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedClockSeconds*1000.0f;
+				if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedTime.ClockSeconds * 1000.0f;
                 if (AnimationKey > 0.999) AnimationKey = 1.0f;
             }
 
@@ -337,7 +337,7 @@ namespace ORTS
         public Matrix[] Matrices;               // the original natural pose for this shape - shared by all instances
         public animations Animations = null;
 
-        private LodControl[] LodControls = null;
+        public LodControl[] LodControls = null;
         
         /// <summary>
         /// Create an empty shape used as a sub when the shape won't load
@@ -399,8 +399,7 @@ namespace ORTS
                 string SDfilePath = FilePath + "d";
                 SDFile SDFile = new SDFile(SDfilePath);
                 altTex = SDFile.shape.ESD_Alternative_Texture;
-                Helpers helper = new Helpers();
-                textureFolder = helper.GetTextureFolder(Viewer, altTex);
+				textureFolder = Helpers.GetTextureFolder(Viewer, altTex);
                 if (altTex == 257) isNightEnabled = 1;
             }
 

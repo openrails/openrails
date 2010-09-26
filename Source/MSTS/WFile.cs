@@ -11,8 +11,9 @@
 
 using System;
 using System.Collections;
-using System.IO;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using MSTSMath;
 
 
@@ -81,7 +82,9 @@ namespace MSTS
                         case TokenID.Transfer: subBlock.Skip(); break; // TODO
                         case TokenID.Gantry: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Pickup: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
-                        case TokenID.Signal: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                        case TokenID.Signal:
+							Add(new SignalObj(subBlock, currentWatermark));
+							break;
                         case TokenID.Speedpost: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
                         case TokenID.Tr_Watermark: currentWatermark = subBlock.ReadInt(); break;
                         default: subBlock.Skip(); break;
@@ -382,6 +385,35 @@ namespace MSTS
 
         }//TreeSize
     }//ForestObj
+
+	public class SignalObj : WorldObject
+	{
+		public readonly SignalUnits SignalUnits;
+
+		public SignalObj(SBR block, int detailLevel)
+        {
+			StaticDetailLevel = detailLevel;
+
+			while (!block.EndOfBlock())
+			{
+				using (SBR subBlock = block.ReadSubBlock())
+				{
+					switch (subBlock.ID)
+					{
+						case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+						case TokenID.FileName: FileName = subBlock.ReadString(); break;
+						case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+						case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+						case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
+						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+						case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+						case TokenID.SignalUnits: SignalUnits = new SignalUnits(subBlock); break;
+						default: subBlock.Skip(); break;
+					}
+				}
+			}
+		}
+	}
 
     // These relate to the general properties settable for scenery objects in RE
     public enum StaticFlag
@@ -787,4 +819,44 @@ namespace MSTS
 		}
 	}
 
+	public class SignalUnits
+	{
+		public readonly SignalUnit[] Units;
+
+		public SignalUnits(SBR block)
+		{
+			var units = new List<SignalUnit>();
+			block.VerifyID(TokenID.SignalUnits);
+			var count = block.ReadUInt();
+			for (var i = 0; i < count; i++)
+			{
+				using (SBR subBlock = block.ReadSubBlock())
+				{
+					units.Add(new SignalUnit(subBlock));
+				}
+			}
+			block.VerifyEndOfBlock();
+			Units = units.ToArray();
+		}
+	}
+
+	public class SignalUnit
+	{
+		public readonly uint SubObj;
+		public readonly uint TrItem;
+
+		public SignalUnit(SBR block)
+		{
+			block.VerifyID(TokenID.SignalUnit);
+			SubObj = block.ReadUInt();
+			using (SBR subBlock = block.ReadSubBlock())
+			{
+				subBlock.VerifyID(TokenID.TrItemId);
+				subBlock.ReadUInt(); // Unk?
+				TrItem = subBlock.ReadUInt();
+				subBlock.VerifyEndOfBlock();
+			}
+			block.VerifyEndOfBlock();
+		}
+	}
 }

@@ -425,7 +425,7 @@ namespace ORTS
             int i = 0;
             int j;
             numLights = car.Lights.LightList.Count;
-            numStates = car.Lights.light.StateList.Count;
+			numStates = car.Lights.light.StateList != null ? car.Lights.light.StateList.Count : 0;
             // Create and fill arrays with the light variables
             type =          new int[numLights];
             headlight =     new int[numLights];
@@ -451,7 +451,7 @@ namespace ORTS
                 }
 
                 
-                if (light.type == 0 && light.penalty <= 1 && ((isFrontCar && light.unit == 2) 
+                if ((car.Lights.light.StateList != null) && light.type == 0 && light.penalty <= 1 && ((isFrontCar && light.unit == 2) 
                     || !isFrontCar && light.unit == 3 || light.unit <= 1)) // Not a light cone, not penalty; unit: 2 = front, 3 = rear
                 {
                     type[i] = light.type;

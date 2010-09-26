@@ -113,6 +113,11 @@ namespace ORTS
             XNAMatrix.Translation = TileLocation;
 
         }
+
+		public override string ToString()
+		{
+			return WorldLocation.ToString();
+		}
     }
 
     public class WorldLocation
@@ -194,6 +199,11 @@ namespace ORTS
 		public static Vector2 GetDistance2D(WorldLocation location1, WorldLocation location2)
 		{
 			return new Vector2(location2.Location.X - location1.Location.X + (location2.TileX - location1.TileX) * 2048, location2.Location.Z - location1.Location.Z + (location2.TileZ - location1.TileZ) * 2048);
+		}
+
+		public override string ToString()
+		{
+			return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4}}}", TileX, TileZ, Location.X, Location.Y, Location.Z);
 		}
 	}
 }

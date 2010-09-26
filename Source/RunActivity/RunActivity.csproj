@@ -217,6 +217,7 @@
     <Compile Include="Simulator\TDBTraveller.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Common\DataLogger.cs" />
+    <Compile Include="Viewer3D\Signals.cs" />
     <Compile Include="Viewer3D\SoundHelper.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\Dynatrack.cs">

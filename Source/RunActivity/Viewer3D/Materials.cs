@@ -35,8 +35,9 @@ namespace ORTS
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
+		private static Dictionary<string, SignalLightMaterial> SignalLightMaterials = new Dictionary<string, SignalLightMaterial>();
         public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
-        private static Material YellowMaterial = null;   // for debug and experiments
+		public static Material YellowMaterial = null;   // for debug and experiments
         public static ShadowMapMaterial ShadowMapMaterial = null;
         public static ShadowMapShader ShadowMapShader = null;
         public static Color FogColor = new Color(110, 110, 110, 255);
@@ -159,6 +160,17 @@ namespace ORTS
                     else
                     {
                         return ForestMaterials[textureName];
+                    }
+				case "SignalLightMaterial":
+					if (!SignalLightMaterials.ContainsKey(textureName))
+                    {
+						var material = new SignalLightMaterial(renderProcess, textureName);
+						SignalLightMaterials.Add(textureName, material);
+                        return material;
+                    }
+                    else
+                    {
+						return SignalLightMaterials[textureName];
                     }
                 default:
                     return Load(renderProcess, "SceneryMaterial");

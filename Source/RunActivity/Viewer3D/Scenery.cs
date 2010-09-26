@@ -273,11 +273,16 @@ namespace ORTS
                     ForestObj forestObj = (ForestObj)worldObject;
                     forestList.Add(new ForestDrawer(viewer, forestObj, worldMatrix));
                 }
-                else // It's some other type of object - not one of the above.
-                {
+				else if (worldObject.GetType() == typeof(MSTS.SignalObj))
+				{
+					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0;
+					SceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+				}
+				else // It's some other type of object - not one of the above.
+				{
 					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0;
 					SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
-                }
+				}
             }
 
         } // WorldFile constructor
@@ -387,7 +392,7 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             foreach ( StaticShape shape in SceneryObjects )
-                shape.PrepareFrame(frame, elapsedTime.ClockSeconds );
+                shape.PrepareFrame(frame, elapsedTime);
         }
 
         /// <summary>

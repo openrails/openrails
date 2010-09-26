@@ -16,26 +16,26 @@ using ORTS;
 
 namespace MSTS
 {
-    public struct strLightTexture
+    public struct LightTexture
     {
-        public string TextureName, TextureFile;
+        public string Name, TextureFile;
         public float u0, v0, u1, v1;	       
     }
 
-    public struct strLightTabEntry
+    public struct LightTableEntry
     {
-        public string LightName;
-        public uint a, r, g, b;   // colour
+        public string Name;
+        public byte a, r, g, b;   // colour
     }
 
-    public struct strSignalLight
+    public struct SignalLight
     {
-        public string LightName;
+        public string Name;
         public float x,y,z;      // position
         public float radius;
     }
 
-    public struct strSignalAspect
+    public struct SignalAspect
     {
         public ORTS.SignalHead.SIGASP signalAspect;   // Display aspect
         public int drawState;      // Index to drawstate table
@@ -46,10 +46,10 @@ namespace MSTS
 
     public class SIGCFGFile
     {
-        public strLightTexture[] lightTextures;
-        public strLightTabEntry[] lightsTable;
-        public SignalType[] SignalTypes;
-        public SignalShape[] SignalShapes;
+		public Dictionary<string, LightTexture> LightTextures = new Dictionary<string, LightTexture>();
+		public Dictionary<string, LightTableEntry> LightsTable = new Dictionary<string, LightTableEntry>();
+		public Dictionary<string, SignalType> SignalTypes = new Dictionary<string, SignalType>();
+		public Dictionary<string, SignalShape> SignalShapes = new Dictionary<string, SignalShape>();
         public List<string> ScriptFiles;
 
         public SIGCFGFile(string filenamewithpath)
@@ -61,11 +61,11 @@ namespace MSTS
                 while (token != "") // EOF
                 {
                     if (token == ")") throw (new STFException(f, "Unexpected )"));
-                    else if (0 == String.Compare(token, "LightTextures", true)) LightTextures(f);
-                    else if (0 == String.Compare(token, "LightsTab", true)) LightsTab(f);
-                    else if (0 == String.Compare(token, "SignalTypes", true)) SigTypes(f);
-                    else if (0 == String.Compare(token, "SignalShapes", true)) SigShapes(f);
-                    else if (0 == String.Compare(token, "ScriptFiles", true)) SignalScripts(f);
+                    else if (0 == String.Compare(token, "LightTextures", true)) ReadLightTextures(f);
+                    else if (0 == String.Compare(token, "LightsTab", true)) ReadLightsTab(f);
+                    else if (0 == String.Compare(token, "SignalTypes", true)) ReadSigTypes(f);
+                    else if (0 == String.Compare(token, "SignalShapes", true)) ReadSigShapes(f);
+                    else if (0 == String.Compare(token, "ScriptFiles", true)) ReadSignalScripts(f);
                     else f.SkipBlock();
                     token = f.ReadToken();
                 }
@@ -76,11 +76,10 @@ namespace MSTS
             }
         }
 
-        private void LightTextures(STFReader f)
+        void ReadLightTextures(STFReader f)
         {
             f.VerifyStartOfBlock();
             uint noTextures = f.ReadUInt();
-            lightTextures = new strLightTexture[noTextures];
             uint count = 0;
             string token = f.ReadToken();
             while (token != ")")
@@ -90,15 +89,16 @@ namespace MSTS
                 {
                     if (count < noTextures)
                     {
-                        lightTextures[count] = new strLightTexture();
+						var lightTexture = new LightTexture();
                         f.VerifyStartOfBlock();
-                        lightTextures[count].TextureName = f.ReadString();
-                        lightTextures[count].TextureFile = f.ReadString();
-                        lightTextures[count].u0 = f.ReadFloat();
-                        lightTextures[count].v0 = f.ReadFloat();
-                        lightTextures[count].u1 = f.ReadFloat();
-                        lightTextures[count].v1 = f.ReadFloat();
+						lightTexture.Name = f.ReadString();
+						lightTexture.TextureFile = f.ReadString();
+						lightTexture.u0 = f.ReadFloat();
+						lightTexture.v0 = f.ReadFloat();
+						lightTexture.u1 = f.ReadFloat();
+						lightTexture.v1 = f.ReadFloat();
                         f.MustMatch(")");
+						LightTextures[lightTexture.Name] = lightTexture;
                         count++;
                     }
                     else
@@ -112,11 +112,10 @@ namespace MSTS
             if (count != noTextures) STFException.ReportError(f, "LightTextures count mismatch");
         }
 
-        private void LightsTab(STFReader f)
+        void ReadLightsTab(STFReader f)
         {
             f.VerifyStartOfBlock();
             uint noLights = f.ReadUInt();
-            lightsTable = new strLightTabEntry[noLights];
             uint count = 0;
             string token = f.ReadToken();
             while (token != ")")
@@ -126,17 +125,17 @@ namespace MSTS
                 {
                     if (count < noLights)
                     {
-                        lightsTable[count] = new strLightTabEntry();
+                        var lightsTableEntry = new LightTableEntry();
                         f.VerifyStartOfBlock();
-                        lightsTable[count].LightName = f.ReadString();
+						lightsTableEntry.Name = f.ReadString();
                         string Token1 = f.ReadToken();
                         if (0 == String.Compare(Token1, "Colour", true))
                         {
                             f.VerifyStartOfBlock();
-                            lightsTable[count].a = f.ReadUInt();
-                            lightsTable[count].r = f.ReadUInt();
-                            lightsTable[count].g = f.ReadUInt();
-                            lightsTable[count].b = f.ReadUInt();
+							lightsTableEntry.a = (byte)f.ReadUInt();
+							lightsTableEntry.r = (byte)f.ReadUInt();
+							lightsTableEntry.g = (byte)f.ReadUInt();
+							lightsTableEntry.b = (byte)f.ReadUInt();
                             f.MustMatch(")");
                         }
                         else
@@ -144,6 +143,7 @@ namespace MSTS
                             STFException.ReportError(f, "'Colour' Expected");
                         }
                         f.MustMatch(")");
+						LightsTable[lightsTableEntry.Name] = lightsTableEntry;
                         count++;
                     }
                     else
@@ -157,11 +157,10 @@ namespace MSTS
             if (count != noLights) STFException.ReportError(f, "LightsTab count mismatch");
         }
 
-        private void SigTypes(STFReader f)
+        void ReadSigTypes(STFReader f)
         {
             f.VerifyStartOfBlock();
             uint noSigTypes = f.ReadUInt();
-            SignalTypes = new SignalType[noSigTypes];
             uint count = 0;
             string token = f.ReadToken();
             while (token != ")")
@@ -171,7 +170,8 @@ namespace MSTS
                 {
                     if (count < noSigTypes)
                     {
-                        SignalTypes[count] = new SignalType(count, f, this);
+						var signalType = new SignalType(count, f, this);
+                        SignalTypes[signalType.typeName] = signalType;
                         count++;
                     }
                 }
@@ -180,11 +180,10 @@ namespace MSTS
             }
         }
 
-        private void SigShapes(STFReader f)
+        void ReadSigShapes(STFReader f)
         {
             f.VerifyStartOfBlock();
             uint noSigShapes = f.ReadUInt();
-            SignalShapes = new SignalShape[noSigShapes];
             uint count = 0;
             string token = f.ReadToken();
             while (token != ")")
@@ -194,7 +193,8 @@ namespace MSTS
                 {
                     if (count < noSigShapes)
                     {
-                        SignalShapes[count] = new SignalShape(count, f, this);
+						var signalShape = new SignalShape(count, f, this);
+                        SignalShapes[signalShape.ShapeFileName] = signalShape;
                         count++;
                     }
                     else throw (new STFException(f, "SigShapes count mismatch"));
@@ -205,7 +205,7 @@ namespace MSTS
             if (count != noSigShapes) STFException.ReportError(f, "SigShapes count mismatch");
         }
 
-        private void SignalScripts(STFReader f)
+        void ReadSignalScripts(STFReader f)
         {
             ScriptFiles = new List<string>();
             f.VerifyStartOfBlock();
@@ -222,22 +222,6 @@ namespace MSTS
                 token = f.ReadToken();
             }
         }
-
-        //
-        // This method returns the signaltype array for the specified sigtype
-        // Returns null if this cannot be found.
-        //
-        public SignalType GetSignalType(string sSigType)
-        {
-            for (int i =0;i<SignalTypes.Length;i++)
-            {
-                if(0==String.Compare(SignalTypes[i].typeName,sSigType,true))
-                {
-                    return SignalTypes[i];
-                }
-            }
-            return null;
-        }
     }
 
     public class SignalType
@@ -247,9 +231,9 @@ namespace MSTS
                                           "APPROACH_3","APPROACH_4","CLEAR_1","CLEAR_2","CLEAR_3","CLEAR_4"};
         public string typeName;
         public uint SignalFnType,SignalNumClearAhead;
-        public int SignalLightTex; // Points to entry in light testure table
-        public strSignalLight[] SignalLights;
-        public strSignalAspect[] SignalAspects;
+		public string SignalLightTex;
+        public SignalLight[] SignalLights;
+        public SignalAspect[] SignalAspects;
         public SignalDrawState[] SignalDrawStates;
         public bool semaphore = false;
         public bool noGantry = false;
@@ -273,14 +257,7 @@ namespace MSTS
                     time_off = f.ReadFloat();
                     f.MustMatch(")");
                 }
-                else if (0 == String.Compare(token, "SignalLightTex", true))
-                {
-                    // Get index to light texture table.
-                    if ((SignalLightTex = SigLightTex(f, sigcfg)) < 0)
-                    {
-                        throw new STFException(f, "Unknown SignalLightTex " + SignalLightTex);
-                    }
-                }
+                else if (0 == String.Compare(token, "SignalLightTex", true)) SignalLightTex = SigLightTex(f);
                 else if (0 == String.Compare(token, "SignalLights", true)) SigLights(f);
                 else if (0 == String.Compare(token, "SignalDrawStates", true)) DrawStates(f,sigcfg);
                 else if (0 == String.Compare(token, "SignalAspects", true)) SigAspects(f);
@@ -313,17 +290,9 @@ namespace MSTS
         //
         //  Scans the light texture table for the light texture name and return an index.
         //
-        private int SigLightTex(STFReader f,SIGCFGFile sigcfg)
+        private string SigLightTex(STFReader f)
         {
-            string slTex = f.ReadStringBlock();
-            for (int i = 0;i< sigcfg.lightTextures.Length; i++)
-            {
-                if(0==String.Compare(slTex,sigcfg.lightTextures[i].TextureName,true))
-                {
-                    return i;   // return the index
-                }
-            }
-            return -1;    // light texture not found.
+            return f.ReadStringBlock();
         }
 
         private void SignalFlags(STFReader f)
@@ -345,7 +314,7 @@ namespace MSTS
         {
             f.VerifyStartOfBlock();
             uint noLights = f.ReadUInt();
-            SignalLights = new strSignalLight[noLights];
+            SignalLights = new SignalLight[noLights];
             string token = f.ReadToken();
             while (token != ")")
             {
@@ -358,8 +327,8 @@ namespace MSTS
                     {
                         throw new STFException(f, "SignalLight index out of range: " + lightindex.ToString());
                     }
-                    SignalLights[lightindex]=new strSignalLight();
-                    SignalLights[lightindex].LightName=f.ReadString();
+                    SignalLights[lightindex]=new SignalLight();
+                    SignalLights[lightindex].Name=f.ReadString();
                     string token1 = f.ReadToken();
                     while (token1 != ")")
                     {
@@ -412,7 +381,7 @@ namespace MSTS
         {
             f.VerifyStartOfBlock();
             uint noAspects = f.ReadUInt();
-            SignalAspects = new strSignalAspect[noAspects];
+            SignalAspects = new SignalAspect[noAspects];
             string token = f.ReadToken();
             uint count=0;
             while(token != ")")
@@ -429,11 +398,16 @@ namespace MSTS
                 else f.SkipBlock();
                 token = f.ReadToken();
             }
+			if (count < noAspects)
+			{
+				noAspects = count;
+				SignalAspects = SignalAspects.Take((int)noAspects).ToArray();
+			}
         }
 
         private void SigAspect(uint count,STFReader f)
         {
-            SignalAspects[count] = new strSignalAspect();
+            SignalAspects[count] = new SignalAspect();
             SignalAspects[count].speed = -1;
             SignalAspects[count].asap = false;
             f.VerifyStartOfBlock();
@@ -536,7 +510,7 @@ namespace MSTS
         public struct strDrawLights
         {
             public uint DrawLight;
-            public bool flashing;
+            public bool Flashing;
         }
         public strDrawLights[] DrawLights;
         public String DrawStateName;
@@ -575,7 +549,7 @@ namespace MSTS
                         DrawLights[count] = new strDrawLights();
                         f.VerifyStartOfBlock();
                         DrawLights[count].DrawLight = f.ReadUInt();
-                        DrawLights[count].flashing = false;
+                        DrawLights[count].Flashing = false;
                         token = f.ReadToken();
                         while (token != ")")
                         {
@@ -585,7 +559,7 @@ namespace MSTS
                                 string trLightFlags = f.ReadStringBlock();
                                 if (0 == String.Compare(trLightFlags, "FLASHING", true))
                                 {
-                                    DrawLights[count].flashing = true;
+                                    DrawLights[count].Flashing = true;
                                     token = f.ReadToken();
                                 }
                                 else
@@ -663,7 +637,7 @@ namespace MSTS
             public string node_name;        // Name of the group within the signal shape which defines this head
             public string description;      // 
             public int SignalSubType = -1;  // Signal sub type: -1 if not specified;
-            public int SigSubSType = -1;    // index to Signal Type table. -1 if not used. 
+            public string SigSubSType;
             public bool optional = false;
             public bool bDefault = false;
             public bool back_facing = false;
@@ -685,7 +659,7 @@ namespace MSTS
                         if (token == "") throw (new STFException(f, "Missing )"));  // EOF
                         else if (0 == String.Compare(token, "SigSubType", true)) SignalSubType = SigSubType(f);
                         else if (0 == String.Compare(token, "SignalFlags", true)) SigSubFlags(f);
-                        else if (0 == String.Compare(token, "SigSubSType", true)) SigSubSType = SigSTtype(f, sigcfg);
+						else if (0 == String.Compare(token, "SigSubSType", true)) SigSubSType = SigSTtype(f);
                         else f.SkipBlock();
                         token = f.ReadToken();
                     }
@@ -725,14 +699,9 @@ namespace MSTS
                 }
             }
 
-            private int SigSTtype(STFReader f, SIGCFGFile sigcfg)
+			private string SigSTtype(STFReader f)
             {
-                string stType = f.ReadStringBlock();
-                for(int i=0;i<sigcfg.SignalTypes.Length;i++)
-                {
-                    if (0 == String.Compare(stType, sigcfg.SignalTypes[i].typeName, true)) return i;   
-                }
-                throw (new STFException(f, "Unknown Signal Type "+stType));
+                return f.ReadStringBlock();
             }
 
             private void SubJnLinkIf(STFReader f)

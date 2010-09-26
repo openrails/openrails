@@ -72,6 +72,7 @@ struct VERTEX_INPUT
 {
 	float4 Position  : POSITION;
 	float2 TexCoords : TEXCOORD0;
+	float4 Color     : COLOR0;
 	float3 Normal    : NORMAL;
 };
 
@@ -81,6 +82,7 @@ struct VERTEX_OUTPUT
 {
 	float4 Position     : POSITION;
 	float2 TexCoords    : TEXCOORD0;
+	float4 Color        : COLOR0;
 	float4 Normal_Light : TEXCOORD1;
 	float4 LightDir_Fog : TEXCOORD2;
 	float4 Shadow       : TEXCOORD3;
@@ -93,6 +95,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.TexCoords = In.TexCoords;
+	Out.Color = In.Color;
 	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
 }
 
@@ -152,6 +155,17 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 	Out.Normal_Light.xyz = eyeVector;
 
 	_VSLightsAndShadows(In, Out);
+
+	return Out;
+}
+
+VERTEX_OUTPUT VSSignalLight(in VERTEX_INPUT In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	_VSNormalProjection(In, Out);
+
+	// Apply a 1cm z-bias so that lights are always on top of the shape.
+	Out.Position.z -= 0.01 / Out.Position.z;
 
 	return Out;
 }
@@ -339,6 +353,14 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 	return Color;	
 }
 
+float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
+{
+	float4 Color = tex2D(imageMap, In.TexCoords);
+	Color.rgb = lerp(Color.rgb, In.Color.rgb, Color.r);
+	_PSApplyFog(Color, In);
+	return Color;
+}
+
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
 technique Image
@@ -401,5 +423,14 @@ technique FullBright
    {
       VertexShader = compile vs_2_0 VSGeneral ( );
       PixelShader = compile ps_2_0 PSFullBright ( );
+   }
+}
+
+technique SignalLight
+{
+   pass Pass_0
+   {
+      VertexShader = compile vs_2_0 VSSignalLight ( );
+      PixelShader = compile ps_2_0 PSSignalLight ( );
    }
 }

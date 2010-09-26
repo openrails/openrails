@@ -815,7 +815,7 @@ namespace ORTS
             if (FreightShape != null)
             {
                 FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimHeight;
-                FreightShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
+                FreightShape.PrepareFrame(frame, elapsedTime);
             }
 
             // Control visibility of passenger cabin when inside it
@@ -825,9 +825,9 @@ namespace ORTS
             {
                 // We are in the passenger cabin
                 if (InteriorShape != null)
-                    InteriorShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
+                    InteriorShape.PrepareFrame(frame, elapsedTime);
                 else
-                    TrainCarShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
+                    TrainCarShape.PrepareFrame(frame, elapsedTime);
             }
             else
             {
@@ -837,7 +837,7 @@ namespace ORTS
                     return;
                 
                 // We are outside the passenger cabin
-                TrainCarShape.PrepareFrame(frame, elapsedTime.ClockSeconds);
+                TrainCarShape.PrepareFrame(frame, elapsedTime);
             }
 
         }

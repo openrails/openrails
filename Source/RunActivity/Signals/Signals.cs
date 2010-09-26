@@ -24,7 +24,7 @@ namespace ORTS
         {
             trackDB = simulator.TDB.TrackDB;
             BuildSignalList(simulator.TDB.TrackDB.TrItemTable, simulator.TDB.TrackDB.TrackNodes);
-            if (foundSignals>0) AddCFG(simulator.sigCFGfile);  // Add links to the sigcfg.dat file
+            if (foundSignals>0) AddCFG(simulator.SIGCFG);  // Add links to the sigcfg.dat file
         }
 
         // Restore state to resume a saved game
@@ -510,7 +510,17 @@ namespace ORTS
             } while (true);
 
         } //FindNearestSignal
-    }
+
+		public KeyValuePair<SignalObject, SignalHead>? FindByTrItem(uint trItem)
+		{
+			foreach (var signal in signalObjects)
+				if (signal != null)
+					foreach (var head in signal.SignalHeads)
+						if (SignalObject.trackNodes[signal.trackNode].TrVectorNode.TrItemRefs[head.trItemIndex] == (int)trItem)
+							return new KeyValuePair<SignalObject, SignalHead>(signal, head);
+			return null;
+		}
+	}
 
 
     public class SignalObject
@@ -672,6 +682,7 @@ namespace ORTS
                 // Get the next track node
                 if (trackNodes[currentTrackNode].TrEndNode != null) return -1;  // End of track reached
                 NextNode(ref currentTrackNode,ref currentDir);
+				if (currentTrackNode == 0) return -1;  // End of track reached (broken track database?)
                 
                 if (currentTrackNode == trackNode) return -1;  // Back to start node again !!
 
@@ -791,7 +802,10 @@ namespace ORTS
             return SignalHead.SIGASP.STOP;
         }
 
-        public SignalHead.SIGASP this_sig_mr(SignalHead.SIGFN fn_type)
+		/// <summary>
+		/// Returns the most restrictive state of this signal's heads.
+		/// </summary>
+		public SignalHead.SIGASP this_sig_mr(SignalHead.SIGFN fn_type)
         {
             SignalHead.SIGASP sigAsp = SignalHead.SIGASP.UNKNOWN;
             foreach(SignalHead sigHead in SignalHeads)
@@ -807,6 +821,9 @@ namespace ORTS
             if(sigAsp==SignalHead.SIGASP.UNKNOWN) return SignalHead.SIGASP.STOP; else return sigAsp;
         }
 
+		/// <summary>
+		/// Returns the least restrictive state of this signal's heads.
+		/// </summary>
         public SignalHead.SIGASP this_sig_lr(SignalHead.SIGFN fn_type)
         {
             SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
@@ -1001,7 +1018,7 @@ namespace ORTS
         public SignalType signalType = null;    // from sigcfg file
         public SIGASP state = SIGASP.STOP;
         public int draw_state;
-        private int trItemIndex;                 // Index to trItem   
+		public int trItemIndex;                 // Index to trItem   
      
 
         private SignalObject mainSignal;         //  This is the signal which this head forms a part.
@@ -1016,7 +1033,7 @@ namespace ORTS
         public void SetSignalType(TrItem[] TrItems,SIGCFGFile sigCFG)
         {
             SignalItem sigItem = (SignalItem)TrItems[SignalObject.trackNodes[mainSignal.trackNode].TrVectorNode.TrItemRefs[trItemIndex]];
-            signalType = sigCFG.GetSignalType(sigItem.SignalType);
+            signalType = sigCFG.SignalTypes[sigItem.SignalType];
         }
 
         public SIGFN sigFunction

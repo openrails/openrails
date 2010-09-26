@@ -58,7 +58,7 @@ namespace ORTS
         public AI AI = null;
         public SeasonType Season;
         public WeatherType Weather;
-        public SIGCFGFile sigCFGfile;
+        public SIGCFGFile SIGCFG;
         public string ExplorePathFile;
         public string ExploreConFile;
 
@@ -84,7 +84,7 @@ namespace ORTS
             TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
 			Trace.Write(" SIGCFG");
-            sigCFGfile = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
+            SIGCFG = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
 
 			Trace.Write(" DAT");
             if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))

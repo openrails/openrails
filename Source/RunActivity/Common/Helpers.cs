@@ -12,9 +12,9 @@ using MSTS;
 
 namespace ORTS
 {
-    class Helpers
+    static class Helpers
     {
-        public string GetTextureFolder(Viewer3D viewer, int altTex)
+        public static string GetTextureFolder(Viewer3D viewer, int altTex)
         {
             string textureFolder;
             int season = (int)viewer.Simulator.Season;
