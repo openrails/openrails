@@ -654,8 +654,11 @@ namespace ORTS
 
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
 
+        Viewer3D _Viewer3D;
+
         public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car): base( viewer, car )
         {
+            _Viewer3D = viewer;
             string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
             string shapePath = wagonFolderSlash + car.MainShapeFileName;
 
@@ -672,6 +675,9 @@ namespace ORTS
 
             LoadCarSounds(wagonFolderSlash);
             LoadTrackSounds();
+
+            // Adding all loaded SoundSource to the main sound update thread
+            _Viewer3D.SoundProcess.AddSoundSource(this, SoundSources);
 
             // Get indexes of all the animated parts
             for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Length; ++iMatrix)
@@ -741,8 +747,9 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-			if (Viewer.SettingsInt[(int)IntSettings.SoundDetailLevel] > 0)
-				UpdateSound(elapsedTime);
+			// Commented out - sound update on a different thread
+            //if (Viewer.SettingsInt[(int)IntSettings.SoundDetailLevel] > 0)
+			//	UpdateSound(elapsedTime);
             UpdateAnimation(frame, elapsedTime);
         }
 
@@ -752,7 +759,7 @@ namespace ORTS
 			try
 			{
 				foreach (SoundSource soundSource in SoundSources)
-					soundSource.Update(elapsedTime);
+					soundSource.Update();
 			}
 			catch (Exception error)
 			{
@@ -842,6 +849,8 @@ namespace ORTS
         /// </summary>
         public virtual void Unload()
         {
+            // Removing sound sources from sound update thread
+            _Viewer3D.SoundProcess.RemoveSoundSource(this);
             SoundSources.Clear();
         }
 

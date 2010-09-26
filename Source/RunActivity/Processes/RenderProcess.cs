@@ -123,7 +123,8 @@ namespace ORTS
             Viewer.LoadPrep();  // Does initial load before 3D window is displayed
             Viewer.Load(this);  // after this Load is done in a background thread.
             Viewer.LoaderProcess.Run();
-            CurrentFrame = new RenderFrame( this );
+            Viewer.SoundProcess.Run();
+            CurrentFrame = new RenderFrame(this);
             if (Viewer.UpdaterProcess != null)
             {   // if its a multiprocessor machine, set up background frame updater
                 NextFrame = new RenderFrame( this );
@@ -305,6 +306,7 @@ namespace ORTS
         {
             if (Viewer.UpdaterProcess != null) Viewer.UpdaterProcess.Stop();
             Viewer.LoaderProcess.Stop();
+            Viewer.SoundProcess.Stop();
             Viewer.Unload(this);
         }
 

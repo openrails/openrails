@@ -168,9 +168,9 @@ namespace ORTS
             }
         }
 
-        public void Update(ElapsedTime elapsedTime)
+        public void Update()
         {
-            if (Program.RealTime < LastUpdate + .2)
+            if (Program.RealTime < LastUpdate + .01)
                 return;
 
             LastUpdate = Program.RealTime;
@@ -1577,12 +1577,13 @@ namespace ORTS
 
         public void Update(ElapsedTime elapsedTime)
         {
+            return;
             lock (Sounds)
             {
                 foreach (List<SoundSource> ls in Sounds.Values)
                 {
-                    foreach (SoundSource ss in ls)
-                        ss.Update(elapsedTime);
+                    //foreach (SoundSource ss in ls)
+                        //ss.Update(elapsedTime);
                 }
             }
         }
@@ -1610,7 +1611,8 @@ namespace ORTS
                                 ls.Add(ss);
                         }
                     }
-                    Sounds.Add(name, ls);
+                    //Sounds.Add(name, ls);
+                    Viewer.SoundProcess.AddSoundSource(name, ls);
                 }
             }
 #endif
@@ -1623,10 +1625,12 @@ namespace ORTS
             {
                 if (Sounds.ContainsKey(name))
                 {
-                    List<SoundSource> ls = Sounds[name];
-                    Sounds.Remove(name);
-                    foreach (SoundSource ss in ls)
-                        ss.Uninitialize();
+                    //List<SoundSource> ls = Sounds[name];
+                    //Sounds.Remove(name);
+                    Viewer.SoundProcess.RemoveSoundSource(name);
+                    //foreach (SoundSource ss in ls)
+                    //    ss.Uninitialize();
+
                 }
             }
         }

@@ -87,6 +87,7 @@ namespace ORTS
         public UpdaterProcess UpdaterProcess = null;
         public LoaderProcess LoaderProcess;
         public RenderProcess RenderProcess;
+        public SoundProcess SoundProcess;
         // Access to the XNA Game class
         public GraphicsDeviceManager GDM;  
         public GraphicsDevice GraphicsDevice;
@@ -235,7 +236,7 @@ namespace ORTS
 
 		public void Run()
 		{
-			RenderProcess.Run();
+            RenderProcess.Run();
 		}
 
 		/// <summary>
@@ -558,12 +559,12 @@ namespace ORTS
 			SceneryDrawer.PrepareFrame(frame, elapsedTime);
 			TrainDrawer.PrepareFrame(frame, elapsedTime);
 			// By GeorgeS
-			if (WorldSounds != null) WorldSounds.Update(elapsedTime);
+			//if (WorldSounds != null) WorldSounds.Update(elapsedTime);
 			if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
 			if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);
 			InfoDisplay.PrepareFrame(frame, elapsedTime);
 			// By GeorgeS
-			if (IngameSounds != null) IngameSounds.Update(elapsedTime);
+			//if (IngameSounds != null) IngameSounds.Update(elapsedTime);
 		}
 
 
@@ -719,6 +720,7 @@ namespace ORTS
             LoaderProcess = new LoaderProcess( this);
             if (processors > 1)
                 UpdaterProcess = new UpdaterProcess( this);
+            SoundProcess = new SoundProcess(this);
         }
 
 
