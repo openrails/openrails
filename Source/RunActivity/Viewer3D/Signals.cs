@@ -3,6 +3,8 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
+//#define DEBUG_SIGNAL_SHAPES
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +72,7 @@ namespace ORTS
 		{
 			static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
 
+			readonly Viewer3D Viewer;
 			readonly SignalShape SignalShape;
 			readonly int Index;
 			readonly SignalHead SignalHead;
@@ -77,16 +80,18 @@ namespace ORTS
 			readonly SignalTypeData SignalTypeData;
 			float CumulativeTime;
 
-			SignalHead.SIGASP LastState;
+			SignalHead.SIGASP LastState = SignalHead.SIGASP.UNKNOWN;
+			SignalHead.SIGASP DisplayState = SignalHead.SIGASP.UNKNOWN;
 
 			public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
 			{
+				Viewer = viewer;
 				SignalShape = signalShape;
 				Index = index;
 				SignalHead = signalHead;
 				MatrixIndex = Array.IndexOf(signalShape.SharedShape.MatrixNames, mstsSignalSubObj.node_name.ToUpper());
 				if (MatrixIndex == -1)
-					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location.ToString(), signalShape.UID, index, mstsSignalSubObj.node_name));
+					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.node_name));
 
 				var mstsSignalType = viewer.Simulator.SIGCFG.SignalTypes[mstsSignalSubObj.SigSubSType];
 				if (SignalTypes.ContainsKey(mstsSignalType.typeName))
@@ -97,18 +102,29 @@ namespace ORTS
 
 			public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
 			{
-				LastState = SignalHead.state;
+				if (LastState != SignalHead.state)
+				{
+#if DEBUG_SIGNAL_SHAPES
+					Console.WriteLine(String.Format("{5} {0} signal {1} unit {2} state: {3} --> {4}", SignalShape.Location, SignalShape.UID, Index, LastState, SignalHead.state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
+#endif
+					LastState = SignalHead.state;
+					DisplayState = LastState;
+					// Find the next least restrictive state that we have defined, or fall back to UNKNOWN.
+					while (!SignalTypeData.Aspects.ContainsKey(DisplayState) && (DisplayState >= SignalHead.SIGASP.STOP))
+						DisplayState--;
+					if (DisplayState < SignalHead.SIGASP.STOP)
+						DisplayState = SignalHead.SIGASP.UNKNOWN;
+				}
 				CumulativeTime += elapsedTime.ClockSeconds;
 
-				// Uhoh, aspect isn't in our data. We'll display nothing for now.
-				if (!SignalTypeData.Aspects.ContainsKey(LastState))
+				if (DisplayState == SignalHead.SIGASP.UNKNOWN)
 					return;
 
 				for (var i = 0; i < SignalTypeData.Lights.Count; i++)
 				{
-					if (!SignalTypeData.Aspects[LastState].DrawLights[i])
+					if (!SignalTypeData.Aspects[DisplayState].DrawLights[i])
 						continue;
-					if (SignalTypeData.Aspects[LastState].FlashLights[i] && (CumulativeTime % 2 < 1))
+					if (SignalTypeData.Aspects[DisplayState].FlashLights[i] && (CumulativeTime % 2 < 1))
 						continue;
 
 					var xnaMatrix = Matrix.Identity;
@@ -171,25 +187,17 @@ namespace ORTS
 
 	public class SignalLightMesh : RenderPrimitive
 	{
-		const int CirclePoints = 32;
-
 		readonly VertexDeclaration VertexDeclaration;
 		readonly VertexBuffer VertexBuffer;
 
 		public SignalLightMesh(Viewer3D viewer, Vector3 position, float radius, Color color, float u0, float v0, float u1, float v1)
 		{
-			var uvRadius = new Vector2(-(u1 - u0) / 2, -(v1 - v0) / 2);
-			var uvCenter = new Vector2(u0 - uvRadius.X, v0 - uvRadius.Y);
-			var verticies = new VertexPositionColorTexture[CirclePoints + 2];
-			verticies[0] = new VertexPositionColorTexture(position, color, uvCenter);
-			for (var i = 1; i <= CirclePoints; i++)
-			{
-				var x = (float)Math.Sin((float)i / CirclePoints * Math.PI * 2);
-				var y = (float)Math.Cos((float)i / CirclePoints * Math.PI * 2);
-				var pos = new Vector3(position.X - radius * x, position.Y - radius * y, position.Z);
-				verticies[i] = new VertexPositionColorTexture(pos, color, new Vector2(uvCenter.X + uvRadius.X * x, uvCenter.Y - uvRadius.Y * y));
-			}
-			verticies[CirclePoints + 1] = verticies[1];
+			var verticies = new[] {
+				new VertexPositionColorTexture(new Vector3(position.X - radius, position.Y + radius, position.Z), color, new Vector2(u0, v0)),
+				new VertexPositionColorTexture(new Vector3(position.X + radius, position.Y + radius, position.Z), color, new Vector2(u1, v0)),
+				new VertexPositionColorTexture(new Vector3(position.X + radius, position.Y - radius, position.Z), color, new Vector2(u1, v1)),
+				new VertexPositionColorTexture(new Vector3(position.X - radius, position.Y - radius, position.Z), color, new Vector2(u0, v1)),
+			};
 
 			VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColorTexture.VertexElements);
 			VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, VertexPositionColorTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
@@ -200,7 +208,7 @@ namespace ORTS
 		{
 			graphicsDevice.VertexDeclaration = VertexDeclaration;
 			graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColorTexture.SizeInBytes);
-			graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, CirclePoints);
+			graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, 2);
 		}
 	}
 

@@ -342,7 +342,7 @@ namespace ORTS
             }
         }
 
-        string FormattedTime(double clockTimeSeconds) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
+        public static string FormattedTime(double clockTimeSeconds) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
         {
             int hour = (int)(clockTimeSeconds / (60.0 * 60.0));
             clockTimeSeconds -= hour * 60.0 * 60.0;
