@@ -79,7 +79,7 @@ namespace ORTS
 		public void Activate()
 		{
 			ScreenChanged();
-			OnActivate();
+			OnActivate(Viewer.Camera == this);
 			Viewer.Camera = this;
 			Update(ElapsedTime.Zero);
 			xnaView = GetCameraView();
@@ -88,7 +88,7 @@ namespace ORTS
 		/// <summary>
 		/// A camera can use this method to handle any preparation when being activated.
 		/// </summary>
-		protected virtual void OnActivate()
+		protected virtual void OnActivate(bool sameCamera)
 		{
 		}
 
@@ -287,14 +287,10 @@ namespace ORTS
 			Vector3 movement = new Vector3(0, 0, 0);
 
 			if (UserInput.IsKeyDown(Keys.Left))
-				if (UserInput.IsControlKeyDown())
-					rotationYRadians += speed * elapsedRealMilliseconds / 1000f;
-				else
+				if (!UserInput.IsControlKeyDown())
 					movement.X -= speed * elapsedRealMilliseconds / 10f;
 			if (UserInput.IsKeyDown(Keys.Right))
-				if (UserInput.IsControlKeyDown())
-					rotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
-				else
+				if (!UserInput.IsControlKeyDown())
 					movement.X += speed * elapsedRealMilliseconds / 10f;
 			if (UserInput.IsKeyDown(Keys.Up))
 				if (UserInput.IsControlKeyDown())
@@ -351,6 +347,30 @@ namespace ORTS
 		{
 		}
 
+		public override void HandleUserInput(ElapsedTime elapsedTime)
+		{
+			if (UserInput.IsPressed(UserCommands.CameraCarNext))
+			{
+				var train = attachedCar.Train;
+				var newCar = attachedCar == train.FirstCar ? attachedCar : train.Cars[train.Cars.IndexOf(attachedCar) - 1];
+				if (newCar.Flipped != attachedCar.Flipped)
+					FlipCamera();
+				attachedCar = newCar;
+			}
+			else if (UserInput.IsPressed(UserCommands.CameraCarPrevious))
+			{
+				var train = attachedCar.Train;
+				var newCar = attachedCar == train.LastCar ? attachedCar : train.Cars[train.Cars.IndexOf(attachedCar) + 1];
+				if (newCar.Flipped != attachedCar.Flipped)
+					FlipCamera();
+				attachedCar = newCar;
+			}
+			else
+			{
+				base.HandleUserInput(elapsedTime);
+			}
+		}
+
 		public override void Update(ElapsedTime elapsedTime)
 		{
             if (attachedCar != null)
@@ -375,6 +395,13 @@ namespace ORTS
             lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
             return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
 		}
+
+		void FlipCamera()
+		{
+			onboardLocation.X *= -1;
+			onboardLocation.Z *= -1;
+			rotationYRadians += (float)Math.PI;
+		}
 	}
 
 	/// <summary>
@@ -388,7 +415,7 @@ namespace ORTS
 		{
 		}
 
-		protected override void OnActivate()
+		protected override void OnActivate(bool sameCamera)
 		{
 			if (attachedCar == null || attachedCar.Train != Viewer.PlayerTrain)
 			{
@@ -397,7 +424,7 @@ namespace ORTS
 				else
 					PositionViewer(false);
 			}
-			base.OnActivate();
+			base.OnActivate(sameCamera);
 		}
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -434,7 +461,7 @@ namespace ORTS
 			Forwards = headDirection == HeadDirection.Forward;
 		}
 
-		protected override void OnActivate()
+		protected override void OnActivate(bool sameCamera)
 		{
 			if (attachedCar == null || attachedCar.Train != Viewer.PlayerTrain)
 			{
@@ -443,7 +470,7 @@ namespace ORTS
 				else
 					PositionViewer(false);
 			}
-			base.OnActivate();
+			base.OnActivate(sameCamera);
 		}
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -456,9 +483,9 @@ namespace ORTS
 			if (UserInput.IsKeyDown(Keys.End))
 				speed = 0.05f;
 
-			if (UserInput.IsKeyDown(Keys.Left))
+			if (UserInput.IsKeyDown(Keys.Left) && !UserInput.IsControlKeyDown())
 				rotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
-			if (UserInput.IsKeyDown(Keys.Right))
+			if (UserInput.IsKeyDown(Keys.Right) && !UserInput.IsControlKeyDown())
 				rotationYRadians += speed * elapsedRealMilliseconds / 1000f;
 
 			// Do this here so we can clamp the angles below.
@@ -523,7 +550,7 @@ namespace ORTS
 		/// Make this the viewer's current camera.
 		/// If the locomotive has no cab view, then do nothing.
 		/// </summary>
-		protected override void OnActivate()
+		protected override void OnActivate(bool sameCamera)
 		{
 			if (Viewer.PlayerLocomotive != null)
 				attachedCar = Viewer.PlayerLocomotive;
@@ -531,7 +558,7 @@ namespace ORTS
 				return;
 			ShiftView(0);
 
-			base.OnActivate();
+			base.OnActivate(sameCamera);
 		}
 
 		// Added to support the side CAB views - by GeorgeS
@@ -565,9 +592,9 @@ namespace ORTS
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
 			// Switched shift number to select the right cab view - by GeorgeS
-			if (UserInput.IsPressed(Keys.Left) && !UserInput.IsKeyDown(Keys.LeftControl))
+			if (UserInput.IsPressed(Keys.Left) && !UserInput.IsControlKeyDown())
 				ShiftView(+1);
-			else if (UserInput.IsPressed(Keys.Right) && !UserInput.IsKeyDown(Keys.LeftControl))
+			else if (UserInput.IsPressed(Keys.Right) && !UserInput.IsControlKeyDown())
 				ShiftView(-1);
 
 			// Don't call this or we'll let the user rotate the camera!
@@ -602,16 +629,19 @@ namespace ORTS
 			: base(viewer)
 		{
 			Front = attachedTo == AttachedTo.Front;
-			positionYRadians = StartPositionYRadians;
-		}
-
-		protected override void OnActivate()
-		{
 			attachedCar = Front ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
+			positionYRadians = StartPositionYRadians + (Front == attachedCar.Flipped ? (float)Math.PI : 0);
 			rotationXRadians = positionXRadians;
 			rotationYRadians = positionYRadians - (float)Math.PI;
+		}
+
+		protected override void OnActivate(bool sameCamera)
+		{
+			// We're not attached to the viewer's train, let's fix that.
+			if (attachedCar.Train != Viewer.PlayerTrain)
+				attachedCar = Front ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
 			UpdateOnboardLocation();
-			base.OnActivate();
+			base.OnActivate(sameCamera);
 		}
 
 		/// <summary>
@@ -635,27 +665,27 @@ namespace ORTS
 				speedMpS = 35;
 			float movement = speedMpS * elapsedRealSeconds;
 
-			if (UserInput.IsKeyDown(Keys.Left))
+			if (UserInput.IsKeyDown(Keys.Left) && !UserInput.IsControlKeyDown())
 			{
 				positionYRadians += movement / 10;
 				rotationYRadians += movement / 10;
 				UpdateOnboardLocation();
 			}
-			else if (UserInput.IsKeyDown(Keys.Right))
+			else if (UserInput.IsKeyDown(Keys.Right) && !UserInput.IsControlKeyDown())
 			{
 				positionYRadians -= movement / 10;
 				rotationYRadians -= movement / 10;
 				UpdateOnboardLocation();
 			}
 
-			if (UserInput.IsControlKeyDown(Keys.Down))
+			if (UserInput.IsControlKeyDown(Keys.Down) && UserInput.IsControlKeyDown())
 			{
 				positionXRadians -= movement / 10f;
 				rotationXRadians -= movement / 10f;
 				if (positionXRadians < -1.5f) positionXRadians = -1.5f;
 				UpdateOnboardLocation();
 			}
-			else if (UserInput.IsControlKeyDown(Keys.Up))
+			else if (UserInput.IsControlKeyDown(Keys.Up) && UserInput.IsControlKeyDown())
 			{
 				positionXRadians += movement / 10f;
 				rotationXRadians += movement / 10f;
@@ -717,9 +747,9 @@ namespace ORTS
             if (UserInput.IsKeyDown(Keys.End))
                 speed = 0.05f;
 
-            if (UserInput.IsKeyDown(Keys.Left))
+			if (UserInput.IsKeyDown(Keys.Left) && !UserInput.IsControlKeyDown())
                 rotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
-            if (UserInput.IsKeyDown(Keys.Right))
+			if (UserInput.IsKeyDown(Keys.Right) && !UserInput.IsControlKeyDown())
                 rotationYRadians += speed * elapsedRealMilliseconds / 1000f;
 
             // Do this here so we can clamp the angles below.
@@ -728,7 +758,7 @@ namespace ORTS
             rotationYRadians = MathHelper.Clamp(rotationYRadians, -(float)Math.PI / 2, (float)Math.PI / 2);
         }
 
-        protected override void OnActivate()
+        protected override void OnActivate(bool sameCamera)
 		{
 			var train = Viewer.PlayerTrain;
 
@@ -747,7 +777,7 @@ namespace ORTS
 			// TODO finish X and Z rotation
 			onboardLocation = attachedCar.PassengerViewpoints[0].Location;
 
-			base.OnActivate();
+			base.OnActivate(sameCamera);
 		}
 	} // Class PassengerCamera
 
@@ -762,9 +792,13 @@ namespace ORTS
 		const float TargetAltitude = TerrainAltitudeMargin;
 		// Max altitude of terrain below coordinate center of train car before bridge-mode.
 		const float BridgeCutoffAltitude = 1;
+		// User adjustment step.
+		const float CameraAltitudeOffsetStep = 1;
 		
 		readonly Random Random;
+		TrainCar AttachedCar;
 		WorldLocation TrackCameraLocation;
+		float CameraAltitudeOffset = 0;
 
 		public override bool IsUnderground
 		{
@@ -784,6 +818,50 @@ namespace ORTS
 			: base(viewer)
 		{
 			Random = new Random();
+			AttachedCar = Viewer.PlayerTrain.FirstCar;
+		}
+
+		protected override void OnActivate(bool sameCamera)
+		{
+			if (sameCamera)
+			{
+				cameraLocation.TileX = 0;
+				cameraLocation.TileZ = 0;
+			}
+			if (AttachedCar.Train != Viewer.PlayerTrain)
+				AttachedCar = Viewer.PlayerTrain.FirstCar;
+			base.OnActivate(sameCamera);
+		}
+
+		public override void HandleUserInput(ElapsedTime elapsedTime)
+		{
+			if (UserInput.IsDown(UserCommands.CameraAltitudeIncrease))
+			{
+				CameraAltitudeOffset += CameraAltitudeOffsetStep;
+				cameraLocation.Location.Y += CameraAltitudeOffsetStep;
+			}
+			else if (UserInput.IsDown(UserCommands.CameraAltitudeDecrease))
+			{
+				if (CameraAltitudeOffset > 0)
+				{
+					CameraAltitudeOffset -= CameraAltitudeOffsetStep;
+					cameraLocation.Location.Y -= CameraAltitudeOffsetStep;
+				}
+			}
+			if (UserInput.IsPressed(UserCommands.CameraCarNext))
+			{
+				var train = AttachedCar.Train;
+				AttachedCar = AttachedCar == train.FirstCar ? AttachedCar : train.Cars[train.Cars.IndexOf(AttachedCar) - 1];
+			}
+			else if (UserInput.IsPressed(UserCommands.CameraCarPrevious))
+			{
+				var train = AttachedCar.Train;
+				AttachedCar = AttachedCar == train.LastCar ? AttachedCar : train.Cars[train.Cars.IndexOf(AttachedCar) + 1];
+			}
+			else
+			{
+				base.HandleUserInput(elapsedTime);
+			}
 		}
 
 		public override void Update(ElapsedTime elapsedTime)
@@ -796,9 +874,12 @@ namespace ORTS
 			}
 
 			var trainForwards = Viewer.PlayerLocomotive.SpeedMpS >= 0;
-			var trainCar = trainForwards ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
-			targetLocation = trainCar.WorldPosition.WorldLocation;
-			if (WorldLocation.GetDistance2D(targetLocation, cameraLocation).Length() > MaximumDistance)
+			var firstCarLocation = Viewer.PlayerTrain.FirstCar.WorldPosition.WorldLocation;
+			var lastCarLocation = Viewer.PlayerTrain.LastCar.WorldPosition.WorldLocation;
+			targetLocation = AttachedCar.WorldPosition.WorldLocation;
+
+			// Switch to new position if BOTH ends of the train are too far away.
+			if ((WorldLocation.GetDistance2D(firstCarLocation, cameraLocation).Length() > MaximumDistance) && (WorldLocation.GetDistance2D(lastCarLocation, cameraLocation).Length() > MaximumDistance))
 			{
 				var tdb = new TDBTraveller(trainForwards ? Viewer.PlayerTrain.FrontTDBTraveller : Viewer.PlayerTrain.RearTDBTraveller);
 				if (!trainForwards)
@@ -823,11 +904,11 @@ namespace ORTS
 				if (newLocationElevation > newLocation.Location.Y - BridgeCutoffAltitude)
 				{
 					cameraLocation = newLocation;
-					cameraLocation.Location.Y = newLocationElevation + CameraNormalAltitude;
+					cameraLocation.Location.Y = newLocationElevation + CameraNormalAltitude + CameraAltitudeOffset;
 				}
 				else
 				{
-					cameraLocation = new WorldLocation(tdb.TileX, tdb.TileZ, tdb.X, tdb.Y + CameraBridgeAltitude, tdb.Z);
+					cameraLocation = new WorldLocation(tdb.TileX, tdb.TileZ, tdb.X, tdb.Y + CameraBridgeAltitude + CameraAltitudeOffset, tdb.Z);
 				}
 			}
 

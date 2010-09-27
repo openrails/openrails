@@ -67,6 +67,10 @@ namespace ORTS
 			Commands[(int)UserCommands.CameraHeadOutForwards] = new UserCommandInput(Keys.Up);
 			Commands[(int)UserCommands.CameraHeadOutBackwards] = new UserCommandInput(Keys.Down);
 			Commands[(int)UserCommands.CameraShowCab] = new UserCommandInput('1', KeyModifiers.Shift);
+			Commands[(int)UserCommands.CameraAltitudeIncrease] = new UserCommandInput(Keys.Up, KeyModifiers.Control);
+			Commands[(int)UserCommands.CameraAltitudeDecrease] = new UserCommandInput(Keys.Down, KeyModifiers.Control);
+			Commands[(int)UserCommands.CameraCarNext] = new UserCommandInput(Keys.Left, KeyModifiers.Control);
+			Commands[(int)UserCommands.CameraCarPrevious] = new UserCommandInput(Keys.Right, KeyModifiers.Control);
 			Commands[(int)UserCommands.SwitchAhead] = new UserCommandInput('g');
 			Commands[(int)UserCommands.SwitchBehind] = new UserCommandInput('g', KeyModifiers.Shift);
 			Commands[(int)UserCommands.LocomotiveSwitch] = new UserCommandInput('e', KeyModifiers.Control);
@@ -240,6 +244,10 @@ namespace ORTS
 		CameraHeadOutForwards,
 		CameraHeadOutBackwards,
 		CameraShowCab,
+		CameraAltitudeIncrease,
+		CameraAltitudeDecrease,
+		CameraCarNext,
+		CameraCarPrevious,
 		SwitchAhead,
 		SwitchBehind,
 		LocomotiveSwitch,
