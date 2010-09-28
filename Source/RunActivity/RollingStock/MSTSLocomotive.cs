@@ -648,7 +648,7 @@ namespace ORTS
             // Find the animated parts
             if (TrainCarShape.SharedShape.Animations != null)
             {
-                for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Length; ++iMatrix)
+				for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
                 {
                     string matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
                     switch (matrixName)

@@ -634,14 +634,14 @@ namespace MSTS
         {
             private string[] SignalSubTypes ={"DECOR","SIGNAL_HEAD","NUMBER_PLATE","GRADIENT_PLATE",
                                               "USER1","USER2","USER3","USER4"};
-            public string node_name;        // Name of the group within the signal shape which defines this head
-            public string description;      // 
+            public string MatrixName;        // Name of the group within the signal shape which defines this head
+            public string Description;      // 
             public int SignalSubType = -1;  // Signal sub type: -1 if not specified;
             public string SigSubSType;
-            public bool optional = false;
-            public bool bDefault = false;
-            public bool back_facing = false;
-            public bool jn_link = false;
+            public bool Optional = false;
+            public bool Default = false;
+            public bool BackFacing = false;
+            public bool JunctionLink = false;
             public uint[] SigSubJnLinkIfs;  // indexes to linked signal heads 
             public uint SigSubJnLinkIf = 0;
 
@@ -651,8 +651,8 @@ namespace MSTS
                 uint seqNo = f.ReadUInt();
                 if (seqNo == seq)
                 {
-                    node_name = f.ReadString();
-                    description = f.ReadString();
+                    MatrixName = f.ReadString().ToUpper();
+                    Description = f.ReadString();
                     string token = f.ReadToken();
                     while (token != ")")
                     {
@@ -690,11 +690,11 @@ namespace MSTS
                 string token = f.ReadToken();
                 while (token != ")")
                 {
-                    if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                    else if (0 == String.Compare(token, "OPTIONAL", true)) optional=true;
-                    else if (0 == String.Compare(token, "DEFAULT", true)) bDefault = true;
-                    else if (0 == String.Compare(token, "BACK_FACING", true)) back_facing = true;
-                    else if (0 == String.Compare(token, "JN_LINK", true)) jn_link = true;
+					if (token == "") throw (new STFException(f, "Missing )"));  // EOF
+					else if (0 == String.Compare(token, "OPTIONAL", true)) Optional = true;
+					else if (0 == String.Compare(token, "DEFAULT", true)) Default = true;
+					else if (0 == String.Compare(token, "BACK_FACING", true)) BackFacing = true;
+					else if (0 == String.Compare(token, "JN_LINK", true)) JunctionLink = true;
                     token = f.ReadToken();
                 }
             }

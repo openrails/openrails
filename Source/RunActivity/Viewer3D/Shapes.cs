@@ -69,7 +69,7 @@ namespace ORTS
     /// </summary>
     public class PoseableShape : StaticShape
     {
-        public Matrix[] XNAMatrices = null;  // the positions of the subobjects
+        public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
 
         /// <summary>
         /// Construct and initialize the class
@@ -77,8 +77,8 @@ namespace ORTS
 		public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
 			: base(viewer, path, initialPosition, flags)
         {
-            XNAMatrices = new Matrix[SharedShape.Matrices.Length];
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+			XNAMatrices = new Matrix[SharedShape.Matrices.Length];
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
         }
 
@@ -200,7 +200,7 @@ namespace ORTS
                 while (AnimationKey < -0.00001) AnimationKey += SharedShape.Animations[0].FrameCount;
 
                 // Update the pose for each matrix
-                for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+				for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                     AnimateMatrix(iMatrix, AnimationKey);
             }
 			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
@@ -237,7 +237,7 @@ namespace ORTS
             }
 
             // Update the pose
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 AnimateMatrix(iMatrix, AnimationKey);
 
 			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
@@ -333,8 +333,8 @@ namespace ORTS
         public string textureFolder;  // Temporary
 
         // This data is common to all instances of the shape
-        public string[] MatrixNames;
-        public Matrix[] Matrices;               // the original natural pose for this shape - shared by all instances
+        public List<string> MatrixNames = new List<string>();
+        public Matrix[] Matrices = new Matrix[0];  // the original natural pose for this shape - shared by all instances
         public animations Animations = null;
 
         public LodControl[] LodControls = null;
@@ -347,8 +347,6 @@ namespace ORTS
         {
             Viewer = viewer;
             FilePath = "Empty";
-            MatrixNames = new string[0];
-            Matrices = new Matrix[0];
             Animations = null;
             LodControls = new LodControl[0];
         }
@@ -404,11 +402,11 @@ namespace ORTS
             }
 
             int matrixCount = sFile.shape.matrices.Count;
-            MatrixNames = new string[matrixCount];
+			MatrixNames.Capacity = matrixCount;
             Matrices = new Matrix[matrixCount];
             for (int i = 0; i < matrixCount; ++i)
             {
-                MatrixNames[i] = sFile.shape.matrices[i].Name.ToUpper();
+                MatrixNames.Add(sFile.shape.matrices[i].Name.ToUpper());
                 Matrices[i] = XNAMatrixFromMSTS(sFile.shape.matrices[i]);
             }
             Animations = sFile.shape.animations;

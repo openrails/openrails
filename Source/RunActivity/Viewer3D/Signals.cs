@@ -5,6 +5,9 @@
 
 //#define DEBUG_SIGNAL_SHAPES
 
+// This is a temporary implementation of signal feathers for testing.
+//#define SIGNAL_SHAPES_FEATHERS
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,36 +24,64 @@ namespace ORTS
 		readonly uint UID;
 		readonly SignalObject SignalObject;
 		readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
+#if SIGNAL_SHAPES_FEATHERS
+		bool InfoHeadFound;
+#endif
 
 		public SignalShape(Viewer3D viewer, MSTS.SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
 			: base(viewer, path, position, flags)
 		{
+#if DEBUG_SIGNAL_SHAPES
+			Console.WriteLine(String.Format("{0} signal {1}:", Location.ToString(), mstsSignal.UID));
+#endif
+
 			UID = mstsSignal.UID;
 			var mstsSignalShape = viewer.Simulator.SIGCFG.SignalShapes[Path.GetFileName(path)];
 
+			// Move the optional signal components way off into the sky. We're
+			// re-position all the ones that are visible on this signal later.
+			// For some reason many optional components aren't in the shape,
+			// so we need to handle that.
+			foreach (var mstsSignalSubObj in mstsSignalShape.SignalSubObjs)
+				if (mstsSignalSubObj.Optional && !mstsSignalSubObj.Default && SharedShape.MatrixNames.Contains(mstsSignalSubObj.MatrixName))
+					XNAMatrices[SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName)].M42 += 10000;
+
 			for (var i = 0; i < mstsSignal.SignalUnits.Units.Length; i++)
 			{
+#if DEBUG_SIGNAL_SHAPES
+				Console.Write("  UNIT {0}: TrItem={1,-5} SubObj={2,-2}", i, mstsSignal.SignalUnits.Units[i].TrItem, mstsSignal.SignalUnits.Units[i].SubObj);
+#endif
+				// Find the simulation SignalObject for this shape.
 				var signalAndHead = viewer.Simulator.Signals.FindByTrItem(mstsSignal.SignalUnits.Units[i].TrItem);
 				if (!signalAndHead.HasValue)
 				{
 					Trace.TraceWarning("{0} signal {1} unit {2} has invalid TrItem {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].TrItem);
 					continue;
 				}
+				// Get the signal sub-object for this unit (head).
 				var mstsSignalSubObj = mstsSignalShape.SignalSubObjs[mstsSignal.SignalUnits.Units[i].SubObj];
 				if (mstsSignalSubObj.SignalSubType != 1) // SIGNAL_HEAD
 				{
 					Trace.TraceWarning("{0} signal {1} unit {2} has invalid SubObj {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].SubObj);
 					continue;
 				}
+				// Ensure this head is displayed if it is optional.
+				if (mstsSignalSubObj.Optional && !mstsSignalSubObj.Default)
+					XNAMatrices[SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName)].M42 -= 10000;
 				SignalObject = signalAndHead.Value.Key;
+				var mstsSignalItem = (MSTS.SignalItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[mstsSignal.SignalUnits.Units[i].TrItem]);
 				try
 				{
-					Heads.Add(new SignalShapeHead(viewer, this, i, signalAndHead.Value.Value, mstsSignalSubObj));
+					// Go create the shape head.
+					Heads.Add(new SignalShapeHead(viewer, this, i, signalAndHead.Value.Value, mstsSignalItem, mstsSignalSubObj));
 				}
 				catch (InvalidDataException error)
 				{
 					Trace.WriteLine(error);
 				}
+#if DEBUG_SIGNAL_SHAPES
+				Console.WriteLine();
+#endif
 			}
 		}
 
@@ -63,8 +94,12 @@ namespace ORTS
 			var xnaTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
 			Matrix.Multiply(ref Location.XNAMatrix, ref xnaTileTranslation, out xnaTileTranslation);
 
+#if SIGNAL_SHAPES_FEATHERS
+			InfoHeadFound = false;
+#endif
 			foreach (var head in Heads)
 				head.PrepareFrame(frame, elapsedTime, xnaTileTranslation);
+
 			base.PrepareFrame(frame, elapsedTime);
 		}
 
@@ -72,32 +107,65 @@ namespace ORTS
 		{
 			static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
 
+#if DEBUG_SIGNAL_SHAPES || SIGNAL_SHAPES_FEATHERS
 			readonly Viewer3D Viewer;
+#endif
 			readonly SignalShape SignalShape;
 			readonly int Index;
 			readonly SignalHead SignalHead;
 			readonly int MatrixIndex;
 			readonly SignalTypeData SignalTypeData;
+#if SIGNAL_SHAPES_FEATHERS
+			readonly uint JunctionTrackNode;
+			readonly uint JunctionLinkRoute;
+#endif
 			float CumulativeTime;
 
 			SignalHead.SIGASP LastState = SignalHead.SIGASP.UNKNOWN;
 			SignalHead.SIGASP DisplayState = SignalHead.SIGASP.UNKNOWN;
 
-			public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
+			public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead, MSTS.SignalItem mstsSignalItem, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
 			{
+#if DEBUG_SIGNAL_SHAPES || SIGNAL_SHAPES_FEATHERS
 				Viewer = viewer;
+#endif
 				SignalShape = signalShape;
 				Index = index;
 				SignalHead = signalHead;
-				MatrixIndex = Array.IndexOf(signalShape.SharedShape.MatrixNames, mstsSignalSubObj.node_name.ToUpper());
+				MatrixIndex = signalShape.SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName);
 				if (MatrixIndex == -1)
-					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.node_name));
+					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName));
 
 				var mstsSignalType = viewer.Simulator.SIGCFG.SignalTypes[mstsSignalSubObj.SigSubSType];
 				if (SignalTypes.ContainsKey(mstsSignalType.typeName))
 					SignalTypeData = SignalTypes[mstsSignalType.typeName];
 				else
 					SignalTypeData = SignalTypes[mstsSignalType.typeName] = new SignalTypeData(viewer, mstsSignalType);
+
+#if DEBUG_SIGNAL_SHAPES
+				Console.Write("  HEAD type={0,-8} lights={1,-2} aspects={2,-2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Aspects.Count);
+#endif
+
+				if (SignalTypeData.Type == SignalTypeDataType.Info)
+				{
+					if (mstsSignalItem.TrSignalDirs == null)
+					{
+						Trace.TraceError("{0} signal {1} unit {2} has no TrSignalDirs.", signalShape.Location, signalShape.UID, index);
+						return;
+					}
+					if (mstsSignalItem.TrSignalDirs.Length != 1)
+					{
+						Trace.TraceError("{0} signal {1} unit {2} has {3} TrSignalDirs; expected 1.", signalShape.Location, signalShape.UID, index, mstsSignalItem.TrSignalDirs.Length);
+						return;
+					}
+#if DEBUG_SIGNAL_SHAPES
+					Console.Write("  LINK node={0,-5} sd1={2,-1} path={1,-1} sd3={3,-1}", mstsSignalItem.TrSignalDirs[0].TrackNode, mstsSignalItem.TrSignalDirs[0].linkLRPath, mstsSignalItem.TrSignalDirs[0].sd1, mstsSignalItem.TrSignalDirs[0].sd3);
+#endif
+#if SIGNAL_SHAPES_FEATHERS
+					JunctionTrackNode = mstsSignalItem.TrSignalDirs[0].TrackNode;
+					JunctionLinkRoute = mstsSignalItem.TrSignalDirs[0].linkLRPath;
+#endif
+				}
 			}
 
 			public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
@@ -108,16 +176,43 @@ namespace ORTS
 					Console.WriteLine(String.Format("{5} {0} signal {1} unit {2} state: {3} --> {4}", SignalShape.Location, SignalShape.UID, Index, LastState, SignalHead.state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
 #endif
 					LastState = SignalHead.state;
-					DisplayState = LastState;
-					// Find the next least restrictive state that we have defined, or fall back to UNKNOWN.
-					while (!SignalTypeData.Aspects.ContainsKey(DisplayState) && (DisplayState >= SignalHead.SIGASP.STOP))
-						DisplayState--;
-					if (DisplayState < SignalHead.SIGASP.STOP)
-						DisplayState = SignalHead.SIGASP.UNKNOWN;
 				}
 				CumulativeTime += elapsedTime.ClockSeconds;
 
-				if (DisplayState == SignalHead.SIGASP.UNKNOWN)
+				switch (SignalTypeData.Type)
+				{
+					case SignalTypeDataType.Normal:
+						// Find the next least restrictive state that we have defined, or fall back to UNKNOWN.
+						DisplayState = LastState;
+						while (!SignalTypeData.Aspects.ContainsKey(DisplayState) && (DisplayState >= SignalHead.SIGASP.STOP))
+							DisplayState--;
+						if (DisplayState < SignalHead.SIGASP.STOP)
+							DisplayState = SignalHead.SIGASP.UNKNOWN;
+						break;
+					case SignalTypeDataType.Distance:
+						// TODO: Implement "distance" signal head type.
+						break;
+					case SignalTypeDataType.Repeater:
+						// TODO: Implement "repeater" signal head type.
+						break;
+					case SignalTypeDataType.Shunting:
+						// TODO: Implement "shunting" signal head type.
+						break;
+					case SignalTypeDataType.Info:
+						// TODO: Implement "info" signal head type.
+#if SIGNAL_SHAPES_FEATHERS
+						if (JunctionTrackNode != 0)
+						{
+							// Use CLEAR_1 or STOP depending on selected route.
+							var selectedRoute = Viewer.Simulator.TDB.TrackDB.TrackNodes[JunctionTrackNode].TrJunctionNode.SelectedRoute;
+							DisplayState = !SignalShape.InfoHeadFound && selectedRoute == JunctionLinkRoute ? SignalHead.SIGASP.CLEAR_1 : SignalHead.SIGASP.STOP;
+							SignalShape.InfoHeadFound |= selectedRoute == JunctionLinkRoute;
+						}
+#endif
+						break;
+				}
+
+				if ((DisplayState == SignalHead.SIGASP.UNKNOWN) || !SignalTypeData.Aspects.ContainsKey(DisplayState))
 					return;
 
 				for (var i = 0; i < SignalTypeData.Lights.Count; i++)
@@ -139,6 +234,7 @@ namespace ORTS
 		class SignalTypeData
 		{
 			public readonly Material Material;
+			public readonly SignalTypeDataType Type;
 			public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
 			public readonly Dictionary<SignalHead.SIGASP, SignalAspectData> Aspects = new Dictionary<SignalHead.SIGASP, SignalAspectData>();
 
@@ -146,6 +242,7 @@ namespace ORTS
 			{
 				var mstsLightTexture = viewer.Simulator.SIGCFG.LightTextures[mstsSignalType.SignalLightTex];
 				Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetTextureFolder(viewer, 0) + @"\" + mstsLightTexture.TextureFile);
+				Type = (SignalTypeDataType)mstsSignalType.SignalFnType;
 				if (mstsSignalType.SignalLights != null)
 				{
 					foreach (var mstsSignalLight in mstsSignalType.SignalLights)
@@ -157,10 +254,32 @@ namespace ORTS
 					if (mstsSignalType.SignalAspects != null)
 					{
 						foreach (var mstsSignalAspect in mstsSignalType.SignalAspects)
-							Aspects.Add(mstsSignalAspect.signalAspect, new SignalAspectData(mstsSignalType, mstsSignalAspect));
+							Aspects.Add(mstsSignalAspect.signalAspect, new SignalAspectData(mstsSignalType, mstsSignalAspect.drawState));
 					}
 				}
+#if SIGNAL_SHAPES_FEATHERS
+				// Info = feather/branch/etc. lights, linked to a junction.
+				if (Type == SignalTypeDataType.Info)
+				{
+					if (mstsSignalType.SignalDrawStates.Length != 2)
+					{
+						Trace.TraceError("Signal type {0} has {1} draw states; expected 2.", mstsSignalType.typeName, mstsSignalType.SignalDrawStates.Length);
+						return;
+					}
+					Aspects.Add(SignalHead.SIGASP.STOP, new SignalAspectData(mstsSignalType, 0));
+					Aspects.Add(SignalHead.SIGASP.CLEAR_1, new SignalAspectData(mstsSignalType, 1));
+				}
+#endif
 			}
+		}
+
+		enum SignalTypeDataType
+		{
+			Normal,
+			Distance,
+			Repeater,
+			Shunting,
+			Info,
 		}
 
 		class SignalAspectData
@@ -168,14 +287,14 @@ namespace ORTS
 			public bool[] DrawLights;
 			public bool[] FlashLights;
 
-			public SignalAspectData(MSTS.SignalType mstsSignalType, MSTS.SignalAspect mstsSignalAspect)
+			public SignalAspectData(MSTS.SignalType mstsSignalType, int drawState)
 			{
 				DrawLights = new bool[mstsSignalType.SignalLights.Length];
 				FlashLights = new bool[mstsSignalType.SignalLights.Length];
-				var drawState = mstsSignalType.SignalDrawStates[mstsSignalAspect.drawState];
-				if (drawState.DrawLights != null)
+				var drawStateData = mstsSignalType.SignalDrawStates[drawState];
+				if (drawStateData.DrawLights != null)
 				{
-					foreach (var drawLight in drawState.DrawLights)
+					foreach (var drawLight in drawStateData.DrawLights)
 					{
 						DrawLights[drawLight.DrawLight] = true;
 						FlashLights[drawLight.DrawLight] = drawLight.Flashing;

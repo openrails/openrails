@@ -680,7 +680,7 @@ namespace ORTS
             _Viewer3D.SoundProcess.AddSoundSource(this, SoundSources);
 
             // Get indexes of all the animated parts
-            for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Length; ++iMatrix)
+			for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
             {
                 string matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
                 if (matrixName.StartsWith("WHEELS"))
