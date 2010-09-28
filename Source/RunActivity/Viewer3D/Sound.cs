@@ -100,6 +100,9 @@ namespace ORTS
         private MSTS.Deactivation DeactivationConditions;
         public bool IsEnvSound = false;
 
+        private float distanceSquared;
+        private bool wasOutOfDistance = false;
+
         private double LastUpdate = 0;
 
         List<SoundStream> SoundStreams = new List<SoundStream>();
@@ -170,11 +173,29 @@ namespace ORTS
 
         public void Update()
         {
-            if (Program.RealTime < LastUpdate + .01)
-                return;
 
-            LastUpdate = Program.RealTime;
-            
+            if (Car != null)
+            {
+                WorldLocation = Car.WorldPosition.WorldLocation;
+            }
+
+            if (isOutOfDistance())
+            {
+                
+                if (!wasOutOfDistance)
+                {
+                    wasOutOfDistance = true;
+                    foreach (SoundStream stream in SoundStreams)
+                        stream.Deactivate();
+
+                    Active = false;
+                }
+                return;
+                
+            }
+
+            wasOutOfDistance = false;
+
             if (!Active)
             {
                 if (Activate())
@@ -203,11 +224,6 @@ namespace ORTS
 
                     Active = false;
                 }
-            }
-
-            if (Car != null)
-            {
-                WorldLocation = Car.WorldPosition.WorldLocation;
             }
 
             // Must start and stop by triggers - by GeorgeS
@@ -242,6 +258,19 @@ namespace ORTS
             }
         } // Update
 
+        public bool isOutOfDistance()
+        {
+            if (WorldLocation == null)
+                return false;
+            
+            distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
+
+            if (IsEnvSound)
+                return false;
+
+            return distanceSquared > 15000;
+        }
+
         /// <summary>
         /// Return true if activation conditions are met,
         /// ie PassengerCam, CabCam, Distance etc
@@ -253,7 +282,7 @@ namespace ORTS
             {
                 if (WorldLocation != null)
                 {
-                    float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
+                    //float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
                     if (distanceSquared < ActivationConditions.Distance * ActivationConditions.Distance)
                         return true;
                 }
@@ -275,7 +304,7 @@ namespace ORTS
 
             if (WorldLocation != null)
             {
-                float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
+                //float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
                 if (distanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance)
                     return true;
             }
@@ -296,7 +325,7 @@ namespace ORTS
 
             Camera.Styles viewpoint = Viewer.Camera.Style;
 
-            if ( (viewpoint == Camera.Styles.Cab) && (Viewer.Camera.AttachedCar != Car) )
+            if (!IsEnvSound && (viewpoint == Camera.Styles.Cab) && (Viewer.Camera.AttachedCar != Car))
             {
                 viewpoint = Camera.Styles.External;
             }
@@ -722,8 +751,8 @@ namespace ORTS
 
             if (SoundSource.IsEnvSound)
             {
-                ISound.MinDistance = 50;
-                ISound.MaxDistance = 200;
+                ISound.MinDistance = 10;
+                ISound.MaxDistance = float.MaxValue;
             }
 
             _playingSound = iSoundSource;

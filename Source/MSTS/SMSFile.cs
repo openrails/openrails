@@ -105,7 +105,7 @@ namespace MSTS
                 {
                     case "activation": Activation = new Activation(f); break;
                     case "deactivation": Deactivation = new Deactivation(f); break; 
-                    case "streams": Streams = new SMSStreams( f ); break;
+                    case "streams": Streams = new SMSStreams( f, Volume ); break;
                     case "volume": Volume = f.ReadFloatBlock(); break;
                     case "stereo": Stereo = f.ReadBoolBlock(); break;
                     case "ignore3d": Ignore3D = f.ReadBoolBlock(); break;
@@ -151,7 +151,7 @@ namespace MSTS
 
     public class SMSStreams : List<SMSStream>
     {
-        public SMSStreams(STFReader f)
+        public SMSStreams(STFReader f, float VolumeOfScGroup)
         {
             f.VerifyStartOfBlock();
 
@@ -162,7 +162,7 @@ namespace MSTS
                 string token = f.ReadToken();
                 switch (token.ToLower())
                 {
-                    case "stream": Add(new SMSStream(f)); break;
+                    case "stream": Add(new SMSStream(f, VolumeOfScGroup)); break;
                     default: f.SkipUnknownBlock(token); break;
                 }
             }
@@ -180,9 +180,11 @@ namespace MSTS
         public VolumeCurve VolumeCurve = null;
         public FrequencyCurve FrequencyCurve = null;
 
-        public SMSStream( STFReader f)
+        public SMSStream(STFReader f, float VolumeOfScGroup)
         {
             f.VerifyStartOfBlock();
+
+            Volume = VolumeOfScGroup;
 
             while (!f.EndOfBlock())
             {
@@ -197,6 +199,9 @@ namespace MSTS
                     default: f.SkipUnknownBlock(token); break;
                 }
             }
+
+            if (Volume > 1)
+                Volume /= 100;
         }
     }
 
