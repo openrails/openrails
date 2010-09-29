@@ -1040,7 +1040,7 @@ namespace ORTS
         {
             get
             {
-                if (signalType != null) return (SIGFN)signalType.SignalFnType; else return SIGFN.UNKNOWN;
+                if (signalType != null) return (SIGFN)signalType.FnType; else return SIGFN.UNKNOWN;
             }
         }
 
@@ -1051,7 +1051,7 @@ namespace ORTS
         {
             get
             {
-                if (signalType != null) return signalType.typeName; else return "";
+                if (signalType != null) return signalType.Name; else return "";
             }
         }
 

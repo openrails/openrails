@@ -28,22 +28,6 @@ namespace MSTS
         public byte a, r, g, b;   // colour
     }
 
-    public struct SignalLight
-    {
-        public string Name;
-        public float x,y,z;      // position
-        public float radius;
-    }
-
-    public struct SignalAspect
-    {
-        public ORTS.SignalHead.SIGASP signalAspect;   // Display aspect
-        public int drawState;      // Index to drawstate table
-        public float speed;        // Speed limit for this aspect. -1 if track speed is to be used
-        public bool speedMPH;      // Set true if speed limit is MPH else KPH
-        public bool asap;          // Set to true if SignalFlags ASAP option specified
-    }
-
     public class SIGCFGFile
     {
 		public Dictionary<string, LightTexture> LightTextures = new Dictionary<string, LightTexture>();
@@ -171,7 +155,7 @@ namespace MSTS
                     if (count < noSigTypes)
                     {
 						var signalType = new SignalType(count, f, this);
-                        SignalTypes[signalType.typeName] = signalType;
+                        SignalTypes[signalType.Name] = signalType;
                         count++;
                     }
                 }
@@ -224,498 +208,497 @@ namespace MSTS
         }
     }
 
-    public class SignalType
-    {
-        private static string[] SigFunctionTypes = { "NORMAL", "DISTANCE", "REPEATER", "SHUNTING","INFO" };
-        private static string[] SigAspectNames ={"STOP","STOP_AND_PROCEED","RESTRICTING","APPROACH_1","APPROACH_2",
-                                          "APPROACH_3","APPROACH_4","CLEAR_1","CLEAR_2","CLEAR_3","CLEAR_4"};
-        public string typeName;
-        public uint SignalFnType,SignalNumClearAhead;
-		public string SignalLightTex;
-        public SignalLight[] SignalLights;
-        public SignalAspect[] SignalAspects;
-        public SignalDrawState[] SignalDrawStates;
-        public bool semaphore = false;
-        public bool noGantry = false;
-        public bool abs = false;                    // Don't know what this is for but found in Marias Pass route
-        public float time_on = 0f, time_off = 0f;   // On/Off duration for flashing light. (In seconds.)
+	public class SignalType
+	{
+		public enum FnTypes
+		{
+			Normal,
+			Distance,
+			Repeater,
+			Shunting,
+			Info,
+		}
 
-        public SignalType(uint count, STFReader f,SIGCFGFile sigcfg)
-        {
-            f.VerifyStartOfBlock();
-            typeName = f.ReadString();
-            string token = f.ReadToken();
-            while (token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));
-                else if (0 == String.Compare(token, "SignalFnType", true)) SigFnType(f);
-                else if (0 == String.Compare(token, "SignalFlags", true)) SignalFlags(f);
-                else if (0 == String.Compare(token, "SigFlashDuration", true))
-                {
-                    f.VerifyStartOfBlock();
-                    time_on = f.ReadFloat();
-                    time_off = f.ReadFloat();
-                    f.MustMatch(")");
-                }
-                else if (0 == String.Compare(token, "SignalLightTex", true)) SignalLightTex = SigLightTex(f);
-                else if (0 == String.Compare(token, "SignalLights", true)) SigLights(f);
-                else if (0 == String.Compare(token, "SignalDrawStates", true)) DrawStates(f,sigcfg);
-                else if (0 == String.Compare(token, "SignalAspects", true)) SigAspects(f);
-                else if (0 == String.Compare(token, "SignalNumClearAhead", true))
-                {
-                    SignalNumClearAhead=f.ReadUIntBlock();
-                }
+		public readonly string Name;
+		public readonly FnTypes FnType;
+		public readonly bool Abs, NoGantry, Semaphore;  // Don't know what Abs is for but found in Marias Pass route
+		public readonly float FlashTimeOn, FlashTimeOff;  // On/Off duration for flashing light. (In seconds.)
+		public readonly string LightTextureName;
+		public readonly IList<SignalLight> Lights;
+		public readonly IList<SignalDrawState> DrawStates;
+		public readonly IDictionary<string, SignalDrawState> DrawStatesByName;
+		public readonly IList<SignalAspect> Aspects;
+		public readonly uint NumClearAhead;
+		public readonly float SemaphoreInfo;
 
-                else f.SkipBlock();
-                token = f.ReadToken();
-
-            }
-
-        }
-
-        private void SigFnType(STFReader f)
-        {
-            string fnType = f.ReadStringBlock();
-            for (uint i = 0; i < SigFunctionTypes.Length; i++)
-            {
-                if(0==String.Compare(fnType,SigFunctionTypes[i],true))
-                {
-                    SignalFnType=i;
-                    return;
-                }
-            }
-            throw new STFException(f,"Unknown SignalFnType " + fnType);
-        }
-
-        //
-        //  Scans the light texture table for the light texture name and return an index.
-        //
-        private string SigLightTex(STFReader f)
-        {
-            return f.ReadStringBlock();
-        }
-
-        private void SignalFlags(STFReader f)
-        {
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
-            while (token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                else if (0 == String.Compare(token, "SEMAPHORE", true)) semaphore = true;
-                else if (0 == String.Compare(token, "NO_GANTRY", true)) noGantry = true;
-                else if (0 == String.Compare(token, "ABS", true)) abs = true;
-                else throw new STFException(f, "Unknown Signal Type Flag " + token);
-                token = f.ReadToken();
-            }
-        }
-
-        private void SigLights(STFReader f)
-        {
-            f.VerifyStartOfBlock();
-            uint noLights = f.ReadUInt();
-            SignalLights = new SignalLight[noLights];
-            string token = f.ReadToken();
-            while (token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                else if (0 == String.Compare(token, "SignalLight", true))
-                {
-                    f.VerifyStartOfBlock();
-                    uint lightindex = f.ReadUInt();
-                    if(lightindex >= noLights)
-                    {
-                        throw new STFException(f, "SignalLight index out of range: " + lightindex.ToString());
-                    }
-                    SignalLights[lightindex]=new SignalLight();
-                    SignalLights[lightindex].Name=f.ReadString();
-                    string token1 = f.ReadToken();
-                    while (token1 != ")")
-                    {
-                        if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                        else if (0 == String.Compare(token1, "Position", true))
-                        {
-                            f.VerifyStartOfBlock();
-                            SignalLights[lightindex].x = f.ReadFloat();
-                            SignalLights[lightindex].y = f.ReadFloat();
-                            SignalLights[lightindex].z = f.ReadFloat();
-                            f.MustMatch(")");
-                        }
-                        else if (0 == String.Compare(token1, "Radius", true))
-                        {
-                            SignalLights[lightindex].radius = f.ReadFloatBlock();
-                        }
-                        else f.SkipBlock();
-                        token1 = f.ReadToken();
-                    }
-                }
-                else f.SkipBlock();
-                token = f.ReadToken();
-            }
-        }
-
-        private void DrawStates(STFReader f,SIGCFGFile sigcfg)
-        {
-            f.VerifyStartOfBlock();
-            uint noStates = f.ReadUInt();
-            SignalDrawStates=new SignalDrawState[noStates];
-            string token = f.ReadToken();
-            while (token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                else if (0 == String.Compare(token, "SignalDrawState", true))
-                {
-                    f.VerifyStartOfBlock();
-                    uint index = f.ReadUInt();
-                    if (index < noStates)
-                    {
-                        SignalDrawStates[index] = new SignalDrawState(f,sigcfg);
-                    }
-                }
-                else f.SkipBlock();
-                token = f.ReadToken();
-            }
-        }
-
-        private void SigAspects(STFReader f)
-        {
-            f.VerifyStartOfBlock();
-            uint noAspects = f.ReadUInt();
-            SignalAspects = new SignalAspect[noAspects];
-            string token = f.ReadToken();
-            uint count=0;
-            while(token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                else if (0 == String.Compare(token, "SignalAspect", true))
-                {
-                    if (count < noAspects)
-                    {
-                        SigAspect(count, f);
-                        count++;
-                    }
-                }
-                else f.SkipBlock();
-                token = f.ReadToken();
-            }
-			if (count < noAspects)
+		public SignalType(uint count, STFReader f, SIGCFGFile sigcfg)
+		{
+			f.VerifyStartOfBlock();
+			Name = f.ReadString();
+			var token = f.ReadToken();
+			while (token != ")")
 			{
-				noAspects = count;
-				SignalAspects = SignalAspects.Take((int)noAspects).ToArray();
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "SignalFnType", true)) FnType = ReadFnType(f);
+				else if (0 == String.Compare(token, "SignalFlags", true))
+				{
+					f.VerifyStartOfBlock();
+					var token1 = f.ReadToken();
+					while (token1 != ")")
+					{
+						if (token1 == "") throw new STFException(f, "Missing )");
+						else if (0 == String.Compare(token1, "ABS", true)) Abs = true;
+						else if (0 == String.Compare(token1, "NO_GANTRY", true)) NoGantry = true;
+						else if (0 == String.Compare(token1, "SEMAPHORE", true)) Semaphore = true;
+						else throw new STFException(f, "Unknown Signal Type Flag " + token1);
+						token1 = f.ReadToken();
+					}
+				}
+				else if (0 == String.Compare(token, "SigFlashDuration", true))
+				{
+					f.VerifyStartOfBlock();
+					FlashTimeOn = f.ReadFloat();
+					FlashTimeOff = f.ReadFloat();
+					f.MustMatch(")");
+				}
+				else if (0 == String.Compare(token, "SignalLightTex", true)) LightTextureName = ReadLightTextureName(f);
+				else if (0 == String.Compare(token, "SignalLights", true)) Lights = ReadLights(f);
+				else if (0 == String.Compare(token, "SignalDrawStates", true)) DrawStates = ReadDrawStates(f, sigcfg);
+				else if (0 == String.Compare(token, "SignalAspects", true)) Aspects = ReadAspects(f);
+				else if (0 == String.Compare(token, "SignalNumClearAhead", true))
+				{
+					NumClearAhead = f.ReadUIntBlock();
+				}
+				else if (0 == String.Compare(token, "SemaphoreInfo", true))
+				{
+					SemaphoreInfo = f.ReadFloat();
+				}
+				else f.SkipBlock();
+				token = f.ReadToken();
 			}
-        }
+			DrawStatesByName = new Dictionary<string, SignalDrawState>(DrawStates.Count);
+			foreach (var drawState in DrawStates)
+				DrawStatesByName.Add(drawState.Name, drawState);
+		}
 
-        private void SigAspect(uint count,STFReader f)
-        {
-            SignalAspects[count] = new SignalAspect();
-            SignalAspects[count].speed = -1;
-            SignalAspects[count].asap = false;
-            f.VerifyStartOfBlock();
-            string aspectName = f.ReadString();
-            if ((SignalAspects[count].signalAspect = (SignalHead.SIGASP) GetAspect(aspectName)) < 0)
-            {
-                throw (new STFException(f, "Unknown Aspect " + aspectName));
-            }
-            string drawState = f.ReadString();
-            if ((SignalAspects[count].drawState = GetDrawState(drawState)) < 0)
-            {
-                throw (new STFException(f, "Undefined draw state " + drawState));
-            }
-            string token = f.ReadToken();
-            while (token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                else if (0 == String.Compare(token, "SpeedMPH ", true))
-                {
-                    SignalAspects[count].speedMPH = true;
-                    SignalAspects[count].speed = f.ReadFloatBlock();
-                }
-                else if (0 == String.Compare(token, "SpeedKPH ", true))
-                {
-                    SignalAspects[count].speedMPH = false;
-                    SignalAspects[count].speed = f.ReadFloatBlock();
-                }
-                else if (0 == String.Compare(token, "SignalFlags ", true))
-                {
-                    string signalFlag = f.ReadStringBlock();
-                    if (0 == String.Compare(signalFlag, "ASAP", true))
-                    {
-                        SignalAspects[count].asap = true;
-                    }
-                    else
-                    {
-                        STFException.ReportError(f, "Unrecognised signal flag " + signalFlag);
-                    }
-                }
-                else f.SkipBlock();
-                token = f.ReadToken();
-            }
-        }
+		static FnTypes ReadFnType(STFReader f)
+		{
+			try
+			{
+				return (FnTypes)Enum.Parse(typeof(FnTypes), f.ReadStringBlock(), true);
+			}
+			catch (ArgumentException error)
+			{
+				throw new STFException(f, "Unknown SignalFnType: " + error.Message);
+			}
+		}
 
-        private int GetAspect(string aspectName)
-        {
-            for (int i = 0; i < SigAspectNames.Length; i++)
-            {
-                if (0 == String.Compare(aspectName, SigAspectNames[i], true)) return i;
-            }
-            return -1;
-        }
+		static string ReadLightTextureName(STFReader f)
+		{
+			return f.ReadStringBlock();
+		}
 
-        private int GetDrawState(string drawState)
-        {
-            for (int i = 0; i < SignalDrawStates.Length; i++)
-            {
-                if (0 == String.Compare(drawState, SignalDrawStates[i].DrawStateName, true)) return i;
-            }
-            return -1;
-        }
+		static IList<SignalLight> ReadLights(STFReader f)
+		{
+			f.VerifyStartOfBlock();
+			var count = f.ReadInt();
+			var lights = new List<SignalLight>(count);
+			var token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");  // EOF
+				else if (0 == String.Compare(token, "SignalLight", true))
+				{
+					if (lights.Count < lights.Capacity)
+						lights.Add(new SignalLight(f));
+				}
+				else f.SkipBlock();
+				token = f.ReadToken();
+			}
+			lights.Sort(SignalLight.Comparer);
+			for (var i = 0; i < lights.Count; i++)
+				if (lights[i].Index != i)
+					throw new STFException(f, "SignalLight index out of range: " + lights[i].Index);
+			return lights;
+		}
 
-        //
-        //  This method returns the default draw state for the specified aspect 
-        //  - 1 if none.
-        //
-        public int def_draw_state( SignalHead.SIGASP state)
-        {
-            for (int i = 0; i < SignalAspects.Length;i++ )
-            {
-                if (state == SignalAspects[i].signalAspect)
-                {
-                    return SignalAspects[i].drawState;
-                }
-            }
-            return -1;
-        }
+		static IList<SignalDrawState> ReadDrawStates(STFReader f, SIGCFGFile sigcfg)
+		{
+			f.VerifyStartOfBlock();
+			var count = f.ReadInt();
+			var drawStates = new List<SignalDrawState>(count);
+			var token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "SignalDrawState", true))
+				{
+					if (drawStates.Count < drawStates.Capacity)
+						drawStates.Add(new SignalDrawState(f));
+				}
+				else f.SkipBlock();
+				token = f.ReadToken();
+			}
+			drawStates.Sort(SignalDrawState.Comparer);
+			for (var i = 0; i < drawStates.Count; i++)
+				if (drawStates[i].Index != i)
+					throw new STFException(f, "SignalDrawState index out of range: " + drawStates[i].Index);
+			return drawStates;
+		}
 
-        //
-        //  This method returns the next least restrictive aspect
-        //  from the one specified.
-        //
-        public SignalHead.SIGASP def_next_state(SignalHead.SIGASP state)
-        {
-            SignalHead.SIGASP next_state=SignalHead.SIGASP.UNKNOWN;
-            for (int i=0;i< SignalAspects.Length;i++)
-            {
-                //if (SignalAspects[i].signalAspect > state)
-                //{
-                //}
-                if (SignalAspects[i].signalAspect > state && SignalAspects[i].signalAspect < next_state) next_state = SignalAspects[i].signalAspect;
-                //if (SignalAspects[i].signalAspect > state) next_state = SignalAspects[i].signalAspect;
-            }
-            if (next_state == SignalHead.SIGASP.UNKNOWN) return state; else return next_state;
-        }
-    }
+		static IList<SignalAspect> ReadAspects(STFReader f)
+		{
+			f.VerifyStartOfBlock();
+			var count = f.ReadInt();
+			var aspects = new List<SignalAspect>(count);
+			var token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "SignalAspect", true))
+				{
+					if (aspects.Count < aspects.Capacity)
+						aspects.Add(new SignalAspect(f));
+				}
+				else f.SkipBlock();
+				token = f.ReadToken();
+			}
+			return aspects;
+		}
 
-    public class SignalDrawState
-    {
-        public struct strDrawLights
-        {
-            public uint DrawLight;
-            public bool Flashing;
-        }
-        public strDrawLights[] DrawLights;
-        public String DrawStateName;
-        public uint index;
+		//
+		//  This method returns the default draw state for the specified aspect 
+		//  - 1 if none.
+		//
+		public int def_draw_state(SignalHead.SIGASP state)
+		{
+			for (int i = 0; i < Aspects.Count; i++)
+			{
+				if (state == Aspects[i].Aspect)
+				{
+					return DrawStates.IndexOf(DrawStatesByName[Aspects[i].DrawStateName]);
+				}
+			}
+			return -1;
+		}
 
-        public SignalDrawState(STFReader f, SIGCFGFile sigcfg)
-        {
-            //f.VerifyStartOfBlock();
-            //index = f.ReadUInt();
-            DrawStateName = f.ReadString();
-            string token = f.ReadToken();
-            ///uint count=0;
-            while(token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF  
-                else if (0 == String.Compare(token, "DrawLights", true)) Lights(f);
-                else f.SkipBlock();
-                token = f.ReadToken();
-            }
-        }
+		//
+		//  This method returns the next least restrictive aspect
+		//  from the one specified.
+		//
+		public SignalHead.SIGASP def_next_state(SignalHead.SIGASP state)
+		{
+			SignalHead.SIGASP next_state = SignalHead.SIGASP.UNKNOWN;
+			for (int i = 0; i < Aspects.Count; i++)
+			{
+				//if (SignalAspects[i].signalAspect > state)
+				//{
+				//}
+				if (Aspects[i].Aspect > state && Aspects[i].Aspect < next_state) next_state = Aspects[i].Aspect;
+				//if (SignalAspects[i].signalAspect > state) next_state = SignalAspects[i].signalAspect;
+			}
+			if (next_state == SignalHead.SIGASP.UNKNOWN) return state; else return next_state;
+		}
+	}
 
-        private void Lights(STFReader f)
-        {
-            f.VerifyStartOfBlock();
-            uint noDrawLights = f.ReadUInt();
-            DrawLights = new strDrawLights[noDrawLights];
-            string token = f.ReadToken();
-            uint count = 0;
-            while (token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF 
-                else if (0 == String.Compare(token, "DrawLight", true))
-                {
-                    if (count < noDrawLights)
-                    {
-                        DrawLights[count] = new strDrawLights();
-                        f.VerifyStartOfBlock();
-                        DrawLights[count].DrawLight = f.ReadUInt();
-                        DrawLights[count].Flashing = false;
-                        token = f.ReadToken();
-                        while (token != ")")
-                        {
-                            if (token == "") throw (new STFException(f, "Missing )"));  // EOF 
-                            else if (0 == String.Compare(token, "SignalFlags", true))
-                            {
-                                string trLightFlags = f.ReadStringBlock();
-                                if (0 == String.Compare(trLightFlags, "FLASHING", true))
-                                {
-                                    DrawLights[count].Flashing = true;
-                                    token = f.ReadToken();
-                                }
-                                else
-                                {
-                                    STFException.ReportError(f, "Unrecognised TRLIGHT flag " + trLightFlags);
-                                }
-                            }
-                        }
-                        count++;
-                    }
-                    else throw (new STFException(f, "DrawLights count mismatch"));
+	public class SignalLight
+	{
+		public readonly uint Index;
+		public readonly string Name;
+		public readonly float X, Y, Z;      // position
+		public readonly float Radius;
 
-                }
-                else f.SkipBlock();
-                token = f.ReadToken();
-            }
-            if(count!=noDrawLights) STFException.ReportError(f, "DrawLights count mismatch");
-        }
-    }
+		public SignalLight(STFReader f)
+		{
+			f.VerifyStartOfBlock();
+			Index = f.ReadUInt();
+			Name = f.ReadString();
+			var token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "Position", true))
+				{
+					f.VerifyStartOfBlock();
+					X = f.ReadFloat();
+					Y = f.ReadFloat();
+					Z = f.ReadFloat();
+					f.MustMatch(")");
+				}
+				else if (0 == String.Compare(token, "Radius", true))
+				{
+					Radius = f.ReadFloatBlock();
+				}
+				else f.SkipBlock();
+				token = f.ReadToken();
+			}
+		}
 
-    public class SignalShape
-    {
-        public string Description, ShapeFileName;
-        public SignalSubObj[] SignalSubObjs;
+		public static int Comparer(SignalLight lightA, SignalLight lightB)
+		{
+			return (int)lightA.Index - (int)lightB.Index;
+		}
+	}
 
-        public SignalShape(uint count, STFReader f, SIGCFGFile sigcfg)
-        {
-            f.VerifyStartOfBlock();
-            ShapeFileName = f.ReadString();
-            Description = f.ReadString();
-            string token = f.ReadToken();
-            while (token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                else if (0 == String.Compare(token, "SignalSubObjs", true)) SigSubObjs(f,sigcfg);
-                //else if (0 == String.Compare(token, "SignalFlagss", true)) SignalShapeFlags(f);
-                else f.SkipBlock();
-                token = f.ReadToken();
-            }
-        }
+	public class SignalDrawState
+	{
+		public readonly uint Index;
+		public readonly string Name;
+		public readonly IList<SignalDrawLight> DrawLights;
 
-        private void SigSubObjs(STFReader f,SIGCFGFile sigcfg)
-        {
-            f.VerifyStartOfBlock();
-            uint noObj = f.ReadUInt();
-            SignalSubObjs = new SignalSubObj[noObj];
-            uint count = 0;
-            string token = f.ReadToken();
-            while (token != ")")
-            {
-                if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                else if (0 == String.Compare(token, "SignalSubObj", true))
-                {
-                    SignalSubObjs[count]=new SignalSubObj(count,f,sigcfg);
-                    count++;
-                }
-                else f.SkipBlock();
-                token = f.ReadToken();
+		public SignalDrawState(STFReader f)
+		{
+			f.VerifyStartOfBlock();
+			Index = f.ReadUInt();
+			Name = f.ReadString();
+			var token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "DrawLights", true)) DrawLights = ReadDrawLights(f);
+				else f.SkipBlock();
+				token = f.ReadToken();
+			}
+		}
 
-        }
+		static IList<SignalDrawLight> ReadDrawLights(STFReader f)
+		{
+			f.VerifyStartOfBlock();
+			var count = f.ReadInt();
+			var drawLights = new List<SignalDrawLight>(count);
+			var token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "DrawLight", true))
+				{
+					if (drawLights.Count < drawLights.Capacity)
+						drawLights.Add(new SignalDrawLight(f));
+				}
+				else f.SkipBlock();
+				token = f.ReadToken();
+			}
+			return drawLights;
+		}
 
-        //
-        //  Found a reference to this in the documentation but no details
-        //  Commented out for the time being
-        //
-        //private void SignalShapeFlags(STFReader f)
-        //{
-        //}
-    }
+		public static int Comparer(SignalDrawState drawStateA, SignalDrawState drawStateB)
+		{
+			return (int)drawStateA.Index - (int)drawStateB.Index;
+		}
+	}
 
-        public class SignalSubObj
-        {
-            private string[] SignalSubTypes ={"DECOR","SIGNAL_HEAD","NUMBER_PLATE","GRADIENT_PLATE",
+	public class SignalDrawLight
+	{
+		public readonly uint LightIndex;
+		public readonly bool Flashing;
+
+		public SignalDrawLight(STFReader f)
+		{
+			f.VerifyStartOfBlock();
+			LightIndex = f.ReadUInt();
+			var token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "SignalFlags", true))
+				{
+					var flag = f.ReadStringBlock();
+					if (0 == String.Compare(flag, "Flashing", true))
+					{
+						Flashing = true;
+						token = f.ReadToken();
+					}
+					else
+					{
+						STFException.ReportError(f, "Unrecognised DrawLight flag " + flag);
+					}
+				}
+			}
+		}
+	}
+
+	public class SignalAspect
+	{
+		public readonly ORTS.SignalHead.SIGASP Aspect;
+		public readonly string DrawStateName;
+		public readonly float SpeedMpS;  // Speed limit for this aspect. -1 if track speed is to be used
+		public readonly bool Asap;  // Set to true if SignalFlags ASAP option specified
+
+		public SignalAspect(STFReader f)
+		{
+			SpeedMpS = -1;
+			f.VerifyStartOfBlock();
+			var aspectName = f.ReadString();
+			try
+			{
+				Aspect = (ORTS.SignalHead.SIGASP)Enum.Parse(typeof(ORTS.SignalHead.SIGASP), aspectName, true);
+			}
+			catch (ArgumentException)
+			{
+				throw new STFException(f, "Unknown Aspect " + aspectName);
+			}
+			DrawStateName = f.ReadString();
+			var token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "SpeedMPH ", true))
+				{
+					SpeedMpS = MpH.ToMpS(f.ReadFloatBlock());
+				}
+				else if (0 == String.Compare(token, "SpeedKPH ", true))
+				{
+					SpeedMpS = KpH.ToMpS(f.ReadFloatBlock());
+				}
+				else if (0 == String.Compare(token, "SignalFlags ", true))
+				{
+					var signalFlag = f.ReadStringBlock();
+					if (0 == String.Compare(signalFlag, "ASAP", true))
+						Asap = true;
+					else
+						throw new STFException(f, "Unrecognised signal flag " + signalFlag);
+				}
+				else f.SkipBlock();
+				token = f.ReadToken();
+			}
+		}
+	}
+
+	public class SignalShape
+	{
+		public string Description, ShapeFileName;
+		public SignalSubObj[] SignalSubObjs;
+
+		public SignalShape(uint count, STFReader f, SIGCFGFile sigcfg)
+		{
+			f.VerifyStartOfBlock();
+			ShapeFileName = f.ReadString();
+			Description = f.ReadString();
+			string token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw (new STFException(f, "Missing )"));  // EOF
+				else if (0 == String.Compare(token, "SignalSubObjs", true)) SigSubObjs(f, sigcfg);
+				//else if (0 == String.Compare(token, "SignalFlagss", true)) SignalShapeFlags(f);
+				else f.SkipBlock();
+				token = f.ReadToken();
+			}
+		}
+
+		private void SigSubObjs(STFReader f, SIGCFGFile sigcfg)
+		{
+			f.VerifyStartOfBlock();
+			uint noObj = f.ReadUInt();
+			SignalSubObjs = new SignalSubObj[noObj];
+			uint count = 0;
+			string token = f.ReadToken();
+			while (token != ")")
+			{
+				if (token == "") throw (new STFException(f, "Missing )"));  // EOF
+				else if (0 == String.Compare(token, "SignalSubObj", true))
+				{
+					SignalSubObjs[count] = new SignalSubObj(count, f, sigcfg);
+					count++;
+				}
+				else f.SkipBlock();
+				token = f.ReadToken();
+
+			}
+
+			//
+			//  Found a reference to this in the documentation but no details
+			//  Commented out for the time being
+			//
+			//private void SignalShapeFlags(STFReader f)
+			//{
+			//}
+		}
+
+		public class SignalSubObj
+		{
+			private string[] SignalSubTypes ={"DECOR","SIGNAL_HEAD","NUMBER_PLATE","GRADIENT_PLATE",
                                               "USER1","USER2","USER3","USER4"};
-            public string MatrixName;        // Name of the group within the signal shape which defines this head
-            public string Description;      // 
-            public int SignalSubType = -1;  // Signal sub type: -1 if not specified;
-            public string SigSubSType;
-            public bool Optional = false;
-            public bool Default = false;
-            public bool BackFacing = false;
-            public bool JunctionLink = false;
-            public uint[] SigSubJnLinkIfs;  // indexes to linked signal heads 
-            public uint SigSubJnLinkIf = 0;
+			public string MatrixName;        // Name of the group within the signal shape which defines this head
+			public string Description;      // 
+			public int SignalSubType = -1;  // Signal sub type: -1 if not specified;
+			public string SigSubSType;
+			public bool Optional = false;
+			public bool Default = false;
+			public bool BackFacing = false;
+			public bool JunctionLink = false;
+			public uint[] SigSubJnLinkIfs;  // indexes to linked signal heads 
+			public uint SigSubJnLinkIf = 0;
 
-            public SignalSubObj(uint seq, STFReader f, SIGCFGFile sigcfg)
-            {
-                f.VerifyStartOfBlock();
-                uint seqNo = f.ReadUInt();
-                if (seqNo == seq)
-                {
-                    MatrixName = f.ReadString().ToUpper();
-                    Description = f.ReadString();
-                    string token = f.ReadToken();
-                    while (token != ")")
-                    {
-                        if (token == "") throw (new STFException(f, "Missing )"));  // EOF
-                        else if (0 == String.Compare(token, "SigSubType", true)) SignalSubType = SigSubType(f);
-                        else if (0 == String.Compare(token, "SignalFlags", true)) SigSubFlags(f);
+			public SignalSubObj(uint seq, STFReader f, SIGCFGFile sigcfg)
+			{
+				f.VerifyStartOfBlock();
+				uint seqNo = f.ReadUInt();
+				if (seqNo == seq)
+				{
+					MatrixName = f.ReadString().ToUpper();
+					Description = f.ReadString();
+					string token = f.ReadToken();
+					while (token != ")")
+					{
+						if (token == "") throw (new STFException(f, "Missing )"));  // EOF
+						else if (0 == String.Compare(token, "SigSubType", true)) SignalSubType = SigSubType(f);
+						else if (0 == String.Compare(token, "SignalFlags", true)) SigSubFlags(f);
 						else if (0 == String.Compare(token, "SigSubSType", true)) SigSubSType = SigSTtype(f);
-                        else f.SkipBlock();
-                        token = f.ReadToken();
-                    }
-                }
-                else
-                {
-                    throw (new STFException(f, "SignalSubObj Sequence Missmatch"));
-                }
+						else f.SkipBlock();
+						token = f.ReadToken();
+					}
+				}
+				else
+				{
+					throw (new STFException(f, "SignalSubObj Sequence Missmatch"));
+				}
 
-            }
+			}
 
-            private int SigSubType(STFReader f)
-            {
-                string subType = f.ReadStringBlock();
-                for (int i = 0; i < SignalSubTypes.Length; i++)
-                {
-                    if (0 == String.Compare(subType, SignalSubTypes[i], true))
-                    {
-                        return i;
-                    }
-                }
-                return -1;
-            }
+			private int SigSubType(STFReader f)
+			{
+				string subType = f.ReadStringBlock();
+				for (int i = 0; i < SignalSubTypes.Length; i++)
+				{
+					if (0 == String.Compare(subType, SignalSubTypes[i], true))
+					{
+						return i;
+					}
+				}
+				return -1;
+			}
 
-            private void SigSubFlags(STFReader f)
-            {
-                f.VerifyStartOfBlock();
-                string token = f.ReadToken();
-                while (token != ")")
-                {
+			private void SigSubFlags(STFReader f)
+			{
+				f.VerifyStartOfBlock();
+				string token = f.ReadToken();
+				while (token != ")")
+				{
 					if (token == "") throw (new STFException(f, "Missing )"));  // EOF
 					else if (0 == String.Compare(token, "OPTIONAL", true)) Optional = true;
 					else if (0 == String.Compare(token, "DEFAULT", true)) Default = true;
 					else if (0 == String.Compare(token, "BACK_FACING", true)) BackFacing = true;
 					else if (0 == String.Compare(token, "JN_LINK", true)) JunctionLink = true;
-                    token = f.ReadToken();
-                }
-            }
+					token = f.ReadToken();
+				}
+			}
 
 			private string SigSTtype(STFReader f)
-            {
-                return f.ReadStringBlock();
-            }
+			{
+				return f.ReadStringBlock();
+			}
 
-            private void SubJnLinkIf(STFReader f)
-            {
-                f.VerifyStartOfBlock();
-                SigSubJnLinkIf=f.ReadUInt();
-                SigSubJnLinkIfs=new uint[SigSubJnLinkIf];
-                for (int i = 0; i < SigSubJnLinkIf; i++)
-                {
-                    SigSubJnLinkIfs[i] = f.ReadUInt();
-                }
-                f.MustMatch(")");
-            }
-        }
-    }
-
+			private void SubJnLinkIf(STFReader f)
+			{
+				f.VerifyStartOfBlock();
+				SigSubJnLinkIf = f.ReadUInt();
+				SigSubJnLinkIfs = new uint[SigSubJnLinkIf];
+				for (int i = 0; i < SigSubJnLinkIf; i++)
+				{
+					SigSubJnLinkIfs[i] = f.ReadUInt();
+				}
+				f.MustMatch(")");
+			}
+		}
+	}
 }

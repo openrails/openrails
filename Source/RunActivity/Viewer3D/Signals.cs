@@ -10,12 +10,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.IO;
-using System.Diagnostics;
 
 namespace ORTS
 {
@@ -137,10 +137,10 @@ namespace ORTS
 					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName));
 
 				var mstsSignalType = viewer.Simulator.SIGCFG.SignalTypes[mstsSignalSubObj.SigSubSType];
-				if (SignalTypes.ContainsKey(mstsSignalType.typeName))
-					SignalTypeData = SignalTypes[mstsSignalType.typeName];
+				if (SignalTypes.ContainsKey(mstsSignalType.Name))
+					SignalTypeData = SignalTypes[mstsSignalType.Name];
 				else
-					SignalTypeData = SignalTypes[mstsSignalType.typeName] = new SignalTypeData(viewer, mstsSignalType);
+					SignalTypeData = SignalTypes[mstsSignalType.Name] = new SignalTypeData(viewer, mstsSignalType);
 
 #if DEBUG_SIGNAL_SHAPES
 				Console.Write("  HEAD type={0,-8} lights={1,-2} aspects={2,-2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Aspects.Count);
@@ -240,21 +240,21 @@ namespace ORTS
 
 			public SignalTypeData(Viewer3D viewer, MSTS.SignalType mstsSignalType)
 			{
-				var mstsLightTexture = viewer.Simulator.SIGCFG.LightTextures[mstsSignalType.SignalLightTex];
+				var mstsLightTexture = viewer.Simulator.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
 				Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetTextureFolder(viewer, 0) + @"\" + mstsLightTexture.TextureFile);
-				Type = (SignalTypeDataType)mstsSignalType.SignalFnType;
-				if (mstsSignalType.SignalLights != null)
+				Type = (SignalTypeDataType)mstsSignalType.FnType;
+				if (mstsSignalType.Lights != null)
 				{
-					foreach (var mstsSignalLight in mstsSignalType.SignalLights)
+					foreach (var mstsSignalLight in mstsSignalType.Lights)
 					{
 						var mstsLight = viewer.Simulator.SIGCFG.LightsTable[mstsSignalLight.Name];
-						Lights.Add(new SignalLightMesh(viewer, new Vector3(mstsSignalLight.x, mstsSignalLight.y, mstsSignalLight.z), mstsSignalLight.radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
+						Lights.Add(new SignalLightMesh(viewer, new Vector3(mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
 					}
 					// Only load aspects if we've got lights. Not much point otherwise.
-					if (mstsSignalType.SignalAspects != null)
+					if (mstsSignalType.Aspects != null)
 					{
-						foreach (var mstsSignalAspect in mstsSignalType.SignalAspects)
-							Aspects.Add(mstsSignalAspect.signalAspect, new SignalAspectData(mstsSignalType, mstsSignalAspect.drawState));
+						foreach (var mstsSignalAspect in mstsSignalType.Aspects)
+							Aspects.Add(mstsSignalAspect.Aspect, new SignalAspectData(mstsSignalType, mstsSignalAspect.DrawStateName));
 					}
 				}
 #if SIGNAL_SHAPES_FEATHERS
@@ -287,17 +287,17 @@ namespace ORTS
 			public bool[] DrawLights;
 			public bool[] FlashLights;
 
-			public SignalAspectData(MSTS.SignalType mstsSignalType, int drawState)
+			public SignalAspectData(MSTS.SignalType mstsSignalType, string drawState)
 			{
-				DrawLights = new bool[mstsSignalType.SignalLights.Length];
-				FlashLights = new bool[mstsSignalType.SignalLights.Length];
-				var drawStateData = mstsSignalType.SignalDrawStates[drawState];
+				DrawLights = new bool[mstsSignalType.Lights.Count];
+				FlashLights = new bool[mstsSignalType.Lights.Count];
+				var drawStateData = mstsSignalType.DrawStatesByName[drawState];
 				if (drawStateData.DrawLights != null)
 				{
 					foreach (var drawLight in drawStateData.DrawLights)
 					{
-						DrawLights[drawLight.DrawLight] = true;
-						FlashLights[drawLight.DrawLight] = drawLight.Flashing;
+						DrawLights[drawLight.LightIndex] = true;
+						FlashLights[drawLight.LightIndex] = drawLight.Flashing;
 					}
 				}
 			}
