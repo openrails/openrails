@@ -306,6 +306,10 @@ namespace ORTS
             TMaspect = nextSignal.GetMonitorAspect();
 
         }
+        public SignalHead.SIGASP GetNextSignalAspect()
+        {
+            return nextSignal.GetAspect();
+        }
         /// <summary>
         /// Returns true if (forward == 1) and front of train on TrEndNode
         /// or if (forward == 0) and rear of train on TrEndNode.

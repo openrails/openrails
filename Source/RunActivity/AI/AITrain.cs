@@ -499,6 +499,24 @@ namespace ORTS
                 if (stopDistanceM > d)
                     stopDistanceM = d;
             }
+            if (AITrainDirectionForward)
+            {
+                switch (GetNextSignalAspect())
+                {
+                    case SignalHead.SIGASP.STOP:
+                        targetMpS *= .5f;
+                        if (stopDistanceM > distanceToSignal - 1)
+                            stopDistanceM = distanceToSignal - 1;
+                        break;
+                    case SignalHead.SIGASP.STOP_AND_PROCEED:
+                        targetMpS *= .5f;
+                        if (distanceToSignal > 3 && stopDistanceM > distanceToSignal - 1)
+                            stopDistanceM = distanceToSignal - 1;
+                        break;
+                }
+            }
+            if (stopDistanceM < 0)
+                stopDistanceM = 0;
             // adjust stopDistanceM to account for signals etc.
             float maxSpeedSq = targetMpS * targetMpS;
             if (maxSpeedSq > 2 * stopDistanceM * MaxDecelMpSS)

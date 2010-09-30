@@ -142,6 +142,7 @@ namespace ORTS
                 else if (tvnIndex >= 0)
                     s.Append("=");
             }
+            s.Append(string.Format(" {0} {1:F1}", Train.GetNextSignalAspect(), Train.distanceToSignal));
             return s.ToString();
         }
 
