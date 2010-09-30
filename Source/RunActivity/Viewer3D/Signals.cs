@@ -66,7 +66,7 @@ namespace ORTS
 					continue;
 				}
 				// Ensure this head is displayed if it is optional.
-				if (mstsSignalSubObj.Optional && !mstsSignalSubObj.Default)
+				if (mstsSignalSubObj.Optional && !mstsSignalSubObj.Default && SharedShape.MatrixNames.Contains(mstsSignalSubObj.MatrixName))
 					XNAMatrices[SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName)].M42 -= 10000;
 				SignalObject = signalAndHead.Value.Key;
 				var mstsSignalItem = (MSTS.SignalItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[mstsSignal.SignalUnits.Units[i].TrItem]);
