@@ -136,6 +136,9 @@ namespace ORTS
 				if (MatrixIndex == -1)
 					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName));
 
+				if (!viewer.Simulator.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SigSubSType))
+					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid SigSubSType {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SigSubSType));
+
 				var mstsSignalType = viewer.Simulator.SIGCFG.SignalTypes[mstsSignalSubObj.SigSubSType];
 				if (SignalTypes.ContainsKey(mstsSignalType.Name))
 					SignalTypeData = SignalTypes[mstsSignalType.Name];
