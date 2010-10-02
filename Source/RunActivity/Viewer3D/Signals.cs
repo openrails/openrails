@@ -36,7 +36,13 @@ namespace ORTS
 #endif
 
 			UID = mstsSignal.UID;
-			var mstsSignalShape = viewer.Simulator.SIGCFG.SignalShapes[Path.GetFileName(path)];
+			var signalShape = Path.GetFileName(path).ToUpper();
+			if (!viewer.Simulator.SIGCFG.SignalShapes.ContainsKey(signalShape))
+			{
+				Trace.TraceError("{0} signal {1} has invalid shape {2}.", Location.ToString(), mstsSignal.UID, signalShape);
+				return;
+			}
+			var mstsSignalShape = viewer.Simulator.SIGCFG.SignalShapes[signalShape];
 
 			// Move the optional signal components way off into the sky. We're
 			// re-position all the ones that are visible on this signal later.

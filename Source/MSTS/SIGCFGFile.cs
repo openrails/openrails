@@ -178,7 +178,7 @@ namespace MSTS
                     if (count < noSigShapes)
                     {
 						var signalShape = new SignalShape(count, f, this);
-                        SignalShapes[signalShape.ShapeFileName] = signalShape;
+                        SignalShapes[signalShape.ShapeFileName.ToUpper()] = signalShape;
                         count++;
                     }
                     else throw (new STFException(f, "SigShapes count mismatch"));
