@@ -222,7 +222,7 @@ namespace MSTS
 		public readonly string Name;
 		public readonly FnTypes FnType;
 		public readonly bool Abs, NoGantry, Semaphore;  // Don't know what Abs is for but found in Marias Pass route
-		public readonly float FlashTimeOn, FlashTimeOff;  // On/Off duration for flashing light. (In seconds.)
+		public readonly float FlashTimeOn = 1, FlashTimeOff = 1;  // On/Off duration for flashing light. (In seconds.)
 		public readonly string LightTextureName;
 		public readonly IList<SignalLight> Lights;
 		public readonly IList<SignalDrawState> DrawStates;
@@ -366,10 +366,9 @@ namespace MSTS
 			return aspects;
 		}
 
-		//
-		//  This method returns the default draw state for the specified aspect 
-		//  - 1 if none.
-		//
+		/// <summary>
+		/// This method returns the default draw state for the specified aspect or -1 if none.
+		/// </summary>
 		public int def_draw_state(SignalHead.SIGASP state)
 		{
 			for (int i = 0; i < Aspects.Count; i++)
@@ -382,11 +381,10 @@ namespace MSTS
 			return -1;
 		}
 
-        //
-        //  This method returns the next least restrictive aspect
-        //  from the one specified.
-        //
-        public SignalHead.SIGASP GetDefaultLeastRestrictingState(SignalHead.SIGASP state)
+        /// <summary>
+		/// This method returns the next least restrictive aspect from the one specified.
+        /// </summary>
+        public SignalHead.SIGASP GetNextLeastRestrictiveState(SignalHead.SIGASP state)
         {
             SignalHead.SIGASP targetState = SignalHead.SIGASP.UNKNOWN;
             SignalHead.SIGASP leastState = SignalHead.SIGASP.STOP;
@@ -399,9 +397,9 @@ namespace MSTS
             if (targetState == SignalHead.SIGASP.UNKNOWN) return leastState; else return targetState;
         }
 
-        //
-        //  This method returns the most restrictive aspect for this signal type
-        //
+        /// <summary>
+		/// This method returns the most restrictive aspect for this signal type.
+        /// </summary>
         public SignalHead.SIGASP GetMostRestrictiveAspect()
         {
             SignalHead.SIGASP targetAspect = SignalHead.SIGASP.UNKNOWN;

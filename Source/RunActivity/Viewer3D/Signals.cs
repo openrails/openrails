@@ -179,41 +179,24 @@ namespace ORTS
 					Console.WriteLine(String.Format("{5} {0} signal {1} unit {2} state: {3} --> {4}", SignalShape.Location, SignalShape.UID, Index, LastState, SignalHead.state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
 #endif
 					LastState = SignalHead.state;
+					DisplayState = LastState;
 				}
 				CumulativeTime += elapsedTime.ClockSeconds;
+				while (CumulativeTime > SignalTypeData.FlashTimeTotal)
+					CumulativeTime -= SignalTypeData.FlashTimeTotal;
 
-				switch (SignalTypeData.Type)
-				{
-					case SignalTypeDataType.Normal:
-						// Find the next least restrictive state that we have defined, or fall back to UNKNOWN.
-						DisplayState = LastState;
-						while (!SignalTypeData.Aspects.ContainsKey(DisplayState) && (DisplayState >= SignalHead.SIGASP.STOP))
-							DisplayState--;
-						if (DisplayState < SignalHead.SIGASP.STOP)
-							DisplayState = SignalHead.SIGASP.UNKNOWN;
-						break;
-					case SignalTypeDataType.Distance:
-						// TODO: Implement "distance" signal head type.
-						break;
-					case SignalTypeDataType.Repeater:
-						// TODO: Implement "repeater" signal head type.
-						break;
-					case SignalTypeDataType.Shunting:
-						// TODO: Implement "shunting" signal head type.
-						break;
-					case SignalTypeDataType.Info:
-						// TODO: Implement "info" signal head type.
 #if SIGNAL_SHAPES_FEATHERS
-						if (JunctionTrackNode != 0)
-						{
-							// Use CLEAR_1 or STOP depending on selected route.
-							var selectedRoute = Viewer.Simulator.TDB.TrackDB.TrackNodes[JunctionTrackNode].TrJunctionNode.SelectedRoute;
-							DisplayState = !SignalShape.InfoHeadFound && selectedRoute == JunctionLinkRoute ? SignalHead.SIGASP.CLEAR_1 : SignalHead.SIGASP.STOP;
-							SignalShape.InfoHeadFound |= selectedRoute == JunctionLinkRoute;
-						}
-#endif
-						break;
+				if (SignalTypeData.Type == SignalTypeDataType.Info)
+				{
+					if (JunctionTrackNode != 0)
+					{
+						// Use CLEAR_1 or STOP depending on selected route.
+						var selectedRoute = Viewer.Simulator.TDB.TrackDB.TrackNodes[JunctionTrackNode].TrJunctionNode.SelectedRoute;
+						DisplayState = !SignalShape.InfoHeadFound && selectedRoute == JunctionLinkRoute ? SignalHead.SIGASP.CLEAR_1 : SignalHead.SIGASP.STOP;
+						SignalShape.InfoHeadFound |= selectedRoute == JunctionLinkRoute;
+					}
 				}
+#endif
 
 				if ((DisplayState == SignalHead.SIGASP.UNKNOWN) || !SignalTypeData.Aspects.ContainsKey(DisplayState))
 					return;
@@ -222,7 +205,7 @@ namespace ORTS
 				{
 					if (!SignalTypeData.Aspects[DisplayState].DrawLights[i])
 						continue;
-					if (SignalTypeData.Aspects[DisplayState].FlashLights[i] && (CumulativeTime % 2 < 1))
+					if (SignalTypeData.Aspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn))
 						continue;
 
 					var xnaMatrix = Matrix.Identity;
@@ -240,6 +223,8 @@ namespace ORTS
 			public readonly SignalTypeDataType Type;
 			public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
 			public readonly Dictionary<SignalHead.SIGASP, SignalAspectData> Aspects = new Dictionary<SignalHead.SIGASP, SignalAspectData>();
+			public readonly float FlashTimeOn;
+			public readonly float FlashTimeTotal;
 
 			public SignalTypeData(Viewer3D viewer, MSTS.SignalType mstsSignalType)
 			{
@@ -273,6 +258,8 @@ namespace ORTS
 					Aspects.Add(SignalHead.SIGASP.CLEAR_1, new SignalAspectData(mstsSignalType, 1));
 				}
 #endif
+				FlashTimeOn = mstsSignalType.FlashTimeOn;
+				FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
 			}
 		}
 
@@ -287,8 +274,8 @@ namespace ORTS
 
 		class SignalAspectData
 		{
-			public bool[] DrawLights;
-			public bool[] FlashLights;
+			public readonly bool[] DrawLights;
+			public readonly bool[] FlashLights;
 
 			public SignalAspectData(MSTS.SignalType mstsSignalType, string drawState)
 			{
@@ -336,27 +323,29 @@ namespace ORTS
 
 	public class SignalLightMaterial : Material
 	{
+		readonly RenderProcess RenderProcess;
 		readonly SceneryShader SceneryShader;
 		readonly Texture2D Texture;
 
 		public SignalLightMaterial(RenderProcess renderProcess, string textureName)
 		{
+			RenderProcess = renderProcess;
 			SceneryShader = Materials.SceneryShader;
 			Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, textureName);
 		}
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
+			RenderProcess.RenderStateChangesCount++;
+			RenderProcess.ImageChangesCount++;
+
 			SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["SignalLight"];
 			SceneryShader.ImageMap_Tex = Texture;
+
 			graphicsDevice.RenderState.AlphaBlendEnable = true;
-			graphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
-			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
 			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
 			graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
-			graphicsDevice.RenderState.AlphaSourceBlend = Blend.Zero;
-			graphicsDevice.RenderState.AlphaDestinationBlend = Blend.One;
-			graphicsDevice.RenderState.AlphaBlendOperation = BlendFunction.Add;
+			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -384,10 +373,9 @@ namespace ORTS
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
 			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.SourceBlend = Blend.One;
 			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
 			graphicsDevice.RenderState.SeparateAlphaBlendEnabled = false;
-			graphicsDevice.RenderState.AlphaSourceBlend = Blend.One;
+			graphicsDevice.RenderState.SourceBlend = Blend.One;
 		}
 	}
 }

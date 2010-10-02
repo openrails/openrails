@@ -840,9 +840,9 @@ namespace ORTS
             return sigAsp;
         }
 
-        //
-        //  Perform the update for each head on this signal
-        //
+        /// <summary>
+		/// Perform the update for each head on this signal.
+        /// </summary>
         public void Update()
          {
              if (canUpdate)        
@@ -855,9 +855,9 @@ namespace ORTS
        
         } // Update
 
-        //
-        //  Returns the distance from the TDBtraveller to this signal. 
-        //
+        /// <summary>
+		/// Returns the distance from the TDBtraveller to this signal. 
+        /// </summary>
         public float DistanceTo(TDBTraveller tdbTraveller)
         {
             int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
@@ -865,9 +865,9 @@ namespace ORTS
         }  //DistanceTo
 
 
-        //
-        //   Check Whether signal head is for this signal 
-        //
+        /// <summary>
+		/// Check Whether signal head is for this signal.
+        /// </summary>
         public bool isSignalHead(SignalItem signalItem)
         {
             SignalItem thisSignalItem = (SignalItem)trItems[this.trItem];   // Tritem for this signal
@@ -881,18 +881,18 @@ namespace ORTS
             return false;
         }
 
-        //
-        //  Adds a head to this signal
-        //
+        /// <summary>
+		/// Adds a head to this signal.
+        /// </summary>
         public void AddHead(int trItem)
         {
             SignalHead head = new SignalHead(this,trItem);
             SignalHeads.Add(head);
         }
 
-        //
-        //   Gets the correspnding TrItem from the TDB
-        //
+        /// <summary>
+		/// Gets the correspnding TrItem from the TDB.
+        /// </summary>
         public int trItem
         {
             get
@@ -900,9 +900,10 @@ namespace ORTS
                 return trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
             }
         }
-        //
-        //  Sets the signal type from the sigcfg file for each signal head
-        //
+
+        /// <summary>
+		/// Sets the signal type from the sigcfg file for each signal head.
+        /// </summary>
         public void SetSignalType(SIGCFGFile sigCFG)
         {
              foreach (SignalHead sigHead in SignalHeads)
@@ -947,9 +948,9 @@ namespace ORTS
             nextSignal = -2;
         }
 
-        //
-        // Gets the display aspect for the track monitor
-        //
+        /// <summary>
+		/// Gets the display aspect for the track monitor.
+        /// </summary>
         public TrackMonitorSignalAspect GetMonitorAspect()
         {
             switch (this_sig_lr(SignalHead.SIGFN.NORMAL))
@@ -1102,7 +1103,7 @@ namespace ORTS
         //
         public SignalHead.SIGASP def_next_state(SignalHead.SIGASP state)
         {
-            if (signalType != null) return signalType.GetDefaultLeastRestrictingState(state); else return SignalHead.SIGASP.STOP;
+            if (signalType != null) return signalType.GetNextLeastRestrictiveState(state); else return SignalHead.SIGASP.STOP;
         }
 
         //
