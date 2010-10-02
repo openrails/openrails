@@ -50,14 +50,16 @@ namespace ORTS
 			ShadowMapTexture.SetValue(shadowMapTexture);
 		}
 
+		EffectParameter zbias_lighting;
+		public float ZBias { get; set; }
+		public float LightingDiffuse { get; set; }
+		public float LightingSpecular { get; set; }
+
 		EffectParameter Fog;
 		public void SetFog(float depth, ref Color color)
 		{
 			Fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, depth));
 		}
-
-		EffectParameter zbias;
-		public float ZBias { set { zbias.SetValue(value); } }
 
         EffectParameter lightVector;
         public Vector3 LightVector { set { lightVector.SetValue(value); } }
@@ -87,6 +89,11 @@ namespace ORTS
         EffectParameter normalMap_Tex;
         public Texture2D NormalMap_Tex { set { normalMap_Tex.SetValue(value); } }
 
+		public void Apply()
+		{
+			zbias_lighting.SetValue(new Vector3(ZBias, LightingDiffuse, LightingSpecular));
+		}
+
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
         {
@@ -100,7 +107,7 @@ namespace ORTS
 
 			Fog = Parameters["Fog"];
 
-			zbias = Parameters["ZBias"];
+			zbias_lighting = Parameters["ZBias_Lighting"];
 
             lightVector = Parameters["LightVector"];
 

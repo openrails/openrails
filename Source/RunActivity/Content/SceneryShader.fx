@@ -14,12 +14,12 @@ float4x4 WorldViewProjection;  // model -> world -> view -> projection
 float4x4 LightViewProjectionShadowProjection;  // world -> light view -> light projection -> shadow map projection
 texture  ShadowMapTexture;
 
+// Z-bias and lighting coeffecients
+float3 ZBias_Lighting;  // x = z-bias, y = diffuse, z = specular
+
 // Fog values
 float4 Fog;  // rgb = color of fog; a = distance from camera, everything is
              // normal color; FogDepth = FogStart, i.e. FogEnd = 2 * FogStart.
-
-// Z-bias value
-float ZBias;
 
 float3 LightVector;  // Direction vector to sun
 
@@ -81,11 +81,12 @@ struct VERTEX_INPUT
 struct VERTEX_OUTPUT
 {
 	float4 Position     : POSITION;
-	float2 TexCoords    : TEXCOORD0;
+	float4 RelPosition  : TEXCOORD0;
+	float2 TexCoords    : TEXCOORD1;
 	float4 Color        : COLOR0;
-	float4 Normal_Light : TEXCOORD1;
-	float4 LightDir_Fog : TEXCOORD2;
-	float4 Shadow       : TEXCOORD3;
+	float4 Normal_Light : TEXCOORD2;
+	float4 LightDir_Fog : TEXCOORD3;
+	float4 Shadow       : TEXCOORD4;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -94,6 +95,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.RelPosition = mul(In.Position, World) - View._m03_m13_m23_m33;
 	Out.TexCoords = In.TexCoords;
 	Out.Color = In.Color;
 	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
@@ -101,7 +103,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 
 void _VSLightsAndShadows(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
-	// Normal lighting
+	// Normal lighting (range 0.0 - 1.0)
 	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
 
 	// Headlight lighting
@@ -121,7 +123,7 @@ VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
 	_VSLightsAndShadows(In, Out);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-	Out.Position.z -= ZBias * saturate(In.TexCoords.x * (1 - dot(In.Position.xyz, In.Normal.xyz))) / 1000;
+	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x * (1 - dot(In.Position.xyz, In.Normal.xyz))) / 1000;
 
 	return Out;
 }
@@ -172,18 +174,21 @@ VERTEX_OUTPUT VSSignalLight(in VERTEX_INPUT In)
 
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
-// Calculate the day2night fading position; 0 for night, 1 for day.
-float _PSGetDay2Night(inout float4 Color)
+// Gets the ambient light effect.
+float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 {
-	// The following constants define the beginning and the end conditions of
-	// the day-night transition. Values refer to the Y postion of LightVector.
-	const float startNightTrans = 0.1;
-	const float finishNightTrans = -0.1;
-	return saturate((LightVector.y - finishNightTrans) / (startNightTrans - finishNightTrans));
+	return In.Normal_Light.w * ZBias_Lighting.y;
 }
 
-// Applies the Variance Shadow Map to the pixel.
-void _PSApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
+// Gets the specular light effect.
+float _PSGetSpecularEffect(in VERTEX_OUTPUT In)
+{
+	float3 halfVector = normalize(normalize(-In.RelPosition) + normalize(LightVector));
+	return step(0.5, In.Normal_Light.w) * step(1, ZBias_Lighting.z) * pow(saturate(dot(normalize(In.Normal_Light.xyz), halfVector)), ZBias_Lighting.z);
+}
+
+// Gets the shadow effect.
+float _PSGetShadowEffect(in VERTEX_OUTPUT In)
 {
 	float2 moments = tex2D(ShadowMap, In.Shadow.xy);
 	bool outside_shadowmap = any(floor(In.Shadow.xy));
@@ -193,42 +198,38 @@ void _PSApplyShadowMap(inout float4 Color, in VERTEX_OUTPUT In)
 	float variance = clamp(E_x2 - Ex_2, 0.00001, 1.0);
 	float m_d = moments.x - In.Shadow.z;
 	float p = variance / (variance + m_d * m_d);
-	Color.rgb *= lerp(1.0, lerp(0.5, 1.0, saturate(outside_shadowmap + not_shadowed + p)), _PSGetDay2Night(Color));
+	return saturate(outside_shadowmap + not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
 }
 
-// Apply lighting with brightness and ambient modifiers.
-void _PSApplyBrightnessAndAmbient(inout float4 Color, in VERTEX_OUTPUT In)
+// Gets the overcast effect.
+float3 _PSGetOvercastEffect()
 {
-	Color.rgb *= In.Normal_Light.w * 0.65 + 0.4;
+	return overcast;
 }
 
-// This function dims the lighting at night, with a transition period as the sun rises/sets.
-void _PSApplyDay2Night(inout float4 Color)
+// Gets the overcast color.
+float3 _PSGetOvercastColor(in float4 Color, in VERTEX_OUTPUT In)
 {
-	const float nightCoeff = 0.15;
-	const float dayCoeff = 0.9;
-	Color.rgb *= lerp(nightCoeff, dayCoeff, _PSGetDay2Night(Color));
-}
-
-// This function reduces color saturation and brightness as overcast increases.
-// Adapted from an algorithm by Romain Dura aka Romz.
-void _PSApplyOvercast(inout float4 Color)
-{
-	// Values used to determine equivalent grayscale color:
+	// Value used to determine equivalent grayscale color.
 	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
-	
-	float sat = 1 - overcast;
-	float intensityf = dot(Color, LumCoeff);
-	Color.rgb = lerp(intensityf, Color.rgb, clamp(sat, 0.8, 1.0));
-	
-	// Reduce brightness slightly
-	// Default overcast=0.2 and sat=1-0.2, so this equation yields a default brightness of 1.0 
-	Color.rgb *= 0.6 * (0.867 + sat); 
+
+	float intensity = dot(Color, LumCoeff);
+	return lerp(intensity, Color.rgb, 0.8) * 0.5;
+}
+
+// Gets the night-time effect.
+float _PSGetNightEffect()
+{
+	// The following constants define the beginning and the end conditions of
+	// the day-night transition. Values refer to the Y postion of LightVector.
+	const float startNightTrans = 0.1;
+	const float finishNightTrans = -0.1;
+	return saturate((LightVector.y - finishNightTrans) / (startNightTrans - finishNightTrans));
 }
 
 // Applies the lighting effect of the train's headlights, including
 // fade-in/fade-out animations.
-void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_OUTPUT In)
+void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_OUTPUT In)
 {
 	// Decides the width of the lit cone (larger number = wider lit cone).
 	const float headlightWidth = 0.12;
@@ -249,188 +250,211 @@ void _PSApplyHeadlights(inout float4 Color, in float4 OriginalColor, in VERTEX_O
 	shading *= headlightStrength;
 	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / headlightDepth);
 	shading *= HeadlightPosition.w;
-	Color.rgb += OriginalColor.rgb * shading;
+	Color += OriginalColor * shading;
 }
 
 // Applies distance fog to the pixel.
-void _PSApplyFog(inout float4 Color, in VERTEX_OUTPUT In)
+void _PSApplyFog(inout float3 Color, in VERTEX_OUTPUT In)
 {
-	Color.rgb = lerp(Color.rgb, Fog.rgb, In.LightDir_Fog.w);
+	Color = lerp(Color, Fog.rgb, In.LightDir_Fog.w);
 }
 
 float4 PSImage(in VERTEX_OUTPUT In) : COLOR0
 {
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+	const float NightBrightness = 0.2;
+
 	float4 Color = tex2D(imageMap, In.TexCoords);
-	// No shadows cast on dark side (side facing away from light) of objects.
-	if (In.Normal_Light.w > 0.5)
-		_PSApplyShadowMap(Color, In);
-	_PSApplyBrightnessAndAmbient(Color, In);
-	float4 OriginalColor = Color;
-	// TODO: Specular lighting goes here.
-	if (!isNight_Tex)
-	{
-		_PSApplyDay2Night(Color);
-		_PSApplyOvercast(Color);
-	}
-	_PSApplyHeadlights(Color, OriginalColor, In);
-	_PSApplyFog(Color, In);
-	return Color;
+	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(In) + isNight_Tex));
+	// Specular effect next.
+	litColor += _PSGetSpecularEffect(In);
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
+	// Night-time darkens everything, except night-time textures.
+	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNight_Tex));
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color, In);
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	return float4(litColor, Color.a);
 }
 
 float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
-{ 
+{
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+	const float NightBrightness = 0.2;
+
 	float4 Color = tex2D(imageMap, In.TexCoords);
-	// No shadows cast on cruciform material (to prevent visibility of billboard panels).
-
-	// TODO: What are these values for?
-	Color.rgb *= 0.8;  
-	Color.rgb += 0.03;
-
-	float4 OriginalColor = Color;
-	_PSApplyDay2Night(Color);
-	_PSApplyOvercast(Color);
-	_PSApplyHeadlights(Color, OriginalColor, In);
-	_PSApplyFog(Color, In);
-	return Color;
+	// Ambient effect applies first; no shadow effect for vegetation; night-time textures cancel out all normal lighting.
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) + isNight_Tex));
+	// No specular effect for vegetation.
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
+	// Night-time darkens everything, except night-time textures.
+	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNight_Tex));
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color, In);
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	return float4(litColor, Color.a);
 }
 
 float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
-{ 
+{
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+	const float NightBrightness = 0.2;
+
 	float4 Color = tex2D(imageMap, In.TexCoords);
-	_PSApplyShadowMap(Color, In);
+	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(In) + isNight_Tex));
+	// No specular effect for terrain.
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
+	// Night-time darkens everything, except night-time textures.
+	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNight_Tex));
 
 	// TODO: What are these values for?
-	float3 bump = tex2D(normalMap, In.TexCoords * 50);
-	bump -= 0.5;
-	Color.rgb +=  0.5 * bump;
+	//float3 bump = tex2D(normalMap, In.TexCoords * 50);
+	//bump -= 0.5;
+	//Color.rgb += 0.5 * bump;
 
-	_PSApplyBrightnessAndAmbient(Color, In);
-	float4 OriginalColor = Color;
-	_PSApplyDay2Night(Color);
-	_PSApplyOvercast(Color);
-	_PSApplyHeadlights(Color, OriginalColor, In);
-	_PSApplyFog(Color, In);
-	return Color;
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color, In);
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	return float4(litColor, Color.a);
 }
 
 float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
-{ 
+{
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+	const float NightBrightness = 0.2;
+
 	float4 Color = tex2D(imageMap, In.TexCoords);
-	// No shadows cast on dark shade material - it is already dark.
-
-	// TODO: What is this value for?
-	Color.rgb *= 0.2;
-
-	float4 OriginalColor = Color;
-	_PSApplyDay2Night(Color);
-	_PSApplyOvercast(Color);
-	_PSApplyHeadlights(Color, OriginalColor, In);
-	_PSApplyFog(Color, In);
-	return Color;
-
+	// Fixed ambient and shadow effects at darkest level.
+	float3 litColor = Color.rgb * ShadowBrightness;
+	// No specular effect for dark shade.
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
+	// Night-time darkens everything, except night-time textures.
+	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNight_Tex));
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color, In);
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	return float4(litColor, Color.a);
 }
 
 float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
-{ 
+{
+	const float FullBrightness = 1.0;
+	const float HalfShadowBrightness = 0.75;
+	const float NightBrightness = 0.2;
+
 	float4 Color = tex2D(imageMap, In.TexCoords);
-	// No shadows cast on light sources.
-
-	// TODO: What is this value for?
-	Color.rgb *= 0.55;
-
-	_PSApplyHeadlights(Color, Color, In);
-	_PSApplyFog(Color, In);
-	return Color;	
+	// Fixed ambient and shadow effects at mid-dark level.
+	float3 litColor = Color.rgb * HalfShadowBrightness;
+	// No specular effect for half-bright.
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
+	// Night-time darkens everything, except night-time textures.
+	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNight_Tex));
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color, In);
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	return float4(litColor, Color.a);
 }
 
 float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
-{ 
-	float4 Color = tex2D(imageMap, In.TexCoords);
-	// No shadows cast on light sources.
+{
+	const float FullBrightness = 1.0;
+	const float NightBrightness = 0.2;
 
-	_PSApplyHeadlights(Color, Color, In);
-	_PSApplyFog(Color, In);
-	return Color;	
+	float4 Color = tex2D(imageMap, In.TexCoords);
+	// Fixed ambient and shadow effects at brightest level.
+	float3 litColor = Color.rgb;
+	// No specular effect for full-bright.
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
+	// Night-time darkens everything, except night-time textures.
+	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNight_Tex));
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color, In);
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	return float4(litColor, Color.a);
 }
 
 float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = tex2D(imageMap, In.TexCoords);
-	Color.rgb = lerp(Color.rgb, In.Color.rgb, Color.r);
-	_PSApplyFog(Color, In);
-	return Color;
+	// No ambient and shadow effects for signal lights.
+	// Apply signal coloring effect.
+	float3 litColor = lerp(Color.rgb, In.Color.rgb, Color.r);
+	// No specular effect, overcast effect, night-time darkening, headlights or fogging effect for signal lights.
+	return float4(litColor, Color.a);
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
-technique Image
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSGeneral ( );
-      PixelShader = compile ps_2_0 PSImage ( );
-   }
+technique Image {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSGeneral();
+		PixelShader = compile ps_2_0 PSImage();
+	}
 }
 
-technique Forest
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSForest ( );
-      PixelShader = compile ps_2_0 PSVegetation ( );
-   }
+technique Forest {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSForest();
+		PixelShader = compile ps_2_0 PSVegetation();
+	}
 }
 
-technique Vegetation
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSGeneral ( );
-      PixelShader = compile ps_2_0 PSVegetation ( );
-   }
+technique Vegetation {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSGeneral();
+		PixelShader = compile ps_2_0 PSVegetation();
+	}
 }
 
-technique Terrain
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSTerrain ( );
-      PixelShader = compile ps_2_0 PSTerrain ( );
-   }
+technique Terrain {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSTerrain();
+		PixelShader = compile ps_2_0 PSTerrain();
+	}
 }
 
-technique DarkShade
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSGeneral ( );
-      PixelShader = compile ps_2_0 PSDarkShade ( );
-   }
+technique DarkShade {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSGeneral();
+		PixelShader = compile ps_2_0 PSDarkShade();
+	}
 }
 
-technique HalfBright
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSGeneral ( );
-      PixelShader = compile ps_2_0 PSHalfBright ( );
-   }
+technique HalfBright {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSGeneral();
+		PixelShader = compile ps_2_0 PSHalfBright();
+	}
 }
 
-technique FullBright
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSGeneral ( );
-      PixelShader = compile ps_2_0 PSFullBright ( );
-   }
+technique FullBright {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSGeneral();
+		PixelShader = compile ps_2_0 PSFullBright();
+	}
 }
 
-technique SignalLight
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSSignalLight ( );
-      PixelShader = compile ps_2_0 PSSignalLight ( );
-   }
+technique SignalLight {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSSignalLight();
+		PixelShader = compile ps_2_0 PSSignalLight();
+	}
 }

@@ -409,49 +409,68 @@ namespace ORTS
 			// Enabled         8192     0x2000      0010 0000 0000 0000
 			//
 
-			// Lighting model
-			int lighting = (Options & 0x00f0) >> 4;
-			SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"]; // Default
-			switch (lighting)
+			var shaders = Options & 0x000f;
+			var lighting = (Options & 0x00f0) >> 4;
+			var alphaTest = (Options & 0x0100) >> 8;
+			var textureAddressMode = (Options & 0x1800) >> 11;
+
+			switch (shaders)
 			{
-				case 1: // DarkShade (-12)
-					SceneryShader.CurrentTechnique = SceneryShader.Techniques["DarkShade"];
+				case 1: // Diffuse
+				case 3: // TexDiff
+				case 6: // BlendATexDiff
+				case 7: // AddATexDiff
+					SceneryShader.LightingDiffuse = 1;
 					break;
-				case 2: // OptHalfBright (-11)
-					SceneryShader.CurrentTechnique = SceneryShader.Techniques["HalfBright"];
-					break;
-				case 4: // CruciformLong (-10)
-				case 3: // Cruciform (-9)
-					SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
-					break;
-				case 5: // OptFullBright (-8)
-					SceneryShader.CurrentTechnique = SceneryShader.Techniques["FullBright"];
-					break;
-				case 6: // OptSpecular750 (-7)
-					// TODO: SceneryShader.SpecularPower = 64;
-					break;
-				case 7: // OptSpecular25 (-6)
-					// TODO: SceneryShader.SpecularPower = 128;
-					break;
-				case 8: // OptSpecular0 (-5)
 				default:
-					// TODO: SceneryShader.SpecularPower = 0;
+					SceneryShader.LightingDiffuse = 0;
 					break;
 			}
 
-			// Transparency test
-			int alphaTest = (Options & 0x0100) >> 8;
+			switch (lighting)
+			{
+				case 1: // DarkShade
+					SceneryShader.CurrentTechnique = SceneryShader.Techniques["DarkShade"];
+					break;
+				case 2: // OptHalfBright
+					SceneryShader.CurrentTechnique = SceneryShader.Techniques["HalfBright"];
+					break;
+				case 3: // Cruciform
+				case 4: // CruciformLong
+					SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
+					break;
+				case 5: // OptFullBright
+					SceneryShader.CurrentTechnique = SceneryShader.Techniques["FullBright"];
+					break;
+				default:
+					SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
+					break;
+			}
+
+			switch (lighting)
+			{
+				case 6: // OptSpecular750
+					SceneryShader.LightingSpecular = 750;
+					break;
+				case 7: // OptSpecular25
+					SceneryShader.LightingSpecular = 25;
+					break;
+				case 8: // OptSpecular0
+				default:
+					SceneryShader.LightingSpecular = 0;
+					break;
+			}
+
 			if (alphaTest != 0)
 			{
+				// Transparency test
 				graphicsDevice.RenderState.AlphaTestEnable = true;
 				graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
 				graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
 			}
-
-			// Translucency
-			int shaders = Options & 0x000f;
-			if (alphaTest == 0 && shaders >= 4)
+			else if (shaders >= 4)
 			{
+				// Translucency
 				graphicsDevice.RenderState.AlphaTestEnable = true;
 				graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
 				graphicsDevice.RenderState.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
@@ -464,8 +483,7 @@ namespace ORTS
 			}
 
 			// Texture addressing
-			int wrapping = (Options & 0x1800) >> 11;
-			switch (wrapping)
+			switch (textureAddressMode)
 			{
 				case 0: // wrap
 					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
@@ -499,6 +517,8 @@ namespace ORTS
 				SceneryShader.ImageMap_Tex = Texture;
 				SceneryShader.IsNight_Tex = false;
 			}
+
+			SceneryShader.Apply();
 
 			if (MipMapBias < -1)
 				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
