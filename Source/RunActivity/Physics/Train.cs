@@ -116,7 +116,7 @@ namespace ORTS
                 nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
                 distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
                 nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
-                if (isPlayerTrain) nextSignal.SetSignalState(Signal.SIGNALSTATE.STOP);
+               // if (isPlayerTrain) nextSignal.SetSignalState(Signal.SIGNALSTATE.STOP);
             }
         }
 

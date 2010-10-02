@@ -1097,9 +1097,20 @@ namespace ORTS
             if (signalType != null) return signalType.def_draw_state(state); else return -1;
         }
 
+        //
+        //  Gets the least restrictive aspect for this head from the SIGCFG file depending on state of next signal 
+        //
         public SignalHead.SIGASP def_next_state(SignalHead.SIGASP state)
         {
-            if (signalType != null) return signalType.def_next_state(state); else return SignalHead.SIGASP.STOP;
+            if (signalType != null) return signalType.GetDefaultLeastRestrictingState(state); else return SignalHead.SIGASP.STOP;
+        }
+
+        //
+        //  Sets the state to the most restrictive aspect for this head.
+        //
+        public void SetMostRestrictiveAspect()
+        {
+            if (signalType != null) state = signalType.GetMostRestrictiveAspect(); else state = SignalHead.SIGASP.STOP;
         }
 
         public int route_set()
@@ -1122,32 +1133,66 @@ namespace ORTS
             //}
             return 1;
         }
+
         //
         //  Default update process
-        //  To do: add interface to scripting.
+        //  To do: add interface for scripting.
         //
         public void Update()
         {
             if (mainSignal.enabled)
             {
-                if (route_set() == 1 && mainSignal.block_state()==SignalObject.BLOCKSTATE.CLEAR)
+                if (route_set() == 1 && mainSignal.block_state() == SignalObject.BLOCKSTATE.CLEAR)
                 {
                     switch (this.sigFunction)
                     {
+                        case SIGFN.DISTANCE:
+                            //
+                            //  If the signal head is part of a signal with a normal head then check 
+                            //  whether this is set to stop state, 
+                            //  If so then set most restrictive aspect for this head,
+                            //
+                            if (mainSignal.this_sig_lr(SIGFN.NORMAL) == SIGASP.STOP)
+                            {
+                                SetMostRestrictiveAspect();
+                            }
+                            else
+                            {
+                                state = def_next_state(mainSignal.next_sig_lr(SIGFN.NORMAL));
+                            }
+                            break;
+                        //case SIGFN.INFO:
+                        //
+                        //  Info signals depend on the implementation of the route_set function
+                        //  
+                        //break;
                         case SIGFN.NORMAL:
                             state = def_next_state(mainSignal.next_sig_lr(SIGFN.NORMAL));
                             break;
+
+                        case SIGFN.REPEATER:
+                            //
+                            //  For repeater signals just copy the state of the next siganl
+                            //
+                            state = next_sig_lr(SIGFN.NORMAL);
+                            break;
+                        case SIGFN.SHUNTING:
+                            //
+                            //  Need to confirm how these should work.
+                            //
+                            state = def_next_state(mainSignal.next_sig_lr(SIGFN.NORMAL));
+                            break;
+
                         default:
-                            state = SIGASP.STOP;
+                            SetMostRestrictiveAspect();
                             break;
                     }
                 }
-                else state = SIGASP.STOP;
+                else SetMostRestrictiveAspect();
             }
-            else state = SIGASP.STOP;
+            else SetMostRestrictiveAspect();
             draw_state = def_draw_state(state);
         }
-
     } // SignalHead
 
     public class Signal

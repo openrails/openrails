@@ -382,23 +382,35 @@ namespace MSTS
 			return -1;
 		}
 
-		//
-		//  This method returns the next least restrictive aspect
-		//  from the one specified.
-		//
-		public SignalHead.SIGASP def_next_state(SignalHead.SIGASP state)
-		{
-			SignalHead.SIGASP next_state = SignalHead.SIGASP.UNKNOWN;
-			for (int i = 0; i < Aspects.Count; i++)
-			{
-				//if (SignalAspects[i].signalAspect > state)
-				//{
-				//}
-				if (Aspects[i].Aspect > state && Aspects[i].Aspect < next_state) next_state = Aspects[i].Aspect;
-				//if (SignalAspects[i].signalAspect > state) next_state = SignalAspects[i].signalAspect;
-			}
-			if (next_state == SignalHead.SIGASP.UNKNOWN) return state; else return next_state;
-		}
+        //
+        //  This method returns the next least restrictive aspect
+        //  from the one specified.
+        //
+        public SignalHead.SIGASP GetDefaultLeastRestrictingState(SignalHead.SIGASP state)
+        {
+            SignalHead.SIGASP targetState = SignalHead.SIGASP.UNKNOWN;
+            SignalHead.SIGASP leastState = SignalHead.SIGASP.STOP;
+
+            for (int i=0;i< Aspects.Count;i++)
+            {
+                if (Aspects[i].Aspect > leastState) leastState = Aspects[i].Aspect;
+                if (Aspects[i].Aspect > state && Aspects[i].Aspect < targetState) targetState = Aspects[i].Aspect;
+            }
+            if (targetState == SignalHead.SIGASP.UNKNOWN) return leastState; else return targetState;
+        }
+
+        //
+        //  This method returns the most restrictive aspect for this signal type
+        //
+        public SignalHead.SIGASP GetMostRestrictiveAspect()
+        {
+            SignalHead.SIGASP targetAspect = SignalHead.SIGASP.UNKNOWN;
+            for (int i = 0; i < Aspects.Count; i++)
+            {
+                if (Aspects[i].Aspect < targetAspect) targetAspect = Aspects[i].Aspect;
+            }
+            if (targetAspect == SignalHead.SIGASP.UNKNOWN) return SignalHead.SIGASP.STOP; else return targetAspect;
+        }
 	}
 
 	public class SignalLight
