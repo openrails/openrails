@@ -42,7 +42,7 @@ namespace ORTS
 			: this()
         {
             Text = "Route Details";
-			lblName.Text = route.TRKFile.Tr_RouteFile.Name;
+			grpDescription.Text = route.TRKFile.Tr_RouteFile.Name;
 			txtDescription.Text = route.TRKFile.Tr_RouteFile.Description.Replace("\n", "\r\n");
 			grpBriefing.Visible = false;
 			grpEnvironment.Visible = false;
@@ -53,7 +53,7 @@ namespace ORTS
 			: this()
 		{
             Text = "Activity Details";
-			lblName.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Name;
+			grpDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Name;
 			txtDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Description.Replace("\n", "\r\n");
 			txtBriefing.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Briefing.Replace("\n", "\r\n");
 			txtStartTime.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
