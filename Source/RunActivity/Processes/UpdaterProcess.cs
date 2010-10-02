@@ -102,7 +102,9 @@ namespace ORTS
 						// Unblock anyone waiting for us, report error and die.
 						State.SignalFinish();
 						Viewer.ProcessReportError(error);
-						return;
+                        // Finally unblock any process that may have started us, while the message was showing
+                        State.SignalFinish();
+                        return;
 					}
 				}
 
