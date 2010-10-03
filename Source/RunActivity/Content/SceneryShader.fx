@@ -8,6 +8,7 @@
 float4x4 World;                // model -> world
 float4x4 View;                 // world -> view
 //float4x4 Projection;           // view -> projection (currently unused)
+float4x4 WorldView;            // model -> world -> view
 float4x4 WorldViewProjection;  // model -> world -> view -> projection
 
 // Shadow map values
@@ -81,7 +82,7 @@ struct VERTEX_INPUT
 struct VERTEX_OUTPUT
 {
 	float4 Position     : POSITION;
-	float4 RelPosition  : TEXCOORD0;
+	float3 RelPosition  : TEXCOORD0;
 	float2 TexCoords    : TEXCOORD1;
 	float4 Color        : COLOR0;
 	float4 Normal_Light : TEXCOORD2;
@@ -95,7 +96,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.RelPosition = mul(In.Position, World) - View._m03_m13_m23_m33;
+	Out.RelPosition = mul(In.Position, WorldView);
 	Out.TexCoords = In.TexCoords;
 	Out.Color = In.Color;
 	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
@@ -166,8 +167,8 @@ VERTEX_OUTPUT VSSignalLight(in VERTEX_INPUT In)
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSNormalProjection(In, Out);
 
-	// Apply a 1cm z-bias so that lights are always on top of the shape.
-	Out.Position.z -= 0.01 / Out.Position.z;
+	// Apply a small z-bias so that lights are always on top of the shape.
+	Out.Position.z *= 0.9999;
 
 	return Out;
 }
