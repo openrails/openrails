@@ -1,0 +1,180 @@
+<?xml version='1.0'?>
+<Obfuscator>
+  <Var name="InPath" value="." />
+  <Var name="OutPath" value=".." />
+  <Var name="ReuseNames" value="true" />
+
+  <Module file="$(InPath)\Reader.dll">
+    <Var name="HideStrings" value="false" />
+    
+    <SkipType name="MSTS.ACEFile" />
+    <SkipField type="MSTS.ACEFile" attrib="protected" name="*" />
+    <SkipMethod type="MSTS.ACEFile" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.ACEFile" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.KeyPosition" />
+    <SkipField type="MSTS.KeyPosition" attrib="protected" name="*" />
+    <SkipMethod type="MSTS.KeyPosition" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.KeyPosition" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.SBR" />
+    <SkipField type="MSTS.SBR" attrib="protected" name="*" />
+    <SkipMethod type="MSTS.SBR" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.SBR" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.SFile" />
+    <SkipField type="MSTS.SFile" attrib="protected" name="*" />
+    <SkipMethod type="MSTS.SFile" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.SFile" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.TokenID" />
+    <SkipField type="MSTS.TokenID" name="*" />
+
+    <SkipType name="MSTS.animation" />
+    <SkipField type="MSTS.animation" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.animation" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.animations" />
+    <SkipField type="MSTS.animations" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.animations" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.anim_node" />
+    <SkipField type="MSTS.anim_node" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.anim_node" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.anim_nodes" />
+    <SkipField type="MSTS.anim_nodes" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.anim_nodes" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.controller" />
+    <SkipField type="MSTS.controller" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.controller" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.distance_level" />
+    <SkipField type="MSTS.distance_level" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.distance_level" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.distance_levels" name="*" />
+
+    <SkipType name="MSTS.distance_level_header" />
+    <SkipField type="MSTS.distance_level_header" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.distance_level_header" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.images" name="*" />
+
+    <SkipType name="MSTS.indexed_trilist" />
+    <SkipField type="MSTS.indexed_trilist" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.indexed_trilist" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.lod_control" />
+    <SkipField type="MSTS.lod_control" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.lod_control" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.lod_controls" name="*" />
+
+    <SkipType name="MSTS.light_model_cfg" />
+    <SkipField type="MSTS.light_model_cfg" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.light_model_cfg" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.light_model_cfgs" name="*" />
+
+    <SkipType name="MSTS.linear_key" />
+    <SkipField type="MSTS.linear_key" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.linear_key" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.matrix" />
+    <SkipField type="MSTS.matrix" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.matrix" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.matrices" name="*" />
+
+    <SkipProperty type="MSTS.normals" name="*" />
+
+    <SkipType name="MSTS.point" />
+    <SkipField type="MSTS.point" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.point" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.points" name="*" />
+
+    <SkipType name="MSTS.primitive" />
+    <SkipField type="MSTS.primitive" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.primitive" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.prim_state" />
+    <SkipField type="MSTS.prim_state" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.prim_state" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.prim_states" name="*" />
+
+    <SkipProperty type="MSTS.shader_names" name="*" />
+
+    <SkipType name="MSTS.shape" />
+    <SkipField type="MSTS.shape" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.shape" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.slerp_rot" />
+    <SkipField type="MSTS.slerp_rot" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.slerp_rot" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.sub_object" />
+    <SkipField type="MSTS.sub_object" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.sub_object" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.sub_objects" name="*" />
+
+    <SkipField type="MSTS.sub_object_header" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.sub_object_header" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.tcb_key" />
+    <SkipField type="MSTS.tcb_key" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.tcb_key" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.texture" />
+    <SkipField type="MSTS.texture" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.texture" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.textures" name="*" />
+
+    <SkipType name="MSTS.uv_op" />
+    <SkipField type="MSTS.uv_op" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.uv_op" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.uv_ops" name="*" />
+
+    <SkipType name="MSTS.uv_point" />
+    <SkipField type="MSTS.uv_point" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.uv_point" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.uv_points" name="*" />
+
+    <SkipType name="MSTS.vector" />
+    <SkipField type="MSTS.vector" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.vector" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.vertex" />
+    <SkipField type="MSTS.vertex" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.vertex" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.vertex_idx" />
+    <SkipField type="MSTS.vertex_idx" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.vertex_idx" attrib="protected" name="*" />
+
+    <SkipType name="MSTS.vertex_set" />
+    <SkipField type="MSTS.vertex_set" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.vertex_set" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.vertex_sets" name="*" />
+
+    <SkipProperty type="MSTS.vertices" name="*" />
+
+    <SkipField type="MSTS.vol_sphere" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.volumes" name="*" />
+
+    <SkipType name="MSTS.vtx_state" />
+    <SkipField type="MSTS.vtx_state" attrib="protected" name="*" />
+    <SkipProperty type="MSTS.vtx_state" attrib="protected" name="*" />
+
+    <SkipProperty type="MSTS.vtx_states" name="*" />
+  </Module>
+</Obfuscator>
