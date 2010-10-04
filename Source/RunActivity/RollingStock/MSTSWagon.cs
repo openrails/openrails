@@ -692,7 +692,8 @@ namespace ORTS
                                    && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
                             RunningGearPartIndexes.Add(iMatrix);
                         Matrix m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
-                        car.AddWheelSet(m.M43, 0);
+                        int pmatrix = TrainCarShape.SharedShape.GetParentMatrix(iMatrix);
+                        car.AddWheelSet(m.M43, 0, pmatrix);
                     }
                     else if (matrixName.Length == 8)
                     {
@@ -701,7 +702,8 @@ namespace ORTS
                         {
                             int id = Int32.Parse(matrixName.Substring(6, 1));
                             Matrix m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
-                            car.AddWheelSet(m.M43, id);
+                            int pmatrix = TrainCarShape.SharedShape.GetParentMatrix(iMatrix);
+                            car.AddWheelSet(m.M43, id, pmatrix);
                         }
                         catch
                         {

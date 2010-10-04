@@ -152,11 +152,11 @@ namespace ORTS
             return 1e10f;
         }
 
-        public void AddWheelSet(float offset, int bogie)
+        public void AddWheelSet(float offset, int bogie, int parentMatrix)
         {
             if (WheelAxlesLoaded)
                 return;
-            WheelAxles.Add(new WheelAxle(offset, bogie));
+            WheelAxles.Add(new WheelAxle(offset, bogie, parentMatrix));
         }
 
         public void AddBogie(float offset, int matrix, int id)
@@ -182,6 +182,15 @@ namespace ORTS
             {
                 if (w.BogieIndex >= Parts.Count)
                     w.BogieIndex = 0;
+                if (w.BogieMatrix > 0)
+                {
+                    for (int i = 0; i < Parts.Count; i++)
+                        if (Parts[i].iMatrix == w.BogieMatrix)
+                        {
+                            w.BogieIndex = i;
+                            break;
+                        }
+                }
                 w.Part = Parts[w.BogieIndex];
                 w.Part.SumWgt++;
             }
@@ -203,7 +212,7 @@ namespace ORTS
                 var part = new TrainCarPart(prevPart.OffsetM - offset, 0) { SumWgt = prevPart.SumWgt };
                 Parts.Add(part);
                 var partIndex = Parts.IndexOf(part);
-                WheelAxles.AddRange(prevAxles.Select(a => new WheelAxle(a.OffsetM - offset, partIndex) { Part = part }));
+                WheelAxles.AddRange(prevAxles.Select(a => new WheelAxle(a.OffsetM - offset, partIndex, 0) { Part = part }));
             }
             else if (!Articulated && (Parts[0].SumWgt < 1.5))
             {
@@ -338,11 +347,13 @@ namespace ORTS
     {
         public float OffsetM;   // distance from center of model, positive forward
         public int BogieIndex;
+        public int BogieMatrix;
         public TrainCarPart Part;
-        public WheelAxle(float offset, int bogie)
+        public WheelAxle(float offset, int bogie, int parentMatrix)
         {
             OffsetM = offset;
             BogieIndex = bogie;
+            BogieMatrix = parentMatrix;
         }
         int IComparer<WheelAxle>.Compare(WheelAxle a, WheelAxle b)
         {

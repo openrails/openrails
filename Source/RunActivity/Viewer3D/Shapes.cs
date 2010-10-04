@@ -825,6 +825,10 @@ namespace ORTS
             }
             return matrix;
         }
+        public int GetParentMatrix(int iNode)
+        {
+            return LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[iNode];
+        }
 
     }// class SharedShape
 }
