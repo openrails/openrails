@@ -143,10 +143,6 @@ namespace ORTS
         private bool isMouseTimerVisible = false;
         private double MouseShownAt = 0;
 
-		public Profiler RenderProfiler;
-		public Profiler UpdaterProfiler;
-		public Profiler LoaderProfiler;
-
 		/// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
@@ -285,7 +281,7 @@ namespace ORTS
         /// processes haven't started yet.
         /// Executes in the RenderProcess thread.
         /// </summary>
-        public void Initialize(RenderProcess renderProcess)
+		public void Initialize(RenderProcess renderProcess)
         {
             GraphicsDevice = renderProcess.GraphicsDevice;
 			DisplaySize.X = GraphicsDevice.Viewport.Width;
@@ -349,7 +345,7 @@ namespace ORTS
         /// in the next load call.
         /// Executes in the UpdaterProcess thread.
         /// </summary>
-        public void LoadPrep()
+		public void LoadPrep()
         {
             TerrainDrawer.LoadPrep();
             SceneryDrawer.LoadPrep();
@@ -366,7 +362,7 @@ namespace ORTS
         /// LoadPrep() )
         /// Executes in the LoaderProcess thread.
         /// </summary>
-        public void Load( RenderProcess renderProcess )
+		public void Load(RenderProcess renderProcess)
         {
             TerrainDrawer.Load(renderProcess);
             SceneryDrawer.Load(renderProcess);
@@ -404,7 +400,7 @@ namespace ORTS
         /// Examine the static class UserInput for mouse and keyboard status
         /// Executes in the UpdaterProcess thread.
         /// </summary>
-        public void HandleUserInput(ElapsedTime elapsedTime)
+		public void HandleUserInput(ElapsedTime elapsedTime)
         {
             Camera.HandleUserInput(elapsedTime);
 
@@ -486,7 +482,7 @@ namespace ORTS
         //  This is to enable the user to move popup windows
         //  Coded as a separate routine as HandleUserInput does not cater for mouse movemenmt.
         //
-        public void HandleMouseMovement()
+		public void HandleMouseMovement()
         {
             MouseState currentMouseState = Mouse.GetState();
 
@@ -715,11 +711,9 @@ namespace ORTS
 
         public void SetupBackgroundProcesses()
         {
-            int processors =  System.Environment.ProcessorCount;
-            RenderProcess = new RenderProcess( this);   // the order is important, since one process depends on the next
-            LoaderProcess = new LoaderProcess( this);
-            if (processors > 1)
-                UpdaterProcess = new UpdaterProcess( this);
+            RenderProcess = new RenderProcess(this);   // the order is important, since one process depends on the next
+            LoaderProcess = new LoaderProcess(this);
+            UpdaterProcess = new UpdaterProcess(this);
             SoundProcess = new SoundProcess(this);
         }
 

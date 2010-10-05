@@ -20,7 +20,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace ORTS
 {
     #region Materials class
-    public class Materials
+	public class Materials
     {
         public static SceneryShader SceneryShader = null;
         public static SkyShader SkyShader = null;
@@ -51,7 +51,7 @@ namespace ORTS
         /// ( per Shawn Hargreaves )
         /// </summary>
         /// <param name="renderProcess"></param>
-        public static void Initialize(RenderProcess renderProcess)
+		public static void Initialize(RenderProcess renderProcess)
         {
             SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SceneryShader.NormalMap_Tex = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, 
@@ -74,21 +74,21 @@ namespace ORTS
             IsInitialized = true;
         }
 
-        public static Material Load(RenderProcess renderProcess, string materialName)
+		public static Material Load(RenderProcess renderProcess, string materialName)
         {
             return Load(renderProcess, materialName, null, 0, 0);
         }
-        public static Material Load(RenderProcess renderProcess, string materialName, string textureName)
+		public static Material Load(RenderProcess renderProcess, string materialName, string textureName)
         {
             return Load(renderProcess, materialName, textureName, 0, 0);
         }
 
-        public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options)
+		public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options)
         {
             return Load(renderProcess, materialName, textureName, options, 0);
         }
 
-        public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options, float mipMapBias )
+		public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options, float mipMapBias )
         {
             System.Diagnostics.Debug.Assert(IsInitialized, "Must initialize Materials before using.");
             if (!IsInitialized)             // this shouldn't happen, but if it does
@@ -243,9 +243,8 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-					Trace.WriteLine(path);
-					Trace.WriteLine(error);
-                    return Materials.MissingTexture;
+					Trace.TraceError(path + "\n" + error.ToString());
+					return Materials.MissingTexture;
                 }
             }
             else
@@ -318,7 +317,7 @@ namespace ORTS
     #endregion
 
     #region Scenery material
-    public class SceneryMaterial : Material
+	public class SceneryMaterial : Material
     {
 		readonly int Options = 0;
 		readonly float MipMapBias = 0;
@@ -328,7 +327,7 @@ namespace ORTS
 		bool isNightEnabled = false;
 		readonly public RenderProcess RenderProcess;  // for diagnostics only
 
-        public SceneryMaterial(RenderProcess renderProcess, string texturePath, int options, float mipMapBias)  
+		public SceneryMaterial(RenderProcess renderProcess, string texturePath, int options, float mipMapBias)  
         {
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
@@ -610,13 +609,13 @@ namespace ORTS
     #endregion
 
     #region Terrain material
-    public class TerrainMaterial : Material
+	public class TerrainMaterial : Material
     {
         readonly SceneryShader SceneryShader;
         readonly Texture2D PatchTexture;
         readonly public RenderProcess RenderProcess;  // for diagnostics only
 
-        public TerrainMaterial(RenderProcess renderProcess, string terrainTexture )
+		public TerrainMaterial(RenderProcess renderProcess, string terrainTexture )
         {
             SceneryShader = Materials.SceneryShader;
             PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, terrainTexture);
@@ -682,7 +681,7 @@ namespace ORTS
         private Matrix XNAMoonWorldMatrix;
         public RenderProcess RenderProcess;
 
-        public SkyMaterial(RenderProcess renderProcess)
+		public SkyMaterial(RenderProcess renderProcess)
         {
             RenderProcess = renderProcess;
             SkyShader = Materials.SkyShader;
@@ -882,14 +881,14 @@ namespace ORTS
     #endregion
 
     #region Precipitation material
-    public class PrecipMaterial : Material
+	public class PrecipMaterial : Material
     {
         PrecipShader PrecipShader;
         Texture2D rainTexture;
         Texture2D snowTexture;
         public RenderProcess RenderProcess;
 
-        public PrecipMaterial(RenderProcess renderProcess)
+		public PrecipMaterial(RenderProcess renderProcess)
         {
             RenderProcess = renderProcess;
             PrecipShader = Materials.PrecipShader;
@@ -963,7 +962,7 @@ namespace ORTS
 	#endregion
 
     #region Dynatrack material
-    public class DynatrackMaterial : Material
+	public class DynatrackMaterial : Material
     {
         SceneryShader SceneryShader;
         Texture2D image1;
@@ -972,7 +971,7 @@ namespace ORTS
         string texturePath;
         public RenderProcess RenderProcess;
 
-        public DynatrackMaterial(RenderProcess renderProcess)
+		public DynatrackMaterial(RenderProcess renderProcess)
         {
             TrProfile profile = renderProcess.Viewer.Simulator.TrackProfile;
             
@@ -1092,12 +1091,12 @@ namespace ORTS
     #endregion
 
     #region Forest material
-    public class ForestMaterial : Material
+	public class ForestMaterial : Material
     {
         public readonly RenderProcess RenderProcess;  // for diagnostics only
         readonly Texture2D TreeTexture = null;
 
-        public ForestMaterial(RenderProcess renderProcess, string treeTexture)
+		public ForestMaterial(RenderProcess renderProcess, string treeTexture)
         {
             RenderProcess = renderProcess;
             TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
@@ -1148,7 +1147,7 @@ namespace ORTS
     #endregion
 
     #region LightGlow material
-    public class LightGlowMaterial : Material
+	public class LightGlowMaterial : Material
     {
         LightGlowShader LightGlowShader;
         Texture2D lightGlowTexture;
@@ -1156,7 +1155,7 @@ namespace ORTS
         int lastLightState = 0, currentLightState = 0;
         double fadeTimer = 0;
 
-        public LightGlowMaterial(RenderProcess renderProcess)
+		public LightGlowMaterial(RenderProcess renderProcess)
         {
             RenderProcess = renderProcess;
             LightGlowShader = Materials.LightGlowShader;
@@ -1230,7 +1229,7 @@ namespace ORTS
     #endregion
     
     #region Water material
-    public class WaterMaterial : Material
+	public class WaterMaterial : Material
     {
         public readonly RenderProcess RenderProcess;  // for diagnostics only
         readonly Texture2D WaterTexture;
@@ -1296,11 +1295,11 @@ namespace ORTS
     #endregion
 
     #region Shadow Map material
-    public class ShadowMapMaterial : Material
+	public class ShadowMapMaterial : Material
     {
 		public readonly RenderProcess RenderProcess;  // for diagnostics only
 
-        public ShadowMapMaterial(RenderProcess renderProcess)
+		public ShadowMapMaterial(RenderProcess renderProcess)
         {
 			RenderProcess = renderProcess;
         }
@@ -1408,12 +1407,12 @@ namespace ORTS
     /// <summary>
     /// This material is used for debug and testing.
     /// </summary>
-    public class YellowMaterial : Material
+	public class YellowMaterial : Material
     {
         static BasicEffect basicEffect = null;
         RenderProcess RenderProcess;
 
-        public YellowMaterial(RenderProcess renderProcess)
+		public YellowMaterial(RenderProcess renderProcess)
         {
             RenderProcess = renderProcess;
             if( basicEffect == null )

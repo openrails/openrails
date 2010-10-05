@@ -451,7 +451,7 @@ namespace ORTS
                 }
 
                 
-                if ((car.Lights.light.StateList != null) && light.type == 0 && light.penalty <= 1 && ((isFrontCar && light.unit == 2) 
+                if ((light.StateList != null) && light.type == 0 && light.penalty <= 1 && ((isFrontCar && light.unit == 2) 
                     || !isFrontCar && light.unit == 3 || light.unit <= 1)) // Not a light cone, not penalty; unit: 2 = front, 3 = rear
                 {
                     type[i] = light.type;

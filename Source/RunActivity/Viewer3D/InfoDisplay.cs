@@ -71,7 +71,7 @@ namespace ORTS
 				{
 					using (StreamWriter file = File.AppendText("dump.csv"))
 					{
-						file.WriteLine("SVN,Frame,FPS,Frame Time,Frame Jitter,Primitives,State Changes,Image Changes,Processors,Render Process,Updater Process,Loader Process,Camera TileX, Camera TileZ, Camera Location");
+						file.WriteLine("SVN,Frame,FPS,Frame Time,Frame Jitter,Primitives,State Changes,Image Changes,Processors,Render Process,Updater Process,Loader Process,Sound Process,Camera TileX, Camera TileZ, Camera Location");
 						file.Close();
 					}
 				}
@@ -114,9 +114,10 @@ namespace ORTS
 				Logger.Data(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
 				Logger.Data(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
 				Logger.Data(processors.ToString()); //Processors
-				Logger.Data(Viewer.RenderProfiler.Wall.ToString("F0")); //Render Process %
-				Logger.Data(Viewer.UpdaterProfiler.Wall.ToString("F0")); //Updater Process %
-				Logger.Data(Viewer.LoaderProfiler.Wall.ToString("F0")); //Loader Process %
+				Logger.Data(Viewer.RenderProcess.Profiler.Wall.ToString("F0")); //Render Process %
+				Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.ToString("F0")); //Updater Process %
+				Logger.Data(Viewer.LoaderProcess.Profiler.Wall.ToString("F0")); //Loader Process %
+				Logger.Data(Viewer.SoundProcess.Profiler.Wall.ToString("F0")); //Sound Process %
 				Logger.Data(Viewer.Camera.TileX.ToString());     //
 				Logger.Data(Viewer.Camera.TileZ.ToString());     // Camera coordinates
 				Logger.Data(Viewer.Camera.Location.ToString());  //
@@ -275,18 +276,18 @@ namespace ORTS
 			TextBuilder.AppendLine("DEBUG INFORMATION");
             TextBuilder.AppendFormat("Logging Enabled = {0}", LoggerEnabled); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Memory = {0:N0} MB", memory / 1024 / 1024); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Memory = {0:N0} MB", memory / 1024 / 1024); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.SmoothedCPU + Viewer.UpdaterProcess.Profiler.SmoothedCPU + Viewer.LoaderProcess.Profiler.SmoothedCPU + Viewer.SoundProcess.Profiler.SmoothedCPU) / processors, processors); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms)", Viewer.RenderProcess.SmoothedFrameRate, Viewer.RenderProcess.SmoothedFrameTime * 1000, Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Adapter = {0} ({1:N0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Frame Time = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameTime * 1000); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Frame Jitter = {0:F1} ms", Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render Primitives = {0:N0} ({1})", Viewer.RenderProcess.PrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("N0")).ToArray())); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Processors = {0}", processors); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.SmoothedWall, Viewer.RenderProfiler.SmoothedWait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Update Process = {0:F0}% ({1:F0}% wait)", Viewer.UpdaterProfiler.SmoothedWall, Viewer.UpdaterProfiler.SmoothedWait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait)", Viewer.LoaderProfiler.SmoothedWall, Viewer.LoaderProfiler.SmoothedWait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProfiler.SmoothedWall + Viewer.UpdaterProfiler.SmoothedWall + Viewer.LoaderProfiler.SmoothedWall, Viewer.RenderProfiler.SmoothedWait + Viewer.UpdaterProfiler.SmoothedWait + Viewer.LoaderProfiler.SmoothedWait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.SmoothedWall, Viewer.RenderProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Updater Process = {0:F0}% ({1:F0}% wait){2}", Viewer.UpdaterProcess.Profiler.SmoothedWall, Viewer.UpdaterProcess.Profiler.SmoothedWait, Viewer.UpdaterProcess.Slow ? " BUSY" : ""); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait){2}", Viewer.LoaderProcess.Profiler.SmoothedWall, Viewer.LoaderProcess.Profiler.SmoothedWait, Viewer.LoaderProcess.Slow ? " BUSY" : ""); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Sound Process = {0:F0}% ({1:F0}% wait)", Viewer.SoundProcess.Profiler.SmoothedWall, Viewer.SoundProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.SmoothedWall + Viewer.UpdaterProcess.Profiler.SmoothedWall + Viewer.LoaderProcess.Profiler.SmoothedWall + Viewer.SoundProcess.Profiler.SmoothedWall, Viewer.RenderProcess.Profiler.SmoothedWait + Viewer.UpdaterProcess.Profiler.SmoothedWait + Viewer.LoaderProcess.Profiler.SmoothedWait + Viewer.SoundProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
             // Added by rvg....
             TextBuilder.Append("Tile: "); TextBuilder.Append(Viewer.Camera.TileX.ToString()); // Camera coordinates
             TextBuilder.Append(" ");
@@ -367,9 +368,10 @@ namespace ORTS
             if (elapsedRealSeconds < 0.01)  // just in case
 				return;
 
-			Viewer.RenderProfiler.Mark();
-			Viewer.UpdaterProfiler.Mark();
-			Viewer.LoaderProfiler.Mark();
+			Viewer.RenderProcess.Profiler.Mark();
+			Viewer.UpdaterProcess.Profiler.Mark();
+			Viewer.LoaderProcess.Profiler.Mark();
+			Viewer.SoundProcess.Profiler.Mark();
         }
 
     } // Class Info Display

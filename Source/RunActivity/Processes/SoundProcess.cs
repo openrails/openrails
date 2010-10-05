@@ -8,23 +8,31 @@ namespace ORTS
 {
     public class SoundProcess
     {
-        Thread _SoundThread;
-        Viewer3D _Viewer3D;
+		public readonly bool Threaded;
+		public readonly Profiler Profiler = new Profiler("Sound");
+		readonly Viewer3D Viewer;
+		readonly Thread Thread;
+		readonly ProcessState State;
+
         Dictionary<object, List<SoundSource>> _SoundSources;
 
         /// <summary>
         /// Constructs SoundProcess, creates the sound thread but not start. Must create after loading ingame sounds.
         /// </summary>
         /// <param name="viewer3D">The Viewer</param>
-        public SoundProcess(Viewer3D viewer3D)
+		public SoundProcess(Viewer3D viewer)
         {
-            _Viewer3D = viewer3D;
-            ThreadStart ts = new ThreadStart(SoundUpdateLoop);
-            _SoundThread = new Thread(ts);
+			Threaded = true;
+			Viewer = viewer;
+			if (Threaded)
+			{
+				State = new ProcessState();
+				Thread = new Thread(SoundUpdateLoop);
+			}
             _SoundSources = new Dictionary<object, List<SoundSource>>();
-            if (_Viewer3D.IngameSounds != null)
+			if (Viewer.IngameSounds != null)
             {
-                AddSoundSource(_Viewer3D.Simulator.RoutePath + "\\Sound\\ingame.sms", new List<SoundSource>() { _Viewer3D.IngameSounds });
+				AddSoundSource(Viewer.Simulator.RoutePath + "\\Sound\\ingame.sms", new List<SoundSource>() { Viewer.IngameSounds });
             }
         }
 
@@ -33,7 +41,7 @@ namespace ORTS
         /// </summary>
         public void Run()
         {
-            if (_Viewer3D.SettingsInt[(int)IntSettings.SoundDetailLevel] > 0) _SoundThread.Start();
+			if (Viewer.SettingsInt[(int)IntSettings.SoundDetailLevel] > 0) Thread.Start();
         }
 
         /// <summary>
@@ -41,7 +49,7 @@ namespace ORTS
         /// </summary>
         public void Stop()
         {
-            _SoundThread.Abort();
+			Thread.Abort();
         }
 
         /// <summary>
@@ -87,12 +95,16 @@ namespace ORTS
         /// </summary>
         public void SoundUpdateLoop()
         {
-            while (true)
+			Thread.CurrentThread.Name = "Sound Process";
+
+			while (true)
             {
                 // Sleeping a while
                 Thread.Sleep(200);
 
-                // Update all sound in our list
+				Profiler.Start();
+
+				// Update all sound in our list
                 lock (_SoundSources)
                 {
                     foreach (List<SoundSource> src in _SoundSources.Values)
@@ -103,7 +115,9 @@ namespace ORTS
                         }
                     }
                 }
-            }
+
+				Profiler.Stop();
+			}
         }
     }
 }

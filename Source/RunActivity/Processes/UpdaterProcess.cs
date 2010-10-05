@@ -5,95 +5,76 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using System.Diagnostics;
 
 namespace ORTS
 {
-    public class UpdaterProcess
-    {
-        RenderFrame Frame;       //     this frame has been             Note: when frame is null, then update simulator only
-        double NewRealTime;    //  real time seconds of the requested frame.
-        Viewer3D Viewer;       //     3D viewer and the 
-        Thread UpdaterThread;    // The updater thread calls the
-        public bool Finished { get { return State.Finished; } }
-        ProcessState State = new ProcessState();  // manage interprocess signalling
+	public class UpdaterProcess
+	{
+		public readonly bool Threaded;
+		public readonly Profiler Profiler = new Profiler("Updater");
+		public bool Slow;
+		readonly Viewer3D Viewer;
+		readonly Thread Thread;
+		readonly ProcessState State;
 
-        public UpdaterProcess( Viewer3D viewer )
-        {
-            Viewer = viewer;
-            UpdaterThread = new Thread(UpdateLoop);
-            //UpdaterThread.Priority = ThreadPriority.AboveNormal;
-        }
+		public UpdaterProcess(Viewer3D viewer)
+		{
+			Threaded = System.Environment.ProcessorCount > 1;
+			Viewer = viewer;
+			if (Threaded)
+			{
+				State = new ProcessState();
+				Thread = new Thread(UpdateLoop);
+			}
+		}
 
-        public void Run()
-        {
-            UpdaterThread.Start();
-        }
+		public void Run()
+		{
+			if (Threaded)
+				Thread.Start();
+		}
 
-        public void Stop()
-        {
-            UpdaterThread.Abort();
-        }
+		public void Stop()
+		{
+			if (Threaded)
+				Thread.Abort();
+		}
 
-        public void WaitTillFinished()
-        {
-            State.WaitTillFinished();
-        }
+		public bool Finished
+		{
+			get
+			{
+				// Non-threaded updater is always "finished".
+				return !Threaded || State.Finished;
+			}
+		}
 
-        /// <summary>
-        /// Note:  caller must pass gametime as a threadsafe copy
-        /// Executes in the RenderProcess thread.
-        /// </summary>
-        public void StartUpdate(RenderFrame frame, double newRealTime )
-        {
-            if (!State.Finished)   
-            {
-                System.Diagnostics.Debug.Assert( false, "Can't overlap updates");
-                return;
-            }
-            Frame = frame;
-            NewRealTime = newRealTime;
-            State.SignalStart();   
-        }
+		public void WaitTillFinished()
+		{
+			Slow = !Finished;
+			// Non-threaded updater never waits.
+			if (Threaded)
+				State.WaitTillFinished();
+		}
 
-        public void UpdateLoop()
-        {
-			Viewer.UpdaterProfiler = new Profiler("Updater");
+		void UpdateLoop()
+		{
+			Thread.CurrentThread.Name = "Updater Process";
 
-            while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
-            {
-                // Wait for a new Update() command
-                State.WaitTillStarted();
-
-				Viewer.UpdaterProfiler.Start();
-                Program.RealTime = NewRealTime;
-                ElapsedTime frameElapsedTime = Viewer.RenderProcess.GetFrameElapsedTime();
+			while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
+			{
+				// Wait for a new Update() command
+				State.WaitTillStarted();
 
 				try
 				{
-					Viewer.RenderProcess.ComputeFPS(frameElapsedTime.RealSeconds);
-
-					// Update the simulator 
-					Viewer.Simulator.Update(frameElapsedTime.ClockSeconds);
-
-					// Handle user input, its was read is in RenderProcess thread                
-					Viewer.HandleUserInput(Viewer.RenderProcess.GetUserInputElapsedTime());
-					UserInput.Handled();
-
-					Viewer.HandleMouseMovement();
-
-					// Prepare the frame for drawing
-					if (Frame != null)
-					{
-						Frame.Clear();
-						Viewer.PrepareFrame(Frame, frameElapsedTime);
-						Frame.Sort();
-					}
+					Update();
 				}
 				catch (Exception error)
 				{
@@ -102,22 +83,73 @@ namespace ORTS
 						// Unblock anyone waiting for us, report error and die.
 						State.SignalFinish();
 						Viewer.ProcessReportError(error);
-                        // Finally unblock any process that may have started us, while the message was showing
-                        State.SignalFinish();
-                        return;
+						// Finally unblock any process that may have started us, while the message was showing
+						State.SignalFinish();
+						return;
 					}
 				}
 
-                // Signal finished so RenderProcess can start drawing
-                State.SignalFinish();
+				// Signal finished so RenderProcess can start drawing
+				State.SignalFinish();
+			}
+		}
 
-                // Update the loader - it should only copy volatile data and return
-                if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
-                    Viewer.LoaderProcess.StartUpdate();
+		public void StartUpdate(RenderFrame frame, double totalRealSeconds)
+		{
+			if (!Finished)
+				throw new InvalidOperationException("Can't overlap updates.");
+			CurrentFrame = frame;
+			TotalRealSeconds = totalRealSeconds;
+			if (Threaded)
+			{
+				State.SignalStart();
+			}
+			else
+			{
+				try
+				{
+					Update();
+				}
+				catch (Exception error)
+				{
+					Viewer.ProcessReportError(error);
+				}
+			}
+		}
 
-				Viewer.UpdaterProfiler.Stop();
-            }
-        }
+		RenderFrame CurrentFrame;
+		double TotalRealSeconds;
+		double LastTotalRealSeconds;
 
-    } // Updater Process
+		public void Update()
+		{
+			Profiler.Start();
+
+			Program.RealTime = TotalRealSeconds;
+			ElapsedTime elapsedTime = new ElapsedTime();
+			elapsedTime.RealSeconds = (float)(TotalRealSeconds - LastTotalRealSeconds);
+			elapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(elapsedTime.RealSeconds);
+			LastTotalRealSeconds = TotalRealSeconds;
+
+			try
+			{
+				Viewer.RenderProcess.ComputeFPS(elapsedTime.RealSeconds);
+				Viewer.Simulator.Update(elapsedTime.ClockSeconds);
+				Viewer.HandleUserInput(elapsedTime);
+				Viewer.HandleMouseMovement();
+				UserInput.Handled();
+				CurrentFrame.Clear();
+				Viewer.PrepareFrame(CurrentFrame, elapsedTime);
+				CurrentFrame.Sort();
+			}
+			finally
+			{
+				Profiler.Stop();
+
+				// Update the loader - it should only copy volatile data and return.
+				if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
+					Viewer.LoaderProcess.StartUpdate();
+			}
+		}
+	} // Updater Process
 }
