@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -616,6 +617,82 @@ namespace ORTS
             base.SignalEvent(eventID );
         }
 
+        /// <summary>
+        /// Gets the Locomotive data needed by the Cav View Control
+        /// </summary>
+        /// <param name="cvc">The Cab View Control</param>
+        /// <returns>The data converted to the requested unit</returns>
+        public virtual float GetDataOf(CabViewControl cvc)
+        {
+            float data;
+            switch (cvc.ControlType)
+            {
+                case CABViewControlTypes.SPEEDOMETER:
+                    {
+                        data = SpeedMpS;
+                        if (cvc.Units == CABViewControlUnits.KM_PER_HOUR)
+                            data *= 3.6f;
+                        else
+                            data *= 2.2369f;
+
+                        break;
+                    }
+                case CABViewControlTypes.AMMETER:
+                    {
+                        data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                        break;
+                    }
+                case CABViewControlTypes.MAIN_RES:
+                    {
+                        data = this.MainResPressurePSI;
+                        if (cvc.Units == CABViewControlUnits.BAR)
+                            data *= 68.948e-3f;
+                        else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
+                            data *= 6.89476f;
+                        else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
+                            data *= 70.307e-3f;
+                        break;
+                    }
+                case CABViewControlTypes.BRAKE_PIPE:
+                case CABViewControlTypes.EQ_RES:
+                    {
+                        data = this.BrakeSystem.BrakeLine1PressurePSI;
+                        if (cvc.Units == CABViewControlUnits.BAR)
+                            data *= 68.948e-3f;
+                        else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
+                            data *= 6.89476f;
+                        else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
+                            data *= 70.307e-3f;
+                        break;
+                    }
+                case CABViewControlTypes.BRAKE_CYL:
+                    {
+                        AirSinglePipe asp = BrakeSystem as AirSinglePipe;
+                        if (asp != null)
+                        {
+                            data = asp.CylPSIPressure;
+                            if (cvc.Units == CABViewControlUnits.BAR)
+                                data *= 68.948e-3f;
+                            else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
+                                data *= 6.89476f;
+                            else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
+                                data *= 70.307e-3f;
+                        }
+                        else
+                        {
+                            data = 0;
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        data = 0;
+                        break;
+                    }
+            }
+            return data;
+        }
+
     } // LocomotiveSimulator
 
     ///////////////////////////////////////////////////
@@ -805,22 +882,237 @@ namespace ORTS
 
     } // Class LocomotiveViewer
 
-
     // By GeorgeS
+    /// <summary>
+    /// Manages all CAB View textures - light conditions and texture parts
+    /// </summary>
+    public static class CABTextureManager
+    {
+        private static Dictionary<string, Texture2D> DayTextures = new Dictionary<string, Texture2D>();
+        private static Dictionary<string, Texture2D> NightTextures = new Dictionary<string, Texture2D>();
+        private static Dictionary<string, Texture2D> LightTextures = new Dictionary<string, Texture2D>();
+        private static Dictionary<string, Texture2D[]> PDayTextures = new Dictionary<string, Texture2D[]>();
+        private static Dictionary<string, Texture2D[]> PNightTextures = new Dictionary<string, Texture2D[]>();
+        private static Dictionary<string, Texture2D[]> PLightTextures = new Dictionary<string, Texture2D[]>();
+
+        /// <summary>
+        /// Loads a texture, day night and cablight
+        /// </summary>
+        /// <param name="viewer">Viver3D</param>
+        /// <param name="FileName">Name of the Texture</param>
+        public static void LoadTextures(Viewer3D viewer, string FileName)
+        {
+            if (string.IsNullOrEmpty(FileName))
+                return;
+
+            if (DayTextures.Keys.Contains(FileName))
+                return;
+
+            Texture2D tex;
+
+            if (File.Exists(FileName))
+            {
+                tex = SharedTextureManager.Get(viewer.GraphicsDevice, FileName);
+                DayTextures.Add(FileName, tex);
+            }
+            else
+                DayTextures.Add(FileName, Materials.MissingTexture);
+
+            string nightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\night" + FileName.Substring(FileName.LastIndexOf('\\'));
+            if (File.Exists(nightpath))
+            {
+                tex = SharedTextureManager.Get(viewer.GraphicsDevice, nightpath);
+                NightTextures.Add(FileName, tex);
+            }
+            else
+                NightTextures.Add(FileName, Materials.MissingTexture);
+
+            string lightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\cablight" + FileName.Substring(FileName.LastIndexOf('\\'));
+            if (File.Exists(lightpath))
+            {
+                tex = SharedTextureManager.Get(viewer.GraphicsDevice, nightpath);
+                LightTextures.Add(FileName, tex);
+            }
+            else
+                LightTextures.Add(FileName, Materials.MissingTexture);
+        }
+
+        /// <summary>
+        /// Disassembles a compund Texture into parts
+        /// </summary>
+        /// <param name="graphicsDevice">The GraphicsDevice</param>
+        /// <param name="tex">Texture to be disassembled</param>
+        /// <param name="width">Width of the Cab View Control</param>
+        /// <param name="height">Height of the Cab View Control</param>
+        /// <returns>Array with Textures disassembled</returns>
+        private static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D tex, int width, int height)
+        {
+            Texture2D dtex;
+            Color[] arr = new Color[width * height];
+
+            int wcou = tex.Width / width;
+            int hcou = tex.Height / height;
+
+            Texture2D[] dest = new Texture2D[wcou * hcou];
+            int indx = 0;
+
+            for (int j = 0; j < hcou; j++)
+            {
+                for (int i = 0; i < wcou; i++)
+                {
+                    tex.GetData<Color>(0, new Rectangle(i * width, j * height, width, height),
+                        arr, 0, width * height);
+
+                    dtex = new Texture2D(graphicsDevice, width, height);
+                    dtex.SetData<Color>(arr);
+                    dest[indx] = dtex;
+                    indx++;
+                }
+            }
+            return dest;
+        }
+        
+        /// <summary>
+        /// Disassembles all compund textures into parts
+        /// </summary>
+        /// <param name="graphicsDevice">The GraphicsDevice</param>
+        /// <param name="FileName">Name of the Texture to be disassembled</param>
+        /// <param name="width">Width of the Cab View Control</param>
+        /// <param name="height">Height of the Cab View Control</param>
+        public static void DisassembleTexture(GraphicsDevice graphicsDevice, string FileName, int width, int height)
+        {
+            Texture2D tex;
+            tex = DayTextures[FileName];
+            if (tex != Materials.MissingTexture)
+            {
+                PDayTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+            }
+            else
+            {
+                PDayTextures[FileName] = null;
+            }
+
+            tex = NightTextures[FileName];
+            if (tex != Materials.MissingTexture)
+            {
+                PNightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+            }
+            else
+            {
+                PNightTextures[FileName] = null;
+            }
+
+            tex = LightTextures[FileName];
+            if (tex != Materials.MissingTexture)
+            {
+                PLightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+            }
+            else
+            {
+                PLightTextures[FileName] = null;
+            }
+        }
+
+        /// <summary>
+        /// Returns the compound part of a Texture previously disassembled
+        /// </summary>
+        /// <param name="FileName">Name of the disassembled Texture</param>
+        /// <param name="indx">Index of the part</param>
+        /// <param name="isDark">Is dark out there?</param>
+        /// <param name="isLight">Is Cab Light on?</param>
+        /// <returns>The Texture represented by its index</returns>
+        public static Texture2D GetTextureByIndexes(string FileName, int indx, bool isDark, bool isLight)
+        {
+            Texture2D retval = Materials.MissingTexture;
+            Texture2D[] tmp = null;
+
+            if (string.IsNullOrEmpty(FileName) || !PDayTextures.Keys.Contains(FileName))
+                return Materials.MissingTexture;
+
+            if (isDark)
+            {
+                if (isLight)
+                {
+                    tmp = PLightTextures[FileName];
+                    if (tmp != null)
+                    {
+                        indx = (int)MathHelper.Clamp(indx, 0, tmp.Length);
+                        retval = tmp[indx];
+                    }
+                }
+
+                if (retval == Materials.MissingTexture)
+                {
+                    tmp = PNightTextures[FileName];
+                    if (tmp != null)
+                    {
+                        indx = (int)MathHelper.Clamp(indx, 0, tmp.Length);
+                        retval = tmp[indx];
+                    }
+                }
+            }
+
+            if (retval == Materials.MissingTexture)
+            {
+                tmp = PDayTextures[FileName];
+                if (tmp != null)
+                {
+                    indx = (int)MathHelper.Clamp(indx, 0, tmp.Length);
+                    retval = tmp[indx];
+                }
+            }
+            return retval;
+        }
+
+        /// <summary>
+        /// Returns a Texture by its name
+        /// </summary>
+        /// <param name="FileName">Name of the Texture</param>
+        /// <param name="isDark">Is dark out there?</param>
+        /// <param name="isLight">Is Cab Light on?</param>
+        /// <returns>The Texture</returns>
+        public static Texture2D GetTexture(string FileName, bool isDark, bool isLight)
+        {
+            Texture2D retval = Materials.MissingTexture;
+
+            if (string.IsNullOrEmpty(FileName) || !DayTextures.Keys.Contains(FileName))
+                return retval;
+
+            if (isDark)
+            {
+                if (isLight)
+                {
+                    retval = LightTextures[FileName];
+                }
+
+                if (retval == Materials.MissingTexture)
+                {
+                    retval = NightTextures[FileName];
+                }
+            }
+
+            if (retval == Materials.MissingTexture)
+            {
+                retval = DayTextures[FileName];
+            }
+
+            return retval;
+        }
+    }
+
     public class CabRenderer : RenderPrimitive
     {
         private SpriteBatchMaterial _Sprite2DCabView;
-        private List<Texture2D> _CabViews = new List<Texture2D>();
-        private List<Texture2D> _NightViews = new List<Texture2D>();
-        private List<Texture2D> _LightViews = new List<Texture2D>();
         private Rectangle _CabRect;
         private Matrix _Scale = Matrix.Identity;
+        private Texture2D _CabTexture;
+
+        private CabViewControls CabViewControls;
+        private List<CabViewControlRenderer> CabViewControlRenderers = new List<CabViewControlRenderer>();
 
         private Viewer3D _Viewer;
         private MSTSLocomotive _Locomotive;
         private int _Location;
-        private bool _Dark = false;
-        private bool _CabLight = false;
 
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
@@ -830,23 +1122,58 @@ namespace ORTS
             // Loading ACE files, skip displaying ERROR messages
             foreach (string cabfile in car.CVFFile.TwoDViews)
             {
-                if (File.Exists(cabfile))
-                    _CabViews.Add(SharedTextureManager.Get(viewer.GraphicsDevice, cabfile));
-                else
-                    _CabViews.Add(Materials.MissingTexture);
+                CABTextureManager.LoadTextures(viewer, cabfile);
             }
 
-            foreach (string cabfile in car.CVFFile.NightViews)
-                if (File.Exists(cabfile))
-                    _NightViews.Add(SharedTextureManager.Get(viewer.GraphicsDevice, cabfile));
-                else
-                    _NightViews.Add(Materials.MissingTexture);
-
-            foreach (string cabfile in car.CVFFile.LightViews)
-                if (File.Exists(cabfile))
-                    _LightViews.Add(SharedTextureManager.Get(viewer.GraphicsDevice, cabfile));
-                else
-                    _LightViews.Add(Materials.MissingTexture);
+            CabViewControls = car.CVFFile.CabViewControls;
+            if (CabViewControls != null)
+            {
+                foreach (CabViewControl cvc in CabViewControls)
+                {
+                    CVCDial dial = cvc as CVCDial;
+                    if (dial != null)
+                    {
+                        CabViewDialRenderer cvcr = new CabViewDialRenderer(dial, viewer, car);
+                        CabViewControlRenderers.Add(cvcr);
+                        continue;
+                    }
+                    CVCGauge gauge = cvc as CVCGauge;
+                    if (gauge != null)
+                    {
+                        CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(gauge, viewer, car);
+                        CabViewControlRenderers.Add(cvgr);
+                        continue;
+                    }
+                    CVCSignal asp = cvc as CVCSignal;
+                    if (asp != null)
+                    {
+                        CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(asp, viewer, car);
+                        CabViewControlRenderers.Add(aspr);
+                        continue;
+                    }
+                    CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
+                    if (multi != null)
+                    {
+                        CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(multi, viewer, car);
+                        CabViewControlRenderers.Add(mspr);
+                        continue;
+                    }
+                    CVCDiscrete disc = cvc as CVCDiscrete;
+                    if (disc != null)
+                    {
+                        CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(disc, viewer, car);
+                        CabViewControlRenderers.Add(cvdr);
+                        continue;
+                    }
+                    CVCDigital digital = cvc as CVCDigital;
+                    if (digital != null)
+                    {
+                        CabViewDigitalRenderer cvdr = new CabViewDigitalRenderer(digital, viewer, car);
+                        CabViewControlRenderers.Add(cvdr);
+                        continue;
+                    }
+                }
+            }
 
             _Viewer = viewer;
             _Locomotive = car;
@@ -856,6 +1183,9 @@ namespace ORTS
         {
             if (!_Locomotive.ShowCab)
                 return;
+
+            bool Dark = Materials.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool CabLight = _Locomotive.CabLightOn;
 
             CabCamera cbc = _Viewer.Camera as CabCamera;
             if (cbc != null)
@@ -867,40 +1197,466 @@ namespace ORTS
                 _Location = 0;
             }
 
-            // Night
-            // TODO set tunnels
-            _Dark = Materials.sunDirection.Y <= 0f;
-            _CabLight = _Locomotive.CabLightOn;
+            _CabTexture = CABTextureManager.GetTexture(_Locomotive.CVFFile.TwoDViews[_Location], Dark, CabLight);
+
+            if (_CabTexture == Materials.MissingTexture)
+                return;
 
             _CabRect = new Rectangle(0, 0, (int)_Viewer.DisplaySize.X, (int)_Viewer.DisplaySize.Y);
             frame.AddPrimitive(_Sprite2DCabView, this, RenderPrimitiveGroup.Cab, ref _Scale);
+
+            if (_Location == 0)
+            {
+                foreach (CabViewControlRenderer cvcr in CabViewControlRenderers)
+                {
+                    cvcr.PrepareFrame(frame);
+                }
+            }
         }
         
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            Texture2D cabv = Materials.MissingTexture;
-
-            // Try to find the right texture to draw
-            if (_Dark)
-            {
-                if (_CabLight)
-                {
-                    cabv = _LightViews[_Location];
-                }
-                
-                if (cabv == Materials.MissingTexture)
-                {
-                    cabv = _NightViews[_Location];
-                }
-            }
-            
-            if (cabv == Materials.MissingTexture)
-            {
-                cabv = _CabViews[_Location];
-            }
-
-            _Sprite2DCabView.SpriteBatch.Draw(cabv, _CabRect, Color.White);
+            _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
         }
     }
 
+    /// <summary>
+    /// Base class for rendering Cab Controls
+    /// </summary>
+    public class CabViewControlRenderer : RenderPrimitive
+    {
+        protected CabViewControl _CabViewControl;
+        protected SpriteBatchMaterial _Sprite2DCtlView;
+        protected Matrix _Matrix = Matrix.Identity;
+        protected Texture2D _Texture;
+        protected Viewer3D _Viewer;
+        protected MSTSLocomotive _Locomotive;
+
+        protected Vector2 _Position;
+
+        public CabViewControlRenderer(CabViewControl cvc, Viewer3D viewer, MSTSLocomotive car)
+        {
+            _CabViewControl = cvc;
+            _Sprite2DCtlView = new SpriteBatchMaterial(viewer.RenderProcess);
+
+            CABTextureManager.LoadTextures(viewer, _CabViewControl.ACEFile);
+
+            _Viewer = viewer;
+            _Locomotive = car;
+        }
+
+        /// <summary>
+        /// Gets the requested Locomotive data and translates it into percents by Min and Max values
+        /// </summary>
+        /// <param name="cvc">Cab View Control</param>
+        /// <returns>Percent of real data by Min and Max values</returns>
+        public float TranslateToPercent()
+        {
+            float data = _Locomotive.GetDataOf(_CabViewControl);
+            if (data < _CabViewControl.MinValue)
+                return 0;
+            if (data > _CabViewControl.MaxValue)
+                return 1;
+
+            return (float)((data - _CabViewControl.MinValue) / (_CabViewControl.MaxValue - _CabViewControl.MinValue));
+        }
+
+        public virtual void PrepareFrame(RenderFrame frame)
+        {
+            frame.AddPrimitive(_Sprite2DCtlView, this, RenderPrimitiveGroup.Cab, ref _Matrix);
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Dial Cab Control Renderer
+    /// Problems with aspect ratio
+    /// </summary>
+    public class CabViewDialRenderer : CabViewControlRenderer
+    {
+        private float _Rotation = 0f;
+        private float _ScaleToScreen = 1f;
+        private Vector2 _Origin;
+        private CVCDial _Dial;
+        protected float _Scale = 1f;
+
+        public CabViewDialRenderer(CVCDial dial, Viewer3D viewer, MSTSLocomotive car)
+            : base (dial, viewer, car)
+        {
+            _Dial = dial;
+            _Origin = new Vector2((float)(_Dial.Width / 2), _Dial.Center);
+
+            _Texture = CABTextureManager.GetTexture(_CabViewControl.ACEFile, false, false);
+            _Scale = (float)(_Dial.Height / _Texture.Height);
+        }
+
+        public override void PrepareFrame(RenderFrame frame)
+        {
+            bool Dark = Materials.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool CabLight = _Locomotive.CabLightOn;
+
+            _Texture = CABTextureManager.GetTexture(_CabViewControl.ACEFile, Dark, CabLight);
+
+            if (_Texture == Materials.MissingTexture)
+                return;
+
+            base.PrepareFrame(frame);
+
+            _Position = new Vector2((float)(_Viewer.DisplaySize.X / 640 * (_CabViewControl.PositionX + _Origin.X)),
+                (float)(_Viewer.DisplaySize.Y / 480 * (_CabViewControl.PositionY + _Origin.Y)));
+
+            _ScaleToScreen = _Viewer.DisplaySize.Y / 480 * _Scale;
+
+            float percent = TranslateToPercent();
+            float range;
+
+            if ((_Dial.FromDegree > _Dial.ToDegree && _Dial.Direction == 0) ||
+                (_Dial.ToDegree > _Dial.FromDegree && _Dial.Direction != 0))
+            {
+                range = 360 - _Dial.FromDegree + _Dial.ToDegree;
+            }
+            else
+            {
+                range = _Dial.ToDegree - _Dial.FromDegree;
+            }
+
+            float degree = range * percent;
+
+            if (_Dial.Direction == 0)
+                degree = _Dial.FromDegree + degree;
+            else
+                degree = _Dial.ToDegree - degree;
+
+            _Rotation = MathHelper.ToRadians(degree);
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _Position, null, Color.White, _Rotation, _Origin, _ScaleToScreen, SpriteEffects.None, 0);
+        }
+    }
+
+    /// <summary>
+    /// Gauge type renderer
+    /// Supports pointer, liquid, solid
+    /// Supports Orientation and Direction
+    /// </summary>
+    public class CabViewGaugeRenderer : CabViewControlRenderer
+    {
+        private CVCGauge _Gauge;
+        protected Rectangle _SourceRectangle;
+        protected Rectangle _DestRectangle;
+
+        public CabViewGaugeRenderer(CVCGauge gauge, Viewer3D viewer, MSTSLocomotive car)
+            : base(gauge, viewer, car)
+        {
+            _Gauge = gauge;
+            _SourceRectangle = _Gauge.Area;
+        }
+
+        public override void PrepareFrame(RenderFrame frame)
+        {
+            bool Dark = Materials.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool CabLight = _Locomotive.CabLightOn;
+
+            _Texture = CABTextureManager.GetTexture(_CabViewControl.ACEFile, Dark, CabLight);
+
+            if (_Texture == Materials.MissingTexture)
+                return;
+
+            base.PrepareFrame(frame);
+
+            float xratio = (float)(_Viewer.DisplaySize.X / 640);
+            float yratio = (float)(_Viewer.DisplaySize.Y / 480);
+
+            float percent = TranslateToPercent();
+
+            float xpos;
+            float ypos;
+
+            if (_Gauge.Orientation == 0)
+            {
+                ypos = (int)_Gauge.Height;
+                if (_Gauge.Direction == 0)
+                {
+                    xpos = ((float)_Gauge.Width * percent);
+                }
+                else
+                {
+                    xpos = ((float)_Gauge.Width - (float)_Gauge.Width * percent);
+                }
+            }
+            else
+            {
+                xpos = (int)_Gauge.Width;
+                if (_Gauge.Direction == 0)
+                {
+                    ypos = ((float)_Gauge.Height * percent);
+                }
+                else
+                {
+                    ypos = ((float)_Gauge.Height - (float)_Gauge.Height * percent);
+                }
+            }
+
+            if (_Gauge.ControlStyle == CABViewControlStyles.SOLID || _Gauge.ControlStyle == CABViewControlStyles.LIQUID)
+            {
+                _DestRectangle = new Rectangle((int)(xratio * _CabViewControl.PositionX),
+                    (int)(yratio * _CabViewControl.PositionY),
+                    (int)(xratio * xpos), (int)(yratio * ypos));
+            }
+            else
+            {
+                _DestRectangle = new Rectangle((int)(xratio * (_CabViewControl.PositionX + xpos)),
+                    (int)(yratio * (_CabViewControl.PositionY + ypos)),
+                    (int)(xratio * _Gauge.Area.Width), (int)(yratio * _Gauge.Area.Height));
+            }
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+        }
+    }
+
+    /// <summary>
+    /// Discrete renderer for Lever, Twostate, Tristate, Multistate, Signal
+    /// </summary>
+    public class CabViewDiscreteRenderer : CabViewControlRenderer
+    {
+        protected CVCWithFrames _CVCWithFrames;
+        protected Rectangle _SourceRectangle;
+        protected Rectangle _DestRectangle;
+        
+        public CabViewDiscreteRenderer(CVCWithFrames cvc, Viewer3D viewer, MSTSLocomotive car)
+            : base(cvc, viewer, car)
+        {
+            _CVCWithFrames = cvc;
+            CABTextureManager.DisassembleTexture(viewer.GraphicsDevice, _CabViewControl.ACEFile,
+                (int)_CabViewControl.Width, (int)_CabViewControl.Height);
+        }
+
+        public override void PrepareFrame(RenderFrame frame)
+        {
+            bool Dark = Materials.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool CabLight = _Locomotive.CabLightOn;
+
+            int indx = GetDrawIndex();
+
+            indx = (int)MathHelper.Clamp(indx, 0, _CVCWithFrames.FramesCount - 1);
+
+            _Texture = CABTextureManager.GetTextureByIndexes(_CabViewControl.ACEFile, indx, Dark, CabLight);
+
+            if (_Texture == Materials.MissingTexture)
+                return;
+
+            base.PrepareFrame(frame);
+
+            float xratio = (float)(_Viewer.DisplaySize.X / 640);
+            float yratio = (float)(_Viewer.DisplaySize.Y / 480);
+
+            _DestRectangle = new Rectangle((int)(xratio * _CabViewControl.PositionX * 1.0001),
+                (int)(yratio * _CabViewControl.PositionY * 1.0001), (int)(xratio * _CabViewControl.Width), (int)(yratio * _CabViewControl.Height));
+
+            _SourceRectangle = new Rectangle(0, 0, (int)_CVCWithFrames.Width, (int)_CVCWithFrames.Height);
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            //graphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
+            _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+        }
+
+        /// <summary>
+        /// Determines the index of the Texture to be drawn
+        /// Check here for Signal display
+        /// </summary>
+        /// <returns>index of the Texture</returns>
+        public int GetDrawIndex()
+        {
+            int indx = 0;
+            switch (_CVCWithFrames.ControlType)
+            {
+                case CABViewControlTypes.THROTTLE:
+                case CABViewControlTypes.THROTTLE_DISPLAY:
+                //case CABViewControlTypes.CPH_DISPLAY:
+                    {
+                        indx = FromPercent(_Locomotive.ThrottlePercent);
+                        break;
+                    }
+                case CABViewControlTypes.ENGINE_BRAKE:
+                    {
+                        indx = FromPercent(_Locomotive.EngineBrakeController.CurrentValue);
+                        break;
+                    }
+                case CABViewControlTypes.TRAIN_BRAKE:
+                    {
+                        indx = FromPercent(_Locomotive.TrainBrakeController.CurrentValue);
+                        break;
+                    }
+                case CABViewControlTypes.WIPERS:
+                    {
+                        indx = _Locomotive.Wiper ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.HORN:
+                    {
+                        indx = _Locomotive.Horn ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.BELL:
+                    {
+                        indx = _Locomotive.Bell ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.SANDERS:
+                    {
+                        indx = _Locomotive.Sander ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.FRONT_HLIGHT:
+                    {
+                        indx = _Locomotive.Headlight;
+                        break;
+                    }
+                case CABViewControlTypes.PANTOGRAPH:
+                case CABViewControlTypes.PANTO_DISPLAY:
+                    {
+                        MSTSElectricLocomotive el = _Locomotive as MSTSElectricLocomotive;
+                        indx = el.Pan ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.DIRECTION:
+                case CABViewControlTypes.DIRECTION_DISPLAY:
+                    {
+                        if (_Locomotive.Direction == Direction.Forward)
+                            indx = 2;
+                        else if (_Locomotive.Direction == Direction.Reverse)
+                            indx = 0;
+                        else
+                            indx = 1;
+                        break;
+                    }
+                case CABViewControlTypes.ASPECT_DISPLAY:
+                    {
+                        switch (_Locomotive.Train.CABAspect)
+                        {
+                            case SignalHead.SIGASP.STOP:
+                                {
+                                    indx = 0;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.STOP_AND_PROCEED:
+                                {
+                                    indx = 1;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.RESTRICTING:
+                                {
+                                    indx = 2;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.APPROACH_1:
+                                {
+                                    indx = 3;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.APPROACH_2:
+                                {
+                                    indx = 4;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.APPROACH_3:
+                            case SignalHead.SIGASP.APPROACH_4:
+                                {
+                                    indx = 5;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.CLEAR_1:
+                            case SignalHead.SIGASP.CLEAR_2:
+                            case SignalHead.SIGASP.CLEAR_3:
+                            case SignalHead.SIGASP.CLEAR_4:
+                                {
+                                    indx = 6;
+                                    break;
+                                }
+                            default:
+                                {
+                                    indx = 7;
+                                    break;
+                                }
+                        }
+                        break;
+                    }
+            }
+
+            return indx;
+        }
+
+        /// <summary>
+        /// Translates a percent value to a display index
+        /// </summary>
+        /// <param name="percent">Percent to be translated</param>
+        /// <returns>The calculated display index by the Control's Values</returns>
+        public int FromPercent(float percent)
+        {
+            int indx;
+            if (percent > 1) percent /= 100f;
+            if (_CVCWithFrames.Values.Count > 1)
+            {
+                double val = _CVCWithFrames.Values.Where(v => v <= percent).Last();
+                indx = _CVCWithFrames.Values.IndexOf(val);
+            }
+            else
+            {
+                indx = (int)(percent / (_CVCWithFrames.MaxValue - _CVCWithFrames.MinValue) * _CVCWithFrames.FramesCount);
+            }
+
+            return indx;
+        }
+    }
+
+    /// <summary>
+    /// Digital Cab Control renderer
+    /// Uses fonts instead of graphic
+    /// Do not supports Justification
+    /// </summary>
+    public class CabViewDigitalRenderer : CabViewControlRenderer
+    {
+        private string _Text;
+        SpriteFont _Font;
+        private float _ScaleToScreen = 1f;
+        private int _Digits = 1;
+
+        public CabViewDigitalRenderer (CVCDigital digital, Viewer3D viewer, MSTSLocomotive car)
+            : base (digital, viewer, car)
+        {
+            _Font = _Viewer.RenderProcess.Content.Load<SpriteFont>("Arial");
+            _Digits = (int)Math.Log10(_CabViewControl.MaxValue) + 1;
+        }
+
+        public override void PrepareFrame(RenderFrame frame)
+        {
+            float fontratio = (float)_CabViewControl.Height / 16;
+            float fpos = ((float)_CabViewControl.Width) - 6 * _Digits * fontratio;
+
+            _Position = new Vector2((float)(_Viewer.DisplaySize.X / 640 * (_CabViewControl.PositionX + fpos)),
+                (float)(_Viewer.DisplaySize.Y / 480 * _CabViewControl.PositionY));
+
+            base.PrepareFrame(frame);
+
+            _ScaleToScreen = _Viewer.DisplaySize.Y / 480 * (fontratio);
+
+            float num = _Locomotive.GetDataOf(_CabViewControl);
+            _Text = num.ToString("00");
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            _Sprite2DCtlView.SpriteBatch.DrawString(_Font, _Text, _Position, Color.White, 0f, new Vector2(), _ScaleToScreen, SpriteEffects.None, 0);
+        }
+    }
 }

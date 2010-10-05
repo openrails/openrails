@@ -66,6 +66,7 @@ namespace ORTS
         public float distanceToSignal = 0.1f;
         public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
         private bool spad = false;      // Signal Passed At Danger
+        public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
 
         // For AI control of the train
         public float AITrainBrakePercent
@@ -304,7 +305,7 @@ namespace ORTS
             nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
             distanceToSignal = dist;
             TMaspect = nextSignal.GetMonitorAspect();
-
+            CABAspect = nextSignal.GetAspect();     // By GeorgeS
         }
         public SignalHead.SIGASP GetNextSignalAspect()
         {

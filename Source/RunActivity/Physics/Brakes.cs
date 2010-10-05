@@ -117,6 +117,14 @@ namespace ORTS
             return s;
         }
 
+        public float CylPSIPressure
+        {
+            get
+            {
+                return CylPressurePSI;
+            }
+        }
+
         public override void Parse(string lowercasetoken, STFReader f)
         {
             switch (lowercasetoken)
