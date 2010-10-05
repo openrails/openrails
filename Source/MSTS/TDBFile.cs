@@ -211,6 +211,7 @@ namespace MSTS
         public uint Outpins;
     }
 
+    [DebuggerDisplay("\\{MSTS.TrPin\\} Link={Link}, Dir={Direction}")]
     public class TrPin
     {
         public TrPin(STFReader f)
@@ -224,6 +225,7 @@ namespace MSTS
         public int Direction;
     }
 
+    [DebuggerDisplay("\\{MSTS.UiD\\} ID={WorldID}, TileX={TileX}, TileZ={TileZ}, X={X}, Y={Y}, Z={Z}, AX={AX}, AY={AY}, AZ={AZ}, WorldX={WorldTileX}, WorldZ={WorldTileZ}")]
     public class UiD
     {
         public int TileX, TileZ;   // location of the junction 
@@ -254,6 +256,7 @@ namespace MSTS
 
     }
 
+    [DebuggerDisplay("\\{MSTS.TrJunctionNode\\} SelectedRoute={SelectedRoute}, ShapeIndex={ShapeIndex}")]
     public class TrJunctionNode
     {
         public int SelectedRoute = 0;

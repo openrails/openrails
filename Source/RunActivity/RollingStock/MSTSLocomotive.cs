@@ -981,35 +981,34 @@ namespace ORTS
         /// <param name="height">Height of the Cab View Control</param>
         public static void DisassembleTexture(GraphicsDevice graphicsDevice, string FileName, int width, int height)
         {
-            Texture2D tex;
-            tex = DayTextures[FileName];
-            if (tex != Materials.MissingTexture)
+            PDayTextures[FileName] = null;
+            if (DayTextures.ContainsKey(FileName))
             {
-                PDayTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
-            }
-            else
-            {
-                PDayTextures[FileName] = null;
-            }
-
-            tex = NightTextures[FileName];
-            if (tex != Materials.MissingTexture)
-            {
-                PNightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
-            }
-            else
-            {
-                PNightTextures[FileName] = null;
+                var tex = DayTextures[FileName];
+                if (tex != Materials.MissingTexture)
+                {
+                    PDayTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+                }
             }
 
-            tex = LightTextures[FileName];
-            if (tex != Materials.MissingTexture)
+            PNightTextures[FileName] = null;
+            if (NightTextures.ContainsKey(FileName))
             {
-                PLightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+                var tex = NightTextures[FileName];
+                if (tex != Materials.MissingTexture)
+                {
+                    PNightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+                }
             }
-            else
+
+            PLightTextures[FileName] = null;
+            if (LightTextures.ContainsKey(FileName))
             {
-                PLightTextures[FileName] = null;
+                var tex = LightTextures[FileName];
+                if (tex != Materials.MissingTexture)
+                {
+                    PLightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+                }
             }
         }
 

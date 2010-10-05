@@ -297,9 +297,7 @@ namespace ORTS
                 }
                 if (!Path.SwitchIsAligned(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode)))
                 {
-                    TDBTraveller traveller= FrontTDBTraveller;
-                    if (!AITrainDirectionForward)
-                        traveller = RearTDBTraveller;
+                    TDBTraveller traveller = AITrainDirectionForward ? FrontTDBTraveller : RearTDBTraveller;
                     float d= WorldLocation.DistanceSquared(traveller.WorldLocation, node.Location);
                     //Console.WriteLine("throw distance {0}", d);
                     if (d > throwDistance*throwDistance || AI.Simulator.SwitchIsOccupied(node.JunctionIndex))
@@ -489,9 +487,7 @@ namespace ORTS
             }
             if (AI.Dispatcher.PlayerOverlaps(this, false))
             {
-                TDBTraveller traveller = FrontTDBTraveller;
-                if (!AITrainDirectionForward)
-                    traveller = RearTDBTraveller;
+                TDBTraveller traveller = AITrainDirectionForward ? FrontTDBTraveller : RearTDBTraveller;
                 float d = (float)Math.Sqrt(WorldLocation.DistanceSquared(traveller.WorldLocation, AI.Simulator.PlayerLocomotive.Train.RearTDBTraveller.WorldLocation));
                 d -= SpeedMpS == 0 ? 500 : 50;
                 if (d < 0)

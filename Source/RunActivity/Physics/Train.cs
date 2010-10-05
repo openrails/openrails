@@ -762,11 +762,11 @@ namespace ORTS
             }
             if (sw == null || sw.TrJunctionNode == null)
                 return;
-            for (int i = 1; i < sw.TrPins.Length; i++)
+            for (int i = 0; i < sw.Outpins; i++)
             {
-                if (from == Program.Simulator.TDB.TrackDB.TrackNodes[sw.TrPins[i].Link])
+                if (to == Program.Simulator.TDB.TrackDB.TrackNodes[sw.TrPins[i + sw.Inpins].Link])
                 {
-                    sw.TrJunctionNode.SelectedRoute = i - 1;
+                    sw.TrJunctionNode.SelectedRoute = i;
                     return;
                 }
             }
