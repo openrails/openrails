@@ -600,7 +600,21 @@ namespace ORTS
 			// Don't call this or we'll let the user rotate the camera!
 			//base.HandleUserInput(elapsedTime);
 		}
-	}
+
+        public override bool IsUnderground
+        {
+            get
+            {
+                // Camera is underground if target (base) is underground or
+                // track location is underground. The latter means we switch
+                // to cab view instead of putting the camera above the tunnel.
+                if (base.IsUnderground)
+                    return true;
+                var elevationAtCameraTarget = Viewer.Tiles.GetElevation(attachedCar.WorldPosition.WorldLocation);
+                return attachedCar.WorldPosition.Location.Y + TerrainAltitudeMargin < elevationAtCameraTarget;
+            }
+        }
+    }
 
 	public class TrackingCamera : AttachedCamera
 	{

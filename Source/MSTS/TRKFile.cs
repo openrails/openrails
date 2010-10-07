@@ -75,7 +75,8 @@ namespace MSTS
 				else if (0 == String.Compare(token, "Name", true)) Name = f.ReadStringBlock();
 				else if (0 == String.Compare(token, "FileName", true)) FileName = f.ReadStringBlock();
 				else if (0 == String.Compare(token, "Description", true)) Description = f.ReadStringBlock();
-				else if (0 == String.Compare(token, "RouteStart", true) && RouteStart == null) RouteStart = new RouteStart(f); // take only the first - ignore any others
+                else if (0 == String.Compare(token, "MaxLineVoltage", true)) MaxLineVoltage = f.ReadDoubleBlock();
+                else if (0 == String.Compare(token, "RouteStart", true) && RouteStart == null) RouteStart = new RouteStart(f); // take only the first - ignore any others
 				else if (0 == String.Compare(token, "Environment", true)) Environment = new TRKEnvironment(f);
 				else if (0 == String.Compare(token, "MilepostUnitsKilometers", true)) MilepostUnitsMetric = true;
 				else f.SkipBlock();
@@ -93,6 +94,7 @@ namespace MSTS
         public RouteStart RouteStart;
         public TRKEnvironment Environment;
 		public bool MilepostUnitsMetric = false;
+        public double MaxLineVoltage = 0;
     }
 
 

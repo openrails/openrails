@@ -130,6 +130,40 @@ namespace ORTS
             base.SignalEvent(eventID);
         }
 
+        public override float GetDataOf(CabViewControl cvc)
+        {
+            float data;
+
+            switch (cvc.ControlType)
+            {
+                case CABViewControlTypes.LINE_VOLTAGE:
+                    {
+                        if (Pan)
+                        {
+                            data = (float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
+                            if (cvc.Units == CABViewControlUnits.KILOVOLTS)
+                                data /= 1000;
+                        }
+                        else
+                            data = 0;
+                        break;
+                    }
+                case CABViewControlTypes.PANTOGRAPH:
+                case CABViewControlTypes.PANTO_DISPLAY:
+                    {
+                        data = Pan ? 1 : 0;
+                        break;
+                    }
+                default:
+                    {
+                        data = base.GetDataOf(cvc);
+                        break;
+                    }
+            }
+
+            return data;
+        }
+
     } // class ElectricLocomotive
 
     ///////////////////////////////////////////////////

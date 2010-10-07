@@ -73,11 +73,15 @@ namespace MSTS
         EQ_RES,
         BRAKE_CYL,
         BRAKE_PIPE,
+        LINE_VOLTAGE,
         AMMETER,
+        LOAD_METER,
         THROTTLE,
         PANTOGRAPH,
         TRAIN_BRAKE,
         ENGINE_BRAKE,
+        DYNAMIC_BRAKE,
+        DYNAMIC_BRAKE_DISPLAY,
         SANDERS,
         WIPERS,
         HORN,
@@ -112,6 +116,8 @@ namespace MSTS
         KILOPASCALS,
         KGS_PER_SQUARE_CM,
         APMS,
+        VOLTS,
+        KILOVOLTS,
         KM_PER_HOUR,
         MILES_PER_HOUR
     }
@@ -443,7 +449,10 @@ namespace MSTS
                 }
                 else
                 {
-                    Values[0] = MinValue;
+                    if (Values.Count > 0)
+                        Values[0] = MinValue;
+                    else
+                        Values.Add(MinValue);
                     Values.Add(MaxValue);
                     Positions.Add(FramesCount);
                 }
@@ -506,6 +515,11 @@ namespace MSTS
                         token = inf.ReadToken();
                     }
                     //inf.VerifyEndOfBlock();
+
+                    if (Values.Count > 0)
+                    {
+                        MaxValue = Values.Last();
+                    }
                     
                     for (int i = Values.Count; i < FramesCount; i++)
                         Values.Add(-10000);

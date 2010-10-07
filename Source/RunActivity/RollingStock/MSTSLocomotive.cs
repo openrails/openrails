@@ -611,7 +611,7 @@ namespace ORTS
                 if (eventID == EventID.HeadlightOn) {  Headlight = 2; break; }
                 if (eventID == EventID.CompressorOn) { CompressorOn = true; break; }
                 if (eventID == EventID.CompressorOff) { CompressorOn = false; break; }
-                if (eventID == EventID.LightSwitchToggle) { CabLightOn = !CabLightOn; break; }
+                if (eventID == EventID.LightSwitchToggle) { break; }
             } while (false);
 
             base.SignalEvent(eventID );
@@ -619,6 +619,7 @@ namespace ORTS
 
         /// <summary>
         /// Gets the Locomotive data needed by the Cav View Control
+        /// Check here for Signal display
         /// </summary>
         /// <param name="cvc">The Cab View Control</param>
         /// <returns>The data converted to the requested unit</returns>
@@ -638,6 +639,7 @@ namespace ORTS
                         break;
                     }
                 case CABViewControlTypes.AMMETER:
+                case CABViewControlTypes.LOAD_METER:
                     {
                         data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
                         break;
@@ -681,6 +683,116 @@ namespace ORTS
                         else
                         {
                             data = 0;
+                        }
+                        break;
+                    }
+                case CABViewControlTypes.THROTTLE:
+                case CABViewControlTypes.THROTTLE_DISPLAY:
+                    //case CABViewControlTypes.CPH_DISPLAY:
+                    {
+                        data = ThrottlePercent / 100f;
+                        break;
+                    }
+                case CABViewControlTypes.ENGINE_BRAKE:
+                    {
+                        data = EngineBrakeController.CurrentValue;
+                        break;
+                    }
+                case CABViewControlTypes.TRAIN_BRAKE:
+                    {
+                        data = TrainBrakeController.CurrentValue;
+                        break;
+                    }
+                case CABViewControlTypes.DYNAMIC_BRAKE:
+                case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
+                    {
+                        data = DynamicBrakePercent;
+                        break;
+                    }
+                case CABViewControlTypes.WIPERS:
+                    {
+                        data = Wiper ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.HORN:
+                    {
+                        data = Horn ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.BELL:
+                    {
+                        data = Bell ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.SANDERS:
+                    {
+                        data = Sander ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.FRONT_HLIGHT:
+                    {
+                        data = Headlight;
+                        break;
+                    }
+                case CABViewControlTypes.DIRECTION:
+                case CABViewControlTypes.DIRECTION_DISPLAY:
+                    {
+                        if (Direction == Direction.Forward)
+                            data = 2;
+                        else if (Direction == Direction.Reverse)
+                            data = 0;
+                        else
+                            data = 1;
+                        break;
+                    }
+                case CABViewControlTypes.ASPECT_DISPLAY:
+                    {
+                        switch (Train.CABAspect)
+                        {
+                            case SignalHead.SIGASP.STOP:
+                                {
+                                    data = 0;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.STOP_AND_PROCEED:
+                                {
+                                    data = 1;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.RESTRICTING:
+                                {
+                                    data = 2;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.APPROACH_1:
+                                {
+                                    data = 3;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.APPROACH_2:
+                                {
+                                    data = 4;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.APPROACH_3:
+                            case SignalHead.SIGASP.APPROACH_4:
+                                {
+                                    data = 5;
+                                    break;
+                                }
+                            case SignalHead.SIGASP.CLEAR_1:
+                            case SignalHead.SIGASP.CLEAR_2:
+                            case SignalHead.SIGASP.CLEAR_3:
+                            case SignalHead.SIGASP.CLEAR_4:
+                                {
+                                    data = 6;
+                                    break;
+                                }
+                            default:
+                                {
+                                    data = 7;
+                                    break;
+                                }
                         }
                         break;
                     }
@@ -824,7 +936,7 @@ namespace ORTS
                 Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
 
             // By GeorgeS
-			if (UserInput.IsPressed(UserCommands.ControlLight)) Locomotive.SignalEvent(EventID.LightSwitchToggle);
+            if (UserInput.IsPressed(UserCommands.ControlLight)) { Locomotive.CabLightOn = !Locomotive.CabLightOn; Locomotive.SignalEvent(EventID.LightSwitchToggle); }
             if (UserInput.IsPressed(UserCommands.CameraShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
 			base.HandleUserInput(elapsedTime);
         }
@@ -930,7 +1042,7 @@ namespace ORTS
             string lightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\cablight" + FileName.Substring(FileName.LastIndexOf('\\'));
             if (File.Exists(lightpath))
             {
-                tex = SharedTextureManager.Get(viewer.GraphicsDevice, nightpath);
+                tex = SharedTextureManager.Get(viewer.GraphicsDevice, lightpath);
                 LightTextures.Add(FileName, tex);
             }
             else
@@ -1035,7 +1147,7 @@ namespace ORTS
                     tmp = PLightTextures[FileName];
                     if (tmp != null)
                     {
-                        indx = (int)MathHelper.Clamp(indx, 0, tmp.Length);
+                        indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
                         retval = tmp[indx];
                     }
                 }
@@ -1045,7 +1157,7 @@ namespace ORTS
                     tmp = PNightTextures[FileName];
                     if (tmp != null)
                     {
-                        indx = (int)MathHelper.Clamp(indx, 0, tmp.Length);
+                        indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
                         retval = tmp[indx];
                     }
                 }
@@ -1056,7 +1168,7 @@ namespace ORTS
                 tmp = PDayTextures[FileName];
                 if (tmp != null)
                 {
-                    indx = (int)MathHelper.Clamp(indx, 0, tmp.Length);
+                    indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
                     retval = tmp[indx];
                 }
             }
@@ -1256,6 +1368,9 @@ namespace ORTS
                 return 0;
             if (data > _CabViewControl.MaxValue)
                 return 1;
+
+            if (_CabViewControl.MaxValue == _CabViewControl.MinValue)
+                return 0;
 
             return (float)((data - _CabViewControl.MinValue) / (_CabViewControl.MaxValue - _CabViewControl.MinValue));
         }
@@ -1471,123 +1586,37 @@ namespace ORTS
 
         /// <summary>
         /// Determines the index of the Texture to be drawn
-        /// Check here for Signal display
         /// </summary>
         /// <returns>index of the Texture</returns>
         public int GetDrawIndex()
         {
+            float data = _Locomotive.GetDataOf(_CabViewControl);
             int indx = 0;
             switch (_CVCWithFrames.ControlType)
             {
                 case CABViewControlTypes.THROTTLE:
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                 //case CABViewControlTypes.CPH_DISPLAY:
-                    {
-                        indx = FromPercent(_Locomotive.ThrottlePercent);
-                        break;
-                    }
                 case CABViewControlTypes.ENGINE_BRAKE:
-                    {
-                        indx = FromPercent(_Locomotive.EngineBrakeController.CurrentValue);
-                        break;
-                    }
                 case CABViewControlTypes.TRAIN_BRAKE:
+                case CABViewControlTypes.DYNAMIC_BRAKE:
+                case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     {
-                        indx = FromPercent(_Locomotive.TrainBrakeController.CurrentValue);
+                        indx = FromPercent(data);
                         break;
                     }
                 case CABViewControlTypes.WIPERS:
-                    {
-                        indx = _Locomotive.Wiper ? 1 : 0;
-                        break;
-                    }
                 case CABViewControlTypes.HORN:
-                    {
-                        indx = _Locomotive.Horn ? 1 : 0;
-                        break;
-                    }
                 case CABViewControlTypes.BELL:
-                    {
-                        indx = _Locomotive.Bell ? 1 : 0;
-                        break;
-                    }
                 case CABViewControlTypes.SANDERS:
-                    {
-                        indx = _Locomotive.Sander ? 1 : 0;
-                        break;
-                    }
                 case CABViewControlTypes.FRONT_HLIGHT:
-                    {
-                        indx = _Locomotive.Headlight;
-                        break;
-                    }
                 case CABViewControlTypes.PANTOGRAPH:
                 case CABViewControlTypes.PANTO_DISPLAY:
-                    {
-                        MSTSElectricLocomotive el = _Locomotive as MSTSElectricLocomotive;
-                        indx = el.Pan ? 1 : 0;
-                        break;
-                    }
                 case CABViewControlTypes.DIRECTION:
                 case CABViewControlTypes.DIRECTION_DISPLAY:
-                    {
-                        if (_Locomotive.Direction == Direction.Forward)
-                            indx = 2;
-                        else if (_Locomotive.Direction == Direction.Reverse)
-                            indx = 0;
-                        else
-                            indx = 1;
-                        break;
-                    }
                 case CABViewControlTypes.ASPECT_DISPLAY:
                     {
-                        switch (_Locomotive.Train.CABAspect)
-                        {
-                            case SignalHead.SIGASP.STOP:
-                                {
-                                    indx = 0;
-                                    break;
-                                }
-                            case SignalHead.SIGASP.STOP_AND_PROCEED:
-                                {
-                                    indx = 1;
-                                    break;
-                                }
-                            case SignalHead.SIGASP.RESTRICTING:
-                                {
-                                    indx = 2;
-                                    break;
-                                }
-                            case SignalHead.SIGASP.APPROACH_1:
-                                {
-                                    indx = 3;
-                                    break;
-                                }
-                            case SignalHead.SIGASP.APPROACH_2:
-                                {
-                                    indx = 4;
-                                    break;
-                                }
-                            case SignalHead.SIGASP.APPROACH_3:
-                            case SignalHead.SIGASP.APPROACH_4:
-                                {
-                                    indx = 5;
-                                    break;
-                                }
-                            case SignalHead.SIGASP.CLEAR_1:
-                            case SignalHead.SIGASP.CLEAR_2:
-                            case SignalHead.SIGASP.CLEAR_3:
-                            case SignalHead.SIGASP.CLEAR_4:
-                                {
-                                    indx = 6;
-                                    break;
-                                }
-                            default:
-                                {
-                                    indx = 7;
-                                    break;
-                                }
-                        }
+                        indx = (int)data;
                         break;
                     }
             }
@@ -1602,8 +1631,10 @@ namespace ORTS
         /// <returns>The calculated display index by the Control's Values</returns>
         public int FromPercent(float percent)
         {
-            int indx;
+            int indx = 0;
+
             if (percent > 1) percent /= 100f;
+            percent = MathHelper.Clamp(percent, (float)_CVCWithFrames.MinValue, (float)_CVCWithFrames.MaxValue);
             if (_CVCWithFrames.Values.Count > 1)
             {
                 double val = _CVCWithFrames.Values.Where(v => v <= percent).Last();
@@ -1611,7 +1642,10 @@ namespace ORTS
             }
             else
             {
-                indx = (int)(percent / (_CVCWithFrames.MaxValue - _CVCWithFrames.MinValue) * _CVCWithFrames.FramesCount);
+                if (_CVCWithFrames.MaxValue != _CVCWithFrames.MinValue)
+                {
+                    indx = (int)(percent / (_CVCWithFrames.MaxValue - _CVCWithFrames.MinValue) * _CVCWithFrames.FramesCount);
+                }
             }
 
             return indx;
