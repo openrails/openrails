@@ -733,10 +733,6 @@ namespace MSTS
 		private void UpdateTreeAndRewindBuffer(string token)
 		{
             rewindToken = token;
-
-            // I am fairly certain that the replacement function ReadString() unlike the obsolete ReadDelimitedItem() does not send leading/trailing whitespace
-            // If after testing this assumption is correct, then the line after the assertion can be removed, if I am wrong then remove the assertion
-            Debug.Assert(token == token.Trim());
 			token = token.Trim();
 
 			if (token == "(")
