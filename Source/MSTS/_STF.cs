@@ -727,7 +727,12 @@ namespace MSTS
 
 		public string Tree
 		{
-			get { return String.Join("", tree.ToArray()) + currentToken; }
+            get
+            {
+                var array = tree.ToArray();
+                Array.Reverse(array);
+                return String.Join("", array) + currentToken;
+            }
 		}
 
 		private void UpdateTreeAndRewindBuffer(string token)
@@ -746,9 +751,8 @@ namespace MSTS
 			{
                 rewindTree = new Stack<string>(tree);
                 rewindCurrToken = currentToken;
-                Debug.Assert(tree.Count > 0);
                 if(tree.Count > 0) tree.Pop();
-                currentToken = "";
+                currentToken = ")";
             }
 			else
 			{
