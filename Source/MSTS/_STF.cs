@@ -166,16 +166,34 @@ namespace MSTS
             }
         }
 
+        public void RewindToken()
+        {
+            Debug.Assert(rewindToken != null, "You must called at least one ReadString() between RewindToken() calls", "The current rewind functionality only allows for a single rewind");
+            rewindNextStringRead = true;
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         public string ReadString()
         {
+            if (rewindNextStringRead)
+            {
+                Debug.Assert(rewindToken != null, "You must called at least one ReadString() between RewindToken() calls", "The current rewind functionality only allows for a single rewind");
+                string token = rewindToken;
+                currentToken = rewindCurrToken;
+                if (rewindTree != null) tree = rewindTree;
+                rewindNextStringRead = false;
+                rewindToken = rewindCurrToken = null;
+                rewindTree = null;
+                return token;
+            }
+
             if (IncludeReader != null)
             {
                 string s = IncludeReader.ReadString();
-                UpdateTree(s);
+                UpdateTreeAndRewindBuffer(s);
                 if (s != "" || !IncludeReader.EOF())
                     return s;
                 IncludeReader = null;
@@ -219,7 +237,7 @@ namespace MSTS
                     else //  c == '"'
                     {
                         // Check for string extender
-                        if (f.Peek() != '+')
+                        if (PeekPastWhitespace() != '+')
                             break;   // we found final " to terminate the string
                         
                         // This is an extended string
@@ -267,14 +285,14 @@ namespace MSTS
             }
 
             string result= stringText.ToString();
-            if (treeLevel == 0 && result == "include")
+            if (tree.Count == 0 && result == "include")
             {
                 string filename = ReadStringBlock();
                 IncludeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename);
                 return ReadString();
             }
 
-            UpdateTree(result);
+            UpdateTreeAndRewindBuffer(result);
             return result;
         }
 
@@ -314,7 +332,10 @@ namespace MSTS
 		{
 			string token = ReadToken();  // read the leading bracket ( 
             if (token == ")")   // just in case we are not where we think we are
-                return; 
+            {
+                RewindToken();
+                return;
+            }
             // note, even if this isn't a leading bracket, we'll carry on anyway                            
             SkipRestOfBlock();
 		}
@@ -462,6 +483,13 @@ namespace MSTS
 			double scale = 1.0;
 			string token = ReadToken();
 
+            if (token == ")")
+            {
+                STFException.ReportWarning(this, "When expecting a number, we found a ) marker");
+                RewindToken();
+                return 0;
+            }
+
 			// TODO complete parsing of units ie, km, etc - some are done but not all.
 			token = token.ToLower();
 			int i;
@@ -558,8 +586,13 @@ namespace MSTS
             VerifyEndOfBlock();
 			return s;
 		}
-		public uint ReadUIntBlock()
-		// Reads a () enclosed int
+
+        public uint ReadUIntBlock()
+        {
+            return ReadUIntBlock(false);
+        }
+        public uint ReadUIntBlock(bool optionalblock)
+// Reads a () enclosed int
 		/* Throws
 				STFError( this, "( Not Found" )
 				IOException An I/O error occurs. 
@@ -567,7 +600,7 @@ namespace MSTS
 		{
 			try
 			{
-				double value = ReadDoubleBlock();
+                double value = ReadDoubleBlock(optionalblock);
 				return (uint)value;
 			}
 			catch (Exception e)
@@ -577,7 +610,11 @@ namespace MSTS
 			}
 		}
 
-		public int ReadIntBlock()
+        public int ReadIntBlock()
+        {
+            return ReadIntBlock(false);
+        }
+        public int ReadIntBlock(bool optionalblock)
 		// Reads a () enclosed int
 		/* Throws
 				STFError( this, ") Not Found" )
@@ -586,7 +623,7 @@ namespace MSTS
 		{
 			try
 			{
-				double value = ReadDoubleBlock();
+				double value = ReadDoubleBlock(optionalblock);
 				return (int)value;
 			}
 			catch (Exception e)
@@ -598,20 +635,39 @@ namespace MSTS
 
         public float ReadFloatBlock()
         {
-            return (float)ReadDoubleBlock();
+            return ReadFloatBlock(false);
+        }
+        public float ReadFloatBlock(bool optionalblock)
+        {
+            return (float)ReadDoubleBlock(optionalblock);
         }
 
-		public double ReadDoubleBlock()
+        public double ReadDoubleBlock()
+        {
+            return ReadDoubleBlock(false);
+        }
+        public double ReadDoubleBlock(bool optionalblock)
 			// Reads a () enclosed double
 			/* Throws
 					STFError - syntax or numeric format
 					IOException An I/O error occurs. 
 			*/
 		{
-            VerifyStartOfBlock();
-			double result = ReadDouble();
-            VerifyEndOfBlock();
-			return result;
+            string s = ReadToken();
+            if (s == "")
+                STFException.ReportError(this, "Unexpected end of file");
+            else if (s == ")" && optionalblock)
+                RewindToken();
+            else if (s == "(")
+            {
+                double result = ReadDouble();
+                VerifyEndOfBlock();
+                return result;
+            }
+            else
+                STFException.ReportError(this, "Block Not Found - instead found " + s);
+
+            return 0;
 		}
 
 		public bool ReadBoolBlock()
@@ -650,149 +706,6 @@ namespace MSTS
             return vector;
         }
 
-        public string ReadDelimitedItem()  // legacy - don't use
-        // We are processing a line like this:
-        //            token ( parameters .. )
-        // the token has been read.  Now read bracket and up to final bracket.
-        // if there isn't a leading bracket, just point to the start of the next token, ie:
-        //			  token
-        //            token
-        // if we reach end of file before finding parameters or another token, leave
-        // pointer pointing to end of file char
-
-    /* Throws
-        IOException An I/O error occurs. 
-    */
-        {
-            string s = "";
-
-            // Peek ahead for a (
-            while (true)
-            {
-                int c = Peek();
-                if ( EOF())
-                    return s;
-                if (c == '(')
-                    break;
-                if (c > ' ')
-                    return s;
-                if (c < 0)
-                    return s;
-                // else it must be white space
-                s += (char)ReadChar();
-            }
-
-            // We have a bracket, so skip the entire hierarchy
-            s += ReadDelimitedToken();  // now read the leading bracket ( 
-            int depth = 1;
-            while (depth > 0)
-            {
-                string token = this.ReadDelimitedToken();
-                s += token;
-                if (token.Trim() == "")
-                    throw (new STFException(this, "Missing )"));
-                if (token.Trim() == "(")
-                    ++depth;
-                if (token.Trim() == ")")
-                    --depth;
-            }
-            return s;
-        }
-
-        public string ReadDelimitedToken()
-        // Read any leading whitespace, then a token and the trailing delimiter
-        // TODO - multiline tokens ending with +
-        /* Throws:
-            IOException An I/O error occurs. 
-        */
-        // Returned value may include leading and trailing whitespace and quote chars
-        {
-            int c = 0;
-
-            var tokenText = new StringBuilder();
-
-            // Read leading whitespace 
-            while (true)
-            {
-                c = ReadChar();
-                if ( EOF() ) // EOF
-                    break;
-                if (c < 0 || c > ' ')
-                    break;
-                tokenText.Append((char)c);
-            }
-            // c == -1 or first char of token
-
-            if (c == '"')
-            {
-                tokenText.Append((char)c);
-                // Read the rest of the string token and final delimiting "
-                do
-                {
-                    c = ReadChar();
-                    if ( EOF()) // EOF
-                        break;
-                    tokenText.Append((char)c);
-                    if (c == '\\') // escape sequence
-                    {
-                        c = ReadChar();
-                        tokenText.Append((char)c);
-                    }
-                    else if (c == '"')
-                    {
-                        // Check for string extender
-                        if ( Peek() != '+')
-                            break;
-
-                        // Skip over white space to next string
-                        tokenText.Append( (char)ReadChar());
-                        do
-                        {
-                            c = ReadChar();
-                            if (EOF()) // EOF
-                                break;
-                            tokenText.Append((char)c);
-                        }
-                        while (c >= 0 && c <= ' ');
-
-                        // ensure we are at a quote
-                        if (c != '"')
-                            break;
-
-                    }
-
-                }
-                while (true);
-            }
-            else if (c == '(')
-            {
-                tokenText.Append((char)c);
-            }
-            else if (c == ')')
-            {
-                tokenText.Append((char)c);
-            }
-            else if ( !EOF() )
-            {
-                tokenText.Append((char)c);
-                // Read the rest of the token and first delimiter character
-                do
-                {
-                    if ( EOF() ) // EOF
-                        break;
-                    if (Peek() == '(')
-                        break;
-                    if (Peek() == ')')
-                        break;
-                    c = ReadChar();
-                    tokenText.Append((char)c);
-                }
-                while (c > ' ');
-            }
-            UpdateTree(tokenText.ToString());
-            return tokenText.ToString();
-        }
-
         /// <summary>
         /// Throw an unknown token exception
         /// </summary>
@@ -803,37 +716,49 @@ namespace MSTS
         }
 
 
-		// HIERARCHICAL TREE VIEW OF FILE POSITION
+		// HIERARCHICAL TREE VIEW OF FILE POSITION AND BUFFER TO ALLOW OF A REWIND OF A SINGLE TOKEN
 
-		private List<string> tree = new List<string>();
-		private int treeLevel = 0;
+        private Stack<string> tree = new Stack<string>();
+        private string currentToken = "";
+        private bool rewindNextStringRead = false;
+        private string rewindToken;
+        private Stack<string> rewindTree;
+        private string rewindCurrToken;
 
 		public string Tree
 		{
-			get { return String.Join("", tree.ToArray()); }
+			get { return String.Join("", tree.ToArray()) + currentToken; }
 		}
 
-		private void UpdateTree(string delimitedToken)
-		// A delimited token may include leading and trailing whitespace characters
+		private void UpdateTreeAndRewindBuffer(string token)
 		{
-			string token = delimitedToken.Trim();
+            rewindToken = token;
+
+            // I am fairly certain that the replacement function ReadString() unlike the obsolete ReadDelimitedItem() does not send leading/trailing whitespace
+            // If after testing this assumption is correct, then the line after the assertion can be removed, if I am wrong then remove the assertion
+            Debug.Assert(token == token.Trim());
+			token = token.Trim();
+
 			if (token == "(")
 			{
-				++treeLevel;
-				tree.Add("(");
-			}
+                rewindTree = new Stack<string>(tree);
+                rewindCurrToken = currentToken;
+                tree.Push(currentToken + "(");
+                currentToken = "";
+            }
 			else if (token == ")")
 			{
-				if (treeLevel > 0)
-					--treeLevel;
-				tree.RemoveRange(treeLevel * 2 + 1, tree.Count - treeLevel * 2 - 1);
-			}
+                rewindTree = new Stack<string>(tree);
+                rewindCurrToken = currentToken;
+                Debug.Assert(tree.Count > 0);
+                if(tree.Count > 0) tree.Pop();
+                currentToken = "";
+            }
 			else
 			{
-				if (tree.Count > treeLevel * 2)
-					tree[treeLevel * 2] = token;
-				else
-					tree.Add(token);
+                rewindTree = null;
+                rewindCurrToken = currentToken;
+                currentToken = token;
 			}
 		}
 	}

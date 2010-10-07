@@ -271,7 +271,7 @@ namespace MSTS
 				}
 				else if (0 == String.Compare(token, "SemaphoreInfo", true))
 				{
-					SemaphoreInfo = f.ReadFloat();
+					SemaphoreInfo = f.ReadFloatBlock();
 				}
 				else f.SkipBlock();
 				token = f.ReadToken();
@@ -552,15 +552,15 @@ namespace MSTS
 			while (token != ")")
 			{
 				if (token == "") throw new STFException(f, "Missing )");
-				else if (0 == String.Compare(token, "SpeedMPH ", true))
+				else if (0 == String.Compare(token, "SpeedMPH", true))
 				{
-					SpeedMpS = MpH.ToMpS(f.ReadFloatBlock());
+					SpeedMpS = MpH.ToMpS(f.ReadFloatBlock(true));
 				}
-				else if (0 == String.Compare(token, "SpeedKPH ", true))
+				else if (0 == String.Compare(token, "SpeedKPH", true))
 				{
-					SpeedMpS = KpH.ToMpS(f.ReadFloatBlock());
+					SpeedMpS = KpH.ToMpS(f.ReadFloatBlock(true));
 				}
-				else if (0 == String.Compare(token, "SignalFlags ", true))
+				else if (0 == String.Compare(token, "SignalFlags", true))
 				{
 					var signalFlag = f.ReadStringBlock();
 					if (0 == String.Compare(signalFlag, "ASAP", true))
