@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
 
 namespace MSTS
 {
@@ -130,53 +131,61 @@ namespace MSTS
 
             int count = inf.ReadInt();
 
-            while (!inf.EndOfBlock())
+            try
             {
-                string token = inf.ReadToken();
-                if (string.Compare(token, "Dial", true) == 0)
+                while (!inf.EndOfBlock())
                 {
-                    CVCDial dial = new CVCDial(inf, basePath);
-                    Add(dial);
+                    string token = inf.ReadToken();
+                    if (string.Compare(token, "Dial", true) == 0)
+                    {
+                        CVCDial dial = new CVCDial(inf, basePath);
+                        Add(dial);
+                    }
+                    else if (string.Compare(token, "Gauge", true) == 0)
+                    {
+                        CVCGauge gauge = new CVCGauge(inf, basePath);
+                        Add(gauge);
+                    }
+                    else if (string.Compare(token, "Lever", true) == 0)
+                    {
+                        CVCDiscrete lever = new CVCDiscrete(inf, basePath);
+                        Add(lever);
+                    }
+                    else if (string.Compare(token, "TwoState", true) == 0)
+                    {
+                        CVCDiscrete twostate = new CVCDiscrete(inf, basePath);
+                        Add(twostate);
+                    }
+                    else if (string.Compare(token, "TriState", true) == 0)
+                    {
+                        CVCDiscrete tristate = new CVCDiscrete(inf, basePath);
+                        Add(tristate);
+                    }
+                    else if (string.Compare(token, "MultiStateDisplay", true) == 0)
+                    {
+                        CVCMultiStateDisplay multi = new CVCMultiStateDisplay(inf, basePath);
+                        Add(multi);
+                    }
+                    else if (string.Compare(token, "CabSignalDisplay", true) == 0)
+                    {
+                        CVCSignal cabsignal = new CVCSignal(inf, basePath);
+                        Add(cabsignal);
+                    }
+                    else if (string.Compare(token, "Digital", true) == 0)
+                    {
+                        CVCDigital digital = new CVCDigital(inf, basePath);
+                        Add(digital);
+                    }
+                    else
+                    {
+                        inf.SkipBlock();
+                    }
                 }
-                else if (string.Compare(token, "Gauge", true) == 0)
-                {
-                    CVCGauge gauge = new CVCGauge(inf, basePath);
-                    Add(gauge);
-                }
-                else if (string.Compare(token, "Lever", true) == 0)
-                {
-                    CVCDiscrete lever = new CVCDiscrete(inf, basePath);
-                    Add(lever);
-                }
-                else if (string.Compare(token, "TwoState", true) == 0)
-                {
-                    CVCDiscrete twostate = new CVCDiscrete(inf, basePath);
-                    Add(twostate);
-                }
-                else if (string.Compare(token, "TriState", true) == 0)
-                {
-                    CVCDiscrete tristate = new CVCDiscrete(inf, basePath);
-                    Add(tristate);
-                }
-                else if (string.Compare(token, "MultiStateDisplay", true) == 0)
-                {
-                    CVCMultiStateDisplay multi = new CVCMultiStateDisplay(inf, basePath);
-                    Add(multi);
-                }
-                else if (string.Compare(token, "CabSignalDisplay", true) == 0)
-                {
-                    CVCSignal cabsignal = new CVCSignal(inf, basePath);
-                    Add(cabsignal);
-                }
-                else if (string.Compare(token, "Digital", true) == 0)
-                {
-                    CVCDigital digital = new CVCDigital(inf, basePath);
-                    Add(digital);
-                }
-                else
-                {
-                    inf.SkipBlock();
-                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(string.Format("Error reading CAB View file {0}", inf.FileName));
+                Trace.WriteLine(ex);
             }
 
             /*
@@ -382,6 +391,7 @@ namespace MSTS
     {
         public List<int> Positions = new List<int>();
 
+        private int _PositionsRead = 0;
         private int _ValuesRead = 0;
 
         public CVCDiscrete(STFReader inf, string basePath)
@@ -398,31 +408,49 @@ namespace MSTS
                     FramesX = inf.ReadInt();
                     FramesY = inf.ReadInt();
                     inf.VerifyEndOfBlock();
-                    for (int i = Values.Count; i < FramesCount; i++)
-                        Values.Add(0);
                 }
                 else if (string.Compare(token, "NumPositions", true) == 0)
                 {
                     inf.VerifyStartOfBlock();
+
+                    // If Positions are not filled before by Values
+                    bool shouldFill = Positions.Count == 0;
+
+                    // Number of Positions - Ignore it
                     int p = inf.ReadInt();
                     while (!inf.EndOfBlock())
                     {
                         p = inf.ReadInt();
-                        Positions.Add(p);
+
+                        // If Positions are not filled before by Values
+                        if (shouldFill)
+                            Positions.Add(p);
                     }
                 }
                 else if (string.Compare(token, "NumValues", true) == 0)
                 {
                     inf.VerifyStartOfBlock();
+                    
+                    // Number of Values - ignore it
                     double v = inf.ReadDouble();
+
                     while (!inf.EndOfBlock())
                     {
                         v = inf.ReadDouble();
-                        //Values.Add(v);
-                        while (Values.Count < Positions[_ValuesRead] + 1)
+                        // If the Positions are less than expected add new Position(s)
+                        while (Positions.Count <= _ValuesRead)
+                        {
+                            Positions.Add(_ValuesRead);
+                            _PositionsRead++;
+                        }
+
+                        // Avoid later repositioning, put every value to its Position
+                        // But before resize Values if needed
+                        while (Values.Count <= Positions[_ValuesRead])
                         {
                             Values.Add(0);
                         }
+                        // Avoid later repositioning, put every value to its Position
                         Values[Positions[_ValuesRead]] = v;
                         _ValuesRead++;
                     }
@@ -433,40 +461,102 @@ namespace MSTS
                 }
             } // while
 
+            // If no ACE, just don't need any fixup
+            // Because Values are tied to the image Frame to be shown
+            if (string.IsNullOrEmpty(ACEFile))
+                return;
+
+            // Now, we have an ACE.
+
+            // If read any Values, or the control requires Values to control
+            //     The twostate, tristate, signal displays are not in these
+            // Need check the Values collection for validity
             if (_ValuesRead > 0 || ControlStyle == CABViewControlStyles.SPRUNG || ControlStyle == CABViewControlStyles.NOT_SPRUNG)
             {
-                // Fixup NumPositions and NumValues
-                if (Positions.Count != _ValuesRead || (FramesCount > 0 && Positions.Count == 0))
+                // Check max number of Frames
+                if (FramesCount == 0)
                 {
+                    // Check valid Frame information
+                    if (FramesX == 0 || FramesY == 0)
+                    {
+                        // Give up, it won't work
+                        // Because later we won't know how to display frames from that
+                        Trace.TraceError(string.Format("Invalid Frames information given for ACE {0} in file {1}.", ACEFile, inf.FileName));
+
+                        ACEFile = "";
+                        return;
+                    }
+
+                    // Valid frames info, set FramesCount
+                    FramesCount = FramesX * FramesY;
+                }
+
+                // Now we have an ACE and Frames for it.
+
+                // Fixup Positions and Values collections first
+
+                // If the read Positions and Values are not match
+                // Or we didn't read Values but have Frames to draw
+                // Do not test if FramesCount equals Values count, we trust in the creator -
+                //     maybe did not want to display all Frames
+                // (If there are more Values than Frames it will checked at draw time)
+                // Need to fix the whole Values
+                if (Positions.Count != _ValuesRead || (FramesCount > 0 && Values.Count == 0))
+                {
+                    // Clear existing
                     Positions.Clear();
                     Values.Clear();
+
+                    // Add the two sure positions, the two ends
                     Positions.Add(0);
+                    // We will need the FramesCount later!
+                    // We use Positions only here
                     Positions.Add(FramesCount);
+
+                    // Fill empty Values
                     for (int i = 0; i < FramesCount; i++)
                         Values.Add(0);
                     Values[0] = MinValue;
+
                     Values.Add(MaxValue);
                 }
+                // The Positions, Values are correct
                 else
                 {
+                    // Check if read Values at all
                     if (Values.Count > 0)
+                        // Set Min for sure
                         Values[0] = MinValue;
                     else
                         Values.Add(MinValue);
+
+                    // Fill empty Values
+                    for (int i = Values.Count; i < FramesCount; i++)
+                        Values.Add(0);
+
+                    // Add the maximums to the end, the Value will be removed
+                    // We use Positions only here
                     Values.Add(MaxValue);
                     Positions.Add(FramesCount);
                 }
 
+                // OK, we have a valid size of Positions and Values
+
+                // Now it is the time for checking holes in the given data
                 if (Positions.Count < FramesCount - 1)
                 {
                     int j = 1;
                     int p = 0;
+                    // Skip the 0 element, that is the default MinValue
                     for (int i = 1; i < Positions.Count; i++)
                     {
+                        // Found a hole
                         if (Positions[i] != p + 1)
                         {
+                            // Iterate to the next valid data and fill the hole
                             for (j = p + 1; j < Positions[i]; j++)
                             {
+                                // Extrapolate into the hole
                                 Values[j] = MathHelper.Lerp((float)Values[p], (float)Values[Positions[i]], (float)j / (float)Positions[i]);
                             }
                         }
@@ -474,9 +564,11 @@ namespace MSTS
                     }
                 }
 
+                // Don't need the MaxValue added before, remove it
                 Values.RemoveAt(FramesCount);
-            }
-        }
+
+            } // End of Need check the Values collection for validity
+        } // End of Constructor
     }
 
     public class CVCMultiStateDisplay : CVCWithFrames
