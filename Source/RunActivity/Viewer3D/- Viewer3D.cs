@@ -84,7 +84,7 @@ namespace ORTS
 		}
         public Vector2 WindowSize = new Vector2(1024, 768);
 		// Multi-threaded processes
-        public UpdaterProcess UpdaterProcess = null;
+        public UpdaterProcess UpdaterProcess;
         public LoaderProcess LoaderProcess;
         public RenderProcess RenderProcess;
         public SoundProcess SoundProcess;

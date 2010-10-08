@@ -167,7 +167,7 @@ namespace ORTS
 
 		public void Update(double currentTime)
 		{
-			while (((ParticleEndIndex - ParticleStartIndex + MaxParticleCount) % MaxParticleCount > 0) && (currentTime >= Particles[ParticleStartIndex].time + height))
+			while (((ParticleEndIndex - ParticleStartIndex + MaxParticleCount) % MaxParticleCount != 1) && (currentTime >= Particles[ParticleStartIndex].time + height))
 			{
 				ParticleStartIndex++;
 				ParticleStartIndex %= MaxParticleCount;

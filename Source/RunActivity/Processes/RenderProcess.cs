@@ -223,7 +223,7 @@ namespace ORTS
         /// </summary>
         private void Terminate()
         {
-            if (Viewer.UpdaterProcess != null) Viewer.UpdaterProcess.Stop();
+            Viewer.UpdaterProcess.Stop();
             Viewer.LoaderProcess.Stop();
             Viewer.SoundProcess.Stop();
             Viewer.Unload(this);
