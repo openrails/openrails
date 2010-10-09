@@ -13,7 +13,6 @@ namespace ORTS
 	{
 		public readonly bool Threaded;
 		public readonly Profiler Profiler = new Profiler("Loader");
-		public bool Slow;
 		readonly Viewer3D Viewer;
 		readonly Thread Thread;
 		readonly ProcessState State;
@@ -86,10 +85,9 @@ namespace ORTS
 
 		public void StartUpdate()
 		{
-			Slow = !Finished;
 			// the loader will often fall behind, in that case let it finish
 			// before issueing a new command.
-			if (Slow)
+			if (!Finished)
 				return;
 
 			Viewer.LoadPrep();

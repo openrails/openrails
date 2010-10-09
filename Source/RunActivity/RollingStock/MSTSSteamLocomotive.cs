@@ -425,11 +425,10 @@ namespace ORTS
 
         public override string GetStatus()
         {
-            float evap= Evaporation*3600;
-            float usage= (SteamUsageLBpS+BasicSteamUsageLBpS)*3600;
-            return string.Format("Pressure = {0}PSI\nGeneration = {1}\nUsage = {2}",
-                BoilerPressurePSI.ToString("F0"),evap.ToString("F0"),usage.ToString("F0"));
-                //BoilerHeatBTU,BoilerMassLB,WaterFraction.ToString("F2"));
+			float evap = Evaporation * 3600;
+			float usage = (SteamUsageLBpS + BasicSteamUsageLBpS) * 3600;
+			return string.Format("Boiler Pressure = {0:F1} PSI\nSteam Generation = {1:F0} lb/h\nSteam Usage = {2:F0} lb/h", BoilerPressurePSI, evap, usage);
+            //BoilerHeatBTU,BoilerMassLB,WaterFraction.ToString("F2"));
         }
 
         public void StartReverseIncrease()

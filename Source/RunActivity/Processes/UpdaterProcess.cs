@@ -18,7 +18,6 @@ namespace ORTS
 	{
 		public readonly bool Threaded;
 		public readonly Profiler Profiler = new Profiler("Updater");
-		public bool Slow;
 		readonly Viewer3D Viewer;
 		readonly Thread Thread;
 		readonly ProcessState State;
@@ -57,7 +56,6 @@ namespace ORTS
 
 		public void WaitTillFinished()
 		{
-			Slow = !Finished;
 			// Non-threaded updater never waits.
 			if (Threaded)
 				State.WaitTillFinished();

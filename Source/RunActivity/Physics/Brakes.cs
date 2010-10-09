@@ -496,7 +496,7 @@ namespace ORTS
 
         public override string GetStatus(int detailLevel)
         {
-            return string.Format( "{0:F0}", BrakeLine1PressurePSI);
+			return string.Format("{0:F0} PSI", BrakeLine1PressurePSI);
         }
 
         public override void Parse(string lowercasetoken, STFReader f)

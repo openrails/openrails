@@ -59,7 +59,7 @@ namespace ORTS
 			// Calculate the Wall and CPU times from timers.
 			Wall = 100d * (double)TimeRunning.ElapsedMilliseconds / (double)TimeTotal.ElapsedMilliseconds;
 			CPU = 100d * (double)TimeCPU.TotalMilliseconds / (double)TimeTotal.ElapsedMilliseconds;
-			var rate = 1000d / TimeTotal.ElapsedMilliseconds;
+			var rate = 3000d / TimeTotal.ElapsedMilliseconds;
 			SmoothedWall = (SmoothedWall * (rate - 1) + Wall) / rate;
 			SmoothedCPU = (SmoothedCPU * (rate - 1) + CPU) / rate;
 			// Resume timers.

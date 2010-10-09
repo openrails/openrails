@@ -21,27 +21,22 @@ namespace ORTS
     {
         readonly StringBuilder TextBuilder = new StringBuilder();
         readonly DataLogger Logger = new DataLogger();
-        readonly TextPrimitive TextPrimitive = new TextPrimitive();
-        readonly SpriteBatchMaterial Material;
+        readonly TextPrimitive TextPrimitive;
         readonly Viewer3D Viewer;
 		Matrix Matrix = Matrix.Identity;
 		int InfoAmount = 1;
-        int frameNum = 0;
+        int FrameNumber = 0;
         bool LoggerEnabled = false;
-        double lastUpdateTime = 0;   // update text message only 10 times per second
+        double LastUpdateTime = 0;   // update text message only 10 times per second
 		ElapsedTime ElapsedTime = new ElapsedTime();
 
-        int processors = System.Environment.ProcessorCount;
+        readonly int ProcessorCount = System.Environment.ProcessorCount;
 
         public InfoDisplay( Viewer3D viewer )
         {
             Viewer = viewer;
-            // Create a new SpriteBatch, which can be used to draw text.
-            Material = (SpriteBatchMaterial) Materials.Load( Viewer.RenderProcess, "SpriteBatch" );
-            TextPrimitive.Material = Material;
-            TextPrimitive.Color = Color.Yellow;
-            TextPrimitive.Location = new Vector2(10, 10);
-            //TextPrimitive.Sequence = RenderPrimitiveSequence.TextOverlay;
+			var material = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
+			TextPrimitive = new TextPrimitive(material, new Vector2(10, 10), Color.White, 0.5f, Color.Black);
         }
 
 		public void Stop()
@@ -84,36 +79,35 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-			frameNum++;
+			FrameNumber++;
 			ElapsedTime += elapsedTime;
 			UpdateDialogs(elapsedTime);
 
-            if (Program.RealTime - lastUpdateTime >= 0.25)
-            {
-                double elapsedRealSeconds = Program.RealTime - lastUpdateTime;
-                lastUpdateTime = Program.RealTime;
-                Profile(elapsedRealSeconds);
+			if (Program.RealTime - LastUpdateTime >= 0.1)
+			{
+				double elapsedRealSeconds = Program.RealTime - LastUpdateTime;
+				LastUpdateTime = Program.RealTime;
+				Profile(elapsedRealSeconds);
 				UpdateDialogsText(ElapsedTime);
-                UpdateText();
-
+				UpdateText();
 				ElapsedTime.Reset();
-            }
+			}
 
             TextPrimitive.Text = TextBuilder.ToString();
-            frame.AddPrimitive(Material, TextPrimitive, RenderPrimitiveGroup.Overlay, ref Matrix);
+            frame.AddPrimitive(TextPrimitive.Material, TextPrimitive, RenderPrimitiveGroup.Overlay, ref Matrix);
 
 			//Here's where the logger stores the data from each frame
 			if (LoggerEnabled)
 			{
 				Logger.Data(Program.Revision); //SVN Revision
-				Logger.Data(frameNum.ToString()); //Frame Number
+				Logger.Data(FrameNumber.ToString()); //Frame Number
 				Logger.Data(Viewer.RenderProcess.FrameRate.ToString("F0")); //FPS
 				Logger.Data(Viewer.RenderProcess.FrameTime.ToString("F4")); //Frame Time
 				Logger.Data(Viewer.RenderProcess.FrameJitter.ToString("F4")); //Frame Jitter
 				Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString()); //Primitives
 				Logger.Data(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
 				Logger.Data(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
-				Logger.Data(processors.ToString()); //Processors
+				Logger.Data(ProcessorCount.ToString()); //Processors
 				Logger.Data(Viewer.RenderProcess.Profiler.Wall.ToString("F0")); //Render Process %
 				Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.ToString("F0")); //Updater Process %
 				Logger.Data(Viewer.LoaderProcess.Profiler.Wall.ToString("F0")); //Loader Process %
@@ -179,87 +173,63 @@ namespace ORTS
             {
                 AddBrakeInfo();
             }
-            if (InfoAmount == 3)
+			if (InfoAmount == 3)
+			{
+				AddForceInfo();
+			}
+            if (InfoAmount == 4)
             {
                 AddDispatcherInfo();
             }
-            if (InfoAmount == 4)
+			if (InfoAmount == 5)
             {
                 AddDebugInfo();
-            }
-            if (InfoAmount == 5)
-            {
-                AddForceInfo();
             }
         }
 
         private void AddBasicInfo()
         {
-            string clockTimeString = FormattedTime(Viewer.Simulator.ClockTime);
-            Train playerTrain = Viewer.PlayerLocomotive.Train;
+            var playerTrain = Viewer.PlayerLocomotive.Train;
+			var showMUReverser = Math.Abs(playerTrain.MUReverserPercent) != 100;
+			var showRetainers = playerTrain.RetainerSetting != RetainerSetting.Exhaust;
+			var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
+			var dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
+			var locomotiveStatus = Viewer.PlayerLocomotive.GetStatus();
+			var stretched = playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1;
+			var bunched = !stretched && playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1;
 
-            TextBuilder.Append("Version = "); TextBuilder.AppendLine(Program.Revision);//this DONE
-            TextBuilder.Append("Time = "); TextBuilder.AppendLine(clockTimeString);
-            TextBuilder.Append("Direction = ");
-            if (Math.Abs(Viewer.PlayerLocomotive.Train.MUReverserPercent) != 100)
-                TextBuilder.Append(string.Format("{0:F0}% ", Math.Abs(Viewer.PlayerLocomotive.Train.MUReverserPercent)));
-            TextBuilder.AppendLine(Viewer.PlayerLocomotive.Direction.ToString());
-            TextBuilder.Append("Throttle = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
-            TextBuilder.Append("Train Brake = "); TextBuilder.AppendLine(Viewer.PlayerLocomotive.GetTrainBrakeStatus());
-            if (playerTrain.RetainerSetting != RetainerSetting.Exhaust)
-            {
-                TextBuilder.Append("Retainers = "); TextBuilder.AppendLine(string.Format("{0}% {1}", playerTrain.RetainerPercent, playerTrain.RetainerSetting));
-            }
-            string engBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
-            if (engBrakeStatus != null)
-            {
-                TextBuilder.Append("Engine Brake = "); TextBuilder.AppendLine(engBrakeStatus);
-            }
-            string dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
-            if (dynamicBrakeStatus != null)
-            {
-                TextBuilder.Append("Dynamic Brake = "); TextBuilder.AppendLine(dynamicBrakeStatus);
-            }
-            TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.PlayerLocomotive.SpeedMpS)).ToString("F1"));
-            string status = Viewer.PlayerLocomotive.GetStatus();
-            if (status != null)
-                TextBuilder.AppendLine(status);
-            TextBuilder.Append("Slack = "); TextBuilder.Append(playerTrain.TotalCouplerSlackM.ToString("F2")+" "+playerTrain.NPull.ToString()+" "+playerTrain.NPush.ToString());
-            if (playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1)
-                TextBuilder.AppendLine(" Stretched");
-            else if (playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1)
-                TextBuilder.AppendLine(" Bunched");
-            else
-                TextBuilder.AppendLine();
-            TextBuilder.Append("CForce = "); TextBuilder.AppendLine(playerTrain.MaximumCouplerForceN.ToString("F0"));
+			TextBuilder.AppendFormat("Version = {0}", Program.Revision); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Time = {0}", FormattedTime(Viewer.Simulator.ClockTime)); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat(showMUReverser ? "Direction = {1:F0} {0}" : "Direction = {0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent)); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Throttle = {0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Train Brake = {0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus()); TextBuilder.AppendLine();
+			if (showRetainers)
+			{
+				TextBuilder.AppendFormat("Retainers = {0}% {1}", playerTrain.RetainerPercent, playerTrain.RetainerSetting); TextBuilder.AppendLine();
+			}
+			if (engineBrakeStatus != null)
+			{
+				TextBuilder.AppendFormat("Engine Brake = {0}", engineBrakeStatus); TextBuilder.AppendLine();
+			}
+			if (dynamicBrakeStatus != null)
+			{
+				TextBuilder.AppendFormat("Dynamic Brake = {0}", dynamicBrakeStatus); TextBuilder.AppendLine();
+			}
+			if (locomotiveStatus != null)
+			{
+				TextBuilder.AppendLine(locomotiveStatus);
+			}
+			TextBuilder.AppendFormat("Coupler Slack = {0:F2} m ({1} pulling, {2} pushing) {3}", playerTrain.TotalCouplerSlackM, playerTrain.NPull, playerTrain.NPush, stretched ? "Stretched" : bunched ? "Bunched" : ""); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Coupler Force = {0:F0} N", playerTrain.MaximumCouplerForceN); TextBuilder.AppendLine();
 
-            // Added by rvg....
-            // Compass
-            string sTemp;
-            Vector2 compassDir;
-            compassDir.X = Viewer.Camera.XNAView.M11;
-            compassDir.Y = Viewer.Camera.XNAView.M13;
-            float direction = MathHelper.ToDegrees((float)Math.Acos(compassDir.X));
-            if (compassDir.Y > 0) direction = 360-direction;
-            sTemp = direction.ToString("N0");
-            sTemp += Convert.ToChar(176);
-            TextBuilder.Append("Compass Hdg: "); TextBuilder.AppendLine(sTemp);
-            // Latitude/Longitude
-            WorldLatLon worldLatLon = new WorldLatLon();
-            double latitude = 0;
-            double longitude = 0; ;
-            worldLatLon.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
-            sTemp = MathHelper.ToDegrees((float)latitude).ToString("F6");
-            sTemp += ", ";
-            sTemp += MathHelper.ToDegrees((float)longitude).ToString("F6");
-            TextBuilder.Append("Lat/Lon: "); TextBuilder.AppendLine(sTemp);
-
-            status = Viewer.Simulator.AI.GetStatus();
-            if (status != null)
-                TextBuilder.Append(status);
-
+            locomotiveStatus = Viewer.Simulator.AI.GetStatus();
+			if (locomotiveStatus != null)
+			{
+				TextBuilder.Append(locomotiveStatus);
+			}
             TextBuilder.AppendLine();
-            TextBuilder.AppendLine(string.Format("FPS = {0:F0}", Viewer.RenderProcess.SmoothedFrameRate)); //this DONE
+
+			TextBuilder.AppendFormat("FPS = {0:F0}", Viewer.RenderProcess.SmoothedFrameRate); TextBuilder.AppendLine();
 /*
             //WHN:
             status = Viewer.PlayerTrain.RearTDBTraveller.TNToString();
@@ -267,80 +237,76 @@ namespace ORTS
 */
         }
 
-        [Conditional("DEBUG")]
-        private void AddDebugInfo()
+		private void AddBrakeInfo()
+		{
+			TextBuilder.AppendLine();
+			TextBuilder.AppendLine("BRAKE INFORMATION");
+			Train playerTrain = Viewer.PlayerLocomotive.Train;
+			TextBuilder.Append("Main Res = "); TextBuilder.AppendLine(string.Format("{0:F0}", playerTrain.BrakeLine2PressurePSI));
+			int n = playerTrain.Cars.Count;
+			if (n > 10)
+				n = 11;
+			for (int i = 0; i < n; i++)
+			{
+				int j = i;
+				if (playerTrain.Cars.Count > 10)
+					j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
+				TextBuilder.AppendFormat("Car {0:D2}: {1}", j + 1, playerTrain.Cars[j].BrakeSystem.GetStatus(2));
+				TextBuilder.AppendLine();
+			}
+		}
+
+		private void AddForceInfo()
+		{
+			TextBuilder.AppendLine();
+			TextBuilder.AppendLine("FORCE INFORMATION");
+			Train playerTrain = Viewer.PlayerLocomotive.Train;
+			int n = playerTrain.Cars.Count;
+			if (n > 10)
+				n = 11;
+			for (int i = 0; i < n; i++)
+			{
+				int j = i;
+				if (playerTrain.Cars.Count > 10)
+					j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
+				TrainCar car = playerTrain.Cars[j];
+				TextBuilder.AppendFormat("Car {0:D2}: {1:F0} {2:F0} {3:F0} {4:F0} {5:F0} {6:F0} {7}", j + 1, car.TotalForceN, car.MotiveForceN, car.FrictionForceN, car.GravityForceN, car.CouplerForceU, car.MassKG, car.Flipped ? "Flipped" : "");
+				TextBuilder.AppendLine();
+			}
+		}
+
+		private void AddDispatcherInfo()
+		{
+			TextBuilder.AppendLine();
+			TextBuilder.AppendLine("DISPATCHER INFORMATION");
+			foreach (TrackAuthority auth in Program.Simulator.AI.Dispatcher.TrackAuthorities)
+			{
+				TextBuilder.AppendLine(auth.GetStatus());
+			}
+		}
+
+		[Conditional("DEBUG")]
+		private void AddDebugInfo()
         {
             // Memory Useage
             long memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
-            TextBuilder.AppendLine(); //notepad pls.
+            TextBuilder.AppendLine();
 			TextBuilder.AppendLine("DEBUG INFORMATION");
             TextBuilder.AppendFormat("Logging Enabled = {0}", LoggerEnabled); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Memory = {0:N0} MB", memory / 1024 / 1024); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.SmoothedCPU + Viewer.UpdaterProcess.Profiler.SmoothedCPU + Viewer.LoaderProcess.Profiler.SmoothedCPU + Viewer.SoundProcess.Profiler.SmoothedCPU) / processors, processors); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Memory = {0:F0} MB", memory / 1024 / 1024); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.SmoothedCPU + Viewer.UpdaterProcess.Profiler.SmoothedCPU + Viewer.LoaderProcess.Profiler.SmoothedCPU + Viewer.SoundProcess.Profiler.SmoothedCPU) / ProcessorCount, ProcessorCount); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms)", Viewer.RenderProcess.SmoothedFrameRate, Viewer.RenderProcess.SmoothedFrameTime * 1000, Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Adapter = {0} ({1:N0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Primitives = {0:N0} ({1})", Viewer.RenderProcess.PrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("N0")).ToArray())); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render State Changes = {0:N0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Render Image Changes = {0:N0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Adapter = {0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Primitives = {0:F0} ({1})", Viewer.RenderProcess.PrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray())); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render State Changes = {0:F0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Render Image Changes = {0:F0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.SmoothedWall, Viewer.RenderProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Updater Process = {0:F0}% ({1:F0}% wait){2}", Viewer.UpdaterProcess.Profiler.SmoothedWall, Viewer.UpdaterProcess.Profiler.SmoothedWait, Viewer.UpdaterProcess.Slow ? " BUSY" : ""); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait){2}", Viewer.LoaderProcess.Profiler.SmoothedWall, Viewer.LoaderProcess.Profiler.SmoothedWait, Viewer.LoaderProcess.Slow ? " BUSY" : ""); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Updater Process = {0:F0}% ({1:F0}% wait)", Viewer.UpdaterProcess.Profiler.SmoothedWall, Viewer.UpdaterProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait)", Viewer.LoaderProcess.Profiler.SmoothedWall, Viewer.LoaderProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Sound Process = {0:F0}% ({1:F0}% wait)", Viewer.SoundProcess.Profiler.SmoothedWall, Viewer.SoundProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.SmoothedWall + Viewer.UpdaterProcess.Profiler.SmoothedWall + Viewer.LoaderProcess.Profiler.SmoothedWall + Viewer.SoundProcess.Profiler.SmoothedWall, Viewer.RenderProcess.Profiler.SmoothedWait + Viewer.UpdaterProcess.Profiler.SmoothedWait + Viewer.LoaderProcess.Profiler.SmoothedWait + Viewer.SoundProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
-            // Added by rvg....
-            TextBuilder.Append("Tile: "); TextBuilder.Append(Viewer.Camera.TileX.ToString()); // Camera coordinates
-            TextBuilder.Append(" ");
-            TextBuilder.Append(Viewer.Camera.TileZ.ToString());//this DONE
-            TextBuilder.Append(" ");
-            TextBuilder.AppendLine(Viewer.Camera.Location.ToString()); //this DONE
-        }
-
-        private void AddBrakeInfo()
-        {
-            TextBuilder.AppendLine();
-			TextBuilder.AppendLine("BRAKE INFORMATION");
-			Train playerTrain = Viewer.PlayerLocomotive.Train;
-            TextBuilder.Append("Main Res = "); TextBuilder.AppendLine(string.Format("{0:F0}", playerTrain.BrakeLine2PressurePSI));
-            int n = playerTrain.Cars.Count;
-            if (n > 10)
-                n = 11;
-            for (int i = 0; i < n; i++)
-            {
-                int j = i;
-                if (playerTrain.Cars.Count > 10)
-                    j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
-                TextBuilder.Append(string.Format("Car {0:D2} ", j + 1));
-                TextBuilder.AppendLine(playerTrain.Cars[j].BrakeSystem.GetStatus(2));
-            }
-        }
-
-        private void AddForceInfo()
-        {
-            TextBuilder.AppendLine();
-            TextBuilder.AppendLine("FORCE INFORMATION");
-            Train playerTrain = Viewer.PlayerLocomotive.Train;
-            int n = playerTrain.Cars.Count;
-            if (n > 10)
-                n = 11;
-            for (int i = 0; i < n; i++)
-            {
-                int j = i;
-                if (playerTrain.Cars.Count > 10)
-                    j = i * playerTrain.Cars.Count / 10 + (i == 10 ? -1 : 0);
-                TrainCar car= playerTrain.Cars[j];
-                TextBuilder.Append(string.Format("Car {0:D2} ", j + 1));
-                TextBuilder.AppendLine(string.Format("{0:F0} {1:F0} {2:F0} {3:F0} {4:F0} {5:F0} {6}", car.TotalForceN, car.MotiveForceN, car.FrictionForceN, car.GravityForceN, car.CouplerForceU, car.MassKG, car.Flipped));
-            }
-        }
-        private void AddDispatcherInfo()
-        {
-            TextBuilder.AppendLine();
-			TextBuilder.AppendLine("DISPATCHER INFORMATION");
-			foreach (TrackAuthority auth in Program.Simulator.AI.Dispatcher.TrackAuthorities)
-            {
-                TextBuilder.AppendLine(auth.GetStatus());
-            }
+			TextBuilder.AppendFormat("Camera: TileX:{0:F0} TileZ:{1:F0} X:{2:F4} Y:{3:F4} Z:{4:F4}", Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location.X, Viewer.Camera.Location.Y, Viewer.Camera.Location.Z); TextBuilder.AppendLine();
         }
 
         public static string FormattedTime(double clockTimeSeconds) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
@@ -378,10 +344,21 @@ namespace ORTS
 
     public class TextPrimitive : RenderPrimitive
     {
-        public SpriteBatchMaterial Material;
+        public readonly SpriteBatchMaterial Material;
+		public readonly Vector2 Position;
+		public readonly Color Color;
+		public readonly float ShadowStrength;
+		public readonly Color ShadowColor;
         public string Text;
-        public Color Color;
-        public Vector2 Location;
+
+		public TextPrimitive(SpriteBatchMaterial material, Vector2 position, Color color, float shadowStrength, Color shadowColor)
+		{
+			Material = material;
+			Position = position;
+			Color = color;
+			ShadowStrength = shadowStrength;
+			ShadowColor = shadowColor;
+		}
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -389,7 +366,14 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            Material.SpriteBatch.DrawString(Material.DefaultFont, Text, Location, Color );
+			if (ShadowStrength > 0.01f)
+			{
+				var color = new Color(ShadowColor, ShadowStrength);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y + 0), color);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 0, Position.Y + 1), color);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y + 1), color);
+			}
+			Material.SpriteBatch.DrawString(Material.DefaultFont, Text, Position, Color);
         }
     }
 
