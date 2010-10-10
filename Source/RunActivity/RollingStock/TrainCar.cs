@@ -289,9 +289,13 @@ namespace ORTS
             }
             p0.FindCenterLine();
             Vector3 fwd = new Vector3(p0.B[0], p0.B[1], -p0.B[2]);
-            fwd.Normalize();
+            // Check if null vector - The Length() is fine also, but may be more time consuming - By GeorgeS
+            if (fwd.X != 0 && fwd.Y != 0 && fwd.Z != 0)
+                fwd.Normalize();
             Vector3 side = Vector3.Cross(Vector3.Up, fwd);
-            side.Normalize();
+            // Check if null vector - The Length() is fine also, but may be more time consuming - By GeorgeS
+            if (side.X != 0 && side.Y != 0 && side.Z != 0)
+                side.Normalize();
             Vector3 up = Vector3.Cross(fwd, side);
             //Console.WriteLine("fwd {0}", fwd);
             //Console.WriteLine("side {0}", side);
