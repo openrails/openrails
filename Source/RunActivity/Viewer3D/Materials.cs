@@ -973,7 +973,7 @@ namespace ORTS
 
 		public DynatrackMaterial(RenderProcess renderProcess)
         {
-            TrProfile profile = renderProcess.Viewer.Simulator.TrackProfile;
+            TrProfile profile = renderProcess.Viewer.Simulator.TRP.TrackProfile;
             
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
@@ -1005,7 +1005,6 @@ namespace ORTS
             // This is BAD BAD BAD, visibility testing shouldn't be in here.
             foreach (var item in renderItems)
             {
-
                 DynatrackMesh mesh = (DynatrackMesh)item.RenderPrimitive;
                 Vector3 mstsLocation = mesh.MSTSLODCenter;
 
@@ -1014,8 +1013,8 @@ namespace ORTS
                 {
                     for (uint i = 0; i < mesh.LODGrid.Length; i++)
                     {
-                        bool test = RenderProcess.Viewer.Camera.InRange(mstsLocation,
-                                            mesh.TrProfile.TrProfileLODItems[i].CutoffRadius);
+                        LODItem lod = (LODItem)mesh.TrProfile.LODItems[0];
+                        bool test = RenderProcess.Viewer.Camera.InRange(mstsLocation, lod.CutoffRadius);
                         if (!test) continue;
                         //TODO: All of the content of the switch block below needs to be
                         //      replaced by general state handling, driven from track profile.
@@ -1053,11 +1052,11 @@ namespace ORTS
 
                         // The following are controlled by options in the track profile
                         graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias =
-                                    mesh.TrProfile.TrProfileLODItems[i].MipMapLevelOfDetailBias;
+                                    lod.MipMapLevelOfDetailBias;
                         graphicsDevice.RenderState.AlphaBlendEnable =
-                            mesh.TrProfile.TrProfileLODItems[i].AlphaBlendEnable;
+                            lod.AlphaBlendEnable;
                         graphicsDevice.RenderState.AlphaTestEnable =
-                            mesh.TrProfile.TrProfileLODItems[i].AlphaTestEnable;
+                            lod.AlphaTestEnable;
 
                         SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
                         SceneryShader.ZBias = item.RenderPrimitive.ZBias;

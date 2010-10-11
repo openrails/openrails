@@ -53,7 +53,7 @@ namespace ORTS
         {
 			SharedShape.PrepareFrame(frame, Location, Flags);
         }
-    }
+    } // class StaticShape
 
 	public class StaticTrackShape : StaticShape
 	{
