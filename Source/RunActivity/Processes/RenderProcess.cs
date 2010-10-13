@@ -54,12 +54,9 @@ namespace ORTS
         public new bool IsMouseVisible = false;  // handles cross thread issues by signalling RenderProcess of a change
 
         // Diagnostic information
-        public float FrameRate = -1; // frames-per-second, information displayed by InfoViewer in upper left
-        public float FrameTime = -1; // seconds
-        public float FrameJitter = -1; // seconds
-		public float SmoothedFrameRate = -1;
-		public float SmoothedFrameTime = -1;
-		public float SmoothedFrameJitter = -1;
+		public readonly SmoothedData FrameRate = new SmoothedData();
+		public readonly SmoothedData FrameTime = new SmoothedData();
+		public readonly SmoothedData FrameJitter = new SmoothedData();
 		public int[] PrimitiveCount = new int[(int)RenderPrimitiveSequence.Sentinel];
 		public int[] PrimitivePerFrame = new int[(int)RenderPrimitiveSequence.Sentinel];
 		public int RenderStateChangesCount = 0;
@@ -245,36 +242,11 @@ namespace ORTS
 			if (elapsedRealTime < 0.001)
 				return;
 
-			// Smoothing filter length
-			if (lastElapsedTime < 0)
-			{
-				lastElapsedTime = 0;
-			}
-			else
-			{
-				float rate = 3.0f / elapsedRealTime;
-
-				// Calculate current frame rate, time and jitter.
-				FrameRate = 1.0f / elapsedRealTime;
-				FrameTime = elapsedRealTime;
-				FrameJitter = Math.Abs(lastElapsedTime - elapsedRealTime);
-				lastElapsedTime = elapsedRealTime;
-
-				// Update smoothed frame rate, time and jitter.
-				if (SmoothedFrameRate < 0)
-					SmoothedFrameRate = FrameRate;
-				else
-					SmoothedFrameRate = (SmoothedFrameRate * (rate - 1.0f) + FrameRate) / rate;
-				if (SmoothedFrameTime < 0)
-					SmoothedFrameTime = FrameTime;
-				else
-					SmoothedFrameTime = (SmoothedFrameTime * (rate - 1.0f) + FrameTime) / rate;
-				if (SmoothedFrameJitter < 0)
-					SmoothedFrameJitter = FrameJitter;
-				else
-					SmoothedFrameJitter = (SmoothedFrameJitter * (rate - 1.0f) + FrameJitter) / rate;
-			}
-
+			FrameRate.Update(elapsedRealTime, 1f / elapsedRealTime);
+			FrameTime.Update(elapsedRealTime, elapsedRealTime);
+			if (lastElapsedTime != -1)
+				FrameJitter.Update(elapsedRealTime, Math.Abs(lastElapsedTime - elapsedRealTime));
+			lastElapsedTime = elapsedRealTime;
 		}
     }// RenderProcess
 }

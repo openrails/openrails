@@ -10,12 +10,9 @@ namespace ORTS
 	public class Profiler
 	{
 		public readonly string Name;
-		public double Wall { get; private set; }
-		public double CPU { get; private set; }
-		public double Wait { get { return Wall > CPU ? Wall - CPU : 0; } }
-		public double SmoothedWall { get; private set; }
-		public double SmoothedCPU { get; private set; }
-		public double SmoothedWait { get { return SmoothedWall > SmoothedCPU ? SmoothedWall - SmoothedCPU : 0; } }
+		public SmoothedData Wall { get; private set; }
+		public SmoothedData CPU { get; private set; }
+		public SmoothedData Wait { get; private set; }
 		readonly Stopwatch TimeTotal;
 		readonly Stopwatch TimeRunning;
 		TimeSpan TimeCPU;
@@ -25,6 +22,9 @@ namespace ORTS
 		public Profiler(string name)
 		{
 			Name = name;
+			Wall = new SmoothedData();
+			CPU = new SmoothedData();
+			Wait = new SmoothedData();
 			TimeTotal = new Stopwatch();
 			TimeRunning = new Stopwatch();
 			foreach (ProcessThread thread in Process.GetCurrentProcess().Threads)
@@ -57,11 +57,9 @@ namespace ORTS
 			TimeTotal.Stop();
 			TimeRunning.Stop();
 			// Calculate the Wall and CPU times from timers.
-			Wall = 100d * (double)TimeRunning.ElapsedMilliseconds / (double)TimeTotal.ElapsedMilliseconds;
-			CPU = 100d * (double)TimeCPU.TotalMilliseconds / (double)TimeTotal.ElapsedMilliseconds;
-			var rate = 3000d / TimeTotal.ElapsedMilliseconds;
-			SmoothedWall = (SmoothedWall * (rate - 1) + Wall) / rate;
-			SmoothedCPU = (SmoothedCPU * (rate - 1) + CPU) / rate;
+			Wall.Update(TimeTotal.ElapsedMilliseconds / 1000f, 100f * (float)TimeRunning.ElapsedMilliseconds / (float)TimeTotal.ElapsedMilliseconds);
+			CPU.Update(TimeTotal.ElapsedMilliseconds / 1000f, 100f * (float)TimeCPU.TotalMilliseconds / (float)TimeTotal.ElapsedMilliseconds);
+			Wait.Update(TimeTotal.ElapsedMilliseconds / 1000f, Math.Max(0, Wall.Value - CPU.Value));
 			// Resume timers.
 			TimeTotal.Reset();
 			TimeRunning.Reset();

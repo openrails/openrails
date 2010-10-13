@@ -31,12 +31,13 @@ namespace ORTS
 		ElapsedTime ElapsedTime = new ElapsedTime();
 
         readonly int ProcessorCount = System.Environment.ProcessorCount;
+		readonly int GCGenerationCount = System.GC.MaxGeneration + 1; // Include 0 as well.
 
         public InfoDisplay( Viewer3D viewer )
         {
             Viewer = viewer;
 			var material = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
-			TextPrimitive = new TextPrimitive(material, new Vector2(10, 10), Color.White, 0.5f, Color.Black);
+			TextPrimitive = new TextPrimitive(material, new Vector2(10, 10), Color.White, 0.25f, Color.Black);
         }
 
 		public void Stop()
@@ -83,7 +84,7 @@ namespace ORTS
 			ElapsedTime += elapsedTime;
 			UpdateDialogs(elapsedTime);
 
-			if (Program.RealTime - LastUpdateTime >= 0.1)
+			if (Program.RealTime - LastUpdateTime >= 0.25)
 			{
 				double elapsedRealSeconds = Program.RealTime - LastUpdateTime;
 				LastUpdateTime = Program.RealTime;
@@ -101,17 +102,17 @@ namespace ORTS
 			{
 				Logger.Data(Program.Revision); //SVN Revision
 				Logger.Data(FrameNumber.ToString()); //Frame Number
-				Logger.Data(Viewer.RenderProcess.FrameRate.ToString("F0")); //FPS
-				Logger.Data(Viewer.RenderProcess.FrameTime.ToString("F4")); //Frame Time
-				Logger.Data(Viewer.RenderProcess.FrameJitter.ToString("F4")); //Frame Jitter
+				Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0")); //FPS
+				Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4")); //Frame Time
+				Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4")); //Frame Jitter
 				Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString()); //Primitives
 				Logger.Data(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
 				Logger.Data(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
 				Logger.Data(ProcessorCount.ToString()); //Processors
-				Logger.Data(Viewer.RenderProcess.Profiler.Wall.ToString("F0")); //Render Process %
-				Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.ToString("F0")); //Updater Process %
-				Logger.Data(Viewer.LoaderProcess.Profiler.Wall.ToString("F0")); //Loader Process %
-				Logger.Data(Viewer.SoundProcess.Profiler.Wall.ToString("F0")); //Sound Process %
+				Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0")); //Render Process %
+				Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0")); //Updater Process %
+				Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0")); //Loader Process %
+				Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0")); //Sound Process %
 				Logger.Data(Viewer.Camera.TileX.ToString());     //
 				Logger.Data(Viewer.Camera.TileZ.ToString());     // Camera coordinates
 				Logger.Data(Viewer.Camera.Location.ToString());  //
@@ -229,7 +230,7 @@ namespace ORTS
 			}
             TextBuilder.AppendLine();
 
-			TextBuilder.AppendFormat("FPS = {0:F0}", Viewer.RenderProcess.SmoothedFrameRate); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("FPS = {0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue); TextBuilder.AppendLine();
 /*
             //WHN:
             status = Viewer.PlayerTrain.RearTDBTraveller.TNToString();
@@ -295,17 +296,17 @@ namespace ORTS
             TextBuilder.AppendFormat("Logging Enabled = {0}", LoggerEnabled); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Memory = {0:F0} MB", memory / 1024 / 1024); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.SmoothedCPU + Viewer.UpdaterProcess.Profiler.SmoothedCPU + Viewer.LoaderProcess.Profiler.SmoothedCPU + Viewer.SoundProcess.Profiler.SmoothedCPU) / ProcessorCount, ProcessorCount); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms)", Viewer.RenderProcess.SmoothedFrameRate, Viewer.RenderProcess.SmoothedFrameTime * 1000, Viewer.RenderProcess.SmoothedFrameJitter * 1000); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("CPU = {0:F0}% (GCs: {2}, {1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount, String.Join("/", Enumerable.Range(0, GCGenerationCount).Select(i => GC.CollectionCount(i).ToString()).ToArray())); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms)", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedValue * 1000, Viewer.RenderProcess.FrameJitter.SmoothedValue * 1000); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Adapter = {0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render Primitives = {0:F0} ({1})", Viewer.RenderProcess.PrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray())); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render State Changes = {0:F0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Render Image Changes = {0:F0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.SmoothedWall, Viewer.RenderProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Updater Process = {0:F0}% ({1:F0}% wait)", Viewer.UpdaterProcess.Profiler.SmoothedWall, Viewer.UpdaterProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait)", Viewer.LoaderProcess.Profiler.SmoothedWall, Viewer.LoaderProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Sound Process = {0:F0}% ({1:F0}% wait)", Viewer.SoundProcess.Profiler.SmoothedWall, Viewer.SoundProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.SmoothedWall + Viewer.UpdaterProcess.Profiler.SmoothedWall + Viewer.LoaderProcess.Profiler.SmoothedWall + Viewer.SoundProcess.Profiler.SmoothedWall, Viewer.RenderProcess.Profiler.SmoothedWait + Viewer.UpdaterProcess.Profiler.SmoothedWait + Viewer.LoaderProcess.Profiler.SmoothedWait + Viewer.SoundProcess.Profiler.SmoothedWait); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Updater Process = {0:F0}% ({1:F0}% wait)", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait)", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Sound Process = {0:F0}% ({1:F0}% wait)", Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.SoundProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue + Viewer.LoaderProcess.Profiler.Wall.SmoothedValue + Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue + Viewer.LoaderProcess.Profiler.Wait.SmoothedValue + Viewer.SoundProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Camera: TileX:{0:F0} TileZ:{1:F0} X:{2:F4} Y:{3:F4} Z:{4:F4}", Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location.X, Viewer.Camera.Location.Y, Viewer.Camera.Location.Z); TextBuilder.AppendLine();
         }
 
@@ -347,7 +348,6 @@ namespace ORTS
         public readonly SpriteBatchMaterial Material;
 		public readonly Vector2 Position;
 		public readonly Color Color;
-		public readonly float ShadowStrength;
 		public readonly Color ShadowColor;
         public string Text;
 
@@ -356,8 +356,7 @@ namespace ORTS
 			Material = material;
 			Position = position;
 			Color = color;
-			ShadowStrength = shadowStrength;
-			ShadowColor = shadowColor;
+			ShadowColor = new Color(shadowColor, shadowStrength);
 		}
 
         /// <summary>
@@ -366,12 +365,16 @@ namespace ORTS
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-			if (ShadowStrength > 0.01f)
+			if (ShadowColor.A > 0.01f)
 			{
-				var color = new Color(ShadowColor, ShadowStrength);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y + 0), color);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 0, Position.Y + 1), color);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y + 1), color);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X - 1, Position.Y - 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 0, Position.Y - 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y - 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X - 1, Position.Y + 0), ShadowColor);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y + 0), ShadowColor);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X - 1, Position.Y + 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 0, Position.Y + 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y + 1), ShadowColor);
 			}
 			Material.SpriteBatch.DrawString(Material.DefaultFont, Text, Position, Color);
         }

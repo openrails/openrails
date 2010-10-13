@@ -34,6 +34,7 @@ namespace ORTS.Popups
 		Label POIDistance;
 
 		float LastSpeedMpS;
+		SmoothedData AccelerationMpSpS = new SmoothedData();
 
 		static readonly Dictionary<TrackMonitorSignalAspect, Rectangle> SignalAspectSources = InitSignalAspectSources();
 		static Dictionary<TrackMonitorSignalAspect, Rectangle> InitSignalAspectSources()
@@ -118,8 +119,11 @@ namespace ORTS.Popups
 
 		public void UpdateText(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, TrackMonitorSignalAspect signalAspect, DispatcherPOIType poiType, float poiDistance)
 		{
-			var speedProjectedMpS = speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds;
-			speedProjectedMpS = speedMpS > 0 ? Math.Max(0, speedProjectedMpS) : Math.Min(0, speedProjectedMpS);
+			AccelerationMpSpS.Update(elapsedTime.ClockSeconds, 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds);
+			LastSpeedMpS = speedMpS;
+			//var speedProjectedMpS = speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds;
+			var speedProjectedMpS = speedMpS + AccelerationMpSpS.SmoothedValue;
+			speedProjectedMpS = speedMpS > float.Epsilon ? Math.Max(0, speedProjectedMpS) : speedMpS < -float.Epsilon ? Math.Min(0, speedProjectedMpS) : 0;
 			SpeedCurrent.Text = FormatSpeed(speedMpS, milepostUnitsMetric);
 			SpeedProjected.Text = FormatSpeed(speedProjectedMpS, milepostUnitsMetric);
 			LastSpeedMpS = speedMpS;

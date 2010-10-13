@@ -180,6 +180,7 @@
     <Compile Include="Common\Helpers.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
+    <Compile Include="Common\SmoothedData.cs" />
     <Compile Include="Common\SteamTable.cs" />
     <Compile Include="Common\SunMoonPos.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
