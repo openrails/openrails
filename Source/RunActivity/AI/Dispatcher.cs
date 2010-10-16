@@ -450,6 +450,9 @@ namespace ORTS
                 if (Reservations[j] == auth.TrainID)
                     n++;
             //Console.WriteLine("setauth {0} {1} {2} {3}", auth.TrainID, result, n, nRev);
+            //for (int j = 0; j < Reservations.Length; j++)
+            //    if (Reservations[j] == auth.TrainID)
+            //        Console.WriteLine(" res {0}", j);
             return result;
         }
 

@@ -130,7 +130,7 @@ namespace ORTS
                 NextStopNode = FindStopNode(NextStopNode, 50);
                 if (NextStopNode == null)
                     return;
-                //Console.WriteLine("nextstop {0} {1} {2}", NextStopNode.ID, NextStopNode.Type, NextStopNode.IsFacingPoint);
+                //Console.WriteLine("nextstop {0} {1} {2} {3} {4}", UiD, NextStopNode.ID, NextStopNode.Type, NextStopNode.IsFacingPoint, SwitchList.Count);
                 if (!CalcNextStopDistance(clockTime))
                     return;
             }
@@ -160,7 +160,8 @@ namespace ORTS
             float distanceM = dir * SpeedMpS * elapsedClockSeconds;
             NextStopDistanceM -= distanceM;
             float targetMpSS = CalcAccelMpSS();
-            //Console.WriteLine("update {0} {1} {2}", NextStopDistanceM, SpeedMpS, targetMpSS);
+            //if (NextStopDistanceM < 100)
+            //    Console.WriteLine("update {0} {1} {2} {3} {4}", NextStopDistanceM, SpeedMpS, targetMpSS, AITrainThrottlePercent, AITrainBrakePercent);
             if (elapsedClockSeconds > 0)
                 AdjustControls(targetMpSS, dir * (SpeedMpS - prevSpeedMpS) / elapsedClockSeconds, dir * elapsedClockSeconds);
         }
@@ -252,7 +253,7 @@ namespace ORTS
                     if (tn != null && tn.TrJunctionNode != null)
                     {
                         TrackShape shape = Path.TSectionDat.TrackShapes.Get(tn.TrJunctionNode.ShapeIndex);
-                        if (shape != null)
+                        if (shape != null && shape.ClearanceDistance > 30)
                             clearance = 1.5f * (float)shape.ClearanceDistance;
                     }
                 }
@@ -304,8 +305,8 @@ namespace ORTS
                         return node;
                     Path.AlignSwitch(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode));
                 }
-                if (node.JunctionIndex >= 0)
-                    SwitchList.Add(new AISwitchInfo(Path,node));
+                if (node.JunctionIndex >= 0 && node != TrackAuthority.EndNode)
+                        SwitchList.Add(new AISwitchInfo(Path, node));
             }
             return node;
         }
@@ -470,6 +471,7 @@ namespace ORTS
                         stopDistanceM = 0;
                     if (d < 40.5f && !AI.Simulator.SwitchIsOccupied(sw.JunctionNode))
                         sw.JunctionNode.SelectedRoute = sw.SelectedRoute;
+                    //Console.WriteLine("accelthrow {0} {1} {2} {3} {4} {5}", UiD, sw.JunctionNode.SelectedRoute, sw.SelectedRoute, d, SpeedMpS, !AI.Simulator.SwitchIsOccupied(sw.JunctionNode));
                     break;
                 }
             }
@@ -533,6 +535,7 @@ namespace ORTS
                 minSpeedSq = (stopDistanceM - .2f) * MaxDecelMpSS;
             if (minSpeedSq < 0)
                 minSpeedSq = 0;
+            //Console.WriteLine("{0} {1}", stopDistanceM, SpeedMpS);
             float speedSq = SpeedMpS * SpeedMpS;
             if (speedSq > maxSpeedSq && stopDistanceM>0 && 2*stopDistanceM*MaxDecelMpSS<speedSq)
                 return -.5f*speedSq/stopDistanceM;
@@ -576,7 +579,10 @@ namespace ORTS
                     float ds= timeS * (targetMpSS - measMpSS);
                     SpeedMpS += ds;
                     foreach (TrainCar car in Cars)
-                        car.SpeedMpS += ds;
+                        if (car.Flipped)
+                            car.SpeedMpS -= ds;
+                        else
+                            car.SpeedMpS += ds;
                     //Console.WriteLine("extra {0} {1} {2}", SpeedMpS, targetMpSS, measMpSS);
                 }
                 //Console.WriteLine("down {0} {1}", AITrainThrottlePercent, AITrainBrakePercent);
@@ -600,7 +606,10 @@ namespace ORTS
                     float ds = timeS * (targetMpSS - measMpSS);
                     SpeedMpS += ds;
                     foreach (TrainCar car in Cars)
-                        car.SpeedMpS += ds;
+                        if (car.Flipped)
+                            car.SpeedMpS -= ds;
+                        else
+                            car.SpeedMpS += ds;
                     //Console.WriteLine("extra {0} {1} {2}", SpeedMpS, targetMpSS, measMpSS);
                 }
                 //Console.WriteLine("up {0} {1}", AITrainThrottlePercent, AITrainBrakePercent);
