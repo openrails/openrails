@@ -1,0 +1,311 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Menu</name>
+    </assembly>
+    <members>
+        <member name="F:ORTS.DetailsForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.DetailsForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.DetailsForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.ExploreForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.ExploreForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.ExploreForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.OptionsForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.OptionsForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.MainForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.MainForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:MSTS.STFReader">
+            <summary>Used for reading data from Structured Text Format (MSTS1 style) files.
+            </summary><remarks><para>
+            An STF file is whitespace delimitered file, taking the format - {item}{whitespace}[repeated].</para><para>
+             </para><para>
+            At it's most simple an STF file has the format - {token_item}{whitespace}{data_item}{whitespace}(repeated)</para><para>
+            Even, more simplisitically every {data_item} can be a {constant_item}</para>
+            <code lang="STF" title="STF Example"><para>
+                Example:</para><para>
+                name SimpleSTFfile</para><para>
+                weight 100</para><para>
+                speed 50.25</para>
+            </code> <para>
+            STF also has a block methodology where a {data_item} following a {token_item} can start with '(' followed by any number of {data_item}s and closed with a ')'.
+            The contents of the block are defined in the specific file schema, and not in the STF definition.
+            The STF defintion allows that inside a pair of parentheses may be a single {constant_item}, multiple whitespace delimitered {constant_item}s, or a nested {token_item}{data_item} pair (which could contain a further nested block recursively).</para>
+            <code lang="STF" title="STF Example"><para>
+                Example:</para><para>
+                name BlockedSTFfile</para><para>
+                root_constant 100</para><para>
+                root_block_1</para><para>
+                (</para><para>
+                      nested_block_1_1</para><para>
+                      (</para><para>
+                            1</para><para>
+                      )</para><para>
+                      nested_block_1_2 ( 5 )</para><para>
+                )</para><para>
+                root_block_2</para><para>
+                (</para><para>
+                      1 2 3</para><para>
+                )</para><para>
+                root_block_3 ( a b c )</para>
+            </code> <para>
+            Numeric {constan_item}s can include a 'unit' suffix, which is handled in the ReadDouble() function.</para><para>
+            Within ReadDouble these units are then converted to the standards used throughout OR - meters, newtons, kilograms.</para>
+            <code lang="STF" title="STF Example"><para>
+                Example:</para><para>
+                name STFfileWithUnits</para><para>
+                weight 100kg</para><para>
+                speed 50mph</para>
+            </code> <para>
+            Whitespaces can be included within any {item} using a double quotation notation.
+            Quoted values also support a trailing addition operator to indicate an append operation of multiple quoted strings.</para><para>
+            Although append operations are technically allowed for {token_item}'s this practice is *strongly* discouraged for readability.</para>
+            <code lang="STF" title="STF Example"><para>
+                Example:</para><para>
+                simple_token "Data Item with" + " whitespace"</para><para>
+                block_token ( "Data " + "Item 1" "Data Item 2" )</para><para>
+                "discouraged_" + "token" -1</para><para>
+                Error Example:</para><para>
+                error1 "You cannot use append suffix to non quoted " + items</para>
+            </code> <para>
+            The STF format also supports 3 special {token_item}s - include, comment &amp; skip.</para><list class="bullet">
+            <listItem><para>include - must be at the root level (that is to say it cannot be included within a block).
+            After an include directive the {constant_item} is a filename relative to the current processing STF file.
+            The include token has the effect of in-lining the defined file into the current document.</para></listItem>
+            <listItem><para>comment &amp; skip - must be followed by a {data_item} which will not be processed in OR</para></listItem>
+            </list>
+            </remarks>
+            <example>
+            !!!TODO!!!
+            </example>
+            <exception cref="T:MSTS.STFException"><para>
+            STF reports errors using the  exception static members</para><para>
+            There are three broad categories of error</para><list class="bullet">
+            <listItem><para>Failure - Something which prevents loading from continuing, this throws an unhandled exception and drops out of Open Rails.</para></listItem>
+            <listItem><para>Error - The data read does not have logical meaning - STFReader does not generate these errors, this is only appropriate STFReader consumers who understand the context of the data being processed</para></listItem>
+            <listItem><para>Warning - When an error which can be programatically recovered from should be reported back to the user</para></listItem>
+            </list>
+            </exception>
+        </member>
+        <member name="M:MSTS.STFReader.#ctor(System.IO.Stream,System.String,System.Text.Encoding)">
+            <summary>
+            Create from an input stream, 
+            Assumes header has already been read
+            Filename is just for error reporting purposes.
+            </summary>
+            <param name="inputStream"></param>
+            <param name="fileName"></param>
+        </member>
+        <member name="M:MSTS.STFReader.EndOfBlock">
+            <summary>
+            A block is enclosed in brackets, ie ( block data )
+            Returns true if the next character is the end of block, or end of file
+            Consumes the closing ")"
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadChar">
+            <summary>
+            Read a character, -1 if at end of stream
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.STFReader.PeekPastWhitespace">
+            <summary>
+            Peek ahead to the next non-whitespace character
+            Returns -1 if end of file is reached
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadString">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.STFReader.SkipRestOfBlock">
+            <summary>
+            Skip to the end of this block
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.STFReader.SkipUnknownBlock(System.String)">
+            <summary>
+            We weren't expecting this block
+            If its not a comment, issue a warning
+            and skip the entire block
+            </summary>
+            <param name="token"></param>
+        </member>
+        <member name="M:MSTS.STFReader.VerifyEndOfBlock">
+            <summary>
+            We are inside ( a b c )
+            We expect the next token is ), but if there are more params, skip them and report
+            </summary>
+        </member>
+        <member name="M:MSTS.STFReader.MustMatch(System.String)">
+            <summary>
+            Reports error if not a match then continues
+            </summary>
+            <param name="target"></param>
+        </member>
+        <member name="M:MSTS.STFReader.ReadDouble">
+            <summary>
+            Return double, scaled to meters, grams, newtons if needed
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.STFReader.ThrowUnknownToken(System.String)">
+            <summary>
+            Throw an unknown token exception
+            </summary>
+            <param name="token"></param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "P:MSTS.STFReader.Tree" -->
+        <member name="T:MSTS.MSTSPath">
+            <summary>
+            Deals with the MSTS file structure.
+            </summary>
+        </member>
+        <member name="M:MSTS.MSTSPath.Base">
+            <summary>
+            Returns the base path of the MSTS installation
+            </summary>
+            <returns>no trailing \</returns>
+        </member>
+        <member name="M:MSTS.MSTSPath.RouteFolder(System.String)">
+            <summary>
+            Returns the route folder with out trailing \
+            </summary>
+            <param name="route"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.MSTSPath.TrainSoundPath(System.String,System.String)">
+            <summary>
+            Given a soundfile reference in a wag or eng file, return the path the sound file
+            </summary>
+            <param name="wagfilename"></param>
+            <param name="soundfile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.MSTSPath.SMSSoundPath(System.String,System.String)">
+            <summary>
+            Given a soundfile reference in a cvf file, return the path to the sound file
+            </summary>
+            <param name="wagfilename"></param>
+            <param name="soundfile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ORTS.Program.SetBuildRevision">
+            <summary>
+            Set up the global Build and Revision variables
+            from assembly data and the revision.txt file.
+            </summary>
+        </member>
+        <member name="F:ORTS.FormFolderName.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.FormFolderName.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:MSTS.ACTFile">
+            <summary>
+            Summary description for Class1.
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
+            <summary>
+            Create a new 'ActivitySuccess' LocationEvent
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
+            <summary>
+            Build a default EventTypeAllStops event
+            </summary>
+        </member>
+        <member name="T:ORTS.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:ORTS.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:ORTS.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="1c57d10e-58e8-47d0-8fa7-0119692e655b" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink"  xmlns:dev="file://C:/Program Files/Microsoft SDKs/Sandcastle/Schemas/Authoring/developer.xsd">
+  	<history>
+  		<version revisionNumber="1" author="Strings" date="16OCT2010"></version>
+	</history>
+    <introduction>
+      <para>Welcome to the documentation for the <application>Open Rails</application> project.  This document like the code itself, is a community effort.</para>
+      <para>If you find something missing in the documentation, and can fill that whole with your knowledge, then you can make an important contribution that will help all of the <application>Open Rails</application> community. Everyone can contribute something in our community.</para>
+    </introduction>
+  </developerConceptualDocument>
+</topic>

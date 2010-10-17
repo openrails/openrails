@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Topics>
+  <Topic id="1c57d10e-58e8-47d0-8fa7-0119692e655b" visible="True" isDefault="true" apiParentMode="InsertAsChild" title="Open Rails Documentation">
+    <Topic id="dbf77cac-4da8-43d3-8fb6-ece24f5f1617" visible="True" title="Contributing to the Open Rails project">
+      <Topic id="f9325597-294e-41f7-949c-6a86af4759bc" visible="True" title="HowTo: Updating to the Latest Source" />
+      <Topic id="f07e4606-d499-40a8-87cc-47b8b7b1ee77" visible="True" title="HowTo: Commit a Contribution" />
+      <Topic id="c067895a-196c-4bb4-a37e-2b6c37c67534" visible="True" title="HowTo: Adding to the Documentation" />
+    </Topic>
+    <Topic id="3065cbad-710c-40c0-a6e4-71336ca99a87" visible="True" tocTitle="Content Creation Documentation" />
+  </Topic>
+</Topics>
