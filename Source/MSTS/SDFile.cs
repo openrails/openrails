@@ -18,24 +18,19 @@ namespace MSTS
 
         public SDFile(string filename)
         {
-            STFReader f = new STFReader(filename);
-            try
+            using (STFReader f = new STFReader(filename))
             {
-                string token = f.ReadToken();
+                string token = f.ReadItem();
                 while (token != "") // EOF
                 {
-                    if (token == ")") throw (new STFException(f, "Unexpected )"));
+                    if (token == ")") throw new STFException(f, "Unexpected )");
                     else if (token == "(") f.SkipBlock();
                     else if (0 == String.Compare(token, "shape", true)) shape = new SDShape(f);
                     else f.SkipBlock();
-                    token = f.ReadToken();
+                    token = f.ReadItem();
                 }
                 if (shape == null)
-                    throw (new STFException(f, "Missing shape statement"));
-            }
-            finally
-            {
-                f.Close();
+                    throw new STFException(f, "Missing shape statement");
             }
         }
 
@@ -50,17 +45,17 @@ namespace MSTS
             {
 				try
 				{
-					while (!f.EOF())
+					while (!f.EOF)
 					{
-						string token = f.ReadToken();
+						string token = f.ReadItem();
 						if (token == "(")
-							token = f.ReadToken();
+							token = f.ReadItem();
 						if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
 						{
 							while (token != ")")
 							{
-								token = f.ReadToken();
-								if (token == "") throw (new STFException(f, "Missing )"));
+								token = f.ReadItem();
+								if (token == "") throw new STFException(f, "Missing )");
 								else if (0 == String.Compare(token, "ESD_Detail_Level", true)) ESD_Detail_Level = f.ReadIntBlock();
 								else if (0 == String.Compare(token, "ESD_Alternative_Texture", true)) ESD_Alternative_Texture = f.ReadIntBlock();
 								else if (0 == String.Compare(token, "ESD_Bounding_Box", true))
@@ -100,9 +95,10 @@ namespace MSTS
 
             public ESD_Bounding_Box(STFReader f)
             {
-                f.VerifyStartOfBlock();
-                if (f.PeekPastWhitespace() == ')')
-                    return;    // quietly return on ESD_Bounding_Box()
+                f.MustMatch("(");
+                string item = f.ReadItem();
+                if (item == ")") return;    // quietly return on ESD_Bounding_Box()
+                f.RewindItem();
                 float X = f.ReadFloat();
                 float Y = f.ReadFloat();
                 float Z = f.ReadFloat();
@@ -114,7 +110,7 @@ namespace MSTS
                 // JP2indirt.sd has extra parameters
                 for (; ; )
                 {
-                    string token = f.ReadToken();
+                    string token = f.ReadItem();
                     if (token == "" || token == ")")
                         break;
                 }

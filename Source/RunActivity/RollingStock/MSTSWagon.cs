@@ -81,16 +81,15 @@ namespace ORTS
             string orFile = dir + @"\openrails\" + file;
             if (File.Exists(orFile))
                 wagFilePath = orFile;
-            STFReader f = new STFReader(wagFilePath);
-            while (!f.EOF())
-            {
-                string token = f.ReadToken();
-                if (token == ")")
-                    Parse(f.Tree.ToLower() + ")", f);  // ie  wagon(inside) at end of block
-                else
-                    Parse(f.Tree.ToLower(), f);  // otherwise wagon(inside
-            }
-            f.Close();
+            using (STFReader f = new STFReader(wagFilePath))
+                while (!f.EOF)
+                {
+                    string token = f.ReadItem();
+                    if (token == ")")
+                        Parse(f.Tree.ToLower() + ")", f);  // ie  wagon(inside) at end of block
+                    else
+                        Parse(f.Tree.ToLower(), f);  // otherwise wagon(inside
+                }
             if (BrakeSystem == null)
                     BrakeSystem = new AirSinglePipe(this);
         }
@@ -108,7 +107,7 @@ namespace ORTS
             {
                 case "wagon(wagonshape": MainShapeFileName = f.ReadStringBlock(); break;
                 case "wagon(freightanim": ParseFreightAnim(f); break;
-                case "wagon(size": f.VerifyStartOfBlock(); f.ReadFloat(); f.ReadFloat(); Length = f.ReadFloat(); f.VerifyEndOfBlock(); break;
+                case "wagon(size": f.MustMatch("("); f.ReadFloat(); f.ReadFloat(); Length = f.ReadFloat(); f.SkipRestOfBlock(); break;
                 case "wagon(mass": MassKG = f.ReadFloatBlock(); break;
                 case "wagon(inside(sound": InteriorSoundFileName = f.ReadStringBlock(); break;
                 case "wagon(inside(passengercabinfile": InteriorShapeFileName = f.ReadStringBlock(); break;
@@ -127,14 +126,14 @@ namespace ORTS
                 case "wagon(coupling": Couplers.Add(new MSTSCoupling()); break;
                 case "wagon(coupling(couplinghasrigidconnection": Couplers[Couplers.Count - 1].Rigid = f.ReadBoolBlock(); break;
                 case "wagon(coupling(spring(stiffness":
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     Couplers[Couplers.Count - 1].SetStiffness(f.ReadFloat(), f.ReadFloat());
-                    f.VerifyEndOfBlock();
+                    f.SkipRestOfBlock();
                     break;
                 case "wagon(coupling(spring(r0":
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     Couplers[Couplers.Count - 1].SetR0(f.ReadFloat(), f.ReadFloat());
-                    f.VerifyEndOfBlock();
+                    f.SkipRestOfBlock();
                     break;
                 default:
                     if (MSTSBrakeSystem != null)
@@ -189,21 +188,21 @@ namespace ORTS
         }
         public void ParseFreightAnim(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            FreightShapeFileName = f.ReadToken();
+            f.MustMatch("(");
+            FreightShapeFileName = f.ReadItem();
             FreightAnimHeight = f.ReadFloat() - f.ReadFloat();
-            f.VerifyEndOfBlock();
+            f.SkipRestOfBlock();
         }
         public void ParseFriction(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            float c1 = ParseNpMpS(f.ReadString(),f);
+            f.MustMatch("(");
+            float c1 = ParseNpMpS(f.ReadItem(),f);
             float e1 = f.ReadFloat();
-            float v2 = ParseMpS(f.ReadString(),f);
-            float c2 = ParseNpMpS(f.ReadString(),f);
+            float v2 = ParseMpS(f.ReadItem(),f);
+            float c2 = ParseNpMpS(f.ReadItem(),f);
             float e2 = f.ReadFloat();
-            f.ReadString(); f.ReadString(); f.ReadString(); f.ReadString(); f.ReadString();
-            f.VerifyEndOfBlock();
+            f.ReadItem(); f.ReadItem(); f.ReadItem(); f.ReadItem(); f.ReadItem();
+            f.SkipRestOfBlock();
             if (v2 < 0 || v2 > 4.4407f)
             {   // not fcalc ignore friction and use default davis equation
                 // Starting Friction 

@@ -23,10 +23,10 @@ namespace MSTS
 		}
 		public SectionCurve( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			Radius = f.ReadFloat();
 			Angle = f.ReadFloat();
-			while( f.ReadToken() != ")" );  // MSTS seems to ignore extra params
+			while( f.ReadItem() != ")" );  // MSTS seems to ignore extra params
 		}
 		public float Radius;	// meters
 		public float Angle;	// degrees
@@ -41,10 +41,10 @@ namespace MSTS
 		}
 		public SectionSize( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			Width = f.ReadFloat();
 			Length = f.ReadFloat();
-			while( f.ReadToken() != ")" );  // MSTS seems to ignore extra params
+			while( f.ReadItem() != ")" );  // MSTS seems to ignore extra params
 		}
 		public float Width;
 		public float Length;
@@ -58,16 +58,16 @@ namespace MSTS
 		
 		public TrackSection( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			SectionIndex = f.ReadUInt();
-			string token = f.ReadToken();
+			string token = f.ReadItem();
 			while( token != ")" )
 			{
-				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
+                if (token == "") throw new STFException(f, "Missing )");
 				else if( 0 == String.Compare( token,"SectionSize",true ) )  SectionSize = new SectionSize( f );
 				else if( 0 == String.Compare( token,"SectionCurve", true ) ) SectionCurve = new SectionCurve( f );
 				else f.SkipBlock();
-				token = f.ReadToken();
+				token = f.ReadItem();
 			}
 			//if( SectionSize == null )
 			//	throw( new STFError( f, "Missing SectionSize" ) );
@@ -83,11 +83,11 @@ namespace MSTS
 	{
 		public RouteTrackSection( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			f.MustMatch( "SectionCurve" );
-			f.VerifyStartOfBlock();
-			f.ReadToken(); // 0 or 1
-			f.VerifyEndOfBlock();
+			f.MustMatch("(");
+			f.ReadItem(); // 0 or 1
+			f.SkipRestOfBlock();
 			SectionIndex = f.ReadUInt();
 			SectionSize = new SectionSize();
 			float a = f.ReadFloat();
@@ -104,7 +104,7 @@ namespace MSTS
 				SectionCurve.Radius = b;
 				SectionCurve.Angle = (float)M.Degrees( a );
 			}
-			f.VerifyEndOfBlock();
+			f.SkipRestOfBlock();
 
 		}
 	}
@@ -113,31 +113,31 @@ namespace MSTS
 	{
 		public TrackSections( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			MaxSectionIndex = f.ReadUInt();
-			string token = f.ReadToken();
+			string token = f.ReadItem();
 			while( token != ")" ) 
 			{
-				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
+                if (token == "") throw new STFException(f, "Missing )");
 				else if (0 == String.Compare(token, "TrackSection", true)) {
 					AddSection(f, new TrackSection(f));
 				} else f.SkipBlock();
-				token = f.ReadToken();
+				token = f.ReadItem();
 			}
 		}
 
 		public void AddRouteTrackSections( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			MaxSectionIndex = f.ReadUInt();
-			string token = f.ReadToken();
+			string token = f.ReadItem();
 			while( token != ")" ) 
 			{
-				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
+                if (token == "") throw new STFException(f, "Missing )");
 				else if (0 == String.Compare(token, "TrackSection", true)) {
 					AddSection(f, new RouteTrackSection(f));
 				} else f.SkipBlock();
-				token = f.ReadToken();
+				token = f.ReadItem();
 			}
 		}
 		private void AddSection(STFReader f, TrackSection section) {
@@ -163,7 +163,7 @@ namespace MSTS
 	{
 		public SectionIdx( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			NoSections = f.ReadUInt();
 			X = f.ReadDouble();
 			Y = f.ReadDouble();
@@ -172,7 +172,7 @@ namespace MSTS
 			TrackSections = new uint[ NoSections ]; 
 			for( int i = 0; i < NoSections; ++i )  
 			{
-       			string token = f.ReadToken();
+       			string token = f.ReadItem();
                 if( token == ")" ) 
                 {
                     STFException.ReportError( f, "Missing track section" );
@@ -187,7 +187,7 @@ namespace MSTS
 					STFException.ReportError(f, error.Message);
 				}
 			}
-			f.VerifyEndOfBlock();
+			f.SkipRestOfBlock();
 		}
 		public uint NoSections;
 		public double X,Y,Z;  // Offset
@@ -199,13 +199,13 @@ namespace MSTS
 	{
 		public TrackShape( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			ShapeIndex = f.ReadUInt();
-			string token = f.ReadToken();
+			string token = f.ReadItem();
 			int nextPath = 0;
 			while( token != ")" )
 			{
-				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
+                if (token == "") throw new STFException(f, "Missing )");
 				else if( 0 == String.Compare( token,"FileName", true ) )  FileName = f.ReadStringBlock();
 				else if( 0 == String.Compare( token,"NumPaths", true ) ) 
 				{
@@ -218,7 +218,7 @@ namespace MSTS
 				else if( 0 == String.Compare( token,"TunnelShape",true ) ) TunnelShape = f.ReadBoolBlock();
 				else if( 0 == String.Compare( token,"RoadShape",true ) ) RoadShape = f.ReadBoolBlock();
 				else f.SkipBlock();
-				token = f.ReadToken();
+				token = f.ReadItem();
 			}
 			// TODO - this was removed since TrackShape( 183 ) is blank
 			//if( FileName == null )	throw( new STFError( f, "Missing FileName" ) );
@@ -239,15 +239,15 @@ namespace MSTS
 	{
 		public TrackShapes( STFReader f )
 		{
-			f.VerifyStartOfBlock();
+			f.MustMatch("(");
 			MaxShapeIndex = f.ReadUInt();
-			string token = f.ReadToken();
+			string token = f.ReadItem();
 			while( token != ")" ) 
 			{
-				if( token == "" ) throw ( new STFException( f, "Missing )" ) );
+                if (token == "") throw new STFException(f, "Missing )");
 				else if( 0 == String.Compare( token,"TrackShape",true ) ) this.Add( new TrackShape(f) );
 				else f.SkipBlock();
-				token = f.ReadToken();
+				token = f.ReadItem();
 			}
 		}
 		public TrackShape Get( uint targetShapeIndex )
@@ -267,52 +267,42 @@ namespace MSTS
 	{
 		public void AddRouteTSectionDatFile( string pathNameExt )
 		{
-			STFReader f = new STFReader( pathNameExt );
-            if (f.Header != "SIMISA@@@@@@@@@@JINX0T0t______")
+            using (STFReader f = new STFReader(pathNameExt))
             {
-				Trace.TraceWarning("Ignoring invalid TSECTION.DAT in route folder.");
-                return;
+                if (f.Header != "SIMISA@@@@@@@@@@JINX0T0t______")
+                {
+                    Trace.TraceWarning("Ignoring invalid TSECTION.DAT in route folder.");
+                    return;
+                }
+                string token = f.ReadItem();
+                while (token != "") // EOF
+                {
+                    if (token == "(") throw new STFException(f, "Unexpected (");
+                    else if (token == ")") throw new STFException(f, "Unexpected )");
+                    else if (0 == String.Compare(token, "TrackSections", true)) TrackSections.AddRouteTrackSections(f);
+                    // todo read in SectionIdx part of RouteTSectionDat
+                    else f.SkipBlock();
+                    token = f.ReadItem();
+                }
             }
-			try
-			{
-				string token = f.ReadToken();
-				while( token != "" ) // EOF
-				{
-					if( token == "(" ) throw ( new STFException( f, "Unexpected (" ) );
-					else if( token == ")" ) throw ( new STFException( f, "Unexpected )" ) );
-					else if( 0 == String.Compare( token,"TrackSections",true ) ) TrackSections.AddRouteTrackSections(f);
-						// todo read in SectionIdx part of RouteTSectionDat
-					else f.SkipBlock();
-					token = f.ReadToken();
-				}
-			}
-			finally
-			{
-				f.Close();
-			}
 		}
 		public TSectionDatFile( string filePath )
 		{
-			STFReader f = new STFReader( filePath );
-			try
-			{
-				string token = f.ReadToken();
-				while( token != "" ) // EOF
-				{
-					if( token == "(" ) throw ( new STFException( f, "Unexpected (" ) );
-					else if( token == ")" ) throw ( new STFException( f, "Unexpected )" ) );
-					else if( 0 == String.Compare( token,"TrackSections",true ) ) TrackSections = new TrackSections(f);
-					else if( 0 == String.Compare( token,"TrackShapes", true ) ) TrackShapes = new TrackShapes(f);
-					else f.SkipBlock();
-					token = f.ReadToken();
-				}
-				if( TrackSections == null ) throw( new STFException( f, "Missing TrackSections" ) );
-				if( TrackShapes == null ) throw ( new STFException( f, "Missing TrackShapes" ) );
-			}
-			finally
-			{
-				f.Close();
-			}
+            using (STFReader f = new STFReader(filePath))
+            {
+                string token = f.ReadItem();
+                while (token != "") // EOF
+                {
+                    if (token == "(") throw new STFException(f, "Unexpected (");
+                    else if (token == ")") throw new STFException(f, "Unexpected )");
+                    else if (0 == String.Compare(token, "TrackSections", true)) TrackSections = new TrackSections(f);
+                    else if (0 == String.Compare(token, "TrackShapes", true)) TrackShapes = new TrackShapes(f);
+                    else f.SkipBlock();
+                    token = f.ReadItem();
+                }
+                if (TrackSections == null) throw new STFException(f, "Missing TrackSections");
+                if (TrackShapes == null) throw new STFException(f, "Missing TrackShapes");
+            }
 		}
 		public TrackSections TrackSections;
 		public TrackShapes TrackShapes;

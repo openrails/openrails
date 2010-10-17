@@ -44,15 +44,10 @@ namespace ORTS
         public Interpolator(STFReader reader)
         {
             List<float> list = new List<float>();
-            reader.VerifyStartOfBlock();
-            for (; ; )
-            {
-                int c = reader.PeekPastWhitespace();
-                if (reader.EOF() || c == ')')
-                    break;
+            reader.MustMatch("(");
+            while (!reader.EndOfBlock())
                 list.Add(reader.ReadFloat());
-            }
-            reader.VerifyEndOfBlock();
+            reader.SkipRestOfBlock();
             if (list.Count % 2 == 1)
                 STFException.ReportWarning(reader, "Ignoring extra odd value in Interpolator list.");
             int n = list.Count/2;
@@ -252,16 +247,13 @@ namespace ORTS
         {
             List<float> xlist = new List<float>();
             List<Interpolator> ilist = new List<Interpolator>();
-            reader.VerifyStartOfBlock();
-            for (; ; )
+            reader.MustMatch("(");
+            while(!reader.EndOfBlock())
             {
-                int c = reader.PeekPastWhitespace();
-                if (reader.EOF() || c == ')')
-                    break;
                 xlist.Add(reader.ReadFloat());
                 ilist.Add(new Interpolator(reader));
             }
-            reader.VerifyEndOfBlock();
+            reader.SkipRestOfBlock();
             int n = xlist.Count;
             if (n < 2)
                 STFException.ReportError(reader, "Interpolator must have at least two x values.");

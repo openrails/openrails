@@ -78,14 +78,14 @@ namespace ORTS
 
         public void Parse(STFReader f)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             MinimumValue = f.ReadFloat();
             MaximumValue = f.ReadFloat();
             StepSize = f.ReadFloat();
             IntermediateValue = CurrentValue = f.ReadFloat();
             //Console.WriteLine("controller {0} {1} {2} {3}", MinimumValue, MaximumValue, StepSize, CurrentValue);
             f.ReadTokenNoComment(); // numnotches
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             f.ReadInt();
             for (; ; )
             {
@@ -93,14 +93,14 @@ namespace ORTS
                 if (token == ")") break;
                 if (token == "notch")
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     float value = f.ReadFloat();
                     int smooth = f.ReadInt();
-                    string type = f.ReadString();
+                    string type = f.ReadItem();
                     //Console.WriteLine("Notch {0} {1} {2}", value, smooth, type);
                     Notches.Add(new MSTSNotch(value, smooth, type, f));
                     if (type != ")")
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                 }
             }
             SetValue(CurrentValue);

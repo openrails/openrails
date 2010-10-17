@@ -109,18 +109,17 @@ namespace ORTS
 
             public void WagFile(string filenamewithpath)
             {
-                STFReader f = new STFReader(filenamewithpath);
-                while (!f.EndOfBlock())
-                {
-                    string token = f.ReadToken();
-                    switch (token.ToLower())
+                using (STFReader f = new STFReader(filenamewithpath))
+                    while (!f.EndOfBlock())
                     {
-                        case "engine": Engine = new EngineClass(f); break;
-                        case "_openrails": OpenRails = new OpenRailsData(f); break;
-                        default: f.SkipBlock(); break;
+                        string token = f.ReadItem();
+                        switch (token.ToLower())
+                        {
+                            case "engine": Engine = new EngineClass(f); break;
+                            case "_openrails": OpenRails = new OpenRailsData(f); break;
+                            default: f.SkipBlock(); break;
+                        }
                     }
-                }
-                f.Close();
             }
 
             public class EngineClass
@@ -129,11 +128,11 @@ namespace ORTS
 
                 public EngineClass(STFReader f)
                 {
-                    f.VerifyStartOfBlock();
-                    f.ReadToken();
+                    f.MustMatch("(");
+                    f.ReadItem();
                     while (!f.EndOfBlock())
                     {
-                        string token = f.ReadToken();
+                        string token = f.ReadItem();
                         switch (token.ToLower())
                         {
                             case "type": Type = f.ReadStringBlock(); break;
@@ -149,10 +148,10 @@ namespace ORTS
 
                 public OpenRailsData(STFReader f)
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     while (!f.EndOfBlock())
                     {
-                        string token = f.ReadToken();
+                        string token = f.ReadItem();
                         switch (token.ToLower())
                         {
                             case "dll": DLL = f.ReadStringBlock(); break;

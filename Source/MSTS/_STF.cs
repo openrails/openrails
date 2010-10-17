@@ -20,167 +20,149 @@ using Microsoft.Xna.Framework;
 
 namespace MSTS
 {
-	public class STFException : Exception
-	// STF errors display the last few lines of the STF file when reporting errors.
-	{
-		public static void Report(STFReader reader, Exception error)
-		{
-			Trace.TraceError("STF error in {0}:line {1}", reader.FileName, reader.LineNumber);
-			Trace.WriteLine(error);
-		}
-
-		public static void ReportError(STFReader reader, string message)
-		{
-			Trace.TraceError("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
-		}
-
-		public static void ReportWarning(STFReader reader, string message)
-		{
-			Trace.TraceWarning("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
-		}
-
-		public STFException(STFReader reader, string message)
-			: base(String.Format("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message))
-		{
-		}
-	}
-
-
-	public class STFReader
+    /// <summary>Used for reading data from Structured Text Format (MSTS1 style) files.
+    /// </summary><remarks><para>
+    /// An STF file is whitespace delimitered file, taking the format - {item}{whitespace}[repeated].</para><para>
+    /// &#160;</para><para>
+    /// At it's most simple an STF file has the format - {token_item}{whitespace}{data_item}{whitespace}(repeated)</para><para>
+    /// Even, more simplisitically every {data_item} can be a {constant_item}</para>
+    /// <code lang="STF" title="STF Example"><para>
+    ///     Example:</para><para>
+    ///     name SimpleSTFfile</para><para>
+    ///     weight 100</para><para>
+    ///     speed 50.25</para>
+    /// </code>&#160;<para>
+    /// STF also has a block methodology where a {data_item} following a {token_item} can start with '(' followed by any number of {data_item}s and closed with a ')'.
+    /// The contents of the block are defined in the specific file schema, and not in the STF definition.
+    /// The STF defintion allows that inside a pair of parentheses may be a single {constant_item}, multiple whitespace delimitered {constant_item}s, or a nested {token_item}{data_item} pair (which could contain a further nested block recursively).</para>
+    /// <code lang="STF" title="STF Example"><para>
+    ///     Example:</para><para>
+    ///     name BlockedSTFfile</para><para>
+    ///     root_constant 100</para><para>
+    ///     root_block_1</para><para>
+    ///     (</para><para>
+    ///         &#160;&#160;nested_block_1_1</para><para>
+    ///         &#160;&#160;(</para><para>
+    ///             &#160;&#160;&#160;&#160;1</para><para>
+    ///         &#160;&#160;)</para><para>
+    ///         &#160;&#160;nested_block_1_2 ( 5 )</para><para>
+    ///     )</para><para>
+    ///     root_block_2</para><para>
+    ///     (</para><para>
+    ///         &#160;&#160;1 2 3</para><para>
+    ///     )</para><para>
+    ///     root_block_3 ( a b c )</para>
+    /// </code>&#160;<para>
+    /// Numeric {constan_item}s can include a 'unit' suffix, which is handled in the ReadDouble() function.</para><para>
+    /// Within ReadDouble these units are then converted to the standards used throughout OR - meters, newtons, kilograms.</para>
+    /// <code lang="STF" title="STF Example"><para>
+    ///     Example:</para><para>
+    ///     name STFfileWithUnits</para><para>
+    ///     weight 100kg</para><para>
+    ///     speed 50mph</para>
+    /// </code>&#160;<para>
+    /// Whitespaces can be included within any {item} using a double quotation notation.
+    /// Quoted values also support a trailing addition operator to indicate an append operation of multiple quoted strings.</para><para>
+    /// Although append operations are technically allowed for {token_item}'s this practice is *strongly* discouraged for readability.</para>
+    /// <code lang="STF" title="STF Example"><para>
+    ///     Example:</para><para>
+    ///     simple_token "Data Item with" + " whitespace"</para><para>
+    ///     block_token ( "Data " + "Item 1" "Data Item 2" )</para><para>
+    ///     "discouraged_" + "token" -1</para><para>
+    ///     Error Example:</para><para>
+    ///     error1 "You cannot use append suffix to non quoted " + items</para>
+    /// </code>&#160;<para>
+    /// The STF format also supports 3 special {token_item}s - include, comment &amp; skip.</para><list class="bullet">
+    /// <listItem><para>include - must be at the root level (that is to say it cannot be included within a block).
+    /// After an include directive the {constant_item} is a filename relative to the current processing STF file.
+    /// The include token has the effect of in-lining the defined file into the current document.</para></listItem>
+    /// <listItem><para>comment &amp; skip - must be followed by a {data_item} which will not be processed in OR</para></listItem>
+    /// </list>
+    /// </remarks>
+    /// <example>
+    /// !!!TODO!!!
+    /// </example>
+    /// <exception cref="STFException"><para>
+    /// STF reports errors using the  exception static members</para><para>
+    /// There are three broad categories of error</para><list class="bullet">
+    /// <listItem><para>Failure - Something which prevents loading from continuing, this throws an unhandled exception and drops out of Open Rails.</para></listItem>
+    /// <listItem><para>Error - The data read does not have logical meaning - STFReader does not generate these errors, this is only appropriate STFReader consumers who understand the context of the data being processed</para></listItem>
+    /// <listItem><para>Warning - When an error which can be programatically recovered from should be reported back to the user</para></listItem>
+    /// </list>
+    /// </exception>
+    public class STFReader : IDisposable
 	{
 		StreamReader f;
-		public string FileName;  // only needed for error reporting purposes
-        public int LineNumber = 1;    // current line number for error reporting
-        public string Header;
         private STFReader IncludeReader = null;
        
-		public STFReader( string filename )
+        /// <summary>Open a file, reader the header line, and prepare for STF parsing
+        /// </summary>
+        /// <param name="filename"></param>
+		public STFReader(string filename)
         {
-            f = new StreamReader(filename, true); // TODO,was  System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
+            f = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
             FileName = filename;
             Header = f.ReadLine();
-            ++LineNumber;
+            LineNumber = 2;
         }
-
-        /// <summary>
-        /// Create from an input stream, 
-        /// Assumes header has already been read
-        /// Filename is just for error reporting purposes.
+        /// <summary>Use an open stream for STF parsing, this constructor assumes that the header has already been gathered
         /// </summary>
-        /// <param name="inputStream"></param>
-        /// <param name="fileName"></param>
-        public STFReader(Stream inputStream, string fileName, Encoding encoding )
+        /// <param name="inputStream">Stream that will be parsed</param>
+        /// <param name="fileName">Is only used for error reporting</param>
+        public STFReader(Stream inputStream, string fileName, Encoding encoding)
         {
+            Debug.Assert(inputStream.CanSeek);
             FileName = fileName;
-            f = new StreamReader( inputStream , encoding ); 
+            f = new StreamReader(inputStream , encoding);
+            LineNumber = 1;
         }
 
-		public void Close(){ f.Close(); }
-		 
-		private int Peek()
-        {
-            int c = f.Peek();
-            if (c == -1) // I've seen a problem with compressed input streams with a false -1 on peek
-            {
-                c = f.Read();
-                if( c != -1 )
-                    throw new InvalidDataException("Problem peeking eof in compressed file.");
-            }
-            return c; 
-        }
-
-
-        public bool EOF() { return Peek() == -1; }
-
-        /// <summary>
-        /// A block is enclosed in brackets, ie ( block data )
-        /// Returns true if the next character is the end of block, or end of file
-        /// Consumes the closing ")"
+        /// <summary>Implements the IDisposable interface so this class can be included in a using(...) {...} block.
         /// </summary>
-        /// <returns></returns>
-        public bool EndOfBlock()
+        public void Dispose()
         {
-            int c = PeekPastWhitespace();
-            if( c == ')' )
-                c = f.Read();
-            return c == ')' || c == -1;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
-
-        /// <summary>
-        /// Read a character, -1 if at end of stream
+        ~STFReader()
+        {
+            Dispose(false);
+        }
+        /// <summary>Releases the resources used by the STFReader.
         /// </summary>
-        /// <returns></returns>
-		private int ReadChar(){ int c = f.Read(); if( c == '\n' ) ++LineNumber; return c;}
-
-        /// <summary>
-        /// Peek ahead to the next non-whitespace character
-        /// Returns -1 if end of file is reached
-        /// </summary>
-        /// <returns></returns>
-        public int PeekPastWhitespace()
+        /// <param name="disposing">
+        /// <para>true - release managed and unmanaged resources.</para>
+        /// <para>false - release only unmanaged resources.</para>
+        /// </param>
+        protected virtual void Dispose(bool disposing)
         {
-            // scan ahead and see if the next character is a bracket )
-            int c = f.Peek();
-            while ( IsEof(c) || IsWhiteSpace(c) ) // skip over eof and white space
+            if (disposing)
             {
-                c = ReadChar();
-                if (IsEof(c))
-                    break;   // break on reading eof 
-                c = f.Peek();
-            }
-
-            return c;
-        }
-
-
-        private bool IsWhiteSpace(int c)
-        {
-            return c >= 0 && c <= ' ';
-        }
-
-        private bool IsEof(int c)
-        {
-            return c == -1;
-        }
-
-        public string ReadToken()
-        {
-            return ReadString();
-        }
-
-        public string ReadTokenNoComment()
-        {
-            for (; ; )
-            {
-                string token = ReadString();
-                if (token.StartsWith("_") || token.StartsWith("#"))
-                    SkipBlock();
-                else
-                {
-                    string lower = token.ToLower();
-                    if (lower == "skip" || lower == "comment")
-                        SkipBlock();
-                    else
-                        return token;
-                }
+                f.Close(); f = null;
             }
         }
 
-        public void RewindToken()
-        {
-            Debug.Assert(rewindToken != null, "You must called at least one ReadString() between RewindToken() calls", "The current rewind functionality only allows for a single rewind");
-            rewindNextStringRead = true;
-        }
-
-        /// <summary>
-        /// 
+        /// <summary>Property that returns true when the EOF has been reached
         /// </summary>
-        /// <returns></returns>
-        public string ReadString()
+        public bool EOF { get { return Peek() == -1; } }
+        /// <summary>Filename property for the file being parsed - for reporting purposes
+        /// </summary>
+        public string FileName { get; private set; }
+        /// <summary>Line Number property for the file being parsed - for reporting purposes
+        /// </summary>
+        public int LineNumber { get; private set; }
+        /// <summary>SIMIS header read from the first line of the file being parsed
+        /// </summary>
+        public string Header { get; private set; }
+
+        /// <summary>This is the main function in STFReader, it returns the next whitespace delimited {item} from the STF file.
+        /// </summary>
+        /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
+        public string ReadItem()
         {
             if (rewindNextStringRead)
             {
-                Debug.Assert(rewindToken != null, "You must called at least one ReadString() between RewindToken() calls", "The current rewind functionality only allows for a single rewind");
+                Debug.Assert(rewindToken != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
                 string token = rewindToken;
                 currentToken = rewindCurrToken;
                 if (rewindTree != null) tree = rewindTree;
@@ -192,9 +174,9 @@ namespace MSTS
 
             if (IncludeReader != null)
             {
-                string s = IncludeReader.ReadString();
+                string s = IncludeReader.ReadItem();
                 UpdateTreeAndRewindBuffer(s);
-                if (s != "" || !IncludeReader.EOF())
+                if (s != "" || !IncludeReader.EOF)
                     return s;
                 IncludeReader = null;
             }
@@ -289,25 +271,101 @@ namespace MSTS
             {
                 string filename = ReadStringBlock();
                 IncludeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename);
-                return ReadString();
+                return ReadItem();
             }
 
             UpdateTreeAndRewindBuffer(result);
             return result;
         }
-
-
-        /// <summary>
-        /// Skip to the end of this block
+        /// <summary>Calling this function causes ReadItem() to repeat the last {item} that was read from the STF file
         /// </summary>
+        /// <remarks>
+        /// <para>The current implementation of RewindItem() only allows for "rewind".</para>
+        /// <para>This means that there each call to RewindItem() must have an intervening call to ReadItem().</para>
+        /// </remarks>
+        public void RewindItem()
+        {
+            Debug.Assert(rewindToken != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
+            rewindNextStringRead = true;
+        }
+
+        /// <summary>Reports a critical error if the next {item} does not match the target.
+        /// </summary>
+        /// <param name="target">The next {item} contents we are expecting in the STF file.</param>
+        /// <returns>The {item} read from the STF file</returns>
+        public void MustMatch(string target)
+        {
+            string s = ReadItem();
+            if (s == "")
+                throw new STFException(this, "Unexpected end of file");
+            else if (s != target)
+                throw new STFException(this, target + " Not Found - instead found " + s);
+        }
+
+        /// <summary>Read the next {token_item} skipping past any 'comment', 'skip', '#*' or '_*' tokens.
+        /// </summary>
+        /// <remarks>
+        /// <para>This cursor should be called when placed at a {token_item} and not at a {data_item}.</para>
+        /// </remarks>
         /// <returns></returns>
+        public string ReadTokenNoComment()
+        {
+            for (; ; )
+            {
+                string token = ReadItem();
+                if (token.StartsWith("_") || token.StartsWith("#"))
+                    SkipBlock();
+                else
+                {
+                    string lower = token.ToLower();
+                    if (lower == "skip" || lower == "comment")
+                        SkipBlock();
+                    else
+                        return token;
+                }
+            }
+        }
+
+        /// <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")".
+        /// </summary>
+        /// <remarks>
+        /// <para>An STF block should be enclosed in parenthesis, ie ( {data_item} {data_item} )</para>
+        /// </remarks>
+        /// <returns>
+        /// <para>true - An EOF, or closing parenthesis was found and consumed.</para>
+        /// <para>false - Another type of {item} was found but not consumed.</para>
+        /// </returns>
+        public bool EndOfBlock()
+        {
+            int c = PeekPastWhitespace();
+            if (c == ')')
+                c = f.Read();
+            return c == ')' || c == -1;
+        }
+        /// <summary>Read a block open (, and then consume the rest of the block without processing.
+        /// If we find an immediate close ), then produce a warning, and return without consuming the parenthesis.
+        /// </summary>
+        public void SkipBlock()
+		{
+			string token = ReadItem();  // read the leading bracket ( 
+            if (token == ")")   // just in case we are not where we think we are
+            {
+                STFException.ReportWarning(this, "Found a close parenthesis, rather than the expected block of data");
+                RewindItem();
+                return;
+            }
+            // note, even if this isn't a leading bracket, we'll carry on anyway                            
+            SkipRestOfBlock();
+		}
+        /// <summary>Skip to the end of this block, ignoring any nested blocks
+        /// </summary>
         public void SkipRestOfBlock()
         {
             // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket
             int depth = 1;
-            while (!EOF() &&  depth > 0)
+            while (!EOF && depth > 0)
             {
-                string token = ReadToken();
+                string token = ReadItem();
                 if (token == "(")
                     ++depth;
                 if (token == ")")
@@ -316,37 +374,6 @@ namespace MSTS
         }
 
 
-        // We are processing a line like this:
-        //            token ( parameters .. )
-        // the token has been read.  Now read bracket and up to final bracket.
-        // if there isn't a leading bracket, just point to the start of the next token, ie:
-        //			  token
-        //            token
-        // if we reach end of file before finding parameters or another token, leave
-        // pointer pointing to end of file char
-
-        /* Throws
-            IOException An I/O error occurs. 
-        */
-        public void SkipBlock()
-		{
-			string token = ReadToken();  // read the leading bracket ( 
-            if (token == ")")   // just in case we are not where we think we are
-            {
-                RewindToken();
-                return;
-            }
-            // note, even if this isn't a leading bracket, we'll carry on anyway                            
-            SkipRestOfBlock();
-		}
-
-
-        /// <summary>
-        /// We weren't expecting this block
-        /// If its not a comment, issue a warning
-        /// and skip the entire block
-        /// </summary>
-        /// <param name="token"></param>
         public void SkipUnknownBlock(string token)
         {
             if( token.StartsWith( "_" ) )
@@ -363,93 +390,30 @@ namespace MSTS
             }
         }
 
-        public void VerifyStartOfBlock()
-        {
-            MustMatch("(");
-        }
-
-        /// <summary>
-        /// We are inside ( a b c )
-        /// We expect the next token is ), but if there are more params, skip them and report
-        /// </summary>
-        public void VerifyEndOfBlock()
-        {
-            string extraTokens = "";
-
-            // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket
-            int depth = 1;
-            while (depth > 0)
-            {
-                string token = ReadToken();
-                if (token == "")
-                    return;
-
-                if (token == "(")
-                    ++depth;
-                if (token == ")")
-                    --depth;
-
-                if (depth > 0)
-                    extraTokens = extraTokens + " " + token;
-            }
-
-            if (extraTokens != "" 
-                && !extraTokens.StartsWith( "#" ) 
-                && !extraTokens.StartsWith( "comment", StringComparison.OrdinalIgnoreCase ) 
-                && !extraTokens.StartsWith( "skip", StringComparison.OrdinalIgnoreCase ) 
-                )
-                STFException.ReportWarning(this, "Ignoring extra data: " + extraTokens);
-
-        }
-		
-
-		/// <summary>
-		/// Reports error if not a match then continues
-		/// </summary>
-		/// <param name="target"></param>
-		public void MustMatch( string target )
-		{
-            string s = ReadToken();
-            if (s != target)
-            {
-                if (s == "")
-                    STFException.ReportError(this, "Unexpected end of file");
-                else
-                    STFException.ReportError(this, target + " Not Found - instead found " + s);
-            }
-		}
-
-
-
 		public int ReadHex()
-		// Note:  end of file should return FormatException.
-		/* Throws:
-			IOException An I/O error occurs. 
-			STFError			
-		*/
 		{
-			string token = ReadToken();
+			string token = ReadItem();
 			try
 			{
 				return int.Parse(token, System.Globalization.NumberStyles.HexNumber);
 			}
 			catch (Exception e)
 			{
-				STFException.Report(this, e);
+				STFException.ReportInformation(this, e);
 				return 0;
 			}
 		}
 
 		public uint ReadFlags()
 		{
-			string token = ReadToken();
+			string token = ReadItem();
 			try
 			{
 				return uint.Parse(token, System.Globalization.NumberStyles.HexNumber);
 			}
 			catch (Exception e)
 			{
-				STFException.Report(this, e);
+				STFException.ReportInformation(this, e);
 				return 0;
 			}
 		}
@@ -469,24 +433,15 @@ namespace MSTS
 			return (float)ReadDouble();
 		}
 
-		/// <summary>
-		/// Return double, scaled to meters, grams, newtons if needed
-		/// </summary>
-		/// <returns></returns>
 		public double ReadDouble()
-		// Note:  end of file should return FormatException.
-		/* Throws:
-			IOException An I/O error occurs. 
-			STFError
-		*/
 		{
 			double scale = 1.0;
-			string token = ReadToken();
+			string token = ReadItem();
 
             if (token == ")")
             {
                 STFException.ReportWarning(this, "When expecting a number, we found a ) marker");
-                RewindToken();
+                RewindItem();
                 return 0;
             }
 
@@ -568,22 +523,16 @@ namespace MSTS
 			}
 			catch (Exception e)
 			{
-				STFException.Report(this, e);
+				STFException.ReportInformation(this, e);
 				return 0;
 			}
 		}
 
 		public string ReadStringBlock()
-			// Reads a () enclosed string
-			/* Throws
-					STFError( this, "( Not Found" )
-					STFError( this, ") Not Found" )
-					IOException An I/O error occurs. 
-			*/
 		{
-            VerifyStartOfBlock();
-			string s = ReadString();
-            VerifyEndOfBlock();
+            MustMatch("(");
+			string s = ReadItem();
+            SkipRestOfBlock();
 			return s;
 		}
 
@@ -592,11 +541,6 @@ namespace MSTS
             return ReadUIntBlock(false);
         }
         public uint ReadUIntBlock(bool optionalblock)
-// Reads a () enclosed int
-		/* Throws
-				STFError( this, "( Not Found" )
-				IOException An I/O error occurs. 
-		*/
 		{
 			try
 			{
@@ -605,7 +549,7 @@ namespace MSTS
 			}
 			catch (Exception e)
 			{
-				STFException.Report(this, e);
+				STFException.ReportInformation(this, e);
 				return 0;
 			}
 		}
@@ -615,11 +559,6 @@ namespace MSTS
             return ReadIntBlock(false);
         }
         public int ReadIntBlock(bool optionalblock)
-		// Reads a () enclosed int
-		/* Throws
-				STFError( this, ") Not Found" )
-				IOException An I/O error occurs. 
-		*/
 		{
 			try
 			{
@@ -628,7 +567,7 @@ namespace MSTS
 			}
 			catch (Exception e)
 			{
-				STFException.Report(this, e);
+				STFException.ReportInformation(this, e);
 				return 0;
 			}
 		}
@@ -647,21 +586,16 @@ namespace MSTS
             return ReadDoubleBlock(false);
         }
         public double ReadDoubleBlock(bool optionalblock)
-			// Reads a () enclosed double
-			/* Throws
-					STFError - syntax or numeric format
-					IOException An I/O error occurs. 
-			*/
 		{
-            string s = ReadToken();
+            string s = ReadItem();
             if (s == "")
                 STFException.ReportError(this, "Unexpected end of file");
             else if (s == ")" && optionalblock)
-                RewindToken();
+                RewindItem();
             else if (s == "(")
             {
                 double result = ReadDouble();
-                VerifyEndOfBlock();
+                SkipRestOfBlock();
                 return result;
             }
             else
@@ -671,14 +605,9 @@ namespace MSTS
 		}
 
 		public bool ReadBoolBlock()
-		// Reads a () enclosed bool block
-		/* Throws
-				STFError - syntax or numeric conversion
-				IOException An I/O error occurs. 
-		*/
 		{
-			VerifyStartOfBlock();
-			string s = ReadToken();
+            MustMatch("(");
+			string s = ReadItem();
 			if (s == ")")
 				return true;  // assume a null block is true
 			int i;
@@ -688,35 +617,68 @@ namespace MSTS
 			}
 			catch (Exception e)
 			{
-				STFException.Report(this, e);
+				STFException.ReportInformation(this, e);
 				return false;
 			}
-			VerifyEndOfBlock();
+			SkipRestOfBlock();
 			return i != 0;
 		}
 
         public Vector3 ReadVector3Block()
         {
             Vector3 vector = new Vector3();
-            VerifyStartOfBlock();
+            MustMatch("(");
             vector.X = ReadFloat();
             vector.Y = ReadFloat();
             vector.Z = ReadFloat();
-            VerifyEndOfBlock();
+            SkipRestOfBlock();
             return vector;
         }
 
-        /// <summary>
-        /// Throw an unknown token exception
-        /// </summary>
-        /// <param name="token"></param>
         public void ThrowUnknownToken(string token)
         {
             throw new STFException(this, "Unknown token " + token);
         }
 
 
-		// HIERARCHICAL TREE VIEW OF FILE POSITION AND BUFFER TO ALLOW OF A REWIND OF A SINGLE TOKEN
+        #region Private Class Implementation
+        private bool IsWhiteSpace(int c) { return c >= 0 && c <= ' '; }
+        private bool IsEof(int c) { return c == -1; }
+        private int Peek()
+        {
+            int c = f.Peek();
+            if (IsEof(c))
+            {
+                // I've seen a problem with compressed input streams with a false -1 on peek
+                c = f.Read();
+                if (c != -1)
+                    throw new InvalidDataException("Problem peeking eof in compressed file.");
+            }
+            return c;
+        }
+        private int PeekPastWhitespace()
+        {
+            // scan ahead and see if the next character is a bracket )
+            int c = f.Peek();
+            while (IsEof(c) || IsWhiteSpace(c)) // skip over eof and white space
+            {
+                c = ReadChar();
+                if (IsEof(c))
+                    break;   // break on reading eof 
+                c = f.Peek();
+            }
+            return c;
+        }
+        private int ReadChar()
+        {
+            int c = f.Read();
+            if (c == '\n') ++LineNumber;
+            return c;
+        }
+        #endregion
+
+
+        // HIERARCHICAL TREE VIEW OF FILE POSITION AND BUFFER TO ALLOW OF A REWIND OF A SINGLE TOKEN
 
         private Stack<string> tree = new Stack<string>();
         private string currentToken = "";
@@ -725,6 +687,10 @@ namespace MSTS
         private Stack<string> rewindTree;
         private string rewindCurrToken;
 
+        /// <summary>
+        /// This function returns a tree describing the last read token
+        /// This function is expensive to the GC, so if you are calling it repeatedly its better to cache the result and use the cached version
+        /// </summary>
 		public string Tree
 		{
             get
@@ -762,4 +728,27 @@ namespace MSTS
 			}
 		}
 	}
+
+    public class STFException : Exception
+    // STF errors display the last few lines of the STF file when reporting errors.
+    {
+        public static void ReportError(STFReader reader, string message)
+        {
+            Trace.TraceError("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
+        }
+        public static void ReportWarning(STFReader reader, string message)
+        {
+            Trace.TraceWarning("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
+        }
+        public static void ReportInformation(STFReader reader, Exception error)
+        {
+            Trace.TraceError("STF error in {0}:line {1}", reader.FileName, reader.LineNumber);
+            Trace.WriteLine(error);
+        }
+
+        public STFException(STFReader reader, string message)
+            : base(String.Format("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message))
+        {
+        }
+    }
 }

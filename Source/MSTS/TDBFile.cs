@@ -19,22 +19,17 @@ namespace MSTS
     {
         public TDBFile(string filenamewithpath)
         {
-            STFReader f = new STFReader(filenamewithpath);
-            try
+            using(STFReader f = new STFReader(filenamewithpath))
             {
-                string token = f.ReadToken();
+                string token = f.ReadItem();
                 while (token != "") // EOF
                 {
-                    if (token == ")") throw (new STFException(f, "Unexpected )"));
+                    if (token == ")") throw new STFException(f, "Unexpected )");
                     else if (token == "(") f.SkipBlock();
                     else if (0 == String.Compare(token, "TrackDB", true)) TrackDB = new TrackDB(f);
                     else f.SkipBlock();
-                    token = f.ReadToken();
+                    token = f.ReadItem();
                 }
-            }
-            finally
-            {
-                f.Close();
             }
         }
 
@@ -70,40 +65,40 @@ namespace MSTS
     {
         public TrackDB(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrackNodes", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     int count = f.ReadInt();
                     TrackNodes = new TrackNode[count + 1];
                     count = 1;
-                    token = f.ReadToken();
+                    token = f.ReadItem();
                     while (token != ")")
                     {
-                        if (token == "") throw (new STFException(f, "Missing )"));
+                        if (token == "") throw new STFException(f, "Missing )");
                         else if (0 == String.Compare(token, "TrackNode", true))
                         {
                             TrackNodes[count] = new TrackNode(f, count);
                             ++count;
                         }
                         else f.SkipBlock();
-                        token = f.ReadToken();
+                        token = f.ReadItem();
                     }
                 }
                 else if (0 == String.Compare(token, "TrItemTable", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     int count = f.ReadInt();
                     TrItemTable = new TrItem[count];
                     count = 0;
-                    token = f.ReadToken();
+                    token = f.ReadItem();
                     while (token != ")")
                     {
-                        if (token == "") throw (new STFException(f, "Missing )"));
+                        if (token == "") throw new STFException(f, "Missing )");
                         else if (0 == String.Compare(token, "CrossoverItem", true))
                         {
                             TrItemTable[count]=new CrossoverItem(f,count);
@@ -146,11 +141,11 @@ namespace MSTS
                         }
                         else f.SkipBlock();
                         ++count;
-                        token = f.ReadToken();
+                        token = f.ReadItem();
                     }
                 }
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
         public TrackNode[] TrackNodes;
@@ -171,20 +166,20 @@ namespace MSTS
     {
         public TrackNode(STFReader f, int count)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             uint index = f.ReadUInt();
             Debug.Assert(count == index, "TrackNode Index Mismatch");
-            string token = f.ReadToken();
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrJunctionNode", true)) TrJunctionNode = new TrJunctionNode(f);
                 else if (0 == String.Compare(token, "TrVectorNode", true)) TrVectorNode = new TrVectorNode(f);
                 else if (0 == String.Compare(token, "UiD", true)) UiD = new UiD(f);
                 else if (0 == String.Compare(token, "TrEndNode", true)) TrEndNode = new TrEndNode(f);
                 else if (0 == String.Compare(token, "TrPins", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     Inpins = f.ReadUInt();
                     Outpins = f.ReadUInt();
                     TrPins = new TrPin[Inpins + Outpins];
@@ -196,7 +191,7 @@ namespace MSTS
                     f.MustMatch(")");
                 }
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
             // TODO We assume there is only 2 outputs to each junction
             if (TrVectorNode != null && TrPins.Length != 2)
@@ -216,7 +211,7 @@ namespace MSTS
     {
         public TrPin(STFReader f)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             Link = f.ReadInt();
             Direction = f.ReadInt();
             f.MustMatch(")");
@@ -238,7 +233,7 @@ namespace MSTS
         {
             // UiD ( -11283 14482 5 0 -11283 14482 -445.573 239.861 186.111 0 -3.04199 0 )
 
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             WorldTileX = f.ReadInt();            // -11283
             WorldTileZ = f.ReadInt();            // 14482
             WorldID = f.ReadInt();              // 5
@@ -263,10 +258,10 @@ namespace MSTS
 
         public TrJunctionNode(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            f.ReadToken();
+            f.MustMatch("(");
+            f.ReadItem();
             ShapeIndex = f.ReadUInt();
-            f.ReadToken();
+            f.ReadItem();
             f.MustMatch(")");
         }
         public uint ShapeIndex;
@@ -276,14 +271,14 @@ namespace MSTS
     {
         public TrVectorNode(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrVectorSections", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     int count = f.ReadInt();
                     TrVectorSections = new TrVectorSection[count];
                     for (int i = 0; i < count; ++i)
@@ -294,7 +289,7 @@ namespace MSTS
                 }
                 else if (0 == String.Compare(token, "TrItemRefs", true)) ItemRefs(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
         public TrVectorSection[] TrVectorSections;
@@ -314,13 +309,13 @@ namespace MSTS
         {
             int count = 0;
 
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             noItemRefs=f.ReadInt();
             TrItemRefs = new int[noItemRefs];
-            string token = f.ReadToken();
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemRef", true))
                 {
                     if (count < noItemRefs)
@@ -330,13 +325,13 @@ namespace MSTS
                     }
                     else
                     {
-                        throw (new STFException(f, "TrItemRef Count Mismatch"));
+                        throw new STFException(f, "TrItemRef Count Mismatch");
                     }
                 }
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
-            if (count != noItemRefs) throw (new STFException(f, "TrItemRef Count Mismatch"));
+            if (count != noItemRefs) throw new STFException(f, "TrItemRef Count Mismatch");
         }
     }
 
@@ -346,12 +341,12 @@ namespace MSTS
         {
             SectionIndex = f.ReadUInt();
             ShapeIndex = f.ReadUInt();
-            f.ReadToken(); // worldfilenamex
-            f.ReadToken(); // worldfilenamez
+            f.ReadItem(); // worldfilenamex
+            f.ReadItem(); // worldfilenamez
             WorldFileUiD = f.ReadUInt(); // UID in worldfile
             flag1 = f.ReadInt(); // 0
             flag2 = f.ReadInt(); // 1
-            f.ReadToken(); // 00 
+            f.ReadItem(); // 00 
             TileX = f.ReadInt();
             TileZ = f.ReadInt();
             X = f.ReadFloat();
@@ -378,8 +373,8 @@ namespace MSTS
     {
         public TrEndNode(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            f.ReadToken();
+            f.MustMatch("(");
+            f.ReadItem();
             f.MustMatch(")");
         }
     }
@@ -415,7 +410,7 @@ namespace MSTS
         //}
         protected void TrItemRData(STFReader f)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             X = f.ReadFloat();
             Y = f.ReadFloat();
             Z = f.ReadFloat();
@@ -426,7 +421,7 @@ namespace MSTS
 
         protected void TrItemPData(STFReader f)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             PX = f.ReadFloat();
             PZ = f.ReadFloat();
             TilePX = f.ReadInt();
@@ -436,9 +431,9 @@ namespace MSTS
 
         protected void TrItemSData(STFReader f)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             SData1 = f.ReadFloat();
-            SData2 = f.ReadToken();
+            SData2 = f.ReadItem();
             f.MustMatch(")");
         }
     }
@@ -449,14 +444,14 @@ namespace MSTS
         public CrossoverItem(STFReader f, int count)
         {
             this.ItemType = trItemType.trCROSSOVER;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "CrossoverItem Index Mismatch");
                     f.MustMatch(")");
@@ -465,12 +460,12 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "CrossoverTrItemData", true)) CrossoverTrItemData(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
         private void CrossoverTrItemData(STFReader f)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             TrackNode = f.ReadUInt();
             CID1 = f.ReadUInt();
             f.MustMatch(")");
@@ -501,14 +496,14 @@ namespace MSTS
         public SignalItem(STFReader f, int count)
         {
             this.ItemType = trItemType.trSIGNAL;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "SignalItem Index Mismatch");
                     f.MustMatch(")");
@@ -518,35 +513,35 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrSignalType", true)) this.TrSignalType(f);
                 else if (0 == String.Compare(token, "TrSignalDirs", true)) this.TrSigDirs(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
         private void TrSignalType(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            Flags1 = f.ReadToken();
+            f.MustMatch("(");
+            Flags1 = f.ReadItem();
             Direction = f.ReadUInt();
             SigData1 = f.ReadFloat();
-            SignalType = f.ReadString();
+            SignalType = f.ReadItem();
             // To do get index to Sigtypes table corresponding to this sigmal
             f.MustMatch(")");
         }
         private void TrSigDirs(STFReader f)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             this.noSigDirs = f.ReadUInt();
             TrSignalDirs = new strTrSignalDir[noSigDirs];
             int count=0;
-            string token = f.ReadToken();
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrSignalDir", true)) 
                 {
                     if(count<noSigDirs)
                     {
                         TrSignalDirs[count]=new strTrSignalDir();
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         TrSignalDirs[count].TrackNode=f.ReadUInt();
                         TrSignalDirs[count].sd1=f.ReadUInt();
                         TrSignalDirs[count].linkLRPath = f.ReadUInt(); 
@@ -556,13 +551,13 @@ namespace MSTS
                     }
                     else
                     {
-                        throw (new STFException(f, "TrSignalDirs count mismatch"));
+                        throw new STFException(f, "TrSignalDirs count mismatch");
                     }
                 }
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
-            if(count!=noSigDirs)throw (new STFException(f, "TrSignalDirs count mismatch"));
+            if(count!=noSigDirs)throw new STFException(f, "TrSignalDirs count mismatch");
         }
     }
 
@@ -574,14 +569,14 @@ namespace MSTS
         public SpeedPostItem(STFReader f, int count)
         {
             this.ItemType = trItemType.trSPEEDPOST;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "SpeedPostItem Index Mismatch");
                     f.MustMatch(")");
@@ -591,13 +586,13 @@ namespace MSTS
                 //else if (0 == String.Compare(token, "TrItemPData", true)) this.TrItemPData(f);
                 //else if (0 == String.Compare(token, "SpeedpostTrItemData", true)) SpeedpostTrItemData(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
         private void SpeedpostTrItemData(STFReader f)
         {
             this.ItemType = trItemType.trSPEEDPOST;
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             Flags = f.ReadUInt();
             //
             //  The number of parameters depends on the flags seeting
@@ -619,14 +614,14 @@ namespace MSTS
         public PlatformItem(STFReader f, int count)
         {
             this.ItemType=trItemType.trPLATFORM;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "PlatformItem Index Mismatch");
                     f.MustMatch(")");
@@ -635,37 +630,37 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "PlatformName", true))
                 {
-                    f.VerifyStartOfBlock();
-                    PlatformName = f.ReadString();
+                    f.MustMatch("(");
+                    PlatformName = f.ReadItem();
                     f.MustMatch(")");
                 }
                 else if (0 == String.Compare(token, "Station", true))
                 {
-                    f.VerifyStartOfBlock();
-                    Station = f.ReadString();
+                    f.MustMatch("(");
+                    Station = f.ReadItem();
                     f.MustMatch(")");
                 }
                 else if (0 == String.Compare(token, "PlatformMinWaitingTime", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     PlatformMinWaitingTime = f.ReadUInt();
                     f.MustMatch(")");
                 }
                 else if (0 == String.Compare(token, "PlatformNumPassengersWaiting", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     PlatformNumPassengersWaiting = f.ReadUInt();
                     f.MustMatch(")");
                 }
                 else if (0 == String.Compare(token, "PlatformTrItemData", true)) PlatformTrItemData(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
         private void PlatformTrItemData(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            Flags1 = f.ReadString();
+            f.MustMatch("(");
+            Flags1 = f.ReadItem();
             Flags2 = f.ReadUInt();
             f.MustMatch(")");
         }
@@ -678,14 +673,14 @@ namespace MSTS
         public SoundRegionItem(STFReader f, int count)
         {
             this.ItemType = trItemType.trSOUNDREGION;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "SoundRegionItem Index Mismatch");
                     f.MustMatch(")");
@@ -694,12 +689,12 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "TrItemPData", true)) base.TrItemPData(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
         private void TrItemSRData(STFReader f)
         {
-            f.VerifyStartOfBlock();
+            f.MustMatch("(");
             SRData1 = f.ReadUInt();
             SRData2 = f.ReadUInt();
             SRData3 = f.ReadFloat();
@@ -711,20 +706,20 @@ namespace MSTS
     {
         public EmptyItem(STFReader f, int count)
         {
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "EmptyItem Index Mismatch");
                     f.MustMatch(")");
                 }
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
     }
@@ -734,14 +729,14 @@ namespace MSTS
         public LevelCrItem(STFReader f, int count)
         {
             this.ItemType = trItemType.trXING;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "LevelCrItem Index Mismatch");
                     f.MustMatch(")");
@@ -750,7 +745,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "TrItemPData", true)) base.TrItemPData(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
     }
@@ -764,14 +759,14 @@ namespace MSTS
         public SidingItem(STFReader f, int count)
         {
             this.ItemType = trItemType.trSIDING;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "SidingItem Index Mismatch");
                     f.MustMatch(")");
@@ -781,19 +776,19 @@ namespace MSTS
                 else if (0 == String.Compare(token, "SidingTrItemData", true)) SidingTrItemData(f);
                 else if (0 == String.Compare(token, "SidingName", true))
                 {
-                    f.VerifyStartOfBlock();
-                    SidingName = f.ReadString();
+                    f.MustMatch("(");
+                    SidingName = f.ReadItem();
                     f.MustMatch(")");
                 }
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
 
         private void SidingTrItemData(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            Flags1 = f.ReadString();
+            f.MustMatch("(");
+            Flags1 = f.ReadItem();
             Flags2 = f.ReadUInt();
             f.MustMatch(")");
         }
@@ -804,14 +799,14 @@ namespace MSTS
         public HazzardItem(STFReader f, int count)
         {
             this.ItemType = trItemType.trHAZZARD;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "HazzardItem Index Mismatch");
                     f.MustMatch(")");
@@ -820,7 +815,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "TrItemPData", true)) base.TrItemPData(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
     }
@@ -830,14 +825,14 @@ namespace MSTS
         public PickupItem(STFReader f, int count)
         {
             this.ItemType = trItemType.trPICKUP;
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
             while (token != ")")
             {
-                if (token == "") throw (new STFException(f, "Missing )"));
+                if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
-                    f.VerifyStartOfBlock();
+                    f.MustMatch("(");
                     this.TrItemId = f.ReadUInt();
                     Debug.Assert(count == this.TrItemId, "PickupItem Index Mismatch");
                     f.MustMatch(")");
@@ -846,7 +841,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemSData", true)) base.TrItemSData(f);
                 else if (0 == String.Compare(token, "TrItemPData", true)) base.TrItemPData(f);
                 else f.SkipBlock();
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
     }

@@ -88,7 +88,7 @@ namespace ORTS
                         {
                             token = f.ReadTokenNoComment();
                             if (token == ")") break;
-                            if (token == "") throw (new STFException(f, "Missing )"));
+                            if (token == "") throw new STFException(f, "Missing )");
                             if (0 != String.Compare(token, "Light", true))// Weed out extraneous comments etc.
                             {
                                 f.SkipBlock();
@@ -98,99 +98,99 @@ namespace ORTS
                             {
                                 light = new Light();
                                 LightList.Add(light);
-                                f.VerifyStartOfBlock();
+                                f.MustMatch("(");
                                 token = f.ReadTokenNoComment();
                                 while (token != ")")
                                 {
-                                    if (token == "") throw (new STFException(f, "Missing )"));
+                                    if (token == "") throw new STFException(f, "Missing )");
                                     else if (0 == String.Compare(token, "comment", true))
                                     {
                                         f.SkipBlock(); // Ignore the comment
                                     }
                                     else if (0 == String.Compare(token, "Type", true))
                                     {
-                                        f.VerifyStartOfBlock();
+                                        f.MustMatch("(");
                                         light.type = f.ReadInt();
-                                        f.VerifyEndOfBlock();
+                                        f.SkipRestOfBlock();
                                     }
                                     else if (0 == String.Compare(token, "Conditions", true))
                                     {
-                                        f.VerifyStartOfBlock();
+                                        f.MustMatch("(");
                                         token = f.ReadTokenNoComment();
                                         while (token != ")")
                                         {
                                             if (0 == String.Compare(token, "Headlight", true))
                                             {
-                                                f.VerifyStartOfBlock();
+                                                f.MustMatch("(");
                                                 light.headlight = f.ReadInt();
-                                                f.VerifyEndOfBlock();
+                                                f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Unit", true))
                                             {
-                                                f.VerifyStartOfBlock();
+                                                f.MustMatch("(");
                                                 light.unit = f.ReadInt();
-                                                f.VerifyEndOfBlock();
+                                                f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Penalty", true))
                                             {
-                                                f.VerifyStartOfBlock();
+                                                f.MustMatch("(");
                                                 light.penalty = f.ReadInt();
-                                                f.VerifyEndOfBlock();
+                                                f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Control", true))
                                             {
-                                                f.VerifyStartOfBlock();
+                                                f.MustMatch("(");
                                                 light.control = f.ReadInt();
-                                                f.VerifyEndOfBlock();
+                                                f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Service", true))
                                             {
-                                                f.VerifyStartOfBlock();
+                                                f.MustMatch("(");
                                                 light.service = f.ReadInt();
-                                                f.VerifyEndOfBlock();
+                                                f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "TimeOfDay", true))
                                             {
-                                                f.VerifyStartOfBlock();
+                                                f.MustMatch("(");
                                                 light.timeofday = f.ReadInt();
-                                                f.VerifyEndOfBlock();
+                                                f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Weather", true))
                                             {
-                                                f.VerifyStartOfBlock();
+                                                f.MustMatch("(");
                                                 light.weather = f.ReadInt();
-                                                f.VerifyEndOfBlock();
+                                                f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Coupling", true))
                                             {
-                                                f.VerifyStartOfBlock();
+                                                f.MustMatch("(");
                                                 light.coupling = f.ReadInt();
-                                                f.VerifyEndOfBlock();
+                                                f.SkipRestOfBlock();
                                             }
                                             token = f.ReadTokenNoComment();
                                         }
                                     }// else if (0 == String.Compare(token, "Conditions", true))
                                     else if (0 == String.Compare(token, "Cycle", true))
                                     {
-                                        f.VerifyStartOfBlock();
+                                        f.MustMatch("(");
                                         light.cycle = f.ReadInt();
-                                        f.VerifyEndOfBlock();
+                                        f.SkipRestOfBlock();
                                     }
                                     else if (0 == String.Compare(token, "FadeIn", true))
                                     {
-                                        f.VerifyStartOfBlock();
+                                        f.MustMatch("(");
                                         light.fadein = f.ReadFloat();
-                                        f.VerifyEndOfBlock();
+                                        f.SkipRestOfBlock();
                                     }
                                     else if (0 == String.Compare(token, "FadeOut", true))
                                     {
-                                        f.VerifyStartOfBlock();
+                                        f.MustMatch("(");
                                         light.fadeout = f.ReadFloat();
-                                        f.VerifyEndOfBlock();
+                                        f.SkipRestOfBlock();
                                     }
                                     else if (0 == String.Compare(token, "States", true))
                                     {
-                                        f.VerifyStartOfBlock();
+                                        f.MustMatch("(");
                                         numStates = f.ReadInt();
                                         for (int j = 0; j < numStates; j++)
                                         {
@@ -245,69 +245,69 @@ namespace ORTS
         /// </summary>
         public void ReadLightState(STFReader f)
         {
-            string token = f.ReadToken();
+            string token = f.ReadItem();
             if (0 == String.Compare(token, "State", true))
             {
-                f.VerifyStartOfBlock();
-                token = f.ReadToken();
+                f.MustMatch("(");
+                token = f.ReadItem();
                 while (token != ")")
                 {
-                    if (token == "") throw (new STFException(f, "Missing )"));
+                    if (token == "") throw new STFException(f, "Missing )");
                     else if (0 == String.Compare(token, "Duration", true))
                     {
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         duration = f.ReadFloat();
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Transition", true))
                     {
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         transition = f.ReadFloat();
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Radius", true))
                     {
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         radius = f.ReadFloat();
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Angle", true))
                     {
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         angle = f.ReadFloat();
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Position", true))
                     {
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         position.X = f.ReadFloat();
                         position.Y = f.ReadFloat();
                         position.Z = f.ReadFloat();
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Azimuth", true))
                     {
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         azimuth.X = f.ReadFloat();
                         azimuth.Y = f.ReadFloat();
                         azimuth.Z = f.ReadFloat();
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Elevation", true))
                     {
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         elevation.X = f.ReadFloat();
                         elevation.Y = f.ReadFloat();
                         elevation.Z = f.ReadFloat();
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "LightColour", true))
                     {
-                        f.VerifyStartOfBlock();
+                        f.MustMatch("(");
                         color = f.ReadHex();
-                        f.VerifyEndOfBlock();
+                        f.SkipRestOfBlock();
                     }
-                    token = f.ReadToken();
+                    token = f.ReadItem();
                 }// while (token != ")")
             }// if (0 == String.Compare(token, "State", true))
         }// ReadLightStates

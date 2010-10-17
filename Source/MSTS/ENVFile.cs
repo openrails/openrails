@@ -16,34 +16,35 @@ namespace MSTS
 
         public ENVFile(string filePath)
         {
-            STFReader reader = new STFReader(filePath);
-			var waterLayers = new List<ENVFileWaterLayer>();
-			var waterLayerCount = 0;
-            while (!reader.EOF())
+            using (STFReader reader = new STFReader(filePath))
             {
-                reader.ReadToken();
-				if (reader.Tree == "world(world_water(world_water_wave_height(")
-				{
-					WaterWaveHeight = reader.ReadInt();
-				}
-				else if (reader.Tree == "world(world_water(world_water_wave_speed(")
-				{
-					WaterWaveSpeed = reader.ReadInt();
-				}
-				else if (reader.Tree == "world(world_water(world_water_layers(")
-				{
-					waterLayers.Capacity = waterLayerCount = reader.ReadInt();
-				}
-				else if (reader.Tree == "world(world_water(world_water_layers(world_water_layer(")
-				{
-					if (waterLayers.Count < waterLayerCount)
-						waterLayers.Add(new ENVFileWaterLayer(reader));
-					else
-						Trace.TraceWarning("Ignoring extra world_water_layer in {0}:line {1}", reader.FileName, reader.LineNumber);
-				}
+                var waterLayers = new List<ENVFileWaterLayer>();
+                var waterLayerCount = 0;
+                while (!reader.EOF)
+                {
+                    reader.ReadItem();
+                    if (reader.Tree == "world(world_water(world_water_wave_height(")
+                    {
+                        WaterWaveHeight = reader.ReadInt();
+                    }
+                    else if (reader.Tree == "world(world_water(world_water_wave_speed(")
+                    {
+                        WaterWaveSpeed = reader.ReadInt();
+                    }
+                    else if (reader.Tree == "world(world_water(world_water_layers(")
+                    {
+                        waterLayers.Capacity = waterLayerCount = reader.ReadInt();
+                    }
+                    else if (reader.Tree == "world(world_water(world_water_layers(world_water_layer(")
+                    {
+                        if (waterLayers.Count < waterLayerCount)
+                            waterLayers.Add(new ENVFileWaterLayer(reader));
+                        else
+                            Trace.TraceWarning("Ignoring extra world_water_layer in {0}:line {1}", reader.FileName, reader.LineNumber);
+                    }
+                }
+                WaterLayers = waterLayers;
             }
-            reader.Close();
-			WaterLayers = waterLayers;
         }
     }
 
@@ -54,9 +55,9 @@ namespace MSTS
 
 		internal ENVFileWaterLayer(STFReader reader)
 		{
-			while (!reader.EOF() && reader.Tree.StartsWith("world(world_water(world_water_layers(world_water_layer("))
+			while (!reader.EOF && reader.Tree.StartsWith("world(world_water(world_water_layers(world_water_layer("))
 			{
-				reader.ReadToken();
+				reader.ReadItem();
 				if (reader.Tree == "world(world_water(world_water_layers(world_water_layer(world_water_layer_height(")
 				{
 					Height = reader.ReadFloat();
@@ -64,9 +65,9 @@ namespace MSTS
 				else if (reader.Tree == "world(world_water(world_water_layers(world_water_layer(world_anim_shader(world_shader(terrain_texslots(terrain_texslot(")
 				{
 					// ie terrain_texslot ( waterbot.ace 1 0 )
-					TextureName = reader.ReadToken();
-					reader.ReadToken();
-					reader.ReadToken();
+					TextureName = reader.ReadItem();
+					reader.ReadItem();
+					reader.ReadItem();
 					reader.MustMatch(")");
 				}
 			}

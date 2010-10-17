@@ -19,7 +19,6 @@ namespace ORTS
         /// <summary>
         /// Constructs SoundProcess, creates the sound thread but not start. Must create after loading ingame sounds.
         /// </summary>
-        /// <param name="viewer3D">The Viewer</param>
 		public SoundProcess(Viewer3D viewer)
         {
 			Threaded = true;

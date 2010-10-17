@@ -29,12 +29,11 @@ namespace MSTS
 		/// <param name="filePath"></param>
 		public SRVFile( string filePath )
 		{
-			STFReader inf = new STFReader( filePath );
-			try
+            using (STFReader inf = new STFReader(filePath))
 			{
-				while( !inf.EOF() )
+				while( !inf.EOF)
 				{
-					inf.ReadToken();
+					inf.ReadItem();
 
 					switch( inf.Tree )
 					{
@@ -61,10 +60,6 @@ namespace MSTS
 							break;
 					}
 				}
-			}
-			finally
-			{
-				inf.Close();
 			}
 		}
 

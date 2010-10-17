@@ -286,7 +286,7 @@
         </member>
         <member name="M:ORTS.Viewer3D.ProcessReportError(System.Exception)">
             <summary>
-            Report an Exception from a background process (e.g. loader).
+            ReportInformation an Exception from a background process (e.g. loader).
             </summary>
             <param name="error"></param>
         </member>
@@ -698,81 +698,98 @@
             </list>
             </exception>
         </member>
+        <member name="M:MSTS.STFReader.#ctor(System.String)">
+            <summary>Open a file, reader the header line, and prepare for STF parsing
+            </summary>
+            <param name="filename"></param>
+        </member>
         <member name="M:MSTS.STFReader.#ctor(System.IO.Stream,System.String,System.Text.Encoding)">
-            <summary>
-            Create from an input stream, 
-            Assumes header has already been read
-            Filename is just for error reporting purposes.
+            <summary>Use an open stream for STF parsing, this constructor assumes that the header has already been gathered
             </summary>
-            <param name="inputStream"></param>
-            <param name="fileName"></param>
+            <param name="inputStream">Stream that will be parsed</param>
+            <param name="fileName">Is only used for error reporting</param>
         </member>
-        <member name="M:MSTS.STFReader.EndOfBlock">
-            <summary>
-            A block is enclosed in brackets, ie ( block data )
-            Returns true if the next character is the end of block, or end of file
-            Consumes the closing ")"
+        <member name="M:MSTS.STFReader.Dispose">
+            <summary>Implements the IDisposable interface so this class can be included in a using(...) {...} block.
             </summary>
-            <returns></returns>
         </member>
-        <member name="M:MSTS.STFReader.ReadChar">
-            <summary>
-            Read a character, -1 if at end of stream
+        <member name="M:MSTS.STFReader.Dispose(System.Boolean)">
+            <summary>Releases the resources used by the STFReader.
             </summary>
-            <returns></returns>
+            <param name="disposing">
+            <para>true - release managed and unmanaged resources.</para>
+            <para>false - release only unmanaged resources.</para>
+            </param>
         </member>
-        <member name="M:MSTS.STFReader.PeekPastWhitespace">
-            <summary>
-            Peek ahead to the next non-whitespace character
-            Returns -1 if end of file is reached
+        <member name="M:MSTS.STFReader.ReadItem">
+            <summary>This is the main function in STFReader, it returns the next whitespace delimited {item} from the STF file.
             </summary>
-            <returns></returns>
+            <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         </member>
-        <member name="M:MSTS.STFReader.ReadString">
-            <summary>
-            
+        <member name="M:MSTS.STFReader.RewindItem">
+            <summary>Calling this function causes ReadItem() to repeat the last {item} that was read from the STF file
             </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MSTS.STFReader.SkipRestOfBlock">
-            <summary>
-            Skip to the end of this block
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MSTS.STFReader.SkipUnknownBlock(System.String)">
-            <summary>
-            We weren't expecting this block
-            If its not a comment, issue a warning
-            and skip the entire block
-            </summary>
-            <param name="token"></param>
-        </member>
-        <member name="M:MSTS.STFReader.VerifyEndOfBlock">
-            <summary>
-            We are inside ( a b c )
-            We expect the next token is ), but if there are more params, skip them and report
-            </summary>
+            <remarks>
+            <para>The current implementation of RewindItem() only allows for "rewind".</para>
+            <para>This means that there each call to RewindItem() must have an intervening call to ReadItem().</para>
+            </remarks>
         </member>
         <member name="M:MSTS.STFReader.MustMatch(System.String)">
-            <summary>
-            Reports error if not a match then continues
+            <summary>Reports a critical error if the next {item} does not match the target.
             </summary>
-            <param name="target"></param>
+            <param name="target">The next {item} contents we are expecting in the STF file.</param>
+            <returns>The {item} read from the STF file</returns>
         </member>
-        <member name="M:MSTS.STFReader.ReadDouble">
-            <summary>
-            Return double, scaled to meters, grams, newtons if needed
+        <member name="M:MSTS.STFReader.ReadTokenNoComment">
+            <summary>Read the next {token_item} skipping past any 'comment', 'skip', '#*' or '_*' tokens.
             </summary>
+            <remarks>
+            <para>This cursor should be called when placed at a {token_item} and not at a {data_item}.</para>
+            </remarks>
             <returns></returns>
         </member>
-        <member name="M:MSTS.STFReader.ThrowUnknownToken(System.String)">
-            <summary>
-            Throw an unknown token exception
+        <member name="M:MSTS.STFReader.EndOfBlock">
+            <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")".
             </summary>
-            <param name="token"></param>
+            <remarks>
+            <para>An STF block should be enclosed in parenthesis, ie ( {data_item} {data_item} )</para>
+            </remarks>
+            <returns>
+            <para>true - An EOF, or closing parenthesis was found and consumed.</para>
+            <para>false - Another type of {item} was found but not consumed.</para>
+            </returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "P:MSTS.STFReader.Tree" -->
+        <member name="M:MSTS.STFReader.SkipBlock">
+            <summary>Read a block open (, and then consume the rest of the block without processing.
+            If we find an immediate close ), then produce a warning, and return without consuming the parenthesis.
+            </summary>
+        </member>
+        <member name="M:MSTS.STFReader.SkipRestOfBlock">
+            <summary>Skip to the end of this block, ignoring any nested blocks
+            </summary>
+        </member>
+        <member name="P:MSTS.STFReader.EOF">
+            <summary>Property that returns true when the EOF has been reached
+            </summary>
+        </member>
+        <member name="P:MSTS.STFReader.FileName">
+            <summary>Filename property for the file being parsed - for reporting purposes
+            </summary>
+        </member>
+        <member name="P:MSTS.STFReader.LineNumber">
+            <summary>Line Number property for the file being parsed - for reporting purposes
+            </summary>
+        </member>
+        <member name="P:MSTS.STFReader.Header">
+            <summary>SIMIS header read from the first line of the file being parsed
+            </summary>
+        </member>
+        <member name="P:MSTS.STFReader.Tree">
+            <summary>
+            This function returns a tree describing the last read token
+            This function is expensive to the GC, so if you are calling it repeatedly its better to cache the result and use the cached version
+            </summary>
+        </member>
         <member name="T:MSTS.CAMCFGFile">
             <summary>
             Object used by ORTS.Cameras to set up views (3dviewer\camera.cs)
@@ -1128,7 +1145,6 @@
             <summary>
             Constructs SoundProcess, creates the sound thread but not start. Must create after loading ingame sounds.
             </summary>
-            <param name="viewer3D">The Viewer</param>
         </member>
         <member name="M:ORTS.SoundProcess.Run">
             <summary>

@@ -24,21 +24,16 @@ namespace ORTS
             if (File.Exists(wsfilename))
             {
 				Trace.Write("$");
-                STFReader reader = new STFReader(wsfilename);
-                try
+                using (STFReader reader = new STFReader(wsfilename))
                 {
                     while (!reader.EndOfBlock()) // EOF
                     {
-                        string token = reader.ReadToken();
+                        string token = reader.ReadItem();
                         if (string.Compare(token, "Tr_Worldsoundfile", true) == 0) TR_WorldSoundFile = new TR_WorldSoundFile(reader);
                         else reader.SkipBlock();
                     }
                     if (TR_WorldSoundFile == null)
-                        throw (new STFException(reader, "Missing TR_WorldSoundFile statement"));
-                }
-                finally
-                {
-                    reader.Close();
+                        throw new STFException(reader, "Missing TR_WorldSoundFile statement");
                 }
             }
         }
@@ -50,10 +45,10 @@ namespace ORTS
 
         public TR_WorldSoundFile(STFReader reader)
         {
-            reader.VerifyStartOfBlock();
+            reader.MustMatch("(");
             while (!reader.EndOfBlock())
             {
-                string token = reader.ReadToken();
+                string token = reader.ReadItem();
                 if (string.Compare(token, "Soundsource", true) == 0) SoundSources.Add (new WorldSoundSource (reader));
             }
         }
@@ -68,17 +63,17 @@ namespace ORTS
 
         public WorldSoundSource(STFReader reader)
         {
-            reader.VerifyStartOfBlock();
+            reader.MustMatch("(");
             while (!reader.EndOfBlock())
             {
-                string token = reader.ReadToken();
+                string token = reader.ReadItem();
                 if (string.Compare(token, "position", true) == 0)
                 {
-                    reader.VerifyStartOfBlock();
+                    reader.MustMatch("(");
                     X = reader.ReadFloat();
                     Y = reader.ReadFloat();
                     Z = reader.ReadFloat();
-                    reader.VerifyEndOfBlock();
+                    reader.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "filename", true) == 0) SoundSourceFileName = reader.ReadStringBlock();
                 else reader.SkipBlock();

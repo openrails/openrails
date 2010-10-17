@@ -21,13 +21,12 @@ namespace MSTS
     {
         public CAMCFGFile(string filename)
         {
-            STFReader f = new STFReader(filename);
-            try
+            using (STFReader f = new STFReader(filename))
             {
-                string token = f.ReadToken();
+                string token = f.ReadItem();
                 while (!f.EndOfBlock())
                 {
-                    if (token == ")") throw (new STFException(f, "Unexpected )"));
+                    if (token == ")") throw new STFException(f, "Unexpected )");
                     else if (token == "(") f.SkipBlock();
                         
                     else if (0 == String.Compare(token, "camera", true))
@@ -37,12 +36,8 @@ namespace MSTS
                         Cameras.Add(cam);
                     }
                     else f.SkipBlock();
-                    token = f.ReadToken();
+                    token = f.ReadItem();
                 }
-            }
-            finally
-            {
-                f.Close();
             }
         }
         private camera cam;
@@ -56,8 +51,8 @@ namespace MSTS
     {
         public camera(STFReader f)
         {
-            f.VerifyStartOfBlock();
-            string token = f.ReadToken();
+            f.MustMatch("(");
+            string token = f.ReadItem();
 
             while (token != ")")
             {
@@ -74,7 +69,7 @@ namespace MSTS
                     case "wagonnum": WagonNum = f.ReadIntBlock(); break;
                     default: f.SkipBlock(); break;
                 }
-                token = f.ReadToken();
+                token = f.ReadItem();
             }
         }
 

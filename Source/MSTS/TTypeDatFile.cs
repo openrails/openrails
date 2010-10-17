@@ -22,20 +22,21 @@ namespace MSTS
         
         public TTypeDatFile(string filePath): base()
 		{
-            STFReader f = new STFReader(filePath); 
-            int count = f.ReadInt();
-            while( !f.EndOfBlock() )
+            using (STFReader f = new STFReader(filePath))
             {
-                string token = f.ReadToken();
-                switch (token.ToLower())
+                int count = f.ReadInt();
+                while (!f.EndOfBlock())
                 {
-                    case "tracktype": this.Add(new TrackType(f)); break;
-                    default: f.SkipUnknownBlock( token ); break;
+                    string token = f.ReadItem();
+                    switch (token.ToLower())
+                    {
+                        case "tracktype": this.Add(new TrackType(f)); break;
+                        default: f.SkipUnknownBlock(token); break;
+                    }
                 }
+                if (count != this.Count)
+                    STFException.ReportError(f, "Count mismatch.");
             }
-            if (count != this.Count)
-                STFException.ReportError( f,"Count mismatch." );
-            f.Close();
 		}
 
         public class TrackType
@@ -46,11 +47,11 @@ namespace MSTS
 
             public TrackType(STFReader f)
             {
-                f.VerifyStartOfBlock();
-                Label = f.ReadToken();
-                InsideSound = f.ReadToken();
-                OutsideSound = f.ReadToken();
-                f.VerifyEndOfBlock();
+                f.MustMatch("(");
+                Label = f.ReadItem();
+                InsideSound = f.ReadItem();
+                OutsideSound = f.ReadItem();
+                f.SkipRestOfBlock();
             }
         } // TrackType
 

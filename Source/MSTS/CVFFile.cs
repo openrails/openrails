@@ -26,15 +26,14 @@ namespace MSTS
 
         public CVFFile(string filePath)
 		{
-            STFReader inf = new STFReader( filePath );
-            string Path = filePath.Substring(0, filePath.LastIndexOf('\\') + 1);
-            try
+            using (STFReader inf = new STFReader(filePath))
             {
-                inf.MustMatch( "Tr_CabViewFile" );
-                inf.VerifyStartOfBlock();
-                while( !inf.EOF() )
+                string Path = filePath.Substring(0, filePath.LastIndexOf('\\') + 1);
+                inf.MustMatch("Tr_CabViewFile");
+                inf.MustMatch("(");
+                while (!inf.EOF)
                 {
-                    string token = inf.ReadToken();
+                    string token = inf.ReadItem();
                     if (0 == string.Compare(token, "Position", true))
                         Locations.Add(inf.ReadVector3Block());
 
@@ -57,10 +56,6 @@ namespace MSTS
                         inf.SkipBlock();  // TODO, complete parse
 
                 }
-            }
-            finally
-            {
-                inf.Close();
             }
 		}
 
@@ -127,7 +122,7 @@ namespace MSTS
     {
         public CabViewControls(STFReader inf, string basePath)
         {
-            inf.VerifyStartOfBlock();
+            inf.MustMatch("(");
 
             int count = inf.ReadInt();
 
@@ -135,7 +130,7 @@ namespace MSTS
             {
                 while (!inf.EndOfBlock())
                 {
-                    string token = inf.ReadToken();
+                    string token = inf.ReadItem();
                     if (string.Compare(token, "Dial", true) == 0)
                     {
                         CVCDial dial = new CVCDial(inf, basePath);
@@ -221,32 +216,32 @@ namespace MSTS
 
             if (string.Compare(token, "Type", true) == 0)
             {
-                inf.VerifyStartOfBlock();
-                s = inf.ReadString();
+                inf.MustMatch("(");
+                s = inf.ReadItem();
                 var qtr = (from ctc in ccts
                            where ctc.ToString().ToLower() == s.ToLower()
                            select ctc).FirstOrDefault();
 
                 ControlType = qtr;
 
-                s = inf.ReadString(); // Skip again Type 
-                inf.VerifyEndOfBlock();
+                s = inf.ReadItem(); // Skip again Type 
+                inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "Position", true) == 0)
             {
-                inf.VerifyStartOfBlock();
+                inf.MustMatch("(");
                 PositionX = inf.ReadInt();
                 PositionY = inf.ReadInt();
                 Width = inf.ReadInt();
                 Height = inf.ReadInt();
-                inf.VerifyEndOfBlock();
+                inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "ScaleRange", true) == 0)
             {
-                inf.VerifyStartOfBlock();
+                inf.MustMatch("(");
                 MinValue = inf.ReadInt();
                 MaxValue = inf.ReadInt();
-                inf.VerifyEndOfBlock();
+                inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "Graphic", true) == 0)
             {
@@ -254,27 +249,27 @@ namespace MSTS
             }
             else if (string.Compare(token, "Style", true) == 0)
             {
-                inf.VerifyStartOfBlock();
-                s = inf.ReadString();
+                inf.MustMatch("(");
+                s = inf.ReadItem();
                 var qsr = (from cts in ccss
                            where cts.ToString().ToLower() == s.ToLower()
                            select cts).FirstOrDefault();
 
                 ControlStyle = qsr;
 
-                inf.VerifyEndOfBlock();
+                inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "Units", true) == 0)
             {
-                inf.VerifyStartOfBlock();
-                s = inf.ReadString();
+                inf.MustMatch("(");
+                s = inf.ReadItem();
                 var qmr = (from ctm in ccms
                            where ctm.ToString().ToLower() == s.ToLower()
                            select ctm).FirstOrDefault();
 
                 Units = qmr;
 
-                inf.VerifyEndOfBlock();
+                inf.SkipRestOfBlock();
             }
             else
             {
@@ -292,17 +287,17 @@ namespace MSTS
         
         public CVCDial(STFReader inf, string basePath)
         {
-            inf.VerifyStartOfBlock();
+            inf.MustMatch("(");
 
             while (!inf.EndOfBlock())
             {
-                string token = inf.ReadToken();
+                string token = inf.ReadItem();
                 if (string.Compare(token, "ScalePos", true) == 0)
                 {
-                    inf.VerifyStartOfBlock();
+                    inf.MustMatch("(");
                     FromDegree = inf.ReadInt();
                     ToDegree = inf.ReadInt();
-                    inf.VerifyEndOfBlock();
+                    inf.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "Pivot", true) == 0)
                 {
@@ -329,20 +324,20 @@ namespace MSTS
 
         public CVCGauge(STFReader inf, string basePath)
         {
-            inf.VerifyStartOfBlock();
+            inf.MustMatch("(");
 
             while (!inf.EndOfBlock())
             {
-                string token = inf.ReadToken();
+                string token = inf.ReadItem();
                 if (string.Compare(token, "Area", true) == 0)
                 {
-                    inf.VerifyStartOfBlock();
+                    inf.MustMatch("(");
                     int x = inf.ReadInt();
                     int y = inf.ReadInt();
                     int width = inf.ReadInt();
                     int height = inf.ReadInt();
                     Area = new Rectangle(x, y, width, height);
-                    inf.VerifyEndOfBlock();
+                    inf.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "ZeroPos", true) == 0)
                 {
@@ -377,11 +372,11 @@ namespace MSTS
     {
         public CVCDigital(STFReader inf, string basePath)
         {
-            inf.VerifyStartOfBlock();
+            inf.MustMatch("(");
 
             while (!inf.EndOfBlock())
             {
-                string token = inf.ReadToken();
+                string token = inf.ReadItem();
                 base.Parse(token, inf, basePath);
             }
         }
@@ -396,22 +391,22 @@ namespace MSTS
 
         public CVCDiscrete(STFReader inf, string basePath)
         {
-            inf.VerifyStartOfBlock();
+            inf.MustMatch("(");
 
             while (!inf.EndOfBlock())
             {
-                string token = inf.ReadToken();
+                string token = inf.ReadItem();
                 if (string.Compare(token, "NumFrames", true) == 0)
                 {
-                    inf.VerifyStartOfBlock();
+                    inf.MustMatch("(");
                     FramesCount = inf.ReadInt();
                     FramesX = inf.ReadInt();
                     FramesY = inf.ReadInt();
-                    inf.VerifyEndOfBlock();
+                    inf.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "NumPositions", true) == 0)
                 {
-                    inf.VerifyStartOfBlock();
+                    inf.MustMatch("(");
 
                     // If Positions are not filled before by Values
                     bool shouldFill = Positions.Count == 0;
@@ -429,7 +424,7 @@ namespace MSTS
                 }
                 else if (string.Compare(token, "NumValues", true) == 0)
                 {
-                    inf.VerifyStartOfBlock();
+                    inf.MustMatch("(");
                     
                     // Number of Values - ignore it
                     double v = inf.ReadDouble();
@@ -576,25 +571,25 @@ namespace MSTS
 
         public CVCMultiStateDisplay(STFReader inf, string basePath)
         {
-            inf.VerifyStartOfBlock();
+            inf.MustMatch("(");
 
             while (!inf.EndOfBlock())
             {
-                string token = inf.ReadToken();
+                string token = inf.ReadItem();
                 if (string.Compare(token, "States", true) == 0)
                 {
-                    inf.VerifyStartOfBlock();
+                    inf.MustMatch("(");
                     FramesCount = inf.ReadInt();
                     FramesX = inf.ReadInt();
                     FramesY = inf.ReadInt();
 
-                    token = inf.ReadToken();
+                    token = inf.ReadItem();
                     while (string.Compare(token, "State", true) == 0)
                     {
-                        inf.VerifyStartOfBlock();
+                        inf.MustMatch("(");
                         while (!inf.EndOfBlock())
                         {
-                            token = inf.ReadToken();
+                            token = inf.ReadItem();
                             if (string.Compare(token, "SwitchVal", true) == 0)
                             {
                                 Values.Add(inf.ReadDoubleBlock());
@@ -604,9 +599,9 @@ namespace MSTS
                                 inf.SkipBlock();
                             }
                         }
-                        token = inf.ReadToken();
+                        token = inf.ReadItem();
                     }
-                    //inf.VerifyEndOfBlock();
+                    //inf.SkipRestOfBlock();
 
                     if (Values.Count > 0)
                     {
