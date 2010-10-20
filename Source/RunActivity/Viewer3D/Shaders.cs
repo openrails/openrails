@@ -425,4 +425,76 @@ namespace ORTS
 		}
 	}
 	#endregion
+
+    #region CAB shader
+    /// <summary>
+    /// Wrapper for CabShader.fx
+    /// </summary>
+    public class CabShader : Effect
+    {
+        EffectParameter _LightVector = null;
+        EffectParameter _isNightTex = null;
+        EffectParameter _Texture = null;
+        EffectParameter _DashLight1Pos = null;
+        EffectParameter _DashLight2Pos = null;
+        EffectParameter _DashLight1Col = null;
+        EffectParameter _DashLight2Col = null;
+        EffectParameter _isDashLight = null;
+        EffectParameter _TexPos = null;
+        EffectParameter _TexSize = null;
+        EffectParameter _Overcast = null;
+
+        Vector2 _Position = new Vector2();
+        Vector2 _Size = new Vector2();
+
+        public void SetTexData(float X, float Y, float Width, float Height)
+        {
+            _Position.X = X;
+            _Position.Y = Y;
+            _Size.X = Width;
+            _Size.Y = Height;
+            _TexPos.SetValue(_Position);
+            _TexSize.SetValue(_Size);
+        }
+
+        public void SetLightPositions(Vector4 DashLight1Pos, Vector4 DashLight2Pos)
+        {
+            _DashLight1Pos.SetValue(DashLight1Pos);
+            _DashLight2Pos.SetValue(DashLight2Pos);
+        }
+
+        public void SetData(Vector3 LightVector, 
+            bool isNightTexture, bool isDashLight, float Overcast)
+        {
+            _LightVector.SetValue(LightVector);
+            _isDashLight.SetValue(isDashLight);
+            _isNightTex.SetValue(isNightTexture);
+            _Overcast.SetValue(Overcast);
+        }
+
+        public CabShader(GraphicsDevice graphicsDevice, ContentManager content, Vector4 DashLight1Pos, Vector4 DashLight2Pos,
+            Vector3 DashLight1Col, Vector3 DashLight2Col)
+            : base(graphicsDevice, content.Load<Effect>("CabShader"))
+        {
+            _LightVector = Parameters["LightVector"];
+            _isNightTex = Parameters["isNightTex"];
+            _Texture = Parameters["ImageTexture"];
+            _DashLight1Pos = Parameters["Light1Pos"];
+            _DashLight2Pos = Parameters["Light2Pos"];
+            _DashLight1Col = Parameters["Light1Col"];
+            _DashLight2Col = Parameters["Light2Col"];
+            _isDashLight = Parameters["isLight"];
+
+            _TexPos = Parameters["TexPos"];
+            _TexSize = Parameters["TexSize"];
+            _Overcast = Parameters["overcast"];
+
+            _DashLight1Pos.SetValue(DashLight1Pos);
+            _DashLight2Pos.SetValue(DashLight2Pos);
+            _DashLight1Col.SetValue(DashLight1Col);
+            _DashLight2Col.SetValue(DashLight2Col);
+        }
+    }
+    #endregion
+
 }
