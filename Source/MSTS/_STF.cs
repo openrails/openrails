@@ -92,32 +92,30 @@ namespace MSTS
     /// </exception>
     public class STFReader : IDisposable
 	{
-		StreamReader f;
-        private STFReader IncludeReader = null;
-       
         /// <summary>Open a file, reader the header line, and prepare for STF parsing
         /// </summary>
-        /// <param name="filename"></param>
+        /// <param name="filename">Filename of the STF file to be opened and parsed.</param>
 		public STFReader(string filename)
         {
-            f = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
+            streamSTF = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
             FileName = filename;
-            Header = f.ReadLine();
+            SIMISsignature = streamSTF.ReadLine();
             LineNumber = 2;
         }
-        /// <summary>Use an open stream for STF parsing, this constructor assumes that the header has already been gathered
+        /// <summary>Use an open stream for STF parsing, this constructor assumes that the SIMIS signature has already been gathered (or there isn't one)
         /// </summary>
-        /// <param name="inputStream">Stream that will be parsed</param>
-        /// <param name="fileName">Is only used for error reporting</param>
+        /// <param name="inputStream">Stream that will be parsed.</param>
+        /// <param name="fileName">Is only used for error reporting.</param>
+        /// <param name="encoding">One of the Encoding formats, defined as static members in Encoding which return an Encoding type.  Eg. Encoding.ASCII or Encoding.Unicode</param>
         public STFReader(Stream inputStream, string fileName, Encoding encoding)
         {
             Debug.Assert(inputStream.CanSeek);
             FileName = fileName;
-            f = new StreamReader(inputStream , encoding);
+            streamSTF = new StreamReader(inputStream , encoding);
             LineNumber = 1;
         }
 
-        /// <summary>Implements the IDisposable interface so this class can be included in a using(...) {...} block.
+        /// <summary>Implements the IDisposable interface so this class can be implemented with the 'using(STFReader r = new STFReader(...)) {...}' C# statement.
         /// </summary>
         public void Dispose()
         {
@@ -138,7 +136,7 @@ namespace MSTS
         {
             if (disposing)
             {
-                f.Close(); f = null;
+                streamSTF.Close(); streamSTF = null;
             }
         }
 
@@ -153,21 +151,38 @@ namespace MSTS
         public int LineNumber { get; private set; }
         /// <summary>SIMIS header read from the first line of the file being parsed
         /// </summary>
-        public string Header { get; private set; }
+        public string SIMISsignature { get; private set; }
+        /// <summary>Property returning the last {item} read using ReadItem() prefixed with string describing the nested block hierachy.
+        /// <para>The string returned is formatted 'rootnode(nestednode(childnode(previous_item'.</para>
+        /// </summary>
+        /// <remarks>
+        /// Tree is expensive method of reading STF files (especially for the GC) and should be avoided if possible.
+        /// </remarks>
+        public string Tree
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder(256);
+                foreach (string t in tree) sb.Append(t);
+                sb.Append(previousItem);
+                return sb.ToString();
+            }
+        }
+
 
         /// <summary>This is the main function in STFReader, it returns the next whitespace delimited {item} from the STF file.
         /// </summary>
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         public string ReadItem()
         {
-            if (rewindNextStringRead)
+            if (rewindNextReadItemFlag)
             {
-                Debug.Assert(rewindToken != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
-                string token = rewindToken;
-                currentToken = rewindCurrToken;
+                Debug.Assert(rewindItem != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
+                string token = rewindItem;
+                previousItem = rewindCurrItem;
                 if (rewindTree != null) tree = rewindTree;
-                rewindNextStringRead = false;
-                rewindToken = rewindCurrToken = null;
+                rewindNextReadItemFlag = false;
+                rewindItem = rewindCurrItem = null;
                 rewindTree = null;
                 return token;
             }
@@ -176,8 +191,11 @@ namespace MSTS
             {
                 string s = IncludeReader.ReadItem();
                 UpdateTreeAndRewindBuffer(s);
-                if (s != "" || !IncludeReader.EOF)
+                if (!IncludeReader.EOF)
                     return s;
+                if (tree.Count != 0)
+                    STFException.ReportWarning(IncludeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
+                IncludeReader.Dispose();
                 IncludeReader = null;
             }
 
@@ -255,9 +273,9 @@ namespace MSTS
                 do
                 {
                     stringText.Append((char)c);
-                    if (f.Peek() == '(')
+                    if (streamSTF.Peek() == '(')
                         break;
-                    if (f.Peek() == ')')
+                    if (streamSTF.Peek() == ')')
                         break;
                     c = ReadChar();
                     if (IsEof(c))
@@ -285,8 +303,8 @@ namespace MSTS
         /// </remarks>
         public void RewindItem()
         {
-            Debug.Assert(rewindToken != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
-            rewindNextStringRead = true;
+            Debug.Assert(rewindItem != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
+            rewindNextReadItemFlag = true;
         }
 
         /// <summary>Reports a critical error if the next {item} does not match the target.
@@ -295,10 +313,10 @@ namespace MSTS
         /// <returns>The {item} read from the STF file</returns>
         public void MustMatch(string target)
         {
-            string s = ReadItem();
-            if (s == "")
+            if (EOF)
                 throw new STFException(this, "Unexpected end of file");
-            else if (s != target)
+            string s = ReadItem();
+            if (s != target)
                 throw new STFException(this, target + " Not Found - instead found " + s);
         }
 
@@ -326,7 +344,7 @@ namespace MSTS
             }
         }
 
-        /// <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")".
+        /// <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")" all other values are not consumed.
         /// </summary>
         /// <remarks>
         /// <para>An STF block should be enclosed in parenthesis, ie ( {data_item} {data_item} )</para>
@@ -339,7 +357,7 @@ namespace MSTS
         {
             int c = PeekPastWhitespace();
             if (c == ')')
-                c = f.Read();
+                c = streamSTF.Read();
             return c == ')' || c == -1;
         }
         /// <summary>Read a block open (, and then consume the rest of the block without processing.
@@ -587,10 +605,10 @@ namespace MSTS
         }
         public double ReadDoubleBlock(bool optionalblock)
 		{
-            string s = ReadItem();
-            if (s == "")
+            if (EOF)
                 STFException.ReportError(this, "Unexpected end of file");
-            else if (s == ")" && optionalblock)
+            string s = ReadItem();
+            if (s == ")" && optionalblock)
                 RewindItem();
             else if (s == "(")
             {
@@ -635,22 +653,42 @@ namespace MSTS
             return vector;
         }
 
-        public void ThrowUnknownToken(string token)
-        {
-            throw new STFException(this, "Unknown token " + token);
-        }
+        private StreamReader streamSTF;
+        /// <summary>IncludeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
+        /// </summary>
+        private STFReader IncludeReader = null;
+        /// <summary>Remembers the last returned ReadItem().  If the next {item] is a '(', this is the block name used in the tree.
+        /// </summary>
+        private string previousItem = "";
+        /// <summary>A list describing the hierachy of nested block tokens
+        /// </summary>
+        private List<string> tree = new List<string>();
+        #region *** Rewind Variables - It is important that all state variables in this class have a rewind equivalent
+        /// <summary>This flag is set in RewindItem(), and causes ReadItem(), to use the rewind* variables to do an item repeat
+        /// </summary>
+        private bool rewindNextReadItemFlag = false;
+        /// <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindTree « tree
+        /// <para>This item, is optimized, so when value is null it means rewindTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
+        /// </summary>
+        private List<string> rewindTree;
+        /// <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindCurrItem « previousItem
+        /// </summary>
+        private string rewindCurrItem;
+        /// <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindItem « ReadItem() return
+        /// </summary>
+        private string rewindItem;
+        #endregion
 
-
-        #region Private Class Implementation
+        #region *** Private Class Implementation
         private bool IsWhiteSpace(int c) { return c >= 0 && c <= ' '; }
         private bool IsEof(int c) { return c == -1; }
         private int Peek()
         {
-            int c = f.Peek();
+            int c = streamSTF.Peek();
             if (IsEof(c))
             {
                 // I've seen a problem with compressed input streams with a false -1 on peek
-                c = f.Read();
+                c = streamSTF.Read();
                 if (c != -1)
                     throw new InvalidDataException("Problem peeking eof in compressed file.");
             }
@@ -659,74 +697,56 @@ namespace MSTS
         private int PeekPastWhitespace()
         {
             // scan ahead and see if the next character is a bracket )
-            int c = f.Peek();
+            int c = streamSTF.Peek();
             while (IsEof(c) || IsWhiteSpace(c)) // skip over eof and white space
             {
                 c = ReadChar();
                 if (IsEof(c))
                     break;   // break on reading eof 
-                c = f.Peek();
+                c = streamSTF.Peek();
             }
             return c;
         }
         private int ReadChar()
         {
-            int c = f.Read();
+            int c = streamSTF.Read();
             if (c == '\n') ++LineNumber;
             return c;
         }
-        #endregion
-
-
-        // HIERARCHICAL TREE VIEW OF FILE POSITION AND BUFFER TO ALLOW OF A REWIND OF A SINGLE TOKEN
-
-        private Stack<string> tree = new Stack<string>();
-        private string currentToken = "";
-        private bool rewindNextStringRead = false;
-        private string rewindToken;
-        private Stack<string> rewindTree;
-        private string rewindCurrToken;
-
-        /// <summary>
-        /// This function returns a tree describing the last read token
-        /// This function is expensive to the GC, so if you are calling it repeatedly its better to cache the result and use the cached version
+        /// <summary>Internal Implementation
+        /// <para>This function is called by ReadItem() for every item read from the STF file (and Included files).</para>
+        /// <para>If a block instuction is found, then tree list is updated.</para>
+        /// <para>As this function is called once per ReadItem() is stores the previous value in rewind* variables (there is additional optimization that we only copy rewindTree if the tree has changed.</para>
+        /// <para>Now when the rewind flag is set, we use the rewind* copies, to move back exactly one item.</para>
         /// </summary>
-		public string Tree
-		{
-            get
+        /// <param name="token"></param>
+        private void UpdateTreeAndRewindBuffer(string token)
+        {
+            rewindItem = token;
+            token = token.Trim();
+
+            if (token == "(")
             {
-                var array = tree.ToArray();
-                Array.Reverse(array);
-                return String.Join("", array) + currentToken;
+                rewindTree = new List<string>(tree);
+                rewindCurrItem = previousItem;
+                tree.Add(previousItem + "(");
+                previousItem = "";
             }
-		}
-
-		private void UpdateTreeAndRewindBuffer(string token)
-		{
-            rewindToken = token;
-			token = token.Trim();
-
-			if (token == "(")
-			{
-                rewindTree = new Stack<string>(tree);
-                rewindCurrToken = currentToken;
-                tree.Push(currentToken + "(");
-                currentToken = "";
+            else if (token == ")")
+            {
+                rewindTree = new List<string>(tree);
+                rewindCurrItem = previousItem;
+                if (tree.Count > 0) tree.RemoveAt(tree.Count - 1);
+                previousItem = token;
             }
-			else if (token == ")")
-			{
-                rewindTree = new Stack<string>(tree);
-                rewindCurrToken = currentToken;
-                if(tree.Count > 0) tree.Pop();
-                currentToken = ")";
-            }
-			else
-			{
+            else
+            {
                 rewindTree = null;
-                rewindCurrToken = currentToken;
-                currentToken = token;
-			}
-		}
+                rewindCurrItem = previousItem;
+                previousItem = token;
+            }
+        }
+        #endregion
 	}
 
     public class STFException : Exception

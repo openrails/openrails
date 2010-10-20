@@ -33,38 +33,31 @@ namespace MSTS
 			{
 				while( !inf.EOF)
 				{
-					inf.ReadItem();
-
-					switch( inf.Tree )
-					{
-						case "Service_Definition(Serial":
-							Serial = inf.ReadIntBlock();
-							break;
-						case "Service_Definition(Name":
-							Name = inf.ReadStringBlock();
-							break;
-						case "Service_Definition(Train_Config":
-							Train_Config = inf.ReadStringBlock();
-							break;
-						case "Service_Definition(PathID":
-							PathID = inf.ReadStringBlock();
-							break;
-						case "Service_Definition(MaxWheelAcceleration":
-							MaxWheelAcceleration = (float)inf.ReadDoubleBlock();
-							break;
-						case "Service_Definition(Efficiency":
-							Efficiency = (float)inf.ReadDoubleBlock();
-							break;
-						case "Service_Definition(TimeTable":
-                            inf.SkipBlock(); // todo complete parse
-							break;
-					}
-				}
-			}
-		}
-
-
+                    switch (inf.ReadItem())
+                    {
+                        case "Service_Definition": ReadServiceDefintionBlock(inf); break;
+                        case "(": inf.SkipRestOfBlock(); break;
+                    }
+                }
+            }
+        }
+        private void ReadServiceDefintionBlock(STFReader inf)
+        {
+            inf.MustMatch("(");
+            while(!inf.EndOfBlock())
+            {
+                switch (inf.ReadItem())
+                {
+                    case "Serial": Serial = inf.ReadIntBlock(); break;
+                    case "Name": Name = inf.ReadStringBlock(); break;
+                    case "Train_Config": Train_Config = inf.ReadStringBlock(); break;
+                    case "PathID": PathID = inf.ReadStringBlock(); break;
+                    case "MaxWheelAcceleration": MaxWheelAcceleration = inf.ReadFloatBlock(); break;
+                    case "Efficiency": Efficiency = inf.ReadFloatBlock(); break;
+                    case "(": inf.SkipRestOfBlock(); break;
+                }
+            }
+        }
 	} // SRVFile
-
 }
 

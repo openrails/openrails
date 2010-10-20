@@ -147,16 +147,17 @@
         <member name="M:MSTS.STFReader.#ctor(System.String)">
             <summary>Open a file, reader the header line, and prepare for STF parsing
             </summary>
-            <param name="filename"></param>
+            <param name="filename">Filename of the STF file to be opened and parsed.</param>
         </member>
         <member name="M:MSTS.STFReader.#ctor(System.IO.Stream,System.String,System.Text.Encoding)">
-            <summary>Use an open stream for STF parsing, this constructor assumes that the header has already been gathered
+            <summary>Use an open stream for STF parsing, this constructor assumes that the SIMIS signature has already been gathered (or there isn't one)
             </summary>
-            <param name="inputStream">Stream that will be parsed</param>
-            <param name="fileName">Is only used for error reporting</param>
+            <param name="inputStream">Stream that will be parsed.</param>
+            <param name="fileName">Is only used for error reporting.</param>
+            <param name="encoding">One of the Encoding formats, defined as static members in Encoding which return an Encoding type.  Eg. Encoding.ASCII or Encoding.Unicode</param>
         </member>
         <member name="M:MSTS.STFReader.Dispose">
-            <summary>Implements the IDisposable interface so this class can be included in a using(...) {...} block.
+            <summary>Implements the IDisposable interface so this class can be implemented with the 'using(STFReader r = new STFReader(...)) {...}' C# statement.
             </summary>
         </member>
         <member name="M:MSTS.STFReader.Dispose(System.Boolean)">
@@ -195,7 +196,7 @@
             <returns></returns>
         </member>
         <member name="M:MSTS.STFReader.EndOfBlock">
-            <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")".
+            <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")" all other values are not consumed.
             </summary>
             <remarks>
             <para>An STF block should be enclosed in parenthesis, ie ( {data_item} {data_item} )</para>
@@ -214,6 +215,44 @@
             <summary>Skip to the end of this block, ignoring any nested blocks
             </summary>
         </member>
+        <member name="F:MSTS.STFReader.IncludeReader">
+            <summary>IncludeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.previousItem">
+            <summary>Remembers the last returned ReadItem().  If the next {item] is a '(', this is the block name used in the tree.
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.tree">
+            <summary>A list describing the hierachy of nested block tokens
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.rewindNextReadItemFlag">
+            <summary>This flag is set in RewindItem(), and causes ReadItem(), to use the rewind* variables to do an item repeat
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.rewindTree">
+            <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindTree « tree
+            <para>This item, is optimized, so when value is null it means rewindTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.rewindCurrItem">
+            <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindCurrItem « previousItem
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.rewindItem">
+            <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindItem « ReadItem() return
+            </summary>
+        </member>
+        <member name="M:MSTS.STFReader.UpdateTreeAndRewindBuffer(System.String)">
+            <summary>Internal Implementation
+            <para>This function is called by ReadItem() for every item read from the STF file (and Included files).</para>
+            <para>If a block instuction is found, then tree list is updated.</para>
+            <para>As this function is called once per ReadItem() is stores the previous value in rewind* variables (there is additional optimization that we only copy rewindTree if the tree has changed.</para>
+            <para>Now when the rewind flag is set, we use the rewind* copies, to move back exactly one item.</para>
+            </summary>
+            <param name="token"></param>
+        </member>
         <member name="P:MSTS.STFReader.EOF">
             <summary>Property that returns true when the EOF has been reached
             </summary>
@@ -226,15 +265,17 @@
             <summary>Line Number property for the file being parsed - for reporting purposes
             </summary>
         </member>
-        <member name="P:MSTS.STFReader.Header">
+        <member name="P:MSTS.STFReader.SIMISsignature">
             <summary>SIMIS header read from the first line of the file being parsed
             </summary>
         </member>
         <member name="P:MSTS.STFReader.Tree">
-            <summary>
-            This function returns a tree describing the last read token
-            This function is expensive to the GC, so if you are calling it repeatedly its better to cache the result and use the cached version
+            <summary>Property returning the last {item} read using ReadItem() prefixed with string describing the nested block hierachy.
+            <para>The string returned is formatted 'rootnode(nestednode(childnode(previous_item'.</para>
             </summary>
+            <remarks>
+            Tree is expensive method of reading STF files (especially for the GC) and should be avoided if possible.
+            </remarks>
         </member>
         <member name="T:MSTS.MSTSPath">
             <summary>

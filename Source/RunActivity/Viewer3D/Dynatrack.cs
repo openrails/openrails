@@ -120,7 +120,7 @@ namespace ORTS
                         using (STFReader f = new STFReader(filespec))
                         {
                             // "EXPERIMENTAL" header is temporary
-                            if (f.Header != "EXPERIMENTAL")
+                            if (f.SIMISsignature != "EXPERIMENTAL")
                                 throw new STFException(f, "Invalid header");
                             else
                             {

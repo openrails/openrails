@@ -85,16 +85,12 @@ namespace ORTS
                 while (!f.EOF)
                 {
                     string token = f.ReadItem();
-                    if (token == ")")
-                        Parse(f.Tree.ToLower() + ")", f);  // ie  wagon(inside) at end of block
-                    else
-                        Parse(f.Tree.ToLower(), f);  // otherwise wagon(inside
+                    Parse(f.Tree.ToLower(), f);
                 }
             if (BrakeSystem == null)
                     BrakeSystem = new AirSinglePipe(this);
         }
 
-        ViewPoint passengerViewPoint = new ViewPoint();
         string brakeSystemType = null;
 
         /// <summary>
@@ -109,12 +105,6 @@ namespace ORTS
                 case "wagon(freightanim": ParseFreightAnim(f); break;
                 case "wagon(size": f.MustMatch("("); f.ReadFloat(); f.ReadFloat(); Length = f.ReadFloat(); f.SkipRestOfBlock(); break;
                 case "wagon(mass": MassKG = f.ReadFloatBlock(); break;
-                case "wagon(inside(sound": InteriorSoundFileName = f.ReadStringBlock(); break;
-                case "wagon(inside(passengercabinfile": InteriorShapeFileName = f.ReadStringBlock(); break;
-                case "wagon(inside(passengercabinheadpos": passengerViewPoint.Location = f.ReadVector3Block(); break;
-                case "wagon(inside(rotationlimit": passengerViewPoint.RotationLimit = f.ReadVector3Block(); break;
-                case "wagon(inside(startdirection": passengerViewPoint.StartDirection = f.ReadVector3Block(); break;
-                case "wagon(inside)": PassengerViewpoints.Add(passengerViewPoint); break;
                 case "wagon(wheelradius": WheelRadiusM = f.ReadFloatBlock(); break;
                 case "engine(wheelradius": DriverWheelRadiusM = f.ReadFloatBlock(); break;
                 case "wagon(sound": MainSoundFileName = f.ReadStringBlock(); break;
@@ -135,16 +125,17 @@ namespace ORTS
                     Couplers[Couplers.Count - 1].SetR0(f.ReadFloat(), f.ReadFloat());
                     f.SkipRestOfBlock();
                     break;
-                default:
-                    if (MSTSBrakeSystem != null)
-                        MSTSBrakeSystem.Parse(lowercasetoken, f);
-                    break;
                 case "wagon(lights": 
                     if (Program.TrainLightsEnabled) 
                     { 
                         try { Lights = new Lights(f, this); } 
                         catch { Lights = null; } 
                     } 
+                    break;
+                case "wagon(inside": ParseWagonInside(f); break;
+                default:
+                    if (MSTSBrakeSystem != null)
+                        MSTSBrakeSystem.Parse(lowercasetoken, f);
                     break;
             }
         }
@@ -185,6 +176,24 @@ namespace ORTS
             brakeSystemType = copy.brakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
+        }
+        private void ParseWagonInside(STFReader f)
+        {
+            ViewPoint passengerViewPoint = new ViewPoint();
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                switch (f.ReadItem().ToLower())
+                {
+                    case "sound": InteriorSoundFileName = f.ReadStringBlock(); break;
+                    case "passengercabinfile": InteriorShapeFileName = f.ReadStringBlock(); break;
+                    case "passengercabinheadpos": passengerViewPoint.Location = f.ReadVector3Block(); break;
+                    case "rotationlimit": passengerViewPoint.RotationLimit = f.ReadVector3Block(); break;
+                    case "startdirection": passengerViewPoint.StartDirection = f.ReadVector3Block(); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
+            }
+            PassengerViewpoints.Add(passengerViewPoint);
         }
         public void ParseFreightAnim(STFReader f)
         {

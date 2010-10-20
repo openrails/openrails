@@ -10,67 +10,132 @@ namespace MSTS
 {
     public class ENVFile
     {
-		public readonly float WaterWaveHeight;
-		public readonly float WaterWaveSpeed;
-		public readonly IEnumerable<ENVFileWaterLayer> WaterLayers;
+		public float WaterWaveHeight;
+		public float WaterWaveSpeed;
+		public List<ENVFileWaterLayer> WaterLayers;
 
         public ENVFile(string filePath)
         {
             using (STFReader reader = new STFReader(filePath))
             {
-                var waterLayers = new List<ENVFileWaterLayer>();
-                var waterLayerCount = 0;
                 while (!reader.EOF)
                 {
-                    reader.ReadItem();
-                    if (reader.Tree == "world(world_water(world_water_wave_height(")
+                    switch (reader.ReadItem())
                     {
-                        WaterWaveHeight = reader.ReadInt();
-                    }
-                    else if (reader.Tree == "world(world_water(world_water_wave_speed(")
-                    {
-                        WaterWaveSpeed = reader.ReadInt();
-                    }
-                    else if (reader.Tree == "world(world_water(world_water_layers(")
-                    {
-                        waterLayers.Capacity = waterLayerCount = reader.ReadInt();
-                    }
-                    else if (reader.Tree == "world(world_water(world_water_layers(world_water_layer(")
-                    {
-                        if (waterLayers.Count < waterLayerCount)
-                            waterLayers.Add(new ENVFileWaterLayer(reader));
-                        else
-                            Trace.TraceWarning("Ignoring extra world_water_layer in {0}:line {1}", reader.FileName, reader.LineNumber);
+                        case "world": ParseWorld(reader); break;
+                        case "(": reader.SkipRestOfBlock(); break;
                     }
                 }
-                WaterLayers = waterLayers;
+            }
+        }
+        private void ParseWorld(STFReader reader)
+        {
+            reader.MustMatch("(");
+            while (!reader.EndOfBlock())
+            {
+                switch (reader.ReadItem())
+                {
+                    case "world_water": ParseWater(reader); break;
+                    case "(": reader.SkipRestOfBlock(); break;
+                }
+            }
+        }
+        private void ParseWater(STFReader reader)
+        {
+            reader.MustMatch("(");
+            while (!reader.EndOfBlock())
+            {
+                switch (reader.ReadItem())
+                {
+                    case "world_water_wave_height": WaterWaveHeight = reader.ReadFloatBlock(); break;
+                    case "world_water_wave_speed": WaterWaveSpeed = reader.ReadFloatBlock(); break;
+                    case "world_water_layers": ParseWaterLayers(reader); break;
+                    case "(": reader.SkipRestOfBlock(); break;
+                }
+            }
+        }
+        private void ParseWaterLayers(STFReader reader)
+        {
+            reader.MustMatch("(");
+            int texturelayers = reader.ReadInt();
+            WaterLayers = new List<ENVFileWaterLayer>(texturelayers);
+            while (!reader.EndOfBlock())
+            {
+                switch (reader.ReadItem())
+                {
+                    case "world_water_layer":
+                        if(texturelayers-- > 0)
+                            WaterLayers.Add(new ENVFileWaterLayer(reader));
+                        break;
+                    case "(":
+                        reader.SkipRestOfBlock();
+                        break;
+                }
             }
         }
     }
 
 	public class ENVFileWaterLayer
 	{
-		public readonly float Height;
-		public readonly string TextureName;
+		public float Height;
+		public string TextureName;
 
-		internal ENVFileWaterLayer(STFReader reader)
+		public ENVFileWaterLayer(STFReader reader)
 		{
-			while (!reader.EOF && reader.Tree.StartsWith("world(world_water(world_water_layers(world_water_layer("))
-			{
-				reader.ReadItem();
-				if (reader.Tree == "world(world_water(world_water_layers(world_water_layer(world_water_layer_height(")
-				{
-					Height = reader.ReadFloat();
-				}
-				else if (reader.Tree == "world(world_water(world_water_layers(world_water_layer(world_anim_shader(world_shader(terrain_texslots(terrain_texslot(")
-				{
-					// ie terrain_texslot ( waterbot.ace 1 0 )
-					TextureName = reader.ReadItem();
-					reader.ReadItem();
-					reader.ReadItem();
-					reader.MustMatch(")");
-				}
-			}
-		}
+            reader.MustMatch("(");
+            while (!reader.EndOfBlock())
+            {
+                switch (reader.ReadItem())
+                {
+                    case "world_water_layer_height": Height = reader.ReadFloatBlock(); break;
+                    case "world_anim_shader": ParseAnimShader(reader); break;
+                    case "(": reader.SkipRestOfBlock(); break;
+                }
+            }
+        }
+        private void ParseAnimShader(STFReader reader)
+        {
+            reader.MustMatch("(");
+            while (!reader.EndOfBlock())
+            {
+                switch (reader.ReadItem())
+                {
+                    case "world_shader": ParseWorldShader(reader); break;
+                    case "(": reader.SkipRestOfBlock(); break;
+                }
+            }
+        }
+        private void ParseWorldShader(STFReader reader)
+        {
+            reader.MustMatch("(");
+            reader.ReadItem(); // TextureMode
+            while (!reader.EndOfBlock())
+            {
+                switch (reader.ReadItem())
+                {
+                    case "terrain_texslots": ParseTerrainTexSlots(reader); break;
+                    case "(": reader.SkipRestOfBlock(); break;
+                }
+            }
+        }
+        private void ParseTerrainTexSlots(STFReader reader)
+        {
+            reader.MustMatch("(");
+            reader.ReadInt(); // Count
+            while (!reader.EndOfBlock())
+            {
+                switch (reader.ReadItem())
+                {
+                    case "terrain_texslot":
+                        reader.MustMatch("(");
+					    TextureName = reader.ReadItem();
+					    reader.ReadItem();
+					    reader.ReadItem();
+					    reader.MustMatch(")");
+                        break;
+                    case "(": reader.SkipRestOfBlock(); break;
+                }
+            }
+        }
 	}
 }
