@@ -167,6 +167,10 @@ namespace ORTS
                                                 light.coupling = f.ReadInt();
                                                 f.SkipRestOfBlock();
                                             }
+                                            else
+                                            {
+                                                f.SkipBlock();
+                                            }
                                             token = f.ReadTokenNoComment();
                                         }
                                     }// else if (0 == String.Compare(token, "Conditions", true))
@@ -200,6 +204,10 @@ namespace ORTS
                                             light.StateList.Add(lightState);
                                         }
                                     }// else if (0 == String.Compare(token, "States", true))
+                                    else
+                                    {
+                                        f.SkipBlock();
+                                    }
                                     token = f.ReadTokenNoComment();
                                 }// while (token != ")")
                                 token = f.ReadTokenNoComment();
@@ -306,6 +314,10 @@ namespace ORTS
                         f.MustMatch("(");
                         color = f.ReadHex();
                         f.SkipRestOfBlock();
+                    }
+                    else
+                    {
+                        f.SkipBlock();
                     }
                     token = f.ReadItem();
                 }// while (token != ")")
