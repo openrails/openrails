@@ -373,11 +373,14 @@ namespace ORTS
                     MotiveForceN = 0;
             }
 
-            MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
-            float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
-            if (w < 0)
-                w = 0;
-            AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
+            if (MaxForceN > 0 && MaxContinuousForceN > 0)
+            {
+                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
+                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+                if (w < 0)
+                    w = 0;
+                AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
+            }
             MotiveForceN *= (Direction == Direction.Forward ? 1 : -1);
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
