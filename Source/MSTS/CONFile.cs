@@ -9,11 +9,11 @@ using System.IO;
 
 namespace MSTS
 {
-	/// <summary>
-	/// Work with consist files
-	/// </summary>
-	public class CONFile
-	{
+    /// <summary>
+    /// Work with consist files
+    /// </summary>
+    public class CONFile
+    {
         public string FileName;   // no extension, no path
         public string Description;  // form the Name field or label field of the consist file
         public Train_Config Train;
@@ -23,14 +23,14 @@ namespace MSTS
             Description = FileName;
             using (STFReader f = new STFReader(filenamewithpath))
             {
-                while (!f.EndOfBlock()) // EOF
-                {
-                    string token = f.ReadItem();
-                    if (0 == String.Compare(token, "Train", true)) Train = new Train_Config(f);
-                    else f.SkipBlock();
-                }
+                while (!f.EndOfBlock())
+                    switch (f.ReadItem().ToLower())
+                    {
+                        case "train": Train = new Train_Config(f); break;
+                        case "(": f.SkipRestOfBlock(); break;
+                    }
             }
-       }
+        }
     }
 }
 

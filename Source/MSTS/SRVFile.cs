@@ -45,18 +45,16 @@ namespace MSTS
         {
             inf.MustMatch("(");
             while(!inf.EndOfBlock())
-            {
-                switch (inf.ReadItem())
+                switch (inf.ReadItem().ToLower())
                 {
-                    case "Serial": Serial = inf.ReadIntBlock(); break;
-                    case "Name": Name = inf.ReadStringBlock(); break;
-                    case "Train_Config": Train_Config = inf.ReadStringBlock(); break;
-                    case "PathID": PathID = inf.ReadStringBlock(); break;
-                    case "MaxWheelAcceleration": MaxWheelAcceleration = inf.ReadFloatBlock(); break;
-                    case "Efficiency": Efficiency = inf.ReadFloatBlock(); break;
+                    case "serial": Serial = inf.ReadIntBlock(); break;
+                    case "name": Name = inf.ReadStringBlock(); break;
+                    case "train_config": Train_Config = inf.ReadStringBlock(); break;
+                    case "pathid": PathID = inf.ReadStringBlock(); break;
+                    case "maxwheelacceleration": MaxWheelAcceleration = inf.ReadFloatBlock(); break;
+                    case "efficiency": Efficiency = inf.ReadFloatBlock(); break;
                     case "(": inf.SkipRestOfBlock(); break;
                 }
-            }
         }
 	} // SRVFile
 }

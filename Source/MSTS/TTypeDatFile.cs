@@ -26,14 +26,11 @@ namespace MSTS
             {
                 int count = f.ReadInt();
                 while (!f.EndOfBlock())
-                {
-                    string token = f.ReadItem();
-                    switch (token.ToLower())
+                    switch (f.ReadItem().ToLower())
                     {
                         case "tracktype": this.Add(new TrackType(f)); break;
-                        default: f.SkipUnknownBlock(token); break;
+                        case "(": f.SkipRestOfBlock(); break;
                     }
-                }
                 if (count != this.Count)
                     STFException.ReportError(f, "Count mismatch.");
             }

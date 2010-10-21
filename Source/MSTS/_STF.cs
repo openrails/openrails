@@ -392,22 +392,6 @@ namespace MSTS
         }
 
 
-        public void SkipUnknownBlock(string token)
-        {
-            if( token.StartsWith( "_" ) )
-                SkipBlock();
-            else switch( token.ToLower() )
-            {
-                case "skip":
-                case "comment": SkipBlock(); break;
-                default: 
-                    if (!token.StartsWith("#"))
-                        STFException.ReportError(this, "Unexpected " + token);
-                    SkipBlock();
-                    break;
-            }
-        }
-
 		public int ReadHex()
 		{
 			string token = ReadItem();

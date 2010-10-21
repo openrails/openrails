@@ -182,7 +182,6 @@ namespace ORTS
             ViewPoint passengerViewPoint = new ViewPoint();
             f.MustMatch("(");
             while (!f.EndOfBlock())
-            {
                 switch (f.ReadItem().ToLower())
                 {
                     case "sound": InteriorSoundFileName = f.ReadStringBlock(); break;
@@ -192,7 +191,6 @@ namespace ORTS
                     case "startdirection": passengerViewPoint.StartDirection = f.ReadVector3Block(); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
-            }
             PassengerViewpoints.Add(passengerViewPoint);
         }
         public void ParseFreightAnim(STFReader f)

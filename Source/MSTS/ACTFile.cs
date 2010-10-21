@@ -36,11 +36,13 @@ namespace MSTS
         {
             using (STFReader f = new STFReader(filenamewithpath))
             {
-                while (!f.EndOfBlock()) // EOF
+                while (!f.EndOfBlock())
                 {
-                    string token = f.ReadItem();
-                    if (0 == String.Compare(token, "Tr_Activity", true)) Tr_Activity = new Tr_Activity(f, headerOnly);
-                    else f.SkipUnknownBlock(token);
+                    switch (f.ReadItem().ToLower())
+                    {
+                        case "tr_activity": Tr_Activity = new Tr_Activity(f, headerOnly); break;
+                        case "(": f.SkipRestOfBlock(); break;
+                    }
                     if (headerOnly && Tr_Activity.Tr_Activity_Header != null)
                         return;
                 }
@@ -50,30 +52,31 @@ namespace MSTS
         }
 	}
 
-	public class Tr_Activity
-	{
-		public int Serial = 1;
-		public Tr_Activity_Header Tr_Activity_Header;
-		public Tr_Activity_File Tr_Activity_File;
+    public class Tr_Activity
+    {
+        public int Serial = 1;
+        public Tr_Activity_Header Tr_Activity_Header;
+        public Tr_Activity_File Tr_Activity_File;
 
-		public Tr_Activity( STFReader f , bool headerOnly)
-		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-                if (0 == String.Compare(token, "Tr_Activity_File", true)) Tr_Activity_File = new Tr_Activity_File(f);
-                if (0 == String.Compare(token, "Serial", true)) Serial = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Tr_Activity_Header", true)) Tr_Activity_Header = new Tr_Activity_Header(f);
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
+        public Tr_Activity(STFReader f, bool headerOnly)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                switch (f.ReadItem().ToLower())
+                {
+                    case "tr_activity_file": Tr_Activity_File = new Tr_Activity_File(f); break;
+                    case "serial": Serial = f.ReadIntBlock(); break;
+                    case "tr_activity_header": Tr_Activity_Header = new Tr_Activity_Header(f); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
                 if (headerOnly && Tr_Activity_Header != null)
                     return;
-
             }
-			if( Tr_Activity_File == null )
+            if (Tr_Activity_File == null)
                 throw new STFException(f, "Missing Tr_Activity_File statement");
-		}
-	}
+        }
+    }
 
 	public class Tr_Activity_Header
 	{
@@ -101,29 +104,29 @@ namespace MSTS
 		{
 			f.MustMatch("(");
 			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-                if (0 == String.Compare(token, "RouteID", true)) RouteID = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "Name", true)) Name = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "Description", true)) Description = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "Briefing", true)) Briefing = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "CompleteActivity", true)) CompleteActivity = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Type", true)) Type = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Mode", true)) Mode = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "StartTime", true)) StartTime = new StartTime(f);
-                else if (0 == String.Compare(token, "Season", true)) Season = (SeasonType)f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Weather", true)) Weather = (WeatherType)f.ReadIntBlock();
-                else if (0 == String.Compare(token, "PathID", true)) PathID = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "StartingSpeed", true)) StartingSpeed = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Duration", true)) Duration = new Duration(f);
-                else if (0 == String.Compare(token, "Difficulty", true)) Difficulty = (Difficulty)f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Animals", true)) Animals = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Workers", true)) Workers = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "FuelWater", true)) FuelWater = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "FuelCoal", true)) FuelCoal = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "FuelDiesel", true)) FuelDiesel = f.ReadIntBlock();
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-			}
+                switch(f.ReadItem().ToLower())
+                {
+                    case "routeid": RouteID = f.ReadStringBlock(); break;
+                    case "name": Name = f.ReadStringBlock(); break;
+                    case "description": Description = f.ReadStringBlock(); break;
+                    case "briefing": Briefing = f.ReadStringBlock(); break;
+                    case "completeactivity": CompleteActivity = f.ReadIntBlock(); break;
+                    case "type": Type = f.ReadIntBlock(); break;
+                    case "mode": Mode = f.ReadIntBlock(); break;
+                    case "starttime": StartTime = new StartTime(f); break;
+                    case "season": Season = (SeasonType)f.ReadIntBlock(); break;
+                    case "weather": Weather = (WeatherType)f.ReadIntBlock(); break;
+                    case "pathid": PathID = f.ReadStringBlock(); break;
+                    case "startingspeed": StartingSpeed = f.ReadIntBlock(); break;
+                    case "duration": Duration = new Duration(f); break;
+                    case "difficulty": Difficulty = (Difficulty)f.ReadIntBlock(); break;
+                    case "animals": Animals = f.ReadIntBlock(); break;
+                    case "workers": Workers = f.ReadIntBlock(); break;
+                    case "fuelwater": FuelWater = f.ReadIntBlock(); break;
+                    case "fuelcoal": FuelCoal = f.ReadIntBlock(); break;
+                    case "fueldiesel": FuelDiesel = f.ReadIntBlock(); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
 		}
         public Tr_Activity_Header( )
         {
@@ -199,19 +202,19 @@ namespace MSTS
 		{
 			f.MustMatch("(");
 			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-                if (0 == String.Compare(token, "Player_Service_Definition", true)) Player_Service_Definition = new Player_Service_Definition(f);
-                else if (0 == String.Compare(token, "NextServiceUID", true)) NextServiceUID = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "NextActivityObjectUID", true)) NextActivityObjectUID = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Events", true)) Events = new Events(f);
-                else if (0 == String.Compare(token, "Traffic_Definition", true)) Traffic_Definition = new Traffic_Definition(f);
-                else if (0 == String.Compare(token, "ActivityObjects", true)) ActivityObjects = new ActivityObjects(f);
-                else if (0 == String.Compare(token, "ActivityFailedSignals", true)) ActivityFailedSignals = new ActivityFailedSignals(f);
-                else if (0 == String.Compare(token, "PlatformNumPassengersWaiting", true)) f.SkipBlock();// todo complete parse
-                else if (0 == String.Compare(token, "ActivityRestrictedSpeedZones", true)) f.SkipBlock();  // todo complete parse
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-            }
+                switch(f.ReadItem().ToLower())
+                {
+                    case "player_service_definition": Player_Service_Definition = new Player_Service_Definition(f); break;
+                    case "nextserviceuid": NextServiceUID = f.ReadIntBlock(); break;
+                    case "nextactivityobjectuid": NextActivityObjectUID = f.ReadIntBlock(); break;
+                    case "events": Events = new Events(f); break;
+                    case "traffic_definition": Traffic_Definition = new Traffic_Definition(f); break;
+                    case "activityobjects": ActivityObjects = new ActivityObjects(f); break;
+                    case "activityfailedsignals": ActivityFailedSignals = new ActivityFailedSignals(f); break;
+                    case "platformnumpassengerswaiting": f.SkipBlock(); break;
+                    case "activityrestrictedspeedzones": f.SkipBlock(); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
 		}
 
 
@@ -238,12 +241,12 @@ namespace MSTS
 		{
 			f.MustMatch("(");
 			Label = f.ReadItem();
-			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-                if (0 == String.Compare(token, "Service_Definition", true)) this.Add(new Service_Definition(f));
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-            }
+            while (!f.EndOfBlock())
+                switch(f.ReadItem().ToLower())
+                {
+                    case "service_definition": this.Add(new Service_Definition(f)); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
 		}
 	}
 
@@ -259,18 +262,15 @@ namespace MSTS
 			Service = f.ReadItem();
 			Time = f.ReadInt();
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                switch (f.ReadItem().ToLower())
                 {
                     case "uid": UiD = f.ReadIntBlock(); break;
                     case "efficiency": f.ReadFloatBlock(); break;
                     case "skipcount": f.ReadIntBlock(); break;
                     case "distancedownpath": f.ReadFloatBlock(); break;
                     case "platformstartid": f.ReadIntBlock(); break;
-                    default: f.SkipUnknownBlock(token); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
         }
 	}
 
@@ -279,13 +279,13 @@ namespace MSTS
 		public Events( STFReader f )
 		{
 			f.MustMatch("(");
-			while( !f.EndOfBlock() ) 
-			{
-                string token = f.ReadItem();
-                if (0 == String.Compare(token, "EventCategoryLocation", true)) this.Add(new EventCategoryLocation(f));
-                else if (0 == String.Compare(token, "EventCategoryAction", true)) this.Add(new EventCategoryAction(f));
-                else f.SkipBlock(); // TODO complete parse and replace with f.SkipUnknownBlock(token);
-			}
+            while (!f.EndOfBlock()) 
+                switch (f.ReadItem().ToLower())
+                {
+                    case "eventcategorylocation": this.Add(new EventCategoryLocation(f)); break;
+                    case "eventcategoryaction": this.Add(new EventCategoryAction(f)); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
 		}
 
 		public Events()
@@ -313,27 +313,26 @@ namespace MSTS
 		{
 			f.MustMatch("(");
 			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-                if (0 == String.Compare(token, "EventTypeLocation", true)) { f.MustMatch("("); f.MustMatch(")"); }
-                else if (0 == String.Compare(token, "ID", true)) ID = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Activation_Level", true)) Activation_Level = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Outcomes", true)) Outcomes = new Outcomes(f);
-                else if (0 == String.Compare(token, "Name", true)) Name = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "TextToDisplayOnCompletionIfNotTriggered", true)) TextToDisplayOnCompletionIfNotTriggered = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "Location", true))
+                switch (f.ReadItem().ToLower())
                 {
-                    f.MustMatch("(");
-                    TileX = f.ReadInt();
-                    TileZ = f.ReadInt();
-                    X = f.ReadDouble();
-                    Z = f.ReadDouble();
-                    Size = f.ReadDouble();
-                    f.SkipRestOfBlock();
+                    case "eventtypelocation": f.MustMatch("("); f.MustMatch(")"); break;
+                    case "id": ID = f.ReadIntBlock(); break;
+                    case "activation_level": Activation_Level = f.ReadIntBlock(); break;
+                    case "outcomes": Outcomes = new Outcomes(f); break;
+                    case "name": Name = f.ReadStringBlock(); break;
+                    case "texttodisplayoncompletionifnottriggered": TextToDisplayOnCompletionIfNotTriggered = f.ReadStringBlock(); break;
+                    case "triggeronstop": TriggerOnStop = f.ReadBoolBlock(); break;
+                    case "location":
+                        f.MustMatch("(");
+                        TileX = f.ReadInt();
+                        TileZ = f.ReadInt();
+                        X = f.ReadDouble();
+                        Z = f.ReadDouble();
+                        Size = f.ReadDouble();
+                        f.SkipRestOfBlock();
+                        break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-                else if (0 == String.Compare(token, "TriggerOnStop", true)) TriggerOnStop = f.ReadBoolBlock();
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-            }
 		}
 
 		/// <summary>
@@ -376,20 +375,19 @@ namespace MSTS
 		public EventCategoryAction( STFReader f )
 		{
 			f.MustMatch("(");
-			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-                if (0 == String.Compare(token, "EventTypeAllStops", true)) { f.MustMatch("("); f.MustMatch(")"); }
-                else if (0 == String.Compare(token, "ID", true)) ID = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Activation_Level", true)) Activation_Level = f.ReadIntBlock();
-                else if (0 == String.Compare(token, "Outcomes", true)) Outcomes = new Outcomes(f);
-                else if (0 == String.Compare(token, "TextToDisplayOnCompletionIfTriggered", true)) f.ReadStringBlock(); // ignore
-                else if (0 == String.Compare(token, "TextToDisplayOnCompletionIfNotTriggered", true)) f.ReadStringBlock(); // ignore
-                else if (0 == String.Compare(token, "Name", true)) Name = f.ReadStringBlock();
-                else f.SkipBlock(); // TODO, when we finish it should be f.ThrowUnknownToken(token);
-			}
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
+                {
+                    case "eventtypeallstops": f.MustMatch("("); f.MustMatch(")"); break;
+                    case "id": ID = f.ReadIntBlock(); break;
+                    case "activation_level": Activation_Level = f.ReadIntBlock(); break;
+                    case "outcomes": Outcomes = new Outcomes(f); break;
+                    case "texttodisplayoncompletioniftriggered": f.ReadStringBlock(); break;
+                    case "texttodisplayoncompletionifnotrriggered": f.ReadStringBlock(); break;
+                    case "name": Name = f.ReadStringBlock(); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
 		}
-
 	}
 
 
@@ -398,13 +396,14 @@ namespace MSTS
 		public Outcomes( STFReader f )
 		{
 			f.MustMatch("(");
-			while( !f.EndOfBlock() ) 
-			{
-                string token = f.ReadItem();
-                // TODO, we'll have to handle other types of activity outcomes eventually
-                if (0 == String.Compare(token, "ActivitySuccess", true)) this.Add(new ActivitySuccess(f));
-                else f.SkipBlock(); // TODO, when finished this line should be  f.ThrowUnknownToken(token);
-			}
+            // TODO, we'll have to handle other types of activity outcomes eventually
+            while (!f.EndOfBlock()) 
+                switch (f.ReadItem().ToLower())
+                {
+
+                    case "activitysuccess": this.Add(new ActivitySuccess(f)); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
 		}
 
 		public Outcomes()
@@ -435,11 +434,11 @@ namespace MSTS
 		{
 			f.MustMatch("(");
 			while( !f.EndOfBlock() ) 
-			{
-                string token = f.ReadItem();
-				if( 0 == String.Compare( token,"ActivityFailedSignal", true ) ) this.Add( f.ReadIntBlock() );
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-            }
+                switch(f.ReadItem().ToLower())
+                {
+                    case"activityfailedsignal": this.Add(f.ReadIntBlock()); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
 		}
 
 		public ActivityFailedSignals()
@@ -460,11 +459,11 @@ namespace MSTS
 		{
 			f.MustMatch("(");
 			while( !f.EndOfBlock() ) 
-			{
-                string token = f.ReadItem();
-				if( 0 == String.Compare( token,"ActivityObject", true ) ) this.Add( new ActivityObject(f) );
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-            }
+                switch(f.ReadItem().ToLower())
+                {
+                    case "activityobject": this.Add(new ActivityObject(f)); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
 		}
 
 		public ActivityObjects()
@@ -483,47 +482,43 @@ namespace MSTS
 		public float X;
 		public float Z;
 
-		public ActivityObject( STFReader f )
-		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-				if( 0 == String.Compare( token, "ObjectType" ) ) { f.MustMatch("("); f.MustMatch( "WagonsList" ); f.SkipRestOfBlock(); }
-				else if( 0 == String.Compare( token,"Train_Config", true ) ) Train_Config = new Train_Config(f);
-				else if( 0 == String.Compare( token,"Direction", true ) ) Direction = f.ReadIntBlock();
-				else if( 0 == String.Compare( token,"ID", true ) ) ID = f.ReadIntBlock();
-				else if( 0 == String.Compare( token,"Tile", true ) ) 
-				{
-					f.MustMatch("(");
-					TileX = f.ReadInt();
-					TileZ = f.ReadInt();
-					X = f.ReadFloat();
-					Z = f.ReadFloat();
-					f.SkipRestOfBlock();
-				}
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-            }
-		}
-
+        public ActivityObject(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
+                {
+                    case "objecttype": f.MustMatch("("); f.MustMatch("WagonsList"); f.SkipRestOfBlock(); break;
+                    case "train_config": Train_Config = new Train_Config(f); break;
+                    case "direction": Direction = f.ReadIntBlock(); break;
+                    case "id": ID = f.ReadIntBlock(); break;
+                    case "tile":
+                        f.MustMatch("(");
+                        TileX = f.ReadInt();
+                        TileZ = f.ReadInt();
+                        X = f.ReadFloat();
+                        Z = f.ReadFloat();
+                        f.SkipRestOfBlock();
+                        break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
+        }
 	}
 
 	public class Train_Config
 	{
 		public TrainCfg TrainCfg;
 
-		public Train_Config( STFReader f )
-		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-				if( 0 == String.Compare( token,"TrainCfg", true ) ) TrainCfg = new TrainCfg(f);
-                else f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-            }
-		}
-
-
+        public Train_Config(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
+                {
+                    case "traincfg": TrainCfg = new TrainCfg(f); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
+        }
 	}
 
 
@@ -555,25 +550,23 @@ namespace MSTS
 
 		public ArrayList Wagons = new ArrayList();
 
-		public TrainCfg( STFReader f )
-		{
-			f.MustMatch("(");
-			f.ReadItem();  // Discard the "" token after the braces
-			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-				if( 0 == String.Compare( token,"Name", true ) ) Name = f.ReadStringBlock();
-				else if( 0 == String.Compare( token,"Serial", true ) ) Serial = f.ReadIntBlock();
-				else if( 0 == String.Compare( token,"MaxVelocity", true ) ) MaxVelocity = new MaxVelocity( f );
-				else if( 0 == String.Compare( token,"NextWagonUID", true ) ) NextWagonUID = f.ReadIntBlock();
- 			    else if( 0 == String.Compare( token,"Durability", true ) ) Durability = (float) f.ReadDoubleBlock();
-				else if( 0 == String.Compare( token,"Wagon", true ) ) Wagons.Add( new Wagon( f ) );
-				else if( 0 == String.Compare( token,"Engine", true ) ) Wagons.Add( new Wagon( f ) );
-                else 
-                f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-            }
-		}
-
+        public TrainCfg(STFReader f)
+        {
+            f.MustMatch("(");
+            f.ReadItem();  // Discard the "" lowertoken after the braces
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
+                {
+                    case "name": Name = f.ReadStringBlock(); break;
+                    case "serial": Serial = f.ReadIntBlock(); break;
+                    case "maxvelocity": MaxVelocity = new MaxVelocity(f); break;
+                    case "nextwagonuid": NextWagonUID = f.ReadIntBlock(); break;
+                    case "durability": Durability = (float)f.ReadDoubleBlock(); break;
+                    case "wagon": Wagons.Add(new Wagon(f)); break;
+                    case "engine": Wagons.Add(new Wagon(f)); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
+        }
 	}
 
 	public class Wagon
@@ -584,27 +577,19 @@ namespace MSTS
 		public bool IsEngine = false;
 		public bool Flip = false;
 
-		public Wagon( STFReader f )
-		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() )
-			{
-                string token = f.ReadItem();
-				if( 0 == String.Compare( token,"UiD", true ) ) UiD = f.ReadIntBlock();
-				else if( 0 == String.Compare( token,"Flip", true ) ) { Flip = true; f.MustMatch("("); f.SkipRestOfBlock(); }
-				else if( 0 == String.Compare( token,"WagonData", true )
-					||   0 == String.Compare( token,"EngineData", true ))
-				{
-					if( 0 == String.Compare( token,"EngineData", true )) IsEngine = true;
-					f.MustMatch("(");
-					Name = f.ReadItem();
-					Folder = f.ReadItem();
-					f.SkipRestOfBlock();
-				}
-				else 
-                   f.SkipBlock(); //TODO complete parse and replace with f.SkipUnknownBlock(token);
-			}
-		}
+        public Wagon(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
+                {
+                    case "uid": UiD = f.ReadIntBlock(); break;
+                    case "flip": Flip = true; f.SkipBlock(); break;
+                    case "enginedata": f.MustMatch("("); Name = f.ReadItem(); Folder = f.ReadItem(); f.SkipRestOfBlock(); IsEngine = true; break;
+                    case "wagondata": f.MustMatch("("); Name = f.ReadItem(); Folder = f.ReadItem(); f.SkipRestOfBlock(); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
+        }
 
 		public Wagon( int uiD, string folder, string name, bool isEngine, bool flip ) 
 		{
@@ -630,15 +615,12 @@ namespace MSTS
             f.MustMatch("(");
             Name = f.ReadItem();
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem().ToLower();
-                switch (token)
+                switch (f.ReadItem().ToLower())
                 {
                     case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock()); break;
                     case "player_traffic_definition": Player_Traffic_Definition = new Player_Traffic_Definition(f); break;
-                    default: f.SkipBlock(); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
         }
 
     }
@@ -660,16 +642,13 @@ namespace MSTS
             f.MustMatch("(");
             Name = f.ReadItem();
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem().ToLower();
-                switch (token)
+                switch (f.ReadItem().ToLower())
                 {
                     case "arrivaltime": ArrivalTime.Add(basedt.AddSeconds(f.ReadFloatBlock())); break;
                     case "departtime": DepartTime.Add(basedt.AddSeconds(f.ReadFloatBlock())); break;
                     case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock()); break;
                     case "platformstartid": PlatformStartID.Add(f.ReadIntBlock()); break;
-                    default: f.SkipBlock(); break;
-                }
+                    case "(": f.SkipRestOfBlock(); break;
             }
         }
     }

@@ -50,14 +50,11 @@ namespace MSTS
         {
             f.MustMatch("(");
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                switch (f.ReadItem().ToLower())
                 {
                     case "maxviewingdistance": MaxViewingDistance = f.ReadFloatBlock(); break;
-                    default: f.SkipUnknownBlock(token); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
         }
     }
 

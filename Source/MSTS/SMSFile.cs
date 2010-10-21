@@ -2,8 +2,6 @@
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
-/// 
-/// NOTE: THIS IS THE REFERENCE PROTOTYPE FOR PARSING STF FILES
 
 using System;
 using System.Collections;
@@ -52,14 +50,11 @@ namespace MSTS
         {
             using(STFReader f = new STFReader(filePath))
                 while (!f.EndOfBlock())
-                {
-                    string token = f.ReadItem();
-                    switch( token.ToLower() )
+                    switch(f.ReadItem().ToLower())
                     {
                         case "tr_sms": Tr_SMS = new Tr_SMS(f); break;
-                        default: f.SkipUnknownBlock(token); break;
+                        case "(": f.SkipRestOfBlock(); break;
                     }
-                }
         }
 
 	} // class SMSFile
@@ -72,14 +67,11 @@ namespace MSTS
         {
             f.MustMatch("(");
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                switch (f.ReadItem().ToLower())
                 {
                     case "scalabiltygroup": ScalabiltyGroups.Add(new ScalabiltyGroup(f)); break;
-                    default: f.SkipUnknownBlock( token ); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
         }
     } // class Tr_SMS
 
@@ -98,19 +90,16 @@ namespace MSTS
             f.MustMatch("(");
             DetailLevel = f.ReadInt();
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                switch( token.ToLower() )
+                switch (f.ReadItem().ToLower())
                 {
                     case "activation": Activation = new Activation(f); break;
-                    case "deactivation": Deactivation = new Deactivation(f); break; 
-                    case "streams": Streams = new SMSStreams( f, Volume ); break;
+                    case "deactivation": Deactivation = new Deactivation(f); break;
+                    case "streams": Streams = new SMSStreams(f, Volume); break;
                     case "volume": Volume = f.ReadFloatBlock(); break;
                     case "stereo": Stereo = f.ReadBoolBlock(); break;
                     case "ignore3d": Ignore3D = f.ReadBoolBlock(); break;
-                    default: f.SkipUnknownBlock( token); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
         }
     } // class ScalabiltyGroup
 
@@ -126,18 +115,15 @@ namespace MSTS
         {
             f.MustMatch("(");
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                switch(f.ReadItem().ToLower())
                 {
                     case "externalcam": ExternalCam = f.ReadBoolBlock(); break;
                     case "cabcam": CabCam = f.ReadBoolBlock(); break;
                     case "passengercam": PassengerCam = f.ReadBoolBlock(); break;
                     case "distance": Distance = f.ReadFloatBlock(); break;
                     case "tracktype": TrackType = f.ReadIntBlock(); break;
-                    default: f.SkipUnknownBlock(token); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
         }
     }
 
@@ -157,14 +143,11 @@ namespace MSTS
             int count = f.ReadInt();
 
             while( !f.EndOfBlock() )
-            {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                switch(f.ReadItem().ToLower())
                 {
                     case "stream": Add(new SMSStream(f, VolumeOfScGroup)); break;
-                    default: f.SkipUnknownBlock(token); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
 
             if (count != this.Count)
                 STFException.ReportError(f,"Stream count mismatch");  
@@ -186,18 +169,15 @@ namespace MSTS
             Volume = VolumeOfScGroup;
 
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                switch(f.ReadItem().ToLower())
                 {
                     case "priority": Priority = f.ReadIntBlock(); break;
                     case "triggers":  Triggers = new Triggers(f); break;
                     case "volumecurve": VolumeCurve = new VolumeCurve(f); break; 
                     case "frequencycurve": FrequencyCurve = new FrequencyCurve(f); break;
                     case "volume": Volume = f.ReadFloatBlock(); break;
-                    default: f.SkipUnknownBlock(token); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
 
             if (Volume > 1)
                 Volume /= 100;
@@ -221,20 +201,17 @@ namespace MSTS
         public VolumeCurve(STFReader f)
         {
             f.MustMatch("(");
-            string controlString = f.ReadItem();
-            switch (controlString.ToLower())
+            switch (f.ReadItem().ToLower())
             {
                 case "distancecontrolled": Control = Controls.DistanceControlled; break;
                 case "speedcontrolled": Control = Controls.SpeedControlled; break;
                 case "variable1controlled": Control = Controls.Variable1Controlled; break;
                 case "variable2controlled": Control = Controls.Variable2Controlled; break;
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
-                default: STFException.ReportError(f, "Unexpected " + controlString); break; 
+                case "(": f.SkipRestOfBlock(); break;
             }
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                switch (f.ReadItem().ToLower())
                 {
                     case "curvepoints":
                         f.MustMatch("(");
@@ -248,9 +225,8 @@ namespace MSTS
                         f.SkipRestOfBlock();
                         break;
                     case "granularity": Granularity = f.ReadFloatBlock(); break;
-                    default: f.SkipUnknownBlock(token); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
 
             if (Control == Controls.Variable2Controlled && CurvePoints[CurvePoints.Length - 1].X <= 1)
             {
@@ -278,20 +254,16 @@ namespace MSTS
             f.MustMatch("(");
             int count = f.ReadInt();
 
-            while( !f.EndOfBlock() )
-            {
-                string token = f.ReadItem();
-
-                switch (token.ToLower())
+            while(!f.EndOfBlock())
+                switch(f.ReadItem().ToLower())
                 {
-                    case "dist_travelled_trigger": Add( new Dist_Travelled_Trigger( f )); break;   
-                    case "discrete_trigger": Add( new Discrete_Trigger( f) ); break;       
-                    case "random_trigger": Add( new Random_Trigger( f) ); break; 
-                    case "variable_trigger": Add( new Variable_Trigger( f )); break; 
-                    case "initial_trigger": Add( new Initial_Trigger( f )); break;
-                    default: f.SkipUnknownBlock(token); break;
+                    case "dist_travelled_trigger": Add(new Dist_Travelled_Trigger(f)); break;   
+                    case "discrete_trigger": Add(new Discrete_Trigger(f)); break;       
+                    case "random_trigger": Add(new Random_Trigger(f)); break; 
+                    case "variable_trigger": Add(new Variable_Trigger(f)); break; 
+                    case "initial_trigger": Add(new Initial_Trigger(f)); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
 
             foreach (Trigger trigger in this)
                 if (trigger.SoundCommand == null)
@@ -305,9 +277,9 @@ namespace MSTS
 
         int playcommandcount = 0;
 
-        protected void ParsePlayCommand( STFReader f, string token )
+        protected void ParsePlayCommand( STFReader f, string lowertoken )
         {
-            switch (token.ToLower())
+            switch (lowertoken)
             {
                 case "playoneshot": 
                 case "startloop":
@@ -325,7 +297,7 @@ namespace MSTS
                     break;
             }
 
-            switch (token.ToLower())
+            switch (lowertoken)
             {
                 case "playoneshot": SoundCommand = new PlayOneShot(f); break;
                 case "startloop": SoundCommand = new StartLoop(f); break;
@@ -335,7 +307,7 @@ namespace MSTS
                 case "disabletrigger": SoundCommand = new DisableTrigger( f); break; 
                 case "enabletrigger": SoundCommand = new EnableTrigger( f); break;
                 case "setstreamvolume": SoundCommand = new SetStreamVolume(f); break;
-                default: f.SkipUnknownBlock(token); break;
+                case "(": f.SkipRestOfBlock(); break;
             }
         }
     }
@@ -347,10 +319,7 @@ namespace MSTS
         {
             f.MustMatch("(");
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                ParsePlayCommand(f, token);
-            }
+                ParsePlayCommand(f, f.ReadItem().ToLower());
         }
     }
 
@@ -362,14 +331,9 @@ namespace MSTS
         public Discrete_Trigger(STFReader f)
         {
             f.MustMatch("(");
-
             TriggerID = f.ReadInt();
-
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                ParsePlayCommand(f, token);
-            }
+                ParsePlayCommand(f, f.ReadItem().ToLower());
         }
     }
 
@@ -407,10 +371,7 @@ namespace MSTS
             Threshold = f.ReadFloat();
 
             while (!f.EndOfBlock())
-            {
-                string token = f.ReadItem();
-                ParsePlayCommand(f, token);
-            }
+                ParsePlayCommand(f, f.ReadItem().ToLower());
         }
     }
 
@@ -426,12 +387,12 @@ namespace MSTS
             f.MustMatch("(");
             while (!f.EndOfBlock())
             {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                string lowtok = f.ReadItem().ToLower();
+                switch (lowtok)
                 {
                     case "dist_min_max": f.MustMatch("(");  Dist_Min = f.ReadFloat(); Dist_Max = f.ReadFloat(); f.SkipRestOfBlock(); break;
                     case "volume_min_max": f.MustMatch("(");  Volume_Min = f.ReadFloat(); Volume_Max = f.ReadFloat(); f.SkipRestOfBlock(); break;
-                    default: ParsePlayCommand(f, token); break;
+                    default: ParsePlayCommand(f, lowtok); break;
                 }
             }
         }
@@ -449,12 +410,12 @@ namespace MSTS
             f.MustMatch("(");
             while (!f.EndOfBlock())
             {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+                string lowtok = f.ReadItem().ToLower();
+                switch (lowtok)
                 {
                     case "delay_min_max": f.MustMatch("("); Delay_Min = f.ReadFloat(); Delay_Max = f.ReadFloat(); f.SkipRestOfBlock(); break;
                     case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(); Volume_Max = f.ReadFloat(); f.SkipRestOfBlock(); break;
-                    default: ParsePlayCommand(f, token); break;
+                    default: ParsePlayCommand(f, lowtok); break;
                 }
             }
         }
@@ -529,10 +490,8 @@ namespace MSTS
             int count = f.ReadInt();
             Files = new string[count];
             int iFile = 0;
-            while( !f.EndOfBlock() )
-            {
-                string token = f.ReadItem();
-                switch (token.ToLower())
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
                 {
                     case "file":
                         if (iFile < count)
@@ -557,11 +516,10 @@ namespace MSTS
                             case "sequentialselection": SelectionMethod = SelectionMethods.SequentialSelection; break;
                             default: STFException.ReportError(f, "Unknown selection method " + s); break;
                         }
-                        f.SkipRestOfBlock(); 
+                        f.SkipRestOfBlock();
                         break;
-                    default: f.SkipUnknownBlock( token ); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
         }
     }// PlayOneShot
 

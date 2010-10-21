@@ -23,24 +23,14 @@ namespace MSTS
         {
             using (STFReader f = new STFReader(filename))
             {
-                string token = f.ReadItem();
                 while (!f.EndOfBlock())
-                {
-                    if (token == ")") throw new STFException(f, "Unexpected )");
-                    else if (token == "(") f.SkipBlock();
-                        
-                    else if (0 == String.Compare(token, "camera", true))
+                    switch (f.ReadItem().ToLower())
                     {
-                        // add this camera to the list
-                        cam = new camera(f);
-                        Cameras.Add(cam);
+                        case "camera": Cameras.Add(new camera(f)); break;
+                        case "(": f.SkipRestOfBlock(); break;
                     }
-                    else f.SkipBlock();
-                    token = f.ReadItem();
-                }
             }
         }
-        private camera cam;
         public ArrayList Cameras = new ArrayList(8);
     }
 

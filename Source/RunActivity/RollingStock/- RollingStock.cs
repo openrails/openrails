@@ -111,15 +111,12 @@ namespace ORTS
             {
                 using (STFReader f = new STFReader(filenamewithpath))
                     while (!f.EndOfBlock())
-                    {
-                        string token = f.ReadItem();
-                        switch (token.ToLower())
+                        switch (f.ReadItem().ToLower())
                         {
                             case "engine": Engine = new EngineClass(f); break;
                             case "_openrails": OpenRails = new OpenRailsData(f); break;
-                            default: f.SkipBlock(); break;
+                            case "(": f.SkipRestOfBlock(); break;
                         }
-                    }
             }
 
             public class EngineClass
@@ -131,14 +128,11 @@ namespace ORTS
                     f.MustMatch("(");
                     f.ReadItem();
                     while (!f.EndOfBlock())
-                    {
-                        string token = f.ReadItem();
-                        switch (token.ToLower())
+                        switch (f.ReadItem().ToLower())
                         {
                             case "type": Type = f.ReadStringBlock(); break;
-                            default: f.SkipBlock(); break; // TODO complete parse and replace with f.SkipUnknownBlock ...
+                            case "(": f.SkipRestOfBlock(); break;
                         }
-                    }
                 }
             } // class WAGFile.Engine
 
@@ -150,14 +144,11 @@ namespace ORTS
                 {
                     f.MustMatch("(");
                     while (!f.EndOfBlock())
-                    {
-                        string token = f.ReadItem();
-                        switch (token.ToLower())
+                        switch (f.ReadItem().ToLower())
                         {
                             case "dll": DLL = f.ReadStringBlock(); break;
-                            default: f.SkipBlock(); break; // TODO complete parse and replace with f.SkipUnknownBlock ...
+                            case "(": f.SkipRestOfBlock(); break;
                         }
-                    }
                 }
             } // class WAGFile.Engine
 

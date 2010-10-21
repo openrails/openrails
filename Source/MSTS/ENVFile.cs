@@ -32,27 +32,23 @@ namespace MSTS
         {
             reader.MustMatch("(");
             while (!reader.EndOfBlock())
-            {
-                switch (reader.ReadItem())
+                switch (reader.ReadItem().ToLower())
                 {
                     case "world_water": ParseWater(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
-            }
         }
         private void ParseWater(STFReader reader)
         {
             reader.MustMatch("(");
             while (!reader.EndOfBlock())
-            {
-                switch (reader.ReadItem())
+                switch (reader.ReadItem().ToLower())
                 {
                     case "world_water_wave_height": WaterWaveHeight = reader.ReadFloatBlock(); break;
                     case "world_water_wave_speed": WaterWaveSpeed = reader.ReadFloatBlock(); break;
                     case "world_water_layers": ParseWaterLayers(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
-            }
         }
         private void ParseWaterLayers(STFReader reader)
         {
@@ -60,8 +56,7 @@ namespace MSTS
             int texturelayers = reader.ReadInt();
             WaterLayers = new List<ENVFileWaterLayer>(texturelayers);
             while (!reader.EndOfBlock())
-            {
-                switch (reader.ReadItem())
+                switch (reader.ReadItem().ToLower())
                 {
                     case "world_water_layer":
                         if(texturelayers-- > 0)
@@ -71,7 +66,6 @@ namespace MSTS
                         reader.SkipRestOfBlock();
                         break;
                 }
-            }
         }
     }
 
@@ -84,47 +78,40 @@ namespace MSTS
 		{
             reader.MustMatch("(");
             while (!reader.EndOfBlock())
-            {
-                switch (reader.ReadItem())
+                switch (reader.ReadItem().ToLower())
                 {
                     case "world_water_layer_height": Height = reader.ReadFloatBlock(); break;
                     case "world_anim_shader": ParseAnimShader(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
-            }
         }
         private void ParseAnimShader(STFReader reader)
         {
             reader.MustMatch("(");
             while (!reader.EndOfBlock())
-            {
-                switch (reader.ReadItem())
+                switch (reader.ReadItem().ToLower())
                 {
                     case "world_shader": ParseWorldShader(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
-            }
         }
         private void ParseWorldShader(STFReader reader)
         {
             reader.MustMatch("(");
             reader.ReadItem(); // TextureMode
             while (!reader.EndOfBlock())
-            {
-                switch (reader.ReadItem())
+                switch (reader.ReadItem().ToLower())
                 {
                     case "terrain_texslots": ParseTerrainTexSlots(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
-            }
         }
         private void ParseTerrainTexSlots(STFReader reader)
         {
             reader.MustMatch("(");
             reader.ReadInt(); // Count
             while (!reader.EndOfBlock())
-            {
-                switch (reader.ReadItem())
+                switch (reader.ReadItem().ToLower())
                 {
                     case "terrain_texslot":
                         reader.MustMatch("(");
@@ -135,7 +122,6 @@ namespace MSTS
                         break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
-            }
         }
 	}
 }
