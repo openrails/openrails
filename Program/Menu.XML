@@ -227,6 +227,10 @@
             <summary>A list describing the hierachy of nested block tokens
             </summary>
         </member>
+        <member name="F:MSTS.STFReader.tree_cache">
+            <summary>The tree cache is used to minimize the calls to StringBuilder when Tree is called repetively for the same hierachy.
+            </summary>
+        </member>
         <member name="F:MSTS.STFReader.rewindNextReadItemFlag">
             <summary>This flag is set in RewindItem(), and causes ReadItem(), to use the rewind* variables to do an item repeat
             </summary>

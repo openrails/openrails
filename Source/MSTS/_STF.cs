@@ -162,10 +162,16 @@ namespace MSTS
         {
             get
             {
-                StringBuilder sb = new StringBuilder(256);
-                foreach (string t in tree) sb.Append(t);
-                sb.Append(previousItem);
-                return sb.ToString();
+                if (tree_cache != null)
+                    return tree_cache + previousItem;
+                else
+                {
+                    StringBuilder sb = new StringBuilder(256);
+                    foreach (string t in tree) sb.Append(t);
+                    tree_cache = sb.ToString();
+                    sb.Append(previousItem);
+                    return sb.ToString();
+                }
             }
         }
 
@@ -357,7 +363,10 @@ namespace MSTS
         {
             int c = PeekPastWhitespace();
             if (c == ')')
+            {
                 c = streamSTF.Read();
+                UpdateTreeAndRewindBuffer(")");
+            }
             return c == ')' || c == -1;
         }
         /// <summary>Read a block open (, and then consume the rest of the block without processing.
@@ -647,6 +656,9 @@ namespace MSTS
         /// <summary>A list describing the hierachy of nested block tokens
         /// </summary>
         private List<string> tree = new List<string>();
+        /// <summary>The tree cache is used to minimize the calls to StringBuilder when Tree is called repetively for the same hierachy.
+        /// </summary>
+        private string tree_cache;
         #region *** Rewind Variables - It is important that all state variables in this class have a rewind equivalent
         /// <summary>This flag is set in RewindItem(), and causes ReadItem(), to use the rewind* variables to do an item repeat
         /// </summary>
@@ -714,18 +726,23 @@ namespace MSTS
                 rewindTree = new List<string>(tree);
                 rewindCurrItem = previousItem;
                 tree.Add(previousItem + "(");
+                tree_cache = null; // The tree has changed, so we need to empty the cache which will be rebuilt if the property 'Tree' is used
                 previousItem = "";
             }
             else if (token == ")")
             {
                 rewindTree = new List<string>(tree);
                 rewindCurrItem = previousItem;
-                if (tree.Count > 0) tree.RemoveAt(tree.Count - 1);
+                if (tree.Count > 0)
+                {
+                    tree.RemoveAt(tree.Count - 1);
+                    tree_cache = null; // The tree has changed, so we need to empty the cache which will be rebuilt if the property 'Tree' is used
+                }
                 previousItem = token;
             }
             else
             {
-                rewindTree = null;
+                rewindTree = null; // The tree has not changed so rewind doesn't need any data
                 rewindCurrItem = previousItem;
                 previousItem = token;
             }
