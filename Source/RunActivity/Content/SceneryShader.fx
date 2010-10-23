@@ -97,13 +97,13 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.RelPosition = mul(In.Position, World) - viewerPos;
 	Out.TexCoords = In.TexCoords;
 	Out.Color = In.Color;
-	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
+	Out.Normal_Light.xyz = mul(In.Normal, World).xyz;
 }
 
 void _VSLightsAndShadows(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
 	// Normal lighting (range 0.0 - 1.0)
-	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
+	Out.Normal_Light.w = dot(normalize(Out.Normal_Light.xyz), LightVector) * 0.5 + 0.5;
 
 	// Headlight lighting
 	Out.LightDir_Fog.xyz = mul(In.Position, World) - HeadlightPosition.xyz;
@@ -182,8 +182,8 @@ float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 // Gets the specular light effect.
 float _PSGetSpecularEffect(in VERTEX_OUTPUT In)
 {
-	float3 halfVector = normalize(normalize(-In.RelPosition) + normalize(LightVector));
-	return step(0.5, In.Normal_Light.w) * step(1, ZBias_Lighting.z) * pow(saturate(dot(normalize(In.Normal_Light.xyz), halfVector)), ZBias_Lighting.z);
+	float3 halfVector = normalize(-In.RelPosition) + LightVector;
+	return In.Normal_Light.w * step(1, ZBias_Lighting.z) * pow(saturate(dot(normalize(In.Normal_Light.xyz), normalize(halfVector))), ZBias_Lighting.z);
 }
 
 // Gets the shadow effect.
@@ -268,7 +268,7 @@ float4 PSImage(in VERTEX_OUTPUT In) : COLOR0
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
 	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(In) + isNight_Tex));
 	// Specular effect next.
-	litColor += _PSGetSpecularEffect(In);
+	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(In);
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
 	// Night-time darkens everything, except night-time textures.
