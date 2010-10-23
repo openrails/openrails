@@ -842,13 +842,13 @@ namespace MSTS
 
 	public class SignalUnit
 	{
-		public readonly uint SubObj;
+		public readonly int SubObj;
 		public readonly uint TrItem;
 
 		public SignalUnit(SBR block)
 		{
 			block.VerifyID(TokenID.SignalUnit);
-			SubObj = block.ReadUInt();
+			SubObj = block.ReadInt();
 			using (SBR subBlock = block.ReadSubBlock())
 			{
 				subBlock.VerifyID(TokenID.TrItemId);

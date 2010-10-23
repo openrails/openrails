@@ -10,31 +10,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ORTS;
 
 namespace MSTS
 {
-    public struct LightTexture
-    {
-        public string Name, TextureFile;
-        public float u0, v0, u1, v1;	       
-    }
-
-    public struct LightTableEntry
-    {
-        public string Name;
-        public byte a, r, g, b;   // colour
-    }
-
     public class SIGCFGFile
     {
-		public Dictionary<string, LightTexture> LightTextures = new Dictionary<string, LightTexture>();
-		public Dictionary<string, LightTableEntry> LightsTable = new Dictionary<string, LightTableEntry>();
-		public Dictionary<string, SignalType> SignalTypes = new Dictionary<string, SignalType>();
-		public Dictionary<string, SignalShape> SignalShapes = new Dictionary<string, SignalShape>();
-        public List<string> ScriptFiles;
+		public readonly IDictionary<string, LightTexture> LightTextures;
+		public readonly IDictionary<string, LightTableEntry> LightsTable;
+		public readonly IDictionary<string, SignalType> SignalTypes;
+		public readonly IDictionary<string, SignalShape> SignalShapes;
+		public readonly IList<string> ScriptFiles;
 
         public SIGCFGFile(string filenamewithpath)
         {
@@ -44,164 +33,200 @@ namespace MSTS
                 while (token != "") // EOF
                 {
                     if (token == ")") throw new STFException(f, "Unexpected )");
-                    else if (0 == String.Compare(token, "LightTextures", true)) ReadLightTextures(f);
-                    else if (0 == String.Compare(token, "LightsTab", true)) ReadLightsTab(f);
-                    else if (0 == String.Compare(token, "SignalTypes", true)) ReadSigTypes(f);
-                    else if (0 == String.Compare(token, "SignalShapes", true)) ReadSigShapes(f);
-                    else if (0 == String.Compare(token, "ScriptFiles", true)) ReadSignalScripts(f);
+					else if (0 == String.Compare(token, "LightTextures", true)) LightTextures = ReadLightTextures(f);
+                    else if (0 == String.Compare(token, "LightsTab", true)) LightsTable = ReadLightsTable(f);
+                    else if (0 == String.Compare(token, "SignalTypes", true)) SignalTypes = ReadSignalTypes(f);
+                    else if (0 == String.Compare(token, "SignalShapes", true)) SignalShapes = ReadSignalShapes(f);
+                    else if (0 == String.Compare(token, "ScriptFiles", true)) ScriptFiles = ReadScriptFiles(f);
                     else f.SkipBlock();
                     token = f.ReadItem();
                 }
             }
         }
 
-        void ReadLightTextures(STFReader f)
+        static IDictionary<string, LightTexture> ReadLightTextures(STFReader f)
         {
             f.MustMatch("(");
-            uint noTextures = f.ReadUInt();
-            uint count = 0;
-            string token = f.ReadItem();
+            var count = f.ReadInt();
+			var lightTextures = new Dictionary<string, LightTexture>(count);
+			var token = f.ReadItem();
             while (token != ")")
             {
                 if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "LightTex", true))
                 {
-                    if (count < noTextures)
+					if (lightTextures.Count >= count)
+						Trace.TraceWarning("Skipped extra LightTex in {0}:line {1}", f.FileName, f.LineNumber);
+					else
                     {
-						var lightTexture = new LightTexture();
-                        f.MustMatch("(");
-						lightTexture.Name = f.ReadItem();
-						lightTexture.TextureFile = f.ReadItem();
-						lightTexture.u0 = f.ReadFloat();
-						lightTexture.v0 = f.ReadFloat();
-						lightTexture.u1 = f.ReadFloat();
-						lightTexture.v1 = f.ReadFloat();
-                        f.MustMatch(")");
-						LightTextures[lightTexture.Name] = lightTexture;
-                        count++;
-                    }
-                    else
-                    {
-                        throw new STFException(f, "LightTextures count mismatch");
+						var lightTexture = new LightTexture(f);
+						if (lightTextures.ContainsKey(lightTexture.Name))
+							Trace.TraceWarning("Skipped duplicate LightTex '{2}' in {0}:line {1}", f.FileName, f.LineNumber, lightTexture.Name);
+						else
+							lightTextures.Add(lightTexture.Name, lightTexture);
                     }
                 }
                 else f.SkipBlock();
                 token = f.ReadItem();
             }
-            if (count != noTextures) STFException.ReportError(f, "LightTextures count mismatch");
-        }
+			if (lightTextures.Count < count)
+				Trace.TraceWarning("{2} missing LightTex in {0}:line {1}", f.FileName, f.LineNumber, count - lightTextures.Count);
+			return lightTextures;
+		}
 
-        void ReadLightsTab(STFReader f)
+		static IDictionary<string, LightTableEntry> ReadLightsTable(STFReader f)
         {
             f.MustMatch("(");
-            uint noLights = f.ReadUInt();
-            uint count = 0;
-            string token = f.ReadItem();
+            var count = f.ReadInt();
+			var lightsTable = new Dictionary<string, LightTableEntry>(count);
+            var token = f.ReadItem();
             while (token != ")")
             {
                 if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "LightsTabEntry", true))
                 {
-                    if (count < noLights)
-                    {
-                        var lightsTableEntry = new LightTableEntry();
-                        f.MustMatch("(");
-						lightsTableEntry.Name = f.ReadItem();
-                        string Token1 = f.ReadItem();
-                        if (0 == String.Compare(Token1, "Colour", true))
-                        {
-                            f.MustMatch("(");
-							lightsTableEntry.a = (byte)f.ReadUInt();
-							lightsTableEntry.r = (byte)f.ReadUInt();
-							lightsTableEntry.g = (byte)f.ReadUInt();
-							lightsTableEntry.b = (byte)f.ReadUInt();
-                            f.MustMatch(")");
-                        }
-                        else
-                        {
-                            STFException.ReportError(f, "'Colour' Expected");
-                        }
-                        f.MustMatch(")");
-						LightsTable[lightsTableEntry.Name] = lightsTableEntry;
-                        count++;
-                    }
-                    else
-                    {
-                        throw new STFException(f, "LightsTab count mismatch");
-                    }
+					if (lightsTable.Count >= count)
+						Trace.TraceWarning("Skipped extra LightsTabEntry in {0}:line {1}", f.FileName, f.LineNumber);
+					else
+					{
+						var lightsTableEntry = new LightTableEntry(f);
+						if (lightsTable.ContainsKey(lightsTableEntry.Name))
+							Trace.TraceWarning("Skipped duplicate LightsTabEntry '{2}' in {0}:line {1}", f.FileName, f.LineNumber, lightsTableEntry.Name);
+						else
+							lightsTable.Add(lightsTableEntry.Name, lightsTableEntry);
+					}
                 }
                 else f.SkipBlock();
                 token = f.ReadItem();
             }
-            if (count != noLights) STFException.ReportError(f, "LightsTab count mismatch");
-        }
+			if (lightsTable.Count < count)
+				Trace.TraceWarning("{2} missing LightsTabEntry in {0}:line {1}", f.FileName, f.LineNumber, count - lightsTable.Count);
+			return lightsTable;
+		}
 
-        void ReadSigTypes(STFReader f)
+		static IDictionary<string, SignalType> ReadSignalTypes(STFReader f)
         {
             f.MustMatch("(");
-            uint noSigTypes = f.ReadUInt();
-            uint count = 0;
-            string token = f.ReadItem();
-            while (token != ")")
+			var count = f.ReadInt();
+			var signalTypes = new Dictionary<string, SignalType>(count);
+			var token = f.ReadItem();
+			while (token != ")")
             {
                 if (token == "") throw new STFException(f, "Missing )");
                 else if (0 == String.Compare(token, "SignalType", true))
                 {
-                    if (count < noSigTypes)
-                    {
-						var signalType = new SignalType(count, f, this);
-                        SignalTypes[signalType.Name] = signalType;
-                        count++;
+					if (signalTypes.Count >= count)
+						Trace.TraceWarning("Skipped extra SignalType in {0}:line {1}", f.FileName, f.LineNumber);
+					else
+					{
+						var signalType = new SignalType(f);
+						if (signalTypes.ContainsKey(signalType.Name))
+							Trace.TraceWarning("Skipped duplicate SignalType '{2}' in {0}:line {1}", f.FileName, f.LineNumber, signalType.Name);
+						else
+							signalTypes.Add(signalType.Name, signalType);
                     }
                 }
                 else f.SkipBlock();
                 token = f.ReadItem();
             }
-        }
+			if (signalTypes.Count < count)
+				Trace.TraceWarning("{2} missing SignalType in {0}:line {1}", f.FileName, f.LineNumber, count - signalTypes.Count);
+			return signalTypes;
+		}
 
-        void ReadSigShapes(STFReader f)
+        static IDictionary<string, SignalShape> ReadSignalShapes(STFReader f)
         {
             f.MustMatch("(");
-            uint noSigShapes = f.ReadUInt();
-            uint count = 0;
-            string token = f.ReadItem();
+			var count = f.ReadInt();
+			var signalShapes = new Dictionary<string, SignalShape>(count);
+			var token = f.ReadItem();
+			while (token != ")")
+			{
+				if (token == "") throw new STFException(f, "Missing )");
+				else if (0 == String.Compare(token, "SignalShape", true))
+				{
+					if (signalShapes.Count >= count)
+						Trace.TraceWarning("Skipped extra SignalShape in {0}:line {1}", f.FileName, f.LineNumber);
+					else
+					{
+						var signalShape = new SignalShape(f);
+						if (signalShapes.ContainsKey(signalShape.ShapeFileName))
+							Trace.TraceWarning("Skipped duplicate SignalShape '{2}' in {0}:line {1}", f.FileName, f.LineNumber, signalShape.ShapeFileName);
+						else
+							signalShapes.Add(signalShape.ShapeFileName, signalShape);
+					}
+				}
+				else f.SkipBlock();
+				token = f.ReadItem();
+			}
+			if (signalShapes.Count < count)
+				Trace.TraceWarning("{2} missing SignalShape in {0}:line {1}", f.FileName, f.LineNumber, count - signalShapes.Count);
+			return signalShapes;
+        }
+
+        static IList<string> ReadScriptFiles(STFReader f)
+        {
+            f.MustMatch("(");
+			var scriptFiles = new List<string>();
+            var token = f.ReadItem();
             while (token != ")")
             {
                 if (token == "") throw new STFException(f, "Missing )");
-                else if (0 == String.Compare(token, "SignalShape", true))
+				else if (0 == String.Compare(token, "ScriptFile", true))
                 {
-                    if (count < noSigShapes)
-                    {
-						var signalShape = new SignalShape(count, f, this);
-                        SignalShapes[signalShape.ShapeFileName.ToUpper()] = signalShape;
-                        count++;
-                    }
-                    else throw new STFException(f, "SigShapes count mismatch");
+					scriptFiles.Add(f.ReadStringBlock());
                 }
                 else f.SkipBlock();
                 token = f.ReadItem();
             }
-            if (count != noSigShapes) STFException.ReportError(f, "SigShapes count mismatch");
-        }
-
-        void ReadSignalScripts(STFReader f)
-        {
-            ScriptFiles = new List<string>();
-            f.MustMatch("(");
-            string token = f.ReadItem();
-            while (token != ")")
-            {
-                if (token == "") throw new STFException(f, "Missing )");
-                else if (0 == String.Compare(token, "ScrptFile", true))
-                {
-                    string ScriptFile = f.ReadStringBlock();
-                    ScriptFiles.Add(ScriptFile);
-                }
-                else f.SkipBlock();
-                token = f.ReadItem();
-            }
+			return scriptFiles;
         }
     }
+
+	public class LightTexture
+	{
+		public readonly string Name, TextureFile;
+		public readonly float u0, v0, u1, v1;
+
+		public LightTexture(STFReader f)
+		{
+			f.MustMatch("(");
+			Name = f.ReadItem();
+			TextureFile = f.ReadItem();
+			u0 = f.ReadFloat();
+			v0 = f.ReadFloat();
+			u1 = f.ReadFloat();
+			v1 = f.ReadFloat();
+			f.MustMatch(")");
+		}
+	}
+
+	public class LightTableEntry
+	{
+		public readonly string Name;
+		public readonly byte a, r, g, b;   // colour
+
+		public LightTableEntry(STFReader f)
+		{
+			f.MustMatch("(");
+			Name = f.ReadItem();
+			var token = f.ReadItem();
+			if (0 == String.Compare(token, "Colour", true))
+			{
+				f.MustMatch("(");
+				a = (byte)f.ReadUInt();
+				r = (byte)f.ReadUInt();
+				g = (byte)f.ReadUInt();
+				b = (byte)f.ReadUInt();
+				f.MustMatch(")");
+			}
+			else
+			{
+				STFException.ReportError(f, "'Colour' Expected");
+			}
+			f.MustMatch(")");
+		}
+	}
 
 	public class SignalType
 	{
@@ -220,13 +245,12 @@ namespace MSTS
 		public readonly float FlashTimeOn = 1, FlashTimeOff = 1;  // On/Off duration for flashing light. (In seconds.)
 		public readonly string LightTextureName;
 		public readonly IList<SignalLight> Lights;
-		public readonly IList<SignalDrawState> DrawStates;
-		public readonly IDictionary<string, SignalDrawState> DrawStatesByName;
+		public readonly IDictionary<string, SignalDrawState> DrawStates;
 		public readonly IList<SignalAspect> Aspects;
 		public readonly uint NumClearAhead;
 		public readonly float SemaphoreInfo;
 
-		public SignalType(uint count, STFReader f, SIGCFGFile sigcfg)
+		public SignalType(STFReader f)
 		{
 			f.MustMatch("(");
 			Name = f.ReadItem();
@@ -258,7 +282,7 @@ namespace MSTS
 				}
 				else if (0 == String.Compare(token, "SignalLightTex", true)) LightTextureName = ReadLightTextureName(f);
 				else if (0 == String.Compare(token, "SignalLights", true)) Lights = ReadLights(f);
-				else if (0 == String.Compare(token, "SignalDrawStates", true)) DrawStates = ReadDrawStates(f, sigcfg);
+				else if (0 == String.Compare(token, "SignalDrawStates", true)) DrawStates = ReadDrawStates(f);
 				else if (0 == String.Compare(token, "SignalAspects", true)) Aspects = ReadAspects(f);
 				else if (0 == String.Compare(token, "SignalNumClearAhead", true))
 				{
@@ -271,9 +295,6 @@ namespace MSTS
 				else f.SkipBlock();
 				token = f.ReadItem();
 			}
-			DrawStatesByName = new Dictionary<string, SignalDrawState>(DrawStates.Count);
-			foreach (var drawState in DrawStates)
-				DrawStatesByName.Add(drawState.Name, drawState);
 		}
 
 		static FnTypes ReadFnType(STFReader f)
@@ -304,7 +325,9 @@ namespace MSTS
                 if (token == "") throw new STFException(f, "Missing )");  // EOF
 				else if (0 == String.Compare(token, "SignalLight", true))
 				{
-					if (lights.Count < lights.Capacity)
+					if (lights.Count >= lights.Capacity)
+						Trace.TraceWarning("Skipped extra SignalLight in {0}:line {1}", f.FileName, f.LineNumber);
+					else
 						lights.Add(new SignalLight(f));
 				}
 				else f.SkipBlock();
@@ -317,27 +340,33 @@ namespace MSTS
 			return lights;
 		}
 
-		static IList<SignalDrawState> ReadDrawStates(STFReader f, SIGCFGFile sigcfg)
+		static IDictionary<string, SignalDrawState> ReadDrawStates(STFReader f)
 		{
 			f.MustMatch("(");
 			var count = f.ReadInt();
-			var drawStates = new List<SignalDrawState>(count);
+			var drawStates = new Dictionary<string, SignalDrawState>(count);
 			var token = f.ReadItem();
 			while (token != ")")
 			{
                 if (token == "") throw new STFException(f, "Missing )");
 				else if (0 == String.Compare(token, "SignalDrawState", true))
 				{
-					if (drawStates.Count < drawStates.Capacity)
-						drawStates.Add(new SignalDrawState(f));
+					if (drawStates.Count >= count)
+						Trace.TraceWarning("Skipped extra SignalDrawState in {0}:line {1}", f.FileName, f.LineNumber);
+					else
+					{
+						var drawState = new SignalDrawState(f);
+						if (drawStates.ContainsKey(drawState.Name))
+							Trace.TraceWarning("Skipped duplicate SignalDrawState '{2}' in {0}:line {1}", f.FileName, f.LineNumber, drawState.Name);
+						else
+							drawStates.Add(drawState.Name, drawState);
+					}
 				}
 				else f.SkipBlock();
 				token = f.ReadItem();
 			}
-			drawStates.Sort(SignalDrawState.Comparer);
-			for (var i = 0; i < drawStates.Count; i++)
-				if (drawStates[i].Index != i)
-					throw new STFException(f, "SignalDrawState index out of range: " + drawStates[i].Index);
+			if (drawStates.Count < count)
+				Trace.TraceWarning("{2} missing SignalDrawState in {0}:line {1}", f.FileName, f.LineNumber, count - drawStates.Count);
 			return drawStates;
 		}
 
@@ -352,7 +381,9 @@ namespace MSTS
 				if (token == "") throw new STFException(f, "Missing )");
 				else if (0 == String.Compare(token, "SignalAspect", true))
 				{
-					if (aspects.Count < aspects.Capacity)
+					if (aspects.Count >= aspects.Capacity)
+						Trace.TraceWarning("Skipped extra SignalAspect in {0}:line {1}", f.FileName, f.LineNumber);
+					else
 						aspects.Add(new SignalAspect(f));
 				}
 				else f.SkipBlock();
@@ -370,7 +401,7 @@ namespace MSTS
 			{
 				if (state == Aspects[i].Aspect)
 				{
-					return DrawStates.IndexOf(DrawStatesByName[Aspects[i].DrawStateName]);
+					return DrawStates[Aspects[i].DrawStateName].Index;
 				}
 			}
 			return -1;
@@ -447,14 +478,14 @@ namespace MSTS
 
 	public class SignalDrawState
 	{
-		public readonly uint Index;
+		public readonly int Index;
 		public readonly string Name;
 		public readonly IList<SignalDrawLight> DrawLights;
 
 		public SignalDrawState(STFReader f)
 		{
 			f.MustMatch("(");
-			Index = f.ReadUInt();
+			Index = f.ReadInt();
 			Name = f.ReadItem();
 			var token = f.ReadItem();
 			while (token != ")")
@@ -477,7 +508,9 @@ namespace MSTS
 				if (token == "") throw new STFException(f, "Missing )");
 				else if (0 == String.Compare(token, "DrawLight", true))
 				{
-					if (drawLights.Count < drawLights.Capacity)
+					if (drawLights.Count >= drawLights.Capacity)
+						Trace.TraceWarning("Skipped extra DrawLight in {0}:line {1}", f.FileName, f.LineNumber);
+					else
 						drawLights.Add(new SignalDrawLight(f));
 				}
 				else f.SkipBlock();
@@ -572,137 +605,107 @@ namespace MSTS
 	public class SignalShape
 	{
 		public string Description, ShapeFileName;
-		public SignalSubObj[] SignalSubObjs;
+		public readonly IList<SignalSubObj> SignalSubObjs;
 
-		public SignalShape(uint count, STFReader f, SIGCFGFile sigcfg)
+		public SignalShape(STFReader f)
 		{
 			f.MustMatch("(");
-			ShapeFileName = f.ReadItem();
+			ShapeFileName = f.ReadItem().ToUpper();
 			Description = f.ReadItem();
 			string token = f.ReadItem();
 			while (token != ")")
 			{
                 if (token == "") throw new STFException(f, "Missing )");  // EOF
-				else if (0 == String.Compare(token, "SignalSubObjs", true)) SigSubObjs(f, sigcfg);
+				else if (0 == String.Compare(token, "SignalSubObjs", true)) SignalSubObjs = ReadSignalSubObjects(f);
 				//else if (0 == String.Compare(token, "SignalFlagss", true)) SignalShapeFlags(f);
 				else f.SkipBlock();
 				token = f.ReadItem();
 			}
 		}
 
-		private void SigSubObjs(STFReader f, SIGCFGFile sigcfg)
+		static IList<SignalSubObj> ReadSignalSubObjects(STFReader f)
 		{
 			f.MustMatch("(");
-			uint noObj = f.ReadUInt();
-			SignalSubObjs = new SignalSubObj[noObj];
-			uint count = 0;
-			string token = f.ReadItem();
+			var count = f.ReadInt();
+			var signalSubObjects = new List<SignalSubObj>(count);
+			var token = f.ReadItem();
 			while (token != ")")
 			{
                 if (token == "") throw new STFException(f, "Missing )");  // EOF
 				else if (0 == String.Compare(token, "SignalSubObj", true))
 				{
-					SignalSubObjs[count] = new SignalSubObj(count, f, sigcfg);
-					count++;
+					if (signalSubObjects.Count >= count)
+						Trace.TraceWarning("Skipped extra SignalSubObj in {0}:line {1}", f.FileName, f.LineNumber);
+					else
+					{
+						var signalSubObject = new SignalSubObj(f);
+						if (signalSubObject.Index != signalSubObjects.Count)
+							Trace.TraceWarning("Index of SignalSubObj is {2}; expected {3} in {0}:line {1}", f.FileName, f.LineNumber, signalSubObject.Index, signalSubObjects.Count);
+						signalSubObjects.Add(signalSubObject);
+					}
 				}
 				else f.SkipBlock();
 				token = f.ReadItem();
-
 			}
-
-			//
-			//  Found a reference to this in the documentation but no details
-			//  Commented out for the time being
-			//
-			//private void SignalShapeFlags(STFReader f)
-			//{
-			//}
+			if (signalSubObjects.Count < count)
+				Trace.TraceWarning("{2} missing SignalSubObj in {0}:line {1}", f.FileName, f.LineNumber, count - signalSubObjects.Count);
+			return signalSubObjects;
 		}
 
 		public class SignalSubObj
 		{
-			private string[] SignalSubTypes ={"DECOR","SIGNAL_HEAD","NUMBER_PLATE","GRADIENT_PLATE",
-                                              "USER1","USER2","USER3","USER4"};
-			public string MatrixName;        // Name of the group within the signal shape which defines this head
-			public string Description;      // 
-			public int SignalSubType = -1;  // Signal sub type: -1 if not specified;
-			public string SigSubSType;
-			public bool Optional = false;
-			public bool Default = false;
-			public bool BackFacing = false;
-			public bool JunctionLink = false;
-			public uint[] SigSubJnLinkIfs;  // indexes to linked signal heads 
-			public uint SigSubJnLinkIf = 0;
+			static IList<string> SignalSubTypes = new[] {"DECOR","SIGNAL_HEAD","NUMBER_PLATE","GRADIENT_PLATE","USER1","USER2","USER3","USER4"};
 
-			public SignalSubObj(uint seq, STFReader f, SIGCFGFile sigcfg)
+			public readonly int Index;
+			public readonly string MatrixName;        // Name of the group within the signal shape which defines this head
+			public readonly string Description;      // 
+			public readonly int SignalSubType = -1;  // Signal sub type: -1 if not specified;
+			public readonly string SignalSubSignalType;
+			public readonly bool Optional = false;
+			public readonly bool Default = false;
+			public readonly bool BackFacing = false;
+			public readonly bool JunctionLink = false;
+
+			public SignalSubObj(STFReader f)
 			{
 				f.MustMatch("(");
-				uint seqNo = f.ReadUInt();
-				if (seqNo == seq)
-				{
-					MatrixName = f.ReadItem().ToUpper();
-					Description = f.ReadItem();
-					string token = f.ReadItem();
-					while (token != ")")
-					{
-						if (token == "") throw new STFException(f, "Missing )");  // EOF
-						else if (0 == String.Compare(token, "SigSubType", true)) SignalSubType = SigSubType(f);
-						else if (0 == String.Compare(token, "SignalFlags", true)) SigSubFlags(f);
-						else if (0 == String.Compare(token, "SigSubSType", true)) SigSubSType = SigSTtype(f);
-						else f.SkipBlock();
-						token = f.ReadItem();
-					}
-				}
-				else
-				{
-					throw new STFException(f, "SignalSubObj Sequence Missmatch");
-				}
-
-			}
-
-			private int SigSubType(STFReader f)
-			{
-				string subType = f.ReadStringBlock();
-				for (int i = 0; i < SignalSubTypes.Length; i++)
-				{
-					if (0 == String.Compare(subType, SignalSubTypes[i], true))
-					{
-						return i;
-					}
-				}
-				return -1;
-			}
-
-			private void SigSubFlags(STFReader f)
-			{
-				f.MustMatch("(");
-				string token = f.ReadItem();
+				Index = f.ReadInt();
+				MatrixName = f.ReadItem().ToUpper();
+				Description = f.ReadItem();
+				var token = f.ReadItem();
 				while (token != ")")
 				{
 					if (token == "") throw new STFException(f, "Missing )");  // EOF
-					else if (0 == String.Compare(token, "OPTIONAL", true)) Optional = true;
-					else if (0 == String.Compare(token, "DEFAULT", true)) Default = true;
-					else if (0 == String.Compare(token, "BACK_FACING", true)) BackFacing = true;
-					else if (0 == String.Compare(token, "JN_LINK", true)) JunctionLink = true;
+					else if (0 == String.Compare(token, "SigSubType", true)) SignalSubType = ReadSignalSubType(f);
+					else if (0 == String.Compare(token, "SignalFlags", true))
+					{
+						f.MustMatch("(");
+						var token1 = f.ReadItem();
+						while (token1 != ")")
+						{
+							if (token1 == "") throw new STFException(f, "Missing )");
+							else if (0 == String.Compare(token1, "OPTIONAL", true)) Optional = true;
+							else if (0 == String.Compare(token1, "DEFAULT", true)) Default = true;
+							else if (0 == String.Compare(token1, "BACK_FACING", true)) BackFacing = true;
+							else if (0 == String.Compare(token1, "JN_LINK", true)) JunctionLink = true;
+							else throw new STFException(f, "Unknown SignalSubObj flag " + token1);
+							token1 = f.ReadItem();
+						}
+					}
+					else if (0 == String.Compare(token, "SigSubSType", true)) SignalSubSignalType = ReadSignalSubSignalType(f);
+					else f.SkipBlock();
 					token = f.ReadItem();
 				}
 			}
 
-			private string SigSTtype(STFReader f)
+			static int ReadSignalSubType(STFReader f)
 			{
-				return f.ReadStringBlock();
+				return SignalSubTypes.IndexOf(f.ReadStringBlock().ToUpper());
 			}
 
-			private void SubJnLinkIf(STFReader f)
+			static string ReadSignalSubSignalType(STFReader f)
 			{
-				f.MustMatch("(");
-				SigSubJnLinkIf = f.ReadUInt();
-				SigSubJnLinkIfs = new uint[SigSubJnLinkIf];
-				for (int i = 0; i < SigSubJnLinkIf; i++)
-				{
-					SigSubJnLinkIfs[i] = f.ReadUInt();
-				}
-				f.MustMatch(")");
+				return f.ReadStringBlock();
 			}
 		}
 	}

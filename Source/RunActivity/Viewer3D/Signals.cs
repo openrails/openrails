@@ -142,10 +142,10 @@ namespace ORTS
 				if (MatrixIndex == -1)
 					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName));
 
-				if (!viewer.Simulator.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SigSubSType))
-					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid SigSubSType {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SigSubSType));
+				if (!viewer.Simulator.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
+					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid SigSubSType {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
 
-				var mstsSignalType = viewer.Simulator.SIGCFG.SignalTypes[mstsSignalSubObj.SigSubSType];
+				var mstsSignalType = viewer.Simulator.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
 				if (SignalTypes.ContainsKey(mstsSignalType.Name))
 					SignalTypeData = SignalTypes[mstsSignalType.Name];
 				else
@@ -234,23 +234,33 @@ namespace ORTS
 
 			public SignalTypeData(Viewer3D viewer, MSTS.SignalType mstsSignalType)
 			{
-				var mstsLightTexture = viewer.Simulator.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
-				Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetTextureFolder(viewer, 0) + @"\" + mstsLightTexture.TextureFile);
-				Type = (SignalTypeDataType)mstsSignalType.FnType;
-				if (mstsSignalType.Lights != null)
+				if (!viewer.Simulator.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
 				{
-					foreach (var mstsSignalLight in mstsSignalType.Lights)
-					{
-						var mstsLight = viewer.Simulator.SIGCFG.LightsTable[mstsSignalLight.Name];
-						Lights.Add(new SignalLightMesh(viewer, new Vector3(mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
-					}
-					// Only load aspects if we've got lights. Not much point otherwise.
-					if (mstsSignalType.Aspects != null)
-					{
-						foreach (var mstsSignalAspect in mstsSignalType.Aspects)
-							Aspects.Add(mstsSignalAspect.Aspect, new SignalAspectData(mstsSignalType, mstsSignalAspect.DrawStateName));
-					}
+					Trace.TraceError("Signal type {0} has invalid light texture {1}.", mstsSignalType.Name, mstsSignalType.LightTextureName);
+					Material = Materials.YellowMaterial;
+					Type = SignalTypeDataType.Normal;
+					FlashTimeOn = 1;
+					FlashTimeTotal = 2;
 				}
+				else
+				{
+					var mstsLightTexture = viewer.Simulator.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
+					Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetTextureFolder(viewer, 0) + @"\" + mstsLightTexture.TextureFile);
+					Type = (SignalTypeDataType)mstsSignalType.FnType;
+					if (mstsSignalType.Lights != null)
+					{
+						foreach (var mstsSignalLight in mstsSignalType.Lights)
+						{
+							var mstsLight = viewer.Simulator.SIGCFG.LightsTable[mstsSignalLight.Name];
+							Lights.Add(new SignalLightMesh(viewer, new Vector3(mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
+						}
+						// Only load aspects if we've got lights. Not much point otherwise.
+						if (mstsSignalType.Aspects != null)
+						{
+							foreach (var mstsSignalAspect in mstsSignalType.Aspects)
+								Aspects.Add(mstsSignalAspect.Aspect, new SignalAspectData(mstsSignalType, mstsSignalAspect.DrawStateName));
+						}
+					}
 #if SIGNAL_SHAPES_FEATHERS
 				// Info = feather/branch/etc. lights, linked to a junction.
 				if (Type == SignalTypeDataType.Info)
@@ -264,8 +274,9 @@ namespace ORTS
 					Aspects.Add(SignalHead.SIGASP.CLEAR_1, new SignalAspectData(mstsSignalType, 1));
 				}
 #endif
-				FlashTimeOn = mstsSignalType.FlashTimeOn;
-				FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
+					FlashTimeOn = mstsSignalType.FlashTimeOn;
+					FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
+				}
 			}
 		}
 
@@ -287,7 +298,7 @@ namespace ORTS
 			{
 				DrawLights = new bool[mstsSignalType.Lights.Count];
 				FlashLights = new bool[mstsSignalType.Lights.Count];
-				var drawStateData = mstsSignalType.DrawStatesByName[drawState];
+				var drawStateData = mstsSignalType.DrawStates[drawState];
 				if (drawStateData.DrawLights != null)
 				{
 					foreach (var drawLight in drawStateData.DrawLights)
