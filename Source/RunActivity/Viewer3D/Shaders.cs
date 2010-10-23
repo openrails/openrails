@@ -33,14 +33,11 @@ namespace ORTS
     {
 		EffectParameter World;
 		EffectParameter View;
-		//EffectParameter Projection;
-		EffectParameter WorldView;
 		EffectParameter WorldViewProjection;
 		public void SetMatrix(Matrix world, ref Matrix view, ref Matrix viewProj)
 		{
 			World.SetValue(world);
 			View.SetValue(view);
-			WorldView.SetValue(world * view);
 			WorldViewProjection.SetValue(world * viewProj);
 		}
 
@@ -101,8 +98,6 @@ namespace ORTS
         {
 			World = Parameters["World"];
 			View = Parameters["View"];
-			//Projection = Parameters["Projection"];
-			WorldView = Parameters["WorldView"];
 			WorldViewProjection = Parameters["WorldViewProjection"];
 
 			LightViewProjectionShadowProjection = Parameters["LightViewProjectionShadowProjection"];

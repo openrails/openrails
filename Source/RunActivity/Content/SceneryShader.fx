@@ -7,8 +7,6 @@
 // General values
 float4x4 World;                // model -> world
 float4x4 View;                 // world -> view
-//float4x4 Projection;           // view -> projection (currently unused)
-float4x4 WorldView;            // model -> world -> view
 float4x4 WorldViewProjection;  // model -> world -> view -> projection
 
 // Shadow map values
@@ -22,7 +20,7 @@ float3 ZBias_Lighting;  // x = z-bias, y = diffuse, z = specular
 float4 Fog;  // rgb = color of fog; a = distance from camera, everything is
              // normal color; FogDepth = FogStart, i.e. FogEnd = 2 * FogStart.
 
-float3 LightVector;  // Direction vector to sun
+float3 LightVector;  // Direction vector to sun (world)
 
 // Headlight values
 float4 HeadlightPosition;   // xyz = position; w = lighting scaling.
@@ -96,7 +94,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.RelPosition = mul(In.Position, WorldView);
+	Out.RelPosition = mul(In.Position, World) - viewerPos;
 	Out.TexCoords = In.TexCoords;
 	Out.Color = In.Color;
 	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);

@@ -218,6 +218,7 @@ namespace ORTS
 			// End headlight illumination
 
 			SceneryShader.Overcast = renderProcess.Viewer.SkyDrawer.overcast;
+			SceneryShader.ViewerPos = renderProcess.Viewer.Camera.XNALocation(renderProcess.Viewer.Camera.CameraWorldLocation);
 
 			SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref Materials.FogColor);
 		}
@@ -530,23 +531,6 @@ namespace ORTS
 
         public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-			var lighting = (Options & 0x00f0) >> 4;
-			switch (lighting)
-			{
-				case 1: // DarkShade (-12)
-				case 2: // OptHalfBright (-11)
-				case 4: // CruciformLong (-10)
-				case 3: // Cruciform (-9)
-				case 5: // OptFullBright (-8)
-					break;
-				case 6: // OptSpecular750 (-7)
-				case 7: // OptSpecular25 (-6)
-				case 8: // OptSpecular0 (-5)
-				default:
-					SceneryShader.ViewerPos = new Vector3(XNAViewMatrix.M41, XNAViewMatrix.M42, XNAViewMatrix.M43);
-					break;
-			}
-
             Matrix viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
             // With the GPU configured, now we can draw the primitive
