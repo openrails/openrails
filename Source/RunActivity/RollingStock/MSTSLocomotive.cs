@@ -35,7 +35,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MSTS;
-using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 using System.Xml;
 using Microsoft.Xna.Framework.Content;
 
@@ -152,6 +151,9 @@ namespace ORTS
                 string ExtendedCVF = CVFFilePath.Substring(0, CVFFilePath.LastIndexOf('.')) + ".xml";
                 ExCVF = null;
 
+                // Commented out until the IntermediateSerializer is changed to XmlReader
+                // By GeorgeS
+                /*
                 if (File.Exists(ExtendedCVF))
                 {
                     try
@@ -167,6 +169,7 @@ namespace ORTS
                         Trace.WriteLine(ex);
                     }
                 }
+                */
 
                 if (ExCVF == null && !(this is MSTSSteamLocomotive))
                 {
