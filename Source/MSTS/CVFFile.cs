@@ -32,30 +32,27 @@ namespace MSTS
                 inf.MustMatch("Tr_CabViewFile");
                 inf.MustMatch("(");
                 while (!inf.EOF)
-                {
-                    string token = inf.ReadItem();
-                    if (0 == string.Compare(token, "Position", true))
-                        Locations.Add(inf.ReadVector3Block());
-
-                    else if (0 == string.Compare(token, "Direction", true))
-                        Directions.Add(inf.ReadVector3Block());
-
-                    // Read CAB View files for 2D cab views - by GeorgeS
-                    else if (0 == string.Compare(token, "CabViewFile", true))
+                    switch (inf.ReadItem().ToLower())
                     {
-                        string fName = inf.ReadStringBlock();
-                        TwoDViews.Add(Path + fName);
-                        NightViews.Add(Path + "night\\" + fName);
-                        LightViews.Add(Path + "cablight\\" + fName);
+                        case "position":
+                            Locations.Add(inf.ReadVector3Block());
+                            break;
+                        case "direction":
+                            Directions.Add(inf.ReadVector3Block());
+                            break;
+                        case "cabviewfile":
+                            string fName = inf.ReadStringBlock();
+                            TwoDViews.Add(Path + fName);
+                            NightViews.Add(Path + "night\\" + fName);
+                            LightViews.Add(Path + "cablight\\" + fName);
+                            break;
+                        case "cabviewcontrols":
+                            CabViewControls = new CabViewControls(inf, Path);
+                            break;
+                        case "(":
+                            inf.SkipRestOfBlock();
+                            break;
                     }
-                    else if (string.Compare(token, "CabViewControls", true) == 0)
-                    {
-                        CabViewControls = new CabViewControls(inf, Path);
-                    }
-                    else
-                        inf.SkipBlock();  // TODO, complete parse
-
-                }
             }
 		}
 

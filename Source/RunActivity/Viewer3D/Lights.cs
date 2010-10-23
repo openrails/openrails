@@ -76,7 +76,7 @@ namespace ORTS
 
             try
             {
-                string token = f.ReadTokenNoComment();
+                string token = f.ReadItem();
                 while (token != "") // EOF
                 {
                     if (token == ")") break; // throw ( new STFError( f, "Unexpected )" ) );  we should really throw an exception
@@ -86,20 +86,20 @@ namespace ORTS
                         int numLights = f.ReadInt();// ignore this because its not always correct
                         for (; ; )
                         {
-                            token = f.ReadTokenNoComment();
+                            token = f.ReadItem();
                             if (token == ")") break;
                             if (token == "") throw new STFException(f, "Missing )");
                             if (0 != String.Compare(token, "Light", true))// Weed out extraneous comments etc.
                             {
                                 f.SkipBlock();
-                                token = f.ReadTokenNoComment();
+                                token = f.ReadItem();
                             }
                             if (0 == String.Compare(token, "Light", true))
                             {
                                 light = new Light();
                                 LightList.Add(light);
                                 f.MustMatch("(");
-                                token = f.ReadTokenNoComment();
+                                token = f.ReadItem();
                                 while (token != ")")
                                 {
                                     if (token == "") throw new STFException(f, "Missing )");
@@ -116,7 +116,7 @@ namespace ORTS
                                     else if (0 == String.Compare(token, "Conditions", true))
                                     {
                                         f.MustMatch("(");
-                                        token = f.ReadTokenNoComment();
+                                        token = f.ReadItem();
                                         while (token != ")")
                                         {
                                             if (0 == String.Compare(token, "Headlight", true))
@@ -171,7 +171,7 @@ namespace ORTS
                                             {
                                                 f.SkipBlock();
                                             }
-                                            token = f.ReadTokenNoComment();
+                                            token = f.ReadItem();
                                         }
                                     }// else if (0 == String.Compare(token, "Conditions", true))
                                     else if (0 == String.Compare(token, "Cycle", true))
@@ -208,9 +208,9 @@ namespace ORTS
                                     {
                                         f.SkipBlock();
                                     }
-                                    token = f.ReadTokenNoComment();
+                                    token = f.ReadItem();
                                 }// while (token != ")")
-                                token = f.ReadTokenNoComment();
+                                token = f.ReadItem();
                             }// if (0 == String.Compare(token, "Light", true))
                         }// for (int i = 0; i < numLights; i++)
                     }// else file is readable

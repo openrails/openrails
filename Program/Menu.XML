@@ -21,55 +21,6 @@
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="F:ORTS.MainForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.MainForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="T:MSTS.ACTFile">
-            <summary>
-            Summary description for Class1.
-            </summary>
-        </member>
-        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
-            <summary>
-            Create a new 'ActivitySuccess' LocationEvent
-            </summary>
-        </member>
-        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
-            <summary>
-            Build a default EventTypeAllStops event
-            </summary>
-        </member>
-        <member name="F:ORTS.FormFolderName.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.FormFolderName.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
         <member name="F:ORTS.ExploreForm.components">
             <summary>
             Required designer variable.
@@ -82,6 +33,40 @@
             <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         </member>
         <member name="M:ORTS.ExploreForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.OptionsForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.OptionsForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.MainForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.MainForm.InitializeComponent">
             <summary>
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
@@ -144,8 +129,9 @@
             <listItem><para>include - must be at the root level (that is to say it cannot be included within a block).
             After an include directive the {constant_item} is a filename relative to the current processing STF file.
             The include token has the effect of in-lining the defined file into the current document.</para></listItem>
-            <listItem><para>comment &amp; skip - must be followed by a {data_item} which will not be processed in OR</para></listItem>
-            </list>
+            <listItem><para>comment &amp; skip - must be followed by a block which will not be processed in OR</para></listItem>
+            </list> <para>
+            Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para>
             </remarks>
             <example>
             !!!TODO!!!
@@ -202,14 +188,6 @@
             <param name="target">The next {item} contents we are expecting in the STF file.</param>
             <returns>The {item} read from the STF file</returns>
         </member>
-        <member name="M:MSTS.STFReader.ReadTokenNoComment">
-            <summary>Read the next {token_item} skipping past any 'comment', 'skip', '#*' or '_*' tokens.
-            </summary>
-            <remarks>
-            <para>This cursor should be called when placed at a {token_item} and not at a {data_item}.</para>
-            </remarks>
-            <returns></returns>
-        </member>
         <member name="M:MSTS.STFReader.EndOfBlock">
             <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")" all other values are not consumed.
             </summary>
@@ -263,6 +241,12 @@
             <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindItem « ReadItem() return
             </summary>
         </member>
+        <member name="M:MSTS.STFReader.ReadItem(System.Boolean)">
+            <summary>This is the main function that reads an item from the STF stream.
+            </summary>
+            <param name="skip_mode">True - we are in a skip function, and so we don't want to do any special token processing.</param>
+            <returns>The next item from the STF file</returns>
+        </member>
         <member name="M:MSTS.STFReader.UpdateTreeAndRewindBuffer(System.String)">
             <summary>Internal Implementation
             <para>This function is called by ReadItem() for every item read from the STF file (and Included files).</para>
@@ -295,22 +279,6 @@
             <remarks>
             Tree is expensive method of reading STF files (especially for the GC) and should be avoided if possible.
             </remarks>
-        </member>
-        <member name="T:ORTS.Properties.Resources">
-            <summary>
-              A strongly-typed resource class, for looking up localized strings, etc.
-            </summary>
-        </member>
-        <member name="P:ORTS.Properties.Resources.ResourceManager">
-            <summary>
-              Returns the cached ResourceManager instance used by this class.
-            </summary>
-        </member>
-        <member name="P:ORTS.Properties.Resources.Culture">
-            <summary>
-              Overrides the current thread's CurrentUICulture property for all
-              resource lookups using this strongly typed resource class.
-            </summary>
         </member>
         <member name="T:MSTS.MSTSPath">
             <summary>
@@ -346,27 +314,58 @@
             <param name="soundfile"></param>
             <returns></returns>
         </member>
-        <member name="F:ORTS.OptionsForm.components">
+        <member name="M:ORTS.Program.SetBuildRevision">
+            <summary>
+            Set up the global Build and Revision variables
+            from assembly data and the revision.txt file.
+            </summary>
+        </member>
+        <member name="F:ORTS.FormFolderName.components">
             <summary>
             Required designer variable.
             </summary>
         </member>
-        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
+        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
             <summary>
             Clean up any resources being used.
             </summary>
             <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         </member>
-        <member name="M:ORTS.OptionsForm.InitializeComponent">
+        <member name="M:ORTS.FormFolderName.InitializeComponent">
             <summary>
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="M:ORTS.Program.SetBuildRevision">
+        <member name="T:MSTS.ACTFile">
             <summary>
-            Set up the global Build and Revision variables
-            from assembly data and the revision.txt file.
+            Summary description for Class1.
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
+            <summary>
+            Create a new 'ActivitySuccess' LocationEvent
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
+            <summary>
+            Build a default EventTypeAllStops event
+            </summary>
+        </member>
+        <member name="T:ORTS.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:ORTS.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:ORTS.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
     </members>

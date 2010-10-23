@@ -76,8 +76,9 @@ namespace MSTS
     /// <listItem><para>include - must be at the root level (that is to say it cannot be included within a block).
     /// After an include directive the {constant_item} is a filename relative to the current processing STF file.
     /// The include token has the effect of in-lining the defined file into the current document.</para></listItem>
-    /// <listItem><para>comment &amp; skip - must be followed by a {data_item} which will not be processed in OR</para></listItem>
-    /// </list>
+    /// <listItem><para>comment &amp; skip - must be followed by a block which will not be processed in OR</para></listItem>
+    /// </list>&#160;<para>
+    /// Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para>
     /// </remarks>
     /// <example>
     /// !!!TODO!!!
@@ -142,7 +143,7 @@ namespace MSTS
 
         /// <summary>Property that returns true when the EOF has been reached
         /// </summary>
-        public bool EOF { get { return Peek() == -1; } }
+        public bool EOF { get { return PeekChar() == -1; } }
         /// <summary>Filename property for the file being parsed - for reporting purposes
         /// </summary>
         public string FileName { get; private set; }
@@ -181,6 +182,7 @@ namespace MSTS
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         public string ReadItem()
         {
+            #region If RewindItem() has been called then return the previous output from ReadItem() rather than reading a new token
             if (rewindNextReadItemFlag)
             {
                 Debug.Assert(rewindItem != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
@@ -192,114 +194,8 @@ namespace MSTS
                 rewindTree = null;
                 return token;
             }
-
-            if (IncludeReader != null)
-            {
-                string s = IncludeReader.ReadItem();
-                UpdateTreeAndRewindBuffer(s);
-                if (!IncludeReader.EOF)
-                    return s;
-                if (tree.Count != 0)
-                    STFException.ReportWarning(IncludeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
-                IncludeReader.Dispose();
-                IncludeReader = null;
-            }
-
-            int c = 0;
-
-            var stringText = new StringBuilder();
-
-            // Read leading whitespace 
-            while (true)
-            {
-                c = ReadChar();
-                if (IsEof(c)) 
-                    break;
-                if ( !IsWhiteSpace(c))
-                    break;
-            }
-            // c == -1 or first char of token
-
-            if (c == '"')
-            {
-                // Read the rest of the string token and final delimiting "
-                do
-                {
-                    c = ReadChar();
-                    if (IsEof(c))
-                        break;
-                    if (c == '\\') // escape sequence
-                    {
-                        c = ReadChar();
-                        if (c == 'n')
-                            stringText.Append('\n');
-                        else
-                            stringText.Append((char)c);  // ie \, " etc
-                    }
-                    else if (c != '"')
-                    {
-                        stringText.Append((char)c);
-                    }
-                    else //  c == '"'
-                    {
-                        // Check for string extender
-                        if (PeekPastWhitespace() != '+')
-                            break;   // we found final " to terminate the string
-                        
-                        // This is an extended string
-                        // Skip over white space to next string
-                        int cs = ReadChar();
-                        do
-                        {
-                            c = ReadChar();
-                            if (IsEof(c))
-                                break;
-                        }
-                        while ( IsWhiteSpace(c));
-
-                        // ensure we are at a quote
-                        if (c != '"')
-                            break;
-
-                    }
-                }
-                while (true);
-            }
-            else if (c == '(')
-            {
-                stringText.Append((char)c);
-            }
-            else if (c == ')')
-            {
-                stringText.Append((char)c);
-            }
-            else if (c != -1)
-            {
-                // Read the rest of the token and first delimiter character
-                do
-                {
-                    stringText.Append((char)c);
-                    if (streamSTF.Peek() == '(')
-                        break;
-                    if (streamSTF.Peek() == ')')
-                        break;
-                    c = ReadChar();
-                    if (IsEof(c))
-                        break;
-                }
-                while ( !IsWhiteSpace(c) );
-            }
-
-            string result= stringText.ToString();
-            if (tree.Count == 0 && result == "include")
-            {
-                string filename = ReadStringBlock();
-                IncludeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename);
-                return ReadItem();
-            }
-
-            UpdateTreeAndRewindBuffer(result);
-            return result;
+            #endregion
+            return ReadItem(false);
         }
         /// <summary>Calling this function causes ReadItem() to repeat the last {item} that was read from the STF file
         /// </summary>
@@ -326,30 +222,6 @@ namespace MSTS
                 throw new STFException(this, target + " Not Found - instead found " + s);
         }
 
-        /// <summary>Read the next {token_item} skipping past any 'comment', 'skip', '#*' or '_*' tokens.
-        /// </summary>
-        /// <remarks>
-        /// <para>This cursor should be called when placed at a {token_item} and not at a {data_item}.</para>
-        /// </remarks>
-        /// <returns></returns>
-        public string ReadTokenNoComment()
-        {
-            for (; ; )
-            {
-                string token = ReadItem();
-                if (token.StartsWith("_") || token.StartsWith("#"))
-                    SkipBlock();
-                else
-                {
-                    string lower = token.ToLower();
-                    if (lower == "skip" || lower == "comment")
-                        SkipBlock();
-                    else
-                        return token;
-                }
-            }
-        }
-
         /// <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")" all other values are not consumed.
         /// </summary>
         /// <remarks>
@@ -374,14 +246,15 @@ namespace MSTS
         /// </summary>
         public void SkipBlock()
 		{
-			string token = ReadItem();  // read the leading bracket ( 
+			string token = ReadItem(true);  // read the leading bracket ( 
             if (token == ")")   // just in case we are not where we think we are
             {
                 STFException.ReportWarning(this, "Found a close parenthesis, rather than the expected block of data");
                 RewindItem();
                 return;
             }
-            // note, even if this isn't a leading bracket, we'll carry on anyway                            
+            else if (token != "(")
+                throw new STFException(this, "SkipBlock() expected an open block but found a token instead: " + token);
             SkipRestOfBlock();
 		}
         /// <summary>Skip to the end of this block, ignoring any nested blocks
@@ -392,7 +265,7 @@ namespace MSTS
             int depth = 1;
             while (!EOF && depth > 0)
             {
-                string token = ReadItem();
+                string token = ReadItem(true);
                 if (token == "(")
                     ++depth;
                 if (token == ")")
@@ -678,7 +551,7 @@ namespace MSTS
         #region *** Private Class Implementation
         private bool IsWhiteSpace(int c) { return c >= 0 && c <= ' '; }
         private bool IsEof(int c) { return c == -1; }
-        private int Peek()
+        private int PeekChar()
         {
             int c = streamSTF.Peek();
             if (IsEof(c))
@@ -709,6 +582,164 @@ namespace MSTS
             if (c == '\n') ++LineNumber;
             return c;
         }
+        /// <summary>This is the main function that reads an item from the STF stream.
+        /// </summary>
+        /// <param name="skip_mode">True - we are in a skip function, and so we don't want to do any special token processing.</param>
+        /// <returns>The next item from the STF file</returns>
+        private string ReadItem(bool skip_mode)
+        {
+            #region If IncludeReader exists, then recurse down to get the next token from the included STF file
+            if (IncludeReader != null)
+            {
+                string item = IncludeReader.ReadItem();
+                UpdateTreeAndRewindBuffer(item);
+                if ((!IncludeReader.EOF) || (item.Length > 0)) return item;
+                if (tree.Count != 0)
+                    STFException.ReportWarning(IncludeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
+                IncludeReader.Dispose();
+                IncludeReader = null;
+            }
+            #endregion
+
+            int c;
+            #region Skip past any leading whitespace characters
+            for (; ; )
+            {
+                c = ReadChar();
+                if (IsEof(c)) return UpdateTreeAndRewindBuffer("");
+                if (!IsWhiteSpace(c)) break;
+            }
+            #endregion
+
+            var itemBuilder = new StringBuilder();
+            #region Handle Open and Close Block markers - parenthisis
+            if (c == '(')
+            {
+                return UpdateTreeAndRewindBuffer("(");
+            }
+            else if (c == ')')
+            {
+                return UpdateTreeAndRewindBuffer(")");
+            }
+            #endregion
+            #region Handle # markers
+            else if ((!skip_mode) && ((c == '#') || (c == '_')))
+            {
+                #region Move on to a whitespace so we can pick up any token starting with a #
+                for (; ; )
+                {
+                    c = PeekChar();
+                    if ((c == '(') || (c == ')')) break;
+                    c = ReadChar();
+                    if (IsEof(c))
+                    {
+                        STFException.ReportWarning(this, "Found a # marker immediately followed by an unexpected EOF.");
+                        return UpdateTreeAndRewindBuffer("");
+                    }
+                    if (IsWhiteSpace(c)) break;
+                }
+                #endregion
+                #region Skip the comment item or block
+                string comment = ReadItem();
+                if (comment == "(") SkipRestOfBlock();
+                #endregion
+                return ReadItem(); // Now move on to the next token after the commented area
+            }
+            #endregion
+            #region Build Quoted Items - including append operations
+            else if (c == '"')
+            {
+                for (; ; )
+                {
+                    c = ReadChar();
+                    if (IsEof(c))
+                    {
+                        STFException.ReportWarning(this, "Found an unexpected EOF, while reading an item started with a double-quote character.");
+                        return UpdateTreeAndRewindBuffer(itemBuilder.ToString());
+                    }
+                    if (c == '\\') // escape sequence
+                    {
+                        c = ReadChar();
+                        if (c == 'n') itemBuilder.Append('\n');
+                        else itemBuilder.Append((char)c);  // ie \, " etc
+                    }
+                    else if (c != '"')
+                    {
+                        itemBuilder.Append((char)c);
+                    }
+                    else //  end of quotation
+                    {
+                        // Anything other than a string extender now, means we have finished reading the item
+                        if (PeekPastWhitespace() != '+') break;
+                        ReadChar(); // Read the '+' character
+
+                        #region Skip past any leading whitespace characters
+                        for (; ; )
+                        {
+                            c = ReadChar();
+                            if (IsEof(c))
+                            {
+                                STFException.ReportWarning(this, "Found an unexpected EOF, while reading an item started with a double-quote character and followed by the + operator.");
+                                return UpdateTreeAndRewindBuffer("");
+                            }
+                            if (!IsWhiteSpace(c)) break;
+                        }
+                        #endregion
+
+                        if (c != '"')
+                            throw new STFException(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
+
+                    }
+                }
+            }
+            #endregion
+            #region Build Normal Items - whitespace delimitered
+            else if (c != -1)
+            {
+                for (; ; )
+                {
+                    itemBuilder.Append((char)c);
+                    c = PeekChar();
+                    if ((c == '(') || (c == ')')) break;
+                    c = ReadChar();
+                    if (IsEof(c)) break;
+                    if (IsWhiteSpace(c)) break;
+                }
+            }
+            #endregion
+
+            string result = itemBuilder.ToString();
+            if (!skip_mode)
+                switch (result.ToLower())
+                {
+                    #region Process special token - include
+                    case "include":
+                        string filename = ReadItem();
+                        if (filename == "(")
+                        {
+                            filename = ReadItem();
+                            SkipRestOfBlock();
+                        }
+                        if (tree.Count == 0)
+                        {
+                            IncludeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename);
+                            return ReadItem(); // Which will recurse down when IncludeReader is tested
+                        }
+                        else
+                            throw new STFException(this, "Found an include directive, but it was enclosed in block parenthesis which is illegal.");
+                    #endregion
+                    #region Process special token - skip and comment
+                    case "skip":
+                        SkipBlock();
+                        return ReadItem();
+                    case "comment":
+                        SkipBlock();
+                        return ReadItem();
+                    #endregion
+                }
+
+            return UpdateTreeAndRewindBuffer(result);
+        }
         /// <summary>Internal Implementation
         /// <para>This function is called by ReadItem() for every item read from the STF file (and Included files).</para>
         /// <para>If a block instuction is found, then tree list is updated.</para>
@@ -716,11 +747,10 @@ namespace MSTS
         /// <para>Now when the rewind flag is set, we use the rewind* copies, to move back exactly one item.</para>
         /// </summary>
         /// <param name="token"></param>
-        private void UpdateTreeAndRewindBuffer(string token)
+        private string UpdateTreeAndRewindBuffer(string token)
         {
             rewindItem = token;
             token = token.Trim();
-
             if (token == "(")
             {
                 rewindTree = new List<string>(tree);
@@ -746,6 +776,7 @@ namespace MSTS
                 rewindCurrItem = previousItem;
                 previousItem = token;
             }
+            return rewindItem;
         }
         #endregion
 	}

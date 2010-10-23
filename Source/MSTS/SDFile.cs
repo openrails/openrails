@@ -52,22 +52,20 @@ namespace MSTS
 							token = f.ReadItem();
 						if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
 						{
-							while (token != ")")
-							{
-								token = f.ReadItem();
-								if (token == "") throw new STFException(f, "Missing )");
-								else if (0 == String.Compare(token, "ESD_Detail_Level", true)) ESD_Detail_Level = f.ReadIntBlock();
-								else if (0 == String.Compare(token, "ESD_Alternative_Texture", true)) ESD_Alternative_Texture = f.ReadIntBlock();
-								else if (0 == String.Compare(token, "ESD_Bounding_Box", true))
-								{
-									ESD_Bounding_Box = new ESD_Bounding_Box(f);
-									if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
-										ESD_Bounding_Box = null;
-								}
-								else if (0 == String.Compare(token, "ESD_No_Visual_Obstruction", true)) ESD_No_Visual_Obstruction = f.ReadBoolBlock();
-								else if (0 == String.Compare(token, "ESD_Snapable", true)) ESD_Snapable = f.ReadBoolBlock();
-								else f.SkipBlock();
-							}
+							while (!f.EndOfBlock())
+                                switch (f.ReadItem().ToLower())
+                                {
+                                    case "esd_detail_level": ESD_Detail_Level = f.ReadIntBlock(); break;
+                                    case "esd_alternative_texture": ESD_Alternative_Texture = f.ReadIntBlock(); break;
+                                    case "esd_bounding_box":
+                                        ESD_Bounding_Box = new ESD_Bounding_Box(f);
+                                        if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
+                                            ESD_Bounding_Box = null;
+                                        break;
+                                    case "esd_no_visual_obstruction": ESD_No_Visual_Obstruction = f.ReadBoolBlock(); break;
+                                    case "esd_snapable": ESD_Snapable = f.ReadBoolBlock(); break;
+                                    case "(": f.SkipRestOfBlock(); break;
+                                }
 						}
 					}
 					// TODO - some objects have no bounding box - ie JP2BillboardTree1.sd

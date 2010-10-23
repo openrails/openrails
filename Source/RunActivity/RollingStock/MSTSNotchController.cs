@@ -84,12 +84,12 @@ namespace ORTS
             StepSize = f.ReadFloat();
             IntermediateValue = CurrentValue = f.ReadFloat();
             //Console.WriteLine("controller {0} {1} {2} {3}", MinimumValue, MaximumValue, StepSize, CurrentValue);
-            f.ReadTokenNoComment(); // numnotches
+            f.ReadItem(); // numnotches
             f.MustMatch("(");
             f.ReadInt();
             for (; ; )
             {
-                string token = f.ReadTokenNoComment().ToLower();
+                string token = f.ReadItem().ToLower();
                 if (token == ")") break;
                 if (token == "notch")
                 {
