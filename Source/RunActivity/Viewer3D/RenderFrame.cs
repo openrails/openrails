@@ -67,18 +67,10 @@ namespace ORTS
 
     public struct RenderItem
     {
-        public readonly Material Material;
-        public readonly RenderPrimitive RenderPrimitive;
+        public Material Material;
+        public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
-		public readonly ShapeFlags Flags;
-
-		public RenderItem(Material material, RenderPrimitive renderPrimitive, Matrix xnaMatrix, ShapeFlags flags)
-        {
-            Material = material;
-            RenderPrimitive = renderPrimitive;
-            XNAMatrix = xnaMatrix;
-            Flags = flags;
-        }
+		public ShapeFlags Flags;
 
 		public class Comparer : IComparer<RenderItem>
 		{
@@ -103,6 +95,125 @@ namespace ORTS
 		}
     }
 
+	public class RenderItemCollection : IEnumerable<RenderItem>, IEnumerator<RenderItem>
+	{
+		RenderItem[] RenderItems;
+		int count;
+		bool Enumerating;
+		int EnumeratingIndex;
+
+		public RenderItemCollection()
+		{
+			// 128 is a reasonable size, i.e. few instances need to resize up
+			// but isn't too big. Further tuning certainly possible.
+			RenderItems = new RenderItem[128];
+			count = 0;
+		}
+
+		public RenderItem this[int index]
+		{
+			get
+			{
+				return RenderItems[index];
+			}
+		}
+
+		public int Count
+		{
+			get
+			{
+				return count;
+			}
+		}
+
+		public void Add(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags)
+		{
+			if (count >= RenderItems.Length)
+			{
+				var newRenderItems = new RenderItem[RenderItems.Length * 2];
+				Array.Copy(RenderItems, newRenderItems, RenderItems.Length);
+				RenderItems = newRenderItems;
+			}
+			RenderItems[count].Material = material;
+			RenderItems[count].RenderPrimitive = renderPrimitive;
+			RenderItems[count].XNAMatrix = xnaMatrix;
+			RenderItems[count].Flags = flags;
+			count++;
+		}
+
+		public void Clear()
+		{
+			count = 0;
+		}
+
+		#region IEnumerable<RenderItem> Members
+
+		public IEnumerator<RenderItem> GetEnumerator()
+		{
+			//return new RenderItemCollectionEnumerator(this);
+			if (Enumerating) throw new InvalidOperationException("RenderItemCollection can only have one enumerator.");
+			Enumerating = true;
+			EnumeratingIndex = -1;
+			return this;
+		}
+
+		#endregion
+
+		#region IEnumerable Members
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		#endregion
+
+		#region IEnumerator<RenderItem> Members
+
+		public RenderItem Current
+		{
+			get
+			{
+				return RenderItems[EnumeratingIndex];
+			}
+		}
+
+		#endregion
+
+		#region IDisposable Members
+
+		public void Dispose()
+		{
+			if (!Enumerating) throw new InvalidOperationException("RenderItemCollection is not enumerating.");
+			Enumerating = false;
+		}
+
+		#endregion
+
+		#region IEnumerator Members
+
+		object System.Collections.IEnumerator.Current
+		{
+			get
+			{
+				return RenderItems[EnumeratingIndex];
+			}
+		}
+
+		public bool MoveNext()
+		{
+			EnumeratingIndex++;
+			return EnumeratingIndex < count;
+		}
+
+		public void Reset()
+		{
+			EnumeratingIndex = -1;
+		}
+
+		#endregion
+	}
+
     public class RenderFrame
     {
 		const int ShadowMapSunDistance = 1000; // distance from shadow map center to put camera
@@ -118,7 +229,7 @@ namespace ORTS
 		static readonly Material DummyBlendedMaterial = new EmptyMaterial();
 
 		readonly RenderProcess RenderProcess;
-        readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[(int)RenderPrimitiveSequence.Sentinel];
+		readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
 
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
@@ -129,7 +240,7 @@ namespace ORTS
 
             for (int i = 0; i < RenderItems.Length; i++)
             {
-                RenderItems[i] = new Dictionary<Material, List<RenderItem>>();
+				RenderItems[i] = new Dictionary<Material, RenderItemCollection>();
             }
         }
 
@@ -240,9 +351,9 @@ namespace ORTS
 			var sequence = RenderItems[(int)GetRenderSequence(group, blended)];
 
 			if (!sequence.ContainsKey(sortingMaterial))
-				sequence.Add(sortingMaterial, new List<RenderItem>());
+				sequence.Add(sortingMaterial, new RenderItemCollection());
 
-			sequence[sortingMaterial].Add(new RenderItem(material, primitive, xnaMatrix, flags));
+			sequence[sortingMaterial].Add(material, primitive, ref xnaMatrix, flags);
             
 			if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
 				primitive.ZBias = 1;

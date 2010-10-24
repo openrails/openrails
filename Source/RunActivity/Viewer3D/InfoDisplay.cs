@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Popups;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace ORTS
 {
@@ -33,20 +34,38 @@ namespace ORTS
 
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 		readonly int GCGenerationCount = System.GC.MaxGeneration + 1; // Include 0 as well.
-		readonly PerformanceCounter GCAllocatedBytesCounter = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", "RunActivity", true);
-		readonly SmoothedData GCAllocatedBytes = new SmoothedData();
-		double GCAllocatedBytesRealTime;
-		int GCGen0Collections = 0;
 
-        public InfoDisplay( Viewer3D viewer )
+		[StructLayout(LayoutKind.Sequential, Size = 40)]
+		struct PROCESS_MEMORY_COUNTERS
+		{
+			public int cb;
+			public int PageFaultCount;
+			public int PeakWorkingSetSize;
+			public int WorkingSetSize;
+			public int QuotaPeakPagedPoolUsage;
+			public int QuotaPagedPoolUsage;
+			public int QuotaPeakNonPagedPoolUsage;
+			public int QuotaNonPagedPoolUsage;
+			public int PagefileUsage;
+			public int PeakPagefileUsage;
+		}
+
+		[DllImport("psapi.dll", SetLastError = true)]
+		static extern bool GetProcessMemoryInfo(IntPtr hProcess, out PROCESS_MEMORY_COUNTERS counters, int size);
+
+		[DllImport("kernel32.dll")]
+		static extern IntPtr OpenProcess(int dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
+
+		readonly IntPtr ProcessHandle;
+		PROCESS_MEMORY_COUNTERS ProcessMemoryCounters;
+
+		public InfoDisplay(Viewer3D viewer)
         {
-			// If running in the debugger, the OS's process name is different.
-			if (Debugger.IsAttached)
-				GCAllocatedBytesCounter.InstanceName += ".vshost";
-
             Viewer = viewer;
 			var material = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
 			TextPrimitive = new TextPrimitive(material, new Vector2(10, 10), Color.White, 0.25f, Color.Black);
+			ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
+			ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
         }
 
 		public void Stop()
@@ -298,26 +317,15 @@ namespace ORTS
 		[Conditional("DEBUG")]
 		private void AddDebugInfo(double elapsedRealSeconds)
         {
-            // Memory Useage
-			var memory = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64;
-
-			// The allocated bytes value is only available when the GC has just
-			// done a collection - we can only read it once after a collection
-			// before it resets to 0.
-			GCAllocatedBytesRealTime += elapsedRealSeconds;
-			var gcGen0Collections = GC.CollectionCount(0);
-			if (GCGen0Collections != gcGen0Collections)
-			{
-				GCAllocatedBytes.Update((float)GCAllocatedBytesRealTime, GCAllocatedBytesCounter.NextValue());
-				GCAllocatedBytesRealTime = 0;
-				GCGen0Collections = gcGen0Collections;
-			}
+            // Get memory usage (working set).
+			GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.cb);
+			var memory = ProcessMemoryCounters.WorkingSetSize;
 
             TextBuilder.AppendLine();
 			TextBuilder.AppendLine("DEBUG INFORMATION");
             TextBuilder.AppendFormat("Logging Enabled = {0}", LoggerEnabled); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Memory = {0:F0} MB (allocations: {1:F0} MB/s, collections: {2})", memory / 1024 / 1024, GCAllocatedBytes.SmoothedValue / 1024 / 1024, String.Join("/", Enumerable.Range(0, GCGenerationCount).Select(i => GC.CollectionCount(i).ToString()).ToArray())); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Memory = {0:F0} MB (managed: {1:F0} MB, collections: {2})", memory / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, String.Join("/", Enumerable.Range(0, GCGenerationCount).Select(i => GC.CollectionCount(i).ToString()).ToArray())); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms)", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedValue * 1000, Viewer.RenderProcess.FrameJitter.SmoothedValue * 1000); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Adapter = {0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();

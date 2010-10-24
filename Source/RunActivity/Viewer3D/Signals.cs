@@ -365,7 +365,7 @@ namespace ORTS
 			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
 			Matrix viewProj = XNAViewMatrix * XNAProjectionMatrix;
 

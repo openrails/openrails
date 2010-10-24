@@ -129,7 +129,7 @@ namespace ORTS
 		/// Called by RenderFrame.Draw() in the RenderProcess thread for each primitive
 		/// that was loaded by PrepareFrame
 		/// </summary>
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
 			foreach(var item in renderItems)
 			    item.RenderPrimitive.Draw(graphicsDevice);

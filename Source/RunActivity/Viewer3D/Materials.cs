@@ -260,7 +260,7 @@ namespace ORTS
 	public abstract class Material
 	{
 		public virtual void SetState(GraphicsDevice graphicsDevice, Material previousMaterial) { }
-		public virtual void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
+		public virtual void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
 		public virtual void ResetState(GraphicsDevice graphicsDevice) { }
 
 		public virtual bool GetBlending(RenderPrimitive renderPrimitive) { return false; }
@@ -297,7 +297,7 @@ namespace ORTS
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
 		}
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
             foreach (var item in renderItems)
             {
@@ -327,6 +327,12 @@ namespace ORTS
 		readonly Texture2D nightTexture = null;
 		bool isNightEnabled = false;
 		readonly public RenderProcess RenderProcess;  // for diagnostics only
+		IEnumerator<EffectPass> ShaderPassesDarkShade;
+		IEnumerator<EffectPass> ShaderPassesFullBright;
+		IEnumerator<EffectPass> ShaderPassesHalfBright;
+		IEnumerator<EffectPass> ShaderPassesImage;
+		IEnumerator<EffectPass> ShaderPassesVegetation;
+		IEnumerator<EffectPass> ShaderPasses;
 
 		public SceneryMaterial(RenderProcess renderProcess, string texturePath, int options, float mipMapBias)  
         {
@@ -357,6 +363,12 @@ namespace ORTS
 		{
 			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 			graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
+
+			if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = SceneryShader.Techniques["DarkShade"].Passes.GetEnumerator();
+			if (ShaderPassesFullBright == null) ShaderPassesFullBright = SceneryShader.Techniques["FullBright"].Passes.GetEnumerator();
+			if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = SceneryShader.Techniques["HalfBright"].Passes.GetEnumerator();
+			if (ShaderPassesImage == null) ShaderPassesImage = SceneryShader.Techniques["Image"].Passes.GetEnumerator();
+			if (ShaderPassesVegetation == null) ShaderPassesVegetation = SceneryShader.Techniques["Vegetation"].Passes.GetEnumerator();
 
 			/////////////// MATERIAL OPTIONS //////////////////
 			//
@@ -431,19 +443,24 @@ namespace ORTS
 			{
 				case 1: // DarkShade
 					SceneryShader.CurrentTechnique = SceneryShader.Techniques["DarkShade"];
+					ShaderPasses = ShaderPassesDarkShade;
 					break;
 				case 2: // OptHalfBright
 					SceneryShader.CurrentTechnique = SceneryShader.Techniques["HalfBright"];
+					ShaderPasses = ShaderPassesHalfBright;
 					break;
 				case 3: // Cruciform
 				case 4: // CruciformLong
 					SceneryShader.CurrentTechnique = SceneryShader.Techniques["Vegetation"];
+					ShaderPasses = ShaderPassesVegetation;
 					break;
 				case 5: // OptFullBright
 					SceneryShader.CurrentTechnique = SceneryShader.Techniques["FullBright"];
+					ShaderPasses = ShaderPassesFullBright;
 					break;
 				default:
 					SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
+					ShaderPasses = ShaderPassesImage;
 					break;
 			}
 
@@ -529,16 +546,16 @@ namespace ORTS
 			RenderProcess.ImageChangesCount++;
 		}
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             Matrix viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
             // With the GPU configured, now we can draw the primitive
             SceneryShader.Begin();
-            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
             {
-                pass.Begin();
-
+				ShaderPasses.Current.Begin();
                 foreach(RenderItem item in renderItems)
                 {
                     SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewProj);
@@ -546,8 +563,7 @@ namespace ORTS
                     SceneryShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-
-                pass.End();
+				ShaderPasses.Current.End();
             }
             SceneryShader.End();
         }
@@ -598,6 +614,7 @@ namespace ORTS
         readonly SceneryShader SceneryShader;
         readonly Texture2D PatchTexture;
         readonly public RenderProcess RenderProcess;  // for diagnostics only
+		IEnumerator<EffectPass> ShaderPasses;
 
 		public TerrainMaterial(RenderProcess renderProcess, string terrainTexture )
         {
@@ -612,6 +629,7 @@ namespace ORTS
 			RenderProcess.ImageChangesCount++;
 
 			SceneryShader.CurrentTechnique = SceneryShader.Techniques["Terrain"];
+			if (ShaderPasses == null) ShaderPasses = SceneryShader.Techniques["Terrain"].Passes.GetEnumerator();
 			SceneryShader.ImageMap_Tex = PatchTexture;
 
 			graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
@@ -626,26 +644,24 @@ namespace ORTS
 			graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
 		}
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             SceneryShader.Begin();
-            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
-            {
-                pass.Begin();
-
-                foreach (RenderItem item in renderItems)
-                {
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
-                    SceneryShader.ZBias = item.RenderPrimitive.ZBias;
-                    SceneryShader.CommitChanges();
-                    item.RenderPrimitive.Draw(graphicsDevice);
-                }
-
-
-                pass.End();
-            }
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
+			{
+				ShaderPasses.Current.Begin();
+				foreach (RenderItem item in renderItems)
+				{
+					SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+					SceneryShader.ZBias = item.RenderPrimitive.ZBias;
+					SceneryShader.CommitChanges();
+					item.RenderPrimitive.Draw(graphicsDevice);
+				}
+				ShaderPasses.Current.End();
+			}
             SceneryShader.End();
         }
 	}
@@ -664,6 +680,7 @@ namespace ORTS
         private Matrix XNAMoonMatrix;
         private Matrix XNAMoonWorldMatrix;
         public RenderProcess RenderProcess;
+		IEnumerator<EffectPass> ShaderPasses;
 
 		public SkyMaterial(RenderProcess renderProcess)
         {
@@ -677,9 +694,9 @@ namespace ORTS
             cloudTexture = renderProcess.Content.Load<Texture2D>("Clouds01");
         }
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            
+			if (ShaderPasses == null) ShaderPasses = SkyShader.Techniques["SkyTechnique"].Passes.GetEnumerator();
 
             // Adjust Fog color for day-night conditions and overcast
             FogDay2Night(
@@ -718,10 +735,10 @@ namespace ORTS
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
 
             SkyShader.Begin();
-            foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
             {
-                pass.Begin();
-
+				ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
@@ -729,7 +746,7 @@ namespace ORTS
                     SkyShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                pass.End();
+				ShaderPasses.Current.End();
             }
             SkyShader.End();
 
@@ -762,10 +779,10 @@ namespace ORTS
             RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 2;
             SkyShader.Begin();
-            foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
             {
-                pass.Begin();
-
+				ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
@@ -774,7 +791,7 @@ namespace ORTS
 
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                pass.End();
+				ShaderPasses.Current.End();
             }
             SkyShader.End();
 
@@ -792,10 +809,10 @@ namespace ORTS
             RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 3;
             SkyShader.Begin();
-            foreach (EffectPass pass in SkyShader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
             {
-                pass.Begin();
-
+				ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
@@ -804,7 +821,7 @@ namespace ORTS
 
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                pass.End();
+				ShaderPasses.Current.End();
             }
             SkyShader.End();
 
@@ -871,6 +888,7 @@ namespace ORTS
         Texture2D rainTexture;
         Texture2D snowTexture;
         public RenderProcess RenderProcess;
+		IEnumerator<EffectPass> ShaderPasses;
 
 		public PrecipMaterial(RenderProcess renderProcess)
         {
@@ -887,6 +905,7 @@ namespace ORTS
 
             var weatherType = RenderProcess.Viewer.PrecipDrawer.weatherType;
             PrecipShader.CurrentTechnique = PrecipShader.Techniques["RainTechnique"];
+			if (ShaderPasses == null) ShaderPasses = PrecipShader.Techniques["RainTechnique"].Passes.GetEnumerator();
             PrecipShader.WeatherType = weatherType;
             PrecipShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
             PrecipShader.ViewportHeight = (int)RenderProcess.Viewer.DisplaySize.Y;
@@ -908,23 +927,23 @@ namespace ORTS
 			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
 		}
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
 			if (RenderProcess.Viewer.PrecipDrawer.weatherType == 0)
 				return;
 
             PrecipShader.Begin();
-            foreach (EffectPass pass in PrecipShader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
             {
-                pass.Begin();
-
+                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     PrecipShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref Camera.XNASkyProjection);
                     PrecipShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                pass.End();
+                ShaderPasses.Current.End();
             }
             PrecipShader.End();
         }
@@ -972,7 +991,7 @@ namespace ORTS
             image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
         }
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
@@ -1078,6 +1097,7 @@ namespace ORTS
     {
         public readonly RenderProcess RenderProcess;  // for diagnostics only
         readonly Texture2D TreeTexture = null;
+		IEnumerator<EffectPass> ShaderPasses;
 
 		public ForestMaterial(RenderProcess renderProcess, string treeTexture)
         {
@@ -1091,6 +1111,7 @@ namespace ORTS
 			RenderProcess.ImageChangesCount++;
 
 			Materials.SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["Forest"];
+			if (ShaderPasses == null) ShaderPasses = Materials.SceneryShader.Techniques["Forest"].Passes.GetEnumerator();
 			Materials.SceneryShader.ImageMap_Tex = TreeTexture;
 
 			graphicsDevice.RenderState.AlphaTestEnable = true;
@@ -1098,16 +1119,16 @@ namespace ORTS
 			graphicsDevice.RenderState.ReferenceAlpha = 200;
 		}
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
 			var shader = Materials.SceneryShader;
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
 			shader.Begin();
-			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
             {
-                pass.Begin();
-
+                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
 					shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
@@ -1115,7 +1136,7 @@ namespace ORTS
 					shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                pass.End();
+                ShaderPasses.Current.End();
             }
 			shader.End();
         }
@@ -1159,7 +1180,7 @@ namespace ORTS
 			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
 		}
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             // Lights fade-in / fade-out
             currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
@@ -1216,6 +1237,7 @@ namespace ORTS
     {
         public readonly RenderProcess RenderProcess;  // for diagnostics only
         readonly Texture2D WaterTexture;
+		IEnumerator<EffectPass> ShaderPasses;
 
 		public WaterMaterial(RenderProcess renderProcess, string waterTexturePath)
 		{
@@ -1229,6 +1251,7 @@ namespace ORTS
 			RenderProcess.ImageChangesCount++;
 
 			Materials.SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["Image"];
+			if (ShaderPasses == null) ShaderPasses = Materials.SceneryShader.Techniques["Image"].Passes.GetEnumerator();
 			Materials.SceneryShader.ImageMap_Tex = WaterTexture;
 
 			graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
@@ -1242,15 +1265,16 @@ namespace ORTS
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
 			var shader = Materials.SceneryShader;
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
 			shader.Begin();
-			foreach (var pass in shader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
             {
-                pass.Begin();
+                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
 					shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
@@ -1258,7 +1282,7 @@ namespace ORTS
 					shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                pass.End();
+                ShaderPasses.Current.End();
             }
 			shader.End();
         }
@@ -1281,6 +1305,9 @@ namespace ORTS
 	public class ShadowMapMaterial : Material
     {
 		public readonly RenderProcess RenderProcess;  // for diagnostics only
+		IEnumerator<EffectPass> ShaderPassesShadowMap;
+		IEnumerator<EffectPass> ShaderPassesShadowMapBlocker;
+		IEnumerator<EffectPass> ShaderPasses;
 
 		public ShadowMapMaterial(RenderProcess renderProcess)
         {
@@ -1291,20 +1318,24 @@ namespace ORTS
 		{
 			var shader = Materials.ShadowMapShader;
 			shader.CurrentTechnique = shader.Techniques[blocker ? "ShadowMapBlocker" : "ShadowMap"];
+			if (ShaderPassesShadowMap == null) ShaderPassesShadowMap = shader.Techniques["ShadowMap"].Passes.GetEnumerator();
+			if (ShaderPassesShadowMapBlocker == null) ShaderPassesShadowMapBlocker = shader.Techniques["ShadowMapBlocker"].Passes.GetEnumerator();
+			ShaderPasses = blocker ? ShaderPassesShadowMapBlocker : ShaderPassesShadowMap;
 
 			var rs = graphicsDevice.RenderState;
 			rs.CullMode = blocker ? CullMode.CullClockwiseFace : CullMode.CullCounterClockwiseFace;
 		}
 
-		public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
 			var shader = Materials.ShadowMapShader;
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
 			shader.Begin();
-			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
 			{
-				pass.Begin();
+				ShaderPasses.Current.Begin();
 				foreach (var item in renderItems)
 				{
 					var wvp = item.XNAMatrix * viewproj;
@@ -1312,7 +1343,7 @@ namespace ORTS
 					shader.CommitChanges();
 					item.RenderPrimitive.Draw(graphicsDevice);
 				}
-				pass.End();
+				ShaderPasses.Current.End();
 			}
 			shader.End();
 		}
@@ -1328,6 +1359,9 @@ namespace ORTS
 	public class PopupWindowMaterial : Material
 	{
 		public SpriteFont DefaultFont;
+		IEnumerator<EffectPass> ShaderPassesPopupWindow;
+		IEnumerator<EffectPass> ShaderPassesPopupWindowGlass;
+		IEnumerator<EffectPass> ShaderPasses;
 
 		public PopupWindowMaterial(RenderProcess renderProcess)
 		{
@@ -1338,6 +1372,9 @@ namespace ORTS
 		{
 			var shader = Materials.PopupWindowShader;
 			shader.CurrentTechnique = screen == null ? shader.Techniques["PopupWindow"] : shader.Techniques["PopupWindowGlass"];
+			if (ShaderPassesPopupWindow == null) ShaderPassesPopupWindow = shader.Techniques["PopupWindow"].Passes.GetEnumerator();
+			if (ShaderPassesPopupWindowGlass == null) ShaderPassesPopupWindowGlass = shader.Techniques["PopupWindowGlass"].Passes.GetEnumerator();
+			ShaderPasses = screen == null ? ShaderPassesPopupWindow : ShaderPassesPopupWindowGlass;
 			shader.Screen = screen;
 			shader.GlassColor = Color.Black;
 
@@ -1359,11 +1396,12 @@ namespace ORTS
             shader.SetMatrix(XNAWorldMatrix, ref wvp);
 
             shader.Begin();
-            foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+			ShaderPasses.Reset();
+			while (ShaderPasses.MoveNext())
             {
-                pass.Begin();
+                ShaderPasses.Current.Begin();
                 renderPrimitive.Draw(graphicsDevice);
-                pass.End();
+                ShaderPasses.Current.End();
             }
             shader.End();
         }
@@ -1428,7 +1466,7 @@ namespace ORTS
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
 
-        public override void Render(GraphicsDevice graphicsDevice, List<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             
             basicEffect.View = XNAViewMatrix;
