@@ -121,7 +121,7 @@ namespace MSTS
         {
             inf.MustMatch("(");
 
-            int count = inf.ReadInt();
+            int count = inf.ReadInt(STFReader.UNITS.Any, null);
 
             try
             {
@@ -227,17 +227,17 @@ namespace MSTS
             else if (string.Compare(token, "Position", true) == 0)
             {
                 inf.MustMatch("(");
-                PositionX = inf.ReadInt();
-                PositionY = inf.ReadInt();
-                Width = inf.ReadInt();
-                Height = inf.ReadInt();
+                PositionX = inf.ReadInt(STFReader.UNITS.Any, null);
+                PositionY = inf.ReadInt(STFReader.UNITS.Any, null);
+                Width = inf.ReadInt(STFReader.UNITS.Any, null);
+                Height = inf.ReadInt(STFReader.UNITS.Any, null);
                 inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "ScaleRange", true) == 0)
             {
                 inf.MustMatch("(");
-                MinValue = inf.ReadInt();
-                MaxValue = inf.ReadInt();
+                MinValue = inf.ReadInt(STFReader.UNITS.Any, null);
+                MaxValue = inf.ReadInt(STFReader.UNITS.Any, null);
                 inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "Graphic", true) == 0)
@@ -292,8 +292,8 @@ namespace MSTS
                 if (string.Compare(token, "ScalePos", true) == 0)
                 {
                     inf.MustMatch("(");
-                    FromDegree = inf.ReadInt();
-                    ToDegree = inf.ReadInt();
+                    FromDegree = inf.ReadInt(STFReader.UNITS.Any, null);
+                    ToDegree = inf.ReadInt(STFReader.UNITS.Any, null);
                     inf.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "Pivot", true) == 0)
@@ -329,10 +329,10 @@ namespace MSTS
                 if (string.Compare(token, "Area", true) == 0)
                 {
                     inf.MustMatch("(");
-                    int x = inf.ReadInt();
-                    int y = inf.ReadInt();
-                    int width = inf.ReadInt();
-                    int height = inf.ReadInt();
+                    int x = inf.ReadInt(STFReader.UNITS.Any, null);
+                    int y = inf.ReadInt(STFReader.UNITS.Any, null);
+                    int width = inf.ReadInt(STFReader.UNITS.Any, null);
+                    int height = inf.ReadInt(STFReader.UNITS.Any, null);
                     Area = new Rectangle(x, y, width, height);
                     inf.SkipRestOfBlock();
                 }
@@ -396,9 +396,9 @@ namespace MSTS
                 if (string.Compare(token, "NumFrames", true) == 0)
                 {
                     inf.MustMatch("(");
-                    FramesCount = inf.ReadInt();
-                    FramesX = inf.ReadInt();
-                    FramesY = inf.ReadInt();
+                    FramesCount = inf.ReadInt(STFReader.UNITS.Any, null);
+                    FramesX = inf.ReadInt(STFReader.UNITS.Any, null);
+                    FramesY = inf.ReadInt(STFReader.UNITS.Any, null);
                     inf.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "NumPositions", true) == 0)
@@ -409,10 +409,10 @@ namespace MSTS
                     bool shouldFill = Positions.Count == 0;
 
                     // Number of Positions - Ignore it
-                    int p = inf.ReadInt();
+                    int p = inf.ReadInt(STFReader.UNITS.Any, null);
                     while (!inf.EndOfBlock())
                     {
-                        p = inf.ReadInt();
+                        p = inf.ReadInt(STFReader.UNITS.Any, null);
 
                         // If Positions are not filled before by Values
                         if (shouldFill)
@@ -424,11 +424,11 @@ namespace MSTS
                     inf.MustMatch("(");
                     
                     // Number of Values - ignore it
-                    double v = inf.ReadDouble();
+                    double v = inf.ReadDouble(STFReader.UNITS.Any, null);
 
                     while (!inf.EndOfBlock())
                     {
-                        v = inf.ReadDouble();
+                        v = inf.ReadDouble(STFReader.UNITS.Any, null);
                         // If the Positions are less than expected add new Position(s)
                         while (Positions.Count <= _ValuesRead)
                         {
@@ -576,9 +576,9 @@ namespace MSTS
                 if (string.Compare(token, "States", true) == 0)
                 {
                     inf.MustMatch("(");
-                    FramesCount = inf.ReadInt();
-                    FramesX = inf.ReadInt();
-                    FramesY = inf.ReadInt();
+                    FramesCount = inf.ReadInt(STFReader.UNITS.Any, null);
+                    FramesX = inf.ReadInt(STFReader.UNITS.Any, null);
+                    FramesY = inf.ReadInt(STFReader.UNITS.Any, null);
 
                     token = inf.ReadItem();
                     while (string.Compare(token, "State", true) == 0)

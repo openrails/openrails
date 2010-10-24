@@ -73,7 +73,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrackNodes", true))
                 {
                     f.MustMatch("(");
-                    int count = f.ReadInt();
+                    int count = f.ReadInt(STFReader.UNITS.Any, null);
                     TrackNodes = new TrackNode[count + 1];
                     count = 1;
                     token = f.ReadItem();
@@ -92,7 +92,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemTable", true))
                 {
                     f.MustMatch("(");
-                    int count = f.ReadInt();
+                    int count = f.ReadInt(STFReader.UNITS.Any, null);
                     TrItemTable = new TrItem[count];
                     count = 0;
                     token = f.ReadItem();
@@ -167,7 +167,7 @@ namespace MSTS
         public TrackNode(STFReader f, int count)
         {
             f.MustMatch("(");
-            uint index = f.ReadUInt();
+            uint index = f.ReadUInt(STFReader.UNITS.Any, null);
             Debug.Assert(count == index, "TrackNode Index Mismatch");
             string token = f.ReadItem();
             while (token != ")")
@@ -180,8 +180,8 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrPins", true))
                 {
                     f.MustMatch("(");
-                    Inpins = f.ReadUInt();
-                    Outpins = f.ReadUInt();
+                    Inpins = f.ReadUInt(STFReader.UNITS.Any, null);
+                    Outpins = f.ReadUInt(STFReader.UNITS.Any, null);
                     TrPins = new TrPin[Inpins + Outpins];
                     for (int i = 0; i < Inpins + Outpins; ++i)
                     {
@@ -212,8 +212,8 @@ namespace MSTS
         public TrPin(STFReader f)
         {
             f.MustMatch("(");
-            Link = f.ReadInt();
-            Direction = f.ReadInt();
+            Link = f.ReadInt(STFReader.UNITS.Any, null);
+            Direction = f.ReadInt(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
         public int Link;
@@ -234,18 +234,18 @@ namespace MSTS
             // UiD ( -11283 14482 5 0 -11283 14482 -445.573 239.861 186.111 0 -3.04199 0 )
 
             f.MustMatch("(");
-            WorldTileX = f.ReadInt();            // -11283
-            WorldTileZ = f.ReadInt();            // 14482
-            WorldID = f.ReadInt();              // 5
-            f.ReadInt();                        // 0
-            TileX = f.ReadInt();            // -11283
-            TileZ = f.ReadInt();            // 14482
-            X = f.ReadFloat();         // -445.573
-            Y = f.ReadFloat();         // 239.861
-            Z = f.ReadFloat();         // 186.111
-            AX = f.ReadFloat();         // 0
-            AY = f.ReadFloat();         // -3.04199
-            AZ = f.ReadFloat();         // 0
+            WorldTileX = f.ReadInt(STFReader.UNITS.Any, null);            // -11283
+            WorldTileZ = f.ReadInt(STFReader.UNITS.Any, null);            // 14482
+            WorldID = f.ReadInt(STFReader.UNITS.Any, null);              // 5
+            f.ReadInt(STFReader.UNITS.Any, null);                        // 0
+            TileX = f.ReadInt(STFReader.UNITS.Any, null);            // -11283
+            TileZ = f.ReadInt(STFReader.UNITS.Any, null);            // 14482
+            X = f.ReadFloat(STFReader.UNITS.Any, null);         // -445.573
+            Y = f.ReadFloat(STFReader.UNITS.Any, null);         // 239.861
+            Z = f.ReadFloat(STFReader.UNITS.Any, null);         // 186.111
+            AX = f.ReadFloat(STFReader.UNITS.Any, null);         // 0
+            AY = f.ReadFloat(STFReader.UNITS.Any, null);         // -3.04199
+            AZ = f.ReadFloat(STFReader.UNITS.Any, null);         // 0
             f.MustMatch(")");
         }
 
@@ -260,7 +260,7 @@ namespace MSTS
         {
             f.MustMatch("(");
             f.ReadItem();
-            ShapeIndex = f.ReadUInt();
+            ShapeIndex = f.ReadUInt(STFReader.UNITS.Any, null);
             f.ReadItem();
             f.MustMatch(")");
         }
@@ -279,7 +279,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrVectorSections", true))
                 {
                     f.MustMatch("(");
-                    int count = f.ReadInt();
+                    int count = f.ReadInt(STFReader.UNITS.Any, null);
                     TrVectorSections = new TrVectorSection[count];
                     for (int i = 0; i < count; ++i)
                     {
@@ -310,7 +310,7 @@ namespace MSTS
             int count = 0;
 
             f.MustMatch("(");
-            noItemRefs=f.ReadInt();
+            noItemRefs = f.ReadInt(STFReader.UNITS.Any, null);
             TrItemRefs = new int[noItemRefs];
             string token = f.ReadItem();
             while (token != ")")
@@ -339,22 +339,22 @@ namespace MSTS
     {
         public TrVectorSection(STFReader f)
         {
-            SectionIndex = f.ReadUInt();
-            ShapeIndex = f.ReadUInt();
+            SectionIndex = f.ReadUInt(STFReader.UNITS.Any, null);
+            ShapeIndex = f.ReadUInt(STFReader.UNITS.Any, null);
             f.ReadItem(); // worldfilenamex
             f.ReadItem(); // worldfilenamez
-            WorldFileUiD = f.ReadUInt(); // UID in worldfile
-            flag1 = f.ReadInt(); // 0
-            flag2 = f.ReadInt(); // 1
+            WorldFileUiD = f.ReadUInt(STFReader.UNITS.Any, null); // UID in worldfile
+            flag1 = f.ReadInt(STFReader.UNITS.Any, null); // 0
+            flag2 = f.ReadInt(STFReader.UNITS.Any, null); // 1
             f.ReadItem(); // 00 
-            TileX = f.ReadInt();
-            TileZ = f.ReadInt();
-            X = f.ReadFloat();
-            Y = f.ReadFloat();
-            Z = f.ReadFloat();
-            AX = f.ReadFloat();
-            AY = f.ReadFloat();
-            AZ = f.ReadFloat();
+            TileX = f.ReadInt(STFReader.UNITS.Any, null);
+            TileZ = f.ReadInt(STFReader.UNITS.Any, null);
+            X = f.ReadFloat(STFReader.UNITS.Any, null);
+            Y = f.ReadFloat(STFReader.UNITS.Any, null);
+            Z = f.ReadFloat(STFReader.UNITS.Any, null);
+            AX = f.ReadFloat(STFReader.UNITS.Any, null);
+            AY = f.ReadFloat(STFReader.UNITS.Any, null);
+            AZ = f.ReadFloat(STFReader.UNITS.Any, null);
         }
         public int flag1;   // usually 0, - may point to the connecting pin entry in a junction
         public int flag2;  // usually 1, but set to 0 when curve track is flipped around
@@ -411,28 +411,28 @@ namespace MSTS
         protected void TrItemRData(STFReader f)
         {
             f.MustMatch("(");
-            X = f.ReadFloat();
-            Y = f.ReadFloat();
-            Z = f.ReadFloat();
-            TileX = f.ReadInt();
-            TileZ = f.ReadInt();
+            X = f.ReadFloat(STFReader.UNITS.Any, null);
+            Y = f.ReadFloat(STFReader.UNITS.Any, null);
+            Z = f.ReadFloat(STFReader.UNITS.Any, null);
+            TileX = f.ReadInt(STFReader.UNITS.Any, null);
+            TileZ = f.ReadInt(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
 
         protected void TrItemPData(STFReader f)
         {
             f.MustMatch("(");
-            PX = f.ReadFloat();
-            PZ = f.ReadFloat();
-            TilePX = f.ReadInt();
-            TilePZ = f.ReadInt();
+            PX = f.ReadFloat(STFReader.UNITS.Any, null);
+            PZ = f.ReadFloat(STFReader.UNITS.Any, null);
+            TilePX = f.ReadInt(STFReader.UNITS.Any, null);
+            TilePZ = f.ReadInt(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
 
         protected void TrItemSData(STFReader f)
         {
             f.MustMatch("(");
-            SData1 = f.ReadFloat();
+            SData1 = f.ReadFloat(STFReader.UNITS.Any, null);
             SData2 = f.ReadItem();
             f.MustMatch(")");
         }
@@ -452,7 +452,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "CrossoverItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -466,8 +466,8 @@ namespace MSTS
         private void CrossoverTrItemData(STFReader f)
         {
             f.MustMatch("(");
-            TrackNode = f.ReadUInt();
-            CID1 = f.ReadUInt();
+            TrackNode = f.ReadUInt(STFReader.UNITS.Any, null);
+            CID1 = f.ReadUInt(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
     }
@@ -504,7 +504,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "SignalItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -520,8 +520,8 @@ namespace MSTS
         {
             f.MustMatch("(");
             Flags1 = f.ReadItem();
-            Direction = f.ReadUInt();
-            SigData1 = f.ReadFloat();
+            Direction = f.ReadUInt(STFReader.UNITS.Any, null);
+            SigData1 = f.ReadFloat(STFReader.UNITS.Any, null);
             SignalType = f.ReadItem();
             // To do get index to Sigtypes table corresponding to this sigmal
             f.MustMatch(")");
@@ -529,7 +529,7 @@ namespace MSTS
         private void TrSigDirs(STFReader f)
         {
             f.MustMatch("(");
-            this.noSigDirs = f.ReadUInt();
+            this.noSigDirs = f.ReadUInt(STFReader.UNITS.Any, null);
             TrSignalDirs = new strTrSignalDir[noSigDirs];
             int count=0;
             string token = f.ReadItem();
@@ -542,10 +542,10 @@ namespace MSTS
                     {
                         TrSignalDirs[count]=new strTrSignalDir();
                         f.MustMatch("(");
-                        TrSignalDirs[count].TrackNode=f.ReadUInt();
-                        TrSignalDirs[count].sd1=f.ReadUInt();
-                        TrSignalDirs[count].linkLRPath = f.ReadUInt(); 
-                        TrSignalDirs[count].sd3=f.ReadUInt();
+                        TrSignalDirs[count].TrackNode = f.ReadUInt(STFReader.UNITS.Any, null);
+                        TrSignalDirs[count].sd1 = f.ReadUInt(STFReader.UNITS.Any, null);
+                        TrSignalDirs[count].linkLRPath = f.ReadUInt(STFReader.UNITS.Any, null);
+                        TrSignalDirs[count].sd3 = f.ReadUInt(STFReader.UNITS.Any, null);
                         f.MustMatch(")");
                         count++;
                     }
@@ -577,7 +577,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "SpeedPostItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -593,13 +593,13 @@ namespace MSTS
         {
             this.ItemType = trItemType.trSPEEDPOST;
             f.MustMatch("(");
-            Flags = f.ReadUInt();
+            Flags = f.ReadUInt(STFReader.UNITS.Any, null);
             //
             //  The number of parameters depends on the flags seeting
             //  To do: Check flags seetings and parse accordingly.
             //
-            SpeedInd = f.ReadFloat();
-            SID1 = f.ReadFloat();
+            SpeedInd = f.ReadFloat(STFReader.UNITS.Any, null);
+            SID1 = f.ReadFloat(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
     }
@@ -622,7 +622,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "PlatformItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -643,13 +643,13 @@ namespace MSTS
                 else if (0 == String.Compare(token, "PlatformMinWaitingTime", true))
                 {
                     f.MustMatch("(");
-                    PlatformMinWaitingTime = f.ReadUInt();
+                    PlatformMinWaitingTime = f.ReadUInt(STFReader.UNITS.Any, null);
                     f.MustMatch(")");
                 }
                 else if (0 == String.Compare(token, "PlatformNumPassengersWaiting", true))
                 {
                     f.MustMatch("(");
-                    PlatformNumPassengersWaiting = f.ReadUInt();
+                    PlatformNumPassengersWaiting = f.ReadUInt(STFReader.UNITS.Any, null);
                     f.MustMatch(")");
                 }
                 else if (0 == String.Compare(token, "PlatformTrItemData", true)) PlatformTrItemData(f);
@@ -661,7 +661,7 @@ namespace MSTS
         {
             f.MustMatch("(");
             Flags1 = f.ReadItem();
-            Flags2 = f.ReadUInt();
+            Flags2 = f.ReadUInt(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
     }
@@ -681,7 +681,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "SoundRegionItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -695,9 +695,9 @@ namespace MSTS
         private void TrItemSRData(STFReader f)
         {
             f.MustMatch("(");
-            SRData1 = f.ReadUInt();
-            SRData2 = f.ReadUInt();
-            SRData3 = f.ReadFloat();
+            SRData1 = f.ReadUInt(STFReader.UNITS.Any, null);
+            SRData2 = f.ReadUInt(STFReader.UNITS.Any, null);
+            SRData3 = f.ReadFloat(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
     }
@@ -714,7 +714,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "EmptyItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -737,7 +737,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "LevelCrItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -767,7 +767,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "SidingItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -789,7 +789,7 @@ namespace MSTS
         {
             f.MustMatch("(");
             Flags1 = f.ReadItem();
-            Flags2 = f.ReadUInt();
+            Flags2 = f.ReadUInt(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
     }
@@ -807,7 +807,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "HazzardItem Index Mismatch");
                     f.MustMatch(")");
                 }
@@ -833,7 +833,7 @@ namespace MSTS
                 else if (0 == String.Compare(token, "TrItemID", true))
                 {
                     f.MustMatch("(");
-                    this.TrItemId = f.ReadUInt();
+                    this.TrItemId = f.ReadUInt(STFReader.UNITS.Any, null);
                     Debug.Assert(count == this.TrItemId, "PickupItem Index Mismatch");
                     f.MustMatch(")");
                 }

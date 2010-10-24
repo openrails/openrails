@@ -149,9 +149,9 @@ namespace MSTS
 		public StartTime( STFReader f )
 		{
 			f.MustMatch("(");
-			Hour = f.ReadInt();
-			Minute = f.ReadInt();
-			Second = f.ReadInt();
+            Hour = f.ReadInt(STFReader.UNITS.Any, null);
+            Minute = f.ReadInt(STFReader.UNITS.Any, null);
+            Second = f.ReadInt(STFReader.UNITS.Any, null);
 			f.SkipRestOfBlock();
 		}
 
@@ -175,8 +175,8 @@ namespace MSTS
 		public Duration( STFReader f )
 		{
 			f.MustMatch("(");
-			Hour = f.ReadInt();
-			Minute = f.ReadInt();
+            Hour = f.ReadInt(STFReader.UNITS.Any, null);
+            Minute = f.ReadInt(STFReader.UNITS.Any, null);
 			f.SkipRestOfBlock();
 		}
 
@@ -260,7 +260,7 @@ namespace MSTS
 		{
 			f.MustMatch("(");
 			Service = f.ReadItem();
-			Time = f.ReadInt();
+            Time = f.ReadInt(STFReader.UNITS.Any, null);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
@@ -324,11 +324,11 @@ namespace MSTS
                     case "triggeronstop": TriggerOnStop = f.ReadBoolBlock(); break;
                     case "location":
                         f.MustMatch("(");
-                        TileX = f.ReadInt();
-                        TileZ = f.ReadInt();
-                        X = f.ReadDouble();
-                        Z = f.ReadDouble();
-                        Size = f.ReadDouble();
+                        TileX = f.ReadInt(STFReader.UNITS.Any, null);
+                        TileZ = f.ReadInt(STFReader.UNITS.Any, null);
+                        X = f.ReadDouble(STFReader.UNITS.Any, null);
+                        Z = f.ReadDouble(STFReader.UNITS.Any, null);
+                        Size = f.ReadDouble(STFReader.UNITS.Any, null);
                         f.SkipRestOfBlock();
                         break;
                     case "(": f.SkipRestOfBlock(); break;
@@ -494,10 +494,10 @@ namespace MSTS
                     case "id": ID = f.ReadIntBlock(); break;
                     case "tile":
                         f.MustMatch("(");
-                        TileX = f.ReadInt();
-                        TileZ = f.ReadInt();
-                        X = f.ReadFloat();
-                        Z = f.ReadFloat();
+                        TileX = f.ReadInt(STFReader.UNITS.Any, null);
+                        TileZ = f.ReadInt(STFReader.UNITS.Any, null);
+                        X = f.ReadFloat(STFReader.UNITS.Any, null);
+                        Z = f.ReadFloat(STFReader.UNITS.Any, null);
                         f.SkipRestOfBlock();
                         break;
                     case "(": f.SkipRestOfBlock(); break;
@@ -534,8 +534,8 @@ namespace MSTS
 		public MaxVelocity( STFReader f )
 		{
 			f.MustMatch("(");
-			A = f.ReadFloat();
-			B = f.ReadFloat();
+            A = f.ReadFloat(STFReader.UNITS.Any, null);
+            B = f.ReadFloat(STFReader.UNITS.Any, null);
 			f.SkipRestOfBlock();
 		}
 	}

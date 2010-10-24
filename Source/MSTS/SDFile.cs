@@ -96,14 +96,14 @@ namespace MSTS
                 f.MustMatch("(");
                 string item = f.ReadItem();
                 if (item == ")") return;    // quietly return on ESD_Bounding_Box()
-                f.RewindItem();
-                float X = f.ReadFloat();
-                float Y = f.ReadFloat();
-                float Z = f.ReadFloat();
+                f.StepBackOneItem();
+                float X = f.ReadFloat(STFReader.UNITS.Any, null);
+                float Y = f.ReadFloat(STFReader.UNITS.Any, null);
+                float Z = f.ReadFloat(STFReader.UNITS.Any, null);
                 A = new TWorldPosition(X, Y, Z);
-                X = f.ReadFloat();
-                Y = f.ReadFloat();
-                Z = f.ReadFloat();
+                X = f.ReadFloat(STFReader.UNITS.Any, null);
+                Y = f.ReadFloat(STFReader.UNITS.Any, null);
+                Z = f.ReadFloat(STFReader.UNITS.Any, null);
                 B = new TWorldPosition(X, Y, Z);
                 // JP2indirt.sd has extra parameters
                 for (; ; )

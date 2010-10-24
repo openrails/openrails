@@ -182,17 +182,17 @@ namespace MSTS
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         public string ReadItem()
         {
-            #region If RewindItem() has been called then return the previous output from ReadItem() rather than reading a new token
-            if (rewindNextReadItemFlag)
+            #region If StepBackOneItem() has been called then return the previous output from ReadItem() rather than reading a new token
+            if (stepbackoneitemFlag)
             {
-                Debug.Assert(rewindItem != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
-                string token = rewindItem;
-                previousItem = rewindCurrItem;
-                if (rewindTree != null) tree = rewindTree;
-                rewindNextReadItemFlag = false;
-                rewindItem = rewindCurrItem = null;
-                rewindTree = null;
-                return token;
+                Debug.Assert(stepbackItem != null, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
+                string item = stepbackItem;
+                previousItem = stepbackPrevItem;
+                if (stepbackTree != null) tree = stepbackTree;
+                stepbackoneitemFlag = false;
+                stepbackItem = stepbackPrevItem = null;
+                stepbackTree = null;
+                return item;
             }
             #endregion
             return ReadItem(false);
@@ -200,13 +200,13 @@ namespace MSTS
         /// <summary>Calling this function causes ReadItem() to repeat the last {item} that was read from the STF file
         /// </summary>
         /// <remarks>
-        /// <para>The current implementation of RewindItem() only allows for "rewind".</para>
-        /// <para>This means that there each call to RewindItem() must have an intervening call to ReadItem().</para>
+        /// <para>The current implementation of StepBackOneItem() only allows for one "step back".</para>
+        /// <para>This means that there each call to StepBackOneItem() must have an intervening call to ReadItem().</para>
         /// </remarks>
-        public void RewindItem()
+        public void StepBackOneItem()
         {
-            Debug.Assert(rewindItem != null, "You must called at least one ReadItem() between RewindItem() calls", "The current rewind functionality only allows for a single rewind");
-            rewindNextReadItemFlag = true;
+            Debug.Assert(stepbackItem != null, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
+            stepbackoneitemFlag = true;
         }
 
         /// <summary>Reports a critical error if the next {item} does not match the target.
@@ -237,7 +237,7 @@ namespace MSTS
             if (c == ')')
             {
                 c = streamSTF.Read();
-                UpdateTreeAndRewindBuffer(")");
+                UpdateTreeAndStepBack(")");
             }
             return c == ')' || c == -1;
         }
@@ -250,7 +250,7 @@ namespace MSTS
             if (token == ")")   // just in case we are not where we think we are
             {
                 STFException.ReportWarning(this, "Found a close parenthesis, rather than the expected block of data");
-                RewindItem();
+                StepBackOneItem();
                 return;
             }
             else if (token != "(")
@@ -274,143 +274,206 @@ namespace MSTS
         }
 
 
-		public int ReadHex()
+        [Flags]
+        public enum UNITS
+        {
+            None = 0,
+            Compulsary = 1 << 0, // OR with other UNITS if the unit is compulsary (this will slow parsing)
+            Distance = 1 << 1, // Scaled to meters.          Valid Units: m, cm, mm, km, ft, in
+            Weight = 1 << 2, // Scaled to kilograms.       Valid Units: kg, t, lb
+            Force = 1 << 3, // Scaled to newtons.         Valid Units: n, kn, lbf
+            Stiffness = 1 << 4, // Scaled to newtons/metre.   Valid Units: n/m
+            Any = -2    // This is only provided for backwards compatibility - all new uses should limit the units to appropriate types
+        }
+        /// <summary>Read an signed integer {constant_item}
+        /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
+        public int ReadInt(UNITS valid_units, int? default_val)
 		{
-			string token = ReadItem();
-			try
-			{
-				return int.Parse(token, System.Globalization.NumberStyles.HexNumber);
-			}
-			catch (Exception e)
-			{
-				STFException.ReportInformation(this, e);
-				return 0;
-			}
-		}
+            string token = ReadItem();
 
-		public uint ReadFlags()
-		{
-			string token = ReadItem();
-			try
-			{
-				return uint.Parse(token, System.Globalization.NumberStyles.HexNumber);
-			}
-			catch (Exception e)
-			{
-				STFException.ReportInformation(this, e);
-				return 0;
-			}
-		}
-
-		public int ReadInt()
-		{
-			return (int)ReadDouble();
-		}
-
-		public uint ReadUInt()
-		{
-			return (uint)ReadDouble();
-		}
-
-        public float ReadFloat()
-		{
-			return (float)ReadDouble();
-		}
-
-		public double ReadDouble()
-		{
-			double scale = 1.0;
-			string token = ReadItem();
-
-            if (token == ")")
+            if ((default_val.HasValue) && (token == ")"))
             {
-                STFException.ReportWarning(this, "When expecting a number, we found a ) marker");
-                RewindItem();
-                return 0;
+                STFException.ReportWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                StepBackOneItem();
+                return default_val.Value;
             }
 
-			// TODO complete parsing of units ie, km, etc - some are done but not all.
-			token = token.ToLower();
-			int i;
-			// Add handling of units
-			i = token.IndexOf("/2", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale /= 2;
-				token = token.Substring(0, i);
-			}
-			i = token.IndexOf("cm", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 0.01;
-				token = token.Substring(0, i);
-			}
-			i = token.IndexOf("mm", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 0.001;
-				token = token.Substring(0, i);
-			}
-			i = token.IndexOf("ft", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 0.3048;
-				token = token.Substring(0, i);
-			}
-			i = token.IndexOf("in", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 0.0254;
-				token = token.Substring(0, i);
-			}
-			i = token.IndexOf("kn", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 1e3;
-				token = token.Substring(0, i);
-			}
-			i = token.IndexOf("n", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 1e0;
-				token = token.Substring(0, i);
-			}
-			i = token.IndexOf("t", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 1e3;
-				token = token.Substring(0, i); // return kg
-			}
-			i = token.IndexOf("kg", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 1;
-				token = token.Substring(0, i); // return kg
-			}
-			i = token.IndexOf("lb", StringComparison.Ordinal);
-			if (i != -1)
-			{
-				scale *= 0.00045359237;
-				token = token.Substring(0, i); // return kg
-			}
-			i = token.IndexOf("m", StringComparison.Ordinal);
-			if (i != -1)
-				token = token.Substring(0, i);
+            int val;
+            double scale = ParseUnitSuffix(ref token, valid_units);
+            if (int.TryParse(token, out val)) return (int)(scale * val);
 
-			i = token.IndexOf(",", StringComparison.Ordinal);   // MSTS ignores a comma at the end of the number
-			if (i != -1)
-				token = token.Substring(0, i);
+            STFException.ReportWarning(this, "Cannot parse the constant number " + token);
+            return default_val.GetValueOrDefault(0);
+        }
+        /// <summary>Read an unsigned integer {constant_item}
+        /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
+        public uint ReadUInt(UNITS valid_units, uint? default_val)
+		{
+            string token = ReadItem();
 
-			try
-			{
-				return double.Parse(token, CultureInfo.InvariantCulture) * scale;
-			}
-			catch (Exception e)
-			{
-				STFException.ReportInformation(this, e);
-				return 0;
-			}
+            if ((default_val.HasValue) && (token == ")"))
+            {
+                STFException.ReportWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                StepBackOneItem();
+                return default_val.Value;
+            }
+
+            uint val;
+            double scale = ParseUnitSuffix(ref token, valid_units);
+            if (uint.TryParse(token, out val)) return (uint)(scale * val);
+
+            STFException.ReportWarning(this, "Cannot parse the constant number " + token);
+            return default_val.GetValueOrDefault(0);
+        }
+        /// <summary>Read an single precision floating point number {constant_item}
+        /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
+        public float ReadFloat(UNITS valid_units, float? default_val)
+		{
+            string token = ReadItem();
+
+            if ((default_val.HasValue) && (token == ")"))
+            {
+                STFException.ReportWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                StepBackOneItem();
+                return default_val.Value;
+            }
+
+            float val;
+            double scale = ParseUnitSuffix(ref token, valid_units);
+            if (float.TryParse(token, out val)) return (float)(scale * val);
+
+            STFException.ReportWarning(this, "Cannot parse the constant number " + token);
+            return default_val.GetValueOrDefault(0);
+        }
+        /// <summary>Read an double precision floating point number {constant_item}
+        /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
+        public double ReadDouble(UNITS valid_units, double? default_val)
+		{
+            string token = ReadItem();
+
+            if ((default_val.HasValue) && (token == ")"))
+            {
+                STFException.ReportWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                StepBackOneItem();
+                return default_val.Value;
+            }
+
+            double val;
+            double scale = ParseUnitSuffix(ref token, valid_units);
+            if (double.TryParse(token, out val)) return scale * val;
+
+            STFException.ReportWarning(this, "Cannot parse the constant number " + token);
+            return default_val.GetValueOrDefault(0);
 		}
+        /// <summary>This function removes known unit suffixes, and returns a scaler to bring the constant into the standard OR units.
+        /// </summary>
+        /// <remarks>This function is marked internal so it can be used to support arithmetic processing once the elements are seperated (eg. 5*2m)
+        /// </remarks>
+        /// <param name="constant">string with suffix, after the function call the suffix is removed.</param>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <returns>The scaler that should be used to modify the constant to standard OR units.</returns>
+        internal double ParseUnitSuffix(ref string constant, UNITS valid_units)
+        {
+            if (valid_units == UNITS.None)
+                return 1;
+
+            int beg, end, i;
+            for (beg = end = i = 0; i < constant.Length; end = ++i)
+            {
+                char c = constant[i];
+                if ((i == 0) && (c == '+')) { ++beg; continue; }
+                if ((i == 0) && (c == '-')) continue;
+                if ((c == '.') || (c == ',')) continue;
+                if ((c == 'e') || (c == 'E') && (i < constant.Length - 1))
+                {
+                    c = constant[i + 1];
+                    if ((c == '+') || (c == '-')) { ++i; continue; }
+                }
+                if ((c < '0') || (c > '9')) break;
+            }
+            if (i == constant.Length)
+            {
+                if ((valid_units & UNITS.Compulsary) > 0)
+                    STFException.ReportWarning(this, "Missing a suffix for data expecting " + valid_units.ToString() + " units");
+                return 1; // There is no suffix, it's all numeric
+            }
+            while ((i < constant.Length) && (constant[i] == ' ')) ++i; // skip the spaces
+
+            string suffix = constant.Substring(i).ToLowerInvariant();
+            constant = constant.Substring(beg, end - beg);
+            if ((valid_units & UNITS.Distance) > 0)
+                switch (suffix)
+                {
+                    case "m": return 1;
+                    case "cm": return 0.01;
+                    case "mm": return 0.001;
+                    case "km": return 1e3;
+                    case "ft": return 0.3048;
+                    case "in": return 0.0254;
+                }
+            if ((valid_units & UNITS.Weight) > 0)
+                switch (suffix)
+                {
+                    case "kg": return 1;
+                    case "t": return 1e3;
+                    case "lb": return 0.00045359237;
+                }
+            if ((valid_units & UNITS.Force) > 0)
+                switch (suffix)
+                {
+                    case "n": return 1;
+                    case "kn": return 1e3;
+                    case "lbf": return 4.44822162;
+                }
+            if ((valid_units & UNITS.Stiffness) > 0)
+                switch (suffix)
+                {
+                    case "n/m": return 1;
+                }
+            STFException.ReportWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + valid_units.ToString() + " unit");
+            return 1;
+        }
+
+        public int ReadHex()
+        {
+            string token = ReadItem();
+            try
+            {
+                return int.Parse(token, System.Globalization.NumberStyles.HexNumber);
+            }
+            catch (Exception e)
+            {
+                STFException.ReportInformation(this, e);
+                return 0;
+            }
+        }
+
+        public uint ReadFlags()
+        {
+            string token = ReadItem();
+            try
+            {
+                return uint.Parse(token, System.Globalization.NumberStyles.HexNumber);
+            }
+            catch (Exception e)
+            {
+                STFException.ReportInformation(this, e);
+                return 0;
+            }
+        }
+
 
 		public string ReadStringBlock()
 		{
@@ -419,7 +482,6 @@ namespace MSTS
             SkipRestOfBlock();
 			return s;
 		}
-
         public uint ReadUIntBlock()
         {
             return ReadUIntBlock(false);
@@ -437,7 +499,6 @@ namespace MSTS
 				return 0;
 			}
 		}
-
         public int ReadIntBlock()
         {
             return ReadIntBlock(false);
@@ -455,7 +516,6 @@ namespace MSTS
 				return 0;
 			}
 		}
-
         public float ReadFloatBlock()
         {
             return ReadFloatBlock(false);
@@ -464,7 +524,6 @@ namespace MSTS
         {
             return (float)ReadDoubleBlock(optionalblock);
         }
-
         public double ReadDoubleBlock()
         {
             return ReadDoubleBlock(false);
@@ -475,10 +534,10 @@ namespace MSTS
                 STFException.ReportError(this, "Unexpected end of file");
             string s = ReadItem();
             if (s == ")" && optionalblock)
-                RewindItem();
+                StepBackOneItem();
             else if (s == "(")
             {
-                double result = ReadDouble();
+                double result = ReadDouble(STFReader.UNITS.Any, null);
                 SkipRestOfBlock();
                 return result;
             }
@@ -487,7 +546,6 @@ namespace MSTS
 
             return 0;
 		}
-
 		public bool ReadBoolBlock()
 		{
             MustMatch("(");
@@ -507,14 +565,13 @@ namespace MSTS
 			SkipRestOfBlock();
 			return i != 0;
 		}
-
         public Vector3 ReadVector3Block()
         {
             Vector3 vector = new Vector3();
             MustMatch("(");
-            vector.X = ReadFloat();
-            vector.Y = ReadFloat();
-            vector.Z = ReadFloat();
+            vector.X = ReadFloat(STFReader.UNITS.Any, null);
+            vector.Y = ReadFloat(STFReader.UNITS.Any, null);
+            vector.Z = ReadFloat(STFReader.UNITS.Any, null);
             SkipRestOfBlock();
             return vector;
         }
@@ -532,20 +589,20 @@ namespace MSTS
         /// <summary>The tree cache is used to minimize the calls to StringBuilder when Tree is called repetively for the same hierachy.
         /// </summary>
         private string tree_cache;
-        #region *** Rewind Variables - It is important that all state variables in this class have a rewind equivalent
-        /// <summary>This flag is set in RewindItem(), and causes ReadItem(), to use the rewind* variables to do an item repeat
+        #region *** StepBack Variables - It is important that all state variables in this class have a stepback equivalent
+        /// <summary>This flag is set in StepBackOneItem(), and causes ReadItem(), to use the stepback* variables to do an item repeat
         /// </summary>
-        private bool rewindNextReadItemFlag = false;
-        /// <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindTree « tree
-        /// <para>This item, is optimized, so when value is null it means rewindTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
+        private bool stepbackoneitemFlag = false;
+        /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackTree « tree
+        /// <para>This item, is optimized, so when value is null it means stepbackTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
         /// </summary>
-        private List<string> rewindTree;
-        /// <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindCurrItem « previousItem
+        private List<string> stepbackTree;
+        /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackCurrItem « previousItem
         /// </summary>
-        private string rewindCurrItem;
-        /// <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindItem « ReadItem() return
+        private string stepbackPrevItem;
+        /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackItem « ReadItem() return
         /// </summary>
-        private string rewindItem;
+        private string stepbackItem;
         #endregion
 
         #region *** Private Class Implementation
@@ -565,7 +622,6 @@ namespace MSTS
         }
         private int PeekPastWhitespace()
         {
-            // scan ahead and see if the next character is a bracket )
             int c = streamSTF.Peek();
             while (IsEof(c) || IsWhiteSpace(c)) // skip over eof and white space
             {
@@ -592,7 +648,7 @@ namespace MSTS
             if (IncludeReader != null)
             {
                 string item = IncludeReader.ReadItem();
-                UpdateTreeAndRewindBuffer(item);
+                UpdateTreeAndStepBack(item);
                 if ((!IncludeReader.EOF) || (item.Length > 0)) return item;
                 if (tree.Count != 0)
                     STFException.ReportWarning(IncludeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
@@ -606,7 +662,7 @@ namespace MSTS
             for (; ; )
             {
                 c = ReadChar();
-                if (IsEof(c)) return UpdateTreeAndRewindBuffer("");
+                if (IsEof(c)) return UpdateTreeAndStepBack("");
                 if (!IsWhiteSpace(c)) break;
             }
             #endregion
@@ -615,11 +671,11 @@ namespace MSTS
             #region Handle Open and Close Block markers - parenthisis
             if (c == '(')
             {
-                return UpdateTreeAndRewindBuffer("(");
+                return UpdateTreeAndStepBack("(");
             }
             else if (c == ')')
             {
-                return UpdateTreeAndRewindBuffer(")");
+                return UpdateTreeAndStepBack(")");
             }
             #endregion
             #region Handle # markers
@@ -634,7 +690,7 @@ namespace MSTS
                     if (IsEof(c))
                     {
                         STFException.ReportWarning(this, "Found a # marker immediately followed by an unexpected EOF.");
-                        return UpdateTreeAndRewindBuffer("");
+                        return UpdateTreeAndStepBack("");
                     }
                     if (IsWhiteSpace(c)) break;
                 }
@@ -655,7 +711,7 @@ namespace MSTS
                     if (IsEof(c))
                     {
                         STFException.ReportWarning(this, "Found an unexpected EOF, while reading an item started with a double-quote character.");
-                        return UpdateTreeAndRewindBuffer(itemBuilder.ToString());
+                        return UpdateTreeAndStepBack(itemBuilder.ToString());
                     }
                     if (c == '\\') // escape sequence
                     {
@@ -680,7 +736,7 @@ namespace MSTS
                             if (IsEof(c))
                             {
                                 STFException.ReportWarning(this, "Found an unexpected EOF, while reading an item started with a double-quote character and followed by the + operator.");
-                                return UpdateTreeAndRewindBuffer("");
+                                return UpdateTreeAndStepBack("");
                             }
                             if (!IsWhiteSpace(c)) break;
                         }
@@ -738,31 +794,31 @@ namespace MSTS
                     #endregion
                 }
 
-            return UpdateTreeAndRewindBuffer(result);
+            return UpdateTreeAndStepBack(result);
         }
         /// <summary>Internal Implementation
         /// <para>This function is called by ReadItem() for every item read from the STF file (and Included files).</para>
         /// <para>If a block instuction is found, then tree list is updated.</para>
-        /// <para>As this function is called once per ReadItem() is stores the previous value in rewind* variables (there is additional optimization that we only copy rewindTree if the tree has changed.</para>
-        /// <para>Now when the rewind flag is set, we use the rewind* copies, to move back exactly one item.</para>
+        /// <para>As this function is called once per ReadItem() is stores the previous value in stepback* variables (there is additional optimization that we only copy stepbackTree if the tree has changed.</para>
+        /// <para>Now when the stepbackoneitemFlag flag is set, we use the stepback* copies, to move back exactly one item.</para>
         /// </summary>
         /// <param name="token"></param>
-        private string UpdateTreeAndRewindBuffer(string token)
+        private string UpdateTreeAndStepBack(string token)
         {
-            rewindItem = token;
+            stepbackItem = token;
             token = token.Trim();
             if (token == "(")
             {
-                rewindTree = new List<string>(tree);
-                rewindCurrItem = previousItem;
+                stepbackTree = new List<string>(tree);
+                stepbackPrevItem = previousItem;
                 tree.Add(previousItem + "(");
                 tree_cache = null; // The tree has changed, so we need to empty the cache which will be rebuilt if the property 'Tree' is used
                 previousItem = "";
             }
             else if (token == ")")
             {
-                rewindTree = new List<string>(tree);
-                rewindCurrItem = previousItem;
+                stepbackTree = new List<string>(tree);
+                stepbackPrevItem = previousItem;
                 if (tree.Count > 0)
                 {
                     tree.RemoveAt(tree.Count - 1);
@@ -772,11 +828,11 @@ namespace MSTS
             }
             else
             {
-                rewindTree = null; // The tree has not changed so rewind doesn't need any data
-                rewindCurrItem = previousItem;
+                stepbackTree = null; // The tree has not changed so stepback doesn't need any data
+                stepbackPrevItem = previousItem;
                 previousItem = token;
             }
-            return rewindItem;
+            return stepbackItem;
         }
         #endregion
 	}

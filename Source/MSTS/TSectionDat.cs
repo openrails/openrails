@@ -24,8 +24,8 @@ namespace MSTS
 		public SectionCurve( STFReader f )
 		{
 			f.MustMatch("(");
-			Radius = f.ReadFloat();
-			Angle = f.ReadFloat();
+            Radius = f.ReadFloat(STFReader.UNITS.Any, null);
+            Angle = f.ReadFloat(STFReader.UNITS.Any, null);
 			while( f.ReadItem() != ")" );  // MSTS seems to ignore extra params
 		}
 		public float Radius;	// meters
@@ -42,8 +42,8 @@ namespace MSTS
 		public SectionSize( STFReader f )
 		{
 			f.MustMatch("(");
-			Width = f.ReadFloat();
-			Length = f.ReadFloat();
+            Width = f.ReadFloat(STFReader.UNITS.Any, null);
+            Length = f.ReadFloat(STFReader.UNITS.Any, null);
 			while( f.ReadItem() != ")" );  // MSTS seems to ignore extra params
 		}
 		public float Width;
@@ -59,7 +59,7 @@ namespace MSTS
 		public TrackSection( STFReader f )
 		{
 			f.MustMatch("(");
-			SectionIndex = f.ReadUInt();
+            SectionIndex = f.ReadUInt(STFReader.UNITS.Any, null);
 			string token = f.ReadItem();
 			while( token != ")" )
 			{
@@ -88,10 +88,10 @@ namespace MSTS
 			f.MustMatch("(");
 			f.ReadItem(); // 0 or 1
 			f.SkipRestOfBlock();
-			SectionIndex = f.ReadUInt();
+            SectionIndex = f.ReadUInt(STFReader.UNITS.Any, null);
 			SectionSize = new SectionSize();
-			float a = f.ReadFloat();
-			float b = f.ReadFloat();
+            float a = f.ReadFloat(STFReader.UNITS.Any, null);
+            float b = f.ReadFloat(STFReader.UNITS.Any, null);
 			if( b == 0 )
 				// Its straight
 			{
@@ -114,7 +114,7 @@ namespace MSTS
 		public TrackSections( STFReader f )
 		{
 			f.MustMatch("(");
-			MaxSectionIndex = f.ReadUInt();
+            MaxSectionIndex = f.ReadUInt(STFReader.UNITS.Any, null);
 			string token = f.ReadItem();
 			while( token != ")" ) 
 			{
@@ -129,7 +129,7 @@ namespace MSTS
 		public void AddRouteTrackSections( STFReader f )
 		{
 			f.MustMatch("(");
-			MaxSectionIndex = f.ReadUInt();
+            MaxSectionIndex = f.ReadUInt(STFReader.UNITS.Any, null);
 			string token = f.ReadItem();
 			while( token != ")" ) 
 			{
@@ -164,11 +164,11 @@ namespace MSTS
 		public SectionIdx( STFReader f )
 		{
 			f.MustMatch("(");
-			NoSections = f.ReadUInt();
-			X = f.ReadDouble();
-			Y = f.ReadDouble();
-			Z = f.ReadDouble();
-			A = f.ReadDouble();
+            NoSections = f.ReadUInt(STFReader.UNITS.Any, null);
+            X = f.ReadDouble(STFReader.UNITS.Any, null);
+            Y = f.ReadDouble(STFReader.UNITS.Any, null);
+            Z = f.ReadDouble(STFReader.UNITS.Any, null);
+            A = f.ReadDouble(STFReader.UNITS.Any, null);
 			TrackSections = new uint[ NoSections ]; 
 			for( int i = 0; i < NoSections; ++i )  
 			{
@@ -200,7 +200,7 @@ namespace MSTS
 		public TrackShape( STFReader f )
 		{
 			f.MustMatch("(");
-			ShapeIndex = f.ReadUInt();
+            ShapeIndex = f.ReadUInt(STFReader.UNITS.Any, null);
 			string token = f.ReadItem();
 			int nextPath = 0;
 			while( token != ")" )
@@ -240,7 +240,7 @@ namespace MSTS
 		public TrackShapes( STFReader f )
 		{
 			f.MustMatch("(");
-			MaxShapeIndex = f.ReadUInt();
+            MaxShapeIndex = f.ReadUInt(STFReader.UNITS.Any, null);
 			string token = f.ReadItem();
 			while( token != ")" ) 
 			{

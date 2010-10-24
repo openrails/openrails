@@ -70,9 +70,9 @@ namespace ORTS
                 {
                     case "position":
                         reader.MustMatch("(");
-                        X = reader.ReadFloat();
-                        Y = reader.ReadFloat();
-                        Z = reader.ReadFloat();
+                        X = reader.ReadFloat(STFReader.UNITS.Any, null);
+                        Y = reader.ReadFloat(STFReader.UNITS.Any, null);
+                        Z = reader.ReadFloat(STFReader.UNITS.Any, null);
                         reader.SkipRestOfBlock();
                         break;
                     case "filename": SoundSourceFileName = reader.ReadStringBlock(); break;

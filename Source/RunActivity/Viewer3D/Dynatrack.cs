@@ -667,8 +667,8 @@ namespace ORTS
                         break;
                     case "DeltaTexCoord":
                         f.MustMatch("(");
-                        DeltaTexCoord.X = f.ReadFloat();
-                        DeltaTexCoord.Y = f.ReadFloat();
+                        DeltaTexCoord.X = f.ReadFloat(STFReader.UNITS.Any, null);
+                        DeltaTexCoord.Y = f.ReadFloat(STFReader.UNITS.Any, null);
                         f.SkipRestOfBlock();
                         break;
                     case "Vertex":
@@ -726,22 +726,22 @@ namespace ORTS
                 {
                     case "Position":
                         f.MustMatch("(");
-                        Position.X = f.ReadFloat();
-                        Position.Y = f.ReadFloat();
+                        Position.X = f.ReadFloat(STFReader.UNITS.Any, null);
+                        Position.Y = f.ReadFloat(STFReader.UNITS.Any, null);
                         Position.Z = 0.0f;
                         f.SkipRestOfBlock();
                         break;
                     case "Normal":
                         f.MustMatch("(");
-                        Normal.X = f.ReadFloat();
-                        Normal.Y = f.ReadFloat();
-                        Normal.Z = f.ReadFloat();
+                        Normal.X = f.ReadFloat(STFReader.UNITS.Any, null);
+                        Normal.Y = f.ReadFloat(STFReader.UNITS.Any, null);
+                        Normal.Z = f.ReadFloat(STFReader.UNITS.Any, null);
                         f.SkipRestOfBlock();
                         break;
                     case "TexCoord":
                         f.MustMatch("(");
-                        TexCoord.X = f.ReadFloat();
-                        TexCoord.Y = f.ReadFloat();
+                        TexCoord.X = f.ReadFloat(STFReader.UNITS.Any, null);
+                        TexCoord.Y = f.ReadFloat(STFReader.UNITS.Any, null);
                         f.SkipRestOfBlock();
                         break;
                     default:

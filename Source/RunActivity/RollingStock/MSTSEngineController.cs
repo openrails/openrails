@@ -37,14 +37,14 @@ namespace ORTS
         public void Parse(STFReader f)
         {
             f.MustMatch("(");
-            MinimumValue = f.ReadFloat();
-            MaximumValue = f.ReadFloat();
-            StepSize = f.ReadFloat();
-            CurrentValue = f.ReadFloat();
+            MinimumValue = f.ReadFloat(STFReader.UNITS.Any, null);
+            MaximumValue = f.ReadFloat(STFReader.UNITS.Any, null);
+            StepSize = f.ReadFloat(STFReader.UNITS.Any, null);
+            CurrentValue = f.ReadFloat(STFReader.UNITS.Any, null);
             //Console.WriteLine("controller {0} {1} {2} {3}", MinimumValue, MaximumValue, StepSize, CurrentValue);
             f.ReadItem(); // numnotches
             f.MustMatch("(");
-            int n = f.ReadInt();
+            int n = f.ReadInt(STFReader.UNITS.Any, null);
             for (; ; )
             {
                 string token = f.ReadItem().ToLower();
@@ -52,8 +52,8 @@ namespace ORTS
                 if (token == "notch")
                 {
                     f.MustMatch("(");
-                    float value = f.ReadFloat();
-                    int smooth = f.ReadInt();
+                    float value = f.ReadFloat(STFReader.UNITS.Any, null);
+                    int smooth = f.ReadInt(STFReader.UNITS.Any, null);
                     string type = f.ReadItem();
                     //Console.WriteLine("Notch {0} {1} {2}", value, smooth, type);
                     Notches.Add(new MSTSNotch(value,smooth,type,f));

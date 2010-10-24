@@ -53,7 +53,7 @@ namespace MSTS
         private void ParseWaterLayers(STFReader reader)
         {
             reader.MustMatch("(");
-            int texturelayers = reader.ReadInt();
+            int texturelayers = reader.ReadInt(STFReader.UNITS.Any, null);
             WaterLayers = new List<ENVFileWaterLayer>(texturelayers);
             while (!reader.EndOfBlock())
                 switch (reader.ReadItem().ToLower())
@@ -109,7 +109,7 @@ namespace MSTS
         private void ParseTerrainTexSlots(STFReader reader)
         {
             reader.MustMatch("(");
-            reader.ReadInt(); // Count
+            reader.ReadInt(STFReader.UNITS.Any, null); // Count
             while (!reader.EndOfBlock())
                 switch (reader.ReadItem().ToLower())
                 {

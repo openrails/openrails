@@ -129,7 +129,7 @@ namespace MSTS
         public void ReadTrPathNodes(STFReader f)
         {
             f.MustMatch("(");
-            int count = f.ReadInt();
+            int count = f.ReadInt(STFReader.UNITS.Any, null);
             string token = f.ReadItem();
             while (token != ")")
             {
@@ -162,13 +162,13 @@ namespace MSTS
 		public TrackPDP( STFReader f )
 		{
             f.MustMatch("(");
-            TileX = f.ReadInt();
-            TileZ = f.ReadInt();
-            X = f.ReadFloat();
-            Y = f.ReadFloat();
-            Z = f.ReadFloat();
-            A = f.ReadInt();
-            B = f.ReadInt();
+            TileX = f.ReadInt(STFReader.UNITS.Any, null);
+            TileZ = f.ReadInt(STFReader.UNITS.Any, null);
+            X = f.ReadFloat(STFReader.UNITS.Any, null);
+            Y = f.ReadFloat(STFReader.UNITS.Any, null);
+            Z = f.ReadFloat(STFReader.UNITS.Any, null);
+            A = f.ReadInt(STFReader.UNITS.Any, null);
+            B = f.ReadInt(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
 	}
@@ -181,9 +181,9 @@ namespace MSTS
         {
             f.MustMatch("(");
             A = f.ReadFlags();
-            NextNode = f.ReadUInt();
-            C = f.ReadUInt();
-            FromPDP = f.ReadUInt();
+            NextNode = f.ReadUInt(STFReader.UNITS.Any, null);
+            C = f.ReadUInt(STFReader.UNITS.Any, null);
+            FromPDP = f.ReadUInt(STFReader.UNITS.Any, null);
             f.MustMatch(")");
         }
     }

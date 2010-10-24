@@ -46,7 +46,7 @@ namespace ORTS
             List<float> list = new List<float>();
             reader.MustMatch("(");
             while (!reader.EndOfBlock())
-                list.Add(reader.ReadFloat());
+                list.Add(reader.ReadFloat(STFReader.UNITS.Any, null));
             reader.SkipRestOfBlock();
             if (list.Count % 2 == 1)
                 STFException.ReportWarning(reader, "Ignoring extra odd value in Interpolator list.");
@@ -250,7 +250,7 @@ namespace ORTS
             reader.MustMatch("(");
             while(!reader.EndOfBlock())
             {
-                xlist.Add(reader.ReadFloat());
+                xlist.Add(reader.ReadFloat(STFReader.UNITS.Any, null));
                 ilist.Add(new Interpolator(reader));
             }
             reader.SkipRestOfBlock();

@@ -47,7 +47,7 @@ namespace MSTS
         static IDictionary<string, LightTexture> ReadLightTextures(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var lightTextures = new Dictionary<string, LightTexture>(count);
 			var token = f.ReadItem();
             while (token != ")")
@@ -77,7 +77,7 @@ namespace MSTS
 		static IDictionary<string, LightTableEntry> ReadLightsTable(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var lightsTable = new Dictionary<string, LightTableEntry>(count);
             var token = f.ReadItem();
             while (token != ")")
@@ -107,7 +107,7 @@ namespace MSTS
 		static IDictionary<string, SignalType> ReadSignalTypes(STFReader f)
         {
             f.MustMatch("(");
-			var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var signalTypes = new Dictionary<string, SignalType>(count);
 			var token = f.ReadItem();
 			while (token != ")")
@@ -137,7 +137,7 @@ namespace MSTS
         static IDictionary<string, SignalShape> ReadSignalShapes(STFReader f)
         {
             f.MustMatch("(");
-			var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var signalShapes = new Dictionary<string, SignalShape>(count);
 			var token = f.ReadItem();
 			while (token != ")")
@@ -193,10 +193,10 @@ namespace MSTS
 			f.MustMatch("(");
 			Name = f.ReadItem();
 			TextureFile = f.ReadItem();
-			u0 = f.ReadFloat();
-			v0 = f.ReadFloat();
-			u1 = f.ReadFloat();
-			v1 = f.ReadFloat();
+            u0 = f.ReadFloat(STFReader.UNITS.Any, null);
+            v0 = f.ReadFloat(STFReader.UNITS.Any, null);
+            u1 = f.ReadFloat(STFReader.UNITS.Any, null);
+            v1 = f.ReadFloat(STFReader.UNITS.Any, null);
 			f.MustMatch(")");
 		}
 	}
@@ -214,10 +214,10 @@ namespace MSTS
 			if (0 == String.Compare(token, "Colour", true))
 			{
 				f.MustMatch("(");
-				a = (byte)f.ReadUInt();
-				r = (byte)f.ReadUInt();
-				g = (byte)f.ReadUInt();
-				b = (byte)f.ReadUInt();
+                a = (byte)f.ReadUInt(STFReader.UNITS.Any, null);
+                r = (byte)f.ReadUInt(STFReader.UNITS.Any, null);
+                g = (byte)f.ReadUInt(STFReader.UNITS.Any, null);
+                b = (byte)f.ReadUInt(STFReader.UNITS.Any, null);
 				f.MustMatch(")");
 			}
 			else
@@ -276,8 +276,8 @@ namespace MSTS
 				else if (0 == String.Compare(token, "SigFlashDuration", true))
 				{
 					f.MustMatch("(");
-					FlashTimeOn = f.ReadFloat();
-					FlashTimeOff = f.ReadFloat();
+                    FlashTimeOn = f.ReadFloat(STFReader.UNITS.Any, null);
+                    FlashTimeOff = f.ReadFloat(STFReader.UNITS.Any, null);
 					f.MustMatch(")");
 				}
 				else if (0 == String.Compare(token, "SignalLightTex", true)) LightTextureName = ReadLightTextureName(f);
@@ -317,7 +317,7 @@ namespace MSTS
 		static IList<SignalLight> ReadLights(STFReader f)
 		{
 			f.MustMatch("(");
-			var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var lights = new List<SignalLight>(count);
 			var token = f.ReadItem();
 			while (token != ")")
@@ -343,7 +343,7 @@ namespace MSTS
 		static IDictionary<string, SignalDrawState> ReadDrawStates(STFReader f)
 		{
 			f.MustMatch("(");
-			var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var drawStates = new Dictionary<string, SignalDrawState>(count);
 			var token = f.ReadItem();
 			while (token != ")")
@@ -373,7 +373,7 @@ namespace MSTS
 		static IList<SignalAspect> ReadAspects(STFReader f)
 		{
 			f.MustMatch("(");
-			var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var aspects = new List<SignalAspect>(count);
 			var token = f.ReadItem();
 			while (token != ")")
@@ -447,7 +447,7 @@ namespace MSTS
 		public SignalLight(STFReader f)
 		{
 			f.MustMatch("(");
-			Index = f.ReadUInt();
+            Index = f.ReadUInt(STFReader.UNITS.Any, null);
 			Name = f.ReadItem();
 			var token = f.ReadItem();
 			while (token != ")")
@@ -456,9 +456,9 @@ namespace MSTS
 				else if (0 == String.Compare(token, "Position", true))
 				{
 					f.MustMatch("(");
-					X = f.ReadFloat();
-					Y = f.ReadFloat();
-					Z = f.ReadFloat();
+                    X = f.ReadFloat(STFReader.UNITS.Any, null);
+                    Y = f.ReadFloat(STFReader.UNITS.Any, null);
+                    Z = f.ReadFloat(STFReader.UNITS.Any, null);
 					f.MustMatch(")");
 				}
 				else if (0 == String.Compare(token, "Radius", true))
@@ -485,7 +485,7 @@ namespace MSTS
 		public SignalDrawState(STFReader f)
 		{
 			f.MustMatch("(");
-			Index = f.ReadInt();
+            Index = f.ReadInt(STFReader.UNITS.Any, null);
 			Name = f.ReadItem();
 			var token = f.ReadItem();
 			while (token != ")")
@@ -500,7 +500,7 @@ namespace MSTS
 		static IList<SignalDrawLight> ReadDrawLights(STFReader f)
 		{
 			f.MustMatch("(");
-			var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var drawLights = new List<SignalDrawLight>(count);
 			var token = f.ReadItem();
 			while (token != ")")
@@ -533,7 +533,7 @@ namespace MSTS
 		public SignalDrawLight(STFReader f)
 		{
 			f.MustMatch("(");
-			LightIndex = f.ReadUInt();
+            LightIndex = f.ReadUInt(STFReader.UNITS.Any, null);
 			var token = f.ReadItem();
 			while (token != ")")
 			{
@@ -626,7 +626,7 @@ namespace MSTS
 		static IList<SignalSubObj> ReadSignalSubObjects(STFReader f)
 		{
 			f.MustMatch("(");
-			var count = f.ReadInt();
+            var count = f.ReadInt(STFReader.UNITS.Any, null);
 			var signalSubObjects = new List<SignalSubObj>(count);
 			var token = f.ReadItem();
 			while (token != ")")
@@ -669,7 +669,7 @@ namespace MSTS
 			public SignalSubObj(STFReader f)
 			{
 				f.MustMatch("(");
-				Index = f.ReadInt();
+                Index = f.ReadInt(STFReader.UNITS.Any, null);
 				MatrixName = f.ReadItem().ToUpper();
 				Description = f.ReadItem();
 				var token = f.ReadItem();

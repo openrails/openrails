@@ -99,10 +99,10 @@ namespace MSTS
         public RouteStart(STFReader f)
         {
             f.MustMatch("(");
-            WX = f.ReadDouble();   // tilex
-            WZ = f.ReadDouble();   // tilez
-            X = f.ReadDouble();
-            Z = f.ReadDouble();
+            WX = f.ReadDouble(STFReader.UNITS.Any, null);   // tilex
+            WZ = f.ReadDouble(STFReader.UNITS.Any, null);   // tilez
+            X = f.ReadDouble(STFReader.UNITS.Any, null);
+            Z = f.ReadDouble(STFReader.UNITS.Any, null);
             while (f.ReadItem() != ")") ; // discard extra parameters - users frequently describe location here
         }
         public double WX, WZ, X, Z;

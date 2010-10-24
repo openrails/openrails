@@ -174,12 +174,12 @@
             </summary>
             <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         </member>
-        <member name="M:MSTS.STFReader.RewindItem">
+        <member name="M:MSTS.STFReader.StepBackOneItem">
             <summary>Calling this function causes ReadItem() to repeat the last {item} that was read from the STF file
             </summary>
             <remarks>
-            <para>The current implementation of RewindItem() only allows for "rewind".</para>
-            <para>This means that there each call to RewindItem() must have an intervening call to ReadItem().</para>
+            <para>The current implementation of StepBackOneItem() only allows for one "step back".</para>
+            <para>This means that there each call to StepBackOneItem() must have an intervening call to ReadItem().</para>
             </remarks>
         </member>
         <member name="M:MSTS.STFReader.MustMatch(System.String)">
@@ -224,21 +224,21 @@
             <summary>The tree cache is used to minimize the calls to StringBuilder when Tree is called repetively for the same hierachy.
             </summary>
         </member>
-        <member name="F:MSTS.STFReader.rewindNextReadItemFlag">
-            <summary>This flag is set in RewindItem(), and causes ReadItem(), to use the rewind* variables to do an item repeat
+        <member name="F:MSTS.STFReader.stepbackoneitemFlag">
+            <summary>This flag is set in StepBackOneItem(), and causes ReadItem(), to use the stepback* variables to do an item repeat
             </summary>
         </member>
-        <member name="F:MSTS.STFReader.rewindTree">
-            <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindTree « tree
-            <para>This item, is optimized, so when value is null it means rewindTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
+        <member name="F:MSTS.STFReader.stepbackTree">
+            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackTree « tree
+            <para>This item, is optimized, so when value is null it means stepbackTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
             </summary>
         </member>
-        <member name="F:MSTS.STFReader.rewindCurrItem">
-            <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindCurrItem « previousItem
+        <member name="F:MSTS.STFReader.stepbackPrevItem">
+            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackCurrItem « previousItem
             </summary>
         </member>
-        <member name="F:MSTS.STFReader.rewindItem">
-            <summary>The rewind* variables store the previous state, so RewindItem() can jump back on {item}. rewindItem « ReadItem() return
+        <member name="F:MSTS.STFReader.stepbackItem">
+            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackItem « ReadItem() return
             </summary>
         </member>
         <member name="M:MSTS.STFReader.ReadItem(System.Boolean)">
@@ -247,12 +247,12 @@
             <param name="skip_mode">True - we are in a skip function, and so we don't want to do any special token processing.</param>
             <returns>The next item from the STF file</returns>
         </member>
-        <member name="M:MSTS.STFReader.UpdateTreeAndRewindBuffer(System.String)">
+        <member name="M:MSTS.STFReader.UpdateTreeAndStepBack(System.String)">
             <summary>Internal Implementation
             <para>This function is called by ReadItem() for every item read from the STF file (and Included files).</para>
             <para>If a block instuction is found, then tree list is updated.</para>
-            <para>As this function is called once per ReadItem() is stores the previous value in rewind* variables (there is additional optimization that we only copy rewindTree if the tree has changed.</para>
-            <para>Now when the rewind flag is set, we use the rewind* copies, to move back exactly one item.</para>
+            <para>As this function is called once per ReadItem() is stores the previous value in stepback* variables (there is additional optimization that we only copy stepbackTree if the tree has changed.</para>
+            <para>Now when the stepbackoneitemFlag flag is set, we use the stepback* copies, to move back exactly one item.</para>
             </summary>
             <param name="token"></param>
         </member>
