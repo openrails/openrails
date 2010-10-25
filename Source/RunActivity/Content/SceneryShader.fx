@@ -179,6 +179,12 @@ float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 	return In.Normal_Light.w * ZBias_Lighting.y;
 }
 
+// Gets the vegetation ambient light effect.
+float _PSGetVegetationAmbientEffect(in VERTEX_OUTPUT In)
+{
+	return ZBias_Lighting.y;
+}
+
 // Gets the specular light effect.
 float _PSGetSpecularEffect(in VERTEX_OUTPUT In)
 {
@@ -288,7 +294,7 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 
 	float4 Color = tex2D(imageMap, In.TexCoords);
 	// Ambient effect applies first; no shadow effect for vegetation; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) + isNight_Tex));
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetVegetationAmbientEffect(In) + isNight_Tex));
 	// No specular effect for vegetation.
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
