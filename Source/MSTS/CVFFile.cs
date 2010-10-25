@@ -35,13 +35,13 @@ namespace MSTS
                     switch (inf.ReadItem().ToLower())
                     {
                         case "position":
-                            Locations.Add(inf.ReadVector3Block());
+                            Locations.Add(inf.ReadVector3Block(new Vector3()));
                             break;
                         case "direction":
-                            Directions.Add(inf.ReadVector3Block());
+                            Directions.Add(inf.ReadVector3Block(new Vector3()));
                             break;
                         case "cabviewfile":
-                            string fName = inf.ReadStringBlock();
+                            string fName = inf.ReadItemBlock(null);
                             TwoDViews.Add(Path + fName);
                             NightViews.Add(Path + "night\\" + fName);
                             LightViews.Add(Path + "cablight\\" + fName);
@@ -242,7 +242,7 @@ namespace MSTS
             }
             else if (string.Compare(token, "Graphic", true) == 0)
             {
-                ACEFile = basePath + inf.ReadStringBlock();
+                ACEFile = basePath + inf.ReadItemBlock(null);
             }
             else if (string.Compare(token, "Style", true) == 0)
             {
@@ -298,11 +298,11 @@ namespace MSTS
                 }
                 else if (string.Compare(token, "Pivot", true) == 0)
                 {
-                    Center = inf.ReadIntBlock();
+                    Center = inf.ReadIntBlock(STFReader.UNITS.Any, null);
                 }
                 else if (string.Compare(token, "DirIncrease", true) == 0)
                 {
-                    Direction = inf.ReadIntBlock();
+                    Direction = inf.ReadIntBlock(STFReader.UNITS.Any, null);
                 }
                 else
                 {
@@ -338,15 +338,15 @@ namespace MSTS
                 }
                 else if (string.Compare(token, "ZeroPos", true) == 0)
                 {
-                    ZeroPos = inf.ReadIntBlock();
+                    ZeroPos = inf.ReadIntBlock(STFReader.UNITS.Any, null);
                 }
                 else if (string.Compare(token, "Orientation", true) == 0)
                 {
-                    Orientation = inf.ReadIntBlock();
+                    Orientation = inf.ReadIntBlock(STFReader.UNITS.Any, null);
                 }
                 else if (string.Compare(token, "DirIncrease", true) == 0)
                 {
-                    Direction = inf.ReadIntBlock();
+                    Direction = inf.ReadIntBlock(STFReader.UNITS.Any, null);
                 }
                 else
                 {
@@ -589,7 +589,7 @@ namespace MSTS
                             token = inf.ReadItem();
                             if (string.Compare(token, "SwitchVal", true) == 0)
                             {
-                                Values.Add(inf.ReadDoubleBlock());
+                                Values.Add(inf.ReadDoubleBlock(STFReader.UNITS.Any, null));
                             }
                             else
                             {

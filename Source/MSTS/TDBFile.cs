@@ -320,7 +320,7 @@ namespace MSTS
                 {
                     if (count < noItemRefs)
                     {
-                        TrItemRefs[count] = f.ReadIntBlock();
+                        TrItemRefs[count] = f.ReadIntBlock(STFReader.UNITS.Any, null);
                         count++;
                     }
                     else

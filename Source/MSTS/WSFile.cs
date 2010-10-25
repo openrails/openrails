@@ -75,7 +75,7 @@ namespace ORTS
                         Z = reader.ReadFloat(STFReader.UNITS.Any, null);
                         reader.SkipRestOfBlock();
                         break;
-                    case "filename": SoundSourceFileName = reader.ReadStringBlock(); break;
+                    case "filename": SoundSourceFileName = reader.ReadItemBlock(null); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
         }

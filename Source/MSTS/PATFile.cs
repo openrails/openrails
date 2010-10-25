@@ -180,7 +180,7 @@ namespace MSTS
         public TrPathNode(STFReader f)
         {
             f.MustMatch("(");
-            A = f.ReadFlags();
+            A = f.ReadHex(0);
             NextNode = f.ReadUInt(STFReader.UNITS.Any, null);
             C = f.ReadUInt(STFReader.UNITS.Any, null);
             FromPDP = f.ReadUInt(STFReader.UNITS.Any, null);

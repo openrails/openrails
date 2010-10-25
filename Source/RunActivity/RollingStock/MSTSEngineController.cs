@@ -67,12 +67,12 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "maxsystempressure": MaxPressurePSI = f.ReadFloatBlock(); break;
-                case "maxreleaserate": ReleaseRatePSIpS = f.ReadFloatBlock(); break;
-                case "maxapplicationrate": ApplyRatePSIpS = f.ReadFloatBlock(); break;
-                case "emergencyapplicationrate": EmergencyRatePSIpS = f.ReadFloatBlock(); break;
-                case "fullservicepressuredrop": FullServReductionPSI = f.ReadFloatBlock(); break;
-                case "minpressurereduction": MinReductionPSI = f.ReadFloatBlock(); break;
+                case "maxsystempressure": MaxPressurePSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "maxreleaserate": ReleaseRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "maxapplicationrate": ApplyRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "emergencyapplicationrate": EmergencyRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "fullservicepressuredrop": FullServReductionPSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "minpressurereduction": MinReductionPSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 //default: Console.WriteLine("{0}", lowercasetoken); break;
             }
         }

@@ -204,14 +204,14 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "engine(numcylinders": NumCylinders = f.ReadIntBlock(); break;
-                case "engine(cylinderstroke": CylinderStrokeM = f.ReadFloatBlock(); break;
-                case "engine(cylinderdiameter": CylinderDiameterM = f.ReadFloatBlock(); break;
-                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(f.ReadStringBlock(),f); break;
-                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(f.ReadStringBlock(),f); break;
-                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
-                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadStringBlock(),f); break;
-                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadStringBlock(),f)/3600; break;
+                case "engine(numcylinders": NumCylinders = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                case "engine(cylinderstroke": CylinderStrokeM = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(cylinderdiameter": CylinderDiameterM = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(f.ReadItemBlock(null), f); break;
+                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(f.ReadItemBlock(null), f); break;
+                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadItemBlock(null), f); break;
+                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadItemBlock(null), f); break;
+                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadItemBlock(null), f) / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(f); break;
                 case "engine(forcefactor1": ForceFactor1 = new Interpolator(f); break;
                 case "engine(forcefactor2": ForceFactor2 = new Interpolator(f); break;
@@ -220,6 +220,65 @@ namespace ORTS
                 case "engine(burnrate": BurnRate = new Interpolator(f); break;
                 case "engine(evaporationrate": EvaporationRate = new Interpolator(f); break;
                 default: base.Parse(lowercasetoken, f); break;
+            }
+        }
+        public float ParseFT3(string token, STFReader f)
+        {
+            token = token.ToLower();
+            if (token[0] == '"')
+                token = token.Substring(1);
+            int i = token.IndexOf("*(ft^3)");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            try
+            {
+                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception)
+            {
+                string msg = String.Format("invalid volume value or units {0}, cubic feet expected", token);
+                STFException.ReportError(f, msg);
+                return ParseFloat(token);
+            }
+        }
+        public float ParsePSI(string token, STFReader f)
+        {
+            token = token.ToLower();
+            int i = token.IndexOf("psi");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            try
+            {
+                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception)
+            {
+                string msg = String.Format("invalid pressure value or units {0}, pounds per square inch expected", token);
+                STFException.ReportError(f, msg);
+                return ParseFloat(token);
+            }
+        }
+        public float ParseLBpH(string token, STFReader f)
+        {
+            token = token.ToLower();
+            int i = token.IndexOf("lb/h");
+            if (i != -1)
+            {
+                token = token.Substring(0, i);
+            }
+            try
+            {
+                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
+            }
+            catch (System.Exception)
+            {
+                string msg = String.Format("invalid steaming rate value or units {0}, pounds per hour expected", token);
+                STFException.ReportError(f, msg);
+                return ParseFloat(token);
             }
         }
 

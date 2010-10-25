@@ -55,15 +55,15 @@ namespace MSTS
 							while (!f.EndOfBlock())
                                 switch (f.ReadItem().ToLower())
                                 {
-                                    case "esd_detail_level": ESD_Detail_Level = f.ReadIntBlock(); break;
-                                    case "esd_alternative_texture": ESD_Alternative_Texture = f.ReadIntBlock(); break;
+                                    case "esd_detail_level": ESD_Detail_Level = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                                    case "esd_alternative_texture": ESD_Alternative_Texture = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
                                     case "esd_bounding_box":
                                         ESD_Bounding_Box = new ESD_Bounding_Box(f);
                                         if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
                                             ESD_Bounding_Box = null;
                                         break;
-                                    case "esd_no_visual_obstruction": ESD_No_Visual_Obstruction = f.ReadBoolBlock(); break;
-                                    case "esd_snapable": ESD_Snapable = f.ReadBoolBlock(); break;
+                                    case "esd_no_visual_obstruction": ESD_No_Visual_Obstruction = f.ReadBoolBlock(true); break;
+                                    case "esd_snapable": ESD_Snapable = f.ReadBoolBlock(true); break;
                                     case "(": f.SkipRestOfBlock(); break;
                                 }
 						}

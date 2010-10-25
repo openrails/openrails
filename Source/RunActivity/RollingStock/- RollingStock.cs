@@ -130,7 +130,7 @@ namespace ORTS
                     while (!f.EndOfBlock())
                         switch (f.ReadItem().ToLower())
                         {
-                            case "type": Type = f.ReadStringBlock(); break;
+                            case "type": Type = f.ReadItemBlock(null); break;
                             case "(": f.SkipRestOfBlock(); break;
                         }
                 }
@@ -146,7 +146,7 @@ namespace ORTS
                     while (!f.EndOfBlock())
                         switch (f.ReadItem().ToLower())
                         {
-                            case "dll": DLL = f.ReadStringBlock(); break;
+                            case "dll": DLL = f.ReadItemBlock(null); break;
                             case "(": f.SkipRestOfBlock(); break;
                         }
                 }

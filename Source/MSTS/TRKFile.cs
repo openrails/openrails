@@ -52,7 +52,7 @@ namespace MSTS
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
-                    case "maxviewingdistance": MaxViewingDistance = f.ReadFloatBlock(); break;
+                    case "maxviewingdistance": MaxViewingDistance = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
         }
@@ -63,21 +63,19 @@ namespace MSTS
         public Tr_RouteFile(STFReader f)
         {
             f.MustMatch("(");
-            string token = f.ReadItem();
-            while (token != ")")
-            {
-				if (token == "") throw new STFException(f, "Missing )");
-				else if (0 == String.Compare(token, "RouteID", true)) RouteID = f.ReadStringBlock();
-				else if (0 == String.Compare(token, "Name", true)) Name = f.ReadStringBlock();
-				else if (0 == String.Compare(token, "FileName", true)) FileName = f.ReadStringBlock();
-				else if (0 == String.Compare(token, "Description", true)) Description = f.ReadStringBlock();
-                else if (0 == String.Compare(token, "MaxLineVoltage", true)) MaxLineVoltage = f.ReadDoubleBlock();
-                else if (0 == String.Compare(token, "RouteStart", true) && RouteStart == null) RouteStart = new RouteStart(f); // take only the first - ignore any others
-				else if (0 == String.Compare(token, "Environment", true)) Environment = new TRKEnvironment(f);
-				else if (0 == String.Compare(token, "MilepostUnitsKilometers", true)) MilepostUnitsMetric = true;
-				else f.SkipBlock();
-                token = f.ReadItem();
-            }
+            while(!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
+                {
+                    case "routeid": RouteID = f.ReadItemBlock(null); break;
+                    case "name": Name = f.ReadItemBlock(null); break;
+                    case "filename": FileName = f.ReadItemBlock(null); break;
+                    case "description": Description = f.ReadItemBlock(null); break;
+                    case "maxlinevoltage": MaxLineVoltage = f.ReadDoubleBlock(STFReader.UNITS.Any, null); break;
+                    case "routestart": if (RouteStart == null) RouteStart = new RouteStart(f); break; // take only the first - ignore any others
+                    case "environment": Environment = new TRKEnvironment(f); break;
+                    case "milepostunitskilometers": MilepostUnitsMetric = true; break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
             if (RouteID == null) throw new STFException(f, "Missing RouteID");
             if (Name == null) throw new STFException(f, "Missing Name");
             if (Description == null) throw new STFException(f, "Missing Description");

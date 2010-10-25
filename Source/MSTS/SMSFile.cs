@@ -95,9 +95,9 @@ namespace MSTS
                     case "activation": Activation = new Activation(f); break;
                     case "deactivation": Deactivation = new Deactivation(f); break;
                     case "streams": Streams = new SMSStreams(f, Volume); break;
-                    case "volume": Volume = f.ReadFloatBlock(); break;
-                    case "stereo": Stereo = f.ReadBoolBlock(); break;
-                    case "ignore3d": Ignore3D = f.ReadBoolBlock(); break;
+                    case "volume": Volume = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "stereo": Stereo = f.ReadBoolBlock(true); break;
+                    case "ignore3d": Ignore3D = f.ReadBoolBlock(true); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
         }
@@ -117,11 +117,11 @@ namespace MSTS
             while (!f.EndOfBlock())
                 switch(f.ReadItem().ToLower())
                 {
-                    case "externalcam": ExternalCam = f.ReadBoolBlock(); break;
-                    case "cabcam": CabCam = f.ReadBoolBlock(); break;
-                    case "passengercam": PassengerCam = f.ReadBoolBlock(); break;
-                    case "distance": Distance = f.ReadFloatBlock(); break;
-                    case "tracktype": TrackType = f.ReadIntBlock(); break;
+                    case "externalcam": ExternalCam = f.ReadBoolBlock(true); break;
+                    case "cabcam": CabCam = f.ReadBoolBlock(true); break;
+                    case "passengercam": PassengerCam = f.ReadBoolBlock(true); break;
+                    case "distance": Distance = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "tracktype": TrackType = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
         }
@@ -171,11 +171,11 @@ namespace MSTS
             while (!f.EndOfBlock())
                 switch(f.ReadItem().ToLower())
                 {
-                    case "priority": Priority = f.ReadIntBlock(); break;
+                    case "priority": Priority = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
                     case "triggers":  Triggers = new Triggers(f); break;
                     case "volumecurve": VolumeCurve = new VolumeCurve(f); break; 
                     case "frequencycurve": FrequencyCurve = new FrequencyCurve(f); break;
-                    case "volume": Volume = f.ReadFloatBlock(); break;
+                    case "volume": Volume = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
 
@@ -224,7 +224,7 @@ namespace MSTS
                         }
                         f.SkipRestOfBlock();
                         break;
-                    case "granularity": Granularity = f.ReadFloatBlock(); break;
+                    case "granularity": Granularity = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
 

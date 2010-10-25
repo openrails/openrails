@@ -48,15 +48,15 @@ namespace MSTS
             {
                 switch (token.ToLower())
                 {
-                    case "camtype": CamType=f.ReadStringBlock(); CamControl=f.ReadStringBlock(); break;
-                    case "cameraoffset": CameraOffset=new vector(f.ReadFloatBlock(),f.ReadFloatBlock(),f.ReadFloatBlock()); break;
-                    case "direction": Direction = new vector(f.ReadFloatBlock(), f.ReadFloatBlock(), f.ReadFloatBlock()); break;
-                    case "objectoffset": ObjectOffset = new vector(f.ReadFloatBlock(), f.ReadFloatBlock(), f.ReadFloatBlock()); break;
-                    case "rotationlimit": RotationLimit = new vector(f.ReadFloatBlock(), f.ReadFloatBlock(), f.ReadFloatBlock()); break;
-                    case "description": Description = f.ReadStringBlock(); break;
-                    case "fov": Fov = f.ReadFloatBlock(); break;
-                    case "zclip": ZClip = f.ReadFloatBlock(); break;
-                    case "wagonnum": WagonNum = f.ReadIntBlock(); break;
+                    case "camtype": CamType = f.ReadItemBlock(null); CamControl = f.ReadItemBlock(null); break;
+                    case "cameraoffset": CameraOffset=new vector(f.ReadFloatBlock(STFReader.UNITS.Any, null),f.ReadFloatBlock(STFReader.UNITS.Any, null),f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
+                    case "direction": Direction = new vector(f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
+                    case "objectoffset": ObjectOffset = new vector(f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
+                    case "rotationlimit": RotationLimit = new vector(f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
+                    case "description": Description = f.ReadItemBlock(null); break;
+                    case "fov": Fov = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "zclip": ZClip = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "wagonnum": WagonNum = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
                     default: f.SkipBlock(); break;
                 }
                 token = f.ReadItem();

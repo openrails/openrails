@@ -242,7 +242,7 @@ namespace ORTS
         public Vector3 position;
         public Vector3 azimuth;
         public Vector3 elevation;
-        public int color;
+        public uint color;
 
         public LightState()
         {
@@ -312,7 +312,7 @@ namespace ORTS
                     else if (0 == String.Compare(token, "LightColour", true))
                     {
                         f.MustMatch("(");
-                        color = f.ReadHex();
+                        color = f.ReadHex(0);
                         f.SkipRestOfBlock();
                     }
                     else
@@ -426,7 +426,7 @@ namespace ORTS
         public float[,] radius;
         public Vector3[,] position;
         public Vector3[,] azimuth;
-        public int[,] color;
+        public uint[,] color;
 
         /// <summary>
         /// Constructor.
@@ -449,7 +449,7 @@ namespace ORTS
             radius =        new float[numLights, numStates];
             position =      new Vector3[numLights, numStates];
             azimuth =       new Vector3[numLights, numStates];
-            color =         new int[numLights, numStates];
+            color =         new uint[numLights, numStates];
             foreach (Light light in car.Lights.LightList)
             {
                 if (light.type == 1 && light.unit == 2 && light.penalty <= 1 
@@ -511,7 +511,7 @@ namespace ORTS
             for (int i = 0; i < numLights * 6; i++)
             {
                 // Parse the MSTS color variable
-                uint u = (uint)unchecked(color[i / 6, 0]);
+                uint u = color[i / 6, 0];
                 colorA = (float)((u & 0xff000000) >> 24) / 255;
                 colorR = (float)((u & 0x00ff0000) >> 16) / 255;
                 colorG = (float)((u & 0x0000ff00) >> 8) / 255;

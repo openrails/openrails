@@ -174,7 +174,7 @@ namespace MSTS
                 if (token == "") throw new STFException(f, "Missing )");
 				else if (0 == String.Compare(token, "ScriptFile", true))
                 {
-					scriptFiles.Add(f.ReadStringBlock());
+                    scriptFiles.Add(f.ReadItemBlock(null));
                 }
                 else f.SkipBlock();
                 token = f.ReadItem();
@@ -286,11 +286,11 @@ namespace MSTS
 				else if (0 == String.Compare(token, "SignalAspects", true)) Aspects = ReadAspects(f);
 				else if (0 == String.Compare(token, "SignalNumClearAhead", true))
 				{
-					NumClearAhead = f.ReadUIntBlock();
+					NumClearAhead = f.ReadUIntBlock(STFReader.UNITS.Any, null);
 				}
 				else if (0 == String.Compare(token, "SemaphoreInfo", true))
 				{
-					SemaphoreInfo = f.ReadFloatBlock();
+					SemaphoreInfo = f.ReadFloatBlock(STFReader.UNITS.Any, null);
 				}
 				else f.SkipBlock();
 				token = f.ReadItem();
@@ -301,7 +301,7 @@ namespace MSTS
 		{
 			try
 			{
-				return (FnTypes)Enum.Parse(typeof(FnTypes), f.ReadStringBlock(), true);
+                return (FnTypes)Enum.Parse(typeof(FnTypes), f.ReadItemBlock(null), true);
 			}
 			catch (ArgumentException error)
 			{
@@ -311,7 +311,7 @@ namespace MSTS
 
 		static string ReadLightTextureName(STFReader f)
 		{
-			return f.ReadStringBlock();
+            return f.ReadItemBlock(null);
 		}
 
 		static IList<SignalLight> ReadLights(STFReader f)
@@ -463,7 +463,7 @@ namespace MSTS
 				}
 				else if (0 == String.Compare(token, "Radius", true))
 				{
-					Radius = f.ReadFloatBlock();
+					Radius = f.ReadFloatBlock(STFReader.UNITS.Any, null);
 				}
 				else f.SkipBlock();
 				token = f.ReadItem();
@@ -540,7 +540,7 @@ namespace MSTS
 				if (token == "") throw new STFException(f, "Missing )");
 				else if (0 == String.Compare(token, "SignalFlags", true))
 				{
-					var flag = f.ReadStringBlock();
+                    var flag = f.ReadItemBlock(null);
 					if (0 == String.Compare(flag, "Flashing", true))
 					{
 						Flashing = true;
@@ -582,15 +582,15 @@ namespace MSTS
 				if (token == "") throw new STFException(f, "Missing )");
 				else if (0 == String.Compare(token, "SpeedMPH", true))
 				{
-					SpeedMpS = MpH.ToMpS(f.ReadFloatBlock(true));
+					SpeedMpS = MpH.ToMpS(f.ReadFloatBlock(STFReader.UNITS.None, 0));
 				}
 				else if (0 == String.Compare(token, "SpeedKPH", true))
 				{
-					SpeedMpS = KpH.ToMpS(f.ReadFloatBlock(true));
+                    SpeedMpS = KpH.ToMpS(f.ReadFloatBlock(STFReader.UNITS.None, 0));
 				}
 				else if (0 == String.Compare(token, "SignalFlags", true))
 				{
-					var signalFlag = f.ReadStringBlock();
+                    var signalFlag = f.ReadItemBlock(null);
 					if (0 == String.Compare(signalFlag, "ASAP", true))
 						Asap = true;
 					else
@@ -700,12 +700,12 @@ namespace MSTS
 
 			static int ReadSignalSubType(STFReader f)
 			{
-				return SignalSubTypes.IndexOf(f.ReadStringBlock().ToUpper());
+                return SignalSubTypes.IndexOf(f.ReadItemBlock(null).ToUpper());
 			}
 
 			static string ReadSignalSubSignalType(STFReader f)
 			{
-				return f.ReadStringBlock();
+                return f.ReadItemBlock(null);
 			}
 		}
 	}

@@ -44,8 +44,8 @@ namespace MSTS
             while (!reader.EndOfBlock())
                 switch (reader.ReadItem().ToLower())
                 {
-                    case "world_water_wave_height": WaterWaveHeight = reader.ReadFloatBlock(); break;
-                    case "world_water_wave_speed": WaterWaveSpeed = reader.ReadFloatBlock(); break;
+                    case "world_water_wave_height": WaterWaveHeight = reader.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "world_water_wave_speed": WaterWaveSpeed = reader.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                     case "world_water_layers": ParseWaterLayers(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
@@ -80,7 +80,7 @@ namespace MSTS
             while (!reader.EndOfBlock())
                 switch (reader.ReadItem().ToLower())
                 {
-                    case "world_water_layer_height": Height = reader.ReadFloatBlock(); break;
+                    case "world_water_layer_height": Height = reader.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                     case "world_anim_shader": ParseAnimShader(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }

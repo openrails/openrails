@@ -206,17 +206,17 @@ namespace MSTS
 			while( token != ")" )
 			{
                 if (token == "") throw new STFException(f, "Missing )");
-				else if( 0 == String.Compare( token,"FileName", true ) )  FileName = f.ReadStringBlock();
+                else if (0 == String.Compare(token, "FileName", true)) FileName = f.ReadItemBlock(null);
 				else if( 0 == String.Compare( token,"NumPaths", true ) ) 
 				{
-					NumPaths = f.ReadUIntBlock();
+					NumPaths = f.ReadUIntBlock(STFReader.UNITS.Any, null);
 					SectionIdxs = new SectionIdx[ NumPaths ];
 				}
-				else if( 0 == String.Compare( token,"MainRoute",true ) ) MainRoute = f.ReadUIntBlock();
-				else if( 0 == String.Compare( token,"ClearanceDist",true ) ) ClearanceDistance = f.ReadDoubleBlock();
+				else if( 0 == String.Compare( token,"MainRoute",true ) ) MainRoute = f.ReadUIntBlock(STFReader.UNITS.Any, null);
+				else if( 0 == String.Compare( token,"ClearanceDist",true ) ) ClearanceDistance = f.ReadDoubleBlock(STFReader.UNITS.Any, null);
 				else if( 0 == String.Compare( token,"SectionIdx",true ) ) SectionIdxs[ nextPath++ ] = new SectionIdx( f );
-				else if( 0 == String.Compare( token,"TunnelShape",true ) ) TunnelShape = f.ReadBoolBlock();
-				else if( 0 == String.Compare( token,"RoadShape",true ) ) RoadShape = f.ReadBoolBlock();
+				else if( 0 == String.Compare( token,"TunnelShape",true ) ) TunnelShape = f.ReadBoolBlock(true);
+				else if( 0 == String.Compare( token,"RoadShape",true ) ) RoadShape = f.ReadBoolBlock(true);
 				else f.SkipBlock();
 				token = f.ReadItem();
 			}

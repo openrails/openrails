@@ -47,12 +47,12 @@ namespace MSTS
             while(!inf.EndOfBlock())
                 switch (inf.ReadItem().ToLower())
                 {
-                    case "serial": Serial = inf.ReadIntBlock(); break;
-                    case "name": Name = inf.ReadStringBlock(); break;
-                    case "train_config": Train_Config = inf.ReadStringBlock(); break;
-                    case "pathid": PathID = inf.ReadStringBlock(); break;
-                    case "maxwheelacceleration": MaxWheelAcceleration = inf.ReadFloatBlock(); break;
-                    case "efficiency": Efficiency = inf.ReadFloatBlock(); break;
+                    case "serial": Serial = inf.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "name": Name = inf.ReadItemBlock(null); break;
+                    case "train_config": Train_Config = inf.ReadItemBlock(null); break;
+                    case "pathid": PathID = inf.ReadItemBlock(null); break;
+                    case "maxwheelacceleration": MaxWheelAcceleration = inf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "efficiency": Efficiency = inf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                     case "(": inf.SkipRestOfBlock(); break;
                 }
         }

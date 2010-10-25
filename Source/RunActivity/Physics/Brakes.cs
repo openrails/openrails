@@ -129,16 +129,16 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = f.ReadFloatBlock(); break;
-                case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(); break;
-                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = f.ReadFloatBlock(); break;
-                case "wagon(triplevalveratio": AuxCylVolumeRatio = f.ReadFloatBlock(); break;
-                case "wagon(maxreleaserate": MaxReleaseRate = ReleaseRate = f.ReadFloatBlock(); break;
-                case "wagon(maxapplicationrate": MaxApplicationRate = f.ReadFloatBlock(); break;
-                case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRate = f.ReadFloatBlock(); break;
-                case "wagon(emergencyreschargingrate": EmergResChargingRate = f.ReadFloatBlock(); break;
-                case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = f.ReadFloatBlock(); break;
-                case "wagon(brakepipevolume": BrakePipeVolumeFT3 = f.ReadFloatBlock(); break;
+                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(triplevalveratio": AuxCylVolumeRatio = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(maxreleaserate": MaxReleaseRate = ReleaseRate = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(maxapplicationrate": MaxApplicationRate = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRate = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(emergencyreschargingrate": EmergResChargingRate = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(brakepipevolume": BrakePipeVolumeFT3 = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
             }
         }
 
@@ -503,9 +503,9 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = f.ReadFloatBlock(); break;
-                case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(); break;
-                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxPressurePSI = f.ReadFloatBlock(); break;
+                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxPressurePSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
             }
         }
 

@@ -135,9 +135,14 @@ namespace MSTS
         /// </param>
         protected virtual void Dispose(bool disposing)
         {
+#if DEBUG
+            if (!IsEof(PeekPastWhitespace()))
+                STFException.ReportWarning(this, "Some of this STF file was not parsed.");
+#endif
             if (disposing)
             {
                 streamSTF.Close(); streamSTF = null;
+                itemBuilder.Capacity = 0;
             }
         }
 
@@ -176,7 +181,6 @@ namespace MSTS
             }
         }
 
-
         /// <summary>This is the main function in STFReader, it returns the next whitespace delimited {item} from the STF file.
         /// </summary>
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
@@ -185,13 +189,13 @@ namespace MSTS
             #region If StepBackOneItem() has been called then return the previous output from ReadItem() rather than reading a new token
             if (stepbackoneitemFlag)
             {
-                Debug.Assert(stepbackItem != null, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
-                string item = stepbackItem;
-                previousItem = stepbackPrevItem;
-                if (stepbackTree != null) tree = stepbackTree;
+                Debug.Assert(stepback.Item != null, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
+                string item = stepback.Item;
+                previousItem = stepback.PrevItem;
+                if (stepback.Tree != null) { tree = stepback.Tree; tree_cache = null; }
                 stepbackoneitemFlag = false;
-                stepbackItem = stepbackPrevItem = null;
-                stepbackTree = null;
+                stepback.Item = stepback.PrevItem = null;
+                stepback.Tree = null;
                 return item;
             }
             #endregion
@@ -205,7 +209,7 @@ namespace MSTS
         /// </remarks>
         public void StepBackOneItem()
         {
-            Debug.Assert(stepbackItem != null, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
+            Debug.Assert(stepback.Item != null, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
             stepbackoneitemFlag = true;
         }
 
@@ -273,17 +277,25 @@ namespace MSTS
             }
         }
 
-
-        [Flags]
-        public enum UNITS
+        /// <summary>Read an hexidecimal encoded number {constant_item}
+        /// </summary>
+        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <returns>The next {constant_item} from the STF file.</returns>
+        public uint ReadHex(uint? default_val)
         {
-            None = 0,
-            Compulsary = 1 << 0, // OR with other UNITS if the unit is compulsary (this will slow parsing)
-            Distance = 1 << 1, // Scaled to meters.          Valid Units: m, cm, mm, km, ft, in
-            Weight = 1 << 2, // Scaled to kilograms.       Valid Units: kg, t, lb
-            Force = 1 << 3, // Scaled to newtons.         Valid Units: n, kn, lbf
-            Stiffness = 1 << 4, // Scaled to newtons/metre.   Valid Units: n/m
-            Any = -2    // This is only provided for backwards compatibility - all new uses should limit the units to appropriate types
+            string item = ReadItem();
+
+            if ((default_val.HasValue) && (item == ")"))
+            {
+                STFException.ReportWarning(this, "When expecting a hex string, we found a ) marker. Using the default " + default_val.ToString());
+                StepBackOneItem();
+                return default_val.Value;
+            }
+
+            uint val;
+            if (uint.TryParse(item, NumberStyles.HexNumber, null, out val)) return val;
+            STFException.ReportWarning(this, "Cannot parse the constant hex string " + item);
+            return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an signed integer {constant_item}
         /// </summary>
@@ -303,7 +315,7 @@ namespace MSTS
 
             int val;
             double scale = ParseUnitSuffix(ref token, valid_units);
-            if (int.TryParse(token, out val)) return (int)(scale * val);
+            if (int.TryParse(token, out val)) return (scale == 1) ? val : (int)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
@@ -326,7 +338,7 @@ namespace MSTS
 
             uint val;
             double scale = ParseUnitSuffix(ref token, valid_units);
-            if (uint.TryParse(token, out val)) return (uint)(scale * val);
+            if (uint.TryParse(token, out val)) return (scale == 1) ? val : (uint)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
@@ -349,7 +361,7 @@ namespace MSTS
 
             float val;
             double scale = ParseUnitSuffix(ref token, valid_units);
-            if (float.TryParse(token, out val)) return (float)(scale * val);
+            if (float.TryParse(token, out val)) return (scale == 1) ? val : (float)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
@@ -377,6 +389,20 @@ namespace MSTS
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
 		}
+        [Flags]
+        public enum UNITS
+        {
+            None = 0,
+            Compulsary = 1 << 0,    // OR with other UNITS if the unit is compulsary (this will slow parsing)
+            Distance = 1 << 1,      // Scaled to meters.            Valid Units: m, cm, mm, km, ft, in
+            Speed = 1 << 2,         // Scaled to meters/second.     Valid Units: m/s, mph, kph, kmh, km/h
+            Weight = 1 << 3,        // Scaled to kilograms.         Valid Units: kg, t, lb
+            Force = 1 << 4,         // Scaled to newtons.           Valid Units: n, kn, lbf
+            Power = 1 << 5,         // Scaled to watts.             Valid Units: w, kw, hp
+            Stiffness = 1 << 6,     // Scaled to newtons/metre.     Valid Units: n/m
+            Resistance = 1 << 7,    // Scaled to newtons/speed(m/s) Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
+            Any = -2                // This is only provided for backwards compatibility - all new uses should limit the units to appropriate types
+        }
         /// <summary>This function removes known unit suffixes, and returns a scaler to bring the constant into the standard OR units.
         /// </summary>
         /// <remarks>This function is marked internal so it can be used to support arithmetic processing once the elements are seperated (eg. 5*2m)
@@ -422,6 +448,16 @@ namespace MSTS
                     case "km": return 1e3;
                     case "ft": return 0.3048;
                     case "in": return 0.0254;
+                    case "in/2": return 0.0127; // This is a strange unit used to measure radius
+                }
+            if ((valid_units & UNITS.Speed) > 0)
+                switch (suffix)
+                {
+                    case "m/s": return 1;
+                    case "mph": return 0.44704;
+                    case "kph": return 0.27778;
+                    case "kmh": return 0.27778;
+                    case "km/h": return 0.27778;
                 }
             if ((valid_units & UNITS.Weight) > 0)
                 switch (suffix)
@@ -437,149 +473,209 @@ namespace MSTS
                     case "kn": return 1e3;
                     case "lbf": return 4.44822162;
                 }
+            if ((valid_units & UNITS.Power) > 0)
+                switch (suffix)
+                {
+                    case "w": return 1;
+                    case "kw": return 1e3;
+                    case "hp": return 745.7;
+                }
             if ((valid_units & UNITS.Stiffness) > 0)
                 switch (suffix)
                 {
                     case "n/m": return 1;
                 }
+            if ((valid_units & UNITS.Resistance) > 0)
+                switch (suffix)
+                {
+                    case "n/m/s": return 1;
+                    case "/m/s": return 1;
+                }
             STFException.ReportWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + valid_units.ToString() + " unit");
             return 1;
         }
 
-        public int ReadHex()
-        {
-            string token = ReadItem();
-            try
-            {
-                return int.Parse(token, System.Globalization.NumberStyles.HexNumber);
-            }
-            catch (Exception e)
-            {
-                STFException.ReportInformation(this, e);
-                return 0;
-            }
-        }
 
-        public uint ReadFlags()
-        {
-            string token = ReadItem();
-            try
-            {
-                return uint.Parse(token, System.Globalization.NumberStyles.HexNumber);
-            }
-            catch (Exception e)
-            {
-                STFException.ReportInformation(this, e);
-                return 0;
-            }
-        }
-
-
-		public string ReadStringBlock()
-		{
-            MustMatch("(");
-			string s = ReadItem();
-            SkipRestOfBlock();
-			return s;
-		}
-        public uint ReadUIntBlock()
-        {
-            return ReadUIntBlock(false);
-        }
-        public uint ReadUIntBlock(bool optionalblock)
-		{
-			try
-			{
-                double value = ReadDoubleBlock(optionalblock);
-				return (uint)value;
-			}
-			catch (Exception e)
-			{
-				STFException.ReportInformation(this, e);
-				return 0;
-			}
-		}
-        public int ReadIntBlock()
-        {
-            return ReadIntBlock(false);
-        }
-        public int ReadIntBlock(bool optionalblock)
-		{
-			try
-			{
-				double value = ReadDoubleBlock(optionalblock);
-				return (int)value;
-			}
-			catch (Exception e)
-			{
-				STFException.ReportInformation(this, e);
-				return 0;
-			}
-		}
-        public float ReadFloatBlock()
-        {
-            return ReadFloatBlock(false);
-        }
-        public float ReadFloatBlock(bool optionalblock)
-        {
-            return (float)ReadDoubleBlock(optionalblock);
-        }
-        public double ReadDoubleBlock()
-        {
-            return ReadDoubleBlock(false);
-        }
-        public double ReadDoubleBlock(bool optionalblock)
+        /// <summary>Read an {item} from the STF format '( {item} ... )'
+        /// </summary>
+        /// <param name="default_val">the default value if the item is not found in the block.</param>
+        /// <returns>The first item inside the STF block.</returns>
+        public string ReadItemBlock(string default_val)
 		{
             if (EOF)
                 STFException.ReportError(this, "Unexpected end of file");
             string s = ReadItem();
-            if (s == ")" && optionalblock)
-                StepBackOneItem();
-            else if (s == "(")
+            if (s == ")" && (default_val != null))
             {
-                double result = ReadDouble(STFReader.UNITS.Any, null);
+                StepBackOneItem();
+                return default_val;
+            }
+            if (s == "(")
+            {
+                string result = ReadItem();
                 SkipRestOfBlock();
                 return result;
             }
-            else
-                STFException.ReportError(this, "Block Not Found - instead found " + s);
-
-            return 0;
+            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            return default_val;
 		}
-		public bool ReadBoolBlock()
+        /// <summary>Read an integer constant from the STF format '( {int_constant} ... )'
+        /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <returns>The STF block with the first {item} converted to a integer constant.</returns>
+        public int ReadIntBlock(UNITS valid_units, int? default_val)
 		{
-            MustMatch("(");
-			string s = ReadItem();
-			if (s == ")")
-				return true;  // assume a null block is true
-			int i;
-			try
-			{
-				i = int.Parse(s);
-			}
-			catch (Exception e)
-			{
-				STFException.ReportInformation(this, e);
-				return false;
-			}
-			SkipRestOfBlock();
-			return i != 0;
-		}
-        public Vector3 ReadVector3Block()
+            if (EOF)
+                STFException.ReportError(this, "Unexpected end of file");
+            string s = ReadItem();
+            if (s == ")" && default_val.HasValue)
+            {
+                StepBackOneItem();
+                return default_val.Value;
+            }
+            if (s == "(")
+            {
+                int result = ReadInt(valid_units, default_val);
+                SkipRestOfBlock();
+                return result;
+            }
+            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            return default_val.GetValueOrDefault(0);
+        }
+        /// <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
+        /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <returns>The STF block with the first {item} converted to a unsigned integer constant.</returns>
+        public uint ReadUIntBlock(UNITS valid_units, uint? default_val)
         {
-            Vector3 vector = new Vector3();
-            MustMatch("(");
-            vector.X = ReadFloat(STFReader.UNITS.Any, null);
-            vector.Y = ReadFloat(STFReader.UNITS.Any, null);
-            vector.Z = ReadFloat(STFReader.UNITS.Any, null);
-            SkipRestOfBlock();
-            return vector;
+            if (EOF)
+                STFException.ReportError(this, "Unexpected end of file");
+            string s = ReadItem();
+            if (s == ")" && default_val.HasValue)
+            {
+                StepBackOneItem();
+                return default_val.Value;
+            }
+            if (s == "(")
+            {
+                uint result = ReadUInt(valid_units, default_val);
+                SkipRestOfBlock();
+                return result;
+            }
+            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            return default_val.GetValueOrDefault(0);
+        }
+        /// <summary>Read an single precision constant from the STF format '( {float_constant} ... )'
+        /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <returns>The STF block with the first {item} converted to a single precision constant.</returns>
+        public float ReadFloatBlock(UNITS valid_units, float? default_val)
+        {
+            if (EOF)
+                STFException.ReportError(this, "Unexpected end of file");
+            string s = ReadItem();
+            if (s == ")" && default_val.HasValue)
+            {
+                StepBackOneItem();
+                return default_val.Value;
+            }
+            if (s == "(")
+            {
+                float result = ReadFloat(valid_units, default_val);
+                SkipRestOfBlock();
+                return result;
+            }
+            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            return default_val.GetValueOrDefault(0);
+        }
+        /// <summary>Read an double precision constant from the STF format '( {double_constant} ... )'
+        /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <returns>The STF block with the first {item} converted to a double precision constant.</returns>
+        public double ReadDoubleBlock(UNITS valid_units, double? default_val)
+		{
+            if (EOF)
+                STFException.ReportError(this, "Unexpected end of file");
+            string s = ReadItem();
+            if (s == ")" && default_val.HasValue)
+            {
+                StepBackOneItem();
+                return default_val.Value;
+            }
+            if (s == "(")
+            {
+                double result = ReadDouble(valid_units, default_val);
+                SkipRestOfBlock();
+                return result;
+            }
+            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            return default_val.GetValueOrDefault(0);
+		}
+        /// <summary>Reads the first item from a block in the STF format '( {double_constant} ... )' and return true if is not-zero or 'true'
+        /// </summary>
+        /// <param name="default_val">the default value if a item is not found in the block.</param>
+        /// <returns><para>true - If the first {item} in the block is non-zero or 'true'.</para>
+        /// <para>false - If the first {item} in the block is zero or 'false'.</para></returns>
+        public bool ReadBoolBlock(bool default_val)
+        {
+            if (EOF)
+                STFException.ReportError(this, "Unexpected end of file");
+            string s = ReadItem();
+            if (s == ")")
+            {
+                StepBackOneItem();
+                return default_val;
+            }
+            if (s == "(")
+            {
+                switch(s = ReadItem().ToLower())
+                {
+                    case "true": SkipRestOfBlock(); return true;
+                    case "false": SkipRestOfBlock(); return false;
+                    default:
+                    int v;
+                    if (int.TryParse(s, out v)) default_val = (v != 0);
+                    SkipRestOfBlock();
+                    return default_val;
+                }
+            }
+            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            return default_val;
+        }
+        /// <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
+        /// </summary>
+        /// <param name="default_val">The default vector if any of the values are not specified</param>
+        /// <returns>The STF block as a Vector3</returns>
+        public Vector3 ReadVector3Block(Vector3 default_val)
+        {
+            if (EOF)
+                STFException.ReportError(this, "Unexpected end of file");
+            string s = ReadItem();
+            if (s == ")")
+            {
+                StepBackOneItem();
+                return default_val;
+            }
+            if (s == "(")
+            {
+                default_val.X = ReadFloat(STFReader.UNITS.Any, default_val.X);
+                default_val.Y = ReadFloat(STFReader.UNITS.Any, default_val.Y);
+                default_val.Z = ReadFloat(STFReader.UNITS.Any, default_val.Z);
+                SkipRestOfBlock();
+                return default_val;
+            }
+            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            return default_val;
         }
 
         private StreamReader streamSTF;
-        /// <summary>IncludeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
+        /// <summary>includeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
         /// </summary>
-        private STFReader IncludeReader = null;
+        private STFReader includeReader = null;
         /// <summary>Remembers the last returned ReadItem().  If the next {item] is a '(', this is the block name used in the tree.
         /// </summary>
         private string previousItem = "";
@@ -589,25 +685,32 @@ namespace MSTS
         /// <summary>The tree cache is used to minimize the calls to StringBuilder when Tree is called repetively for the same hierachy.
         /// </summary>
         private string tree_cache;
-        #region *** StepBack Variables - It is important that all state variables in this class have a stepback equivalent
+        #region *** StepBack Variables - It is important that all state variables in this STFReader class have a equivalent in the STEPBACK structure
         /// <summary>This flag is set in StepBackOneItem(), and causes ReadItem(), to use the stepback* variables to do an item repeat
         /// </summary>
         private bool stepbackoneitemFlag = false;
-        /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackTree « tree
-        /// <para>This item, is optimized, so when value is null it means stepbackTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
-        /// </summary>
-        private List<string> stepbackTree;
-        /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackCurrItem « previousItem
-        /// </summary>
-        private string stepbackPrevItem;
-        /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackItem « ReadItem() return
-        /// </summary>
-        private string stepbackItem;
+        private struct STEPBACK
+        {
+            //streamSTF - is not needed for this stepback implementation
+            //includeReader - is not needed for this stepback implementation
+            /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackItem « ReadItem() return
+            /// </summary>
+            public string Item;
+            /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackCurrItem « previousItem
+            /// </summary>
+            public string PrevItem;
+            /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackTree « tree
+            /// <para>This item, is optimized, so when value is null it means stepbackTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
+            /// </summary>
+            public List<string> Tree;
+            //tree_cache can just be set to null, so it is re-evaluated from the stepback'd tree state variable if Tree is called
+        };
+        private STEPBACK stepback = new STEPBACK();
         #endregion
 
         #region *** Private Class Implementation
-        private bool IsWhiteSpace(int c) { return c >= 0 && c <= ' '; }
-        private bool IsEof(int c) { return c == -1; }
+        private static bool IsWhiteSpace(int c) { return c >= 0 && c <= ' '; }
+        private static bool IsEof(int c) { return c == -1; }
         private int PeekChar()
         {
             int c = streamSTF.Peek();
@@ -638,22 +741,25 @@ namespace MSTS
             if (c == '\n') ++LineNumber;
             return c;
         }
-        /// <summary>This is the main function that reads an item from the STF stream.
+        /// <summary>This is really a local variable in the function ReadItem(...) but it is a class member to stop unnecessary memory re-allocations.
+        /// </summary>
+        private StringBuilder itemBuilder = new StringBuilder(256);
+        /// <summary>Internal Implementation - This is the main function that reads an item from the STF stream.
         /// </summary>
         /// <param name="skip_mode">True - we are in a skip function, and so we don't want to do any special token processing.</param>
         /// <returns>The next item from the STF file</returns>
         private string ReadItem(bool skip_mode)
         {
-            #region If IncludeReader exists, then recurse down to get the next token from the included STF file
-            if (IncludeReader != null)
+            #region If includeReader exists, then recurse down to get the next token from the included STF file
+            if (includeReader != null)
             {
-                string item = IncludeReader.ReadItem();
+                string item = includeReader.ReadItem();
                 UpdateTreeAndStepBack(item);
-                if ((!IncludeReader.EOF) || (item.Length > 0)) return item;
+                if ((!includeReader.EOF) || (item.Length > 0)) return item;
                 if (tree.Count != 0)
-                    STFException.ReportWarning(IncludeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
-                IncludeReader.Dispose();
-                IncludeReader = null;
+                    STFException.ReportWarning(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
+                includeReader.Dispose();
+                includeReader = null;
             }
             #endregion
 
@@ -667,7 +773,7 @@ namespace MSTS
             }
             #endregion
 
-            var itemBuilder = new StringBuilder();
+            itemBuilder.Length = 0;
             #region Handle Open and Close Block markers - parenthisis
             if (c == '(')
             {
@@ -778,8 +884,8 @@ namespace MSTS
                         }
                         if (tree.Count == 0)
                         {
-                            IncludeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename);
-                            return ReadItem(); // Which will recurse down when IncludeReader is tested
+                            includeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename);
+                            return ReadItem(); // Which will recurse down when includeReader is tested
                         }
                         else
                             throw new STFException(this, "Found an include directive, but it was enclosed in block parenthesis which is illegal.");
@@ -805,20 +911,20 @@ namespace MSTS
         /// <param name="token"></param>
         private string UpdateTreeAndStepBack(string token)
         {
-            stepbackItem = token;
+            stepback.Item = token;
             token = token.Trim();
             if (token == "(")
             {
-                stepbackTree = new List<string>(tree);
-                stepbackPrevItem = previousItem;
+                stepback.Tree = new List<string>(tree);
+                stepback.PrevItem = previousItem;
                 tree.Add(previousItem + "(");
                 tree_cache = null; // The tree has changed, so we need to empty the cache which will be rebuilt if the property 'Tree' is used
                 previousItem = "";
             }
             else if (token == ")")
             {
-                stepbackTree = new List<string>(tree);
-                stepbackPrevItem = previousItem;
+                stepback.Tree = new List<string>(tree);
+                stepback.PrevItem = previousItem;
                 if (tree.Count > 0)
                 {
                     tree.RemoveAt(tree.Count - 1);
@@ -828,11 +934,11 @@ namespace MSTS
             }
             else
             {
-                stepbackTree = null; // The tree has not changed so stepback doesn't need any data
-                stepbackPrevItem = previousItem;
+                stepback.Tree = null; // The tree has not changed so stepback doesn't need any data
+                stepback.PrevItem = previousItem;
                 previousItem = token;
             }
-            return stepbackItem;
+            return stepback.Item;
         }
         #endregion
 	}

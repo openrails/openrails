@@ -52,9 +52,9 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "engine(dieselengineidlerpm": IdleRPM = ParseW(f.ReadStringBlock(), f); break;
-                case "engine(dieselenginemaxrpm": MaxRPM = ParseN(f.ReadStringBlock(), f); break;
-                case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = ParseN(f.ReadStringBlock(), f); break;
+                case "engine(dieselengineidlerpm": IdleRPM = f.ReadFloatBlock(STFReader.UNITS.Power, null); break;
+                case "engine(dieselenginemaxrpm": MaxRPM = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 // for example
                 //case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;

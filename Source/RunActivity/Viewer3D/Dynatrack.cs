@@ -226,16 +226,16 @@ namespace ORTS
                 switch (token)
                 {
                     case "Name":
-                        Name = f.ReadStringBlock();
+                        Name = f.ReadItemBlock(null);
                         break;
                     case "Image1Name":
-                        Image1Name = f.ReadStringBlock();
+                        Image1Name = f.ReadItemBlock(null);
                         break;
                     case "Image1sName":
-                        Image1sName = f.ReadStringBlock();
+                        Image1sName = f.ReadItemBlock(null);
                         break;
                     case "Image2Name":
-                        Image2Name = f.ReadStringBlock();
+                        Image2Name = f.ReadItemBlock(null);
                         break;
                     case "LODItem":
                         LODItem lod = new LODItem(f, this);
@@ -591,19 +591,19 @@ namespace ORTS
                 switch (token)
                 {
                     case "Name":
-                        Name = f.ReadStringBlock();
+                        Name = f.ReadItemBlock(null);
                         break;
                     case "CutoffRadius":
-                        CutoffRadius = f.ReadFloatBlock();
+                        CutoffRadius = f.ReadFloatBlock(STFReader.UNITS.Any, null);
                         break;
                     case "MipMapLevelOfDetailBias":
-                        MipMapLevelOfDetailBias = f.ReadFloatBlock();
+                        MipMapLevelOfDetailBias = f.ReadFloatBlock(STFReader.UNITS.Any, null);
                         break;
                     case "AlphaBlendEnable":
-                        AlphaBlendEnable = f.ReadBoolBlock();
+                        AlphaBlendEnable = f.ReadBoolBlock(true);
                         break;
                     case "AlphaTestEnable":
-                        AlphaTestEnable = f.ReadBoolBlock();
+                        AlphaTestEnable = f.ReadBoolBlock(true);
                         break;
                     case "Polyline":
                         Polyline pl = new Polyline(f);
@@ -663,7 +663,7 @@ namespace ORTS
                 switch (token)
                 {
                     case "Name":
-                        Name = f.ReadStringBlock();
+                        Name = f.ReadItemBlock(null);
                         break;
                     case "DeltaTexCoord":
                         f.MustMatch("(");

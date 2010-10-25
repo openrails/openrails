@@ -208,8 +208,98 @@
             <summary>Skip to the end of this block, ignoring any nested blocks
             </summary>
         </member>
-        <member name="F:MSTS.STFReader.IncludeReader">
-            <summary>IncludeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
+        <member name="M:MSTS.STFReader.ReadHex(System.Nullable{System.UInt32})">
+            <summary>Read an hexidecimal encoded number {constant_item}
+            </summary>
+            <param name="default_val">the default value if an unexpected ')' token is found</param>
+            <returns>The next {constant_item} from the STF file.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadInt(MSTS.STFReader.UNITS,System.Nullable{System.Int32})">
+            <summary>Read an signed integer {constant_item}
+            </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <param name="default_val">the default value if an unexpected ')' token is found</param>
+            <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadUInt(MSTS.STFReader.UNITS,System.Nullable{System.UInt32})">
+            <summary>Read an unsigned integer {constant_item}
+            </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <param name="default_val">the default value if an unexpected ')' token is found</param>
+            <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadFloat(MSTS.STFReader.UNITS,System.Nullable{System.Single})">
+            <summary>Read an single precision floating point number {constant_item}
+            </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <param name="default_val">the default value if an unexpected ')' token is found</param>
+            <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadDouble(MSTS.STFReader.UNITS,System.Nullable{System.Double})">
+            <summary>Read an double precision floating point number {constant_item}
+            </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <param name="default_val">the default value if an unexpected ')' token is found</param>
+            <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ParseUnitSuffix(System.String@,MSTS.STFReader.UNITS)">
+            <summary>This function removes known unit suffixes, and returns a scaler to bring the constant into the standard OR units.
+            </summary>
+            <remarks>This function is marked internal so it can be used to support arithmetic processing once the elements are seperated (eg. 5*2m)
+            </remarks>
+            <param name="constant">string with suffix, after the function call the suffix is removed.</param>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <returns>The scaler that should be used to modify the constant to standard OR units.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadItemBlock(System.String)">
+            <summary>Read an {item} from the STF format '( {item} ... )'
+            </summary>
+            <param name="default_val">the default value if the item is not found in the block.</param>
+            <returns>The first item inside the STF block.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadIntBlock(MSTS.STFReader.UNITS,System.Nullable{System.Int32})">
+            <summary>Read an integer constant from the STF format '( {int_constant} ... )'
+            </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <param name="default_val">the default value if the constant is not found in the block.</param>
+            <returns>The STF block with the first {item} converted to a integer constant.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadUIntBlock(MSTS.STFReader.UNITS,System.Nullable{System.UInt32})">
+            <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
+            </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <param name="default_val">the default value if the constant is not found in the block.</param>
+            <returns>The STF block with the first {item} converted to a unsigned integer constant.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadFloatBlock(MSTS.STFReader.UNITS,System.Nullable{System.Single})">
+            <summary>Read an single precision constant from the STF format '( {float_constant} ... )'
+            </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <param name="default_val">the default value if the constant is not found in the block.</param>
+            <returns>The STF block with the first {item} converted to a single precision constant.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadDoubleBlock(MSTS.STFReader.UNITS,System.Nullable{System.Double})">
+            <summary>Read an double precision constant from the STF format '( {double_constant} ... )'
+            </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+            <param name="default_val">the default value if the constant is not found in the block.</param>
+            <returns>The STF block with the first {item} converted to a double precision constant.</returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadBoolBlock(System.Boolean)">
+            <summary>Reads the first item from a block in the STF format '( {double_constant} ... )' and return true if is not-zero or 'true'
+            </summary>
+            <param name="default_val">the default value if a item is not found in the block.</param>
+            <returns><para>true - If the first {item} in the block is non-zero or 'true'.</para>
+            <para>false - If the first {item} in the block is zero or 'false'.</para></returns>
+        </member>
+        <member name="M:MSTS.STFReader.ReadVector3Block(Microsoft.Xna.Framework.Vector3)">
+            <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
+            </summary>
+            <param name="default_val">The default vector if any of the values are not specified</param>
+            <returns>The STF block as a Vector3</returns>
+        </member>
+        <member name="F:MSTS.STFReader.includeReader">
+            <summary>includeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
             </summary>
         </member>
         <member name="F:MSTS.STFReader.previousItem">
@@ -228,21 +318,12 @@
             <summary>This flag is set in StepBackOneItem(), and causes ReadItem(), to use the stepback* variables to do an item repeat
             </summary>
         </member>
-        <member name="F:MSTS.STFReader.stepbackTree">
-            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackTree « tree
-            <para>This item, is optimized, so when value is null it means stepbackTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
-            </summary>
-        </member>
-        <member name="F:MSTS.STFReader.stepbackPrevItem">
-            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackCurrItem « previousItem
-            </summary>
-        </member>
-        <member name="F:MSTS.STFReader.stepbackItem">
-            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackItem « ReadItem() return
+        <member name="F:MSTS.STFReader.itemBuilder">
+            <summary>This is really a local variable in the function ReadItem(...) but it is a class member to stop unnecessary memory re-allocations.
             </summary>
         </member>
         <member name="M:MSTS.STFReader.ReadItem(System.Boolean)">
-            <summary>This is the main function that reads an item from the STF stream.
+            <summary>Internal Implementation - This is the main function that reads an item from the STF stream.
             </summary>
             <param name="skip_mode">True - we are in a skip function, and so we don't want to do any special token processing.</param>
             <returns>The next item from the STF file</returns>
@@ -279,6 +360,19 @@
             <remarks>
             Tree is expensive method of reading STF files (especially for the GC) and should be avoided if possible.
             </remarks>
+        </member>
+        <member name="F:MSTS.STFReader.STEPBACK.Item">
+            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackItem « ReadItem() return
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.STEPBACK.PrevItem">
+            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackCurrItem « previousItem
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.STEPBACK.Tree">
+            <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackTree « tree
+            <para>This item, is optimized, so when value is null it means stepbackTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
+            </summary>
         </member>
         <member name="T:MSTS.MSTSPath">
             <summary>

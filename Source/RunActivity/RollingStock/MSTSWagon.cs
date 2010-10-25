@@ -101,20 +101,20 @@ namespace ORTS
 
             switch (lowercasetoken)
             {
-                case "wagon(wagonshape": MainShapeFileName = f.ReadStringBlock(); break;
+                case "wagon(wagonshape": MainShapeFileName = f.ReadItemBlock(null); break;
                 case "wagon(freightanim": ParseFreightAnim(f); break;
                 case "wagon(size": f.MustMatch("("); f.ReadFloat(STFReader.UNITS.Any, null); f.ReadFloat(STFReader.UNITS.Any, null); Length = f.ReadFloat(STFReader.UNITS.Any, null); f.SkipRestOfBlock(); break;
-                case "wagon(mass": MassKG = f.ReadFloatBlock(); break;
-                case "wagon(wheelradius": WheelRadiusM = f.ReadFloatBlock(); break;
-                case "engine(wheelradius": DriverWheelRadiusM = f.ReadFloatBlock(); break;
-                case "wagon(sound": MainSoundFileName = f.ReadStringBlock(); break;
+                case "wagon(mass": MassKG = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(wheelradius": WheelRadiusM = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(wheelradius": DriverWheelRadiusM = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(sound": MainSoundFileName = f.ReadItemBlock(null); break;
                 case "wagon(friction": ParseFriction(f); break;
                 case "wagon(brakesystemtype":
-                    brakeSystemType = f.ReadStringBlock().ToLower();
+                    brakeSystemType = f.ReadItemBlock(null).ToLower();
                     BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
                     break;
                 case "wagon(coupling": Couplers.Add(new MSTSCoupling()); break;
-                case "wagon(coupling(couplinghasrigidconnection": Couplers[Couplers.Count - 1].Rigid = f.ReadBoolBlock(); break;
+                case "wagon(coupling(couplinghasrigidconnection": Couplers[Couplers.Count - 1].Rigid = f.ReadBoolBlock(true); break;
                 case "wagon(coupling(spring(stiffness":
                     f.MustMatch("(");
                     Couplers[Couplers.Count - 1].SetStiffness(f.ReadFloat(STFReader.UNITS.Any, null), f.ReadFloat(STFReader.UNITS.Any, null));
@@ -184,11 +184,11 @@ namespace ORTS
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
-                    case "sound": InteriorSoundFileName = f.ReadStringBlock(); break;
-                    case "passengercabinfile": InteriorShapeFileName = f.ReadStringBlock(); break;
-                    case "passengercabinheadpos": passengerViewPoint.Location = f.ReadVector3Block(); break;
-                    case "rotationlimit": passengerViewPoint.RotationLimit = f.ReadVector3Block(); break;
-                    case "startdirection": passengerViewPoint.StartDirection = f.ReadVector3Block(); break;
+                    case "sound": InteriorSoundFileName = f.ReadItemBlock(null); break;
+                    case "passengercabinfile": InteriorShapeFileName = f.ReadItemBlock(null); break;
+                    case "passengercabinheadpos": passengerViewPoint.Location = f.ReadVector3Block(new Vector3()); break;
+                    case "rotationlimit": passengerViewPoint.RotationLimit = f.ReadVector3Block(new Vector3()); break;
+                    case "startdirection": passengerViewPoint.StartDirection = f.ReadVector3Block(new Vector3()); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
             PassengerViewpoints.Add(passengerViewPoint);
@@ -203,10 +203,10 @@ namespace ORTS
         public void ParseFriction(STFReader f)
         {
             f.MustMatch("(");
-            float c1 = ParseNpMpS(f.ReadItem(),f);
+            float c1 = f.ReadFloat(STFReader.UNITS.Resistance, null);
             float e1 = f.ReadFloat(STFReader.UNITS.Any, null);
-            float v2 = ParseMpS(f.ReadItem(),f);
-            float c2 = ParseNpMpS(f.ReadItem(),f);
+            float v2 = f.ReadFloat(STFReader.UNITS.Speed,null);
+            float c2 = f.ReadFloat(STFReader.UNITS.Resistance, null);
             float e2 = f.ReadFloat(STFReader.UNITS.Any, null);
             f.ReadItem(); f.ReadItem(); f.ReadItem(); f.ReadItem(); f.ReadItem();
             f.SkipRestOfBlock();
@@ -266,186 +266,6 @@ namespace ORTS
             }
             //Console.WriteLine("friction {0} {1} {2} {3} {4}", c1, e1, v2, c2, e2);
             //Console.WriteLine("davis {0} {1} {2} {3}", Friction0N, DavisAN, DavisBNSpM, DavisCNSSpMM);
-        }
-        public float ParseN(string token, STFReader f)
-        {
-            token = token.ToLower();
-            float scale = 1;
-            int i = token.IndexOf("kn");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-                scale = 1e3f;
-            }
-            i = token.IndexOf("n");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            i = token.IndexOf("lbf");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-                scale = 4.44822f;
-            }
-            try
-            {
-                return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid force value or units {0}, newtons expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
-        }
-        public float ParseW(string token, STFReader f)
-        {
-            token = token.ToLower();
-            float scale = 1;
-            int i = token.IndexOf("kw");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-                scale = 1e3f;
-            }
-            i = token.IndexOf("w");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            i = token.IndexOf("hp");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-                scale = 745.7f;
-            }
-            try
-            {
-                return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid power value or units {0}, watts expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
-        }
-        public float ParseMpS(string token, STFReader f)
-        {
-            token = token.ToLower();
-            float scale = 1;
-            int i = token.IndexOf("mph");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-                scale = .44704f;
-            }
-            else
-            {
-                i = token.IndexOf("kph");
-                if (i == -1) i = token.IndexOf("kmh");
-                if (i == -1) i = token.IndexOf("km/h");
-                if (i != -1)
-                {
-                    token = token.Substring(0, i);
-                    scale = .27778f;
-                }
-            }
-            try
-            {
-                return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid speed value or units {0}, meters per second expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
-        }
-        public float ParseFT3(string token, STFReader f)
-        {
-            token = token.ToLower();
-            if (token[0] == '"')
-                token = token.Substring(1);
-            int i = token.IndexOf("*(ft^3)");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            try
-            {
-                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid volume value or units {0}, cubic feet expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
-        }
-        public float ParsePSI(string token, STFReader f)
-        {
-            token = token.ToLower();
-            int i = token.IndexOf("psi");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            try
-            {
-                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid pressure value or units {0}, pounds per square inch expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
-        }
-        public float ParseLBpH(string token, STFReader f)
-        {
-            token = token.ToLower();
-            int i = token.IndexOf("lb/h");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            try
-            {
-                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid steaming rate value or units {0}, pounds per hour expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
-        }
-        public float ParseNpMpS(string token, STFReader f)
-        {
-            token = token.ToLower();
-            float scale = 1;
-            int i = token.IndexOf("n/m/s");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            i = token.IndexOf("/m/s");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            try
-            {
-                return scale * float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg= String.Format("invalid friction value or units {0}, Newtons per meters per second expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
         }
         public float ParseFloat(string token)
         {   // is there a better way to ignore any suffix?
