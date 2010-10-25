@@ -305,7 +305,7 @@ namespace MSTS
             }
 
             uint val;
-            if (uint.TryParse(item, NumberStyles.HexNumber, null, out val)) return val;
+            if (uint.TryParse(item, parseHex, parseNFI, out val)) return val;
             STFException.ReportWarning(this, "Cannot parse the constant hex string " + item);
             return default_val.GetValueOrDefault(0);
         }
@@ -329,7 +329,7 @@ namespace MSTS
             double scale = ParseUnitSuffix(ref token, valid_units);
             if (token.Length == 0) return 0;
             if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
-            if (int.TryParse(token, out val)) return (scale == 1) ? val : (int)(scale * val);
+            if (int.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (int)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
@@ -354,7 +354,7 @@ namespace MSTS
             double scale = ParseUnitSuffix(ref token, valid_units);
             if (token.Length == 0) return 0;
             if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
-            if (uint.TryParse(token, out val)) return (scale == 1) ? val : (uint)(scale * val);
+            if (uint.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (uint)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
@@ -379,7 +379,7 @@ namespace MSTS
             double scale = ParseUnitSuffix(ref token, valid_units);
             if (token.Length == 0) return 0.0f;
             if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
-            if (float.TryParse(token, out val)) return (scale == 1) ? val : (float)(scale * val);
+            if (float.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
@@ -404,7 +404,7 @@ namespace MSTS
             double scale = ParseUnitSuffix(ref token, valid_units);
             if (token.Length == 0) return 0.0;
             if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
-            if (double.TryParse(token, out val)) return scale * val;
+            if (double.TryParse(token, parseNum, parseNFI, out val)) return scale * val;
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
@@ -420,7 +420,7 @@ namespace MSTS
             /// <summary>Combined using an | with other UNITS if the unit is compulsary (compulsary units will slow parsing)
             /// </summary>
             Compulsary = 1 << 0,
-            /// <summary>Valid Units: m, cm, mm, km, ft, in
+            /// <summary>Valid Units: m, cm, mm, km, ft, ', in, "
             /// <para>Scaled to meters.</para>
             /// </summary>
             Distance = 1 << 1,
@@ -496,7 +496,9 @@ namespace MSTS
                     case "mm": return 0.001;
                     case "km": return 1e3;
                     case "ft": return 0.3048;
+                    case "'": return 0.3048;
                     case "in": return 0.0254;
+                    case "\"": return 0.0254;
                     case "in/2": return 0.0127; // This is a strange unit used to measure radius
                 }
             if ((valid_units & UNITS.Speed) > 0)
@@ -688,7 +690,7 @@ namespace MSTS
                     case ")": return default_val;
                     default:
                         int v;
-                        if (int.TryParse(s, out v)) default_val = (v != 0);
+                        if (int.TryParse(s, NumberStyles.Any, parseNFI, out v)) default_val = (v != 0);
                         SkipRestOfBlock();
                         return default_val;
                 }
@@ -737,6 +739,10 @@ namespace MSTS
         /// <summary>The tree cache is used to minimize the calls to StringBuilder when Tree is called repetively for the same hierachy.
         /// </summary>
         private string tree_cache;
+
+        private static NumberStyles parseHex = NumberStyles.AllowLeadingWhite|NumberStyles.AllowHexSpecifier|NumberStyles.AllowTrailingWhite;
+        private static NumberStyles parseNum = NumberStyles.AllowLeadingWhite | NumberStyles.AllowLeadingSign | NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowTrailingWhite;
+        private static IFormatProvider parseNFI = NumberFormatInfo.InvariantInfo;
         #region *** StepBack Variables - It is important that all state variables in this STFReader class have a equivalent in the STEPBACK structure
         /// <summary>This flag is set in StepBackOneItem(), and causes ReadItem(), to use the stepback* variables to do an item repeat
         /// </summary>
@@ -956,14 +962,20 @@ namespace MSTS
                     #region Process special token - skip and comment
                     case "skip":
                         {
-                            SkipBlock();
+                            #region Skip the comment item or block
+                            string comment = ReadItem();
+                            if (comment == "(") SkipRestOfBlock();
+                            #endregion
                             string item = ReadItem();
                             if (item == ")") { StepBackOneItem(); return "#"; }
                             return item; // Now move on to the next token after the commented area
                         }
                     case "comment":
                         {
-                            SkipBlock();
+                            #region Skip the comment item or block
+                            string comment = ReadItem();
+                            if (comment == "(") SkipRestOfBlock();
+                            #endregion
                             string item = ReadItem();
                             if (item == ")") { StepBackOneItem(); return "#"; }
                             return item; // Now move on to the next token after the commented area

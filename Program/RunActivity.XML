@@ -937,7 +937,7 @@
             </summary>
         </member>
         <member name="F:MSTS.STFReader.UNITS.Distance">
-            <summary>Valid Units: m, cm, mm, km, ft, in
+            <summary>Valid Units: m, cm, mm, km, ft, ', in, "
             <para>Scaled to meters.</para>
             </summary>
         </member>
