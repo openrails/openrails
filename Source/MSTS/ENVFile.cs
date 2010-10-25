@@ -19,13 +19,11 @@ namespace MSTS
             using (STFReader reader = new STFReader(filePath))
             {
                 while (!reader.EOF)
-                {
                     switch (reader.ReadItem())
                     {
                         case "world": ParseWorld(reader); break;
                         case "(": reader.SkipRestOfBlock(); break;
                     }
-                }
             }
         }
         private void ParseWorld(STFReader reader)

@@ -23,7 +23,7 @@ namespace MSTS
             Description = FileName;
             using (STFReader f = new STFReader(filenamewithpath))
             {
-                while (!f.EndOfBlock())
+                while (!f.EOF)
                     switch (f.ReadItem().ToLower())
                     {
                         case "train": Train = new Train_Config(f); break;

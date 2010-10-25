@@ -124,16 +124,14 @@ namespace ORTS
                                 throw new STFException(f, "Invalid header");
                             else
                             {
-                                string token = f.ReadItem();
-                                while (token != "") // EOF
-                                {
-                                    if (token == "(") throw new STFException(f, "Unexpected (");
-                                    else if (token == ")") throw new STFException(f, "Unexpected )");
-                                    else if (0 == String.Compare(token, "TrProfile", true))
-                                        TrackProfile = new TrProfile(f); // .dat file constructor
-                                    else f.SkipBlock();
-                                    token = f.ReadItem();
-                                }
+                                while (!f.EOF)
+                                    switch (f.ReadItem().ToLower())
+                                    {
+                                        case "trprofile":
+                                            TrackProfile = new TrProfile(f); // .dat file constructor
+                                            break;
+                                        case "(": f.SkipRestOfBlock(); break;
+                                    }
                                 if (TrackProfile == null) throw new STFException(f, "Track profile DAT constructor failed.");
                             }
                         }
@@ -219,34 +217,19 @@ namespace ORTS
             Image2Name = "acleantrack2.ace";
 
             f.MustMatch("(");
-            string token = f.ReadItem();
-            while (token != ")")
-            {
-                if (token == "") throw new STFException(f, "Missing )");
-                switch (token)
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
                 {
-                    case "Name":
-                        Name = f.ReadItemBlock(null);
-                        break;
-                    case "Image1Name":
-                        Image1Name = f.ReadItemBlock(null);
-                        break;
-                    case "Image1sName":
-                        Image1sName = f.ReadItemBlock(null);
-                        break;
-                    case "Image2Name":
-                        Image2Name = f.ReadItemBlock(null);
-                        break;
-                    case "LODItem":
+                    case "name": Name = f.ReadItemBlock(null); break;
+                    case "image1name": Image1Name = f.ReadItemBlock(null); break;
+                    case "image1sname": Image1sName = f.ReadItemBlock(null); break;
+                    case "image2name": Image2Name = f.ReadItemBlock(null); break;
+                    case "loditem":
                         LODItem lod = new LODItem(f, this);
                         LODItems.Add(lod); // Append to LODItems array
                         break;
-                    default:
-                        f.SkipBlock();
-                        break;
-                }
-                token = f.ReadItem();
-            } // while token
+                    case "(": f.SkipRestOfBlock(); break;
+                } // while token
 
             // Checks for required member variables: 
             // Name not required.
@@ -584,38 +567,21 @@ namespace ORTS
         public LODItem(STFReader f, TrProfile parent)
         {
             f.MustMatch("(");
-            string token = f.ReadItem();
-            while (token != ")")
-            {
-                if (token == "") throw new STFException(f, "Missing )");
-                switch (token)
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
                 {
-                    case "Name":
-                        Name = f.ReadItemBlock(null);
-                        break;
-                    case "CutoffRadius":
-                        CutoffRadius = f.ReadFloatBlock(STFReader.UNITS.Any, null);
-                        break;
-                    case "MipMapLevelOfDetailBias":
-                        MipMapLevelOfDetailBias = f.ReadFloatBlock(STFReader.UNITS.Any, null);
-                        break;
-                    case "AlphaBlendEnable":
-                        AlphaBlendEnable = f.ReadBoolBlock(true);
-                        break;
-                    case "AlphaTestEnable":
-                        AlphaTestEnable = f.ReadBoolBlock(true);
-                        break;
-                    case "Polyline":
+                    case "name": Name = f.ReadItemBlock(null); break;
+                    case "cutoffradius": CutoffRadius = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "mipmaplevelofdetailbias": MipMapLevelOfDetailBias = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "alphablendenable": AlphaBlendEnable = f.ReadBoolBlock(true); break;
+                    case "alphatestenable": AlphaTestEnable = f.ReadBoolBlock(true); break;
+                    case "polyline":
                         Polyline pl = new Polyline(f);
                         Polylines.Add(pl); // Append to Polylines array
                         parent.Accum(pl.Vertices.Count);
                         break;
-                    default:
-                        f.SkipBlock();
-                        break;
-                }
-                token = f.ReadItem();
-            } // while token
+                    case "(": f.SkipRestOfBlock(); break;
+                } // while token
 
             // Checks for required member variables:
             // Name not required.
@@ -656,31 +622,24 @@ namespace ORTS
         public Polyline(STFReader f)
         {
             f.MustMatch("(");
-            string token = f.ReadItem();
-            while (token != ")")
-            {
-                if (token == "") throw new STFException(f, "Missing )");
-                switch (token)
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
                 {
-                    case "Name":
+                    case "name":
                         Name = f.ReadItemBlock(null);
                         break;
-                    case "DeltaTexCoord":
+                    case "deltatexcoord":
                         f.MustMatch("(");
                         DeltaTexCoord.X = f.ReadFloat(STFReader.UNITS.Any, null);
                         DeltaTexCoord.Y = f.ReadFloat(STFReader.UNITS.Any, null);
                         f.SkipRestOfBlock();
                         break;
-                    case "Vertex":
+                    case "vertex":
                         Vertex v = new Vertex(f);
                         Vertices.Add(v); // Append to Vertices array
                         break;
-                    default:
-                        f.SkipBlock();
-                        break;
-                }
-                token = f.ReadItem();
-            } // while token
+                    case "(": f.SkipRestOfBlock(); break;
+                } // while token
 
             // Checks for required member variables: 
             // Name not required.
@@ -715,41 +674,34 @@ namespace ORTS
         {
             Position = new Vector3();
             Normal = new Vector3();
-            TexCoord = new Vector2();            
+            TexCoord = new Vector2();
 
             f.MustMatch("(");
-            string token = f.ReadItem();
-            while (token != ")")
-            {
-                if (token == "") throw new STFException(f, "Missing )");
-                switch (token)
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
                 {
-                    case "Position":
+                    case "position":
                         f.MustMatch("(");
                         Position.X = f.ReadFloat(STFReader.UNITS.Any, null);
                         Position.Y = f.ReadFloat(STFReader.UNITS.Any, null);
                         Position.Z = 0.0f;
                         f.SkipRestOfBlock();
                         break;
-                    case "Normal":
+                    case "normal":
                         f.MustMatch("(");
                         Normal.X = f.ReadFloat(STFReader.UNITS.Any, null);
                         Normal.Y = f.ReadFloat(STFReader.UNITS.Any, null);
                         Normal.Z = f.ReadFloat(STFReader.UNITS.Any, null);
                         f.SkipRestOfBlock();
                         break;
-                    case "TexCoord":
+                    case "texcoord":
                         f.MustMatch("(");
                         TexCoord.X = f.ReadFloat(STFReader.UNITS.Any, null);
                         TexCoord.Y = f.ReadFloat(STFReader.UNITS.Any, null);
                         f.SkipRestOfBlock();
                         break;
-                    default:
-                        f.SkipBlock();
-                        break;
-                }
-                token = f.ReadItem();
-            } // while token
+                    case "(": f.SkipRestOfBlock(); break;
+                } // while token
 
             // Checks for required member variables
             // No way to check for missing Position.

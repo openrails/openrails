@@ -23,7 +23,7 @@ namespace MSTS
         {
             using (STFReader f = new STFReader(filename))
             {
-                while (!f.EndOfBlock())
+                while (!f.EOF)
                     switch (f.ReadItem().ToLower())
                     {
                         case "camera": Cameras.Add(new camera(f)); break;

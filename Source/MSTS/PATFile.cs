@@ -81,74 +81,50 @@ namespace MSTS
 		public PATFile( string filePath )
 		{
             using (STFReader f = new STFReader(filePath))
-            {
-                string token = f.ReadItem();
-                while (token != "") // EOF
+            while(!f.EOF)
+                switch(f.ReadItem().ToLower())
                 {
-                    if (token == "(") throw new STFException(f, "Unexpected (");
-                    else if (token == ")") throw new STFException(f, "Unexpected )");
-                    else if (0 == String.Compare(token, "TrackPDPs", true)) ReadTrackPDPs(f);
-                    else if (0 == String.Compare(token, "TrackPath", true)) ReadTrackPath(f);
-                    else f.SkipBlock();  // TODO for now we are skipping unknown items
-                    token = f.ReadItem();
+                    case "trackpdps": ReadTrackPDPs(f); break;
+                    case "trackpath": ReadTrackPath(f); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-            }
       }
 
-        public void ReadTrackPDPs( STFReader f )
+        public void ReadTrackPDPs(STFReader f)
         {
             f.MustMatch("(");
-            string token = f.ReadItem();
-            while (token != ")")
-            {
-                if (0 == String.Compare(token, "TrackPDP", true))
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
                 {
-                    TrackPDPs.Add(new TrackPDP(f));
+                    case "trackpdp": TrackPDPs.Add(new TrackPDP(f)); break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-                else
-                {
-                    throw new STFException(f, "Unexpected " + token + "in TrackPDBs");
-                }
-                token = f.ReadItem();
-            }
         }
 
         public void ReadTrackPath(STFReader f)
         {
             f.MustMatch("(");
-            string token = f.ReadItem();
-            while (token != ")") 
-            {
-                if (token == "(") throw new STFException(f, "Unexpected (");
-                else if (0 == String.Compare(token, "TrPathNodes", true)) ReadTrPathNodes(f);
-                else f.SkipBlock();  // TODO for now we are skipping unknown items
-                token = f.ReadItem();
-            }
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
+                {
+                    case "trpathnodes": ReadTrPathNodes(f); break;
+                    case "(": f.SkipRestOfBlock(); break;
+                }
         }
 
         public void ReadTrPathNodes(STFReader f)
         {
             f.MustMatch("(");
             int count = f.ReadInt(STFReader.UNITS.Any, null);
-            string token = f.ReadItem();
-            while (token != ")")
-            {
-                if (0 == String.Compare(token, "TrPathNode", true))
+            while (!f.EndOfBlock())
+                switch (f.ReadItem().ToLower())
                 {
-                    TrPathNodes.Add(new TrPathNode(f));
-                    count--;
+                    case "trpathnode": TrPathNodes.Add(new TrPathNode(f)); count--; break;
+                    case "(": f.SkipRestOfBlock(); break;
                 }
-                else
-                {
-                    throw new STFException(f, "Unexpected " + token + "in TrPathNodes");
-                }
-                token = f.ReadItem();
-            }
             if (count != 0)
                 throw new STFException(f, "TrPathNodes count incorrect");
         }
-
-
 	} // Class CONFile
 
 	public class TrackPDP
@@ -188,4 +164,3 @@ namespace MSTS
         }
     }
 }
-

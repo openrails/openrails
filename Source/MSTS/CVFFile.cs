@@ -236,8 +236,8 @@ namespace MSTS
             else if (string.Compare(token, "ScaleRange", true) == 0)
             {
                 inf.MustMatch("(");
-                MinValue = inf.ReadInt(STFReader.UNITS.Any, null);
-                MaxValue = inf.ReadInt(STFReader.UNITS.Any, null);
+                MinValue = inf.ReadDouble(STFReader.UNITS.Any, null);
+                MaxValue = inf.ReadDouble(STFReader.UNITS.Any, null);
                 inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "Graphic", true) == 0)

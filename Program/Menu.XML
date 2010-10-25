@@ -131,7 +131,9 @@
             The include token has the effect of in-lining the defined file into the current document.</para></listItem>
             <listItem><para>comment &amp; skip - must be followed by a block which will not be processed in OR</para></listItem>
             </list> <para>
-            Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para>
+            Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para><para>
+             </para>
+            <alert class="important">NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
             </remarks>
             <example>
             !!!TODO!!!
@@ -172,6 +174,9 @@
         <member name="M:MSTS.STFReader.ReadItem">
             <summary>This is the main function in STFReader, it returns the next whitespace delimited {item} from the STF file.
             </summary>
+            <remarks>
+            <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+            </remarks>
             <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         </member>
         <member name="M:MSTS.STFReader.StepBackOneItem">
@@ -298,6 +303,10 @@
             <param name="default_val">The default vector if any of the values are not specified</param>
             <returns>The STF block as a Vector3</returns>
         </member>
+        <member name="F:MSTS.STFReader.streamSTF">
+            <summary>The I/O stream for the STF file we are processing
+            </summary>
+        </member>
         <member name="F:MSTS.STFReader.includeReader">
             <summary>includeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
             </summary>
@@ -361,6 +370,61 @@
             Tree is expensive method of reading STF files (especially for the GC) and should be avoided if possible.
             </remarks>
         </member>
+        <member name="T:MSTS.STFReader.UNITS">
+            <summary>Enumeration limiting which units are valid when parsing a numeric constant.
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.None">
+            <summary>No unit parsing is done on the {constant_item} - which is obviously fastest
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Compulsary">
+            <summary>Combined using an | with other UNITS if the unit is compulsary (compulsary units will slow parsing)
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Distance">
+            <summary>Valid Units: m, cm, mm, km, ft, in
+            <para>Scaled to meters.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Speed">
+            <summary>Valid Units: m/s, mph, kph, kmh, km/h
+            <para>Scaled to meters/second.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Weight">
+            <summary>Valid Units: kg, t, lb
+            <para>Scaled to kilograms.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Force">
+            <summary>Valid Units: n, kn, lbf
+            <para>Scaled to newtons.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Power">
+            <summary>Valid Units: w, kw, hp
+            <para>Scaled to watts.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Stiffness">
+            <summary>Valid Units: n/m
+            <para>Scaled to newtons/metre.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Resistance">
+            <summary>Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
+            <para>Scaled to newtons/speed(m/s)</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Any">
+            <summary>This is only provided for backwards compatibility - all new users should limit the units to appropriate types
+            </summary>
+        </member>
+        <member name="T:MSTS.STFReader.STEPBACK">
+            <summary>Internal Structure used to group together the variables used to implement step back functionality.
+            </summary>
+        </member>
         <member name="F:MSTS.STFReader.STEPBACK.Item">
             <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackItem « ReadItem() return
             </summary>
@@ -372,6 +436,10 @@
         <member name="F:MSTS.STFReader.STEPBACK.Tree">
             <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. stepbackTree « tree
             <para>This item, is optimized, so when value is null it means stepbackTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
+            </summary>
+        </member>
+        <member name="M:MSTS.STFReader.STEPBACK.Clear">
+            <summary>Clear all of the members after a step back has been processed
             </summary>
         </member>
         <member name="T:MSTS.MSTSPath">

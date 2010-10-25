@@ -30,16 +30,12 @@ namespace MSTS
 		public SRVFile( string filePath )
 		{
             using (STFReader inf = new STFReader(filePath))
-			{
-				while( !inf.EOF)
-				{
-                    switch (inf.ReadItem())
+                while (!inf.EOF)
+                    switch (inf.ReadItem().ToLower())
                     {
-                        case "Service_Definition": ReadServiceDefintionBlock(inf); break;
+                        case "service_definition": ReadServiceDefintionBlock(inf); break;
                         case "(": inf.SkipRestOfBlock(); break;
                     }
-                }
-            }
         }
         private void ReadServiceDefintionBlock(STFReader inf)
         {

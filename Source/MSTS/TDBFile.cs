@@ -19,18 +19,13 @@ namespace MSTS
     {
         public TDBFile(string filenamewithpath)
         {
-            using(STFReader f = new STFReader(filenamewithpath))
-            {
-                string token = f.ReadItem();
-                while (token != "") // EOF
-                {
-                    if (token == ")") throw new STFException(f, "Unexpected )");
-                    else if (token == "(") f.SkipBlock();
-                    else if (0 == String.Compare(token, "TrackDB", true)) TrackDB = new TrackDB(f);
-                    else f.SkipBlock();
-                    token = f.ReadItem();
-                }
-            }
+            using (STFReader f = new STFReader(filenamewithpath))
+                while (!f.EOF)
+                    switch (f.ReadItem().ToLower())
+                    {
+                        case "trackdb": TrackDB = new TrackDB(f); break;
+                        case "(": f.SkipRestOfBlock(); break;
+                    }
         }
 
         /// <summary>

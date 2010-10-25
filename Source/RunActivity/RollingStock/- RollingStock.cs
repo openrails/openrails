@@ -110,7 +110,7 @@ namespace ORTS
             public void WagFile(string filenamewithpath)
             {
                 using (STFReader f = new STFReader(filenamewithpath))
-                    while (!f.EndOfBlock())
+                    while (!f.EOF)
                         switch (f.ReadItem().ToLower())
                         {
                             case "engine": Engine = new EngineClass(f); break;

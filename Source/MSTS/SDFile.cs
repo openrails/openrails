@@ -20,15 +20,12 @@ namespace MSTS
         {
             using (STFReader f = new STFReader(filename))
             {
-                string token = f.ReadItem();
-                while (token != "") // EOF
-                {
-                    if (token == ")") throw new STFException(f, "Unexpected )");
-                    else if (token == "(") f.SkipBlock();
-                    else if (0 == String.Compare(token, "shape", true)) shape = new SDShape(f);
-                    else f.SkipBlock();
-                    token = f.ReadItem();
-                }
+                while (!f.EOF)
+                    switch (f.ReadItem().ToLower())
+                    {
+                        case "shape": shape = new SDShape(f); break;
+                        case "(": f.SkipRestOfBlock(); break;
+                    }
                 if (shape == null)
                     throw new STFException(f, "Missing shape statement");
             }

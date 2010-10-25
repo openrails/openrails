@@ -125,7 +125,6 @@ namespace MSTS
 		{
 			f.MustMatch("(");
             MaxSectionIndex = f.ReadUInt(STFReader.UNITS.Any, null);
-			string token = f.ReadItem();
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {

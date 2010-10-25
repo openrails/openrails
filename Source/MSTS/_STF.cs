@@ -78,7 +78,9 @@ namespace MSTS
     /// The include token has the effect of in-lining the defined file into the current document.</para></listItem>
     /// <listItem><para>comment &amp; skip - must be followed by a block which will not be processed in OR</para></listItem>
     /// </list>&#160;<para>
-    /// Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para>
+    /// Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para><para>
+    /// &#160;</para>
+    /// <alert class="important">NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
     /// </remarks>
     /// <example>
     /// !!!TODO!!!
@@ -142,6 +144,7 @@ namespace MSTS
             if (disposing)
             {
                 streamSTF.Close(); streamSTF = null;
+                itemBuilder.Length = 0;
                 itemBuilder.Capacity = 0;
             }
         }
@@ -183,6 +186,9 @@ namespace MSTS
 
         /// <summary>This is the main function in STFReader, it returns the next whitespace delimited {item} from the STF file.
         /// </summary>
+        /// <remarks>
+        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+        /// </remarks>
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         public string ReadItem()
         {
@@ -194,8 +200,7 @@ namespace MSTS
                 previousItem = stepback.PrevItem;
                 if (stepback.Tree != null) { tree = stepback.Tree; tree_cache = null; }
                 stepbackoneitemFlag = false;
-                stepback.Item = stepback.PrevItem = null;
-                stepback.Tree = null;
+                stepback.Clear();
                 return item;
             }
             #endregion
@@ -237,6 +242,13 @@ namespace MSTS
         /// </returns>
         public bool EndOfBlock()
         {
+            if (stepbackoneitemFlag && (stepback.Item == ")"))
+            {
+                // Consume the step-back end-of-block
+                stepbackoneitemFlag = false;
+                stepback.Clear();
+                return true;
+            }
             int c = PeekPastWhitespace();
             if (c == ')')
             {
@@ -315,6 +327,8 @@ namespace MSTS
 
             int val;
             double scale = ParseUnitSuffix(ref token, valid_units);
+            if (token.Length == 0) return 0;
+            if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
             if (int.TryParse(token, out val)) return (scale == 1) ? val : (int)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
@@ -338,6 +352,8 @@ namespace MSTS
 
             uint val;
             double scale = ParseUnitSuffix(ref token, valid_units);
+            if (token.Length == 0) return 0;
+            if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
             if (uint.TryParse(token, out val)) return (scale == 1) ? val : (uint)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
@@ -361,6 +377,8 @@ namespace MSTS
 
             float val;
             double scale = ParseUnitSuffix(ref token, valid_units);
+            if (token.Length == 0) return 0.0f;
+            if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
             if (float.TryParse(token, out val)) return (scale == 1) ? val : (float)(scale * val);
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
@@ -384,24 +402,55 @@ namespace MSTS
 
             double val;
             double scale = ParseUnitSuffix(ref token, valid_units);
+            if (token.Length == 0) return 0.0;
+            if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
             if (double.TryParse(token, out val)) return scale * val;
 
             STFException.ReportWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
 		}
+        /// <summary>Enumeration limiting which units are valid when parsing a numeric constant.
+        /// </summary>
         [Flags]
         public enum UNITS
         {
+            /// <summary>No unit parsing is done on the {constant_item} - which is obviously fastest
+            /// </summary>
             None = 0,
-            Compulsary = 1 << 0,    // OR with other UNITS if the unit is compulsary (this will slow parsing)
-            Distance = 1 << 1,      // Scaled to meters.            Valid Units: m, cm, mm, km, ft, in
-            Speed = 1 << 2,         // Scaled to meters/second.     Valid Units: m/s, mph, kph, kmh, km/h
-            Weight = 1 << 3,        // Scaled to kilograms.         Valid Units: kg, t, lb
-            Force = 1 << 4,         // Scaled to newtons.           Valid Units: n, kn, lbf
-            Power = 1 << 5,         // Scaled to watts.             Valid Units: w, kw, hp
-            Stiffness = 1 << 6,     // Scaled to newtons/metre.     Valid Units: n/m
-            Resistance = 1 << 7,    // Scaled to newtons/speed(m/s) Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
-            Any = -2                // This is only provided for backwards compatibility - all new uses should limit the units to appropriate types
+            /// <summary>Combined using an | with other UNITS if the unit is compulsary (compulsary units will slow parsing)
+            /// </summary>
+            Compulsary = 1 << 0,
+            /// <summary>Valid Units: m, cm, mm, km, ft, in
+            /// <para>Scaled to meters.</para>
+            /// </summary>
+            Distance = 1 << 1,
+            /// <summary>Valid Units: m/s, mph, kph, kmh, km/h
+            /// <para>Scaled to meters/second.</para>
+            /// </summary>
+            Speed = 1 << 2,
+            /// <summary>Valid Units: kg, t, lb
+            /// <para>Scaled to kilograms.</para>
+            /// </summary>
+            Weight = 1 << 3,
+            /// <summary>Valid Units: n, kn, lbf
+            /// <para>Scaled to newtons.</para>
+            /// </summary>
+            Force = 1 << 4,
+            /// <summary>Valid Units: w, kw, hp
+            /// <para>Scaled to watts.</para>
+            /// </summary>
+            Power = 1 << 5,
+            /// <summary>Valid Units: n/m
+            /// <para>Scaled to newtons/metre.</para>
+            /// </summary>
+            Stiffness = 1 << 6,
+            /// <summary>Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
+            /// <para>Scaled to newtons/speed(m/s)</para>
+            /// </summary>
+            Resistance = 1 << 7,
+            /// <summary>This is only provided for backwards compatibility - all new users should limit the units to appropriate types
+            /// </summary>
+            Any = -2
         }
         /// <summary>This function removes known unit suffixes, and returns a scaler to bring the constant into the standard OR units.
         /// </summary>
@@ -632,15 +681,16 @@ namespace MSTS
             }
             if (s == "(")
             {
-                switch(s = ReadItem().ToLower())
+                switch (s = ReadItem().ToLower())
                 {
                     case "true": SkipRestOfBlock(); return true;
                     case "false": SkipRestOfBlock(); return false;
+                    case ")": return default_val;
                     default:
-                    int v;
-                    if (int.TryParse(s, out v)) default_val = (v != 0);
-                    SkipRestOfBlock();
-                    return default_val;
+                        int v;
+                        if (int.TryParse(s, out v)) default_val = (v != 0);
+                        SkipRestOfBlock();
+                        return default_val;
                 }
             }
             STFException.ReportError(this, "Block Not Found - instead found " + s);
@@ -672,6 +722,8 @@ namespace MSTS
             return default_val;
         }
 
+        /// <summary>The I/O stream for the STF file we are processing
+        /// </summary>
         private StreamReader streamSTF;
         /// <summary>includeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
         /// </summary>
@@ -689,6 +741,8 @@ namespace MSTS
         /// <summary>This flag is set in StepBackOneItem(), and causes ReadItem(), to use the stepback* variables to do an item repeat
         /// </summary>
         private bool stepbackoneitemFlag = false;
+        /// <summary>Internal Structure used to group together the variables used to implement step back functionality.
+        /// </summary>
         private struct STEPBACK
         {
             //streamSTF - is not needed for this stepback implementation
@@ -704,6 +758,13 @@ namespace MSTS
             /// </summary>
             public List<string> Tree;
             //tree_cache can just be set to null, so it is re-evaluated from the stepback'd tree state variable if Tree is called
+            /// <summary>Clear all of the members after a step back has been processed
+            /// </summary>
+            public void Clear()
+            {
+                Item = PrevItem = null;
+                Tree = null;
+            }
         };
         private STEPBACK stepback = new STEPBACK();
         #endregion
@@ -784,7 +845,7 @@ namespace MSTS
                 return UpdateTreeAndStepBack(")");
             }
             #endregion
-            #region Handle # markers
+            #region Handle #&_ markers
             else if ((!skip_mode) && ((c == '#') || (c == '_')))
             {
                 #region Move on to a whitespace so we can pick up any token starting with a #
@@ -805,7 +866,9 @@ namespace MSTS
                 string comment = ReadItem();
                 if (comment == "(") SkipRestOfBlock();
                 #endregion
-                return ReadItem(); // Now move on to the next token after the commented area
+                string item = ReadItem();
+                if (item == ")") { StepBackOneItem(); return "#"; }
+                return item; // Now move on to the next token after the commented area
             }
             #endregion
             #region Build Quoted Items - including append operations
@@ -892,11 +955,19 @@ namespace MSTS
                     #endregion
                     #region Process special token - skip and comment
                     case "skip":
-                        SkipBlock();
-                        return ReadItem();
+                        {
+                            SkipBlock();
+                            string item = ReadItem();
+                            if (item == ")") { StepBackOneItem(); return "#"; }
+                            return item; // Now move on to the next token after the commented area
+                        }
                     case "comment":
-                        SkipBlock();
-                        return ReadItem();
+                        {
+                            SkipBlock();
+                            string item = ReadItem();
+                            if (item == ")") { StepBackOneItem(); return "#"; }
+                            return item; // Now move on to the next token after the commented area
+                        }
                     #endregion
                 }
 

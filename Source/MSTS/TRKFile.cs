@@ -14,19 +14,19 @@ namespace MSTS
     {
         public TRKFile(string filename)
         {
-            using (STFReader f = new STFReader(filename))
             try
             {
-                string token = f.ReadItem();
-                while (token != "") // EOF
+                using (STFReader f = new STFReader(filename))
                 {
-                    if (token == "(") f.SkipBlock();
-                    else if (0 == String.Compare(token, "Tr_RouteFile", true)) Tr_RouteFile = new Tr_RouteFile(f);
-                    else if (0 == String.Compare(token, "_OpenRails", true)) ORTRKData = new ORTRKData(f);
-                    else f.SkipBlock();
-                    token = f.ReadItem();
+                    while (!f.EOF)
+                        switch (f.ReadItem().ToLower())
+                        {
+                            case "tr_routefile": Tr_RouteFile = new Tr_RouteFile(f); break;
+                            case "_OpenRails": ORTRKData = new ORTRKData(f); break;
+                            case "(": f.SkipRestOfBlock(); break;
+                        }
+                    if (Tr_RouteFile == null) throw new STFException(f, "Missing Tr_RouteFile");
                 }
-                if (Tr_RouteFile == null) throw new STFException(f, "Missing Tr_RouteFile");
             }
             finally
             {
@@ -35,7 +35,7 @@ namespace MSTS
             }
         }
         public Tr_RouteFile Tr_RouteFile;
-        public ORTRKData ORTRKData = null;
+        public ORTRKData ORTRKData;
     }
 
     public class ORTRKData

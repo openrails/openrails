@@ -49,7 +49,7 @@ namespace MSTS
         private void ReadFile(string filePath)
         {
             using(STFReader f = new STFReader(filePath))
-                while (!f.EndOfBlock())
+                while (!f.EOF)
                     switch(f.ReadItem().ToLower())
                     {
                         case "tr_sms": Tr_SMS = new Tr_SMS(f); break;
