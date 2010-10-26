@@ -571,6 +571,9 @@ namespace ORTS
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
 			SceneryShader.IsNight_Tex = false;
+			SceneryShader.LightingDiffuse = 1;
+			SceneryShader.LightingSpecular = 0;
+			SceneryShader.Apply();
 
 			graphicsDevice.RenderState.AlphaBlendEnable = false;
 			graphicsDevice.RenderState.AlphaDestinationBlend = Blend.Zero;
@@ -991,19 +994,21 @@ namespace ORTS
             image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
         }
 
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			RenderProcess.RenderStateChangesCount++;
+
+			SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
+
+			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+		}
+
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            RenderProcess.RenderStateChangesCount++;
             RenderProcess.ImageChangesCount++;
 
-            // Save existing render state
-            CullMode cullMode = graphicsDevice.RenderState.CullMode;
-            bool alphaBlendEnable = graphicsDevice.RenderState.AlphaBlendEnable;
-            Blend destinationBlend = graphicsDevice.RenderState.DestinationBlend;
-            Blend sourceBlend = graphicsDevice.RenderState.SourceBlend;
-            bool alphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
-
-            Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
+			Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             // This is BAD BAD BAD, visibility testing shouldn't be in here.
             foreach (var item in renderItems)
@@ -1027,27 +1032,20 @@ namespace ORTS
                         switch (i)
                         {
                             case 0: // Ballast
-                                SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
-
                                 if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
                                     RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
                                     SceneryShader.ImageMap_Tex = image1s;
                                 else
                                     SceneryShader.ImageMap_Tex = image1;
 
-                                // Set render state for drawing ballast
-                                graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-                                graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-                                graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-
-                                // TODO: SceneryShader.SpecularPower = 0;
+                                SceneryShader.LightingSpecular = 0;
                                 break;
                             case 1: // Rail tops
                                 SceneryShader.ImageMap_Tex = image2;
-                                // TODO: SceneryShader.SpecularPower = 64;
+								SceneryShader.LightingSpecular = 25;
                                 break;
                             case 2: // Rail sides
-                                // TODO: SceneryShader.SpecularPower = 0;
+								SceneryShader.LightingSpecular = 0;
                                 break;
 
                             default: continue;
@@ -1063,6 +1061,7 @@ namespace ORTS
 
                         SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
                         SceneryShader.ZBias = item.RenderPrimitive.ZBias;
+						SceneryShader.Apply();
 
                         mesh.DrawIndex = (int)i;
                         SceneryShader.Begin();
@@ -1076,14 +1075,18 @@ namespace ORTS
                     } // end for i
                 } // end if not behind camera
             }
-               
-            // Restore the pre-existing render state
-            graphicsDevice.RenderState.AlphaBlendEnable = alphaBlendEnable;
-            graphicsDevice.RenderState.DestinationBlend = destinationBlend;
-            graphicsDevice.RenderState.SourceBlend = sourceBlend;
-            graphicsDevice.RenderState.AlphaTestEnable = alphaTestEnable;
-            graphicsDevice.RenderState.CullMode = cullMode;
         }
+
+		public override void ResetState(GraphicsDevice graphicsDevice)
+		{
+			SceneryShader.LightingSpecular = 0;
+			SceneryShader.Apply();
+
+			graphicsDevice.RenderState.AlphaBlendEnable = false;
+			graphicsDevice.RenderState.AlphaTestEnable = false;
+			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
+			graphicsDevice.RenderState.SourceBlend = Blend.One;
+		}
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
