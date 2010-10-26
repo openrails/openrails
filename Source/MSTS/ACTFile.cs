@@ -46,6 +46,7 @@ namespace MSTS
                     if (headerOnly && Tr_Activity.Tr_Activity_Header != null)
                         return;
                 }
+                //TODO This should be changed to STFException.TraceError() with defaults values created
                 if (Tr_Activity == null)
                     throw new STFException(f, "Missing Tr_Activity statement");
             }
@@ -73,6 +74,7 @@ namespace MSTS
                 if (headerOnly && Tr_Activity_Header != null)
                     return;
             }
+            //TODO This should be changed to STFException.TraceError() with defaults values created
             if (Tr_Activity_File == null)
                 throw new STFException(f, "Missing Tr_Activity_File statement");
         }

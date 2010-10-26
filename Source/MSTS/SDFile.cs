@@ -26,6 +26,7 @@ namespace MSTS
                         case "shape": shape = new SDShape(f); break;
                         case "(": f.SkipRestOfBlock(); break;
                     }
+                //TODO This should be changed to STFException.TraceError() with defaults values created
                 if (shape == null)
                     throw new STFException(f, "Missing shape statement");
             }
@@ -40,38 +41,31 @@ namespace MSTS
 
             public SDShape(STFReader f)
             {
-				try
-				{
-					while (!f.EOF)
-					{
-						string token = f.ReadItem();
-						if (token == "(")
-							token = f.ReadItem();
-						if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
-						{
-							while (!f.EndOfBlock())
-                                switch (f.ReadItem().ToLower())
-                                {
-                                    case "esd_detail_level": ESD_Detail_Level = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                                    case "esd_alternative_texture": ESD_Alternative_Texture = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                                    case "esd_bounding_box":
-                                        ESD_Bounding_Box = new ESD_Bounding_Box(f);
-                                        if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
-                                            ESD_Bounding_Box = null;
-                                        break;
-                                    case "esd_no_visual_obstruction": ESD_No_Visual_Obstruction = f.ReadBoolBlock(true); break;
-                                    case "esd_snapable": ESD_Snapable = f.ReadBoolBlock(true); break;
-                                    case "(": f.SkipRestOfBlock(); break;
-                                }
-						}
-					}
-					// TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
-					//if( ESD_Bounding_Box == null )throw( new STFError( f, "Missing ESD_Bound_Box statement" ) );
-				}
-				catch (STFException error)
-				{
-					STFException.ReportError(f, error.Message);
-				}
+                while (!f.EOF)
+                {
+                    string token = f.ReadItem();
+                    if (token == "(")
+                        token = f.ReadItem();
+                    if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
+                    {
+                        while (!f.EndOfBlock())
+                            switch (f.ReadItem().ToLower())
+                            {
+                                case "esd_detail_level": ESD_Detail_Level = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                                case "esd_alternative_texture": ESD_Alternative_Texture = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                                case "esd_bounding_box":
+                                    ESD_Bounding_Box = new ESD_Bounding_Box(f);
+                                    if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
+                                        ESD_Bounding_Box = null;
+                                    break;
+                                case "esd_no_visual_obstruction": ESD_No_Visual_Obstruction = f.ReadBoolBlock(true); break;
+                                case "esd_snapable": ESD_Snapable = f.ReadBoolBlock(true); break;
+                                case "(": f.SkipRestOfBlock(); break;
+                            }
+                    }
+                }
+                // TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
+                //if( ESD_Bounding_Box == null )throw( new STFError( f, "Missing ESD_Bound_Box statement" ) );
             }
             public int ESD_Detail_Level = 0;
             public int ESD_Alternative_Texture = 0;

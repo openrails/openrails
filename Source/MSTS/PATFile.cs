@@ -123,7 +123,7 @@ namespace MSTS
                     case "(": f.SkipRestOfBlock(); break;
                 }
             if (count != 0)
-                throw new STFException(f, "TrPathNodes count incorrect");
+                STFException.TraceError(f, "TrPathNodes count incorrect");
         }
 	} // Class CONFile
 

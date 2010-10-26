@@ -165,7 +165,7 @@ namespace MSTS
         {
 #if DEBUG
             if (!IsEof(PeekPastWhitespace()))
-                STFException.ReportWarning(this, "Some of this STF file was not parsed.");
+                STFException.TraceWarning(this, "Some of this STF file was not parsed.");
 #endif
             if (disposing)
             {
@@ -251,10 +251,13 @@ namespace MSTS
         public void MustMatch(string target)
         {
             if (EOF)
-                throw new STFException(this, "Unexpected end of file");
-            string s = ReadItem();
-            if (s != target)
-                throw new STFException(this, target + " Not Found - instead found " + s);
+                STFException.TraceError(this, "Unexpected end of file instead of " + target);
+            else
+            {
+                string s = ReadItem();
+                if (s != target)
+                    throw new STFException(this, target + " Not Found - instead found " + s);
+            }
         }
 
         /// <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")" all other values are not consumed.
@@ -291,7 +294,7 @@ namespace MSTS
 			string token = ReadItem(true);  // read the leading bracket ( 
             if (token == ")")   // just in case we are not where we think we are
             {
-                STFException.ReportWarning(this, "Found a close parenthesis, rather than the expected block of data");
+                STFException.TraceWarning(this, "Found a close parenthesis, rather than the expected block of data");
                 StepBackOneItem();
                 return;
             }
@@ -325,14 +328,14 @@ namespace MSTS
 
             if ((default_val.HasValue) && (item == ")"))
             {
-                STFException.ReportWarning(this, "When expecting a hex string, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a hex string, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
                 return default_val.Value;
             }
 
             uint val;
             if (uint.TryParse(item, parseHex, parseNFI, out val)) return val;
-            STFException.ReportWarning(this, "Cannot parse the constant hex string " + item);
+            STFException.TraceWarning(this, "Cannot parse the constant hex string " + item);
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an signed integer {constant_item}
@@ -346,7 +349,7 @@ namespace MSTS
 
             if ((default_val.HasValue) && (token == ")"))
             {
-                STFException.ReportWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
                 return default_val.Value;
             }
@@ -357,7 +360,7 @@ namespace MSTS
             if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
             if (int.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (int)(scale * val);
 
-            STFException.ReportWarning(this, "Cannot parse the constant number " + token);
+            STFException.TraceWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an unsigned integer {constant_item}
@@ -371,7 +374,7 @@ namespace MSTS
 
             if ((default_val.HasValue) && (token == ")"))
             {
-                STFException.ReportWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
                 return default_val.Value;
             }
@@ -382,7 +385,7 @@ namespace MSTS
             if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
             if (uint.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (uint)(scale * val);
 
-            STFException.ReportWarning(this, "Cannot parse the constant number " + token);
+            STFException.TraceWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an single precision floating point number {constant_item}
@@ -396,7 +399,7 @@ namespace MSTS
 
             if ((default_val.HasValue) && (token == ")"))
             {
-                STFException.ReportWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
                 return default_val.Value;
             }
@@ -407,7 +410,7 @@ namespace MSTS
             if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
             if (float.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
 
-            STFException.ReportWarning(this, "Cannot parse the constant number " + token);
+            STFException.TraceWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an double precision floating point number {constant_item}
@@ -421,7 +424,7 @@ namespace MSTS
 
             if ((default_val.HasValue) && (token == ")"))
             {
-                STFException.ReportWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
                 return default_val.Value;
             }
@@ -432,7 +435,7 @@ namespace MSTS
             if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
             if (double.TryParse(token, parseNum, parseNFI, out val)) return scale * val;
 
-            STFException.ReportWarning(this, "Cannot parse the constant number " + token);
+            STFException.TraceWarning(this, "Cannot parse the constant number " + token);
             return default_val.GetValueOrDefault(0);
 		}
         /// <summary>Enumeration limiting which units are valid when parsing a numeric constant.
@@ -507,7 +510,7 @@ namespace MSTS
             if (i == constant.Length)
             {
                 if ((valid_units & UNITS.Compulsary) > 0)
-                    STFException.ReportWarning(this, "Missing a suffix for data expecting " + valid_units.ToString() + " units");
+                    STFException.TraceWarning(this, "Missing a suffix for data expecting " + valid_units.ToString() + " units");
                 return 1; // There is no suffix, it's all numeric
             }
             while ((i < constant.Length) && (constant[i] == ' ')) ++i; // skip the spaces
@@ -568,7 +571,7 @@ namespace MSTS
                     case "n/m/s": return 1;
                     case "/m/s": return 1;
                 }
-            STFException.ReportWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + valid_units.ToString() + " unit");
+            STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + valid_units.ToString() + " unit");
             return 1;
         }
 
@@ -580,7 +583,10 @@ namespace MSTS
         public string ReadItemBlock(string default_val)
 		{
             if (EOF)
-                STFException.ReportError(this, "Unexpected end of file");
+            {
+                STFException.TraceError(this, "Unexpected end of file");
+                return default_val;
+            }
             string s = ReadItem();
             if (s == ")" && (default_val != null))
             {
@@ -593,7 +599,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val;
 		}
         /// <summary>Read an integer constant from the STF format '( {int_constant} ... )'
@@ -604,7 +610,10 @@ namespace MSTS
         public int ReadIntBlock(UNITS valid_units, int? default_val)
 		{
             if (EOF)
-                STFException.ReportError(this, "Unexpected end of file");
+            {
+                STFException.TraceError(this, "Unexpected end of file");
+                return default_val.GetValueOrDefault(0);
+            }
             string s = ReadItem();
             if (s == ")" && default_val.HasValue)
             {
@@ -617,7 +626,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
@@ -628,7 +637,10 @@ namespace MSTS
         public uint ReadUIntBlock(UNITS valid_units, uint? default_val)
         {
             if (EOF)
-                STFException.ReportError(this, "Unexpected end of file");
+            {
+                STFException.TraceError(this, "Unexpected end of file");
+                return default_val.GetValueOrDefault(0);
+            }
             string s = ReadItem();
             if (s == ")" && default_val.HasValue)
             {
@@ -641,7 +653,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an single precision constant from the STF format '( {float_constant} ... )'
@@ -652,7 +664,10 @@ namespace MSTS
         public float ReadFloatBlock(UNITS valid_units, float? default_val)
         {
             if (EOF)
-                STFException.ReportError(this, "Unexpected end of file");
+            {
+                STFException.TraceError(this, "Unexpected end of file");
+                return default_val.GetValueOrDefault(0);
+            }
             string s = ReadItem();
             if (s == ")" && default_val.HasValue)
             {
@@ -665,7 +680,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an double precision constant from the STF format '( {double_constant} ... )'
@@ -676,7 +691,10 @@ namespace MSTS
         public double ReadDoubleBlock(UNITS valid_units, double? default_val)
 		{
             if (EOF)
-                STFException.ReportError(this, "Unexpected end of file");
+            {
+                STFException.TraceError(this, "Unexpected end of file");
+                return default_val.GetValueOrDefault(0);
+            }
             string s = ReadItem();
             if (s == ")" && default_val.HasValue)
             {
@@ -689,9 +707,9 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val.GetValueOrDefault(0);
-		}
+        }
         /// <summary>Reads the first item from a block in the STF format '( {double_constant} ... )' and return true if is not-zero or 'true'
         /// </summary>
         /// <param name="default_val">the default value if a item is not found in the block.</param>
@@ -700,7 +718,10 @@ namespace MSTS
         public bool ReadBoolBlock(bool default_val)
         {
             if (EOF)
-                STFException.ReportError(this, "Unexpected end of file");
+            {
+                STFException.TraceError(this, "Unexpected end of file");
+                return default_val;
+            }
             string s = ReadItem();
             if (s == ")")
             {
@@ -721,7 +742,7 @@ namespace MSTS
                         return default_val;
                 }
             }
-            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val;
         }
         /// <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
@@ -732,7 +753,10 @@ namespace MSTS
         public Vector3 ReadVector3Block(UNITS valid_units, Vector3 default_val)
         {
             if (EOF)
-                STFException.ReportError(this, "Unexpected end of file");
+            {
+                STFException.TraceError(this, "Unexpected end of file");
+                return default_val;
+            }
             string s = ReadItem();
             if (s == ")")
             {
@@ -747,7 +771,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return default_val;
             }
-            STFException.ReportError(this, "Block Not Found - instead found " + s);
+            STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val;
         }
 
@@ -851,7 +875,7 @@ namespace MSTS
                 UpdateTreeAndStepBack(item);
                 if ((!includeReader.EOF) || (item.Length > 0)) return item;
                 if (tree.Count != 0)
-                    STFException.ReportWarning(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
+                    STFException.TraceError(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
                 includeReader.Dispose();
                 includeReader = null;
             }
@@ -889,7 +913,7 @@ namespace MSTS
                     c = ReadChar();
                     if (IsEof(c))
                     {
-                        STFException.ReportWarning(this, "Found a # marker immediately followed by an unexpected EOF.");
+                        STFException.TraceWarning(this, "Found a # marker immediately followed by an unexpected EOF.");
                         return UpdateTreeAndStepBack("");
                     }
                     if (IsWhiteSpace(c)) break;
@@ -912,7 +936,7 @@ namespace MSTS
                     c = ReadChar();
                     if (IsEof(c))
                     {
-                        STFException.ReportWarning(this, "Found an unexpected EOF, while reading an item started with a double-quote character.");
+                        STFException.TraceWarning(this, "Found an unexpected EOF, while reading an item started with a double-quote character.");
                         return UpdateTreeAndStepBack(itemBuilder.ToString());
                     }
                     if (c == '\\') // escape sequence
@@ -932,21 +956,20 @@ namespace MSTS
                         ReadChar(); // Read the '+' character
 
                         #region Skip past any leading whitespace characters
-                        for (; ; )
+                        c = (char)PeekPastWhitespace();
+                        if (IsEof(c))
                         {
-                            c = ReadChar();
-                            if (IsEof(c))
-                            {
-                                STFException.ReportWarning(this, "Found an unexpected EOF, while reading an item started with a double-quote character and followed by the + operator.");
-                                return UpdateTreeAndStepBack("");
-                            }
-                            if (!IsWhiteSpace(c)) break;
+                            STFException.TraceWarning(this, "Found an unexpected EOF, while reading an item started with a double-quote character and followed by the + operator.");
+                            return UpdateTreeAndStepBack(itemBuilder.ToString());
                         }
                         #endregion
 
                         if (c != '"')
-                            throw new STFException(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
-
+                        {
+                            STFException.TraceError(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
+                            return UpdateTreeAndStepBack(itemBuilder.ToString());
+                        }
+                        c = ReadChar(); // Read the open quote
                     }
                 }
             }
@@ -984,7 +1007,8 @@ namespace MSTS
                             return ReadItem(); // Which will recurse down when includeReader is tested
                         }
                         else
-                            throw new STFException(this, "Found an include directive, but it was enclosed in block parenthesis which is illegal.");
+                            STFException.TraceError(this, "Found an include directive, but it was enclosed inside block parenthesis which is illegal.");
+                        break;
                     #endregion
                     #region Process special token - skip and comment
                     case "skip":
@@ -1056,18 +1080,13 @@ namespace MSTS
     public class STFException : Exception
     // STF errors display the last few lines of the STF file when reporting errors.
     {
-        public static void ReportError(STFReader reader, string message)
+        public static void TraceError(STFReader reader, string message)
         {
             Trace.TraceError("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
         }
-        public static void ReportWarning(STFReader reader, string message)
+        public static void TraceWarning(STFReader reader, string message)
         {
             Trace.TraceWarning("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
-        }
-        public static void ReportInformation(STFReader reader, Exception error)
-        {
-            Trace.TraceError("STF error in {0}:line {1}", reader.FileName, reader.LineNumber);
-            Trace.WriteLine(error);
         }
 
         public STFException(STFReader reader, string message)

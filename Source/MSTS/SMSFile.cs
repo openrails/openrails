@@ -150,7 +150,7 @@ namespace MSTS
                 }
 
             if (count != this.Count)
-                STFException.ReportError(f,"Stream count mismatch");  
+                STFException.TraceWarning(f,"Stream count mismatch");  
         }
     }
 
@@ -267,7 +267,7 @@ namespace MSTS
 
             foreach (Trigger trigger in this)
                 if (trigger.SoundCommand == null)
-                    STFException.ReportError( f, "Trigger lacks a sound command");
+                    STFException.TraceError( f, "Trigger lacks a sound command");
         }
     }
 
@@ -291,7 +291,7 @@ namespace MSTS
                 case "setstreamvolume":
                     ++playcommandcount;
                     if (playcommandcount > 1)
-                        STFException.ReportError( f, "MultiplePlayCommands");
+                        STFException.TraceWarning( f, "Found multiple Play Commands");
                     break;
                 default:
                     break;
@@ -363,9 +363,6 @@ namespace MSTS
                 case "variable2_dec_past": Event = Events.Variable2_Dec_Past; break;
                 case "variable3_inc_past": Event = Events.Variable3_Inc_Past; break;
                 case "variable3_dec_past": Event = Events.Variable3_Dec_Past; break;
-                default:
-                    STFException.ReportError(f, "Unexpected " + eventString);
-                    break;  // MSTS ignores unrecognized tokens
             }
 
             Threshold = f.ReadFloat(STFReader.UNITS.None, null);
@@ -503,7 +500,7 @@ namespace MSTS
                         }
                         else  // MSTS skips extra files
                         {
-                            STFException.ReportError(f, "File count mismatch");
+                            STFException.TraceWarning(f, "File count mismatch");
                             f.SkipBlock();
                         }
                         break;
@@ -514,7 +511,7 @@ namespace MSTS
                         {
                             case "randomselection": SelectionMethod = SelectionMethods.RandomSelection; break;
                             case "sequentialselection": SelectionMethod = SelectionMethods.SequentialSelection; break;
-                            default: STFException.ReportError(f, "Unknown selection method " + s); break;
+                            default: STFException.TraceWarning(f, "Unknown selection method " + s); break;
                         }
                         f.SkipRestOfBlock();
                         break;

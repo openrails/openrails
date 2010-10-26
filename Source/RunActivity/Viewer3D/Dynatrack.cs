@@ -121,18 +121,36 @@ namespace ORTS
                         {
                             // "EXPERIMENTAL" header is temporary
                             if (f.SIMISsignature != "EXPERIMENTAL")
-                                throw new STFException(f, "Invalid header");
+                            {
+                                STFException.TraceError(f, "Invalid header - file will not be processed. Using DEFAULT profile.");
+                                TrackProfile = new TrProfile(); // Default profile if no file
+                            }
                             else
                             {
-                                while (!f.EOF)
-                                    switch (f.ReadItem().ToLower())
+                                try
+                                {
+                                    while (!f.EOF)
+                                        switch (f.ReadItem().ToLower())
+                                        {
+                                            case "trprofile":
+                                                TrackProfile = new TrProfile(f); // .dat file constructor
+                                                break;
+                                            case "(": f.SkipRestOfBlock(); break;
+                                        }
+                                }
+                                catch (Exception e)
+                                {
+                                    STFException.TraceError(f, "Track profile DAT constructor failed because " + e.Message + ". Using DEFAULT profile.");
+                                    TrackProfile = new TrProfile(); // Default profile if no file
+                                }
+                                finally
+                                {
+                                    if (TrackProfile == null)
                                     {
-                                        case "trprofile":
-                                            TrackProfile = new TrProfile(f); // .dat file constructor
-                                            break;
-                                        case "(": f.SkipRestOfBlock(); break;
+                                        STFException.TraceError(f, "Track profile DAT constructor failed. Using DEFAULT profile.");
+                                        TrackProfile = new TrProfile(); // Default profile if no file
                                     }
-                                if (TrackProfile == null) throw new STFException(f, "Track profile DAT constructor failed.");
+                                }
                             }
                         }
                         Trace.Write("(.DAT)");
@@ -234,7 +252,7 @@ namespace ORTS
             // Checks for required member variables: 
             // Name not required.
             // Image1Name, Image1sName, and Image2Name initialized as MSTS defaults.
-            if (LODItems.Count == 0) throw new STFException(f, "Missing LODItems");
+            if (LODItems.Count == 0) throw new Exception("missing LODItems");
 
         } // end TrProfile(STFReader) constructor
 
@@ -585,11 +603,11 @@ namespace ORTS
 
             // Checks for required member variables:
             // Name not required.
-            if (CutoffRadius == 0) throw new STFException(f, "Missing CutoffRadius");
+            if (CutoffRadius == 0) throw new Exception("missing CutoffRadius");
             // MipMapLevelOfDetail bias initializes to 0.
             // AlphaBlendEnable initializes to false.
             // AlphaTestEnable initializes to false.
-            if (Polylines.Count == 0) throw new STFException(f, "Missing Polylines");
+            if (Polylines.Count == 0) throw new Exception("missing Polylines");
 
         } // end LODItem() constructor
     } // end LODItem
@@ -643,8 +661,8 @@ namespace ORTS
 
             // Checks for required member variables: 
             // Name not required.
-            if (DeltaTexCoord == Vector2.Zero) throw new STFException(f, "Missing DeltaTexCoord");
-            if (Vertices.Count == 0) throw new STFException(f, "Missing Vertices");
+            if (DeltaTexCoord == Vector2.Zero) throw new Exception("missing DeltaTexCoord");
+            if (Vertices.Count == 0) throw new Exception("missing Vertices");
         } // end Polyline() constructor
     } // end Polyline
 
@@ -705,7 +723,7 @@ namespace ORTS
 
             // Checks for required member variables
             // No way to check for missing Position.
-            if (Normal == Vector3.Zero) throw new STFException(f, "Improper Normal");
+            if (Normal == Vector3.Zero) throw new Exception("improper Normal");
             // No way to check for missing TexCoord
         } // end Vertex() constructor
 

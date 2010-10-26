@@ -232,16 +232,11 @@ namespace ORTS
             {
                 token = token.Substring(0, i);
             }
-            try
-            {
-                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid volume value or units {0}, cubic feet expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
+            float result;
+            if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
+                return result;
+            STFException.TraceWarning(f, "Invalid volume value or units " + token + ", cubic feet expected");
+            return ParseFloat(token);
         }
         public float ParsePSI(string token, STFReader f)
         {
@@ -251,16 +246,11 @@ namespace ORTS
             {
                 token = token.Substring(0, i);
             }
-            try
-            {
-                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid pressure value or units {0}, pounds per square inch expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
+            float result;
+            if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
+                return result;
+            STFException.TraceWarning(f, "invalid pressure value or units " + token + ", pounds per square inch expected");
+            return ParseFloat(token);
         }
         public float ParseLBpH(string token, STFReader f)
         {
@@ -270,16 +260,11 @@ namespace ORTS
             {
                 token = token.Substring(0, i);
             }
-            try
-            {
-                return float.Parse(token, new System.Globalization.CultureInfo("en-US"));
-            }
-            catch (System.Exception)
-            {
-                string msg = String.Format("invalid steaming rate value or units {0}, pounds per hour expected", token);
-                STFException.ReportError(f, msg);
-                return ParseFloat(token);
-            }
+            float result;
+            if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
+                return result;
+            STFException.TraceWarning(f, "invalid steaming rate value or units " + token + ", pounds per hour expected");
+            return ParseFloat(token);
         }
 
         /// <summary>

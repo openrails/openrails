@@ -32,7 +32,7 @@ namespace MSTS
                         case "(": f.SkipRestOfBlock(); break;
                     }
                 if (count != this.Count)
-                    STFException.ReportError(f, "Count mismatch.");
+                    STFException.TraceError(f, "Count mismatch.");
             }
 		}
 

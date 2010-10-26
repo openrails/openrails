@@ -136,7 +136,7 @@ namespace MSTS
         {
             if (ContainsKey(section.SectionIndex))
             {
-                STFException.ReportError(f, "Duplicate SectionIndex of " + section.SectionIndex);
+                STFException.TraceWarning(f, "Duplicate SectionIndex of " + section.SectionIndex);
             }
             this[section.SectionIndex] = section;
         }
@@ -169,17 +169,11 @@ namespace MSTS
        			string token = f.ReadItem();
                 if( token == ")" ) 
                 {
-                    STFException.ReportError( f, "Missing track section" );
+                    STFException.TraceError( f, "Missing track section" );
                     return;   // there are many TSECTION.DAT's with missing sections so we will accept this error
                 }
-				try
-				{
-					TrackSections[i] = uint.Parse(token);
-				}
-				catch (STFException error)
-				{
-					STFException.ReportError(f, error.Message);
-				}
+                if (!uint.TryParse(token, out TrackSections[i]))
+                    STFException.TraceWarning(f, "Invalid Track Section " + token);
 			}
 			f.SkipRestOfBlock();
 		}
@@ -283,6 +277,7 @@ namespace MSTS
                         case "trackshapes": TrackShapes = new TrackShapes(f); break;
                         case "(": f.SkipRestOfBlock(); break;
                     }
+                //TODO This should be changed to STFException.TraceError() with defaults values created
                 if (TrackSections == null) throw new STFException(f, "Missing TrackSections");
                 if (TrackShapes == null) throw new STFException(f, "Missing TrackShapes");
             }

@@ -32,6 +32,7 @@ namespace ORTS
                             case "tr_worldsoundfile": TR_WorldSoundFile = new TR_WorldSoundFile(reader); break;
                             case "(": reader.SkipRestOfBlock(); break;
                         }
+                    //TODO This should be changed to STFException.TraceError() with defaults values created
                     if (TR_WorldSoundFile == null)
                         throw new STFException(reader, "Missing TR_WorldSoundFile statement");
                 }

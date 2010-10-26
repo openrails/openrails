@@ -49,10 +49,10 @@ namespace ORTS
                 list.Add(reader.ReadFloat(STFReader.UNITS.Any, null));
             reader.SkipRestOfBlock();
             if (list.Count % 2 == 1)
-                STFException.ReportWarning(reader, "Ignoring extra odd value in Interpolator list.");
+                STFException.TraceWarning(reader, "Ignoring extra odd value in Interpolator list.");
             int n = list.Count/2;
             if (n < 2)
-                STFException.ReportError(reader, "Interpolator must have at least two value pairs.");
+                STFException.TraceError(reader, "Interpolator must have at least two value pairs.");
             X = new float[n];
             Y = new float[n];
             Size = n;
@@ -61,7 +61,7 @@ namespace ORTS
                 X[i] = list[2*i];
                 Y[i] = list[2*i+1];
                 if (i > 0 && X[i - 1] >= X[i])
-                    STFException.ReportError(reader, " Interpolator x values must be increasing.");
+                    STFException.TraceWarning(reader, " Interpolator x values must be increasing.");
             }
         }
         public float this[float x]
@@ -256,7 +256,7 @@ namespace ORTS
             reader.SkipRestOfBlock();
             int n = xlist.Count;
             if (n < 2)
-                STFException.ReportError(reader, "Interpolator must have at least two x values.");
+                STFException.TraceError(reader, "Interpolator must have at least two x values.");
             X = new float[n];
             Y = new Interpolator[n];
             Size = n;
@@ -265,7 +265,7 @@ namespace ORTS
                 X[i] = xlist[i];
                 Y[i] = ilist[i];
                 if (i > 0 && X[i - 1] >= X[i])
-                    STFException.ReportError(reader, " Interpolator x values must be increasing.");
+                    STFException.TraceWarning(reader, " Interpolator x values must be increasing.");
             }
         }
         public float Get(float x, float y)

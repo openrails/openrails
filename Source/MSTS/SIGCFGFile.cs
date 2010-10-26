@@ -200,7 +200,7 @@ namespace MSTS
 			}
 			else
 			{
-				STFException.ReportError(f, "'Colour' Expected");
+				STFException.TraceWarning(f, "'Colour' Expected");
 			}
 			f.MustMatch(")");
 		}
@@ -244,7 +244,7 @@ namespace MSTS
                                 case "abs": Abs = true; break;
                                 case "no_gantry": NoGantry = true; break;
                                 case "semaphore": Semaphore = true; break;
-                                default: f.StepBackOneItem(); STFException.ReportWarning(f, "Unknown Signal Type Flag " + f.ReadItem()); break;
+                                default: f.StepBackOneItem(); STFException.TraceError(f, "Unknown Signal Type Flag " + f.ReadItem()); break;
                             }
                         break;
                     case "sigflashduration":
@@ -271,7 +271,8 @@ namespace MSTS
 			}
 			catch (ArgumentException error)
 			{
-                throw new STFException(f, "Unknown SignalFnType: " + error.Message);
+                STFException.TraceWarning(f, "Unknown SignalFnType: " + error.Message);
+                return FnTypes.Info;
 			}
 		}
 
@@ -299,7 +300,7 @@ namespace MSTS
             lights.Sort(SignalLight.Comparer);
             for (var i = 0; i < lights.Count; i++)
                 if (lights[i].Index != i)
-                    throw new STFException(f, "SignalLight index out of range: " + lights[i].Index);
+                    STFException.TraceError(f, "SignalLight index out of range: " + lights[i].Index);
             return lights;
 		}
 
@@ -491,7 +492,7 @@ namespace MSTS
                             switch (f.ReadItem().ToLower())
                             {
                                 case "flashing": Flashing = true; break;
-                                default: f.StepBackOneItem(); STFException.ReportWarning(f, "Unknown DrawLight Flag " + f.ReadItem()); break;
+                                default: f.StepBackOneItem(); STFException.TraceWarning(f, "Unknown DrawLight Flag " + f.ReadItem()); break;
                             }
                         break;
                     case "(": f.SkipRestOfBlock(); break;
@@ -517,7 +518,8 @@ namespace MSTS
             }
             catch (ArgumentException)
             {
-                throw new STFException(f, "Unknown Aspect " + aspectName);
+                STFException.TraceError(f, "Unknown Aspect " + aspectName);
+                Aspect = SignalHead.SIGASP.UNKNOWN;
             }
             DrawStateName = f.ReadItem();
             while (!f.EndOfBlock())
@@ -531,7 +533,7 @@ namespace MSTS
                             switch (f.ReadItem().ToLower())
                             {
                                 case "asap": Asap = true; break;
-                                default: f.StepBackOneItem(); STFException.ReportWarning(f, "Unknown DrawLight Flag " + f.ReadItem()); break;
+                                default: f.StepBackOneItem(); STFException.TraceWarning(f, "Unknown DrawLight Flag " + f.ReadItem()); break;
                             }
                         break;
                     case "(": f.SkipRestOfBlock(); break;
@@ -616,7 +618,7 @@ namespace MSTS
                                     case "default": Default = true; break;
                                     case "back_facing": BackFacing = true; break;
                                     case "jn_link": JunctionLink = true; break;
-                                    default: f.StepBackOneItem(); STFException.ReportWarning(f, "Unknown SignalSubObj flag " + f.ReadItem()); break;
+                                    default: f.StepBackOneItem(); STFException.TraceWarning(f, "Unknown SignalSubObj flag " + f.ReadItem()); break;
                                 }
                             break;
                         case "sigsubstype": SignalSubSignalType = ReadSignalSubSignalType(f); break;

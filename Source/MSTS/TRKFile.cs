@@ -25,6 +25,7 @@ namespace MSTS
                             case "_OpenRails": ORTRKData = new ORTRKData(f); break;
                             case "(": f.SkipRestOfBlock(); break;
                         }
+                    //TODO This should be changed to STFException.TraceError() with defaults values created
                     if (Tr_RouteFile == null) throw new STFException(f, "Missing Tr_RouteFile");
                 }
             }
@@ -76,6 +77,7 @@ namespace MSTS
                     case "milepostunitskilometers": MilepostUnitsMetric = true; break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
+            //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(f, "Missing RouteID");
             if (Name == null) throw new STFException(f, "Missing Name");
             if (Description == null) throw new STFException(f, "Missing Description");
