@@ -43,7 +43,7 @@ namespace MSTS
         static IDictionary<string, LightTexture> ReadLightTextures(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var lightTextures = new Dictionary<string, LightTexture>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -70,7 +70,7 @@ namespace MSTS
         static IDictionary<string, LightTableEntry> ReadLightsTable(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var lightsTable = new Dictionary<string, LightTableEntry>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -97,7 +97,7 @@ namespace MSTS
         static IDictionary<string, SignalType> ReadSignalTypes(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var signalTypes = new Dictionary<string, SignalType>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -124,7 +124,7 @@ namespace MSTS
         static IDictionary<string, SignalShape> ReadSignalShapes(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var signalShapes = new Dictionary<string, SignalShape>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -172,10 +172,10 @@ namespace MSTS
 			f.MustMatch("(");
 			Name = f.ReadItem();
 			TextureFile = f.ReadItem();
-            u0 = f.ReadFloat(STFReader.UNITS.Any, null);
-            v0 = f.ReadFloat(STFReader.UNITS.Any, null);
-            u1 = f.ReadFloat(STFReader.UNITS.Any, null);
-            v1 = f.ReadFloat(STFReader.UNITS.Any, null);
+            u0 = f.ReadFloat(STFReader.UNITS.None, null);
+            v0 = f.ReadFloat(STFReader.UNITS.None, null);
+            u1 = f.ReadFloat(STFReader.UNITS.None, null);
+            v1 = f.ReadFloat(STFReader.UNITS.None, null);
 			f.MustMatch(")");
 		}
 	}
@@ -192,10 +192,10 @@ namespace MSTS
 			if (f.ReadItem().ToLower() == "colour")
 			{
 				f.MustMatch("(");
-                a = (byte)f.ReadUInt(STFReader.UNITS.Any, null);
-                r = (byte)f.ReadUInt(STFReader.UNITS.Any, null);
-                g = (byte)f.ReadUInt(STFReader.UNITS.Any, null);
-                b = (byte)f.ReadUInt(STFReader.UNITS.Any, null);
+                a = (byte)f.ReadUInt(STFReader.UNITS.None, null);
+                r = (byte)f.ReadUInt(STFReader.UNITS.None, null);
+                g = (byte)f.ReadUInt(STFReader.UNITS.None, null);
+                b = (byte)f.ReadUInt(STFReader.UNITS.None, null);
 				f.MustMatch(")");
 			}
 			else
@@ -249,16 +249,16 @@ namespace MSTS
                         break;
                     case "sigflashduration":
                         f.MustMatch("(");
-                        FlashTimeOn = f.ReadFloat(STFReader.UNITS.Any, null);
-                        FlashTimeOff = f.ReadFloat(STFReader.UNITS.Any, null);
+                        FlashTimeOn = f.ReadFloat(STFReader.UNITS.None, null);
+                        FlashTimeOff = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                         break;
                     case "signallighttex": LightTextureName = ReadLightTextureName(f); break;
                     case "signallights": Lights = ReadLights(f); break;
                     case "signaldrawstates": DrawStates = ReadDrawStates(f); break;
                     case "signalaspects": Aspects = ReadAspects(f); break;
-                    case "signalnumclearahead": NumClearAhead = f.ReadUIntBlock(STFReader.UNITS.Any, null); break;
-                    case "semaphoreinfo": SemaphoreInfo = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "signalnumclearahead": NumClearAhead = f.ReadUIntBlock(STFReader.UNITS.None, null); break;
+                    case "semaphoreinfo": SemaphoreInfo = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
         }
@@ -283,7 +283,7 @@ namespace MSTS
         static IList<SignalLight> ReadLights(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var lights = new List<SignalLight>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -306,7 +306,7 @@ namespace MSTS
         static IDictionary<string, SignalDrawState> ReadDrawStates(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var drawStates = new Dictionary<string, SignalDrawState>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -333,7 +333,7 @@ namespace MSTS
         static IList<SignalAspect> ReadAspects(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var aspects = new List<SignalAspect>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -404,20 +404,20 @@ namespace MSTS
         public SignalLight(STFReader f)
         {
             f.MustMatch("(");
-            Index = f.ReadUInt(STFReader.UNITS.Any, null);
+            Index = f.ReadUInt(STFReader.UNITS.None, null);
             Name = f.ReadItem();
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
                     case "position":
                         f.MustMatch("(");
-                        X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        Y = f.ReadFloat(STFReader.UNITS.Any, null);
-                        Z = f.ReadFloat(STFReader.UNITS.Any, null);
+                        X = f.ReadFloat(STFReader.UNITS.None, null);
+                        Y = f.ReadFloat(STFReader.UNITS.None, null);
+                        Z = f.ReadFloat(STFReader.UNITS.None, null);
                         f.MustMatch(")");
                         break;
                     case "radius":
-                        Radius = f.ReadFloatBlock(STFReader.UNITS.Any, null);
+                        Radius = f.ReadFloatBlock(STFReader.UNITS.None, null);
                         break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
@@ -438,7 +438,7 @@ namespace MSTS
         public SignalDrawState(STFReader f)
         {
             f.MustMatch("(");
-            Index = f.ReadInt(STFReader.UNITS.Any, null);
+            Index = f.ReadInt(STFReader.UNITS.None, null);
             Name = f.ReadItem();
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -451,7 +451,7 @@ namespace MSTS
         static IList<SignalDrawLight> ReadDrawLights(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var drawLights = new List<SignalDrawLight>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -481,7 +481,7 @@ namespace MSTS
 		public SignalDrawLight(STFReader f)
 		{
             f.MustMatch("(");
-            LightIndex = f.ReadUInt(STFReader.UNITS.Any, null);
+            LightIndex = f.ReadUInt(STFReader.UNITS.None, null);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
@@ -560,7 +560,7 @@ namespace MSTS
         static IList<SignalSubObj> ReadSignalSubObjects(STFReader f)
         {
             f.MustMatch("(");
-            var count = f.ReadInt(STFReader.UNITS.Any, null);
+            var count = f.ReadInt(STFReader.UNITS.None, null);
             var signalSubObjects = new List<SignalSubObj>(count);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
@@ -600,7 +600,7 @@ namespace MSTS
             public SignalSubObj(STFReader f)
             {
                 f.MustMatch("(");
-                Index = f.ReadInt(STFReader.UNITS.Any, null);
+                Index = f.ReadInt(STFReader.UNITS.None, null);
                 MatrixName = f.ReadItem().ToUpper();
                 Description = f.ReadItem();
                 while (!f.EndOfBlock())

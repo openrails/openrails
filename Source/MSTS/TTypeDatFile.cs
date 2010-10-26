@@ -24,7 +24,7 @@ namespace MSTS
 		{
             using (STFReader f = new STFReader(filePath))
             {
-                int count = f.ReadInt(STFReader.UNITS.Any, null);
+                int count = f.ReadInt(STFReader.UNITS.None, null);
                 while (!f.EndOfBlock())
                     switch (f.ReadItem().ToLower())
                     {

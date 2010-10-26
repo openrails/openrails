@@ -52,7 +52,7 @@ namespace MSTS
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
-                    case "maxviewingdistance": MaxViewingDistance = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "maxviewingdistance": MaxViewingDistance = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
         }
@@ -70,7 +70,7 @@ namespace MSTS
                     case "name": Name = f.ReadItemBlock(null); break;
                     case "filename": FileName = f.ReadItemBlock(null); break;
                     case "description": Description = f.ReadItemBlock(null); break;
-                    case "maxlinevoltage": MaxLineVoltage = f.ReadDoubleBlock(STFReader.UNITS.Any, null); break;
+                    case "maxlinevoltage": MaxLineVoltage = f.ReadDoubleBlock(STFReader.UNITS.None, null); break;
                     case "routestart": if (RouteStart == null) RouteStart = new RouteStart(f); break; // take only the first - ignore any others
                     case "environment": Environment = new TRKEnvironment(f); break;
                     case "milepostunitskilometers": MilepostUnitsMetric = true; break;
@@ -97,10 +97,10 @@ namespace MSTS
         public RouteStart(STFReader f)
         {
             f.MustMatch("(");
-            WX = f.ReadDouble(STFReader.UNITS.Any, null);   // tilex
-            WZ = f.ReadDouble(STFReader.UNITS.Any, null);   // tilez
-            X = f.ReadDouble(STFReader.UNITS.Any, null);
-            Z = f.ReadDouble(STFReader.UNITS.Any, null);
+            WX = f.ReadDouble(STFReader.UNITS.None, null);   // tilex
+            WZ = f.ReadDouble(STFReader.UNITS.None, null);   // tilez
+            X = f.ReadDouble(STFReader.UNITS.None, null);
+            Z = f.ReadDouble(STFReader.UNITS.None, null);
             while (f.ReadItem() != ")") ; // discard extra parameters - users frequently describe location here
         }
         public double WX, WZ, X, Z;

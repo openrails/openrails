@@ -42,8 +42,8 @@ namespace MSTS
             while (!reader.EndOfBlock())
                 switch (reader.ReadItem().ToLower())
                 {
-                    case "world_water_wave_height": WaterWaveHeight = reader.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "world_water_wave_speed": WaterWaveSpeed = reader.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "world_water_wave_height": WaterWaveHeight = reader.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "world_water_wave_speed": WaterWaveSpeed = reader.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                     case "world_water_layers": ParseWaterLayers(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
@@ -51,7 +51,7 @@ namespace MSTS
         private void ParseWaterLayers(STFReader reader)
         {
             reader.MustMatch("(");
-            int texturelayers = reader.ReadInt(STFReader.UNITS.Any, null);
+            int texturelayers = reader.ReadInt(STFReader.UNITS.None, null);
             WaterLayers = new List<ENVFileWaterLayer>(texturelayers);
             while (!reader.EndOfBlock())
                 switch (reader.ReadItem().ToLower())
@@ -78,7 +78,7 @@ namespace MSTS
             while (!reader.EndOfBlock())
                 switch (reader.ReadItem().ToLower())
                 {
-                    case "world_water_layer_height": Height = reader.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "world_water_layer_height": Height = reader.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                     case "world_anim_shader": ParseAnimShader(reader); break;
                     case "(": reader.SkipRestOfBlock(); break;
                 }
@@ -107,7 +107,7 @@ namespace MSTS
         private void ParseTerrainTexSlots(STFReader reader)
         {
             reader.MustMatch("(");
-            reader.ReadInt(STFReader.UNITS.Any, null); // Count
+            reader.ReadInt(STFReader.UNITS.None, null); // Count
             while (!reader.EndOfBlock())
                 switch (reader.ReadItem().ToLower())
                 {

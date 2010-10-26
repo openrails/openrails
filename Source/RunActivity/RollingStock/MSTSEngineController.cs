@@ -44,7 +44,7 @@ namespace ORTS
             //Console.WriteLine("controller {0} {1} {2} {3}", MinimumValue, MaximumValue, StepSize, CurrentValue);
             f.ReadItem(); // numnotches
             f.MustMatch("(");
-            int n = f.ReadInt(STFReader.UNITS.Any, null);
+            int n = f.ReadInt(STFReader.UNITS.None, null);
             for (; ; )
             {
                 string token = f.ReadItem().ToLower();

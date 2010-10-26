@@ -52,8 +52,8 @@ namespace MSTS
 							while (!f.EndOfBlock())
                                 switch (f.ReadItem().ToLower())
                                 {
-                                    case "esd_detail_level": ESD_Detail_Level = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                                    case "esd_alternative_texture": ESD_Alternative_Texture = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                                    case "esd_detail_level": ESD_Detail_Level = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                                    case "esd_alternative_texture": ESD_Alternative_Texture = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                                     case "esd_bounding_box":
                                         ESD_Bounding_Box = new ESD_Bounding_Box(f);
                                         if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
@@ -94,13 +94,13 @@ namespace MSTS
                 string item = f.ReadItem();
                 if (item == ")") return;    // quietly return on ESD_Bounding_Box()
                 f.StepBackOneItem();
-                float X = f.ReadFloat(STFReader.UNITS.Any, null);
-                float Y = f.ReadFloat(STFReader.UNITS.Any, null);
-                float Z = f.ReadFloat(STFReader.UNITS.Any, null);
+                float X = f.ReadFloat(STFReader.UNITS.None, null);
+                float Y = f.ReadFloat(STFReader.UNITS.None, null);
+                float Z = f.ReadFloat(STFReader.UNITS.None, null);
                 A = new TWorldPosition(X, Y, Z);
-                X = f.ReadFloat(STFReader.UNITS.Any, null);
-                Y = f.ReadFloat(STFReader.UNITS.Any, null);
-                Z = f.ReadFloat(STFReader.UNITS.Any, null);
+                X = f.ReadFloat(STFReader.UNITS.None, null);
+                Y = f.ReadFloat(STFReader.UNITS.None, null);
+                Z = f.ReadFloat(STFReader.UNITS.None, null);
                 B = new TWorldPosition(X, Y, Z);
                 // JP2indirt.sd has extra parameters
                 for (; ; )

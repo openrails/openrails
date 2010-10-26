@@ -103,10 +103,10 @@ namespace ORTS
             {
                 case "wagon(wagonshape": MainShapeFileName = f.ReadItemBlock(null); break;
                 case "wagon(freightanim": ParseFreightAnim(f); break;
-                case "wagon(size": f.MustMatch("("); f.ReadFloat(STFReader.UNITS.Any, null); f.ReadFloat(STFReader.UNITS.Any, null); Length = f.ReadFloat(STFReader.UNITS.Any, null); f.SkipRestOfBlock(); break;
-                case "wagon(mass": MassKG = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "wagon(wheelradius": WheelRadiusM = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(wheelradius": DriverWheelRadiusM = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(size": f.MustMatch("("); f.ReadFloat(STFReader.UNITS.Distance, null); f.ReadFloat(STFReader.UNITS.Distance, null); Length = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                case "wagon(mass": MassKG = f.ReadFloatBlock(STFReader.UNITS.Weight, null); break;
+                case "wagon(wheelradius": WheelRadiusM = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(wheelradius": DriverWheelRadiusM = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = f.ReadItemBlock(null); break;
                 case "wagon(friction": ParseFriction(f); break;
                 case "wagon(brakesystemtype":
@@ -117,12 +117,12 @@ namespace ORTS
                 case "wagon(coupling(couplinghasrigidconnection": Couplers[Couplers.Count - 1].Rigid = f.ReadBoolBlock(true); break;
                 case "wagon(coupling(spring(stiffness":
                     f.MustMatch("(");
-                    Couplers[Couplers.Count - 1].SetStiffness(f.ReadFloat(STFReader.UNITS.Any, null), f.ReadFloat(STFReader.UNITS.Any, null));
+                    Couplers[Couplers.Count - 1].SetStiffness(f.ReadFloat(STFReader.UNITS.Stiffness, null), f.ReadFloat(STFReader.UNITS.Stiffness, null));
                     f.SkipRestOfBlock();
                     break;
                 case "wagon(coupling(spring(r0":
                     f.MustMatch("(");
-                    Couplers[Couplers.Count - 1].SetR0(f.ReadFloat(STFReader.UNITS.Any, null), f.ReadFloat(STFReader.UNITS.Any, null));
+                    Couplers[Couplers.Count - 1].SetR0(f.ReadFloat(STFReader.UNITS.Distance, null), f.ReadFloat(STFReader.UNITS.Distance, null));
                     f.SkipRestOfBlock();
                     break;
                 case "wagon(lights": 
@@ -186,9 +186,9 @@ namespace ORTS
                 {
                     case "sound": InteriorSoundFileName = f.ReadItemBlock(null); break;
                     case "passengercabinfile": InteriorShapeFileName = f.ReadItemBlock(null); break;
-                    case "passengercabinheadpos": passengerViewPoint.Location = f.ReadVector3Block(new Vector3()); break;
-                    case "rotationlimit": passengerViewPoint.RotationLimit = f.ReadVector3Block(new Vector3()); break;
-                    case "startdirection": passengerViewPoint.StartDirection = f.ReadVector3Block(new Vector3()); break;
+                    case "passengercabinheadpos": passengerViewPoint.Location = f.ReadVector3Block(STFReader.UNITS.None, new Vector3()); break;
+                    case "rotationlimit": passengerViewPoint.RotationLimit = f.ReadVector3Block(STFReader.UNITS.None, new Vector3()); break;
+                    case "startdirection": passengerViewPoint.StartDirection = f.ReadVector3Block(STFReader.UNITS.None, new Vector3()); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
             PassengerViewpoints.Add(passengerViewPoint);
@@ -197,17 +197,17 @@ namespace ORTS
         {
             f.MustMatch("(");
             FreightShapeFileName = f.ReadItem();
-            FreightAnimHeight = f.ReadFloat(STFReader.UNITS.Any, null) - f.ReadFloat(STFReader.UNITS.Any, null);
+            FreightAnimHeight = f.ReadFloat(STFReader.UNITS.Distance, null) - f.ReadFloat(STFReader.UNITS.Distance, null);
             f.SkipRestOfBlock();
         }
         public void ParseFriction(STFReader f)
         {
             f.MustMatch("(");
             float c1 = f.ReadFloat(STFReader.UNITS.Resistance, null);
-            float e1 = f.ReadFloat(STFReader.UNITS.Any, null);
+            float e1 = f.ReadFloat(STFReader.UNITS.None, null);
             float v2 = f.ReadFloat(STFReader.UNITS.Speed,null);
             float c2 = f.ReadFloat(STFReader.UNITS.Resistance, null);
-            float e2 = f.ReadFloat(STFReader.UNITS.Any, null);
+            float e2 = f.ReadFloat(STFReader.UNITS.None, null);
             f.ReadItem(); f.ReadItem(); f.ReadItem(); f.ReadItem(); f.ReadItem();
             f.SkipRestOfBlock();
             if (v2 < 0 || v2 > 4.4407f)

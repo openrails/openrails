@@ -687,11 +687,37 @@
             </list> <para>
             Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para><para>
              </para>
-            <alert class="important">NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+            <alert class="important"><para>NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</para></alert>
             </remarks>
-            <example>
-            !!!TODO!!!
-            </example>
+            <example><code lang="C#" title="Typical STF parsing using C#">
+                   using (STFReader f = new STFReader(filename))
+                   {
+                       while (!f.EOF)
+                           switch (f.ReadItem().ToLower())
+                           {
+                               case "item_single_constant": float isc = f.ReadFloat(STFReader.UNITS.None, 0); break;
+                               case "item_single_speed": float iss_mps = f.ReadFloat(STFReader.UNITS.Speed, 0); break;
+                               case "block_single_constant": float bsc = f.ReadFloatBlock(STFReader.UNITS.None, 0); break;
+                               case "block_fixed_format":
+                                   f.MustMatch("(");
+                                   int bff1 = f.ReadInt(STFReader.UNITS.None, 0);
+                                   string bff2 = f.ReadItem();
+                                   f.SkipRestOfBlock();
+                                   break;
+                               case "block_variable_contents":
+                                   f.MustMatch("(");
+                                   while (!f.EndOfBlock())
+                                       switch (f.ReadItem().ToLower())
+                                       {
+                                           case "subitem": string si = f.ReadItem(); break;
+                                           case "subblock": string sb = f.ReadItemBlock(""); break;
+                                           case "(": f.SkipRestOfBlock();
+                                       }
+                                   break;
+                               case "(": f.SkipRestOfBlock(); break;
+                           }
+                   }
+            </code></example>
             <exception cref="T:MSTS.STFException"><para>
             STF reports errors using the  exception static members</para><para>
             There are three broad categories of error</para><list class="bullet">
@@ -851,9 +877,10 @@
             <returns><para>true - If the first {item} in the block is non-zero or 'true'.</para>
             <para>false - If the first {item} in the block is zero or 'false'.</para></returns>
         </member>
-        <member name="M:MSTS.STFReader.ReadVector3Block(Microsoft.Xna.Framework.Vector3)">
+        <member name="M:MSTS.STFReader.ReadVector3Block(MSTS.STFReader.UNITS,Microsoft.Xna.Framework.Vector3)">
             <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
             </summary>
+            <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
             <param name="default_val">The default vector if any of the values are not specified</param>
             <returns>The STF block as a Vector3</returns>
         </member>

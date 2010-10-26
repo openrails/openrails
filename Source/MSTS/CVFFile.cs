@@ -35,10 +35,10 @@ namespace MSTS
                     switch (inf.ReadItem().ToLower())
                     {
                         case "position":
-                            Locations.Add(inf.ReadVector3Block(new Vector3()));
+                            Locations.Add(inf.ReadVector3Block(STFReader.UNITS.None, new Vector3()));
                             break;
                         case "direction":
-                            Directions.Add(inf.ReadVector3Block(new Vector3()));
+                            Directions.Add(inf.ReadVector3Block(STFReader.UNITS.None, new Vector3()));
                             break;
                         case "cabviewfile":
                             string fName = inf.ReadItemBlock(null);
@@ -121,7 +121,7 @@ namespace MSTS
         {
             inf.MustMatch("(");
 
-            int count = inf.ReadInt(STFReader.UNITS.Any, null);
+            int count = inf.ReadInt(STFReader.UNITS.None, null);
 
             try
             {
@@ -227,17 +227,17 @@ namespace MSTS
             else if (string.Compare(token, "Position", true) == 0)
             {
                 inf.MustMatch("(");
-                PositionX = inf.ReadInt(STFReader.UNITS.Any, null);
-                PositionY = inf.ReadInt(STFReader.UNITS.Any, null);
-                Width = inf.ReadInt(STFReader.UNITS.Any, null);
-                Height = inf.ReadInt(STFReader.UNITS.Any, null);
+                PositionX = inf.ReadInt(STFReader.UNITS.None, null);
+                PositionY = inf.ReadInt(STFReader.UNITS.None, null);
+                Width = inf.ReadInt(STFReader.UNITS.None, null);
+                Height = inf.ReadInt(STFReader.UNITS.None, null);
                 inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "ScaleRange", true) == 0)
             {
                 inf.MustMatch("(");
-                MinValue = inf.ReadDouble(STFReader.UNITS.Any, null);
-                MaxValue = inf.ReadDouble(STFReader.UNITS.Any, null);
+                MinValue = inf.ReadDouble(STFReader.UNITS.None, null);
+                MaxValue = inf.ReadDouble(STFReader.UNITS.None, null);
                 inf.SkipRestOfBlock();
             }
             else if (string.Compare(token, "Graphic", true) == 0)
@@ -292,17 +292,17 @@ namespace MSTS
                 if (string.Compare(token, "ScalePos", true) == 0)
                 {
                     inf.MustMatch("(");
-                    FromDegree = inf.ReadInt(STFReader.UNITS.Any, null);
-                    ToDegree = inf.ReadInt(STFReader.UNITS.Any, null);
+                    FromDegree = inf.ReadInt(STFReader.UNITS.None, null);
+                    ToDegree = inf.ReadInt(STFReader.UNITS.None, null);
                     inf.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "Pivot", true) == 0)
                 {
-                    Center = inf.ReadIntBlock(STFReader.UNITS.Any, null);
+                    Center = inf.ReadIntBlock(STFReader.UNITS.None, null);
                 }
                 else if (string.Compare(token, "DirIncrease", true) == 0)
                 {
-                    Direction = inf.ReadIntBlock(STFReader.UNITS.Any, null);
+                    Direction = inf.ReadIntBlock(STFReader.UNITS.None, null);
                 }
                 else
                 {
@@ -329,24 +329,24 @@ namespace MSTS
                 if (string.Compare(token, "Area", true) == 0)
                 {
                     inf.MustMatch("(");
-                    int x = inf.ReadInt(STFReader.UNITS.Any, null);
-                    int y = inf.ReadInt(STFReader.UNITS.Any, null);
-                    int width = inf.ReadInt(STFReader.UNITS.Any, null);
-                    int height = inf.ReadInt(STFReader.UNITS.Any, null);
+                    int x = inf.ReadInt(STFReader.UNITS.None, null);
+                    int y = inf.ReadInt(STFReader.UNITS.None, null);
+                    int width = inf.ReadInt(STFReader.UNITS.None, null);
+                    int height = inf.ReadInt(STFReader.UNITS.None, null);
                     Area = new Rectangle(x, y, width, height);
                     inf.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "ZeroPos", true) == 0)
                 {
-                    ZeroPos = inf.ReadIntBlock(STFReader.UNITS.Any, null);
+                    ZeroPos = inf.ReadIntBlock(STFReader.UNITS.None, null);
                 }
                 else if (string.Compare(token, "Orientation", true) == 0)
                 {
-                    Orientation = inf.ReadIntBlock(STFReader.UNITS.Any, null);
+                    Orientation = inf.ReadIntBlock(STFReader.UNITS.None, null);
                 }
                 else if (string.Compare(token, "DirIncrease", true) == 0)
                 {
-                    Direction = inf.ReadIntBlock(STFReader.UNITS.Any, null);
+                    Direction = inf.ReadIntBlock(STFReader.UNITS.None, null);
                 }
                 else
                 {
@@ -396,9 +396,9 @@ namespace MSTS
                 if (string.Compare(token, "NumFrames", true) == 0)
                 {
                     inf.MustMatch("(");
-                    FramesCount = inf.ReadInt(STFReader.UNITS.Any, null);
-                    FramesX = inf.ReadInt(STFReader.UNITS.Any, null);
-                    FramesY = inf.ReadInt(STFReader.UNITS.Any, null);
+                    FramesCount = inf.ReadInt(STFReader.UNITS.None, null);
+                    FramesX = inf.ReadInt(STFReader.UNITS.None, null);
+                    FramesY = inf.ReadInt(STFReader.UNITS.None, null);
                     inf.SkipRestOfBlock();
                 }
                 else if (string.Compare(token, "NumPositions", true) == 0)
@@ -409,10 +409,10 @@ namespace MSTS
                     bool shouldFill = Positions.Count == 0;
 
                     // Number of Positions - Ignore it
-                    int p = inf.ReadInt(STFReader.UNITS.Any, null);
+                    int p = inf.ReadInt(STFReader.UNITS.None, null);
                     while (!inf.EndOfBlock())
                     {
-                        p = inf.ReadInt(STFReader.UNITS.Any, null);
+                        p = inf.ReadInt(STFReader.UNITS.None, null);
 
                         // If Positions are not filled before by Values
                         if (shouldFill)
@@ -424,11 +424,11 @@ namespace MSTS
                     inf.MustMatch("(");
                     
                     // Number of Values - ignore it
-                    double v = inf.ReadDouble(STFReader.UNITS.Any, null);
+                    double v = inf.ReadDouble(STFReader.UNITS.None, null);
 
                     while (!inf.EndOfBlock())
                     {
-                        v = inf.ReadDouble(STFReader.UNITS.Any, null);
+                        v = inf.ReadDouble(STFReader.UNITS.None, null);
                         // If the Positions are less than expected add new Position(s)
                         while (Positions.Count <= _ValuesRead)
                         {
@@ -576,9 +576,9 @@ namespace MSTS
                 if (string.Compare(token, "States", true) == 0)
                 {
                     inf.MustMatch("(");
-                    FramesCount = inf.ReadInt(STFReader.UNITS.Any, null);
-                    FramesX = inf.ReadInt(STFReader.UNITS.Any, null);
-                    FramesY = inf.ReadInt(STFReader.UNITS.Any, null);
+                    FramesCount = inf.ReadInt(STFReader.UNITS.None, null);
+                    FramesX = inf.ReadInt(STFReader.UNITS.None, null);
+                    FramesY = inf.ReadInt(STFReader.UNITS.None, null);
 
                     token = inf.ReadItem();
                     while (string.Compare(token, "State", true) == 0)
@@ -589,7 +589,7 @@ namespace MSTS
                             token = inf.ReadItem();
                             if (string.Compare(token, "SwitchVal", true) == 0)
                             {
-                                Values.Add(inf.ReadDoubleBlock(STFReader.UNITS.Any, null));
+                                Values.Add(inf.ReadDoubleBlock(STFReader.UNITS.None, null));
                             }
                             else
                             {

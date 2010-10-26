@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace MSTS
 {
@@ -49,14 +50,14 @@ namespace MSTS
                 switch (token.ToLower())
                 {
                     case "camtype": CamType = f.ReadItemBlock(null); CamControl = f.ReadItemBlock(null); break;
-                    case "cameraoffset": CameraOffset=new vector(f.ReadFloatBlock(STFReader.UNITS.Any, null),f.ReadFloatBlock(STFReader.UNITS.Any, null),f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
-                    case "direction": Direction = new vector(f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
-                    case "objectoffset": ObjectOffset = new vector(f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
-                    case "rotationlimit": RotationLimit = new vector(f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null), f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
+                    case "cameraoffset": CameraOffset = f.ReadVector3Block(STFReader.UNITS.None, CameraOffset); break;
+                    case "direction": Direction = f.ReadVector3Block(STFReader.UNITS.None, Direction); break;
+                    case "objectoffset": ObjectOffset = f.ReadVector3Block(STFReader.UNITS.None, ObjectOffset); break;
+                    case "rotationlimit": RotationLimit = f.ReadVector3Block(STFReader.UNITS.None, RotationLimit); break;
                     case "description": Description = f.ReadItemBlock(null); break;
-                    case "fov": Fov = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "zclip": ZClip = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "wagonnum": WagonNum = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "fov": Fov = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                    case "zclip": ZClip = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                    case "wagonnum": WagonNum = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     default: f.SkipBlock(); break;
                 }
                 token = f.ReadItem();
@@ -65,13 +66,13 @@ namespace MSTS
 
         public string CamType;
         public string CamControl;
-        public vector CameraOffset = new vector(0f,0f,0f);
-  	    public vector Direction =new vector( 0f,0f,0f );
+        public Vector3 CameraOffset = new Vector3();
+        public Vector3 Direction = new Vector3();
 	    public float Fov = 55f;
 	    public float ZClip =0.1f;
 	    public int WagonNum =-1;
-	    public vector ObjectOffset = new vector ( 0f, 0f, 0f);
-	    public vector RotationLimit = new vector ( 0f, 0f, 0f);
+        public Vector3 ObjectOffset = new Vector3();
+        public Vector3 RotationLimit = new Vector3();
 	    public string Description ="";
 
     }

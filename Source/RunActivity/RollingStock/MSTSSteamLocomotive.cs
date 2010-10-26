@@ -204,9 +204,9 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "engine(numcylinders": NumCylinders = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                case "engine(cylinderstroke": CylinderStrokeM = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(cylinderdiameter": CylinderDiameterM = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(numcylinders": NumCylinders = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                case "engine(cylinderstroke": CylinderStrokeM = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(cylinderdiameter": CylinderDiameterM = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(f.ReadItemBlock(null), f); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(f.ReadItemBlock(null), f); break;
                 case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadItemBlock(null), f); break;

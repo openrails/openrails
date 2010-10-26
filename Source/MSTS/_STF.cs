@@ -80,11 +80,37 @@ namespace MSTS
     /// </list>&#160;<para>
     /// Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para><para>
     /// &#160;</para>
-    /// <alert class="important">NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+    /// <alert class="important"><para>NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</para></alert>
     /// </remarks>
-    /// <example>
-    /// !!!TODO!!!
-    /// </example>
+    /// <example><code lang="C#" title="Typical STF parsing using C#">
+    ///        using (STFReader f = new STFReader(filename))
+    ///        {
+    ///            while (!f.EOF)
+    ///                switch (f.ReadItem().ToLower())
+    ///                {
+    ///                    case "item_single_constant": float isc = f.ReadFloat(STFReader.UNITS.None, 0); break;
+    ///                    case "item_single_speed": float iss_mps = f.ReadFloat(STFReader.UNITS.Speed, 0); break;
+    ///                    case "block_single_constant": float bsc = f.ReadFloatBlock(STFReader.UNITS.None, 0); break;
+    ///                    case "block_fixed_format":
+    ///                        f.MustMatch("(");
+    ///                        int bff1 = f.ReadInt(STFReader.UNITS.None, 0);
+    ///                        string bff2 = f.ReadItem();
+    ///                        f.SkipRestOfBlock();
+    ///                        break;
+    ///                    case "block_variable_contents":
+    ///                        f.MustMatch("(");
+    ///                        while (!f.EndOfBlock())
+    ///                            switch (f.ReadItem().ToLower())
+    ///                            {
+    ///                                case "subitem": string si = f.ReadItem(); break;
+    ///                                case "subblock": string sb = f.ReadItemBlock(""); break;
+    ///                                case "(": f.SkipRestOfBlock();
+    ///                            }
+    ///                        break;
+    ///                    case "(": f.SkipRestOfBlock(); break;
+    ///                }
+    ///        }
+    /// </code></example>
     /// <exception cref="STFException"><para>
     /// STF reports errors using the  exception static members</para><para>
     /// There are three broad categories of error</para><list class="bullet">
@@ -700,9 +726,10 @@ namespace MSTS
         }
         /// <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
         /// </summary>
+        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
         /// <param name="default_val">The default vector if any of the values are not specified</param>
         /// <returns>The STF block as a Vector3</returns>
-        public Vector3 ReadVector3Block(Vector3 default_val)
+        public Vector3 ReadVector3Block(UNITS valid_units, Vector3 default_val)
         {
             if (EOF)
                 STFException.ReportError(this, "Unexpected end of file");
@@ -714,9 +741,9 @@ namespace MSTS
             }
             if (s == "(")
             {
-                default_val.X = ReadFloat(STFReader.UNITS.Any, default_val.X);
-                default_val.Y = ReadFloat(STFReader.UNITS.Any, default_val.Y);
-                default_val.Z = ReadFloat(STFReader.UNITS.Any, default_val.Z);
+                default_val.X = ReadFloat(valid_units, default_val.X);
+                default_val.Y = ReadFloat(valid_units, default_val.Y);
+                default_val.Z = ReadFloat(valid_units, default_val.Z);
                 SkipRestOfBlock();
                 return default_val;
             }

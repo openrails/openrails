@@ -66,7 +66,7 @@ namespace MSTS
                 switch (f.ReadItem().ToLower())
                 {
                     case "tr_activity_file": Tr_Activity_File = new Tr_Activity_File(f); break;
-                    case "serial": Serial = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "serial": Serial = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "tr_activity_header": Tr_Activity_Header = new Tr_Activity_Header(f); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
@@ -110,18 +110,18 @@ namespace MSTS
                     case "name": Name = f.ReadItemBlock(null); break;
                     case "description": Description = f.ReadItemBlock(null); break;
                     case "briefing": Briefing = f.ReadItemBlock(null); break;
-                    case "completeactivity": CompleteActivity = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "type": Type = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "mode": Mode = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "completeactivity": CompleteActivity = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "type": Type = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "mode": Mode = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "starttime": StartTime = new StartTime(f); break;
-                    case "season": Season = (SeasonType)f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "weather": Weather = (WeatherType)f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "season": Season = (SeasonType)f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "weather": Weather = (WeatherType)f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "pathid": PathID = f.ReadItemBlock(null); break;
-                    case "startingspeed": StartingSpeed = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "startingspeed": StartingSpeed = f.ReadIntBlock(STFReader.UNITS.Speed, null); break;
                     case "duration": Duration = new Duration(f); break;
-                    case "difficulty": Difficulty = (Difficulty)f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "animals": Animals = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "workers": Workers = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "difficulty": Difficulty = (Difficulty)f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "animals": Animals = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "workers": Workers = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "fuelwater": FuelWater = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
                     case "fuelcoal": FuelCoal = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
                     case "fueldiesel": FuelDiesel = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
@@ -149,9 +149,9 @@ namespace MSTS
 		public StartTime( STFReader f )
 		{
 			f.MustMatch("(");
-            Hour = f.ReadInt(STFReader.UNITS.Any, null);
-            Minute = f.ReadInt(STFReader.UNITS.Any, null);
-            Second = f.ReadInt(STFReader.UNITS.Any, null);
+            Hour = f.ReadInt(STFReader.UNITS.None, null);
+            Minute = f.ReadInt(STFReader.UNITS.None, null);
+            Second = f.ReadInt(STFReader.UNITS.None, null);
 			f.SkipRestOfBlock();
 		}
 
@@ -175,8 +175,8 @@ namespace MSTS
 		public Duration( STFReader f )
 		{
 			f.MustMatch("(");
-            Hour = f.ReadInt(STFReader.UNITS.Any, null);
-            Minute = f.ReadInt(STFReader.UNITS.Any, null);
+            Hour = f.ReadInt(STFReader.UNITS.None, null);
+            Minute = f.ReadInt(STFReader.UNITS.None, null);
 			f.SkipRestOfBlock();
 		}
 
@@ -205,8 +205,8 @@ namespace MSTS
                 switch(f.ReadItem().ToLower())
                 {
                     case "player_service_definition": Player_Service_Definition = new Player_Service_Definition(f); break;
-                    case "nextserviceuid": NextServiceUID = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "nextactivityobjectuid": NextActivityObjectUID = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "nextserviceuid": NextServiceUID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "nextactivityobjectuid": NextActivityObjectUID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "events": Events = new Events(f); break;
                     case "traffic_definition": Traffic_Definition = new Traffic_Definition(f); break;
                     case "activityobjects": ActivityObjects = new ActivityObjects(f); break;
@@ -260,15 +260,15 @@ namespace MSTS
 		{
 			f.MustMatch("(");
 			Service = f.ReadItem();
-            Time = f.ReadInt(STFReader.UNITS.Any, null);
+            Time = f.ReadInt(STFReader.UNITS.None, null);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
-                    case "uid": UiD = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "uid": UiD = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "efficiency": f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "skipcount": f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "distancedownpath": f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "platformstartid": f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "skipcount": f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "distancedownpath": f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "platformstartid": f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
         }
@@ -316,19 +316,19 @@ namespace MSTS
                 switch (f.ReadItem().ToLower())
                 {
                     case "eventtypelocation": f.MustMatch("("); f.MustMatch(")"); break;
-                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "activation_level": Activation_Level = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "activation_level": Activation_Level = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "outcomes": Outcomes = new Outcomes(f); break;
                     case "name": Name = f.ReadItemBlock(null); break;
                     case "texttodisplayoncompletionifnottriggered": TextToDisplayOnCompletionIfNotTriggered = f.ReadItemBlock(null); break;
                     case "triggeronstop": TriggerOnStop = f.ReadBoolBlock(true); break;
                     case "location":
                         f.MustMatch("(");
-                        TileX = f.ReadInt(STFReader.UNITS.Any, null);
-                        TileZ = f.ReadInt(STFReader.UNITS.Any, null);
-                        X = f.ReadDouble(STFReader.UNITS.Any, null);
-                        Z = f.ReadDouble(STFReader.UNITS.Any, null);
-                        Size = f.ReadDouble(STFReader.UNITS.Any, null);
+                        TileX = f.ReadInt(STFReader.UNITS.None, null);
+                        TileZ = f.ReadInt(STFReader.UNITS.None, null);
+                        X = f.ReadDouble(STFReader.UNITS.None, null);
+                        Z = f.ReadDouble(STFReader.UNITS.None, null);
+                        Size = f.ReadDouble(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                         break;
                     case "(": f.SkipRestOfBlock(); break;
@@ -379,12 +379,12 @@ namespace MSTS
                 switch (f.ReadItem().ToLower())
                 {
                     case "eventtypeallstops": f.MustMatch("("); f.MustMatch(")"); break;
-                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "activation_level": Activation_Level = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "activation_level": Activation_Level = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "outcomes": Outcomes = new Outcomes(f); break;
-                    case "texttodisplayoncompletioniftriggered": f.ReadItemBlock(null); break;
-                    case "texttodisplayoncompletionifnotrriggered": f.ReadItemBlock(null); break;
-                    case "name": Name = f.ReadItemBlock(null); break;
+                    case "texttodisplayoncompletioniftriggered": f.ReadItemBlock(""); break;
+                    case "texttodisplayoncompletionifnotrriggered": f.ReadItemBlock(""); break;
+                    case "name": Name = f.ReadItemBlock(""); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
 		}
@@ -436,7 +436,7 @@ namespace MSTS
 			while( !f.EndOfBlock() ) 
                 switch(f.ReadItem().ToLower())
                 {
-                    case"activityfailedsignal": this.Add(f.ReadIntBlock(STFReader.UNITS.Any, null)); break;
+                    case"activityfailedsignal": this.Add(f.ReadIntBlock(STFReader.UNITS.None, null)); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
 		}
@@ -490,14 +490,14 @@ namespace MSTS
                 {
                     case "objecttype": f.MustMatch("("); f.MustMatch("WagonsList"); f.SkipRestOfBlock(); break;
                     case "train_config": Train_Config = new Train_Config(f); break;
-                    case "direction": Direction = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "direction": Direction = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "tile":
                         f.MustMatch("(");
-                        TileX = f.ReadInt(STFReader.UNITS.Any, null);
-                        TileZ = f.ReadInt(STFReader.UNITS.Any, null);
-                        X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        Z = f.ReadFloat(STFReader.UNITS.Any, null);
+                        TileX = f.ReadInt(STFReader.UNITS.None, null);
+                        TileZ = f.ReadInt(STFReader.UNITS.None, null);
+                        X = f.ReadFloat(STFReader.UNITS.None, null);
+                        Z = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                         break;
                     case "(": f.SkipRestOfBlock(); break;
@@ -534,8 +534,8 @@ namespace MSTS
 		public MaxVelocity( STFReader f )
 		{
 			f.MustMatch("(");
-            A = f.ReadFloat(STFReader.UNITS.Any, null);
-            B = f.ReadFloat(STFReader.UNITS.Any, null);
+            A = f.ReadFloat(STFReader.UNITS.Speed, null);
+            B = f.ReadFloat(STFReader.UNITS.Speed, null);
 			f.SkipRestOfBlock();
 		}
 	}
@@ -558,10 +558,10 @@ namespace MSTS
                 switch (f.ReadItem().ToLower())
                 {
                     case "name": Name = f.ReadItemBlock(null); break;
-                    case "serial": Serial = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "serial": Serial = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "maxvelocity": MaxVelocity = new MaxVelocity(f); break;
-                    case "nextwagonuid": NextWagonUID = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "durability": Durability = (float)f.ReadDoubleBlock(STFReader.UNITS.Any, null); break;
+                    case "nextwagonuid": NextWagonUID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
+                    case "durability": Durability = (float)f.ReadDoubleBlock(STFReader.UNITS.None, null); break;
                     case "wagon": Wagons.Add(new Wagon(f)); break;
                     case "engine": Wagons.Add(new Wagon(f)); break;
                     case "(": f.SkipRestOfBlock(); break;
@@ -583,7 +583,7 @@ namespace MSTS
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
-                    case "uid": UiD = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "uid": UiD = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "flip": Flip = true; f.SkipBlock(); break;
                     case "enginedata": f.MustMatch("("); Name = f.ReadItem(); Folder = f.ReadItem(); f.SkipRestOfBlock(); IsEngine = true; break;
                     case "wagondata": f.MustMatch("("); Name = f.ReadItem(); Folder = f.ReadItem(); f.SkipRestOfBlock(); break;
@@ -617,7 +617,7 @@ namespace MSTS
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
-                    case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
+                    case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock(STFReader.UNITS.Distance, null)); break;
                     case "player_traffic_definition": Player_Traffic_Definition = new Player_Traffic_Definition(f); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
@@ -644,10 +644,10 @@ namespace MSTS
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
-                    case "arrivaltime": ArrivalTime.Add(basedt.AddSeconds(f.ReadFloatBlock(STFReader.UNITS.Any, null))); break;
-                    case "departtime": DepartTime.Add(basedt.AddSeconds(f.ReadFloatBlock(STFReader.UNITS.Any, null))); break;
-                    case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock(STFReader.UNITS.Any, null)); break;
-                    case "platformstartid": PlatformStartID.Add(f.ReadIntBlock(STFReader.UNITS.Any, null)); break;
+                    case "arrivaltime": ArrivalTime.Add(basedt.AddSeconds(f.ReadFloatBlock(STFReader.UNITS.None, null))); break;
+                    case "departtime": DepartTime.Add(basedt.AddSeconds(f.ReadFloatBlock(STFReader.UNITS.None, null))); break;
+                    case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock(STFReader.UNITS.Distance, null)); break;
+                    case "platformstartid": PlatformStartID.Add(f.ReadIntBlock(STFReader.UNITS.None, null)); break;
                     case "(": f.SkipRestOfBlock(); break;
             }
         }

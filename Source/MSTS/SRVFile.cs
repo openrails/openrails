@@ -43,7 +43,7 @@ namespace MSTS
             while(!inf.EndOfBlock())
                 switch (inf.ReadItem().ToLower())
                 {
-                    case "serial": Serial = inf.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "serial": Serial = inf.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "name": Name = inf.ReadItemBlock(null); break;
                     case "train_config": Train_Config = inf.ReadItemBlock(null); break;
                     case "pathid": PathID = inf.ReadItemBlock(null); break;

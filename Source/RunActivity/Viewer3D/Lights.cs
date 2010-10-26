@@ -83,7 +83,7 @@ namespace ORTS
                     // but MSTS just ignores the rest of the file, and we will also
                     else
                     {
-                        int numLights = f.ReadInt(STFReader.UNITS.Any, null);// ignore this because its not always correct
+                        int numLights = f.ReadInt(STFReader.UNITS.None, null);// ignore this because its not always correct
                         for (; ; )
                         {
                             token = f.ReadItem();
@@ -110,7 +110,7 @@ namespace ORTS
                                     else if (0 == String.Compare(token, "Type", true))
                                     {
                                         f.MustMatch("(");
-                                        light.type = f.ReadInt(STFReader.UNITS.Any, null);
+                                        light.type = f.ReadInt(STFReader.UNITS.None, null);
                                         f.SkipRestOfBlock();
                                     }
                                     else if (0 == String.Compare(token, "Conditions", true))
@@ -122,49 +122,49 @@ namespace ORTS
                                             if (0 == String.Compare(token, "Headlight", true))
                                             {
                                                 f.MustMatch("(");
-                                                light.headlight = f.ReadInt(STFReader.UNITS.Any, null);
+                                                light.headlight = f.ReadInt(STFReader.UNITS.None, null);
                                                 f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Unit", true))
                                             {
                                                 f.MustMatch("(");
-                                                light.unit = f.ReadInt(STFReader.UNITS.Any, null);
+                                                light.unit = f.ReadInt(STFReader.UNITS.None, null);
                                                 f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Penalty", true))
                                             {
                                                 f.MustMatch("(");
-                                                light.penalty = f.ReadInt(STFReader.UNITS.Any, null);
+                                                light.penalty = f.ReadInt(STFReader.UNITS.None, null);
                                                 f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Control", true))
                                             {
                                                 f.MustMatch("(");
-                                                light.control = f.ReadInt(STFReader.UNITS.Any, null);
+                                                light.control = f.ReadInt(STFReader.UNITS.None, null);
                                                 f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Service", true))
                                             {
                                                 f.MustMatch("(");
-                                                light.service = f.ReadInt(STFReader.UNITS.Any, null);
+                                                light.service = f.ReadInt(STFReader.UNITS.None, null);
                                                 f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "TimeOfDay", true))
                                             {
                                                 f.MustMatch("(");
-                                                light.timeofday = f.ReadInt(STFReader.UNITS.Any, null);
+                                                light.timeofday = f.ReadInt(STFReader.UNITS.None, null);
                                                 f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Weather", true))
                                             {
                                                 f.MustMatch("(");
-                                                light.weather = f.ReadInt(STFReader.UNITS.Any, null);
+                                                light.weather = f.ReadInt(STFReader.UNITS.None, null);
                                                 f.SkipRestOfBlock();
                                             }
                                             else if (0 == String.Compare(token, "Coupling", true))
                                             {
                                                 f.MustMatch("(");
-                                                light.coupling = f.ReadInt(STFReader.UNITS.Any, null);
+                                                light.coupling = f.ReadInt(STFReader.UNITS.None, null);
                                                 f.SkipRestOfBlock();
                                             }
                                             else
@@ -177,25 +177,25 @@ namespace ORTS
                                     else if (0 == String.Compare(token, "Cycle", true))
                                     {
                                         f.MustMatch("(");
-                                        light.cycle = f.ReadInt(STFReader.UNITS.Any, null);
+                                        light.cycle = f.ReadInt(STFReader.UNITS.None, null);
                                         f.SkipRestOfBlock();
                                     }
                                     else if (0 == String.Compare(token, "FadeIn", true))
                                     {
                                         f.MustMatch("(");
-                                        light.fadein = f.ReadFloat(STFReader.UNITS.Any, null);
+                                        light.fadein = f.ReadFloat(STFReader.UNITS.None, null);
                                         f.SkipRestOfBlock();
                                     }
                                     else if (0 == String.Compare(token, "FadeOut", true))
                                     {
                                         f.MustMatch("(");
-                                        light.fadeout = f.ReadFloat(STFReader.UNITS.Any, null);
+                                        light.fadeout = f.ReadFloat(STFReader.UNITS.None, null);
                                         f.SkipRestOfBlock();
                                     }
                                     else if (0 == String.Compare(token, "States", true))
                                     {
                                         f.MustMatch("(");
-                                        numStates = f.ReadInt(STFReader.UNITS.Any, null);
+                                        numStates = f.ReadInt(STFReader.UNITS.None, null);
                                         for (int j = 0; j < numStates; j++)
                                         {
                                             light.StateList = new List<LightState>();
@@ -264,49 +264,49 @@ namespace ORTS
                     else if (0 == String.Compare(token, "Duration", true))
                     {
                         f.MustMatch("(");
-                        duration = f.ReadFloat(STFReader.UNITS.Any, null);
+                        duration = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Transition", true))
                     {
                         f.MustMatch("(");
-                        transition = f.ReadFloat(STFReader.UNITS.Any, null);
+                        transition = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Radius", true))
                     {
                         f.MustMatch("(");
-                        radius = f.ReadFloat(STFReader.UNITS.Any, null);
+                        radius = f.ReadFloat(STFReader.UNITS.Distance, null);
                         f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Angle", true))
                     {
                         f.MustMatch("(");
-                        angle = f.ReadFloat(STFReader.UNITS.Any, null);
+                        angle = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Position", true))
                     {
                         f.MustMatch("(");
-                        position.X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        position.Y = f.ReadFloat(STFReader.UNITS.Any, null);
-                        position.Z = f.ReadFloat(STFReader.UNITS.Any, null);
+                        position.X = f.ReadFloat(STFReader.UNITS.None, null);
+                        position.Y = f.ReadFloat(STFReader.UNITS.None, null);
+                        position.Z = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Azimuth", true))
                     {
                         f.MustMatch("(");
-                        azimuth.X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        azimuth.Y = f.ReadFloat(STFReader.UNITS.Any, null);
-                        azimuth.Z = f.ReadFloat(STFReader.UNITS.Any, null);
+                        azimuth.X = f.ReadFloat(STFReader.UNITS.None, null);
+                        azimuth.Y = f.ReadFloat(STFReader.UNITS.None, null);
+                        azimuth.Z = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "Elevation", true))
                     {
                         f.MustMatch("(");
-                        elevation.X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        elevation.Y = f.ReadFloat(STFReader.UNITS.Any, null);
-                        elevation.Z = f.ReadFloat(STFReader.UNITS.Any, null);
+                        elevation.X = f.ReadFloat(STFReader.UNITS.None, null);
+                        elevation.Y = f.ReadFloat(STFReader.UNITS.None, null);
+                        elevation.Z = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                     }
                     else if (0 == String.Compare(token, "LightColour", true))

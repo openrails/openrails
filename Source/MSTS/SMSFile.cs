@@ -88,14 +88,14 @@ namespace MSTS
         public ScalabiltyGroup(STFReader f)
         {
             f.MustMatch("(");
-            DetailLevel = f.ReadInt(STFReader.UNITS.Any, null);
+            DetailLevel = f.ReadInt(STFReader.UNITS.None, null);
             while (!f.EndOfBlock())
                 switch (f.ReadItem().ToLower())
                 {
                     case "activation": Activation = new Activation(f); break;
                     case "deactivation": Deactivation = new Deactivation(f); break;
                     case "streams": Streams = new SMSStreams(f, Volume); break;
-                    case "volume": Volume = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "volume": Volume = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
                     case "stereo": Stereo = f.ReadBoolBlock(true); break;
                     case "ignore3d": Ignore3D = f.ReadBoolBlock(true); break;
                     case "(": f.SkipRestOfBlock(); break;
@@ -120,8 +120,8 @@ namespace MSTS
                     case "externalcam": ExternalCam = f.ReadBoolBlock(true); break;
                     case "cabcam": CabCam = f.ReadBoolBlock(true); break;
                     case "passengercam": PassengerCam = f.ReadBoolBlock(true); break;
-                    case "distance": Distance = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "tracktype": TrackType = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "distance": Distance = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "tracktype": TrackType = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
         }
@@ -140,7 +140,7 @@ namespace MSTS
         {
             f.MustMatch("(");
 
-            int count = f.ReadInt(STFReader.UNITS.Any, null);
+            int count = f.ReadInt(STFReader.UNITS.None, null);
 
             while( !f.EndOfBlock() )
                 switch(f.ReadItem().ToLower())
@@ -171,11 +171,11 @@ namespace MSTS
             while (!f.EndOfBlock())
                 switch(f.ReadItem().ToLower())
                 {
-                    case "priority": Priority = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
+                    case "priority": Priority = f.ReadIntBlock(STFReader.UNITS.None, null); break;
                     case "triggers":  Triggers = new Triggers(f); break;
                     case "volumecurve": VolumeCurve = new VolumeCurve(f); break; 
                     case "frequencycurve": FrequencyCurve = new FrequencyCurve(f); break;
-                    case "volume": Volume = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "volume": Volume = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
 
@@ -215,16 +215,16 @@ namespace MSTS
                 {
                     case "curvepoints":
                         f.MustMatch("(");
-                        int count = f.ReadInt(STFReader.UNITS.Any, null);
+                        int count = f.ReadInt(STFReader.UNITS.None, null);
                         CurvePoints = new CurvePoint[count];
                         for (int i = 0; i < count; ++i)
                         {
-                            CurvePoints[i].X = f.ReadFloat(STFReader.UNITS.Any, null);
-                            CurvePoints[i].Y = f.ReadFloat(STFReader.UNITS.Any, null);
+                            CurvePoints[i].X = f.ReadFloat(STFReader.UNITS.None, null);
+                            CurvePoints[i].Y = f.ReadFloat(STFReader.UNITS.None, null);
                         }
                         f.SkipRestOfBlock();
                         break;
-                    case "granularity": Granularity = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "granularity": Granularity = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
                     case "(": f.SkipRestOfBlock(); break;
                 }
 
@@ -252,7 +252,7 @@ namespace MSTS
         public Triggers(STFReader f)
         {
             f.MustMatch("(");
-            int count = f.ReadInt(STFReader.UNITS.Any, null);
+            int count = f.ReadInt(STFReader.UNITS.None, null);
 
             while(!f.EndOfBlock())
                 switch(f.ReadItem().ToLower())
@@ -331,7 +331,7 @@ namespace MSTS
         public Discrete_Trigger(STFReader f)
         {
             f.MustMatch("(");
-            TriggerID = f.ReadInt(STFReader.UNITS.Any, null);
+            TriggerID = f.ReadInt(STFReader.UNITS.None, null);
             while (!f.EndOfBlock())
                 ParsePlayCommand(f, f.ReadItem().ToLower());
         }
@@ -368,7 +368,7 @@ namespace MSTS
                     break;  // MSTS ignores unrecognized tokens
             }
 
-            Threshold = f.ReadFloat(STFReader.UNITS.Any, null);
+            Threshold = f.ReadFloat(STFReader.UNITS.None, null);
 
             while (!f.EndOfBlock())
                 ParsePlayCommand(f, f.ReadItem().ToLower());
@@ -390,8 +390,8 @@ namespace MSTS
                 string lowtok = f.ReadItem().ToLower();
                 switch (lowtok)
                 {
-                    case "dist_min_max": f.MustMatch("("); Dist_Min = f.ReadFloat(STFReader.UNITS.Any, null); Dist_Max = f.ReadFloat(STFReader.UNITS.Any, null); f.SkipRestOfBlock(); break;
-                    case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.Any, null); Volume_Max = f.ReadFloat(STFReader.UNITS.Any, null); f.SkipRestOfBlock(); break;
+                    case "dist_min_max": f.MustMatch("("); Dist_Min = f.ReadFloat(STFReader.UNITS.Distance, null); Dist_Max = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -413,8 +413,8 @@ namespace MSTS
                 string lowtok = f.ReadItem().ToLower();
                 switch (lowtok)
                 {
-                    case "delay_min_max": f.MustMatch("("); Delay_Min = f.ReadFloat(STFReader.UNITS.Any, null); Delay_Max = f.ReadFloat(STFReader.UNITS.Any, null); f.SkipRestOfBlock(); break;
-                    case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.Any, null); Volume_Max = f.ReadFloat(STFReader.UNITS.Any, null); f.SkipRestOfBlock(); break;
+                    case "delay_min_max": f.MustMatch("("); Delay_Min = f.ReadFloat(STFReader.UNITS.None, null); Delay_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
+                    case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -432,7 +432,7 @@ namespace MSTS
         public SetStreamVolume(STFReader f)
         {
             f.MustMatch("(");
-            Volume = f.ReadFloat(STFReader.UNITS.Any, null);
+            Volume = f.ReadFloat(STFReader.UNITS.None, null);
             f.SkipRestOfBlock();
         }
     }
@@ -444,7 +444,7 @@ namespace MSTS
         public DisableTrigger(STFReader f)
         {
             f.MustMatch("(");
-            TriggerID = f.ReadInt(STFReader.UNITS.Any, null);
+            TriggerID = f.ReadInt(STFReader.UNITS.None, null);
             f.SkipRestOfBlock();
         }
     }
@@ -487,7 +487,7 @@ namespace MSTS
         public PlayOneShot(STFReader f)
         {
             f.MustMatch("(");
-            int count = f.ReadInt(STFReader.UNITS.Any, null);
+            int count = f.ReadInt(STFReader.UNITS.None, null);
             Files = new string[count];
             int iFile = 0;
             while (!f.EndOfBlock())
@@ -498,7 +498,7 @@ namespace MSTS
                         {
                             f.MustMatch("(");
                             Files[iFile++] = f.ReadItem();
-                            f.ReadInt(STFReader.UNITS.Any, null);
+                            f.ReadInt(STFReader.UNITS.None, null);
                             f.SkipRestOfBlock();
                         }
                         else  // MSTS skips extra files

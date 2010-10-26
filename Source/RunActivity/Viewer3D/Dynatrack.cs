@@ -571,8 +571,8 @@ namespace ORTS
                 switch (f.ReadItem().ToLower())
                 {
                     case "name": Name = f.ReadItemBlock(null); break;
-                    case "cutoffradius": CutoffRadius = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "mipmaplevelofdetailbias": MipMapLevelOfDetailBias = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                    case "cutoffradius": CutoffRadius = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "mipmaplevelofdetailbias": MipMapLevelOfDetailBias = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
                     case "alphablendenable": AlphaBlendEnable = f.ReadBoolBlock(true); break;
                     case "alphatestenable": AlphaTestEnable = f.ReadBoolBlock(true); break;
                     case "polyline":
@@ -630,8 +630,8 @@ namespace ORTS
                         break;
                     case "deltatexcoord":
                         f.MustMatch("(");
-                        DeltaTexCoord.X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        DeltaTexCoord.Y = f.ReadFloat(STFReader.UNITS.Any, null);
+                        DeltaTexCoord.X = f.ReadFloat(STFReader.UNITS.None, null);
+                        DeltaTexCoord.Y = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                         break;
                     case "vertex":
@@ -682,22 +682,22 @@ namespace ORTS
                 {
                     case "position":
                         f.MustMatch("(");
-                        Position.X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        Position.Y = f.ReadFloat(STFReader.UNITS.Any, null);
+                        Position.X = f.ReadFloat(STFReader.UNITS.None, null);
+                        Position.Y = f.ReadFloat(STFReader.UNITS.None, null);
                         Position.Z = 0.0f;
                         f.SkipRestOfBlock();
                         break;
                     case "normal":
                         f.MustMatch("(");
-                        Normal.X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        Normal.Y = f.ReadFloat(STFReader.UNITS.Any, null);
-                        Normal.Z = f.ReadFloat(STFReader.UNITS.Any, null);
+                        Normal.X = f.ReadFloat(STFReader.UNITS.None, null);
+                        Normal.Y = f.ReadFloat(STFReader.UNITS.None, null);
+                        Normal.Z = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                         break;
                     case "texcoord":
                         f.MustMatch("(");
-                        TexCoord.X = f.ReadFloat(STFReader.UNITS.Any, null);
-                        TexCoord.Y = f.ReadFloat(STFReader.UNITS.Any, null);
+                        TexCoord.X = f.ReadFloat(STFReader.UNITS.None, null);
+                        TexCoord.Y = f.ReadFloat(STFReader.UNITS.None, null);
                         f.SkipRestOfBlock();
                         break;
                     case "(": f.SkipRestOfBlock(); break;

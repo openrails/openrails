@@ -234,13 +234,13 @@ namespace ORTS
                 case "engine(brakepipechargingrate": BrakePipeChargingRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(maxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(f); break;
                 case "engine(dynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(f); break;
-                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1 = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2 = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3 = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4 = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1 = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2 = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3 = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4 = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = f.ReadBoolBlock(true); break;
-                case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 default: base.Parse(lowercasetoken, f); break;
             }
         }
