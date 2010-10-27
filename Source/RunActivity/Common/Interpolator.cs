@@ -47,7 +47,6 @@ namespace ORTS
             reader.MustMatch("(");
             while (!reader.EndOfBlock())
                 list.Add(reader.ReadFloat(STFReader.UNITS.Any, null));
-            reader.SkipRestOfBlock();
             if (list.Count % 2 == 1)
                 STFException.TraceWarning(reader, "Ignoring extra odd value in Interpolator list.");
             int n = list.Count/2;

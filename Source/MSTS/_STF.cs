@@ -8,8 +8,6 @@
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
-
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -163,12 +161,12 @@ namespace MSTS
         /// </param>
         protected virtual void Dispose(bool disposing)
         {
-#if DEBUG
-            if (!IsEof(PeekPastWhitespace()))
-                STFException.TraceWarning(this, "Some of this STF file was not parsed.");
-#endif
             if (disposing)
             {
+#if DEBUG
+                if (!IsEof(PeekPastWhitespace()))
+                    STFException.TraceWarning(this, "Some of this STF file was not parsed.");
+#endif
                 streamSTF.Close(); streamSTF = null;
                 itemBuilder.Length = 0;
                 itemBuilder.Capacity = 0;
@@ -271,6 +269,23 @@ namespace MSTS
         /// </returns>
         public bool EndOfBlock()
         {
+            if (includeReader != null)
+            {
+                bool eob = includeReader.EndOfBlock();
+                if (includeReader.EOF)
+                {
+                    if (tree.Count != 0)
+                        STFException.TraceError(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
+                    includeReader.Dispose();
+                    includeReader = null;
+                }
+                else
+                {
+                    if (eob) UpdateTreeAndStepBack(")");
+                    return eob;
+                }
+            }
+            #region If StepBackOneItem() has been called and that token was a ")" then consume it, and return true;
             if (stepbackoneitemFlag && (stepback.Item == ")"))
             {
                 // Consume the step-back end-of-block
@@ -278,10 +293,11 @@ namespace MSTS
                 stepback.Clear();
                 return true;
             }
+            #endregion
             int c = PeekPastWhitespace();
             if (c == ')')
             {
-                c = streamSTF.Read();
+                c = streamSTF.Read(); // consume the end block
                 UpdateTreeAndStepBack(")");
             }
             return c == ')' || c == -1;
@@ -306,6 +322,13 @@ namespace MSTS
         /// </summary>
         public void SkipRestOfBlock()
         {
+            if (stepbackoneitemFlag && (stepback.Item == ")"))
+            {
+                // Consume the step-back end-of-block
+                stepbackoneitemFlag = false;
+                stepback.Clear();
+                return;
+            }
             // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket
             int depth = 1;
             while (!EOF && depth > 0)
@@ -597,6 +620,11 @@ namespace MSTS
             {
                 string result = ReadItem();
                 SkipRestOfBlock();
+                if (result == "#\u00b6")
+                {
+                    STFException.TraceError(this, "Found a comment when an {constant item} was expected.");
+                    return (default_val != null) ? default_val : result;
+                }
                 return result;
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
@@ -921,10 +949,11 @@ namespace MSTS
                 #endregion
                 #region Skip the comment item or block
                 string comment = ReadItem();
+                if (comment == ")") { StepBackOneItem(); return "#\u00b6"; }
                 if (comment == "(") SkipRestOfBlock();
                 #endregion
                 string item = ReadItem();
-                if (item == ")") { StepBackOneItem(); return "#"; }
+                if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
                 return item; // Now move on to the next token after the commented area
             }
             #endregion
@@ -966,7 +995,8 @@ namespace MSTS
 
                         if (c != '"')
                         {
-                            STFException.TraceError(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
+                            if(!skip_mode)
+                                STFException.TraceError(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
                             return UpdateTreeAndStepBack(itemBuilder.ToString());
                         }
                         c = ReadChar(); // Read the open quote
@@ -1018,7 +1048,7 @@ namespace MSTS
                             if (comment == "(") SkipRestOfBlock();
                             #endregion
                             string item = ReadItem();
-                            if (item == ")") { StepBackOneItem(); return "#"; }
+                            if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
                             return item; // Now move on to the next token after the commented area
                         }
                     case "comment":
@@ -1028,7 +1058,7 @@ namespace MSTS
                             if (comment == "(") SkipRestOfBlock();
                             #endregion
                             string item = ReadItem();
-                            if (item == ")") { StepBackOneItem(); return "#"; }
+                            if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
                             return item; // Now move on to the next token after the commented area
                         }
                     #endregion

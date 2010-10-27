@@ -98,7 +98,6 @@ namespace ORTS
         /// </summary>
         public virtual void Parse(string lowercasetoken, STFReader f)
         {
-
             switch (lowercasetoken)
             {
                 case "wagon(wagonshape": MainShapeFileName = f.ReadItemBlock(null); break;
