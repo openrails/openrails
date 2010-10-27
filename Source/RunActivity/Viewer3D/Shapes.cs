@@ -639,8 +639,8 @@ namespace ORTS
 
                     shapePrimitive.IndexCount = indexCount;
 
-                    shapePrimitive.IndexBuffer = new IndexBuffer(sharedShape.Viewer.GraphicsDevice, sizeof(short) * indexCount, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
-                    shapePrimitive.IndexBuffer.SetData<short>(indexData);
+                    shapePrimitive.IndexBuffer = new IndexBuffer(sharedShape.Viewer.GraphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
+                    shapePrimitive.IndexBuffer.SetData(indexData);
 
                     shapePrimitive.VertexBufferSet = vertexBufferSet;
 

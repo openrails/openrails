@@ -1025,8 +1025,8 @@ namespace ORTS
             VertexBuffer.SetData(VertexList);
             if (IndexBuffer == null)
             {
-                IndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * NumIndices, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
-                IndexBuffer.SetData<short>(TriangleListIndices);
+                IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), NumIndices, BufferUsage.WriteOnly);
+                IndexBuffer.SetData(TriangleListIndices);
             }
         }
         #endregion

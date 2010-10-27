@@ -189,12 +189,12 @@ namespace ORTS.Popups
 			}
 			if (WindowIndexBuffer == null)
 			{
-				var indexData = new int[] {
+				var indexData = new short[] {
 					0, 4, 1, 5, 2, 6, 3, 7,
 					11, 6, 10, 5, 9, 4, 8,
 					12, 9, 13, 10, 14, 11, 15,
 				};
-				WindowIndexBuffer = new IndexBuffer(graphicsDevice, typeof(int), indexData.Length, BufferUsage.WriteOnly);
+				WindowIndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Length, BufferUsage.WriteOnly);
 				WindowIndexBuffer.SetData(indexData);
 			}
 

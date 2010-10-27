@@ -446,8 +446,8 @@ namespace ORTS
             SkyVertexBuffer.SetData(vertexList);
             if (SkyIndexBuffer == null)
             {
-                SkyIndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * indexCount, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
-                SkyIndexBuffer.SetData<short>(triangleListIndices);
+                SkyIndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
+                SkyIndexBuffer.SetData(triangleListIndices);
             }
         }
 

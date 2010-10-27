@@ -470,8 +470,8 @@ namespace ORTS
                         indexData[iIndex++] = sw;
                     }
                 }
-            PatchIndexBuffer = new IndexBuffer(Viewer.GraphicsDevice, sizeof(short) * indexCount, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
-            PatchIndexBuffer.SetData<short>(indexData);
+            PatchIndexBuffer = new IndexBuffer(Viewer.GraphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
+            PatchIndexBuffer.SetData(indexData);
         }
 
         private void SetupVertexBuffer()
