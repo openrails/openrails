@@ -607,7 +607,6 @@ namespace ORTS
         /// <summary>
         /// Cars have been added to the rear of the train, recalc the rearTDBtraveller
         /// </summary>
-        /// <param name="distance"></param>
         public void RepositionRearTraveller()
         {
 

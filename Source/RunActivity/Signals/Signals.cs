@@ -958,30 +958,22 @@ namespace ORTS
                 case SignalHead.SIGASP.STOP:
                 case SignalHead.SIGASP.STOP_AND_PROCEED:
                     if(hasPermission==Signal.PERMISSION.GRANTED)
-                    {
                         return TrackMonitorSignalAspect.Warning;
-                    }
                     else
-                    {
                         return TrackMonitorSignalAspect.Stop;
-                    }
-                    break;
                 case SignalHead.SIGASP.RESTRICTING:
                 case SignalHead.SIGASP.APPROACH_1:
                 case SignalHead.SIGASP.APPROACH_2:
                 case SignalHead.SIGASP.APPROACH_3:
                 case SignalHead.SIGASP.APPROACH_4:
                     return TrackMonitorSignalAspect.Warning;
-                    break;
                 case SignalHead.SIGASP.CLEAR_1:
                 case SignalHead.SIGASP.CLEAR_2:
                 case SignalHead.SIGASP.CLEAR_3:
                 case SignalHead.SIGASP.CLEAR_4:
                     return TrackMonitorSignalAspect.Clear;
-                    break;
                 default:
                     return TrackMonitorSignalAspect.None;
-                    break;
             }
         } // GetMonitorAspect
 

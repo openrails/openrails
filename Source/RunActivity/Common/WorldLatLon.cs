@@ -47,10 +47,6 @@ namespace ORTS
         /// Entry point to this series of methods
         /// Gets Longitude, Latitude from Goode X, Y
         /// </summary>        
-        /// <param name="wt_ew_dat">Name of the east-west world tile</param>
-        /// <param name="wt_ns_dat">Name of the north-south world tile</param>
-        /// <param name="latitude">Latitude in radians, passed back to the caller by reference</param>
-        /// <param name="longitude">Longitude in radians, passed back to the caller by reference</param>
         public int ConvertWTC(int wt_ew_dat, int wt_ns_dat, Vector3 locOnTile, ref double latitude, ref double longitude)
         {
             GoodeInit();

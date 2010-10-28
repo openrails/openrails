@@ -1214,6 +1214,7 @@ namespace ORTS
         /// <param name="indx">Index of the part</param>
         /// <param name="isDark">Is dark out there?</param>
         /// <param name="isLight">Is Cab Light on?</param>
+        /// <param name="isNightTexture"></param>
         /// <returns>The Texture represented by its index</returns>
         public static Texture2D GetTextureByIndexes(string FileName, int indx, bool isDark, bool isLight, out bool isNightTexture)
         {
@@ -1270,6 +1271,7 @@ namespace ORTS
         /// <param name="FileName">Name of the Texture</param>
         /// <param name="isDark">Is dark out there?</param>
         /// <param name="isLight">Is Cab Light on?</param>
+        /// <param name="isNightTexture"></param>
         /// <returns>The Texture</returns>
         public static Texture2D GetTexture(string FileName, bool isDark, bool isLight, out bool isNightTexture)
         {
@@ -1503,7 +1505,6 @@ namespace ORTS
         /// <summary>
         /// Gets the requested Locomotive data and translates it into percents by Min and Max values
         /// </summary>
-        /// <param name="cvc">Cab View Control</param>
         /// <returns>Percent of real data by Min and Max values</returns>
         public float TranslateToPercent()
         {

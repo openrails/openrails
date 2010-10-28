@@ -681,7 +681,6 @@ namespace ORTS
         Texture2D moonMask;
         Texture2D cloudTexture;
         private Matrix XNAMoonMatrix;
-        private Matrix XNAMoonWorldMatrix;
         public RenderProcess RenderProcess;
 		IEnumerator<EffectPass> ShaderPasses;
 

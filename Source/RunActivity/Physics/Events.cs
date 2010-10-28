@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿
 namespace ORTS
 {
     public interface CarEventHandler
@@ -63,6 +59,16 @@ namespace ORTS
         public static bool operator !=(EventID ev1, EventID ev2)
         {
             return ev1._id != ev2._id;
+        }
+
+        public override int GetHashCode()
+        {
+            return _id;
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj is int) return (int)obj == _id;
+            return base.Equals(obj);
         }
     }
 /*

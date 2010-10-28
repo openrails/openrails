@@ -111,7 +111,6 @@ namespace ORTS
 		/// <summary>
 		/// A camera should use this method to return a unique view.
 		/// </summary>
-		/// <param name="elapsedTime"></param>
 		protected abstract Matrix GetCameraView();
 
 		/// <summary>

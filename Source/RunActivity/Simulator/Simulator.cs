@@ -201,8 +201,6 @@ namespace ORTS
         /// Convert and elapsed real time into clock time based on simulator
         /// running speed and paused state.
         /// </summary>
-        /// <param name="elapsedRealTimeSeconds"></param>
-        /// <returns></returns>
         public float GetElapsedClockSeconds( float elapsedRealSeconds )
         {
             return elapsedRealSeconds * (Paused ? 0 : GameSpeed);
@@ -213,7 +211,6 @@ namespace ORTS
         /// elapsedClockSeconds represents the the time since the last call to Simulator.Update
         /// Executes in the UpdaterProcess thread.
         /// </summary>
-        /// <param name="gameTime"></param>
         public void Update( float elapsedClockSeconds )
         {
             // Advance the Clock
@@ -293,7 +290,6 @@ namespace ORTS
         /// <summary>
         /// Scan other trains
         /// </summary>
-        /// <param name="train"></param>
         public void CheckForCoupling(Train drivenTrain, float elapsedClockSeconds)
         {
             if (drivenTrain.SpeedMpS < 0)
@@ -414,7 +410,6 @@ namespace ORTS
         /// <summary>
         /// Sets the trailing point switches ahead of the train
         /// </summary>
-        /// <param name="train"></param>
         public void AlignTrailingPointSwitches(Train train, bool forward)
         {
             // figure out which direction we are going

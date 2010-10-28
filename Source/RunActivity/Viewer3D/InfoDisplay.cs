@@ -105,7 +105,6 @@ namespace ORTS
         /// <summary>
         /// Allows the game component to update itself.
         /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
 			FrameNumber++;
@@ -392,7 +391,6 @@ namespace ORTS
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
 			if (ShadowColor.A > 0.01f)

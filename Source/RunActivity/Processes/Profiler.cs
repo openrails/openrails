@@ -27,14 +27,16 @@ namespace ORTS
 			Wait = new SmoothedData();
 			TimeTotal = new Stopwatch();
 			TimeRunning = new Stopwatch();
-			foreach (ProcessThread thread in Process.GetCurrentProcess().Threads)
+            #pragma warning disable 618 // Although obsolete GetCurrentThreadId() is required to link to ProcessThread
+            foreach (ProcessThread thread in Process.GetCurrentProcess().Threads)
 			{
-				if (thread.Id == AppDomain.GetCurrentThreadId())
+                if (thread.Id == AppDomain.GetCurrentThreadId())
 				{
 					ProcessThread = thread;
 					break;
 				}
 			}
+            #pragma warning restore 618
 			TimeTotal.Start();
 		}
 

@@ -309,20 +309,21 @@ namespace ORTS
 			ShadowMapBound = new BoundingFrustum(ShadowMapLightView * ShadowMapLightProj);
 		}
 
-		/// <summary>
-		/// Automatically adds or culls a <see cref="RenderPrimitive"/> based on a location, radius and max viewing distance.
-		/// </summary>
-		/// <remarks>
-		/// Must be called from the UpdateProcess thread.
-		/// </remarks>
-		/// <param name="mstsLocation">Center location of the <see cref="RenderPrimitive"/> in MSTS coordinates.</param>
-		/// <param name="objectRadius">Radius of a sphere containing the whole <see cref="RenderPrimitive"/>, centered on <paramref name="mstsLocation"/>.</param>
-		/// <param name="objectViewingDistance">Maximum distance from which the <see cref="RenderPrimitive"/> should be viewable.</param>
-		/// <param name="material"></param>
-		/// <param name="primitive"></param>
-		/// <param name="xnaMatrix"></param>
-		/// <param name="flags"></param>
-		public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
+        /// <summary>
+        /// Automatically adds or culls a <see cref="RenderPrimitive"/> based on a location, radius and max viewing distance.
+        /// </summary>
+        /// <remarks>
+        /// Must be called from the UpdateProcess thread.
+        /// </remarks>
+        /// <param name="mstsLocation">Center location of the <see cref="RenderPrimitive"/> in MSTS coordinates.</param>
+        /// <param name="objectRadius">Radius of a sphere containing the whole <see cref="RenderPrimitive"/>, centered on <paramref name="mstsLocation"/>.</param>
+        /// <param name="objectViewingDistance">Maximum distance from which the <see cref="RenderPrimitive"/> should be viewable.</param>
+        /// <param name="material"></param>
+        /// <param name="primitive"></param>
+        /// <param name="group"></param>
+        /// <param name="xnaMatrix"></param>
+        /// <param name="flags"></param>
+        public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
 			if (RenderProcess.Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
                 AddPrimitive(material, primitive, group, ref xnaMatrix, flags);

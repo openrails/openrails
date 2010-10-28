@@ -510,9 +510,6 @@ namespace ORTS
         /// If wx,wz is in this straight section, init the traveller to this location
         /// otherwise return false
         /// </summary>
-        /// <param name="wx"></param>
-        /// <param name="wz"></param>
-        /// <returns></returns>
         bool StraightSectionInit(int tileX, int tileZ, float wx, float wz)
         {
             // get wx and wz relative to the tile that the section starts on

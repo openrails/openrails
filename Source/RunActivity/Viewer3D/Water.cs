@@ -60,7 +60,6 @@ namespace ORTS
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void PrepareFrame(RenderFrame frame)
         {
             if (WaterLayers == null)  // if there was a problem loading the water texture

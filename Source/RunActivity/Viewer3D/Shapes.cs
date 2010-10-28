@@ -90,10 +90,6 @@ namespace ORTS
         /// <summary>
         /// Adjust the pose of the specified node to the frame position specifed by key.
         /// </summary>
-        /// <param name="initialPose"></param>
-        /// <param name="anim_node"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
         public void AnimateMatrix( int iMatrix, float key)
         {
             if (SharedShape.Animations == null )

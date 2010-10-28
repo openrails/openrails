@@ -1012,10 +1012,6 @@
             <summary>
             Adjust the pose of the specified node to the frame position specifed by key.
             </summary>
-            <param name="initialPose"></param>
-            <param name="anim_node"></param>
-            <param name="key"></param>
-            <returns></returns>
         </member>
         <member name="T:ORTS.ExtendedCVF">
             <summary>
@@ -1084,6 +1080,7 @@
             <param name="indx">Index of the part</param>
             <param name="isDark">Is dark out there?</param>
             <param name="isLight">Is Cab Light on?</param>
+            <param name="isNightTexture"></param>
             <returns>The Texture represented by its index</returns>
         </member>
         <member name="M:ORTS.CABTextureManager.GetTexture(System.String,System.Boolean,System.Boolean,System.Boolean@)">
@@ -1093,6 +1090,7 @@
             <param name="FileName">Name of the Texture</param>
             <param name="isDark">Is dark out there?</param>
             <param name="isLight">Is Cab Light on?</param>
+            <param name="isNightTexture"></param>
             <returns>The Texture</returns>
         </member>
         <member name="T:ORTS.CabViewControlRenderer">
@@ -1104,7 +1102,6 @@
             <summary>
             Gets the requested Locomotive data and translates it into percents by Min and Max values
             </summary>
-            <param name="cvc">Cab View Control</param>
             <returns>Percent of real data by Min and Max values</returns>
         </member>
         <member name="T:ORTS.CabViewDialRenderer">
@@ -1157,6 +1154,7 @@
             <param name="objectViewingDistance">Maximum distance from which the <see cref="T:ORTS.RenderPrimitive"/> should be viewable.</param>
             <param name="material"></param>
             <param name="primitive"></param>
+            <param name="group"></param>
             <param name="xnaMatrix"></param>
             <param name="flags"></param>
         </member>
@@ -1197,7 +1195,6 @@
             <summary>
             This is called when the game should draw itself.
             </summary>
-            <param name="gameTime">Provides a snapshot of timing values.</param>
         </member>
         <member name="M:ORTS.WaterTile.Draw(Microsoft.Xna.Framework.Graphics.GraphicsDevice)">
             <summary>
@@ -1236,7 +1233,6 @@
             <summary>
             A camera should use this method to return a unique view.
             </summary>
-            <param name="elapsedTime"></param>
         </member>
         <member name="M:ORTS.Camera.ScreenChanged">
             <summary>
@@ -1319,8 +1315,6 @@
             Convert and elapsed real time into clock time based on simulator
             running speed and paused state.
             </summary>
-            <param name="elapsedRealTimeSeconds"></param>
-            <returns></returns>
         </member>
         <member name="M:ORTS.Simulator.Update(System.Single)">
             <summary>
@@ -1328,19 +1322,16 @@
             elapsedClockSeconds represents the the time since the last call to Simulator.Update
             Executes in the UpdaterProcess thread.
             </summary>
-            <param name="gameTime"></param>
         </member>
         <member name="M:ORTS.Simulator.CheckForCoupling(ORTS.Train,System.Single)">
             <summary>
             Scan other trains
             </summary>
-            <param name="train"></param>
         </member>
         <member name="M:ORTS.Simulator.AlignTrailingPointSwitches(ORTS.Train,System.Boolean)">
             <summary>
             Sets the trailing point switches ahead of the train
             </summary>
-            <param name="train"></param>
         </member>
         <member name="M:ORTS.Simulator.AlignSwitchesToDefault">
             <summary>
@@ -1393,7 +1384,6 @@
             <summary>
             Cars have been added to the rear of the train, recalc the rearTDBtraveller
             </summary>
-            <param name="distance"></param>
         </member>
         <member name="M:ORTS.Train.CalculatePositionOfCars(System.Single)">
             <summary>
@@ -1700,7 +1690,6 @@
             Do not reference any volatile data.
             Executes in the RenderProcess thread called from the Render method of the material class
             </summary>
-            <param name="graphicsDevice"></param>
         </member>
         <member name="M:ORTS.TDBTraveller.MoveTo(System.Int32,System.Int32,System.Single,System.Single,System.Single)">
             <summary>
@@ -1720,9 +1709,6 @@
             If wx,wz is in this straight section, init the traveller to this location
             otherwise return false
             </summary>
-            <param name="wx"></param>
-            <param name="wz"></param>
-            <returns></returns>
         </member>
         <member name="M:ORTS.TDBTraveller.MoveInCurvedSegment(System.Single,System.Int32,MSTS.TrackSection)">
             <summary>
@@ -1800,13 +1786,6 @@
             returns lat =  distance of x,z off of the line
             returns lon =  distance of x,z along the line
             </summary>
-            <param name="pX"></param>
-            <param name="pZ"></param>
-            <param name="deg"></param>
-            <param name="x"></param>
-            <param name="z"></param>
-            <param name="lon"></param>
-            <param name="lat"></param>
         </member>
         <member name="M:MSTSMath.M.DistanceToLine(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
@@ -1969,7 +1948,6 @@
             <summary>
             This is called when the game should draw itself.
             </summary>
-            <param name="gameTime">Provides a snapshot of timing values.</param>
         </member>
         <member name="M:ORTS.TerrainPatch.Elevation(System.Int32,System.Int32)">
             <summary>
@@ -2002,13 +1980,11 @@
             <summary>
             Allows the game component to update itself.
             </summary>
-            <param name="gameTime">Provides a snapshot of timing values.</param>
         </member>
         <member name="M:ORTS.TextPrimitive.Draw(Microsoft.Xna.Framework.Graphics.GraphicsDevice)">
             <summary>
             This is called when the game should draw itself.
             </summary>
-            <param name="gameTime">Provides a snapshot of timing values.</param>
         </member>
         <member name="M:ORTS.AI.#ctor(ORTS.Simulator)">
             <summary>
@@ -2058,7 +2034,11 @@
             TrProfile constructor (default - builds from self-contained data)
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:ORTS.LODItem.#ctor(System.String)" -->
+        <member name="M:ORTS.LODItem.#ctor(System.String)">
+            <summary>
+            LODITem constructor (default &amp; XML)
+            </summary>
+        </member>
         <member name="M:ORTS.LODItem.#ctor(MSTS.STFReader,ORTS.TrProfile)">
             <summary>
             LODITem constructor (DAT)
@@ -2106,12 +2086,14 @@
             Generates vertices for a succeeding cross section (straight track).
             </summary>
             <param name="stride">Index increment between section-to-section vertices.</param>
+            <param name="pl"></param>
         </member>
         <member name="M:ORTS.DynatrackMesh.CircArcGen(System.UInt32,ORTS.Polyline)">
             <summary>
             /// Generates vertices for a succeeding cross section (circular arc track).
             </summary>
             <param name="stride">Index increment between section-to-section vertices.</param>
+            <param name="pl"></param>
         </member>
         <member name="M:ORTS.DynatrackMesh.InitializeVertexBuffers(Microsoft.Xna.Framework.Graphics.GraphicsDevice)">
             <summary>
@@ -2134,10 +2116,6 @@
             Entry point to this series of methods
             Gets Longitude, Latitude from Goode X, Y
             </summary>        
-            <param name="wt_ew_dat">Name of the east-west world tile</param>
-            <param name="wt_ns_dat">Name of the north-south world tile</param>
-            <param name="latitude">Latitude in radians, passed back to the caller by reference</param>
-            <param name="longitude">Longitude in radians, passed back to the caller by reference</param>
         </member>
         <member name="M:ORTS.WorldLatLon.GoodeInit">
             <summary>
@@ -2318,16 +2296,12 @@
             The user has left clicked with U pressed.   
             If the mouse was over a coupler, then uncouple the car.
             </summary>
-            <param name="mouseX"></param>
-            <param name="mouseY"></param>
         </member>
         <member name="M:ORTS.Viewer3D.TryThrowSwitchAt">
             <summary>
             The user has left clicked with U pressed.   
             If the mouse was over a coupler, then uncouple the car.
             </summary>
-            <param name="mouseX"></param>
-            <param name="mouseY"></param>
         </member>
         <member name="T:ORTS.SoundSource">
             SOUND SOURCE
@@ -3175,9 +3149,6 @@
             <summary>
             Given a soundfile reference in a cvf file, return the path to the sound file
             </summary>
-            <param name="wagfilename"></param>
-            <param name="soundfile"></param>
-            <returns></returns>
         </member>
         <member name="M:MSTS.PATTraveller.#ctor(System.String)">
             <summary>

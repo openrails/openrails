@@ -650,8 +650,6 @@ namespace ORTS
         /// The user has left clicked with U pressed.   
         /// If the mouse was over a coupler, then uncouple the car.
         /// </summary>
-        /// <param name="mouseX"></param>
-        /// <param name="mouseY"></param>
         private void TryUncoupleAt()
         {
             // Create a ray from the near clip plane to the far clip plane.
@@ -683,8 +681,6 @@ namespace ORTS
         /// The user has left clicked with U pressed.   
         /// If the mouse was over a coupler, then uncouple the car.
         /// </summary>
-        /// <param name="mouseX"></param>
-        /// <param name="mouseY"></param>
         private void TryThrowSwitchAt()
         {
             TrJunctionNode bestNode = null;

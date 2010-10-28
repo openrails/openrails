@@ -103,8 +103,6 @@ namespace ORTS
         private float distanceSquared;
         private bool wasOutOfDistance = false;
 
-        private double LastUpdate = 0;
-
         List<SoundStream> SoundStreams = new List<SoundStream>();
 
         public void Initialize(Viewer3D viewer, WorldLocation worldLocation, string smsFilePath)
@@ -1607,6 +1605,7 @@ namespace ORTS
         public void Update(ElapsedTime elapsedTime)
         {
             return;
+            /*
             lock (Sounds)
             {
                 foreach (List<SoundSource> ls in Sounds.Values)
@@ -1615,6 +1614,7 @@ namespace ORTS
                         //ss.Update(elapsedTime);
                 }
             }
+            */
         }
 
         public void AddByTile(int TileX, int TileZ)

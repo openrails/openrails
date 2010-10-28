@@ -448,15 +448,20 @@ namespace ORTS
                 // return the read bytes number, if less than expected, it will indicate the end of the stream
                 return rdb;
             }
+#if DEBUGSCR
             catch (Exception e)
             {
-#if DEBUGSCR
                 Console.WriteLine("Exception caught on file {0}.", this.Name.Substring(this.Name.LastIndexOf('\\')));
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
-#endif
                 return rdb;
             }
+#else
+            catch (Exception)
+            {
+                return rdb;
+            }
+#endif
             finally
             {
                 WAVIrrKlangFileFactory.SavePos(Name, ID);

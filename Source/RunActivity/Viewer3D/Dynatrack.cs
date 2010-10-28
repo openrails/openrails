@@ -572,7 +572,7 @@ namespace ORTS
         public bool AlphaTestEnable;
 
         /// <summary>
-        /// LODITem constructor (default & XML)
+        /// LODITem constructor (default &amp; XML)
         /// </summary>
         public LODItem(string name)
         {
@@ -968,6 +968,7 @@ namespace ORTS
         /// Generates vertices for a succeeding cross section (straight track).
         /// </summary>
         /// <param name="stride">Index increment between section-to-section vertices.</param>
+        /// <param name="pl"></param>
         void LinearGen(uint stride, Polyline pl)
         {
             Vector3 displacement = new Vector3(0, 0, -SegmentLength) + DDY;
@@ -987,6 +988,7 @@ namespace ORTS
         /// /// Generates vertices for a succeeding cross section (circular arc track).
         /// </summary>
         /// <param name="stride">Index increment between section-to-section vertices.</param>
+        /// <param name="pl"></param>
         void CircArcGen(uint stride, Polyline pl)
         {
             // Get the previous vertex about the local coordinate system

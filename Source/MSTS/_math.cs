@@ -157,13 +157,6 @@ namespace MSTSMath
         /// returns lat =  distance of x,z off of the line
         /// returns lon =  distance of x,z along the line
         /// </summary>
-        /// <param name="pX"></param>
-        /// <param name="pZ"></param>
-        /// <param name="deg"></param>
-        /// <param name="x"></param>
-        /// <param name="z"></param>
-        /// <param name="lon"></param>
-        /// <param name="lat"></param>
         public static void Survey(float pX, float pZ, float rad, float x, float z, out float lon, out float lat)
         {
             // translate the coordinates relative to a track section that starts at 0,0 

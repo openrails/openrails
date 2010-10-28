@@ -108,9 +108,6 @@ namespace MSTS
         /// <summary>
         /// Given a soundfile reference in a cvf file, return the path to the sound file
         /// </summary>
-        /// <param name="wagfilename"></param>
-        /// <param name="soundfile"></param>
-        /// <returns></returns>
         public static string SMSSoundPath(string smsfilename, string soundfile)
         {
             string smsSoundPath = Path.GetDirectoryName(smsfilename) + @"\" + soundfile;
