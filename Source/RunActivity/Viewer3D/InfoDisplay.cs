@@ -28,12 +28,10 @@ namespace ORTS
 		Matrix Matrix = Matrix.Identity;
 		int InfoAmount = 1;
         int FrameNumber = 0;
-        bool LoggerEnabled = false;
         double LastUpdateTime = 0;   // update text message only 10 times per second
 		ElapsedTime ElapsedTime = new ElapsedTime();
 
         readonly int ProcessorCount = System.Environment.ProcessorCount;
-		readonly int GCGenerationCount = System.GC.MaxGeneration + 1; // Include 0 as well.
 
 		[StructLayout(LayoutKind.Sequential, Size = 40)]
 		struct PROCESS_MEMORY_COUNTERS
@@ -61,19 +59,21 @@ namespace ORTS
 
 		public InfoDisplay(Viewer3D viewer)
         {
+			Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
             Viewer = viewer;
 			var material = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
 			TextPrimitive = new TextPrimitive(material, new Vector2(10, 10), Color.White, 0.25f, Color.Black);
 			ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
 			ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
-        }
+
+			if (Viewer.SettingsBool[(int)BoolSettings.DataLogger])
+				DataLoggerStart();
+		}
 
 		public void Stop()
 		{
-			if (LoggerEnabled)
-			{
-				Logger.Flush();
-			}
+			if (Viewer.SettingsBool[(int)BoolSettings.DataLogger])
+				DataLoggerStop();
 		}
 
         public void HandleUserInput(ElapsedTime elapsedTime)
@@ -86,23 +86,15 @@ namespace ORTS
             }
             if (UserInput.IsPressed(UserCommands.GameLogger))
             {
-                LoggerEnabled = !LoggerEnabled;
-				if (LoggerEnabled == false)
-				{
-					Logger.Flush();
-				}
+				Viewer.SettingsBool[(int)BoolSettings.DataLogger] = !Viewer.SettingsBool[(int)BoolSettings.DataLogger];
+				if (Viewer.SettingsBool[(int)BoolSettings.DataLogger])
+					DataLoggerStart();
 				else
-				{
-					using (StreamWriter file = File.AppendText("dump.csv"))
-					{
-						file.WriteLine("SVN,Frame,FPS,Frame Time,Frame Jitter,Primitives,State Changes,Image Changes,Processors,Render Process,Updater Process,Loader Process,Sound Process,Camera TileX, Camera TileZ, Camera Location");
-						file.Close();
-					}
-				}
+					DataLoggerStop();
             }
         }
 
-        /// <summary>
+		/// <summary>
         /// Allows the game component to update itself.
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -125,24 +117,31 @@ namespace ORTS
             frame.AddPrimitive(TextPrimitive.Material, TextPrimitive, RenderPrimitiveGroup.Overlay, ref Matrix);
 
 			//Here's where the logger stores the data from each frame
-			if (LoggerEnabled)
+			if (Viewer.SettingsBool[(int)BoolSettings.DataLogger])
 			{
-				Logger.Data(Program.Revision); //SVN Revision
-				Logger.Data(FrameNumber.ToString()); //Frame Number
-				Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0")); //FPS
-				Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4")); //Frame Time
-				Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4")); //Frame Jitter
-				Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString()); //Primitives
-				Logger.Data(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString()); //State Changes
-				Logger.Data(Viewer.RenderProcess.ImageChangesPerFrame.ToString()); //Image Changes
-				Logger.Data(ProcessorCount.ToString()); //Processors
-				Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0")); //Render Process %
-				Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0")); //Updater Process %
-				Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0")); //Loader Process %
-				Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0")); //Sound Process %
-				Logger.Data(Viewer.Camera.TileX.ToString());     //
-				Logger.Data(Viewer.Camera.TileZ.ToString());     // Camera coordinates
-				Logger.Data(Viewer.Camera.Location.ToString());  //
+				Logger.Data(Program.Revision);
+				Logger.Data(FrameNumber.ToString("F0"));
+				Logger.Data(GetWorkingSetSize().ToString("F0"));
+				Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
+				Logger.Data(GC.CollectionCount(0).ToString("F0"));
+				Logger.Data(GC.CollectionCount(1).ToString("F0"));
+				Logger.Data(GC.CollectionCount(2).ToString("F0"));
+				Logger.Data(ProcessorCount.ToString("F0"));
+				Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
+				Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
+				Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4"));
+				Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
+				Logger.Data(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString("F0"));
+				Logger.Data(Viewer.RenderProcess.ImageChangesPerFrame.ToString("F0"));
+				Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
+				Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
+				Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
+				Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
+				Logger.Data(Viewer.Camera.TileX.ToString("F0"));
+				Logger.Data(Viewer.Camera.TileZ.ToString("F0"));
+				Logger.Data(Viewer.Camera.Location.X.ToString("F4"));
+				Logger.Data(Viewer.Camera.Location.Y.ToString("F4"));
+				Logger.Data(Viewer.Camera.Location.Z.ToString("F4"));
 				Logger.End();
 			}
 		}
@@ -316,15 +315,11 @@ namespace ORTS
 		[Conditional("DEBUG")]
 		private void AddDebugInfo(double elapsedRealSeconds)
         {
-            // Get memory usage (working set).
-			GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.cb);
-			var memory = ProcessMemoryCounters.WorkingSetSize;
-
             TextBuilder.AppendLine();
 			TextBuilder.AppendLine("DEBUG INFORMATION");
-            TextBuilder.AppendFormat("Logging Enabled = {0}", LoggerEnabled); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Logging Enabled = {0}", Viewer.SettingsBool[(int)BoolSettings.DataLogger]); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Memory = {0:F0} MB (managed: {1:F0} MB, collections: {2})", memory / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, String.Join("/", Enumerable.Range(0, GCGenerationCount).Select(i => GC.CollectionCount(i).ToString()).ToArray())); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Memory = {0:F0} MB (managed: {1:F0} MB, collections: {2:F0}/{3:F0}/{4:F0})", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2)); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms)", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedValue * 1000, Viewer.RenderProcess.FrameJitter.SmoothedValue * 1000); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Adapter = {0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
@@ -338,6 +333,14 @@ namespace ORTS
 			TextBuilder.AppendFormat("Total Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue + Viewer.LoaderProcess.Profiler.Wall.SmoothedValue + Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue + Viewer.LoaderProcess.Profiler.Wait.SmoothedValue + Viewer.SoundProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Camera: TileX:{0:F0} TileZ:{1:F0} X:{2:F4} Y:{3:F4} Z:{4:F4}", Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location.X, Viewer.Camera.Location.Y, Viewer.Camera.Location.Z); TextBuilder.AppendLine();
         }
+
+		int GetWorkingSetSize()
+		{
+			// Get memory usage (working set).
+			GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.cb);
+			var memory = ProcessMemoryCounters.WorkingSetSize;
+			return memory;
+		}
 
         public static string FormattedTime(double clockTimeSeconds) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
         {
@@ -359,7 +362,45 @@ namespace ORTS
             return string.Format("{0:D2}:{1:D2}:{2:D2}", hour, minute, seconds);
         }
 
-        public void Profile(double elapsedRealSeconds) // should be called every 100mS
+		static void DataLoggerStart()
+		{
+			using (StreamWriter file = File.AppendText("dump.csv"))
+			{
+				file.WriteLine(String.Join(",", new[] {
+							"SVN",
+							"Frame",
+							"Memory",
+							"Memory (Managed)",
+							"Gen 0 GC",
+							"Gen 1 GC",
+							"Gen 2 GC",
+							"Processors",
+							"Frame Rate",
+							"Frame Time",
+							"Frame Jitter",
+							"Render Primitives",
+							"Render State Changes",
+							"Render Image Changes",
+							"Render Process",
+							"Updater Process",
+							"Loader Process",
+							"Sound Process",
+							"Camera TileX",
+							"Camera TileZ",
+							"Camera X",
+							"Camera Y",
+							"Camera Z",
+						}));
+				file.Close();
+			}
+		}
+
+		void DataLoggerStop()
+		{
+			Logger.Flush();
+		}
+
+		public void Profile(double elapsedRealSeconds) // should be called every 100mS
         {
             if (elapsedRealSeconds < 0.01)  // just in case
 				return;

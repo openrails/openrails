@@ -1,6 +1,12 @@
 ﻿// Define this to check every material is resetting the RenderState correctly.
 //#define DEBUG_RENDER_STATE
 
+// Define this to use the experimental collection that reduces reallocation
+// and copying of RenderItems. This reduces the number/frequency of Gen 0 and
+// Gen 1 garbage collections but has little overall performance effect. It
+// also leaks memory currently.
+//#define RENDER_ITEM_COLLECTION
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -65,12 +71,26 @@ namespace ORTS
         public abstract void Draw(GraphicsDevice graphicsDevice);
     }
 
+#if RENDER_ITEM_COLLECTION
     public struct RenderItem
+#else
+	public class RenderItem
+#endif
     {
         public Material Material;
         public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
 		public ShapeFlags Flags;
+
+#if !RENDER_ITEM_COLLECTION
+		public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags)
+		{
+			Material = material;
+			RenderPrimitive = renderPrimitive;
+			XNAMatrix = xnaMatrix;
+			Flags = flags;
+		}
+#endif
 
 		public class Comparer : IComparer<RenderItem>
 		{
@@ -95,6 +115,7 @@ namespace ORTS
 		}
     }
 
+#if RENDER_ITEM_COLLECTION
 	public class RenderItemCollection : IEnumerable<RenderItem>, IEnumerator<RenderItem>
 	{
 		RenderItem[] RenderItems;
@@ -213,6 +234,11 @@ namespace ORTS
 
 		#endregion
 	}
+#else
+	public class RenderItemCollection : List<RenderItem>
+	{
+	}
+#endif
 
     public class RenderFrame
     {
@@ -354,7 +380,11 @@ namespace ORTS
 			if (!sequence.ContainsKey(sortingMaterial))
 				sequence.Add(sortingMaterial, new RenderItemCollection());
 
+#if RENDER_ITEM_COLLECTION
 			sequence[sortingMaterial].Add(material, primitive, ref xnaMatrix, flags);
+#else
+			sequence[sortingMaterial].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+#endif
             
 			if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
 				primitive.ZBias = 1;

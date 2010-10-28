@@ -41,6 +41,7 @@ namespace ORTS
 {
 	public enum BoolSettings
 	{
+		DataLogger,
 		DynamicShadows,
 		FullScreen,
 		Precipitation,
@@ -64,6 +65,7 @@ namespace ORTS
 		private static bool[] InitialiseSettingsBool()
 		{
 			var rv = new bool[Enum.GetNames(typeof(BoolSettings)).Length];
+			rv[(int)BoolSettings.DataLogger] = false;
 			rv[(int)BoolSettings.DynamicShadows] = false;
 			rv[(int)BoolSettings.FullScreen] = false;
 			rv[(int)BoolSettings.Precipitation] = false;
