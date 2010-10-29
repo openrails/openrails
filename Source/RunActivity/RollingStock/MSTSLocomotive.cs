@@ -1208,6 +1208,44 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Gets a Texture from the given array
+        /// </summary>
+        /// <param name="arr">Texture array</param>
+        /// <param name="indx">Index</param>
+        /// <param name="FileName">Name of the file to report</param>
+        /// <returns>The given Texture</returns>
+        private static Texture2D SafeGetAt(Texture2D[] arr, int indx, string FileName, bool isNight)
+        {
+            if (arr == null)
+            {
+                Trace.TraceWarning(string.Format("Passed null Texture[] for accessing: {0}", FileName +
+                    (isNight ? ":night" : ":day")));
+                return Materials.MissingTexture;
+            }
+            
+            if (arr.Length < 1)
+            {
+                Trace.TraceWarning(string.Format("Disassembled texture invalid for: {0}", FileName + 
+                    (isNight ? ":night" : ":day")));
+                return Materials.MissingTexture;
+            }
+            
+            indx = (int)MathHelper.Clamp(indx, 0, arr.Length - 1);
+
+            try
+            {
+                return arr[indx];
+            }
+            catch
+            {
+                Trace.TraceError(string.Format("Error accessing texture for: {0}", FileName +
+                    (isNight ? ":night" : ":day")));
+                Trace.TraceWarning(string.Format("The array length is {0}, while the index is {1}.", arr.Length, indx));
+                return Materials.MissingTexture;
+            }
+        }
+
+        /// <summary>
         /// Returns the compound part of a Texture previously disassembled
         /// </summary>
         /// <param name="FileName">Name of the disassembled Texture</param>
@@ -1234,8 +1272,9 @@ namespace ORTS
                     tmp = PDayTextures[FileName];
                     if (tmp != null)
                     {
-                        indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
-                        retval = tmp[indx];
+                        //indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
+                        //retval = tmp[indx];
+                        retval = SafeGetAt(tmp, indx, FileName, true);
                         isNightTexture = false;
                     }
                 }
@@ -1245,8 +1284,9 @@ namespace ORTS
                     tmp = PNightTextures[FileName];
                     if (tmp != null)
                     {
-                        indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
-                        retval = tmp[indx];
+                        //indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
+                        //retval = tmp[indx];
+                        retval = SafeGetAt(tmp, indx, FileName, false);
                         isNightTexture = true;
                     }
                 }
@@ -1257,8 +1297,9 @@ namespace ORTS
                 tmp = PDayTextures[FileName];
                 if (tmp != null)
                 {
-                    indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
-                    retval = tmp[indx];
+                    //indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
+                    //retval = tmp[indx];
+                    retval = SafeGetAt(tmp, indx, FileName, true);
                     isNightTexture = false;
                 }
             }
