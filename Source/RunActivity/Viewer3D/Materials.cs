@@ -244,7 +244,8 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-					Trace.TraceError(path + "\n" + error.ToString());
+					Trace.TraceInformation(path);
+					Trace.WriteLine(error);
 					return Materials.MissingTexture;
                 }
             }

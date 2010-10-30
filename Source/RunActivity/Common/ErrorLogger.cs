@@ -60,31 +60,46 @@ namespace ORTS
 			Writer = writer;
 		}
 
+		public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id)
+		{
+			if ((Filter == null) || Filter.ShouldTrace(eventCache, source, eventType, id, null, null, null, null))
+				TraceEventInternal(eventCache, source, eventType, id, "", new object[0]);
+		}
+
+		public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string message)
+		{
+			if ((Filter == null) || Filter.ShouldTrace(eventCache, source, eventType, id, message, null, null, null))
+				TraceEventInternal(eventCache, source, eventType, id, message, new object[0]);
+		}
+
 		public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, params object[] args)
 		{
 			if ((Filter == null) || Filter.ShouldTrace(eventCache, source, eventType, id, format, args, null, null))
+				TraceEventInternal(eventCache, source, eventType, id, format, args);
+		}
+
+		void TraceEventInternal(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, object[] args)
+		{
+			var output = new StringBuilder();
+			output.AppendLine();
+			output.AppendLine();
+			output.AppendFormat("{0} : {1} : {2} : ", source, eventType, id);
+			output.AppendFormat(format, args);
+			if (eventCache.LogicalOperationStack.Contains(LogicalOperationWriteException))
 			{
-				var output = new StringBuilder();
+				var error = (Exception)args[0];
+				output.AppendLine(error.ToString());
 				output.AppendLine();
-				output.AppendLine();
-				output.AppendFormat("{0} : {1} : {2} : ", source, eventType, id);
-				output.AppendFormat(format, args);
-				if (eventCache.LogicalOperationStack.Contains(LogicalOperationWriteException))
-				{
-					var error = (Exception)args[0];
-					output.AppendLine(error.ToString());
-					output.AppendLine();
-				}
-				else
-				{
-					output.AppendLine();
-					if ((TraceOutputOptions & TraceOptions.Callstack) != 0)
-						output.AppendLine(new StackTrace(true).ToString());
-					else
-						output.AppendLine();
-				}
-				Write(output);
 			}
+			else
+			{
+				output.AppendLine();
+				if ((TraceOutputOptions & TraceOptions.Callstack) != 0)
+					output.AppendLine(new StackTrace(true).ToString());
+				else
+					output.AppendLine();
+			}
+			Write(output);
 		}
 
 		public override void Write(string message)

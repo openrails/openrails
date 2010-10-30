@@ -176,7 +176,7 @@ namespace MSTS
             }
             catch (Exception ex)
             {
-                Trace.TraceError(string.Format("Error reading CAB View file {0}", inf.FileName));
+				Trace.TraceInformation(inf.FileName);
                 Trace.WriteLine(ex);
             }
 

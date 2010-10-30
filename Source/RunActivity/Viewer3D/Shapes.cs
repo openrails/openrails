@@ -258,7 +258,7 @@ namespace ORTS
 				}
 				catch (Exception error)
 				{
-					Trace.WriteLine(path);
+					Trace.TraceInformation(path);
 					Trace.WriteLine(error);
 					if (EmptyShape == null)
 						EmptyShape = new SharedShape(viewer);

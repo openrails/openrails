@@ -390,7 +390,7 @@ namespace ORTS
                     }
                     catch (Exception error)
                     {
-                        Trace.WriteLine(filename);
+						Trace.TraceInformation(filename);
 						Trace.WriteLine(error);
                     }
 

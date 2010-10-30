@@ -220,7 +220,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-					Trace.WriteLine(wagonFilePath);
+					Trace.TraceInformation(wagonFilePath);
 					Trace.WriteLine(error);
                 }
 
