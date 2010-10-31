@@ -16,7 +16,7 @@ namespace MSTS
 
         public ENVFile(string filePath)
         {
-            using (STFReader reader = new STFReader(filePath))
+            using (STFReader reader = new STFReader(filePath, false))
             {
                 while (!reader.EOF)
                     switch (reader.ReadItem())

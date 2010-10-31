@@ -26,7 +26,7 @@ namespace MSTS
 
         public CVFFile(string filePath)
 		{
-            using (STFReader inf = new STFReader(filePath))
+            using (STFReader inf = new STFReader(filePath, false))
             {
                 string Path = filePath.Substring(0, filePath.LastIndexOf('\\') + 1);
                 inf.MustMatch("Tr_CabViewFile");

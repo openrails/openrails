@@ -1213,6 +1213,7 @@ namespace ORTS
         /// <param name="arr">Texture array</param>
         /// <param name="indx">Index</param>
         /// <param name="FileName">Name of the file to report</param>
+        /// <param name="isNight"></param>
         /// <returns>The given Texture</returns>
         private static Texture2D SafeGetAt(Texture2D[] arr, int indx, string FileName, bool isNight)
         {

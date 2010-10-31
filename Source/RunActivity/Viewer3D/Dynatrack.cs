@@ -117,7 +117,7 @@ namespace ORTS
                 switch (fext.ToUpper())
                 {
                     case ".DAT": // MSTS-style
-                        using (STFReader f = new STFReader(filespec))
+                        using (STFReader f = new STFReader(filespec, false))
                         {
                             // "EXPERIMENTAL" header is temporary
                             if (f.SIMISsignature != "EXPERIMENTAL")

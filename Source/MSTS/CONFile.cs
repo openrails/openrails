@@ -21,7 +21,7 @@ namespace MSTS
         {
             FileName = Path.GetFileNameWithoutExtension(filenamewithpath);
             Description = FileName;
-            using (STFReader f = new STFReader(filenamewithpath))
+            using (STFReader f = new STFReader(filenamewithpath, false))
             {
                 while (!f.EOF)
                     switch (f.ReadItem().ToLower())

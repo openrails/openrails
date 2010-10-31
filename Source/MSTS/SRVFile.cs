@@ -29,7 +29,7 @@ namespace MSTS
 		/// <param name="filePath"></param>
 		public SRVFile( string filePath )
 		{
-            using (STFReader inf = new STFReader(filePath))
+            using (STFReader inf = new STFReader(filePath, false))
                 while (!inf.EOF)
                     switch (inf.ReadItem().ToLower())
                     {

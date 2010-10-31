@@ -81,7 +81,7 @@ namespace ORTS
             string orFile = dir + @"\openrails\" + file;
             if (File.Exists(orFile))
                 wagFilePath = orFile;
-            using (STFReader f = new STFReader(wagFilePath))
+            using (STFReader f = new STFReader(wagFilePath, true))
                 while (!f.EOF)
                 {
                     string token = f.ReadItem();

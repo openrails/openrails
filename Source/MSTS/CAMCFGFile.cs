@@ -22,7 +22,7 @@ namespace MSTS
     {
         public CAMCFGFile(string filename)
         {
-            using (STFReader f = new STFReader(filename))
+            using (STFReader f = new STFReader(filename, false))
             {
                 while (!f.EOF)
                     switch (f.ReadItem().ToLower())

@@ -34,7 +34,7 @@ namespace MSTS
 
         public void Read(string filenamewithpath, bool headerOnly)
         {
-            using (STFReader f = new STFReader(filenamewithpath))
+            using (STFReader f = new STFReader(filenamewithpath, false))
             {
                 while (!f.EOF)
                 {

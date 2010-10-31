@@ -81,7 +81,7 @@ namespace MSTS
     /// <alert class="important"><para>NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</para></alert>
     /// </remarks>
     /// <example><code lang="C#" title="Typical STF parsing using C#">
-    ///        using (STFReader f = new STFReader(filename))
+    ///        using (STFReader f = new STFReader(filename, false))
     ///        {
     ///            while (!f.EOF)
     ///                switch (f.ReadItem().ToLower())
@@ -122,24 +122,30 @@ namespace MSTS
         /// <summary>Open a file, reader the header line, and prepare for STF parsing
         /// </summary>
         /// <param name="filename">Filename of the STF file to be opened and parsed.</param>
-		public STFReader(string filename)
+        /// <param name="useTree"><para>true - if the consumer is going to use the Tree Property as it's parsing method (MSTS wagons &amp; engines)</para>
+        /// <para>false - if Tree is not used which signicantly reduces GC</para></param>
+		public STFReader(string filename, bool useTree)
         {
             streamSTF = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
             FileName = filename;
             SIMISsignature = streamSTF.ReadLine();
             LineNumber = 2;
+            if (useTree) tree = new List<string>();
         }
         /// <summary>Use an open stream for STF parsing, this constructor assumes that the SIMIS signature has already been gathered (or there isn't one)
         /// </summary>
         /// <param name="inputStream">Stream that will be parsed.</param>
         /// <param name="fileName">Is only used for error reporting.</param>
         /// <param name="encoding">One of the Encoding formats, defined as static members in Encoding which return an Encoding type.  Eg. Encoding.ASCII or Encoding.Unicode</param>
-        public STFReader(Stream inputStream, string fileName, Encoding encoding)
+        /// <param name="useTree"><para>true - if the consumer is going to use the Tree Property as it's parsing method (MSTS wagons &amp; engines)</para>
+        /// <para>false - if Tree is not used which signicantly reduces GC</para></param>
+        public STFReader(Stream inputStream, string fileName, Encoding encoding, bool useTree)
         {
             Debug.Assert(inputStream.CanSeek);
             FileName = fileName;
             streamSTF = new StreamReader(inputStream , encoding);
             LineNumber = 1;
+            if (useTree) tree = new List<string>();
         }
 
         /// <summary>Implements the IDisposable interface so this class can be implemented with the 'using(STFReader r = new STFReader(...)) {...}' C# statement.
@@ -195,12 +201,13 @@ namespace MSTS
         {
             get
             {
-                if (tree_cache != null)
+                Debug.Assert(tree != null);
+                if ((tree_cache != null) && (!stepbackoneitemFlag))
                     return tree_cache + previousItem;
                 else
                 {
                     StringBuilder sb = new StringBuilder(256);
-                    foreach (string t in tree) sb.Append(t);
+                    foreach (string t in (stepbackoneitemFlag) ? stepback.Tree : tree) sb.Append(t);
                     tree_cache = sb.ToString();
                     sb.Append(previousItem);
                     return sb.ToString();
@@ -222,6 +229,7 @@ namespace MSTS
                 Debug.Assert(stepback.Item != null, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
                 string item = stepback.Item;
                 previousItem = stepback.PrevItem;
+                block_depth = stepback.BlockDepth;
                 if (stepback.Tree != null) { tree = stepback.Tree; tree_cache = null; }
                 stepbackoneitemFlag = false;
                 stepback.Clear();
@@ -812,9 +820,12 @@ namespace MSTS
         /// <summary>Remembers the last returned ReadItem().  If the next {item] is a '(', this is the block name used in the tree.
         /// </summary>
         private string previousItem = "";
+        /// <summary>How deep in nested blocks the current parser is
+        /// </summary>
+        private int block_depth;
         /// <summary>A list describing the hierachy of nested block tokens
         /// </summary>
-        private List<string> tree = new List<string>();
+        private List<string> tree;
         /// <summary>The tree cache is used to minimize the calls to StringBuilder when Tree is called repetively for the same hierachy.
         /// </summary>
         private string tree_cache;
@@ -842,6 +853,9 @@ namespace MSTS
             /// <para>This item, is optimized, so when value is null it means stepbackTree was the same as Tree, so we don't create unneccessary memory duplicates of lists.</para>
             /// </summary>
             public List<string> Tree;
+            /// <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. BlockDepth « block_depth
+            /// </summary>
+            public int BlockDepth;
             //tree_cache can just be set to null, so it is re-evaluated from the stepback'd tree state variable if Tree is called
             /// <summary>Clear all of the members after a step back has been processed
             /// </summary>
@@ -995,8 +1009,8 @@ namespace MSTS
 
                         if (c != '"')
                         {
-                            if(!skip_mode)
-                                STFException.TraceError(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
+                            if (skip_mode) return "";
+                            STFException.TraceError(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
                             return UpdateTreeAndStepBack(itemBuilder.ToString());
                         }
                         c = ReadChar(); // Read the open quote
@@ -1019,50 +1033,50 @@ namespace MSTS
             }
             #endregion
 
+            if (skip_mode) return "";
             string result = itemBuilder.ToString();
-            if (!skip_mode)
-                switch (result.ToLower())
-                {
-                    #region Process special token - include
-                    case "include":
-                        string filename = ReadItem();
-                        if (filename == "(")
-                        {
-                            filename = ReadItem();
-                            SkipRestOfBlock();
-                        }
-                        if (tree.Count == 0)
-                        {
-                            includeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename);
-                            return ReadItem(); // Which will recurse down when includeReader is tested
-                        }
-                        else
-                            STFException.TraceError(this, "Found an include directive, but it was enclosed inside block parenthesis which is illegal.");
-                        break;
-                    #endregion
-                    #region Process special token - skip and comment
-                    case "skip":
-                        {
-                            #region Skip the comment item or block
-                            string comment = ReadItem();
-                            if (comment == "(") SkipRestOfBlock();
-                            #endregion
-                            string item = ReadItem();
-                            if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
-                            return item; // Now move on to the next token after the commented area
-                        }
-                    case "comment":
-                        {
-                            #region Skip the comment item or block
-                            string comment = ReadItem();
-                            if (comment == "(") SkipRestOfBlock();
-                            #endregion
-                            string item = ReadItem();
-                            if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
-                            return item; // Now move on to the next token after the commented area
-                        }
-                    #endregion
-                }
+            switch (result.ToLower())
+            {
+                #region Process special token - include
+                case "include":
+                    string filename = ReadItem();
+                    if (filename == "(")
+                    {
+                        filename = ReadItem();
+                        SkipRestOfBlock();
+                    }
+                    if (tree.Count == 0)
+                    {
+                        includeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename, false);
+                        return ReadItem(); // Which will recurse down when includeReader is tested
+                    }
+                    else
+                        STFException.TraceError(this, "Found an include directive, but it was enclosed inside block parenthesis which is illegal.");
+                    break;
+                #endregion
+                #region Process special token - skip and comment
+                case "skip":
+                    {
+                        #region Skip the comment item or block
+                        string comment = ReadItem();
+                        if (comment == "(") SkipRestOfBlock();
+                        #endregion
+                        string item = ReadItem();
+                        if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
+                        return item; // Now move on to the next token after the commented area
+                    }
+                case "comment":
+                    {
+                        #region Skip the comment item or block
+                        string comment = ReadItem();
+                        if (comment == "(") SkipRestOfBlock();
+                        #endregion
+                        string item = ReadItem();
+                        if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
+                        return item; // Now move on to the next token after the commented area
+                    }
+                #endregion
+            }
 
             return UpdateTreeAndStepBack(result);
         }
@@ -1079,21 +1093,29 @@ namespace MSTS
             token = token.Trim();
             if (token == "(")
             {
-                stepback.Tree = new List<string>(tree);
+                if (tree != null)
+                {
+                    stepback.Tree = new List<string>(tree);
+                    tree.Add(previousItem + "(");
+                    tree_cache = null; // The tree has changed, so we need to empty the cache which will be rebuilt if the property 'Tree' is used
+                }
+                stepback.BlockDepth = block_depth++;
                 stepback.PrevItem = previousItem;
-                tree.Add(previousItem + "(");
-                tree_cache = null; // The tree has changed, so we need to empty the cache which will be rebuilt if the property 'Tree' is used
                 previousItem = "";
             }
             else if (token == ")")
             {
-                stepback.Tree = new List<string>(tree);
-                stepback.PrevItem = previousItem;
-                if (tree.Count > 0)
+                if (tree != null)
                 {
-                    tree.RemoveAt(tree.Count - 1);
-                    tree_cache = null; // The tree has changed, so we need to empty the cache which will be rebuilt if the property 'Tree' is used
+                    stepback.Tree = new List<string>(tree);
+                    if (tree.Count > 0)
+                    {
+                        tree.RemoveAt(tree.Count - 1);
+                        tree_cache = null; // The tree has changed, so we need to empty the cache which will be rebuilt if the property 'Tree' is used
+                    }
                 }
+                stepback.BlockDepth = (block_depth > 0) ? block_depth-- : 0;
+                stepback.PrevItem = previousItem;
                 previousItem = token;
             }
             else

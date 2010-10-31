@@ -250,7 +250,7 @@ namespace MSTS
 	{
 		public void AddRouteTSectionDatFile( string pathNameExt )
 		{
-            using (STFReader f = new STFReader(pathNameExt))
+            using (STFReader f = new STFReader(pathNameExt, false))
             {
                 if (f.SIMISsignature != "SIMISA@@@@@@@@@@JINX0T0t______")
                 {
@@ -268,7 +268,7 @@ namespace MSTS
 		}
         public TSectionDatFile(string filePath)
         {
-            using (STFReader f = new STFReader(filePath))
+            using (STFReader f = new STFReader(filePath, false))
             {
                 while (!f.EOF)
                     switch (f.ReadItem().ToLower())

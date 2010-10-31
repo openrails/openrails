@@ -22,7 +22,7 @@ namespace MSTS
         
         public TTypeDatFile(string filePath): base()
 		{
-            using (STFReader f = new STFReader(filePath))
+            using (STFReader f = new STFReader(filePath, false))
             {
                 int count = f.ReadInt(STFReader.UNITS.None, null);
                 while (!f.EndOfBlock())

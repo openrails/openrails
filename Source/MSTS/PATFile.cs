@@ -80,7 +80,7 @@ namespace MSTS
 		/// <param name="filePath"></param>
 		public PATFile( string filePath )
 		{
-            using (STFReader f = new STFReader(filePath))
+            using (STFReader f = new STFReader(filePath, false))
             while(!f.EOF)
                 switch(f.ReadItem().ToLower())
                 {

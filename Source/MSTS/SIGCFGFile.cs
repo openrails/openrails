@@ -27,7 +27,7 @@ namespace MSTS
 
         public SIGCFGFile(string filenamewithpath)
         {
-            using (STFReader f = new STFReader(filenamewithpath))
+            using (STFReader f = new STFReader(filenamewithpath, false))
                 while (!f.EOF)
                     switch (f.ReadItem().ToLower())
                     {

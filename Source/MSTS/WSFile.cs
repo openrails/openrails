@@ -24,7 +24,7 @@ namespace ORTS
             if (File.Exists(wsfilename))
             {
 				Trace.Write("$");
-                using (STFReader reader = new STFReader(wsfilename))
+                using (STFReader reader = new STFReader(wsfilename, false))
                 {
                     while (!reader.EndOfBlock())
                         switch (reader.ReadItem().ToLower())
