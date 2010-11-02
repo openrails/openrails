@@ -394,7 +394,7 @@ namespace ORTS
             for (int j = 0; j < TDB.TrackDB.TrackNodes.Count(); j++)
             {
                 TrackNode tn = TDB.TrackDB.TrackNodes[j];
-                if (tn != null && tn.TrEndNode != null && tn.UiD.WorldTileX == location.TileX && tn.UiD.WorldTileZ == location.TileZ)
+                if (tn != null && tn.TrEndNode && tn.UiD.WorldTileX == location.TileX && tn.UiD.WorldTileZ == location.TileZ)
                 {
                     float dx = tn.UiD.X - location.Location.X;
                     dx += (tn.UiD.TileX - location.TileX) * 2048;

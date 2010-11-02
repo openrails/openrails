@@ -31,9 +31,9 @@ namespace MSTS
             TileX = int.Parse(filename.Substring(p + 8, 7));
             TileZ = int.Parse(filename.Substring(p + 15, 7));
 
-            using (SBR f = SBR.Open(filename))
+            using (SBR sbr = SBR.Open(filename))
             {
-                using (SBR block = f.ReadSubBlock())
+                using (SBR block = sbr.ReadSubBlock())
                 {
                     Tr_Worldfile = new Tr_Worldfile( block );
                 }

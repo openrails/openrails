@@ -155,16 +155,16 @@ namespace ORTS
             }
         }      
 
-        public void ParseBrakeValue(string lowercasetoken, STFReader f)
+        public void ParseBrakeValue(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
-                case "maxsystempressure": MaxPressurePSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "maxreleaserate": ReleaseRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "maxapplicationrate": ApplyRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "emergencyapplicationrate": EmergencyRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "fullservicepressuredrop": FullServReductionPSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "minpressurereduction": MinReductionPSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "maxsystempressure": MaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "maxreleaserate": ReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "maxapplicationrate": ApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "emergencyapplicationrate": EmergencyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "fullservicepressuredrop": FullServReductionPSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "minpressurereduction": MinReductionPSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 //default: Console.WriteLine("{0}", lowercasetoken); break;
             }
         }

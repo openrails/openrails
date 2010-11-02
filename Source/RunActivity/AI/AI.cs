@@ -189,7 +189,7 @@ namespace ORTS
             if (sd.Time < Simulator.ClockTime)
             {
                 float dtS = (float)(Simulator.ClockTime - sd.Time);
-                if (train.RearTDBTraveller.Move(dtS * train.MaxSpeedMpS) > 0.01 || train.RearTDBTraveller.TN.TrEndNode != null)
+                if (train.RearTDBTraveller.Move(dtS * train.MaxSpeedMpS) > 0.01 || train.RearTDBTraveller.TN.TrEndNode)
                     return null;
                 //Console.WriteLine("initial move {0} {1}", dtS * train.MaxSpeedMpS, train.MaxSpeedMpS);
                 AIPathNode node = train.Path.FirstNode;
@@ -229,7 +229,7 @@ namespace ORTS
             train.CalculatePositionOfCars(0);
             for (int i = 0; i < train.Cars.Count; i++)
                 train.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
-            if (train.FrontTDBTraveller.TN.TrEndNode != null)
+            if (train.FrontTDBTraveller.TN.TrEndNode)
                 return null;
 
             train.AITrainDirectionForward = true;

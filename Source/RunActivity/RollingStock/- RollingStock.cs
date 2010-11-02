@@ -109,30 +109,24 @@ namespace ORTS
 
             public void WagFile(string filenamewithpath)
             {
-                using (STFReader f = new STFReader(filenamewithpath, false))
-                    while (!f.EOF)
-                        switch (f.ReadItem().ToLower())
-                        {
-                            case "engine": Engine = new EngineClass(f); break;
-                            case "_openrails": OpenRails = new OpenRailsData(f); break;
-                            case "(": f.SkipRestOfBlock(); break;
-                        }
+                using (STFReader stf = new STFReader(filenamewithpath, false))
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("engine", ()=>{ Engine = new EngineClass(stf); }),
+                        new STFReader.TokenProcessor("_openrails", ()=>{ OpenRails = new OpenRailsData(stf); }),
+                    });
             }
 
             public class EngineClass
             {
                 public string Type = null;
 
-                public EngineClass(STFReader f)
+                public EngineClass(STFReader stf)
                 {
-                    f.MustMatch("(");
-                    f.ReadItem();
-                    while (!f.EndOfBlock())
-                        switch (f.ReadItem().ToLower())
-                        {
-                            case "type": Type = f.ReadItemBlock(null); break;
-                            case "(": f.SkipRestOfBlock(); break;
-                        }
+                    stf.MustMatch("(");
+                    stf.ReadItem();
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadItemBlock(null); }),
+                    });
                 }
             } // class WAGFile.Engine
 
@@ -140,15 +134,12 @@ namespace ORTS
             {
                 public string DLL = null;
 
-                public OpenRailsData(STFReader f)
+                public OpenRailsData(STFReader stf)
                 {
-                    f.MustMatch("(");
-                    while (!f.EndOfBlock())
-                        switch (f.ReadItem().ToLower())
-                        {
-                            case "dll": DLL = f.ReadItemBlock(null); break;
-                            case "(": f.SkipRestOfBlock(); break;
-                        }
+                    stf.MustMatch("(");
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("dll", ()=>{ DLL = stf.ReadItemBlock(null); }),
+                    });
                 }
             } // class WAGFile.Engine
 

@@ -43,7 +43,7 @@ namespace ORTS
                 return new AirSinglePipe(car);
         }
 
-        public abstract void Parse(string lowercasetoken, STFReader f);
+        public abstract void Parse(string lowercasetoken, STFReader stf);
 
         public abstract void Update(float elapsedClockSeconds);
 
@@ -125,20 +125,20 @@ namespace ORTS
             }
         }
 
-        public override void Parse(string lowercasetoken, STFReader f)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
-                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(triplevalveratio": AuxCylVolumeRatio = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(maxreleaserate": MaxReleaseRate = ReleaseRate = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "wagon(maxapplicationrate": MaxApplicationRate = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRate = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "wagon(emergencyreschargingrate": EmergResChargingRate = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(brakepipevolume": BrakePipeVolumeFT3 = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(triplevalveratio": AuxCylVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(maxreleaserate": MaxReleaseRate = ReleaseRate = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(maxapplicationrate": MaxApplicationRate = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRate = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(emergencyreschargingrate": EmergResChargingRate = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(brakepipevolume": BrakePipeVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
             }
         }
 
@@ -499,13 +499,13 @@ namespace ORTS
 			return string.Format("{0:F0} PSI", BrakeLine1PressurePSI);
         }
 
-        public override void Parse(string lowercasetoken, STFReader f)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
-                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(maxbrakeforce": MaxBrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxPressurePSI = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
             }
         }
 

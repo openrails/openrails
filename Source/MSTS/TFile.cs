@@ -344,9 +344,9 @@ namespace MSTS
 		{
             FileName = filename;
 
-            using( SBR f = SBR.Open( filename ))
+            using( SBR sbr = SBR.Open( filename ))
             {
-                using (SBR block = f.ReadSubBlock() )
+                using (SBR block = sbr.ReadSubBlock() )
                 {
                     terrain = new terrain(block);
                 }

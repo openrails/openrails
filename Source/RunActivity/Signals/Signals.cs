@@ -87,7 +87,7 @@ namespace ORTS
                 for (int i = 1; i < trackNodes.Length; i++)
                 {
                     // Using the track end node as starting point to find signals.
-                    if (trackNodes[i].TrEndNode != null)
+                    if (trackNodes[i].TrEndNode)
                     {
                         int direction = trackNodes[i].TrPins[0].Direction;
                         int nextNode = trackNodes[i].TrPins[0].Link;
@@ -114,7 +114,7 @@ namespace ORTS
                 if (visited[index, direction] > 0) return;
                 visited[index, direction] = 1;      //  Mark track node as processed
 
-                if (trackNodes[index].TrEndNode != null) return;
+                if (trackNodes[index].TrEndNode) return;
                 //  Is it a vector node then it may contain objects.
                 if (trackNodes[index].TrVectorNode != null)
                 {
@@ -236,7 +236,7 @@ namespace ORTS
             int direction = startDir;
             do
             {
-                if (trackNodes[index].TrEndNode != null) return -1;
+                if (trackNodes[index].TrEndNode) return -1;
                 if (trackNodes[index].TrVectorNode != null)
                 {
                     // Any obects ?
@@ -472,7 +472,7 @@ namespace ORTS
 
             do
             {
-                if (trackNodes[currenNode].TrEndNode != null) return -1;  // End of track reached no signals found.
+                if (trackNodes[currenNode].TrEndNode) return -1;  // End of track reached no signals found.
                 if (trackNodes[currenNode].TrVectorNode != null)
                 {
                     if (trackNodes[currenNode].TrVectorNode.noItemRefs > 0)
@@ -577,7 +577,7 @@ namespace ORTS
 
             while (currentTrackNode != iLinknode)
             {
-                if (trackNodes[currentTrackNode].TrEndNode != null) return false;  // End of track reached
+                if (trackNodes[currentTrackNode].TrEndNode) return false;  // End of track reached
                 NextNode(ref currentTrackNode,ref currentDir);
             }
 
@@ -680,7 +680,7 @@ namespace ORTS
             do
             {
                 // Get the next track node
-                if (trackNodes[currentTrackNode].TrEndNode != null) return -1;  // End of track reached
+                if (trackNodes[currentTrackNode].TrEndNode) return -1;  // End of track reached
                 NextNode(ref currentTrackNode,ref currentDir);
 				if (currentTrackNode == 0) return -1;  // End of track reached (broken track database?)
                 

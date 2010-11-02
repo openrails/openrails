@@ -28,13 +28,13 @@ namespace MSTS
 			Filename = filename;
 
 			// Open the file
-			BinaryReader f = new BinaryReader( new FileStream( Filename, FileMode.Open, FileAccess.Read ) );
+			BinaryReader reader = new BinaryReader( new FileStream( Filename, FileMode.Open, FileAccess.Read ) );
             try
             {
                 // read it in
                 for (int y = 0; y < 256; ++y)
                     for (int x = 0; x < 256; ++x)
-                        A[y, x] = f.ReadUInt16();
+                        A[y, x] = reader.ReadUInt16();
             }
             catch (Exception error)
             {
@@ -43,7 +43,7 @@ namespace MSTS
             }
 			finally
 			{
-				f.Close( );
+				reader.Close( );
 			}
 		}
 

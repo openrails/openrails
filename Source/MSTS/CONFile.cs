@@ -21,15 +21,10 @@ namespace MSTS
         {
             FileName = Path.GetFileNameWithoutExtension(filenamewithpath);
             Description = FileName;
-            using (STFReader f = new STFReader(filenamewithpath, false))
-            {
-                while (!f.EOF)
-                    switch (f.ReadItem().ToLower())
-                    {
-                        case "train": Train = new Train_Config(f); break;
-                        case "(": f.SkipRestOfBlock(); break;
-                    }
-            }
+            using (STFReader stf = new STFReader(filenamewithpath, false))
+                stf.ParseFile(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
+                });
         }
     }
 }

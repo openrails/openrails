@@ -392,7 +392,7 @@ namespace ORTS
 							var actFile = new ACTFile(file, true);
 							Activities.Add(new Activity(actFile.Tr_Activity.Tr_Activity_Header.Name, file, actFile));
 						}
-						catch
+						catch(Exception)
 						{
 						}
 					}

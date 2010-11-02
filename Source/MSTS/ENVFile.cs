@@ -6,6 +6,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
+/*
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("", ()=>{  }),
+            });
+*/
+
 namespace MSTS
 {
     public class ENVFile
@@ -16,54 +22,25 @@ namespace MSTS
 
         public ENVFile(string filePath)
         {
-            using (STFReader reader = new STFReader(filePath, false))
-            {
-                while (!reader.EOF)
-                    switch (reader.ReadItem())
-                    {
-                        case "world": ParseWorld(reader); break;
-                        case "(": reader.SkipRestOfBlock(); break;
-                    }
-            }
+            using (STFReader stf = new STFReader(filePath, false))
+                stf.ParseFile(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("world", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("world_water", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("world_water_wave_height", ()=>{ WaterWaveHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                            new STFReader.TokenProcessor("world_water_wave_speed", ()=>{ WaterWaveSpeed = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
+                            new STFReader.TokenProcessor("world_water_layers", ()=>{ ParseWaterLayers(stf); }),
+                        });}),
+                    });}),
+                });
         }
-        private void ParseWorld(STFReader reader)
+        private void ParseWaterLayers(STFReader stf)
         {
-            reader.MustMatch("(");
-            while (!reader.EndOfBlock())
-                switch (reader.ReadItem().ToLower())
-                {
-                    case "world_water": ParseWater(reader); break;
-                    case "(": reader.SkipRestOfBlock(); break;
-                }
-        }
-        private void ParseWater(STFReader reader)
-        {
-            reader.MustMatch("(");
-            while (!reader.EndOfBlock())
-                switch (reader.ReadItem().ToLower())
-                {
-                    case "world_water_wave_height": WaterWaveHeight = reader.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                    case "world_water_wave_speed": WaterWaveSpeed = reader.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                    case "world_water_layers": ParseWaterLayers(reader); break;
-                    case "(": reader.SkipRestOfBlock(); break;
-                }
-        }
-        private void ParseWaterLayers(STFReader reader)
-        {
-            reader.MustMatch("(");
-            int texturelayers = reader.ReadInt(STFReader.UNITS.None, null);
+            stf.MustMatch("(");
+            int texturelayers = stf.ReadInt(STFReader.UNITS.None, null);
             WaterLayers = new List<ENVFileWaterLayer>(texturelayers);
-            while (!reader.EndOfBlock())
-                switch (reader.ReadItem().ToLower())
-                {
-                    case "world_water_layer":
-                        if(texturelayers-- > 0)
-                            WaterLayers.Add(new ENVFileWaterLayer(reader));
-                        break;
-                    case "(":
-                        reader.SkipRestOfBlock();
-                        break;
-                }
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("world_water_layer", ()=>{ if(texturelayers-- > 0) WaterLayers.Add(new ENVFileWaterLayer(stf)); })
+            });
         }
     }
 
@@ -72,54 +49,19 @@ namespace MSTS
 		public float Height;
 		public string TextureName;
 
-		public ENVFileWaterLayer(STFReader reader)
+		public ENVFileWaterLayer(STFReader stf)
 		{
-            reader.MustMatch("(");
-            while (!reader.EndOfBlock())
-                switch (reader.ReadItem().ToLower())
-                {
-                    case "world_water_layer_height": Height = reader.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                    case "world_anim_shader": ParseAnimShader(reader); break;
-                    case "(": reader.SkipRestOfBlock(); break;
-                }
-        }
-        private void ParseAnimShader(STFReader reader)
-        {
-            reader.MustMatch("(");
-            while (!reader.EndOfBlock())
-                switch (reader.ReadItem().ToLower())
-                {
-                    case "world_shader": ParseWorldShader(reader); break;
-                    case "(": reader.SkipRestOfBlock(); break;
-                }
-        }
-        private void ParseWorldShader(STFReader reader)
-        {
-            reader.MustMatch("(");
-            reader.ReadItem(); // TextureMode
-            while (!reader.EndOfBlock())
-                switch (reader.ReadItem().ToLower())
-                {
-                    case "terrain_texslots": ParseTerrainTexSlots(reader); break;
-                    case "(": reader.SkipRestOfBlock(); break;
-                }
-        }
-        private void ParseTerrainTexSlots(STFReader reader)
-        {
-            reader.MustMatch("(");
-            reader.ReadInt(STFReader.UNITS.None, null); // Count
-            while (!reader.EndOfBlock())
-                switch (reader.ReadItem().ToLower())
-                {
-                    case "terrain_texslot":
-                        reader.MustMatch("(");
-					    TextureName = reader.ReadItem();
-					    reader.ReadItem();
-					    reader.ReadItem();
-					    reader.MustMatch(")");
-                        break;
-                    case "(": reader.SkipRestOfBlock(); break;
-                }
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("world_water_layer_height", ()=>{ Height = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("world_anim_shader", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); stf.ReadItem()/*TextureMode*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("terrain_texslots", ()=>{ stf.MustMatch("("); stf.ReadInt(STFReader.UNITS.None, null)/*Count*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("terrain_texslot", ()=>{ stf.MustMatch("("); TextureName = stf.ReadItem(); stf.SkipRestOfBlock(); }),
+                        });}),
+                    });}),
+                });}),
+            });
         }
 	}
 }

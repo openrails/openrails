@@ -48,17 +48,17 @@ namespace ORTS
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
         /// </summary>
-        public override void Parse(string lowercasetoken, STFReader f)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
-                case "engine(dieselengineidlerpm": IdleRPM = f.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(dieselenginemaxrpm": MaxRPM = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
+                case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 // for example
-                //case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
-                //case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
-                default: base.Parse(lowercasetoken, f); break;
+                //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
+                //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
+                default: base.Parse(lowercasetoken, stf); break;
             }
 
             if (IdleRPM != 0 && MaxRPM != 0 && MaxRPMChangeRate != 0)

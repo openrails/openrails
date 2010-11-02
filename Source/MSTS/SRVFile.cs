@@ -29,28 +29,17 @@ namespace MSTS
 		/// <param name="filePath"></param>
 		public SRVFile( string filePath )
 		{
-            using (STFReader inf = new STFReader(filePath, false))
-                while (!inf.EOF)
-                    switch (inf.ReadItem().ToLower())
-                    {
-                        case "service_definition": ReadServiceDefintionBlock(inf); break;
-                        case "(": inf.SkipRestOfBlock(); break;
-                    }
-        }
-        private void ReadServiceDefintionBlock(STFReader inf)
-        {
-            inf.MustMatch("(");
-            while(!inf.EndOfBlock())
-                switch (inf.ReadItem().ToLower())
-                {
-                    case "serial": Serial = inf.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "name": Name = inf.ReadItemBlock(null); break;
-                    case "train_config": Train_Config = inf.ReadItemBlock(null); break;
-                    case "pathid": PathID = inf.ReadItemBlock(null); break;
-                    case "maxwheelacceleration": MaxWheelAcceleration = inf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "efficiency": Efficiency = inf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "(": inf.SkipRestOfBlock(); break;
-                }
+            using (STFReader stf = new STFReader(filePath, false))
+                stf.ParseFile(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("service_definition", ()=> { stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                        new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
+                        new STFReader.TokenProcessor("train_config", ()=>{ Train_Config = stf.ReadItemBlock(null); }),
+                        new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadItemBlock(null); }),
+                        new STFReader.TokenProcessor("maxwheelacceleration", ()=>{ MaxWheelAcceleration = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
+                        new STFReader.TokenProcessor("efficiency", ()=>{ Efficiency = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
+                    });}),
+                });
         }
 	} // SRVFile
 }

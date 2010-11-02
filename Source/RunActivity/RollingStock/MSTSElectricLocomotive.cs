@@ -46,14 +46,14 @@ namespace ORTS
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
         /// </summary>
-        public override void Parse(string lowercasetoken, STFReader f)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
                 // for example
-                //case "engine(sound": CabSoundFileName = f.ReadStringBlock(); break;
-                //case "engine(cabview": CVFFileName = f.ReadStringBlock(); break;
-                default: base.Parse(lowercasetoken, f); break;
+                //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
+                //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
+                default: base.Parse(lowercasetoken, stf); break;
             }
         }
 

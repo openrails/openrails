@@ -20,19 +20,16 @@ namespace MSTS
 	public class TTypeDatFile: List<TTypeDatFile.TrackType>
 	{
         
-        public TTypeDatFile(string filePath): base()
+        public TTypeDatFile(string filePath)
 		{
-            using (STFReader f = new STFReader(filePath, false))
+            using (STFReader stf = new STFReader(filePath, false))
             {
-                int count = f.ReadInt(STFReader.UNITS.None, null);
-                while (!f.EndOfBlock())
-                    switch (f.ReadItem().ToLower())
-                    {
-                        case "tracktype": this.Add(new TrackType(f)); break;
-                        case "(": f.SkipRestOfBlock(); break;
-                    }
-                if (count != this.Count)
-                    STFException.TraceError(f, "Count mismatch.");
+                int count = stf.ReadInt(STFReader.UNITS.None, null);
+                stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("tracktype", ()=>{ Add(new TrackType(stf)); }),
+                });
+                if (count != Count)
+                    STFException.TraceError(stf, "Count mismatch.");
             }
 		}
 
@@ -42,13 +39,13 @@ namespace MSTS
             public string InsideSound;
             public string OutsideSound;
 
-            public TrackType(STFReader f)
+            public TrackType(STFReader stf)
             {
-                f.MustMatch("(");
-                Label = f.ReadItem();
-                InsideSound = f.ReadItem();
-                OutsideSound = f.ReadItem();
-                f.SkipRestOfBlock();
+                stf.MustMatch("(");
+                Label = stf.ReadItem();
+                InsideSound = stf.ReadItem();
+                OutsideSound = stf.ReadItem();
+                stf.SkipRestOfBlock();
             }
         } // TrackType
 

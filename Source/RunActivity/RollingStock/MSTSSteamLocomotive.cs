@@ -200,29 +200,29 @@ namespace ORTS
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
         /// </summary>
-        public override void Parse(string lowercasetoken, STFReader f)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
-                case "engine(numcylinders": NumCylinders = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                case "engine(cylinderstroke": CylinderStrokeM = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "engine(cylinderdiameter": CylinderDiameterM = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(f.ReadItemBlock(null), f); break;
-                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(f.ReadItemBlock(null), f); break;
-                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(f.ReadItemBlock(null), f); break;
-                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(f.ReadItemBlock(null), f); break;
-                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(f.ReadItemBlock(null), f) / 3600; break;
-                case "engine(enginecontrollers(cutoff": CutoffController.Parse(f); break;
-                case "engine(forcefactor1": ForceFactor1 = new Interpolator(f); break;
-                case "engine(forcefactor2": ForceFactor2 = new Interpolator(f); break;
-                case "engine(cylinderpressuredrop": CylinderPressureDrop = new Interpolator(f); break;
-                case "engine(backpressure": BackPressure = new Interpolator(f); break;
-                case "engine(burnrate": BurnRate = new Interpolator(f); break;
-                case "engine(evaporationrate": EvaporationRate = new Interpolator(f); break;
-                default: base.Parse(lowercasetoken, f); break;
+                case "engine(numcylinders": NumCylinders = stf.ReadIntBlock(STFReader.UNITS.None, null); break;
+                case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(cylinderdiameter": CylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(stf.ReadItemBlock(null), stf); break;
+                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(stf.ReadItemBlock(null), stf); break;
+                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(stf.ReadItemBlock(null), stf); break;
+                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(stf.ReadItemBlock(null), stf); break;
+                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(stf.ReadItemBlock(null), stf) / 3600; break;
+                case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
+                case "engine(forcefactor1": ForceFactor1 = new Interpolator(stf); break;
+                case "engine(forcefactor2": ForceFactor2 = new Interpolator(stf); break;
+                case "engine(cylinderpressuredrop": CylinderPressureDrop = new Interpolator(stf); break;
+                case "engine(backpressure": BackPressure = new Interpolator(stf); break;
+                case "engine(burnrate": BurnRate = new Interpolator(stf); break;
+                case "engine(evaporationrate": EvaporationRate = new Interpolator(stf); break;
+                default: base.Parse(lowercasetoken, stf); break;
             }
         }
-        public float ParseFT3(string token, STFReader f)
+        public float ParseFT3(string token, STFReader stf)
         {
             token = token.ToLower();
             if (token[0] == '"')
@@ -235,10 +235,10 @@ namespace ORTS
             float result;
             if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
                 return result;
-            STFException.TraceWarning(f, "Invalid volume value or units " + token + ", cubic feet expected");
+            STFException.TraceWarning(stf, "Invalid volume value or units " + token + ", cubic feet expected");
             return ParseFloat(token);
         }
-        public float ParsePSI(string token, STFReader f)
+        public float ParsePSI(string token, STFReader stf)
         {
             token = token.ToLower();
             int i = token.IndexOf("psi");
@@ -249,10 +249,10 @@ namespace ORTS
             float result;
             if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
                 return result;
-            STFException.TraceWarning(f, "invalid pressure value or units " + token + ", pounds per square inch expected");
+            STFException.TraceWarning(stf, "invalid pressure value or units " + token + ", pounds per square inch expected");
             return ParseFloat(token);
         }
-        public float ParseLBpH(string token, STFReader f)
+        public float ParseLBpH(string token, STFReader stf)
         {
             token = token.ToLower();
             int i = token.IndexOf("lb/h");
@@ -263,7 +263,7 @@ namespace ORTS
             float result;
             if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
                 return result;
-            STFException.TraceWarning(f, "invalid steaming rate value or units " + token + ", pounds per hour expected");
+            STFException.TraceWarning(stf, "invalid steaming rate value or units " + token + ", pounds per hour expected");
             return ParseFloat(token);
         }
 

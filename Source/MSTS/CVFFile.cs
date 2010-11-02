@@ -26,34 +26,21 @@ namespace MSTS
 
         public CVFFile(string filePath)
 		{
-            using (STFReader inf = new STFReader(filePath, false))
-            {
-                string Path = filePath.Substring(0, filePath.LastIndexOf('\\') + 1);
-                inf.MustMatch("Tr_CabViewFile");
-                inf.MustMatch("(");
-                while (!inf.EOF)
-                    switch (inf.ReadItem().ToLower())
-                    {
-                        case "position":
-                            Locations.Add(inf.ReadVector3Block(STFReader.UNITS.None, new Vector3()));
-                            break;
-                        case "direction":
-                            Directions.Add(inf.ReadVector3Block(STFReader.UNITS.None, new Vector3()));
-                            break;
-                        case "cabviewfile":
-                            string fName = inf.ReadItemBlock(null);
-                            TwoDViews.Add(Path + fName);
-                            NightViews.Add(Path + "night\\" + fName);
-                            LightViews.Add(Path + "cablight\\" + fName);
-                            break;
-                        case "cabviewcontrols":
-                            CabViewControls = new CabViewControls(inf, Path);
-                            break;
-                        case "(":
-                            inf.SkipRestOfBlock();
-                            break;
-                    }
-            }
+            string basepath = filePath.Substring(0, filePath.LastIndexOf('\\') + 1);
+            using (STFReader stf = new STFReader(filePath, false))
+                stf.ParseFile(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("tr_cabviewfile", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("position", ()=>{ Locations.Add(stf.ReadVector3Block(STFReader.UNITS.None, new Vector3())); }),
+                        new STFReader.TokenProcessor("direction", ()=>{ Directions.Add(stf.ReadVector3Block(STFReader.UNITS.None, new Vector3())); }),
+                        new STFReader.TokenProcessor("cabviewfile", ()=>{
+                            string filename = stf.ReadItemBlock(null);
+                            TwoDViews.Add(basepath + filename);
+                            NightViews.Add(basepath + Path.GetDirectoryName(filename) + "night\\" + Path.GetFileName(filename));
+                            LightViews.Add(basepath + Path.GetDirectoryName(filename) + "cablight\\" + Path.GetFileName(filename));
+                        }),
+                        new STFReader.TokenProcessor("cabviewcontrols", ()=>{ CabViewControls = new CabViewControls(stf, basepath); }),
+                    });}),
+                });
 		}
 
 	} // class CVFFile
@@ -117,73 +104,23 @@ namespace MSTS
 
     public class CabViewControls : List<CabViewControl>
     {
-        public CabViewControls(STFReader inf, string basePath)
+        public CabViewControls(STFReader stf, string basepath)
         {
-            inf.MustMatch("(");
-
-            int count = inf.ReadInt(STFReader.UNITS.None, null);
-
-            try
-            {
-                while (!inf.EndOfBlock())
-                {
-                    string token = inf.ReadItem();
-                    if (string.Compare(token, "Dial", true) == 0)
-                    {
-                        CVCDial dial = new CVCDial(inf, basePath);
-                        Add(dial);
-                    }
-                    else if (string.Compare(token, "Gauge", true) == 0)
-                    {
-                        CVCGauge gauge = new CVCGauge(inf, basePath);
-                        Add(gauge);
-                    }
-                    else if (string.Compare(token, "Lever", true) == 0)
-                    {
-                        CVCDiscrete lever = new CVCDiscrete(inf, basePath);
-                        Add(lever);
-                    }
-                    else if (string.Compare(token, "TwoState", true) == 0)
-                    {
-                        CVCDiscrete twostate = new CVCDiscrete(inf, basePath);
-                        Add(twostate);
-                    }
-                    else if (string.Compare(token, "TriState", true) == 0)
-                    {
-                        CVCDiscrete tristate = new CVCDiscrete(inf, basePath);
-                        Add(tristate);
-                    }
-                    else if (string.Compare(token, "MultiStateDisplay", true) == 0)
-                    {
-                        CVCMultiStateDisplay multi = new CVCMultiStateDisplay(inf, basePath);
-                        Add(multi);
-                    }
-                    else if (string.Compare(token, "CabSignalDisplay", true) == 0)
-                    {
-                        CVCSignal cabsignal = new CVCSignal(inf, basePath);
-                        Add(cabsignal);
-                    }
-                    else if (string.Compare(token, "Digital", true) == 0)
-                    {
-                        CVCDigital digital = new CVCDigital(inf, basePath);
-                        Add(digital);
-                    }
-                    else
-                    {
-                        inf.SkipBlock();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-				Trace.TraceInformation(inf.FileName);
-                Trace.WriteLine(ex);
-            }
-
+            stf.MustMatch("(");
+            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
+                new STFReader.TokenProcessor("guage", ()=>{ Add(new CVCGauge(stf, basepath)); }),
+                new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("twostate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("multistatedisplay", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
+                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }),
+                new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }),
+            });
+            //TODO Uncomment when parsed all type
             /*
-             * Uncomment when parsed all type
-            if (count != this.Count)
-                STFException.ReportError(inf, "CabViewControl count mismatch");
+            if (count != this.Count) STFException.ReportWarning(inf, "CabViewControl count mismatch");
             */
         }
     }
@@ -204,104 +141,77 @@ namespace MSTS
         public CABViewControlStyles ControlStyle = CABViewControlStyles.NONE;
         public CABViewControlUnits Units = CABViewControlUnits.NONE;
 
-        public void Parse(string token, STFReader inf, string basePath)
+        protected void ParseType(STFReader stf)
         {
-            List<CABViewControlStyles> ccss = new List<CABViewControlStyles>((IEnumerable<CABViewControlStyles>)Enum.GetValues(typeof(CABViewControlStyles)));
-            List<CABViewControlTypes> ccts = new List<CABViewControlTypes>((IEnumerable<CABViewControlTypes>)Enum.GetValues(typeof(CABViewControlTypes)));
-            List<CABViewControlUnits> ccms = new List<CABViewControlUnits>((IEnumerable<CABViewControlUnits>)Enum.GetValues(typeof(CABViewControlUnits)));
-            string s;
-
-            if (string.Compare(token, "Type", true) == 0)
+            stf.MustMatch("(");
+            try
             {
-                inf.MustMatch("(");
-                s = inf.ReadItem();
-                var qtr = (from ctc in ccts
-                           where ctc.ToString().ToLower() == s.ToLower()
-                           select ctc).FirstOrDefault();
-
-                ControlType = qtr;
-
-                s = inf.ReadItem(); // Skip again Type 
-                inf.SkipRestOfBlock();
+                ControlType = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), stf.ReadItem());
             }
-            else if (string.Compare(token, "Position", true) == 0)
+            catch(ArgumentException)
             {
-                int[] posArray = new int[10];
-                int posRead = 0;
-                inf.MustMatch("(");
-
-                // Handling middle values
-                while (!inf.EndOfBlock())
-                {
-                    if (posRead > 0 && posRead % 10 == 0)
-                    {
-                        Array.Resize<int>(ref posArray, (posRead / 10 + 1) * 10);
-                    }
-
-                    posArray[posRead] = inf.ReadInt(STFReader.UNITS.None, null);
-
-                    posRead++;
-                }
-
-                if (posRead > 4)
-                {
-                    Trace.TraceWarning(string.Format("Position has too much parameters in {0}, control type {1}.", inf.FileName, this.ControlType));
-                }
-
-                if (posRead < 4)
-                {
-                    Trace.TraceError(string.Format("Position has too few parameters in {0}, control type {1}.", inf.FileName, this.ControlType));
-                    while (posRead < 4)
-                    {
-                        posArray[posRead] = 0;
-                        posRead++;
-                    }
-                }
-
-                PositionX = posArray[0];
-                PositionY = posArray[1];
-                Width = posArray[posRead - 2];
-                Height = posArray[posRead - 1];
+                stf.StepBackOneItem();
+                STFException.TraceWarning(stf, "Unknown ControlType " + stf.ReadItem());
+                ControlType = CABViewControlTypes.NONE;
             }
-            else if (string.Compare(token, "ScaleRange", true) == 0)
+            //stf.ReadItem(); // Skip repeated Class Type 
+            stf.SkipRestOfBlock();
+        }
+        protected void ParsePosition(STFReader stf)
+        {
+            stf.MustMatch("(");
+            PositionX = stf.ReadInt(STFReader.UNITS.None, null);
+            PositionY = stf.ReadInt(STFReader.UNITS.None, null);
+            Width = stf.ReadInt(STFReader.UNITS.None, null);
+            Height = stf.ReadInt(STFReader.UNITS.None, null);
+            // Handling middle values
+            while (!stf.EndOfBlock())
             {
-                inf.MustMatch("(");
-                MinValue = inf.ReadDouble(STFReader.UNITS.None, null);
-                MaxValue = inf.ReadDouble(STFReader.UNITS.None, null);
-                inf.SkipRestOfBlock();
+                STFException.TraceWarning(stf, "Ignoring additional positional parameters");
+                Width = Height;
+                Height = stf.ReadInt(STFReader.UNITS.None, null);
             }
-            else if (string.Compare(token, "Graphic", true) == 0)
+        }
+        protected void ParseScaleRange(STFReader stf)
+        {
+            stf.MustMatch("(");
+            MinValue = stf.ReadDouble(STFReader.UNITS.None, null);
+            MaxValue = stf.ReadDouble(STFReader.UNITS.None, null);
+            stf.SkipRestOfBlock();
+        }
+        protected void ParseGraphic(STFReader stf, string basepath)
+        {
+            ACEFile = basepath + stf.ReadItemBlock(null);
+        }
+        protected void ParseStyle(STFReader stf)
+        {
+            stf.MustMatch("(");
+            try
             {
-                ACEFile = basePath + inf.ReadItemBlock(null);
+                ControlStyle = (CABViewControlStyles)Enum.Parse(typeof(CABViewControlStyles), stf.ReadItem());
             }
-            else if (string.Compare(token, "Style", true) == 0)
+            catch (ArgumentException)
             {
-                inf.MustMatch("(");
-                s = inf.ReadItem();
-                var qsr = (from cts in ccss
-                           where cts.ToString().ToLower() == s.ToLower()
-                           select cts).FirstOrDefault();
-
-                ControlStyle = qsr;
-
-                inf.SkipRestOfBlock();
+                stf.StepBackOneItem();
+                STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadItem());
+                ControlStyle = CABViewControlStyles.NONE;
             }
-            else if (string.Compare(token, "Units", true) == 0)
+            stf.SkipRestOfBlock();
+        }
+        protected void ParseUnits(STFReader stf)
+        {
+            stf.MustMatch("(");
+            try
             {
-                inf.MustMatch("(");
-                s = inf.ReadItem();
-                var qmr = (from ctm in ccms
-                           where ctm.ToString().ToLower() == s.ToLower()
-                           select ctm).FirstOrDefault();
-
-                Units = qmr;
-
-                inf.SkipRestOfBlock();
+                Units = (CABViewControlUnits)Enum.Parse(typeof(CABViewControlUnits), stf.ReadItem());
             }
-            else
+            catch (ArgumentException)
             {
-                inf.SkipBlock();
+                stf.StepBackOneItem();
+                STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadItem());
+                Units = CABViewControlUnits.NONE;
             }
+            stf.SkipRestOfBlock();
         }
     }
 
@@ -312,33 +222,26 @@ namespace MSTS
         public int Center = 0;
         public int Direction = 0;
         
-        public CVCDial(STFReader inf, string basePath)
+        public CVCDial(STFReader stf, string basepath)
         {
-            inf.MustMatch("(");
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
+                new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
+                new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
+                new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
-            while (!inf.EndOfBlock())
-            {
-                string token = inf.ReadItem();
-                if (string.Compare(token, "ScalePos", true) == 0)
-                {
-                    inf.MustMatch("(");
-                    FromDegree = inf.ReadInt(STFReader.UNITS.None, null);
-                    ToDegree = inf.ReadInt(STFReader.UNITS.None, null);
-                    inf.SkipRestOfBlock();
-                }
-                else if (string.Compare(token, "Pivot", true) == 0)
-                {
-                    Center = inf.ReadIntBlock(STFReader.UNITS.None, null);
-                }
-                else if (string.Compare(token, "DirIncrease", true) == 0)
-                {
-                    Direction = inf.ReadIntBlock(STFReader.UNITS.None, null);
-                }
-                else
-                {
-                    base.Parse(token, inf, basePath);
-                }
-            } // while
+                new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("scalepos", ()=>{
+                    stf.MustMatch("(");
+                    FromDegree = stf.ReadInt(STFReader.UNITS.None, null);
+                    ToDegree = stf.ReadInt(STFReader.UNITS.None, null);
+                    stf.SkipRestOfBlock();
+                }),
+            });
         }
     }
 
@@ -349,40 +252,30 @@ namespace MSTS
         public int Orientation = 0;
         public int Direction = 0;
 
-        public CVCGauge(STFReader inf, string basePath)
+        public CVCGauge(STFReader stf, string basepath)
         {
-            inf.MustMatch("(");
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
+                new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
+                new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
+                new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
-            while (!inf.EndOfBlock())
-            {
-                string token = inf.ReadItem();
-                if (string.Compare(token, "Area", true) == 0)
-                {
-                    inf.MustMatch("(");
-                    int x = inf.ReadInt(STFReader.UNITS.None, null);
-                    int y = inf.ReadInt(STFReader.UNITS.None, null);
-                    int width = inf.ReadInt(STFReader.UNITS.None, null);
-                    int height = inf.ReadInt(STFReader.UNITS.None, null);
+                new STFReader.TokenProcessor("zeropos", ()=>{ ZeroPos = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("area", ()=>{ 
+                    stf.MustMatch("(");
+                    int x = stf.ReadInt(STFReader.UNITS.None, null);
+                    int y = stf.ReadInt(STFReader.UNITS.None, null);
+                    int width = stf.ReadInt(STFReader.UNITS.None, null);
+                    int height = stf.ReadInt(STFReader.UNITS.None, null);
                     Area = new Rectangle(x, y, width, height);
-                    inf.SkipRestOfBlock();
-                }
-                else if (string.Compare(token, "ZeroPos", true) == 0)
-                {
-                    ZeroPos = inf.ReadIntBlock(STFReader.UNITS.None, null);
-                }
-                else if (string.Compare(token, "Orientation", true) == 0)
-                {
-                    Orientation = inf.ReadIntBlock(STFReader.UNITS.None, null);
-                }
-                else if (string.Compare(token, "DirIncrease", true) == 0)
-                {
-                    Direction = inf.ReadIntBlock(STFReader.UNITS.None, null);
-                }
-                else
-                {
-                    base.Parse(token, inf, basePath);
-                }
-            } // while
+                    stf.SkipRestOfBlock();
+                }),
+            });
         }
     }
 
@@ -397,15 +290,18 @@ namespace MSTS
 
     public class CVCDigital : CabViewControl
     {
-        public CVCDigital(STFReader inf, string basePath)
+        public CVCDigital(STFReader stf, string basepath)
         {
-            inf.MustMatch("(");
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
+                new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
+                new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
+                new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
-            while (!inf.EndOfBlock())
-            {
-                string token = inf.ReadItem();
-                base.Parse(token, inf, basePath);
-            }
+            });
         }
     }
 
@@ -416,56 +312,48 @@ namespace MSTS
         private int _PositionsRead = 0;
         private int _ValuesRead = 0;
 
-        public CVCDiscrete(STFReader inf, string basePath)
+        public CVCDiscrete(STFReader stf, string basepath)
         {
-            inf.MustMatch("(");
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
+                new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
+                new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
+                new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
-            while (!inf.EndOfBlock())
-            {
-                string token = inf.ReadItem();
-                if (string.Compare(token, "NumFrames", true) == 0)
-                {
-                    inf.MustMatch("(");
-                    FramesCount = inf.ReadInt(STFReader.UNITS.None, null);
-                    FramesX = inf.ReadInt(STFReader.UNITS.None, null);
-                    FramesY = inf.ReadInt(STFReader.UNITS.None, null);
-                    inf.SkipRestOfBlock();
-                }
-                else if (string.Compare(token, "NumPositions", true) == 0)
-                {
-                    inf.MustMatch("(");
-
+                new STFReader.TokenProcessor("numframes", ()=>{
+                    stf.MustMatch("(");
+                    FramesCount = stf.ReadInt(STFReader.UNITS.None, null);
+                    FramesX = stf.ReadInt(STFReader.UNITS.None, null);
+                    FramesY = stf.ReadInt(STFReader.UNITS.None, null);
+                    stf.SkipRestOfBlock();
+                }),
+                new STFReader.TokenProcessor("numpositions", ()=>{
+                    stf.MustMatch("(");
                     // If Positions are not filled before by Values
-                    bool shouldFill = Positions.Count == 0;
-
-                    // Number of Positions - Ignore it
-                    int p = inf.ReadInt(STFReader.UNITS.None, null);
-                    while (!inf.EndOfBlock())
+                    bool shouldFill = (Positions.Count == 0);
+                    stf.ReadInt(STFReader.UNITS.None, null); // Number of Positions - Ignore it
+                    while (!stf.EndOfBlock())
                     {
-                        p = inf.ReadInt(STFReader.UNITS.None, null);
-
+                        int p = stf.ReadInt(STFReader.UNITS.None, null);
                         // If Positions are not filled before by Values
-                        if (shouldFill)
-                            Positions.Add(p);
+                        if (shouldFill) Positions.Add(p);
                     }
-                }
-                else if (string.Compare(token, "NumValues", true) == 0)
-                {
-                    inf.MustMatch("(");
-                    
-                    // Number of Values - ignore it
-                    double v = inf.ReadDouble(STFReader.UNITS.None, null);
-
-                    while (!inf.EndOfBlock())
+                }),
+                new STFReader.TokenProcessor("numvalues", ()=>{
+                    stf.MustMatch("(");
+                    stf.ReadDouble(STFReader.UNITS.None, null); // Number of Values - ignore it
+                    while (!stf.EndOfBlock())
                     {
-                        v = inf.ReadDouble(STFReader.UNITS.None, null);
+                        double v = stf.ReadDouble(STFReader.UNITS.None, null);
                         // If the Positions are less than expected add new Position(s)
                         while (Positions.Count <= _ValuesRead)
                         {
                             Positions.Add(_ValuesRead);
                             _PositionsRead++;
                         }
-
                         // Avoid later repositioning, put every value to its Position
                         // But before resize Values if needed
                         while (Values.Count <= Positions[_ValuesRead])
@@ -476,17 +364,12 @@ namespace MSTS
                         Values[Positions[_ValuesRead]] = v;
                         _ValuesRead++;
                     }
-                }
-                else
-                {
-                    base.Parse(token, inf, basePath);
-                }
-            } // while
+                }),
+            });
 
             // If no ACE, just don't need any fixup
             // Because Values are tied to the image Frame to be shown
-            if (string.IsNullOrEmpty(ACEFile))
-                return;
+            if (string.IsNullOrEmpty(ACEFile)) return;
 
             // Now, we have an ACE.
 
@@ -503,7 +386,7 @@ namespace MSTS
                     {
                         // Give up, it won't work
                         // Because later we won't know how to display frames from that
-                        Trace.TraceError(string.Format("Invalid Frames information given for ACE {0} in file {1}.", ACEFile, inf.FileName));
+                        Trace.TraceError(string.Format("Invalid Frames information given for ACE {0} in file {1}.", ACEFile, stf.FileName));
 
                         ACEFile = "";
                         return;
@@ -596,60 +479,39 @@ namespace MSTS
     public class CVCMultiStateDisplay : CVCWithFrames
     {
 
-        public CVCMultiStateDisplay(STFReader inf, string basePath)
+        public CVCMultiStateDisplay(STFReader stf, string basepath)
         {
-            inf.MustMatch("(");
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
+                new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
+                new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
+                new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
-            while (!inf.EndOfBlock())
-            {
-                string token = inf.ReadItem();
-                if (string.Compare(token, "States", true) == 0)
-                {
-                    inf.MustMatch("(");
-                    FramesCount = inf.ReadInt(STFReader.UNITS.None, null);
-                    FramesX = inf.ReadInt(STFReader.UNITS.None, null);
-                    FramesY = inf.ReadInt(STFReader.UNITS.None, null);
-
-                    token = inf.ReadItem();
-                    while (string.Compare(token, "State", true) == 0)
-                    {
-                        inf.MustMatch("(");
-                        while (!inf.EndOfBlock())
-                        {
-                            token = inf.ReadItem();
-                            if (string.Compare(token, "SwitchVal", true) == 0)
-                            {
-                                Values.Add(inf.ReadDoubleBlock(STFReader.UNITS.None, null));
-                            }
-                            else
-                            {
-                                inf.SkipBlock();
-                            }
-                        }
-                        token = inf.ReadItem();
-                    }
-                    //inf.SkipRestOfBlock();
-
-                    if (Values.Count > 0)
-                    {
-                        MaxValue = Values.Last();
-                    }
-                    
+                new STFReader.TokenProcessor("states", ()=>{
+                    stf.MustMatch("(");
+                    FramesCount = stf.ReadInt(STFReader.UNITS.None, null);
+                    FramesX = stf.ReadInt(STFReader.UNITS.None, null);
+                    FramesY = stf.ReadInt(STFReader.UNITS.None, null);
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("state", ()=>{ stf.MustMatch("("); stf.ParseBlock( new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("switchval", ()=>{ Values.Add(stf.ReadDoubleBlock(STFReader.UNITS.None, null)); }),
+                        });}),
+                    });
+                    if (Values.Count > 0) MaxValue = Values.Last();
                     for (int i = Values.Count; i < FramesCount; i++)
                         Values.Add(-10000);
-                }
-                else
-                {
-                    base.Parse(token, inf, basePath);
-                }
-            } // while
+                }),
+            });
         }
     }
 
     public class CVCSignal : CVCDiscrete
     {
-        public CVCSignal(STFReader inf, string basePath)
-            : base(inf, basePath)
+        public CVCSignal(STFReader inf, string basepath)
+            : base(inf, basepath)
         {
             FramesCount = 8;
             FramesX = 4;

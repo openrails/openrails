@@ -78,36 +78,52 @@ namespace MSTS
     /// </list>&#160;<para>
     /// Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para><para>
     /// &#160;</para>
-    /// <alert class="important"><para>NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</para></alert>
+    /// <alert class="important"><para>NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy "#\u00b6" is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</para></alert>
     /// </remarks>
-    /// <example><code lang="C#" title="Typical STF parsing using C#">
-    ///        using (STFReader f = new STFReader(filename, false))
-    ///        {
-    ///            while (!f.EOF)
-    ///                switch (f.ReadItem().ToLower())
+    /// <example><code lang="C#" title="STF parsing using Parse...() and delegate/lambda functions in C#">
+    ///     using (STFReader stf = new STFReader(filename, false))
+    ///         stf.ParseFile(new STFReader.TokenProcessor[] {
+    ///             new STFReader.TokenProcessor("item_single_constant", ()=>{ float isc = stf.ReadFloat(STFReader.UNITS.None, 0); }),
+    ///             new STFReader.TokenProcessor("item_single_speed", ()=>{ float iss_mps = stf.ReadFloat(STFReader.UNITS.Speed, 0); }),
+    ///             new STFReader.TokenProcessor("block_single_constant", ()=>{ float bsc = stf.ReadFloatBlock(STFReader.UNITS.None, 0); }),
+    ///             new STFReader.TokenProcessor("block_fixed_format", ()=>{
+    ///                 stf.MustMatch("(");
+    ///                 int bff1 = stf.ReadInt(STFReader.UNITS.None, 0);
+    ///                 string bff2 = stf.ReadItem();
+    ///                 stf.SkipRestOfBlock();
+    ///             }),
+    ///             new STFReader.TokenProcessor("block_variable_contents", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+    ///                 new STFReader.TokenProcessor("subitem", ()=>{ string si = stf.ReadItem(); }),
+    ///                 new STFReader.TokenProcessor("subblock", ()=>{ string sb = stf.ReadItemBlock(""); }),
+    ///             });}),
+    ///         });
+    /// </code></example>
+    /// <example><code lang="C#" title="Alternate functional method to parse STF using C#">
+    ///        using (STFReader stf = new STFReader(filename, false))
+    ///            while (!stf.EOF)
+    ///                switch (stf.ReadItem().ToLower())
     ///                {
-    ///                    case "item_single_constant": float isc = f.ReadFloat(STFReader.UNITS.None, 0); break;
-    ///                    case "item_single_speed": float iss_mps = f.ReadFloat(STFReader.UNITS.Speed, 0); break;
-    ///                    case "block_single_constant": float bsc = f.ReadFloatBlock(STFReader.UNITS.None, 0); break;
+    ///                    case "item_single_constant": float isc = stf.ReadFloat(STFReader.UNITS.None, 0); break;
+    ///                    case "item_single_speed": float iss_mps = stf.ReadFloat(STFReader.UNITS.Speed, 0); break;
+    ///                    case "block_single_constant": float bsc = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
     ///                    case "block_fixed_format":
-    ///                        f.MustMatch("(");
-    ///                        int bff1 = f.ReadInt(STFReader.UNITS.None, 0);
-    ///                        string bff2 = f.ReadItem();
-    ///                        f.SkipRestOfBlock();
+    ///                        stf.MustMatch("(");
+    ///                        int bff1 = stf.ReadInt(STFReader.UNITS.None, 0);
+    ///                        string bff2 = stf.ReadItem();
+    ///                        stf.SkipRestOfBlock();
     ///                        break;
     ///                    case "block_variable_contents":
-    ///                        f.MustMatch("(");
-    ///                        while (!f.EndOfBlock())
-    ///                            switch (f.ReadItem().ToLower())
+    ///                        stf.MustMatch("(");
+    ///                        while (!stf.EndOfBlock())
+    ///                            switch (stf.ReadItem().ToLower())
     ///                            {
-    ///                                case "subitem": string si = f.ReadItem(); break;
-    ///                                case "subblock": string sb = f.ReadItemBlock(""); break;
-    ///                                case "(": f.SkipRestOfBlock();
+    ///                                case "subitem": string si = stf.ReadItem(); break;
+    ///                                case "subblock": string sb = stf.ReadItemBlock(""); break;
+    ///                                case "(": stf.SkipRestOfBlock();
     ///                            }
     ///                        break;
-    ///                    case "(": f.SkipRestOfBlock(); break;
+    ///                    case "(": stf.SkipRestOfBlock(); break;
     ///                }
-    ///        }
     /// </code></example>
     /// <exception cref="STFException"><para>
     /// STF reports errors using the  exception static members</para><para>
@@ -232,7 +248,6 @@ namespace MSTS
                 block_depth = stepback.BlockDepth;
                 if (stepback.Tree != null) { tree = stepback.Tree; tree_cache = null; }
                 stepbackoneitemFlag = false;
-                stepback.Clear();
                 return item;
             }
             #endregion
@@ -246,7 +261,7 @@ namespace MSTS
         /// </remarks>
         public void StepBackOneItem()
         {
-            Debug.Assert(stepback.Item != null, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
+            Debug.Assert(!stepbackoneitemFlag, "You must called at least one ReadItem() between StepBackOneItem() calls", "The current step back functionality only allows for a single step");
             stepbackoneitemFlag = true;
         }
 
@@ -298,7 +313,6 @@ namespace MSTS
             {
                 // Consume the step-back end-of-block
                 stepbackoneitemFlag = false;
-                stepback.Clear();
                 return true;
             }
             #endregion
@@ -334,7 +348,6 @@ namespace MSTS
             {
                 // Consume the step-back end-of-block
                 stepbackoneitemFlag = false;
-                stepback.Clear();
                 return;
             }
             // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket
@@ -367,6 +380,7 @@ namespace MSTS
             uint val;
             if (uint.TryParse(item, parseHex, parseNFI, out val)) return val;
             STFException.TraceWarning(this, "Cannot parse the constant hex string " + item);
+            if (item == ")") StepBackOneItem();
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an signed integer {constant_item}
@@ -376,9 +390,9 @@ namespace MSTS
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
         public int ReadInt(UNITS valid_units, int? default_val)
 		{
-            string token = ReadItem();
+            string item = ReadItem();
 
-            if ((default_val.HasValue) && (token == ")"))
+            if ((default_val.HasValue) && (item == ")"))
             {
                 STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
@@ -386,12 +400,13 @@ namespace MSTS
             }
 
             int val;
-            double scale = ParseUnitSuffix(ref token, valid_units);
-            if (token.Length == 0) return 0;
-            if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
-            if (int.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (int)(scale * val);
+            double scale = ParseUnitSuffix(ref item, valid_units);
+            if (item.Length == 0) return 0;
+            if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
+            if (int.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (int)(scale * val);
 
-            STFException.TraceWarning(this, "Cannot parse the constant number " + token);
+            STFException.TraceWarning(this, "Cannot parse the constant number " + item);
+            if (item == ")") StepBackOneItem();
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an unsigned integer {constant_item}
@@ -401,9 +416,9 @@ namespace MSTS
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
         public uint ReadUInt(UNITS valid_units, uint? default_val)
 		{
-            string token = ReadItem();
+            string item = ReadItem();
 
-            if ((default_val.HasValue) && (token == ")"))
+            if ((default_val.HasValue) && (item == ")"))
             {
                 STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
@@ -411,12 +426,13 @@ namespace MSTS
             }
 
             uint val;
-            double scale = ParseUnitSuffix(ref token, valid_units);
-            if (token.Length == 0) return 0;
-            if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
-            if (uint.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (uint)(scale * val);
+            double scale = ParseUnitSuffix(ref item, valid_units);
+            if (item.Length == 0) return 0;
+            if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
+            if (uint.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (uint)(scale * val);
 
-            STFException.TraceWarning(this, "Cannot parse the constant number " + token);
+            STFException.TraceWarning(this, "Cannot parse the constant number " + item);
+            if (item == ")") StepBackOneItem();
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an single precision floating point number {constant_item}
@@ -426,9 +442,9 @@ namespace MSTS
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
         public float ReadFloat(UNITS valid_units, float? default_val)
 		{
-            string token = ReadItem();
+            string item = ReadItem();
 
-            if ((default_val.HasValue) && (token == ")"))
+            if ((default_val.HasValue) && (item == ")"))
             {
                 STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
@@ -436,12 +452,13 @@ namespace MSTS
             }
 
             float val;
-            double scale = ParseUnitSuffix(ref token, valid_units);
-            if (token.Length == 0) return 0.0f;
-            if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
-            if (float.TryParse(token, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
+            double scale = ParseUnitSuffix(ref item, valid_units);
+            if (item.Length == 0) return 0.0f;
+            if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
+            if (float.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
 
-            STFException.TraceWarning(this, "Cannot parse the constant number " + token);
+            STFException.TraceWarning(this, "Cannot parse the constant number " + item);
+            if (item == ")") StepBackOneItem();
             return default_val.GetValueOrDefault(0);
         }
         /// <summary>Read an double precision floating point number {constant_item}
@@ -451,9 +468,9 @@ namespace MSTS
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
         public double ReadDouble(UNITS valid_units, double? default_val)
 		{
-            string token = ReadItem();
+            string item = ReadItem();
 
-            if ((default_val.HasValue) && (token == ")"))
+            if ((default_val.HasValue) && (item == ")"))
             {
                 STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
                 StepBackOneItem();
@@ -461,12 +478,13 @@ namespace MSTS
             }
 
             double val;
-            double scale = ParseUnitSuffix(ref token, valid_units);
-            if (token.Length == 0) return 0.0;
-            if (token[token.Length - 1] == ',') token = token.TrimEnd(',');
-            if (double.TryParse(token, parseNum, parseNFI, out val)) return scale * val;
+            double scale = ParseUnitSuffix(ref item, valid_units);
+            if (item.Length == 0) return 0.0;
+            if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
+            if (double.TryParse(item, parseNum, parseNFI, out val)) return scale * val;
 
-            STFException.TraceWarning(this, "Cannot parse the constant number " + token);
+            STFException.TraceWarning(this, "Cannot parse the constant number " + item);
+            if (item == ")") StepBackOneItem();
             return default_val.GetValueOrDefault(0);
 		}
         /// <summary>Enumeration limiting which units are valid when parsing a numeric constant.
@@ -811,12 +829,112 @@ namespace MSTS
             return default_val;
         }
 
+        /// <summary>Parse an STF file until the EOF, using the array of lower case tokens, with a processor delegate/lambda
+        /// </summary>
+        /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        public void ParseFile(TokenProcessor[] processors)
+        { // Press F10 'Step Over' to jump to the next token
+#line hidden
+            while (!EOF)
+            {
+                string token = ReadItem().ToLower();
+                if (token == "(") { SkipRestOfBlock(); continue; }
+                foreach (TokenProcessor tp in processors)
+                    if (tp.token == token)
+#line default
+                        tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
+            } // Press F10 'Step Over' to jump to the next token
+        }
+        /// <summary>Parse an STF file until the EOF, using the array of lower case tokens, with a processor delegate/lambda
+        /// </summary>
+        /// <param name="breakout">A delegate that returns true, if the processing should be halted prematurely</param>
+        /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        public void ParseFile(ParsingBreak breakout, TokenProcessor[] processors)
+        { // Press F10 'Step Over' to jump to the next token
+#line hidden
+            while (!EOF)
+            {
+#line default
+                if (breakout()) break; // Press F11 'Step Into' to debug the Breakout delegate
+#if DEBUG
+                else { } // Press F10 'Step Over' to jump to the next token
+#endif
+#line hidden
+                string token = ReadItem().ToLower();
+                if (token == "(") { SkipRestOfBlock(); continue; }
+                foreach (TokenProcessor tp in processors)
+                    if (tp.token == token)
+#line default
+                        tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
+            } // Press F10 'Step Over' to jump to the next token
+        }
+        /// <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
+        /// </summary>
+        /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        public void ParseBlock(TokenProcessor[] processors)
+        { // Press F10 'Step Over' to jump to the next token
+#line hidden
+            while (!EndOfBlock())
+            {
+                string token = ReadItem().ToLower();
+                if (token == "(") { SkipRestOfBlock(); continue; }
+                foreach (TokenProcessor tp in processors)
+                    if (tp.token == token)
+#line default
+                        tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
+            } // Press F10 'Step Over' to jump to the next token
+        }
+        /// <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
+        /// </summary>
+        /// <param name="breakout">A delegate that returns true, if the processing should be halted prematurely</param>
+        /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        public void ParseBlock(ParsingBreak breakout, TokenProcessor[] processors)
+        { // Press F10 'Step Over' to jump to the next token
+#line hidden
+            while (!EndOfBlock())
+            {
+#line default
+                if (breakout()) { SkipRestOfBlock(); break; } // Press F11 'Step Into' to debug the Breakout delegate
+#if DEBUG
+                else { } // Press F10 'Step Over' to jump to the next token
+#endif
+#line hidden
+                string token = ReadItem().ToLower();
+                if (token == "(") { SkipRestOfBlock(); continue; }
+                foreach (TokenProcessor tp in processors)
+                    if (tp.token == token)
+#line default
+                        tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
+            } // Press F10 'Step Over' to jump to the next token
+        }
+        #region *** Delegate and Structure definitions used by the Parse...() methods.
+        /// <summary>This delegate definition is used by the ParseFile and ParseBlock methods, and is called when an associated matching token is found.
+        /// </summary>
+        public delegate void Processor();
+        /// <summary>This delegate definition is used by the ParseFile and ParseBlock methods, and is used to break out of the processing loop prematurely.
+        /// </summary>
+        /// <returns>true - if the parsing should be aborted prematurely</returns>
+        public delegate bool ParsingBreak();
+        /// <summary>A structure used to index lambda functions to a lower cased token.
+        /// </summary>
+        public struct TokenProcessor
+        {
+            /// <summary>This constructor is used for the arguments to ParseFile and ParseBlock.
+            /// </summary>
+            /// <param name="t">The lower case token.</param>
+            /// <param name="p">A lambda function or delegate that will be called from the Parse...() method.</param>
+            [DebuggerStepThrough]
+            public TokenProcessor(string t, Processor p) { token = t; processor = p; }
+            public string token; public Processor processor;
+        }
+        #endregion
+
         /// <summary>The I/O stream for the STF file we are processing
         /// </summary>
         private StreamReader streamSTF;
         /// <summary>includeReader is used recursively in ReadItem() to handle the 'include' token, file include mechanism
         /// </summary>
-        private STFReader includeReader = null;
+        private STFReader includeReader;
         /// <summary>Remembers the last returned ReadItem().  If the next {item] is a '(', this is the block name used in the tree.
         /// </summary>
         private string previousItem = "";
@@ -836,7 +954,7 @@ namespace MSTS
         #region *** StepBack Variables - It is important that all state variables in this STFReader class have a equivalent in the STEPBACK structure
         /// <summary>This flag is set in StepBackOneItem(), and causes ReadItem(), to use the stepback* variables to do an item repeat
         /// </summary>
-        private bool stepbackoneitemFlag = false;
+        private bool stepbackoneitemFlag;
         /// <summary>Internal Structure used to group together the variables used to implement step back functionality.
         /// </summary>
         private struct STEPBACK
@@ -857,13 +975,6 @@ namespace MSTS
             /// </summary>
             public int BlockDepth;
             //tree_cache can just be set to null, so it is re-evaluated from the stepback'd tree state variable if Tree is called
-            /// <summary>Clear all of the members after a step back has been processed
-            /// </summary>
-            public void Clear()
-            {
-                Item = PrevItem = null;
-                Tree = null;
-            }
         };
         private STEPBACK stepback = new STEPBACK();
         #endregion
@@ -1056,15 +1167,6 @@ namespace MSTS
                 #endregion
                 #region Process special token - skip and comment
                 case "skip":
-                    {
-                        #region Skip the comment item or block
-                        string comment = ReadItem();
-                        if (comment == "(") SkipRestOfBlock();
-                        #endregion
-                        string item = ReadItem();
-                        if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
-                        return item; // Now move on to the next token after the commented area
-                    }
                 case "comment":
                     {
                         #region Skip the comment item or block
@@ -1132,17 +1234,17 @@ namespace MSTS
     public class STFException : Exception
     // STF errors display the last few lines of the STF file when reporting errors.
     {
-        public static void TraceError(STFReader reader, string message)
+        public static void TraceError(STFReader stf, string message)
         {
-            Trace.TraceError("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
+            Trace.TraceError("{2} in STF {0}:line {1}", stf.FileName, stf.LineNumber, message);
         }
-        public static void TraceWarning(STFReader reader, string message)
+        public static void TraceWarning(STFReader stf, string message)
         {
-            Trace.TraceWarning("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message);
+            Trace.TraceWarning("{2} in STF {0}:line {1}", stf.FileName, stf.LineNumber, message);
         }
 
-        public STFException(STFReader reader, string message)
-            : base(String.Format("{2} in {0}:line {1}", reader.FileName, reader.LineNumber, message))
+        public STFException(STFReader stf, string message)
+            : base(String.Format("{2} in STF {0}:line {1}", stf.FileName, stf.LineNumber, message))
         {
         }
     }

@@ -21,6 +21,54 @@
             the contents of this method with the code editor.
             </summary>
         </member>
+        <member name="F:ORTS.FormFolderName.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.FormFolderName.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:MSTS.ACTFile">
+            <summary>
+            Summary description for Class1.
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
+            <summary>
+            Create a new 'ActivitySuccess' LocationEvent
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
+            <summary>
+            Build a default EventTypeAllStops event
+            </summary>
+        </member>
+        <member name="T:ORTS.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:ORTS.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:ORTS.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
         <member name="F:ORTS.DetailsForm.components">
             <summary>
             Required designer variable.
@@ -33,6 +81,40 @@
             <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         </member>
         <member name="M:ORTS.DetailsForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.MainForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.MainForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.OptionsForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.OptionsForm.InitializeComponent">
             <summary>
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
@@ -99,36 +181,52 @@
             </list> <para>
             Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para><para>
              </para>
-            <alert class="important"><para>NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</para></alert>
+            <alert class="important"><para>NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy "#\u00b6" is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</para></alert>
             </remarks>
-            <example><code lang="C#" title="Typical STF parsing using C#">
-                   using (STFReader f = new STFReader(filename, false))
-                   {
-                       while (!f.EOF)
-                           switch (f.ReadItem().ToLower())
+            <example><code lang="C#" title="STF parsing using Parse...() and delegate/lambda functions in C#">
+                using (STFReader stf = new STFReader(filename, false))
+                    stf.ParseFile(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("item_single_constant", ()=&gt;{ float isc = stf.ReadFloat(STFReader.UNITS.None, 0); }),
+                        new STFReader.TokenProcessor("item_single_speed", ()=&gt;{ float iss_mps = stf.ReadFloat(STFReader.UNITS.Speed, 0); }),
+                        new STFReader.TokenProcessor("block_single_constant", ()=&gt;{ float bsc = stf.ReadFloatBlock(STFReader.UNITS.None, 0); }),
+                        new STFReader.TokenProcessor("block_fixed_format", ()=&gt;{
+                            stf.MustMatch("(");
+                            int bff1 = stf.ReadInt(STFReader.UNITS.None, 0);
+                            string bff2 = stf.ReadItem();
+                            stf.SkipRestOfBlock();
+                        }),
+                        new STFReader.TokenProcessor("block_variable_contents", ()=&gt;{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("subitem", ()=&gt;{ string si = stf.ReadItem(); }),
+                            new STFReader.TokenProcessor("subblock", ()=&gt;{ string sb = stf.ReadItemBlock(""); }),
+                        });}),
+                    });
+            </code></example>
+            <example><code lang="C#" title="Alternate functional method to parse STF using C#">
+                   using (STFReader stf = new STFReader(filename, false))
+                       while (!stf.EOF)
+                           switch (stf.ReadItem().ToLower())
                            {
-                               case "item_single_constant": float isc = f.ReadFloat(STFReader.UNITS.None, 0); break;
-                               case "item_single_speed": float iss_mps = f.ReadFloat(STFReader.UNITS.Speed, 0); break;
-                               case "block_single_constant": float bsc = f.ReadFloatBlock(STFReader.UNITS.None, 0); break;
+                               case "item_single_constant": float isc = stf.ReadFloat(STFReader.UNITS.None, 0); break;
+                               case "item_single_speed": float iss_mps = stf.ReadFloat(STFReader.UNITS.Speed, 0); break;
+                               case "block_single_constant": float bsc = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
                                case "block_fixed_format":
-                                   f.MustMatch("(");
-                                   int bff1 = f.ReadInt(STFReader.UNITS.None, 0);
-                                   string bff2 = f.ReadItem();
-                                   f.SkipRestOfBlock();
+                                   stf.MustMatch("(");
+                                   int bff1 = stf.ReadInt(STFReader.UNITS.None, 0);
+                                   string bff2 = stf.ReadItem();
+                                   stf.SkipRestOfBlock();
                                    break;
                                case "block_variable_contents":
-                                   f.MustMatch("(");
-                                   while (!f.EndOfBlock())
-                                       switch (f.ReadItem().ToLower())
+                                   stf.MustMatch("(");
+                                   while (!stf.EndOfBlock())
+                                       switch (stf.ReadItem().ToLower())
                                        {
-                                           case "subitem": string si = f.ReadItem(); break;
-                                           case "subblock": string sb = f.ReadItemBlock(""); break;
-                                           case "(": f.SkipRestOfBlock();
+                                           case "subitem": string si = stf.ReadItem(); break;
+                                           case "subblock": string sb = stf.ReadItemBlock(""); break;
+                                           case "(": stf.SkipRestOfBlock();
                                        }
                                    break;
-                               case "(": f.SkipRestOfBlock(); break;
+                               case "(": stf.SkipRestOfBlock(); break;
                            }
-                   }
             </code></example>
             <exception cref="T:MSTS.STFException"><para>
             STF reports errors using the  exception static members</para><para>
@@ -300,6 +398,28 @@
             <param name="default_val">The default vector if any of the values are not specified</param>
             <returns>The STF block as a Vector3</returns>
         </member>
+        <member name="M:MSTS.STFReader.ParseFile(MSTS.STFReader.TokenProcessor[])">
+            <summary>Parse an STF file until the EOF, using the array of lower case tokens, with a processor delegate/lambda
+            </summary>
+            <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        </member>
+        <member name="M:MSTS.STFReader.ParseFile(MSTS.STFReader.ParsingBreak,MSTS.STFReader.TokenProcessor[])">
+            <summary>Parse an STF file until the EOF, using the array of lower case tokens, with a processor delegate/lambda
+            </summary>
+            <param name="breakout">A delegate that returns true, if the processing should be halted prematurely</param>
+            <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        </member>
+        <member name="M:MSTS.STFReader.ParseBlock(MSTS.STFReader.TokenProcessor[])">
+            <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
+            </summary>
+            <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        </member>
+        <member name="M:MSTS.STFReader.ParseBlock(MSTS.STFReader.ParsingBreak,MSTS.STFReader.TokenProcessor[])">
+            <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
+            </summary>
+            <param name="breakout">A delegate that returns true, if the processing should be halted prematurely</param>
+            <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        </member>
         <member name="F:MSTS.STFReader.streamSTF">
             <summary>The I/O stream for the STF file we are processing
             </summary>
@@ -422,6 +542,25 @@
             <summary>This is only provided for backwards compatibility - all new users should limit the units to appropriate types
             </summary>
         </member>
+        <member name="T:MSTS.STFReader.Processor">
+            <summary>This delegate definition is used by the ParseFile and ParseBlock methods, and is called when an associated matching token is found.
+            </summary>
+        </member>
+        <member name="T:MSTS.STFReader.ParsingBreak">
+            <summary>This delegate definition is used by the ParseFile and ParseBlock methods, and is used to break out of the processing loop prematurely.
+            </summary>
+            <returns>true - if the parsing should be aborted prematurely</returns>
+        </member>
+        <member name="T:MSTS.STFReader.TokenProcessor">
+            <summary>A structure used to index lambda functions to a lower cased token.
+            </summary>
+        </member>
+        <member name="M:MSTS.STFReader.TokenProcessor.#ctor(System.String,MSTS.STFReader.Processor)">
+            <summary>This constructor is used for the arguments to ParseFile and ParseBlock.
+            </summary>
+            <param name="t">The lower case token.</param>
+            <param name="p">A lambda function or delegate that will be called from the Parse...() method.</param>
+        </member>
         <member name="T:MSTS.STFReader.STEPBACK">
             <summary>Internal Structure used to group together the variables used to implement step back functionality.
             </summary>
@@ -441,48 +580,6 @@
         </member>
         <member name="F:MSTS.STFReader.STEPBACK.BlockDepth">
             <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. BlockDepth « block_depth
-            </summary>
-        </member>
-        <member name="M:MSTS.STFReader.STEPBACK.Clear">
-            <summary>Clear all of the members after a step back has been processed
-            </summary>
-        </member>
-        <member name="M:ORTS.Program.SetBuildRevision">
-            <summary>
-            Set up the global Build and Revision variables
-            from assembly data and the revision.txt file.
-            </summary>
-        </member>
-        <member name="F:ORTS.OptionsForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.OptionsForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="T:MSTS.ACTFile">
-            <summary>
-            Summary description for Class1.
-            </summary>
-        </member>
-        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
-            <summary>
-            Create a new 'ActivitySuccess' LocationEvent
-            </summary>
-        </member>
-        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
-            <summary>
-            Build a default EventTypeAllStops event
             </summary>
         </member>
         <member name="T:MSTS.MSTSPath">
@@ -516,54 +613,10 @@
             Given a soundfile reference in a cvf file, return the path to the sound file
             </summary>
         </member>
-        <member name="F:ORTS.MainForm.components">
+        <member name="M:ORTS.Program.SetBuildRevision">
             <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.MainForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="F:ORTS.FormFolderName.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.FormFolderName.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="T:ORTS.Properties.Resources">
-            <summary>
-              A strongly-typed resource class, for looking up localized strings, etc.
-            </summary>
-        </member>
-        <member name="P:ORTS.Properties.Resources.ResourceManager">
-            <summary>
-              Returns the cached ResourceManager instance used by this class.
-            </summary>
-        </member>
-        <member name="P:ORTS.Properties.Resources.Culture">
-            <summary>
-              Overrides the current thread's CurrentUICulture property for all
-              resource lookups using this strongly typed resource class.
+            Set up the global Build and Revision variables
+            from assembly data and the revision.txt file.
             </summary>
         </member>
     </members>

@@ -55,9 +55,9 @@ namespace ORTS
             }
         }
 
-        public MSTSNotchController(STFReader f)
+        public MSTSNotchController(STFReader stf)
         {
-            Parse(f);
+            Parse(stf);
         }
 
         public MSTSNotchController(BinaryReader inf)
@@ -76,33 +76,28 @@ namespace ORTS
             return StepSize != 0;
         }
 
-        public void Parse(STFReader f)
+        public void Parse(STFReader stf)
         {
-            f.MustMatch("(");
-            MinimumValue = f.ReadFloat(STFReader.UNITS.Any, null);
-            MaximumValue = f.ReadFloat(STFReader.UNITS.Any, null);
-            StepSize = f.ReadFloat(STFReader.UNITS.Any, null);
-            IntermediateValue = CurrentValue = f.ReadFloat(STFReader.UNITS.Any, null);
+            stf.MustMatch("(");
+            MinimumValue = stf.ReadFloat(STFReader.UNITS.Any, null);
+            MaximumValue = stf.ReadFloat(STFReader.UNITS.Any, null);
+            StepSize = stf.ReadFloat(STFReader.UNITS.Any, null);
+            IntermediateValue = CurrentValue = stf.ReadFloat(STFReader.UNITS.Any, null);
             //Console.WriteLine("controller {0} {1} {2} {3}", MinimumValue, MaximumValue, StepSize, CurrentValue);
-            f.ReadItem(); // numnotches
-            f.MustMatch("(");
-            f.ReadInt(STFReader.UNITS.None, null);
-            for (; ; )
-            {
-                string token = f.ReadItem().ToLower();
-                if (token == ")") break;
-                if (token == "notch")
-                {
-                    f.MustMatch("(");
-                    float value = f.ReadFloat(STFReader.UNITS.Any, null);
-                    int smooth = f.ReadInt(STFReader.UNITS.Any, null);
-                    string type = f.ReadItem();
+            stf.ReadItem(); // numnotches
+            stf.MustMatch("(");
+            stf.ReadInt(STFReader.UNITS.None, null);
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("notch", ()=>{
+                    stf.MustMatch("(");
+                    float value = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    int smooth = stf.ReadInt(STFReader.UNITS.Any, null);
+                    string type = stf.ReadItem();
                     //Console.WriteLine("Notch {0} {1} {2}", value, smooth, type);
-                    Notches.Add(new MSTSNotch(value, smooth, type, f));
-                    if (type != ")")
-                        f.SkipRestOfBlock();
-                }
-            }
+                    Notches.Add(new MSTSNotch(value, smooth, type, stf));
+                    if (type != ")") stf.SkipRestOfBlock();
+                }),
+            });
             SetValue(CurrentValue);
         }
 

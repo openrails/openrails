@@ -323,7 +323,7 @@ namespace ORTS
 
             // Using FrontTDBTraveller if moving forward or RearTDBTraveller if moving backwards
             TDBTraveller t = (forward == Direction.Forward) ? FrontTDBTraveller : RearTDBTraveller;
-            if (t.TN.TrEndNode == null) return false;
+            if (!t.TN.TrEndNode) return false;
             else return true; // Signal end-of-route
         } // end IsEndOfRoute
 

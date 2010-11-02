@@ -24,7 +24,7 @@ namespace ORTS
         void StopDecrease();        
 
         //Loads the controller from a stream
-        void Parse(STFReader f);        
+        void Parse(STFReader stf);        
 
         //returns true if this controller was loaded and can be used
         //Some notched controllers will have stepSize == 0, those are invalid

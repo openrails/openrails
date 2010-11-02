@@ -203,45 +203,45 @@ namespace ORTS
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
         /// </summary>
-        public override void Parse(string lowercasetoken, STFReader f)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             if (lowercasetoken.StartsWith("engine(trainbrakescontroller"))
-                TrainBrakeController.ParseBrakeValue(lowercasetoken.Substring(28), f);
+                TrainBrakeController.ParseBrakeValue(lowercasetoken.Substring(28), stf);
             if (lowercasetoken.StartsWith("engine(enginebrakescontroller"))
-                EngineBrakeController.ParseBrakeValue(lowercasetoken.Substring(29), f);
+                EngineBrakeController.ParseBrakeValue(lowercasetoken.Substring(29), stf);
             switch (lowercasetoken)
             {
-                case "engine(sound": CabSoundFileName = f.ReadItemBlock(null); break;
-                case "engine(cabview": CVFFileName = f.ReadItemBlock(null); break;
-                case "engine(maxpower": MaxPowerW = f.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(maxforce": MaxForceN = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(maxcontinuousforce": MaxContinuousForceN = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(maxvelocity": MaxSpeedMpS = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(f); break;
-                case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(f); break;
-                case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(f); break;
-                case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(f); break;
-                case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(f); break;
-                case "engine(airbrakesmainresvolume": MainResVolumeFT3 = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(mainreschargingrate": MainResChargingRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(enginebrakereleaserate": EngineBrakeReleaseRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(enginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(brakepipetimefactor": BrakePipeTimeFactorS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(brakeservicetimefactor": BrakeServiceTimeFactorS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(brakeemergencytimefactor": BrakeEmergencyTimeFactorS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(brakepipechargingrate": BrakePipeChargingRatePSIpS = f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                case "engine(maxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(f); break;
-                case "engine(dynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(f); break;
-                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1 = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2 = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3 = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4 = f.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = f.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = f.ReadBoolBlock(true); break;
-                case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                default: base.Parse(lowercasetoken, f); break;
+                case "engine(sound": CabSoundFileName = stf.ReadItemBlock(null); break;
+                case "engine(cabview": CVFFileName = stf.ReadItemBlock(null); break;
+                case "engine(maxpower": MaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
+                case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
+                case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
+                case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(stf); break;
+                case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(stf); break;
+                case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
+                case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(mainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(enginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(enginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(brakepipetimefactor": BrakePipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(brakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(brakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(brakepipechargingrate": BrakePipeChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(maxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(stf); break;
+                case "engine(dynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(stf); break;
+                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1 = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2 = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3 = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4 = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
+                case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                default: base.Parse(lowercasetoken, stf); break;
             }
         }
 

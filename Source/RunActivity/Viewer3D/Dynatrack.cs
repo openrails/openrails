@@ -117,41 +117,34 @@ namespace ORTS
                 switch (fext.ToUpper())
                 {
                     case ".DAT": // MSTS-style
-                        using (STFReader f = new STFReader(filespec, false))
+                        using (STFReader stf = new STFReader(filespec, false))
                         {
                             // "EXPERIMENTAL" header is temporary
-                            if (f.SIMISsignature != "EXPERIMENTAL")
+                            if (stf.SIMISsignature != "EXPERIMENTAL")
                             {
-                                STFException.TraceError(f, "Invalid header - file will not be processed. Using DEFAULT profile.");
+                                STFException.TraceError(stf, "Invalid header - file will not be processed. Using DEFAULT profile.");
                                 TrackProfile = new TrProfile(); // Default profile if no file
                             }
                             else
-                            {
                                 try
                                 {
-                                    while (!f.EOF)
-                                        switch (f.ReadItem().ToLower())
-                                        {
-                                            case "trprofile":
-                                                TrackProfile = new TrProfile(f); // .dat file constructor
-                                                break;
-                                            case "(": f.SkipRestOfBlock(); break;
-                                        }
+                                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                        new STFReader.TokenProcessor("trprofile", ()=>{ TrackProfile = new TrProfile(stf); }),
+                                    });
                                 }
                                 catch (Exception e)
                                 {
-                                    STFException.TraceError(f, "Track profile DAT constructor failed because " + e.Message + ". Using DEFAULT profile.");
+                                    STFException.TraceError(stf, "Track profile DAT constructor failed because " + e.Message + ". Using DEFAULT profile.");
                                     TrackProfile = new TrProfile(); // Default profile if no file
                                 }
                                 finally
                                 {
                                     if (TrackProfile == null)
                                     {
-                                        STFException.TraceError(f, "Track profile DAT constructor failed. Using DEFAULT profile.");
+                                        STFException.TraceError(stf, "Track profile DAT constructor failed. Using DEFAULT profile.");
                                         TrackProfile = new TrProfile(); // Default profile if no file
                                     }
                                 }
-                            }
                         }
                         Trace.Write("(.DAT)");
                         break;
@@ -224,7 +217,7 @@ namespace ORTS
         /// <summary>
         /// TrProfile constructor from STFReader-style profile file
         /// </summary>
-        public TrProfile(STFReader f)
+        public TrProfile(STFReader stf)
         {
             NumVertices = 0;
             NumSegments = 0;
@@ -234,21 +227,14 @@ namespace ORTS
             Image1sName = "acleantrack1.ace";
             Image2Name = "acleantrack2.ace";
 
-            f.MustMatch("(");
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "name": Name = f.ReadItemBlock(null); break;
-                    case "image1name": Image1Name = f.ReadItemBlock(null); break;
-                    case "image1sname": Image1sName = f.ReadItemBlock(null); break;
-                    case "image2name": Image2Name = f.ReadItemBlock(null); break;
-                    case "loditem":
-                        LODItem lod = new LODItem(f, this);
-                        LODItems.Add(lod); // Append to LODItems array
-                        break;
-                    case "(": f.SkipRestOfBlock(); break;
-                } // while token
-
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("image1name", ()=>{ Image1Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("image1sname", ()=>{ Image1sName = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("image2name", ()=>{ Image2Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("loditem", ()=>{ LODItems.Add(new LODItem(stf, this)); }),
+            });
             // Checks for required member variables: 
             // Name not required.
             // Image1Name, Image1sName, and Image2Name initialized as MSTS defaults.
@@ -582,25 +568,21 @@ namespace ORTS
         /// <summary>
         /// LODITem constructor (DAT)
         /// </summary>
-        public LODItem(STFReader f, TrProfile parent)
+        public LODItem(STFReader stf, TrProfile parent)
         {
-            f.MustMatch("(");
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "name": Name = f.ReadItemBlock(null); break;
-                    case "cutoffradius": CutoffRadius = f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                    case "mipmaplevelofdetailbias": MipMapLevelOfDetailBias = f.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                    case "alphablendenable": AlphaBlendEnable = f.ReadBoolBlock(true); break;
-                    case "alphatestenable": AlphaTestEnable = f.ReadBoolBlock(true); break;
-                    case "polyline":
-                        Polyline pl = new Polyline(f);
-                        Polylines.Add(pl); // Append to Polylines array
-                        parent.Accum(pl.Vertices.Count);
-                        break;
-                    case "(": f.SkipRestOfBlock(); break;
-                } // while token
-
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("cutoffradius", ()=>{ CutoffRadius = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("mipmaplevelofdetailbias", ()=>{ MipMapLevelOfDetailBias = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("alphablendenable", ()=>{ AlphaBlendEnable = stf.ReadBoolBlock(true); }),
+                new STFReader.TokenProcessor("alphatestenable", ()=>{ AlphaTestEnable = stf.ReadBoolBlock(true); }),
+                new STFReader.TokenProcessor("polyline", ()=>{
+                    Polyline pl = new Polyline(stf);
+                    Polylines.Add(pl); // Append to Polylines array
+                    parent.Accum(pl.Vertices.Count);
+                }),
+            });
             // Checks for required member variables:
             // Name not required.
             if (CutoffRadius == 0) throw new Exception("missing CutoffRadius");
@@ -637,28 +619,19 @@ namespace ORTS
         /// <summary>
         /// Polyline constructor (DAT)
         /// </summary>
-        public Polyline(STFReader f)
+        public Polyline(STFReader stf)
         {
-            f.MustMatch("(");
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "name":
-                        Name = f.ReadItemBlock(null);
-                        break;
-                    case "deltatexcoord":
-                        f.MustMatch("(");
-                        DeltaTexCoord.X = f.ReadFloat(STFReader.UNITS.None, null);
-                        DeltaTexCoord.Y = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                        break;
-                    case "vertex":
-                        Vertex v = new Vertex(f);
-                        Vertices.Add(v); // Append to Vertices array
-                        break;
-                    case "(": f.SkipRestOfBlock(); break;
-                } // while token
-
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("name", ()=>{ stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("vertex", ()=>{ Vertices.Add(new Vertex(stf)); }),
+                new STFReader.TokenProcessor("deltatexcoord", ()=>{
+                    stf.MustMatch("(");
+                    DeltaTexCoord.X = stf.ReadFloat(STFReader.UNITS.None, null);
+                    DeltaTexCoord.Y = stf.ReadFloat(STFReader.UNITS.None, null);
+                    stf.SkipRestOfBlock();
+                }),
+            });
             // Checks for required member variables: 
             // Name not required.
             if (DeltaTexCoord == Vector2.Zero) throw new Exception("missing DeltaTexCoord");
@@ -688,39 +661,36 @@ namespace ORTS
         } // end Vertex() constructor
 
         // Vertex constructor (DAT)
-        public Vertex(STFReader f)
+        public Vertex(STFReader stf)
         {
-            Position = new Vector3();
-            Normal = new Vector3();
-            TexCoord = new Vector2();
-
-            f.MustMatch("(");
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "position":
-                        f.MustMatch("(");
-                        Position.X = f.ReadFloat(STFReader.UNITS.None, null);
-                        Position.Y = f.ReadFloat(STFReader.UNITS.None, null);
-                        Position.Z = 0.0f;
-                        f.SkipRestOfBlock();
-                        break;
-                    case "normal":
-                        f.MustMatch("(");
-                        Normal.X = f.ReadFloat(STFReader.UNITS.None, null);
-                        Normal.Y = f.ReadFloat(STFReader.UNITS.None, null);
-                        Normal.Z = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                        break;
-                    case "texcoord":
-                        f.MustMatch("(");
-                        TexCoord.X = f.ReadFloat(STFReader.UNITS.None, null);
-                        TexCoord.Y = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                        break;
-                    case "(": f.SkipRestOfBlock(); break;
-                } // while token
-
+            Vertex v = new Vertex(); // Temp variable used to construct the struct in ParseBlock
+            v.Position = new Vector3();
+            v.Normal = new Vector3();
+            v.TexCoord = new Vector2();
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("position", ()=>{
+                    stf.MustMatch("(");
+                    v.Position.X = stf.ReadFloat(STFReader.UNITS.None, null);
+                    v.Position.Y = stf.ReadFloat(STFReader.UNITS.None, null);
+                    v.Position.Z = 0.0f;
+                    stf.SkipRestOfBlock();
+                }),
+                new STFReader.TokenProcessor("normal", ()=>{
+                    stf.MustMatch("(");
+                    v.Normal.X = stf.ReadFloat(STFReader.UNITS.None, null);
+                    v.Normal.Y = stf.ReadFloat(STFReader.UNITS.None, null);
+                    v.Normal.Z = stf.ReadFloat(STFReader.UNITS.None, null);
+                    stf.SkipRestOfBlock();
+                }),
+                new STFReader.TokenProcessor("texcoord", ()=>{
+                    stf.MustMatch("(");
+                    v.TexCoord.X = stf.ReadFloat(STFReader.UNITS.None, null);
+                    v.TexCoord.Y = stf.ReadFloat(STFReader.UNITS.None, null);
+                    stf.SkipRestOfBlock();
+                }),
+            });
+            this = v;
             // Checks for required member variables
             // No way to check for missing Position.
             if (Normal == Vector3.Zero) throw new Exception("improper Normal");

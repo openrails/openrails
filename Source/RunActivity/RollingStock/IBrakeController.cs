@@ -9,7 +9,7 @@ namespace ORTS
      */
     public interface IBrakeController: IController
     {
-        void ParseBrakeValue(string lowercasetoken, STFReader f);
+        void ParseBrakeValue(string lowercasetoken, STFReader stf);
 
         void UpdatePressure(ref float pressurePSI, float elapsedClockSeconds, ref float epPressurePSI);
         void UpdateEngineBrakePressure(ref float pressurePSI, float elapsedClockSeconds);

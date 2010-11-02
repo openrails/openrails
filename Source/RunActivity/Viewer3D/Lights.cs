@@ -37,7 +37,7 @@ namespace ORTS
         public int cycle;
         public float fadein;
         public float fadeout;
-        public List<LightState> StateList;
+        public List<LightState> StateList = new List<LightState>();
 
         public Light()
         {
@@ -56,12 +56,9 @@ namespace ORTS
     {
         public List<Light> LightList = new List<Light>();
 
-        public Light light;
-        LightState lightState;
-
-        public Lights(STFReader f, TrainCar railcar)
+        public Lights(STFReader stf, TrainCar railcar)
         {
-            ReadWagLights(f);
+            ReadWagLights(stf);
             if (LightList.Count == 0)
 				throw new InvalidDataException("lights with no lights");
         }
@@ -70,158 +67,43 @@ namespace ORTS
         /// <summary>
         /// Reads the Lights block of an ENG/WAG file
         /// </summary>
-        public bool ReadWagLights(STFReader f)
+        public bool ReadWagLights(STFReader stf)
         {
-            int numStates = 0;
-
-            try
-            {
-                string token = f.ReadItem();
-                while (token != "") // EOF
-                {
-                    if (token == ")") break; // throw ( new STFError( f, "Unexpected )" ) );  we should really throw an exception
-                    // but MSTS just ignores the rest of the file, and we will also
-                    else
-                    {
-                        int numLights = f.ReadInt(STFReader.UNITS.None, null);// ignore this because its not always correct
-                        for (; ; )
-                        {
-                            token = f.ReadItem();
-                            if (token == ")") break;
-                            if (token == "") throw new STFException(f, "Missing )");
-                            if (0 != String.Compare(token, "Light", true))// Weed out extraneous comments etc.
-                            {
-                                f.SkipBlock();
-                                token = f.ReadItem();
-                            }
-                            if (0 == String.Compare(token, "Light", true))
-                            {
-                                light = new Light();
-                                LightList.Add(light);
-                                f.MustMatch("(");
-                                token = f.ReadItem();
-                                while (token != ")")
-                                {
-                                    if (token == "") throw new STFException(f, "Missing )");
-                                    else if (0 == String.Compare(token, "comment", true))
-                                    {
-                                        f.SkipBlock(); // Ignore the comment
-                                    }
-                                    else if (0 == String.Compare(token, "Type", true))
-                                    {
-                                        f.MustMatch("(");
-                                        light.type = f.ReadInt(STFReader.UNITS.None, null);
-                                        f.SkipRestOfBlock();
-                                    }
-                                    else if (0 == String.Compare(token, "Conditions", true))
-                                    {
-                                        f.MustMatch("(");
-                                        token = f.ReadItem();
-                                        while (token != ")")
-                                        {
-                                            if (0 == String.Compare(token, "Headlight", true))
-                                            {
-                                                f.MustMatch("(");
-                                                light.headlight = f.ReadInt(STFReader.UNITS.None, null);
-                                                f.SkipRestOfBlock();
-                                            }
-                                            else if (0 == String.Compare(token, "Unit", true))
-                                            {
-                                                f.MustMatch("(");
-                                                light.unit = f.ReadInt(STFReader.UNITS.None, null);
-                                                f.SkipRestOfBlock();
-                                            }
-                                            else if (0 == String.Compare(token, "Penalty", true))
-                                            {
-                                                f.MustMatch("(");
-                                                light.penalty = f.ReadInt(STFReader.UNITS.None, null);
-                                                f.SkipRestOfBlock();
-                                            }
-                                            else if (0 == String.Compare(token, "Control", true))
-                                            {
-                                                f.MustMatch("(");
-                                                light.control = f.ReadInt(STFReader.UNITS.None, null);
-                                                f.SkipRestOfBlock();
-                                            }
-                                            else if (0 == String.Compare(token, "Service", true))
-                                            {
-                                                f.MustMatch("(");
-                                                light.service = f.ReadInt(STFReader.UNITS.None, null);
-                                                f.SkipRestOfBlock();
-                                            }
-                                            else if (0 == String.Compare(token, "TimeOfDay", true))
-                                            {
-                                                f.MustMatch("(");
-                                                light.timeofday = f.ReadInt(STFReader.UNITS.None, null);
-                                                f.SkipRestOfBlock();
-                                            }
-                                            else if (0 == String.Compare(token, "Weather", true))
-                                            {
-                                                f.MustMatch("(");
-                                                light.weather = f.ReadInt(STFReader.UNITS.None, null);
-                                                f.SkipRestOfBlock();
-                                            }
-                                            else if (0 == String.Compare(token, "Coupling", true))
-                                            {
-                                                f.MustMatch("(");
-                                                light.coupling = f.ReadInt(STFReader.UNITS.None, null);
-                                                f.SkipRestOfBlock();
-                                            }
-                                            else
-                                            {
-                                                f.SkipBlock();
-                                            }
-                                            token = f.ReadItem();
-                                        }
-                                    }// else if (0 == String.Compare(token, "Conditions", true))
-                                    else if (0 == String.Compare(token, "Cycle", true))
-                                    {
-                                        f.MustMatch("(");
-                                        light.cycle = f.ReadInt(STFReader.UNITS.None, null);
-                                        f.SkipRestOfBlock();
-                                    }
-                                    else if (0 == String.Compare(token, "FadeIn", true))
-                                    {
-                                        f.MustMatch("(");
-                                        light.fadein = f.ReadFloat(STFReader.UNITS.None, null);
-                                        f.SkipRestOfBlock();
-                                    }
-                                    else if (0 == String.Compare(token, "FadeOut", true))
-                                    {
-                                        f.MustMatch("(");
-                                        light.fadeout = f.ReadFloat(STFReader.UNITS.None, null);
-                                        f.SkipRestOfBlock();
-                                    }
-                                    else if (0 == String.Compare(token, "States", true))
-                                    {
-                                        f.MustMatch("(");
-                                        numStates = f.ReadInt(STFReader.UNITS.None, null);
-                                        for (int j = 0; j < numStates; j++)
-                                        {
-                                            light.StateList = new List<LightState>();
-                                            lightState = new LightState();
-                                            lightState.ReadLightState(f);
-                                            light.StateList.Add(lightState);
-                                        }
-                                    }// else if (0 == String.Compare(token, "States", true))
-                                    else
-                                    {
-                                        f.SkipBlock();
-                                    }
-                                    token = f.ReadItem();
-                                }// while (token != ")")
-                                token = f.ReadItem();
-                            }// if (0 == String.Compare(token, "Light", true))
-                        }// for (int i = 0; i < numLights; i++)
-                    }// else file is readable
-                }// while !EOF
-
-            }
-            catch (Exception error)
-            {
-				Trace.WriteLine(error);
-                return false;
-            }
+            Light light;
+            int numStates;
+            stf.MustMatch("(");
+            stf.ReadInt(STFReader.UNITS.None, null);// ignore this because its not always correct
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("light", ()=>{
+                    stf.MustMatch("(");
+                    LightList.Add(light = new Light());
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("type", ()=>{ light.type = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                        new STFReader.TokenProcessor("conditions", ()=>{ stf.MustMatch("("); stf.ParseBlock( new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("headlight", ()=>{ light.headlight = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                            new STFReader.TokenProcessor("unit", ()=>{ light.unit = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                            new STFReader.TokenProcessor("penalty", ()=>{ light.penalty = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                            new STFReader.TokenProcessor("control", ()=>{ light.control = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                            new STFReader.TokenProcessor("service", ()=>{ light.service = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                            new STFReader.TokenProcessor("timeofday", ()=>{ light.timeofday = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                            new STFReader.TokenProcessor("weather", ()=>{ light.weather = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                            new STFReader.TokenProcessor("coupling", ()=>{ light.coupling = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                        });}),
+                        new STFReader.TokenProcessor("cycle", ()=>{ light.cycle = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                        new STFReader.TokenProcessor("fadein", ()=>{ light.fadein = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                        new STFReader.TokenProcessor("fadeout", ()=>{ light.fadeout = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                        new STFReader.TokenProcessor("states", ()=>{ stf.MustMatch("("); numStates = stf.ReadInt(STFReader.UNITS.None, null); stf.ParseBlock( new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("state", ()=>{
+                                if(light.StateList.Count < numStates)
+                                    light.StateList.Add(new LightState(stf));
+                                else
+                                    STFException.TraceWarning(stf, "Additional State ignored");
+                            }),});
+                            if(light.StateList.Count != numStates)
+                                STFException.TraceWarning(stf, "Missing State block");
+                        }),
+                });}),
+            });
             return true;
         }// ReadWagLights
         #endregion
@@ -229,9 +111,7 @@ namespace ORTS
     #endregion
 
     #region LightState
-	/// <summary>
-    /// A LightState object encapsulates the data for each State 
-    /// in the States subblock.
+	/// <summary>A LightState object encapsulates the data for each State in the States subblock.
     /// </summary>
     public class LightState
     {
@@ -239,91 +119,26 @@ namespace ORTS
         public float transition;
         public float radius;
         public float angle;
+        public uint color;
         public Vector3 position;
         public Vector3 azimuth;
         public Vector3 elevation;
-        public uint color;
 
-        public LightState()
+        public LightState(STFReader stf)
         {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("duration", ()=>{ duration = stf.ReadFloatBlock(STFReader.UNITS.None, 0f); }),
+                new STFReader.TokenProcessor("transition", ()=>{ transition = stf.ReadFloatBlock(STFReader.UNITS.None, 0f); }),
+                new STFReader.TokenProcessor("radius", ()=>{ radius = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0f); }),
+                new STFReader.TokenProcessor("angle", ()=>{ angle = stf.ReadFloatBlock(STFReader.UNITS.None, 0f); }),
+                new STFReader.TokenProcessor("lightcolour", ()=>{ stf.MustMatch("("); color = stf.ReadHex(0); stf.SkipRestOfBlock(); }),
+                new STFReader.TokenProcessor("position", ()=>{ position = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("azimuth", ()=>{ azimuth = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("elevation", ()=>{ elevation = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+            });
         }
-
-        /// <summary>
-        /// Reads the State data from the current States subblock.
-        /// </summary>
-        public void ReadLightState(STFReader f)
-        {
-            string token = f.ReadItem();
-            if (0 == String.Compare(token, "State", true))
-            {
-                f.MustMatch("(");
-                token = f.ReadItem();
-                while (token != ")")
-                {
-                    if (token == "") throw new STFException(f, "Missing )");
-                    else if (0 == String.Compare(token, "Duration", true))
-                    {
-                        f.MustMatch("(");
-                        duration = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                    }
-                    else if (0 == String.Compare(token, "Transition", true))
-                    {
-                        f.MustMatch("(");
-                        transition = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                    }
-                    else if (0 == String.Compare(token, "Radius", true))
-                    {
-                        f.MustMatch("(");
-                        radius = f.ReadFloat(STFReader.UNITS.Distance, null);
-                        f.SkipRestOfBlock();
-                    }
-                    else if (0 == String.Compare(token, "Angle", true))
-                    {
-                        f.MustMatch("(");
-                        angle = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                    }
-                    else if (0 == String.Compare(token, "Position", true))
-                    {
-                        f.MustMatch("(");
-                        position.X = f.ReadFloat(STFReader.UNITS.None, null);
-                        position.Y = f.ReadFloat(STFReader.UNITS.None, null);
-                        position.Z = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                    }
-                    else if (0 == String.Compare(token, "Azimuth", true))
-                    {
-                        f.MustMatch("(");
-                        azimuth.X = f.ReadFloat(STFReader.UNITS.None, null);
-                        azimuth.Y = f.ReadFloat(STFReader.UNITS.None, null);
-                        azimuth.Z = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                    }
-                    else if (0 == String.Compare(token, "Elevation", true))
-                    {
-                        f.MustMatch("(");
-                        elevation.X = f.ReadFloat(STFReader.UNITS.None, null);
-                        elevation.Y = f.ReadFloat(STFReader.UNITS.None, null);
-                        elevation.Z = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                    }
-                    else if (0 == String.Compare(token, "LightColour", true))
-                    {
-                        f.MustMatch("(");
-                        color = f.ReadHex(0);
-                        f.SkipRestOfBlock();
-                    }
-                    else
-                    {
-                        f.SkipBlock();
-                    }
-                    token = f.ReadItem();
-                }// while (token != ")")
-            }// if (0 == String.Compare(token, "State", true))
-        }// ReadLightStates
-    }// LightStates
+    }
 	#endregion
 
     #region LightGlowDrawer
@@ -407,10 +222,9 @@ namespace ORTS
         // LightGlow variables
         public int objectRadius = 20;
         int numLights;
-        int numStates;
+        int maxStates;
         public bool isFrontCar = false;
         public bool hasHeadlight = false;
-        bool isFirstHeadlight = true;
         public Vector3 lightconeLoc;
         public float lightconeFadein;
         public float lightconeFadeout;
@@ -437,33 +251,34 @@ namespace ORTS
             int i = 0;
             int j;
             numLights = car.Lights.LightList.Count;
-			numStates = car.Lights.light.StateList != null ? car.Lights.light.StateList.Count : 0;
+			maxStates = 1;
             // Create and fill arrays with the light variables
             type =          new int[numLights];
             headlight =     new int[numLights];
             unit =          new int[numLights];
             fadein =        new float[numLights];
             fadeout =       new float[numLights];
-            duration =      new float[numLights, numStates];
-            transition =    new float[numLights, numStates];
-            radius =        new float[numLights, numStates];
-            position =      new Vector3[numLights, numStates];
-            azimuth =       new Vector3[numLights, numStates];
-            color =         new uint[numLights, numStates];
+            duration =      new float[numLights, maxStates];
+            transition =    new float[numLights, maxStates];
+            radius =        new float[numLights, maxStates];
+            position =      new Vector3[numLights, maxStates];
+            azimuth =       new Vector3[numLights, maxStates];
+            color =         new uint[numLights, maxStates];
+            bool findFirstHeadlight = true;
             foreach (Light light in car.Lights.LightList)
             {
-                if (light.type == 1 && light.unit == 2 && light.penalty <= 1 
-                    && isFirstHeadlight && isFrontCar) // Find the first non-penalty light cone on the player locomotive
+                if (light.type == 1 && light.unit == 2 && light.penalty <= 1
+                    && findFirstHeadlight && isFrontCar) // Find the first non-penalty light cone on the player locomotive
                 {
                     hasHeadlight = true;
                     lightconeLoc = light.StateList.ElementAt<LightState>(0).position;
                     lightconeFadein = light.fadein;
                     lightconeFadeout = light.fadeout;
-                    isFirstHeadlight = false;
+                    findFirstHeadlight = false;
                 }
 
                 
-                if ((light.StateList != null) && light.type == 0 && light.penalty <= 1 && ((isFrontCar && light.unit == 2) 
+                if ((light.StateList.Count > 0) && light.type == 0 && light.penalty <= 1 && ((isFrontCar && light.unit == 2) 
                     || !isFrontCar && light.unit == 3 || light.unit <= 1)) // Not a light cone, not penalty; unit: 2 = front, 3 = rear
                 {
                     type[i] = light.type;
@@ -474,6 +289,7 @@ namespace ORTS
                     j = 0;
                     foreach (LightState state in light.StateList)
                     {
+                        if (j == maxStates) continue;
                         duration[i, j] = state.duration;
                         transition[i, j] = state.transition;
                         radius[i, j] = state.radius;

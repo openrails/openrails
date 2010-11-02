@@ -319,7 +319,7 @@ namespace ORTS
                     traveller.NextSection();  // we are at a junction - move past it
                 }
 
-                if (traveller.TN.TrEndNode != null)
+                if (traveller.TN.TrEndNode)
                     return -1;   // we are at the end and didn't find the waypoint
 
 
@@ -746,7 +746,7 @@ namespace ORTS
         /// <returns></returns>
         public bool NextSection()
         {
-            if (TN.TrEndNode != null)
+            if (TN.TrEndNode)
             {
             }
             if (TN.TrVectorNode != null)  // we were in a track node that contains multiple sections
@@ -856,7 +856,7 @@ namespace ORTS
                 TN = TDB.TrackDB.TrackNodes[iTrackNode];  // we are at the new node
                 pDirection = TrPin.Direction;
             }
-            else if (TN.TrEndNode != null) // are we coming from an end node
+            else if (TN.TrEndNode) // are we coming from an end node
             {
                 // if we are moving forward then there is no place to go
                 if (pDirection == 1) return false;

@@ -34,21 +34,14 @@ namespace MSTS
 
         public void Read(string filenamewithpath, bool headerOnly)
         {
-            using (STFReader f = new STFReader(filenamewithpath, false))
+            using (STFReader stf = new STFReader(filenamewithpath, false))
             {
-                while (!f.EOF)
-                {
-                    switch (f.ReadItem().ToLower())
-                    {
-                        case "tr_activity": Tr_Activity = new Tr_Activity(f, headerOnly); break;
-                        case "(": f.SkipRestOfBlock(); break;
-                    }
-                    if (headerOnly && Tr_Activity.Tr_Activity_Header != null)
-                        return;
-                }
+                stf.ParseFile(() => headerOnly && (Tr_Activity != null) && (Tr_Activity.Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("tr_activity", ()=>{ Tr_Activity = new Tr_Activity(stf, headerOnly); }),
+                });
                 //TODO This should be changed to STFException.TraceError() with defaults values created
                 if (Tr_Activity == null)
-                    throw new STFException(f, "Missing Tr_Activity statement");
+                    throw new STFException(stf, "Missing Tr_Activity statement");
             }
         }
 	}
@@ -59,24 +52,17 @@ namespace MSTS
         public Tr_Activity_Header Tr_Activity_Header;
         public Tr_Activity_File Tr_Activity_File;
 
-        public Tr_Activity(STFReader f, bool headerOnly)
+        public Tr_Activity(STFReader stf, bool headerOnly)
         {
-            f.MustMatch("(");
-            while (!f.EndOfBlock())
-            {
-                switch (f.ReadItem().ToLower())
-                {
-                    case "tr_activity_file": Tr_Activity_File = new Tr_Activity_File(f); break;
-                    case "serial": Serial = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "tr_activity_header": Tr_Activity_Header = new Tr_Activity_Header(f); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
-                if (headerOnly && Tr_Activity_Header != null)
-                    return;
-            }
+            stf.MustMatch("(");
+            stf.ParseBlock(() => headerOnly && (Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("tr_activity_file", ()=>{ Tr_Activity_File = new Tr_Activity_File(stf); }),
+                new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("tr_activity_header", ()=>{ Tr_Activity_Header = new Tr_Activity_Header(stf); }),
+            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
-            if (Tr_Activity_File == null)
-                throw new STFException(f, "Missing Tr_Activity_File statement");
+            if (!headerOnly && (Tr_Activity_File == null))
+                throw new STFException(stf, "Missing Tr_Activity_File statement");
         }
     }
 
@@ -102,33 +88,30 @@ namespace MSTS
 		public int FuelCoal = 100;		// Percent
 		public int FuelDiesel = 100;	// Percent
 
-		public Tr_Activity_Header( STFReader f )
+		public Tr_Activity_Header(STFReader stf)
 		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() )
-                switch(f.ReadItem().ToLower())
-                {
-                    case "routeid": RouteID = f.ReadItemBlock(null); break;
-                    case "name": Name = f.ReadItemBlock(null); break;
-                    case "description": Description = f.ReadItemBlock(null); break;
-                    case "briefing": Briefing = f.ReadItemBlock(null); break;
-                    case "completeactivity": CompleteActivity = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "type": Type = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "mode": Mode = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "starttime": StartTime = new StartTime(f); break;
-                    case "season": Season = (SeasonType)f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "weather": Weather = (WeatherType)f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "pathid": PathID = f.ReadItemBlock(null); break;
-                    case "startingspeed": StartingSpeed = f.ReadIntBlock(STFReader.UNITS.Speed, null); break;
-                    case "duration": Duration = new Duration(f); break;
-                    case "difficulty": Difficulty = (Difficulty)f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "animals": Animals = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "workers": Workers = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "fuelwater": FuelWater = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "fuelcoal": FuelCoal = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "fueldiesel": FuelDiesel = f.ReadIntBlock(STFReader.UNITS.Any, null); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("routeid", ()=>{ RouteID = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadItemBlock(Description); }),
+                new STFReader.TokenProcessor("briefing", ()=>{ Briefing = stf.ReadItemBlock(Briefing); }),
+                new STFReader.TokenProcessor("completeactivity", ()=>{ CompleteActivity = stf.ReadIntBlock(STFReader.UNITS.None, CompleteActivity); }),
+                new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadIntBlock(STFReader.UNITS.None, Type); }),
+                new STFReader.TokenProcessor("mode", ()=>{ Mode = stf.ReadIntBlock(STFReader.UNITS.None, Mode); }),
+                new STFReader.TokenProcessor("starttime", ()=>{ StartTime = new StartTime(stf); }),
+                new STFReader.TokenProcessor("season", ()=>{ Season = (SeasonType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("weather", ()=>{ Weather = (WeatherType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("startingspeed", ()=>{ StartingSpeed = stf.ReadIntBlock(STFReader.UNITS.Speed, StartingSpeed); }),
+                new STFReader.TokenProcessor("duration", ()=>{ Duration = new Duration(stf); }),
+                new STFReader.TokenProcessor("difficulty", ()=>{ Difficulty = (Difficulty)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("animals", ()=>{ Animals = stf.ReadIntBlock(STFReader.UNITS.None, Animals); }),
+                new STFReader.TokenProcessor("workers", ()=>{ Workers = stf.ReadIntBlock(STFReader.UNITS.None, Workers); }),
+                new STFReader.TokenProcessor("fuelwater", ()=>{ FuelWater = stf.ReadIntBlock(STFReader.UNITS.Any, FuelWater); }),
+                new STFReader.TokenProcessor("fuelcoal", ()=>{ FuelCoal = stf.ReadIntBlock(STFReader.UNITS.Any, FuelCoal); }),
+                new STFReader.TokenProcessor("fueldiesel", ()=>{ FuelDiesel = stf.ReadIntBlock(STFReader.UNITS.Any, FuelDiesel); }),
+            });
 		}
         public Tr_Activity_Header( )
         {
@@ -148,13 +131,13 @@ namespace MSTS
 			Second = s;
 		}
 
-		public StartTime( STFReader f )
+		public StartTime(STFReader stf)
 		{
-			f.MustMatch("(");
-            Hour = f.ReadInt(STFReader.UNITS.None, null);
-            Minute = f.ReadInt(STFReader.UNITS.None, null);
-            Second = f.ReadInt(STFReader.UNITS.None, null);
-			f.SkipRestOfBlock();
+			stf.MustMatch("(");
+            Hour = stf.ReadInt(STFReader.UNITS.None, null);
+            Minute = stf.ReadInt(STFReader.UNITS.None, null);
+            Second = stf.ReadInt(STFReader.UNITS.None, null);
+            stf.SkipRestOfBlock();
 		}
 
         public String FormattedStartTime()
@@ -174,12 +157,12 @@ namespace MSTS
 			Minute = m;
 		}
 
-		public Duration( STFReader f )
+		public Duration(STFReader stf)
 		{
-			f.MustMatch("(");
-            Hour = f.ReadInt(STFReader.UNITS.None, null);
-            Minute = f.ReadInt(STFReader.UNITS.None, null);
-			f.SkipRestOfBlock();
+			stf.MustMatch("(");
+            Hour = stf.ReadInt(STFReader.UNITS.None, null);
+            Minute = stf.ReadInt(STFReader.UNITS.None, null);
+			stf.SkipRestOfBlock();
 		}
 
         public String FormattedDurationTime()
@@ -200,23 +183,20 @@ namespace MSTS
 		//string PlatformNumPassengersWaiting = null; // Commented out to eliminate warning
         //string ActivityRestrictedSpeedZones = null; // Commented out to eliminate warning
 
-		public Tr_Activity_File( STFReader f )
+		public Tr_Activity_File(STFReader stf)
 		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() )
-                switch(f.ReadItem().ToLower())
-                {
-                    case "player_service_definition": Player_Service_Definition = new Player_Service_Definition(f); break;
-                    case "nextserviceuid": NextServiceUID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "nextactivityobjectuid": NextActivityObjectUID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "events": Events = new Events(f); break;
-                    case "traffic_definition": Traffic_Definition = new Traffic_Definition(f); break;
-                    case "activityobjects": ActivityObjects = new ActivityObjects(f); break;
-                    case "activityfailedsignals": ActivityFailedSignals = new ActivityFailedSignals(f); break;
-                    case "platformnumpassengerswaiting": f.SkipBlock(); break;
-                    case "activityrestrictedspeedzones": f.SkipBlock(); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("player_service_definition",()=>{ Player_Service_Definition = new Player_Service_Definition(stf); }),
+                new STFReader.TokenProcessor("nextserviceuid",()=>{ NextServiceUID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("nextactivityobjectuid",()=>{ NextActivityObjectUID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("events",()=>{ Events = new Events(stf); }),
+                new STFReader.TokenProcessor("traffic_definition",()=>{ Traffic_Definition = new Traffic_Definition(stf); }),
+                new STFReader.TokenProcessor("activityobjects",()=>{ ActivityObjects = new ActivityObjects(stf); }),
+                new STFReader.TokenProcessor("activityfailedsignals",()=>{ ActivityFailedSignals = new ActivityFailedSignals(stf); }),
+                new STFReader.TokenProcessor("platformnumpassengerswaiting",()=>{ stf.SkipRestOfBlock();  }),
+                new STFReader.TokenProcessor("activityrestrictedspeedzones",()=>{ stf.SkipRestOfBlock(); }),
+            });
 		}
 
 
@@ -239,16 +219,13 @@ namespace MSTS
 	{
 		public string Label;
 
-		public Traffic_Definition( STFReader f )
+		public Traffic_Definition(STFReader stf)
 		{
-			f.MustMatch("(");
-			Label = f.ReadItem();
-            while (!f.EndOfBlock())
-                switch(f.ReadItem().ToLower())
-                {
-                    case "service_definition": this.Add(new Service_Definition(f)); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+			Label = stf.ReadItem();
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("service_definition", ()=>{ Add(new Service_Definition(stf)); }),
+            });
 		}
 	}
 
@@ -258,36 +235,30 @@ namespace MSTS
 		public int Time;
 		public int UiD;
 
-		public Service_Definition( STFReader f )
+		public Service_Definition(STFReader stf)
 		{
-			f.MustMatch("(");
-			Service = f.ReadItem();
-            Time = f.ReadInt(STFReader.UNITS.None, null);
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "uid": UiD = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "efficiency": f.ReadFloatBlock(STFReader.UNITS.Any, null); break;
-                    case "skipcount": f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "distancedownpath": f.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                    case "platformstartid": f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+			Service = stf.ReadItem();
+            Time = stf.ReadInt(STFReader.UNITS.None, null);
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("uid", ()=>{ UiD = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("efficiency", ()=>{ stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
+                new STFReader.TokenProcessor("skipcount", ()=>{ stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("distancedownpath", ()=>{ stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("platformstartid", ()=>{ stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+            });
         }
 	}
 
 	public class Events: ArrayList
 	{
-		public Events( STFReader f )
+		public Events(STFReader stf)
 		{
-			f.MustMatch("(");
-            while (!f.EndOfBlock()) 
-                switch (f.ReadItem().ToLower())
-                {
-                    case "eventcategorylocation": this.Add(new EventCategoryLocation(f)); break;
-                    case "eventcategoryaction": this.Add(new EventCategoryAction(f)); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("eventcategorylocation", ()=>{ Add(new EventCategoryLocation(stf)); }),
+                new STFReader.TokenProcessor("eventcategoryaction", ()=>{ Add(new EventCategoryAction(stf)); }),
+            });
 		}
 
 		public Events()
@@ -311,30 +282,27 @@ namespace MSTS
 		public double Z;
 		public double Size;
 
-		public EventCategoryLocation( STFReader f )
+		public EventCategoryLocation(STFReader stf)
 		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() )
-                switch (f.ReadItem().ToLower())
-                {
-                    case "eventtypelocation": f.MustMatch("("); f.MustMatch(")"); break;
-                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "activation_level": Activation_Level = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "outcomes": Outcomes = new Outcomes(f); break;
-                    case "name": Name = f.ReadItemBlock(null); break;
-                    case "texttodisplayoncompletionifnottriggered": TextToDisplayOnCompletionIfNotTriggered = f.ReadItemBlock(null); break;
-                    case "triggeronstop": TriggerOnStop = f.ReadBoolBlock(true); break;
-                    case "location":
-                        f.MustMatch("(");
-                        TileX = f.ReadInt(STFReader.UNITS.None, null);
-                        TileZ = f.ReadInt(STFReader.UNITS.None, null);
-                        X = f.ReadDouble(STFReader.UNITS.None, null);
-                        Z = f.ReadDouble(STFReader.UNITS.None, null);
-                        Size = f.ReadDouble(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                        break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("eventtypelocation", ()=>{ stf.SkipBlock();  }),
+                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("texttodisplayoncompletionifnottriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("triggeronstop", ()=>{ TriggerOnStop = stf.ReadBoolBlock(true); }),
+                new STFReader.TokenProcessor("location", ()=>{
+                    stf.MustMatch("(");
+                    TileX = stf.ReadInt(STFReader.UNITS.None, null);
+                    TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+                    X = stf.ReadDouble(STFReader.UNITS.None, null);
+                    Z = stf.ReadDouble(STFReader.UNITS.None, null);
+                    Size = stf.ReadDouble(STFReader.UNITS.None, null);
+                    stf.SkipRestOfBlock();
+                }),
+            });
 		}
 
 		/// <summary>
@@ -374,38 +342,30 @@ namespace MSTS
 			Name = string.Format( "Action{0}",ID );
 		}
 
-		public EventCategoryAction( STFReader f )
+		public EventCategoryAction(STFReader stf)
 		{
-			f.MustMatch("(");
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "eventtypeallstops": f.MustMatch("("); f.MustMatch(")"); break;
-                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "activation_level": Activation_Level = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "outcomes": Outcomes = new Outcomes(f); break;
-                    case "texttodisplayoncompletioniftriggered": f.ReadItemBlock(""); break;
-                    case "texttodisplayoncompletionifnotrriggered": f.ReadItemBlock(""); break;
-                    case "name": Name = f.ReadItemBlock(""); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("eventtypeallstops", ()=>{ stf.SkipBlock(); }),
+                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
+                new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ stf.ReadItemBlock(""); }),
+                new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ stf.ReadItemBlock(""); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(""); }),
+            });
 		}
 	}
 
 
 	public class Outcomes: ArrayList
 	{
-		public Outcomes( STFReader f )
+		public Outcomes(STFReader stf)
 		{
-			f.MustMatch("(");
-            // TODO, we'll have to handle other types of activity outcomes eventually
-            while (!f.EndOfBlock()) 
-                switch (f.ReadItem().ToLower())
-                {
-
-                    case "activitysuccess": this.Add(new ActivitySuccess(f)); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("activitysuccess", ()=>{ Add(new ActivitySuccess(stf)); }),
+            });
 		}
 
 		public Outcomes()
@@ -417,10 +377,10 @@ namespace MSTS
 
 	public class ActivitySuccess // a type of outcome
 	{
-		public ActivitySuccess( STFReader f )
+		public ActivitySuccess(STFReader stf)
 		{
-			f.MustMatch("(");
-			f.SkipRestOfBlock();
+			stf.MustMatch("(");
+			stf.SkipRestOfBlock();
 		}
 
 		public ActivitySuccess()
@@ -432,15 +392,12 @@ namespace MSTS
 	
 	public class ActivityFailedSignals: ArrayList
 	{
-		public ActivityFailedSignals( STFReader f )
+		public ActivityFailedSignals(STFReader stf)
 		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() ) 
-                switch(f.ReadItem().ToLower())
-                {
-                    case"activityfailedsignal": this.Add(f.ReadIntBlock(STFReader.UNITS.None, null)); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("activityfailedsignal", ()=>{ Add(stf.ReadIntBlock(STFReader.UNITS.None, null)); }),
+            });
 		}
 
 		public ActivityFailedSignals()
@@ -457,15 +414,12 @@ namespace MSTS
             set { base[i] = value; }
         }
 
-		public ActivityObjects( STFReader f )
+		public ActivityObjects(STFReader stf)
 		{
-			f.MustMatch("(");
-			while( !f.EndOfBlock() ) 
-                switch(f.ReadItem().ToLower())
-                {
-                    case "activityobject": this.Add(new ActivityObject(f)); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+			stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("activityobject", ()=>{ Add(new ActivityObject(stf)); }),
+            });
 		}
 
 		public ActivityObjects()
@@ -484,26 +438,23 @@ namespace MSTS
 		public float X;
 		public float Z;
 
-        public ActivityObject(STFReader f)
+        public ActivityObject(STFReader stf)
         {
-            f.MustMatch("(");
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "objecttype": f.MustMatch("("); f.MustMatch("WagonsList"); f.SkipRestOfBlock(); break;
-                    case "train_config": Train_Config = new Train_Config(f); break;
-                    case "direction": Direction = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "id": ID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "tile":
-                        f.MustMatch("(");
-                        TileX = f.ReadInt(STFReader.UNITS.None, null);
-                        TileZ = f.ReadInt(STFReader.UNITS.None, null);
-                        X = f.ReadFloat(STFReader.UNITS.None, null);
-                        Z = f.ReadFloat(STFReader.UNITS.None, null);
-                        f.SkipRestOfBlock();
-                        break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("objecttype", ()=>{ stf.MustMatch("("); stf.MustMatch("WagonsList"); stf.SkipRestOfBlock(); }),
+                new STFReader.TokenProcessor("train_config", ()=>{ Train_Config = new Train_Config(stf); }),
+                new STFReader.TokenProcessor("direction", ()=>{ Direction = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("tile", ()=>{
+                    stf.MustMatch("(");
+                    TileX = stf.ReadInt(STFReader.UNITS.None, null);
+                    TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+                    X = stf.ReadFloat(STFReader.UNITS.None, null);
+                    Z = stf.ReadFloat(STFReader.UNITS.None, null);
+                    stf.SkipRestOfBlock();
+                }),
+            });
         }
 	}
 
@@ -511,15 +462,12 @@ namespace MSTS
 	{
 		public TrainCfg TrainCfg;
 
-        public Train_Config(STFReader f)
+        public Train_Config(STFReader stf)
         {
-            f.MustMatch("(");
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "traincfg": TrainCfg = new TrainCfg(f); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("traincfg", ()=>{ TrainCfg = new TrainCfg(stf); }),
+            });
         }
 	}
 
@@ -533,12 +481,12 @@ namespace MSTS
 		{
 		}
 
-		public MaxVelocity( STFReader f )
+		public MaxVelocity(STFReader stf)
 		{
-			f.MustMatch("(");
-            A = f.ReadFloat(STFReader.UNITS.Speed, null);
-            B = f.ReadFloat(STFReader.UNITS.Speed, null);
-			f.SkipRestOfBlock();
+			stf.MustMatch("(");
+            A = stf.ReadFloat(STFReader.UNITS.Speed, null);
+            B = stf.ReadFloat(STFReader.UNITS.Speed, null);
+			stf.SkipRestOfBlock();
 		}
 	}
 
@@ -552,22 +500,19 @@ namespace MSTS
 
 		public ArrayList Wagons = new ArrayList();
 
-        public TrainCfg(STFReader f)
+        public TrainCfg(STFReader stf)
         {
-            f.MustMatch("(");
-            f.ReadItem();  // Discard the "" lowertoken after the braces
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "name": Name = f.ReadItemBlock(null); break;
-                    case "serial": Serial = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "maxvelocity": MaxVelocity = new MaxVelocity(f); break;
-                    case "nextwagonuid": NextWagonUID = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "durability": Durability = (float)f.ReadDoubleBlock(STFReader.UNITS.None, null); break;
-                    case "wagon": Wagons.Add(new Wagon(f)); break;
-                    case "engine": Wagons.Add(new Wagon(f)); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+            stf.MustMatch("(");
+            stf.ReadItem();  // Discard the "" lowertoken after the braces
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("maxvelocity", ()=>{ MaxVelocity = new MaxVelocity(stf); }),
+                new STFReader.TokenProcessor("nextwagonuid", ()=>{ NextWagonUID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("durability", ()=>{ Durability = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("wagon", ()=>{ Wagons.Add(new Wagon(stf)); }),
+                new STFReader.TokenProcessor("engine", ()=>{ Wagons.Add(new Wagon(stf)); }),
+            });
         }
 	}
 
@@ -579,18 +524,15 @@ namespace MSTS
 		public bool IsEngine = false;
 		public bool Flip = false;
 
-        public Wagon(STFReader f)
+        public Wagon(STFReader stf)
         {
-            f.MustMatch("(");
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "uid": UiD = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                    case "flip": Flip = true; f.SkipBlock(); break;
-                    case "enginedata": f.MustMatch("("); Name = f.ReadItem(); Folder = f.ReadItem(); f.SkipRestOfBlock(); IsEngine = true; break;
-                    case "wagondata": f.MustMatch("("); Name = f.ReadItem(); Folder = f.ReadItem(); f.SkipRestOfBlock(); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("uid", ()=>{ UiD = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("flip", ()=>{ Flip = true; stf.SkipBlock(); }),
+                new STFReader.TokenProcessor("enginedata", ()=>{ stf.MustMatch("("); Name = stf.ReadItem(); Folder = stf.ReadItem(); stf.SkipRestOfBlock(); IsEngine = true; }),
+                new STFReader.TokenProcessor("wagondata", ()=>{ stf.MustMatch("("); Name = stf.ReadItem(); Folder = stf.ReadItem(); stf.SkipRestOfBlock(); }),
+            });
         }
 
 		public Wagon( int uiD, string folder, string name, bool isEngine, bool flip ) 
@@ -610,19 +552,14 @@ namespace MSTS
         public List<float> DistanceDownPath = new List<float>();
         public Player_Traffic_Definition Player_Traffic_Definition;
 
-        public Player_Service_Definition(STFReader f)
+        public Player_Service_Definition(STFReader stf)
         {
-            StringBuilder s = new StringBuilder();
-
-            f.MustMatch("(");
-            Name = f.ReadItem();
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock(STFReader.UNITS.Distance, null)); break;
-                    case "player_traffic_definition": Player_Traffic_Definition = new Player_Traffic_Definition(f); break;
-                    case "(": f.SkipRestOfBlock(); break;
-                }
+            stf.MustMatch("(");
+            Name = stf.ReadItem();
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("distancedownpath", ()=>{ DistanceDownPath.Add(stf.ReadFloatBlock(STFReader.UNITS.Distance, null)); }),
+                new STFReader.TokenProcessor("player_traffic_definition", ()=>{ Player_Traffic_Definition = new Player_Traffic_Definition(stf); }),
+            });
         }
 
     }
@@ -636,22 +573,17 @@ namespace MSTS
 
         public string Name;
 
-        public Player_Traffic_Definition(STFReader f)
+        public Player_Traffic_Definition(STFReader stf)
         {
-            StringBuilder s = new StringBuilder();
             DateTime basedt = new DateTime();
-
-            f.MustMatch("(");
-            Name = f.ReadItem();
-            while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
-                {
-                    case "arrivaltime": ArrivalTime.Add(basedt.AddSeconds(f.ReadFloatBlock(STFReader.UNITS.None, null))); break;
-                    case "departtime": DepartTime.Add(basedt.AddSeconds(f.ReadFloatBlock(STFReader.UNITS.None, null))); break;
-                    case "distancedownpath": DistanceDownPath.Add(f.ReadFloatBlock(STFReader.UNITS.Distance, null)); break;
-                    case "platformstartid": PlatformStartID.Add(f.ReadIntBlock(STFReader.UNITS.None, null)); break;
-                    case "(": f.SkipRestOfBlock(); break;
-            }
+            stf.MustMatch("(");
+            Name = stf.ReadItem();
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("arrivaltime", ()=>{ ArrivalTime.Add(basedt.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.None, null))); }),
+                new STFReader.TokenProcessor("departtime", ()=>{ DepartTime.Add(basedt.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.None, null))); }),
+                new STFReader.TokenProcessor("distancedownpath", ()=>{ DistanceDownPath.Add(stf.ReadFloatBlock(STFReader.UNITS.Distance, null)); }),
+                new STFReader.TokenProcessor("platformstartid", ()=>{ PlatformStartID.Add(stf.ReadIntBlock(STFReader.UNITS.None, null)); }),
+            });
         }
     }
 

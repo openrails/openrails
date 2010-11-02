@@ -18,17 +18,14 @@ namespace MSTS
 
         public SDFile(string filename)
         {
-            using (STFReader f = new STFReader(filename, false))
+            using (STFReader stf = new STFReader(filename, false))
             {
-                while (!f.EOF)
-                    switch (f.ReadItem().ToLower())
-                    {
-                        case "shape": shape = new SDShape(f); break;
-                        case "(": f.SkipRestOfBlock(); break;
-                    }
+                stf.ParseFile(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("shape", ()=>{ shape = new SDShape(stf); }),
+                });
                 //TODO This should be changed to STFException.TraceError() with defaults values created
                 if (shape == null)
-                    throw new STFException(f, "Missing shape statement");
+                    throw new STFException(stf, "Missing shape statement");
             }
         }
 
@@ -39,33 +36,22 @@ namespace MSTS
                 ESD_Bounding_Box = new ESD_Bounding_Box();
             }
 
-            public SDShape(STFReader f)
+            public SDShape(STFReader stf)
             {
-                while (!f.EOF)
-                {
-                    string token = f.ReadItem();
-                    if (token == "(")
-                        token = f.ReadItem();
-                    if (token.EndsWith(".s") || token.EndsWith(".S")) // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
-                    {
-                        while (!f.EndOfBlock())
-                            switch (f.ReadItem().ToLower())
-                            {
-                                case "esd_detail_level": ESD_Detail_Level = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                                case "esd_alternative_texture": ESD_Alternative_Texture = f.ReadIntBlock(STFReader.UNITS.None, null); break;
-                                case "esd_bounding_box":
-                                    ESD_Bounding_Box = new ESD_Bounding_Box(f);
-                                    if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
-                                        ESD_Bounding_Box = null;
-                                    break;
-                                case "esd_no_visual_obstruction": ESD_No_Visual_Obstruction = f.ReadBoolBlock(true); break;
-                                case "esd_snapable": ESD_Snapable = f.ReadBoolBlock(true); break;
-                                case "(": f.SkipRestOfBlock(); break;
-                            }
-                    }
-                }
+                stf.ReadItem(); // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
+                stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("esd_detail_level", ()=>{ ESD_Detail_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                    new STFReader.TokenProcessor("esd_alternative_texture", ()=>{ ESD_Alternative_Texture = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                    new STFReader.TokenProcessor("esd_no_visual_obstruction", ()=>{ ESD_No_Visual_Obstruction = stf.ReadBoolBlock(true); }),
+                    new STFReader.TokenProcessor("esd_snapable", ()=>{ ESD_Snapable = stf.ReadBoolBlock(true); }),
+                    new STFReader.TokenProcessor("esd_bounding_box", ()=>{
+                        ESD_Bounding_Box = new ESD_Bounding_Box(stf);
+                        if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
+                            ESD_Bounding_Box = null;
+                    }),
+                });
                 // TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
-                //if( ESD_Bounding_Box == null )throw( new STFError( f, "Missing ESD_Bound_Box statement" ) );
+                //if (ESD_Bounding_Box == null) throw new STFException(stf, "Missing ESD_Bound_Box statement");
             }
             public int ESD_Detail_Level = 0;
             public int ESD_Alternative_Texture = 0;
@@ -82,28 +68,22 @@ namespace MSTS
                 B = new TWorldPosition(10, 10, 10);
             }
 
-            public ESD_Bounding_Box(STFReader f)
+            public ESD_Bounding_Box(STFReader stf)
             {
-                f.MustMatch("(");
-                string item = f.ReadItem();
+                stf.MustMatch("(");
+                string item = stf.ReadItem();
                 if (item == ")") return;    // quietly return on ESD_Bounding_Box()
-                f.StepBackOneItem();
-                float X = f.ReadFloat(STFReader.UNITS.None, null);
-                float Y = f.ReadFloat(STFReader.UNITS.None, null);
-                float Z = f.ReadFloat(STFReader.UNITS.None, null);
+                stf.StepBackOneItem();
+                float X = stf.ReadFloat(STFReader.UNITS.None, null);
+                float Y = stf.ReadFloat(STFReader.UNITS.None, null);
+                float Z = stf.ReadFloat(STFReader.UNITS.None, null);
                 A = new TWorldPosition(X, Y, Z);
-                X = f.ReadFloat(STFReader.UNITS.None, null);
-                Y = f.ReadFloat(STFReader.UNITS.None, null);
-                Z = f.ReadFloat(STFReader.UNITS.None, null);
+                X = stf.ReadFloat(STFReader.UNITS.None, null);
+                Y = stf.ReadFloat(STFReader.UNITS.None, null);
+                Z = stf.ReadFloat(STFReader.UNITS.None, null);
                 B = new TWorldPosition(X, Y, Z);
                 // JP2indirt.sd has extra parameters
-                for (; ; )
-                {
-                    string token = f.ReadItem();
-                    if (token == "" || token == ")")
-                        break;
-                }
-
+                stf.SkipRestOfBlock();
             }
             public TWorldPosition A = null;
             public TWorldPosition B = null;
