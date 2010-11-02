@@ -164,18 +164,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PopupWindowImage.png">
-      <Name>PopupWindowImage</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="PopupWindowMask.png">
-      <Name>PopupWindowMask</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="SignalAspects.png">
       <Name>SignalAspects</Name>
       <Importer>TextureImporter</Importer>
@@ -208,6 +196,13 @@
       <Name>CabShader</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Window.png">
+      <Name>Window</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

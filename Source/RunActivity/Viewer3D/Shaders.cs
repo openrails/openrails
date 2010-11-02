@@ -415,8 +415,7 @@ namespace ORTS
 			glassColor = Parameters["GlassColor"];
 			ScreenSize = Parameters["ScreenSize"];
 			Screen_Tex = Parameters["Screen_Tex"];
-			Parameters["PopupWindowImage_Tex"].SetValue(content.Load<Texture2D>("PopupWindowImage"));
-			Parameters["PopupWindowMask_Tex"].SetValue(content.Load<Texture2D>("PopupWindowMask"));
+			Parameters["Window_Tex"].SetValue(content.Load<Texture2D>("Window"));
 		}
 	}
 	#endregion

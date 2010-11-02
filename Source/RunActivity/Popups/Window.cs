@@ -164,25 +164,25 @@ namespace ORTS.Popups
 				// Edges/corners are 32px (1/4th image size).
 				var vertexData = new[] {
 					//  0  1  2  3
-					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 00, 0), new Vector2(0.00f, 0.00f)),
-					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 00, 0), new Vector2(0.25f, 0.00f)),
-					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 00, 0), new Vector2(0.75f, 0.00f)),
-					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 00, 0), new Vector2(1.00f, 0.00f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 00, 0), new Vector2(0.00f / 2, 0.00f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 00, 0), new Vector2(0.25f / 2, 0.00f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 00, 0), new Vector2(0.75f / 2, 0.00f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 00, 0), new Vector2(1.00f / 2, 0.00f)),
 					//  4  5  6  7
-					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 32, 0), new Vector2(0.00f, 0.25f)),
-					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 32, 0), new Vector2(0.25f, 0.25f)),
-					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 32, 0), new Vector2(0.75f, 0.25f)),
-					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 32, 0), new Vector2(1.00f, 0.25f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 0 * location.Height + 32, 0), new Vector2(0.00f / 2, 0.25f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 0 * location.Height + 32, 0), new Vector2(0.25f / 2, 0.25f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 0 * location.Height + 32, 0), new Vector2(0.75f / 2, 0.25f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 0 * location.Height + 32, 0), new Vector2(1.00f / 2, 0.25f)),
 					//  8  9 10 11
-					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 32, 0), new Vector2(0.00f, 0.75f)),
-					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 32, 0), new Vector2(0.25f, 0.75f)),
-					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 32, 0), new Vector2(0.75f, 0.75f)),
-					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 32, 0), new Vector2(1.00f, 0.75f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 32, 0), new Vector2(0.00f / 2, 0.75f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 32, 0), new Vector2(0.25f / 2, 0.75f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 32, 0), new Vector2(0.75f / 2, 0.75f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 32, 0), new Vector2(1.00f / 2, 0.75f)),
 					// 12 13 14 15
-					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 00, 0), new Vector2(0.00f, 1.00f)),
-					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 00, 0), new Vector2(0.25f, 1.00f)),
-					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 00, 0), new Vector2(0.75f, 1.00f)),
-					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 00, 0), new Vector2(1.00f, 1.00f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 00, 1 * location.Height - 00, 0), new Vector2(0.00f / 2, 1.00f)),
+					new VertexPositionTexture(new Vector3(0 * location.Width + 32, 1 * location.Height - 00, 0), new Vector2(0.25f / 2, 1.00f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 32, 1 * location.Height - 00, 0), new Vector2(0.75f / 2, 1.00f)),
+					new VertexPositionTexture(new Vector3(1 * location.Width - 00, 1 * location.Height - 00, 0), new Vector2(1.00f / 2, 1.00f)),
 				};
 				WindowVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionTexture), vertexData.Length, BufferUsage.WriteOnly);
 				WindowVertexBuffer.SetData(vertexData);

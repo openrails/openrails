@@ -25,24 +25,13 @@ sampler Screen = sampler_state
 	AddressV = Clamp;
 };
 
-texture PopupWindowImage_Tex;
-sampler PopupWindowImage = sampler_state
+texture Window_Tex;
+sampler Window = sampler_state
 {
-    Texture = (PopupWindowImage_Tex);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
-
-texture PopupWindowMask_Tex;
-sampler PopupWindowMask = sampler_state
-{
-    Texture = (PopupWindowMask_Tex);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
+    Texture = (Window_Tex);
+	MagFilter = Point;
+	MinFilter = Point;
+	MipFilter = Point;
 	AddressU = Clamp;
 	AddressV = Clamp;
 };
@@ -88,15 +77,15 @@ VERTEX_OUTPUT VSPopupWindowGlass(in VERTEX_INPUT In)
 
 float4 PSPopupWindow(in VERTEX_OUTPUT In) : COLOR
 {
-	float4 Color = tex2D(PopupWindowImage, In.TexCoords_Pos.xy);
-	float Mask = tex2D(PopupWindowMask, In.TexCoords_Pos.xy).r;
+	float4 Color = tex2D(Window, In.TexCoords_Pos.xy);
+	float Mask = tex2D(Window, In.TexCoords_Pos.xy + float2(0.5, 0.0)).r;
 	return float4(Color.rgb, Color.a + Mask);
 }
 
 float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
 {
-	float4 Color = tex2D(PopupWindowImage, In.TexCoords_Pos.xy);
-	float Mask = tex2D(PopupWindowMask, In.TexCoords_Pos.xy).r;
+	float4 Color = tex2D(Window, In.TexCoords_Pos.xy);
+	float Mask = tex2D(Window, In.TexCoords_Pos.xy + float2(0.5, 0.0)).r;
 	float3 ScreenColor = tex2D(Screen, In.TexCoords_Pos.zw);
 	if (Mask > 0) {
 		float3 ScreenColor1 = tex2D(Screen, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, +1 / ScreenSize.y));
