@@ -1139,28 +1139,62 @@ namespace ORTS
         /// <param name="tex">Texture to be disassembled</param>
         /// <param name="width">Width of the Cab View Control</param>
         /// <param name="height">Height of the Cab View Control</param>
+        /// <param name="FramesCount">Number of frames read from CVF</param>
+        /// <param name="FileName">Name of the control ACE file</param>
         /// <returns>Array with Textures disassembled</returns>
-        private static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D tex, int width, int height)
+        private static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D tex, int width, int height, int FramesCount, string FileName)
         {
             Texture2D dtex;
             Color[] arr = new Color[width * height];
+            Texture2D[] dest;
 
-            int wcou = tex.Width / width;
-            int hcou = tex.Height / height;
-
-            Texture2D[] dest = new Texture2D[wcou * hcou];
-            int indx = 0;
-
-            for (int j = 0; j < hcou; j++)
+            // Problem with texture sizes, could not disassemble
+            if (width == 0 || height == 0 || tex.Width / width == 0 || tex.Height / height == 0)
             {
-                for (int i = 0; i < wcou; i++)
-                {
-                    tex.GetData<Color>(0, new Rectangle(i * width, j * height, width, height),
-                        arr, 0, width * height);
+                Trace.TraceError(string.Format("Could not disassemble texture {0}. Texture width is {1}, height is {2}; Control width is {3}, height is {4}",
+                    FileName, tex.Width, tex.Height, width, height));
 
-                    dtex = new Texture2D(graphicsDevice, width, height);
-                    dtex.SetData<Color>(arr);
-                    dest[indx] = dtex;
+                dest = new Texture2D[FramesCount];
+                for (int i = 0; i < FramesCount; i++)
+                    dest[i] = Materials.MissingTexture;
+            }
+            else
+            {
+                int wcou = tex.Width / width;
+                int hcou = tex.Height / height;
+                int texcou = FramesCount;
+
+                // Problem with texture size, disassemble and later fill with missing the rest
+                if (hcou * wcou != FramesCount)
+                {
+                    if (hcou * wcou > FramesCount)
+                        texcou = hcou * wcou;
+
+                    Trace.TraceWarning(string.Format("Frames count mismatch in {0}. Specified frames: {1}, texture frames: {2}. Using frames number {3}.",
+                        FileName, FramesCount, hcou * wcou, texcou));
+                }
+
+                dest = new Texture2D[texcou];
+                int indx = 0;
+
+                for (int j = 0; j < hcou; j++)
+                {
+                    for (int i = 0; i < wcou; i++)
+                    {
+                        tex.GetData<Color>(0, new Rectangle(i * width, j * height, width, height),
+                            arr, 0, width * height);
+
+                        dtex = new Texture2D(graphicsDevice, width, height);
+                        dtex.SetData<Color>(arr);
+                        dest[indx] = dtex;
+                        indx++;
+                    }
+                }
+
+                // Fill missing the rest if has any
+                while (indx < FramesCount)
+                {
+                    dest[indx] = Materials.MissingTexture;
                     indx++;
                 }
             }
@@ -1174,7 +1208,8 @@ namespace ORTS
         /// <param name="FileName">Name of the Texture to be disassembled</param>
         /// <param name="width">Width of the Cab View Control</param>
         /// <param name="height">Height of the Cab View Control</param>
-        public static void DisassembleTexture(GraphicsDevice graphicsDevice, string FileName, int width, int height)
+        /// <param name="FramesCount">Number of frames, read from CVF</param>
+        public static void DisassembleTexture(GraphicsDevice graphicsDevice, string FileName, int width, int height, int FramesCount)
         {
             PDayTextures[FileName] = null;
             if (DayTextures.ContainsKey(FileName))
@@ -1182,7 +1217,7 @@ namespace ORTS
                 var tex = DayTextures[FileName];
                 if (tex != Materials.MissingTexture)
                 {
-                    PDayTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+                    PDayTextures[FileName] = Disassemble(graphicsDevice, tex, width, height, FramesCount, FileName + ":day");
                 }
             }
 
@@ -1192,7 +1227,7 @@ namespace ORTS
                 var tex = NightTextures[FileName];
                 if (tex != Materials.MissingTexture)
                 {
-                    PNightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+                    PNightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height, FramesCount, FileName + ":night");
                 }
             }
 
@@ -1202,7 +1237,7 @@ namespace ORTS
                 var tex = LightTextures[FileName];
                 if (tex != Materials.MissingTexture)
                 {
-                    PLightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height);
+                    PLightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height, FramesCount, FileName + ":light");
                 }
             }
         }
@@ -1213,21 +1248,18 @@ namespace ORTS
         /// <param name="arr">Texture array</param>
         /// <param name="indx">Index</param>
         /// <param name="FileName">Name of the file to report</param>
-        /// <param name="isNight"></param>
         /// <returns>The given Texture</returns>
-        private static Texture2D SafeGetAt(Texture2D[] arr, int indx, string FileName, bool isNight)
+        private static Texture2D SafeGetAt(Texture2D[] arr, int indx, string FileName)
         {
             if (arr == null)
             {
-                Trace.TraceWarning(string.Format("Passed null Texture[] for accessing: {0}", FileName +
-                    (isNight ? ":night" : ":day")));
+                Trace.TraceWarning(string.Format("Passed null Texture[] for accessing: {0}", FileName));
                 return Materials.MissingTexture;
             }
             
             if (arr.Length < 1)
             {
-                Trace.TraceWarning(string.Format("Disassembled texture invalid for: {0}", FileName + 
-                    (isNight ? ":night" : ":day")));
+                Trace.TraceWarning(string.Format("Disassembled texture invalid for: {0}", FileName));
                 return Materials.MissingTexture;
             }
             
@@ -1239,8 +1271,7 @@ namespace ORTS
             }
             catch
             {
-                Trace.TraceError(string.Format("Error accessing texture for: {0}", FileName +
-                    (isNight ? ":night" : ":day")));
+                Trace.TraceError(string.Format("Error accessing texture for: {0}", FileName));
                 Trace.TraceWarning(string.Format("The array length is {0}, while the index is {1}.", arr.Length, indx));
                 return Materials.MissingTexture;
             }
@@ -1273,9 +1304,7 @@ namespace ORTS
                     tmp = PDayTextures[FileName];
                     if (tmp != null)
                     {
-                        //indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
-                        //retval = tmp[indx];
-                        retval = SafeGetAt(tmp, indx, FileName, true);
+                        retval = SafeGetAt(tmp, indx, FileName);
                         isNightTexture = false;
                     }
                 }
@@ -1285,9 +1314,7 @@ namespace ORTS
                     tmp = PNightTextures[FileName];
                     if (tmp != null)
                     {
-                        //indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
-                        //retval = tmp[indx];
-                        retval = SafeGetAt(tmp, indx, FileName, false);
+                        retval = SafeGetAt(tmp, indx, FileName);
                         isNightTexture = true;
                     }
                 }
@@ -1298,9 +1325,7 @@ namespace ORTS
                 tmp = PDayTextures[FileName];
                 if (tmp != null)
                 {
-                    //indx = (int)MathHelper.Clamp(indx, 0, tmp.Length - 1);
-                    //retval = tmp[indx];
-                    retval = SafeGetAt(tmp, indx, FileName, true);
+                    retval = SafeGetAt(tmp, indx, FileName);
                     isNightTexture = false;
                 }
             }
@@ -1377,9 +1402,6 @@ namespace ORTS
             if (_Locomotive.ExCVF != null)
             {
                 _Shader = new CabShader(viewer.GraphicsDevice, viewer.RenderProcess.Content,
-                    //new Vector3(_Viewer.DisplaySize.X / 2, _Viewer.DisplaySize.Y * 3 / 4, 350),
-                    //new Vector3(_Viewer.DisplaySize.X / 5 * 4, _Viewer.DisplaySize.Y / 10 * 3, 100),
-                    //new Vector3(1f, 0.85f, 0.7f), new Vector3(0.7f, 1f, 0.7f));
                     _Locomotive.ExCVF.Light1.TranslatedPosition(_Viewer.DisplaySize),
                     _Locomotive.ExCVF.Light2.TranslatedPosition(_Viewer.DisplaySize),
                     _Locomotive.ExCVF.Light1.TranslatedColor, _Locomotive.ExCVF.Light2.TranslatedColor);
@@ -1475,8 +1497,6 @@ namespace ORTS
             {
                 _PrevScreenSize = _Viewer.DisplaySize;
                 _Shader.SetLightPositions(
-                    //new Vector3(_Viewer.DisplaySize.X / 2, _Viewer.DisplaySize.Y * 3 / 4, 350),
-                    //new Vector3(_Viewer.DisplaySize.X / 5 * 4, _Viewer.DisplaySize.Y / 10 * 3, 100));
                     _Locomotive.ExCVF.Light1.TranslatedPosition(_Viewer.DisplaySize),
                     _Locomotive.ExCVF.Light2.TranslatedPosition(_Viewer.DisplaySize));
             }
@@ -1500,7 +1520,6 @@ namespace ORTS
                     _isNightTexture, _Locomotive.CabLightOn, _Viewer.SkyDrawer.overcast);
 
                 _Shader.SetTexData(_CabRect.Left, _CabRect.Top, _CabRect.Width, _CabRect.Height);
-                //new Vector2(1 / 1.5f, 1 / 1.5f), _isNightTexture, true);
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
@@ -1761,7 +1780,7 @@ namespace ORTS
         {
             _CVCWithFrames = cvc;
             CABTextureManager.DisassembleTexture(viewer.GraphicsDevice, _CabViewControl.ACEFile,
-                (int)_CabViewControl.Width, (int)_CabViewControl.Height);
+                (int)_CabViewControl.Width, (int)_CabViewControl.Height, _CVCWithFrames.FramesCount);
 
             _SourceRectangle = new Rectangle(0, 0, (int)_CVCWithFrames.Width, (int)_CVCWithFrames.Height);
         }

@@ -226,12 +226,42 @@ namespace MSTS
             }
             else if (string.Compare(token, "Position", true) == 0)
             {
+                int[] posArray = new int[10];
+                int posRead = 0;
                 inf.MustMatch("(");
-                PositionX = inf.ReadInt(STFReader.UNITS.None, null);
-                PositionY = inf.ReadInt(STFReader.UNITS.None, null);
-                Width = inf.ReadInt(STFReader.UNITS.None, null);
-                Height = inf.ReadInt(STFReader.UNITS.None, null);
-                inf.SkipRestOfBlock();
+
+                // Handling middle values
+                while (!inf.EndOfBlock())
+                {
+                    if (posRead > 0 && posRead % 10 == 0)
+                    {
+                        Array.Resize<int>(ref posArray, (posRead / 10 + 1) * 10);
+                    }
+
+                    posArray[posRead] = inf.ReadInt(STFReader.UNITS.None, null);
+
+                    posRead++;
+                }
+
+                if (posRead > 4)
+                {
+                    Trace.TraceWarning(string.Format("Position has too much parameters in {0}, control type {1}.", inf.FileName, this.ControlType));
+                }
+
+                if (posRead < 4)
+                {
+                    Trace.TraceError(string.Format("Position has too few parameters in {0}, control type {1}.", inf.FileName, this.ControlType));
+                    while (posRead < 4)
+                    {
+                        posArray[posRead] = 0;
+                        posRead++;
+                    }
+                }
+
+                PositionX = posArray[0];
+                PositionY = posArray[1];
+                Width = posArray[posRead - 2];
+                Height = posArray[posRead - 1];
             }
             else if (string.Compare(token, "ScaleRange", true) == 0)
             {
