@@ -39,51 +39,10 @@ using ORTS.Popups;
 
 namespace ORTS
 {
-	public enum BoolSettings
-	{
-		DataLogger,
-		DynamicShadows,
-		FullScreen,
-		Precipitation,
-		Profiling,
-		VerticalSync,
-		WindowGlass,
-		Wire,
-	}
-
-	public enum IntSettings
-	{
-		WorldObjectDensity,
-		SoundDetailLevel,
-		ViewingDistance,
-	}
-
 	public class Viewer3D
     {
         // User setups.
-		public readonly bool[] SettingsBool = InitialiseSettingsBool();
-		private static bool[] InitialiseSettingsBool()
-		{
-			var rv = new bool[Enum.GetNames(typeof(BoolSettings)).Length];
-			rv[(int)BoolSettings.DataLogger] = false;
-			rv[(int)BoolSettings.DynamicShadows] = false;
-			rv[(int)BoolSettings.FullScreen] = false;
-			rv[(int)BoolSettings.Precipitation] = false;
-			rv[(int)BoolSettings.Profiling] = false;
-			rv[(int)BoolSettings.VerticalSync] = false;
-			rv[(int)BoolSettings.WindowGlass] = false;
-			rv[(int)BoolSettings.Wire] = false;
-			return rv;
-		}
-		public readonly int[] SettingsInt = InitialiseSettingsInt();
-		private static int[] InitialiseSettingsInt()
-		{
-			var rv = new int[Enum.GetNames(typeof(IntSettings)).Length];
-			rv[(int)IntSettings.WorldObjectDensity] = 10;
-			rv[(int)IntSettings.SoundDetailLevel] = 5;
-			rv[(int)IntSettings.ViewingDistance] = 2000;
-			return rv;
-		}
+		public readonly UserSettings Settings;
         public Vector2 WindowSize = new Vector2(1024, 768);
 		// Multi-threaded processes
         public UpdaterProcess UpdaterProcess;
@@ -153,6 +112,12 @@ namespace ORTS
 		public Viewer3D(Simulator simulator)
 		{
 			Simulator = simulator;
+			Settings = simulator.Settings;
+
+			// Parse the screen dimensions.
+			var windowSizeParts = Settings.WindowSize.Split(new[] { 'x' }, 2);
+			WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
+			WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
 		}
 
         /// <summary>
@@ -178,43 +143,11 @@ namespace ORTS
 			CameraToRestore = inf.ReadInt32();
 		}
 
-        /// <summary>
-        /// Setup the game settings provided by the user in the main menu screen.
-        /// </summary>
-        public void LoadUserSettings()
-        {
-            // Restore retained settings
-            string strWindowSize = "1024x768";
-
-			try
-			{
-				RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-				if (RK != null)
-				{
-					foreach (int key in Enum.GetValues(typeof(BoolSettings)))
-						SettingsBool[key] = (1 == (int)RK.GetValue(Enum.GetName(typeof(BoolSettings), key), SettingsBool[key] ? 1 : 0));
-					foreach (int key in Enum.GetValues(typeof(IntSettings)))
-						SettingsInt[key] = (int)RK.GetValue(Enum.GetName(typeof(IntSettings), key), SettingsInt[key]);
-
-					strWindowSize = (string)RK.GetValue("WindowSize", (string)strWindowSize);
-					// Parse the screen dimensions text
-					char[] delimiterChars = { 'x' };
-					string[] words = strWindowSize.Split(delimiterChars);
-					WindowSize.X = Convert.ToInt32(words[0]);
-					WindowSize.Y = Convert.ToInt32(words[1]);
-				}
-			}
-			catch (Exception error)
-			{
-				Trace.WriteLine(error);
-			}
-        }
-
 		public void Initialize()
 		{
 			Console.WriteLine();
-			Materials.ViewingDistance = SettingsInt[(int)IntSettings.ViewingDistance] = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, SettingsInt[(int)IntSettings.ViewingDistance]);
-			if (SettingsInt[(int)IntSettings.SoundDetailLevel] > 0)
+			Materials.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
+			if (Settings.SoundDetailLevel > 0)
 			{
 				SoundEngine = new ISoundEngine();
 				SoundEngine.SetListenerPosition(new IrrKlang.Vector3D(0, 0, 0), new IrrKlang.Vector3D(0, 0, 1));
@@ -258,7 +191,7 @@ namespace ORTS
             // resolution that is greater than what the hardware can support, XNA adjusts the
             // resolution to the actual capability. "...the XNA framework automatically selects the 
             // highest resolution supported by the output device." rvg
-			GDM.SynchronizeWithVerticalRetrace = SettingsBool[(int)BoolSettings.VerticalSync];
+			GDM.SynchronizeWithVerticalRetrace = Settings.VerticalSync;
             renderProcess.IsFixedTimeStep = false; // you get smoother animation if we pace to video card retrace setting
             renderProcess.TargetElapsedTime = TimeSpan.FromMilliseconds(1); // setting this a value near refresh rate, ie 16ms, causes hiccups ( beating against refresh rate )
             GDM.PreferredBackBufferWidth = (int)WindowSize.X; // screen.Bounds.Width; // 1680;
@@ -291,7 +224,7 @@ namespace ORTS
 
             PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
-			if (SettingsInt[(int)IntSettings.SoundDetailLevel] > 0)
+			if (Settings.SoundDetailLevel > 0)
             {
                 ISound ambientSound = SoundEngine.Play2D(Simulator.BasePath + @"\SOUND\gen_urb1.wav", true);  // TODO temp code
                 if (ambientSound != null)
@@ -313,8 +246,8 @@ namespace ORTS
             SkyDrawer = new SkyDrawer(this);
             TerrainDrawer = new TerrainDrawer(this);
             SceneryDrawer = new SceneryDrawer(this);
-			if (SettingsBool[(int)BoolSettings.Precipitation]) PrecipDrawer = new PrecipDrawer(this);
-			if (SettingsBool[(int)BoolSettings.Wire]) WireDrawer = new WireDrawer(this);
+			if (Settings.Precipitation) PrecipDrawer = new PrecipDrawer(this);
+			if (Settings.Wire) WireDrawer = new WireDrawer(this);
             TrainDrawer = new TrainDrawer(this);
 			weatherControl = new WeatherControl(this);
 
@@ -336,7 +269,7 @@ namespace ORTS
             else
                new FreeRoamCamera(this, Camera).Activate();
 
-			if (SettingsBool[(int)BoolSettings.FullScreen])
+			if (Settings.FullScreen)
 				ToggleFullscreen();
         }
 

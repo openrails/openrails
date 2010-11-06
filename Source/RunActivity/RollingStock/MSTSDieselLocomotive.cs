@@ -40,8 +40,8 @@ namespace ORTS
         float MaxRPMChangeRate = 0;
         float PercentChangePerSec = .2f;
 
-        public MSTSDieselLocomotive(string wagFile, TrainCar previousCar)
-            : base(wagFile, previousCar)
+		public MSTSDieselLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
+            : base(simulator, wagFile, previousCar)
         {
         }
 

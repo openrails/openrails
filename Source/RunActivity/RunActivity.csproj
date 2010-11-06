@@ -185,6 +185,7 @@
     <Compile Include="Common\SmoothedData.cs" />
     <Compile Include="Common\SteamTable.cs" />
     <Compile Include="Common\SunMoonPos.cs" />
+    <Compile Include="Common\UserSettings.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />

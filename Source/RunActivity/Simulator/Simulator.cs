@@ -39,6 +39,8 @@ namespace ORTS
                                                     // while Simulator.Update() is running, objects are adjusted to this target time 
                                                     // after Simulator.Update() is complete, the simulator state matches this time
 
+		public readonly UserSettings Settings;
+
         public string BasePath;     // ie c:\program files\microsoft games\train simulator
         public string RoutePath;    // ie c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's
 
@@ -65,8 +67,9 @@ namespace ORTS
         
         public TrainCar PlayerLocomotive = null;  // Set by the Viewer - TODO there could be more than one player so eliminate this.
 
-        public Simulator(string activityPath)
+        public Simulator(UserSettings settings, string activityPath)
         {
+			Settings = settings;
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             RouteName = Path.GetFileName(RoutePath);
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
@@ -594,7 +597,7 @@ namespace ORTS
 
                 try
                 {
-                    TrainCar car = RollingStock.Load(wagonFilePath, previousCar);
+                    TrainCar car = RollingStock.Load(this, wagonFilePath, previousCar);
                     car.Flipped = wagon.Flip;
 					car.UiD = wagon.UiD;
                     train.Cars.Add(car);
@@ -657,7 +660,7 @@ namespace ORTS
                             wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
                         try
                         {
-                            TrainCar car = RollingStock.Load(wagonFilePath, previousCar);
+                            TrainCar car = RollingStock.Load(this, wagonFilePath, previousCar);
                             car.Flipped = !wagon.Flip;
 							car.UiD = wagon.UiD;
 							train.Cars.Add(car);
@@ -735,14 +738,14 @@ namespace ORTS
             {
                 int trainType = inf.ReadInt32();
                 if (trainType == 0)
-                    Trains.Add(new Train(inf));
+                    Trains.Add(new Train(this, inf));
                 else if (trainType == 1)
-                    Trains.Add(new AITrain(inf));
+                    Trains.Add(new AITrain(this, inf));
                 else
                 {
                     Trace.TraceWarning("Don't know how to restore train type: " + trainType.ToString());
                     Debug.Fail("Don't know how to restore train type: " + trainType.ToString());  // in debug mode, halt on this error
-                    Trains.Add(new Train(inf)); // for release version, we'll try to press on anyway
+                    Trains.Add(new Train(this, inf)); // for release version, we'll try to press on anyway
                 }
             }
         }

@@ -19,7 +19,7 @@ namespace ORTS
                 controller.Save(outf);
         }
 
-        public static IController Restore(BinaryReader inf)
+		public static IController Restore(Simulator simulator, BinaryReader inf)
         {
             if (!inf.ReadBoolean())
                 return null;
@@ -30,7 +30,7 @@ namespace ORTS
                     return new MSTSNotchController(inf);                
 
                 case ControllerTypes.MSTSBrakeController:
-                    return new MSTSBrakeController(inf);
+                    return new MSTSBrakeController(simulator, inf);
 
                 default:
 					throw new InvalidDataException("Invalid controller type");

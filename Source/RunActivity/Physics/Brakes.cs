@@ -79,7 +79,7 @@ namespace ORTS
         public enum ValveState { Lap, Apply, Release, Emergency };
         protected ValveState TripleValveState = ValveState.Lap;
 
-        public AirSinglePipe( TrainCar car )
+        public AirSinglePipe(TrainCar car)
         {
             Car = car;
             BrakePipeVolumeFT3 = .028f * (1 + car.Length);
@@ -220,7 +220,7 @@ namespace ORTS
             if (TripleValveState == ValveState.Release)
             {
                 float threshold = RetainerPressureThresholdPSI;
-                if (Program.GraduatedRelease)
+                if (Car.Simulator.Settings.GraduatedRelease)
                 {
                     float t = (EmergResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
                     if (threshold < t)
@@ -232,7 +232,7 @@ namespace ORTS
                     if (AutoCylPressurePSI < threshold)
                         AutoCylPressurePSI = threshold;
                 }
-                if (!Program.GraduatedRelease && AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
+				if (!Car.Simulator.Settings.GraduatedRelease && AuxResPressurePSI < EmergResPressurePSI && AuxResPressurePSI < BrakeLine1PressurePSI)
                 {
                     float dp = elapsedClockSeconds * EmergResChargingRate;
                     if (EmergResPressurePSI - dp < AuxResPressurePSI + dp * EmergAuxVolumeRatio)

@@ -169,9 +169,9 @@ namespace ORTS
         }
 
         // restore game state
-        public Train(BinaryReader inf)
+		public Train(Simulator simulator, BinaryReader inf)
         {
-            RestoreCars( inf );
+			RestoreCars(simulator, inf);
             SpeedMpS = inf.ReadSingle();
             MUDirection = (Direction)inf.ReadInt32();
             MUThrottlePercent = inf.ReadSingle();
@@ -215,11 +215,11 @@ namespace ORTS
                 RollingStock.Save(outf, car); 
         }
 
-        private void RestoreCars(BinaryReader inf)
+		private void RestoreCars(Simulator simulator, BinaryReader inf)
         {
             int count = inf.ReadInt32();
             for (int i = 0; i < count; ++i)
-                Cars.Add( RollingStock.Restore(inf, this, i == 0 ? null : Cars[i - 1]));
+                Cars.Add( RollingStock.Restore(simulator, inf, this, i == 0 ? null : Cars[i - 1]));
         }
 
         /// <summary>

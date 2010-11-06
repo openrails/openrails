@@ -41,9 +41,6 @@ namespace ORTS
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator; 
         private static Viewer3D Viewer;
-        public static bool TrainLightsEnabled = false;  // control parsing and displaying of train lights
-        public static int BrakePipeChargingRatePSIpS = 21; // temporary option to control player train brakes
-        public static bool GraduatedRelease = false;
 
 
         /// <summary>
@@ -59,25 +56,6 @@ namespace ORTS
 
 			EnableLogging();
 
-			try
-			{
-				RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-				if (RK != null)
-				{
-                    foreach (string nm in RK.GetValueNames()) Trace.WriteLine("REG:" + nm + "=" + RK.GetValue(nm).ToString());
-                    Trace.WriteLine("");
-					TrainLightsEnabled = (1 == (int)RK.GetValue("TrainLights", 0));
-					BrakePipeChargingRatePSIpS = (int)RK.GetValue("BrakePipeChargingRate", (int)21);
-					GraduatedRelease = (1 == (int)RK.GetValue("GraduatedRelease", 0));
-                    if ((1 == (int)RK.GetValue("MSTSBINSound", 0)))
-                        EventID.SetMSTSBINCompatible();
-				}
-			}
-			catch (Exception error)
-			{
-				Trace.WriteLine(error);
-			}
-
 			// Look for an action to perform.
 			var action = "";
 			var actions = new[] { "start", "resume", "random", "runtest" };
@@ -85,8 +63,8 @@ namespace ORTS
 				if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction))
 					action = possibleAction;
 
-			// Collect all non-action settings.
-			var settings = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1))).Select(a => a.Substring(1));
+			// Collect all non-action options.
+			var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1))).Select(a => a.Substring(1));
 
 			// Collect all non-options as data.
 			var data = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
@@ -100,13 +78,13 @@ namespace ORTS
 			{
 				case "start":
 				case "start-profile":
-					Start(settings, data);
+					Start(options, data);
 					break;
 				case "resume":
-					Resume(settings);
+					Resume(options);
 					break;
 				case "random":
-					Start(settings, new[] { Testing.GetRandomActivity() });
+					Start(options, new[] { Testing.GetRandomActivity() });
 					break;
 				case "runtest":
 					Testing.Test();
@@ -125,29 +103,40 @@ namespace ORTS
         /// <summary>
         /// Run the specified activity from the beginning.
         /// </summary>
-		static void Start(IEnumerable<string> settings, string[] args)
+		static void Start(IEnumerable<string> options, string[] args)
 		{
 			try
 			{
 				ActivityPath = args[0];
 
+				Console.WriteLine("Mode:     {0}", args.Length == 1 ? "Activity" : "Explore");
 				if (args.Length == 1)
-					Console.WriteLine("Starting Activity = " + args[0]);
+				{
+					Console.WriteLine("Activity: {0}", args[0]);
+				}
 				else
-					Console.WriteLine("Starting Explore = " + args[0] + " " + args[1]);
+				{
+					Console.WriteLine("Path:     {0}", args[0]);
+					Console.WriteLine("Consist:  {0}", args[1]);
+					Console.WriteLine("Time:     {0}", args[2]);
+					Console.WriteLine("Season:   {0}", args[3]);
+					Console.WriteLine("Weather:  {0}", args[4]);
+				}
 				Console.WriteLine();
-				Console.WriteLine("------------------------------------------------");
+				var settings = new UserSettings(RegistryKey, options);
+				if (settings.MSTSBINSound)
+					EventID.SetMSTSBINCompatible();
+				Console.WriteLine();
+				Console.WriteLine("========================================");
+				Console.WriteLine();
 
-				Simulator = new Simulator(args[0]);
+				Simulator = new Simulator(settings, args[0]);
 				if (args.Length == 1)
 					Simulator.SetActivity(args[0]);
 				else
 					Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
 				Simulator.Start();
 				Viewer = new Viewer3D(Simulator);
-				if (!settings.Contains("skip-user-settings"))
-					Viewer.LoadUserSettings();
-				SetViewerSettings(Viewer, settings);
 				Viewer.Initialize();
 				Viewer.Run();
 			}
@@ -190,35 +179,49 @@ namespace ORTS
         /// <summary>
         /// Resume a saved game.
         /// </summary>
-		static void Resume(IEnumerable<string> settings)
+		static void Resume(IEnumerable<string> options)
         {
             try
             {
-                using( BinaryReader inf = new BinaryReader( new FileStream( UserDataFolder + "\\SAVE.BIN", FileMode.Open, FileAccess.Read )) )
-                {
-                    ActivityPath = inf.ReadString();
-                    bool explore = inf.ReadBoolean();
-                    string conFile = null;
-                    if (explore)
-                        conFile = inf.ReadString();
+				using (BinaryReader inf = new BinaryReader(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Open, FileAccess.Read)))
+				{
+					ActivityPath = inf.ReadString();
+					bool explore = inf.ReadBoolean();
+					string conFile = null;
+					if (explore)
+						conFile = inf.ReadString();
 
-                    Console.WriteLine("Restoring Activity = " + ActivityPath);
-                    Console.WriteLine();
-                    Console.WriteLine("------------------------------------------------");
+					Console.WriteLine("Mode:     Resume {0}", !explore ? "Activity" : "Explore");
+					if (!explore)
+					{
+						Console.WriteLine("Activity: {0}", ActivityPath);
+					}
+					else
+					{
+						Console.WriteLine("Path:     {0}", ActivityPath);
+						Console.WriteLine("Consist:  {0}", conFile);
+						Console.WriteLine("Time:     {0}", 12);
+						Console.WriteLine("Season:   {0}", 0);
+						Console.WriteLine("Weather:  {0}", 0);
+					}
+					Console.WriteLine();
+					var settings = new UserSettings(RegistryKey, options);
+					if (settings.MSTSBINSound)
+						EventID.SetMSTSBINCompatible();
+					Console.WriteLine();
+					Console.WriteLine("========================================");
+					Console.WriteLine();
 
-                    Simulator = new Simulator(ActivityPath);
-                    if (explore)
-                        Simulator.SetExplore(ActivityPath, conFile, "12", "0", "0");
-                    else
-                        Simulator.SetActivity(ActivityPath);
-                    Simulator.Restore(inf);
-                    Viewer = new Viewer3D(Simulator);
-					if (!settings.Contains("skip-user-settings"))
-						Viewer.LoadUserSettings();
-					SetViewerSettings(Viewer, settings);
+					Simulator = new Simulator(settings, ActivityPath);
+					if (explore)
+						Simulator.SetExplore(ActivityPath, conFile, "12", "0", "0");
+					else
+						Simulator.SetActivity(ActivityPath);
+					Simulator.Restore(inf);
+					Viewer = new Viewer3D(Simulator);
 					Viewer.Initialize();
 					Viewer.Restore(inf);
-                }
+				}
                 Viewer.Run();
             }
             catch (Exception error)
@@ -262,33 +265,12 @@ namespace ORTS
 			// Trace.Listeners and Debug.Listeners are the same list.
 			Trace.Listeners.Add(traceListener);
 
-			Console.WriteLine("SVN V = " + Revision);
-			Console.WriteLine("BUILD = " + Build);
+			Console.WriteLine("{0} is starting...", Application.ProductName);
+			Console.WriteLine();
+			Console.WriteLine("Version: {0}", Revision);
+			Console.WriteLine("Build:   {0}", Build);
 			Console.WriteLine();
         }
-
-		static void SetViewerSettings(Viewer3D viewer, IEnumerable<string> settings)
-		{
-			foreach (var setting in settings)
-			{
-				var data = setting.ToLowerInvariant().Split('=', ':');
-				if (Enum.GetNames(typeof(BoolSettings)).Contains(data[0], StringComparer.OrdinalIgnoreCase))
-				{
-					viewer.SettingsBool[(int)Enum.Parse(typeof(BoolSettings), data[0], true)] = (data.Length == 1) || new[] { "true", "yes", "on", "1" }.Contains(data[1]);
-				}
-				else if (Enum.GetNames(typeof(IntSettings)).Contains(data[0], StringComparer.OrdinalIgnoreCase))
-				{
-					if (data.Length < 2)
-						Console.WriteLine("Option '" + setting + "' missing value.");
-					else
-						viewer.SettingsInt[(int)Enum.Parse(typeof(IntSettings), data[0], true)] = int.Parse(data[1]);
-				}
-				else if (data[0] != "skip-user-settings")
-				{
-					Console.WriteLine("Option '" + data[0] + "' is unknown.");
-				}
-			}
-		}
 
         /// <summary>
         /// Set up the global Build and Revision variables

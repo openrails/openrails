@@ -40,7 +40,7 @@ namespace ORTS
         /// </summary>
         public void Run()
         {
-			if (Viewer.SettingsInt[(int)IntSettings.SoundDetailLevel] > 0) Thread.Start();
+			if (Viewer.Settings.SoundDetailLevel > 0) Thread.Start();
         }
 
         /// <summary>

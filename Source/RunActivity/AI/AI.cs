@@ -21,7 +21,7 @@ namespace ORTS
     public class AI
     {
         Heap<AITrain> StartQueue = new Heap<AITrain>();
-        public Simulator Simulator;
+        public readonly Simulator Simulator;
         public List<AITrain> AITrains = new List<AITrain>();// active AI trains
         public Dictionary<int, AITrain> AITrainDictionary = new Dictionary<int, AITrain>();
         bool FirstUpdate = true; // flag for special processing if first call to Update
@@ -81,7 +81,7 @@ namespace ORTS
             for (int i = 0; i < n; i++)
             {
                 double time = inf.ReadDouble();
-                AITrain train = new AITrain(inf);
+                AITrain train = new AITrain(Simulator, inf);
                 StartQueue.Add(time, train);
                 AITrainDictionary.Add(train.UiD, train);
                 train.AI = this;
@@ -211,7 +211,7 @@ namespace ORTS
 
                 try
                 {
-                    TrainCar car = RollingStock.Load(wagonFilePath, previousCar);
+                    TrainCar car = RollingStock.Load(Simulator, wagonFilePath, previousCar);
                     car.Flipped = wagon.Flip;
                     train.Cars.Add(car);
                     car.Train = train;

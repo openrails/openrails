@@ -67,8 +67,8 @@ namespace ORTS
         Interpolator BurnRate;      // fuel burn rate given steam usage
         Interpolator EvaporationRate;   // steam generation rate given fuel burn rate
 
-        public MSTSSteamLocomotive(string wagFile, TrainCar previousCar)
-            : base(wagFile, previousCar)
+		public MSTSSteamLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
+            : base(simulator, wagFile, previousCar)
         {
             //Console.WriteLine(" {0} {1} {2} {3}", NumCylinders, CylinderDiameterM, CylinderStrokeM, DriverWheelRadiusM);
             //Console.WriteLine(" {0} {1} {2} {3} {4}", MaxBoilerPressurePSI,MaxBoilerOutputLBpH,ExhaustLimitLBpH,BasicSteamUsageLBpS,BoilerVolumeFT3);
@@ -349,7 +349,7 @@ namespace ORTS
         /// We are restoring a saved game.  The TrainCar class has already
         /// been initialized.   Restore the game state.
         /// </summary>
-        public override void Restore(BinaryReader inf)
+		public override void Restore(BinaryReader inf)
         {
             SteamUsageLBpS = inf.ReadSingle();
             BoilerHeatBTU = inf.ReadSingle();
@@ -378,7 +378,7 @@ namespace ORTS
             Heat2Pressure = new Interpolator(inf);
             BurnRate = new Interpolator(inf);
             EvaporationRate = new Interpolator(inf);
-            CutoffController = (MSTSNotchController)ControllerFactory.Restore(inf);
+            CutoffController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             base.Restore(inf);
         }
 

@@ -118,7 +118,7 @@ namespace ORTS
             while ( iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count)
                 {
             
-                if (smsFile.Tr_SMS.ScalabiltyGroups[iSG].DetailLevel <= Viewer.SettingsInt[(int)IntSettings.SoundDetailLevel])
+                if (smsFile.Tr_SMS.ScalabiltyGroups[iSG].DetailLevel <= Viewer.Settings.SoundDetailLevel)
                 {
                     break;
                 }

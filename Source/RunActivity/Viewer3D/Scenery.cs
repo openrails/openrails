@@ -222,7 +222,7 @@ namespace ORTS
             // create all the individual scenery objects specified in the WFile
             foreach (WorldObject worldObject in WFile.Tr_Worldfile)
             {
-                if (worldObject.StaticDetailLevel > viewer.SettingsInt[(int)IntSettings.WorldObjectDensity])
+                if (worldObject.StaticDetailLevel > viewer.Settings.WorldObjectDensity)
                     continue;
 
                 // determine the full file path to the shape file for this scenery object 

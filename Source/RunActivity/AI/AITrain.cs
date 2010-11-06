@@ -50,7 +50,8 @@ namespace ORTS
         }
 
         // restore game state
-        public AITrain(BinaryReader inf): base( inf )
+		public AITrain(Simulator simulator, BinaryReader inf)
+			: base(simulator, inf)
         {
             UiD = inf.ReadInt32();
             AuthUpdateDistanceM = inf.ReadSingle();

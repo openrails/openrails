@@ -61,7 +61,7 @@ namespace ORTS
                 Swap(ref LoadedCars, ref UpdatedLoadedCars);
             }
             // build a list of cars in viewing range for loader to ensure are loaded
-			float removeDistance = Viewer.SettingsInt[(int)IntSettings.ViewingDistance] * 1.5f;  
+			float removeDistance = Viewer.Settings.ViewingDistance * 1.5f;  
             ViewableCars.Clear();
             ViewableCars.Add(Viewer.PlayerLocomotiveViewer.Car);  // lets make sure its included even if its out of viewing range
             foreach (Train train in Viewer.Simulator.Trains)

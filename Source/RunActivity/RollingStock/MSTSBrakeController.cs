@@ -13,6 +13,8 @@ namespace ORTS
      */ 
     public class MSTSBrakeController: MSTSNotchController, IBrakeController
     {
+		protected readonly Simulator Simulator;
+
         // brake controller values
         private float MaxPressurePSI = 90;
         private float ReleaseRatePSIpS = 5;
@@ -21,18 +23,21 @@ namespace ORTS
         private float FullServReductionPSI = 26;
         private float MinReductionPSI = 6;
 
-        public MSTSBrakeController()
+		public MSTSBrakeController(Simulator simulator)
         {
+			Simulator = simulator;
         }
 
-        public MSTSBrakeController(MSTSBrakeController controller):
+		public MSTSBrakeController(MSTSBrakeController controller) :
             base(controller)  
-        {            
+        {
+			Simulator = controller.Simulator;
         }
 
-        public MSTSBrakeController(BinaryReader inf):
+		public MSTSBrakeController(Simulator simulator, BinaryReader inf) :
             base(inf)               
         {
+			Simulator = simulator;
             this.RestoreData(inf);
         }
 
@@ -89,7 +94,7 @@ namespace ORTS
                     case MSTSNotchType.GSelfLap:
                         x = MaxPressurePSI - MinReductionPSI * (1 - x) - FullServReductionPSI * x;
                         DecreasePressure(ref pressurePSI, x, ApplyRatePSIpS, elapsedClockSeconds);
-                        if (Program.GraduatedRelease)
+                        if (Simulator.Settings.GraduatedRelease)
                             IncreasePressure(ref pressurePSI, x, ReleaseRatePSIpS, elapsedClockSeconds);
                         break;
                     case MSTSNotchType.Emergency:

@@ -56,8 +56,8 @@ namespace ORTS
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
-        public MSTSWagon(string wagFilePath, TrainCar previousCar)
-            : base(wagFilePath, previousCar)
+        public MSTSWagon(Simulator simulator, string wagFilePath, TrainCar previousCar)
+            : base(simulator, wagFilePath, previousCar)
         {
             if (CarManager.LoadedCars.ContainsKey(wagFilePath))
             {
@@ -140,7 +140,7 @@ namespace ORTS
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(lights":
-                    if (Program.TrainLightsEnabled)
+                    if (Simulator.Settings.TrainLights)
                     {
                         try { Lights = new Lights(stf, this); }
                         catch { Lights = null; }

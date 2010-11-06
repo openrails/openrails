@@ -10,6 +10,8 @@ namespace ORTS
 {
     public class MSTSEngineController
     {
+		protected readonly Simulator Simulator;
+
         public float CurrentValue = 0;
         public float MinimumValue = 0;
         public float MaximumValue = 1;
@@ -25,12 +27,14 @@ namespace ORTS
         public float FullServReductionPSI = 26;
         public float MinReductionPSI = 6;
 
-        public MSTSEngineController()
+		public MSTSEngineController(Simulator simulator)
         {
+			Simulator = simulator;
         }
 
-        public MSTSEngineController(STFReader stf)
+        public MSTSEngineController(Simulator simulator, STFReader stf)
         {
+			Simulator = simulator;
             Parse(stf);
         }
         
@@ -76,7 +80,7 @@ namespace ORTS
         {
             if (copy == null)
                 return null;
-            MSTSEngineController controller = new MSTSEngineController();
+            MSTSEngineController controller = new MSTSEngineController(copy.Simulator);
             controller.CurrentValue = copy.CurrentValue;
             controller.MinimumValue = copy.MinimumValue;
             controller.MaximumValue = copy.MaximumValue;
@@ -118,12 +122,12 @@ namespace ORTS
             }
         }
 
-        public static MSTSEngineController Restore(BinaryReader inf)
+		public static MSTSEngineController Restore(Simulator simulator, BinaryReader inf)
         {
             bool create = inf.ReadBoolean();
             if (!create)
                 return null;
-            MSTSEngineController controller = new MSTSEngineController();
+            MSTSEngineController controller = new MSTSEngineController(simulator);
             controller.CurrentValue = inf.ReadSingle();
             controller.MinimumValue = inf.ReadSingle();
             controller.MaximumValue = inf.ReadSingle();
@@ -291,7 +295,7 @@ namespace ORTS
                     case MSTSNotchType.GSelfLap:
                         x = MaxPressurePSI - MinReductionPSI * (1 - x) - FullServReductionPSI * x;
                         DecreasePressure(ref pressurePSI, x, ApplyRatePSIpS, elapsedClockSeconds);
-                        if (Program.GraduatedRelease)
+                        if (Simulator.Settings.GraduatedRelease)
                             IncreasePressure(ref pressurePSI, x, ReleaseRatePSIpS, elapsedClockSeconds);
                         break;
                     case MSTSNotchType.Emergency:

@@ -66,13 +66,13 @@ namespace ORTS
 			ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
 			ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
 
-			if (Viewer.SettingsBool[(int)BoolSettings.DataLogger])
+			if (Viewer.Settings.DataLogger)
 				DataLoggerStart();
 		}
 
 		public void Stop()
 		{
-			if (Viewer.SettingsBool[(int)BoolSettings.DataLogger])
+			if (Viewer.Settings.DataLogger)
 				DataLoggerStop();
 		}
 
@@ -86,8 +86,8 @@ namespace ORTS
             }
             if (UserInput.IsPressed(UserCommands.GameLogger))
             {
-				Viewer.SettingsBool[(int)BoolSettings.DataLogger] = !Viewer.SettingsBool[(int)BoolSettings.DataLogger];
-				if (Viewer.SettingsBool[(int)BoolSettings.DataLogger])
+				Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
+				if (Viewer.Settings.DataLogger)
 					DataLoggerStart();
 				else
 					DataLoggerStop();
@@ -117,7 +117,7 @@ namespace ORTS
             frame.AddPrimitive(TextPrimitive.Material, TextPrimitive, RenderPrimitiveGroup.Overlay, ref Matrix);
 
 			//Here's where the logger stores the data from each frame
-			if (Viewer.SettingsBool[(int)BoolSettings.DataLogger])
+			if (Viewer.Settings.DataLogger)
 			{
 				Logger.Data(Program.Revision);
 				Logger.Data(FrameNumber.ToString("F0"));
@@ -317,7 +317,7 @@ namespace ORTS
         {
             TextBuilder.AppendLine();
 			TextBuilder.AppendLine("DEBUG INFORMATION");
-			TextBuilder.AppendFormat("Logging Enabled = {0}", Viewer.SettingsBool[(int)BoolSettings.DataLogger]); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Logging Enabled = {0}", Viewer.Settings.DataLogger); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Memory = {0:F0} MB (managed: {1:F0} MB, collections: {2:F0}/{3:F0}/{4:F0})", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2)); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount); TextBuilder.AppendLine();

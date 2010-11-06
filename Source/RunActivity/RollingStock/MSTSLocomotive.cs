@@ -83,7 +83,7 @@ namespace ORTS
         public float BrakePipeTimeFactorS = .003f;
         public float BrakeServiceTimeFactorS = 1.009f;
         public float BrakeEmergencyTimeFactorS = .1f;
-        public float BrakePipeChargingRatePSIpS = Program.BrakePipeChargingRatePSIpS;
+        public float BrakePipeChargingRatePSIpS;
         public Interpolator2D TractiveForceCurves = null;
         public Interpolator2D DynamicBrakeForceCurves = null;
         public float DynamicBrakeSpeed1 = 3;
@@ -104,9 +104,10 @@ namespace ORTS
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController  DynamicBrakeController;
 
-        public MSTSLocomotive(string wagPath, TrainCar previousCar)
-            : base(wagPath, previousCar)
+        public MSTSLocomotive(Simulator simulator, string wagPath, TrainCar previousCar)
+            : base(simulator, wagPath, previousCar)
         {
+			BrakePipeChargingRatePSIpS = simulator.Settings.BrakePipeChargingRate;
             //Console.WriteLine("loco {0} {1} {2}", MaxPowerW, MaxForceN, MaxSpeedMpS);
         }
 
@@ -116,8 +117,8 @@ namespace ORTS
         /// </summary>
         public override void InitializeFromWagFile(string wagFilePath)
         {
-            TrainBrakeController = new MSTSBrakeController();
-            EngineBrakeController = new MSTSBrakeController();
+            TrainBrakeController = new MSTSBrakeController(Simulator);
+            EngineBrakeController = new MSTSBrakeController(Simulator);
             DynamicBrakeController = new MSTSNotchController();
             base.InitializeFromWagFile(wagFilePath);
 
@@ -179,7 +180,7 @@ namespace ORTS
 
             IsDriveable = true;
             if (!TrainBrakeController.IsValid())
-                TrainBrakeController = new MSTSBrakeController(); //create a blank one
+                TrainBrakeController = new MSTSBrakeController(Simulator); //create a blank one
             if (!EngineBrakeController.IsValid())
                 EngineBrakeController = null;
             if (!DynamicBrakeController.IsValid())
@@ -307,10 +308,10 @@ namespace ORTS
             MainResPressurePSI = inf.ReadSingle();
             CompressorOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
-            ThrottleController = (MSTSNotchController)ControllerFactory.Restore(inf);
-            TrainBrakeController = (MSTSBrakeController)ControllerFactory.Restore(inf);
-            EngineBrakeController = (MSTSBrakeController)ControllerFactory.Restore(inf);
-            DynamicBrakeController = (MSTSNotchController)ControllerFactory.Restore(inf);
+            ThrottleController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
+            TrainBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
+            EngineBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
+            DynamicBrakeController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             base.Restore(inf);
         }
 
