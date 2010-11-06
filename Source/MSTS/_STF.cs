@@ -248,7 +248,7 @@ namespace MSTS
                 block_depth = stepback.BlockDepth;
                 if (stepback.Tree != null) { tree = stepback.Tree; tree_cache = null; }
                 stepbackoneitemFlag = false;
-                return item;
+                return UpdateTreeAndStepBack(item);
             }
             #endregion
             return ReadItem(false);
@@ -313,6 +313,7 @@ namespace MSTS
             {
                 // Consume the step-back end-of-block
                 stepbackoneitemFlag = false;
+                UpdateTreeAndStepBack(")");
                 return true;
             }
             #endregion
@@ -348,6 +349,7 @@ namespace MSTS
             {
                 // Consume the step-back end-of-block
                 stepbackoneitemFlag = false;
+                UpdateTreeAndStepBack(")");
                 return;
             }
             // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket

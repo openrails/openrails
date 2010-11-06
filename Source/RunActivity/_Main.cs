@@ -64,6 +64,8 @@ namespace ORTS
 				RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
 				if (RK != null)
 				{
+                    foreach (string nm in RK.GetValueNames()) Trace.WriteLine("REG:" + nm + "=" + RK.GetValue(nm).ToString());
+                    Trace.WriteLine("");
 					TrainLightsEnabled = (1 == (int)RK.GetValue("TrainLights", 0));
 					BrakePipeChargingRatePSIpS = (int)RK.GetValue("BrakePipeChargingRate", (int)21);
 					GraduatedRelease = (1 == (int)RK.GetValue("GraduatedRelease", 0));

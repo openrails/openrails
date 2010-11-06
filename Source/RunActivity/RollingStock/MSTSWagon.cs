@@ -139,12 +139,14 @@ namespace ORTS
                     Couplers[Couplers.Count - 1].SetR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(lights": 
-                    if (Program.TrainLightsEnabled) 
-                    { 
-                        try { Lights = new Lights(stf, this); } 
-                        catch { Lights = null; } 
-                    } 
+                case "wagon(lights":
+                    if (Program.TrainLightsEnabled)
+                    {
+                        try { Lights = new Lights(stf, this); }
+                        catch { Lights = null; }
+                    }
+                    else
+                        stf.SkipBlock();
                     break;
                 case "wagon(inside": ParseWagonInside(stf); break;
                 default:
