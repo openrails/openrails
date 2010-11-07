@@ -8,6 +8,11 @@
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
+
+/// Additional Contributions
+/// Copyright (c) Robert Hodgson 2010
+/// Licensed to OpenRails under the Open Software License (OSL) v3.0
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
