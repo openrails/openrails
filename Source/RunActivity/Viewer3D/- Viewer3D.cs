@@ -349,7 +349,8 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.GameQuit)) {  Stop(); return; }
             if (UserInput.IsPressed(UserCommands.GameFullscreen)) { ToggleFullscreen(); }
             if (UserInput.IsPressed(UserCommands.GamePause) ) Simulator.Paused = !Simulator.Paused;
-            if (UserInput.IsPressed(UserCommands.GameSpeedUp)) { Simulator.Paused = false; Simulator.GameSpeed = Simulator.GameSpeed * 1.5f; }
+			if (UserInput.IsPressed(UserCommands.GameSpeedUp)) Simulator.GameSpeed *= 1.5f;
+			if (UserInput.IsPressed(UserCommands.GameSpeedDown)) Simulator.GameSpeed /= 1.5f;
             if (UserInput.IsPressed(UserCommands.GameSpeedReset)) Simulator.GameSpeed = 1; 
             if (UserInput.IsPressed(UserCommands.GameSave)) { Program.Save(); }
 			if (UserInput.IsPressed(UserCommands.GameHelp)) HelpWindow.Visible = !HelpWindow.Visible;
@@ -379,14 +380,14 @@ namespace ORTS
 			if (UserInput.IsPressed(UserCommands.CameraFree)) new FreeRoamCamera(this, Camera).Activate();
 
             bool mayheadout = (Camera == CabCamera) || (Camera == HeadOutFwdCamera) || (Camera == HeadOutBackCamera);
-            if (UserInput.IsPressed(UserCommands.CameraHeadOutForwards) && mayheadout) HeadOutFwdCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraHeadOutBackwards) && mayheadout) HeadOutBackCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraCarFirst) && mayheadout) HeadOutFwdCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraCarLast) && mayheadout) HeadOutBackCamera.Activate();
 
 			if (UserInput.IsPressed(UserCommands.SwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);
 			if (UserInput.IsPressed(UserCommands.SwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
             if (UserInput.IsPressed(UserCommands.LocomotiveFlip)) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
 			if (UserInput.IsPressed(UserCommands.ResetSignal)) PlayerTrain.ResetSignal(true);
-            if (!Simulator.Paused && UserInput.IsAltKeyDown())
+            if (!Simulator.Paused && UserInput.IsDown(UserCommands.SwitchWithMouse))
             {
                 isMouseShouldVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
@@ -395,7 +396,7 @@ namespace ORTS
                     UserInput.Handled();
                 }
             }
-            else if (!Simulator.Paused && UserInput.IsKeyDown(Keys.U))
+            else if (!Simulator.Paused && UserInput.IsDown(UserCommands.UncoupleWithMouse))
             {
                 isMouseShouldVisible = true;
                 if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)

@@ -3,6 +3,14 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
+// This checks all keys for conflicts.
+//#define CHECK_KEYMAP_DUPLICATES
+
+// This dumps out the full keymap at startup based on the user's keyboard layout.
+//#define DUMP_KEYMAP
+
+// This logs every UserCommandInput change from pressed to released.
+//#define DEBUG_USER_INPUT
 
 using System;
 using System.Collections.Generic;
@@ -39,74 +47,111 @@ namespace ORTS
 
 		public static void Initialize()
 		{
-			Commands[(int)UserCommands.GameQuit] = new UserCommandInput(Keys.Escape);
-			Commands[(int)UserCommands.GameFullscreen] = new UserCommandInput(Keys.Enter, KeyModifiers.Alt);
-			Commands[(int)UserCommands.GamePause] = new UserCommandInput(Keys.Pause);
-			Commands[(int)UserCommands.GameHelp] = new UserCommandInput(Keys.F1);
-			Commands[(int)UserCommands.GameSave] = new UserCommandInput(Keys.F2);
-			Commands[(int)UserCommands.GameSpeedUp] = new UserCommandInput(Keys.PageUp);
-			Commands[(int)UserCommands.GameSpeedReset] = new UserCommandInput(Keys.PageDown);
-			Commands[(int)UserCommands.GameOvercastIncrease] = new UserCommandInput(Keys.OemPlus, KeyModifiers.Control);
-			Commands[(int)UserCommands.GameOvercastDecrease] = new UserCommandInput(Keys.OemMinus, KeyModifiers.Control);
-			Commands[(int)UserCommands.GameClockForwards] = new UserCommandInput(Keys.OemPlus);
-			Commands[(int)UserCommands.GameClockBackwards] = new UserCommandInput(Keys.OemMinus);
-			Commands[(int)UserCommands.GameODS] = new UserCommandInput(Keys.F5);
-			Commands[(int)UserCommands.GameLogger] = new UserCommandInput(Keys.F12);
-			Commands[(int)UserCommands.WindowTrackMonitor] = new UserCommandInput(Keys.F4);
-			Commands[(int)UserCommands.WindowSwitch] = new UserCommandInput(Keys.F8);
-			Commands[(int)UserCommands.WindowTrainOperations] = new UserCommandInput(Keys.F9);
-			Commands[(int)UserCommands.WindowNextStation] = new UserCommandInput(Keys.F10);
-			Commands[(int)UserCommands.WindowCompass] = new UserCommandInput('0');
-			Commands[(int)UserCommands.CameraCab] = new UserCommandInput('1');
-			Commands[(int)UserCommands.CameraOutsideFront] = new UserCommandInput('2');
-			Commands[(int)UserCommands.CameraOutsideRear] = new UserCommandInput('3');
-			Commands[(int)UserCommands.CameraTrackside] = new UserCommandInput('4');
-			Commands[(int)UserCommands.CameraPassenger] = new UserCommandInput('5');
-			Commands[(int)UserCommands.CameraBrakeman] = new UserCommandInput('6');
-			Commands[(int)UserCommands.CameraFree] = new UserCommandInput('8');
-			Commands[(int)UserCommands.CameraHeadOutForwards] = new UserCommandInput(Keys.Up);
-			Commands[(int)UserCommands.CameraHeadOutBackwards] = new UserCommandInput(Keys.Down);
-			Commands[(int)UserCommands.CameraShowCab] = new UserCommandInput('1', KeyModifiers.Shift);
-			Commands[(int)UserCommands.CameraAltitudeIncrease] = new UserCommandInput(Keys.Up, KeyModifiers.Control);
-			Commands[(int)UserCommands.CameraAltitudeDecrease] = new UserCommandInput(Keys.Down, KeyModifiers.Control);
-			Commands[(int)UserCommands.CameraCarNext] = new UserCommandInput(Keys.Left, KeyModifiers.Control);
-			Commands[(int)UserCommands.CameraCarPrevious] = new UserCommandInput(Keys.Right, KeyModifiers.Control);
-			Commands[(int)UserCommands.SwitchAhead] = new UserCommandInput('g');
-			Commands[(int)UserCommands.SwitchBehind] = new UserCommandInput('g', KeyModifiers.Shift);
-			Commands[(int)UserCommands.LocomotiveSwitch] = new UserCommandInput('e', KeyModifiers.Control);
-			Commands[(int)UserCommands.LocomotiveFlip] = new UserCommandInput('f', KeyModifiers.Shift | KeyModifiers.Control);
-			Commands[(int)UserCommands.ResetSignal] = new UserCommandInput(Keys.Tab);
-			Commands[(int)UserCommands.ControlForwards] = new UserCommandInput('w');
-			Commands[(int)UserCommands.ControlBackwards] = new UserCommandInput('s');
-			Commands[(int)UserCommands.ControlReverserForward] = new UserCommandInput('w');
-			Commands[(int)UserCommands.ControlReverserBackwards] = new UserCommandInput('s');
-			Commands[(int)UserCommands.ControlThrottleIncrease] = new UserCommandInput('d');
-			Commands[(int)UserCommands.ControlThrottleDecrease] = new UserCommandInput('a');
-			Commands[(int)UserCommands.ControlTrainBrakeIncrease] = new UserCommandInput('\'');
-			Commands[(int)UserCommands.ControlTrainBrakeDecrease] = new UserCommandInput(';');
-			Commands[(int)UserCommands.ControlEngineBrakeIncrease] = new UserCommandInput(']');
-			Commands[(int)UserCommands.ControlEngineBrakeDecrease] = new UserCommandInput('[');
-			Commands[(int)UserCommands.ControlDynamicBrakeIncrease] = new UserCommandInput(',');
-			Commands[(int)UserCommands.ControlDynamicBrakeDecrease] = new UserCommandInput('.');
-			Commands[(int)UserCommands.ControlBailOff] = new UserCommandInput('/');
-			Commands[(int)UserCommands.ControlInitializeBrakes] = new UserCommandInput('?');
-			Commands[(int)UserCommands.ControlHandbrakeFull] = new UserCommandInput('\'', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlHandbrakeNone] = new UserCommandInput(';', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandInput(']');
-			Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandInput('[');
-			Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandInput('\\');
-			Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandInput('\\', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlEmergency] = new UserCommandInput(Keys.Back);
-			Commands[(int)UserCommands.ControlSander] = new UserCommandInput('x');
-			Commands[(int)UserCommands.ControlWiper] = new UserCommandInput('v');
-			Commands[(int)UserCommands.ControlHorn] = new UserCommandInput(' ');
-			Commands[(int)UserCommands.ControlBell] = new UserCommandInput('b');
-			Commands[(int)UserCommands.ControlLight] = new UserCommandInput('l');
-			Commands[(int)UserCommands.ControlPantograph] = new UserCommandInput('p');
-			Commands[(int)UserCommands.ControlHeadlightIncrease] = new UserCommandInput('h');
-			Commands[(int)UserCommands.ControlHeadlightDecrease] = new UserCommandInput('h', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlDispatcherExtend] = new UserCommandInput(Keys.Tab, KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlDispatcherRelease] = new UserCommandInput(Keys.Tab, KeyModifiers.Shift | KeyModifiers.Control);
+			Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(Keys.Escape);
+			Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(Keys.Enter, KeyModifiers.Alt);
+			Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(Keys.Pause);
+			Commands[(int)UserCommands.GameHelp] = new UserCommandKeyInput(Keys.F1);
+			Commands[(int)UserCommands.GameSave] = new UserCommandKeyInput(Keys.F2);
+			Commands[(int)UserCommands.GameSpeedUp] = new UserCommandKeyInput(Keys.PageUp, KeyModifiers.Control | KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameSpeedDown] = new UserCommandKeyInput(Keys.PageDown, KeyModifiers.Control | KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameSpeedReset] = new UserCommandKeyInput(Keys.Home, KeyModifiers.Control | KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameOvercastIncrease] = new UserCommandKeyInput(Keys.OemPlus, KeyModifiers.Control);
+			Commands[(int)UserCommands.GameOvercastDecrease] = new UserCommandKeyInput(Keys.OemMinus, KeyModifiers.Control);
+			Commands[(int)UserCommands.GameClockForwards] = new UserCommandKeyInput(Keys.OemPlus);
+			Commands[(int)UserCommands.GameClockBackwards] = new UserCommandKeyInput(Keys.OemMinus);
+			Commands[(int)UserCommands.GameODS] = new UserCommandKeyInput(Keys.F5);
+			Commands[(int)UserCommands.GameLogger] = new UserCommandKeyInput(Keys.F12);
+			Commands[(int)UserCommands.GameDebugWeatherChange] = new UserCommandKeyInput(Keys.P, KeyModifiers.Alt);
+			Commands[(int)UserCommands.WindowTrackMonitor] = new UserCommandKeyInput(Keys.F4);
+			Commands[(int)UserCommands.WindowSwitch] = new UserCommandKeyInput(Keys.F8);
+			Commands[(int)UserCommands.WindowTrainOperations] = new UserCommandKeyInput(Keys.F9);
+			Commands[(int)UserCommands.WindowNextStation] = new UserCommandKeyInput(Keys.F10);
+			Commands[(int)UserCommands.WindowCompass] = new UserCommandKeyInput('0');
+			Commands[(int)UserCommands.CameraCab] = new UserCommandKeyInput('1');
+			Commands[(int)UserCommands.CameraOutsideFront] = new UserCommandKeyInput('2');
+			Commands[(int)UserCommands.CameraOutsideRear] = new UserCommandKeyInput('3');
+			Commands[(int)UserCommands.CameraTrackside] = new UserCommandKeyInput('4');
+			Commands[(int)UserCommands.CameraPassenger] = new UserCommandKeyInput('5');
+			Commands[(int)UserCommands.CameraBrakeman] = new UserCommandKeyInput('6');
+			Commands[(int)UserCommands.CameraFree] = new UserCommandKeyInput('8');
+			Commands[(int)UserCommands.CameraToggleShowCab] = new UserCommandKeyInput('1', KeyModifiers.Shift);
+			Commands[(int)UserCommands.CameraMoveFast] = new UserCommandModifierInput(KeyModifiers.Shift);
+			Commands[(int)UserCommands.CameraMoveSlow] = new UserCommandModifierInput(KeyModifiers.Control);
+			Commands[(int)UserCommands.CameraPanLeft] = new UserCommandModifiableKeyInput(Keys.Left, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraPanRight] = new UserCommandModifiableKeyInput(Keys.Right, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraPanUp] = new UserCommandModifiableKeyInput(Keys.Up, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraPanDown] = new UserCommandModifiableKeyInput(Keys.Down, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraPanIn] = new UserCommandModifiableKeyInput(Keys.PageUp, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraPanOut] = new UserCommandModifiableKeyInput(Keys.PageDown, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraRotateLeft] = new UserCommandModifiableKeyInput(Keys.Left, KeyModifiers.Alt, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraRotateRight] = new UserCommandModifiableKeyInput(Keys.Right, KeyModifiers.Alt, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraRotateUp] = new UserCommandModifiableKeyInput(Keys.Up, KeyModifiers.Alt, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraRotateDown] = new UserCommandModifiableKeyInput(Keys.Down, KeyModifiers.Alt, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+			Commands[(int)UserCommands.CameraCarNext] = new UserCommandKeyInput(Keys.PageUp, KeyModifiers.Alt);
+			Commands[(int)UserCommands.CameraCarPrevious] = new UserCommandKeyInput(Keys.PageDown, KeyModifiers.Alt);
+			Commands[(int)UserCommands.CameraCarFirst] = new UserCommandKeyInput(Keys.Home);
+			Commands[(int)UserCommands.CameraCarLast] = new UserCommandKeyInput(Keys.End);
+			Commands[(int)UserCommands.SwitchAhead] = new UserCommandKeyInput('g');
+			Commands[(int)UserCommands.SwitchBehind] = new UserCommandKeyInput('g', KeyModifiers.Shift);
+			Commands[(int)UserCommands.SwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
+			Commands[(int)UserCommands.UncoupleWithMouse] = new UserCommandKeyInput('u');
+			Commands[(int)UserCommands.LocomotiveSwitch] = new UserCommandKeyInput('e', KeyModifiers.Control);
+			Commands[(int)UserCommands.LocomotiveFlip] = new UserCommandKeyInput('f', KeyModifiers.Shift | KeyModifiers.Control);
+			Commands[(int)UserCommands.ResetSignal] = new UserCommandKeyInput(Keys.Tab);
+			Commands[(int)UserCommands.ControlForwards] = new UserCommandKeyInput('w');
+			Commands[(int)UserCommands.ControlBackwards] = new UserCommandKeyInput('s');
+			Commands[(int)UserCommands.ControlReverserForward] = new UserCommandKeyInput('w');
+			Commands[(int)UserCommands.ControlReverserBackwards] = new UserCommandKeyInput('s');
+			Commands[(int)UserCommands.ControlThrottleIncrease] = new UserCommandKeyInput('d');
+			Commands[(int)UserCommands.ControlThrottleDecrease] = new UserCommandKeyInput('a');
+			Commands[(int)UserCommands.ControlTrainBrakeIncrease] = new UserCommandKeyInput('\'');
+			Commands[(int)UserCommands.ControlTrainBrakeDecrease] = new UserCommandKeyInput(';');
+			Commands[(int)UserCommands.ControlEngineBrakeIncrease] = new UserCommandKeyInput(']');
+			Commands[(int)UserCommands.ControlEngineBrakeDecrease] = new UserCommandKeyInput('[');
+			Commands[(int)UserCommands.ControlDynamicBrakeIncrease] = new UserCommandKeyInput(',');
+			Commands[(int)UserCommands.ControlDynamicBrakeDecrease] = new UserCommandKeyInput('.');
+			Commands[(int)UserCommands.ControlBailOff] = new UserCommandKeyInput('/');
+			Commands[(int)UserCommands.ControlInitializeBrakes] = new UserCommandKeyInput('?');
+			Commands[(int)UserCommands.ControlHandbrakeFull] = new UserCommandKeyInput('\'', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlHandbrakeNone] = new UserCommandKeyInput(';', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandKeyInput(']');
+			Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput('[');
+			Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput('\\');
+			Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput('\\', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlEmergency] = new UserCommandKeyInput(Keys.Back);
+			Commands[(int)UserCommands.ControlSander] = new UserCommandKeyInput('x');
+			Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput('v');
+			Commands[(int)UserCommands.ControlHorn] = new UserCommandKeyInput(' ');
+			Commands[(int)UserCommands.ControlBell] = new UserCommandKeyInput('b');
+			Commands[(int)UserCommands.ControlLight] = new UserCommandKeyInput('l');
+			Commands[(int)UserCommands.ControlPantograph] = new UserCommandKeyInput('p');
+			Commands[(int)UserCommands.ControlHeadlightIncrease] = new UserCommandKeyInput('h');
+			Commands[(int)UserCommands.ControlHeadlightDecrease] = new UserCommandKeyInput('h', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlDispatcherExtend] = new UserCommandKeyInput(Keys.Tab, KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlDispatcherRelease] = new UserCommandKeyInput(Keys.Tab, KeyModifiers.Shift | KeyModifiers.Control);
+#if CHECK_KEYMAP_DUPLICATES
+			var firstUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Min();
+			var lastUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Max();
+			for (var outerCommand = firstUserCommand; outerCommand <= lastUserCommand; outerCommand++)
+			{
+				for (var innerCommand = outerCommand + 1; innerCommand <= lastUserCommand; innerCommand++)
+				{
+					var outerCommandUniqueInputs = Commands[(int)outerCommand].UniqueInputs();
+					var innerCommandUniqueInputs = Commands[(int)innerCommand].UniqueInputs();
+					var sharedUniqueInputs = outerCommandUniqueInputs.Where(id => innerCommandUniqueInputs.Contains(id));
+					foreach (var uniqueInput in sharedUniqueInputs)
+						Trace.TraceInformation("Commands {0} and {1} conflict on input {2}.", outerCommand, innerCommand, uniqueInput);
+				}
+			}
+#endif
+#if DUMP_KEYMAP
+			Console.WriteLine();
+			Console.WriteLine("{0,-40}{1,-40}{2}", "Command", "Key", "Unique Inputs");
+			Console.WriteLine(new String('=', 40 * 3));
+			foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+				Console.WriteLine("{0,-40}{1,-40}{2}", UserInput.FormatCommandName(command), Commands[(int)command], String.Join(", ", Commands[(int)command].UniqueInputs().OrderBy(s => s).ToArray()));
+			Console.WriteLine();
+#endif
 		}
 
 		public static void Update(Viewer3D viewer)
@@ -130,6 +175,15 @@ namespace ORTS
 					FarPoint = viewer.GraphicsDevice.Viewport.Unproject(farsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
 				}
 			}
+#if DEBUG_USER_INPUT
+			foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+			{
+				if (UserInput.IsPressed(command))
+					Console.WriteLine("Pressed  {0} - {1}", command, Commands[(int)command]);
+				if (UserInput.IsReleased(command))
+					Console.WriteLine("Released {0} - {1}", command, Commands[(int)command]);
+			}
+#endif
 		}
 
 		public static void Handled()
@@ -137,65 +191,37 @@ namespace ORTS
 			Changed = false;
 		}
 
-		static bool IsKeyState(UserCommandInput setting)
+		public static string FormatCommandName(UserCommands command)
 		{
-			return (KeyboardState.IsKeyDown(setting.Key)) &&
-				((KeyboardState.IsKeyDown(Keys.LeftShift) || KeyboardState.IsKeyDown(Keys.RightShift)) == setting.Shift) &&
-				((KeyboardState.IsKeyDown(Keys.LeftControl) || KeyboardState.IsKeyDown(Keys.RightControl)) == setting.Control) &&
-				((KeyboardState.IsKeyDown(Keys.LeftAlt) || KeyboardState.IsKeyDown(Keys.RightAlt)) == setting.Alt);
+			var name = command.ToString();
+			var nameU = name.ToUpperInvariant();
+			for (var i = name.Length - 1; i > 0; i--)
+			{
+				if ((name[i] == nameU[i]) && (name[i - 1] != nameU[i - 1]))
+				{
+					name = name.Insert(i, " ");
+					nameU = nameU.Insert(i, " ");
+				}
+			}
+			return name;
 		}
-
-		static bool IsLastKeyState(UserCommandInput setting)
-		{
-			return (LastKeyboardState.IsKeyDown(setting.Key)) &&
-				((LastKeyboardState.IsKeyDown(Keys.LeftShift) || LastKeyboardState.IsKeyDown(Keys.RightShift)) == setting.Shift) &&
-				((LastKeyboardState.IsKeyDown(Keys.LeftControl) || LastKeyboardState.IsKeyDown(Keys.RightControl)) == setting.Control) &&
-				((LastKeyboardState.IsKeyDown(Keys.LeftAlt) || LastKeyboardState.IsKeyDown(Keys.RightAlt)) == setting.Alt);
-		}
-
 		public static bool IsPressed(UserCommands command)
 		{
 			var setting = Commands[(int)command];
-			return IsKeyState(setting) && !IsLastKeyState(setting);
+			return setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState);
 		}
 
 		public static bool IsReleased(UserCommands command)
 		{
 			var setting = Commands[(int)command];
-			return !IsKeyState(setting) && IsLastKeyState(setting);
+			return !setting.IsKeyDown(KeyboardState) && setting.IsKeyDown(LastKeyboardState);
 		}
 
 		public static bool IsDown(UserCommands command)
 		{
 			var setting = Commands[(int)command];
-			return IsKeyState(setting);
+			return setting.IsKeyDown(KeyboardState);
 		}
-
-		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsKeyDown(Keys key) { return KeyboardState.IsKeyDown(key); }
-		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsKeyUp(Keys key) { return KeyboardState.IsKeyUp(key); }
-
-		[Obsolete("UserInput.IsShiftDown() has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsShiftKeyDown() { return IsKeyDown(Keys.LeftShift) || IsKeyDown(Keys.RightShift); }
-
-		[Obsolete("UserInput.IsAltKeyDown() has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsAltKeyDown() { return IsKeyDown(Keys.LeftAlt) || IsKeyDown(Keys.RightAlt); }
-		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsAltKeyDown(Keys key) { return KeyboardState.IsKeyDown(key) && IsAltKeyDown(); }
-
-		[Obsolete("UserInput.IsCtrlKeyDown() has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsControlKeyDown() { return IsKeyDown(Keys.LeftControl) || IsKeyDown(Keys.RightControl); }
-		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsControlKeyDown(Keys key) { return KeyboardState.IsKeyDown(key) && IsControlKeyDown(); }
-
-		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsPressed(Keys key) { return KeyboardState.IsKeyDown(key) && LastKeyboardState.IsKeyUp(key); }
-		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsReleased(Keys key) { return KeyboardState.IsKeyUp(key) && LastKeyboardState.IsKeyDown(key); }
-
-		[Obsolete("Using the enum Microsoft.Xna.Framework.Input.Keys with UserInput has been deprecated because it does not provide for users' keyboard layouts or customizable input keys. To respect the user's configuration, use the ORTS.UserInputCommands enum instead.")]
-		public static bool IsAltPressed(Keys key) { return IsPressed(key) && IsAltKeyDown(); }
 
 		public static bool IsMouseMoved() { return MouseState.X != LastMouseState.X || MouseState.Y != LastMouseState.Y; }
 		public static int MouseMoveX() { return MouseState.X - LastMouseState.X; }
@@ -222,6 +248,7 @@ namespace ORTS
 		GameHelp,
 		GameSave,
 		GameSpeedUp,
+		GameSpeedDown,
 		GameSpeedReset,
 		GameOvercastIncrease,
 		GameOvercastDecrease,
@@ -229,6 +256,7 @@ namespace ORTS
 		GameClockBackwards,
 		GameODS,
 		GameLogger,
+		GameDebugWeatherChange,
 		WindowTrackMonitor,
 		WindowSwitch,
 		WindowTrainOperations,
@@ -241,15 +269,27 @@ namespace ORTS
 		CameraPassenger,
 		CameraBrakeman,
 		CameraFree,
-		CameraHeadOutForwards,
-		CameraHeadOutBackwards,
-		CameraShowCab,
-		CameraAltitudeIncrease,
-		CameraAltitudeDecrease,
+		CameraToggleShowCab,
+		CameraMoveFast,
+		CameraMoveSlow,
+		CameraPanLeft,
+		CameraPanRight,
+		CameraPanUp,
+		CameraPanDown,
+		CameraPanIn,
+		CameraPanOut,
+		CameraRotateLeft,
+		CameraRotateRight,
+		CameraRotateUp,
+		CameraRotateDown,
 		CameraCarNext,
 		CameraCarPrevious,
+		CameraCarFirst,
+		CameraCarLast,
 		SwitchAhead,
 		SwitchBehind,
+		SwitchWithMouse,
+		UncoupleWithMouse,
 		LocomotiveSwitch,
 		LocomotiveFlip,
 		ResetSignal,
@@ -295,7 +335,70 @@ namespace ORTS
 		Alt = 4
 	}
 
-	public class UserCommandInput
+	public abstract class UserCommandInput
+	{
+		public abstract bool IsKeyDown(KeyboardState keyboardState);
+
+		public abstract IEnumerable<string> UniqueInputs();
+
+		public override string ToString()
+		{
+			return "";
+		}
+	}
+
+	public class UserCommandModifierInput : UserCommandInput
+	{
+		public readonly bool Shift;
+		public readonly bool Control;
+		public readonly bool Alt;
+
+		protected UserCommandModifierInput(bool shift, bool control, bool alt)
+		{
+			Shift = shift;
+			Control = control;
+			Alt = alt;
+		}
+
+		public UserCommandModifierInput(KeyModifiers modifiers)
+			: this((modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
+		{
+		}
+
+		protected bool IsModifiersMatching(KeyboardState keyboardState, bool shift, bool control, bool alt)
+		{
+			return (!shift || keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift)) &&
+				(!control || keyboardState.IsKeyDown(Keys.LeftControl) || keyboardState.IsKeyDown(Keys.RightControl)) &&
+				(!alt || keyboardState.IsKeyDown(Keys.LeftAlt) || keyboardState.IsKeyDown(Keys.RightAlt));
+		}
+
+		public override bool IsKeyDown(KeyboardState keyboardState)
+		{
+			return IsModifiersMatching(keyboardState, Shift, Control, Alt);
+		}
+
+		public override IEnumerable<string> UniqueInputs()
+		{
+			var key = new StringBuilder();
+			if (Shift) key = key.Append("Shift+");
+			if (Control) key = key.Append("Control+");
+			if (Alt) key = key.Append("Alt+");
+			if (key.Length > 0) key.Length -= 1;
+			return new[] { key.ToString() };
+		}
+
+		public override string ToString()
+		{
+			var key = new StringBuilder();
+			if (Shift) key = key.Append("Shift + ");
+			if (Control) key = key.Append("Control + ");
+			if (Alt) key = key.Append("Alt + ");
+			if (key.Length > 0) key.Length -= 3;
+			return key.ToString();
+		}
+	}
+
+	public class UserCommandKeyInput : UserCommandInput
 	{
 		public readonly Keys Key;
 		public readonly bool Shift;
@@ -311,7 +414,7 @@ namespace ORTS
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		static extern int GetKeyNameText(int lParam, [Out] string lpString, int nSize);
 
-		UserCommandInput(Keys key, bool shift, bool control, bool alt)
+		protected UserCommandKeyInput(Keys key, bool shift, bool control, bool alt)
 		{
 			if (key == Keys.None) throw new InvalidOperationException("No key specified for UserCommandInput(). VkKeyScan failure?");
 			Key = key;
@@ -320,30 +423,54 @@ namespace ORTS
 			Alt = alt;
 		}
 
-		public UserCommandInput(Keys key, KeyModifiers modifiers)
+		public UserCommandKeyInput(Keys key, KeyModifiers modifiers)
 			: this(key, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
 		{
 		}
 
-		public UserCommandInput(Keys key)
+		public UserCommandKeyInput(Keys key)
 			: this(key, KeyModifiers.None)
 		{
 		}
 
-		public UserCommandInput(char key)
+		public UserCommandKeyInput(char key)
 			: this((Keys)(VkKeyScan(key) & 0xFF), (KeyModifiers)((VkKeyScan(key) & 0xFF00) >> 8))
 		{
 		}
 
-		public UserCommandInput(char key, KeyModifiers modifiers)
-			: this(key)
+		public UserCommandKeyInput(char key, KeyModifiers modifiers)
+			: this((Keys)(VkKeyScan(key) & 0xFF), (KeyModifiers)((VkKeyScan(key) & 0xFF00) >> 8) ^ modifiers)
 		{
 			var keyModifiers = (KeyModifiers)((VkKeyScan(key) & 0xFF00) >> 8);
 			if ((modifiers & keyModifiers) != 0)
 				Trace.TraceWarning(String.Format("UserCommandInput character '{0}' has conflicting modifier(s) {1}. Modifiers will be inverted from intended state.", key, modifiers & keyModifiers));
-			if ((modifiers & KeyModifiers.Shift) != 0) Shift = !Shift;
-			if ((modifiers & KeyModifiers.Control) != 0) Control = !Control;
-			if ((modifiers & KeyModifiers.Alt) != 0) Alt = !Alt;
+		}
+
+		protected bool IsKeyMatching(KeyboardState keyboardState, Keys key)
+		{
+			return keyboardState.IsKeyDown(Key);
+		}
+
+		protected bool IsModifiersMatching(KeyboardState keyboardState, bool shift, bool control, bool alt)
+		{
+			return ((keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift)) == shift) &&
+				((keyboardState.IsKeyDown(Keys.LeftControl) || keyboardState.IsKeyDown(Keys.RightControl)) == control) &&
+				((keyboardState.IsKeyDown(Keys.LeftAlt) || keyboardState.IsKeyDown(Keys.RightAlt)) == alt);
+		}
+
+		public override bool IsKeyDown(KeyboardState keyboardState)
+		{
+			return IsKeyMatching(keyboardState, Key) && IsModifiersMatching(keyboardState, Shift, Control, Alt);
+		}
+
+		public override IEnumerable<string> UniqueInputs()
+		{
+			var key = new StringBuilder();
+			if (Shift) key = key.Append("Shift+");
+			if (Control) key = key.Append("Control+");
+			if (Alt) key = key.Append("Alt+");
+			key.Append(Key);
+			return new[] { key.ToString() };
 		}
 
 		public override string ToString()
@@ -381,6 +508,77 @@ namespace ORTS
 				key.Append(xnaName);
 			}
 
+			return key.ToString();
+		}
+	}
+
+	public class UserCommandModifiableKeyInput : UserCommandKeyInput
+	{
+		public readonly bool IgnoreShift;
+		public readonly bool IgnoreControl;
+		public readonly bool IgnoreAlt;
+
+		UserCommandModifiableKeyInput(Keys key, bool shift, bool control, bool alt, bool ignoreShift, bool ignoreControl, bool ignoreAlt)
+			: base(key, shift, control, alt)
+		{
+			IgnoreShift = ignoreShift;
+			IgnoreControl = ignoreControl;
+			IgnoreAlt = ignoreAlt;
+		}
+
+		UserCommandModifiableKeyInput(Keys key, KeyModifiers modifiers, IEnumerable<UserCommandModifierInput> combine)
+			: this(key, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0, combine.Any(c => c.Shift), combine.Any(c => c.Control), combine.Any(c => c.Alt))
+		{
+		}
+
+		public UserCommandModifiableKeyInput(Keys key, KeyModifiers modifiers, params UserCommandInput[] combine)
+			: this(key, modifiers, combine.Cast<UserCommandModifierInput>())
+		{
+		}
+
+		public UserCommandModifiableKeyInput(Keys key, params UserCommandInput[] combine)
+			: this(key, KeyModifiers.None, combine)
+		{
+		}
+
+		public override bool IsKeyDown(KeyboardState keyboardState)
+		{
+			var shiftState = IgnoreShift ? keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift) : Shift;
+			var controlState = IgnoreControl ? keyboardState.IsKeyDown(Keys.LeftControl) || keyboardState.IsKeyDown(Keys.RightControl) : Control;
+			var altState = IgnoreAlt ? keyboardState.IsKeyDown(Keys.LeftAlt) || keyboardState.IsKeyDown(Keys.RightAlt) : Alt;
+			return IsKeyMatching(keyboardState, Key) && IsModifiersMatching(keyboardState, shiftState, controlState, altState);
+		}
+
+		public override IEnumerable<string> UniqueInputs()
+		{
+			IEnumerable<string> inputs = new[] { Key.ToString() };
+
+			// This must result in the output being Shift+Control+Alt+key.
+
+			if (IgnoreAlt)
+				inputs = inputs.SelectMany(i => new[] { i, "Alt+" + i });
+			else if (Alt)
+				inputs = inputs.Select(i => "Alt+" + i);
+
+			if (IgnoreControl)
+				inputs = inputs.SelectMany(i => new[] { i, "Control+" + i });
+			else if (Control)
+				inputs = inputs.Select(i => "Control+" + i);
+
+			if (IgnoreShift)
+				inputs = inputs.SelectMany(i => new[] { i, "Shift+" + i });
+			else if (Shift)
+				inputs = inputs.Select(i => "Shift+" + i);
+
+			return inputs;
+		}
+
+		public override string ToString()
+		{
+			var key = new StringBuilder(base.ToString());
+			if (IgnoreShift) key.Append(" (+ Shift)");
+			if (IgnoreControl) key.Append(" (+ Control)");
+			if (IgnoreAlt) key.Append(" (+ Alt)");
 			return key.ToString();
 		}
 	}

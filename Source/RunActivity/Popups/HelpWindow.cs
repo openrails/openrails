@@ -29,28 +29,14 @@ namespace ORTS.Popups
 			var scrollbox = hbox.AddLayoutScrollboxVertical(hbox.RemainingWidth);
 			scrollbox.Add(new Label(scrollbox.RemainingWidth, 16, "Keyboard Shortcuts", LabelAlignment.Center));
 			scrollbox.AddHorizontalSeparator();
-			foreach (int command in Enum.GetValues(typeof(UserCommands)))
+			foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
 			{
 				var line = scrollbox.AddLayoutHorizontal(16);
 				var width = line.RemainingWidth / 2;
-				line.Add(new Label(width, line.RemainingHeight, FormatCommandName(Enum.GetName(typeof(UserCommands), command))));
-				line.Add(new Label(width, line.RemainingHeight, UserInput.Commands[command].ToString()));
+				line.Add(new Label(width, line.RemainingHeight, UserInput.FormatCommandName(command)));
+				line.Add(new Label(width, line.RemainingHeight, UserInput.Commands[(int)command].ToString()));
 			}
 			return hbox;
-		}
-
-		string FormatCommandName(string name)
-		{
-			var nameU = name.ToUpperInvariant();
-			for (var i = name.Length - 1; i > 0; i--)
-			{
-				if ((name[i] == nameU[i]) && (name[i - 1] != nameU[i - 1]))
-				{
-					name = name.Insert(i, " ");
-					nameU = nameU.Insert(i, " ");
-				}
-			}
-			return name;
 		}
 	}
 }

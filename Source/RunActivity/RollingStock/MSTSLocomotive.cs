@@ -1021,7 +1021,7 @@ namespace ORTS
 
             // By GeorgeS
             if (UserInput.IsPressed(UserCommands.ControlLight)) { Locomotive.CabLightOn = !Locomotive.CabLightOn; Locomotive.SignalEvent(EventID.LightSwitchToggle); }
-            if (UserInput.IsPressed(UserCommands.CameraShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
+            if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
 			base.HandleUserInput(elapsedTime);
         }
 

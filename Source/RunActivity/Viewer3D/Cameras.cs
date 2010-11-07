@@ -199,8 +199,20 @@ namespace ORTS
 			return CanSee(mstsLocation, objectRadius, objectViewingDistance);
 		}
 
+		protected float GetSpeed(ElapsedTime elapsedTime)
+		{
+			var speed = 5 * elapsedTime.RealSeconds;
+			if (UserInput.IsDown(UserCommands.CameraMoveFast))
+				speed *= 10;
+			if (UserInput.IsDown(UserCommands.CameraMoveSlow))
+				speed /= 10;
+			return speed;
+		}
+
+		protected const float SpeedAdjustmentForRotation = 0.1f;
+
 		protected void Normalize()
-		{	
+		{
 			while (cameraLocation.Location.X > 1024) { cameraLocation.Location.X -= 2048; ++cameraLocation.TileX; };
 			while (cameraLocation.Location.X < -1024) { cameraLocation.Location.X += 2048; --cameraLocation.TileX; };
 			while (cameraLocation.Location.Z > 1024) { cameraLocation.Location.Z -= 2048; ++cameraLocation.TileZ; };
@@ -268,39 +280,37 @@ namespace ORTS
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
-			var elapsedRealMilliseconds = elapsedTime.RealSeconds * 1000;
+			var speed = GetSpeed(elapsedTime);
 
 			// Rotation
 			if (UserInput.IsMouseRightButtonDown())
 			{
-				rotationXRadians += UserInput.MouseMoveY() * elapsedRealMilliseconds / 1000f;
-				rotationYRadians += UserInput.MouseMoveX() * elapsedRealMilliseconds / 1000f;
+				rotationXRadians += UserInput.MouseMoveY() * elapsedTime.RealSeconds;
+				rotationYRadians += UserInput.MouseMoveX() * elapsedTime.RealSeconds;
 			}
+			if (UserInput.IsDown(UserCommands.CameraRotateLeft))
+				rotationYRadians -= speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraRotateRight))
+				rotationYRadians += speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraRotateUp))
+				rotationXRadians -= speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraRotateDown))
+				rotationXRadians += speed * SpeedAdjustmentForRotation;
 
 			// Movement
-			var speed = 1.0f;
-			if (UserInput.IsShiftKeyDown())
-				speed = 10.0f;
-			if (UserInput.IsKeyDown(Keys.End))
-				speed = 0.05f;
 			Vector3 movement = new Vector3(0, 0, 0);
-
-			if (UserInput.IsKeyDown(Keys.Left))
-				if (!UserInput.IsControlKeyDown())
-					movement.X -= speed * elapsedRealMilliseconds / 10f;
-			if (UserInput.IsKeyDown(Keys.Right))
-				if (!UserInput.IsControlKeyDown())
-					movement.X += speed * elapsedRealMilliseconds / 10f;
-			if (UserInput.IsKeyDown(Keys.Up))
-				if (UserInput.IsControlKeyDown())
-					movement.Y += speed * elapsedRealMilliseconds / 10f;
-				else
-					movement.Z += speed * elapsedRealMilliseconds / 10f;
-			if (UserInput.IsKeyDown(Keys.Down))
-				if (UserInput.IsControlKeyDown())
-					movement.Y -= speed * elapsedRealMilliseconds / 10f;
-				else
-					movement.Z -= speed * elapsedRealMilliseconds / 10f;
+			if (UserInput.IsDown(UserCommands.CameraPanLeft))
+				movement.X -= speed;
+			if (UserInput.IsDown(UserCommands.CameraPanRight))
+				movement.X += speed;
+			if (UserInput.IsDown(UserCommands.CameraPanUp))
+				movement.Y += speed;
+			if (UserInput.IsDown(UserCommands.CameraPanDown))
+				movement.Y -= speed;
+			if (UserInput.IsDown(UserCommands.CameraPanIn))
+				movement.Z += speed;
+			if (UserInput.IsDown(UserCommands.CameraPanOut))
+				movement.Z -= speed;
 
 			movement = Vector3.Transform(movement, Matrix.CreateRotationX(rotationXRadians));
 			movement = Vector3.Transform(movement, Matrix.CreateRotationY(rotationYRadians));
@@ -348,18 +358,19 @@ namespace ORTS
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
+			var train = attachedCar.Train;
+			TrainCar newCar = null;
 			if (UserInput.IsPressed(UserCommands.CameraCarNext))
-			{
-				var train = attachedCar.Train;
-				var newCar = attachedCar == train.FirstCar ? attachedCar : train.Cars[train.Cars.IndexOf(attachedCar) - 1];
-				if (newCar.Flipped != attachedCar.Flipped)
-					FlipCamera();
-				attachedCar = newCar;
-			}
+				newCar = attachedCar == train.FirstCar ? attachedCar : train.Cars[train.Cars.IndexOf(attachedCar) - 1];
 			else if (UserInput.IsPressed(UserCommands.CameraCarPrevious))
+				newCar = attachedCar == train.LastCar ? attachedCar : train.Cars[train.Cars.IndexOf(attachedCar) + 1];
+			else if (UserInput.IsPressed(UserCommands.CameraCarFirst))
+				newCar = attachedCar.Train.FirstCar;
+			else if (UserInput.IsPressed(UserCommands.CameraCarLast))
+				newCar = attachedCar.Train.LastCar;
+
+			if (newCar != null)
 			{
-				var train = attachedCar.Train;
-				var newCar = attachedCar == train.LastCar ? attachedCar : train.Cars[train.Cars.IndexOf(attachedCar) + 1];
 				if (newCar.Flipped != attachedCar.Flipped)
 					FlipCamera();
 				attachedCar = newCar;
@@ -372,27 +383,27 @@ namespace ORTS
 
 		public override void Update(ElapsedTime elapsedTime)
 		{
-            if (attachedCar != null)
-            {
-                cameraLocation.TileX = attachedCar.WorldPosition.TileX;
-                cameraLocation.TileZ = attachedCar.WorldPosition.TileZ;
-                cameraLocation.Location = onboardLocation;
-                cameraLocation.Location.Z *= -1;
-                cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
-                cameraLocation.Location.Z *= -1;
-            }
+			if (attachedCar != null)
+			{
+				cameraLocation.TileX = attachedCar.WorldPosition.TileX;
+				cameraLocation.TileZ = attachedCar.WorldPosition.TileZ;
+				cameraLocation.Location = onboardLocation;
+				cameraLocation.Location.Z *= -1;
+				cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
+				cameraLocation.Location.Z *= -1;
+			}
 			base.Update(elapsedTime);
 		}
 
 		protected override Matrix GetCameraView()
 		{
-            var lookAtPosition = Vector3.UnitZ;
-            lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationX(rotationXRadians));
-            lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationY(rotationYRadians));
-            lookAtPosition += onboardLocation;
-            lookAtPosition.Z *= -1;
-            lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
-            return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
+			var lookAtPosition = Vector3.UnitZ;
+			lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationX(rotationXRadians));
+			lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationY(rotationYRadians));
+			lookAtPosition += onboardLocation;
+			lookAtPosition.Z *= -1;
+			lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
+			return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
 		}
 
 		void FlipCamera()
@@ -428,11 +439,29 @@ namespace ORTS
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
-			if (UserInput.IsPressed(Keys.Home))
+			var speed = GetSpeed(elapsedTime);
+
+			if (UserInput.IsDown(UserCommands.CameraPanLeft))
+				rotationYRadians -= speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraPanRight))
+				rotationYRadians += speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraPanUp))
+				rotationXRadians -= speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraPanDown))
+				rotationXRadians += speed * SpeedAdjustmentForRotation;
+
+			if (UserInput.IsPressed(UserCommands.CameraCarFirst))
 				PositionViewer(true);
-			else if (UserInput.IsPressed(Keys.End))
+			else if (UserInput.IsPressed(UserCommands.CameraCarLast))
 				PositionViewer(false);
-			base.HandleUserInput(elapsedTime);
+			else
+				base.HandleUserInput(elapsedTime);
+
+			rotationXRadians = MathHelper.Clamp(rotationXRadians, -(float)Math.PI / 2.1f, (float)Math.PI / 2.1f);
+			if (attachedCar == Viewer.PlayerTrain.FirstCar)
+				rotationYRadians = MathHelper.Clamp(rotationYRadians, -(float)Math.PI / 2, (float)Math.PI);
+			else
+				rotationYRadians = MathHelper.Clamp(rotationYRadians, 0, (float)Math.PI * 1.5f);
 		}
 
 		void PositionViewer(bool front)
@@ -474,22 +503,17 @@ namespace ORTS
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
-			var elapsedRealMilliseconds = elapsedTime.RealSeconds * 1000;
-			var speed = 1.0f;
+			var speed = GetSpeed(elapsedTime);
 
-			if (UserInput.IsShiftKeyDown())
-				speed = 10.0f;
-			if (UserInput.IsKeyDown(Keys.End))
-				speed = 0.05f;
-
-			if (UserInput.IsKeyDown(Keys.Left) && !UserInput.IsControlKeyDown())
-				rotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
-			if (UserInput.IsKeyDown(Keys.Right) && !UserInput.IsControlKeyDown())
-				rotationYRadians += speed * elapsedRealMilliseconds / 1000f;
+			if (UserInput.IsDown(UserCommands.CameraPanLeft))
+				rotationYRadians -= speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraPanRight))
+				rotationYRadians += speed * SpeedAdjustmentForRotation;
 
 			// Do this here so we can clamp the angles below.
 			base.HandleUserInput(elapsedTime);
 
+			rotationXRadians = MathHelper.Clamp(rotationXRadians, -(float)Math.PI / 2.1f, (float)Math.PI / 2.1f);
 			if (Forwards)
 				rotationYRadians = MathHelper.Clamp(rotationYRadians, 0, (float)Math.PI);
 			else
@@ -535,15 +559,15 @@ namespace ORTS
 
 		public override Camera.Styles Style { get { return Styles.Cab; } }
 
-        public bool HasCABViews
-        {
-            get
-            {
-                if (Viewer.PlayerLocomotive != null)
-                    attachedCar = Viewer.PlayerLocomotive;
-                return attachedCar != null && attachedCar.FrontCabViewpoints != null && attachedCar.FrontCabViewpoints.Count != 0;
-            }
-        }
+		public bool HasCABViews
+		{
+			get
+			{
+				if (Viewer.PlayerLocomotive != null)
+					attachedCar = Viewer.PlayerLocomotive;
+				return attachedCar != null && attachedCar.FrontCabViewpoints != null && attachedCar.FrontCabViewpoints.Count != 0;
+			}
+		}
 
 		/// <summary>
 		/// Make this the viewer's current camera.
@@ -591,29 +615,29 @@ namespace ORTS
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
 			// Switched shift number to select the right cab view - by GeorgeS
-			if (UserInput.IsPressed(Keys.Left) && !UserInput.IsControlKeyDown())
+			if (UserInput.IsPressed(UserCommands.CameraPanLeft))
 				ShiftView(+1);
-			else if (UserInput.IsPressed(Keys.Right) && !UserInput.IsControlKeyDown())
+			if (UserInput.IsPressed(UserCommands.CameraPanRight))
 				ShiftView(-1);
 
 			// Don't call this or we'll let the user rotate the camera!
 			//base.HandleUserInput(elapsedTime);
 		}
 
-        public override bool IsUnderground
-        {
-            get
-            {
-                // Camera is underground if target (base) is underground or
-                // track location is underground. The latter means we switch
-                // to cab view instead of putting the camera above the tunnel.
-                if (base.IsUnderground)
-                    return true;
-                var elevationAtCameraTarget = Viewer.Tiles.GetElevation(attachedCar.WorldPosition.WorldLocation);
-                return attachedCar.WorldPosition.Location.Y + TerrainAltitudeMargin < elevationAtCameraTarget;
-            }
-        }
-    }
+		public override bool IsUnderground
+		{
+			get
+			{
+				// Camera is underground if target (base) is underground or
+				// track location is underground. The latter means we switch
+				// to cab view instead of putting the camera above the tunnel.
+				if (base.IsUnderground)
+					return true;
+				var elevationAtCameraTarget = Viewer.Tiles.GetElevation(attachedCar.WorldPosition.WorldLocation);
+				return attachedCar.WorldPosition.Location.Y + TerrainAltitudeMargin < elevationAtCameraTarget;
+			}
+		}
+	}
 
 	public class TrackingCamera : AttachedCamera
 	{
@@ -672,49 +696,43 @@ namespace ORTS
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
-			var elapsedRealSeconds = elapsedTime.RealSeconds;
-			var speedMpS = 5f;
-			if (UserInput.IsShiftKeyDown())
-				speedMpS = 35;
-			float movement = speedMpS * elapsedRealSeconds;
+			var speed = GetSpeed(elapsedTime);
 
-			if (UserInput.IsKeyDown(Keys.Left) && !UserInput.IsControlKeyDown())
+			if (UserInput.IsDown(UserCommands.CameraPanLeft))
 			{
-				positionYRadians += movement / 10;
-				rotationYRadians += movement / 10;
+				positionYRadians += speed * SpeedAdjustmentForRotation;
+				rotationYRadians += speed * SpeedAdjustmentForRotation;
 				UpdateOnboardLocation();
 			}
-			else if (UserInput.IsKeyDown(Keys.Right) && !UserInput.IsControlKeyDown())
+			if (UserInput.IsDown(UserCommands.CameraPanRight))
 			{
-				positionYRadians -= movement / 10;
-				rotationYRadians -= movement / 10;
+				positionYRadians -= speed * SpeedAdjustmentForRotation;
+				rotationYRadians -= speed * SpeedAdjustmentForRotation;
 				UpdateOnboardLocation();
 			}
-
-			if (UserInput.IsControlKeyDown(Keys.Down) && UserInput.IsControlKeyDown())
+			if (UserInput.IsDown(UserCommands.CameraPanDown))
 			{
-				positionXRadians -= movement / 10f;
-				rotationXRadians -= movement / 10f;
+				positionXRadians -= speed * SpeedAdjustmentForRotation;
+				rotationXRadians -= speed * SpeedAdjustmentForRotation;
 				if (positionXRadians < -1.5f) positionXRadians = -1.5f;
 				UpdateOnboardLocation();
 			}
-			else if (UserInput.IsControlKeyDown(Keys.Up) && UserInput.IsControlKeyDown())
+			if (UserInput.IsDown(UserCommands.CameraPanUp))
 			{
-				positionXRadians += movement / 10f;
-				rotationXRadians += movement / 10f;
+				positionXRadians += speed * SpeedAdjustmentForRotation;
+				rotationXRadians += speed * SpeedAdjustmentForRotation;
 				if (positionXRadians > 1.5f) positionXRadians = 1.5f;
 				UpdateOnboardLocation();
 			}
-
-			if (UserInput.IsKeyDown(Keys.Down) && !UserInput.IsControlKeyDown())
+			if (UserInput.IsDown(UserCommands.CameraPanIn))
 			{
-				positionDistance += movement * positionDistance / 10;
+				positionDistance -= speed * positionDistance / 10;
 				if (positionDistance < 1) positionDistance = 1;
 				UpdateOnboardLocation();
 			}
-			else if (UserInput.IsKeyDown(Keys.Up) && !UserInput.IsControlKeyDown())
+			if (UserInput.IsDown(UserCommands.CameraPanOut))
 			{
-				positionDistance -= movement * positionDistance / 10;
+				positionDistance += speed * positionDistance / 10;
 				if (positionDistance > 100) positionDistance = 100;
 				UpdateOnboardLocation();
 			}
@@ -730,48 +748,47 @@ namespace ORTS
 		{
 		}
 
-        public bool HasPassengerCamera
-        {
-            get
-            {
-                var train = Viewer.PlayerTrain;
+		public bool HasPassengerCamera
+		{
+			get
+			{
+				var train = Viewer.PlayerTrain;
 
-                // find first car with a passenger view
-                attachedCar = null;
-                foreach (TrainCar car in train.Cars)
-                    if (car.PassengerViewpoints.Count > 0)
-                    {
-                        attachedCar = car;
-                        break;
-                    }
-                return attachedCar != null;
-            }
-        }
+				// find first car with a passenger view
+				attachedCar = null;
+				foreach (TrainCar car in train.Cars)
+					if (car.PassengerViewpoints.Count > 0)
+					{
+						attachedCar = car;
+						break;
+					}
+				return attachedCar != null;
+			}
+		}
 
 		public override Camera.Styles Style { get { return Styles.Passenger; } }
 
-        public override void HandleUserInput(ElapsedTime elapsedTime)
-        {
-            var elapsedRealMilliseconds = elapsedTime.RealSeconds * 1000;
-            var speed = 1.0f;
+		public override void HandleUserInput(ElapsedTime elapsedTime)
+		{
+			var speed = GetSpeed(elapsedTime);
 
-            if (UserInput.IsShiftKeyDown())
-                speed = 10.0f;
-            if (UserInput.IsKeyDown(Keys.End))
-                speed = 0.05f;
+			if (UserInput.IsDown(UserCommands.CameraPanLeft))
+				rotationYRadians -= speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraPanRight))
+				rotationYRadians += speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraPanUp))
+				rotationXRadians -= speed * SpeedAdjustmentForRotation;
+			if (UserInput.IsDown(UserCommands.CameraPanDown))
+				rotationXRadians += speed * SpeedAdjustmentForRotation;
 
-			if (UserInput.IsKeyDown(Keys.Left) && !UserInput.IsControlKeyDown())
-                rotationYRadians -= speed * elapsedRealMilliseconds / 1000f;
-			if (UserInput.IsKeyDown(Keys.Right) && !UserInput.IsControlKeyDown())
-                rotationYRadians += speed * elapsedRealMilliseconds / 1000f;
+			// Do this here so we can clamp the angles below.
+			base.HandleUserInput(elapsedTime);
 
-            // Do this here so we can clamp the angles below.
-            base.HandleUserInput(elapsedTime);
+			rotationXRadians = MathHelper.Clamp(rotationXRadians, -(float)Math.PI / 2.1f, (float)Math.PI / 2.1f);
+			rotationYRadians = MathHelper.Clamp(rotationYRadians, -(float)Math.PI / 2, (float)Math.PI / 2);
+		}
 
-            rotationYRadians = MathHelper.Clamp(rotationYRadians, -(float)Math.PI / 2, (float)Math.PI / 2);
-        }
-
-        protected override void OnActivate(bool sameCamera)
+		protected override void OnActivate(bool sameCamera)
 		{
 			var train = Viewer.PlayerTrain;
 
@@ -805,11 +822,9 @@ namespace ORTS
 		const float TargetAltitude = TerrainAltitudeMargin;
 		// Max altitude of terrain below coordinate center of train car before bridge-mode.
 		const float BridgeCutoffAltitude = 1;
-		// User adjustment step.
-		const float CameraAltitudeOffsetStep = 1;
-		
+
 		readonly Random Random;
-		TrainCar AttachedCar;
+		new TrainCar AttachedCar;
 		WorldLocation TrackCameraLocation;
 		float CameraAltitudeOffset = 0;
 
@@ -848,17 +863,21 @@ namespace ORTS
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
-			if (UserInput.IsDown(UserCommands.CameraAltitudeIncrease))
+			var speed = GetSpeed(elapsedTime);
+
+			if (UserInput.IsDown(UserCommands.CameraPanUp))
 			{
-				CameraAltitudeOffset += CameraAltitudeOffsetStep;
-				cameraLocation.Location.Y += CameraAltitudeOffsetStep;
+				CameraAltitudeOffset += speed;
+				cameraLocation.Location.Y += speed;
 			}
-			else if (UserInput.IsDown(UserCommands.CameraAltitudeDecrease))
+			if (UserInput.IsDown(UserCommands.CameraPanDown))
 			{
-				if (CameraAltitudeOffset > 0)
+				CameraAltitudeOffset -= speed;
+				cameraLocation.Location.Y -= speed;
+				if (CameraAltitudeOffset < 0)
 				{
-					CameraAltitudeOffset -= CameraAltitudeOffsetStep;
-					cameraLocation.Location.Y -= CameraAltitudeOffsetStep;
+					cameraLocation.Location.Y -= CameraAltitudeOffset;
+					CameraAltitudeOffset = 0;
 				}
 			}
 			if (UserInput.IsPressed(UserCommands.CameraCarNext))
