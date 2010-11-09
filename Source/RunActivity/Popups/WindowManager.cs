@@ -142,7 +142,7 @@ namespace ORTS.Popups
 		Window mouseActiveWindow;
 		public Window MouseActiveWindow { get { return mouseActiveWindow; } }
 
-		double LastUpdateTime;
+		double LastUpdateRealTime;
 		public void HandleUserInput()
 		{
 			if (UserInput.IsMouseLeftButtonPressed())
@@ -166,9 +166,9 @@ namespace ORTS.Popups
 				if (UserInput.IsMouseMoved())
 					mouseActiveWindow.MouseMove();
 
-				if (Program.RealTime - LastUpdateTime >= 0.1)
+				if (Viewer.RealTime - LastUpdateRealTime >= 0.1)
 				{
-					LastUpdateTime = Program.RealTime;
+					LastUpdateRealTime = Viewer.RealTime;
 					mouseActiveWindow.HandleUserInput();
 				}
 

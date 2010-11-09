@@ -644,11 +644,11 @@ namespace ORTS
                 {
                     if (_stoppedAt == 0)
                     {
-                        _stoppedAt = Program.RealTime;
+						_stoppedAt = SoundSource.Viewer.RealTime;
                         //_stoppedAt += WAVIrrKlangFileFactory.Weigth(_playingSound.Name) * .025;
 
                     }
-                    else if (_stoppedAt + .8 < Program.RealTime)
+					else if (_stoppedAt + .8 < SoundSource.Viewer.RealTime)
                     {
                         _stoppedAt = 0;
                         Stop();

@@ -123,8 +123,8 @@ namespace ORTS
 		{
 			Profiler.Start();
 
-			Program.RealTime = TotalRealSeconds;
-			ElapsedTime elapsedTime = new ElapsedTime();
+			Viewer.RealTime = TotalRealSeconds;
+			var elapsedTime = new ElapsedTime();
 			elapsedTime.RealSeconds = (float)(TotalRealSeconds - LastTotalRealSeconds);
 			elapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(elapsedTime.RealSeconds);
 			LastTotalRealSeconds = TotalRealSeconds;
@@ -145,7 +145,7 @@ namespace ORTS
 				Profiler.Stop();
 
 				// Update the loader - it should only copy volatile data and return.
-				if (Program.RealTime - Viewer.LoaderProcess.LastUpdate > LoaderProcess.UpdatePeriod)
+				if (Viewer.RealTime - Viewer.LoaderProcess.LastUpdateRealTime > LoaderProcess.UpdatePeriod)
 					Viewer.LoaderProcess.StartUpdate();
 			}
 		}

@@ -28,7 +28,7 @@ namespace ORTS
 		Matrix Matrix = Matrix.Identity;
 		int InfoAmount = 1;
         int FrameNumber = 0;
-        double LastUpdateTime = 0;   // update text message only 10 times per second
+        double LastUpdateRealTime = 0;   // update text message only 10 times per second
 		ElapsedTime ElapsedTime = new ElapsedTime();
 
         readonly int ProcessorCount = System.Environment.ProcessorCount;
@@ -103,10 +103,10 @@ namespace ORTS
 			ElapsedTime += elapsedTime;
 			UpdateDialogs(elapsedTime);
 
-			if (Program.RealTime - LastUpdateTime >= 0.25)
+			if (Viewer.RealTime - LastUpdateRealTime >= 0.25)
 			{
-				double elapsedRealSeconds = Program.RealTime - LastUpdateTime;
-				LastUpdateTime = Program.RealTime;
+				double elapsedRealSeconds = Viewer.RealTime - LastUpdateRealTime;
+				LastUpdateRealTime = Viewer.RealTime;
 				Profile(elapsedRealSeconds);
 				UpdateDialogsText(ElapsedTime);
 				UpdateText(elapsedRealSeconds);

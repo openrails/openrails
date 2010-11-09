@@ -37,7 +37,6 @@ namespace ORTS
         public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
         public static string RegistryKey;     // ie "SOFTWARE\\OpenRails\\ORTS"
         public static string UserDataFolder;  // ie "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS"
-        public static double RealTime = 0;    // tracks the real time in seconds for the frame we are currently processing
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator; 
         private static Viewer3D Viewer;

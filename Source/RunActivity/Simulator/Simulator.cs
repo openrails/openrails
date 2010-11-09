@@ -35,7 +35,16 @@ namespace ORTS
     {
         public bool Paused = true;          // start off paused, set to true once the viewer is fully loaded and initialized
         public float GameSpeed = 1;
-        public double ClockTime = 0;         // relative to 00:00:00 on the day the activity starts 
+		/// <summary>
+		/// Monotonically increasing time value (in seconds) for the simulation. Starts at 0 and only ever increases, at <see cref="GameSpeed"/>.
+		/// Does not change if game is <see cref="Paused"/>.
+		/// </summary>
+		public double GameTime = 0;
+		/// <summary>
+		/// "Time of day" clock value (in seconds) for the simulation. Starts at activity start time and may increase, at <see cref="GameSpeed"/>,
+		/// or jump forwards or jump backwards.
+		/// </summary>
+        public double ClockTime = 0;
                                                     // while Simulator.Update() is running, objects are adjusted to this target time 
                                                     // after Simulator.Update() is complete, the simulator state matches this time
 
@@ -204,10 +213,10 @@ namespace ORTS
         /// Convert and elapsed real time into clock time based on simulator
         /// running speed and paused state.
         /// </summary>
-        public float GetElapsedClockSeconds( float elapsedRealSeconds )
-        {
-            return elapsedRealSeconds * (Paused ? 0 : GameSpeed);
-        }
+		public float GetElapsedClockSeconds(float elapsedRealSeconds)
+		{
+			return elapsedRealSeconds * (Paused ? 0 : GameSpeed);
+		}
 
         /// <summary>
         /// Update the simulator state 
@@ -216,7 +225,8 @@ namespace ORTS
         /// </summary>
         public void Update( float elapsedClockSeconds )
         {
-            // Advance the Clock
+            // Advance the times.
+			GameTime += elapsedClockSeconds;
             ClockTime += elapsedClockSeconds;
 
             // Represent conditions at the specified clock time.

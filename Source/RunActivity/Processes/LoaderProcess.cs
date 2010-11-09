@@ -81,7 +81,7 @@ namespace ORTS
 		}
 
 		public const double UpdatePeriod = 0.1;       // 10 times per second 
-		public double LastUpdate = 0;          // last time we were upated
+		public double LastUpdateRealTime = 0;          // last time we were upated
 
 		public void StartUpdate()
 		{
@@ -94,7 +94,7 @@ namespace ORTS
 
 			State.SignalStart();
 
-			LastUpdate = Program.RealTime;
+			LastUpdateRealTime = Viewer.RealTime;
 		}
 
 		public void Update()

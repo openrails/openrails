@@ -55,7 +55,11 @@ namespace ORTS
 		public Vector2 DisplaySize;
         // Components
         public Simulator Simulator;
-        InfoDisplay InfoDisplay;
+		/// <summary>
+		/// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
+		/// </summary>
+		public double RealTime = 0;
+		InfoDisplay InfoDisplay;
 		public WindowManager WindowManager = null;
 		public HelpWindow HelpWindow; // F1 window
 		public TrackMonitorWindow TrackMonitorWindow; // F4 window
@@ -102,7 +106,7 @@ namespace ORTS
         // Mouse visibility by timer - GeorgeS
         private bool isMouseShouldVisible = false;
         private bool isMouseTimerVisible = false;
-        private double MouseShownAt = 0;
+        private double MouseShownAtRealTime = 0;
 
 		/// <summary>
         /// Construct a viewer.  At this time background processes are not running
@@ -427,10 +431,10 @@ namespace ORTS
                 currentMouseState.Y != originalMouseState.Y)
             {
                 isMouseTimerVisible = true;
-                MouseShownAt = Program.RealTime;
+                MouseShownAtRealTime = RealTime;
                 RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
             }
-            else if (isMouseTimerVisible && MouseShownAt + .5 < Program.RealTime)
+            else if (isMouseTimerVisible && MouseShownAtRealTime + .5 < RealTime)
             {
                 isMouseTimerVisible = false;
                 RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
