@@ -1010,70 +1010,63 @@ namespace ORTS
 
 			Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
-            // This is BAD BAD BAD, visibility testing shouldn't be in here.
-            foreach (var item in renderItems)
+            foreach (var item in renderItems) //TODO: Is this ever more than one for dynamic track?
             {
                 DynatrackMesh mesh = (DynatrackMesh)item.RenderPrimitive;
-                Vector3 mstsLocation = mesh.MSTSLODCenter;
+                //Vector3 mstsLocation = mesh.MSTSLODCenter;
 
-                // Test if object behind camera:
-                if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, mesh.ObjectRadius))
+                for (int lodIndex = 0; lodIndex <= mesh.LastIndex; lodIndex++)
                 {
-                    for (uint i = 0; i < mesh.LODGrid.Length; i++)
+                    //TODO: All of the content of the switch block below needs to be
+                    //      replaced by general state handling, driven from track profile.
+                    //      BUT I'LL DEFER TO THE DEMANDS OF TRACK DESIGNERS FOR NOW.
+
+                    // The following switch block serves pro tempore to get the job done
+                    switch (lodIndex)
                     {
-                        LODItem lod = (LODItem)mesh.TrProfile.LODItems[0];
-                        bool test = RenderProcess.Viewer.Camera.InRange(mstsLocation, lod.CutoffRadius);
-                        if (!test) continue;
-                        //TODO: All of the content of the switch block below needs to be
-                        //      replaced by general state handling, driven from track profile.
-                        //      BUT I'LL DEFER TO THE DEMANDS OF TRACK DESIGNERS FOR NOW.
+                        case 0: // Ballast
+                            if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
+                                RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
+                                SceneryShader.ImageMap_Tex = image1s;
+                            else
+                                SceneryShader.ImageMap_Tex = image1;
 
-                        // The following switch block serves pro tempore to get the job done
-                        switch (i)
-                        {
-                            case 0: // Ballast
-                                if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
-                                    RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
-                                    SceneryShader.ImageMap_Tex = image1s;
-                                else
-                                    SceneryShader.ImageMap_Tex = image1;
+                            SceneryShader.LightingSpecular = 0;
+                            break;
+                        case 1: // Rail tops
+                            SceneryShader.ImageMap_Tex = image2;
+							SceneryShader.LightingSpecular = 25;
+                            break;
+                        case 2: // Rail sides
+							SceneryShader.LightingSpecular = 0;
+                            break;
 
-                                SceneryShader.LightingSpecular = 0;
-                                break;
-                            case 1: // Rail tops
-                                SceneryShader.ImageMap_Tex = image2;
-								SceneryShader.LightingSpecular = 25;
-                                break;
-                            case 2: // Rail sides
-								SceneryShader.LightingSpecular = 0;
-                                break;
+                        default: continue;
+                    } // end switch lodIndex
 
-                            default: continue;
-                        } // end switch i
+                    LODItem lod = (LODItem)mesh.TrProfile.LODItems[lodIndex];
+                    // The following are controlled by options in the track profile
+                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias =
+                                lod.MipMapLevelOfDetailBias;
+                    graphicsDevice.RenderState.AlphaBlendEnable =
+                                lod.AlphaBlendEnable;
+                    graphicsDevice.RenderState.AlphaTestEnable =
+                                lod.AlphaTestEnable;
 
-                        // The following are controlled by options in the track profile
-                        graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias =
-                                    lod.MipMapLevelOfDetailBias;
-                        graphicsDevice.RenderState.AlphaBlendEnable =
-                            lod.AlphaBlendEnable;
-                        graphicsDevice.RenderState.AlphaTestEnable =
-                            lod.AlphaTestEnable;
+                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+                    SceneryShader.ZBias = item.RenderPrimitive.ZBias;
+					SceneryShader.Apply();
 
-                        SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
-                        SceneryShader.ZBias = item.RenderPrimitive.ZBias;
-						SceneryShader.Apply();
-
-                        mesh.DrawIndex = (int)i;
-                        SceneryShader.Begin();
-                        foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
-                        {
-                            pass.Begin();
-                            item.RenderPrimitive.Draw(graphicsDevice);
-                            pass.End();
-                        }
-                        SceneryShader.End();
-                    } // end for i
-                } // end if not behind camera
+                    mesh.DrawIndex = lodIndex; // Communicate to Draw which LOD to draw.
+                    SceneryShader.Begin();
+                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+                    {
+                        pass.Begin();
+                        item.RenderPrimitive.Draw(graphicsDevice);
+                        pass.End();
+                    }
+                    SceneryShader.End();
+                } // end for i
             }
         }
 

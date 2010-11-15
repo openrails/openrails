@@ -58,6 +58,10 @@ namespace ORTS
        } // end DynatrackDrawer constructor
         #endregion
 
+        /// <summary>
+        /// PrepareFrame adds any object mesh in-FOV to the RenderItemCollection 
+        /// and marks the last LOD that is in-range.
+        /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // Offset relative to the camera-tile origin
@@ -65,20 +69,34 @@ namespace ORTS
             int dTileZ = worldPosition.TileZ - Viewer.Camera.TileZ;
             Vector3 tileOffsetWrtCamera = new Vector3(dTileX * 2048, 0, -dTileZ * 2048);
 
-            // Find midpoint between auxpoint and track section root
+            // Find midpoint between track section end and track section root.
+            // (Section center for straight; section chord center for arc.)
             Vector3 xnaLODCenter = 0.5f * (dtrackMesh.XNAEnd + worldPosition.XNAMatrix.Translation +
                                             2 * tileOffsetWrtCamera);
             dtrackMesh.MSTSLODCenter = new Vector3(xnaLODCenter.X, xnaLODCenter.Y, -xnaLODCenter.Z);
 
-            if (Viewer.Camera.CanSee(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius, 500))
-            {
-                // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
-                Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
-                xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
-                // (Transformation is now with respect to camera-tile origin)
+            // Ignore any mesh not in field-of-view
+            if (!Viewer.Camera.InFOV(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius)) return;
 
-                frame.AddPrimitive(dtrackMaterial, dtrackMesh, RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
-            }
+            // Scan LODs in reverse order, and find first LOD in-range
+            //for (int lodIndex = dtrackMesh.LODGrid.Length - 1; lodIndex >= 0; lodIndex--)
+            LODItem lod;
+            int lodIndex = dtrackMesh.LODGrid.Length;
+            do
+            {
+                if (--lodIndex < 0) return; // No LOD in-range
+                //Console.Write("{0}/", lodIndex);
+                lod = (LODItem)dtrackMesh.TrProfile.LODItems[lodIndex];
+            } while (!Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, lod.CutoffRadius));
+            dtrackMesh.LastIndex = lodIndex; // Mark index farthest in-range LOD
+
+            // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
+            Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
+            xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
+            // (Transformation is now with respect to camera-tile origin)
+
+            // Add dtrackMesh to the RenderItems collection
+            frame.AddPrimitive(dtrackMaterial, dtrackMesh, RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
         } // end PrepareFrame
     } // end DynatrackDrawer
     #endregion
@@ -716,7 +734,8 @@ namespace ORTS
         short NumIndices;           // Number of triangle indices
 
         // LOD member variables:
-        public int DrawIndex;       // Used by Draw to determine which primitive to draw.
+        public int DrawIndex;       // Used by Draw to determine which LOD to draw.
+        public int LastIndex;       // Marks last LOD that is in-range
         public Vector3 XNAEnd;      // Location of termination-of-section (as opposed to root)
         public float ObjectRadius;  // Radius of bounding sphere
         public Vector3 MSTSLODCenter; // Center of bounding sphere

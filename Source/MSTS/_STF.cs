@@ -256,6 +256,7 @@ namespace MSTS
                 return UpdateTreeAndStepBack(item);
             }
             #endregion
+
             return ReadItem(false);
         }
         /// <summary>Calling this function causes ReadItem() to repeat the last {item} that was read from the STF file
