@@ -20,3 +20,23 @@ C:\Files\OpenRails\Source\MenuWPF\obj\Debug\MenuWPF.pdb
 C:\Files\OpenRails\Source\MenuWPF\bin\Debug\ICSharpCode.SharpZipLib.dll
 C:\Files\OpenRails\Source\MenuWPF\bin\Debug\Reader.dll
 C:\Files\OpenRails\Source\MenuWPF\obj\Debug\MenuWPF.csproj.GenerateResource.Cache
+D:\Projets .NET\Open Rails\Source\MenuWPF\bin\Debug\MenuWPF.exe
+D:\Projets .NET\Open Rails\Source\MenuWPF\bin\Debug\MenuWPF.pdb
+D:\Projets .NET\Open Rails\Source\MenuWPF\bin\Debug\ICSharpCode.SharpZipLib.dll
+D:\Projets .NET\Open Rails\Source\MenuWPF\bin\Debug\Reader.dll
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\ResolveAssemblyReference.cache
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\ORButton.baml
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\Window1.baml
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\App.baml
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MainWindow.g.cs
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\ORButton.g.cs
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\Window1.g.cs
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\App.g.cs
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF_MarkupCompile.cache
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF_MarkupCompile.lref
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MainWindow.baml
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.g.resources
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.Properties.Resources.resources
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.csproj.GenerateResource.Cache
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.exe
+D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.pdb
