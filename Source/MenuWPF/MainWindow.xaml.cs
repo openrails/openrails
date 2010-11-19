@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.IO;
 using MSTS;
 using Microsoft.Win32;
+using System.Text.RegularExpressions;
 
 namespace Menu
 {
@@ -151,7 +152,7 @@ namespace Menu
 		{
             SaveOptions();
 
-            MainStart(listBoxActivities.SelectedItem.ToString());
+            MainStart();
 		}
 
 		private void btnOptions_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -183,15 +184,29 @@ namespace Menu
         /// Old method of Windows Form Application to start the program, 
         /// now included in the main window.
         /// </summary>
-        void MainStart(string activityName)
+        void MainStart()
         {
             try
             {
                 string parameter;
 
-                var exploreActivity = SelectedActivity as ExploreActivity;
-                if (exploreActivity != null)
-                    parameter = String.Format("\"{0}\" \"{1}\" {2} {3} {4}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.Season, exploreActivity.Weather);
+                if (SelectedActivity is ExploreActivity)
+                {
+                    int hour = 10;
+                    
+                    Regex reg = new Regex("^([0-1][0-9]|[2][0-3]):([0-5][0-9])$"); //Match a string format of HH:MM
+                    if (reg.IsMatch(cboStartingTime.Text))
+                    {
+                        int.TryParse(cboStartingTime.Text.Trim().Substring(0, cboStartingTime.Text.Trim().IndexOf(':')), out hour);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        return;
+                    }
+                    
+                    parameter = String.Format("\"{0}\" \"{1}\" {2} {3} {4}", Paths[cboPath.SelectedIndex], Consists[cboConsist.SelectedIndex], hour, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
+                }
                 else
                     parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
 
@@ -215,7 +230,7 @@ namespace Menu
             }
             catch (Exception error)
             {
-                MessageBox.Show(error.ToString());
+                MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -328,7 +343,7 @@ namespace Menu
                 }
                 catch (Exception error)
                 {
-                    MessageBox.Show(error.ToString());
+                    MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
 
@@ -340,7 +355,7 @@ namespace Menu
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", AppDomain.CurrentDomain.FriendlyName);
+                    MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
 
@@ -384,7 +399,7 @@ namespace Menu
             }
             catch (Exception error)
             {
-                MessageBox.Show(error.ToString(), "Open Rails");
+                MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             Routes = Routes.OrderBy(r => r.Name).ToList();
@@ -530,6 +545,7 @@ namespace Menu
                 cboPath.IsEnabled = true;
                 cboConsist.SelectedIndex = 0;
                 cboConsist.IsEnabled = true;
+
             }
         }
 
@@ -577,6 +593,8 @@ namespace Menu
             }
             return consists;
         }
+
+        
 
         #endregion
 

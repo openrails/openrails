@@ -18,7 +18,7 @@
 
 	<Grid x:Name="LayoutRoot" Margin="0">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto" MinHeight="105"/>
+			<RowDefinition Height="50" MinHeight="50"/>
 			<RowDefinition Height="10"/>
 			<RowDefinition Height="0.39*" MinHeight="200"/>
 			<RowDefinition Height="0.61*" MinHeight="300"/>
@@ -62,7 +62,19 @@
 			
 		</Border>
 		<GridSplitter Grid.Column="2" HorizontalAlignment="Left" Margin="0,0,0,-4.333" Width="5" Grid.RowSpan="3" Visibility="Hidden"/>
-		<Image x:Name="imgLogo" Margin="0" Source="BANNER.jpg" Stretch="UniformToFill" d:LayoutOverrides="HorizontalAlignment, GridBox" VerticalAlignment="Top" Grid.ColumnSpan="3"/>
+		<Grid Margin="0" Grid.ColumnSpan="3">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="50" MaxHeight="50" MinHeight="50"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="68"/>
+				<ColumnDefinition/>
+				<ColumnDefinition Width="82"/>
+			</Grid.ColumnDefinitions>
+			<Image x:Name="imgLogo1" Margin="0" Source="BANNER_1.jpg" Stretch="Fill" d:LayoutOverrides="GridBox"/>
+			<Image x:Name="imgLogo2" Margin="0" Source="BANNER_2.jpg" Stretch="Fill" d:LayoutOverrides="HorizontalAlignment, GridBox" Grid.Column="1"/>
+			<Image x:Name="imgLogo3" Margin="0" Source="BANNER_3.jpg" Stretch="Fill" Grid.Column="2"/>
+		</Grid>
 		<FlowDocumentScrollViewer x:Name="docRouteDetail" Margin="8,17.801,0,0" Grid.Row="3" Background="#99FBFBFB">
 			<FlowDocument Background="#7FFFFFFF">
 				
@@ -146,10 +158,30 @@
 							<GradientStop Color="White" Offset="1"/>
 						</LinearGradientBrush>
 					</ComboBox.Background>
-					<ComboBoxItem Content="0:00"/>
-					<ComboBoxItem Content="6:00"/>
+					<ComboBoxItem Content="00:00"/>
+					<ComboBoxItem Content="01:00"/>
+					<ComboBoxItem Content="02:00"/>
+					<ComboBoxItem Content="03:00"/>
+					<ComboBoxItem Content="04:00"/>
+					<ComboBoxItem Content="05:00"/>
+					<ComboBoxItem Content="06:00"/>
+					<ComboBoxItem Content="07:00"/>
+					<ComboBoxItem Content="08:00"/>
+					<ComboBoxItem Content="09:00"/>
+					<ComboBoxItem Content="10:00"/>
+					<ComboBoxItem Content="11:00"/>
 					<ComboBoxItem Content="12:00"/>
+					<ComboBoxItem Content="13:00"/>
+					<ComboBoxItem Content="14:00"/>
+					<ComboBoxItem Content="15:00"/>
+					<ComboBoxItem Content="16:00"/>
+					<ComboBoxItem Content="17:00"/>
 					<ComboBoxItem Content="18:00"/>
+					<ComboBoxItem Content="19:00"/>
+					<ComboBoxItem Content="20:00"/>
+					<ComboBoxItem Content="21:00"/>
+					<ComboBoxItem Content="22:00"/>
+					<ComboBoxItem Content="23:00"/>
 				</ComboBox>
 				<ComboBox x:Name="cboSeason" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="4" VerticalAlignment="Center" FontFamily="Global User Interface" FontSize="13.333" FontWeight="Bold" Foreground="#FF032387" Grid.Column="1">
 					<ComboBox.Background>

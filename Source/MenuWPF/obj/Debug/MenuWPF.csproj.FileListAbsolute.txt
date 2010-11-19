@@ -19,7 +19,6 @@ C:\Files\OpenRails\Source\MenuWPF\obj\Debug\MenuWPF.exe
 C:\Files\OpenRails\Source\MenuWPF\obj\Debug\MenuWPF.pdb
 C:\Files\OpenRails\Source\MenuWPF\bin\Debug\ICSharpCode.SharpZipLib.dll
 C:\Files\OpenRails\Source\MenuWPF\bin\Debug\Reader.dll
-C:\Files\OpenRails\Source\MenuWPF\obj\Debug\MenuWPF.csproj.GenerateResource.Cache
 D:\Projets .NET\Open Rails\Source\MenuWPF\bin\Debug\MenuWPF.exe
 D:\Projets .NET\Open Rails\Source\MenuWPF\bin\Debug\MenuWPF.pdb
 D:\Projets .NET\Open Rails\Source\MenuWPF\bin\Debug\ICSharpCode.SharpZipLib.dll
@@ -40,3 +39,4 @@ D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.Properties.Resources
 D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.csproj.GenerateResource.Cache
 D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.exe
 D:\Projets .NET\Open Rails\Source\MenuWPF\obj\Debug\MenuWPF.pdb
+C:\Files\OpenRails\Source\MenuWPF\obj\Debug\MenuWPF.csproj.GenerateResource.Cache

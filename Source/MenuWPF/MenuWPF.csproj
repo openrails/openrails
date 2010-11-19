@@ -16,6 +16,7 @@
     <WarningLevel>4</WarningLevel>
     <ApplicationIcon>openrails.ico</ApplicationIcon>
     <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
+    <Utf8Output>true</Utf8Output>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -138,6 +139,9 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="BANNER_1.jpg" />
+    <Resource Include="BANNER_2.jpg" />
+    <Resource Include="BANNER_3.jpg" />
     <Resource Include="openrails.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
