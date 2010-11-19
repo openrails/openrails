@@ -238,33 +238,37 @@ namespace Menu
 		/// Set up the global Build and Revision variables
 		/// from assembly data and the revision.txt file.
 		/// </summary>
-		static void SetBuildRevision()
+		private void SetBuildRevision()
 		{
-			try
-			{
-				using (StreamReader f = new StreamReader("Revision.txt"))
-				{
-					string line = f.ReadLine();
-					string rev = line.Substring(11);
-					int i = rev.IndexOf('$');
-					Revision = rev.Substring(0, i).Trim();
+            try
+            {
+                using (StreamReader f = new StreamReader("Revision.txt"))
+                {
+                    string line = f.ReadLine();
+                    string rev = line.Substring(11);
+                    int i = rev.IndexOf('$');
+                    Revision = rev.Substring(0, i).Trim();
 
                     System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
                     Version version = assembly.GetName().Version;
 
                     Build = version.ToString();
-					Build = Build + " " + f.ReadLine();  // date
-					Build = Build + " " + f.ReadLine(); // time
-				}
-			}
-			catch
-			{
-				Revision = "";
+                    Build = Build + " " + f.ReadLine();  // date
+                    Build = Build + " " + f.ReadLine(); // time
+                }
+            }
+            catch
+            {
+                Revision = "";
                 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
                 Version version = assembly.GetName().Version;
 
                 Build = version.ToString();
-			}
+            }
+            finally
+            {
+                this.Title += " BUILD: " + Build;
+            }
 		}
 
         //methods imported from the old Menu Windows Forms Application
