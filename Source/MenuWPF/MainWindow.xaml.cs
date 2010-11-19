@@ -157,7 +157,8 @@ namespace Menu
 
 		private void btnOptions_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
-			// TODO: Add event handler implementation here.
+            MenuWPF.OptionsWindow winOptions = new MenuWPF.OptionsWindow(RegistryKey);
+            winOptions.ShowDialog();
 		}
 
 		private void btnQuit_Click(object sender, System.Windows.RoutedEventArgs e)

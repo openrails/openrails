@@ -1,0 +1,225 @@
+﻿<Window
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+	x:Class="MenuWPF.OptionsWindow"
+	x:Name="winOptions"
+	Title="Options"
+	Width="1024" Height="768" Icon="openrails.ico" WindowStartupLocation="CenterScreen" WindowState="Maximized">
+	<Window.Resources>
+    <Style TargetType="{x:Type TabItem}">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="{x:Type TabItem}">
+            <Grid>
+              <Border
+                 x:Name="Border"
+                 Background="#BF62BC0C"
+                 BorderBrush="Black"
+                 BorderThickness="0,0,0,0"
+                 CornerRadius="20,20,0,0" >
+                <ContentPresenter x:Name="ContentSite"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   ContentSource="Header"
+                   Margin="12,2,12,2"/>
+              </Border>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+	<Window.Background>
+		<ImageBrush ImageSource="background1.jpg"/>
+	</Window.Background>
+
+	<Grid x:Name="LayoutRoot">
+		<Grid.Effect>
+			<DropShadowEffect Opacity="0.5"/>
+		</Grid.Effect>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition MinWidth="56" Width="67"/>
+			<ColumnDefinition MinWidth="100"/>
+			<ColumnDefinition MinWidth="82" Width="115"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="50" MaxHeight="50" MinHeight="50"/>
+			<RowDefinition/>
+			<RowDefinition Height="100" MinHeight="75"/>
+		</Grid.RowDefinitions>
+		<Image x:Name="imgLogo1" Source="BANNER_1.jpg" Stretch="Fill"/>
+		<Image x:Name="imgLogo2" Margin="0" Grid.Column="1" Source="BANNER_2.jpg" Stretch="Fill"/>
+		<Image x:Name="imgLogo3" Margin="0" Source="BANNER_3.jpg" Grid.Column="2" Stretch="Fill"/>
+		<TabControl x:Name="tabOptions" Grid.ColumnSpan="3" Margin="16,16,16,0" Grid.Row="1" BorderThickness="0" Background="{x:Null}" Padding="0">
+			<TabItem Header="General" FontWeight="Bold" FontSize="13.333" FontFamily="Global User Interface" Margin="15,-3,-23,0" Background="{x:Null}">
+				<Grid>
+					<Border x:Name="brdGeneral" BorderBrush="Black" BorderThickness="0" CornerRadius="20">
+						<Border.Background>
+							<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+								<GradientStop Color="#BF62BC0C" Offset="0"/>
+								<GradientStop Color="#BFFFFFFF" Offset="1"/>
+							</LinearGradientBrush>
+						</Border.Background>
+						<Grid x:Name="gridGeneral">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="16" MinHeight="16"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition Height="35" MinHeight="35"/>
+								<RowDefinition MinHeight="16"/>
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition MinWidth="100" Width="175"/>
+								<ColumnDefinition/>
+							</Grid.ColumnDefinitions>
+							<Slider x:Name="sliderWOD" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight"/>
+							<Slider x:Name="sliderSound" d:LayoutOverrides="Height" Grid.Row="2" VerticalAlignment="Center" Margin="10,0,0,0" Maximum="5" AutoToolTipPlacement="BottomRight"/>
+							<ComboBox x:Name="cboResolution" Margin="10,0,0,0" d:LayoutOverrides="Height" Grid.Row="3" VerticalAlignment="Center">
+								<ComboBoxItem Content="1024x768"/>
+								<ComboBoxItem Content="1152x864"/>
+								<ComboBoxItem Content="1280x720"/>
+								<ComboBoxItem Content="1280x768"/>
+								<ComboBoxItem Content="1280x800"/>
+								<ComboBoxItem Content="1280x960"/>
+								<ComboBoxItem Content="1280x1024"/>
+								<ComboBoxItem Content="1360x768"/>
+								<ComboBoxItem Content="1440x900"/>
+								<ComboBoxItem Content="1600x1200"/>
+								<ComboBoxItem Content="1680x1050"/>
+								<ComboBoxItem Content="1768x992"/>
+								<ComboBoxItem Content="1920x1080"/>
+								<ComboBoxItem Content="1920x1200"/>
+							</ComboBox>
+							<CheckBox x:Name="chkFullScreen" Content="" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="4" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<Label x:Name="lblWDO" Content="World Object Density" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblSounds" Content="Sound Detail Level" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblResolution" Content="Window Size" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label Content="Full Screen" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblWarningLog" Content="Warning Log" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="5" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblTrainLights" Content="Train Lights" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="6" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblPrecipitation" Content="Precipitation" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="7" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblOverheadWire" Content="Overhead Wire" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="8" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblGraduated" Content="Graduated Release Air Brakes" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="9" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblBrakePipe" Content="Brake Pipe Charging Rate (PSI/s)" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="10" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblDynamicShadows" Content="Dynamic Shadows" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="11" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label x:Name="lblUseGlass" Content="Use Glass On In-Game Windows" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="12" Grid.Column="1" VerticalAlignment="Center"/>
+							<Label Content="Use MSTS BIN Compatible Sound" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="13" Grid.Column="1" VerticalAlignment="Center"/>
+							<CheckBox x:Name="chkWarningLog" Content="" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="5" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<CheckBox x:Name="chkTrainLights" Content="" HorizontalAlignment="Right" Grid.Row="6" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<CheckBox x:Name="chkPrecipitation" Content="" HorizontalAlignment="Right" Grid.Row="7" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<CheckBox x:Name="chkOverheadWire" Content="" HorizontalAlignment="Right" Grid.Row="8" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<CheckBox x:Name="chkGraduated" Content="" HorizontalAlignment="Right" Grid.Row="9" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<CheckBox x:Name="chkDinamicShadows" Content="" HorizontalAlignment="Right" Grid.Row="11" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<CheckBox x:Name="chkUseGlass" Content="" HorizontalAlignment="Right" Grid.Row="12" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<CheckBox x:Name="chkUseMSTSbin" Content="" HorizontalAlignment="Right" Grid.Row="13" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<Slider x:Name="sliderBrakePipe" d:LayoutOverrides="Height" Grid.Row="10" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight" Minimum="1" Value="1" Maximum="1000"/>
+						</Grid>
+					</Border>
+				</Grid>
+			</TabItem>
+		</TabControl>
+		<Button x:Name="buttonOK" Content="Save" Grid.Column="2" Margin="0" Grid.Row="2" Width="100" Height="100" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" FontFamily="Global User Interface" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonOK_Click"/>
+		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="1" HorizontalAlignment="Right" Margin="0,15.23,0,10.77" Grid.Row="2" Width="139" Style="{DynamicResource ButtonStyle2}" FontFamily="Global User Interface" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonCancel_Click">
+			<Button.Background>
+				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+					<GradientStop Color="#FF0063AF" Offset="0"/>
+					<GradientStop Color="#FFEBEBEB" Offset="0.5"/>
+					<GradientStop Color="#FFDDDDDD" Offset="0.5"/>
+					<GradientStop Color="#FF00BA25" Offset="1"/>
+				</LinearGradientBrush>
+			</Button.Background>
+		</Button>
+	</Grid>
+</Window>

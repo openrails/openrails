@@ -67,9 +67,9 @@
 				<RowDefinition Height="50" MaxHeight="50" MinHeight="50"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="68"/>
+				<ColumnDefinition Width="67"/>
 				<ColumnDefinition/>
-				<ColumnDefinition Width="82"/>
+				<ColumnDefinition Width="115"/>
 			</Grid.ColumnDefinitions>
 			<Image x:Name="imgLogo1" Margin="0" Source="BANNER_1.jpg" Stretch="Fill" d:LayoutOverrides="GridBox"/>
 			<Image x:Name="imgLogo2" Margin="0" Source="BANNER_2.jpg" Stretch="Fill" d:LayoutOverrides="HorizontalAlignment, GridBox" Grid.Column="1"/>
