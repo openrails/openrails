@@ -83,8 +83,8 @@
 								<ColumnDefinition MinWidth="100" Width="175"/>
 								<ColumnDefinition/>
 							</Grid.ColumnDefinitions>
-							<Slider x:Name="sliderWOD" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight"/>
-							<Slider x:Name="sliderSound" d:LayoutOverrides="Height" Grid.Row="2" VerticalAlignment="Center" Margin="10,0,0,0" Maximum="5" AutoToolTipPlacement="BottomRight"/>
+							<Slider x:Name="sliderWOD" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight" Cursor="Hand" MouseEnter="sliderBrakePipe_MouseEnter" />
+							<Slider x:Name="sliderSound" d:LayoutOverrides="Height" Grid.Row="2" VerticalAlignment="Center" Margin="10,0,0,0" Maximum="5" AutoToolTipPlacement="BottomRight" Cursor="Hand" MouseEnter="sliderBrakePipe_MouseEnter" />
 							<ComboBox x:Name="cboResolution" Margin="10,0,0,0" d:LayoutOverrides="Height" Grid.Row="3" VerticalAlignment="Center">
 								<ComboBoxItem Content="1024x768"/>
 								<ComboBoxItem Content="1152x864"/>
@@ -204,14 +204,14 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<Slider x:Name="sliderBrakePipe" d:LayoutOverrides="Height" Grid.Row="10" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight" Minimum="1" Value="1" Maximum="1000"/>
+							<Slider x:Name="sliderBrakePipe" d:LayoutOverrides="Height" Grid.Row="10" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight" Minimum="1" Value="1" Maximum="1000" Cursor="Hand" MouseEnter="sliderBrakePipe_MouseEnter" />
 						</Grid>
 					</Border>
 				</Grid>
 			</TabItem>
 		</TabControl>
-		<Button x:Name="buttonOK" Content="Save" Grid.Column="2" Margin="0" Grid.Row="2" Width="100" Height="100" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" FontFamily="Global User Interface" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonOK_Click"/>
-		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="1" HorizontalAlignment="Right" Margin="0,15.23,0,10.77" Grid.Row="2" Width="139" Style="{DynamicResource ButtonStyle2}" FontFamily="Global User Interface" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonCancel_Click">
+		<Button x:Name="buttonOK" Content="Save" Grid.Column="2" Margin="0" Grid.Row="2" Width="100" Height="100" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" FontFamily="Global User Interface" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonOK_Click" Cursor="Hand" />
+		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="1" HorizontalAlignment="Right" Margin="0,15.23,0,10.77" Grid.Row="2" Width="139" Style="{DynamicResource ButtonStyle2}" FontFamily="Global User Interface" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonCancel_Click" Cursor="Hand">
 			<Button.Background>
 				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
 					<GradientStop Color="#FF0063AF" Offset="0"/>

@@ -137,21 +137,17 @@ namespace Menu
             LoadRoutes();
 
             CleanupPre021();
-
-            LoadOptions();
         }
         #endregion
 
         #region Event Handlers
         private void winMain_Closing(object sender, CancelEventArgs e)
         {
-            SaveOptions();
+            
         }
 
         private void btnStart_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
-            SaveOptions();
-
             MainStart();
 		}
 
@@ -295,36 +291,6 @@ namespace Menu
                 {
                 }
             }
-        }
-
-        void LoadOptions()
-        {
-            // Restore retained settings
-            //using (RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey, true))
-            //{
-            //    if (RK != null)
-            //    {
-            //        checkBoxFullScreen.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? true : false;
-            //        checkBoxWarnings.Checked = (int)RK.GetValue("Warnings", 1) == 1 ? true : false;
-            //    }
-            //}
-
-            //To be retrieved from deserialization of the XML parameters file
-        }
-
-        void SaveOptions()
-        {
-            // Retain settings for convenience
-            //using (RegistryKey RK = Registry.CurrentUser.CreateSubKey(RegistryKey))
-            //{
-            //    if (RK != null)
-            //    {
-            //        RK.SetValue("Fullscreen", checkBoxFullScreen.Checked ? 1 : 0);
-            //        RK.SetValue("Warnings", checkBoxWarnings.Checked ? 1 : 0);
-            //    }
-            //}
-
-            //To be included in the options panel
         }
 
         void LoadFolders()

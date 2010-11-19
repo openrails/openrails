@@ -5,7 +5,7 @@
 	x:Class="Menu.MainWindow"
 	x:Name="winMain"
 	Title="Open Rails"
-	Width="1024" Height="768" WindowState="Maximized" WindowStartupLocation="CenterScreen" Closing="winMain_Closing">
+	Width="1024" Height="768" WindowState="Maximized" WindowStartupLocation="CenterScreen" Closing="winMain_Closing" Icon="/MenuWPF;component/openrails.ico">
 	<Window.Background>
 		<ImageBrush ImageSource="pack://siteoforigin:,,,/background1.jpg"/>
 	</Window.Background>
