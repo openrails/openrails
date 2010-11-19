@@ -1949,7 +1949,7 @@
         </member>
         <member name="M:ORTS.DynatrackDrawer.PrepareFrame(ORTS.RenderFrame,ORTS.ElapsedTime)">
             <summary>
-            PrepareFrame adds any object mesh in-FOV to the RenderItemCollection 
+            PrepareFrame adds any object mesh in-FOV to the RenderItemCollection. 
             and marks the last LOD that is in-range.
             </summary>
         </member>
@@ -1961,6 +1961,17 @@
         <member name="M:ORTS.TrProfile.#ctor(System.Xml.XmlReader)">
             <summary>
             TrProfile constructor from XML profile file
+            </summary>
+        </member>
+        <member name="M:ORTS.TrProfile.LODDefineTexture(System.String)">
+            <summary>
+            LODDefineTexture returns a texture based on the texture identifier string.
+            </summary>
+        </member>
+        <member name="M:ORTS.TrProfile.LODDefaultTexture">
+            <summary>
+            LODDefaultTexture returns the texture used by the last LOD unless this is the first LOD,
+            in which case it returns Image1. 
             </summary>
         </member>
         <member name="M:ORTS.TrProfile.#ctor">

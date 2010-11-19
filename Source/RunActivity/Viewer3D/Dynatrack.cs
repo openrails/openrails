@@ -30,6 +30,12 @@ using MSTS;
 
 namespace ORTS
 {
+    public enum DynatrackTextures
+    {
+        none = 0,
+        Image1, Image1s, Image2
+    }
+
     #region DynatrackDrawer
     public class DynatrackDrawer
     {
@@ -59,7 +65,7 @@ namespace ORTS
         #endregion
 
         /// <summary>
-        /// PrepareFrame adds any object mesh in-FOV to the RenderItemCollection 
+        /// PrepareFrame adds any object mesh in-FOV to the RenderItemCollection. 
         /// and marks the last LOD that is in-range.
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -79,13 +85,11 @@ namespace ORTS
             if (!Viewer.Camera.InFOV(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius)) return;
 
             // Scan LODs in reverse order, and find first LOD in-range
-            //for (int lodIndex = dtrackMesh.LODGrid.Length - 1; lodIndex >= 0; lodIndex--)
             LODItem lod;
             int lodIndex = dtrackMesh.LODGrid.Length;
             do
             {
                 if (--lodIndex < 0) return; // No LOD in-range
-                //Console.Write("{0}/", lodIndex);
                 lod = (LODItem)dtrackMesh.TrProfile.LODItems[lodIndex];
             } while (!Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, lod.CutoffRadius));
             dtrackMesh.LastIndex = lodIndex; // Mark index farthest in-range LOD
@@ -299,6 +303,9 @@ namespace ORTS
                         case "LODItem":
                             name = reader.GetAttribute("Name");
                             lod = new LODItem(name);
+                            lod.Texture = LODDefineTexture(reader.GetAttribute("Texture"));
+                            if (lod.Texture == DynatrackTextures.none) lod.Texture = LODDefaultTexture();
+                            lod.LightingSpecular = float.Parse(reader.GetAttribute("LightingSpecular"));
                             lod.CutoffRadius = float.Parse(reader.GetAttribute("CutoffRadius"));
                             lod.MipMapLevelOfDetailBias = float.Parse(reader.GetAttribute("MipMapLevelOfDetailBias"));
                             lod.AlphaBlendEnable = bool.Parse(reader.GetAttribute("AlphaBlendEnable"));
@@ -330,52 +337,53 @@ namespace ORTS
                 }
             }
         } // end TrProfile(XmlReader) constructor
-/*
+
         /// <summary>
-        /// TrProfile constructor from XML profile file (uses XMLDocument)
+        /// LODDefineTexture returns a texture based on the texture identifier string.
         /// </summary>
-        public TrProfile(string filespec) 
+        public DynatrackTextures LODDefineTexture(string textureID)
         {
-            XmlDocument doc = new XmlDocument();
-            doc.Load(filespec);
-            XmlElement root = doc.DocumentElement;
+            DynatrackTextures texture;
+            switch (textureID)
+            {
+                case "Image1":
+                    texture = DynatrackTextures.Image1;
+                    break;
+                case "Image1s":
+                    texture = DynatrackTextures.Image1s;
+                    break;
+                case "Image2":
+                    texture = DynatrackTextures.Image2;
+                    break;
+                case null: // No Texture attribute in the LOD 
+                    texture = DynatrackTextures.none;
+                    break;
+                default: // Everything else
+                    texture = DynatrackTextures.Image1;
+                    Trace.TraceWarning("Texture " + texture + "not defined; substituting Image1.");
+                    break;
+            } // end switch (texture)
+            return texture;
+        } // end LODDefineTexture
 
-            Console.WriteLine(); // Terminate pending line
-            uint depth = 0;
-            VisitElement(root, ref depth); // Traverse tree starting at root
-        } // end TrProfile(filename) constructor
-
-        private void VisitElement(XmlElement element, ref uint depth)
+        /// <summary>
+        /// LODDefaultTexture returns the texture used by the last LOD unless this is the first LOD,
+        /// in which case it returns Image1. 
+        /// </summary>
+        public DynatrackTextures LODDefaultTexture()
         {
-            for (uint i = 0; i < depth; i++) Console.Write("  "); // Indent
-            Console.Write("{0}[{1}]", element.Name, element.ChildNodes.Count); // ReportInformation
-            XmlAttributeCollection attributes = element.Attributes;
-            switch (element.Name)
-            {
-                case "TrProfile":
-                    ParseTrProfile(attributes);
-                    break;
-                case "LODItem":
-                    break;
-                case "Polyline":
-                    break;
-                case "Vertex":
-                    break;
-                default:
-                    break;
-            }
-            Console.WriteLine();
+                // Use the texture from the last LOD
+                int lastIndex = this.LODItems.Count - 1;
+                if (lastIndex > 0) return ((LODItem)this.LODItems[lastIndex]).Texture;
+                else
+                {
+                    // If this is the first LOD in the profile and there is no Texture,
+                    // use Image1 and flag this with a warning message.
+                    Trace.TraceWarning("No Texture specified in initial LOD of track profile; substituting Image1.");
+                    return DynatrackTextures.Image1;
+                }
+        } // end LODDefaultTexture
 
-            if (!element.HasChildNodes) return;
-
-            depth++; // Increase depth when going down
-            foreach (XmlElement child in element.ChildNodes) // Recurse each child
-            {
-                VisitElement(child, ref depth);
-            }
-            depth--; // Decrease depth when exiting
-        } // end VisitElement
-*/
         /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
         /// </summary>
@@ -400,6 +408,8 @@ namespace ORTS
             lod.MipMapLevelOfDetailBias = -1;
             lod.AlphaBlendEnable = true;
             lod.AlphaTestEnable = false;
+            lod.LightingSpecular = 0;
+            lod.Texture = DynatrackTextures.Image1;
             LODItems.Add(lod); // Append to LODItems array
 
             pl = new Polyline(this, "ballast", 2);
@@ -415,6 +425,8 @@ namespace ORTS
             lod.MipMapLevelOfDetailBias = 0;
             lod.AlphaBlendEnable = false;
             lod.AlphaTestEnable = false;
+            lod.LightingSpecular = 25;
+            lod.Texture = DynatrackTextures.Image2;
             LODItems.Add(lod); // Append to LODItems array
 
             pl = new Polyline(this, "right", 2);
@@ -437,6 +449,8 @@ namespace ORTS
             lod.MipMapLevelOfDetailBias = 0;
             lod.AlphaBlendEnable = false;
             lod.AlphaTestEnable = false;
+            lod.LightingSpecular = 0;
+            lod.Texture = DynatrackTextures.Image2;
             LODItems.Add(lod); // Append to LODItems array
 
             pl = new Polyline(this, "left_outer", 2);
@@ -475,95 +489,8 @@ namespace ORTS
             NumVertices += (uint)count;
             NumSegments += (uint)count - 1;
         } // end Accum
-        /*
-                public void SaveAsXML(string filename)
-                {
-                    // Create a new XML document
-                    XmlDocument xmlDoc = new XmlDocument();
 
-                    // Create and append a root element
-                    XmlElement rootElem = xmlDoc.CreateElement("TrProfile");
-                    xmlDoc.AppendChild(rootElem);
-                    // Add root member variables as attributes
-                    AddAttrib(xmlDoc, rootElem, "Name", this.Name);
-                    AddAttrib(xmlDoc, rootElem, "Image1Name", this.Image1Name);
-                    AddAttrib(xmlDoc, rootElem, "Image1sName", this.Image1sName);
-                    AddAttrib(xmlDoc, rootElem, "Image2Name", this.Image2Name);
-
-                    // Add child LOD elements
-                    foreach (LODItem lod in LODItems)
-                    {
-                        // Create and append a child LOD element
-                        XmlElement lodElement = xmlDoc.CreateElement("LODItem");
-                        rootElem.AppendChild(lodElement);
-                        // Add LOD member variables as attributes
-                        AddAttrib(xmlDoc, lodElement, "Name", lod.Name);
-                        AddAttrib(xmlDoc, lodElement, "CutoffRadius", lod.CutoffRadius.ToString());
-                        AddAttrib(xmlDoc, lodElement, "MipMapLevelOfDetailBias",
-                            lod.MipMapLevelOfDetailBias.ToString());
-                        AddAttrib(xmlDoc, lodElement, "AlphaBlendEnable",
-                            lod.AlphaBlendEnable.ToString());
-                        AddAttrib(xmlDoc, lodElement, "AlphaTestEnable",
-                            lod.AlphaTestEnable.ToString());
-
-                        // Add child polyline elements
-                        foreach (Polyline pl in lod.Polylines)
-                        {
-                            // Create and add a child polyline element
-                            XmlElement plElement = xmlDoc.CreateElement("Polyline");
-                            lodElement.AppendChild(plElement);
-
-                            // Add Polyline member variables as attributes
-                            AddAttrib(xmlDoc, plElement, "Name", pl.Name);
-                            AddAttrib(xmlDoc, plElement, "DeltaTexCoord", string.Format("{0} {1}",
-                                pl.DeltaTexCoord.X, pl.DeltaTexCoord.Y));
-
-                            // Add child vertex elements
-                            uint vIndex = 0;
-                            foreach (Vertex v in pl.Vertices)
-                            {
-                                // Create and add a child vertex element
-                                XmlElement vElement = xmlDoc.CreateElement("Vertex");
-                                plElement.AppendChild(vElement);
-
-                                // Add vertex member variables as attributes
-                                AddAttrib(xmlDoc, vElement, "Position", string.Format("{0} {1} {2}",
-                                    v.Position.X, v.Position.Y, v.Position.Z));
-                                AddAttrib(xmlDoc, vElement, "Normal", string.Format("{0} {1} {2}",
-                                    v.Normal.X, v.Normal.Y, v.Normal.Z));
-                                AddAttrib(xmlDoc, vElement, "TexCoord", string.Format("{0} {1}",
-                                    v.TexCoord.X, v.TexCoord.Y));
-
-                                vIndex++;
-                            }
-                        } // end foreach pl
-                    } // end foreach lod
-
-                    FileInfo xmlFile = new FileInfo(filename);
-                    using (StreamWriter stream = xmlFile.CreateText())
-                    {
-                        stream.Write(xmlDoc.OuterXml);
-                    }
-                } // end SaveAsXML
-
-                private void ParseTrProfile(XmlAttributeCollection attributes)
-                {
-                    string name = attributes["Name"].Value;
-                    uint numLODItems = uint.Parse(attributes["NumLODItems"].Value);
-                    string image1Name = attributes["Image1Name"].Value;
-                    string image1sName = attributes["Image1sName"].Value;
-                    string image2Name = attributes["Image2Name"].Value;
-                    //string foo = attributes["foo"].Value; // This leads to a NullReferenceException
-                } // end ParseTrProfile
-
-                void AddAttrib(XmlDocument xmlDoc, XmlElement xmlElem, string attribName, string attribValue)
-                {
-                    XmlAttribute xmlAttrib = xmlDoc.CreateAttribute(attribName);
-                    xmlAttrib.Value = attribValue;
-                    xmlElem.Attributes.Append(xmlAttrib);
-                } // end Attrib()
-*/
-    } // end TrProfile
+    } // end class TrProfile
 
     public class LODItem
     {
@@ -572,8 +499,10 @@ namespace ORTS
         public string Name;                            // e.g., "Rail sides"
         public float CutoffRadius;                     // Distance beyond which LOD is not seen
         public float MipMapLevelOfDetailBias;
+        public float LightingSpecular;
         public bool AlphaBlendEnable;
         public bool AlphaTestEnable;
+        public DynatrackTextures Texture;
 
         /// <summary>
         /// LODITem constructor (default &amp; XML)
@@ -595,22 +524,40 @@ namespace ORTS
                 new STFReader.TokenProcessor("mipmaplevelofdetailbias", ()=>{ MipMapLevelOfDetailBias = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("alphablendenable", ()=>{ AlphaBlendEnable = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("alphatestenable", ()=>{ AlphaTestEnable = stf.ReadBoolBlock(true); }),
+                new STFReader.TokenProcessor("lightingspecular", ()=>{ LightingSpecular = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("texture", ()=> { Texture = parent.LODDefineTexture(stf.ReadItemBlock(null));
+                }),
                 new STFReader.TokenProcessor("polyline", ()=>{
                     Polyline pl = new Polyline(stf);
                     Polylines.Add(pl); // Append to Polylines array
                     parent.Accum(pl.Vertices.Count);
                 }),
             });
+
             // Checks for required member variables:
             // Name not required.
+            if (Texture == DynatrackTextures.none) Texture = parent.LODDefaultTexture();
             if (CutoffRadius == 0) throw new Exception("missing CutoffRadius");
             // MipMapLevelOfDetail bias initializes to 0.
             // AlphaBlendEnable initializes to false.
             // AlphaTestEnable initializes to false.
             if (Polylines.Count == 0) throw new Exception("missing Polylines");
+            if (Texture == DynatrackTextures.none)
+            {
+                // Texture is not defined in the LOD; use the texture from the last LOD
+                int lastIndex = parent.LODItems.Count - 1;
+                if (lastIndex > 0) Texture = ((LODItem)parent.LODItems[lastIndex]).Texture;
+                else
+                {
+                    // If this is the first LOD in the profile and there is no Texture,
+                    // use Image1 and flag this with a warning message.
+                    Texture = DynatrackTextures.Image1;
+                    Trace.TraceWarning("No Texture specified in initial LOD of track profile; substituting Image1.");
+                }
+            }
 
         } // end LODItem() constructor
-    } // end LODItem
+    } // end class LODItem
 
     public class Polyline
     {
@@ -662,14 +609,7 @@ namespace ORTS
         public Vector3 Position;                           // Position vector (x, y, z)
         public Vector3 Normal;                             // Normal vector (nx, ny, nz)
         public Vector2 TexCoord;                           // Texture coordinate (u, v)
-/*
-        public Vertex()
-        {
-            Position = new Vector3();
-            Normal = new Vector3();
-            TexCoord = new Vector2(); 
-        }
-*/
+
         // Vertex constructor (default)
         public Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v)
         {
@@ -745,7 +685,6 @@ namespace ORTS
             public uint VertexLength;// Number of vertices in LOD
             public uint IndexOrigin; // Start index for first triangle in LOD
             public uint IndexLength; // Number of triangle vertex indicies in LOD
-            //public float CutoffRadius; // Distance beyond which LOD is not seen
         }
         public GridItem[] LODGrid;   // Grid matrix
 
