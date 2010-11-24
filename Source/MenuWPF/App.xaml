@@ -287,5 +287,123 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
+		<Style x:Key="RedRoundButton" TargetType="{x:Type Button}">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type Button}">
+						<ControlTemplate.Resources>
+							<Storyboard x:Key="OnMouseEnter1">
+								<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Width)" Storyboard.TargetName="outerRectangle">
+									<SplineDoubleKeyFrame KeyTime="0" Value="75"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="100"/>
+								</DoubleAnimationUsingKeyFrames>
+								<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Height)" Storyboard.TargetName="outerRectangle">
+									<SplineDoubleKeyFrame KeyTime="0" Value="75"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="100"/>
+								</DoubleAnimationUsingKeyFrames>
+								<ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="outerRectangle">
+									<SplineThicknessKeyFrame KeyTime="0" Value="12"/>
+									<SplineThicknessKeyFrame KeyTime="0:0:0.5" Value="0"/>
+								</ThicknessAnimationUsingKeyFrames>
+							</Storyboard>
+							<Storyboard x:Key="OnMouseEnter2">
+								<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(Shape.Fill).(GradientBrush.GradientStops)[4].(GradientStop.Offset)" Storyboard.TargetName="shineRectangle">
+									<SplineDoubleKeyFrame KeyTime="0" Value="0"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="0.12"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.2" Value="0.225"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="0.333"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="0.466"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="0.627"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.6" Value="0.727"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="0.839"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="0.984"/>
+								</DoubleAnimationUsingKeyFrames>
+								<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(Shape.Fill).(GradientBrush.GradientStops)[5].(GradientStop.Offset)" Storyboard.TargetName="shineRectangle">
+									<SplineDoubleKeyFrame KeyTime="0" Value="0.213"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="0.365"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.2" Value="0.458"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="0.566"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="0.663"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="0.803"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.6" Value="0.904"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1"/>
+									<SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1"/>
+								</DoubleAnimationUsingKeyFrames>
+								<ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Shape.Fill).(GradientBrush.GradientStops)[3].(GradientStop.Color)" Storyboard.TargetName="shineRectangle">
+									<SplineColorKeyFrame KeyTime="0" Value="#FF3BC450"/>
+									<SplineColorKeyFrame KeyTime="0:0:0.1" Value="#003BC450"/>
+									<SplineColorKeyFrame KeyTime="0:0:0.2" Value="#003BC450"/>
+									<SplineColorKeyFrame KeyTime="0:0:0.3" Value="#003BC450"/>
+									<SplineColorKeyFrame KeyTime="0:0:0.4" Value="#003BC450"/>
+									<SplineColorKeyFrame KeyTime="0:0:0.5" Value="#003BC450"/>
+									<SplineColorKeyFrame KeyTime="0:0:0.6" Value="#003BC450"/>
+									<SplineColorKeyFrame KeyTime="0:0:0.7" Value="#003BC450"/>
+									<SplineColorKeyFrame KeyTime="0:0:0.8" Value="#003BC450"/>
+								</ColorAnimationUsingKeyFrames>
+							</Storyboard>
+						</ControlTemplate.Resources>
+						<Grid>
+							<Rectangle x:Name="outerRectangle" Opacity="0.5" RadiusY="50" RadiusX="50" RenderTransformOrigin="0.5,0.5" Stroke="Black" StrokeThickness="0" Width="75" Height="75" Margin="12">
+								<Rectangle.Fill>
+									<RadialGradientBrush>
+										<GradientStop Color="#00005393" Offset="1"/>
+										<GradientStop Color="Red" Offset="0.815"/>
+									</RadialGradientBrush>
+								</Rectangle.Fill>
+								<Rectangle.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</Rectangle.RenderTransform>
+							</Rectangle>
+							<Rectangle x:Name="innerRectangle" Height="Auto" Margin="12" RadiusY="50" RadiusX="50" Stroke="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" StrokeThickness="0">
+								<Rectangle.Fill>
+									<LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+										<GradientStop Color="#FFFDAFAF"/>
+										<GradientStop Color="#FF9D0303" Offset="1"/>
+										<GradientStop Color="#FFDE5A5A" Offset="0.153"/>
+										<GradientStop Color="#FFC43B3B" Offset="0.301"/>
+										<GradientStop Color="#FFC23D3D" Offset="0.486"/>
+									</LinearGradientBrush>
+								</Rectangle.Fill>
+							</Rectangle>
+							<Rectangle x:Name="shineRectangle" Height="Auto" Margin="12" RadiusY="50" RadiusX="50" Stroke="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" StrokeThickness="0">
+								<Rectangle.Fill>
+									<LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+										<GradientStop Color="White"/>
+										<GradientStop Color="#FF039D1B"/>
+										<GradientStop Color="#FF5ADE6E"/>
+										<GradientStop Color="#FF3BC450"/>
+										<GradientStop Color="White"/>
+										<GradientStop Offset="0.213"/>
+									</LinearGradientBrush>
+								</Rectangle.Fill>
+							</Rectangle>
+							<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+						</Grid>
+						<ControlTemplate.Triggers>
+							<EventTrigger RoutedEvent="Mouse.MouseEnter">
+								<BeginStoryboard x:Name="OnMouseEnter2_BeginStoryboard" Storyboard="{StaticResource OnMouseEnter2}"/>
+							</EventTrigger>
+							<EventTrigger RoutedEvent="Mouse.MouseLeave">
+								<StopStoryboard BeginStoryboardName="OnMouseEnter1_BeginStoryboard"/>
+								<StopStoryboard BeginStoryboardName="OnMouseEnter2_BeginStoryboard"/>
+							</EventTrigger>
+							<EventTrigger RoutedEvent="Mouse.MouseEnter">
+								<BeginStoryboard x:Name="OnMouseEnter1_BeginStoryboard" Storyboard="{StaticResource OnMouseEnter1}"/>
+							</EventTrigger>
+							<Trigger Property="IsFocused" Value="True"/>
+							<Trigger Property="IsDefaulted" Value="True"/>
+							<Trigger Property="IsMouseOver" Value="True"/>
+							<Trigger Property="IsPressed" Value="True"/>
+							<Trigger Property="IsEnabled" Value="False"/>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
 	</Application.Resources>
 </Application>

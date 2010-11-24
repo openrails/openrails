@@ -8,6 +8,6 @@
 
 	<Grid x:Name="LayoutRoot">
 		<Button Content="Button" Height="98" Margin="85,85,212,0" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Top"/>
-		<Button Content="Button" Height="100" Margin="241,0,283,92" Style="{DynamicResource RoundButton}" VerticalAlignment="Bottom"/>
+		<Button Content="Button" Height="100" Margin="241,0,283,92" Style="{DynamicResource RedRoundButton}" VerticalAlignment="Bottom"/>
 	</Grid>
 </Window>

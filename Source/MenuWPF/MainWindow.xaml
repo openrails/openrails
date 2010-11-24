@@ -222,7 +222,7 @@
 				</FlowDocumentScrollViewer>
 			</Grid>
 		</Border>
-		<Button x:Name="btnQuit" Content="Quit" HorizontalAlignment="Left" Margin="8,20,0,20" Grid.Row="4" Width="129" Foreground="#FF032387" FontSize="21.333" FontFamily="Global User Interface" FontWeight="Bold" Click="btnQuit_Click" Cursor="Hand">
+		<Button x:Name="btnQuit" Content="Quit" HorizontalAlignment="Left" Margin="8,0,0,0" Grid.Row="4" Width="100" Foreground="Black" FontSize="21.333" FontFamily="Global User Interface" FontWeight="Bold" Click="btnQuit_Click" Cursor="Hand" Style="{DynamicResource RedRoundButton}" Height="100">
 			<Button.Background>
 				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
 					<GradientStop Color="#FFF3F3F3" Offset="0"/>
