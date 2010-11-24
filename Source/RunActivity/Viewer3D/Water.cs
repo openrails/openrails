@@ -65,14 +65,16 @@ namespace ORTS
             if (WaterLayers == null)  // if there was a problem loading the water texture
                 return;
 
-            Vector3 xnaTileLocation = Viewer.Camera.XNALocation(TileWorldLocation);
+			int dTileX = TileX - Viewer.Camera.TileX;
+			int dTileZ = TileZ - Viewer.Camera.TileZ;
+			Vector3 mstsLocation = new Vector3(1024 + dTileX * 2048, 0, 1024 - dTileZ * 2048);
 
             // Distance cull
-            if (Viewer.Camera.CanSee(xnaTileLocation, 3500f, 2000f))
+			if (Viewer.Camera.CanSee(mstsLocation, 1448f, 2000f))
             {
 				foreach (var waterLayer in WaterLayers)
 				{
-					xnaMatrix.Translation = new Vector3(xnaTileLocation.X, xnaTileLocation.Y + waterLayer.Key, xnaTileLocation.Z);
+					xnaMatrix.Translation = new Vector3(mstsLocation.X - 1024, mstsLocation.Y + waterLayer.Key, mstsLocation.Z - 1024);
 					frame.AddPrimitive(waterLayer.Value, this, RenderPrimitiveGroup.World, ref xnaMatrix);
 				}
             }

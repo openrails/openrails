@@ -43,11 +43,11 @@ namespace ORTS
 		Matrix xnaProjection;
 		public Matrix XNAProjection { get { return xnaProjection; } }
 
-		// The right frustrum is precomputed, represented by this equation:
-		//   0 = Ax + Bz; where A^2 + B^2 = 1
-		float rightFrustrumA, rightFrustrumB;
-		public float RightFrustrumA { get { return rightFrustrumA; } }
-		public float RightFrustrumB { get { return rightFrustrumB; } }
+		Vector3 frustumRightProjected;
+		Vector3 frustumLeft;
+		Vector3 frustumRight;
+
+		public float RightFrustrumA { get { return (float)Math.Cos(MathHelper.ToRadians(45.0f) / 2 * (Viewer.DisplaySize.X / Viewer.DisplaySize.Y)); } }
 
 		// This sucks. It's really not camera-related at all.
 		public static Matrix XNASkyProjection;
@@ -123,8 +123,8 @@ namespace ORTS
 			var fovWidthRadians = MathHelper.ToRadians(45.0f);
 			xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, Viewer.Settings.ViewingDistance);
 			XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, farPlaneDistance);    // TODO remove? 
-			rightFrustrumA = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // precompute the right edge of the view frustrum
-			rightFrustrumB = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);
+			frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // precompute the right edge of the view frustrum
+			frustumRightProjected.Z = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);
 		}
 
 		/// <summary>
@@ -136,29 +136,28 @@ namespace ORTS
 		{
 			xnaView = GetCameraView();
 			frame.SetCamera(ref xnaView, ref xnaProjection);
+
+			frustumLeft.X = -xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
+			frustumLeft.Z = xnaView.M31 * frustumRightProjected.X - xnaView.M33 * frustumRightProjected.Z;
+			frustumRight.X = xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
+			frustumRight.Z = -xnaView.M31 * frustumRightProjected.X - xnaView.M33 * frustumRightProjected.Z;
+
+			frustumLeft.Normalize();
+			frustumRight.Normalize();
 		}
 
 		// Cull for fov
 		public bool InFOV(Vector3 mstsObjectCenter, float objectRadius)
 		{
-			Vector3 xnaObjectCenter;
-			// X is not used until later.
-			// Y is unused: xnaObjectCenter.Y = xnaView.M12 * mstsObjectCenter.X + xnaView.M22 * mstsObjectCenter.Y - xnaView.M32 * mstsObjectCenter.Z + xnaView.M42;
-			xnaObjectCenter.Z = xnaView.M13 * mstsObjectCenter.X + xnaView.M23 * mstsObjectCenter.Y - xnaView.M33 * mstsObjectCenter.Z + xnaView.M43;
+			mstsObjectCenter.X -= cameraLocation.Location.X;
+			mstsObjectCenter.Z -= cameraLocation.Location.Z;
+			objectRadius *= 2;
 
-			if (xnaObjectCenter.Z > objectRadius * 2)
-				return false;  // behind camera
+			if (MSTSMath.M.DistanceToLine(frustumLeft.X, frustumLeft.Z, 0, mstsObjectCenter.X, mstsObjectCenter.Z) > objectRadius)
+				return false;
 
-			xnaObjectCenter.X = xnaView.M11 * mstsObjectCenter.X + xnaView.M21 * mstsObjectCenter.Y - xnaView.M31 * mstsObjectCenter.Z + xnaView.M41;
-
-			// Cull for left and right
-			var d = MSTSMath.M.DistanceToLine(RightFrustrumA, RightFrustrumB, 0, xnaObjectCenter.X, xnaObjectCenter.Z);
-			if (d > objectRadius * 2)
-				return false;  // right of view
-
-			d = MSTSMath.M.DistanceToLine(-RightFrustrumA, RightFrustrumB, 0, xnaObjectCenter.X, xnaObjectCenter.Z);
-			if (d > objectRadius * 2)
-				return false; // left of view
+			if (MSTSMath.M.DistanceToLine(frustumRight.X, frustumRight.Z, 0, mstsObjectCenter.X, mstsObjectCenter.Z) > objectRadius)
+				return false;
 
 			return true;
 		}
