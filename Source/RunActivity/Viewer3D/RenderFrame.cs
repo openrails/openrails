@@ -527,7 +527,7 @@ namespace ORTS
         /// <param name="graphicsDevice"></param>
         public void DrawSimple(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.Clear(Materials.FogColor);
+            graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Materials.FogColor, 1, 0);
 
             DrawSequences(graphicsDevice);
         }
