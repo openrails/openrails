@@ -138,8 +138,10 @@ namespace ORTS
 			frame.SetCamera(ref xnaView, ref xnaProjection);
 
 			frustumLeft.X = -xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
+			frustumLeft.Y = -xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
 			frustumLeft.Z = xnaView.M31 * frustumRightProjected.X - xnaView.M33 * frustumRightProjected.Z;
 			frustumRight.X = xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
+			frustumRight.Y = xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
 			frustumRight.Z = -xnaView.M31 * frustumRightProjected.X - xnaView.M33 * frustumRightProjected.Z;
 
 			frustumLeft.Normalize();
@@ -150,13 +152,14 @@ namespace ORTS
 		public bool InFOV(Vector3 mstsObjectCenter, float objectRadius)
 		{
 			mstsObjectCenter.X -= cameraLocation.Location.X;
+			mstsObjectCenter.Y -= cameraLocation.Location.Y;
 			mstsObjectCenter.Z -= cameraLocation.Location.Z;
 			objectRadius *= 2;
 
-			if (MSTSMath.M.DistanceToLine(frustumLeft.X, frustumLeft.Z, 0, mstsObjectCenter.X, mstsObjectCenter.Z) > objectRadius)
+			if (frustumLeft.X * mstsObjectCenter.X + frustumLeft.Y * mstsObjectCenter.Y + frustumLeft.Z * mstsObjectCenter.Z > objectRadius)
 				return false;
 
-			if (MSTSMath.M.DistanceToLine(frustumRight.X, frustumRight.Z, 0, mstsObjectCenter.X, mstsObjectCenter.Z) > objectRadius)
+			if (frustumRight.X * mstsObjectCenter.X + frustumRight.Y * mstsObjectCenter.Y + frustumRight.Z * mstsObjectCenter.Z > objectRadius)
 				return false;
 
 			return true;
