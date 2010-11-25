@@ -55,9 +55,9 @@ namespace MSTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("world_water_layer_height", ()=>{ Height = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("world_anim_shader", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); stf.ReadItem()/*TextureMode*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); stf.ReadString()/*TextureMode*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("terrain_texslots", ()=>{ stf.MustMatch("("); stf.ReadInt(STFReader.UNITS.None, null)/*Count*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("terrain_texslot", ()=>{ stf.MustMatch("("); TextureName = stf.ReadItem(); stf.SkipRestOfBlock(); }),
+                            new STFReader.TokenProcessor("terrain_texslot", ()=>{ stf.MustMatch("("); TextureName = stf.ReadString(); stf.SkipRestOfBlock(); }),
                         });}),
                     });}),
                 });}),

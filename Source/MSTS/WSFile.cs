@@ -61,7 +61,7 @@ namespace ORTS
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("filename", ()=>{ SoundSourceFileName = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("filename", ()=>{ SoundSourceFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("position", ()=>{
                     stf.MustMatch("(");
                     X = stf.ReadFloat(STFReader.UNITS.None, null);

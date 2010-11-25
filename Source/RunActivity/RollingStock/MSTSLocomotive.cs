@@ -212,8 +212,8 @@ namespace ORTS
                 EngineBrakeController.ParseBrakeValue(lowercasetoken.Substring(29), stf);
             switch (lowercasetoken)
             {
-                case "engine(sound": CabSoundFileName = stf.ReadItemBlock(null); break;
-                case "engine(cabview": CVFFileName = stf.ReadItemBlock(null); break;
+                case "engine(sound": CabSoundFileName = stf.ReadStringBlock(null); break;
+                case "engine(cabview": CVFFileName = stf.ReadStringBlock(null); break;
                 case "engine(maxpower": MaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;

@@ -42,9 +42,9 @@ namespace MSTS
             public TrackType(STFReader stf)
             {
                 stf.MustMatch("(");
-                Label = stf.ReadItem();
-                InsideSound = stf.ReadItem();
-                OutsideSound = stf.ReadItem();
+                Label = stf.ReadString();
+                InsideSound = stf.ReadString();
+                OutsideSound = stf.ReadString();
                 stf.SkipRestOfBlock();
             }
         } // TrackType

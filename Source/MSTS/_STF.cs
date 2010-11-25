@@ -94,12 +94,12 @@ namespace MSTS
     ///             new STFReader.TokenProcessor("block_fixed_format", ()=>{
     ///                 stf.MustMatch("(");
     ///                 int bff1 = stf.ReadInt(STFReader.UNITS.None, 0);
-    ///                 string bff2 = stf.ReadItem();
+    ///                 string bff2 = stf.ReadString();
     ///                 stf.SkipRestOfBlock();
     ///             }),
     ///             new STFReader.TokenProcessor("block_variable_contents", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-    ///                 new STFReader.TokenProcessor("subitem", ()=>{ string si = stf.ReadItem(); }),
-    ///                 new STFReader.TokenProcessor("subblock", ()=>{ string sb = stf.ReadItemBlock(""); }),
+    ///                 new STFReader.TokenProcessor("subitem", ()=>{ string si = stf.ReadString(); }),
+    ///                 new STFReader.TokenProcessor("subblock", ()=>{ string sb = stf.ReadStringBlock(""); }),
     ///             });}),
     ///         });
     /// </code></example>
@@ -114,7 +114,7 @@ namespace MSTS
     ///                    case "block_fixed_format":
     ///                        stf.MustMatch("(");
     ///                        int bff1 = stf.ReadInt(STFReader.UNITS.None, 0);
-    ///                        string bff2 = stf.ReadItem();
+    ///                        string bff2 = stf.ReadString();
     ///                        stf.SkipRestOfBlock();
     ///                        break;
     ///                    case "block_variable_contents":
@@ -122,8 +122,8 @@ namespace MSTS
     ///                        while (!stf.EndOfBlock())
     ///                            switch (stf.ReadItem().ToLower())
     ///                            {
-    ///                                case "subitem": string si = stf.ReadItem(); break;
-    ///                                case "subblock": string sb = stf.ReadItemBlock(""); break;
+    ///                                case "subitem": string si = stf.ReadString(); break;
+    ///                                case "subblock": string sb = stf.ReadStringBlock(""); break;
     ///                                case "(": stf.SkipRestOfBlock();
     ///                            }
     ///                        break;
@@ -236,13 +236,26 @@ namespace MSTS
             }
         }
 
-        /// <summary>This is the main function in STFReader, it returns the next whitespace delimited {item} from the STF file.
+        /// <summary>Returns the next whitespace delimited {item} from the STF file skipping comments, etc.
         /// </summary>
         /// <remarks>
         /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
         /// </remarks>
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         public string ReadItem()
+        {
+            return ReadItem(false);
+        }
+
+
+        /// <summary>This is an internal function in STFReader, it returns the next whitespace delimited {item} from the STF file.
+        /// </summary>
+        /// <remarks>
+        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+        /// </remarks>
+        /// <param name="string_mode">When true normal comment processing is disabled.</param>
+        /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
+        public string ReadItem( bool string_mode)
         {
             #region If StepBackOneItem() has been called then return the previous output from ReadItem() rather than reading a new token
             if (stepbackoneitemFlag)
@@ -257,7 +270,7 @@ namespace MSTS
             }
             #endregion
 
-            return ReadItem(false);
+            return ReadItem(false, string_mode);
         }
         /// <summary>Calling this function causes ReadItem() to repeat the last {item} that was read from the STF file
         /// </summary>
@@ -336,7 +349,7 @@ namespace MSTS
         /// </summary>
         public void SkipBlock()
 		{
-			string token = ReadItem(true);  // read the leading bracket ( 
+			string token = ReadItem(true, false);  // read the leading bracket ( 
             if (token == ")")   // just in case we are not where we think we are
             {
                 STFException.TraceWarning(this, "Found a close parenthesis, rather than the expected block of data");
@@ -362,12 +375,23 @@ namespace MSTS
             int depth = 1;
             while (!EOF && depth > 0)
             {
-                string token = ReadItem(true);
+                string token = ReadItem(true, false);
                 if (token == "(")
                     ++depth;
                 if (token == ")")
                     --depth;
             }
+        }
+
+        /// <summary>Return next whitespace delimited string from the STF file.
+        /// </summary>
+        /// <remarks>
+        /// <alert class="important">This differs from ReadInt in that normal comment processing is disabled.  ie an item that starts with _ is returned and not skipped.</alert>
+        /// </remarks>
+        /// <returns>The next {string_item} from the STF file, any surrounding quotations will be not be returned.</returns>
+        public string ReadString()
+        {
+            return ReadItem(true);
         }
 
         /// <summary>Read an hexidecimal encoded number {constant_item}
@@ -633,11 +657,11 @@ namespace MSTS
         }
 
 
-        /// <summary>Read an {item} from the STF format '( {item} ... )'
+        /// <summary>Read an string constant from the STF format '( {string_constant} ... )'
         /// </summary>
         /// <param name="default_val">the default value if the item is not found in the block.</param>
         /// <returns>The first item inside the STF block.</returns>
-        public string ReadItemBlock(string default_val)
+        public string ReadStringBlock(string default_val)
 		{
             if (EOF)
             {
@@ -652,7 +676,7 @@ namespace MSTS
             }
             if (s == "(")
             {
-                string result = ReadItem();
+                string result = ReadString();
                 SkipRestOfBlock();
                 if (result == "#\u00b6")
                 {
@@ -1026,13 +1050,14 @@ namespace MSTS
         /// <summary>Internal Implementation - This is the main function that reads an item from the STF stream.
         /// </summary>
         /// <param name="skip_mode">True - we are in a skip function, and so we don't want to do any special token processing.</param>
+        /// <param name="string_mode">True - we are expecting a string, so don't skip comments.</param>
         /// <returns>The next item from the STF file</returns>
-        private string ReadItem(bool skip_mode)
+        private string ReadItem(bool skip_mode, bool string_mode)
         {
             #region If includeReader exists, then recurse down to get the next token from the included STF file
             if (includeReader != null)
             {
-                string item = includeReader.ReadItem();
+                string item = includeReader.ReadItem( skip_mode, string_mode);
                 UpdateTreeAndStepBack(item);
                 if ((!includeReader.EOF) || (item.Length > 0)) return item;
                 if (tree.Count != 0)
@@ -1064,7 +1089,7 @@ namespace MSTS
             }
             #endregion
             #region Handle #&_ markers
-            else if ((!skip_mode) && ((c == '#') || (c == '_')))
+            else if ((!skip_mode && !string_mode) && ((c == '#') || (c == '_')))
             {
                 #region Move on to a whitespace so we can pick up any token starting with a #
                 for (; ; )
@@ -1081,11 +1106,11 @@ namespace MSTS
                 }
                 #endregion
                 #region Skip the comment item or block
-                string comment = ReadItem();
+                string comment = ReadItem( skip_mode, string_mode);
                 if (comment == ")") { StepBackOneItem(); return "#\u00b6"; }
                 if (comment == "(") SkipRestOfBlock();
                 #endregion
-                string item = ReadItem();
+                string item = ReadItem( skip_mode, string_mode);
                 if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
                 return item; // Now move on to the next token after the commented area
             }
@@ -1154,38 +1179,41 @@ namespace MSTS
 
             if (skip_mode) return "";
             string result = itemBuilder.ToString();
-            switch (result.ToLower())
+            if (!string_mode)  // in string mode we don't exclude comments
             {
-                #region Process special token - include
-                case "include":
-                    string filename = ReadItem();
-                    if (filename == "(")
-                    {
-                        filename = ReadItem();
-                        SkipRestOfBlock();
-                    }
-                    if (tree.Count == 0)
-                    {
-                        includeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename, false);
-                        return ReadItem(); // Which will recurse down when includeReader is tested
-                    }
-                    else
-                        STFException.TraceError(this, "Found an include directive, but it was enclosed inside block parenthesis which is illegal.");
-                    break;
-                #endregion
-                #region Process special token - skip and comment
-                case "skip":
-                case "comment":
-                    {
-                        #region Skip the comment item or block
-                        string comment = ReadItem();
-                        if (comment == "(") SkipRestOfBlock();
-                        #endregion
-                        string item = ReadItem();
-                        if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
-                        return item; // Now move on to the next token after the commented area
-                    }
-                #endregion
+                switch (result.ToLower())
+                {
+                    #region Process special token - include
+                    case "include":
+                        string filename = ReadItem(skip_mode, string_mode);
+                        if (filename == "(")
+                        {
+                            filename = ReadItem(skip_mode, string_mode);
+                            SkipRestOfBlock();
+                        }
+                        if (tree.Count == 0)
+                        {
+                            includeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename, false);
+                            return ReadItem(skip_mode, string_mode); // Which will recurse down when includeReader is tested
+                        }
+                        else
+                            STFException.TraceError(this, "Found an include directive, but it was enclosed inside block parenthesis which is illegal.");
+                        break;
+                    #endregion
+                    #region Process special token - skip and comment
+                    case "skip":
+                    case "comment":
+                        {
+                            #region Skip the comment item or block
+                            string comment = ReadItem(skip_mode, string_mode);
+                            if (comment == "(") SkipRestOfBlock();
+                            #endregion
+                            string item = ReadItem(skip_mode, string_mode);
+                            if (item == ")") { StepBackOneItem(); return "#\u00b6"; }
+                            return item; // Now move on to the next token after the commented area
+                        }
+                    #endregion
+                }
             }
 
             return UpdateTreeAndStepBack(result);

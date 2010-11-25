@@ -153,7 +153,7 @@ namespace MSTS
 			TrackSections = new uint[NoSections]; 
 			for( int i = 0; i < NoSections; ++i )  
 			{
-       			string token = stf.ReadItem();
+       			string token = stf.ReadString();
                 if( token == ")" ) 
                 {
                     STFException.TraceError(stf, "Missing track section");
@@ -178,7 +178,7 @@ namespace MSTS
             ShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);
 			int nextPath = 0;
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("filename", ()=>{ FileName = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("filename", ()=>{ FileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("numpaths", ()=>{ SectionIdxs = new SectionIdx[NumPaths = stf.ReadUIntBlock(STFReader.UNITS.None, null)]; }),
                 new STFReader.TokenProcessor("mainroute", ()=>{ MainRoute = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("clearancedist", ()=>{ ClearanceDistance = stf.ReadDoubleBlock(STFReader.UNITS.Distance, null); }),

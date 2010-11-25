@@ -38,7 +38,7 @@ namespace MSTS
 
             public SDShape(STFReader stf)
             {
-                stf.ReadItem(); // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
+                stf.ReadString(); // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("esd_detail_level", ()=>{ ESD_Detail_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                     new STFReader.TokenProcessor("esd_alternative_texture", ()=>{ ESD_Alternative_Texture = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
@@ -71,7 +71,7 @@ namespace MSTS
             public ESD_Bounding_Box(STFReader stf)
             {
                 stf.MustMatch("(");
-                string item = stf.ReadItem();
+                string item = stf.ReadString();
                 if (item == ")") return;    // quietly return on ESD_Bounding_Box()
                 stf.StepBackOneItem();
                 float X = stf.ReadFloat(STFReader.UNITS.None, null);

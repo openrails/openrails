@@ -59,10 +59,10 @@ namespace MSTS
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("routeid", ()=>{ RouteID = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("filename", ()=>{ FileName = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("routeid", ()=>{ RouteID = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("filename", ()=>{ FileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("maxlinevoltage", ()=>{ MaxLineVoltage = stf.ReadDoubleBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("routestart", ()=>{ if (RouteStart == null) RouteStart = new RouteStart(stf); }),
                 new STFReader.TokenProcessor("environment", ()=>{ Environment = new TRKEnvironment(stf); }),
@@ -108,8 +108,8 @@ namespace MSTS
             stf.MustMatch("(");
             for( int i = 0; i < 12; ++i )
             {
-                string s = stf.ReadItem();
-                ENVFileNames[i] = stf.ReadItemBlock(null);
+                string s = stf.ReadString();
+                ENVFileNames[i] = stf.ReadStringBlock(null);
             }
             stf.SkipRestOfBlock();
         }

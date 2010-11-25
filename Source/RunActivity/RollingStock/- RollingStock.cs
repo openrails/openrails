@@ -123,9 +123,9 @@ namespace ORTS
                 public EngineClass(STFReader stf)
                 {
                     stf.MustMatch("(");
-                    stf.ReadItem();
+                    stf.ReadString();
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadItemBlock(null); }),
+                        new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadStringBlock(null); }),
                     });
                 }
             } // class WAGFile.Engine
@@ -138,7 +138,7 @@ namespace ORTS
                 {
                     stf.MustMatch("(");
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("dll", ()=>{ DLL = stf.ReadItemBlock(null); }),
+                        new STFReader.TokenProcessor("dll", ()=>{ DLL = stf.ReadStringBlock(null); }),
                     });
                 }
             } // class WAGFile.Engine

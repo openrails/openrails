@@ -251,10 +251,10 @@ namespace ORTS
 
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("image1name", ()=>{ Image1Name = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("image1sname", ()=>{ Image1sName = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("image2name", ()=>{ Image2Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("image1name", ()=>{ Image1Name = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("image1sname", ()=>{ Image1sName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("image2name", ()=>{ Image2Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("loditem", ()=>{ LODItems.Add(new LODItem(stf, this)); }),
             });
             // Checks for required member variables: 
@@ -519,13 +519,13 @@ namespace ORTS
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("cutoffradius", ()=>{ CutoffRadius = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("mipmaplevelofdetailbias", ()=>{ MipMapLevelOfDetailBias = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("alphablendenable", ()=>{ AlphaBlendEnable = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("alphatestenable", ()=>{ AlphaTestEnable = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("lightingspecular", ()=>{ LightingSpecular = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("texture", ()=> { Texture = parent.LODDefineTexture(stf.ReadItemBlock(null));
+                new STFReader.TokenProcessor("texture", ()=> { Texture = parent.LODDefineTexture(stf.ReadStringBlock(null));
                 }),
                 new STFReader.TokenProcessor("polyline", ()=>{
                     Polyline pl = new Polyline(stf);
@@ -588,7 +588,7 @@ namespace ORTS
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("name", ()=>{ stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("name", ()=>{ stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("vertex", ()=>{ Vertices.Add(new Vertex(stf)); }),
                 new STFReader.TokenProcessor("deltatexcoord", ()=>{
                     stf.MustMatch("(");

@@ -33,9 +33,9 @@ namespace MSTS
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("service_definition", ()=> { stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                        new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
-                        new STFReader.TokenProcessor("train_config", ()=>{ Train_Config = stf.ReadItemBlock(null); }),
-                        new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadItemBlock(null); }),
+                        new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                        new STFReader.TokenProcessor("train_config", ()=>{ Train_Config = stf.ReadStringBlock(null); }),
+                        new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("maxwheelacceleration", ()=>{ MaxWheelAcceleration = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
                         new STFReader.TokenProcessor("efficiency", ()=>{ Efficiency = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
                     });}),

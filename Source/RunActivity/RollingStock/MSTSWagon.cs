@@ -100,10 +100,10 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "wagon(wagonshape": MainShapeFileName = stf.ReadItemBlock(null); break;
+                case "wagon(wagonshape": MainShapeFileName = stf.ReadStringBlock(null); break;
                 case "wagon(freightanim":
                     stf.MustMatch("(");
-                    FreightShapeFileName = stf.ReadItem();
+                    FreightShapeFileName = stf.ReadString();
                     FreightAnimHeight = stf.ReadFloat(STFReader.UNITS.Distance, null) - stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
@@ -117,10 +117,10 @@ namespace ORTS
                 case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Weight, null); break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(sound": MainSoundFileName = stf.ReadItemBlock(null); break;
+                case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
                 case "wagon(friction": ParseFriction(stf); break;
                 case "wagon(brakesystemtype":
-                    brakeSystemType = stf.ReadItemBlock(null).ToLower();
+                    brakeSystemType = stf.ReadStringBlock(null).ToLower();
                     BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
                     break;
                 case "wagon(coupling":
@@ -198,8 +198,8 @@ namespace ORTS
             ViewPoint passengerViewPoint = new ViewPoint();
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("passengercabinfile", ()=>{ InteriorShapeFileName = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("passengercabinfile", ()=>{ InteriorShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("passengercabinheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),

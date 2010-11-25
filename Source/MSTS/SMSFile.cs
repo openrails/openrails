@@ -182,7 +182,7 @@ namespace MSTS
         public VolumeCurve(STFReader stf)
         {
             stf.MustMatch("(");
-            switch (stf.ReadItem().ToLower())
+            switch (stf.ReadString().ToLower())
             {
                 case "distancecontrolled": Control = Controls.DistanceControlled; break;
                 case "speedcontrolled": Control = Controls.SpeedControlled; break;
@@ -291,7 +291,7 @@ namespace MSTS
         {
             f.MustMatch("(");
             while (!f.EndOfBlock())
-                ParsePlayCommand(f, f.ReadItem().ToLower());
+                ParsePlayCommand(f, f.ReadString().ToLower());
         }
     }
 
@@ -305,7 +305,7 @@ namespace MSTS
             f.MustMatch("(");
             TriggerID = f.ReadInt(STFReader.UNITS.None, null);
             while (!f.EndOfBlock())
-                ParsePlayCommand(f, f.ReadItem().ToLower());
+                ParsePlayCommand(f, f.ReadString().ToLower());
         }
     }
 
@@ -321,7 +321,7 @@ namespace MSTS
         {
             f.MustMatch("(");
 
-            string eventString = f.ReadItem();
+            string eventString = f.ReadString();
 
             switch (eventString.ToLower())
             {
@@ -340,7 +340,7 @@ namespace MSTS
             Threshold = f.ReadFloat(STFReader.UNITS.None, null);
 
             while (!f.EndOfBlock())
-                ParsePlayCommand(f, f.ReadItem().ToLower());
+                ParsePlayCommand(f, f.ReadString().ToLower());
         }
     }
 
@@ -356,7 +356,7 @@ namespace MSTS
             f.MustMatch("(");
             while (!f.EndOfBlock())
             {
-                string lowtok = f.ReadItem().ToLower();
+                string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
                     case "dist_min_max": f.MustMatch("("); Dist_Min = f.ReadFloat(STFReader.UNITS.Distance, null); Dist_Max = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
@@ -379,7 +379,7 @@ namespace MSTS
             f.MustMatch("(");
             while (!f.EndOfBlock())
             {
-                string lowtok = f.ReadItem().ToLower();
+                string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
                     case "delay_min_max": f.MustMatch("("); Delay_Min = f.ReadFloat(STFReader.UNITS.None, null); Delay_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
@@ -460,13 +460,13 @@ namespace MSTS
             Files = new string[count];
             int iFile = 0;
             while (!f.EndOfBlock())
-                switch (f.ReadItem().ToLower())
+                switch (f.ReadString().ToLower())
                 {
                     case "file":
                         if (iFile < count)
                         {
                             f.MustMatch("(");
-                            Files[iFile++] = f.ReadItem();
+                            Files[iFile++] = f.ReadString();
                             f.ReadInt(STFReader.UNITS.None, null);
                             f.SkipRestOfBlock();
                         }
@@ -478,7 +478,7 @@ namespace MSTS
                         break;
                     case "selectionmethod":
                         f.MustMatch("(");
-                        string s = f.ReadItem();
+                        string s = f.ReadString();
                         switch (s.ToLower())
                         {
                             case "randomselection": SelectionMethod = SelectionMethods.RandomSelection; break;

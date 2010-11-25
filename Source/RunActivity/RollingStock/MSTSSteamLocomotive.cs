@@ -207,11 +207,11 @@ namespace ORTS
                 case "engine(numcylinders": NumCylinders = stf.ReadIntBlock(STFReader.UNITS.None, null); break;
                 case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": CylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(stf.ReadItemBlock(null), stf); break;
-                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(stf.ReadItemBlock(null), stf); break;
-                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(stf.ReadItemBlock(null), stf); break;
-                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(stf.ReadItemBlock(null), stf); break;
-                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(stf.ReadItemBlock(null), stf) / 3600; break;
+                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(stf.ReadStringBlock(null), stf); break;
+                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(stf.ReadStringBlock(null), stf); break;
+                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(stf.ReadStringBlock(null), stf); break;
+                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(stf.ReadStringBlock(null), stf); break;
+                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(stf.ReadStringBlock(null), stf) / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(forcefactor1": ForceFactor1 = new Interpolator(stf); break;
                 case "engine(forcefactor2": ForceFactor2 = new Interpolator(stf); break;

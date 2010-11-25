@@ -191,7 +191,7 @@ namespace MSTS
         public TrJunctionNode(STFReader stf)
         {
             stf.MustMatch("(");
-            stf.ReadItem();
+            stf.ReadString();
             ShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);
             stf.SkipRestOfBlock();
         }
@@ -250,12 +250,12 @@ namespace MSTS
         {
             SectionIndex = stf.ReadUInt(STFReader.UNITS.None, null);
             ShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);
-            stf.ReadItem(); // worldfilenamex
-            stf.ReadItem(); // worldfilenamez
+            stf.ReadString(); // worldfilenamex
+            stf.ReadString(); // worldfilenamez
             WorldFileUiD = stf.ReadUInt(STFReader.UNITS.None, null); // UID in worldfile
             flag1 = stf.ReadInt(STFReader.UNITS.None, null); // 0
             flag2 = stf.ReadInt(STFReader.UNITS.None, null); // 1
-            stf.ReadItem(); // 00 
+            stf.ReadString(); // 00 
             TileX = stf.ReadInt(STFReader.UNITS.None, null);
             TileZ = stf.ReadInt(STFReader.UNITS.None, null);
             X = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -339,7 +339,7 @@ namespace MSTS
         {
             stf.MustMatch("(");
             SData1 = stf.ReadFloat(STFReader.UNITS.None, null);
-            SData2 = stf.ReadItem();
+            SData2 = stf.ReadString();
             stf.SkipRestOfBlock();
         }
     }
@@ -400,10 +400,10 @@ namespace MSTS
 
                 new STFReader.TokenProcessor("trsignaltype", ()=>{
                     stf.MustMatch("(");
-                    Flags1 = stf.ReadItem();
+                    Flags1 = stf.ReadString();
                     Direction = stf.ReadUInt(STFReader.UNITS.None, null);
                     SigData1 = stf.ReadFloat(STFReader.UNITS.None, null);
-                    SignalType = stf.ReadItem();
+                    SignalType = stf.ReadString();
                     // To do get index to Sigtypes table corresponding to this sigmal
                     stf.SkipRestOfBlock();
                 }),
@@ -476,13 +476,13 @@ namespace MSTS
                 new STFReader.TokenProcessor("tritemsdata", ()=>{ TrItemSData(stf); }),
                 new STFReader.TokenProcessor("tritempdata", ()=>{ TrItemPData(stf); }),
 
-                new STFReader.TokenProcessor("platformname", ()=>{ PlatformName = stf.ReadItemBlock(""); }),
-                new STFReader.TokenProcessor("station", ()=>{ Station = stf.ReadItemBlock(""); }),
+                new STFReader.TokenProcessor("platformname", ()=>{ PlatformName = stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("station", ()=>{ Station = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("platformminwaitingtime", ()=>{ PlatformMinWaitingTime = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("platformnumpassengerswaiting", ()=>{ PlatformNumPassengersWaiting = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("platformtritemdata", ()=>{
                     stf.MustMatch("(");
-                    Flags1 = stf.ReadItem();
+                    Flags1 = stf.ReadString();
                     LinkedPlatformItemId = stf.ReadUInt(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                 }),
@@ -559,10 +559,10 @@ namespace MSTS
                 new STFReader.TokenProcessor("tritemsdata", ()=>{ TrItemSData(stf); }),
                 new STFReader.TokenProcessor("tritempdata", ()=>{ TrItemPData(stf); }),
 
-                new STFReader.TokenProcessor("sidingname", ()=>{ SidingName = stf.ReadItemBlock(""); }),
+                new STFReader.TokenProcessor("sidingname", ()=>{ SidingName = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("sidingtritemdata", ()=> {
                     stf.MustMatch("(");
-                    Flags1 = stf.ReadItem();
+                    Flags1 = stf.ReadString();
                     Flags2 = stf.ReadUInt(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                 }),

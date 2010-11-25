@@ -39,12 +39,12 @@ namespace MSTS
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("camtype", ()=>{ CamType = stf.ReadItemBlock(null); CamControl = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("camtype", ()=>{ CamType = stf.ReadStringBlock(null); CamControl = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("cameraoffset", ()=>{ CameraOffset = stf.ReadVector3Block(STFReader.UNITS.None, CameraOffset); }),
                 new STFReader.TokenProcessor("direction", ()=>{ Direction = stf.ReadVector3Block(STFReader.UNITS.None, Direction); }),
                 new STFReader.TokenProcessor("objectoffset", ()=>{ ObjectOffset = stf.ReadVector3Block(STFReader.UNITS.None, ObjectOffset); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, RotationLimit); }),
-                new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("fov", ()=>{ Fov = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("zclip", ()=>{ ZClip = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("wagonnum", ()=>{ WagonNum = stf.ReadIntBlock(STFReader.UNITS.None, null); }),

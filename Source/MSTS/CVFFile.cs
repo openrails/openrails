@@ -33,7 +33,7 @@ namespace MSTS
                         new STFReader.TokenProcessor("position", ()=>{ Locations.Add(stf.ReadVector3Block(STFReader.UNITS.None, new Vector3())); }),
                         new STFReader.TokenProcessor("direction", ()=>{ Directions.Add(stf.ReadVector3Block(STFReader.UNITS.None, new Vector3())); }),
                         new STFReader.TokenProcessor("cabviewfile", ()=>{
-                            string filename = stf.ReadItemBlock(null);
+                            string filename = stf.ReadStringBlock(null);
                             TwoDViews.Add(basepath + filename);
                             NightViews.Add(basepath + Path.GetDirectoryName(filename) + "night\\" + Path.GetFileName(filename));
                             LightViews.Add(basepath + Path.GetDirectoryName(filename) + "cablight\\" + Path.GetFileName(filename));
@@ -146,12 +146,12 @@ namespace MSTS
             stf.MustMatch("(");
             try
             {
-                ControlType = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), stf.ReadItem());
+                ControlType = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), stf.ReadString());
             }
             catch(ArgumentException)
             {
                 stf.StepBackOneItem();
-                STFException.TraceWarning(stf, "Unknown ControlType " + stf.ReadItem());
+                STFException.TraceWarning(stf, "Unknown ControlType " + stf.ReadString());
                 ControlType = CABViewControlTypes.NONE;
             }
             //stf.ReadItem(); // Skip repeated Class Type 
@@ -181,19 +181,19 @@ namespace MSTS
         }
         protected void ParseGraphic(STFReader stf, string basepath)
         {
-            ACEFile = basepath + stf.ReadItemBlock(null);
+            ACEFile = basepath + stf.ReadStringBlock(null);
         }
         protected void ParseStyle(STFReader stf)
         {
             stf.MustMatch("(");
             try
             {
-                ControlStyle = (CABViewControlStyles)Enum.Parse(typeof(CABViewControlStyles), stf.ReadItem());
+                ControlStyle = (CABViewControlStyles)Enum.Parse(typeof(CABViewControlStyles), stf.ReadString());
             }
             catch (ArgumentException)
             {
                 stf.StepBackOneItem();
-                STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadItem());
+                STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadString());
                 ControlStyle = CABViewControlStyles.NONE;
             }
             stf.SkipRestOfBlock();

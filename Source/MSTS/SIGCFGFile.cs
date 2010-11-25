@@ -138,7 +138,7 @@ namespace MSTS
             stf.MustMatch("(");
             var scriptFiles = new List<string>();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("scriptfile", ()=>{ scriptFiles.Add(stf.ReadItemBlock(null)); }),
+                new STFReader.TokenProcessor("scriptfile", ()=>{ scriptFiles.Add(stf.ReadStringBlock(null)); }),
             });
             return scriptFiles;
         }
@@ -152,8 +152,8 @@ namespace MSTS
 		public LightTexture(STFReader stf)
 		{
 			stf.MustMatch("(");
-			Name = stf.ReadItem();
-			TextureFile = stf.ReadItem();
+			Name = stf.ReadString();
+			TextureFile = stf.ReadString();
             u0 = stf.ReadFloat(STFReader.UNITS.None, null);
             v0 = stf.ReadFloat(STFReader.UNITS.None, null);
             u1 = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -170,7 +170,7 @@ namespace MSTS
 		public LightTableEntry(STFReader stf)
 		{
 			stf.MustMatch("(");
-			Name = stf.ReadItem();
+			Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("colour", ()=>{
 				    stf.MustMatch("(");
@@ -209,10 +209,10 @@ namespace MSTS
         public SignalType(STFReader stf)
         {
             stf.MustMatch("(");
-            Name = stf.ReadItem();
+            Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalfntype", ()=>{ ReadFnType(stf); }),
-                new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("signallights", ()=>{ Lights = ReadLights(stf); }),
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
                 new STFReader.TokenProcessor("signalaspects", ()=>{ Aspects = ReadAspects(stf); }),
@@ -227,12 +227,12 @@ namespace MSTS
                 new STFReader.TokenProcessor("signalflags", ()=>{
                     stf.MustMatch("(");
                     while (!stf.EndOfBlock())
-                        switch (stf.ReadItem().ToLower())
+                        switch (stf.ReadString().ToLower())
                         {
                             case "abs": Abs = true; break;
                             case "no_gantry": NoGantry = true; break;
                             case "semaphore": Semaphore = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceError(stf, "Unknown Signal Type Flag " + stf.ReadItem()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceError(stf, "Unknown Signal Type Flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -242,7 +242,7 @@ namespace MSTS
 		{
 			try
 			{
-                return (FnTypes)Enum.Parse(typeof(FnTypes), stf.ReadItemBlock(null), true);
+                return (FnTypes)Enum.Parse(typeof(FnTypes), stf.ReadStringBlock(null), true);
 			}
 			catch (ArgumentException error)
 			{
@@ -367,7 +367,7 @@ namespace MSTS
         {
             stf.MustMatch("(");
             Index = stf.ReadUInt(STFReader.UNITS.None, null);
-            Name = stf.ReadItem();
+            Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("radius", ()=>{ Radius = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("position", ()=>{
@@ -396,7 +396,7 @@ namespace MSTS
         {
             stf.MustMatch("(");
             Index = stf.ReadInt(STFReader.UNITS.None, null);
-            Name = stf.ReadItem();
+            Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("drawlights", ()=>{ DrawLights = ReadDrawLights(stf); }),
             });
@@ -437,10 +437,10 @@ namespace MSTS
                 new STFReader.TokenProcessor("signalflags", ()=>{
                     stf.MustMatch("(");
                     while (!stf.EndOfBlock())
-                        switch (stf.ReadItem().ToLower())
+                        switch (stf.ReadString().ToLower())
                         {
                             case "flashing": Flashing = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown DrawLight Flag " + stf.ReadItem()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown DrawLight Flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -458,7 +458,7 @@ namespace MSTS
         {
             SpeedMpS = -1;
             stf.MustMatch("(");
-            string aspectName = stf.ReadItem();
+            string aspectName = stf.ReadString();
             try
             {
                 Aspect = (ORTS.SignalHead.SIGASP)Enum.Parse(typeof(ORTS.SignalHead.SIGASP), aspectName, true);
@@ -468,17 +468,17 @@ namespace MSTS
                 STFException.TraceError(stf, "Unknown Aspect " + aspectName);
                 Aspect = SignalHead.SIGASP.UNKNOWN;
             }
-            DrawStateName = stf.ReadItem();
+            DrawStateName = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("speedmph", ()=>{ SpeedMpS = MpH.ToMpS(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
                 new STFReader.TokenProcessor("speedkph", ()=>{ SpeedMpS = KpH.ToMpS(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
                 new STFReader.TokenProcessor("signalflags", ()=>{
                     stf.MustMatch("(");
                     while (!stf.EndOfBlock())
-                        switch (stf.ReadItem().ToLower())
+                        switch (stf.ReadString().ToLower())
                         {
                             case "asap": Asap = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown DrawLight Flag " + stf.ReadItem()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown DrawLight Flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -493,8 +493,8 @@ namespace MSTS
         public SignalShape(STFReader stf)
         {
             stf.MustMatch("(");
-            ShapeFileName = stf.ReadItem().ToUpper();
-            Description = stf.ReadItem();
+            ShapeFileName = stf.ReadString().ToUpper();
+            Description = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalsubobjs", ()=>{ SignalSubObjs = ReadSignalSubObjects(stf); }),
             });
@@ -541,21 +541,21 @@ namespace MSTS
             {
                 stf.MustMatch("(");
                 Index = stf.ReadInt(STFReader.UNITS.None, null);
-                MatrixName = stf.ReadItem().ToUpper();
-                Description = stf.ReadItem();
+                MatrixName = stf.ReadString().ToUpper();
+                Description = stf.ReadString();
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("sigsubtype", ()=>{ SignalSubType = SignalSubTypes.IndexOf(stf.ReadItemBlock(null).ToUpper()); }),
-                    new STFReader.TokenProcessor("sigsubstype", ()=>{ SignalSubSignalType = stf.ReadItemBlock(null); }),
+                    new STFReader.TokenProcessor("sigsubtype", ()=>{ SignalSubType = SignalSubTypes.IndexOf(stf.ReadStringBlock(null).ToUpper()); }),
+                    new STFReader.TokenProcessor("sigsubstype", ()=>{ SignalSubSignalType = stf.ReadStringBlock(null); }),
                     new STFReader.TokenProcessor("signalflags", ()=>{
                         stf.MustMatch("(");
                         while (!stf.EndOfBlock())
-                            switch (stf.ReadItem().ToLower())
+                            switch (stf.ReadString().ToLower())
                             {
                                 case "optional": Optional = true; break;
                                 case "default": Default = true; break;
                                 case "back_facing": BackFacing = true; break;
                                 case "jn_link": JunctionLink = true; break;
-                                default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown SignalSubObj flag " + stf.ReadItem()); break;
+                                default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown SignalSubObj flag " + stf.ReadString()); break;
                             }
                     }),
                 });

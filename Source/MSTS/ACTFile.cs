@@ -92,17 +92,17 @@ namespace MSTS
 		{
 			stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("routeid", ()=>{ RouteID = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadItemBlock(Description); }),
-                new STFReader.TokenProcessor("briefing", ()=>{ Briefing = stf.ReadItemBlock(Briefing); }),
+                new STFReader.TokenProcessor("routeid", ()=>{ RouteID = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(Description); }),
+                new STFReader.TokenProcessor("briefing", ()=>{ Briefing = stf.ReadStringBlock(Briefing); }),
                 new STFReader.TokenProcessor("completeactivity", ()=>{ CompleteActivity = stf.ReadIntBlock(STFReader.UNITS.None, CompleteActivity); }),
                 new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadIntBlock(STFReader.UNITS.None, Type); }),
                 new STFReader.TokenProcessor("mode", ()=>{ Mode = stf.ReadIntBlock(STFReader.UNITS.None, Mode); }),
                 new STFReader.TokenProcessor("starttime", ()=>{ StartTime = new StartTime(stf); }),
                 new STFReader.TokenProcessor("season", ()=>{ Season = (SeasonType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("weather", ()=>{ Weather = (WeatherType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("startingspeed", ()=>{ StartingSpeed = stf.ReadIntBlock(STFReader.UNITS.Speed, StartingSpeed); }),
                 new STFReader.TokenProcessor("duration", ()=>{ Duration = new Duration(stf); }),
                 new STFReader.TokenProcessor("difficulty", ()=>{ Difficulty = (Difficulty)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
@@ -222,7 +222,7 @@ namespace MSTS
 		public Traffic_Definition(STFReader stf)
 		{
 			stf.MustMatch("(");
-			Label = stf.ReadItem();
+			Label = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("service_definition", ()=>{ Add(new Service_Definition(stf)); }),
             });
@@ -238,7 +238,7 @@ namespace MSTS
 		public Service_Definition(STFReader stf)
 		{
 			stf.MustMatch("(");
-			Service = stf.ReadItem();
+			Service = stf.ReadString();
             Time = stf.ReadInt(STFReader.UNITS.None, null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("uid", ()=>{ UiD = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
@@ -290,8 +290,8 @@ namespace MSTS
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
-                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
-                new STFReader.TokenProcessor("texttodisplayoncompletionifnottriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("texttodisplayoncompletionifnottriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("triggeronstop", ()=>{ TriggerOnStop = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("location", ()=>{
                     stf.MustMatch("(");
@@ -350,9 +350,9 @@ namespace MSTS
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
-                new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ stf.ReadItemBlock(""); }),
-                new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ stf.ReadItemBlock(""); }),
-                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(""); }),
+                new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
             });
 		}
 	}
@@ -503,9 +503,9 @@ namespace MSTS
         public TrainCfg(STFReader stf)
         {
             stf.MustMatch("(");
-            stf.ReadItem();  // Discard the "" lowertoken after the braces
+            stf.ReadString();  // Discard the "" lowertoken after the braces
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadItemBlock(null); }),
+                new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("maxvelocity", ()=>{ MaxVelocity = new MaxVelocity(stf); }),
                 new STFReader.TokenProcessor("nextwagonuid", ()=>{ NextWagonUID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
@@ -530,8 +530,8 @@ namespace MSTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("uid", ()=>{ UiD = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("flip", ()=>{ Flip = true; stf.SkipBlock(); }),
-                new STFReader.TokenProcessor("enginedata", ()=>{ stf.MustMatch("("); Name = stf.ReadItem(); Folder = stf.ReadItem(); stf.SkipRestOfBlock(); IsEngine = true; }),
-                new STFReader.TokenProcessor("wagondata", ()=>{ stf.MustMatch("("); Name = stf.ReadItem(); Folder = stf.ReadItem(); stf.SkipRestOfBlock(); }),
+                new STFReader.TokenProcessor("enginedata", ()=>{ stf.MustMatch("("); Name = stf.ReadString(); Folder = stf.ReadString(); stf.SkipRestOfBlock(); IsEngine = true; }),
+                new STFReader.TokenProcessor("wagondata", ()=>{ stf.MustMatch("("); Name = stf.ReadString(); Folder = stf.ReadString(); stf.SkipRestOfBlock(); }),
             });
         }
 
@@ -555,7 +555,7 @@ namespace MSTS
         public Player_Service_Definition(STFReader stf)
         {
             stf.MustMatch("(");
-            Name = stf.ReadItem();
+            Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ DistanceDownPath.Add(stf.ReadFloatBlock(STFReader.UNITS.Distance, null)); }),
                 new STFReader.TokenProcessor("player_traffic_definition", ()=>{ Player_Traffic_Definition = new Player_Traffic_Definition(stf); }),
@@ -577,7 +577,7 @@ namespace MSTS
         {
             DateTime basedt = new DateTime();
             stf.MustMatch("(");
-            Name = stf.ReadItem();
+            Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("arrivaltime", ()=>{ ArrivalTime.Add(basedt.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.None, null))); }),
                 new STFReader.TokenProcessor("departtime", ()=>{ DepartTime.Add(basedt.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.None, null))); }),
