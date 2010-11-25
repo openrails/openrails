@@ -377,13 +377,19 @@ namespace ORTS
 			//var sortingMaterial = material;
 			var sequence = RenderItems[(int)GetRenderSequence(group, blended)];
 
+#if RENDER_ITEM_COLLECTION
 			if (!sequence.ContainsKey(sortingMaterial))
 				sequence.Add(sortingMaterial, new RenderItemCollection());
 
-#if RENDER_ITEM_COLLECTION
 			sequence[sortingMaterial].Add(material, primitive, ref xnaMatrix, flags);
 #else
-			sequence[sortingMaterial].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+			RenderItemCollection items;
+			if (!sequence.TryGetValue(sortingMaterial, out items))
+			{
+				items = new RenderItemCollection();
+				sequence.Add(sortingMaterial, items);
+			}
+			items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
 #endif
             
 			if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))

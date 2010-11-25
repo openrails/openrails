@@ -776,9 +776,12 @@ namespace ORTS
             // Locate relative to the camera
 			var dTileX = location.TileX - Viewer.Camera.TileX;
 			var dTileZ = location.TileZ - Viewer.Camera.TileZ;
-			var mstsLocation = location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
-			var xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-			Matrix.Multiply(ref location.XNAMatrix, ref xnaDTileTranslation, out xnaDTileTranslation);
+			var mstsLocation = location.Location;
+			mstsLocation.X += dTileX * 2048;
+			mstsLocation.Z += dTileZ * 2048;
+			var xnaDTileTranslation = location.XNAMatrix;
+			xnaDTileTranslation.M41 += dTileX * 2048;
+			xnaDTileTranslation.M43 -= dTileZ * 2048;
 
 			foreach (var lodControl in LodControls)
 			{
