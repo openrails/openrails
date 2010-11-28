@@ -152,7 +152,7 @@ namespace ORTS
 
 				// This shadow map goes from LastC to C; calculate the correct center and diameter for the sphere from the view frustum.
 				var center = (LastC + C) / 2;
-				var diameter = 2 * (float)Math.Tan(fov / 2) * center * ratio;
+				var diameter = 2 * (float)Math.Tan(fov / 2) * C * ratio;
 
 				ShadowMapDistance[shadowMapIndex] = (int)center;
 				ShadowMapDiameter[shadowMapIndex] = (int)diameter;
