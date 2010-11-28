@@ -314,9 +314,11 @@ namespace ORTS
 			// Align shadow map location to grid so it doesn't "flutter" so much. this basically means aligning it along a
 			// grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
 			// and up/left.
-			var shadowMapAlignmentGrid = shadowMapSize / shadowMapSize;
+			var shadowMapAlignmentGrid = ShadowMapSize / shadowMapSize;
 			var shadowMapAlignAxisX = Vector3.Cross(sunDirection, Vector3.UnitY);
 			var shadowMapAlignAxisY = Vector3.Cross(shadowMapAlignAxisX, sunDirection);
+			shadowMapAlignAxisX.Normalize();
+			shadowMapAlignAxisY.Normalize();
 			var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
 			var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
 			var adjustZ = (float)Math.IEEERemainder(Vector3.Dot(sunDirection, shadowMapLocation), shadowMapAlignmentGrid);
