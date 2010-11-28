@@ -10,8 +10,14 @@ float4x4 View;                 // world -> view
 float4x4 WorldViewProjection;  // model -> world -> view -> projection
 
 // Shadow map values
-float4x4 LightViewProjectionShadowProjection;  // world -> light view -> light projection -> shadow map projection
-texture  ShadowMapTexture;
+float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light projection -> shadow map projection
+float4x4 LightViewProjectionShadowProjection1;
+float4x4 LightViewProjectionShadowProjection2;
+float4x4 LightViewProjectionShadowProjection3;
+texture  ShadowMapTexture0;
+texture  ShadowMapTexture1;
+texture  ShadowMapTexture2;
+texture  ShadowMapTexture3;
 
 // Z-bias and lighting coeffecients
 float3 ZBias_Lighting;  // x = z-bias, y = diffuse, z = specular
@@ -54,15 +60,36 @@ sampler normalMap = sampler_state
 	AddressV = Wrap;
 };
 
-sampler ShadowMap = sampler_state
+sampler ShadowMap0 = sampler_state
 {
-	Texture = (ShadowMapTexture);
+	Texture = (ShadowMapTexture0);
 	MagFilter = Linear;
-	MinFilter = Anisotropic;
+	MinFilter = Linear;
 	MipFilter = Linear;
-	MaxAnisotropy = 4;
-	AddressU = Border;
-	AddressV = Border;
+};
+
+sampler ShadowMap1 = sampler_state
+{
+	Texture = (ShadowMapTexture1);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+};
+
+sampler ShadowMap2 = sampler_state
+{
+	Texture = (ShadowMapTexture2);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+};
+
+sampler ShadowMap3 = sampler_state
+{
+	Texture = (ShadowMapTexture3);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
 };
 
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////
@@ -79,13 +106,13 @@ struct VERTEX_INPUT
 
 struct VERTEX_OUTPUT
 {
-	float4 Position     : POSITION;
-	float3 RelPosition  : TEXCOORD0;
-	float2 TexCoords    : TEXCOORD1;
-	float4 Color        : COLOR0;
-	float4 Normal_Light : TEXCOORD2;
-	float4 LightDir_Fog : TEXCOORD3;
-	float4 Shadow       : TEXCOORD4;
+	float4 Position     : POSITION;  // position x, y, z, w
+	float3 RelPosition  : TEXCOORD0; // rel position x, y, z
+	float2 TexCoords    : TEXCOORD1; // tex coords x, y
+	float4 Color        : COLOR0;    // color r, g, b, a
+	float4 Normal_Light : TEXCOORD2; // normal x, y, z; light dot
+	float4 LightDir_Fog : TEXCOORD3; // light dir x, y, z; fog fade
+	float4 Shadow       : TEXCOORD4; // ps2<shadow map texture and depth x, y, z> ps3<abs position x, y, z, w>
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -94,13 +121,13 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.RelPosition = mul(In.Position, World) - viewerPos;
-	Out.TexCoords = In.TexCoords;
+	Out.RelPosition.xyz = mul(In.Position, World) - viewerPos;
+	Out.TexCoords.xy = In.TexCoords;
 	Out.Color = In.Color;
 	Out.Normal_Light.xyz = mul(In.Normal, World).xyz;
 }
 
-void _VSLightsAndShadows(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
+void _VSLightsAndShadows(uniform bool ShaderModel3, in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
 	// Normal lighting (range 0.0 - 1.0)
 	Out.Normal_Light.w = dot(normalize(Out.Normal_Light.xyz), LightVector) * 0.5 + 0.5;
@@ -111,15 +138,19 @@ void _VSLightsAndShadows(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	// Fog fading
 	Out.LightDir_Fog.w = saturate((length(Out.Position.xyz) - Fog.a) / Fog.a);
 
-	// Shadow map
-	Out.Shadow = mul(mul(In.Position, World), LightViewProjectionShadowProjection);
+	// Absolute position for shadow mapping
+	if (ShaderModel3) {
+		Out.Shadow = mul(In.Position, World);
+	} else {
+		Out.Shadow.xyz = mul(mul(In.Position, World), LightViewProjectionShadowProjection0).xyz;
+	}
 }
 
-VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
+VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSNormalProjection(In, Out);
-	_VSLightsAndShadows(In, Out);
+	_VSLightsAndShadows(ShaderModel3, In, Out);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
 	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x * (1 - dot(In.Position.xyz, In.Normal.xyz))) / 1000;
@@ -127,11 +158,11 @@ VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT VSTerrain(in VERTEX_INPUT In)
+VERTEX_OUTPUT VSTerrain(uniform bool ShaderModel3, in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSNormalProjection(In, Out);
-	_VSLightsAndShadows(In, Out);
+	_VSLightsAndShadows(ShaderModel3, In, Out);
 	return Out;
 }
 
@@ -152,10 +183,10 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 
 	// Project vertex with fixed w=1 and normal=eye.
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.TexCoords = In.TexCoords;
+	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light.xyz = eyeVector;
 
-	_VSLightsAndShadows(In, Out);
+	_VSLightsAndShadows(false, In, Out);
 
 	return Out;
 }
@@ -188,22 +219,54 @@ float _PSGetVegetationAmbientEffect(in VERTEX_OUTPUT In)
 // Gets the specular light effect.
 float _PSGetSpecularEffect(in VERTEX_OUTPUT In)
 {
-	float3 halfVector = normalize(-In.RelPosition) + LightVector;
+	float3 halfVector = normalize(-In.RelPosition.xyz) + LightVector;
 	return In.Normal_Light.w * step(1, ZBias_Lighting.z) * pow(saturate(dot(normalize(In.Normal_Light.xyz), normalize(halfVector))), ZBias_Lighting.z);
 }
 
 // Gets the shadow effect.
-float _PSGetShadowEffect(in VERTEX_OUTPUT In)
+float3 _PS2GetShadowEffect(in VERTEX_OUTPUT In)
 {
-	float2 moments = tex2D(ShadowMap, In.Shadow.xy);
-	bool outside_shadowmap = any(floor(In.Shadow.xy));
-	bool not_shadowed = (In.Shadow.z <= moments.x);
+	return float3(tex2D(ShadowMap0, In.Shadow.xy).xy, In.Shadow.z);
+}
+float3 _PS3GetShadowEffect(in VERTEX_OUTPUT In)
+{
+	float3 rv;
+	float3 pos0 = mul(In.Shadow, LightViewProjectionShadowProjection0).xyz;
+	if ((pos0.x > 0.01) && (pos0.x < 0.99) && (pos0.y > 0.01) && (pos0.y < 0.99)) {
+		rv = float3(tex2D(ShadowMap0, pos0.xy).xy, pos0.z);
+	} else {
+		float3 pos1 = mul(In.Shadow, LightViewProjectionShadowProjection1).xyz;
+		if ((pos1.x > 0.01) && (pos1.x < 0.99) && (pos1.y > 0.01) && (pos1.y < 0.99)) {
+			rv = float3(tex2D(ShadowMap1, pos1.xy).xy, pos1.z);
+		} else {
+			float3 pos2 = mul(In.Shadow, LightViewProjectionShadowProjection2).xyz;
+			if ((pos2.x > 0.01) && (pos2.x < 0.99) && (pos2.y > 0.01) && (pos2.y < 0.99)) {
+				rv = float3(tex2D(ShadowMap2, pos2.xy).xy, pos2.z);
+			} else {
+				float3 pos3 = mul(In.Shadow, LightViewProjectionShadowProjection3).xyz;
+				if ((pos3.x > 0.01) && (pos3.x < 0.99) && (pos3.y > 0.01) && (pos3.y < 0.99)) {
+					rv = float3(tex2D(ShadowMap3, pos3.xy).xy, pos3.z);
+				}
+			}
+		}
+	}
+	return rv;
+}
+float _PSGetShadowEffect(uniform bool ShaderModel3, in VERTEX_OUTPUT In)
+{
+	float3 moments;
+	if (ShaderModel3)
+		moments = _PS3GetShadowEffect(In);
+	else
+		moments = _PS2GetShadowEffect(In);
+
+	bool not_shadowed = (moments.z <= moments.x);
 	float E_x2 = moments.y;
 	float Ex_2 = moments.x * moments.x;
-	float variance = clamp(E_x2 - Ex_2, 0.00001, 1.0);
-	float m_d = moments.x - In.Shadow.z;
-	float p = variance / (variance + m_d * m_d);
-	return saturate(outside_shadowmap + not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
+	float variance = clamp(E_x2 - Ex_2, 0.00002, 1.0);
+	float m_d = moments.x - moments.z;
+	float p = pow(variance / (variance + m_d * m_d), 20);
+	return saturate(not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
 }
 
 // Gets the overcast effect.
@@ -264,17 +327,17 @@ void _PSApplyFog(inout float3 Color, in VERTEX_OUTPUT In)
 	Color = lerp(Color, Fog.rgb, In.LightDir_Fog.w);
 }
 
-float4 PSImage(in VERTEX_OUTPUT In) : COLOR0
+float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
 	const float ShadowBrightness = 0.5;
 	const float NightBrightness = 0.2;
 
-	float4 Color = tex2D(imageMap, In.TexCoords);
+	float4 Color = tex2D(imageMap, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(In) + isNight_Tex));
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, In) + isNight_Tex));
 	// Specular effect next.
-	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(In);
+	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, In);
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
 	// Night-time darkens everything, except night-time textures.
@@ -292,7 +355,7 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 	const float ShadowBrightness = 0.5;
 	const float NightBrightness = 0.2;
 
-	float4 Color = tex2D(imageMap, In.TexCoords);
+	float4 Color = tex2D(imageMap, In.TexCoords.xy);
 	// Ambient effect applies first; no shadow effect for vegetation; night-time textures cancel out all normal lighting.
 	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetVegetationAmbientEffect(In) + isNight_Tex));
 	// No specular effect for vegetation.
@@ -307,15 +370,15 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 	return float4(litColor, Color.a);
 }
 
-float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
+float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
 	const float ShadowBrightness = 0.5;
 	const float NightBrightness = 0.2;
 
-	float4 Color = tex2D(imageMap, In.TexCoords);
+	float4 Color = tex2D(imageMap, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(In) + isNight_Tex));
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, In) + isNight_Tex));
 	// No specular effect for terrain.
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
@@ -323,7 +386,7 @@ float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
 	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNight_Tex));
 
 	// TODO: What are these values for?
-	//float3 bump = tex2D(normalMap, In.TexCoords * 50);
+	//float3 bump = tex2D(normalMap, In.TexCoords.xy * 50);
 	//bump -= 0.5;
 	//Color.rgb += 0.5 * bump;
 
@@ -340,7 +403,7 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 	const float ShadowBrightness = 0.5;
 	const float NightBrightness = 0.2;
 
-	float4 Color = tex2D(imageMap, In.TexCoords);
+	float4 Color = tex2D(imageMap, In.TexCoords.xy);
 	// Fixed ambient and shadow effects at darkest level.
 	float3 litColor = Color.rgb * ShadowBrightness;
 	// No specular effect for dark shade.
@@ -361,7 +424,7 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	const float HalfShadowBrightness = 0.75;
 	const float NightBrightness = 0.2;
 
-	float4 Color = tex2D(imageMap, In.TexCoords);
+	float4 Color = tex2D(imageMap, In.TexCoords.xy);
 	// Fixed ambient and shadow effects at mid-dark level.
 	float3 litColor = Color.rgb * HalfShadowBrightness;
 	// No specular effect for half-bright.
@@ -381,7 +444,7 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 	const float FullBrightness = 1.0;
 	const float NightBrightness = 0.2;
 
-	float4 Color = tex2D(imageMap, In.TexCoords);
+	float4 Color = tex2D(imageMap, In.TexCoords.xy);
 	// Fixed ambient and shadow effects at brightest level.
 	float3 litColor = Color.rgb;
 	// No specular effect for full-bright.
@@ -398,7 +461,7 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 Color = tex2D(imageMap, In.TexCoords);
+	float4 Color = tex2D(imageMap, In.TexCoords.xy);
 	// No ambient and shadow effects for signal lights.
 	// Apply signal coloring effect.
 	float3 litColor = lerp(Color.rgb, In.Color.rgb, Color.r);
@@ -408,10 +471,17 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
-technique Image {
+technique ImagePS2 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral();
-		PixelShader = compile ps_2_0 PSImage();
+		VertexShader = compile vs_2_0 VSGeneral(false);
+		PixelShader = compile ps_2_0 PSImage(false);
+	}
+}
+
+technique ImagePS3 {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSGeneral(true);
+		PixelShader = compile ps_3_0 PSImage(true);
 	}
 }
 
@@ -424,35 +494,42 @@ technique Forest {
 
 technique Vegetation {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral();
+		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSVegetation();
 	}
 }
 
-technique Terrain {
+technique TerrainPS2 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSTerrain();
-		PixelShader = compile ps_2_0 PSTerrain();
+		VertexShader = compile vs_2_0 VSTerrain(false);
+		PixelShader = compile ps_2_0 PSTerrain(false);
+	}
+}
+
+technique TerrainPS3 {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSTerrain(true);
+		PixelShader = compile ps_3_0 PSTerrain(true);
 	}
 }
 
 technique DarkShade {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral();
+		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSDarkShade();
 	}
 }
 
 technique HalfBright {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral();
+		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSHalfBright();
 	}
 }
 
 technique FullBright {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral();
+		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSFullBright();
 	}
 }

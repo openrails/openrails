@@ -30,6 +30,12 @@ namespace ORTS
 		public bool MSTSBINSound { get; set; }
 		public bool Precipitation { get; set; }
 		public bool Profiling { get; set; }
+		public int ShaderModel { get; set; }
+		public bool ShadowAllShapes { get; set; }
+		public bool ShadowMapBlur { get; set; }
+		public int ShadowMapCount { get; set; }
+		public int ShadowMapDistance { get; set; }
+		public int ShadowMapResolution { get; set; }
 		public int SoundDetailLevel { get; set; }
 		public bool TrainLights { get; set; }
 		public bool VerticalSync { get; set; }
@@ -54,6 +60,9 @@ namespace ORTS
 			BrakePipeChargingRate = 21;
 			WindowSize = "1024x768";
 			WorldObjectDensity = 10;
+			ShadowMapBlur = true;
+			ShadowMapCount = 4;
+			ShadowMapResolution = 1024;
 			SoundDetailLevel = 5;
 			ViewingDistance = 2000;
 		}

@@ -38,6 +38,9 @@ namespace ORTS
     /// </summary>
     public class RenderProcess : Microsoft.Xna.Framework.Game
     {
+		public const int ShadowMapCountMaximum = 4;
+		public const int ShadowMapMipCount = 4;
+
         System.Windows.Forms.Form Form;    // the 3D view is drawn on this form
         public readonly Viewer3D Viewer;
 		public readonly Profiler Profiler = new Profiler("Render");
@@ -59,10 +62,13 @@ namespace ORTS
 		public readonly SmoothedData FrameJitter = new SmoothedData();
 		public int[] PrimitiveCount = new int[(int)RenderPrimitiveSequence.Sentinel];
 		public int[] PrimitivePerFrame = new int[(int)RenderPrimitiveSequence.Sentinel];
-		public int RenderStateChangesCount = 0;
-        public int RenderStateChangesPerFrame = 0;
-        public int ImageChangesCount = 0;
-        public int ImageChangesPerFrame = 0;
+		public int[] ShadowPrimitiveCount;
+		public int[] ShadowPrimitivePerFrame;
+
+		// Dynamic shadow map setup.
+		public static int ShadowMapCount = -1; // number of shadow maps
+		public static int[] ShadowMapDistance; // distance of shadow map center from camera
+		public static int[] ShadowMapDiameter; // diameter of shadow map
 
 		double LastUpdateTime = 0;
 
@@ -85,7 +91,23 @@ namespace ORTS
 			Thread.CurrentThread.Name = "Render Process";
 
 			Materials.Initialize(this);
-            Viewer.Initialize(this);
+			Viewer.Initialize(this);
+
+			ShadowMapCount = Viewer.Settings.ShadowMapCount;
+			if ((ShadowMapCount > 1) && (Viewer.Settings.ShaderModel < 3))
+				ShadowMapCount = 1;
+			else if (ShadowMapCount < 0)
+				ShadowMapCount = 0;
+			else if (ShadowMapCount > ShadowMapCountMaximum)
+				ShadowMapCount = ShadowMapCountMaximum;
+			ShadowMapDistance = new int[ShadowMapCount];
+			ShadowMapDiameter = new int[ShadowMapCount];
+
+			ShadowPrimitiveCount = new int[ShadowMapCount];
+			ShadowPrimitivePerFrame = new int[ShadowMapCount];
+
+			InitializeShadowMapLocations(Viewer);
+
             Viewer.LoadPrep();  // Does initial load before 3D window is displayed
             Viewer.Load(this);  // after this Load is done in a background thread.
             Viewer.LoaderProcess.Run();
@@ -96,6 +118,47 @@ namespace ORTS
             base.Initialize();
             Viewer.Simulator.Paused = false;
         }
+
+		public static void InitializeShadowMapLocations(Viewer3D viewer)
+		{
+			var ratio = viewer.DisplaySize.X / viewer.DisplaySize.Y;
+			var fov = 45.0f;
+			var n = (float)0.5;
+			var f = (float)viewer.Settings.ShadowMapDistance;
+
+			var m = (float)ShadowMapCount;
+			var LastC = n;
+			for (var shadowMapIndex = 0; shadowMapIndex < ShadowMapCount; shadowMapIndex++)
+			{
+				//     Clog  = split distance i using logarithmic splitting
+				//         i
+				// Cuniform  = split distance i using uniform splitting
+				//         i
+				//         n = near view plane
+				//         f = far view plane
+				//         m = number of splits
+				//
+				//                   i/m
+				//     Clog  = n(f/n)
+				//         i
+				// Cuniform  = n+(f-n)i/m
+				//         i
+
+				// Calculate the two Cs and average them to get a good balance.
+				var i = (float)(shadowMapIndex + 1);
+				var Clog = n * (float)Math.Pow(f / n, i / m);
+				var Cuniform = n + (f - n) * i / m;
+				var C = (Clog + Cuniform) / 2;
+
+				// This shadow map goes from LastC to C; calculate the correct center and diameter for the sphere from the view frustum.
+				var center = (LastC + C) / 2;
+				var diameter = 2 * (float)Math.Tan(fov / 2) * center * ratio;
+
+				ShadowMapDistance[shadowMapIndex] = (int)center;
+				ShadowMapDiameter[shadowMapIndex] = (int)diameter;
+				LastC = C;
+			}
+		}
 
         /// <summary>
         /// Called regularly.   Used to update the simulator class when
@@ -172,10 +235,11 @@ namespace ORTS
 					PrimitivePerFrame[i] = PrimitiveCount[i];
 					PrimitiveCount[i] = 0;
 				}
-				RenderStateChangesPerFrame = RenderStateChangesCount;
-				RenderStateChangesCount = 0;
-				ImageChangesPerFrame = ImageChangesCount;
-				ImageChangesCount = 0;
+				for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+				{
+					ShadowPrimitivePerFrame[shadowMapIndex] = ShadowPrimitiveCount[shadowMapIndex];
+					ShadowPrimitiveCount[shadowMapIndex] = 0;
+				}
 
 				base.Draw(gameTime);
 			}

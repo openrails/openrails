@@ -294,7 +294,6 @@ namespace ORTS
 			float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
 			Vector3 screenScaling = new Vector3(scaling);
 			Matrix xForm = Matrix.CreateScale(screenScaling);
-			RenderProcess.RenderStateChangesCount++;
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
 		}
 
@@ -368,7 +367,7 @@ namespace ORTS
 			if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = SceneryShader.Techniques["DarkShade"].Passes.GetEnumerator();
 			if (ShaderPassesFullBright == null) ShaderPassesFullBright = SceneryShader.Techniques["FullBright"].Passes.GetEnumerator();
 			if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = SceneryShader.Techniques["HalfBright"].Passes.GetEnumerator();
-			if (ShaderPassesImage == null) ShaderPassesImage = SceneryShader.Techniques["Image"].Passes.GetEnumerator();
+			if (ShaderPassesImage == null) ShaderPassesImage = SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
 			if (ShaderPassesVegetation == null) ShaderPassesVegetation = SceneryShader.Techniques["Vegetation"].Passes.GetEnumerator();
 
 			/////////////// MATERIAL OPTIONS //////////////////
@@ -460,7 +459,7 @@ namespace ORTS
 					ShaderPasses = ShaderPassesFullBright;
 					break;
 				default:
-					SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
+					SceneryShader.CurrentTechnique = SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
 					ShaderPasses = ShaderPassesImage;
 					break;
 			}
@@ -542,9 +541,6 @@ namespace ORTS
 				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
 			else
 				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = MipMapBias;
-
-			RenderProcess.RenderStateChangesCount++;
-			RenderProcess.ImageChangesCount++;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -629,11 +625,8 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			RenderProcess.RenderStateChangesCount++;
-			RenderProcess.ImageChangesCount++;
-
-			SceneryShader.CurrentTechnique = SceneryShader.Techniques["Terrain"];
-			if (ShaderPasses == null) ShaderPasses = SceneryShader.Techniques["Terrain"].Passes.GetEnumerator();
+			SceneryShader.CurrentTechnique = SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"];
+			if (ShaderPasses == null) ShaderPasses = SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"].Passes.GetEnumerator();
 			SceneryShader.ImageMap_Tex = PatchTexture;
 
 			graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
@@ -731,8 +724,6 @@ namespace ORTS
             graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
             // Sky dome
-            RenderProcess.RenderStateChangesCount++;
-            RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 1;
 
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
@@ -778,8 +769,6 @@ namespace ORTS
             graphicsDevice.RenderState.AlphaTestEnable = false;
             graphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
 
-            RenderProcess.RenderStateChangesCount++;
-            RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 2;
             SkyShader.Begin();
 			ShaderPasses.Reset();
@@ -808,8 +797,6 @@ namespace ORTS
             SkyShader.WindDirection = RenderProcess.Viewer.SkyDrawer.windDirection;
             graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
-            RenderProcess.RenderStateChangesCount++;
-            RenderProcess.ImageChangesCount++;
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 3;
             SkyShader.Begin();
 			ShaderPasses.Reset();
@@ -903,9 +890,6 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			RenderProcess.RenderStateChangesCount++;
-            RenderProcess.ImageChangesCount++;
-
             var weatherType = RenderProcess.Viewer.PrecipDrawer.weatherType;
             PrecipShader.CurrentTechnique = PrecipShader.Techniques["RainTechnique"];
 			if (ShaderPasses == null) ShaderPasses = PrecipShader.Techniques["RainTechnique"].Passes.GetEnumerator();
@@ -996,9 +980,7 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			RenderProcess.RenderStateChangesCount++;
-
-			SceneryShader.CurrentTechnique = SceneryShader.Techniques["Image"];
+			SceneryShader.CurrentTechnique = SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
 
 			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
 			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
@@ -1006,8 +988,6 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            RenderProcess.ImageChangesCount++;
-
             foreach (var item in renderItems)   // Is this ever more than one for dynamic track?
                                                 // I guess there's nothing to be gained from changing it.
             {
@@ -1087,9 +1067,6 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			RenderProcess.RenderStateChangesCount++;
-			RenderProcess.ImageChangesCount++;
-
 			Materials.SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["Forest"];
 			if (ShaderPasses == null) ShaderPasses = Materials.SceneryShader.Techniques["Forest"].Passes.GetEnumerator();
 			Materials.SceneryShader.ImageMap_Tex = TreeTexture;
@@ -1127,6 +1104,11 @@ namespace ORTS
 			graphicsDevice.RenderState.AlphaFunction = CompareFunction.Always;
 			graphicsDevice.RenderState.ReferenceAlpha = 0;
 		}
+
+		public override Texture2D GetShadowTexture(RenderPrimitive renderPrimitive)
+		{
+			return TreeTexture;
+		}
 	}
     #endregion
 
@@ -1148,9 +1130,6 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-            RenderProcess.RenderStateChangesCount++;
-            RenderProcess.ImageChangesCount++;
-
             LightGlowShader.CurrentTechnique = LightGlowShader.Techniques["LightGlow"];
             LightGlowShader.LightGlowTexture = lightGlowTexture;
 
@@ -1227,11 +1206,8 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			RenderProcess.RenderStateChangesCount++;
-			RenderProcess.ImageChangesCount++;
-
-			Materials.SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["Image"];
-			if (ShaderPasses == null) ShaderPasses = Materials.SceneryShader.Techniques["Image"].Passes.GetEnumerator();
+			Materials.SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
+			if (ShaderPasses == null) ShaderPasses = Materials.SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
 			Materials.SceneryShader.ImageMap_Tex = WaterTexture;
 
 			graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
@@ -1286,24 +1262,33 @@ namespace ORTS
     {
 		public readonly RenderProcess RenderProcess;  // for diagnostics only
 		IEnumerator<EffectPass> ShaderPassesShadowMap;
+		IEnumerator<EffectPass> ShaderPassesShadowMapForest;
 		IEnumerator<EffectPass> ShaderPassesShadowMapBlocker;
 		IEnumerator<EffectPass> ShaderPasses;
+
+		public enum Mode
+		{
+			Normal,
+			Forest,
+			Blocker,
+		}
 
 		public ShadowMapMaterial(RenderProcess renderProcess)
         {
 			RenderProcess = renderProcess;
         }
 
-		public void SetState(GraphicsDevice graphicsDevice, bool blocker)
+		public void SetState(GraphicsDevice graphicsDevice, Mode mode)
 		{
 			var shader = Materials.ShadowMapShader;
-			shader.CurrentTechnique = shader.Techniques[blocker ? "ShadowMapBlocker" : "ShadowMap"];
+			shader.CurrentTechnique = shader.Techniques[mode == Mode.Forest ? "ShadowMapForest" : mode == Mode.Blocker ? "ShadowMapBlocker" : "ShadowMap"];
 			if (ShaderPassesShadowMap == null) ShaderPassesShadowMap = shader.Techniques["ShadowMap"].Passes.GetEnumerator();
+			if (ShaderPassesShadowMapForest == null) ShaderPassesShadowMapForest = shader.Techniques["ShadowMapForest"].Passes.GetEnumerator();
 			if (ShaderPassesShadowMapBlocker == null) ShaderPassesShadowMapBlocker = shader.Techniques["ShadowMapBlocker"].Passes.GetEnumerator();
-			ShaderPasses = blocker ? ShaderPassesShadowMapBlocker : ShaderPassesShadowMap;
+			ShaderPasses = mode == Mode.Forest ? ShaderPassesShadowMapForest : mode == Mode.Blocker ? ShaderPassesShadowMapBlocker : ShaderPassesShadowMap;
 
 			var rs = graphicsDevice.RenderState;
-			rs.CullMode = blocker ? CullMode.CullClockwiseFace : CullMode.CullCounterClockwiseFace;
+			rs.CullMode = mode == Mode.Blocker ? CullMode.CullClockwiseFace : CullMode.CullCounterClockwiseFace;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1319,7 +1304,7 @@ namespace ORTS
 				foreach (var item in renderItems)
 				{
 					var wvp = item.XNAMatrix * viewproj;
-					shader.SetData(ref wvp, item.Material.GetShadowTexture(item.RenderPrimitive));
+					shader.SetData(ref XNAViewMatrix, ref wvp, item.Material.GetShadowTexture(item.RenderPrimitive));
 					shader.CommitChanges();
 					item.RenderPrimitive.Draw(graphicsDevice);
 				}
@@ -1328,9 +1313,52 @@ namespace ORTS
 			shader.End();
 		}
 
+		public Texture2D ApplyBlur(GraphicsDevice graphicsDevice, Texture2D shadowMap, RenderTarget2D renderTarget, DepthStencilBuffer stencilBuffer, DepthStencilBuffer normalStencilBuffer)
+		{
+			var shader = Materials.ShadowMapShader;
+			shader.CurrentTechnique = shader.Techniques["ShadowMapBlur"];
+
+			var rs = graphicsDevice.RenderState;
+			rs.CullMode = CullMode.None;
+			rs.DepthBufferEnable = false;
+			rs.DepthBufferWriteEnable = false;
+
+			var wvp = Matrix.Identity;
+
+			shader.Begin();
+			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+			{
+				graphicsDevice.SetRenderTarget(0, renderTarget);
+				graphicsDevice.DepthStencilBuffer = stencilBuffer;
+				shader.SetData(ref wvp, ref wvp, shadowMap);
+				shader.CommitChanges();
+
+				pass.Begin();
+				graphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleFan, new[] {
+					new VertexPositionNormalTexture(new Vector3(-1, +1, 0), Vector3.Zero, new Vector2(0, 0)),
+					new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(1, 0)),
+					new VertexPositionNormalTexture(new Vector3(+1, -1, 0), Vector3.Zero, new Vector2(1, 1)),
+					new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, 1)),
+				}, 0, 2);
+				pass.End();
+
+				graphicsDevice.DepthStencilBuffer = normalStencilBuffer;
+				graphicsDevice.SetRenderTarget(0, null);
+				shadowMap = renderTarget.GetTexture();
+			}
+			shader.End();
+
+			rs.CullMode = CullMode.CullCounterClockwiseFace;
+			rs.DepthBufferEnable = true;
+			rs.DepthBufferWriteEnable = true;
+
+			return shadowMap;
+		}
+
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
-			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+			var rs = graphicsDevice.RenderState;
+			rs.CullMode = CullMode.CullCounterClockwiseFace;
 		}
 	}
     #endregion
@@ -1441,8 +1469,6 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			RenderProcess.RenderStateChangesCount++;
-
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
 

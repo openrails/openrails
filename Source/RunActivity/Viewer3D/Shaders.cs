@@ -41,12 +41,15 @@ namespace ORTS
 			WorldViewProjection.SetValue(world * viewProj);
 		}
 
-		EffectParameter LightViewProjectionShadowProjection;
-		EffectParameter ShadowMapTexture;
-		public void SetShadowMap(ref Matrix lightViewProjectionShadowProjection, Texture2D shadowMapTexture)
+		EffectParameter[] LightViewProjectionShadowProjection;
+		EffectParameter[] ShadowMapTextures;
+		public void SetShadowMap(Matrix[] lightViewProjectionShadowProjection, Texture2D[] shadowMapTextures)
 		{
-			LightViewProjectionShadowProjection.SetValue(lightViewProjectionShadowProjection);
-			ShadowMapTexture.SetValue(shadowMapTexture);
+			for (var i = 0; i < RenderProcess.ShadowMapCount; i++)
+			{
+				LightViewProjectionShadowProjection[i].SetValue(lightViewProjectionShadowProjection[i]);
+				ShadowMapTextures[i].SetValue(shadowMapTextures[i]);
+			}
 		}
 
 		EffectParameter zbias_lighting;
@@ -100,8 +103,13 @@ namespace ORTS
 			View = Parameters["View"];
 			WorldViewProjection = Parameters["WorldViewProjection"];
 
-			LightViewProjectionShadowProjection = Parameters["LightViewProjectionShadowProjection"];
-			ShadowMapTexture = Parameters["ShadowMapTexture"];
+			LightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
+			ShadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
+			for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)
+			{
+				LightViewProjectionShadowProjection[i] = Parameters["LightViewProjectionShadowProjection" + i];
+				ShadowMapTextures[i] = Parameters["ShadowMapTexture" + i];
+			}
 
 			Fog = Parameters["Fog"];
 
@@ -127,20 +135,26 @@ namespace ORTS
     /// </summary>
 	public class ShadowMapShader : Effect
 	{
+		EffectParameter View = null;
 		EffectParameter WorldViewProjection = null;
 		EffectParameter ImageTexture = null;
+		EffectParameter ImageBlurStep = null;
 
-		public void SetData(ref Matrix wvp, Texture2D imageTexture)
+		public void SetData(ref Matrix view, ref Matrix wvp, Texture2D imageTexture)
 		{
+			View.SetValue(view);
 			WorldViewProjection.SetValue(wvp);
 			ImageTexture.SetValue(imageTexture);
+			ImageBlurStep.SetValue(imageTexture != null ? 1f / imageTexture.Width : 0);
 		}
 
 		public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
 			: base(graphicsDevice, content.Load<Effect>("ShadowMap"))
 		{
+			View = Parameters["View"];
 			WorldViewProjection = Parameters["WorldViewProjection"];
 			ImageTexture = Parameters["ImageTexture"];
+			ImageBlurStep = Parameters["ImageBlurStep"];
 		}
 	}
     #endregion

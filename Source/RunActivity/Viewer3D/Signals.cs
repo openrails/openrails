@@ -353,9 +353,6 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			RenderProcess.RenderStateChangesCount++;
-			RenderProcess.ImageChangesCount++;
-
 			SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["SignalLight"];
 			SceneryShader.ImageMap_Tex = Texture;
 

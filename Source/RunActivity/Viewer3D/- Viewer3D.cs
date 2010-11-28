@@ -225,6 +225,14 @@ namespace ORTS
             GraphicsDevice = renderProcess.GraphicsDevice;
 			DisplaySize.X = GraphicsDevice.Viewport.Width;
 			DisplaySize.Y = GraphicsDevice.Viewport.Height;
+			if (Settings.ShaderModel == 0)
+				Settings.ShaderModel = GraphicsDevice.GraphicsDeviceCapabilities.PixelShaderVersion.Major;
+			else if (Settings.ShaderModel < 2)
+				Settings.ShaderModel = 2;
+			else if (Settings.ShaderModel > 3)
+				Settings.ShaderModel = 3;
+			if (Settings.ShadowMapDistance == 0)
+				Settings.ShadowMapDistance = Settings.ViewingDistance / 2;
 
             PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
@@ -463,7 +471,10 @@ namespace ORTS
 			}
 
 			if (ScreenHasChanged())
+			{
 				Camera.ScreenChanged();
+				RenderProcess.InitializeShadowMapLocations(RenderProcess.Viewer);
+			}
 
 			// Update camera first...
 			Camera.Update(elapsedTime);

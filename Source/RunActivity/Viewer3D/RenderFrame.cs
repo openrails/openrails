@@ -18,7 +18,6 @@ namespace ORTS
 {
 	public enum RenderPrimitiveSequence
 	{
-        Shadows,
         CabOpaque,
         WorldOpaque,
         WorldBlended,
@@ -33,7 +32,6 @@ namespace ORTS
 
     public enum RenderPrimitiveGroup
     {
-        Shadows,
         Cab,
         World,
 		Lights, // TODO: May not be needed once alpha sorting works.
@@ -44,7 +42,6 @@ namespace ORTS
     public abstract class RenderPrimitive
     {
 		public static readonly RenderPrimitiveSequence[] SequenceForBlended = new[] {
-			RenderPrimitiveSequence.Shadows,
 			RenderPrimitiveSequence.CabBlended,
 			RenderPrimitiveSequence.WorldBlended,
 			RenderPrimitiveSequence.Lights,
@@ -52,7 +49,6 @@ namespace ORTS
 			RenderPrimitiveSequence.TextOverlayBlended,
 		};
 		public static readonly RenderPrimitiveSequence[] SequenceForOpaque = new[] {
-			RenderPrimitiveSequence.Shadows,
 			RenderPrimitiveSequence.CabOpaque,
 			RenderPrimitiveSequence.WorldOpaque,
 			RenderPrimitiveSequence.Lights,
@@ -71,6 +67,7 @@ namespace ORTS
         public abstract void Draw(GraphicsDevice graphicsDevice);
     }
 
+	[DebuggerDisplay("{Material} {RenderPrimitive} {Flags}")]
 #if RENDER_ITEM_COLLECTION
     public struct RenderItem
 #else
@@ -242,43 +239,62 @@ namespace ORTS
 
     public class RenderFrame
     {
-		const int ShadowMapSunDistance = 1000; // distance from shadow map center to put camera
-		const int ShadowMapViewMin = 256; // minimum width/height of shadow map projection
-		const int ShadowMapViewMax = 2048; // maximum width/height of shadow map projection
-		const int ShadowMapViewStep = 16; // step size for shadow view to stop it fluctuating too much
-		const int ShadowMapTexelSize = 4; // number of screen pixel to scale 1 shadow map texel to
-		const int ShadowMapSize = 4096; // shadow map texture width/height
-		const SurfaceFormat ShadowMapFormat = SurfaceFormat.Rg32; // shadow map texture format
-		const float ShadowMapViewNear = 0f; // near plane for shadow map camera
-		const float ShadowMapViewFar = 2000f; // far plane for shadow map camera
+		// Shared shadow map data.
+		static Texture2D[] ShadowMap;
+		static RenderTarget2D[] ShadowMapRenderTarget;
+		static DepthStencilBuffer ShadowMapStencilBuffer;
+		static DepthStencilBuffer NormalStencilBuffer;
+
+		// Local shadow map data.
+		Matrix[] ShadowMapLightView;
+		Matrix[] ShadowMapLightProj;
+		Matrix[] ShadowMapLightViewProjShadowProj;
+		BoundingFrustum[] ShadowMapBound;
 
 		static readonly Material DummyBlendedMaterial = new EmptyMaterial();
 
 		readonly RenderProcess RenderProcess;
 		readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
+		readonly RenderItemCollection[] RenderShadowItems;
 
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
 
-        public RenderFrame(RenderProcess owner)
-        {
+		public RenderFrame(RenderProcess owner)
+		{
 			RenderProcess = owner;
 
-            for (int i = 0; i < RenderItems.Length; i++)
-            {
+			for (int i = 0; i < RenderItems.Length; i++)
 				RenderItems[i] = new Dictionary<Material, RenderItemCollection>();
-            }
-        }
+
+			if (ShadowMap == null)
+			{
+				var shadowMapSize = RenderProcess.Viewer.Settings.ShadowMapResolution;
+				ShadowMap = new Texture2D[RenderProcess.ShadowMapCount];
+				ShadowMapRenderTarget = new RenderTarget2D[RenderProcess.ShadowMapCount];
+				for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+					ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, RenderProcess.ShadowMapMipCount, SurfaceFormat.Rg32, RenderTargetUsage.PreserveContents);
+				ShadowMapStencilBuffer = new DepthStencilBuffer(RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, DepthFormat.Depth16);
+				NormalStencilBuffer = RenderProcess.GraphicsDevice.DepthStencilBuffer;
+			}
+
+			ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
+			ShadowMapLightProj = new Matrix[RenderProcess.ShadowMapCount];
+			ShadowMapLightViewProjShadowProj = new Matrix[RenderProcess.ShadowMapCount];
+			ShadowMapBound = new BoundingFrustum[RenderProcess.ShadowMapCount];
+
+			RenderShadowItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+			for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+				RenderShadowItems[shadowMapIndex] = new RenderItemCollection();
+		}
 
         public void Clear() 
         {
             for (int i = 0; i < RenderItems.Length; i++)
-            {
                 foreach (Material mat in RenderItems[i].Keys)
-                {
                     RenderItems[i][mat].Clear();
-                }
-            }
+			for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+				RenderShadowItems[shadowMapIndex].Clear();
         }
 
         public void SetCamera(ref Matrix xnaViewMatrix, ref Matrix xnaProjectionMatrix)
@@ -287,54 +303,56 @@ namespace ORTS
             XNAProjectionMatrix = xnaProjectionMatrix;
         }
 
+		static bool LockShadows;
 		public void PrepareFrame(ElapsedTime elapsedTime)
 		{
-			var sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
-			var cameraLocation = new Vector3(RenderProcess.Viewer.Camera.Location.X, RenderProcess.Viewer.Camera.Location.Y, -RenderProcess.Viewer.Camera.Location.Z);
-			var terrainAltitude = RenderProcess.Viewer.Tiles.GetElevation(RenderProcess.Viewer.Camera.TileX, RenderProcess.Viewer.Camera.TileZ, (cameraLocation.X + 1024) / 8, (cameraLocation.Z + 1024) / 8);
+			if (UserInput.IsPressed(UserCommands.GameDebugLockShadows))
+				LockShadows = !LockShadows;
 
-			// Project the center-bottom of the screen onto the world.
-			var reverseCameraProjection = Matrix.Invert(RenderProcess.Viewer.Camera.XNAView * RenderProcess.Viewer.Camera.XNAProjection);
-			var cameraBottomVector = Vector3.Transform(-Vector3.UnitY, reverseCameraProjection) / (-reverseCameraProjection.M24 + reverseCameraProjection.M44);
-			var cameraBottomRay = new Ray(cameraLocation, cameraBottomVector - cameraLocation);
+			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && !LockShadows)
+			{
+				var sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
 
-			// Find the place where the center-bottom of the screen intersects with the terrain.
-			var terrain = new Plane(-Vector3.UnitY, terrainAltitude);
-			var terrainDistance = cameraBottomRay.Intersects(terrain);
-			var terrainIntersection = cameraBottomRay.Position + terrainDistance.GetValueOrDefault() * cameraBottomRay.Direction;
+				var cameraLocation = RenderProcess.Viewer.Camera.Location;
+				cameraLocation.Z *= -1;
 
-			// Calculate the size of the bottom of the screen in world units.
-			var cameraBottomWidthAtTerrain = RenderProcess.Viewer.Camera.RightFrustrumA * terrainDistance.GetValueOrDefault() * 2;
-			// Shadow map is scaled so that one shadow map texel is ShadowMapTexelSize pixels at the bottom of the screen.
-			var shadowMapSize = (float)Math.Round(MathHelper.Clamp(cameraBottomWidthAtTerrain * ShadowMapTexelSize * ShadowMapSize / RenderProcess.Viewer.DisplaySize.X, ShadowMapViewMin, ShadowMapViewMax) / ShadowMapViewStep) * ShadowMapViewStep;
-			// Get vector pointing directly across the ground from camera,
-			var cameraFront = new Vector3(cameraBottomRay.Direction.X, 0, cameraBottomRay.Direction.Z);
-			// and shift shadow map as far forward as we can (just under half its size) to get the most in front of the camera.
-			var shadowMapLocation = terrainIntersection + shadowMapSize / 2.1f * cameraFront / cameraFront.Length();
-			// Align shadow map location to grid so it doesn't "flutter" so much. this basically means aligning it along a
-			// grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
-			// and up/left.
-			var shadowMapAlignmentGrid = ShadowMapSize / shadowMapSize;
-			var shadowMapAlignAxisX = Vector3.Cross(sunDirection, Vector3.UnitY);
-			var shadowMapAlignAxisY = Vector3.Cross(shadowMapAlignAxisX, sunDirection);
-			shadowMapAlignAxisX.Normalize();
-			shadowMapAlignAxisY.Normalize();
-			var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
-			var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
-			var adjustZ = (float)Math.IEEERemainder(Vector3.Dot(sunDirection, shadowMapLocation), shadowMapAlignmentGrid);
-			shadowMapLocation.X -= shadowMapAlignAxisX.X * adjustX;
-			shadowMapLocation.Y -= shadowMapAlignAxisX.Y * adjustX;
-			shadowMapLocation.Z -= shadowMapAlignAxisX.Z * adjustX;
-			shadowMapLocation.X -= shadowMapAlignAxisY.X * adjustY;
-			shadowMapLocation.Y -= shadowMapAlignAxisY.Y * adjustY;
-			shadowMapLocation.Z -= shadowMapAlignAxisY.Z * adjustY;
-			shadowMapLocation.X -= sunDirection.X * adjustZ;
-			shadowMapLocation.Y -= sunDirection.Y * adjustZ;
-			shadowMapLocation.Z -= sunDirection.Z * adjustZ;
+				var xnaCameraView = RenderProcess.Viewer.Camera.XNAView;
+				var cameraDirection = new Vector3(-xnaCameraView.M13, -xnaCameraView.M23, -xnaCameraView.M33);
+				cameraDirection.Normalize();
 
-			ShadowMapLightView = Matrix.CreateLookAt(shadowMapLocation + ShadowMapSunDistance * sunDirection, shadowMapLocation, Vector3.Up);
-			ShadowMapLightProj = Matrix.CreateOrthographic(shadowMapSize, shadowMapSize, ShadowMapViewNear, ShadowMapViewFar);
-			ShadowMapBound = new BoundingFrustum(ShadowMapLightView * ShadowMapLightProj);
+				for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+				{
+					var shadowMapLocation = cameraLocation + RenderProcess.ShadowMapDistance[shadowMapIndex] * cameraDirection;
+					var shadowMapViewNear = 0;
+					var shadowMapViewFar = RenderProcess.Viewer.Settings.ViewingDistance + 2 * RenderProcess.ShadowMapDiameter[shadowMapIndex];
+
+					// Align shadow map location to grid so it doesn't "flutter" so much. This basically means aligning it along a
+					// grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
+					// and up/left.
+					var shadowMapAlignmentGrid = (float)RenderProcess.Viewer.Settings.ShadowMapResolution / RenderProcess.ShadowMapDiameter[shadowMapIndex];
+					var shadowMapAlignAxisX = Vector3.Cross(sunDirection, Vector3.UnitY);
+					var shadowMapAlignAxisY = Vector3.Cross(shadowMapAlignAxisX, sunDirection);
+					shadowMapAlignAxisX.Normalize();
+					shadowMapAlignAxisY.Normalize();
+					var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
+					var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
+					var adjustZ = (float)Math.IEEERemainder(Vector3.Dot(sunDirection, shadowMapLocation), shadowMapAlignmentGrid);
+					shadowMapLocation.X -= shadowMapAlignAxisX.X * adjustX;
+					shadowMapLocation.Y -= shadowMapAlignAxisX.Y * adjustX;
+					shadowMapLocation.Z -= shadowMapAlignAxisX.Z * adjustX;
+					shadowMapLocation.X -= shadowMapAlignAxisY.X * adjustY;
+					shadowMapLocation.Y -= shadowMapAlignAxisY.Y * adjustY;
+					shadowMapLocation.Z -= shadowMapAlignAxisY.Z * adjustY;
+					shadowMapLocation.X -= sunDirection.X * adjustZ;
+					shadowMapLocation.Y -= sunDirection.Y * adjustZ;
+					shadowMapLocation.Z -= sunDirection.Z * adjustZ;
+
+					ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + (RenderProcess.Viewer.Settings.ViewingDistance + RenderProcess.ShadowMapDiameter[shadowMapIndex] / 2) * sunDirection, shadowMapLocation, Vector3.Up);
+					ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(RenderProcess.ShadowMapDiameter[shadowMapIndex], RenderProcess.ShadowMapDiameter[shadowMapIndex], shadowMapViewNear, shadowMapViewFar);
+					ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
+					ShadowMapBound[shadowMapIndex] = new BoundingFrustum(ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex]);
+				}
+			}
 		}
 
         /// <summary>
@@ -354,10 +372,16 @@ namespace ORTS
         public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
 			if (RenderProcess.Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
-                AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
+				AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
 
-			if (((flags & ShapeFlags.ShadowCaster) != 0) && IsInShadowMap(mstsLocation, objectRadius, objectViewingDistance))
-				AddShadowPrimitive(material, primitive, ref xnaMatrix, flags);
+			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
+			{
+				for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+				{
+					if (IsInShadowMap(shadowMapIndex, mstsLocation, objectRadius, objectViewingDistance))
+						AddShadowPrimitive(shadowMapIndex, material, primitive, ref xnaMatrix, flags);
+				}
+			}
 		}
 
 		/// <summary>
@@ -401,9 +425,13 @@ namespace ORTS
 		/// <summary>
 		/// Executed in the UpdateProcess thread
 		/// </summary>
-		public void AddShadowPrimitive(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
+		void AddShadowPrimitive(int shadowMapIndex, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
-            AddPrimitive(material, primitive, RenderPrimitiveGroup.Shadows, ref xnaMatrix, flags);
+#if RENDER_ITEM_COLLECTION
+			RenderShadowItems[shadowMapIndex].Add(material, primitive, ref xnaMatrix, flags);
+#else
+			RenderShadowItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+#endif
 		}
 
         /// <summary>
@@ -424,16 +452,16 @@ namespace ORTS
 			//}
         }
 
-		public bool IsInShadowMap(Vector3 mstsLocation, float objectRadius, float objectViewingDistance)
+		bool IsInShadowMap(int shadowMapIndex, Vector3 mstsLocation, float objectRadius, float objectViewingDistance)
 		{
 			if (ShadowMapRenderTarget == null)
 				return false;
 
 			var xnaLocation = new Vector3(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
-			return ShadowMapBound.Intersects(new BoundingSphere(xnaLocation, objectRadius));
+			return ShadowMapBound[shadowMapIndex].Intersects(new BoundingSphere(xnaLocation, objectRadius));
 		}
 
-		public static RenderPrimitiveSequence GetRenderSequence(RenderPrimitiveGroup group, bool blended)
+		static RenderPrimitiveSequence GetRenderSequence(RenderPrimitiveGroup group, bool blended)
 		{
 			if (blended)
 				return RenderPrimitive.SequenceForBlended[(int)group];
@@ -453,7 +481,7 @@ namespace ORTS
 
 			Materials.UpdateShaders(RenderProcess, graphicsDevice);
 
-            if (RenderProcess.Viewer.Settings.DynamicShadows)
+			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
                 DrawShadows(graphicsDevice);
 
             DrawSimple(graphicsDevice);
@@ -462,56 +490,46 @@ namespace ORTS
 				RenderProcess.PrimitiveCount[i] = RenderItems[i].Values.Sum(l => l.Count);
 		}
 
-        static RenderTarget2D ShadowMapRenderTarget;
-        static DepthStencilBuffer ShadowMapStencilBuffer;
-		static DepthStencilBuffer NormalStencilBuffer;
-        static Texture2D ShadowMap;
-        Matrix ShadowMapLightView;
-        Matrix ShadowMapLightProj;
-		BoundingFrustum ShadowMapBound;
-		public void DrawShadows(GraphicsDevice graphicsDevice)
+		void DrawShadows(GraphicsDevice graphicsDevice)
 		{
-			if (ShadowMapRenderTarget == null)
-			{
-				ShadowMapRenderTarget = new RenderTarget2D(graphicsDevice, ShadowMapSize, ShadowMapSize, 1, ShadowMapFormat, RenderTargetUsage.PreserveContents);
-				ShadowMapStencilBuffer = new DepthStencilBuffer(graphicsDevice, ShadowMapSize, ShadowMapSize, DepthFormat.Depth16);
-				NormalStencilBuffer = graphicsDevice.DepthStencilBuffer;
-			}
+			for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+				DrawShadows(graphicsDevice, shadowMapIndex);
+			for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+				RenderProcess.ShadowPrimitiveCount[shadowMapIndex] = RenderShadowItems[shadowMapIndex].Count;
+		}
 
+		void DrawShadows(GraphicsDevice graphicsDevice, int shadowMapIndex)
+		{
 			// Prepare renderer for drawing the shadow map.
-			graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget);
+			graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget[shadowMapIndex]);
 			graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
 			graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
 
-			// Prepare for normal (non-blocking) rendering of scenery and terrain.
-			Materials.ShadowMapMaterial.SetState(graphicsDevice, false);
+			// Prepare for normal (non-blocking) rendering of scenery.
+			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
 
-			// Render non-terrain shadow items first.
-            foreach (var pair in RenderItems[(int)RenderPrimitiveSequence.Shadows])
-            {
-                if (!(pair.Key is TerrainMaterial))
-                    Materials.ShadowMapMaterial.Render(graphicsDevice, pair.Value, ref ShadowMapLightView, ref ShadowMapLightProj);
-            }
+			// Render non-terrain, non-forest shadow items first.
+			Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is SceneryMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+
+			// Prepare for normal (non-blocking) rendering of forests.
+			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Forest);
+
+			// Render forest shadow items next.
+			Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is ForestMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+
+			// Prepare for normal (non-blocking) rendering of terrain.
+			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
 
 			// Render terrain shadow items now, with their magic.
 			graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
 			graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
-
-            foreach (var pair in RenderItems[(int)RenderPrimitiveSequence.Shadows])
-            {
-                if (pair.Key is TerrainMaterial)
-                    Materials.ShadowMapMaterial.Render(graphicsDevice, pair.Value, ref ShadowMapLightView, ref ShadowMapLightProj);
-            }
+			Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
 			// Prepare for blocking rendering of terrain.
-			Materials.ShadowMapMaterial.SetState(graphicsDevice, true);
+			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Blocker);
 
 			// Render terrain shadow items in blocking mode.
-            foreach (var pair in RenderItems[(int)RenderPrimitiveSequence.Shadows])
-            {
-                if (pair.Key is TerrainMaterial)
-                    Materials.ShadowMapMaterial.Render(graphicsDevice, pair.Value, ref ShadowMapLightView, ref ShadowMapLightProj);
-            }
+			Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
 			// All done.
 			Materials.ShadowMapMaterial.ResetState(graphicsDevice);
@@ -520,29 +538,37 @@ namespace ORTS
 #endif
 			graphicsDevice.DepthStencilBuffer = NormalStencilBuffer;
 			graphicsDevice.SetRenderTarget(0, null);
-			ShadowMap = ShadowMapRenderTarget.GetTexture();
+			ShadowMap[shadowMapIndex] = ShadowMapRenderTarget[shadowMapIndex].GetTexture();
+
+			// Blur the shadow map.
+			if (RenderProcess.Viewer.Settings.ShadowMapBlur)
+			{
+				ShadowMap[shadowMapIndex] = Materials.ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex], ShadowMapStencilBuffer, NormalStencilBuffer);
+#if DEBUG_RENDER_STATE
+				DebugRenderState(graphicsDevice.RenderState, Materials.ShadowMapMaterial.ToString() + " ApplyBlur()");
+#endif
+			}
 		}
 
         /// <summary>
         /// Executed in the RenderProcess thread - simple draw
         /// </summary>
         /// <param name="graphicsDevice"></param>
-        public void DrawSimple(GraphicsDevice graphicsDevice)
+        void DrawSimple(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Materials.FogColor, 1, 0);
 
             DrawSequences(graphicsDevice);
         }
 
-        public void DrawSequences(GraphicsDevice graphicsDevice)
+        void DrawSequences(GraphicsDevice graphicsDevice)
         {
-            if (RenderProcess.Viewer.Settings.DynamicShadows)
+			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
             {
-				var shadowMapMatrix = ShadowMapLightView * ShadowMapLightProj * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
-				Materials.SceneryShader.SetShadowMap(ref shadowMapMatrix, ShadowMap);
+				Materials.SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap);
             }
 
-			foreach (var sequence in RenderItems.Where((d, i) => i != (int)RenderPrimitiveSequence.Shadows))
+			foreach (var sequence in RenderItems)
 			{
 				foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
 				{

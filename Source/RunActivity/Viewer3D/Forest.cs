@@ -60,7 +60,7 @@ namespace ORTS
 			Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             float viewingDistance = 2000; // Arbitrary, but historically in MSTS it was only 1000.
 			frame.AddAutoPrimitive(mstsLocation, forestMesh.objectRadius, viewingDistance + forestMesh.objectRadius, forestMaterial, forestMesh, 
-                RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.None);
+                RenderPrimitiveGroup.World, ref xnaPatchMatrix, Viewer.Settings.ShadowAllShapes ? ShapeFlags.ShadowCaster : ShapeFlags.None);
         }
     }
     #endregion

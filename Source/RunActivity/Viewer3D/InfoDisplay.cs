@@ -130,9 +130,8 @@ namespace ORTS
 				Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
 				Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
 				Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4"));
+				Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
 				Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
-				Logger.Data(Viewer.RenderProcess.RenderStateChangesPerFrame.ToString("F0"));
-				Logger.Data(Viewer.RenderProcess.ImageChangesPerFrame.ToString("F0"));
 				Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
 				Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
 				Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
@@ -321,11 +320,14 @@ namespace ORTS
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Memory = {0:F0} MB (managed: {1:F0} MB, collections: {2:F0}/{3:F0}/{4:F0})", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2)); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms)", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedValue * 1000, Viewer.RenderProcess.FrameJitter.SmoothedValue * 1000); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms, shader model {3})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedValue * 1000, Viewer.RenderProcess.FrameJitter.SmoothedValue * 1000, Viewer.Settings.ShaderModel); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Adapter = {0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render Primitives = {0:F0} ({1})", Viewer.RenderProcess.PrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray())); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Render State Changes = {0:F0}", Viewer.RenderProcess.RenderStateChangesPerFrame); TextBuilder.AppendLine();
-            TextBuilder.AppendFormat("Render Image Changes = {0:F0}", Viewer.RenderProcess.ImageChangesPerFrame); TextBuilder.AppendLine();
+			if (Viewer.Settings.DynamicShadows)
+			{
+				TextBuilder.AppendFormat("Shadow Maps = {0} ({1}x{1})", String.Join(", ", Enumerable.Range(0, RenderProcess.ShadowMapCount).Select(i => String.Format("{0}m/{1}m", RenderProcess.ShadowMapDistance[i], RenderProcess.ShadowMapDiameter[i])).ToArray()), Viewer.Settings.ShadowMapResolution); TextBuilder.AppendLine();
+				TextBuilder.AppendFormat("Shadow Primitives = {0:F0} = {1}", Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.ShadowPrimitivePerFrame.Select(p => p.ToString("F0")).ToArray())); TextBuilder.AppendLine();
+			}
+			TextBuilder.AppendFormat("Render Primitives = {0:F0} = {1}", Viewer.RenderProcess.PrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray())); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Render Process = {0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Updater Process = {0:F0}% ({1:F0}% wait)", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Loader Process = {0:F0}% ({1:F0}% wait)", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue); TextBuilder.AppendLine();
@@ -378,9 +380,8 @@ namespace ORTS
 							"Frame Rate",
 							"Frame Time",
 							"Frame Jitter",
+							"Shadow Primitives",
 							"Render Primitives",
-							"Render State Changes",
-							"Render Image Changes",
 							"Render Process",
 							"Updater Process",
 							"Loader Process",
