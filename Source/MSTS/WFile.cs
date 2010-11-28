@@ -59,35 +59,40 @@ namespace MSTS
             {
                 using (SBR subBlock = block.ReadSubBlock())
                 {
-                    switch (subBlock.ID)
+
+                    try
                     {
-                        case TokenID.CollideObject:
-                        case TokenID.Static: Add(new StaticObj(subBlock, currentWatermark)); break;
-                        case TokenID.TrackObj: Add(new TrackObj(subBlock, currentWatermark)); break;
-                        case TokenID.CarSpawner: subBlock.Skip(); break; // TODO
-                        case TokenID.Siding: subBlock.Skip(); break; // TODO
-                        case TokenID.Forest: // Unicode
-                            Add(new ForestObj(subBlock, currentWatermark)); 
-                            break;
-                        case (TokenID)308: // Binary
-                            Add(new ForestObj(subBlock, currentWatermark));
-                            break;
-                        case TokenID.LevelCr: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
-                        case TokenID.Dyntrack: // Unicode
-                            Add(new DyntrackObj(subBlock, currentWatermark, true));
-                            break;
-                        case (TokenID)306: // Binary
-                            Add(new DyntrackObj(subBlock, currentWatermark, false));
-                            break;
-                        case TokenID.Transfer: subBlock.Skip(); break; // TODO
-                        case TokenID.Gantry: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
-                        case TokenID.Pickup: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
-                        case TokenID.Signal:
-							Add(new SignalObj(subBlock, currentWatermark));
-							break;
-                        case TokenID.Speedpost: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
-                        case TokenID.Tr_Watermark: currentWatermark = subBlock.ReadInt(); break;
-                        default: subBlock.Skip(); break;
+                        switch (subBlock.ID)
+                        {
+                            case TokenID.CollideObject:
+                            case TokenID.Static: Add(new StaticObj(subBlock, currentWatermark)); break;
+                            case TokenID.TrackObj: Add(new TrackObj(subBlock, currentWatermark)); break;
+                            case TokenID.CarSpawner: subBlock.Skip(); break; // TODO
+                            case TokenID.Siding: subBlock.Skip(); break; // TODO
+                            case TokenID.Forest: // Unicode
+                                Add(new ForestObj(subBlock, currentWatermark));
+                                break;
+                            case TokenID.LevelCr: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                            case TokenID.Dyntrack: // Unicode
+                                Add(new DyntrackObj(subBlock, currentWatermark, true));
+                                break;
+                            case (TokenID)306: // Binary
+                                Add(new DyntrackObj(subBlock, currentWatermark, false));
+                                break;
+                            case TokenID.Transfer: subBlock.Skip(); break; // TODO
+                            case TokenID.Gantry: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                            case TokenID.Pickup: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                            case TokenID.Signal:
+                                Add(new SignalObj(subBlock, currentWatermark));
+                                break;
+                            case TokenID.Speedpost: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+                            case TokenID.Tr_Watermark: currentWatermark = subBlock.ReadInt(); break;
+                            default: subBlock.Skip(); break;
+                        }
+                    }
+                    catch (System.Exception error)
+                    {
+                        Trace.TraceWarning(error.Message);
                     }
                 }
             }
@@ -337,6 +342,10 @@ namespace MSTS
                         default: subBlock.Skip(); break;
                     }
                 }
+            }
+            if (TreeTexture == null)
+            {
+                throw new System.Exception( block.ErrorMessage("Missing texture filename in forest region. UID=" + UID.ToString() ));
             }
         }
 

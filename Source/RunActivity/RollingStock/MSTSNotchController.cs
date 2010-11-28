@@ -84,7 +84,9 @@ namespace ORTS
             StepSize = stf.ReadFloat(STFReader.UNITS.Any, null);
             IntermediateValue = CurrentValue = stf.ReadFloat(STFReader.UNITS.Any, null);
             //Console.WriteLine("controller {0} {1} {2} {3}", MinimumValue, MaximumValue, StepSize, CurrentValue);
-            stf.ReadItem(); // numnotches
+            string token = stf.ReadItem(); // s/b numnotches
+            if (string.Compare(token, "NumNotches", true) != 0) // handle error in gp38.eng where extra parameter provided before NumNotches statement 
+                stf.ReadItem();
             stf.MustMatch("(");
             stf.ReadInt(STFReader.UNITS.None, null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {

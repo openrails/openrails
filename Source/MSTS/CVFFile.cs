@@ -151,7 +151,7 @@ namespace MSTS
             catch(ArgumentException)
             {
                 stf.StepBackOneItem();
-                STFException.TraceWarning(stf, "Unknown ControlType " + stf.ReadString());
+                // REMOVED TEMPORARILY STFException.TraceWarning(stf, "Unknown ControlType " + stf.ReadString());
                 ControlType = CABViewControlTypes.NONE;
             }
             //stf.ReadItem(); // Skip repeated Class Type 
@@ -193,7 +193,7 @@ namespace MSTS
             catch (ArgumentException)
             {
                 stf.StepBackOneItem();
-                STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadString());
+                // REMOVED TEMPORARILY STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadString());
                 ControlStyle = CABViewControlStyles.NONE;
             }
             stf.SkipRestOfBlock();
@@ -208,7 +208,7 @@ namespace MSTS
             catch (ArgumentException)
             {
                 stf.StepBackOneItem();
-                STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadItem());
+                // REMOVED TEMPORARILY STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadItem());
                 Units = CABViewControlUnits.NONE;
             }
             stf.SkipRestOfBlock();

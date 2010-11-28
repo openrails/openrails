@@ -89,17 +89,15 @@ namespace ORTS
 			{
 				var error = (Exception)args[0];
 				output.AppendLine(error.ToString());
-				output.AppendLine();
 			}
-			else
-			{
-				output.AppendLine();
-				if ((TraceOutputOptions & TraceOptions.Callstack) != 0)
-					output.AppendLine(new StackTrace(true).ToString());
-				else
-					output.AppendLine();
-			}
-			Write(output);
+            else //if (eventType != TraceEventType.Warning && eventType != TraceEventType.Information )
+            {
+                output.AppendLine();
+                if ((TraceOutputOptions & TraceOptions.Callstack) != 0)
+                    output.AppendLine(new StackTrace(true).ToString());
+            }
+            output.AppendLine();
+ 			Write(output);
 		}
 
 		public override void Write(string message)

@@ -1152,7 +1152,7 @@ namespace ORTS
             // Problem with texture sizes, could not disassemble
             if (width == 0 || height == 0 || tex.Width / width == 0 || tex.Height / height == 0)
             {
-                Trace.TraceError(string.Format("Could not disassemble texture {0}. Texture width is {1}, height is {2}; Control width is {3}, height is {4}",
+                Trace.TraceWarning(string.Format("Could not disassemble texture {0}. Texture width is {1}, height is {2}; Control width is {3}, height is {4}",
                     FileName, tex.Width, tex.Height, width, height));
 
                 dest = new Texture2D[FramesCount];
