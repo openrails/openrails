@@ -566,7 +566,7 @@ namespace MSTS
         /// </summary>
         /// <remarks>This function is marked internal so it can be used to support arithmetic processing once the elements are seperated (eg. 5*2m)
         /// </remarks>
-        /// <param name="constant">string with suffix, after the function call the suffix is removed.</param>
+        /// <param name="constant">string with suffix, after the function call the suffix is removed, ie "23 mph".</param>
         /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
         /// <returns>The scaler that should be used to modify the constant to standard OR units.</returns>
         internal double ParseUnitSuffix(ref string constant, UNITS valid_units)
@@ -574,6 +574,7 @@ namespace MSTS
             if (valid_units == UNITS.None)
                 return 1;
 
+            // Enclose the prefixed numeric string with beg,end
             int beg, end, i;
             for (beg = end = i = 0; i < constant.Length; end = ++i)
             {
@@ -596,8 +597,22 @@ namespace MSTS
             }
             while ((i < constant.Length) && (constant[i] == ' ')) ++i; // skip the spaces
 
-            string suffix = constant.Substring(i).ToLowerInvariant();
+            // Enclose the unit suffix
+            int suffixStart = i;
+            int suffixLength = constant.Length - suffixStart;  
+
+            // Check for an embedded comment in the unit suffix value, ie "220kN#est" used in acela.eng ) 
+            int commentStart = constant.IndexOf('#', suffixStart);
+            if( commentStart != -1 ) 
+                suffixLength = commentStart - suffixStart;
+
+            // Extract the unit suffix
+            string suffix = constant.Substring(suffixStart, suffixLength).ToLowerInvariant();
+
+            // Extract the prefixed numeric string
             constant = constant.Substring(beg, end - beg);
+
+            // Select and return the scalar value
             if ((valid_units & UNITS.Distance) > 0)
                 switch (suffix)
                 {
