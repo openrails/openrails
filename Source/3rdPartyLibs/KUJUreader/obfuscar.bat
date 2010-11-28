@@ -1,1 +1,0 @@
-..\obfuscar\obfuscar reader.xml

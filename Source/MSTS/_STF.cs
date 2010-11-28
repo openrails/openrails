@@ -562,11 +562,12 @@ namespace MSTS
             /// </summary>
             Any = -2
         }
+
         /// <summary>This function removes known unit suffixes, and returns a scaler to bring the constant into the standard OR units.
         /// </summary>
         /// <remarks>This function is marked internal so it can be used to support arithmetic processing once the elements are seperated (eg. 5*2m)
         /// </remarks>
-        /// <param name="constant">string with suffix, after the function call the suffix is removed, ie "23 mph".</param>
+        /// <param name="constant">string with suffix (ie "23 mph"), after the function call the suffix is removed.</param>
         /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
         /// <returns>The scaler that should be used to modify the constant to standard OR units.</returns>
         internal double ParseUnitSuffix(ref string constant, UNITS valid_units)
@@ -601,7 +602,7 @@ namespace MSTS
             int suffixStart = i;
             int suffixLength = constant.Length - suffixStart;  
 
-            // Check for an embedded comment in the unit suffix value, ie "220kN#est" used in acela.eng ) 
+            // Check for an embedded comment in the unit suffix string, ( ie "220kN#est" used in acela.eng ) 
             int commentStart = constant.IndexOf('#', suffixStart);
             if( commentStart != -1 ) 
                 suffixLength = commentStart - suffixStart;
