@@ -256,11 +256,6 @@ namespace ORTS
             TextBuilder.AppendLine();
 
 			TextBuilder.AppendFormat("FPS = {0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue); TextBuilder.AppendLine();
-/*
-            //WHN:
-            status = Viewer.PlayerTrain.RearTDBTraveller.TNToString();
-            TextBuilder.Append("TN: "); TextBuilder.AppendLine(status);
-*/
         }
 
 		private void AddBrakeInfo()

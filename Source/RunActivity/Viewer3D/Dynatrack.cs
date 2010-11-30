@@ -309,7 +309,6 @@ namespace ORTS
                             lod.CutoffRadius = float.Parse(reader.GetAttribute("CutoffRadius"));
                             lod.MipMapLevelOfDetailBias = float.Parse(reader.GetAttribute("MipMapLevelOfDetailBias"));
                             lod.AlphaBlendEnable = bool.Parse(reader.GetAttribute("AlphaBlendEnable"));
-                            lod.AlphaTestEnable = bool.Parse(reader.GetAttribute("AlphaTestEnable"));
                             LODItems.Add(lod);
                             break;
                         case "Polyline":
@@ -407,7 +406,6 @@ namespace ORTS
             lod.CutoffRadius = 2000.0f;
             lod.MipMapLevelOfDetailBias = -1;
             lod.AlphaBlendEnable = true;
-            lod.AlphaTestEnable = false;
             lod.LightingSpecular = 0;
             lod.Texture = DynatrackTextures.Image1;
             LODItems.Add(lod); // Append to LODItems array
@@ -424,7 +422,6 @@ namespace ORTS
             lod.CutoffRadius = 1200.0f;
             lod.MipMapLevelOfDetailBias = 0;
             lod.AlphaBlendEnable = false;
-            lod.AlphaTestEnable = false;
             lod.LightingSpecular = 25;
             lod.Texture = DynatrackTextures.Image2;
             LODItems.Add(lod); // Append to LODItems array
@@ -448,7 +445,6 @@ namespace ORTS
             lod.CutoffRadius = 700.0f;
             lod.MipMapLevelOfDetailBias = 0;
             lod.AlphaBlendEnable = false;
-            lod.AlphaTestEnable = false;
             lod.LightingSpecular = 0;
             lod.Texture = DynatrackTextures.Image2;
             LODItems.Add(lod); // Append to LODItems array
@@ -501,7 +497,6 @@ namespace ORTS
         public float MipMapLevelOfDetailBias;
         public float LightingSpecular;
         public bool AlphaBlendEnable;
-        public bool AlphaTestEnable;
         public DynatrackTextures Texture;
 
         /// <summary>
@@ -523,7 +518,6 @@ namespace ORTS
                 new STFReader.TokenProcessor("cutoffradius", ()=>{ CutoffRadius = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("mipmaplevelofdetailbias", ()=>{ MipMapLevelOfDetailBias = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("alphablendenable", ()=>{ AlphaBlendEnable = stf.ReadBoolBlock(true); }),
-                new STFReader.TokenProcessor("alphatestenable", ()=>{ AlphaTestEnable = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("lightingspecular", ()=>{ LightingSpecular = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("texture", ()=> { Texture = parent.LODDefineTexture(stf.ReadStringBlock(null));
                 }),
@@ -540,7 +534,6 @@ namespace ORTS
             if (CutoffRadius == 0) throw new Exception("missing CutoffRadius");
             // MipMapLevelOfDetail bias initializes to 0.
             // AlphaBlendEnable initializes to false.
-            // AlphaTestEnable initializes to false.
             if (Polylines.Count == 0) throw new Exception("missing Polylines");
             if (Texture == DynatrackTextures.none)
             {

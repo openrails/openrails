@@ -1013,8 +1013,6 @@ namespace ORTS
                                 lod.MipMapLevelOfDetailBias;
                     graphicsDevice.RenderState.AlphaBlendEnable =
                                 lod.AlphaBlendEnable;
-                    graphicsDevice.RenderState.AlphaTestEnable =
-                                lod.AlphaTestEnable;
 
                     Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
                     SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
@@ -1040,7 +1038,7 @@ namespace ORTS
 			SceneryShader.Apply();
 
 			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.AlphaTestEnable = false;
+			graphicsDevice.RenderState.AlphaTestEnable = false; // Not used at all
 			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
 			graphicsDevice.RenderState.SourceBlend = Blend.One;
 		} // end ResetState()

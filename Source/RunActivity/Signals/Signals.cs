@@ -485,6 +485,7 @@ namespace ORTS
                                 if (sigItem.revDir == currDir)
                                 {
                                     int sigObj = sigItem.sigObj;
+                                    //if (signalObjects[sigObj] != null) //WHN: Fixes Sandpatch problem
                                     if (signalObjects[sigObj].isSignalNormal())
                                     {
                                         float dist = signalObjects[sigObj].DistanceTo(tdbtraveller);
