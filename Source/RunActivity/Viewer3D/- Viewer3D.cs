@@ -423,6 +423,9 @@ namespace ORTS
             }
 
             RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
+
+            if (UserInput.RDState != null)
+                UserInput.RDState.Handled();
 		}
 
 

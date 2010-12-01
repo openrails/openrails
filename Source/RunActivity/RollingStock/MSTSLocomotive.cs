@@ -477,6 +477,11 @@ namespace ORTS
             ThrottleController.StopDecrease();
         }
 
+        public void SetThrottlePercent(float percent)
+        {
+            ThrottlePercent = ThrottleController.SetRDPercent(percent);
+        }
+
         public void StartTrainBrakeIncrease()
         {
             TrainBrakeController.StartIncrease();
@@ -501,10 +506,17 @@ namespace ORTS
         public void StopTrainBrakeDecrease()
         {
             TrainBrakeController.StopDecrease();
-        }        
+        }
+
+        public void SetTrainBrakePercent(float percent)
+        {
+            TrainBrakeController.SetRDPercent(percent);
+        }
 
         public void SetEmergency()
-        {           
+        {
+            if (TrainBrakeController.GetIsEmergency())
+                return;
             TrainBrakeController.SetEmergency();
             SignalEvent(EventID.TrainBrakeEmergency);
         }
@@ -556,6 +568,13 @@ namespace ORTS
 
             EngineBrakeController.StopDecrease();
         }
+
+        public void SetEngineBrakePercent(float percent)
+        {
+            if (EngineBrakeController == null)
+                return;
+            EngineBrakeController.SetRDPercent(percent);
+        }
   
         public override string GetEngineBrakeStatus()
         {
@@ -564,9 +583,9 @@ namespace ORTS
             return string.Format("{0}{1}", EngineBrakeController.GetStatus(), BailOff ? " BailOff" : "");
         }
 
-        public void ToggleBailOff()
+        public void SetBailOff(bool bailOff)
         {
-            BailOff = !BailOff;
+            BailOff = bailOff;
         }
 
         private bool CanUseDynamicBrake()
@@ -616,6 +635,15 @@ namespace ORTS
                 return;
 
             DynamicBrakeController.StopDecrease();
+        }
+
+        public void SetDynamicBrakePercent(float percent)
+        {
+            if (!CanUseDynamicBrake())
+                return;
+            DynamicBrakePercent = DynamicBrakeController.SetRDPercent(percent);
+            if (percent < 0)
+                DynamicBrakePercent = percent;
         }
 
         public override string GetDynamicBrakeStatus()
@@ -977,7 +1005,7 @@ namespace ORTS
 			if (UserInput.IsPressed(UserCommands.ControlDynamicBrakeDecrease)) Locomotive.StartDynamicBrakeDecrease();
 			if (UserInput.IsReleased(UserCommands.ControlDynamicBrakeDecrease)) Locomotive.StopDynamicBrakeDecrease();
 
-			if (UserInput.IsPressed(UserCommands.ControlBailOff)) Locomotive.ToggleBailOff();
+			Locomotive.SetBailOff(UserInput.IsDown(UserCommands.ControlBailOff));
 			if (UserInput.IsPressed(UserCommands.ControlInitializeBrakes)) Locomotive.Train.InitializeBrakes();
 			if (UserInput.IsPressed(UserCommands.ControlHandbrakeNone)) Locomotive.Train.SetHandbrakePercent(0);
 			if (UserInput.IsPressed(UserCommands.ControlHandbrakeFull)) Locomotive.Train.SetHandbrakePercent(100);
@@ -1022,6 +1050,35 @@ namespace ORTS
             // By GeorgeS
             if (UserInput.IsPressed(UserCommands.ControlLight)) { Locomotive.CabLightOn = !Locomotive.CabLightOn; Locomotive.SignalEvent(EventID.LightSwitchToggle); }
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
+
+            if (UserInput.RDState != null)
+            {
+                if (UserInput.RDState.BailOff)
+                    Locomotive.SetBailOff(true);
+                if (UserInput.RDState.Changed)
+                {
+                    Locomotive.SetThrottlePercent(UserInput.RDState.ThrottlePercent);
+                    Locomotive.SetTrainBrakePercent(UserInput.RDState.TrainBrakePercent);
+                    Locomotive.SetEngineBrakePercent(UserInput.RDState.EngineBrakePercent);
+                    Locomotive.SetDynamicBrakePercent(UserInput.RDState.DynamicBrakePercent);
+                    if (UserInput.RDState.DirectionPercent > 50)
+                        Locomotive.SetDirection(Direction.Forward);
+                    else if (UserInput.RDState.DirectionPercent < -50)
+                        Locomotive.SetDirection(Direction.Reverse);
+                    if (UserInput.RDState.Emergency)
+                        Locomotive.SetEmergency();
+                    if (UserInput.RDState.Wipers != 1 && Locomotive.Wiper)
+                        Locomotive.SignalEvent(EventID.WiperOff);
+                    if (UserInput.RDState.Wipers == 1 && !Locomotive.Wiper)
+                        Locomotive.SignalEvent(EventID.WiperOn);
+                    // changing Headlight more than one step at a time doesn't work for some reason
+                    if (Locomotive.Headlight < UserInput.RDState.Lights - 1)
+                        Locomotive.Headlight++;
+                    if (Locomotive.Headlight > UserInput.RDState.Lights - 1)
+                        Locomotive.Headlight--;
+                }
+            }
+
 			base.HandleUserInput(elapsedTime);
         }
 

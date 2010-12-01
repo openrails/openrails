@@ -80,6 +80,10 @@
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
+    <Reference Include="PIEHidDotNet, Version=2.2.3.26389, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\PIEHidDotNet.dll</HintPath>
+    </Reference>
     <Reference Include="Reader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\Reader.dll</HintPath>
@@ -221,6 +225,7 @@
     <Compile Include="RollingStock\TrainCar.cs" />
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Simulator\Activity.cs" />
+    <Compile Include="Simulator\RailDriverHandler.cs" />
     <Compile Include="Simulator\TDBTraveller.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Common\DataLogger.cs" />

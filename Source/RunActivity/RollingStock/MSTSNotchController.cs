@@ -124,6 +124,55 @@ namespace ORTS
             IntermediateValue = CurrentValue;
         }
 
+        /// <summary>
+        /// Sets the controller value based on a RailDriver control
+        /// </summary>
+        /// <param name="percent"></param>
+        public float SetRDPercent(float percent)
+        {
+            float v = (MinimumValue < 0 && percent < 0 ? -MinimumValue : MaximumValue) * percent / 100;
+            if (v < MinimumValue)
+                v = MinimumValue;
+            CurrentValue = v;
+            if (CurrentNotch >= 0)
+            {
+                if (Notches[Notches.Count - 1].Type == MSTSNotchType.Emergency)
+                    v = Notches[Notches.Count - 1].Value * percent / 100;
+                for (; ; )
+                {
+                    MSTSNotch notch = Notches[CurrentNotch];
+                    if (CurrentNotch > 0 && v < notch.Value)
+                    {
+                        MSTSNotch prev= Notches[CurrentNotch-1];
+                        if (!notch.Smooth && !prev.Smooth && v - prev.Value > .45 * (notch.Value - prev.Value))
+                            break;
+                        CurrentNotch--;
+                        continue;
+                    }
+                    if (CurrentNotch < Notches.Count - 1)
+                    {
+                        MSTSNotch next = Notches[CurrentNotch + 1];
+                        if (next.Type != MSTSNotchType.Emergency)
+                        {
+                            if ((notch.Smooth || next.Smooth) && v < next.Value)
+                                break;
+                            if (!notch.Smooth && !next.Smooth && v - notch.Value < .55 * (next.Value - notch.Value))
+                                break;
+                            CurrentNotch++;
+                            continue;
+                        }
+                    }
+                    break;
+                }
+                if (Notches[CurrentNotch].Smooth)
+                    CurrentValue = v;
+                else
+                    CurrentValue = Notches[CurrentNotch].Value;
+            }
+            IntermediateValue = CurrentValue;
+            return 100 * CurrentValue;
+        }
+
         public void StartIncrease()
         {
             UpdateValue = 1;

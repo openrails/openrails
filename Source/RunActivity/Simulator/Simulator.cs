@@ -67,6 +67,7 @@ namespace ORTS
         public List<Train> Trains = new List<Train>();
         public Signals Signals = null;
         public AI AI = null;
+        public RailDriverHandler RailDriver = null;
         public SeasonType Season;
         public WeatherType Weather;
         public SIGCFGFile SIGCFG;
@@ -121,6 +122,8 @@ namespace ORTS
                 TSectionDat = new TSectionDatFile(BasePath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
+
+            RailDriver = new RailDriverHandler(BasePath);
 
 			Trace.Write(" ACT");
         }
@@ -248,6 +251,9 @@ namespace ORTS
             if( AI != null ) AI.Update( elapsedClockSeconds );
 
             if (ActivityRun != null) ActivityRun.Update();
+
+            if (RailDriver != null)
+                RailDriver.Update(PlayerLocomotive);
         }
 
         private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead)

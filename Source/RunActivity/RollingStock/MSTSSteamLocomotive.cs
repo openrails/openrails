@@ -495,6 +495,14 @@ namespace ORTS
             CutoffController.StopDecrease();
         }
 
+        public void SetCutoffPercent(float percent)
+        {
+            Train.MUReverserPercent = CutoffController.SetRDPercent(percent);
+            if (Train.MUReverserPercent >= 0)
+                Train.MUDirection = Direction.Forward;
+            else
+                Train.MUDirection = Direction.Reverse;
+        }
 
         /// <summary>
         /// Used when someone want to notify us of an event
@@ -542,8 +550,11 @@ namespace ORTS
                 SteamLocomotive.StartReverseDecrease();
 			else if (UserInput.IsReleased(UserCommands.ControlReverserBackwards))
                 SteamLocomotive.StopReverseDecrease();
-            else
-                base.HandleUserInput(elapsedTime);
+
+            if (UserInput.RDState != null && UserInput.RDState.Changed)
+                SteamLocomotive.SetCutoffPercent(UserInput.RDState.DirectionPercent);
+
+            base.HandleUserInput(elapsedTime);
         }
 
         /// <summary>

@@ -45,6 +45,8 @@ namespace ORTS
 		public static Vector3 NearPoint;
 		public static Vector3 FarPoint;
 
+        public static RailDriverState RDState = null;
+
 		public static void Initialize()
 		{
 			Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(Keys.Escape);
@@ -190,6 +192,8 @@ namespace ORTS
 		public static void Handled()
 		{
 			Changed = false;
+            if (RDState != null)
+                RDState.Handled();
 		}
 
 		public static string FormatCommandName(UserCommands command)
@@ -208,19 +212,25 @@ namespace ORTS
 		}
 		public static bool IsPressed(UserCommands command)
 		{
+            if (RDState != null && RDState.IsPressed(command))
+                return true;
 			var setting = Commands[(int)command];
 			return setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState);
 		}
 
 		public static bool IsReleased(UserCommands command)
 		{
-			var setting = Commands[(int)command];
+            if (RDState != null && RDState.IsReleased(command))
+                return true;
+            var setting = Commands[(int)command];
 			return !setting.IsKeyDown(KeyboardState) && setting.IsKeyDown(LastKeyboardState);
 		}
 
 		public static bool IsDown(UserCommands command)
 		{
-			var setting = Commands[(int)command];
+            if (RDState != null && RDState.IsDown(command))
+                return true;
+            var setting = Commands[(int)command];
 			return setting.IsKeyDown(KeyboardState);
 		}
 
