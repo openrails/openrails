@@ -1067,9 +1067,9 @@ namespace ORTS
                         Locomotive.SetDirection(Direction.Reverse);
                     if (UserInput.RDState.Emergency)
                         Locomotive.SetEmergency();
-                    if (UserInput.RDState.Wipers != 1 && Locomotive.Wiper)
+                    if (UserInput.RDState.Wipers == 1 && Locomotive.Wiper)
                         Locomotive.SignalEvent(EventID.WiperOff);
-                    if (UserInput.RDState.Wipers == 1 && !Locomotive.Wiper)
+                    if (UserInput.RDState.Wipers != 1 && !Locomotive.Wiper)
                         Locomotive.SignalEvent(EventID.WiperOn);
                     // changing Headlight more than one step at a time doesn't work for some reason
                     if (Locomotive.Headlight < UserInput.RDState.Lights - 1)

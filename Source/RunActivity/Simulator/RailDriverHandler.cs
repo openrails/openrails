@@ -311,6 +311,13 @@ namespace ORTS
                 }
             }
         }
+
+        public void Shutdown()
+        {
+            if (Device == null)
+                return;
+            SetLEDs(0, 0, 0);
+        }
     }
 
     /// <summary>

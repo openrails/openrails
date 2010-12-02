@@ -164,6 +164,12 @@ namespace ORTS
             AI = new AI(this);
         }
 
+        public void Stop()
+        {
+            if (RailDriver != null)
+                RailDriver.Shutdown();
+        }
+
         // resume game after a save
         public void Restore(BinaryReader inf)
         {

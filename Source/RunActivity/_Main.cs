@@ -138,6 +138,7 @@ namespace ORTS
 				Viewer = new Viewer3D(Simulator);
 				Viewer.Initialize();
 				Viewer.Run();
+                Simulator.Stop();
 			}
 			catch (Exception error)
 			{
