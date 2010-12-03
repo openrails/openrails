@@ -191,6 +191,12 @@
     <Compile Include="Common\SunMoonPos.cs" />
     <Compile Include="Common\UserSettings.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
+    <Compile Include="Debugging\DebugViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Debugging\DebugViewerForm.Designer.cs">
+      <DependentUpon>DebugViewerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
@@ -315,6 +321,11 @@
     <Content Include="..\ORThumbnail.png">
       <Link>ORThumbnail.png</Link>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Debugging\DebugViewerForm.resx">
+      <DependentUpon>DebugViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
