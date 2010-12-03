@@ -24,6 +24,7 @@ namespace ORTS.Popups
 
 		public static Texture2D WhiteTexture;
 		public static Texture2D ScrollbarTexture;
+		public static Texture2D LabelShadowTexture;
 
 		public readonly Viewer3D Viewer;
 		readonly List<Window> Windows = new List<Window>();
@@ -46,6 +47,8 @@ namespace ORTS.Popups
 			}
 			if (ScrollbarTexture == null)
 				ScrollbarTexture = viewer.RenderProcess.Content.Load<Texture2D>("WindowScrollbar");
+			if (LabelShadowTexture == null)
+				LabelShadowTexture = viewer.RenderProcess.Content.Load<Texture2D>("WindowLabelShadow");
 		}
 
 		public void Draw(GraphicsDevice graphicsDevice)

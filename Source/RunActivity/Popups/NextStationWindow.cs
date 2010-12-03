@@ -40,8 +40,7 @@ namespace ORTS.Popups
 			: base(owner, 400, 135, "Next Station")
 		{
 			Viewer = owner.Viewer;
-			AlignBottom();
-			AlignLeft();
+			Align(AlignAt.Start, AlignAt.End);
 		}
 
 		protected override ControlLayout Layout(ControlLayout layout)

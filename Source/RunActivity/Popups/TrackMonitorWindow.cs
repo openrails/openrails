@@ -63,8 +63,7 @@ namespace ORTS.Popups
 		public TrackMonitorWindow(WindowManager owner)
 			: base(owner, 150, 300, "Track Monitor")
 		{
-			AlignTop();
-			AlignRight();
+			Align(AlignAt.End, AlignAt.Start);
 			SignalAspect.Texture = owner.Viewer.RenderProcess.Content.Load<Texture2D>("SignalAspects");
 		}
 

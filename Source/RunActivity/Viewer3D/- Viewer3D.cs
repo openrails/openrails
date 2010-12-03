@@ -61,6 +61,7 @@ namespace ORTS
 		public double RealTime = 0;
 		InfoDisplay InfoDisplay;
 		public WindowManager WindowManager = null;
+		public MessagesWindow MessagesWindow; // Game message window (special, always visible)
 		public HelpWindow HelpWindow; // F1 window
 		public TrackMonitorWindow TrackMonitorWindow; // F4 window
 		public SwitchWindow SwitchWindow; // F8 window
@@ -248,6 +249,7 @@ namespace ORTS
             
             // Initialse popup windows.
 			WindowManager = new WindowManager(this);
+			MessagesWindow = new MessagesWindow(WindowManager);
 			HelpWindow = new HelpWindow(WindowManager);
 			TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
 			SwitchWindow = new SwitchWindow(WindowManager);

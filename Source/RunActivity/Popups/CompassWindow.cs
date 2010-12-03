@@ -20,8 +20,7 @@ namespace ORTS.Popups
 		public CompassWindow(WindowManager owner)
 			: base(owner, 250, 95, "Compass")
 		{
-			AlignTop();
-			AlignCenterH();
+			Align(AlignAt.Middle, AlignAt.Start);
 		}
 
 		protected override ControlLayout Layout(ControlLayout layout)

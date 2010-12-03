@@ -27,8 +27,7 @@ namespace ORTS.Popups
 		public SwitchWindow(WindowManager owner)
 			: base(owner, Window.DecorationSize.X + 2 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
 		{
-			AlignCenterV();
-			AlignLeft();
+			Align(AlignAt.Start, AlignAt.Middle);
 			SwitchForwards.Texture = SwitchBackwards.Texture = owner.Viewer.RenderProcess.Content.Load<Texture2D>("SwitchStates");
 		}
 

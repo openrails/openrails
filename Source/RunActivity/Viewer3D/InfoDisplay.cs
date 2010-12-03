@@ -158,6 +158,7 @@ namespace ORTS
 
 		void UpdateDialogsText(ElapsedTime elapsedTime)
 		{
+			Viewer.MessagesWindow.UpdateMessages();
 			if (Viewer.TrackMonitorWindow.Visible)
 			{
 				var poiDistance = 0f;

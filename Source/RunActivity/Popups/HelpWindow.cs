@@ -20,7 +20,7 @@ namespace ORTS.Popups
 		public HelpWindow(WindowManager owner)
 			: base(owner, 600, 450, "Help")
 		{
-			AlignCenter();
+			Align(AlignAt.Middle, AlignAt.Middle);
 		}
 
 		protected override ControlLayout Layout(ControlLayout layout)

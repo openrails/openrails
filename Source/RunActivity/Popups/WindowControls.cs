@@ -144,6 +144,33 @@ namespace ORTS.Popups
 		}
 	}
 
+	public class LabelShadow : Control
+	{
+		public const int ShadowSize = 8;
+		public const int ShadowExtraSizeX = 4;
+		public const int ShadowExtraSizeY = 0;
+
+		public Color Color;
+
+		public LabelShadow(int x, int y, int width, int height)
+			: base(x, y, width, height)
+		{
+			Color = Color.White;
+		}
+
+		public LabelShadow(int width, int height)
+			: this(0, 0, width, height)
+		{
+		}
+
+		internal override void Draw(SpriteBatch spriteBatch, Point offset)
+		{
+			spriteBatch.Draw(WindowManager.LabelShadowTexture, new Rectangle(offset.X + Position.X - ShadowExtraSizeX, offset.Y + Position.Y - ShadowExtraSizeY, ShadowSize + ShadowExtraSizeY, Position.Height + 2 * ShadowExtraSizeY), new Rectangle(0, 0, ShadowSize, 2 * ShadowSize), Color);
+			spriteBatch.Draw(WindowManager.LabelShadowTexture, new Rectangle(offset.X + Position.X - ShadowExtraSizeX + ShadowSize + ShadowExtraSizeY, offset.Y + Position.Y - ShadowExtraSizeY, Position.Width + 2 * ShadowExtraSizeX - 2 * ShadowSize - 2 * ShadowExtraSizeY, Position.Height + 2 * ShadowExtraSizeY), new Rectangle(ShadowSize, 0, ShadowSize, 2 * ShadowSize), Color);
+			spriteBatch.Draw(WindowManager.LabelShadowTexture, new Rectangle(offset.X + Position.X + ShadowExtraSizeX - ShadowSize - ShadowExtraSizeY + Position.Width, offset.Y + Position.Y - ShadowExtraSizeY, ShadowSize + ShadowExtraSizeY, Position.Height + 2 * ShadowExtraSizeY), new Rectangle(2 * ShadowSize, 0, ShadowSize, 2 * ShadowSize), Color);
+		}
+	}
+
 	public class Image : Control
 	{
 		public Texture2D Texture;

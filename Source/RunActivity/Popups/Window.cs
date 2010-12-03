@@ -107,39 +107,17 @@ namespace ORTS.Popups
 			}
 		}
 
-		public void AlignTop()
+		public enum AlignAt
 		{
-			MoveTo(location.X, 0);
-		}
+			Start,
+			Middle,
+			End,
+		};
 
-		public void AlignBottom()
+		public void Align(AlignAt horizontal, AlignAt vertical)
 		{
-			MoveTo(location.X, Owner.ScreenSize.Y);
-		}
-
-		public void AlignLeft()
-		{
-			MoveTo(0, location.Y);
-		}
-
-		public void AlignRight()
-		{
-			MoveTo(Owner.ScreenSize.X, location.Y);
-		}
-
-		public void AlignCenterV()
-		{
-			MoveTo(location.X, (Owner.ScreenSize.Y - location.Height) / 2);
-		}
-
-		public void AlignCenterH()
-		{
-			MoveTo((Owner.ScreenSize.X - location.Width) / 2, location.Y);
-		}
-
-		public void AlignCenter()
-		{
-			MoveTo((Owner.ScreenSize.X - location.Width) / 2, (Owner.ScreenSize.Y - location.Height) / 2);
+			MoveTo(horizontal == AlignAt.Start ? 0 : horizontal == AlignAt.Middle ? (Owner.ScreenSize.X - location.Width) / 2 : Owner.ScreenSize.X - location.Width,
+				vertical == AlignAt.Start ? 0 : vertical == AlignAt.Middle ? (Owner.ScreenSize.Y - location.Height) / 2 : Owner.ScreenSize.Y - location.Height);
 		}
 
 		protected void Layout()
