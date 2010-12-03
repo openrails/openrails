@@ -136,8 +136,8 @@ namespace MSTS
             {
                 STFException.TraceWarning(stf, "Stream count mismatch found :" + this.Count.ToString() + ", expected :" + count.ToString());
                 //Strings: All of the code below should be removed once I locate a bug in STF parsing
-                foreach (var i in this)
-                    Trace.WriteLine(String.Format("stream {0} {1} {2}->{3}", i.Priority, i.Volume, i.Triggers.Count, string.Join(",", i.Triggers.Select(t => t.GetType().Name).ToArray())));
+                //foreach (var i in this)
+                //    Trace.WriteLine(String.Format("stream {0} {1} {2}->{3}", i.Priority, i.Volume, i.Triggers.Count, string.Join(",", i.Triggers.Select(t => t.GetType().Name).ToArray())));
             }
         }
     }
