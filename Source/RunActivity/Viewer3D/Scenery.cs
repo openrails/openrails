@@ -187,7 +187,7 @@ namespace ORTS
     {
         public int TileX, TileZ;
 
-        private List<StaticShape> SceneryObjects = new List<StaticShape>();
+        public List<StaticShape> SceneryObjects = new List<StaticShape>();
 
         // Dynamic track objects in the world file
         public struct DyntrackParams

@@ -140,18 +140,23 @@ namespace ORTS
             Viewer = new Viewer3D(Simulator);
             Viewer.Initialize();
 
-            #if DEBUG
+            
+#if DEBUG
             // prepare to show debug output in a separate window
-            DebugViewer = new DebugViewerForm();
-            DebugViewer.Show();
-            #endif
+
+            // disabled for now - work in progress
+            //DebugViewer = new DebugViewerForm(Simulator, Viewer);
+            //DebugViewer.Show();
+#endif
 
             Viewer.Run();
+       
+
             Simulator.Stop();
 
             
             #if DEBUG
-            DebugViewer.Dispose();
+            //DebugViewer.Dispose();
             #endif
 
          }

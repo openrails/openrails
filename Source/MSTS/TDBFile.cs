@@ -133,7 +133,13 @@ namespace MSTS
         }
         public TrJunctionNode TrJunctionNode;
         public TrVectorNode TrVectorNode;
-        public bool TrEndNode;
+        
+       /// <summary>
+       /// True when this TrackNode has nothing else connected to it (that is, it is
+       /// a buffer end or an unfinished track) and trains cannot proceed beyond here.
+       /// </summary>
+       public bool TrEndNode;
+
         public TrPin[] TrPins;
         public UiD UiD;  // only provided for TrJunctionNode and TrEndNode type of TrackNodes
         public uint Inpins;
