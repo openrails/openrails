@@ -212,7 +212,7 @@ namespace Menu
                 string RunActivityFolder = AppDomain.CurrentDomain.BaseDirectory.ToLower();
 
                 System.Diagnostics.ProcessStartInfo objPSI = new System.Diagnostics.ProcessStartInfo();
-                objPSI.FileName = RunActivityFolder + @"\" + RunActivityProgram;
+                objPSI.FileName = System.IO.Path.Combine(RunActivityFolder, RunActivityProgram);
                 objPSI.Arguments = parameter;
                 objPSI.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal; // or Hidden, Maximized or Normal 
                 objPSI.WorkingDirectory = RunActivityFolder;
