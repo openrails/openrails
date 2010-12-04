@@ -182,6 +182,7 @@
     <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\enums.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
+    <Compile Include="Common\FxCopAttributes.cs" />
     <Compile Include="Common\Interpolator.cs" />
     <Compile Include="Common\Helpers.cs" />
     <Compile Include="Common\Math.cs" />
