@@ -61,6 +61,7 @@ namespace ORTS
 				State.WaitTillFinished();
 		}
 
+		[ThreadName("Updater")]
 		void UpdateLoop()
 		{
 			Thread.CurrentThread.Name = "Updater Process";
@@ -92,6 +93,7 @@ namespace ORTS
 			}
 		}
 
+		[CallOnThread("Render")]
 		public void StartUpdate(RenderFrame frame, double totalRealSeconds)
 		{
 			if (!Finished)
@@ -119,6 +121,7 @@ namespace ORTS
 		double TotalRealSeconds;
 		double LastTotalRealSeconds;
 
+		[ThreadName("Updater")]
 		public void Update()
 		{
 			Profiler.Start();

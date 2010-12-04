@@ -92,6 +92,7 @@ namespace ORTS
         /// <summary>
         /// The loop running in the thread
         /// </summary>
+		[ThreadName("Sound")]
         public void SoundUpdateLoop()
         {
 			Thread.CurrentThread.Name = "Sound Process";

@@ -148,6 +148,7 @@ namespace ORTS
 			CameraToRestore = inf.ReadInt32();
 		}
 
+		[ThreadName("Render")]
 		public void Initialize()
 		{
 			Console.WriteLine();
@@ -170,6 +171,7 @@ namespace ORTS
 			SetupBackgroundProcesses();
 		}
 
+		[ThreadName("Render")]
 		public void Run()
 		{
             RenderProcess.Run();
@@ -219,8 +221,8 @@ namespace ORTS
         /// Called once after the graphics device is ready
         /// to load any static graphics content, background 
         /// processes haven't started yet.
-        /// Executes in the RenderProcess thread.
         /// </summary>
+		[CallOnThread("Render")]
 		public void Initialize(RenderProcess renderProcess)
         {
             GraphicsDevice = renderProcess.GraphicsDevice;
@@ -292,8 +294,8 @@ namespace ORTS
         /// from the simulator and viewer classes in preparation
         /// for the Load call.  Copy data to local storage for use 
         /// in the next load call.
-        /// Executes in the UpdaterProcess thread.
         /// </summary>
+		[CallOnThread("Updater")]
 		public void LoadPrep()
         {
             TerrainDrawer.LoadPrep();
@@ -309,8 +311,8 @@ namespace ORTS
         /// Do not access volatile data from the simulator 
         /// and viewer classes during the Load call ( see
         /// LoadPrep() )
-        /// Executes in the LoaderProcess thread.
         /// </summary>
+		[CallOnThread("Loader")]
 		public void Load(RenderProcess renderProcess)
         {
             TerrainDrawer.Load(renderProcess);
@@ -325,6 +327,7 @@ namespace ORTS
 		uint adapterMemory = 0;
 		public uint AdapterMemory { get { return adapterMemory; } }
 
+		[CallOnThread("Updater")]
 		public void UpdateAdapterInformation(GraphicsAdapter graphicsAdapter)
 		{
 			adapterDescription = graphicsAdapter.Description;
@@ -347,8 +350,8 @@ namespace ORTS
         /// Called whenever a key or mouse buttin is pressed for handling user input
         /// elapsedTime represents the the time since the last call to HandleUserInput
         /// Examine the static class UserInput for mouse and keyboard status
-        /// Executes in the UpdaterProcess thread.
         /// </summary>
+		[CallOnThread("Updater")]
 		public void HandleUserInput(ElapsedTime elapsedTime)
         {
             Camera.HandleUserInput(elapsedTime);
@@ -435,6 +438,7 @@ namespace ORTS
         //  This is to enable the user to move popup windows
         //  Coded as a separate routine as HandleUserInput does not cater for mouse movemenmt.
         //
+		[CallOnThread("Updater")]
 		public void HandleMouseMovement()
         {
             MouseState currentMouseState = Mouse.GetState();
@@ -461,9 +465,9 @@ namespace ORTS
         /// Note:  this doesn't actually draw on the screen surface, but 
         /// instead prepares a list of drawing primitives that will be rendered
         /// later in RenderFrame.Draw() by the RenderProcess thread.
-        /// elapsedTime represents the the time since the last call to PrepareFrame
-        /// Executes in the UpdaterProcess thread.
+        /// elapsedTime represents the the time since the last call to PrepareFrame.
         /// </summary>
+		[CallOnThread("Updater")]
 		public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
 		{
 			// Mute sound when paused
@@ -522,8 +526,8 @@ namespace ORTS
 
         /// <summary>
         /// Unload all graphical content and restore memory
-        /// Executes in the RenderProcess thread.
         /// </summary>
+		[CallOnThread("Render")]
         public void Unload(RenderProcess renderProcess)
         {
             if( SoundEngine != null )

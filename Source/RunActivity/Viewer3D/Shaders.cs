@@ -29,7 +29,8 @@ namespace ORTS
     /// <summary>
     /// Wrapper for SceneryShader.fx
     /// </summary>
-    public class SceneryShader : Effect
+	[CallOnThread("Render")]
+	public class SceneryShader : Effect
     {
 		EffectParameter World;
 		EffectParameter View;
@@ -133,6 +134,7 @@ namespace ORTS
     /// <summary>
     /// Wrapper for ShadowMap.fx
     /// </summary>
+	[CallOnThread("Render")]
 	public class ShadowMapShader : Effect
 	{
 		EffectParameter View = null;
@@ -160,7 +162,8 @@ namespace ORTS
     #endregion
 
     #region Sky shader
-    public class SkyShader : Effect
+	[CallOnThread("Render")]
+	public class SkyShader : Effect
     {
         EffectParameter mModelToProjection = null;
         EffectParameter View = null;
@@ -286,7 +289,8 @@ namespace ORTS
     #endregion
 
     #region Precipitation shader
-    public class PrecipShader : Effect
+	[CallOnThread("Render")]
+	public class PrecipShader : Effect
     {
         EffectParameter mProjection = null;
         EffectParameter mView = null;
@@ -345,7 +349,8 @@ namespace ORTS
     #endregion
 
     #region LightGlow shader
-    public class LightGlowShader : Effect
+	[CallOnThread("Render")]
+	public class LightGlowShader : Effect
     {
         EffectParameter mWorldViewProj = null;
         EffectParameter lightGlow_Tex = null;
@@ -387,6 +392,7 @@ namespace ORTS
 	/// <summary>
 	/// Wrapper for PopupWindow.fx
 	/// </summary>
+	[CallOnThread("Render")]
 	public class PopupWindowShader : Effect
 	{
 		EffectParameter World;
@@ -438,7 +444,8 @@ namespace ORTS
     /// <summary>
     /// Wrapper for CabShader.fx
     /// </summary>
-    public class CabShader : Effect
+	[CallOnThread("Render")]
+	public class CabShader : Effect
     {
         EffectParameter _LightVector = null;
         EffectParameter _isNightTex = null;

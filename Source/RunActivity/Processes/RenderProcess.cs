@@ -36,6 +36,7 @@ namespace ORTS
     /// <summary>
     /// This is the main type for your game
     /// </summary>
+	[CallOnThread("Render")]
     public class RenderProcess : Microsoft.Xna.Framework.Game
     {
 		public const int ShadowMapCountMaximum = 4;
@@ -86,12 +87,13 @@ namespace ORTS
         /// <summary>
         /// Allows the game to perform any initialization it needs after the graphics device has started
         /// </summary>
+		[ThreadName("Render")]
 		protected override void Initialize()
         {
 			Thread.CurrentThread.Name = "Render Process";
 
 			Materials.Initialize(this);
-			Viewer.Initialize(this);
+            Viewer.Initialize(this);
 
 			ShadowMapCount = Viewer.Settings.ShadowMapCount;
 			if ((ShadowMapCount > 1) && (Viewer.Settings.ShaderModel < 3))
@@ -164,6 +166,7 @@ namespace ORTS
         /// Called regularly.   Used to update the simulator class when
         /// the window is minimized.
         /// </summary>
+		[ThreadName("Render")]
         protected override void Update(GameTime gameTime)
         {
             double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;
@@ -200,6 +203,7 @@ namespace ORTS
         /// sequence using this thread alone.
         /// </summary>
 		int ProfileFrames = 1000;
+		[ThreadName("Render")]
 		protected override void Draw(GameTime gameTime)
         {
 			if (Viewer.Settings.Profiling)
@@ -293,6 +297,7 @@ namespace ORTS
         /// <summary>
         /// User closed the window without pressing the exit key
         /// </summary>
+		[ThreadName("Render")]
 		protected override void OnExiting(object sender, EventArgs args)
         {
             Terminate();
@@ -301,6 +306,8 @@ namespace ORTS
 
 		float lastElapsedTime = -1;
 
+		[CallOnThread("Render")]
+		[CallOnThread("Updater")]
 		public void ComputeFPS(float elapsedRealTime)
 		{
 			if (elapsedRealTime < 0.001)

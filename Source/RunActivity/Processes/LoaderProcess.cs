@@ -49,6 +49,7 @@ namespace ORTS
 			}
 		}
 
+		[ThreadName("Loader")]
 		void LoadLoop()
 		{
 			Thread.CurrentThread.Name = "Loader Process";
@@ -83,6 +84,7 @@ namespace ORTS
 		public const double UpdatePeriod = 0.1;       // 10 times per second 
 		public double LastUpdateRealTime = 0;          // last time we were upated
 
+		[CallOnThread("Updater")]
 		public void StartUpdate()
 		{
 			// the loader will often fall behind, in that case let it finish
@@ -97,6 +99,7 @@ namespace ORTS
 			LastUpdateRealTime = Viewer.RealTime;
 		}
 
+		[ThreadName("Loader")]
 		public void Update()
 		{
 			Profiler.Start();

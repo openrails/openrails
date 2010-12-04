@@ -51,6 +51,7 @@ namespace ORTS.Popups
 				LabelShadowTexture = viewer.RenderProcess.Content.Load<Texture2D>("WindowLabelShadow");
 		}
 
+		[CallOnThread("Render")]
 		public void Draw(GraphicsDevice graphicsDevice)
 		{
 			if ((ScreenSize.X != graphicsDevice.PresentationParameters.BackBufferWidth) || (ScreenSize.Y != graphicsDevice.PresentationParameters.BackBufferHeight))
@@ -146,6 +147,7 @@ namespace ORTS.Popups
 		public Window MouseActiveWindow { get { return mouseActiveWindow; } }
 
 		double LastUpdateRealTime;
+		[CallOnThread("Updater")]
 		public void HandleUserInput()
 		{
 			if (UserInput.IsMouseLeftButtonPressed())
