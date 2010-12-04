@@ -197,6 +197,7 @@
     <Compile Include="Debugging\DebugViewerForm.Designer.cs">
       <DependentUpon>DebugViewerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Interlocking\InterlockingTrack.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
