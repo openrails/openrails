@@ -11,13 +11,7 @@ namespace ORTS.Interlocking
    /// </summary>
    public class InterlockingTrack
    {
-      
-      /// <summary>
-      /// True when the track is occupied, false otherwise.
-      /// </summary>
-      public bool Occupied { get; set; }
-
-
+    
       /// <summary>
       /// Reference to the simulation object.
       /// </summary>
@@ -30,6 +24,68 @@ namespace ORTS.Interlocking
       public InterlockingTrack(Simulator simulator/*TrackItem foo*/)
       {
 
+      }
+
+
+
+      /// <summary>
+      /// True when the track is occupied, false otherwise.
+      /// </summary>
+      public bool Occupied { get; set; }
+
+
+      /// <summary>
+      /// Track reference used to detect opposing routes. 
+      /// </summary>
+      public InterlockingTrack CascadeToRight { get; set; }
+
+      /// <summary>
+      /// Track reference used to detect opposing routes. 
+      /// </summary>
+      public InterlockingTrack CascadeToLeft { get; set; }
+
+      /// <summary>
+      /// Track reference used to detect opposing routes. 
+      /// </summary>
+      public InterlockingTrack CascadeFromRight { get; set; }
+
+      /// <summary>
+      /// Track reference used to detect opposing routes. 
+      /// </summary>
+      public InterlockingTrack CascadeFromLeft { get; set; }
+
+
+      /// <summary>
+      /// Returns true when this track has any cascade references.
+      /// </summary>
+      public bool HasCascadeReference
+      {
+         get
+         {
+            bool returnValue = false;
+
+            if (CascadeToRight != null)
+            {
+               returnValue = true;
+            }
+
+            if (CascadeFromRight != null)
+            {
+               returnValue = true;
+            }
+
+            if (CascadeToLeft != null)
+            {
+               returnValue = true;
+            }
+
+            if (CascadeFromLeft != null)
+            {
+               returnValue = true;
+            }
+
+            return returnValue;
+         }
       }
 
    }
