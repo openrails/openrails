@@ -6,13 +6,13 @@
 /// Author: Laurie Heath
 /// Author: James Ross
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
 
 namespace ORTS.Popups
 {
@@ -38,7 +38,7 @@ namespace ORTS.Popups
 		{
 			Viewer = viewer;
 			SpriteBatch = new SpriteBatch(viewer.GraphicsDevice);
-			ScreenSize = new Point(viewer.GraphicsDevice.PresentationParameters.BackBufferWidth, viewer.GraphicsDevice.PresentationParameters.BackBufferHeight);
+			ScreenSize = Viewer.DisplaySize;
 
 			if (WhiteTexture == null)
 			{
@@ -51,25 +51,27 @@ namespace ORTS.Popups
 				LabelShadowTexture = viewer.RenderProcess.Content.Load<Texture2D>("WindowLabelShadow");
 		}
 
+		[CallOnThread("Updater")]
+		public void ScreenChanged()
+		{
+			var oldScreenSize = ScreenSize;
+			ScreenSize = Viewer.DisplaySize;
+
+			// Reset the screen buffer for glass rendering if necessary.
+			if (Screen != null)
+			{
+				Screen.Dispose();
+				Screen = null;
+			}
+
+			// Reposition all the windows.
+			foreach (var window in Windows)
+				window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
+		}
+
 		[CallOnThread("Render")]
 		public void Draw(GraphicsDevice graphicsDevice)
 		{
-			if ((ScreenSize.X != graphicsDevice.PresentationParameters.BackBufferWidth) || (ScreenSize.Y != graphicsDevice.PresentationParameters.BackBufferHeight))
-			{
-				var oldScreenSize = ScreenSize;
-				ScreenSize.X = graphicsDevice.PresentationParameters.BackBufferWidth;
-				ScreenSize.Y = graphicsDevice.PresentationParameters.BackBufferHeight;
-
-				// Reset the screen buffer for glass rendering if necessary.
-				if (Screen != null)
-					Screen.Dispose();
-				Screen = null;
-
-				// Reposition all the windows.
-				foreach (var window in Windows)
-					window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
-			}
-
 			// Nothing visible? Nothing more to do!
 			if (Windows.All(w => !w.Visible))
 				return;
@@ -89,34 +91,34 @@ namespace ORTS.Popups
 				if (Screen == null)
 					Screen = new ResolveTexture2D(graphicsDevice, ScreenSize.X, ScreenSize.Y, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
 
-                foreach (var window in VisibleWindows)
-                {
-                    var xnaWorld = window.XNAWorld;
+				foreach (var window in VisibleWindows)
+				{
+					var xnaWorld = window.XNAWorld;
 
-                    graphicsDevice.ResolveBackBuffer(Screen);
-                    material.SetState(graphicsDevice, Screen);
-                    material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-                    material.ResetState(graphicsDevice);
+					graphicsDevice.ResolveBackBuffer(Screen);
+					material.SetState(graphicsDevice, Screen);
+					material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+					material.ResetState(graphicsDevice);
 
-                    SpriteBatch.Begin(BeginSpriteBlendMode, BeginSpriteSortMode, BeginSaveStateMode);
-                    window.Draw(SpriteBatch);
-                    SpriteBatch.End();
-                }
+					SpriteBatch.Begin(BeginSpriteBlendMode, BeginSpriteSortMode, BeginSaveStateMode);
+					window.Draw(SpriteBatch);
+					SpriteBatch.End();
+				}
 			}
 			else
 			{
-                foreach (var window in VisibleWindows)
-                {
-                    var xnaWorld = window.XNAWorld;
+				foreach (var window in VisibleWindows)
+				{
+					var xnaWorld = window.XNAWorld;
 
-                    material.SetState(graphicsDevice, Screen);
-                    material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-                    material.ResetState(graphicsDevice);
+					material.SetState(graphicsDevice, Screen);
+					material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+					material.ResetState(graphicsDevice);
 
-                    SpriteBatch.Begin(BeginSpriteBlendMode, BeginSpriteSortMode, BeginSaveStateMode);
-                    window.Draw(SpriteBatch);
-                    SpriteBatch.End();
-                }
+					SpriteBatch.Begin(BeginSpriteBlendMode, BeginSpriteSortMode, BeginSaveStateMode);
+					window.Draw(SpriteBatch);
+					SpriteBatch.End();
+				}
 			}
 		}
 

@@ -47,7 +47,7 @@ namespace ORTS
 		Vector3 frustumLeft;
 		Vector3 frustumRight;
 
-		public float RightFrustrumA { get { return (float)Math.Cos(MathHelper.ToRadians(45.0f) / 2 * (Viewer.DisplaySize.X / Viewer.DisplaySize.Y)); } }
+		public float RightFrustrumA { get { return (float)Math.Cos(MathHelper.ToRadians(45.0f) / 2 * ((float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y)); } }
 
 		// This sucks. It's really not camera-related at all.
 		public static Matrix XNASkyProjection;
@@ -118,7 +118,7 @@ namespace ORTS
 		/// </summary>
 		public void ScreenChanged()
 		{
-			var aspectRatio = Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
+			var aspectRatio = (float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
 			var farPlaneDistance = SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
 			var fovWidthRadians = MathHelper.ToRadians(45.0f);
 			xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, Viewer.Settings.ViewingDistance);

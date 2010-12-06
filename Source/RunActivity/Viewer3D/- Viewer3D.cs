@@ -52,7 +52,7 @@ namespace ORTS
         // Access to the XNA Game class
         public GraphicsDeviceManager GDM;  
         public GraphicsDevice GraphicsDevice;
-		public Vector2 DisplaySize;
+		public Point DisplaySize;
         // Components
         public Simulator Simulator;
 		/// <summary>
@@ -483,6 +483,7 @@ namespace ORTS
 			{
 				Camera.ScreenChanged();
 				RenderProcess.InitializeShadowMapLocations(RenderProcess.Viewer);
+				WindowManager.ScreenChanged();
 			}
 
 			// Update camera first...

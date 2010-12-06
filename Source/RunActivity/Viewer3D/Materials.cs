@@ -895,7 +895,7 @@ namespace ORTS
 			if (ShaderPasses == null) ShaderPasses = PrecipShader.Techniques["RainTechnique"].Passes.GetEnumerator();
             PrecipShader.WeatherType = weatherType;
             PrecipShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
-            PrecipShader.ViewportHeight = (int)RenderProcess.Viewer.DisplaySize.Y;
+            PrecipShader.ViewportHeight = RenderProcess.Viewer.DisplaySize.Y;
             PrecipShader.CurrentTime = (float)RenderProcess.Viewer.Simulator.ClockTime;
             switch (weatherType)
             {

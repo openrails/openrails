@@ -123,7 +123,7 @@ namespace ORTS
 
 		public static void InitializeShadowMapLocations(Viewer3D viewer)
 		{
-			var ratio = viewer.DisplaySize.X / viewer.DisplaySize.Y;
+			var ratio = (float)viewer.DisplaySize.X / viewer.DisplaySize.Y;
 			var fov = 45.0f;
 			var n = (float)0.5;
 			var f = (float)viewer.Settings.ShadowMapDistance;

@@ -893,7 +893,7 @@ namespace ORTS
             /// </summary>
             /// <param name="displaySize">Current screen resolution</param>
             /// <returns>Translated vectors</returns>
-            public Vector4 TranslatedPosition(Vector2 displaySize)
+            public Vector4 TranslatedPosition(Point displaySize)
             {
                 return new Vector4(Position.X / 640 * displaySize.X, 
                     Position.Y / 480 * displaySize.Y, 
@@ -1440,7 +1440,7 @@ namespace ORTS
         private Texture2D _CabTexture;
         private CabShader _Shader;
 
-        private Vector2 _PrevScreenSize;
+        private Point _PrevScreenSize;
 
         private CabViewControls CabViewControls;
         private List<CabViewControlRenderer> CabViewControlRenderers = new List<CabViewControlRenderer>();
@@ -1548,8 +1548,8 @@ namespace ORTS
             if (_CabTexture == Materials.MissingTexture)
                 return;
 
-            _CabRect.Width = (int)_Viewer.DisplaySize.X;
-            _CabRect.Height = (int)_Viewer.DisplaySize.Y;
+            _CabRect.Width = _Viewer.DisplaySize.X;
+            _CabRect.Height = _Viewer.DisplaySize.Y;
 
             if (_PrevScreenSize != _Viewer.DisplaySize && _Shader != null)
             {
@@ -1683,10 +1683,10 @@ namespace ORTS
 
             base.PrepareFrame(frame);
 
-            _Position.X = (float)(_Viewer.DisplaySize.X / 640 * (_CabViewControl.PositionX + _Origin.X));
-            _Position.Y = (float)(_Viewer.DisplaySize.Y / 480 * (_CabViewControl.PositionY + _Origin.Y));
+			_Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + _Origin.X);
+			_Position.Y = (float)_Viewer.DisplaySize.Y / 480 * ((float)_CabViewControl.PositionY + _Origin.Y);
 
-            _ScaleToScreen = _Viewer.DisplaySize.Y / 480 * _Scale;
+			_ScaleToScreen = (float)_Viewer.DisplaySize.Y / 480 * _Scale;
 
             float percent = TranslateToPercent();
             float range;
@@ -1758,8 +1758,8 @@ namespace ORTS
 
             base.PrepareFrame(frame);
 
-            float xratio = (float)(_Viewer.DisplaySize.X / 640);
-            float yratio = (float)(_Viewer.DisplaySize.Y / 480);
+            float xratio = (float)_Viewer.DisplaySize.X / 640;
+            float yratio = (float)_Viewer.DisplaySize.Y / 480;
 
             float percent = TranslateToPercent();
 
@@ -1859,8 +1859,8 @@ namespace ORTS
 
             base.PrepareFrame(frame);
 
-            float xratio = (float)(_Viewer.DisplaySize.X / 640);
-            float yratio = (float)(_Viewer.DisplaySize.Y / 480);
+            float xratio = (float)_Viewer.DisplaySize.X / 640;
+            float yratio = (float)_Viewer.DisplaySize.Y / 480;
 
             _DestRectangle.X = (int)(xratio * _CabViewControl.PositionX * 1.0001);
             _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY * 1.0001);
@@ -1977,12 +1977,12 @@ namespace ORTS
             float fontratio = (float)_CabViewControl.Height / 16;
             float fpos = ((float)_CabViewControl.Width) - 6 * _Digits * fontratio;
 
-            _Position.X = (float)(_Viewer.DisplaySize.X / 640 * (_CabViewControl.PositionX + fpos));
-            _Position.Y = (float)(_Viewer.DisplaySize.Y / 480 * _CabViewControl.PositionY);
+            _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
+            _Position.Y = (float)_Viewer.DisplaySize.Y / 480 * (float)_CabViewControl.PositionY;
 
             base.PrepareFrame(frame);
 
-            _ScaleToScreen = _Viewer.DisplaySize.Y / 480 * (fontratio);
+			_ScaleToScreen = (float)_Viewer.DisplaySize.Y / 480 * (fontratio);
 
             float num = _Locomotive.GetDataOf(_CabViewControl);
             _Text = num.ToString("00");
