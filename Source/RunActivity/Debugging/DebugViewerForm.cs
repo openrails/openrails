@@ -158,6 +158,8 @@ namespace ORTS.Debugging
 
          List<LineSegment> segments = new List<LineSegment>();
          List<PointF> switches = new List<PointF>();
+         List<PointF> buffers = new List<PointF>();
+         List<SignalWidget> signals = new List<SignalWidget>();
 
          TrackNode[] nodes = simulator.TDB.TrackDB.TrackNodes;
 
@@ -168,7 +170,11 @@ namespace ORTS.Debugging
             if (currNode != null)
             {
 
-               if (currNode.TrVectorNode != null)
+               if (currNode.TrEndNode)
+               {
+                  buffers.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
+               }
+               else if (currNode.TrVectorNode != null)
                {
 
                   if (currNode.TrVectorNode.TrVectorSections.Length > 1)
@@ -177,17 +183,41 @@ namespace ORTS.Debugging
                   }
                   else
                   {
-                     
+                 
+                     foreach(TrPin pin in currNode.TrPins)
+                     {
+
+                        TrackNode connectedNode = nodes[pin.Link];
+
+                        if (currNode.UiD == null && currNode.TrVectorNode.TrVectorSections.Length == 1)
+                        {
+
+                           TrVectorSection s = currNode.TrVectorNode.TrVectorSections[0];
+
+                           PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
+                           PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
+
+                           segments.Add(new LineSegment(A, B));
+                        }
+                     }
+
+
                   }
                }
                else if (currNode.TrJunctionNode != null)
                {
                   switches.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
                }
-               else
-               {
-                  // for now, do nothing here... we might do something here later
-               }
+            }
+         }
+
+         foreach (TrItem item in simulator.TDB.TrackDB.TrItemTable)
+         {
+            if (item.ItemType == TrItem.trItemType.trSIGNAL)
+            {
+               //SignalObject s = simulator.Signals.SignalObjects[item.ItemType;
+               
+               //signals.Add(new SignalWidget(item, s));
             }
          }
     
@@ -218,7 +248,34 @@ namespace ORTS.Debugging
                {
                   PointF scaledSw = new PointF((sw.X - minX - ViewWindow.X) * xScale, (sw.Y - minY - ViewWindow.Y) * yScale);
 
-                  g.FillEllipse(Brushes.Black, Dot(scaledSw, 5f));
+                  g.FillEllipse(Brushes.Black, GetRect(scaledSw, 5f));
+               }
+            }
+
+            if (showBuffers.Checked)
+            {
+               foreach (PointF b in buffers)
+               {
+                  PointF scaledBuffer = new PointF((b.X - minX - ViewWindow.X) * xScale, (b.Y - minY - ViewWindow.Y) * yScale);
+
+                  g.FillRectangle(Brushes.Black, GetRect(scaledBuffer, 5f));
+               }
+            }
+
+            if (showSignals.Checked)
+            {
+               foreach (var s in signals)
+               {
+                  PointF scaledSignal = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, (s.Location.Y - minY - ViewWindow.Y) * yScale);
+
+                  if (s.IsProceed)
+                  {
+                     g.FillEllipse(Brushes.Green, GetRect(scaledSignal, 5f));
+                  }
+                  else
+                  {
+                     g.FillEllipse(Brushes.Red, GetRect(scaledSignal, 5f));
+                  }
                }
             }
 
@@ -234,7 +291,7 @@ namespace ORTS.Debugging
       /// <param name="p">Center point of the dot, in pixels.</param>
       /// <param name="size">Size of the dot's diameter, in pixels</param>
       /// <returns></returns>
-      private RectangleF Dot(PointF p, float size)
+      private RectangleF GetRect(PointF p, float size)
       {
          return new RectangleF(p.X - size / 2f, p.Y - size / 2f, size, size);
       }
@@ -448,12 +505,73 @@ namespace ORTS.Debugging
       {
          GenerateView();
       }
+
+      private void showBuffers_CheckedChanged(object sender, EventArgs e)
+      {
+         GenerateView();
+      }
       
 
 
 
    }
 
+
+   /// <summary>
+   /// Defines a signal being drawn in a 2D view.
+   /// </summary>
+   internal struct SignalWidget
+   {
+      public PointF Location;
+
+      /// <summary>
+      /// The underlying track item.
+      /// </summary>
+      private TrItem Item;
+
+      /// <summary>
+      /// The underlying signal object as referenced by the TrItem.
+      /// </summary>
+      public SignalObject Signal;
+
+
+      /// <summary>
+      /// For now, returns true if any of the signal heads shows any "clear" aspect.
+      /// This obviously needs some refinement.
+      /// </summary>
+      public bool IsProceed
+      {
+         get
+         {
+            bool returnValue = false;
+
+            foreach (var head in Signal.SignalHeads)
+            {
+               if (head.state == SignalHead.SIGASP.CLEAR_1 || 
+                   head.state == SignalHead.SIGASP.CLEAR_2 ||
+                   head.state == SignalHead.SIGASP.CLEAR_3 ||
+                   head.state == SignalHead.SIGASP.CLEAR_4)
+               {
+                  returnValue = true;
+               }
+            }
+
+            return returnValue;
+         }
+      }
+
+      /// <summary>
+      /// 
+      /// </summary>
+      /// <param name="item"></param>
+      public SignalWidget(TrItem item, SignalObject signal)
+      {
+         Item = item;
+         Signal = signal;
+
+         Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+      }
+   }
 
    /// <summary>
    /// Defines a geometric line segment.

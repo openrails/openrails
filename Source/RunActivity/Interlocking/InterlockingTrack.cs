@@ -15,7 +15,7 @@ namespace ORTS.Interlocking
       /// <summary>
       /// Reference to the simulation object.
       /// </summary>
-      private Simulator simulator;
+      //private Simulator simulator;
 
 
       /// <summary>

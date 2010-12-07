@@ -1408,6 +1408,11 @@
             Forest tree array intialization. 
             </summary>
         </member>
+        <member name="P:ORTS.Signals.SignalObjects">
+            <summary>
+            Gets an array of all the SignalObjects.
+            </summary>
+        </member>
         <member name="M:ORTS.SignalObject.this_sig_mr(ORTS.SignalHead.SIGFN)">
             <summary>
             Returns the most restrictive state of this signal's heads.
@@ -1829,7 +1834,7 @@
             each time the view is drawn. Later, the traversal and drawing can be separated.
             </summary>
         </member>
-        <member name="M:ORTS.Debugging.DebugViewerForm.Dot(System.Drawing.PointF,System.Single)">
+        <member name="M:ORTS.Debugging.DebugViewerForm.GetRect(System.Drawing.PointF,System.Single)">
             <summary>
             Generates a rectangle representing a dot being drawn.
             </summary>
@@ -1873,6 +1878,33 @@
             <summary>
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:ORTS.Debugging.SignalWidget">
+            <summary>
+            Defines a signal being drawn in a 2D view.
+            </summary>
+        </member>
+        <member name="F:ORTS.Debugging.SignalWidget.Item">
+            <summary>
+            The underlying track item.
+            </summary>
+        </member>
+        <member name="F:ORTS.Debugging.SignalWidget.Signal">
+            <summary>
+            The underlying signal object as referenced by the TrItem.
+            </summary>
+        </member>
+        <member name="M:ORTS.Debugging.SignalWidget.#ctor(MSTS.TrItem,ORTS.SignalObject)">
+            <summary>
+            
+            </summary>
+            <param name="item"></param>
+        </member>
+        <member name="P:ORTS.Debugging.SignalWidget.IsProceed">
+            <summary>
+            For now, returns true if any of the signal heads shows any "clear" aspect.
+            This obviously needs some refinement.
             </summary>
         </member>
         <member name="T:ORTS.Debugging.LineSegment">
@@ -1958,11 +1990,6 @@
         <member name="T:ORTS.Interlocking.InterlockingTrack">
             <summary>
             Defines an abstraction of a track circuit used within the interlocking system.
-            </summary>
-        </member>
-        <member name="F:ORTS.Interlocking.InterlockingTrack.simulator">
-            <summary>
-            Reference to the simulation object.
             </summary>
         </member>
         <member name="M:ORTS.Interlocking.InterlockingTrack.#ctor(ORTS.Simulator)">
@@ -3139,7 +3166,7 @@
             X,Y : Position of the light, Z : Radius, W : Aspect ratio X:Y
             </summary>
         </member>
-        <member name="M:ORTS.ExtendedCVF.Light.TranslatedPosition(Microsoft.Xna.Framework.Vector2)">
+        <member name="M:ORTS.ExtendedCVF.Light.TranslatedPosition(Microsoft.Xna.Framework.Point)">
             <summary>
             Translate to current screen resolution
             </summary>

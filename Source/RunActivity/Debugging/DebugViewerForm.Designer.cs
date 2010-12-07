@@ -38,6 +38,8 @@
          this.label1 = new System.Windows.Forms.Label();
          this.label2 = new System.Windows.Forms.Label();
          this.showSwitches = new System.Windows.Forms.CheckBox();
+         this.showBuffers = new System.Windows.Forms.CheckBox();
+         this.showSignals = new System.Windows.Forms.CheckBox();
          ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
          ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
          this.SuspendLayout();
@@ -178,12 +180,39 @@
          this.showSwitches.UseVisualStyleBackColor = true;
          this.showSwitches.CheckedChanged += new System.EventHandler(this.showSwitches_CheckedChanged);
          // 
+         // showBuffers
+         // 
+         this.showBuffers.AutoSize = true;
+         this.showBuffers.Checked = true;
+         this.showBuffers.CheckState = System.Windows.Forms.CheckState.Checked;
+         this.showBuffers.Location = new System.Drawing.Point(318, 86);
+         this.showBuffers.Name = "showBuffers";
+         this.showBuffers.Size = new System.Drawing.Size(167, 17);
+         this.showBuffers.TabIndex = 10;
+         this.showBuffers.Text = "Show Buffers (Black Squares)";
+         this.showBuffers.UseVisualStyleBackColor = true;
+         this.showBuffers.CheckedChanged += new System.EventHandler(this.showBuffers_CheckedChanged);
+         // 
+         // showSignals
+         // 
+         this.showSignals.AutoSize = true;
+         this.showSignals.Checked = true;
+         this.showSignals.CheckState = System.Windows.Forms.CheckState.Checked;
+         this.showSignals.Location = new System.Drawing.Point(134, 63);
+         this.showSignals.Name = "showSignals";
+         this.showSignals.Size = new System.Drawing.Size(178, 17);
+         this.showSignals.TabIndex = 11;
+         this.showSignals.Text = "Show Signals (Red/Green Dots)";
+         this.showSignals.UseVisualStyleBackColor = true;
+         // 
          // DebugViewerForm
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
          this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
          this.AutoScroll = true;
          this.ClientSize = new System.Drawing.Size(650, 644);
+         this.Controls.Add(this.showSignals);
+         this.Controls.Add(this.showBuffers);
          this.Controls.Add(this.showSwitches);
          this.Controls.Add(this.label2);
          this.Controls.Add(this.label1);
@@ -215,5 +244,7 @@
       private System.Windows.Forms.Label label1;
       private System.Windows.Forms.Label label2;
       private System.Windows.Forms.CheckBox showSwitches;
+      private System.Windows.Forms.CheckBox showBuffers;
+      private System.Windows.Forms.CheckBox showSignals;
    }
 }
