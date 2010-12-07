@@ -1386,12 +1386,10 @@ namespace ORTS
 
 			var rs = graphicsDevice.RenderState;
 			rs.AlphaBlendEnable = true;
-			rs.AlphaFunction = CompareFunction.Greater;
-			rs.AlphaTestEnable = true;
 			rs.CullMode = CullMode.None;
 			rs.DepthBufferEnable = false;
-			rs.DepthBufferFunction = CompareFunction.Always;
-			rs.DepthBufferWriteEnable = false;
+			rs.DestinationBlend = Blend.InverseSourceAlpha;
+			rs.SourceBlend = Blend.SourceAlpha;
 		}
 
         public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1415,12 +1413,10 @@ namespace ORTS
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
 			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.AlphaFunction = CompareFunction.Always;
-			graphicsDevice.RenderState.AlphaTestEnable = false;
 			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 			graphicsDevice.RenderState.DepthBufferEnable = true;
-			graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
-			graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
+			graphicsDevice.RenderState.SourceBlend = Blend.One;
 		}
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)

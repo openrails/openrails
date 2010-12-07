@@ -79,7 +79,8 @@ float4 PSPopupWindow(in VERTEX_OUTPUT In) : COLOR
 {
 	float4 Color = tex2D(Window, In.TexCoords_Pos.xy);
 	float Mask = tex2D(Window, In.TexCoords_Pos.xy + float2(0.5, 0.0)).r;
-	return float4(Color.rgb, Color.a + Mask);
+	float4 ScreenColor = float4(GlassColor, Mask);
+	return lerp(ScreenColor, Color, Color.a);
 }
 
 float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
@@ -87,18 +88,16 @@ float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
 	float4 Color = tex2D(Window, In.TexCoords_Pos.xy);
 	float Mask = tex2D(Window, In.TexCoords_Pos.xy + float2(0.5, 0.0)).r;
 	float3 ScreenColor = tex2D(Screen, In.TexCoords_Pos.zw);
-	if (Mask > 0) {
-		float3 ScreenColor1 = tex2D(Screen, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, +1 / ScreenSize.y));
-		float3 ScreenColor2 = tex2D(Screen, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x,  0 / ScreenSize.y));
-		float3 ScreenColor3 = tex2D(Screen, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, -1 / ScreenSize.y));
-		float3 ScreenColor4 = tex2D(Screen, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x, +1 / ScreenSize.y));
-		float3 ScreenColor5 = tex2D(Screen, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x,  0 / ScreenSize.y));
-		float3 ScreenColor6 = tex2D(Screen, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x, -1 / ScreenSize.y));
-		float3 ScreenColor7 = tex2D(Screen, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, +1 / ScreenSize.y));
-		float3 ScreenColor8 = tex2D(Screen, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x,  0 / ScreenSize.y));
-		float3 ScreenColor9 = tex2D(Screen, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, -1 / ScreenSize.y));
-		ScreenColor = (22 * GlassColor + ScreenColor + ScreenColor1 + ScreenColor2 + ScreenColor3 + ScreenColor4 + ScreenColor5 + ScreenColor6 + ScreenColor7 + ScreenColor8 + ScreenColor9) / 32;
-	}
+	float3 ScreenColor1 = tex2D(Screen, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, +1 / ScreenSize.y));
+	float3 ScreenColor2 = tex2D(Screen, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x,  0 / ScreenSize.y));
+	float3 ScreenColor3 = tex2D(Screen, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, -1 / ScreenSize.y));
+	float3 ScreenColor4 = tex2D(Screen, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x, +1 / ScreenSize.y));
+	float3 ScreenColor5 = tex2D(Screen, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x,  0 / ScreenSize.y));
+	float3 ScreenColor6 = tex2D(Screen, In.TexCoords_Pos.zw + float2( 0 / ScreenSize.x, -1 / ScreenSize.y));
+	float3 ScreenColor7 = tex2D(Screen, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, +1 / ScreenSize.y));
+	float3 ScreenColor8 = tex2D(Screen, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x,  0 / ScreenSize.y));
+	float3 ScreenColor9 = tex2D(Screen, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, -1 / ScreenSize.y));
+	ScreenColor = lerp(ScreenColor, (22 * GlassColor + ScreenColor + ScreenColor1 + ScreenColor2 + ScreenColor3 + ScreenColor4 + ScreenColor5 + ScreenColor6 + ScreenColor7 + ScreenColor8 + ScreenColor9) / 32, Mask);
 	return float4(lerp(ScreenColor, Color.rgb, Color.a), 1);
 }
 
