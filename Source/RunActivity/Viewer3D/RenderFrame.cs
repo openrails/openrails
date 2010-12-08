@@ -322,14 +322,14 @@ namespace ORTS
 
 				for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
 				{
+					var viewingDistance = RenderProcess.Viewer.Settings.ViewingDistance;
+					var shadowMapDiameter = RenderProcess.ShadowMapDiameter[shadowMapIndex];
 					var shadowMapLocation = cameraLocation + RenderProcess.ShadowMapDistance[shadowMapIndex] * cameraDirection;
-					var shadowMapViewNear = 0;
-					var shadowMapViewFar = RenderProcess.Viewer.Settings.ViewingDistance + 2 * RenderProcess.ShadowMapDiameter[shadowMapIndex];
 
 					// Align shadow map location to grid so it doesn't "flutter" so much. This basically means aligning it along a
 					// grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
 					// and up/left.
-					var shadowMapAlignmentGrid = (float)RenderProcess.Viewer.Settings.ShadowMapResolution / RenderProcess.ShadowMapDiameter[shadowMapIndex];
+					var shadowMapAlignmentGrid = (float)RenderProcess.Viewer.Settings.ShadowMapResolution / shadowMapDiameter;
 					var shadowMapAlignAxisX = Vector3.Cross(sunDirection, Vector3.UnitY);
 					var shadowMapAlignAxisY = Vector3.Cross(shadowMapAlignAxisX, sunDirection);
 					shadowMapAlignAxisX.Normalize();
@@ -347,8 +347,8 @@ namespace ORTS
 					shadowMapLocation.Y -= sunDirection.Y * adjustZ;
 					shadowMapLocation.Z -= sunDirection.Z * adjustZ;
 
-					ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + (RenderProcess.Viewer.Settings.ViewingDistance + RenderProcess.ShadowMapDiameter[shadowMapIndex] / 2) * sunDirection, shadowMapLocation, Vector3.Up);
-					ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(RenderProcess.ShadowMapDiameter[shadowMapIndex], RenderProcess.ShadowMapDiameter[shadowMapIndex], shadowMapViewNear, shadowMapViewFar);
+					ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + (viewingDistance + shadowMapDiameter / 2) * sunDirection, shadowMapLocation, Vector3.Up);
+					ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, viewingDistance, viewingDistance + shadowMapDiameter);
 					ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
 					ShadowMapBound[shadowMapIndex] = new BoundingFrustum(ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex]);
 				}
@@ -541,7 +541,7 @@ namespace ORTS
 			ShadowMap[shadowMapIndex] = ShadowMapRenderTarget[shadowMapIndex].GetTexture();
 
 			// Blur the shadow map.
-			if (RenderProcess.Viewer.Settings.ShadowMapBlur)
+			if (RenderProcess.Viewer.Settings.ShadowMapBlur && (shadowMapIndex == 0))
 			{
 				ShadowMap[shadowMapIndex] = Materials.ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex], ShadowMapStencilBuffer, NormalStencilBuffer);
 #if DEBUG_RENDER_STATE

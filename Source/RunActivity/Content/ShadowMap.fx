@@ -53,6 +53,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
 	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position.z = saturate(Out.Position.z / Out.Position.w) * Out.Position.w;
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
@@ -76,6 +77,7 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT In)
 
 	// Project vertex with fixed w=1 and normal=eye.
 	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position.z = saturate(Out.Position.z / Out.Position.w) * Out.Position.w;
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
