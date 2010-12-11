@@ -154,6 +154,15 @@ namespace ORTS
 				if (compassDir.Y > 0) heading = 2 * Math.PI - heading;
 				Viewer.CompassWindow.Update((float)heading);
 			}
+
+         if (Viewer.DriverAidWindow.Visible)
+         {
+
+            // update driver aid window - convert m/s to km/h, and take absolute so
+            // speed is non-negative.
+            Viewer.DriverAidWindow.Update(Math.Abs(Viewer.PlayerTrain.SpeedMpS * 3.6f));
+         }
+
 		}
 
 		void UpdateDialogsText(ElapsedTime elapsedTime)

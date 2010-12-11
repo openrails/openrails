@@ -69,6 +69,7 @@ namespace ORTS
 			Commands[(int)UserCommands.WindowSwitch] = new UserCommandKeyInput(Keys.F8);
 			Commands[(int)UserCommands.WindowTrainOperations] = new UserCommandKeyInput(Keys.F9);
 			Commands[(int)UserCommands.WindowNextStation] = new UserCommandKeyInput(Keys.F10);
+         Commands[(int)UserCommands.WindowDriverAid] = new UserCommandKeyInput(Keys.F11);
 			Commands[(int)UserCommands.WindowCompass] = new UserCommandKeyInput('0');
 			Commands[(int)UserCommands.CameraCab] = new UserCommandKeyInput('1');
 			Commands[(int)UserCommands.CameraOutsideFront] = new UserCommandKeyInput('2');
@@ -274,6 +275,7 @@ namespace ORTS
 		WindowTrainOperations,
 		WindowNextStation,
 		WindowCompass,
+      WindowDriverAid,
 		CameraCab,
 		CameraOutsideFront,
 		CameraOutsideRear,

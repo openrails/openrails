@@ -564,6 +564,7 @@ namespace ORTS.Debugging
       /// 
       /// </summary>
       /// <param name="item"></param>
+      /// <param name="signal"></param>
       public SignalWidget(TrItem item, SignalObject signal)
       {
          Item = item;

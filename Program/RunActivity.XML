@@ -101,6 +101,204 @@
             </summary>
             <param name="graphicsDevice"></param>
         </member>
+        <member name="T:ORTS.Popups.DriverAidWindow">
+            <summary>
+            Responsible for displaying a speedometer showing current speed, as well as the 
+            maximum speed the driver may go, as defined by the brake curve. Such a system is 
+            a key ingredient in train control systems.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.TICK_OUTER_Y">
+            <summary>
+            Defines the Y coordinate of the top most point of a gauge tick,
+            if the gauge tick is vertical.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.TICK_INNER_Y">
+            <summary>
+            Defines the Y coordinate of the bottom most point of a gauge tick,
+            if the gauge tick is vertical.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.LABEL_Y">
+            <summary>
+            Defines the Y coordinate of the center of a gauge label, if the label 
+            is drawn vertically above the center of the gauge.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.LABEL_FONT_SIZE">
+            <summary>
+            Font size, in pixels of gauge labels.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.GAUGE_SIZE">
+            <summary>
+            Defines the size of the gauge, in pixels.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.MARGIN_LEFT">
+            <summary>
+            Defines how much space to th left of the gauge is reserved for the distance bar.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.SPEED_WARN_BOTTOM_MARGIN">
+            <summary>
+            Defines the space, in pixels, between the bottom of the speed warning box,
+            and the top of the distance box.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.TARGETSPEED_Y">
+            <summary>
+            Vertical position of the target speed box.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.TARGETSPEED_W">
+            <summary>
+            Target speed box width.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.TARGETSPEED_H">
+            <summary>
+            Target speed box height.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.MinAngle">
+            <summary>
+            Angle of the needle (degrees) when showing "0".
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.MaxAngle">
+            <summary>
+            Angle of the needle (degrees) when showing MaxSpeed;
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.MaxSpeed">
+            <summary>
+            Maximum displayable speed, in kmh.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.MaxDistance">
+            <summary>
+            The maximum distance to show in the target distance bar.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.NEEDLE_WIDTH">
+            <summary>
+            Defines the width of the needle, in pixels.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.NEEDLE_HEIGHT">
+            <summary>
+            Defines the height of the needle, in pixels.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.INDICATOR_WIDTH">
+            <summary>
+            Defines the width of the brake curve indicator bitmap, in pixels.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.INDICATOR_HEIGHT">
+            <summary>
+            Defines the height of the brake curve indicator bitmap, in pixels.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.SpeedLabels">
+            <summary>
+            These are the labels to show on the speedo.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.TargetDistanceRect">
+            <summary>
+            Defines the area that a full target distance bar occupies.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.CurrentSpeedAngle">
+            <summary>
+            The current angle of the needle, in radians.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.CurrentBrakeCurveAngle">
+            <summary>
+            The current angle of the brake curve indicator.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.CurrentDistanceHeight">
+            <summary>
+            The current value of the target distance bar, in the range 0 -> 1.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.CurrentTargetSpeedString">
+            <summary>
+            The string to display as the current target speed.
+            </summary>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.UpdateSpeed(System.Single)">
+            <summary>
+            Updates the current speed, in kmh.
+            </summary>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.UpdateBrakeCurveSpeed(System.Single)">
+            <summary>
+            Updates the current brake speed, in kmh.
+            </summary>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.UpdateTargetDistance(System.Single)">
+            <summary>
+            Updates the current target distance, in metres.
+            </summary>
+            <param name="distance"></param>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.SpeedToAngle(System.Single)">
+            <summary>
+            Given a speed in kmh, convert to gauge angle, in radians.
+            </summary>
+            <param name="speed"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.GenerateNeedle(System.Drawing.Size,Microsoft.Xna.Framework.Vector2)">
+            <summary>
+            Generates a generic speedometer for use with a Texture2D.
+            </summary>
+            <param name="sz"></param>
+            <param name="center"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.GenerateBrakeCurveTexture(System.Drawing.Size)">
+            <summary>
+            Generates a triangular indicator, and formats the result
+            for use on a Texture2D.
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.DrawBrakeIndicator(System.Drawing.Graphics,System.Int32,System.Int32)">
+            <summary>
+            Generates a triangular indicator.
+            </summary>
+            <param name="g"></param>
+            <param name="width"></param>
+            <param name="height"></param>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.DrawNeedle(System.Drawing.Graphics,System.Drawing.Size,Microsoft.Xna.Framework.Vector2)">
+            <summary>
+            Draws a generic speedometer needle.
+            </summary>
+            <param name="g"></param>
+            <param name="sz"></param>
+            <param name="center"></param>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.BitmapToBytes(System.Drawing.Bitmap)">
+            <summary>
+            Given a bitmap, convert it to an array of bytes for use in a Texture2D.
+            </summary>
+            <param name="bitmap"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ORTS.Popups.DriverAid.SpeedWarningBoxCentre">
+            <summary>
+            Defines the centre of the Speed Warning Box(above the target distant rectangle).
+            </summary>
+        </member>
         <member name="T:ORTS.WorldPosition">
             <summary>
             Represents the position and orientation of an object
@@ -1900,6 +2098,7 @@
             
             </summary>
             <param name="item"></param>
+            <param name="signal"></param>
         </member>
         <member name="P:ORTS.Debugging.SignalWidget.IsProceed">
             <summary>
