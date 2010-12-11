@@ -65,6 +65,7 @@ namespace ORTS
 			Commands[(int)UserCommands.GameLogger] = new UserCommandKeyInput(Keys.F12);
 			Commands[(int)UserCommands.GameDebugWeatherChange] = new UserCommandKeyInput(Keys.P, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameDebugLockShadows] = new UserCommandKeyInput(Keys.S, KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameDebugLogRenderFrame] = new UserCommandKeyInput(Keys.F12, KeyModifiers.Alt);
 			Commands[(int)UserCommands.WindowTrackMonitor] = new UserCommandKeyInput(Keys.F4);
 			Commands[(int)UserCommands.WindowSwitch] = new UserCommandKeyInput(Keys.F8);
 			Commands[(int)UserCommands.WindowTrainOperations] = new UserCommandKeyInput(Keys.F9);
@@ -270,6 +271,7 @@ namespace ORTS
 		GameLogger,
 		GameDebugWeatherChange,
 		GameDebugLockShadows,
+		GameDebugLogRenderFrame,
 		WindowTrackMonitor,
 		WindowSwitch,
 		WindowTrainOperations,

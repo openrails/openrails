@@ -120,6 +120,7 @@ namespace ORTS
 	public class WireMaterial : Material
 	{
 		public WireMaterial(RenderProcess renderProcess)
+			: base(null)
 		{
 			// create a shader if necessary
 			// load any static textures etc

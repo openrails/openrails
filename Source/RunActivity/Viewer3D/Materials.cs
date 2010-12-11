@@ -257,9 +257,23 @@ namespace ORTS
     }
     #endregion
 
-    #region Material interface
+    #region Material base class
 	public abstract class Material
 	{
+		readonly string Key;
+
+		protected Material(string key)
+		{
+			Key = key;
+		}
+
+		public override string ToString()
+		{
+			if (String.IsNullOrEmpty(Key))
+				return GetType().Name;
+			return String.Format("{0}({1})", GetType().Name, Key);
+		}
+
 		public virtual void SetState(GraphicsDevice graphicsDevice, Material previousMaterial) { }
 		public virtual void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
 		public virtual void ResetState(GraphicsDevice graphicsDevice) { }
@@ -272,6 +286,10 @@ namespace ORTS
     #region Empty material
 	public class EmptyMaterial : Material
 	{
+		public EmptyMaterial()
+			: base(null)
+		{
+		}
 	}
     #endregion
 
@@ -283,6 +301,7 @@ namespace ORTS
 		public RenderProcess RenderProcess;  // for diagnostics only
 
 		public SpriteBatchMaterial(RenderProcess renderProcess)
+			: base(null)
 		{
 			RenderProcess = renderProcess;
 			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
@@ -334,8 +353,9 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPassesVegetation;
 		IEnumerator<EffectPass> ShaderPasses;
 
-		public SceneryMaterial(RenderProcess renderProcess, string texturePath, int options, float mipMapBias)  
-        {
+		public SceneryMaterial(RenderProcess renderProcess, string texturePath, int options, float mipMapBias)
+			: base(String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
+		{
             RenderProcess = renderProcess;
             SceneryShader = Materials.SceneryShader;
             Options = options;
@@ -617,7 +637,8 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPasses;
 
 		public TerrainMaterial(RenderProcess renderProcess, string terrainTexture )
-        {
+			: base(terrainTexture)
+		{
             SceneryShader = Materials.SceneryShader;
             PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, terrainTexture);
             RenderProcess = renderProcess;
@@ -679,7 +700,8 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPasses;
 
 		public SkyMaterial(RenderProcess renderProcess)
-        {
+			: base(null)
+		{
             RenderProcess = renderProcess;
             SkyShader = Materials.SkyShader;
             skyTexture = renderProcess.Content.Load<Texture2D>("SkyDome1");
@@ -881,8 +903,9 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPasses;
 
 		public PrecipMaterial(RenderProcess renderProcess)
-        {
-            RenderProcess = renderProcess;
+			: base(null)
+		{
+			RenderProcess = renderProcess;
             PrecipShader = Materials.PrecipShader;
             rainTexture = renderProcess.Content.Load<Texture2D>("Raindrop");
             snowTexture = renderProcess.Content.Load<Texture2D>("Snowflake");
@@ -962,7 +985,8 @@ namespace ORTS
         public RenderProcess RenderProcess;
 
 		public DynatrackMaterial(RenderProcess renderProcess)
-        {
+			: base(null)
+		{
             TrProfile profile = renderProcess.Viewer.Simulator.TRP.TrackProfile;
             
             RenderProcess = renderProcess;
@@ -1058,7 +1082,8 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPasses;
 
 		public ForestMaterial(RenderProcess renderProcess, string treeTexture)
-        {
+			: base(treeTexture)
+		{
             RenderProcess = renderProcess;
             TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
         }
@@ -1120,7 +1145,8 @@ namespace ORTS
         double fadeTimer = 0;
 
 		public LightGlowMaterial(RenderProcess renderProcess)
-        {
+			: base(null)
+		{
             RenderProcess = renderProcess;
             LightGlowShader = Materials.LightGlowShader;
             lightGlowTexture = renderProcess.Content.Load<Texture2D>("Lightglow");
@@ -1197,6 +1223,7 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPasses;
 
 		public WaterMaterial(RenderProcess renderProcess, string waterTexturePath)
+			: base(waterTexturePath)
 		{
 			RenderProcess = renderProcess;
 			WaterTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, waterTexturePath);
@@ -1272,7 +1299,8 @@ namespace ORTS
 		}
 
 		public ShadowMapMaterial(RenderProcess renderProcess)
-        {
+			: base(null)
+		{
 			RenderProcess = renderProcess;
         }
 
@@ -1370,6 +1398,7 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPasses;
 
 		public PopupWindowMaterial(RenderProcess renderProcess)
+			: base(null)
 		{
 			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
 		}
@@ -1436,7 +1465,8 @@ namespace ORTS
         RenderProcess RenderProcess;
 
 		public YellowMaterial(RenderProcess renderProcess)
-        {
+			: base(null)
+		{
             RenderProcess = renderProcess;
             if( basicEffect == null )
             {

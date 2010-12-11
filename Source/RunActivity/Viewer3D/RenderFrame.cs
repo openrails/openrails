@@ -478,28 +478,43 @@ namespace ORTS
 #if DEBUG_RENDER_STATE
 			DebugRenderState(graphicsDevice.RenderState, "RenderFrame.Draw");
 #endif
+			var logging = UserInput.IsPressed(UserCommands.GameDebugLogRenderFrame);
+			if (logging) {
+				Console.WriteLine();
+				Console.WriteLine();
+				Console.WriteLine("Draw {");
+			}
 
 			Materials.UpdateShaders(RenderProcess, graphicsDevice);
 
 			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
-                DrawShadows(graphicsDevice);
+                DrawShadows(graphicsDevice, logging);
 
-            DrawSimple(graphicsDevice);
+            DrawSimple(graphicsDevice, logging);
 
 			for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
 				RenderProcess.PrimitiveCount[i] = RenderItems[i].Values.Sum(l => l.Count);
+
+			if (logging) {
+				Console.WriteLine("}");
+				Console.WriteLine();
+			}
 		}
 
-		void DrawShadows(GraphicsDevice graphicsDevice)
+		void DrawShadows(GraphicsDevice graphicsDevice, bool logging)
 		{
+			if (logging) Console.WriteLine("  DrawShadows {");
 			for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-				DrawShadows(graphicsDevice, shadowMapIndex);
+				DrawShadows(graphicsDevice, logging, shadowMapIndex);
 			for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
 				RenderProcess.ShadowPrimitiveCount[shadowMapIndex] = RenderShadowItems[shadowMapIndex].Count;
+			if (logging) Console.WriteLine("  }");
 		}
 
-		void DrawShadows(GraphicsDevice graphicsDevice, int shadowMapIndex)
+		void DrawShadows(GraphicsDevice graphicsDevice, bool logging, int shadowMapIndex)
 		{
+			if (logging) Console.WriteLine("    {0} {{", shadowMapIndex);
+
 			// Prepare renderer for drawing the shadow map.
 			graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget[shadowMapIndex]);
 			graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
@@ -509,12 +524,14 @@ namespace ORTS
 			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
 
 			// Render non-terrain, non-forest shadow items first.
+			if (logging) Console.WriteLine("      {0,-5} * SceneryMaterial (normal)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is SceneryMaterial));
 			Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is SceneryMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
 			// Prepare for normal (non-blocking) rendering of forests.
 			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Forest);
 
 			// Render forest shadow items next.
+			if (logging) Console.WriteLine("      {0,-5} * ForestMaterial (forest)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is ForestMaterial));
 			Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is ForestMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
 			// Prepare for normal (non-blocking) rendering of terrain.
@@ -523,12 +540,14 @@ namespace ORTS
 			// Render terrain shadow items now, with their magic.
 			graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
 			graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
+			if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is TerrainMaterial));
 			Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
 			// Prepare for blocking rendering of terrain.
 			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Blocker);
 
 			// Render terrain shadow items in blocking mode.
+			if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (blocker)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is TerrainMaterial));
 			Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
 			// All done.
@@ -548,66 +567,70 @@ namespace ORTS
 				DebugRenderState(graphicsDevice.RenderState, Materials.ShadowMapMaterial.ToString() + " ApplyBlur()");
 #endif
 			}
+
+			if (logging) Console.WriteLine("    }");
 		}
 
         /// <summary>
         /// Executed in the RenderProcess thread - simple draw
         /// </summary>
         /// <param name="graphicsDevice"></param>
-        void DrawSimple(GraphicsDevice graphicsDevice)
+		void DrawSimple(GraphicsDevice graphicsDevice, bool logging)
         {
-            graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Materials.FogColor, 1, 0);
+			if (logging) Console.WriteLine("  DrawSimple {");
+			graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Materials.FogColor, 1, 0);
+            DrawSequences(graphicsDevice, logging);
+			if (logging) Console.WriteLine("  }");
+		}
 
-            DrawSequences(graphicsDevice);
-        }
-
-        void DrawSequences(GraphicsDevice graphicsDevice)
+		void DrawSequences(GraphicsDevice graphicsDevice, bool logging)
         {
 			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
             {
 				Materials.SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap);
             }
 
-			foreach (var sequence in RenderItems)
+			for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
 			{
-				foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
-				{
-					if (sequenceMaterial.Key == DummyBlendedMaterial)
-					{
+				if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);
+				var sequence = RenderItems[i];
+				foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0)) {
+					if (sequenceMaterial.Key == DummyBlendedMaterial) {
 						// Blended: multiple materials, group by material as much as possible without destroying ordering.
-					    Material lastMaterial = null;
-					    var renderItems = new List<RenderItem>();
-					    foreach (var renderItem in sequenceMaterial.Value)
-					    {
-					        if (lastMaterial != renderItem.Material)
-					        {
-					            if (renderItems.Count > 0)
-					                lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
-					            if (lastMaterial != null)
-					                lastMaterial.ResetState(graphicsDevice);
+						Material lastMaterial = null;
+						var renderItems = new List<RenderItem>();
+						foreach (var renderItem in sequenceMaterial.Value) {
+							if (lastMaterial != renderItem.Material) {
+								if (renderItems.Count > 0) {
+									if (logging) Console.WriteLine("      {0,-5} * {1}", renderItems.Count, lastMaterial);
+									lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
+								}
+								if (lastMaterial != null)
+									lastMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 								if (lastMaterial != null)
 									DebugRenderState(graphicsDevice.RenderState, lastMaterial.ToString());
 #endif
 								renderItems.Clear();
-					            renderItem.Material.SetState(graphicsDevice, lastMaterial);
-					            lastMaterial = renderItem.Material;
-					        }
-					        renderItems.Add(renderItem);
-					    }
-					    if (renderItems.Count > 0)
-					        lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
-					    if (lastMaterial != null)
-					        lastMaterial.ResetState(graphicsDevice);
+								renderItem.Material.SetState(graphicsDevice, lastMaterial);
+								lastMaterial = renderItem.Material;
+							}
+							renderItems.Add(renderItem);
+						}
+						if (renderItems.Count > 0) {
+							if (logging) Console.WriteLine("      {0,-5} * {1}", renderItems.Count, lastMaterial);
+							lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
+						}
+						if (lastMaterial != null)
+							lastMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 						if (lastMaterial != null)
 							DebugRenderState(graphicsDevice.RenderState, lastMaterial.ToString());
 #endif
-					}
-					else
-					{
+					} else {
 						// Opaque: single material, render in one go.
 						sequenceMaterial.Key.SetState(graphicsDevice, null);
+						if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
 						sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref XNAProjectionMatrix);
 						sequenceMaterial.Key.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
@@ -615,6 +638,7 @@ namespace ORTS
 #endif
 					}
 				}
+				if (logging) Console.WriteLine("    }");
 			}
         }
 

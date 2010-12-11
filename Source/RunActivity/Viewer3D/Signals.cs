@@ -345,6 +345,7 @@ namespace ORTS
 		readonly Texture2D Texture;
 
 		public SignalLightMaterial(RenderProcess renderProcess, string textureName)
+			: base(textureName)
 		{
 			RenderProcess = renderProcess;
 			SceneryShader = Materials.SceneryShader;
