@@ -57,11 +57,12 @@ namespace ORTS.Popups
 			var oldScreenSize = ScreenSize;
 			ScreenSize = Viewer.DisplaySize;
 
-			// Reset the screen buffer for glass rendering if necessary.
-			if (Screen != null)
+			// Buffer for screen texture, also same size as viewport and using the backbuffer format.
+			if (Viewer.Settings.WindowGlass)
 			{
-				Screen.Dispose();
-				Screen = null;
+				if (Screen != null)
+					Screen.Dispose();
+				Screen = new ResolveTexture2D(Viewer.GraphicsDevice, ScreenSize.X, ScreenSize.Y, 1, Viewer.GraphicsDevice.PresentationParameters.BackBufferFormat);
 			}
 
 			// Reposition all the windows.
@@ -85,40 +86,19 @@ namespace ORTS.Popups
 			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
 			var material = Materials.PopupWindowMaterial;
-			if (Viewer.Settings.WindowGlass)
+			foreach (var window in VisibleWindows)
 			{
-				// Buffer for screen texture, also same size as viewport and using the backbuffer format.
-				if (Screen == null)
-					Screen = new ResolveTexture2D(graphicsDevice, ScreenSize.X, ScreenSize.Y, 1, graphicsDevice.PresentationParameters.BackBufferFormat);
+				var xnaWorld = window.XNAWorld;
 
-				foreach (var window in VisibleWindows)
-				{
-					var xnaWorld = window.XNAWorld;
-
+				if (Screen != null)
 					graphicsDevice.ResolveBackBuffer(Screen);
-					material.SetState(graphicsDevice, Screen);
-					material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-					material.ResetState(graphicsDevice);
+				material.SetState(graphicsDevice, Screen);
+				material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+				material.ResetState(graphicsDevice);
 
-					SpriteBatch.Begin(BeginSpriteBlendMode, BeginSpriteSortMode, BeginSaveStateMode);
-					window.Draw(SpriteBatch);
-					SpriteBatch.End();
-				}
-			}
-			else
-			{
-				foreach (var window in VisibleWindows)
-				{
-					var xnaWorld = window.XNAWorld;
-
-					material.SetState(graphicsDevice, Screen);
-					material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-					material.ResetState(graphicsDevice);
-
-					SpriteBatch.Begin(BeginSpriteBlendMode, BeginSpriteSortMode, BeginSaveStateMode);
-					window.Draw(SpriteBatch);
-					SpriteBatch.End();
-				}
+				SpriteBatch.Begin(BeginSpriteBlendMode, BeginSpriteSortMode, BeginSaveStateMode);
+				window.Draw(SpriteBatch);
+				SpriteBatch.End();
 			}
 		}
 
