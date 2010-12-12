@@ -244,6 +244,7 @@ namespace ORTS
 		static RenderTarget2D[] ShadowMapRenderTarget;
 		static DepthStencilBuffer ShadowMapStencilBuffer;
 		static DepthStencilBuffer NormalStencilBuffer;
+		static Vector3 SteppedSolarDirection = Vector3.UnitX;
 
 		// Local shadow map data.
 		Matrix[] ShadowMapLightView;
@@ -311,7 +312,10 @@ namespace ORTS
 
 			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && !LockShadows)
 			{
-				var sunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+				var solarDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+				solarDirection.Normalize();
+				if (Vector3.Dot(SteppedSolarDirection, solarDirection) < 0.99999)
+					SteppedSolarDirection = solarDirection;
 
 				var cameraLocation = RenderProcess.Viewer.Camera.Location;
 				cameraLocation.Z *= -1;
@@ -330,24 +334,24 @@ namespace ORTS
 					// grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
 					// and up/left.
 					var shadowMapAlignmentGrid = (float)RenderProcess.Viewer.Settings.ShadowMapResolution / shadowMapDiameter;
-					var shadowMapAlignAxisX = Vector3.Cross(sunDirection, Vector3.UnitY);
-					var shadowMapAlignAxisY = Vector3.Cross(shadowMapAlignAxisX, sunDirection);
+					var shadowMapAlignAxisX = Vector3.Cross(SteppedSolarDirection, Vector3.UnitY);
+					var shadowMapAlignAxisY = Vector3.Cross(shadowMapAlignAxisX, SteppedSolarDirection);
 					shadowMapAlignAxisX.Normalize();
 					shadowMapAlignAxisY.Normalize();
 					var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
 					var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
-					var adjustZ = (float)Math.IEEERemainder(Vector3.Dot(sunDirection, shadowMapLocation), shadowMapAlignmentGrid);
+					var adjustZ = (float)Math.IEEERemainder(Vector3.Dot(SteppedSolarDirection, shadowMapLocation), shadowMapAlignmentGrid);
 					shadowMapLocation.X -= shadowMapAlignAxisX.X * adjustX;
 					shadowMapLocation.Y -= shadowMapAlignAxisX.Y * adjustX;
 					shadowMapLocation.Z -= shadowMapAlignAxisX.Z * adjustX;
 					shadowMapLocation.X -= shadowMapAlignAxisY.X * adjustY;
 					shadowMapLocation.Y -= shadowMapAlignAxisY.Y * adjustY;
 					shadowMapLocation.Z -= shadowMapAlignAxisY.Z * adjustY;
-					shadowMapLocation.X -= sunDirection.X * adjustZ;
-					shadowMapLocation.Y -= sunDirection.Y * adjustZ;
-					shadowMapLocation.Z -= sunDirection.Z * adjustZ;
+					shadowMapLocation.X -= SteppedSolarDirection.X * adjustZ;
+					shadowMapLocation.Y -= SteppedSolarDirection.Y * adjustZ;
+					shadowMapLocation.Z -= SteppedSolarDirection.Z * adjustZ;
 
-					ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + (viewingDistance + shadowMapDiameter / 2) * sunDirection, shadowMapLocation, Vector3.Up);
+					ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + (viewingDistance + shadowMapDiameter / 2) * SteppedSolarDirection, shadowMapLocation, Vector3.Up);
 					ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, viewingDistance, viewingDistance + shadowMapDiameter);
 					ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
 					ShadowMapBound[shadowMapIndex] = new BoundingFrustum(ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex]);

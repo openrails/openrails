@@ -1362,9 +1362,9 @@ namespace ORTS
 				pass.Begin();
 				graphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleFan, new[] {
 					new VertexPositionNormalTexture(new Vector3(-1, +1, 0), Vector3.Zero, new Vector2(0, 0)),
-					new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(1, 0)),
-					new VertexPositionNormalTexture(new Vector3(+1, -1, 0), Vector3.Zero, new Vector2(1, 1)),
-					new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, 1)),
+					new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(shadowMap.Width, 0)),
+					new VertexPositionNormalTexture(new Vector3(+1, -1, 0), Vector3.Zero, new Vector2(shadowMap.Width, shadowMap.Height)),
+					new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, shadowMap.Height)),
 				}, 0, 2);
 				pass.End();
 

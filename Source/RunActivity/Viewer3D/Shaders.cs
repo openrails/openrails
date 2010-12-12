@@ -147,7 +147,7 @@ namespace ORTS
 			View.SetValue(view);
 			WorldViewProjection.SetValue(wvp);
 			ImageTexture.SetValue(imageTexture);
-			ImageBlurStep.SetValue(imageTexture != null ? 1f / imageTexture.Width : 0);
+			ImageBlurStep.SetValue(imageTexture != null ? imageTexture.Width : 0);
 		}
 
 		public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)

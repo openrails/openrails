@@ -53,7 +53,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.Position.z = saturate(Out.Position.z / Out.Position.w) * Out.Position.w;
+	Out.Position.z = saturate(Out.Position.z);
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
@@ -77,7 +77,7 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT In)
 
 	// Project vertex with fixed w=1 and normal=eye.
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.Position.z = saturate(Out.Position.z / Out.Position.w) * Out.Position.w;
+	Out.Position.z = saturate(Out.Position.z);
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
@@ -111,30 +111,30 @@ float4 PSShadowMapBlocker(in VERTEX_OUTPUT In) : COLOR0
 float4 PSShadowMapBlurX(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = 0;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(4 * ImageBlurStep, 0)) * 0.02;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(3 * ImageBlurStep, 0)) * 0.05;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(2 * ImageBlurStep, 0)) * 0.12;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(1 * ImageBlurStep, 0)) * 0.19;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(0 * ImageBlurStep, 0)) * 0.24;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy - float2(1 * ImageBlurStep, 0)) * 0.19;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy - float2(2 * ImageBlurStep, 0)) * 0.12;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy - float2(3 * ImageBlurStep, 0)) * 0.05;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy - float2(4 * ImageBlurStep, 0)) * 0.02;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(4, 0)) / ImageBlurStep) * 0.02;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(3, 0)) / ImageBlurStep) * 0.05;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(2, 0)) / ImageBlurStep) * 0.12;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(1, 0)) / ImageBlurStep) * 0.19;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 0)) / ImageBlurStep) * 0.24;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(1, 0)) / ImageBlurStep) * 0.19;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(2, 0)) / ImageBlurStep) * 0.12;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(3, 0)) / ImageBlurStep) * 0.05;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(4, 0)) / ImageBlurStep) * 0.02;
 	return Color;
 }
 
 float4 PSShadowMapBlurY(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = 0;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(0, 4 * ImageBlurStep)) * 0.02;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(0, 3 * ImageBlurStep)) * 0.05;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(0, 2 * ImageBlurStep)) * 0.12;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(0, 1 * ImageBlurStep)) * 0.19;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy + float2(0, 0 * ImageBlurStep)) * 0.24;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy - float2(0, 1 * ImageBlurStep)) * 0.19;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy - float2(0, 2 * ImageBlurStep)) * 0.12;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy - float2(0, 3 * ImageBlurStep)) * 0.05;
-	Color += tex2D(ImagePoint, In.TexCoord_Depth.xy - float2(0, 4 * ImageBlurStep)) * 0.02;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 4)) / ImageBlurStep) * 0.02;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 3)) / ImageBlurStep) * 0.05;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 2)) / ImageBlurStep) * 0.12;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 1)) / ImageBlurStep) * 0.19;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 0)) / ImageBlurStep) * 0.24;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(0, 1)) / ImageBlurStep) * 0.19;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(0, 2)) / ImageBlurStep) * 0.12;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(0, 3)) / ImageBlurStep) * 0.05;
+	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(0, 4)) / ImageBlurStep) * 0.02;
 	return Color;
 }
 
