@@ -471,6 +471,12 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+// IMPORTANT: ATI graphics cards/drivers do NOT like mixing shader model      //
+//            versions within a technique/pass. Always use the same vertex    //
+//            and pixel shader versions within each technique/pass.           //
+////////////////////////////////////////////////////////////////////////////////
+
 technique ImagePS2 {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSGeneral(false);
@@ -480,7 +486,7 @@ technique ImagePS2 {
 
 technique ImagePS3 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral(true);
+		VertexShader = compile vs_3_0 VSGeneral(true);
 		PixelShader = compile ps_3_0 PSImage(true);
 	}
 }
@@ -508,7 +514,7 @@ technique TerrainPS2 {
 
 technique TerrainPS3 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSTerrain(true);
+		VertexShader = compile vs_3_0 VSTerrain(true);
 		PixelShader = compile ps_3_0 PSTerrain(true);
 	}
 }
