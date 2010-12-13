@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using MSTSMath;
+using ORTS.Interlocking;
 
 namespace MSTS
 {
@@ -71,6 +72,13 @@ namespace MSTS
 		public uint SectionIndex;
 		public SectionSize SectionSize;
 		public SectionCurve SectionCurve;
+
+      public InterlockingTrack InterlockingTrack;
+
+      public override string ToString()
+      {
+         return string.Format("SectionIndex: {0}", SectionIndex);
+      }
 	}
 	
 	public class RouteTrackSection: TrackSection
@@ -170,6 +178,8 @@ namespace MSTS
 		public uint[] TrackSections;
 	}
 	
+
+   [DebuggerDisplay("TrackShape {ShapeIndex}")]
 	public class TrackShape
 	{
 		public TrackShape(STFReader stf)
@@ -199,29 +209,53 @@ namespace MSTS
 		public SectionIdx[] SectionIdxs;
 		public bool TunnelShape = false;
 		public bool RoadShape = false;
+
 	}
 	
-	public class TrackShapes: ArrayList
+	public class TrackShapes: Dictionary<uint, TrackShape>
 	{
+
+      public uint MaxShapeIndex;
+
+      
 		public TrackShapes(STFReader stf)
 		{
             stf.MustMatch("(");
             MaxShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
+            stf.ParseBlock(new STFReader.TokenProcessor[] 
+            {
                 new STFReader.TokenProcessor("trackshape", ()=>{ Add(new TrackShape(stf)); }),
             });
 		}
-		public TrackShape Get( uint targetShapeIndex )
+
+      private void Add(TrackShape trackShape)
+      {
+         Add(trackShape.ShapeIndex, trackShape);
+      }
+
+
+      /// <summary>
+      /// Returns the TrackShape corresponding to the given index value.
+      /// </summary>
+      /// <param name="targetShapeIndex">The index value of the desired TrackShape.</param>
+      /// <returns>The requested TrackShape.</returns>
+		public TrackShape Get(uint targetShapeIndex )
 		{
-			// TODO - do this better - linear search is slow
-			for( int i = 0; i < this.Count; ++i )
-				if( ((TrackShape)this[i]).ShapeIndex == targetShapeIndex )
-				{
-					return (TrackShape)this[i];
-				}
-			throw new InvalidDataException("ShapeIndex not found");
+         TrackShape returnValue = null;
+
+         if (ContainsKey(targetShapeIndex))
+         {
+            returnValue = this[targetShapeIndex];
+         }
+         else
+         {
+            throw new InvalidDataException("ShapeIndex not found");
+         }
+
+         return returnValue;
 		}
-		public uint MaxShapeIndex;
+
+		
 	}
 
 	public class TSectionDatFile

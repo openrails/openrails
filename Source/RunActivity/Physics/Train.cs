@@ -111,11 +111,19 @@ namespace ORTS
         {
         }
 
+      /// <summary>
+      /// Reference to the simulator object.
+      /// </summary>
+      private Simulator simulator;
 
         public void InitializeSignals(Simulator simulator, bool isPlayerTrain)
         {
             if (simulator.Signals != null)
             {
+
+            this.simulator = simulator;
+
+
                 nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
                 distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
                 nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
@@ -1081,6 +1089,70 @@ namespace ORTS
             foreach (TrainCar car in Cars)
                 car.DistanceM += Math.Abs(car.SpeedMpS * elapsedTime);
         }
+
+
+
+
+
+      /// <summary>
+      /// Traverse the cars, occupying tracks underneath.
+      /// </summary>
+      public void UpdateTrackOccupation()
+      {
+         TrackNode tn = RearTDBTraveller.TN;
+
+         TDBTraveller traveller = new TDBTraveller(RearTDBTraveller);
+         // The traveller location represents the back of the train.
+
+
+
+         var sections = simulator.TSectionDat.TrackSections;
+
+         // process the cars last to first
+         for (int i = Cars.Count - 1; i >= 0; i--)
+         {
+            TrainCar car = Cars[i];
+
+            if (i < Cars.Count - 1)
+            {
+               traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
+            }
+
+
+
+
+            TrackNode node = traveller.TN;
+
+            if (node.TrVectorNode != null)
+            {
+               TrVectorNode vNode = node.TrVectorNode;
+
+               for(int j = 0; j < vNode.TrVectorSections.Length; j++)
+               {
+                  if (sections.ContainsKey(vNode.TrVectorSections[j].SectionIndex))
+                  {
+                     TrackSection section = sections.Get(vNode.TrVectorSections[j].SectionIndex);
+
+                     section.InterlockingTrack.Occupy();
+                  }
+                  else
+                  {
+                   
+                  }
+
+               }
+            }
+
+            // traveller is positioned at the back of the car
+
+            // advance to the front of the car
+            traveller.Move(car.Length);
+         }
+
+      }
+
+
+
     }// class Train
 
 

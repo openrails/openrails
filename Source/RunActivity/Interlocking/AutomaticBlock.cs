@@ -49,7 +49,7 @@ namespace ORTS.Interlocking
 
             foreach (var track in Tracks)
             {
-               if (track.Occupied)
+               if (track.IsOccupied)
                {
                   returnValue = true;
                   break;

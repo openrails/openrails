@@ -95,7 +95,7 @@
             </summary>
             <param name="graphicsDevice"></param>
         </member>
-        <member name="M:ORTS.RenderFrame.DrawSimple(Microsoft.Xna.Framework.Graphics.GraphicsDevice)">
+        <member name="M:ORTS.RenderFrame.DrawSimple(Microsoft.Xna.Framework.Graphics.GraphicsDevice,System.Boolean)">
             <summary>
             Executed in the RenderProcess thread - simple draw
             </summary>
@@ -1239,6 +1239,13 @@
             etc for the locomotive.
             </summary>
         </member>
+        <member name="M:ORTS.MSTSLocomotive.LimitMotiveForce">
+            <summary>
+            Adjusts the MotiveForce to account for adhesion limits
+            The basic force limits are calculated the same way MSTS calculates them, but
+            the weather handleing is different
+            </summary>
+        </member>
         <member name="M:ORTS.MSTSLocomotive.SignalEvent(ORTS.EventID)">
             <summary>
             Used when someone want to notify us of an event
@@ -1960,7 +1967,7 @@
         </member>
         <member name="T:ORTS.Debugging.DebugViewerForm">
             <summary>
-            Defines a debugging viewer for use as an external window
+            Defines an external window for use as a debugging viewer 
             when using Open Rails 
             </summary>
         </member>
@@ -2040,7 +2047,7 @@
             <param name="size">Size of the dot's diameter, in pixels</param>
             <returns></returns>
         </member>
-        <member name="M:ORTS.Debugging.DebugViewerForm.AddSegments(System.Collections.Generic.List{ORTS.Debugging.LineSegment},MSTS.TrVectorSection[],System.Single@,System.Single@,System.Single@,System.Single@)">
+        <member name="M:ORTS.Debugging.DebugViewerForm.AddSegments(System.Collections.Generic.List{ORTS.Debugging.LineSegment},MSTS.TrVectorSection[],System.Single@,System.Single@,System.Single@,System.Single@,ORTS.Simulator)">
             <summary>
             Generates line segments from an array of TrVectorSection. Also computes 
             the bounds of the entire route being drawn.
@@ -2051,6 +2058,7 @@
             <param name="minY"></param>
             <param name="maxX"></param>
             <param name="maxY"></param>
+            <param name="simulator"></param>
         </member>
         <member name="M:ORTS.Debugging.DebugViewerForm.CalcBounds(System.Single@,System.Single,System.Boolean)">
             <summary>
@@ -2150,6 +2158,13 @@
             Moves the models down 1000M to make them invisible.
             </summary>
         </member>
+        <member name="M:MSTS.TrackShapes.Get(System.UInt32)">
+            <summary>
+            Returns the TrackShape corresponding to the given index value.
+            </summary>
+            <param name="targetShapeIndex">The index value of the desired TrackShape.</param>
+            <returns>The requested TrackShape.</returns>
+        </member>
         <member name="T:MSTS.TDBFile">
             <summary>
             Summary description for TDBFile.
@@ -2191,12 +2206,45 @@
             Defines an abstraction of a track circuit used within the interlocking system.
             </summary>
         </member>
-        <member name="M:ORTS.Interlocking.InterlockingTrack.#ctor(ORTS.Simulator)">
+        <member name="F:ORTS.Interlocking.InterlockingTrack.simulator">
             <summary>
-            TODO: create instances of tracks from existing track objects.
+            Reference to the simulation object.
             </summary>
         </member>
-        <member name="P:ORTS.Interlocking.InterlockingTrack.Occupied">
+        <member name="M:ORTS.Interlocking.InterlockingTrack.#ctor(ORTS.Simulator,MSTS.TrackSection)">
+            <summary>
+            Creates a new InterlockingTrack object.
+            </summary>
+            <param name="simulator">The Simulator object.</param>
+            <param name="trackSection">The TrackSection from which to create an InterlockingTrack.</param>
+        </member>
+        <member name="F:ORTS.Interlocking.InterlockingTrack.tempIsOccupied">
+            <summary>
+            Used during the update process.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingTrack.Occupy">
+            <summary>
+            Notify this track that it is occupied by a train.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingTrack.BeginUpdate">
+            <summary>
+            Prepares the track for possible changes.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingTrack.EndUpdate">
+            <summary>
+            Informs the track that updating has completed.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingTrack.Section">
+            <summary>
+            Gets the underlying TrackShape.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingTrack.IsOccupied">
             <summary>
             True when the track is occupied, false otherwise.
             </summary>
@@ -2766,6 +2814,12 @@
             or jump forwards or jump backwards.
             </summary>
         </member>
+        <member name="F:ORTS.Simulator.InterlockingSystem">
+            <summary>
+            Reference to the InterlockingSystem object, responsible for
+            managing signalling and interlocking.
+            </summary>
+        </member>
         <member name="M:ORTS.Simulator.InitialPlayerLocomotive">
             <summary>
             Which locomotive does the activity specify for the player.
@@ -2883,6 +2937,11 @@
             The last entry is moved to the front and then sifted down.
             </summary>
         </member>
+        <member name="F:ORTS.Train.simulator">
+            <summary>
+            Reference to the simulator object.
+            </summary>
+        </member>
         <member name="M:ORTS.Train.SignalEvent(ORTS.EventID)">
             <summary>
             Someone is sending an event notification to all cars on this train.
@@ -2910,6 +2969,11 @@
             Distance is the signed distance the cars are moving.
             </summary>
             <param name="distance"></param>
+        </member>
+        <member name="M:ORTS.Train.UpdateTrackOccupation">
+            <summary>
+            Traverse the cars, occupying tracks underneath.
+            </summary>
         </member>
         <member name="M:ORTS.AITrain.AIUpdate(System.Single,System.Double)">
             <summary>
@@ -3796,6 +3860,55 @@
             <summary>
             Initializes a process state object to 
             finished state.
+            </summary>
+        </member>
+        <member name="T:ORTS.Interlocking.InterlockingSystem">
+            <summary>
+            Encapsulates the interlocking and signalling system.
+            </summary>
+        </member>
+        <member name="F:ORTS.Interlocking.InterlockingSystem.simulator">
+            <summary>
+            Reference to the simulator object.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSystem.#ctor(ORTS.Simulator)">
+            <summary>
+            Creates a new InterlockingSystem object.
+            </summary>
+            <param name="simulator">The simulator from which to create an InterlockingSystem.</param>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSystem.CreateTracks">
+            <summary>
+            Instantiates InterlockingTrack objects from the simulation's TrackShapes.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSystem.Tracks">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:ORTS.Debugging.GenericObjectViewerForm.RefreshView">
+            <summary>
+            Get the propertyGrid to refresh, if any of the values
+            gas changed.
+            </summary>
+        </member>
+        <member name="F:ORTS.Debugging.GenericObjectViewerForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.Debugging.GenericObjectViewerForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.Debugging.GenericObjectViewerForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
             </summary>
         </member>
     </members>

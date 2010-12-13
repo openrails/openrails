@@ -7,17 +7,32 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using MSTS;
+using ORTS.Interlocking;
 
 namespace ORTS.Debugging
 {
 
 
    /// <summary>
-   /// Defines a debugging viewer for use as an external window
+   /// Defines an external window for use as a debugging viewer 
    /// when using Open Rails 
    /// </summary>
    public partial class DebugViewerForm : Form
    {
+
+
+      #region Data Viewers
+      GenericObjectViewerForm trackViewer;
+
+      GenericObjectViewerForm TrackViewer
+      {
+         get
+         {
+            return trackViewer ?? (trackViewer = new GenericObjectViewerForm("Tracks", new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray()));
+         }
+      }
+      #endregion
+
       /// <summary>
       /// Reference to the main simulator object.
       /// </summary>
@@ -64,6 +79,8 @@ namespace ORTS.Debugging
       /// </summary>
       private Timer UITimer;
 
+      bool loaded = false;
+
       /// <summary>
       /// Creates a new DebugViewerForm.
       /// </summary>
@@ -92,10 +109,13 @@ namespace ORTS.Debugging
          ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
          windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
 
+      
          InitImage();
 
       }
 
+
+      public int RedrawCount = 0;
 
       /// <summary>
       /// When the user holds down the  "L", "R", "U", "D" buttons,
@@ -124,6 +144,13 @@ namespace ORTS.Debugging
          if (RightButtonDown)
          {
             ShiftViewRight();
+         }
+
+         RedrawCount++;
+
+         if (RedrawCount > 10)
+         {
+            GenerateView();
          }
       }
 
@@ -161,7 +188,17 @@ namespace ORTS.Debugging
          List<PointF> buffers = new List<PointF>();
          List<SignalWidget> signals = new List<SignalWidget>();
 
+         PointF PlayerLocation = new PointF();
+
          TrackNode[] nodes = simulator.TDB.TrackDB.TrackNodes;
+
+         if (!loaded)
+         {
+            // do this only once
+            loaded = true;
+            trackSections.DataSource = new List<TrackSection>(simulator.TSectionDat.TrackSections.Values).ToArray();
+         }
+
 
          for (int i = 0; i < nodes.Length; i++)
          {
@@ -179,7 +216,7 @@ namespace ORTS.Debugging
 
                   if (currNode.TrVectorNode.TrVectorSections.Length > 1)
                   {
-                     AddSegments(segments, currNode.TrVectorNode.TrVectorSections, ref minX, ref minY, ref maxX, ref maxY);
+                     AddSegments(segments, currNode.TrVectorNode.TrVectorSections, ref minX, ref minY, ref maxX, ref maxY, simulator);
                   }
                   else
                   {
@@ -197,7 +234,17 @@ namespace ORTS.Debugging
                            PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
                            PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
 
-                           segments.Add(new LineSegment(A, B));
+                           bool occupied = false;
+                           TrackSection section = null;
+
+                           if (simulator.TSectionDat.TrackSections.ContainsKey(s.SectionIndex))
+                           {
+                              section = simulator.TSectionDat.TrackSections[s.SectionIndex];
+
+                              occupied = section.InterlockingTrack.IsOccupied;
+                           }
+
+                           segments.Add(new LineSegment(A, B, occupied, section));
                         }
                      }
 
@@ -215,13 +262,35 @@ namespace ORTS.Debugging
          {
             if (item.ItemType == TrItem.trItemType.trSIGNAL)
             {
-               //SignalObject s = simulator.Signals.SignalObjects[item.ItemType;
+               if (item is SignalItem)
+               {
+
+                  SignalItem si = item as SignalItem;
+
+                  SignalObject s = simulator.Signals.SignalObjects[si.sigObj];
+
+
+                  signals.Add(new SignalWidget(item, s));
+               }
                
-               //signals.Add(new SignalWidget(item, s));
             }
+         }
+
+
+         if (simulator.Trains.Count > 0 && simulator.Trains[0].LeadLocomotive != null)
+         {
+            var worldPos = simulator.Trains[0].LeadLocomotive.WorldPosition;
+
+            PlayerLocation = new PointF(
+               worldPos.TileX * 2048 + worldPos.Location.X,
+               worldPos.TileZ * 2048 + worldPos.Location.Z);
+               
+               
          }
     
          using(Graphics g = Graphics.FromImage(pictureBox1.Image))
+         using(Pen redPen = new Pen(Color.Red))
+         using (Pen grayPen = new Pen(Color.Gray))
          {
 
             g.Clear(Color.White);
@@ -233,13 +302,33 @@ namespace ORTS.Debugging
             float xScale = pictureBox1.Width / ViewWindow.Width;
             float yScale = pictureBox1.Height/ ViewWindow.Height;
 
+            
             foreach (var line in segments)
             {
 
                PointF scaledA = new PointF((line.A.X - minX - ViewWindow.X) * xScale, (line.A.Y - minY - ViewWindow.Y) * yScale);
                PointF scaledB = new PointF((line.B.X - minX - ViewWindow.X) * xScale, (line.B.Y - minY - ViewWindow.Y) * yScale);
 
-               g.DrawLine(Pens.Gray, scaledA, scaledB);
+
+               Pen p = grayPen;
+
+               if (line.Occupied)
+               {
+                  p = redPen;
+               }
+
+               p.Width = 1f;
+
+               if (highlightTrackSections.Checked)
+               {
+                  if (line.Section != null && line.Section == trackSections.SelectedItem)
+                  {
+                     p.Width = 5f;
+                  }
+               }
+               
+
+               g.DrawLine(p, scaledA, scaledB);
             }
 
             if (showSwitches.Checked)
@@ -279,6 +368,13 @@ namespace ORTS.Debugging
                }
             }
 
+            if (showPlayerTrain.Checked)
+            {
+               PointF trainLocation = new PointF((PlayerLocation.X - minX - ViewWindow.X) * xScale, (PlayerLocation.Y - minY - ViewWindow.Y) * yScale);
+
+               g.FillRectangle(Brushes.DarkGreen, GetRect(trainLocation, 15f));
+            }
+
          }
 
 
@@ -306,7 +402,8 @@ namespace ORTS.Debugging
       /// <param name="minY"></param>
       /// <param name="maxX"></param>
       /// <param name="maxY"></param>
-      private static void AddSegments(List<LineSegment> segments, TrVectorSection[] items,  ref float minX, ref float minY, ref float maxX, ref float maxY)
+      /// <param name="simulator"></param>
+      private static void AddSegments(List<LineSegment> segments, TrVectorSection[] items,  ref float minX, ref float minY, ref float maxX, ref float maxY, Simulator simulator)
       {
          for (int i = 0; i < items.Length - 1; i++)
          {
@@ -323,7 +420,18 @@ namespace ORTS.Debugging
             CalcBounds(ref minX, B.X, false);
             CalcBounds(ref minY, B.Y, false);
 
-            segments.Add(new LineSegment(A, B));
+            bool occupied = false;
+
+            TrackSection section = null;
+
+            if (simulator.TSectionDat.TrackSections.ContainsKey(items[i].SectionIndex))
+            {
+               section = simulator.TSectionDat.TrackSections[items[i].SectionIndex];
+
+               occupied = section.InterlockingTrack.IsOccupied;
+            }
+
+            segments.Add(new LineSegment(A, B, occupied, section));
          }
       }
 
@@ -510,6 +618,27 @@ namespace ORTS.Debugging
       {
          GenerateView();
       }
+
+      private void showSignals_CheckedChanged(object sender, EventArgs e)
+      {
+         GenerateView();
+      }
+
+      private void viewTracksToolStripMenuItem_Click(object sender, EventArgs e)
+      {
+         TrackViewer.Show();
+         TrackViewer.BringToFront();
+      }
+
+      private void highlightTrackShapes_CheckedChanged(object sender, EventArgs e)
+      {
+         GenerateView();
+      }
+
+      private void trackShapes_SelectedIndexChanged(object sender, EventArgs e)
+      {
+         GenerateView();
+      }
       
 
 
@@ -582,10 +711,17 @@ namespace ORTS.Debugging
       public PointF A;
       public PointF B;
 
-      public LineSegment(PointF A, PointF B)
+      public bool Occupied;
+      public TrackSection Section;
+
+      public LineSegment(PointF A, PointF B, bool Occupied, TrackSection Section)
       {
          this.A = A;
          this.B = B;
+
+         this.Occupied = Occupied;
+
+         this.Section = Section;
       }
    }
 

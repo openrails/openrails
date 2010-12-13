@@ -198,7 +198,14 @@
     <Compile Include="Debugging\DebugViewerForm.Designer.cs">
       <DependentUpon>DebugViewerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Debugging\GenericObjectViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Debugging\GenericObjectViewerForm.Designer.cs">
+      <DependentUpon>GenericObjectViewerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Interlocking\AutomaticBlock.cs" />
+    <Compile Include="Interlocking\InterlockingSystem.cs" />
     <Compile Include="Interlocking\InterlockingTrack.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
@@ -331,6 +338,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Debugging\DebugViewerForm.resx">
       <DependentUpon>DebugViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Debugging\GenericObjectViewerForm.resx">
+      <DependentUpon>GenericObjectViewerForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

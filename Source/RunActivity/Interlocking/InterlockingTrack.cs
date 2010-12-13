@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MSTS;
+using System.Diagnostics;
 
 namespace ORTS.Interlocking
 {
@@ -9,30 +11,91 @@ namespace ORTS.Interlocking
    /// <summary>
    /// Defines an abstraction of a track circuit used within the interlocking system.
    /// </summary>
+   [DebuggerDisplay("{Section} Occupied: {IsOccupied}")]
    public class InterlockingTrack
    {
     
       /// <summary>
       /// Reference to the simulation object.
       /// </summary>
-      //private Simulator simulator;
-
+      private Simulator simulator;
 
       /// <summary>
-      /// TODO: create instances of tracks from existing track objects.
+      /// Gets the underlying TrackShape.
       /// </summary>
-      public InterlockingTrack(Simulator simulator/*TrackItem foo*/)
-      {
+      public TrackSection Section { get; private set; }
 
+      /// <summary>
+      /// Creates a new InterlockingTrack object.
+      /// </summary>
+      /// <param name="simulator">The Simulator object.</param>
+      /// <param name="trackSection">The TrackSection from which to create an InterlockingTrack.</param>
+      public InterlockingTrack(Simulator simulator, TrackSection trackSection)
+      {
+         Section = trackSection;
+         this.simulator = simulator;
+
+         Section.InterlockingTrack = this;
+      }
+
+
+      public override string ToString()
+      {
+         return string.Format("{0} Occupied: {1}", Section, IsOccupied);
       }
 
 
 
+      private bool isOccupied;
+
       /// <summary>
       /// True when the track is occupied, false otherwise.
       /// </summary>
-      public bool Occupied { get; set; }
+      public bool IsOccupied 
+      {
+         get
+         {
+            return isOccupied;
+         }
+         private set
+         {
+            if (isOccupied != value)
+            {
+               isOccupied = value;
+            }
+         }
+      }
 
+
+      /// <summary>
+      /// Used during the update process.
+      /// </summary>
+      private bool tempIsOccupied;
+
+      /// <summary>
+      /// Notify this track that it is occupied by a train.
+      /// </summary>
+      /// <returns></returns>
+      public void Occupy()
+      {
+         tempIsOccupied = true;
+      }
+
+      /// <summary>
+      /// Prepares the track for possible changes.
+      /// </summary>
+      public void BeginUpdate()
+      {
+         tempIsOccupied = false;
+      }
+
+      /// <summary>
+      /// Informs the track that updating has completed.
+      /// </summary>
+      public void EndUpdate()
+      {
+         IsOccupied = tempIsOccupied;
+      }
 
       /// <summary>
       /// Track reference used to detect opposing routes. 
@@ -87,6 +150,9 @@ namespace ORTS.Interlocking
             return returnValue;
          }
       }
+
+
+
 
    }
 }
