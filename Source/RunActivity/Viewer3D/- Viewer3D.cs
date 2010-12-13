@@ -486,7 +486,6 @@ namespace ORTS
 			{
 				Camera.ScreenChanged();
 				RenderProcess.InitializeShadowMapLocations(RenderProcess.Viewer);
-				WindowManager.ScreenChanged();
 			}
 
 			// Update camera first...

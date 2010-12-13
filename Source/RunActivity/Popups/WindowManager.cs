@@ -38,7 +38,7 @@ namespace ORTS.Popups
 		{
 			Viewer = viewer;
 			SpriteBatch = new SpriteBatch(viewer.GraphicsDevice);
-			ScreenSize = Viewer.DisplaySize;
+			ScreenChanged();
 
 			if (WhiteTexture == null)
 			{
