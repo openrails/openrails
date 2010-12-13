@@ -44,6 +44,7 @@ namespace ORTS
         public float SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
         public float CouplerSlackM = 0f;// extra distance between cars (calculated based on relative speeds)
         public float CouplerSlack2M = 0f;// slack calculated using draft gear force
+        public bool WheelSlip = false;// true if locomotive wheels slipping
 
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
@@ -97,6 +98,7 @@ namespace ORTS
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
+        public virtual bool GetSanderOn() { return false; }
 
 		public TrainCar(Simulator simulator, string wagFile, TrainCar previousCar)
         {

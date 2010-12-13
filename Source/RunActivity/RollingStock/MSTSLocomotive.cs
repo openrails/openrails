@@ -94,6 +94,8 @@ namespace ORTS
         public bool DynamicBrakeAutoBailOff = false;
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
+        public float NumWheels = 4;
+        public bool AntiSlip = false;
 
         public CVFFile CVFFile = null;
         public ExtendedCVF ExCVF = null;
@@ -242,6 +244,8 @@ namespace ORTS
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(numwheels": NumWheels = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -265,6 +269,8 @@ namespace ORTS
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
+            NumWheels = locoCopy.NumWheels;
+            AntiSlip = locoCopy.AntiSlip;
 
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
@@ -397,6 +403,7 @@ namespace ORTS
                 if (f > 0)
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
             }
+            LimitMotiveForce();
 
             if (MainResPressurePSI < CompressorRestartPressurePSI && !CompressorOn)
                 SignalEvent(EventID.CompressorOn);
@@ -406,6 +413,54 @@ namespace ORTS
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
             base.Update(elapsedClockSeconds);
+        }
+
+        /// <summary>
+        /// Adjusts the MotiveForce to account for adhesion limits
+        /// The basic force limits are calculated the same way MSTS calculates them, but
+        /// the weather handleing is different
+        /// </summary>
+        public void LimitMotiveForce()
+        {
+            if (NumWheels <= 0)
+                return;
+            float max0 = MassKG * 9.8f * Adhesion3 / NumWheels;
+            if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
+            {
+                if (Train.SlipperySpotDistanceM < 0)
+                {
+                    Train.SlipperySpotLengthM = 10 + 40 * (float)Program.Random.NextDouble();
+                    Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float) Program.Random.NextDouble();
+                }
+                if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
+                    max0 *= .8f;
+                if (Program.Simulator.Weather == WeatherType.Rain)
+                    max0 *= .8f;
+                else
+                    max0 *= .7f;
+            }
+            float max1 = (Sander ? .95f : Adhesion2) * max0;
+            WheelSlip = false;
+            if (MotiveForceN > max1)
+            {
+                WheelSlip = true;
+                if (AntiSlip)
+                    MotiveForceN = max1;
+                else
+                    MotiveForceN = Adhesion1 * max0;
+            }
+            else if (MotiveForceN < -max1)
+            {
+                WheelSlip = true;
+                if (AntiSlip)
+                    MotiveForceN = -max1;
+                else
+                    MotiveForceN = -Adhesion1 * max0;
+            }
+        }
+        public override bool GetSanderOn()
+        {
+            return Sander;
         }
 
         public void SetDirection( Direction direction )

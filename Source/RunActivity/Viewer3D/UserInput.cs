@@ -119,8 +119,8 @@ namespace ORTS
 			Commands[(int)UserCommands.ControlInitializeBrakes] = new UserCommandKeyInput('?');
 			Commands[(int)UserCommands.ControlHandbrakeFull] = new UserCommandKeyInput('\'', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlHandbrakeNone] = new UserCommandKeyInput(';', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandKeyInput(']');
-			Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput('[');
+            Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandKeyInput(']', KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput('[', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput('\\');
 			Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput('\\', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlEmergency] = new UserCommandKeyInput(Keys.Back);

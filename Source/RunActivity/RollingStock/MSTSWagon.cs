@@ -53,6 +53,9 @@ namespace ORTS
         public float DavisBNSpM = 0;    // davis equation constant for speed
         public float DavisCNSSpMM = 0;  // davis equation constant for speed squared
         public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
+        public float Adhesion1 = .27f;   // 1st MSTS adheasion value
+        public float Adhesion2 = .49f;   // 2nd MSTS adheasion value
+        public float Adhesion3 = 2;   // 3rd MSTS adheasion value
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
@@ -139,6 +142,14 @@ namespace ORTS
                     Couplers[Couplers.Count - 1].SetR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(adheasion":
+                    stf.MustMatch("(");
+                    Adhesion1 = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    Adhesion2 = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    Adhesion3 = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    stf.ReadFloat(STFReader.UNITS.Any, null);
+                    stf.SkipRestOfBlock();
+                    break;
                 case "wagon(lights":
                     if (Simulator.Settings.TrainLights)
                     {
@@ -179,6 +190,9 @@ namespace ORTS
             DavisCNSSpMM = copy.DavisCNSSpMM;
             Length = copy.Length;
             MassKG = copy.MassKG;
+            Adhesion1 = copy.Adhesion1;
+            Adhesion2 = copy.Adhesion2;
+            Adhesion3 = copy.Adhesion3;
             Lights = copy.Lights;
             foreach (ViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
@@ -604,6 +618,8 @@ namespace ORTS
         private void UpdateAnimation( RenderFrame frame, ElapsedTime elapsedTime )
         {
             float distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds ;
+            if (MSTSWagon.WheelSlip)
+                distanceTravelledM *= 4;
 
             // Running gear animation
             if (RunningGearPartIndexes.Count > 0 && MSTSWagon.DriverWheelRadiusM > 0.001 )  // skip this if there is no running gear and only engines can have running gear

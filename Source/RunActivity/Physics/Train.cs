@@ -49,6 +49,8 @@ namespace ORTS
         public int NPull = 0;
         public int NPush = 0;
         private int LeadLocomotiveIndex = -1;
+        public float SlipperySpotDistanceM = 0; // distance to extra slippery part of track
+        public float SlipperySpotLengthM = 0;
 
         // These signals pass through to all cars and locomotives on the train
         public Direction MUDirection = Direction.Forward; //set by player locomotive to control MU'd locomotives
@@ -185,6 +187,8 @@ namespace ORTS
             RetainerSetting = (RetainerSetting)inf.ReadInt32();
             RetainerPercent = inf.ReadInt32();
             RearTDBTraveller = new TDBTraveller( inf );
+            SlipperySpotDistanceM = inf.ReadSingle();
+            SlipperySpotLengthM = inf.ReadSingle();
             CalculatePositionOfCars(0);
 
         }
@@ -206,6 +210,8 @@ namespace ORTS
             outf.Write((int)RetainerSetting);
             outf.Write(RetainerPercent);
             RearTDBTraveller.Save(outf);
+            outf.Write(SlipperySpotDistanceM);
+            outf.Write(SlipperySpotLengthM);
         }
 
         private void SaveCars(BinaryWriter outf)
@@ -265,6 +271,8 @@ namespace ORTS
                     car1.SpeedMpS = -car1.SpeedMpS;
             }
             SpeedMpS /= Cars.Count;
+
+            SlipperySpotDistanceM -= SpeedMpS * elapsedClockSeconds;
 
             CalculatePositionOfCars( distanceM );
 

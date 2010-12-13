@@ -266,6 +266,11 @@ namespace ORTS
             TextBuilder.AppendLine();
 
 			TextBuilder.AppendFormat("FPS = {0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue); TextBuilder.AppendLine();
+
+            if (Viewer.PlayerLocomotive.WheelSlip)
+                TextBuilder.AppendLine("Wheel Slip");
+            if (Viewer.PlayerLocomotive.GetSanderOn())
+                TextBuilder.AppendLine("Sander On");
         }
 
 		private void AddBrakeInfo()

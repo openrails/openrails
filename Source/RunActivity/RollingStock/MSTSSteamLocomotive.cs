@@ -438,10 +438,7 @@ namespace ORTS
                 (backPressure * ForceFactor1[cutoff] + cylinderPressure * ForceFactor2[cutoff]);
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
-            else if (MotiveForceN > MaxForceN)
-                MotiveForceN = MaxForceN;
-            else if (MotiveForceN < -MaxForceN)
-                MotiveForceN = -MaxForceN;
+            LimitMotiveForce();
             if (speed == 0 && cutoff < .5f)
                 MotiveForceN = 0;   // valves assumed to be closed
             // usage calculated as moving average to minimize chance of oscillation
