@@ -1,4 +1,4 @@
-/// <summary>
+///// <summary>
 /// This application runs an activity.  After loading the activity, main
 /// sets up the simulator engine and connects a 3D viewer 
 /// 

@@ -1127,19 +1127,9 @@ namespace ORTS
             {
                TrVectorNode vNode = node.TrVectorNode;
 
-               for(int j = 0; j < vNode.TrVectorSections.Length; j++)
+               foreach (var trVectorSection in vNode.TrVectorSections)
                {
-                  if (sections.ContainsKey(vNode.TrVectorSections[j].SectionIndex))
-                  {
-                     TrackSection section = sections.Get(vNode.TrVectorSections[j].SectionIndex);
-
-                     section.InterlockingTrack.Occupy();
-                  }
-                  else
-                  {
-                   
-                  }
-
+                  trVectorSection.InterlockingTrack.Occupy();
                }
             }
 

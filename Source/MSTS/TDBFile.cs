@@ -6,6 +6,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using ORTS.Interlocking;
 
 namespace MSTS
 {
@@ -281,6 +282,10 @@ namespace MSTS
         public float X, Y, Z;
         public float AX, AY, AZ;
         public uint WorldFileUiD;
+
+        public InterlockingTrack InterlockingTrack {get; set;}
+       
+         
     }
 
 

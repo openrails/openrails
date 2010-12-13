@@ -72,13 +72,6 @@ namespace MSTS
 		public uint SectionIndex;
 		public SectionSize SectionSize;
 		public SectionCurve SectionCurve;
-
-      public InterlockingTrack InterlockingTrack;
-
-      public override string ToString()
-      {
-         return string.Format("SectionIndex: {0}", SectionIndex);
-      }
 	}
 	
 	public class RouteTrackSection: TrackSection

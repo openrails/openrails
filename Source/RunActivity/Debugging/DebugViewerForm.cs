@@ -196,7 +196,7 @@ namespace ORTS.Debugging
          {
             // do this only once
             loaded = true;
-            trackSections.DataSource = new List<TrackSection>(simulator.TSectionDat.TrackSections.Values).ToArray();
+            trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
          }
 
 
@@ -234,17 +234,7 @@ namespace ORTS.Debugging
                            PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
                            PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
 
-                           bool occupied = false;
-                           TrackSection section = null;
-
-                           if (simulator.TSectionDat.TrackSections.ContainsKey(s.SectionIndex))
-                           {
-                              section = simulator.TSectionDat.TrackSections[s.SectionIndex];
-
-                              occupied = section.InterlockingTrack.IsOccupied;
-                           }
-
-                           segments.Add(new LineSegment(A, B, occupied, section));
+                           segments.Add(new LineSegment(A, B, s.InterlockingTrack.IsOccupied, s));
                         }
                      }
 
@@ -317,15 +307,15 @@ namespace ORTS.Debugging
                   p = redPen;
                }
 
-               p.Width = 1f;
+               //p.Width = 1f;
 
-               if (highlightTrackSections.Checked)
-               {
-                  if (line.Section != null && line.Section == trackSections.SelectedItem)
-                  {
-                     p.Width = 5f;
-                  }
-               }
+               //if (highlightTrackSections.Checked)
+               //{
+               //   if (line.Section != null && line.Section.InterlockingTrack == trackSections.SelectedValue)
+               //   {
+               //      p.Width = 5f;
+               //   }
+               //}
                
 
                g.DrawLine(p, scaledA, scaledB);
@@ -420,18 +410,7 @@ namespace ORTS.Debugging
             CalcBounds(ref minX, B.X, false);
             CalcBounds(ref minY, B.Y, false);
 
-            bool occupied = false;
-
-            TrackSection section = null;
-
-            if (simulator.TSectionDat.TrackSections.ContainsKey(items[i].SectionIndex))
-            {
-               section = simulator.TSectionDat.TrackSections[items[i].SectionIndex];
-
-               occupied = section.InterlockingTrack.IsOccupied;
-            }
-
-            segments.Add(new LineSegment(A, B, occupied, section));
+            segments.Add(new LineSegment(A, B, items[i].InterlockingTrack.IsOccupied, items[i]));
          }
       }
 
@@ -712,9 +691,9 @@ namespace ORTS.Debugging
       public PointF B;
 
       public bool Occupied;
-      public TrackSection Section;
+      public TrVectorSection Section;
 
-      public LineSegment(PointF A, PointF B, bool Occupied, TrackSection Section)
+      public LineSegment(PointF A, PointF B, bool Occupied, TrVectorSection Section)
       {
          this.A = A;
          this.B = B;

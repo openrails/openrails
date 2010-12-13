@@ -21,16 +21,16 @@ namespace ORTS.Interlocking
       private Simulator simulator;
 
       /// <summary>
-      /// Gets the underlying TrackShape.
+      /// Gets the underlying TrVectorSection.
       /// </summary>
-      public TrackSection Section { get; private set; }
+      public TrVectorSection Section { get; private set; }
 
       /// <summary>
       /// Creates a new InterlockingTrack object.
       /// </summary>
       /// <param name="simulator">The Simulator object.</param>
       /// <param name="trackSection">The TrackSection from which to create an InterlockingTrack.</param>
-      public InterlockingTrack(Simulator simulator, TrackSection trackSection)
+      public InterlockingTrack(Simulator simulator, TrVectorSection trackSection)
       {
          Section = trackSection;
          this.simulator = simulator;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MSTS;
 
 namespace ORTS.Interlocking
 {
@@ -18,7 +19,7 @@ namespace ORTS.Interlocking
       /// <summary>
       /// 
       /// </summary>
-      internal Dictionary<uint, InterlockingTrack> Tracks { get; set; }
+      internal Dictionary<TrVectorSection, InterlockingTrack> Tracks { get; set; }
 
       /// <summary>
       /// Creates a new InterlockingSystem object.
@@ -37,15 +38,19 @@ namespace ORTS.Interlocking
       private void CreateTracks()
       {
 
-         Tracks = new Dictionary<uint, InterlockingTrack>();
+         Tracks = new Dictionary<TrVectorSection, InterlockingTrack>();
 
-         var enumer = simulator.TSectionDat.TrackSections.GetEnumerator();
-         
-         while (enumer.MoveNext())
+         var nodes = simulator.TDB.TrackDB.TrackNodes;
+         foreach (var n in nodes)
          {
-            Tracks.Add(enumer.Current.Key, new InterlockingTrack(simulator, enumer.Current.Value));
+            if (n != null && n.TrVectorNode != null)
+            {
+               foreach (var vNode in n.TrVectorNode.TrVectorSections)
+               {
+                  Tracks.Add(vNode, new InterlockingTrack(simulator, vNode));
+               }
+            }
          }
-
       }
 
 

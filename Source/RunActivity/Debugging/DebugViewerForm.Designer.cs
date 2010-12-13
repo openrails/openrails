@@ -260,6 +260,7 @@
          this.highlightTrackSections.TabIndex = 14;
          this.highlightTrackSections.Text = "Highlight Track Sections";
          this.highlightTrackSections.UseVisualStyleBackColor = true;
+         this.highlightTrackSections.Visible = false;
          this.highlightTrackSections.CheckedChanged += new System.EventHandler(this.highlightTrackShapes_CheckedChanged);
          // 
          // trackSections
@@ -267,8 +268,9 @@
          this.trackSections.FormattingEnabled = true;
          this.trackSections.Location = new System.Drawing.Point(378, 111);
          this.trackSections.Name = "trackSections";
-         this.trackSections.Size = new System.Drawing.Size(137, 21);
+         this.trackSections.Size = new System.Drawing.Size(142, 21);
          this.trackSections.TabIndex = 15;
+         this.trackSections.Visible = false;
          this.trackSections.SelectedIndexChanged += new System.EventHandler(this.trackShapes_SelectedIndexChanged);
          // 
          // DebugViewerForm
