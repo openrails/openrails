@@ -205,6 +205,9 @@
       <DependentUpon>GenericObjectViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Interlocking\AutomaticBlock.cs" />
+    <Compile Include="Interlocking\InterlockingItem.cs" />
+    <Compile Include="Interlocking\InterlockingSignal.cs" />
+    <Compile Include="Interlocking\InterlockingSwitch.cs" />
     <Compile Include="Interlocking\InterlockingSystem.cs" />
     <Compile Include="Interlocking\InterlockingTrack.cs" />
     <Compile Include="Physics\Brakes.cs" />

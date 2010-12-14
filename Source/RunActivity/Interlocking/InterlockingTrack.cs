@@ -12,13 +12,10 @@ namespace ORTS.Interlocking
    /// Defines an abstraction of a track circuit used within the interlocking system.
    /// </summary>
    [DebuggerDisplay("{Section} Occupied: {IsOccupied}")]
-   public class InterlockingTrack
+   public class InterlockingTrack : InterlockingItem
    {
     
-      /// <summary>
-      /// Reference to the simulation object.
-      /// </summary>
-      private Simulator simulator;
+  
 
       /// <summary>
       /// Gets the underlying TrVectorSection.
@@ -31,10 +28,10 @@ namespace ORTS.Interlocking
       /// <param name="simulator">The Simulator object.</param>
       /// <param name="trackSection">The TrackSection from which to create an InterlockingTrack.</param>
       public InterlockingTrack(Simulator simulator, TrVectorSection trackSection)
+         : base(simulator)
       {
          Section = trackSection;
-         this.simulator = simulator;
-
+      
          Section.InterlockingTrack = this;
       }
 

@@ -1732,6 +1732,29 @@
             This is called when the game should draw itself.
             </summary>
         </member>
+        <member name="F:ORTS.Debugging.GenericObjectViewerForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.Debugging.GenericObjectViewerForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.Debugging.GenericObjectViewerForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="M:ORTS.Debugging.GenericObjectViewerForm.RefreshView">
+            <summary>
+            Get the propertyGrid to refresh, if any of the values
+            gas changed.
+            </summary>
+        </member>
         <member name="T:MSTS.MSTSPath">
             <summary>
             Deals with the MSTS file structure.
@@ -2206,12 +2229,17 @@
             Defines an abstraction of a track circuit used within the interlocking system.
             </summary>
         </member>
-        <member name="F:ORTS.Interlocking.InterlockingTrack.simulator">
+        <member name="T:ORTS.Interlocking.InterlockingItem">
             <summary>
-            Reference to the simulation object.
+            Defines the base class for interlocking objects.
             </summary>
         </member>
-        <member name="M:ORTS.Interlocking.InterlockingTrack.#ctor(ORTS.Simulator,MSTS.TrackSection)">
+        <member name="F:ORTS.Interlocking.InterlockingItem.simulator">
+            <summary>
+            Reference to the simulator object.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingTrack.#ctor(ORTS.Simulator,MSTS.TrVectorSection)">
             <summary>
             Creates a new InterlockingTrack object.
             </summary>
@@ -2241,7 +2269,7 @@
         </member>
         <member name="P:ORTS.Interlocking.InterlockingTrack.Section">
             <summary>
-            Gets the underlying TrackShape.
+            Gets the underlying TrVectorSection.
             </summary>
         </member>
         <member name="P:ORTS.Interlocking.InterlockingTrack.IsOccupied">
@@ -2338,6 +2366,52 @@
         <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
             <summary>
             Build a default EventTypeAllStops event
+            </summary>
+        </member>
+        <member name="T:ORTS.Interlocking.InterlockingSystem">
+            <summary>
+            Encapsulates the interlocking and signalling system.
+            </summary>
+        </member>
+        <member name="F:ORTS.Interlocking.InterlockingSystem.simulator">
+            <summary>
+            Reference to the simulator object.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSystem.#ctor(ORTS.Simulator)">
+            <summary>
+            Creates a new InterlockingSystem object.
+            </summary>
+            <param name="simulator">The simulator from which to create an InterlockingSystem.</param>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSystem.CreateSwitches">
+            <summary>
+            Instantiates InterlockingSignal objects from the simulation's SignalObject objects.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSystem.CreateSignals">
+            <summary>
+            Instantiates InterlockingSignal objects from the simulation's SignalObject objects.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSystem.CreateTracks">
+            <summary>
+            Instantiates InterlockingTrack objects from the simulation's TrVectorSection.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSystem.Tracks">
+            <summary>
+            Links the underlying TrVectorSection to its corresponding interlocking layer counterpart.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSystem.Signals">
+            <summary>
+            Links the underlying TrVectorSection to its corresponding interlocking layer counterpart.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSystem.Switches">
+            <summary>
+            Links the underlying Switch to its corresponding interlocking layer counterpart.
             </summary>
         </member>
         <member name="M:MSTS.SignalType.def_draw_state(ORTS.SignalHead.SIGASP)">
@@ -3862,53 +3936,32 @@
             finished state.
             </summary>
         </member>
-        <member name="T:ORTS.Interlocking.InterlockingSystem">
+        <member name="T:ORTS.Interlocking.InterlockingSignal">
             <summary>
-            Encapsulates the interlocking and signalling system.
+            Provides an abstraction atop an underlying signal
+            object.
             </summary>
         </member>
-        <member name="F:ORTS.Interlocking.InterlockingSystem.simulator">
+        <member name="M:ORTS.Interlocking.InterlockingSignal.#ctor(ORTS.Simulator,ORTS.SignalObject)">
             <summary>
-            Reference to the simulator object.
+            Creates a new InterlockingSignal object.
+            </summary>
+            <param name="simulator"></param>
+            <param name="signalObject"></param>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSignal.SignalObject">
+            <summary>
+            Gets the underlying SignalObject.
             </summary>
         </member>
-        <member name="M:ORTS.Interlocking.InterlockingSystem.#ctor(ORTS.Simulator)">
+        <member name="P:ORTS.Interlocking.InterlockingSignal.IsShowingAnyProceed">
             <summary>
-            Creates a new InterlockingSystem object.
-            </summary>
-            <param name="simulator">The simulator from which to create an InterlockingSystem.</param>
-        </member>
-        <member name="M:ORTS.Interlocking.InterlockingSystem.CreateTracks">
-            <summary>
-            Instantiates InterlockingTrack objects from the simulation's TrackShapes.
+            Returns true when any of the signal heads show any "proceed" aspect.
             </summary>
         </member>
-        <member name="P:ORTS.Interlocking.InterlockingSystem.Tracks">
+        <member name="T:ORTS.Interlocking.InterlockingSwitch">
             <summary>
-            
-            </summary>
-        </member>
-        <member name="M:ORTS.Debugging.GenericObjectViewerForm.RefreshView">
-            <summary>
-            Get the propertyGrid to refresh, if any of the values
-            gas changed.
-            </summary>
-        </member>
-        <member name="F:ORTS.Debugging.GenericObjectViewerForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.Debugging.GenericObjectViewerForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.Debugging.GenericObjectViewerForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
+            Provides an abstraction atop an underlying switch object.
             </summary>
         </member>
     </members>

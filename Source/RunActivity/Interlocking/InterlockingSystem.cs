@@ -17,9 +17,20 @@ namespace ORTS.Interlocking
       private Simulator simulator;
 
       /// <summary>
-      /// 
+      /// Links the underlying TrVectorSection to its corresponding interlocking layer counterpart.
       /// </summary>
       internal Dictionary<TrVectorSection, InterlockingTrack> Tracks { get; set; }
+
+      /// <summary>
+      /// Links the underlying TrVectorSection to its corresponding interlocking layer counterpart.
+      /// </summary>
+      internal Dictionary<SignalObject, InterlockingSignal> Signals { get; set; }
+
+      /// <summary>
+      /// Links the underlying Switch to its corresponding interlocking layer counterpart.
+      /// </summary>
+      internal Dictionary<TrJunctionNode, InterlockingSwitch> Switches { get; set; }
+
 
       /// <summary>
       /// Creates a new InterlockingSystem object.
@@ -30,18 +41,48 @@ namespace ORTS.Interlocking
          this.simulator = simulator;
 
          CreateTracks();
+         CreateSwitches();
+         CreateSignals();
       }
 
       /// <summary>
-      /// Instantiates InterlockingTrack objects from the simulation's TrackShapes.
+      /// Instantiates InterlockingSignal objects from the simulation's SignalObject objects.
+      /// </summary>
+      private void CreateSwitches()
+      {
+         Switches = new Dictionary<TrJunctionNode, InterlockingSwitch>();
+         
+         foreach (var n in simulator.TDB.TrackDB.TrackNodes)
+         {
+            if (n != null && n.TrJunctionNode != null)
+            {
+               Switches.Add(n.TrJunctionNode, new InterlockingSwitch(simulator, n.TrJunctionNode));
+            }
+         }
+      }
+
+      /// <summary>
+      /// Instantiates InterlockingSignal objects from the simulation's SignalObject objects.
+      /// </summary>
+      private void CreateSignals()
+      {
+         Signals = new Dictionary<SignalObject, InterlockingSignal>();
+         
+         foreach (var sigObj in simulator.Signals.SignalObjects)
+         {
+            Signals.Add(sigObj, new InterlockingSignal(simulator, sigObj));
+         }
+      }
+
+      /// <summary>
+      /// Instantiates InterlockingTrack objects from the simulation's TrVectorSection.
       /// </summary>
       private void CreateTracks()
       {
 
          Tracks = new Dictionary<TrVectorSection, InterlockingTrack>();
 
-         var nodes = simulator.TDB.TrackDB.TrackNodes;
-         foreach (var n in nodes)
+         foreach (var n in simulator.TDB.TrackDB.TrackNodes)
          {
             if (n != null && n.TrVectorNode != null)
             {

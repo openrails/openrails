@@ -132,8 +132,6 @@ namespace ORTS
 
          RailDriver = new RailDriverHandler(BasePath);
 
-         InterlockingSystem = new InterlockingSystem(this);
-
          Trace.Write(" ACT");
       }
       public void SetActivity(string activityPath)
@@ -165,6 +163,9 @@ namespace ORTS
          // Switches
          AlignSwitchesToDefault();  // ie straight through routing
          Signals = new Signals(this);
+
+         InterlockingSystem = new InterlockingSystem(this);
+
          // Trains
          Trace.Write(" CON");
          Trains.Clear();
