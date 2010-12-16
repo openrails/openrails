@@ -100,6 +100,7 @@
             Executed in the RenderProcess thread - simple draw
             </summary>
             <param name="graphicsDevice"></param>
+            <param name="logging"></param>
         </member>
         <member name="T:ORTS.Popups.DriverAidWindow">
             <summary>
@@ -118,6 +119,11 @@
             <summary>
             Defines the Y coordinate of the bottom most point of a gauge tick,
             if the gauge tick is vertical.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.TICK_WIDTH">
+            <summary>
+            Width of each gauge tick.
             </summary>
         </member>
         <member name="F:ORTS.Popups.DriverAid.LABEL_Y">
@@ -207,9 +213,19 @@
             These are the labels to show on the speedo.
             </summary>
         </member>
+        <member name="F:ORTS.Popups.DriverAid.DrawGaugeLabels">
+            <summary> 
+            True when we should draw the gauge labels.
+            </summary>
+        </member>
         <member name="F:ORTS.Popups.DriverAid.TargetDistanceRect">
             <summary>
             Defines the area that a full target distance bar occupies.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.TargetDistanceKeyPoints">
+            <summary>
+            Non-linearity table defining the distance bar behaviour
             </summary>
         </member>
         <member name="F:ORTS.Popups.DriverAid.CurrentSpeedAngle">
@@ -230,6 +246,11 @@
         <member name="F:ORTS.Popups.DriverAid.CurrentTargetSpeedString">
             <summary>
             The string to display as the current target speed.
+            </summary>
+        </member>
+        <member name="F:ORTS.Popups.DriverAid.CurrentSpeedString">
+            <summary>
+            The string to display as the current speed.
             </summary>
         </member>
         <member name="M:ORTS.Popups.DriverAid.UpdateSpeed(System.Single)">
@@ -253,6 +274,20 @@
             Given a speed in kmh, convert to gauge angle, in radians.
             </summary>
             <param name="speed"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.GetWarningBoxTexture">
+            <summary>
+            Returns the correct texture to use for the warning box, as
+            it is sometimes a different color than the other "common" elements.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ORTS.Popups.DriverAid.GetStandardColorTexture">
+            <summary>
+            Returns the correct texture to use for many elements in the driver aid.
+            The texture depends large on how fast the train is going relative to its brake curve.
+            </summary>
             <returns></returns>
         </member>
         <member name="M:ORTS.Popups.DriverAid.GenerateNeedle(System.Drawing.Size,Microsoft.Xna.Framework.Vector2)">
@@ -1542,6 +1577,16 @@
             eg "+014482"
             </summary>
         </member>
+        <member name="T:ORTS.Interlocking.InterlockingItem">
+            <summary>
+            Defines the base class for interlocking objects.
+            </summary>
+        </member>
+        <member name="F:ORTS.Interlocking.InterlockingItem.simulator">
+            <summary>
+            Reference to the simulator object.
+            </summary>
+        </member>
         <member name="M:ORTS.TerrainDrawer.LoadPrep">
             <summary>
             Called 10 times per second when its safe to read volatile data
@@ -2229,16 +2274,6 @@
             Defines an abstraction of a track circuit used within the interlocking system.
             </summary>
         </member>
-        <member name="T:ORTS.Interlocking.InterlockingItem">
-            <summary>
-            Defines the base class for interlocking objects.
-            </summary>
-        </member>
-        <member name="F:ORTS.Interlocking.InterlockingItem.simulator">
-            <summary>
-            Reference to the simulator object.
-            </summary>
-        </member>
         <member name="M:ORTS.Interlocking.InterlockingTrack.#ctor(ORTS.Simulator,MSTS.TrVectorSection)">
             <summary>
             Creates a new InterlockingTrack object.
@@ -2300,6 +2335,29 @@
         <member name="P:ORTS.Interlocking.InterlockingTrack.HasCascadeReference">
             <summary>
             Returns true when this track has any cascade references.
+            </summary>
+        </member>
+        <member name="T:ORTS.Interlocking.InterlockingSignal">
+            <summary>
+            Provides an abstraction atop an underlying signal
+            object.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSignal.#ctor(ORTS.Simulator,ORTS.SignalObject)">
+            <summary>
+            Creates a new InterlockingSignal object.
+            </summary>
+            <param name="simulator"></param>
+            <param name="signalObject"></param>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSignal.SignalObject">
+            <summary>
+            Gets the underlying SignalObject.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSignal.IsShowingAnyProceed">
+            <summary>
+            Returns true when any of the signal heads show any "proceed" aspect.
             </summary>
         </member>
         <member name="M:ORTS.AIPath.#ctor(MSTS.PATFile,MSTS.TDBFile,MSTS.TSectionDatFile,System.String)">
@@ -2432,6 +2490,42 @@
         <member name="T:ORTS.IBrakeController">
             This is the interface for a controller that can be used as a BrakeController.
             
+        </member>
+        <member name="T:ORTS.Interlocking.SwitchState">
+            <summary>
+            Defines possible states of the switch. For now, using underlying
+            value to indicate position, instead of normal/reverse.
+            </summary>
+        </member>
+        <member name="T:ORTS.Interlocking.InterlockingSwitch">
+            <summary>
+            Provides an abstraction atop an underlying switch object.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSwitch.Throw">
+            <summary>
+            Throws switch if possible.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSwitch.IsManuallyLocked">
+            <summary>
+            True when switch is manually locked by the dispatcher.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSwitch.IsRouteLocked">
+            <summary>
+            True when the switch has been locked as part of a route.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSwitch.IsLocked">
+            <summary>
+            True if locked for any reason.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSwitch.CanThrow">
+            <summary>
+            Returns true when this switch can be thrown (commanded to change position)
+            </summary>
         </member>
         <member name="T:ORTS.ThreadNameAttribute">
             <summary>
@@ -3934,34 +4028,6 @@
             <summary>
             Initializes a process state object to 
             finished state.
-            </summary>
-        </member>
-        <member name="T:ORTS.Interlocking.InterlockingSignal">
-            <summary>
-            Provides an abstraction atop an underlying signal
-            object.
-            </summary>
-        </member>
-        <member name="M:ORTS.Interlocking.InterlockingSignal.#ctor(ORTS.Simulator,ORTS.SignalObject)">
-            <summary>
-            Creates a new InterlockingSignal object.
-            </summary>
-            <param name="simulator"></param>
-            <param name="signalObject"></param>
-        </member>
-        <member name="P:ORTS.Interlocking.InterlockingSignal.SignalObject">
-            <summary>
-            Gets the underlying SignalObject.
-            </summary>
-        </member>
-        <member name="P:ORTS.Interlocking.InterlockingSignal.IsShowingAnyProceed">
-            <summary>
-            Returns true when any of the signal heads show any "proceed" aspect.
-            </summary>
-        </member>
-        <member name="T:ORTS.Interlocking.InterlockingSwitch">
-            <summary>
-            Provides an abstraction atop an underlying switch object.
             </summary>
         </member>
     </members>

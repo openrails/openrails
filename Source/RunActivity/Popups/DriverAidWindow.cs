@@ -26,7 +26,7 @@ namespace ORTS.Popups
       DriverAid DriverAid;
 
       public DriverAidWindow(WindowManager owner)
-         : base(owner, 350, 280, "DriverAid")
+         : base(owner, 145, 135, "DriverAid")
       {
          Align(AlignAt.End, AlignAt.End);
       }
@@ -35,16 +35,17 @@ namespace ORTS.Popups
       {
          var vbox = base.Layout(layout).AddLayoutVertical();
 
-         DriverAid = new DriverAid(Owner.Viewer.RenderProcess.Content, vbox.RemainingWidth, 260);
+         DriverAid = new DriverAid(Owner.Viewer.RenderProcess.Content, vbox.RemainingWidth, 150);
 
          vbox.Add(DriverAid);
 
          return vbox;
       }
 
-      public void Update(float speed)
+      public void Update(float speed, float targetDistance)
       {
          DriverAid.UpdateSpeed(speed);
+         DriverAid.UpdateTargetDistance(targetDistance);
       }
    }
 
@@ -66,14 +67,11 @@ namespace ORTS.Popups
       static Texture2D NeedleTexture;
       static Texture2D BrakeCurveTexture;
 
-      static Texture2D SolidRedTexture;
-      static Texture2D SolidYellowTexture;
-      static Texture2D SolidGreenTexture;
-      static Texture2D SolidWhiteTexture;
-
       static SpriteFont SpeedFont;
+      static SpriteFont SpeedFontSmall;
 
       static Dictionary<DisplayColors, Texture2D> CurvedBars = new Dictionary<DisplayColors, Texture2D>();
+      static Dictionary<DisplayColors, Texture2D> SolidTextures = new Dictionary<DisplayColors, Texture2D>();
 
       /// <summary>
       /// Angle of the needle (degrees) when showing "0".
@@ -94,96 +92,101 @@ namespace ORTS.Popups
       /// <summary>
       /// The maximum distance to show in the target distance bar.
       /// </summary>
-      private float MaxDistance = 4000;
+      private float MaxDistance = 1000;
 
 
       /// <summary>
       /// Defines the width of the needle, in pixels.
       /// </summary>
-      private int NEEDLE_WIDTH = 25;
+      private int NEEDLE_WIDTH = 28;
 
       /// <summary>
       /// Defines the height of the needle, in pixels.
       /// </summary>
-      private int NEEDLE_HEIGHT = 100;
-
+      private int NEEDLE_HEIGHT = 50;
 
       /// <summary>
       /// Defines the width of the brake curve indicator bitmap, in pixels.
       /// </summary>
-      private int INDICATOR_WIDTH = 15;
+      private int INDICATOR_WIDTH = 10;
 
       /// <summary>
       /// Defines the height of the brake curve indicator bitmap, in pixels.
       /// </summary>
-      private int INDICATOR_HEIGHT = 120;
+      private int INDICATOR_HEIGHT = 56;
 
       /// <summary>
       /// Defines the Y coordinate of the top most point of a gauge tick,
       /// if the gauge tick is vertical.
       /// </summary>
-      private const float TICK_OUTER_Y = 50;
+      private const float TICK_OUTER_Y = 3;
 
 
       /// <summary>
       /// Defines the Y coordinate of the bottom most point of a gauge tick,
       /// if the gauge tick is vertical.
       /// </summary>
-      private const float TICK_INNER_Y = 60;
+      private const float TICK_INNER_Y = 7;
+
+      /// <summary>
+      /// Width of each gauge tick.
+      /// </summary>
+      private const float TICK_WIDTH = 2;
+      
 
 
       /// <summary>
       /// Defines the Y coordinate of the center of a gauge label, if the label 
       /// is drawn vertically above the center of the gauge.
       /// </summary>
-      private const float LABEL_Y = 15;
+      private const float LABEL_Y = 5;
 
 
       /// <summary>
       /// Font size, in pixels of gauge labels.
       /// </summary>
-      private const float LABEL_FONT_SIZE = 11f;
+      private const float LABEL_FONT_SIZE = 8f;
 
 
       /// <summary>
       /// Defines the size of the gauge, in pixels.
       /// </summary>
-      private const int GAUGE_SIZE = 270;
+      private const int GAUGE_SIZE = 110;
 
 
       /// <summary>
       /// Defines how much space to th left of the gauge is reserved for the distance bar.
       /// </summary>
-      private const int MARGIN_LEFT = 50;
+      private const int MARGIN_LEFT = 25;
 
 
       /// <summary>
       /// Defines the space, in pixels, between the bottom of the speed warning box,
       /// and the top of the distance box.
       /// </summary>
-      private const int SPEED_WARN_BOTTOM_MARGIN = 15;
+      private const int SPEED_WARN_BOTTOM_MARGIN = 5;
 
 
       /// <summary>
       /// Vertical position of the target speed box.
       /// </summary>
-      private const int TARGETSPEED_Y = 210;
+      private const int TARGETSPEED_Y = 80;
 
 
       /// <summary>
       /// Target speed box width.
       /// </summary>
-      private const int TARGETSPEED_W = 100;
+      private const int TARGETSPEED_W = 40;
 
 
       /// <summary>
       /// Target speed box height.
       /// </summary>
-      private const int TARGETSPEED_H = 30;
+      private const int TARGETSPEED_H = 16;
 
 
-      private const int CURVEDBAR_INNER_RADIUS = 104;
-      private const int CURVEDBAR_OUTER_RADIUS = 115;
+      private const int CURVEDBAR_INNER_RADIUS = 45;
+      private const int CURVEDBAR_OUTER_RADIUS = 53;
 
 
       /// <summary>
@@ -191,11 +194,27 @@ namespace ORTS.Popups
       /// </summary>
       private float[] SpeedLabels = new float[] { 0, 20, 40, 60, 80, 100, 120, 140, 160 };
 
+      /// <summary> 
+      /// True when we should draw the gauge labels.
+      /// </summary>
+      private bool DrawGaugeLabels = false;
 
       /// <summary>
       /// Defines the area that a full target distance bar occupies.
       /// </summary>
-      private readonly Rectangle TargetDistanceRect = new Rectangle(15, 60, 30, 180);
+      private readonly Rectangle TargetDistanceRect = new Rectangle(5, 25, 15, 75);
+
+
+      /// <summary>
+      /// Non-linearity table defining the distance bar behaviour
+      /// </summary>
+      private readonly List<Vector2> TargetDistanceKeyPoints = new List<Vector2>
+      {
+         new Vector2(0,0),
+         new Vector2(1000, 0.5f),
+         new Vector2(3000, 0.75f),
+         new Vector2(5000, 1)
+      };
 
 
       /// <summary>
@@ -207,7 +226,7 @@ namespace ORTS.Popups
       /// <summary>
       /// The current angle of the brake curve indicator.
       /// </summary>
-      private float CurrentBrakeCurveAngle = -1;
+      private float CurrentBrakeCurveAngle = 0f;
 
 
       /// <summary>
@@ -235,7 +254,7 @@ namespace ORTS.Popups
       {
          get
          {
-            int returnValue = 10;
+            int returnValue = 8;
 
             // TODO
 
@@ -248,6 +267,13 @@ namespace ORTS.Popups
       /// The string to display as the current target speed.
       /// </summary>
       private string CurrentTargetSpeedString = "120";
+
+
+      /// <summary>
+      /// The string to display as the current speed.
+      /// </summary>
+      private string CurrentSpeedString = string.Empty;
+      
 
 
 
@@ -275,6 +301,12 @@ namespace ORTS.Popups
          }
 
          CurrentSpeedAngle = SpeedToAngle(speed);
+
+
+         int roundedSpeed = (int)System.Math.Round(speed, 0);
+
+         CurrentSpeedString = roundedSpeed.ToString("G");
+
       }
 
 
@@ -302,8 +334,32 @@ namespace ORTS.Popups
       /// <param name="distance"></param>
       internal void UpdateTargetDistance(float distance)
       {
-         // TODO: evaluate 'distance' and convert to a value between 0, 1, inclusive.
-         // Store value in CurrentDistanceHeight.
+
+
+         if (distance < 0)
+         {
+            // we don't expect to see negative values here, but for safety,
+            // clip to zero
+            distance = 0;
+         }
+
+
+         CurrentDistanceHeight = 1;
+
+         for (int i = 0; i < TargetDistanceKeyPoints.Count -1; i++)
+         {
+
+            float current = TargetDistanceKeyPoints[i].X;
+            float next = TargetDistanceKeyPoints[i+1].X;
+
+
+            if (distance >= current && distance <= next)
+            {
+               float value = (distance - TargetDistanceKeyPoints[i].X) / (TargetDistanceKeyPoints[i + 1].X - TargetDistanceKeyPoints[i].X);
+               CurrentDistanceHeight =  MathHelper.Lerp(TargetDistanceKeyPoints[i].Y,TargetDistanceKeyPoints[i+1].Y,value);
+               break;
+            }
+         }
       }
 
 
@@ -357,35 +413,15 @@ namespace ORTS.Popups
             BrakeCurveTexture.SetData(GenerateBrakeCurveTexture(indicatorSize));
          }
 
-         if (SolidGreenTexture == null)
-         {
-            SolidGreenTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-            SolidGreenTexture.SetData(new Color[] { Color.Green });
-         }
+         CreateSolidTexture(spriteBatch, DisplayColors.Green, Color.Green);
+         CreateSolidTexture(spriteBatch, DisplayColors.Yellow, Color.Yellow);
+         CreateSolidTexture(spriteBatch, DisplayColors.Red, Color.Red);
+         CreateSolidTexture(spriteBatch, DisplayColors.None, Color.White);
 
-         if (SolidYellowTexture == null)
-         {
-            SolidYellowTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-            SolidYellowTexture.SetData(new Color[] { Color.Yellow });
-         }
-
-         if (SolidRedTexture == null)
-         {
-            SolidRedTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-            SolidRedTexture.SetData(new Color[] { Color.Green });
-         }
-
-         if (SolidWhiteTexture == null)
-         {
-            SolidWhiteTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-            SolidWhiteTexture.SetData(new Color[] { Color.White });
-         }
-
-         if (CurvedBars.ContainsKey(DisplayColors.Green) == false)
-         {
-            CurvedBars.Add(DisplayColors.Green, new Texture2D(spriteBatch.GraphicsDevice, GAUGE_SIZE, GAUGE_SIZE, 1, TextureUsage.None, SurfaceFormat.Color));
-            CurvedBars[DisplayColors.Green].SetData(GenerateCurvedBar(GAUGE_SIZE, CURVEDBAR_INNER_RADIUS, CURVEDBAR_OUTER_RADIUS, System.Drawing.Color.Green));
-         }
+         CreateCurvedBar(spriteBatch, DisplayColors.Green, System.Drawing.Color.Green);
+         CreateCurvedBar(spriteBatch, DisplayColors.Yellow, System.Drawing.Color.Yellow);
+         CreateCurvedBar(spriteBatch, DisplayColors.Red, System.Drawing.Color.Red);
+         CreateCurvedBar(spriteBatch, DisplayColors.None, System.Drawing.Color.LightGray);
 
 
          if (SpeedFont == null)
@@ -393,14 +429,22 @@ namespace ORTS.Popups
             SpeedFont = Content.Load<SpriteFont>("DriverAidSpeedFont");
          }
 
+         if (SpeedFontSmall == null)
+         {
+            SpeedFontSmall = Content.Load<SpriteFont>("DriverAidSpeedFontSmall");
+         }
+
 
          // draw base 
          spriteBatch.Draw(BaseTexture, new Rectangle(X + MARGIN_LEFT, Y, GAUGE_SIZE, GAUGE_SIZE), Color.White);
 
+
+         Vector2 gaugeCenterPoint = new Vector2(GAUGE_SIZE / 2f, GAUGE_SIZE / 2f);
+
          // draw needle
          spriteBatch.Draw(
             NeedleTexture, // thing to draw
-            new Vector2(X + MARGIN_LEFT + GAUGE_SIZE / 2f, Y + GAUGE_SIZE / 2f), // destination location
+            new Vector2(X + MARGIN_LEFT + gaugeCenterPoint.X, Y + gaugeCenterPoint.Y), // destination location
             new Rectangle(0, 0, needleSize.Width, needleSize.Height), // source rect
             Color.White,
             CurrentSpeedAngle, // rotation angle
@@ -412,11 +456,11 @@ namespace ORTS.Popups
 
          spriteBatch.Draw(
             CurvedBars[DisplayColors.Green], // thing to draw
-            new Vector2(X + MARGIN_LEFT + GAUGE_SIZE / 2f, Y + GAUGE_SIZE / 2f), // destination location
+            new Vector2(X + MARGIN_LEFT + gaugeCenterPoint.X, Y + gaugeCenterPoint.Y), // destination location
             new Rectangle(0, 0, GAUGE_SIZE, GAUGE_SIZE), // source rect
             Color.White,
             SpeedToAngle(0), // rotation angle
-            new Vector2(GAUGE_SIZE / 2f, GAUGE_SIZE / 2f),
+            gaugeCenterPoint,
             1f,                       // scale
             SpriteEffects.None,
             0);                       // layer depth
@@ -426,7 +470,7 @@ namespace ORTS.Popups
          // draw brake speed indicator 
          spriteBatch.Draw(
             BrakeCurveTexture, // thing to draw
-            new Vector2(X + MARGIN_LEFT + GAUGE_SIZE / 2f, Y + GAUGE_SIZE / 2f), // destination location
+            new Vector2(X + MARGIN_LEFT + gaugeCenterPoint.X, Y + gaugeCenterPoint.Y), // destination location
             new Rectangle(0, 0, indicatorSize.Width, indicatorSize.Height), // source rect
             Color.White,
             CurrentBrakeCurveAngle, // rotation angle
@@ -438,46 +482,54 @@ namespace ORTS.Popups
 
 
 
-         int barH = (int)System.Math.Round(TargetDistanceRect.Height * CurrentDistanceHeight, 0);
+
+         // draw central speed value on the needle
+         Vector2 needleSpeed = SpeedFontSmall.MeasureString(CurrentSpeedString);
+         spriteBatch.DrawString(SpeedFontSmall, CurrentSpeedString, new Vector2(X + MARGIN_LEFT+ gaugeCenterPoint.X - needleSpeed.X / 2f, Y + gaugeCenterPoint.Y - needleSpeed.Y / 2f), Color.Black);
+
+
+         Texture2D currentSolidTexture = GetStandardColorTexture();
+
 
          // draw bar
-         spriteBatch.Draw(SolidGreenTexture, new Rectangle(X + TargetDistanceRect.X, Y + TargetDistanceRect.Bottom - barH, TargetDistanceRect.Width, barH), Color.White);
-
-
+         int barH = (int)System.Math.Round(TargetDistanceRect.Height * CurrentDistanceHeight, 0);
+         spriteBatch.Draw(currentSolidTexture, new Rectangle(X + TargetDistanceRect.X, Y + TargetDistanceRect.Bottom - barH, TargetDistanceRect.Width, barH), Color.White);
 
 
          // draw border around target bar (left side)
-         spriteBatch.Draw(SolidWhiteTexture, new Rectangle(X + TargetDistanceRect.X - 1, Y + TargetDistanceRect.Y, 1, TargetDistanceRect.Height), Color.White);
+         spriteBatch.Draw(SolidTextures[DisplayColors.None], new Rectangle(X + TargetDistanceRect.X - 1, Y + TargetDistanceRect.Y, 1, TargetDistanceRect.Height), Color.White);
 
          // draw border around target bar (right side)
-         spriteBatch.Draw(SolidWhiteTexture, new Rectangle(X + TargetDistanceRect.Right, Y + TargetDistanceRect.Y, 1, TargetDistanceRect.Height), Color.White);
+         spriteBatch.Draw(SolidTextures[DisplayColors.None], new Rectangle(X + TargetDistanceRect.Right, Y + TargetDistanceRect.Y, 1, TargetDistanceRect.Height), Color.White);
 
          // draw border around target bar (top)
-         spriteBatch.Draw(SolidWhiteTexture, new Rectangle(X + TargetDistanceRect.X - 1, Y + TargetDistanceRect.Y - 1, TargetDistanceRect.Width + 2, 1), Color.White);
+         spriteBatch.Draw(SolidTextures[DisplayColors.None], new Rectangle(X + TargetDistanceRect.X - 1, Y + TargetDistanceRect.Y - 1, TargetDistanceRect.Width + 2, 1), Color.White);
 
          // draw border around target bar (bottom)
-         spriteBatch.Draw(SolidWhiteTexture, new Rectangle(X + TargetDistanceRect.X - 1, Y + TargetDistanceRect.Bottom, TargetDistanceRect.Width + 2, 1), Color.White);
+         spriteBatch.Draw(SolidTextures[DisplayColors.None], new Rectangle(X + TargetDistanceRect.X - 1, Y + TargetDistanceRect.Bottom, TargetDistanceRect.Width + 2, 1), Color.White);
 
 
-         int boxSize = CurrentSpeedWarningBoxSize;
+
+
 
          // draw speed warning box
-         spriteBatch.Draw(SolidGreenTexture, new Rectangle(X + SpeedWarningBoxCentre.X - boxSize, Y + SpeedWarningBoxCentre.Y - boxSize, boxSize * 2, boxSize * 2), Color.White);
+         int boxSize = CurrentSpeedWarningBoxSize;
+         spriteBatch.Draw(currentSolidTexture, new Rectangle(X + SpeedWarningBoxCentre.X - boxSize, Y + SpeedWarningBoxCentre.Y - boxSize, boxSize * 2, boxSize * 2), Color.White);
 
 
 
 
-
-         int verticalPosition = 210;
-         Vector2 targetSpeedBoxSize = new Vector2(100, 30);
+         Vector2 targetSpeedBoxSize = new Vector2(TARGETSPEED_W , TARGETSPEED_H);
 
          // this is the box the target speed is displayed in
          Rectangle targetSpeedBoxRect = new Rectangle(
             X + MARGIN_LEFT + (int)(GAUGE_SIZE / 2f - targetSpeedBoxSize.X / 2f),
-            Y + verticalPosition, (int)targetSpeedBoxSize.X, (int)targetSpeedBoxSize.Y);
+            Y + TARGETSPEED_Y , (int)targetSpeedBoxSize.X, (int)targetSpeedBoxSize.Y);
+
+
 
          // draw target speed box
-         spriteBatch.Draw(SolidGreenTexture, targetSpeedBoxRect, Color.White);
+         spriteBatch.Draw(GetWarningBoxTexture(), targetSpeedBoxRect, Color.White);
 
 
          Vector2 sz = SpeedFont.MeasureString(CurrentTargetSpeedString);
@@ -487,13 +539,57 @@ namespace ORTS.Popups
             targetSpeedBoxRect.Y + targetSpeedBoxRect.Height / 2 - sz.Y / 2);
 
          // draw target speed label
-         spriteBatch.DrawString(SpeedFont, CurrentTargetSpeedString, new Vector2(textPos.X + 2, textPos.Y + 2), Color.Black);
+         spriteBatch.DrawString(SpeedFont, CurrentTargetSpeedString, new Vector2(textPos.X + 1, textPos.Y + 1), Color.Black);
          spriteBatch.DrawString(SpeedFont, CurrentTargetSpeedString, textPos, Color.White);
 
+      }
 
 
+      /// <summary>
+      /// Returns the correct texture to use for the warning box, as
+      /// it is sometimes a different color than the other "common" elements.
+      /// </summary>
+      /// <returns></returns>
+      private Texture2D GetWarningBoxTexture()
+      {
+         Texture2D returnValue = null;
 
+         returnValue = SolidTextures[DisplayColors.Green];
 
+         return returnValue;
+      }
+
+      /// <summary>
+      /// Returns the correct texture to use for many elements in the driver aid.
+      /// The texture depends large on how fast the train is going relative to its brake curve.
+      /// </summary>
+      /// <returns></returns>
+      private Texture2D GetStandardColorTexture()
+      {
+         Texture2D returnValue = null;
+
+         returnValue = SolidTextures[DisplayColors.Green];
+
+         return returnValue;
+      }
+
+      private void CreateSolidTexture(SpriteBatch spriteBatch, DisplayColors displayColor, Color color)
+      {
+
+         if (SolidTextures.ContainsKey(displayColor) == false)
+         {
+            SolidTextures.Add(displayColor, new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color));
+            SolidTextures[displayColor].SetData(new Color[] { color });
+         }
+      }
+
+      private void CreateCurvedBar(SpriteBatch spriteBatch, DisplayColors displayColor, System.Drawing.Color color)
+      {
+         if (CurvedBars.ContainsKey(displayColor) == false)
+         {
+            CurvedBars.Add(displayColor, new Texture2D(spriteBatch.GraphicsDevice, GAUGE_SIZE, GAUGE_SIZE, 1, TextureUsage.None, SurfaceFormat.Color));
+            CurvedBars[displayColor].SetData(GenerateCurvedBar(GAUGE_SIZE, CURVEDBAR_INNER_RADIUS, CURVEDBAR_OUTER_RADIUS, color));
+         }
       }
 
       private byte[] GenerateCurvedBar(int size, float innerRadius, float outerRadius, System.Drawing.Color color)
@@ -580,8 +676,13 @@ namespace ORTS.Popups
          // label draw point
          System.Drawing.PointF p3 = new System.Drawing.PointF(center.X, LABEL_Y);
 
+         using (System.Drawing.Pen tickPen = new System.Drawing.Pen(System.Drawing.Color.White))
          using (System.Drawing.Font font = new System.Drawing.Font(System.Drawing.FontFamily.GenericSansSerif, LABEL_FONT_SIZE))
          {
+            tickPen.Width = TICK_WIDTH;
+            tickPen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+            tickPen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+
             foreach (var i in SpeedLabels)
             {
                float angle = SpeedToAngle(i);
@@ -600,9 +701,10 @@ namespace ORTS.Popups
 
                System.Drawing.PointF labelDrawPoint = new System.Drawing.PointF(p3prime.X - labelSize.Width / 2f, p3prime.Y - labelSize.Height / 2f);
 
-
-               //g.DrawEllipse(System.Drawing.Pens.Green, new System.Drawing.RectangleF(labelDrawPoint, new System.Drawing.SizeF(2, 2)));
-               g.DrawString(label, font, System.Drawing.Brushes.White, labelDrawPoint);
+               if (DrawGaugeLabels)
+               {
+                  g.DrawString(label, font, System.Drawing.Brushes.White, labelDrawPoint);
+               }
             }
          }
 
@@ -696,11 +798,11 @@ namespace ORTS.Popups
       private void DrawNeedle(System.Drawing.Graphics g, System.Drawing.Size sz, Vector2 center)
       {
 
-         float thickWidth = sz.Width / 3f;
-         float thickHeight = sz.Height - sz.Width / 2f - sz.Height / 3f;
+         float thickWidth = sz.Width / 4f;
+         float thickHeight = NEEDLE_HEIGHT * 0.5f;
 
          float thinWidth = sz.Width / 8f;
-         float thinHeight = sz.Height / 2f;
+         float thinHeight = sz.Height * 0.6f;
 
          // draw circle at the center of the needle
          g.FillEllipse(System.Drawing.Brushes.White, new System.Drawing.RectangleF(center.X - (float)sz.Width / 2f, center.Y - (float)sz.Width / 2f, (float)sz.Width, (float)sz.Width));

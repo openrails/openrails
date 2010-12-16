@@ -46,6 +46,8 @@
          this.showPlayerTrain = new System.Windows.Forms.CheckBox();
          this.highlightTrackSections = new System.Windows.Forms.CheckBox();
          this.trackSections = new System.Windows.Forms.ComboBox();
+         this.viewSignalsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+         this.viewSwitchesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
          ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
          ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
          this.menuStrip.SuspendLayout();
@@ -227,7 +229,9 @@
          // interlockingToolStripMenuItem
          // 
          this.interlockingToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.viewTracksToolStripMenuItem});
+            this.viewTracksToolStripMenuItem,
+            this.viewSignalsToolStripMenuItem,
+            this.viewSwitchesToolStripMenuItem});
          this.interlockingToolStripMenuItem.Name = "interlockingToolStripMenuItem";
          this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(75, 20);
          this.interlockingToolStripMenuItem.Text = "Interlocking";
@@ -235,7 +239,7 @@
          // viewTracksToolStripMenuItem
          // 
          this.viewTracksToolStripMenuItem.Name = "viewTracksToolStripMenuItem";
-         this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+         this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
          this.viewTracksToolStripMenuItem.Text = "View Tracks";
          this.viewTracksToolStripMenuItem.Click += new System.EventHandler(this.viewTracksToolStripMenuItem_Click);
          // 
@@ -272,6 +276,20 @@
          this.trackSections.TabIndex = 15;
          this.trackSections.Visible = false;
          this.trackSections.SelectedIndexChanged += new System.EventHandler(this.trackShapes_SelectedIndexChanged);
+         // 
+         // viewSignalsToolStripMenuItem
+         // 
+         this.viewSignalsToolStripMenuItem.Name = "viewSignalsToolStripMenuItem";
+         this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+         this.viewSignalsToolStripMenuItem.Text = "View Signals";
+         this.viewSignalsToolStripMenuItem.Click += new System.EventHandler(this.viewSignalsToolStripMenuItem_Click);
+         // 
+         // viewSwitchesToolStripMenuItem
+         // 
+         this.viewSwitchesToolStripMenuItem.Name = "viewSwitchesToolStripMenuItem";
+         this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+         this.viewSwitchesToolStripMenuItem.Text = "View Switches";
+         this.viewSwitchesToolStripMenuItem.Click += new System.EventHandler(this.viewSwitchesToolStripMenuItem_Click);
          // 
          // DebugViewerForm
          // 
@@ -327,5 +345,7 @@
       private System.Windows.Forms.CheckBox showPlayerTrain;
       private System.Windows.Forms.CheckBox highlightTrackSections;
       private System.Windows.Forms.ComboBox trackSections;
+      private System.Windows.Forms.ToolStripMenuItem viewSignalsToolStripMenuItem;
+      private System.Windows.Forms.ToolStripMenuItem viewSwitchesToolStripMenuItem;
    }
 }

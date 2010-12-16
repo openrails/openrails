@@ -157,10 +157,12 @@ namespace ORTS
 
          if (Viewer.DriverAidWindow.Visible)
          {
-
             // update driver aid window - convert m/s to km/h, and take absolute so
             // speed is non-negative.
-            Viewer.DriverAidWindow.Update(Math.Abs(Viewer.PlayerTrain.SpeedMpS * 3.6f));
+            Viewer.DriverAidWindow.Update(
+               Math.Abs(Viewer.PlayerTrain.SpeedMpS * 3.6f), // train speed
+               1000 // temp value for now
+               );
          }
 
 		}
