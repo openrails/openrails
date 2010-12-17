@@ -26,7 +26,7 @@ namespace ORTS.Popups
       DriverAid DriverAid;
 
       public DriverAidWindow(WindowManager owner)
-         : base(owner, 145, 135, "DriverAid")
+         : base(owner, 150, 135, "Driver Aid")
       {
          Align(AlignAt.End, AlignAt.End);
       }
@@ -42,10 +42,12 @@ namespace ORTS.Popups
          return vbox;
       }
 
-      public void Update(float speed, float targetDistance)
+      public void Update(float speed, float targetDistance, int targetSpeed, float brakeCurveSpeed)
       {
          DriverAid.UpdateSpeed(speed);
          DriverAid.UpdateTargetDistance(targetDistance);
+         DriverAid.UpdateTargetSpeed(targetSpeed);
+         DriverAid.UpdateBrakeCurveSpeed(brakeCurveSpeed);
       }
    }
 
@@ -53,25 +55,48 @@ namespace ORTS.Popups
 
    public class DriverAid : Control
    {
-
+      /// <summary>
+      /// Defines different levels of "warning".
+      /// </summary>
       private enum DisplayColors
       {
          None,
          Green,
          Yellow,
-         Red
+         Red,
+         Mask
       }
 
+      /// <summary>
+      /// The speedometer texture.
+      /// </summary>
       static Texture2D BaseTexture;
 
+      /// <summary>
+      /// The texture of the primary needle in front of the speedometer texture.
+      /// </summary>
       static Texture2D NeedleTexture;
+
+      /// <summary>
+      /// The texure of the indicator that shows the current brake curve.
+      /// </summary>
       static Texture2D BrakeCurveTexture;
 
+      /// <summary>
+      /// Font used to indicate the current target speed.
+      /// </summary>
       static SpriteFont SpeedFont;
+
+      /// <summary>
+      /// Font used to indicate the the current speed of the train.
+      /// </summary>
       static SpriteFont SpeedFontSmall;
 
-      static Dictionary<DisplayColors, Texture2D> CurvedBars = new Dictionary<DisplayColors, Texture2D>();
+      /// <summary>
+      /// Contains the single-pixel solid color textures for drawing items other than the speedometer and curved bars.
+      /// </summary>
       static Dictionary<DisplayColors, Texture2D> SolidTextures = new Dictionary<DisplayColors, Texture2D>();
+
 
       /// <summary>
       /// Angle of the needle (degrees) when showing "0".
@@ -87,13 +112,6 @@ namespace ORTS.Popups
       /// Maximum displayable speed, in kmh.
       /// </summary>
       private float MaxSpeed = 160;
-
-
-      /// <summary>
-      /// The maximum distance to show in the target distance bar.
-      /// </summary>
-      private float MaxDistance = 1000;
-
 
       /// <summary>
       /// Defines the width of the needle, in pixels.
@@ -132,7 +150,7 @@ namespace ORTS.Popups
       /// Width of each gauge tick.
       /// </summary>
       private const float TICK_WIDTH = 2;
-      
+
 
 
       /// <summary>
@@ -185,8 +203,26 @@ namespace ORTS.Popups
       private const int TARGETSPEED_H = 16;
 
 
-      private const int CURVEDBAR_INNER_RADIUS = 45;
-      private const int CURVEDBAR_OUTER_RADIUS = 53;
+      private const int CURVEDBAR_INNER_RADIUS = 39;
+      private const int CURVEDBAR_OUTER_RADIUS = 45;
+
+
+      /// <summary>
+      /// Size of each curved bar, in degrees.
+      /// </summary>
+      private const int CURVE_BAR_SEGMENT_SIZE = 45;
+
+
+      /// <summary>
+      /// Minumum brake warning box size.
+      /// </summary>
+      private const int MIN_BRAKE_WARN_BOX_SIZE = 3;
+      
+
+      /// <summary>
+      /// Maximum brake warning box size.
+      /// </summary>
+      private const int MAX_BRAKE_WARN_BOX_SIZE = 9;
 
 
       /// <summary>
@@ -202,7 +238,7 @@ namespace ORTS.Popups
       /// <summary>
       /// Defines the area that a full target distance bar occupies.
       /// </summary>
-      private readonly Rectangle TargetDistanceRect = new Rectangle(5, 25, 15, 75);
+      private readonly Rectangle TargetDistanceRect = new Rectangle(4, 25, 15, 75);
 
 
       /// <summary>
@@ -224,15 +260,25 @@ namespace ORTS.Popups
 
 
       /// <summary>
+      /// Current speed of the train, in kmh.
+      /// </summary>
+      private float CurrentSpeed;
+
+
+      /// <summary>
       /// The current angle of the brake curve indicator.
       /// </summary>
       private float CurrentBrakeCurveAngle = 0f;
 
+      /// <summary>
+      /// The current speed of the brake curve, in kmh.
+      /// </summary>
+      private float CurrentBrakeCurveSpeed = 0f;
 
       /// <summary>
       /// The current value of the target distance bar, in the range 0 -> 1.
       /// </summary>
-      private float CurrentDistanceHeight = 0.25f;
+      private float CurrentDistanceHeight = 0;
 
 
       /// <summary>
@@ -254,13 +300,64 @@ namespace ORTS.Popups
       {
          get
          {
-            int returnValue = 8;
+            int returnValue = MIN_BRAKE_WARN_BOX_SIZE;
 
-            // TODO
+            // true when the driver exceeding the brake curve: this means a red bar above the brake curve indicator
+            bool driverExceedsBrakeCurve = false;
 
+            // true when the driver is going faster than the upcoming speed reduction speed
+            bool driverExceedsTargetSpeed = false;
+
+            float CurrentTargetSpeedAngle = 0;
+            float angleMeasureFromTarget = 0;
+
+            ComputeDriverState(ref driverExceedsBrakeCurve, ref driverExceedsTargetSpeed, ref CurrentTargetSpeedAngle, ref angleMeasureFromTarget);
+
+            if (driverExceedsTargetSpeed)
+            {
+               // this is how *close* to the brake curve the driver is: if it's negative, he's going
+               // faster than the brake curve.
+               float proximityToBrakeCurve = CurrentBrakeCurveSpeed - CurrentSpeed;
+
+               float max = MAX_BRAKE_WARN_BOX_SIZE;
+               float min = MIN_BRAKE_WARN_BOX_SIZE;
+
+               float a = 10; // show maximum at 10kmh from brake curve or above
+               float b = 40; // show minimum at 40kmh from brake curve or below
+
+               if (proximityToBrakeCurve < a)
+               {
+                  returnValue = MAX_BRAKE_WARN_BOX_SIZE;
+               }
+               else if (proximityToBrakeCurve > b)
+               {
+                  returnValue = 0; // box is not visible
+               }
+               else
+               {
+                  // simple linear relationship
+                  float slope = (min - max) / (b - a);
+
+                  float yIntercept = max - slope * a;
+
+                  returnValue = (int)System.Math.Round(slope * proximityToBrakeCurve + yIntercept, 0);
+               }
+            }
+            else
+            {
+               returnValue = 0; // box is not visible
+            }
+
+            
             return returnValue;
          }
       }
+
+
+      /// <summary>
+      /// Stores the current target speed.
+      /// </summary>
+      private float CurrentTargetSpeed;
 
 
       /// <summary>
@@ -273,7 +370,7 @@ namespace ORTS.Popups
       /// The string to display as the current speed.
       /// </summary>
       private string CurrentSpeedString = string.Empty;
-      
+
 
 
 
@@ -307,6 +404,8 @@ namespace ORTS.Popups
 
          CurrentSpeedString = roundedSpeed.ToString("G");
 
+
+         CurrentSpeed = speed;
       }
 
 
@@ -323,6 +422,8 @@ namespace ORTS.Popups
          }
 
          CurrentBrakeCurveAngle = SpeedToAngle(speed);
+
+         CurrentBrakeCurveSpeed = speed;
       }
 
 
@@ -346,17 +447,17 @@ namespace ORTS.Popups
 
          CurrentDistanceHeight = 1;
 
-         for (int i = 0; i < TargetDistanceKeyPoints.Count -1; i++)
+         for (int i = 0; i < TargetDistanceKeyPoints.Count - 1; i++)
          {
 
             float current = TargetDistanceKeyPoints[i].X;
-            float next = TargetDistanceKeyPoints[i+1].X;
+            float next = TargetDistanceKeyPoints[i + 1].X;
 
 
             if (distance >= current && distance <= next)
             {
                float value = (distance - TargetDistanceKeyPoints[i].X) / (TargetDistanceKeyPoints[i + 1].X - TargetDistanceKeyPoints[i].X);
-               CurrentDistanceHeight =  MathHelper.Lerp(TargetDistanceKeyPoints[i].Y,TargetDistanceKeyPoints[i+1].Y,value);
+               CurrentDistanceHeight = MathHelper.Lerp(TargetDistanceKeyPoints[i].Y, TargetDistanceKeyPoints[i + 1].Y, value);
                break;
             }
          }
@@ -365,6 +466,7 @@ namespace ORTS.Popups
 
       internal void UpdateTargetSpeed(int targetSpeed)
       {
+         CurrentTargetSpeed = targetSpeed;
          CurrentTargetSpeedString = targetSpeed.ToString("G");
       }
 
@@ -418,12 +520,6 @@ namespace ORTS.Popups
          CreateSolidTexture(spriteBatch, DisplayColors.Red, Color.Red);
          CreateSolidTexture(spriteBatch, DisplayColors.None, Color.White);
 
-         CreateCurvedBar(spriteBatch, DisplayColors.Green, System.Drawing.Color.Green);
-         CreateCurvedBar(spriteBatch, DisplayColors.Yellow, System.Drawing.Color.Yellow);
-         CreateCurvedBar(spriteBatch, DisplayColors.Red, System.Drawing.Color.Red);
-         CreateCurvedBar(spriteBatch, DisplayColors.None, System.Drawing.Color.LightGray);
-
-
          if (SpeedFont == null)
          {
             SpeedFont = Content.Load<SpriteFont>("DriverAidSpeedFont");
@@ -441,6 +537,11 @@ namespace ORTS.Popups
 
          Vector2 gaugeCenterPoint = new Vector2(GAUGE_SIZE / 2f, GAUGE_SIZE / 2f);
 
+
+         DrawCurvedIndicators(spriteBatch, X, Y, gaugeCenterPoint);
+
+
+
          // draw needle
          spriteBatch.Draw(
             NeedleTexture, // thing to draw
@@ -453,17 +554,6 @@ namespace ORTS.Popups
             SpriteEffects.None,
             0);                       // layer depth
 
-
-         spriteBatch.Draw(
-            CurvedBars[DisplayColors.Green], // thing to draw
-            new Vector2(X + MARGIN_LEFT + gaugeCenterPoint.X, Y + gaugeCenterPoint.Y), // destination location
-            new Rectangle(0, 0, GAUGE_SIZE, GAUGE_SIZE), // source rect
-            Color.White,
-            SpeedToAngle(0), // rotation angle
-            gaugeCenterPoint,
-            1f,                       // scale
-            SpriteEffects.None,
-            0);                       // layer depth
 
 
 
@@ -485,7 +575,7 @@ namespace ORTS.Popups
 
          // draw central speed value on the needle
          Vector2 needleSpeed = SpeedFontSmall.MeasureString(CurrentSpeedString);
-         spriteBatch.DrawString(SpeedFontSmall, CurrentSpeedString, new Vector2(X + MARGIN_LEFT+ gaugeCenterPoint.X - needleSpeed.X / 2f, Y + gaugeCenterPoint.Y - needleSpeed.Y / 2f), Color.Black);
+         spriteBatch.DrawString(SpeedFontSmall, CurrentSpeedString, new Vector2(X + MARGIN_LEFT + gaugeCenterPoint.X - needleSpeed.X / 2f, Y + gaugeCenterPoint.Y - needleSpeed.Y / 2f), Color.Black);
 
 
          Texture2D currentSolidTexture = GetStandardColorTexture();
@@ -514,17 +604,17 @@ namespace ORTS.Popups
 
          // draw speed warning box
          int boxSize = CurrentSpeedWarningBoxSize;
-         spriteBatch.Draw(currentSolidTexture, new Rectangle(X + SpeedWarningBoxCentre.X - boxSize, Y + SpeedWarningBoxCentre.Y - boxSize, boxSize * 2, boxSize * 2), Color.White);
+         spriteBatch.Draw(GetWarningBoxTexture(), new Rectangle(X + SpeedWarningBoxCentre.X - boxSize, Y + SpeedWarningBoxCentre.Y - boxSize, boxSize * 2, boxSize * 2), Color.White);
 
 
 
 
-         Vector2 targetSpeedBoxSize = new Vector2(TARGETSPEED_W , TARGETSPEED_H);
+         Vector2 targetSpeedBoxSize = new Vector2(TARGETSPEED_W, TARGETSPEED_H);
 
          // this is the box the target speed is displayed in
          Rectangle targetSpeedBoxRect = new Rectangle(
             X + MARGIN_LEFT + (int)(GAUGE_SIZE / 2f - targetSpeedBoxSize.X / 2f),
-            Y + TARGETSPEED_Y , (int)targetSpeedBoxSize.X, (int)targetSpeedBoxSize.Y);
+            Y + TARGETSPEED_Y, (int)targetSpeedBoxSize.X, (int)targetSpeedBoxSize.Y);
 
 
 
@@ -545,6 +635,150 @@ namespace ORTS.Popups
       }
 
 
+      private Texture2D CurvedBarTexture;
+
+      private void DrawCurvedIndicators(SpriteBatch spriteBatch, int X, int Y, Vector2 gaugeCenterPoint)
+      {
+
+         if (CurvedBarTexture == null)
+         {
+            CurvedBarTexture = new Texture2D(spriteBatch.GraphicsDevice, GAUGE_SIZE, GAUGE_SIZE);
+         }
+
+         using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(GAUGE_SIZE, GAUGE_SIZE))
+         using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
+         {
+
+            // true when the driver exceeding the brake curve: this means a red bar above the brake curve indicator
+            bool driverExceedsBrakeCurve = false;
+
+            // true when the driver is going faster than the upcoming speed reduction speed
+            bool driverExceedsTargetSpeed = false;
+
+            float CurrentTargetSpeedAngle = 0;
+            float angleMeasureFromTarget = 0;
+
+            ComputeDriverState(ref driverExceedsBrakeCurve, ref driverExceedsTargetSpeed, ref CurrentTargetSpeedAngle, ref angleMeasureFromTarget);
+
+            if (driverExceedsTargetSpeed)
+            {
+
+               g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+
+               System.Drawing.PointF center = new System.Drawing.PointF(GAUGE_SIZE / 2f, GAUGE_SIZE / 2f);
+
+               System.Drawing.RectangleF arcBoundsInner = System.Drawing.RectangleF.FromLTRB(
+                  center.X - CURVEDBAR_INNER_RADIUS,
+                  center.Y - CURVEDBAR_INNER_RADIUS,
+                  center.X + CURVEDBAR_INNER_RADIUS,
+                  center.Y + CURVEDBAR_INNER_RADIUS);
+
+               System.Drawing.RectangleF arcBoundsOuter = System.Drawing.RectangleF.FromLTRB(
+                  center.X - CURVEDBAR_OUTER_RADIUS,
+                  center.Y - CURVEDBAR_OUTER_RADIUS,
+                  center.X + CURVEDBAR_OUTER_RADIUS,
+                  center.Y + CURVEDBAR_OUTER_RADIUS);
+
+
+               // we know we need to draw a curved bar starting at the target speed, and increasing around the gauge
+               // until the brake curve indicator
+
+               System.Drawing.Color color = System.Drawing.Color.Yellow;
+
+               using (System.Drawing.SolidBrush b = new System.Drawing.SolidBrush(color))
+               using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
+               {
+                  
+
+
+                  path.StartFigure();
+
+                  // inner arc
+                  path.AddArc(arcBoundsInner, MathHelper.ToDegrees(CurrentBrakeCurveAngle) - 90, MathHelper.ToDegrees(-angleMeasureFromTarget));
+
+                  // outer arc
+                  path.AddArc(arcBoundsOuter, MathHelper.ToDegrees(CurrentTargetSpeedAngle) - 90, MathHelper.ToDegrees(angleMeasureFromTarget));
+
+                  path.CloseFigure();
+
+                  g.Clip = new System.Drawing.Region(path);
+
+                  g.Clear(color);
+
+               }
+
+               if (driverExceedsBrakeCurve)
+               {
+                  using (System.Drawing.SolidBrush b = new System.Drawing.SolidBrush(color))
+                  using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
+                  {
+                     color = System.Drawing.Color.Red;
+
+                     float startAngle = CurrentBrakeCurveAngle;
+
+                     path.StartFigure();
+
+                     // inner arc
+                     path.AddArc(arcBoundsInner, MathHelper.ToDegrees(CurrentBrakeCurveAngle) - 90, MathHelper.ToDegrees(CurrentSpeedAngle - CurrentBrakeCurveAngle));
+
+                     // outer arc
+                     path.AddArc(arcBoundsOuter, MathHelper.ToDegrees(CurrentSpeedAngle) - 90, -MathHelper.ToDegrees(CurrentSpeedAngle - CurrentBrakeCurveAngle));
+
+                     path.CloseFigure();
+
+                     g.Clip = new System.Drawing.Region(path);
+
+                     g.Clear(color);
+
+                  }
+               }
+
+
+               CurvedBarTexture.SetData(BitmapToBytes(bmp));
+
+
+               spriteBatch.Draw(
+                  CurvedBarTexture, // thing to draw
+                  new Vector2(X + MARGIN_LEFT + gaugeCenterPoint.X, Y + gaugeCenterPoint.Y), // destination location
+                  new Rectangle(0, 0, GAUGE_SIZE, GAUGE_SIZE), // source rect
+                  Color.White,
+                  0, // rotation angle
+                  gaugeCenterPoint,
+                  1f,                       // scale
+                  SpriteEffects.None,
+                  0);
+            }
+         }
+      }
+
+      private void ComputeDriverState(ref bool driverExceedsBrakeCurve, ref bool driverExceedsTargetSpeed, ref float CurrentTargetSpeedAngle, ref float angleMeasureFromTarget)
+      {
+         CurrentTargetSpeedAngle = SpeedToAngle(CurrentTargetSpeed);
+
+         angleMeasureFromTarget = CurrentBrakeCurveAngle - CurrentTargetSpeedAngle;
+
+         if (angleMeasureFromTarget > 0)
+         {
+            // train has a brake curve value LARGER than the target speed. This means the train is in an area where
+            // there is an upcoming reduction in speed
+
+            // now: see if the driver is going FASTER than the target speed
+            if (CurrentSpeedAngle > CurrentTargetSpeedAngle)
+            {
+               // yes - driver will have to reduce speed to meet the upcoming target speed
+
+               driverExceedsTargetSpeed = true;
+
+               if (CurrentSpeedAngle > CurrentBrakeCurveAngle)
+               {
+                  driverExceedsBrakeCurve = true;
+               }
+            }
+         }
+      }
+
+
+
       /// <summary>
       /// Returns the correct texture to use for the warning box, as
       /// it is sometimes a different color than the other "common" elements.
@@ -554,7 +788,31 @@ namespace ORTS.Popups
       {
          Texture2D returnValue = null;
 
-         returnValue = SolidTextures[DisplayColors.Green];
+
+         // true when the driver exceeding the brake curve: this means a red bar above the brake curve indicator
+         bool driverExceedsBrakeCurve = false;
+
+         // true when the driver is going faster than the upcoming speed reduction speed
+         bool driverExceedsTargetSpeed = false;
+
+         float CurrentTargetSpeedAngle = 0;
+         float angleMeasureFromTarget = 0;
+
+         ComputeDriverState(ref driverExceedsBrakeCurve, ref driverExceedsTargetSpeed, ref CurrentTargetSpeedAngle, ref angleMeasureFromTarget);
+
+         if (driverExceedsBrakeCurve)
+         {
+            returnValue = SolidTextures[DisplayColors.Red];
+         }
+         else if (driverExceedsTargetSpeed)
+         {
+            returnValue = SolidTextures[DisplayColors.Yellow];
+         }
+         else
+         {
+            returnValue = SolidTextures[DisplayColors.None];
+         }
+         
 
          return returnValue;
       }
@@ -583,68 +841,101 @@ namespace ORTS.Popups
          }
       }
 
-      private void CreateCurvedBar(SpriteBatch spriteBatch, DisplayColors displayColor, System.Drawing.Color color)
-      {
-         if (CurvedBars.ContainsKey(displayColor) == false)
-         {
-            CurvedBars.Add(displayColor, new Texture2D(spriteBatch.GraphicsDevice, GAUGE_SIZE, GAUGE_SIZE, 1, TextureUsage.None, SurfaceFormat.Color));
-            CurvedBars[displayColor].SetData(GenerateCurvedBar(GAUGE_SIZE, CURVEDBAR_INNER_RADIUS, CURVEDBAR_OUTER_RADIUS, color));
-         }
-      }
+      //private void CreateCurvedBar(SpriteBatch spriteBatch, DisplayColors displayColor, System.Drawing.Color color)
+      //{
+      //   if (CurvedBars.ContainsKey(displayColor) == false)
+      //   {
+      //      CurvedBars.Add(displayColor, new Texture2D(spriteBatch.GraphicsDevice, GAUGE_SIZE, GAUGE_SIZE, 1, TextureUsage.None, SurfaceFormat.Color));
 
-      private byte[] GenerateCurvedBar(int size, float innerRadius, float outerRadius, System.Drawing.Color color)
-      {
-         byte[] returnValue = null;
+      //      CurvedBars[displayColor].SetData(GenerateCurvedBar(GAUGE_SIZE, CURVEDBAR_INNER_RADIUS, CURVEDBAR_OUTER_RADIUS, color, displayColor == DisplayColors.Mask));
+      //   }
+      //}
 
-         using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(size, size))
-         using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
-         {
-            // draw the base first
-            DrawCurvedBar(g, size, innerRadius, outerRadius, color);
+      //private byte[] GenerateCurvedBar(int size, float innerRadius, float outerRadius, System.Drawing.Color color, bool mask)
+      //{
+      //   byte[] returnValue = null;
 
-            // and then convert to a byte[]
-            returnValue = BitmapToBytes(bmp);
-         }
+      //   using (System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(size, size))
+      //   using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
+      //   {
+      //      // draw the base first
+      //      DrawCurvedBar(g, size, innerRadius, outerRadius, color, mask);
 
-         return returnValue;
-      }
+      //      // and then convert to a byte[]
+      //      returnValue = BitmapToBytes(bmp);
+      //   }
 
-      private void DrawCurvedBar(System.Drawing.Graphics g, int size, float innerRadius, float outerRadius, System.Drawing.Color color)
-      {
-         float arcThickness = outerRadius - innerRadius;
+      //   return returnValue;
+      //}
 
-         Debug.Assert(arcThickness >= 0, "Driver Aid: outerRadius must be larger than or equal to innerRadius.");
+      //private void DrawCurvedBar(System.Drawing.Graphics g, int size, float innerRadius, float outerRadius, System.Drawing.Color color, bool mask)
+      //{
 
-         if (arcThickness <= 0)
-         {
-            arcThickness = 0;
-         }
-
-         using (System.Drawing.Pen p = new System.Drawing.Pen(color))
-         {
-            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-
-            p.Width = arcThickness;
-
-            p.StartCap = System.Drawing.Drawing2D.LineCap.Square;
-            p.EndCap = System.Drawing.Drawing2D.LineCap.Square;
-
-            System.Drawing.PointF center = new System.Drawing.PointF(size / 2f, size / 2f);
+      //   using (System.Drawing.SolidBrush b = new System.Drawing.SolidBrush(color))
+      //   {
+      //      g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
 
 
-            float radius = innerRadius - arcThickness / 2f;
+      //      System.Drawing.PointF center = new System.Drawing.PointF(size / 2f, size / 2f);
 
-            System.Drawing.RectangleF arcBounds = System.Drawing.RectangleF.FromLTRB(
-               center.X - radius,
-               center.Y - radius,
-               center.X + radius,
-               center.Y + radius);
+      //      System.Drawing.RectangleF arcBoundsInner = System.Drawing.RectangleF.FromLTRB(
+      //         center.X - innerRadius,
+      //         center.Y - innerRadius,
+      //         center.X + innerRadius,
+      //         center.Y + innerRadius);
 
-            g.Clip = new System.Drawing.Region(new System.Drawing.RectangleF(center.X,0,size/2f, size/2f));
+      //      System.Drawing.RectangleF arcBoundsOuter = System.Drawing.RectangleF.FromLTRB(
+      //         center.X - outerRadius,
+      //         center.Y - outerRadius,
+      //         center.X + outerRadius,
+      //         center.Y + outerRadius);
 
-            g.DrawArc(p, arcBounds, -90, 90);
-         }
-      }
+
+      //      System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
+
+      //      path.StartFigure();
+
+
+      //      // inner arc
+      //      path.AddArc(arcBoundsInner,-90 +CURVE_BAR_SEGMENT_SIZE , -CURVE_BAR_SEGMENT_SIZE);
+
+      //      // vertical line
+      //      path.AddLine(new System.Drawing.PointF(center.X, center.Y - innerRadius), new System.Drawing.PointF(center.X, center.Y - outerRadius));
+
+      //      // outer arc
+      //      path.AddArc(arcBoundsOuter, -90, CURVE_BAR_SEGMENT_SIZE);
+
+      //      path.CloseFigure();
+
+
+
+      //      g.Clip = new System.Drawing.Region(path);
+
+      //      g.Clear(color);
+
+      //      //if (!mask)
+      //      //{
+      //      //   p.Width = arcThickness;
+      //      //}
+      //      //else
+      //      //{
+      //      //   p.Width = arcThickness + 2f;
+      //      //}
+
+      //      //p.StartCap = System.Drawing.Drawing2D.LineCap.Square;
+      //      //p.EndCap = System.Drawing.Drawing2D.LineCap.Square;
+
+      //      //g.Clip = new System.Drawing.Region(new System.Drawing.RectangleF(center.X, 0, size / 2f, size / 2f));
+
+      //      //g.DrawArc(p, arcBounds, -90, CURVE_BAR_SEGMENT_SIZE);
+
+
+
+
+
+
+      //   }
+      //}
 
 
       private byte[] GenerateLabels(int size)

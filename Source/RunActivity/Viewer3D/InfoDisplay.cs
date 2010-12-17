@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Popups;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using ORTS.Common;
 
 namespace ORTS
 {
@@ -157,14 +158,35 @@ namespace ORTS
 
          if (Viewer.DriverAidWindow.Visible)
          {
+
             // update driver aid window - convert m/s to km/h, and take absolute so
             // speed is non-negative.
-            Viewer.DriverAidWindow.Update(
-               Math.Abs(Viewer.PlayerTrain.SpeedMpS * 3.6f), // train speed
-               1000 // temp value for now
-               );
-         }
+            float trainSpeed = Math.Abs(Viewer.PlayerTrain.SpeedMpS * 3.6f);
 
+
+            // for now, use 120 = clear, 0 = anything else. 
+            // TODO: get actual target speed of signal ahead. Currently, signals
+            // clear automatically on their own so the by itself, the driver aid 
+            // isn't showing all that much.
+            int targetSpeed = 0;
+            if (Viewer.PlayerTrain.TMaspect == TrackMonitorSignalAspect.Clear)
+            {
+               targetSpeed = 120;
+            }
+
+            // temporary: this shows what it would look like if you had to stop
+            // at every signal, demonstrating stuff needed to get things working
+            // inside the driver aid window
+            targetSpeed = 20;
+
+            float deceleration = 0.3f;
+
+            
+
+            float brakeCurveSpeed = BrakeCurves.ComputeCurve(Viewer.PlayerTrain.SpeedMpS, Viewer.PlayerTrain.distanceToSignal, targetSpeed / 3.6f, deceleration) * 3.6f;
+            
+            Viewer.DriverAidWindow.Update(trainSpeed, Viewer.PlayerTrain.distanceToSignal, targetSpeed, brakeCurveSpeed);
+         }
 		}
 
 		void UpdateDialogsText(ElapsedTime elapsedTime)
