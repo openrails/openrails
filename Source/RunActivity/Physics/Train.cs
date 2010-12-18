@@ -109,21 +109,12 @@ namespace ORTS
 
         public Train()
         {
-        }
-
-      /// <summary>
-      /// Reference to the simulator object.
-      /// </summary>
-      private Simulator simulator;
+        }      
 
         public void InitializeSignals(Simulator simulator, bool isPlayerTrain)
         {
             if (simulator.Signals != null)
-            {
-
-            this.simulator = simulator;
-
-
+            {            
                 nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
                 distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
                 nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
@@ -1103,11 +1094,7 @@ namespace ORTS
 
          TDBTraveller traveller = new TDBTraveller(RearTDBTraveller);
          // The traveller location represents the back of the train.
-
-
-
-         var sections = simulator.TSectionDat.TrackSections;
-
+        
          // process the cars last to first
          for (int i = Cars.Count - 1; i >= 0; i--)
          {
@@ -1117,9 +1104,6 @@ namespace ORTS
             {
                traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
             }
-
-
-
 
             TrackNode node = traveller.TN;
 

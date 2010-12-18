@@ -70,6 +70,9 @@ namespace ORTS.Interlocking
          
          foreach (var sigObj in simulator.Signals.SignalObjects)
          {
+            if (sigObj == null)
+                continue;
+
             Signals.Add(sigObj, new InterlockingSignal(simulator, sigObj));
          }
       }
@@ -94,12 +97,8 @@ namespace ORTS.Interlocking
          }
       }
 
-
-
-
       internal void Update(float elapsed)
-      {
-         
+      {         
          // let the tracks know we're about to change their properties
          var enumer = Tracks.GetEnumerator();
          
@@ -108,15 +107,11 @@ namespace ORTS.Interlocking
             enumer.Current.Value.BeginUpdate();
          }
 
-
-
          // update each train's track occupation
          foreach (Train train in simulator.Trains)
          {
             train.UpdateTrackOccupation();
          }
-
-
 
          // tell the tracks we're done updating
          enumer = Tracks.GetEnumerator();
