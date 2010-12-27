@@ -498,20 +498,20 @@ namespace ORTS
                         SignalItem sigItem = (SignalItem)trItems[trackNodes[currenNode].TrVectorNode.TrItemRefs[i]];
                         if (sigItem.revDir == currDir)
                         {
-                           int sigObj = sigItem.sigObj;
-                           //if (signalObjects[sigObj] != null) //WHN: Fixes Sandpatch problem
-                           if (signalObjects[sigObj].isSignalNormal())
-                           {
-                              float dist = signalObjects[sigObj].DistanceTo(tdbtraveller);
-                              if (dist > 0)
-                              {
-                                 if (dist < distance)
-                                 {
-                                    distance = dist;
-                                    sigIndex = sigObj;
-                                 }
-                              }
-                           }
+                            int sigObj = sigItem.sigObj;
+                            if (signalObjects[sigObj] != null) //WaltN: Fixes Sandpatch problem
+                                if (signalObjects[sigObj].isSignalNormal())
+                                {
+                                    float dist = signalObjects[sigObj].DistanceTo(tdbtraveller);
+                                    if (dist > 0)
+                                    {
+                                        if (dist < distance)
+                                        {
+                                            distance = dist;
+                                            sigIndex = sigObj;
+                                        }
+                                    }
+                                }
                         }
                      }
                   }

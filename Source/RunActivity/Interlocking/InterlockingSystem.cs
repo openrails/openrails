@@ -67,7 +67,8 @@ namespace ORTS.Interlocking
       private void CreateSignals()
       {
          Signals = new Dictionary<SignalObject, InterlockingSignal>();
-         
+
+         if (simulator.Signals.SignalObjects != null) //WaltN: Quick fix for bug reported (http://www.elvastower.com/forums/index.php?/topic/13677-v501-createsignals-fails-with-null-exception/)
          foreach (var sigObj in simulator.Signals.SignalObjects)
          {
             if (sigObj == null)
