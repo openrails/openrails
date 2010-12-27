@@ -46,7 +46,9 @@ namespace MSTS
                         && UiD == tn.UiD.WorldID )
                         return tn.TrJunctionNode;
                 }
-            throw new InvalidDataException("TDB Error, could not find junction.");
+            //throw new InvalidDataException("TDB Error, could not find junction.");
+            throw new InvalidDataException("TDB Error, could not find junction. (tileX = " + tileX.ToString() +
+                ", tileZ = " + tileZ.ToString() + ", UiD = " + UiD.ToString() + ")");
         }
 
         public TrackDB TrackDB;  // Warning, the first TDB entry is always null
