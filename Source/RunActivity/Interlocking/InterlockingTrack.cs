@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MSTS;
 using System.Diagnostics;
+using MSTS;
+
 
 namespace ORTS.Interlocking
 {
@@ -18,27 +19,27 @@ namespace ORTS.Interlocking
   
 
       /// <summary>
-      /// Gets the underlying TrVectorSection.
+      /// Gets the underlying physical object.
       /// </summary>
-      public TrVectorSection Section { get; private set; }
+      public TrackNode Node { get; private set; }
 
       /// <summary>
       /// Creates a new InterlockingTrack object.
       /// </summary>
       /// <param name="simulator">The Simulator object.</param>
-      /// <param name="trackSection">The TrackSection from which to create an InterlockingTrack.</param>
-      public InterlockingTrack(Simulator simulator, TrVectorSection trackSection)
+      /// <param name="node">The underlying object from which to create an InterlockingTrack.</param>
+      public InterlockingTrack(Simulator simulator, TrackNode node)
          : base(simulator)
       {
-         Section = trackSection;
+         Node = node;
       
-         Section.InterlockingTrack = this;
+         Node.InterlockingTrack = this;
       }
 
 
       public override string ToString()
       {
-         return string.Format("{0} Occupied: {1}", Section, IsOccupied);
+         return string.Format("{0} Occupied: {1}", Node, IsOccupied);
       }
 
 

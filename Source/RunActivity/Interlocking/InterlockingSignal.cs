@@ -9,7 +9,7 @@ namespace ORTS.Interlocking
    /// Provides an abstraction atop an underlying signal
    /// object.
    /// </summary>
-   public class InterlockingSignal : InterlockingItem
+   public class InterlockingSignal : InterlockingTerminator
    {
      
       /// <summary>

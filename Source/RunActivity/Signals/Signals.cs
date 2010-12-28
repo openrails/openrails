@@ -641,6 +641,9 @@ namespace ORTS
             return SignalHead.SIGASP.STOP;
          }
       }
+
+
+
       //
       //  Finds the next (NORMAL) signal down the line from this one.
       //  Returns -1 if one cannot be found.

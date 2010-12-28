@@ -237,7 +237,7 @@ namespace ORTS.Debugging
 
                   if (currNode.TrVectorNode.TrVectorSections.Length > 1)
                   {
-                     AddSegments(segments, currNode.TrVectorNode.TrVectorSections, ref minX, ref minY, ref maxX, ref maxY, simulator);
+                     AddSegments(segments, currNode, currNode.TrVectorNode.TrVectorSections, ref minX, ref minY, ref maxX, ref maxY, simulator);
                   }
                   else
                   {
@@ -247,6 +247,14 @@ namespace ORTS.Debugging
 
                         TrackNode connectedNode = nodes[pin.Link];
 
+
+                        //bool occupied = false;
+
+                        //if (simulator.InterlockingSystem.Tracks.ContainsKey(connectedNode))
+                        //{
+                           //occupied = connectedNode   
+                        //}
+
                         if (currNode.UiD == null && currNode.TrVectorNode.TrVectorSections.Length == 1)
                         {
 
@@ -255,7 +263,7 @@ namespace ORTS.Debugging
                            PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
                            PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
 
-                           segments.Add(new LineSegment(A, B, s.InterlockingTrack.IsOccupied, s));
+                           segments.Add(new LineSegment(A, B, /*s.InterlockingTrack.IsOccupied*/ false, s));
                         }
                      }
 
@@ -414,8 +422,17 @@ namespace ORTS.Debugging
       /// <param name="maxX"></param>
       /// <param name="maxY"></param>
       /// <param name="simulator"></param>
-      private static void AddSegments(List<LineSegment> segments, TrVectorSection[] items,  ref float minX, ref float minY, ref float maxX, ref float maxY, Simulator simulator)
+      private static void AddSegments(List<LineSegment> segments, TrackNode node, TrVectorSection[] items,  ref float minX, ref float minY, ref float maxX, ref float maxY, Simulator simulator)
       {
+
+         bool occupied = false;
+
+
+         if (simulator.InterlockingSystem.Tracks.ContainsKey(node))
+         {
+            occupied = node.InterlockingTrack.IsOccupied;
+         }
+
          for (int i = 0; i < items.Length - 1; i++)
          {
             PointF A = new PointF(items[i].TileX * 2048 + items[i].X, items[i].TileZ * 2048 + items[i].Z);
@@ -431,7 +448,7 @@ namespace ORTS.Debugging
             CalcBounds(ref minX, B.X, false);
             CalcBounds(ref minY, B.Y, false);
 
-            segments.Add(new LineSegment(A, B, items[i].InterlockingTrack.IsOccupied, items[i]));
+            segments.Add(new LineSegment(A, B, occupied, items[i]));
          }
       }
 

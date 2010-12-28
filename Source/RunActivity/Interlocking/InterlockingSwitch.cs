@@ -30,12 +30,21 @@ namespace ORTS.Interlocking
 
       public TrJunctionNode Switch { get; private set; }
 
-      public InterlockingSwitch(Simulator simulator, TrJunctionNode switchObject)
+      /// <summary>
+      /// Defines the index number of the underlying TrJunctionNode.
+      /// </summary>
+      private int TrJunctionNodeIndex;
+
+      public InterlockingSwitch(Simulator simulator, TrJunctionNode switchObject, int trJunctionNodeIndex)
          : base(simulator)
       {
          Switch = switchObject;
+         TrJunctionNodeIndex = trJunctionNodeIndex;
+
+         ComputeGeometry();
       }
 
+      
       /// <summary>
       /// True when switch is manually locked by the dispatcher.
       /// </summary>
@@ -113,6 +122,67 @@ namespace ORTS.Interlocking
          }
       }
 
-        
+
+
+      private void ComputeGeometry()
+      {
+         var tracknodes = simulator.TDB.TrackDB.TrackNodes;
+
+
+
+         TrackNode[] connections= new TrackNode[3];
+
+
+         
+         TrackNode thisNode = tracknodes[TrJunctionNodeIndex];
+
+         for (int i = 0; i < thisNode.Inpins + thisNode.Outpins; i++)
+         {
+            connections[i] = tracknodes[thisNode.TrPins[i].Link];
+         }
+            
+         
+         // we now have the 3 connected nodes that are connected to this switch.
+
+         // now, we need to try to compute the angles in this switch
+
+
+
+         point[] junctionVectors = new point[3];
+
+         for (int i = 0; i < 3; i++)
+         {
+
+            if (connections[i].TrEndNode)
+            {
+               // next thing is a buffer
+            }
+            else if (connections[i].TrJunctionNode != null)
+            {
+               // next thing is another switch
+            }
+            else
+            {
+               // just a track section
+            
+               TDBTraveller tempTrav = new TDBTraveller(connections[i],connections[i].TrVectorNode.TrVectorSections[0], simulator.TDB, simulator.TSectionDat);
+
+
+               point initialLocation = new point(tempTrav.TileX * 2048 + tempTrav.X, 0, tempTrav.TileZ * 2048 + tempTrav.Z);
+
+               // move a small distance from the junction
+               tempTrav.Move(1);
+
+               point finalLocation = new point(tempTrav.TileX * 2048 + tempTrav.X, 0, tempTrav.TileZ * 2048 + tempTrav.Z);
+
+
+               // TODO: this does not work correctly yet
+               junctionVectors[i].X = finalLocation.X - initialLocation.X;
+               junctionVectors[i].Z = finalLocation.Z - initialLocation.Z;
+
+            }
+         }
+
+      }
    }
 }

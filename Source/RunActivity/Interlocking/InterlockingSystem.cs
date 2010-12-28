@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MSTS;
+using ORTS.Interlocking.MovementAuthority;
 
 namespace ORTS.Interlocking
 {
    /// <summary>
    /// Encapsulates the interlocking and signalling system.
    /// </summary>
-   public class InterlockingSystem
+   public partial class InterlockingSystem
    {
       /// <summary>
       /// Reference to the simulator object.
@@ -17,20 +18,29 @@ namespace ORTS.Interlocking
       private Simulator simulator;
 
       /// <summary>
-      /// Links the underlying TrVectorSection to its corresponding interlocking layer counterpart.
+      /// Links the underlying TrackNode to its corresponding interlocking layer counterpart.
       /// </summary>
-      internal Dictionary<TrVectorSection, InterlockingTrack> Tracks { get; set; }
+      internal Dictionary<TrackNode, InterlockingTrack> Tracks { get; private set; }
 
       /// <summary>
       /// Links the underlying TrVectorSection to its corresponding interlocking layer counterpart.
       /// </summary>
-      internal Dictionary<SignalObject, InterlockingSignal> Signals { get; set; }
+      internal Dictionary<SignalObject, InterlockingSignal> Signals { get; private set; }
 
       /// <summary>
       /// Links the underlying Switch to its corresponding interlocking layer counterpart.
       /// </summary>
-      internal Dictionary<TrJunctionNode, InterlockingSwitch> Switches { get; set; }
+      internal Dictionary<TrJunctionNode, InterlockingSwitch> Switches { get; private set; }
 
+      /// <summary>
+      /// Links underlying TrackNode objects representing buffer ends
+      /// </summary>
+      internal Dictionary<TrackNode, InterlockingBuffer> Buffers { get; private set; }
+
+      /// <summary>
+      /// Contains all routes within the interlocking system.
+      /// </summary>
+      internal RouteCollection Routes { get; private set; }
 
       /// <summary>
       /// Creates a new InterlockingSystem object.
@@ -43,7 +53,36 @@ namespace ORTS.Interlocking
          CreateTracks();
          CreateSwitches();
          CreateSignals();
+         CreateBuffers();
+
+         CreateRoutes();
       }
+
+      private void CreateRoutes()
+      {
+         Routes = new RouteCollection(this);
+
+         foreach (var s in Signals.Values)
+         {
+            Routes.AddRange(DiscoverRoutesFromSignal(s));
+         }
+      }
+
+
+
+      private void CreateBuffers()
+      {
+         Buffers = new Dictionary<TrackNode, InterlockingBuffer>();
+
+         foreach (var n in simulator.TDB.TrackDB.TrackNodes)
+         {
+            if (n != null && n.TrEndNode)
+            {
+               Buffers.Add(n, new InterlockingBuffer(simulator, n));
+            }
+         }
+      }
+
 
       /// <summary>
       /// Instantiates InterlockingSignal objects from the simulation's SignalObject objects.
@@ -51,12 +90,14 @@ namespace ORTS.Interlocking
       private void CreateSwitches()
       {
          Switches = new Dictionary<TrJunctionNode, InterlockingSwitch>();
-         
-         foreach (var n in simulator.TDB.TrackDB.TrackNodes)
+
+         for (int i = 0; i < simulator.TDB.TrackDB.TrackNodes.Length; i++)
          {
+            var n = simulator.TDB.TrackDB.TrackNodes[i];
+
             if (n != null && n.TrJunctionNode != null)
             {
-               Switches.Add(n.TrJunctionNode, new InterlockingSwitch(simulator, n.TrJunctionNode));
+               Switches.Add(n.TrJunctionNode, new InterlockingSwitch(simulator, n.TrJunctionNode, i));
             }
          }
       }
@@ -68,13 +109,17 @@ namespace ORTS.Interlocking
       {
          Signals = new Dictionary<SignalObject, InterlockingSignal>();
 
-         if (simulator.Signals.SignalObjects != null) //WaltN: Quick fix for bug reported (http://www.elvastower.com/forums/index.php?/topic/13677-v501-createsignals-fails-with-null-exception/)
-         foreach (var sigObj in simulator.Signals.SignalObjects)
-         {
-            if (sigObj == null)
-                continue;
 
-            Signals.Add(sigObj, new InterlockingSignal(simulator, sigObj));
+         // verify that we have signals (it's possible to have none!)
+         if (simulator.Signals.SignalObjects != null)
+         {  
+            foreach (var sigObj in simulator.Signals.SignalObjects)
+            {
+               if (sigObj == null)
+                  continue;
+
+               Signals.Add(sigObj, new InterlockingSignal(simulator, sigObj));
+            }
          }
       }
 
@@ -84,16 +129,15 @@ namespace ORTS.Interlocking
       private void CreateTracks()
       {
 
-         Tracks = new Dictionary<TrVectorSection, InterlockingTrack>();
+         Tracks = new Dictionary<TrackNode, InterlockingTrack>();
 
          foreach (var n in simulator.TDB.TrackDB.TrackNodes)
          {
-            if (n != null && n.TrVectorNode != null)
+            if (n != null && 
+                n.TrEndNode == false &&   // not a buffer
+                n.TrJunctionNode == null) // not a switch
             {
-               foreach (var vNode in n.TrVectorNode.TrVectorSections)
-               {
-                  Tracks.Add(vNode, new InterlockingTrack(simulator, vNode));
-               }
+               Tracks.Add(n, new InterlockingTrack(simulator, n));
             }
          }
       }

@@ -206,11 +206,16 @@
       <DependentUpon>GenericObjectViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Interlocking\AutomaticBlock.cs" />
+    <Compile Include="Interlocking\InterlockingBuffer.cs" />
     <Compile Include="Interlocking\InterlockingItem.cs" />
     <Compile Include="Interlocking\InterlockingSignal.cs" />
     <Compile Include="Interlocking\InterlockingSwitch.cs" />
     <Compile Include="Interlocking\InterlockingSystem.cs" />
+    <Compile Include="Interlocking\InterlockingSystem.Routes.cs" />
+    <Compile Include="Interlocking\InterlockingTerminator.cs" />
     <Compile Include="Interlocking\InterlockingTrack.cs" />
+    <Compile Include="Interlocking\MovementAuthority\AtomicRoute.cs" />
+    <Compile Include="Interlocking\MovementAuthority\RouteCollection.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\CompassWindow.cs" />

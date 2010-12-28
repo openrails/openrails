@@ -393,6 +393,35 @@ namespace ORTS
         }
 
 
+       /// <summary>
+       /// Creates a forward-travelling TDBTraveller.
+       /// </summary>
+       /// <param name="trackNode">The TrackNode from which to create the TDBTraveller.</param>
+        /// <param name="trackSection">The TrackSection from which to create the TDBTraveller.</param>
+       /// <param name="tdb"></param>
+       /// <param name="tsectiondat"></param>
+        public TDBTraveller(TrackNode trackNode, TrVectorSection vectorSection, TDBFile tdb, TSectionDatFile tsectiondat)
+        {
+           TDB = tdb;
+           TSectionDat = tsectiondat;
+
+           Direction = 1; // forward
+
+           TN = trackNode;
+           TVS = vectorSection;
+           TS = TSectionDat.TrackSections.Get(TVS.SectionIndex);
+
+           if (TS.SectionCurve != null)
+           {
+              CurvedSectionInit(TVS.TileX, TVS.TileZ, TVS.X, TVS.Z);
+           }
+           else
+           {
+              StraightSectionInit(TVS.TileX, TVS.TileZ, TVS.X, TVS.Z);
+           }
+
+        }
+
         public float Move(float distanceToGo)
         // moves the traveller along the track traversing the track database
         // direction was set by the constructor

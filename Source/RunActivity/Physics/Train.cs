@@ -70,6 +70,12 @@ namespace ORTS
         private bool spad = false;      // Signal Passed At Danger
         public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
 
+       /// <summary>
+       /// Reference to the Simulator object.
+       /// </summary>
+        private Simulator simulator;
+
+
         // For AI control of the train
         public float AITrainBrakePercent
         {
@@ -113,6 +119,9 @@ namespace ORTS
 
         public void InitializeSignals(Simulator simulator, bool isPlayerTrain)
         {
+
+           this.simulator = simulator;
+
             if (simulator.Signals != null)
             {            
                 nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
@@ -1107,14 +1116,9 @@ namespace ORTS
 
             TrackNode node = traveller.TN;
 
-            if (node.TrVectorNode != null)
+            if (node != null && simulator.InterlockingSystem.Tracks.ContainsKey(node))
             {
-               TrVectorNode vNode = node.TrVectorNode;
-
-               foreach (var trVectorSection in vNode.TrVectorSections)
-               {
-                  trVectorSection.InterlockingTrack.Occupy();
-               }
+               node.InterlockingTrack.Occupy();
             }
 
             // traveller is positioned at the back of the car

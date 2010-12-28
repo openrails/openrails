@@ -147,6 +147,10 @@ namespace MSTS
         public UiD UiD;  // only provided for TrJunctionNode and TrEndNode type of TrackNodes
         public uint Inpins;
         public uint Outpins;
+
+
+        public InterlockingTrack InterlockingTrack { get; set; }
+    
     }
 
     [DebuggerDisplay("\\{MSTS.TrPin\\} Link={Link}, Dir={Direction}")]
@@ -284,9 +288,7 @@ namespace MSTS
         public float X, Y, Z;
         public float AX, AY, AZ;
         public uint WorldFileUiD;
-
-        public InterlockingTrack InterlockingTrack {get; set;}
-       
+   
          
     }
 
