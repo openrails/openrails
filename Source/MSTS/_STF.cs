@@ -541,7 +541,7 @@ namespace MSTS
             /// <summary>Valid Units: kg, t, lb
             /// <para>Scaled to kilograms.</para>
             /// </summary>
-            Weight = 1 << 3,
+            Mass = 1 << 3,
             /// <summary>Valid Units: n, kn, lbf
             /// <para>Scaled to newtons.</para>
             /// </summary>
@@ -636,12 +636,12 @@ namespace MSTS
                     case "kmh": return 0.27778;
                     case "km/h": return 0.27778;
                 }
-            if ((valid_units & UNITS.Weight) > 0)
+            if ((valid_units & UNITS.Mass) > 0)
                 switch (suffix)
                 {
                     case "kg": return 1;
                     case "t": return 1e3;
-                    case "lb": return 0.00045359237;
+                    case "lb": return 0.45359237;
                 }
             if ((valid_units & UNITS.Force) > 0)
                 switch (suffix)

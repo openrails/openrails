@@ -117,7 +117,7 @@ namespace ORTS
                     Length = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Weight, null); break;
+                case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
