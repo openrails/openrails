@@ -558,6 +558,18 @@ namespace MSTS
             /// <para>Scaled to newtons/speed(m/s)</para>
             /// </summary>
             Resistance = 1 << 7,
+            /// <summary>Valid Units: lb/h
+            /// <para>Scaled to pounds per hour.</para>
+            /// </summary>
+            MassRate = 1 << 8,
+            /// <summary>Valid Units: *(ft^3)
+            /// <para>Scaled to cubic feet.</para>
+            /// </summary>
+            Volume = 1 << 9,
+            /// <summary>Valid Units: psi
+            /// <para>Scaled to pounds per square inch.</para>
+            /// </summary>
+            Pressure = 1 << 10,
             /// <summary>This is only provided for backwards compatibility - all new users should limit the units to appropriate types
             /// </summary>
             Any = -2
@@ -643,6 +655,11 @@ namespace MSTS
                     case "t": return 1e3;
                     case "lb": return 0.45359237;
                 }
+            if ((valid_units & UNITS.MassRate) > 0)
+                switch (suffix)
+                {
+                    case "lb/h": return 1;
+                }
             if ((valid_units & UNITS.Force) > 0)
                 switch (suffix)
                 {
@@ -667,6 +684,16 @@ namespace MSTS
                 {
                     case "n/m/s": return 1;
                     case "/m/s": return 1;
+                }
+            if ((valid_units & UNITS.Pressure) > 0)
+                switch (suffix)
+                {
+                    case "psi": return 1;
+                }
+            if ((valid_units & UNITS.Volume) > 0)
+                switch (suffix)
+                {
+                    case "*(ft^3)": return 1;
                 }
             STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + valid_units.ToString() + " unit");
             return 1;

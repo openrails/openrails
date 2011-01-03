@@ -18,6 +18,13 @@ namespace ORTS
             110, 120, 130, 140, 150, 160, 170, 180, 190, 200,
             210, 220, 230, 240, 250, 260, 270, 280, 290, 300
         };
+        // saturation temperature at various pressures (Fahrenheit)
+        static float[] TemperatureTable = new float[]
+        {
+            212.0f, 239.4f, 258.7f, 274.0f, 286.7f, 297.7f, 307.3f, 316.0f, 323.9f, 331.2f, 337.9f,
+            344.2f, 350.1f, 355.6f, 360.9f, 365.9f, 370.6f, 375.6f, 379.6f, 383.8f, 387.8f,
+            391.7f, 395.5f, 399.1f, 402.6f, 406.0f, 409.4f, 412.6f, 415.7f, 418.8f, 421.8f
+        };
         // total heat in water at various pressures (BTU per pound)
         static float[] WaterHeatTable = new float[]
         {
@@ -65,6 +72,14 @@ namespace ORTS
         public static Interpolator WaterHeat2PressureInterpolator()
         {
             return new Interpolator(WaterHeatTable, PressureTable);
+        }
+        public static Interpolator Temperature2PressureInterpolator()
+        {
+            return new Interpolator(TemperatureTable, PressureTable);
+        }
+        public static Interpolator Pressure2TemperatureInterpolator()
+        {
+            return new Interpolator(PressureTable, TemperatureTable);
         }
     }
 }

@@ -244,15 +244,15 @@ namespace ORTS
                 case "engine(numcylinders": NumCylinders = stf.ReadIntBlock(STFReader.UNITS.None, null); break;
                 case "engine(cylinderstroke": CylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": CylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "engine(boilervolume": BoilerVolumeFT3 = ParseFT3(stf.ReadStringBlock(null), stf); break;
-                case "engine(maxboilerpressure": MaxBoilerPressurePSI = ParsePSI(stf.ReadStringBlock(null), stf); break;
-                case "engine(maxboileroutput": MaxBoilerOutputLBpH = ParseLBpH(stf.ReadStringBlock(null), stf); break;
-                case "engine(exhaustlimit": ExhaustLimitLBpH = ParseLBpH(stf.ReadStringBlock(null), stf); break;
-                case "engine(basicsteamusage": BasicSteamUsageLBpS = ParseLBpH(stf.ReadStringBlock(null), stf) / 3600; break;
-                case "engine(safetyvalvessteamusage": SafetyValveUsageLBpS = ParseLBpH(stf.ReadStringBlock(null), stf) / 3600; break;
-                case "engine(safetyvalvepressuredifference": SafetyValveDropPSI = ParsePSI(stf.ReadStringBlock(null), stf); break;
+                case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Pressure, null); break;
+                case "engine(maxboileroutput": MaxBoilerOutputLBpH = stf.ReadFloatBlock(STFReader.UNITS.MassRate, null); break;
+                case "engine(exhaustlimit": ExhaustLimitLBpH = stf.ReadFloatBlock(STFReader.UNITS.MassRate, null); break;
+                case "engine(basicsteamusage": BasicSteamUsageLBpS = stf.ReadFloatBlock(STFReader.UNITS.MassRate, null) / 3600; break;
+                case "engine(safetyvalvessteamusage": SafetyValveUsageLBpS = stf.ReadFloatBlock(STFReader.UNITS.MassRate, null) / 3600; break;
+                case "engine(safetyvalvepressuredifference": SafetyValveDropPSI = stf.ReadFloatBlock(STFReader.UNITS.Pressure, null); break;
                 case "engine(idealfiremass": IdealFireMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
-                case "engine(steamfiremanmaxpossiblefiringrate": MaxFiringRateKGpS = ParseLBpH(stf.ReadStringBlock(null), stf) / 2.2046f / 3600; break;
+                case "engine(steamfiremanmaxpossiblefiringrate": MaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRate, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
@@ -267,50 +267,6 @@ namespace ORTS
                 case "engine(evaporationrate": EvaporationRate = new Interpolator(stf); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
-        }
-        public float ParseFT3(string token, STFReader stf)
-        {
-            token = token.ToLower();
-            if (token[0] == '"')
-                token = token.Substring(1);
-            int i = token.IndexOf("*(ft^3)");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            float result;
-            if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
-                return result;
-            STFException.TraceWarning(stf, "Invalid volume value or units " + token + ", cubic feet expected");
-            return ParseFloat(token);
-        }
-        public float ParsePSI(string token, STFReader stf)
-        {
-            token = token.ToLower();
-            int i = token.IndexOf("psi");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            float result;
-            if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
-                return result;
-            STFException.TraceWarning(stf, "invalid pressure value or units " + token + ", pounds per square inch expected");
-            return ParseFloat(token);
-        }
-        public float ParseLBpH(string token, STFReader stf)
-        {
-            token = token.ToLower();
-            int i = token.IndexOf("lb/h");
-            if (i != -1)
-            {
-                token = token.Substring(0, i);
-            }
-            float result;
-            if (float.TryParse(token, System.Globalization.NumberStyles.None, System.Globalization.NumberFormatInfo.InvariantInfo, out result))
-                return result;
-            STFException.TraceWarning(stf, "invalid steaming rate value or units " + token + ", pounds per hour expected");
-            return ParseFloat(token);
         }
 
         /// <summary>
