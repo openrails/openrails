@@ -8,7 +8,7 @@ namespace ORTS.Interlocking.MovementAuthority
    internal class RouteCollection
    {
 
-      internal Dictionary<InterlockingSignal, List<AtomicRoute>> AtomicRoutes { get; private set; }
+      internal Dictionary<InterlockingSignal, List<Route>> AtomicRoutes { get; private set; }
 
 
       private InterlockingSystem InterLockingSystem;
@@ -23,7 +23,7 @@ namespace ORTS.Interlocking.MovementAuthority
       {
          InterLockingSystem = interlockingSystem;
 
-         AtomicRoutes = new Dictionary<InterlockingSignal, List<AtomicRoute>>();
+         AtomicRoutes = new Dictionary<InterlockingSignal, List<Route>>();
       }
 
 
@@ -31,7 +31,7 @@ namespace ORTS.Interlocking.MovementAuthority
       /// Adds a list of routes to the collection.
       /// </summary>
       /// <param name="items">The routes to add to the collection.</param>
-      internal void AddRange(List<AtomicRoute> items)
+      internal void AddRange(List<Route> items)
       {
          foreach (var route in items)
          {
@@ -44,11 +44,11 @@ namespace ORTS.Interlocking.MovementAuthority
       /// Adds a route to the collection.
       /// </summary>
       /// <param name="route">The route to add to the collection.</param>
-      internal void Add(AtomicRoute route)
+      internal void Add(Route route)
       {
          if (!AtomicRoutes.ContainsKey(route.StartSignal))
          {
-            AtomicRoutes.Add(route.StartSignal, new List<AtomicRoute>());
+            AtomicRoutes.Add(route.StartSignal, new List<Route>());
          }
 
          AtomicRoutes[route.StartSignal].Add(route);
@@ -60,9 +60,9 @@ namespace ORTS.Interlocking.MovementAuthority
       /// </summary>
       /// <param name="StartSignal"></param>
       /// <returns></returns>
-      internal List<AtomicRoute> FindExistingRoutes(InterlockingSignal StartSignal)
+      internal List<Route> FindExistingRoutes(InterlockingSignal StartSignal)
       {
-         List<AtomicRoute> returnValue = new List<AtomicRoute>();
+         List<Route> returnValue = new List<Route>();
          
          if (AtomicRoutes.ContainsKey(StartSignal)) 
          {
@@ -78,7 +78,7 @@ namespace ORTS.Interlocking.MovementAuthority
       /// <param name="StartSignal"></param>
       /// <param name="Terminator"></param>
       /// <returns></returns>
-      internal List<AtomicRoute> FindExistingRoutes(InterlockingSignal StartSignal, InterlockingTerminator Terminator)
+      internal List<Route> FindExistingRoutes(InterlockingSignal StartSignal, InterlockingTerminator Terminator)
       {
          return FindExistingRoutes(StartSignal).FindAll(route => route.Terminator == Terminator);
       }

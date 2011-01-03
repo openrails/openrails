@@ -20,9 +20,9 @@ namespace ORTS.Interlocking
          }
       }
 
-      private List<AtomicRoute> DiscoverRoutesFromSignal(InterlockingSignal s)
+      private List<Route> DiscoverRoutesFromSignal(InterlockingSignal s)
       {
-         List<AtomicRoute> returnValue = new List<AtomicRoute>();
+         List<Route> returnValue = new List<Route>();
 
 
          SignalObject startSignal = s.SignalObject;

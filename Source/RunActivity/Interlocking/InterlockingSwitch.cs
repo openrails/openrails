@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MSTS;
+using ORTS;
+using Microsoft.Xna.Framework;
 
 namespace ORTS.Interlocking
 {
 
    /// <summary>
-   /// Defines possible states of the switch. For now, using underlying
-   /// value to indicate position, instead of normal/reverse.
+   /// Defines possible states of the switch. 
    /// </summary>
    public enum SwitchState
    {
-      Position_0,
-      Position_1,
-      GoingTo_0,
-      GoingTo_1,
+      RightLeading,
+      LeftLeading,
+      GoingToRightLeading,
+      GoingToLeftLeading,
       Trailed
    }
 
@@ -44,6 +45,33 @@ namespace ORTS.Interlocking
          ComputeGeometry();
       }
 
+
+      /// <summary>
+      /// Defines the maximum speed in m/s through the switch via the left leading position.
+      /// </summary>
+      public int SpeedLeftLeading { get; private set; }
+
+      /// <summary>
+      /// Defines the maximum speed in m/s through the switch via the right leading position.
+      /// </summary>
+      public int SpeedRightLeading { get; private set; }
+
+
+      /// <summary>
+      /// The base node of the switch.
+      /// </summary>
+      private TrackNode BaseNode;
+
+      /// <summary>
+      /// The left-leading node of the switch.
+      /// </summary>
+      private TrackNode LeftLeadingNode;
+
+      /// <summary>
+      /// The right-leading node of the switch.
+      /// </summary>
+      private TrackNode RightLeadingNode;
+
       
       /// <summary>
       /// True when switch is manually locked by the dispatcher.
@@ -54,6 +82,36 @@ namespace ORTS.Interlocking
       /// True when the switch has been locked as part of a route.
       /// </summary>
       public bool IsRouteLocked { get; private set; }
+
+
+      /// <summary>
+      /// Returns true if any of the connected tracks are occupied.
+      /// </summary>
+      public bool IsOccupied
+      {
+         get
+         {
+            bool returnValue = false;
+
+            if (BaseNode.InterlockingTrack != null && BaseNode.InterlockingTrack.IsOccupied)
+            {
+               returnValue = true;
+            }
+
+            if (LeftLeadingNode.InterlockingTrack != null && LeftLeadingNode.InterlockingTrack.IsOccupied)
+            {
+               returnValue = true;
+            }
+
+            if (RightLeadingNode.InterlockingTrack != null && RightLeadingNode.InterlockingTrack.IsOccupied)
+            {
+               returnValue = true;
+            }
+
+
+            return returnValue;
+         }
+      }
 
 
       /// <summary>
@@ -123,16 +181,14 @@ namespace ORTS.Interlocking
       }
 
 
-
+      /// <summary>
+      /// Initialises some of the switch properties based on the underlying network topology.
+      /// </summary>
       private void ComputeGeometry()
       {
          var tracknodes = simulator.TDB.TrackDB.TrackNodes;
 
-
-
          TrackNode[] connections= new TrackNode[3];
-
-
          
          TrackNode thisNode = tracknodes[TrJunctionNodeIndex];
 
@@ -140,49 +196,211 @@ namespace ORTS.Interlocking
          {
             connections[i] = tracknodes[thisNode.TrPins[i].Link];
          }
-            
+          
+  
+
          
          // we now have the 3 connected nodes that are connected to this switch.
 
          // now, we need to try to compute the angles in this switch
+         Dictionary<TrVectorNode[],float> angles = DetermineAngles(connections);
 
 
+         bool isWye = true;   // is false for *most* switches - some switches, however, diverge on both branches
+                              // is false when or more of the angles in the switch is ~180.
 
-         point[] junctionVectors = new point[3];
+         foreach (var a in angles.Values)
+         {
+            if (a.AlmostEqual(180f, 0.1f))
+            {
+               isWye = false; // one of the angles is 180 - switch is not a wye.
+               break;               
+            }
+         }
+
+
+         if (!isWye)
+         {
+            // normal case - only one of the branches is diverging
+
+            TrVectorNode baseNode = null;
+            TrVectorNode leftLeadingNode = null;
+            TrVectorNode rightLeadingNode = null;
+
+            ComputeBranches(angles, ref baseNode, ref leftLeadingNode, ref rightLeadingNode);
+
+            foreach (var c in connections)
+            {
+               if (c.TrVectorNode == baseNode)
+               {
+                  BaseNode = c;
+               }
+
+               if (c.TrVectorNode == leftLeadingNode)
+               {
+                  LeftLeadingNode = c;
+               }
+
+               if (c.TrVectorNode == rightLeadingNode)
+               {
+                  RightLeadingNode = c;
+               }
+            }
+
+            if (BaseNode == null)
+            {
+               // TODO: error
+            }
+
+            if (LeftLeadingNode == null)
+            {
+               // TODO: error
+            }
+
+            if (RightLeadingNode == null)
+            {
+               // TODO: error
+            }
+
+         }
+         else
+         {
+            // two of the branches are diverging
+         }
+
+
+       
+
+      }
+
+
+      /// <summary>
+      /// Computes the branches/nodes of the switch.
+      /// </summary>
+      /// <param name="angles"></param>
+      /// <returns></returns>
+      private void ComputeBranches(Dictionary<TrVectorNode[], float> angles, ref TrVectorNode baseNode, ref TrVectorNode leftLeadingNode, ref TrVectorNode rightLeadingNode)
+      {
+        
+         List<TrVectorNode> nodes = new List<TrVectorNode>();
+
+         var tempDict = new Dictionary<TrVectorNode[], float>(angles); 
+
+         foreach (var nodePair in angles)
+         {
+            if (nodes.Contains(nodePair.Key[0]) == false)
+            {
+               nodes.Add(nodePair.Key[0]);
+            }
+
+            if (nodes.Contains(nodePair.Key[1]) == false)
+            {
+               nodes.Add(nodePair.Key[1]);
+            }
+         }
+
+
+         // nodes now contains all three TrVectorNodes
+         // get the smallest angle
+
+         float smallest = float.MaxValue;
+
+         foreach (var nodePair in angles)
+         {
+            if (nodePair.Value < smallest)
+            {
+               smallest = nodePair.Value;
+            }
+         }
+
+         #region Compute Base Node
+         // now that we know the smallest angle, remove that entry, as the other two entries both contain the base
+
+         var enumer = tempDict.GetEnumerator();
+         while (enumer.MoveNext())
+         {
+            if (enumer.Current.Value == smallest)
+            {
+               tempDict.Remove(enumer.Current.Key);
+               break;
+            }
+         }
+
+         // tempDict should now have two entries - the base is the common TrVectorNode between the two
+
+         var first = tempDict.First();
+         var last = tempDict.Last();
+
+         if (first.Key[0] == last.Key[0])
+         {
+            baseNode = first.Key[0];
+         }
+         else if (first.Key[1] == last.Key[1])
+         {
+            baseNode = first.Key[1];
+         }
+         else if (first.Key[1] == last.Key[0])
+         {
+            baseNode = first.Key[1];
+         }
+         else if (first.Key[0] == last.Key[1])
+         {
+            baseNode = first.Key[0];
+         }
+
+         #endregion
+
+         #region Compute Right-Leading Node
+
+         #endregion
+
+      }
+
+      /// <summary>
+      /// Determines the angles of the switch. Useful for computing properties
+      /// related to the geometry of a switch.
+      /// </summary>
+      /// <param name="connections"></param>
+      /// <returns></returns>
+      private Dictionary<TrVectorNode[], float> DetermineAngles(TrackNode[] connections)
+      {
+
+         Dictionary<TrVectorNode[], float> returnValue = new Dictionary<TrVectorNode[], float>();
+
+
+         Vector3[] junctionVectors = new Vector3[3];
 
          for (int i = 0; i < 3; i++)
          {
 
-            if (connections[i].TrEndNode)
+            if (connections[i].TrEndNode == false &&
+                connections[i].TrJunctionNode == null)
             {
-               // next thing is a buffer
-            }
-            else if (connections[i].TrJunctionNode != null)
-            {
-               // next thing is another switch
-            }
-            else
-            {
-               // just a track section
-            
-               TDBTraveller tempTrav = new TDBTraveller(connections[i],connections[i].TrVectorNode.TrVectorSections[0], simulator.TDB, simulator.TSectionDat);
+
+               TDBTraveller tempTrav = new TDBTraveller(connections[i], connections[i].TrVectorNode.TrVectorSections[0], simulator.TDB, simulator.TSectionDat);
 
 
-               point initialLocation = new point(tempTrav.TileX * 2048 + tempTrav.X, 0, tempTrav.TileZ * 2048 + tempTrav.Z);
+               Vector3 initialLocation = new Vector3(/*tempTrav.TileX * 2048 +*/ tempTrav.X, 0, /*tempTrav.TileZ * 2048 +*/ tempTrav.Z);
 
                // move a small distance from the junction
                tempTrav.Move(1);
 
-               point finalLocation = new point(tempTrav.TileX * 2048 + tempTrav.X, 0, tempTrav.TileZ * 2048 + tempTrav.Z);
+               Vector3 finalLocation = new Vector3(/*tempTrav.TileX * 2048 +*/ tempTrav.X, 0, /*tempTrav.TileZ * 2048 +*/ tempTrav.Z);
 
-
-               // TODO: this does not work correctly yet
                junctionVectors[i].X = finalLocation.X - initialLocation.X;
                junctionVectors[i].Z = finalLocation.Z - initialLocation.Z;
 
+               junctionVectors[i].Normalize();
             }
          }
 
+         returnValue.Add(new TrVectorNode[] { connections[0].TrVectorNode, connections[1].TrVectorNode }, MathHelper.ToDegrees((float)Math.Acos(MathHelper.Clamp(Vector3.Dot(junctionVectors[0], junctionVectors[1]), -1, 1))));
+         returnValue.Add(new TrVectorNode[] { connections[1].TrVectorNode, connections[2].TrVectorNode }, MathHelper.ToDegrees((float)Math.Acos(MathHelper.Clamp(Vector3.Dot(junctionVectors[1], junctionVectors[2]), -1, 1))));
+         returnValue.Add(new TrVectorNode[] { connections[0].TrVectorNode, connections[2].TrVectorNode }, MathHelper.ToDegrees((float)Math.Acos(MathHelper.Clamp(Vector3.Dot(junctionVectors[0], junctionVectors[2]), -1, 1))));
+
+         return returnValue;
       }
+
+      
    }
 }

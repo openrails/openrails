@@ -9,7 +9,7 @@ namespace ORTS.Interlocking.MovementAuthority
    /// Defines a single path between either  a signal
    /// and a termination object (another signal or a buffer). 
    /// </summary>
-   public class AtomicRoute
+   public class Route
    {
 
       /// <summary>

@@ -214,7 +214,7 @@
     <Compile Include="Interlocking\InterlockingSystem.Routes.cs" />
     <Compile Include="Interlocking\InterlockingTerminator.cs" />
     <Compile Include="Interlocking\InterlockingTrack.cs" />
-    <Compile Include="Interlocking\MovementAuthority\AtomicRoute.cs" />
+    <Compile Include="Interlocking\MovementAuthority\Route.cs" />
     <Compile Include="Interlocking\MovementAuthority\RouteCollection.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />

@@ -889,7 +889,7 @@
             <para>Scaled to meters/second.</para>
             </summary>
         </member>
-        <member name="F:MSTS.STFReader.UNITS.Weight">
+        <member name="F:MSTS.STFReader.UNITS.Mass">
             <summary>Valid Units: kg, t, lb
             <para>Scaled to kilograms.</para>
             </summary>
@@ -912,6 +912,21 @@
         <member name="F:MSTS.STFReader.UNITS.Resistance">
             <summary>Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
             <para>Scaled to newtons/speed(m/s)</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.MassRate">
+            <summary>Valid Units: lb/h
+            <para>Scaled to pounds per hour.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Volume">
+            <summary>Valid Units: *(ft^3)
+            <para>Scaled to cubic feet.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.Pressure">
+            <summary>Valid Units: psi
+            <para>Scaled to pounds per square inch.</para>
             </summary>
         </member>
         <member name="F:MSTS.STFReader.UNITS.Any">
@@ -2590,8 +2605,7 @@
         </member>
         <member name="T:ORTS.Interlocking.SwitchState">
             <summary>
-            Defines possible states of the switch. For now, using underlying
-            value to indicate position, instead of normal/reverse.
+            Defines possible states of the switch. 
             </summary>
         </member>
         <member name="T:ORTS.Interlocking.InterlockingSwitch">
@@ -2604,9 +2618,54 @@
             Defines the index number of the underlying TrJunctionNode.
             </summary>
         </member>
+        <member name="F:ORTS.Interlocking.InterlockingSwitch.BaseNode">
+            <summary>
+            The base node of the switch.
+            </summary>
+        </member>
+        <member name="F:ORTS.Interlocking.InterlockingSwitch.LeftLeadingNode">
+            <summary>
+            The left-leading node of the switch.
+            </summary>
+        </member>
+        <member name="F:ORTS.Interlocking.InterlockingSwitch.RightLeadingNode">
+            <summary>
+            The right-leading node of the switch.
+            </summary>
+        </member>
         <member name="M:ORTS.Interlocking.InterlockingSwitch.Throw">
             <summary>
             Throws switch if possible.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSwitch.ComputeGeometry">
+            <summary>
+            Initialises some of the switch properties based on the underlying network topology.
+            </summary>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSwitch.ComputeBranches(System.Collections.Generic.Dictionary{MSTS.TrVectorNode[],System.Single},MSTS.TrVectorNode@,MSTS.TrVectorNode@,MSTS.TrVectorNode@)">
+            <summary>
+            Computes the branches/nodes of the switch.
+            </summary>
+            <param name="angles"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ORTS.Interlocking.InterlockingSwitch.DetermineAngles(MSTS.TrackNode[])">
+            <summary>
+            Determines the angles of the switch. Useful for computing properties
+            related to the geometry of a switch.
+            </summary>
+            <param name="connections"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSwitch.SpeedLeftLeading">
+            <summary>
+            Defines the maximum speed in m/s through the switch via the left leading position.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSwitch.SpeedRightLeading">
+            <summary>
+            Defines the maximum speed in m/s through the switch via the right leading position.
             </summary>
         </member>
         <member name="P:ORTS.Interlocking.InterlockingSwitch.IsManuallyLocked">
@@ -2617,6 +2676,11 @@
         <member name="P:ORTS.Interlocking.InterlockingSwitch.IsRouteLocked">
             <summary>
             True when the switch has been locked as part of a route.
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.InterlockingSwitch.IsOccupied">
+            <summary>
+            Returns true if any of the connected tracks are occupied.
             </summary>
         </member>
         <member name="P:ORTS.Interlocking.InterlockingSwitch.IsLocked">
@@ -3831,13 +3895,13 @@
             <param name="interlockingSystem">The InterlockingSystem object from which
             to create routes.</param>
         </member>
-        <member name="M:ORTS.Interlocking.MovementAuthority.RouteCollection.AddRange(System.Collections.Generic.List{ORTS.Interlocking.MovementAuthority.AtomicRoute})">
+        <member name="M:ORTS.Interlocking.MovementAuthority.RouteCollection.AddRange(System.Collections.Generic.List{ORTS.Interlocking.MovementAuthority.Route})">
             <summary>
             Adds a list of routes to the collection.
             </summary>
             <param name="items">The routes to add to the collection.</param>
         </member>
-        <member name="M:ORTS.Interlocking.MovementAuthority.RouteCollection.Add(ORTS.Interlocking.MovementAuthority.AtomicRoute)">
+        <member name="M:ORTS.Interlocking.MovementAuthority.RouteCollection.Add(ORTS.Interlocking.MovementAuthority.Route)">
             <summary>
             Adds a route to the collection.
             </summary>
@@ -3858,17 +3922,6 @@
             <param name="Terminator"></param>
             <returns></returns>
         </member>
-        <member name="T:ORTS.Interlocking.MovementAuthority.AtomicRoute">
-            <summary>
-            Defines a single path between either  a signal
-            and a termination object (another signal or a buffer). 
-            </summary>
-        </member>
-        <member name="P:ORTS.Interlocking.MovementAuthority.AtomicRoute.StartSignal">
-            <summary>
-            The signal defining the beginning of the route.
-            </summary>
-        </member>
         <member name="M:MSTS.TWorldDirection.RotatePoint(MSTS.TWorldPosition)">
             <summary>
             Rotate the specified point in model space to a new location according to the quaternion 
@@ -3876,6 +3929,16 @@
             Example   xyz = 0,1,2 rotated 90 degrees east becomes 2,1,0
             </summary>
             <param name="p1"></param>
+        </member>
+        <member name="M:ORTS.ORTSMath.AlmostEqual(System.Single,System.Single,System.Single)">
+            <summary>
+            Returns true when the floating point value is *close to* the given value,
+            within a given tolerance.
+            </summary>
+            <param name="thisValue"></param>
+            <param name="value">The value to compare with.</param>
+            <param name="tolerance">The amount the two values may differ while still being considered equal</param>
+            <returns></returns>
         </member>
         <member name="T:ORTS.Common.BrakeCurves">
             <summary>
@@ -4192,6 +4255,17 @@
             <summary>
             Initializes a process state object to 
             finished state.
+            </summary>
+        </member>
+        <member name="T:ORTS.Interlocking.MovementAuthority.Route">
+            <summary>
+            Defines a single path between either  a signal
+            and a termination object (another signal or a buffer). 
+            </summary>
+        </member>
+        <member name="P:ORTS.Interlocking.MovementAuthority.Route.StartSignal">
+            <summary>
+            The signal defining the beginning of the route.
             </summary>
         </member>
     </members>

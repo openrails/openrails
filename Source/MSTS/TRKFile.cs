@@ -74,13 +74,14 @@ namespace MSTS
             if (Description == null) throw new STFException(stf, "Missing Description");
             if (RouteStart == null) throw new STFException(stf, "Missing RouteStart");
         }
+
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name
         public string FileName; // ie OdakyuSE - used for MKR,RDB,REF,RIT,TDB,TIT
         public string Name;
         public string Description;
         public RouteStart RouteStart;
         public TRKEnvironment Environment;
-		public bool MilepostUnitsMetric = false;
+		  public bool MilepostUnitsMetric = false;
         public double MaxLineVoltage = 0;
     }
 
