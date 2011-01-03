@@ -896,7 +896,7 @@ namespace ORTS
             }
 
             // figure out which PIN we entered on
-            for (iEntryPIN = 0; iEntryPIN < 5; ++iEntryPIN)
+            for (iEntryPIN = 0; iEntryPIN < 5 && iEntryPIN < TN.TrPins.Length ; ++iEntryPIN)
                 if (TN.TrPins[iEntryPIN].Link == iPreviousTrackNode)
                     break;
 

@@ -95,7 +95,7 @@ namespace MSTS
         PSI,
         KILOPASCALS,
         KGS_PER_SQUARE_CM,
-        APMS,
+        AMPS,
         VOLTS,
         KILOVOLTS,
         KM_PER_HOUR,
@@ -151,7 +151,7 @@ namespace MSTS
             catch(ArgumentException)
             {
                 stf.StepBackOneItem();
-                // REMOVED TEMPORARILY STFException.TraceWarning(stf, "Unknown ControlType " + stf.ReadString());
+                STFException.TraceWarning(stf, "Unknown ControlType " + stf.ReadString());
                 ControlType = CABViewControlTypes.NONE;
             }
             //stf.ReadItem(); // Skip repeated Class Type 
@@ -193,7 +193,7 @@ namespace MSTS
             catch (ArgumentException)
             {
                 stf.StepBackOneItem();
-                // REMOVED TEMPORARILY STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadString());
+                STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadString());
                 ControlStyle = CABViewControlStyles.NONE;
             }
             stf.SkipRestOfBlock();
@@ -208,7 +208,7 @@ namespace MSTS
             catch (ArgumentException)
             {
                 stf.StepBackOneItem();
-                // REMOVED TEMPORARILY STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadItem());
+                STFException.TraceWarning(stf, "Unknown ControlStyle " + stf.ReadItem());
                 Units = CABViewControlUnits.NONE;
             }
             stf.SkipRestOfBlock();
@@ -237,8 +237,8 @@ namespace MSTS
                 new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("scalepos", ()=>{
                     stf.MustMatch("(");
-                    FromDegree = stf.ReadInt(STFReader.UNITS.None, null);
-                    ToDegree = stf.ReadInt(STFReader.UNITS.None, null);
+                    FromDegree = stf.ReadFloat(STFReader.UNITS.None, null);
+                    ToDegree = stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                 }),
             });
