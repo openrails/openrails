@@ -28,6 +28,8 @@ namespace Menu
         #region Members
 
         public const string FolderDataFileName = "folder.dat";
+        private BackgroundWorker bgWork;
+        private Dictionary<string, List<string>> EnginesWithConsists;
 
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
@@ -46,11 +48,11 @@ namespace Menu
         List<Route> Routes;
         List<Activity> Activities;
 
-        //public Folder SelectedFolder { get { return listBoxFolders.SelectedIndex < 0 ? null : Folders[listBoxFolders.SelectedIndex]; } }
+        public Folder SelectedFolder { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex].Folder; } }
         public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
         public Activity SelectedActivity { get { return listBoxActivities.SelectedIndex < 0 ? null : Activities[listBoxActivities.SelectedIndex]; } set { if (listBoxActivities.SelectedIndex >= 0) Activities[listBoxActivities.SelectedIndex] = value; } }
         
-        public Folder SelectedFolder { get { return Folders[0]; } }
+        //public Folder SelectedFolder { get { return Folders[0]; } }
         
         public class Folder
         {
@@ -123,7 +125,9 @@ namespace Menu
         public MainWindow()
 		{
 			this.InitializeComponent();
-
+            bgWork = new BackgroundWorker();
+            bgWork.DoWork += new DoWorkEventHandler(bgWork_DoWork);
+            bgWork.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgWork_RunWorkerCompleted);
             SetBuildRevision();
             UserDataFolder = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.Cookies)));
             UserDataFolder = UserDataFolder.Substring(0, UserDataFolder.LastIndexOf("\\") + 1);
@@ -142,9 +146,21 @@ namespace Menu
 
             CleanupPre021();
         }
+
+        
         #endregion
 
         #region Event Handlers
+        private void bgWork_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void bgWork_DoWork(object sender, DoWorkEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
         private void winMain_Closing(object sender, CancelEventArgs e)
         {
             
@@ -297,7 +313,8 @@ namespace Menu
             }
         }
 
-        void LoadFolders()
+        //============================================================================================
+        private void LoadFolders()
         {
             Folders = new List<Folder>();
 
@@ -339,7 +356,8 @@ namespace Menu
             
         }
 
-        void SaveFolders()
+        //================================================================================
+        private void SaveFolders()
         {
             using (BinaryWriter outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
             {
@@ -352,7 +370,8 @@ namespace Menu
             }
         }
 
-        void LoadRoutes()
+        //===========================================================================
+        private void LoadRoutes()
         {
             Routes = new List<Route>();
             try
@@ -395,7 +414,8 @@ namespace Menu
                 LoadActivities();
         }
 
-        void LoadActivities()
+        //===========================================================================
+        private void LoadActivities()
         {
             Activities = new List<Activity>();
 
@@ -436,7 +456,8 @@ namespace Menu
                 listBoxActivities.UnselectAll();
         }
 
-        void DisplayRouteDetails()
+        //===========================================================================================
+        private void DisplayRouteDetails()
         {
             if (listBoxRoutes.SelectedIndex >= 0)
             {
@@ -461,7 +482,8 @@ namespace Menu
             }
         }
 
-        void DisplayActivityDetails()
+        //================================================================================
+        private void DisplayActivityDetails()
         {
             if (listBoxActivities.SelectedIndex > 0)
             {
@@ -551,22 +573,94 @@ namespace Menu
         List<string> FillConsists(bool driveableOnly)
         {
             List<string> consists = new List<string>();
-            cboConsist.Items.Clear();
-            switch (driveableOnly)
+
+            if (this.Dispatcher.CheckAccess())
             {
-                case true: //to implement in future version
-                    break;
-                default:
-                    
-                    string[] confiles = Directory.GetFiles(Routes[listBoxRoutes.SelectedIndex].Folder.Path + @"\trains\consists");
-                    foreach (string file in confiles)
-                    {
-                        cboConsist.Items.Add(System.IO.Path.GetFileName(file));
-                        consists.Add(file);
-                    }
-                    confiles = null;
-                    break;
+                cboConsist.Items.Clear();
+                switch (driveableOnly)
+                {
+                    case true:
+                        string[] confiles = Directory.GetFiles(SelectedFolder.Path + @"\trains\consists");
+                        EnginesWithConsists = new Dictionary<string, List<string>>();
+                        foreach (string file in confiles)
+                        {
+                            using (StreamReader sr = new StreamReader(file))
+                            {
+                                string fileContent = sr.ReadToEnd();
+                                //Check that the consist file contains an engine
+                                if (fileContent.ToLower().Contains("enginedata"))
+                                {
+                                    string couple = fileContent.Substring(fileContent.ToLower().IndexOf("enginedata") + 10);
+                                    couple = couple.Substring(couple.IndexOf("(") + 1);
+                                    couple = couple.Substring(0, couple.IndexOf(")")).Trim();
+                                    string key = "";
+                                    if (couple.Substring(0, 1) == "\"")
+                                    {
+                                        key = couple.Substring(1);
+                                        key = key.Substring(0, key.IndexOf("\"")).Trim();
+                                    }
+                                    else
+                                    {
+                                        key = couple.Substring(0, couple.IndexOf(" "));
+                                    }
+
+                                    string engineFolder = couple.Substring(key.Length);
+                                    engineFolder = couple.Replace("\"", "").Trim();
+                                    //Check if the engine file exists
+                                    if (File.Exists(SelectedFolder.Path + @"\trains\trainset\" + engineFolder + "\\" + key + ".eng"))
+                                    {
+                                        StreamReader srEngine = new StreamReader(SelectedFolder.Path + @"\trains\trainset\" + engineFolder + "\\" + key + ".eng");
+                                        string engineContent = sr.ReadToEnd();
+                                        //Check if it contains a Cabview => player driveable engine
+                                        if (engineContent.ToLower().Contains("cabview") && engineContent.ToLower().IndexOf("cabview") < engineContent.ToLower().IndexOf("description"))
+                                        {
+                                            if (EnginesWithConsists.ContainsKey(key))
+                                            {
+                                                EnginesWithConsists[key].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
+                                            }
+                                            else
+                                            {
+                                                EnginesWithConsists.Add(key, new List<string>());
+                                                EnginesWithConsists[key].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
+                                            }
+                                        }
+                                        srEngine.Close();
+                                        srEngine = null;
+                                        engineContent = null;
+                                    }
+                                    else
+                                    {
+                                        //Display error message ?
+                                    }
+                                    
+                                }
+                            }
+                                
+                        }
+                            //cboConsist.Items.Add(System.IO.Path.GetFileName(file));
+                            //consists.Add(file);
+                        confiles = null;
+                        consists = null;
+                        //Populate the comboBoxes
+
+                        break;
+                    default:
+
+                        confiles = Directory.GetFiles(Routes[listBoxRoutes.SelectedIndex].Folder.Path + @"\trains\consists");
+                        foreach (string file in confiles)
+                        {
+                            cboConsist.Items.Add(System.IO.Path.GetFileName(file));
+                            consists.Add(file);
+                        }
+                        confiles = null;
+                        break;
+                }
             }
+            else
+            {
+                this.Dispatcher.Invoke(new FillConsistsDelegate(FillConsists), driveableOnly);
+            }
+
             return consists;
         }
 
@@ -574,8 +668,10 @@ namespace Menu
 
         #endregion
 
-       
+        #region Delegates
 
-        
+        private delegate List<string> FillConsistsDelegate(bool driveableOnly);
+
+        #endregion
     }
 }
