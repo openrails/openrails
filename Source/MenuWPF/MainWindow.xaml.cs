@@ -16,6 +16,7 @@ using System.IO;
 using MSTS;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace Menu
 {
@@ -124,12 +125,15 @@ namespace Menu
 			this.InitializeComponent();
 
             SetBuildRevision();
-            UserDataFolder = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)));
-
+            UserDataFolder = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.Cookies)));
+            UserDataFolder = UserDataFolder.Substring(0, UserDataFolder.LastIndexOf("\\") + 1);
+            
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
             // Set title to show revision or build info.
             //Content = String.Format(Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", AppDomain.CurrentDomain.FriendlyName, Revision, Build);
-
+            Assembly exeAssembly = Assembly.GetExecutingAssembly();
+            AssemblyProductAttribute prodName = (AssemblyProductAttribute)exeAssembly.GetCustomAttributes(typeof(System.Reflection.AssemblyProductAttribute), false).Single();
+            UserDataFolder += prodName.Product;
             FolderDataFile = UserDataFolder + @"\" + FolderDataFileName;
             //Load the folders
             LoadFolders();
@@ -373,7 +377,7 @@ namespace Menu
                 MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            Routes = Routes.OrderBy(r => r.Name).ToList();
+            //Routes = Routes.OrderBy(r => r.Folder.Name).OrderBy(r => r.Name).ToList();
 
             listBoxRoutes.Items.Clear();
             foreach (var route in Routes)
@@ -450,7 +454,8 @@ namespace Menu
                     flowDoc.Blocks.Add(paragraph);
                 }
                 //#7FFFFFFF
-                flowDoc.Background = new SolidColorBrush(Color.FromArgb(Convert.ToByte("99", 16), 251, 251, 251));
+                flowDoc.FontFamily = FontFamily;
+                flowDoc.Background = new SolidColorBrush(Color.FromArgb(Convert.ToByte("00", 16), 251, 251, 251));
                 docRouteDetail.Document = flowDoc;
                 lines = null;
             }

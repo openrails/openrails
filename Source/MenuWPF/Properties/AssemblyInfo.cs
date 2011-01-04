@@ -7,12 +7,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Menu")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("MenuWPF")]
+[assembly: AssemblyDescription("Open Rails Train Simulator")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("Menu")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2010")]
+[assembly: AssemblyCompany("Open Rails")]
+[assembly: AssemblyProduct("Open Rails")]
+[assembly: AssemblyCopyright("Copyright © OpenRails 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
