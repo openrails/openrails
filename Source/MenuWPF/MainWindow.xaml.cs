@@ -48,7 +48,7 @@ namespace MenuWPF
         List<Route> Routes;
         List<Activity> Activities;
 
-        public Folder SelectedFolder { get { return listBoxRoutes.SelectedIndex < 0 ? Folders[0] : Routes[listBoxRoutes.SelectedIndex].Folder; } }
+        public Folder SelectedFolder { get { return cboFolder.SelectedIndex < 0 ? null : Folders[cboFolder.SelectedIndex]; } }
         public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
         public Activity SelectedActivity { get { return listBoxActivities.SelectedIndex < 0 ? null : Activities[listBoxActivities.SelectedIndex]; } set { if (listBoxActivities.SelectedIndex >= 0) Activities[listBoxActivities.SelectedIndex] = value; } }
         
@@ -141,8 +141,6 @@ namespace MenuWPF
             FolderDataFile = UserDataFolder + @"\" + FolderDataFileName;
             //Load the folders
             LoadFolders();
-            //Loading the routes
-            LoadRoutes();
 
             CleanupPre021();
         }
@@ -193,6 +191,29 @@ namespace MenuWPF
         {
             //Load activity details
             DisplayActivityDetails();
+        }
+        private void cboEngine_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            cboConsist.Items.Clear();
+            var con = from f in EnginesWithConsists
+                      where f.Key.Name == cboEngine.SelectedItem.ToString()
+                      select f.Value;
+
+            foreach (string consist in con.Single())
+            {
+                cboConsist.Items.Add(consist);
+            }
+            cboConsist.SelectedIndex = 0;
+        }
+
+        private void cboPath_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            // TODO: Add event handler implementation here.
+        }
+
+        private void cboFolder_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            LoadRoutes();
         }
         #endregion
 
@@ -330,6 +351,7 @@ namespace MenuWPF
                             var path = inf.ReadString();
                             var name = inf.ReadString();
                             Folders.Add(new Folder(name, path));
+                            cboFolder.Items.Add(name);
                         }
                     }
                 }
@@ -344,6 +366,7 @@ namespace MenuWPF
                 try
                 {
                     Folders.Add(new Folder("- Default -", MSTSPath.Base()));
+                    cboFolder.Items.Add("- Default -");
                 }
                 catch (Exception)
                 {
@@ -396,7 +419,7 @@ namespace MenuWPF
 
                 listBoxRoutes.Items.Clear();
                 foreach (var route in Routes)
-                    listBoxRoutes.Items.Add(route.Folder.Name + "/" + route.Name);
+                    listBoxRoutes.Items.Add(route.Name);
 
                 if (Routes.Count > 0)
                 {
@@ -516,10 +539,12 @@ namespace MenuWPF
                 cboWeather.IsEnabled = false;
                 labelDifficulty.Content = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty.ToString();
 
-
+                //cboEngine.SelectedIndex = -1;
+                cboEngine.IsEnabled = false;
                 cboPath.SelectedIndex = -1;//Paths.IndexOf(Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.PathID);
                 cboPath.IsEnabled = false;
-                cboConsist.SelectedIndex = -1;
+                cboHeading.SelectedIndex = -1;
+                cboHeading.IsEnabled = false;
                 cboConsist.IsEnabled = false;
             }
             else
@@ -542,7 +567,9 @@ namespace MenuWPF
                 cboWeather.IsEnabled = true;
                 cboPath.SelectedIndex = 0;
                 cboPath.IsEnabled = true;
-                cboConsist.SelectedIndex = 0;
+                //cboEngine.SelectedIndex = 0;
+                cboEngine.IsEnabled = true;
+                cboHeading.IsEnabled = true;
                 cboConsist.IsEnabled = true;
 
             }
@@ -574,7 +601,12 @@ namespace MenuWPF
         {
             if (this.Dispatcher.CheckAccess())
             {
+                lblProgress.Visibility =  Visibility.Visible;
+                progBar.Visibility = Visibility.Visible;
+                System.Windows.Forms.Application.DoEvents();
+                progBar.Value = 0;
                 string[] confiles = Directory.GetFiles(SelectedFolder.Path + @"\trains\consists");
+                progBar.Maximum = confiles.Length;
                 EnginesWithConsists = new Dictionary<EngineInfo, List<string>>(new EngineInfoEqualityComparer());
                 foreach (string file in confiles)
                 {
@@ -607,6 +639,7 @@ namespace MenuWPF
                                 string engineContent = srEngine.ReadToEnd();
                                 EngineInfo engKey = GetEngineInfo(engineContent);
                                 engKey.ID = key;
+                                if (String.IsNullOrEmpty(engKey.Name)) engKey.Name = engKey.ID;
                                 //Check if it contains a Cabview => player driveable engine
                                 if (engineContent.ToLower().Contains("cabview") && engineContent.ToLower().IndexOf("cabview") < engineContent.ToLower().IndexOf("description"))
                                 {
@@ -618,7 +651,9 @@ namespace MenuWPF
                                     {
                                         EnginesWithConsists.Add(engKey, new List<string>());
                                         EnginesWithConsists[engKey].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
+                                        //cboEngine.Items.Add(engKey.Name);
                                     }
+                                    
                                 }
                                 srEngine.Close();
                                 srEngine = null;
@@ -631,12 +666,20 @@ namespace MenuWPF
                             
                         }
                     }
-                        
+                    progBar.Value += 1;
+                    System.Windows.Forms.Application.DoEvents();
                 }
                     //cboConsist.Items.Add(System.IO.Path.GetFileName(file));
                     //consists.Add(file);
                 confiles = null;
-                //Populate the comboBoxes
+                foreach (EngineInfo key in EnginesWithConsists.Keys.OrderBy(p => p.Name))
+                {
+                    cboEngine.Items.Add(key.Name);
+                }
+                cboEngine.SelectionChanged += new SelectionChangedEventHandler(cboEngine_SelectionChanged);
+                cboEngine.SelectedIndex = 0;
+                lblProgress.Visibility = Visibility.Hidden;
+                progBar.Visibility = Visibility.Hidden;
             }
             else
             {
@@ -742,6 +785,8 @@ namespace MenuWPF
             }
             return tagValue;
         }
+
+        
 
         #endregion
 

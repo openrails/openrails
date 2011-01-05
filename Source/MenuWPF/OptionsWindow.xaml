@@ -5,7 +5,7 @@
 	x:Class="MenuWPF.OptionsWindow"
 	x:Name="winOptions"
 	Title="Options"
-	Width="1024" Height="768" Icon="openrails.ico" WindowStartupLocation="CenterScreen" WindowState="Maximized">
+	Width="1024" Height="768" Icon="openrails.ico" WindowStartupLocation="CenterScreen" WindowState="Normal">
 	<Window.Resources>
     <Style TargetType="{x:Type TabItem}">
       <Setter Property="Template">
