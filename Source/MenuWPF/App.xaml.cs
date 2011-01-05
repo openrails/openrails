@@ -5,7 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Windows;
 
-namespace Menu
+namespace MenuWPF
 {
 	/// <summary>
 	/// Interaction logic for App.xaml

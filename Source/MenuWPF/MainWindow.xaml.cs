@@ -18,7 +18,7 @@ using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Reflection;
 
-namespace Menu
+namespace MenuWPF
 {
 	/// <summary>
 	/// New Windows Presentation Foundation Main Menu for Open Rails
@@ -29,7 +29,7 @@ namespace Menu
 
         public const string FolderDataFileName = "folder.dat";
         private BackgroundWorker bgWork;
-        private Dictionary<string, List<string>> EnginesWithConsists;
+        private Dictionary<EngineInfo, List<string>> EnginesWithConsists;
 
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
@@ -48,7 +48,7 @@ namespace Menu
         List<Route> Routes;
         List<Activity> Activities;
 
-        public Folder SelectedFolder { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex].Folder; } }
+        public Folder SelectedFolder { get { return listBoxRoutes.SelectedIndex < 0 ? Folders[0] : Routes[listBoxRoutes.SelectedIndex].Folder; } }
         public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
         public Activity SelectedActivity { get { return listBoxActivities.SelectedIndex < 0 ? null : Activities[listBoxActivities.SelectedIndex]; } set { if (listBoxActivities.SelectedIndex >= 0) Activities[listBoxActivities.SelectedIndex] = value; } }
         
@@ -390,28 +390,29 @@ namespace Menu
                         }
                     }
                 }
+            
+
+                //Routes = Routes.OrderBy(r => r.Folder.Name).OrderBy(r => r.Name).ToList();
+
+                listBoxRoutes.Items.Clear();
+                foreach (var route in Routes)
+                    listBoxRoutes.Items.Add(route.Folder.Name + "/" + route.Name);
+
+                if (Routes.Count > 0)
+                {
+                    listBoxRoutes.SelectedIndex = 0;
+                    FillConsists();
+                }
+                else
+                    listBoxRoutes.UnselectAll();
+
+                if (Routes.Count == 0)   //for what does this serve ? If no route, no game !! ??
+                    LoadActivities();
             }
             catch (Exception error)
             {
                 MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
-            //Routes = Routes.OrderBy(r => r.Folder.Name).OrderBy(r => r.Name).ToList();
-
-            listBoxRoutes.Items.Clear();
-            foreach (var route in Routes)
-                listBoxRoutes.Items.Add(route.Folder.Name + "/" + route.Name);
-
-            if (Routes.Count > 0)
-            {
-                listBoxRoutes.SelectedIndex = 0;
-                Consists = FillConsists(false);
-            }
-            else
-                listBoxRoutes.UnselectAll();
-
-            if (Routes.Count == 0)   //for what does this serve ? If no route, no game !! ??
-                LoadActivities();
         }
 
         //===========================================================================
@@ -567,110 +568,186 @@ namespace Menu
         }
 
         /// <summary>
-        /// Method to fill the consists combo box
+        /// Method to fill the list of engines and consists
         /// </summary>
-        /// <param name="driveableOnly">Fill only with consists that contain a player driveable engine</param>
-        List<string> FillConsists(bool driveableOnly)
+        private void FillConsists()
         {
-            List<string> consists = new List<string>();
-
             if (this.Dispatcher.CheckAccess())
             {
-                cboConsist.Items.Clear();
-                switch (driveableOnly)
+                string[] confiles = Directory.GetFiles(SelectedFolder.Path + @"\trains\consists");
+                EnginesWithConsists = new Dictionary<EngineInfo, List<string>>(new EngineInfoEqualityComparer());
+                foreach (string file in confiles)
                 {
-                    case true:
-                        string[] confiles = Directory.GetFiles(SelectedFolder.Path + @"\trains\consists");
-                        EnginesWithConsists = new Dictionary<string, List<string>>();
-                        foreach (string file in confiles)
+                    using (StreamReader sr = new StreamReader(file))
+                    {
+                        string fileContent = sr.ReadToEnd();
+                        //Check that the consist file contains an engine
+                        if (fileContent.ToLower().Contains("enginedata"))
                         {
-                            using (StreamReader sr = new StreamReader(file))
+                            string couple = fileContent.Substring(fileContent.ToLower().IndexOf("enginedata") + 10);
+                            couple = couple.Substring(couple.IndexOf("(") + 1);
+                            couple = couple.Substring(0, couple.IndexOf(")")).Trim();
+                            string key = "";
+                            if (couple.Substring(0, 1) == "\"")
                             {
-                                string fileContent = sr.ReadToEnd();
-                                //Check that the consist file contains an engine
-                                if (fileContent.ToLower().Contains("enginedata"))
-                                {
-                                    string couple = fileContent.Substring(fileContent.ToLower().IndexOf("enginedata") + 10);
-                                    couple = couple.Substring(couple.IndexOf("(") + 1);
-                                    couple = couple.Substring(0, couple.IndexOf(")")).Trim();
-                                    string key = "";
-                                    if (couple.Substring(0, 1) == "\"")
-                                    {
-                                        key = couple.Substring(1);
-                                        key = key.Substring(0, key.IndexOf("\"")).Trim();
-                                    }
-                                    else
-                                    {
-                                        key = couple.Substring(0, couple.IndexOf(" "));
-                                    }
-
-                                    string engineFolder = couple.Substring(key.Length);
-                                    engineFolder = couple.Replace("\"", "").Trim();
-                                    //Check if the engine file exists
-                                    if (File.Exists(SelectedFolder.Path + @"\trains\trainset\" + engineFolder + "\\" + key + ".eng"))
-                                    {
-                                        StreamReader srEngine = new StreamReader(SelectedFolder.Path + @"\trains\trainset\" + engineFolder + "\\" + key + ".eng");
-                                        string engineContent = sr.ReadToEnd();
-                                        //Check if it contains a Cabview => player driveable engine
-                                        if (engineContent.ToLower().Contains("cabview") && engineContent.ToLower().IndexOf("cabview") < engineContent.ToLower().IndexOf("description"))
-                                        {
-                                            if (EnginesWithConsists.ContainsKey(key))
-                                            {
-                                                EnginesWithConsists[key].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
-                                            }
-                                            else
-                                            {
-                                                EnginesWithConsists.Add(key, new List<string>());
-                                                EnginesWithConsists[key].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
-                                            }
-                                        }
-                                        srEngine.Close();
-                                        srEngine = null;
-                                        engineContent = null;
-                                    }
-                                    else
-                                    {
-                                        //Display error message ?
-                                    }
-                                    
-                                }
+                                key = couple.Substring(1);
+                                key = key.Substring(0, key.IndexOf("\"")).Trim();
                             }
-                                
-                        }
-                            //cboConsist.Items.Add(System.IO.Path.GetFileName(file));
-                            //consists.Add(file);
-                        confiles = null;
-                        consists = null;
-                        //Populate the comboBoxes
+                            else
+                            {
+                                key = couple.Substring(0, couple.IndexOf(" "));
+                            }
 
-                        break;
-                    default:
-
-                        confiles = Directory.GetFiles(Routes[listBoxRoutes.SelectedIndex].Folder.Path + @"\trains\consists");
-                        foreach (string file in confiles)
-                        {
-                            cboConsist.Items.Add(System.IO.Path.GetFileName(file));
-                            consists.Add(file);
+                            string engineFolder = couple.Substring(key.Length);
+                            engineFolder = engineFolder.Replace("\"", "").Trim();
+                            //Check if the engine file exists
+                            if (File.Exists(SelectedFolder.Path + @"\trains\trainset\" + engineFolder + "\\" + key + ".eng"))
+                            {
+                                StreamReader srEngine = new StreamReader(SelectedFolder.Path + @"\trains\trainset\" + engineFolder + "\\" + key + ".eng");
+                                string engineContent = srEngine.ReadToEnd();
+                                EngineInfo engKey = GetEngineInfo(engineContent);
+                                engKey.ID = key;
+                                //Check if it contains a Cabview => player driveable engine
+                                if (engineContent.ToLower().Contains("cabview") && engineContent.ToLower().IndexOf("cabview") < engineContent.ToLower().IndexOf("description"))
+                                {
+                                    if (EnginesWithConsists.ContainsKey(engKey))
+                                    {
+                                        EnginesWithConsists[engKey].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
+                                    }
+                                    else
+                                    {
+                                        EnginesWithConsists.Add(engKey, new List<string>());
+                                        EnginesWithConsists[engKey].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
+                                    }
+                                }
+                                srEngine.Close();
+                                srEngine = null;
+                                engineContent = null;
+                            }
+                            else
+                            {
+                                //Display error message ?
+                            }
+                            
                         }
-                        confiles = null;
-                        break;
+                    }
+                        
                 }
+                    //cboConsist.Items.Add(System.IO.Path.GetFileName(file));
+                    //consists.Add(file);
+                confiles = null;
+                //Populate the comboBoxes
             }
             else
             {
-                this.Dispatcher.Invoke(new FillConsistsDelegate(FillConsists), driveableOnly);
+                this.Dispatcher.Invoke(new FillConsistsDelegate(FillConsists));
             }
-
-            return consists;
         }
 
-        
+        /// <summary>
+        /// Create an EngineInfo object with the data found in the eng file
+        /// </summary>
+        /// <param name="engContent">The text content of the eng file</param>
+        /// <returns>EngineInfo</returns>
+        private EngineInfo GetEngineInfo(string engContent)
+        {
+            EngineInfo eng = new EngineInfo();
+
+            try
+            {
+                eng.Coupling = (CouplingType)Enum.Parse(typeof(CouplingType), ParseTag("Type", ParseTag("Coupling", engContent)), true);
+                eng.Description = ParseTag("Description", engContent);
+                eng.FreightAnim = ParseTag("FreightAnim", engContent);
+                //eng.ID = ParseTag("Wagon", engContent);
+                string len = ParseTag("Size", engContent);
+                len = len.Substring(len.LastIndexOf(" ") + 1);
+                len = len.Replace("m", "").Replace('.', ',');
+                eng.Length = double.Parse(len);
+
+                string ms = ParseTag("Mass", engContent);
+                eng.Mass = double.Parse(ms.Substring(0, ms.IndexOf("t")).Replace('.', ','));
+
+                string mcf = ParseTag("MaxContinuousForce", engContent).ToLower();
+                if (mcf.Contains("kn")) eng.MaxContinuousForce = double.Parse(mcf.Substring(0, mcf.IndexOf("kn")).Replace('.', ',').Trim());
+                else if (mcf.Contains("lbf")) eng.MaxContinuousForce = double.Parse(mcf.Substring(0, mcf.IndexOf("lbf")).Replace('.', ',').Trim());
+                
+                string mf = ParseTag("MaxForce", engContent).ToLower();
+                if (mf.Contains("kn")) eng.MaxForce = double.Parse(mf.Substring(0, mf.IndexOf("kn")).Replace('.', ',').Trim());
+                else if (mf.Contains("lbf")) eng.MaxForce = double.Parse(mf.Substring(0, mf.IndexOf("lbf")).Replace('.', ',').Trim());
+                
+                string mp = ParseTag("MaxPower", engContent).ToLower();
+                if (mp.Contains("kw")) eng.MaxPower = double.Parse(mp.Substring(0, mp.IndexOf("kw")).Replace('.', ',').Trim());
+                else if (mp.Contains("hp")) eng.MaxPower = double.Parse(mp.Substring(0, mp.IndexOf("hp")).Replace('.', ',').Trim());
+                eng.Name = ParseTag("Name", engContent);
+                eng.Shape = ParseTag("WagonShape", engContent);
+                eng.Type = (EngineType)Enum.Parse(typeof(EngineType), ParseTag("Type", ParseTag("Engine (", engContent.Substring(engContent.IndexOf("Engine") + 6), "Engine(", true)), true);
+                
+            }
+            catch
+            {
+
+            }
+            return eng;
+        }
+
+        /// <summary>
+        /// Gets the value between the brackets ( ) of a given tag
+        /// </summary>
+        /// <param name="tagName">The name of the tag</param>
+        /// <param name="fileContent">The text where to search the tag and its value</param>
+        /// <returns>Value of the tag</returns>
+        private string ParseTag(string tagName, string fileContent)
+        {
+            string tagValue = "";
+            if (fileContent.Contains(tagName))
+            {
+                tagValue = fileContent.Substring(fileContent.IndexOf(tagName) + tagName.Length);
+                tagValue = tagValue.Substring(tagValue.IndexOf("(") + 1);
+                if (tagValue.Contains(")")) tagValue = tagValue.Substring(0, tagValue.IndexOf(")")).Trim();
+                tagValue = tagValue.Replace("\"", "").Trim();
+            }
+            return tagValue;
+        }
+
+        /// <summary>
+        /// Gets the value between the brackets ( ) of a given tag
+        /// </summary>
+        /// <param name="tagName">The name of the tag</param>
+        /// <param name="fileContent">The text where to search the tag and its value</param>
+        /// <param name="alternateTag">If the first tag is not found look for a second tag</param>
+        /// <param name="parentTag">true if the tag contains another tag to search</param>
+        /// <returns>Value of the tag</returns>
+        private string ParseTag(string tagName, string fileContent, string alternateTag, bool parentTag)
+        {
+            string tagValue = "";
+            if (fileContent.Contains(tagName))
+            {
+                tagValue = fileContent.Substring(fileContent.IndexOf(tagName) + tagName.Length);
+                tagValue = tagValue.Substring(tagValue.IndexOf("(") + 1);
+                if (!parentTag)
+                {
+                    if (tagValue.Contains(")")) tagValue = tagValue.Substring(0, tagValue.IndexOf(")")).Trim();
+                    tagValue = tagValue.Replace("\"", "").Trim();
+                }
+            }
+            else if (fileContent.Contains(alternateTag))
+            {
+                tagValue = fileContent.Substring(fileContent.IndexOf(alternateTag) + alternateTag.Length);
+                tagValue = tagValue.Substring(tagValue.IndexOf("(") + 1);
+                if (!parentTag)
+                {
+                    if (tagValue.Contains(")")) tagValue = tagValue.Substring(0, tagValue.IndexOf(")")).Trim();
+                    tagValue = tagValue.Replace("\"", "").Trim();
+                }
+            }
+            return tagValue;
+        }
 
         #endregion
 
         #region Delegates
 
-        private delegate List<string> FillConsistsDelegate(bool driveableOnly);
+        private delegate void FillConsistsDelegate();
 
         #endregion
     }
