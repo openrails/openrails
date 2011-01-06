@@ -5,7 +5,7 @@
 	x:Class="MenuWPF.OptionsWindow"
 	x:Name="winOptions"
 	Title="Options"
-	Width="1024" Height="768" Icon="openrails.ico" WindowStartupLocation="CenterScreen" WindowState="Normal">
+	Width="1024" Height="768" Icon="openrails.ico" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" ResizeMode="NoResize" BorderThickness="3">
 	<Window.Resources>
     <Style TargetType="{x:Type TabItem}">
       <Setter Property="Template">
@@ -49,7 +49,7 @@
 			<RowDefinition Height="100" MinHeight="75"/>
 		</Grid.RowDefinitions>
 		<Image x:Name="imgLogo1" Source="BANNER_1.jpg" Stretch="Fill"/>
-		<Image x:Name="imgLogo2" Margin="0" Grid.Column="1" Source="BANNER_2.jpg" Stretch="Fill"/>
+		<Image x:Name="imgLogo2" Margin="0" Grid.Column="1" Source="BANNER_2.jpg" Stretch="Fill" MouseDown="imgLogo2_MouseDown" />
 		<Image x:Name="imgLogo3" Margin="0" Source="BANNER_3.jpg" Grid.Column="2" Stretch="Fill"/>
 		<TabControl x:Name="tabOptions" Grid.ColumnSpan="3" Margin="16,16,16,0" Grid.Row="1" BorderThickness="0" Background="{x:Null}" Padding="0">
 			<TabItem Header="General" FontWeight="Bold" FontSize="13.333" FontFamily="Microsoft Sans Serif" Margin="15,-3,-23,0" Background="{x:Null}">

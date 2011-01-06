@@ -5,7 +5,7 @@
 	x:Class="MenuWPF.MainWindow"
 	x:Name="winMain"
 	Title="Open Rails"
-	Width="1024" Height="768" WindowState="Maximized" WindowStartupLocation="CenterScreen" Closing="winMain_Closing" Icon="/MenuWPF;component/openrails.ico" FontFamily="Microsoft Sans Serif">
+	Width="1024" Height="768" WindowState="Maximized" WindowStartupLocation="CenterScreen" Closing="winMain_Closing" Icon="/MenuWPF;component/openrails.ico" FontFamily="Microsoft Sans Serif" WindowStyle="None">
 	<Window.Background>
 		<ImageBrush ImageSource="background1.jpg"/>
 	</Window.Background>
@@ -82,7 +82,7 @@
 				<ColumnDefinition Width="115"/>
 			</Grid.ColumnDefinitions>
 			<Image x:Name="imgLogo1" Margin="0" Source="BANNER_1.jpg" Stretch="Fill" d:LayoutOverrides="GridBox"/>
-			<Image x:Name="imgLogo2" Margin="0" Source="BANNER_2.jpg" Stretch="Fill" d:LayoutOverrides="HorizontalAlignment, GridBox" Grid.Column="1"/>
+			<Image x:Name="imgLogo2" Margin="0" Source="BANNER_2.jpg" Stretch="Fill" d:LayoutOverrides="HorizontalAlignment, GridBox" Grid.Column="1" MouseDown="imgLogo2_MouseDown" />
 			<Image x:Name="imgLogo3" Margin="0" Source="BANNER_3.jpg" Stretch="Fill" Grid.Column="2"/>
 		</Grid>
         <Border x:Name="brdRouteDetails" BorderBrush="Black" BorderThickness="0" CornerRadius="20" Margin="5,10,0,0" Grid.Row="3" Grid.Column="0" d:LayoutOverrides="GridBox" Background="#99FFFFFF">

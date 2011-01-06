@@ -84,5 +84,10 @@ namespace MenuWPF
         {
             ((Slider)sender).ToolTip = (int)((Slider)sender).Value;
         }
+
+        private void imgLogo2_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
+        }
 	}
 }

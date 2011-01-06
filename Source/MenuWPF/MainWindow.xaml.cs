@@ -17,6 +17,7 @@ using MSTS;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using System.Windows.Media.Effects;
 
 namespace MenuWPF
 {
@@ -30,7 +31,7 @@ namespace MenuWPF
         public const string FolderDataFileName = "folder.dat";
         private BackgroundWorker bgWork;
         private Dictionary<EngineInfo, List<string>> EnginesWithConsists;
-
+        private DataTable Paths;
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
 
@@ -38,9 +39,6 @@ namespace MenuWPF
         public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
         public static string RegistryKey;     // ie "SOFTWARE\\OpenRails\\ORTS"
         public static string UserDataFolder;  // ie "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS"
-
-        List<string> Consists;
-        List<string> Paths;
         #endregion
 
         string FolderDataFile;
@@ -80,6 +78,11 @@ namespace MenuWPF
                 TRKFile = trkFile;
                 Folder = folder;
             }
+
+            public override string ToString()
+            {
+                return this.Name;
+            }
         }
 
         public class Activity
@@ -93,6 +96,11 @@ namespace MenuWPF
                 Name = name;
                 FileName = fileName;
                 ACTFile = actFile;
+            }
+
+            public override string ToString()
+            {
+                return this.Name;
             }
         }
 
@@ -129,18 +137,16 @@ namespace MenuWPF
             bgWork.DoWork += new DoWorkEventHandler(bgWork_DoWork);
             bgWork.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgWork_RunWorkerCompleted);
             SetBuildRevision();
-            UserDataFolder = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.Cookies)));
-            UserDataFolder = UserDataFolder.Substring(0, UserDataFolder.LastIndexOf("\\") + 1);
+            UserDataFolder = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.UserAppDataPath));
             
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
             // Set title to show revision or build info.
             //Content = String.Format(Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", AppDomain.CurrentDomain.FriendlyName, Revision, Build);
-            Assembly exeAssembly = Assembly.GetExecutingAssembly();
-            AssemblyProductAttribute prodName = (AssemblyProductAttribute)exeAssembly.GetCustomAttributes(typeof(System.Reflection.AssemblyProductAttribute), false).Single();
-            UserDataFolder += prodName.Product;
+            
             FolderDataFile = UserDataFolder + @"\" + FolderDataFileName;
             //Load the folders
             LoadFolders();
+            
 
             CleanupPre021();
         }
@@ -172,7 +178,18 @@ namespace MenuWPF
 		private void btnOptions_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
             MenuWPF.OptionsWindow winOptions = new MenuWPF.OptionsWindow(RegistryKey);
+
+            var darkwindow = new Window()
+            {
+                Background = Brushes.Black,
+                Opacity = 0.75,
+                AllowsTransparency = true,
+                WindowStyle = WindowStyle.None,
+                WindowState = WindowState.Maximized
+            };
+            darkwindow.Show();
             winOptions.ShowDialog();
+            darkwindow.Close();
 		}
 
 		private void btnQuit_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -182,9 +199,44 @@ namespace MenuWPF
 
         private void listBoxRoutes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Paths = FillPaths(Routes[listBoxRoutes.SelectedIndex].Path);
-            LoadActivities();
-            DisplayRouteDetails();
+            try
+            {
+                Paths = FillPaths(Routes[listBoxRoutes.SelectedIndex].Path);
+
+                //Fill the starting location comboBox
+                DataRow[] rows = Paths.Select("", "Start");
+                foreach (DataRow dr in rows)
+                {
+                    if (!cboPath.Items.Contains(dr["Start"].ToString()))
+                    {
+                        cboPath.Items.Add(dr["Start"].ToString());
+                    }
+                }
+                cboPath.SelectedIndex = 0;
+                cboEngine.ItemsSource = null;
+                //Manage the engine list whether the route is electrified or not
+                if (Routes[listBoxRoutes.SelectedIndex].TRKFile.Tr_RouteFile.MaxLineVoltage <= 0)
+                {
+                    var eng = from en in EnginesWithConsists
+                              where en.Key.Type != EngineType.Electric
+                              orderby en.Key.Name
+                              select en.Key.Name;
+                    cboEngine.ItemsSource = eng.ToList();
+                }
+                else
+                {
+                    var eng = from en in EnginesWithConsists
+                              orderby en.Key.Name
+                              select en.Key.Name;
+                    cboEngine.ItemsSource = eng.ToList();
+                }
+                cboEngine.SelectedIndex = 0;
+                LoadActivities();
+                DisplayRouteDetails();
+            }
+            catch
+            {
+            }
         }
 
         private void listBoxActivities_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -194,30 +246,66 @@ namespace MenuWPF
         }
         private void cboEngine_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            cboConsist.Items.Clear();
-            var con = from f in EnginesWithConsists
-                      where f.Key.Name == cboEngine.SelectedItem.ToString()
-                      select f.Value;
-
-            foreach (string consist in con.Single())
+            try
             {
-                cboConsist.Items.Add(consist);
+                cboConsist.Items.Clear();
+                var con = from f in EnginesWithConsists
+                          where f.Key.Name == cboEngine.SelectedItem.ToString()
+                          select f.Value;
+
+                foreach (string consist in con.Single())
+                {
+                    cboConsist.Items.Add(consist.ToLower());
+                }
+                cboConsist.SelectedIndex = 0;
             }
-            cboConsist.SelectedIndex = 0;
+            catch
+            {
+            }
         }
 
         private void cboPath_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            // TODO: Add event handler implementation here.
+            try
+            {
+                cboHeading.Items.Clear();
+                DataRow[] rows = Paths.Select("Start = '" + cboPath.SelectedItem.ToString() + "'", "End");
+                foreach (DataRow dr in rows)
+                {
+                    if (!cboHeading.Items.Contains(dr["End"].ToString()))
+                    {
+                        cboHeading.Items.Add(dr["End"].ToString());
+                    }
+                }
+                cboHeading.SelectedIndex = 0;
+            }
+            catch
+            {
+            }
         }
 
         private void cboFolder_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             LoadRoutes();
         }
+
+        private void imgLogo2_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 1)
+            {
+                this.DragMove();
+            }
+            else if (e.ClickCount > 1 && e.LeftButton == MouseButtonState.Pressed)
+            {
+                this.WindowState = this.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            }
+        }
+
         #endregion
 
         #region Methods
+
+        #region MainStart
         /// <summary>
         /// Old method of Windows Form Application to start the program, 
         /// now included in the main window.
@@ -243,7 +331,7 @@ namespace MenuWPF
                         return;
                     }
                     
-                    parameter = String.Format("\"{0}\" \"{1}\" {2} {3} {4}", Paths[cboPath.SelectedIndex], Consists[cboConsist.SelectedIndex], hour, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
+                    parameter = String.Format("\"{0}\" \"{1}\" {2} {3} {4}", GetPathID(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + cboConsist.SelectedItem.ToString(), hour, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
                 }
                 else
                     parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
@@ -271,6 +359,9 @@ namespace MenuWPF
                 MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        #endregion
+
+        #region Utilities
 
         /// <summary>
 		/// Set up the global Build and Revision variables
@@ -333,7 +424,9 @@ namespace MenuWPF
                 }
             }
         }
+        #endregion
 
+        #region Folders
         //============================================================================================
         private void LoadFolders()
         {
@@ -392,39 +485,44 @@ namespace MenuWPF
                 }
             }
         }
+        #endregion
 
+        #region Routes
         //===========================================================================
         private void LoadRoutes()
         {
             Routes = new List<Route>();
             try
             {
-                foreach (Folder f in Folders)
+                foreach (string directory in Directory.GetDirectories(SelectedFolder.Path + @"\ROUTES"))
                 {
-                    foreach (string directory in Directory.GetDirectories(SelectedFolder.Path + @"\ROUTES"))
+                    try
                     {
-                        try
-                        {
-                            TRKFile trkFile = new TRKFile(MSTSPath.GetTRKFileName(directory));
-                            Routes.Add(new Route(trkFile.Tr_RouteFile.Name, directory, trkFile, f));
-                        }
-                        catch
-                        {
-                        }
+                        TRKFile trkFile = new TRKFile(MSTSPath.GetTRKFileName(directory));
+                        Routes.Add(new Route(trkFile.Tr_RouteFile.Name, directory, trkFile, SelectedFolder));
+                    }
+                    catch
+                    {
                     }
                 }
             
-
-                //Routes = Routes.OrderBy(r => r.Folder.Name).OrderBy(r => r.Name).ToList();
-
-                listBoxRoutes.Items.Clear();
-                foreach (var route in Routes)
-                    listBoxRoutes.Items.Add(route.Name);
+                Routes = Routes.OrderBy(r => r.Name).ToList();
+                
+                try
+                {
+                    FillConsists();
+                    listBoxRoutes.ItemsSource = null;
+                }
+                catch
+                {
+                }
+                listBoxRoutes.ItemsSource = Routes;
+                //foreach (var route in Routes)
+                //    listBoxRoutes.Items.Add(route.Name);
 
                 if (Routes.Count > 0)
                 {
                     listBoxRoutes.SelectedIndex = 0;
-                    FillConsists();
                 }
                 else
                     listBoxRoutes.UnselectAll();
@@ -438,47 +536,7 @@ namespace MenuWPF
             }
         }
 
-        //===========================================================================
-        private void LoadActivities()
-        {
-            Activities = new List<Activity>();
-
-            if (SelectedRoute != null)
-            {
-                try
-                {
-                    Activities.Add(new ExploreActivity());
-                    foreach (var file in Directory.GetFiles(SelectedRoute.Path + @"\ACTIVITIES", "*.act"))
-                    {
-                        if (System.IO.Path.GetFileName(file).StartsWith("ITR_e1_s1_w1_t1", StringComparison.OrdinalIgnoreCase))
-                            continue;
-                        try
-                        {
-                            var actFile = new ACTFile(file, true);
-                            Activities.Add(new Activity(actFile.Tr_Activity.Tr_Activity_Header.Name, file, actFile));
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    }
-                }
-                catch (Exception error)
-                {
-                    MessageBox.Show(error.ToString(), AppDomain.CurrentDomain.FriendlyName);
-                }
-            }
-
-            Activities = Activities.OrderBy(a => a.Name).ToList();
-
-            listBoxActivities.Items.Clear();
-            foreach (var activity in Activities)
-                listBoxActivities.Items.Add(activity.Name);
-
-            if (Activities.Count > 0)
-                listBoxActivities.SelectedIndex = 0;
-            else
-                listBoxActivities.UnselectAll();
-        }
+        
 
         //===========================================================================================
         private void DisplayRouteDetails()
@@ -505,95 +563,213 @@ namespace MenuWPF
                 lines = null;
             }
         }
+        #endregion
+
+        #region Activities
+        //===========================================================================
+        private void LoadActivities()
+        {
+            Activities = new List<Activity>();
+
+            if (SelectedRoute != null)
+            {
+                try
+                {
+                    Activities.Add(new ExploreActivity());
+                    foreach (var file in Directory.GetFiles(SelectedRoute.Path + @"\ACTIVITIES", "*.act"))
+                    {
+                        if (System.IO.Path.GetFileName(file).StartsWith("ITR_e1_s1_w1_t1", StringComparison.OrdinalIgnoreCase))
+                            continue;
+                        try
+                        {
+                            var actFile = new ACTFile(file, false);
+                            Activities.Add(new Activity(actFile.Tr_Activity.Tr_Activity_Header.Name, file, actFile));
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(error.ToString(), AppDomain.CurrentDomain.FriendlyName);
+                }
+            }
+
+            Activities = Activities.OrderBy(a => a.Name).ToList();
+            listBoxActivities.ItemsSource = Activities;
+            
+            //foreach (var activity in Activities)
+            //    listBoxActivities.Items.Add(activity.Name);
+
+            if (Activities.Count > 0)
+                listBoxActivities.SelectedIndex = 0;
+            else
+                listBoxActivities.UnselectAll();
+        }
 
         //================================================================================
         private void DisplayActivityDetails()
         {
-            if (listBoxActivities.SelectedIndex > 0)
+            try
             {
-                //Display activity details
-                docActivityDescription.Document.Blocks.Clear();
-                string[] lines = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Description.Split(new String[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string line in lines)
+                if (listBoxActivities.SelectedIndex > 0)
                 {
-                    Paragraph p = new Paragraph();
-                    p.Inlines.Add(new Run(line));
-                    docActivityDescription.Document.Blocks.Add(p);
+                    //Display activity details
+                    docActivityDescription.Document.Blocks.Clear();
+                    string[] lines = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Description.Split(new String[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string line in lines)
+                    {
+                        Paragraph p = new Paragraph();
+                        p.Inlines.Add(new Run(line));
+                        docActivityDescription.Document.Blocks.Add(p);
+                    }
+                    lines = null;
+                    cboStartingTime.Text = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
+                    cboStartingTime.IsEnabled = false;
+
+                    //Show the activity special fields
+                    lblDescription.Visibility = Visibility.Visible;
+                    lblDifficulty.Visibility = Visibility.Visible;
+                    lblDuration.Visibility = Visibility.Visible;
+                    labelDifficulty.Visibility = Visibility.Visible;
+                    labelDuration.Visibility = Visibility.Visible;
+                    docActivityDescription.Visibility = Visibility.Visible;
+                    //================================
+                    labelDuration.Content = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
+                    cboSeason.SelectedIndex = (int)Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Season;
+                    cboSeason.IsEnabled = false;
+                    cboWeather.SelectedIndex = (int)Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Weather;
+                    cboWeather.IsEnabled = false;
+                    labelDifficulty.Content = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty.ToString();
+
+                    //cboEngine.SelectedIndex = -1;
+                    cboEngine.IsEnabled = false;
+                    cboPath.SelectedIndex = -1;//Paths.IndexOf(Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.PathID);
+                    cboPath.IsEnabled = false;
+                    cboHeading.SelectedIndex = -1;
+                    cboHeading.IsEnabled = false;
+                    cboConsist.IsEnabled = false;
+                    //Display the engine and the consist
+                    string service = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
+                    using (StreamReader sr = new StreamReader(SelectedRoute.Path + "\\SERVICES\\" + service + ".srv"))
+                    {
+                        string consist = ParseTag("Train_Config", sr.ReadToEnd());
+                        sr.Close();
+                        StreamReader sr2 = new StreamReader(SelectedFolder.Path + @"\trains\consists\" + consist + ".con");
+                        string content = sr2.ReadToEnd();
+                        //string consistName = ParseTag("Name", content);
+                        string engineID = ParseTag("EngineData", ParseTag("Engine", content, "", true));
+                        engineID = engineID.Substring(0, engineID.IndexOf(" "));
+                        var engName = from en in EnginesWithConsists
+                                      where en.Key.ID == engineID
+                                      select en.Key.Name;
+                        if (engName.Count() > 0)
+                        {
+                            cboEngine.SelectedIndex = cboEngine.Items.IndexOf(engName.Single());
+                            System.Windows.Forms.Application.DoEvents();
+                            cboConsist.SelectedIndex = cboConsist.Items.IndexOf(consist.ToLower());
+                        }
+                        else
+                        {
+                            cboEngine.Text = "UNKNOWN";
+                            cboConsist.SelectedIndex = -1;
+                        }
+                    }
+                    //Display the starting point and the heading direction
+                    string pathID = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.PathID;
+                    DataRow[] rows = Paths.Select("PathID = '" + pathID + "'");
+                    if (rows.Length > 0)
+                    {
+                        cboPath.SelectedIndex = cboPath.Items.IndexOf(rows[0]["Start"].ToString());
+                        System.Windows.Forms.Application.DoEvents();
+                        cboHeading.SelectedIndex = cboHeading.Items.IndexOf(rows[0]["End"].ToString());
+                    }
                 }
-                lines = null;
-                cboStartingTime.Text = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
-                cboStartingTime.IsEnabled = false;
+                else
+                {
+                    docActivityDescription.Document.Blocks.Clear();
+                    cboStartingTime.SelectedIndex = 2;
+                    cboStartingTime.IsEnabled = true;
 
-                //Show the activity special fields
-                lblDescription.Visibility = Visibility.Visible;
-                lblDifficulty.Visibility = Visibility.Visible;
-                lblDuration.Visibility = Visibility.Visible;
-                labelDifficulty.Visibility = Visibility.Visible;
-                labelDuration.Visibility = Visibility.Visible;
-                docActivityDescription.Visibility = Visibility.Visible;
-                //================================
-                labelDuration.Content = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
-                cboSeason.SelectedIndex = (int)Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Season;
-                cboSeason.IsEnabled = false;
-                cboWeather.SelectedIndex = (int)Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Weather;
-                cboWeather.IsEnabled = false;
-                labelDifficulty.Content = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty.ToString();
+                    //Hide the activity special fields
+                    lblDescription.Visibility = Visibility.Hidden;
+                    lblDifficulty.Visibility = Visibility.Hidden;
+                    lblDuration.Visibility = Visibility.Hidden;
+                    labelDifficulty.Visibility = Visibility.Hidden;
+                    labelDuration.Visibility = Visibility.Hidden;
+                    docActivityDescription.Visibility = Visibility.Hidden;
+                    //================================
+                    cboSeason.SelectedIndex = 1;
+                    cboSeason.IsEnabled = true;
+                    cboWeather.SelectedIndex = 0;
+                    cboWeather.IsEnabled = true;
+                    cboPath.SelectedIndex = 0;
+                    cboPath.IsEnabled = true;
+                    //cboEngine.SelectedIndex = 0;
+                    cboEngine.IsEnabled = true;
+                    cboHeading.IsEnabled = true;
+                    cboConsist.IsEnabled = true;
 
-                //cboEngine.SelectedIndex = -1;
-                cboEngine.IsEnabled = false;
-                cboPath.SelectedIndex = -1;//Paths.IndexOf(Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.PathID);
-                cboPath.IsEnabled = false;
-                cboHeading.SelectedIndex = -1;
-                cboHeading.IsEnabled = false;
-                cboConsist.IsEnabled = false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                docActivityDescription.Document.Blocks.Clear();
-                cboStartingTime.SelectedIndex = 2;
-                cboStartingTime.IsEnabled = true;
-
-                //Hide the activity special fields
-                lblDescription.Visibility = Visibility.Hidden;
-                lblDifficulty.Visibility = Visibility.Hidden;
-                lblDuration.Visibility = Visibility.Hidden;
-                labelDifficulty.Visibility = Visibility.Hidden;
-                labelDuration.Visibility = Visibility.Hidden;
-                docActivityDescription.Visibility = Visibility.Hidden;
-                //================================
-                cboSeason.SelectedIndex = 1;
-                cboSeason.IsEnabled = true;
-                cboWeather.SelectedIndex = 0;
-                cboWeather.IsEnabled = true;
-                cboPath.SelectedIndex = 0;
-                cboPath.IsEnabled = true;
-                //cboEngine.SelectedIndex = 0;
-                cboEngine.IsEnabled = true;
-                cboHeading.IsEnabled = true;
-                cboConsist.IsEnabled = true;
-
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        #endregion
 
+        #region Paths
         /// <summary>
         /// Method to fill the paths combo box
         /// </summary>
         /// <param name="route">The path of the route to load the paths for</param>
-        List<string> FillPaths(string route)
+        DataTable FillPaths(string route)
         {
-            List<string> paths = new List<string>();
+            DataTable paths = new DataTable();
+            paths.Columns.Add("PathID");
+            paths.Columns.Add("Start");
+            paths.Columns.Add("End");
+
             string[] patfiles = Directory.GetFiles(route + @"\paths");
             cboPath.Items.Clear();
+            cboHeading.Items.Clear();
             foreach (string file in patfiles)
             {
-                cboPath.Items.Add(System.IO.Path.GetFileName(file));
-                paths.Add(file);
-                
+                using (StreamReader sr = new StreamReader(file))
+                {
+                    string content = sr.ReadToEnd();
+                    paths.Rows.Add(ParseTag("TrPathName", content), ParseTag("TrPathStart", content), ParseTag("TrPathEnd", content));
+                }
+
             }
+            paths.AcceptChanges();
+            
             patfiles = null;
             return paths;
         }
+        /// <summary>
+        /// Gets the pathID
+        /// </summary>
+        /// <param name="start">The Starting Location</param>
+        /// <param name="end">The Heading Towards Location</param>
+        /// <returns>PathID</returns>
+        private string GetPathID(string start, string end)
+        {
+            DataRow[] rows = Paths.Select("Start = '" + start.Replace("'", "''") + "' AND End = '" + end.Replace("'", "''") + "'");
+            if (rows.Length > 0)
+            {
+                return rows[0]["PathID"].ToString();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+        #endregion
 
+        #region Consists
         /// <summary>
         /// Method to fill the list of engines and consists
         /// </summary>
@@ -672,12 +848,8 @@ namespace MenuWPF
                     //cboConsist.Items.Add(System.IO.Path.GetFileName(file));
                     //consists.Add(file);
                 confiles = null;
-                foreach (EngineInfo key in EnginesWithConsists.Keys.OrderBy(p => p.Name))
-                {
-                    cboEngine.Items.Add(key.Name);
-                }
                 cboEngine.SelectionChanged += new SelectionChangedEventHandler(cboEngine_SelectionChanged);
-                cboEngine.SelectedIndex = 0;
+                
                 lblProgress.Visibility = Visibility.Hidden;
                 progBar.Visibility = Visibility.Hidden;
             }
@@ -732,7 +904,9 @@ namespace MenuWPF
             }
             return eng;
         }
+        #endregion
 
+        #region Parsings
         /// <summary>
         /// Gets the value between the brackets ( ) of a given tag
         /// </summary>
@@ -745,8 +919,28 @@ namespace MenuWPF
             if (fileContent.Contains(tagName))
             {
                 tagValue = fileContent.Substring(fileContent.IndexOf(tagName) + tagName.Length);
+                //Count the number of ( and ). The numbers must match to properly close the tag
+
                 tagValue = tagValue.Substring(tagValue.IndexOf("(") + 1);
-                if (tagValue.Contains(")")) tagValue = tagValue.Substring(0, tagValue.IndexOf(")")).Trim();
+                int counter = 0;
+                for (int i = 0; i < tagValue.Length; i++)
+                {
+                    if (tagValue.Substring(i, 1) == "(")
+                    {
+                        counter++;
+                    }
+                    else if (tagValue.Substring(i, 1) == ")")
+                    {
+                        counter--;
+                    }
+                    if (counter == -1)
+                    {
+                        counter = i;
+                        break;
+                    }
+                }
+
+                tagValue = tagValue.Substring(0, counter).Trim();
                 tagValue = tagValue.Replace("\"", "").Trim();
             }
             return tagValue;
@@ -786,7 +980,7 @@ namespace MenuWPF
             return tagValue;
         }
 
-        
+        #endregion
 
         #endregion
 
@@ -795,5 +989,8 @@ namespace MenuWPF
         private delegate void FillConsistsDelegate();
 
         #endregion
+
+        
+
     }
 }
