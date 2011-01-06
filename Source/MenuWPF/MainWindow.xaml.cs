@@ -177,7 +177,7 @@ namespace MenuWPF
 
 		private void btnOptions_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
-            MenuWPF.OptionsWindow winOptions = new MenuWPF.OptionsWindow(RegistryKey);
+            OptionsWindow winOptions = new OptionsWindow(RegistryKey);
 
             var darkwindow = new Window()
             {
@@ -191,6 +191,42 @@ namespace MenuWPF
             winOptions.ShowDialog();
             darkwindow.Close();
 		}
+
+        private void btnDescription_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (cboEngine.SelectedItem != null)
+            {
+
+                var darkwindow = new Window()
+                {
+                    Background = Brushes.Black,
+                    Opacity = 0.75,
+                    AllowsTransparency = true,
+                    WindowStyle = WindowStyle.None,
+                    WindowState = WindowState.Maximized
+                };
+                darkwindow.Show();
+
+                var eng = from en in EnginesWithConsists
+                          where en.Key.Name == cboEngine.SelectedItem.ToString()
+                          select en.Key;
+                EngineInfo info = eng.Single();
+
+                FlowDocument doc = new FlowDocument();
+                string[] lines = info.Description.Replace("\"", "").Replace("\t", "").Replace("\r\n", "").Replace("\\n\\n", "\n").Replace("+", "").Replace("\r", "").Split(new String[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string line in lines)
+                {
+                    Paragraph p = new Paragraph();
+                    p.Inlines.Add(new Run(line.Trim()));
+                    doc.Blocks.Add(p);
+                }
+                doc.FontFamily = SystemFonts.MessageFontFamily;
+                lines = null;
+                EngineInfoWindow winEngine = new EngineInfoWindow(doc);
+                winEngine.ShowDialog();
+                darkwindow.Close();
+            }
+        }
 
 		private void btnQuit_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
