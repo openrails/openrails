@@ -18,6 +18,7 @@ using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Windows.Media.Effects;
+using System.Drawing;
 
 namespace MenuWPF
 {
@@ -181,7 +182,7 @@ namespace MenuWPF
 
             var darkwindow = new Window()
             {
-                Background = Brushes.Black,
+                Background = System.Windows.Media.Brushes.Black,
                 Opacity = 0.75,
                 AllowsTransparency = true,
                 WindowStyle = WindowStyle.None,
@@ -199,7 +200,7 @@ namespace MenuWPF
 
                 var darkwindow = new Window()
                 {
-                    Background = Brushes.Black,
+                    Background = System.Windows.Media.Brushes.Black,
                     Opacity = 0.75,
                     AllowsTransparency = true,
                     WindowStyle = WindowStyle.None,
@@ -220,7 +221,7 @@ namespace MenuWPF
                     p.Inlines.Add(new Run(line.Trim()));
                     doc.Blocks.Add(p);
                 }
-                doc.FontFamily = SystemFonts.MessageFontFamily;
+                doc.FontFamily = System.Windows.SystemFonts.MessageFontFamily;
                 lines = null;
                 EngineInfoWindow winEngine = new EngineInfoWindow(doc);
                 winEngine.ShowDialog();
@@ -594,7 +595,7 @@ namespace MenuWPF
                 }
                 //#7FFFFFFF
                 flowDoc.FontFamily = FontFamily;
-                flowDoc.Background = new SolidColorBrush(Color.FromArgb(Convert.ToByte("00", 16), 251, 251, 251));
+                flowDoc.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(Convert.ToByte("00", 16), 251, 251, 251));
                 docRouteDetail.Document = flowDoc;
                 lines = null;
             }
