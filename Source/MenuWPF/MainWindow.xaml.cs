@@ -356,19 +356,19 @@ namespace MenuWPF
                 if (SelectedActivity is ExploreActivity)
                 {
                     int hour = 10;
-                    
+                    int mins = 0;
                     Regex reg = new Regex("^([0-1][0-9]|[2][0-3]):([0-5][0-9])$"); //Match a string format of HH:MM
                     if (reg.IsMatch(cboStartingTime.Text))
                     {
                         int.TryParse(cboStartingTime.Text.Trim().Substring(0, cboStartingTime.Text.Trim().IndexOf(':')), out hour);
+                        int.TryParse(cboStartingTime.Text.Trim().Substring(cboStartingTime.Text.Trim().IndexOf(':') + 1), out mins);
                     }
                     else
                     {
                         MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                         return;
                     }
-                    
-                    parameter = String.Format("\"{0}\" \"{1}\" {2} {3} {4}", GetPathID(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + cboConsist.SelectedItem.ToString(), hour, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
+                    parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + cboConsist.SelectedItem.ToString() + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
                 }
                 else
                     parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
@@ -768,6 +768,7 @@ namespace MenuWPF
             paths.Columns.Add("PathID");
             paths.Columns.Add("Start");
             paths.Columns.Add("End");
+            paths.Columns.Add("PathFileName");
 
             string[] patfiles = Directory.GetFiles(route + @"\paths");
             cboPath.Items.Clear();
@@ -777,7 +778,7 @@ namespace MenuWPF
                 using (StreamReader sr = new StreamReader(file))
                 {
                     string content = sr.ReadToEnd();
-                    paths.Rows.Add(ParseTag("TrPathName", content), ParseTag("TrPathStart", content), ParseTag("TrPathEnd", content));
+                    paths.Rows.Add(ParseTag("TrPathName", content), ParseTag("TrPathStart", content), ParseTag("TrPathEnd", content), file);
                 }
 
             }
@@ -798,6 +799,24 @@ namespace MenuWPF
             if (rows.Length > 0)
             {
                 return rows[0]["PathID"].ToString();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+        /// <summary>
+        /// Gets the path file name in case it is different from the pathID
+        /// </summary>
+        /// <param name="start">The Starting Location</param>
+        /// <param name="end">The Heading Towards Location</param>
+        /// <returns>PathID</returns>
+        private string GetPathFileName(string start, string end)
+        {
+            DataRow[] rows = Paths.Select("Start = '" + start.Replace("'", "''") + "' AND End = '" + end.Replace("'", "''") + "'");
+            if (rows.Length > 0)
+            {
+                return rows[0]["PathFileName"].ToString();
             }
             else
             {
