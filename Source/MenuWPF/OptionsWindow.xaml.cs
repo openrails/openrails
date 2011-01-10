@@ -89,5 +89,15 @@ namespace MenuWPF
         {
             this.DragMove();
         }
+
+        private void btnPrevious_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            tabOptions.SelectedIndex -= tabOptions.SelectedIndex == 0 ? 0 : 1; 
+        }
+
+        private void btnNext_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            tabOptions.SelectedIndex += tabOptions.SelectedIndex == tabOptions.Items.Count - 1 ? 0 : 1; 
+        }
 	}
 }

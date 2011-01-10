@@ -312,8 +312,28 @@
 				</Grid>
 			</TabItem>			
 		</TabControl>
-		<Button x:Name="buttonOK" Content="Save" Grid.Column="2" Margin="0" Grid.Row="2" Width="100" Height="100" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" FontFamily="Microsoft Sans Serif" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonOK_Click" Cursor="Hand" />
-		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="1" HorizontalAlignment="Right" Margin="0,15.23,0,10.77" Grid.Row="2" Width="139" Style="{DynamicResource ButtonStyle2}" FontFamily="Microsoft Sans Serif" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonCancel_Click" Cursor="Hand">
+		<Button x:Name="buttonOK" Content="Save" Grid.Column="2" Margin="0" Grid.Row="2" Width="100" Height="100" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Foreground="#FF032387" Click="buttonOK_Click" Cursor="Hand" />
+		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="1" Margin="0" Grid.Row="2" Style="{DynamicResource RedRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="#FF032387" Click="buttonCancel_Click" Cursor="Hand" HorizontalAlignment="Right" Width="100">
+			<Button.Background>
+				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+					<GradientStop Color="#FF0063AF" Offset="0"/>
+					<GradientStop Color="#FFEBEBEB" Offset="0.5"/>
+					<GradientStop Color="#FFDDDDDD" Offset="0.5"/>
+					<GradientStop Color="#FF00BA25" Offset="1"/>
+				</LinearGradientBrush>
+			</Button.Background>
+		</Button>
+		<Button x:Name="btnPrevious" Content="&lt;Back" Margin="16,0,295,0" Grid.Row="2" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnPrevious_Click" Cursor="Hand" HorizontalAlignment="Left" Width="100" Grid.ColumnSpan="2">
+			<Button.Background>
+				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+					<GradientStop Color="#FF0063AF" Offset="0"/>
+					<GradientStop Color="#FFEBEBEB" Offset="0.5"/>
+					<GradientStop Color="#FFDDDDDD" Offset="0.5"/>
+					<GradientStop Color="#FF00BA25" Offset="1"/>
+				</LinearGradientBrush>
+			</Button.Background>
+		</Button>
+		<Button x:Name="btnNext" Content="Next&gt;" Grid.Column="1" Grid.Row="2" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnNext_Click" Cursor="Hand" HorizontalAlignment="Left" Width="100" Margin="50,0,0,0">
 			<Button.Background>
 				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
 					<GradientStop Color="#FF0063AF" Offset="0"/>
