@@ -33,6 +33,7 @@ namespace MenuWPF
         private BackgroundWorker bgWork;
         private Dictionary<EngineInfo, List<string>> EnginesWithConsists;
         private DataTable Paths;
+        private String bgImage = "";
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
 
@@ -143,7 +144,18 @@ namespace MenuWPF
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
             // Set title to show revision or build info.
             //Content = String.Format(Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", AppDomain.CurrentDomain.FriendlyName, Revision, Build);
-            
+
+            RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey);
+            if (RK.GetValue("BackgroundImage", "") != null)
+            {
+                if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
+                {
+                    bgImage = RK.GetValue("BackgroundImage", "").ToString();
+                    ((ImageBrush)this.Background).ImageSource = new BitmapImage(new Uri(bgImage, UriKind.Absolute));
+                }
+            }
+            RK.Close();
+
             FolderDataFile = UserDataFolder + @"\" + FolderDataFileName;
             //Load the folders
             LoadFolders();
@@ -223,7 +235,7 @@ namespace MenuWPF
                 }
                 doc.FontFamily = System.Windows.SystemFonts.MessageFontFamily;
                 lines = null;
-                EngineInfoWindow winEngine = new EngineInfoWindow(doc);
+                EngineInfoWindow winEngine = new EngineInfoWindow(doc, bgImage);
                 winEngine.ShowDialog();
                 darkwindow.Close();
             }
