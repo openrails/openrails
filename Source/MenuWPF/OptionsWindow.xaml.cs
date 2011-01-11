@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using System.Text.RegularExpressions;
 
 namespace MenuWPF
 {
@@ -67,6 +68,32 @@ namespace MenuWPF
 
 		private void buttonOK_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
+            //Check the values for resolution
+            Regex reg = new Regex("^([0-1][0-9][0-9][0-9]|[0-9][0-9][0-9])x([0-1][0-9][0-9][0-9]|[0-9][0-9][0-9])$"); //Match a string format of WWWWxHHHH
+            if (!reg.IsMatch(cboResolution.Text))
+            {
+                MessageBox.Show("The resolution is not valid!\nPlease use the following format WidthxHeight", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
+            else
+            {
+                int width = int.Parse(cboResolution.Text.Substring(0, cboResolution.Text.IndexOf('x')));
+                int height = int.Parse(cboResolution.Text.Substring(cboResolution.Text.IndexOf('x') + 1));
+                if ((width / 16) != (int)(width / 16) || (height / 16) != (int)(height / 16) || width < height)
+                {
+                    MessageBox.Show("The resolution is not valid!\nThe values entered are not multiples of 16 or the width is lower than the height.", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    return;
+                }
+            }
+            //Check the values for the brake pipe
+            double result = -1;
+            double.TryParse(txtBrakePipe.Text, out result);
+            if (result < 0)
+            {
+                MessageBox.Show("The value for the brake pipe charging rate is not valid!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
+            
             // Retain settings for convenience
             RegistryKey RK = Registry.CurrentUser.CreateSubKey(regKey);
             if (RK != null)
@@ -107,11 +134,7 @@ namespace MenuWPF
 
         #region Simulation
 
-        private void sliderBrakePipe_MouseEnter(object sender, MouseEventArgs e)
-        {
-            ((Slider)sender).ToolTip = (int)((Slider)sender).Value;
-        }
-
+        
         private void sliderWOD_ValueChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
         {
             lblWDOValue.Content = ((int)sliderWOD.Value).ToString();

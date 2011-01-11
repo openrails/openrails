@@ -217,7 +217,7 @@
 				</LinearGradientBrush>
 			</Button.Background>
 		</Button>
-		<Button x:Name="btnStart" Content="Start" HorizontalAlignment="Right" Margin="0,0,8,0" Grid.Row="4" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Width="100" Height="100" Background="#FF005683" Foreground="#FF032387" BorderThickness="0" Grid.Column="2" Cursor="Hand" Click="btnStart_Click"/>
+		<Button x:Name="btnStart" Content="Start" HorizontalAlignment="Right" Margin="0,0,8,0" Grid.Row="4" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Width="100" Height="100" Background="#FF005683" Foreground="Black" BorderThickness="0" Grid.Column="2" Cursor="Hand" Click="btnStart_Click"/>
 		<ProgressBar x:Name="progBar" Grid.Column="2" Margin="8,37,212,33" Grid.Row="4" Height="30" Visibility="Hidden">
 			<ProgressBar.Foreground>
 				<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
