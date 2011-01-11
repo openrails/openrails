@@ -424,7 +424,15 @@ namespace ORTS
         {
             if (NumWheels <= 0)
                 return;
-            float max0 = MassKG * 9.8f * Adhesion3 / NumWheels;
+
+            //float max0 = MassKG * 9.8f * Adhesion3 / NumWheels;   //Not used
+            
+            //Curtius-Kniffler computation
+            float currentSpeedMpS = Math.Abs(SpeedMpS);
+            float uMax = (7.5f / (currentSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
+            float adhesionUtil = 0.95f;   //Adhesion utilization
+            
+            float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
             if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
             {
                 if (Train.SlipperySpotDistanceM < 0)
@@ -439,7 +447,8 @@ namespace ORTS
                 else
                     max0 *= .7f;
             }
-            float max1 = (Sander ? .95f : Adhesion2) * max0;
+            //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
+            float max1 = (Sander ? 1.5f : 1.0f) * max0; //Increase adhesion when sander is on
             WheelSlip = false;
             if (MotiveForceN > max1)
             {
@@ -447,7 +456,7 @@ namespace ORTS
                 if (AntiSlip)
                     MotiveForceN = max1;
                 else
-                    MotiveForceN = Adhesion1 * max0;
+                    MotiveForceN = Adhesion1 * max0;        //Lowers the adhesion limit to 20% of its full
             }
             else if (MotiveForceN < -max1)
             {
@@ -455,7 +464,7 @@ namespace ORTS
                 if (AntiSlip)
                     MotiveForceN = -max1;
                 else
-                    MotiveForceN = -Adhesion1 * max0;
+                    MotiveForceN = -Adhesion1 * max0;       //Lowers the adhesion limit to 20% of its full
             }
         }
         public override bool GetSanderOn()
