@@ -70,6 +70,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="AddFolderWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="EngineInfoWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -93,6 +97,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AddFolderWindow.xaml.cs">
+      <DependentUpon>AddFolderWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="EngineInfoWindow.xaml.cs">
       <DependentUpon>EngineInfoWindow.xaml</DependentUpon>
@@ -160,6 +167,7 @@
     <Resource Include="BANNER_1.jpg" />
     <Resource Include="BANNER_2.jpg" />
     <Resource Include="BANNER_3.jpg" />
+    <Resource Include="close.png" />
     <Resource Include="openrails.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

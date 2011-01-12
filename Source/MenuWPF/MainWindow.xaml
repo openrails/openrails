@@ -80,10 +80,12 @@
 				<ColumnDefinition Width="67"/>
 				<ColumnDefinition/>
 				<ColumnDefinition Width="115"/>
+				<ColumnDefinition Width="50"/>
 			</Grid.ColumnDefinitions>
 			<Image x:Name="imgLogo1" Margin="0" Source="BANNER_1.jpg" Stretch="Fill" d:LayoutOverrides="GridBox"/>
 			<Image x:Name="imgLogo2" Margin="0" Source="BANNER_2.jpg" Stretch="Fill" d:LayoutOverrides="HorizontalAlignment, GridBox" Grid.Column="1" MouseDown="imgLogo2_MouseDown" />
 			<Image x:Name="imgLogo3" Margin="0" Source="BANNER_3.jpg" Stretch="Fill" Grid.Column="2"/>
+			<Image x:Name="imgQuit" Grid.Column="3" Margin="0" Width="50" Source="close.png" ToolTip="Quit" MouseDown="imgQuit_MouseDown" Cursor="Hand"/>
 		</Grid>
         <Border x:Name="brdRouteDetails" BorderBrush="Black" BorderThickness="0" CornerRadius="20" Margin="5,10,0,0" Grid.Row="3" Grid.Column="0" d:LayoutOverrides="GridBox" Background="#99FFFFFF">
             <FlowDocumentScrollViewer x:Name="docRouteDetail" Margin="10,10,10,10" Background="#99FBFBFB" VerticalScrollBarVisibility="Auto" Style="{DynamicResource FlowDocumentScrollViewerStyle1}">
@@ -196,18 +198,7 @@
 				<Button x:Name="btnDescription" Content="Description" Grid.Column="3" Margin="12,0,16,0" Grid.Row="1" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Center" Background="{x:Null}" Height="22" Click="btnDescription_Click" FontSize="13.333"/>
 			</Grid>
 		</Border>
-		<Button x:Name="btnQuit" Content="Quit" HorizontalAlignment="Left" Margin="8,0,0,0" Grid.Row="4" Width="100" Foreground="Black" FontSize="21.333" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" Click="btnQuit_Click" Cursor="Hand" Style="{DynamicResource RedRoundButton}" Height="100">
-			<Button.Background>
-				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
-					<GradientStop Color="#FFF3F3F3" Offset="0"/>
-					<GradientStop Color="#FFEBEBEB"/>
-					<GradientStop Color="#00DDDDDD"/>
-					<GradientStop Color="#FF0056FF" Offset="1"/>
-					<GradientStop Color="#FFFDFDFD"/>
-				</LinearGradientBrush>
-			</Button.Background>
-		</Button>
-		<Button x:Name="btnOptions" Content="Options" Grid.Column="2" Margin="0,0,108,0" Grid.Row="4" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="18.667" FontWeight="Bold" Cursor="Hand" Foreground="Black" Click="btnOptions_Click" HorizontalAlignment="Right" Width="100" Height="100">
+		<Button x:Name="btnOptions" Content="Options" Grid.Column="2" Margin="0,0,3,0" Grid.Row="4" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="18.667" FontWeight="Bold" Cursor="Hand" Foreground="Black" Click="btnOptions_Click" HorizontalAlignment="Right" Width="100" Height="100">
 			<Button.Background>
 				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
 					<GradientStop Color="#FF0063AF" Offset="0"/>

@@ -241,11 +241,6 @@ namespace MenuWPF
             }
         }
 
-		private void btnQuit_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-            Close();
-        }
-
         private void listBoxRoutes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
@@ -347,6 +342,14 @@ namespace MenuWPF
             else if (e.ClickCount > 1 && e.LeftButton == MouseButtonState.Pressed)
             {
                 this.WindowState = this.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            }
+        }
+
+        private void imgQuit_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to quit Open Rails?", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+            {
+                Close();
             }
         }
 
@@ -543,12 +546,12 @@ namespace MenuWPF
             Routes = new List<Route>();
             try
             {
-                foreach (string directory in Directory.GetDirectories(SelectedFolder.Path + @"\ROUTES"))
+                foreach (string directory in Directory.GetDirectories(Folders[cboFolder.SelectedIndex].Path + @"\ROUTES"))
                 {
                     try
                     {
                         TRKFile trkFile = new TRKFile(MSTSPath.GetTRKFileName(directory));
-                        Routes.Add(new Route(trkFile.Tr_RouteFile.Name, directory, trkFile, SelectedFolder));
+                        Routes.Add(new Route(trkFile.Tr_RouteFile.Name, directory, trkFile, Folders[cboFolder.SelectedIndex]));
                     }
                     catch
                     {

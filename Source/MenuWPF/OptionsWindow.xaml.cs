@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace MenuWPF
 {
@@ -164,10 +165,79 @@ namespace MenuWPF
             }
         }
 
+        
+
         #endregion
 
         #region Train Store
 
+        private void btnAddFolder_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // TODO: Add event handler implementation here.
+        }
+
+        private void btnRemoveFolder_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // TODO: Add event handler implementation here.
+        }
+
+        private void LoadFolders()
+        {
+            //List<MenuWPF.MainWindow.Folder> Folders = new List<MenuWPF.MainWindow.Folder>();
+
+            //if (File.Exists(FolderDataFile))
+            //{
+            //    try
+            //    {
+            //        using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
+            //        {
+            //            var count = inf.ReadInt32();
+            //            for (var i = 0; i < count; ++i)
+            //            {
+            //                var path = inf.ReadString();
+            //                var name = inf.ReadString();
+            //                Folders.Add(new Folder(name, path));
+            //                cboFolder.Items.Add(name);
+            //            }
+            //        }
+            //    }
+            //    catch (Exception error)
+            //    {
+            //        MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //    }
+            //}
+
+            //if (Folders.Count == 0)
+            //{
+            //    try
+            //    {
+            //        Folders.Add(new Folder("- Default -", MSTSPath.Base()));
+            //        cboFolder.Items.Add("- Default -");
+            //    }
+            //    catch (Exception)
+            //    {
+            //        MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //    }
+            //}
+
+            //Folders = Folders.OrderBy(f => f.Name).ToList();
+
+
+        }
+
+        //================================================================================
+        private void SaveFolders()
+        {
+            //using (BinaryWriter outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
+            //{
+            //    outf.Write(Folders.Count);
+            //    foreach (var folder in Folders)
+            //    {
+            //        outf.Write(folder.Path);
+            //        outf.Write(folder.Name);
+            //    }
+            //}
+        }
 
         #endregion
     }
