@@ -190,7 +190,7 @@ namespace MenuWPF
 
 		private void btnOptions_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
-            OptionsWindow winOptions = new OptionsWindow(RegistryKey);
+            OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile);
 
             var darkwindow = new Window()
             {
@@ -678,8 +678,9 @@ namespace MenuWPF
                     }
                     lines = null;
                     cboStartingTime.Text = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
-                    cboStartingTime.IsEnabled = false;
-
+                    cboStartingTime.Visibility = Visibility.Hidden;
+                    lblActStartingTime.Visibility = Visibility.Visible;
+                    lblActStartingTime.Content = cboStartingTime.Text;
                     //Show the activity special fields
                     lblDescription.Visibility = Visibility.Visible;
                     lblDifficulty.Visibility = Visibility.Visible;
@@ -690,18 +691,25 @@ namespace MenuWPF
                     //================================
                     labelDuration.Content = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
                     cboSeason.SelectedIndex = (int)Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Season;
-                    cboSeason.IsEnabled = false;
+                    cboSeason.Visibility = Visibility.Hidden;
+                    lblActSeason.Visibility = Visibility.Visible;
+                    lblActSeason.Content = cboSeason.Text;
                     cboWeather.SelectedIndex = (int)Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Weather;
-                    cboWeather.IsEnabled = false;
+                    cboWeather.Visibility = Visibility.Hidden;
+                    lblActWeather.Visibility = Visibility.Visible;
+                    lblActWeather.Content = cboWeather.Text;
                     labelDifficulty.Content = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty.ToString();
 
                     //cboEngine.SelectedIndex = -1;
-                    cboEngine.IsEnabled = false;
-                    cboPath.SelectedIndex = -1;//Paths.IndexOf(Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_Header.PathID);
-                    cboPath.IsEnabled = false;
-                    cboHeading.SelectedIndex = -1;
-                    cboHeading.IsEnabled = false;
-                    cboConsist.IsEnabled = false;
+                    cboEngine.Visibility = Visibility.Hidden;
+                    lblActLocomotive.Visibility = Visibility.Visible;
+
+                    cboPath.Visibility = Visibility.Hidden;
+                    lblActStartingAt.Visibility = Visibility.Visible;
+                    cboHeading.Visibility = Visibility.Hidden;
+                    lblActHeading.Visibility = Visibility.Visible;
+                    cboConsist.Visibility = Visibility.Hidden;
+                    lblActConsist.Visibility = Visibility.Visible;
                     //Display the engine and the consist
                     string service = Activities[listBoxActivities.SelectedIndex].ACTFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
                     using (StreamReader sr = new StreamReader(SelectedRoute.Path + "\\SERVICES\\" + service + ".srv"))
@@ -720,12 +728,16 @@ namespace MenuWPF
                         {
                             cboEngine.SelectedIndex = cboEngine.Items.IndexOf(engName.Single());
                             System.Windows.Forms.Application.DoEvents();
+                            lblActLocomotive.Content = cboEngine.SelectedItem.ToString();
                             cboConsist.SelectedIndex = cboConsist.Items.IndexOf(consist.ToLower());
+                            lblActConsist.Content = cboConsist.SelectedItem.ToString();
                         }
                         else
                         {
                             cboEngine.Text = "UNKNOWN";
+                            lblActLocomotive.Content = "UNKNOWN";
                             cboConsist.SelectedIndex = -1;
+                            lblActConsist.Content = "n/a";
                         }
                     }
                     //Display the starting point and the heading direction
@@ -735,14 +747,17 @@ namespace MenuWPF
                     {
                         cboPath.SelectedIndex = cboPath.Items.IndexOf(rows[0]["Start"].ToString());
                         System.Windows.Forms.Application.DoEvents();
+                        lblActStartingAt.Content = cboPath.SelectedItem.ToString();
                         cboHeading.SelectedIndex = cboHeading.Items.IndexOf(rows[0]["End"].ToString());
+                        lblActHeading.Content = cboHeading.SelectedItem.ToString();
                     }
                 }
                 else
                 {
                     docActivityDescription.Document.Blocks.Clear();
-                    cboStartingTime.SelectedIndex = 2;
-                    cboStartingTime.IsEnabled = true;
+                    cboStartingTime.SelectedIndex = 10;
+                    cboStartingTime.Visibility = Visibility.Visible;
+                    lblActStartingTime.Visibility = Visibility.Hidden;
 
                     //Hide the activity special fields
                     lblDescription.Visibility = Visibility.Hidden;
@@ -753,16 +768,22 @@ namespace MenuWPF
                     docActivityDescription.Visibility = Visibility.Hidden;
                     //================================
                     cboSeason.SelectedIndex = 1;
-                    cboSeason.IsEnabled = true;
+                    cboSeason.Visibility = Visibility.Visible;
+                    lblActSeason.Visibility = Visibility.Hidden;
                     cboWeather.SelectedIndex = 0;
-                    cboWeather.IsEnabled = true;
+                    lblActWeather.Visibility = Visibility.Hidden;
+                    cboWeather.Visibility = Visibility.Visible;
                     cboPath.SelectedIndex = 0;
-                    cboPath.IsEnabled = true;
+                    cboPath.Visibility = Visibility.Visible;
+                    lblActStartingAt.Visibility = Visibility.Hidden;
                     //cboEngine.SelectedIndex = 0;
-                    cboEngine.IsEnabled = true;
-                    cboHeading.IsEnabled = true;
-                    cboConsist.IsEnabled = true;
+                    cboEngine.Visibility = Visibility.Visible;
+                    lblActLocomotive.Visibility = Visibility.Hidden;
+                    cboHeading.Visibility = Visibility.Visible;
+                    lblActHeading.Visibility = Visibility.Hidden;
 
+                    cboConsist.Visibility = Visibility.Visible;
+                    lblActConsist.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception ex)

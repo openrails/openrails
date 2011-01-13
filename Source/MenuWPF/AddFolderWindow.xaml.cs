@@ -19,7 +19,10 @@ namespace MenuWPF
 	/// </summary>
 	public partial class AddFolderWindow : Window
 	{
-		public AddFolderWindow(FlowDocument doc, string bgImage)
+        public string FolderPath { get; set; }
+        public string FolderName { get; set; }
+
+		public AddFolderWindow()
 		{
 			this.InitializeComponent();
             FolderBrowserDialog fbd = new FolderBrowserDialog();
@@ -48,12 +51,15 @@ namespace MenuWPF
             }
             else
             {
-                //Add the folder to the list
+                FolderPath = txtPath.Text;
+                FolderName = txtName.Text;
+                DialogResult = true;
             }
 		}
 
 		private void btnCancel_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
+            DialogResult = false;
             Close();
 		}
 

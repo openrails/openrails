@@ -253,7 +253,7 @@
 								<ColumnDefinition/>
 								<ColumnDefinition/>
 							</Grid.ColumnDefinitions>
-							<ListBox x:Name="listBoxFolders" Background="#3F0090FF" MinWidth="400" MinHeight="150" FontSize="14.667" FontWeight="Bold" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="16,0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0" SelectionChanged="listBoxActivities_SelectionChanged" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Height="174.88">
+							<ListBox x:Name="listBoxFolders" Background="#3F0090FF" MinWidth="400" MinHeight="150" FontSize="14.667" FontWeight="Bold" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="16,0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Height="174.88">
 								<ListBox.Foreground>
 									<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
 										<GradientStop Color="Black" Offset="0"/>
@@ -262,8 +262,8 @@
 								</ListBox.Foreground>
 							</ListBox>
 							<Label Content="Folders:" HorizontalAlignment="Left" Height="30" Margin="16,10,0,0" VerticalAlignment="Top" Width="75" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" FontSize="16"/>
-							<Button x:Name="btnAddFolder" Content="Add" Margin="16,0,0,16" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnAddFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="60"/>
-							<Button x:Name="btnRemoveFolder" Content="Remove" Margin="90,0,0,16" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnRemoveFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="80"/>
+							<Button x:Name="btnAddFolder" Content="Add" Margin="16,0,0,16" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnAddFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="60" ToolTip="Add a new folder"/>
+							<Button x:Name="btnRemoveFolder" Content="Remove" Margin="90,0,0,16" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnRemoveFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="80" ToolTip="Remove selected folder"/>
 						</Grid>
 					</Border>
 				</Grid>
@@ -384,8 +384,8 @@
 				</Grid>
 			</TabItem>			
 		</TabControl>
-		<Button x:Name="buttonOK" Content="Save" Grid.Column="2" Margin="0" Grid.Row="2" Width="100" Height="100" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Foreground="Black" Click="buttonOK_Click" Cursor="Hand" />
-		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="1" Margin="0" Grid.Row="2" Style="{DynamicResource RedRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="buttonCancel_Click" Cursor="Hand" HorizontalAlignment="Right" Width="100">
+		<Button x:Name="buttonOK" Content="Save" Grid.Column="1" Margin="0" Grid.Row="2" Width="100" Height="100" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Foreground="Black" Click="buttonOK_Click" Cursor="Hand" HorizontalAlignment="Right" ToolTip="Save options" />
+		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="2" Margin="0" Grid.Row="2" Style="{DynamicResource RedRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="buttonCancel_Click" Cursor="Hand" Width="100" ToolTip="Reject changes">
 			<Button.Background>
 				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
 					<GradientStop Color="#FF0063AF" Offset="0"/>
@@ -395,7 +395,7 @@
 				</LinearGradientBrush>
 			</Button.Background>
 		</Button>
-		<Button x:Name="btnPrevious" Content="&lt;Back" Margin="16,0,295,0" Grid.Row="2" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnPrevious_Click" Cursor="Hand" HorizontalAlignment="Left" Width="100" Grid.ColumnSpan="2">
+		<Button x:Name="btnPrevious" Content="&lt;Back" Margin="16,0,295,0" Grid.Row="2" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnPrevious_Click" Cursor="Hand" HorizontalAlignment="Left" Width="100" Grid.ColumnSpan="2" ToolTip="Previous tab">
 			<Button.Background>
 				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
 					<GradientStop Color="#FF0063AF" Offset="0"/>
@@ -405,7 +405,7 @@
 				</LinearGradientBrush>
 			</Button.Background>
 		</Button>
-		<Button x:Name="btnNext" Content="Next&gt;" Grid.Column="1" Grid.Row="2" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnNext_Click" Cursor="Hand" HorizontalAlignment="Left" Width="100" Margin="50,0,0,0">
+		<Button x:Name="btnNext" Content="Next&gt;" Grid.Column="1" Grid.Row="2" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnNext_Click" Cursor="Hand" HorizontalAlignment="Left" Width="100" Margin="50,0,0,0" ToolTip="Next tab">
 			<Button.Background>
 				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
 					<GradientStop Color="#FF0063AF" Offset="0"/>

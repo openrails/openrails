@@ -50,24 +50,10 @@
 					<ColumnDefinition/>
 					<ColumnDefinition MaxWidth="16" MinWidth="16" Width="16"/>
 				</Grid.ColumnDefinitions>
-				<Label Content="Select a route:" Margin="8,0,0,0" VerticalAlignment="Top" d:LayoutOverrides="Width" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="16" Grid.Row="1"/>
-				<ListBox x:Name="listBoxRoutes" Background="Transparent" FontSize="14.667" FontWeight="Bold" MinWidth="358" MinHeight="100" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" Grid.Row="2" Margin="16,0,0,16" VerticalContentAlignment="Stretch" BorderThickness="0" SelectionChanged="listBoxRoutes_SelectionChanged" Grid.ColumnSpan="2" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}">
-					<ListBox.Foreground>
-						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-							<GradientStop Color="Black" Offset="0"/>
-							<GradientStop Color="#FF036400" Offset="1"/>
-						</LinearGradientBrush>
-					</ListBox.Foreground>
-				</ListBox>
-				<Label Content="Select folder:" Margin="8,10,0,0" VerticalAlignment="Top" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="16" d:LayoutOverrides="Width"/>
-				<ComboBox x:Name="cboFolder" Margin="0,11,0,4" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" FontWeight="Bold" Grid.Column="1" Background="{x:Null}" SelectionChanged="cboFolder_SelectionChanged" d:LayoutOverrides="Height">
-					<ComboBox.Foreground>
-						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-							<GradientStop Color="Black" Offset="0"/>
-							<GradientStop Color="#FF036400" Offset="1"/>
-						</LinearGradientBrush>
-					</ComboBox.Foreground>
-				</ComboBox>
+				<Label Content="Select a route:" Margin="8,0,0,0" VerticalAlignment="Top" d:LayoutOverrides="Width" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Grid.Row="1"/>
+				<ListBox x:Name="listBoxRoutes" Background="Transparent" FontSize="14.667" FontWeight="Bold" MinWidth="358" MinHeight="100" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" Grid.Row="2" Margin="16,0,0,16" VerticalContentAlignment="Stretch" BorderThickness="0" SelectionChanged="listBoxRoutes_SelectionChanged" Grid.ColumnSpan="2" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Foreground="#FF013100"/>
+				<Label Content="Select folder:" Margin="8,10,0,0" VerticalAlignment="Top" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" d:LayoutOverrides="Width"/>
+				<ComboBox x:Name="cboFolder" Margin="0,11,0,4" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" FontWeight="Bold" Grid.Column="1" Background="{x:Null}" SelectionChanged="cboFolder_SelectionChanged" d:LayoutOverrides="Height" Foreground="#FF013100"/>
 			</Grid>
 			
 		</Border>
@@ -84,8 +70,8 @@
 			</Grid.ColumnDefinitions>
 			<Image x:Name="imgLogo1" Margin="0" Source="BANNER_1.jpg" Stretch="Fill" d:LayoutOverrides="GridBox"/>
 			<Image x:Name="imgLogo2" Margin="0" Source="BANNER_2.jpg" Stretch="Fill" d:LayoutOverrides="HorizontalAlignment, GridBox" Grid.Column="1" MouseDown="imgLogo2_MouseDown" />
-			<Image x:Name="imgLogo3" Margin="0" Source="BANNER_3.jpg" Stretch="Fill" Grid.Column="2"/>
-			<Image x:Name="imgQuit" Grid.Column="3" Margin="0" Width="50" Source="close.png" ToolTip="Quit" MouseDown="imgQuit_MouseDown" Cursor="Hand"/>
+			<Image x:Name="imgLogo3" Margin="0" Source="BANNER_3.jpg" Stretch="Fill" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="140"/>
+			<Image x:Name="imgQuit" Grid.Column="3" Margin="0" Width="50" Source="close.png" ToolTip="Quit Open Rails" MouseDown="imgQuit_MouseDown" Cursor="Hand"/>
 		</Grid>
         <Border x:Name="brdRouteDetails" BorderBrush="Black" BorderThickness="0" CornerRadius="20" Margin="5,10,0,0" Grid.Row="3" Grid.Column="0" d:LayoutOverrides="GridBox" Background="#99FFFFFF">
             <FlowDocumentScrollViewer x:Name="docRouteDetail" Margin="10,10,10,10" Background="#99FBFBFB" VerticalScrollBarVisibility="Auto" Style="{DynamicResource FlowDocumentScrollViewerStyle1}">
@@ -107,15 +93,8 @@
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition/>
 				</Grid.ColumnDefinitions>
-				<Label Content="Select an activity:" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="16" Margin="8,8,0,0" d:LayoutOverrides="Width"/>
-				<ListBox x:Name="listBoxActivities" Background="Transparent" MinWidth="400" MinHeight="150" FontSize="14.667" FontWeight="Bold" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="16,0,16,16" Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0" SelectionChanged="listBoxActivities_SelectionChanged" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}">
-					<ListBox.Foreground>
-						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-							<GradientStop Color="Black" Offset="0"/>
-							<GradientStop Color="#FF002A8F" Offset="1"/>
-						</LinearGradientBrush>
-					</ListBox.Foreground>
-				</ListBox>
+				<Label Content="Select an activity:" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Margin="8,8,0,0" d:LayoutOverrides="Width"/>
+				<ListBox x:Name="listBoxActivities" Background="Transparent" MinWidth="400" MinHeight="150" FontSize="14.667" FontWeight="Bold" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="16,0,16,16" Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0" SelectionChanged="listBoxActivities_SelectionChanged" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Foreground="#FF002A8F"/>
 			</Grid>
 		</Border>
 		<Border x:Name="brdParameters" BorderBrush="Black" BorderThickness="0" CornerRadius="20" Margin="1,10,5,0" Grid.Row="3" Grid.Column="2" d:LayoutOverrides="GridBox" Background="#99FFFFFF">
@@ -137,14 +116,14 @@
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="1*"/>
 				</Grid.ColumnDefinitions>
-				<Label x:Name="lblSelectPath" Content="Starting at:" Margin="11,0,0,0" VerticalAlignment="Bottom" d:LayoutOverrides="Width" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" HorizontalAlignment="Left" VerticalContentAlignment="Bottom" Grid.Row="3"/>
-				<ComboBox x:Name="cboPath" Margin="16,0" d:LayoutOverrides="Height" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" FontWeight="Bold" Foreground="#FF032387" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="3" Background="{x:Null}" SelectionChanged="cboPath_SelectionChanged"/>
-				<Label x:Name="lblSelectConsist" Content="Select locomotive:" HorizontalAlignment="Left" Margin="11,0,0,0" d:LayoutOverrides="Height" Grid.Row="1" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom"/>
-				<Label x:Name="lblStartTime" Content="Starting time:" HorizontalAlignment="Left" Margin="11,0,0,0" d:LayoutOverrides="Height" Grid.Row="5" VerticalAlignment="Bottom" FontSize="13.333" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-				<Label x:Name="lblSeason" Content="Season:" HorizontalAlignment="Left" Margin="12,0,0,0" d:LayoutOverrides="Height" Grid.Row="6" FontSize="13.333" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" VerticalAlignment="Bottom"/>
-				<Label x:Name="lblWeather" Content="Weather:" HorizontalAlignment="Right" Margin="0,0,12,0" d:LayoutOverrides="Height" Grid.Column="2" Grid.Row="6" VerticalAlignment="Bottom" FontSize="13.333" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-				<ComboBox x:Name="cboConsist" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="2" Grid.ColumnSpan="3" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" FontWeight="Bold" Foreground="#FF032387" Grid.Column="1" VerticalAlignment="Center" Background="{x:Null}"/>
-				<ComboBox x:Name="cboStartingTime" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="5" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" FontWeight="Bold" Foreground="#FF032387" Grid.Column="1" IsEditable="True" BorderThickness="1" Style="{DynamicResource ComboBoxStyle1}" Background="{x:Null}" BorderBrush="#FF787878">
+				<Label x:Name="lblSelectPath" Content="Starting at:" Margin="11,0,0,0" VerticalAlignment="Bottom" d:LayoutOverrides="Width" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" HorizontalAlignment="Left" VerticalContentAlignment="Bottom" Grid.Row="3"/>
+				<ComboBox x:Name="cboPath" Margin="16,0" d:LayoutOverrides="Height" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" Foreground="#FF032387" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="3" Background="{x:Null}" SelectionChanged="cboPath_SelectionChanged"/>
+				<Label x:Name="lblSelectConsist" Content="Select locomotive:" HorizontalAlignment="Left" Margin="11,0,0,0" d:LayoutOverrides="Height" Grid.Row="1" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom"/>
+				<Label x:Name="lblStartTime" Content="Starting time:" HorizontalAlignment="Left" Margin="11,0,0,0" d:LayoutOverrides="Height" Grid.Row="5" VerticalAlignment="Bottom" FontSize="14.667" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+				<Label x:Name="lblSeason" Content="Season:" HorizontalAlignment="Left" Margin="12,0,0,0" d:LayoutOverrides="Height" Grid.Row="6" FontSize="14.667" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" VerticalAlignment="Bottom"/>
+				<Label x:Name="lblWeather" Content="Weather:" HorizontalAlignment="Right" Margin="0,0,12,0" d:LayoutOverrides="Height" Grid.Column="2" Grid.Row="6" VerticalAlignment="Bottom" FontSize="14.667" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+				<ComboBox x:Name="cboConsist" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="2" Grid.ColumnSpan="3" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" Foreground="#FF032387" Grid.Column="1" VerticalAlignment="Center" Background="{x:Null}"/>
+				<ComboBox x:Name="cboStartingTime" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="5" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" Foreground="#FF032387" Grid.Column="1" IsEditable="True" BorderThickness="1" Style="{DynamicResource ComboBoxStyle1}" Background="{x:Null}" BorderBrush="#FF787878">
 					<ComboBoxItem Content="00:00"/>
 					<ComboBoxItem Content="01:00"/>
 					<ComboBoxItem Content="02:00"/>
@@ -170,35 +149,42 @@
 					<ComboBoxItem Content="22:00"/>
 					<ComboBoxItem Content="23:00"/>
 				</ComboBox>
-				<ComboBox x:Name="cboSeason" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="6" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" FontWeight="Bold" Foreground="#FF032387" Grid.Column="1" Background="{x:Null}">
+				<ComboBox x:Name="cboSeason" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="6" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" Foreground="#FF032387" Grid.Column="1" Background="{x:Null}">
 					<ComboBoxItem Content="Spring"/>
 					<ComboBoxItem Content="Summer"/>
 					<ComboBoxItem Content="Autumn"/>
 					<ComboBoxItem Content="Winter"/>
 				</ComboBox>
-				<ComboBox x:Name="cboWeather" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="6" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" FontWeight="Bold" Foreground="#FF032387" Grid.Column="3" Background="{x:Null}">
+				<ComboBox x:Name="cboWeather" Margin="16,0" d:LayoutOverrides="Height" Grid.Row="6" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" Foreground="#FF032387" Grid.Column="3" Background="{x:Null}">
 					<ComboBoxItem Content="Clear"/>
                     <ComboBoxItem Content="Snow"/>
 					<ComboBoxItem Content="Rain"/>
 				</ComboBox>
-				<Label x:Name="lblDifficulty" Content="Difficulty:" Margin="12,0,0,0" Grid.Row="7" VerticalAlignment="Bottom" d:LayoutOverrides="Width" HorizontalAlignment="Left" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333"/>
-				<Label x:Name="labelDifficulty" Content="Label" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Column="1" Margin="12,0,0,0" Grid.Row="7" Foreground="#FF032387" VerticalAlignment="Bottom" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="16" FontWeight="Bold"/>
-				<Label x:Name="lblDuration" Content="Duration:" Margin="0,0,12,0" Grid.Row="7" Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333"/>
-				<Label x:Name="labelDuration" Content="Label" HorizontalAlignment="Left" Grid.Column="3" Margin="12,0,0,0" Grid.Row="7" Foreground="#FF032387" VerticalAlignment="Bottom" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="16" FontWeight="Bold"/>
-				<Label x:Name="lblDescription" Content="Description:" Margin="12,15,0,0" Grid.Row="8" VerticalAlignment="Top" HorizontalAlignment="Left" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333"/>
-				<FlowDocumentScrollViewer x:Name="docActivityDescription" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,0,16,16" Grid.Row="8" d:LayoutOverrides="Height" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Foreground="#FF032387" VerticalScrollBarVisibility="Auto">
+				<Label x:Name="lblDifficulty" Content="Difficulty:" Margin="12,0,0,0" Grid.Row="7" VerticalAlignment="Bottom" d:LayoutOverrides="Width" HorizontalAlignment="Left" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667"/>
+				<Label x:Name="labelDifficulty" Content="Label" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Column="1" Margin="12,0,0,0" Grid.Row="7" Foreground="#FF032387" VerticalAlignment="Bottom" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667"/>
+				<Label x:Name="lblDuration" Content="Duration:" Margin="0,0,12,0" Grid.Row="7" Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667"/>
+				<Label x:Name="labelDuration" Content="Label" HorizontalAlignment="Left" Grid.Column="3" Margin="12,0,0,0" Grid.Row="7" Foreground="#FF032387" VerticalAlignment="Bottom" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667"/>
+				<Label x:Name="lblDescription" Content="Description:" Margin="12,15,0,0" Grid.Row="8" VerticalAlignment="Top" HorizontalAlignment="Left" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667"/>
+				<FlowDocumentScrollViewer x:Name="docActivityDescription" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,0,16,16" Grid.Row="8" d:LayoutOverrides="Height" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Foreground="#FF032387" VerticalScrollBarVisibility="Auto" FontSize="14.667">
 					<FlowDocument FontFamily="Microsoft Sans Serif">
 						<Paragraph><Run Text="FlowDocumentScrollViewer"/></Paragraph>
 					</FlowDocument>
 				</FlowDocumentScrollViewer>
-				<Label x:Name="lblSelectConsist_Copy" Content="Select consist:" HorizontalAlignment="Left" Margin="11,0,0,0" Grid.Row="2" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom"/>
-				<Label x:Name="lblSelectPath_Copy" Content="Heading towards:" Margin="11,0,0,0" VerticalAlignment="Bottom" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" HorizontalAlignment="Left" VerticalContentAlignment="Bottom" Grid.Row="4"/>
-				<ComboBox x:Name="cboEngine" Margin="16,0,0,0" Grid.Row="1" Grid.ColumnSpan="2" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" FontWeight="Bold" Foreground="#FF032387" Grid.Column="1" d:LayoutOverrides="Height" VerticalAlignment="Center" Background="{x:Null}"/>
-				<ComboBox x:Name="cboHeading" Margin="16,0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" FontWeight="Bold" Foreground="#FF032387" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="4" d:LayoutOverrides="Height" VerticalAlignment="Center" Background="{x:Null}"/>
-				<Button x:Name="btnDescription" Content="Description" Grid.Column="3" Margin="12,0,16,0" Grid.Row="1" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Center" Background="{x:Null}" Height="22" Click="btnDescription_Click" FontSize="13.333"/>
+				<Label x:Name="lblSelectConsist_Copy" Content="Select consist:" HorizontalAlignment="Left" Margin="11,0,0,0" Grid.Row="2" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom"/>
+				<Label x:Name="lblSelectPath_Copy" Content="Heading towards:" Margin="11,0,0,0" VerticalAlignment="Bottom" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" HorizontalAlignment="Left" VerticalContentAlignment="Bottom" Grid.Row="4"/>
+				<ComboBox x:Name="cboEngine" Margin="16,0,0,0" Grid.Row="1" Grid.ColumnSpan="2" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" Foreground="#FF032387" Grid.Column="1" d:LayoutOverrides="Height" VerticalAlignment="Center" Background="{x:Null}"/>
+				<ComboBox x:Name="cboHeading" Margin="16,0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="13.333" Foreground="#FF032387" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="4" d:LayoutOverrides="Height" VerticalAlignment="Center" Background="{x:Null}"/>
+				<Button x:Name="btnDescription" Content="Description" Grid.Column="3" Margin="12,0,16,0" Grid.Row="1" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Center" Background="{x:Null}" Height="22" Click="btnDescription_Click" FontSize="13.333" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+				<Label x:Name="lblActLocomotive" Content="Label" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="1" VerticalAlignment="Center" Foreground="#FF032387" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Visibility="Hidden"/>
+				<Label x:Name="lblActConsist" Content="Label" HorizontalAlignment="Left" Grid.Column="1" Margin="10,0,0,-0.867" Grid.Row="2" Foreground="#FF032387" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Visibility="Hidden"/>
+				<Label x:Name="lblActStartingAt" Content="Label" HorizontalAlignment="Left" Grid.Column="1" Margin="10,0,0,0" Grid.Row="3" Foreground="#FF032387" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Visibility="Hidden"/>
+				<Label x:Name="lblActHeading" Content="Label" HorizontalAlignment="Left" Grid.Column="1" Margin="10,0,0,0" Grid.Row="4" Foreground="#FF032387" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Visibility="Hidden"/>
+				<Label x:Name="lblActStartingTime" Content="Label" HorizontalAlignment="Left" Grid.Column="1" Margin="10,0,0,0" Grid.Row="5" Foreground="#FF032387" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" d:LayoutOverrides="Height" VerticalAlignment="Center" Visibility="Hidden"/>
+				<Label x:Name="lblActSeason" Content="Label" HorizontalAlignment="Left" Grid.Column="1" Margin="10,0,0,0" Grid.Row="6" Foreground="#FF032387" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Visibility="Hidden"/>
+				<Label x:Name="lblActWeather" Content="Label" HorizontalAlignment="Left" Grid.Column="3" Margin="12,0,0,0" Grid.Row="6" Foreground="#FF032387" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Visibility="Hidden"/>
 			</Grid>
 		</Border>
-		<Button x:Name="btnOptions" Content="Options" Grid.Column="2" Margin="0,0,3,0" Grid.Row="4" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="18.667" FontWeight="Bold" Cursor="Hand" Foreground="Black" Click="btnOptions_Click" HorizontalAlignment="Right" Width="100" Height="100">
+		<Button x:Name="btnOptions" Content="Options" Grid.Column="2" Margin="0,0,110,0" Grid.Row="4" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="18.667" FontWeight="Bold" Cursor="Hand" Foreground="Black" Click="btnOptions_Click" HorizontalAlignment="Right" Width="100" Height="100" ToolTip="Open Options Panel">
 			<Button.Background>
 				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
 					<GradientStop Color="#FF0063AF" Offset="0"/>
@@ -208,7 +194,7 @@
 				</LinearGradientBrush>
 			</Button.Background>
 		</Button>
-		<Button x:Name="btnStart" Content="Start" HorizontalAlignment="Right" Margin="0,0,8,0" Grid.Row="4" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Width="100" Height="100" Background="#FF005683" Foreground="Black" BorderThickness="0" Grid.Column="2" Cursor="Hand" Click="btnStart_Click"/>
+		<Button x:Name="btnStart" Content="Start" HorizontalAlignment="Right" Margin="0,0,8,0" Grid.Row="4" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Width="100" Height="100" Background="#FF005683" Foreground="Black" BorderThickness="0" Grid.Column="2" Cursor="Hand" Click="btnStart_Click" ToolTip="Start the activity"/>
 		<ProgressBar x:Name="progBar" Grid.Column="2" Margin="8,37,212,33" Grid.Row="4" Height="30" Visibility="Hidden">
 			<ProgressBar.Foreground>
 				<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

@@ -13,6 +13,7 @@ using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.IO;
+using MSTS;
 
 namespace MenuWPF
 {
@@ -23,8 +24,10 @@ namespace MenuWPF
     {
         #region Members & Constructor
         string regKey;
+        string foldersFile;
+        List<MenuWPF.MainWindow.Folder> Folders;
 
-		public OptionsWindow(string registryKey)
+		public OptionsWindow(string registryKey, string foldersFile)
 		{
 			this.InitializeComponent();
 
@@ -32,8 +35,8 @@ namespace MenuWPF
             this.sliderSound.Value = 5;
             this.cboResolution.Text = "1024x768";
             this.txtBrakePipe.Text = "21";
-            regKey = registryKey;
-
+            this.regKey = registryKey;
+            this.foldersFile = foldersFile;
 
             // Restore retained settings
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(registryKey);
@@ -58,6 +61,7 @@ namespace MenuWPF
             {
                 ((ImageBrush)this.Background).ImageSource = new BitmapImage(new Uri(txtBgImage.Text, UriKind.Absolute));
             }
+            LoadFolders();
         }
         #endregion
 
@@ -114,6 +118,7 @@ namespace MenuWPF
                 RK.SetValue("Warnings", this.chkWarningLog.IsChecked.Value ? 1 : 0);
                 RK.SetValue("BackgroundImage", this.txtBgImage.Text);
             }
+            SaveFolders();
             Close();
         }
 
@@ -173,54 +178,76 @@ namespace MenuWPF
 
         private void btnAddFolder_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            // TODO: Add event handler implementation here.
+            AddFolderWindow winAddFolder = new AddFolderWindow();
+
+            var darkwindow = new Window()
+            {
+                Background = System.Windows.Media.Brushes.Black,
+                Opacity = 0.75,
+                AllowsTransparency = true,
+                WindowStyle = WindowStyle.None,
+                WindowState = WindowState.Maximized
+            };
+            darkwindow.Show();
+            winAddFolder.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            if (winAddFolder.ShowDialog() == true)
+            {
+                Folders.Add(new MainWindow.Folder(winAddFolder.FolderName, winAddFolder.FolderPath));
+                listBoxFolders.Items.Add(winAddFolder.FolderName);
+            }
+            darkwindow.Close();
         }
 
         private void btnRemoveFolder_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            // TODO: Add event handler implementation here.
+            if (listBoxFolders.SelectedItem != null)
+            {
+                listBoxFolders.Items.RemoveAt(listBoxFolders.SelectedIndex);
+                Folders.RemoveAt(listBoxFolders.SelectedIndex);
+            }
         }
 
         private void LoadFolders()
         {
-            //List<MenuWPF.MainWindow.Folder> Folders = new List<MenuWPF.MainWindow.Folder>();
+            Folders = new List<MenuWPF.MainWindow.Folder>();
 
-            //if (File.Exists(FolderDataFile))
-            //{
-            //    try
-            //    {
-            //        using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
-            //        {
-            //            var count = inf.ReadInt32();
-            //            for (var i = 0; i < count; ++i)
-            //            {
-            //                var path = inf.ReadString();
-            //                var name = inf.ReadString();
-            //                Folders.Add(new Folder(name, path));
-            //                cboFolder.Items.Add(name);
-            //            }
-            //        }
-            //    }
-            //    catch (Exception error)
-            //    {
-            //        MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            //    }
-            //}
 
-            //if (Folders.Count == 0)
-            //{
-            //    try
-            //    {
-            //        Folders.Add(new Folder("- Default -", MSTSPath.Base()));
-            //        cboFolder.Items.Add("- Default -");
-            //    }
-            //    catch (Exception)
-            //    {
-            //        MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            //    }
-            //}
+            if (File.Exists(foldersFile))
+            {
+                try
+                {
+                    using (var inf = new BinaryReader(File.Open(foldersFile, FileMode.Open)))
+                    {
+                        var count = inf.ReadInt32();
+                        for (var i = 0; i < count; ++i)
+                        {
+                            var path = inf.ReadString();
+                            var name = inf.ReadString();
+                            Folders.Add(new MenuWPF.MainWindow.Folder(name, path));
+                            listBoxFolders.Items.Add(name);
+                        }
+                    }
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
 
-            //Folders = Folders.OrderBy(f => f.Name).ToList();
+            if (Folders.Count == 0)
+            {
+                try
+                {
+                    Folders.Add(new MenuWPF.MainWindow.Folder("- Default -", MSTSPath.Base()));
+                    listBoxFolders.Items.Add("- Default -");
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+
+            Folders = Folders.OrderBy(f => f.Name).ToList();
 
 
         }
@@ -228,15 +255,15 @@ namespace MenuWPF
         //================================================================================
         private void SaveFolders()
         {
-            //using (BinaryWriter outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
-            //{
-            //    outf.Write(Folders.Count);
-            //    foreach (var folder in Folders)
-            //    {
-            //        outf.Write(folder.Path);
-            //        outf.Write(folder.Name);
-            //    }
-            //}
+            using (BinaryWriter outf = new BinaryWriter(File.Open(foldersFile, FileMode.Create)))
+            {
+                outf.Write(listBoxFolders.Items.Count);
+                foreach (var folder in Folders)
+                {
+                    outf.Write(folder.Path);
+                    outf.Write(folder.Name);
+                }
+            }
         }
 
         #endregion
