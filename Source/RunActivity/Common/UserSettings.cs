@@ -73,41 +73,42 @@ namespace ORTS
 			var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
 			// Pull apart the command-line options so we can find them by setting name.
 			var optionsDictionary = options.ToDictionary(o => o.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant(), o => o.Contains('=') || o.Contains(':') ? o.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes");
-			try
+
+			RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
+			foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
 			{
-				RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-				if (RK != null)
+				// Get the default value.
+				var defValue = property.GetValue(this, new object[0]);
+				// Read in the registry option, if it exists.
+				var regValue = allowRegistryValues && RK != null ? RK.GetValue(property.Name, null) : null;
+				// Read in the command-line option, if it exists.
+				var propertyNameLower = property.Name.ToLowerInvariant();
+				var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
+
+				// Map registry option for boolean types so 1 is true; everything else is false;
+				if ((regValue != null) && (regValue is int) && (property.PropertyType == typeof(bool)))
+					regValue = (int)regValue == 1;
+
+				// Map command-line option for boolean types so true/yes/on/1 are all true; everything else is false;
+				if ((optValue != null) && (property.PropertyType == typeof(bool)))
+					optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
+
+				var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
+				try
 				{
-					foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
-					{
-						// Get the default value.
-						var defValue = property.GetValue(this, new object[0]);
-						// Read in the registry option, if it exists.
-						var regValue = allowRegistryValues ? RK.GetValue(property.Name, null) : null;
-						// Read in the command-line option, if it exists.
-						var propertyNameLower = property.Name.ToLowerInvariant();
-						var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
-
-						// Map registry option for boolean types so 1 is true; everything else is false;
-						if ((regValue != null) && (regValue is int) && (property.PropertyType == typeof(bool)))
-							regValue = (int)regValue == 1;
-
-						// Map command-line option for boolean types so true/yes/on/1 are all true; everything else is false;
-						if ((optValue != null) && (property.PropertyType == typeof(bool)))
-							optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
-
-						var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
-						property.SetValue(this, value, new object[0]);
-
-						// Need to use object.Equals(object) here because values are boxed.
-						Console.WriteLine("{0,-25} = {1,-10} {2}", property.Name, value, value.Equals(defValue) ? "" : optValue != null ? "(command-line)" : regValue != null ? "(registry)" : "");
-					}
+					property.SetValue(this, value, new object[0]);
 				}
+				catch (ArgumentException)
+				{
+					Trace.TraceWarning("Unable to load {0} value from type {1}.", property.Name, value.GetType().FullName);
+					value = defValue;
+				}
+
+				// Need to use object.Equals(object) here because values are boxed.
+				Console.WriteLine("{0,-25} = {1,-10} {2}", property.Name, value, value.Equals(defValue) ? "" : optValue != null ? "(command-line)" : regValue != null ? "(registry)" : "");
 			}
-			catch (Exception error)
-			{
-				Trace.WriteLine(error);
-			}
+			if (RK != null)
+				RK.Close();
 		}
 	}
 }
