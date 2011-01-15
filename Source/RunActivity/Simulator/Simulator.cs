@@ -151,7 +151,8 @@ namespace ORTS
       {
          ExplorePathFile = path;
          ExploreConFile = consist;
-         TimeSpan StartTime = new TimeSpan(int.Parse(start.Substring(0, start.IndexOf(":"))), int.Parse(start.Substring(start.IndexOf(":") + 1)), 0);
+         var time = start.Split(':');
+         TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
          ClockTime = StartTime.TotalSeconds;
          Season = (SeasonType)int.Parse(season);
          Weather = (WeatherType)int.Parse(weather);
