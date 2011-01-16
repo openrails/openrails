@@ -34,6 +34,7 @@ namespace MenuWPF
         private Dictionary<EngineInfo, List<string>> EnginesWithConsists;
         private DataTable Paths;
         private String bgImage = "";
+        private ProgressionWindow winProg;
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
 
@@ -155,7 +156,7 @@ namespace MenuWPF
                 }
             }
             RK.Close();
-
+            
             FolderDataFile = UserDataFolder + @"\" + FolderDataFileName;
             //Load the folders
             LoadFolders();
@@ -170,56 +171,42 @@ namespace MenuWPF
         #region Event Handlers
         private void bgWork_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            throw new NotImplementedException();
+            winProg.DoClose();
         }
 
         private void bgWork_DoWork(object sender, DoWorkEventArgs e)
         {
-            throw new NotImplementedException();
+            LoadRoutes();
         }
 
         private void winMain_Closing(object sender, CancelEventArgs e)
         {
-            
+            if (MessageBox.Show("Are you sure you want to quit Open Rails?", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+            {
+                e.Cancel = false;
+            }
+            else
+            {
+                e.Cancel = true;
+            }
         }
 
         private void btnStart_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
-            MainStart();
-		}
-
-		private void btnOptions_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-            OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile);
-
-            var darkwindow = new Window()
+            if (SelectedFolder != null)
             {
-                Background = System.Windows.Media.Brushes.Black,
-                Opacity = 0.75,
-                AllowsTransparency = true,
-                WindowStyle = WindowStyle.None,
-                WindowState = WindowState.Maximized
-            };
-            darkwindow.Show();
-            winOptions.ShowDialog();
-            darkwindow.Close();
+                MainStart();
+            }
+            else
+            {
+                MessageBox.Show("Please select a folder first!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
 		}
 
         private void btnDescription_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (cboEngine.SelectedItem != null)
             {
-
-                var darkwindow = new Window()
-                {
-                    Background = System.Windows.Media.Brushes.Black,
-                    Opacity = 0.75,
-                    AllowsTransparency = true,
-                    WindowStyle = WindowStyle.None,
-                    WindowState = WindowState.Maximized
-                };
-                darkwindow.Show();
-
                 var eng = from en in EnginesWithConsists
                           where en.Key.Name == cboEngine.SelectedItem.ToString()
                           select en.Key;
@@ -237,7 +224,6 @@ namespace MenuWPF
                 lines = null;
                 EngineInfoWindow winEngine = new EngineInfoWindow(doc, bgImage);
                 winEngine.ShowDialog();
-                darkwindow.Close();
             }
         }
 
@@ -330,27 +316,65 @@ namespace MenuWPF
 
         private void cboFolder_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            LoadRoutes();
+            winProg = new ProgressionWindow();
+            bgWork.RunWorkerAsync();
+            winProg.Show();
         }
 
-        private void imgLogo2_MouseDown(object sender, MouseButtonEventArgs e)
+        private void winMain_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.ClickCount == 1)
-            {
-                this.DragMove();
-            }
-            else if (e.ClickCount > 1 && e.LeftButton == MouseButtonState.Pressed)
-            {
-                this.WindowState = this.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-            }
-        }
-
-        private void imgQuit_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (MessageBox.Show("Are you sure you want to quit Open Rails?", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+            if (e.Key == Key.Escape)
             {
                 Close();
             }
+        }
+
+        private void itemSimulation_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile, 0);
+
+            winOptions.ShowDialog();
+        }
+
+        private void itemTrainStore_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile, 1);
+
+            winOptions.ShowDialog();
+        }
+
+        private void itemAudio_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile, 2);
+
+            winOptions.ShowDialog();
+        }
+
+        private void itemVideo_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile, 3);
+
+            winOptions.ShowDialog();
+        }
+
+        private void itemStart_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            btnStart_Click(itemStart, new RoutedEventArgs());
+        }
+
+        private void itemQuit_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void itemUserManual_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // TODO: Add event handler implementation here.
+        }
+
+        private void itemAbout_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // TODO: Add event handler implementation here.
         }
 
         #endregion
@@ -541,50 +565,59 @@ namespace MenuWPF
 
         #region Routes
         //===========================================================================
+       
+
         private void LoadRoutes()
         {
-            Routes = new List<Route>();
-            try
+            if (!this.Dispatcher.CheckAccess())
             {
-                foreach (string directory in Directory.GetDirectories(Folders[cboFolder.SelectedIndex].Path + @"\ROUTES"))
+                this.Dispatcher.Invoke(new LoadRoutesDelegate(LoadRoutes));
+            }
+            else
+            {
+                Routes = new List<Route>();
+                try
                 {
+                    foreach (string directory in Directory.GetDirectories(SelectedFolder.Path + @"\ROUTES"))
+                    {
+                        try
+                        {
+                            TRKFile trkFile = new TRKFile(MSTSPath.GetTRKFileName(directory));
+                            Routes.Add(new Route(trkFile.Tr_RouteFile.Name, directory, trkFile, Folders[cboFolder.SelectedIndex]));
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    Routes = Routes.OrderBy(r => r.Name).ToList();
+
                     try
                     {
-                        TRKFile trkFile = new TRKFile(MSTSPath.GetTRKFileName(directory));
-                        Routes.Add(new Route(trkFile.Tr_RouteFile.Name, directory, trkFile, Folders[cboFolder.SelectedIndex]));
+                        FillConsists();
+                        listBoxRoutes.ItemsSource = null;
                     }
                     catch
                     {
                     }
-                }
-            
-                Routes = Routes.OrderBy(r => r.Name).ToList();
-                
-                try
-                {
-                    FillConsists();
-                    listBoxRoutes.ItemsSource = null;
-                }
-                catch
-                {
-                }
-                listBoxRoutes.ItemsSource = Routes;
-                //foreach (var route in Routes)
-                //    listBoxRoutes.Items.Add(route.Name);
+                    listBoxRoutes.ItemsSource = Routes;
+                    //foreach (var route in Routes)
+                    //    listBoxRoutes.Items.Add(route.Name);
 
-                if (Routes.Count > 0)
-                {
-                    listBoxRoutes.SelectedIndex = 0;
-                }
-                else
-                    listBoxRoutes.UnselectAll();
+                    if (Routes.Count > 0)
+                    {
+                        listBoxRoutes.SelectedIndex = 0;
+                    }
+                    else
+                        listBoxRoutes.UnselectAll();
 
-                if (Routes.Count == 0)   //for what does this serve ? If no route, no game !! ??
-                    LoadActivities();
-            }
-            catch (Exception error)
-            {
-                MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    if (Routes.Count == 0)   //for what does this serve ? If no route, no game !! ??
+                        LoadActivities();
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -869,12 +902,9 @@ namespace MenuWPF
         {
             if (this.Dispatcher.CheckAccess())
             {
-                lblProgress.Visibility =  Visibility.Visible;
-                progBar.Visibility = Visibility.Visible;
-                System.Windows.Forms.Application.DoEvents();
-                progBar.Value = 0;
+                
                 string[] confiles = Directory.GetFiles(SelectedFolder.Path + @"\trains\consists");
-                progBar.Maximum = confiles.Length;
+                winProg.MaxValue = confiles.Length;
                 EnginesWithConsists = new Dictionary<EngineInfo, List<string>>(new EngineInfoEqualityComparer());
                 foreach (string file in confiles)
                 {
@@ -934,7 +964,7 @@ namespace MenuWPF
                             
                         }
                     }
-                    progBar.Value += 1;
+                    winProg.IncreaseBy(1);
                     System.Windows.Forms.Application.DoEvents();
                 }
                     //cboConsist.Items.Add(System.IO.Path.GetFileName(file));
@@ -942,8 +972,7 @@ namespace MenuWPF
                 confiles = null;
                 cboEngine.SelectionChanged += new SelectionChangedEventHandler(cboEngine_SelectionChanged);
                 
-                lblProgress.Visibility = Visibility.Hidden;
-                progBar.Visibility = Visibility.Hidden;
+                
             }
             else
             {
@@ -1072,6 +1101,8 @@ namespace MenuWPF
             return tagValue;
         }
 
+        
+
         #endregion
 
         #endregion
@@ -1079,6 +1110,8 @@ namespace MenuWPF
         #region Delegates
 
         private delegate void FillConsistsDelegate();
+
+        private delegate void LoadRoutesDelegate();
 
         #endregion
 

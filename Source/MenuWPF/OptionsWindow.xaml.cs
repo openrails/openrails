@@ -27,7 +27,7 @@ namespace MenuWPF
         string foldersFile;
         List<MenuWPF.MainWindow.Folder> Folders;
 
-		public OptionsWindow(string registryKey, string foldersFile)
+		public OptionsWindow(string registryKey, string foldersFile, int indexTab)
 		{
 			this.InitializeComponent();
 
@@ -62,6 +62,7 @@ namespace MenuWPF
                 ((ImageBrush)this.Background).ImageSource = new BitmapImage(new Uri(txtBgImage.Text, UriKind.Absolute));
             }
             LoadFolders();
+            tabOptions.SelectedIndex = indexTab;
         }
         #endregion
 
@@ -73,53 +74,56 @@ namespace MenuWPF
 
 		private void buttonOK_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
-            //Check the values for resolution
-            Regex reg = new Regex("^([0-1][0-9][0-9][0-9]|[0-9][0-9][0-9])x([0-1][0-9][0-9][0-9]|[0-9][0-9][0-9])$"); //Match a string format of WWWWxHHHH
-            if (!reg.IsMatch(cboResolution.Text))
+            if (MessageBox.Show("Are you sure you want to save the changes made?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
             {
-                MessageBox.Show("The resolution is not valid!\nPlease use the following format WidthxHeight", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                return;
-            }
-            else
-            {
-                int width = int.Parse(cboResolution.Text.Substring(0, cboResolution.Text.IndexOf('x')));
-                int height = int.Parse(cboResolution.Text.Substring(cboResolution.Text.IndexOf('x') + 1));
-                if ((width / 16) != (int)(width / 16) || (height / 16) != (int)(height / 16) || width < height)
+                //Check the values for resolution
+                Regex reg = new Regex("^([0-1][0-9][0-9][0-9]|[0-9][0-9][0-9])x([0-1][0-9][0-9][0-9]|[0-9][0-9][0-9])$"); //Match a string format of WWWWxHHHH
+                if (!reg.IsMatch(cboResolution.Text))
                 {
-                    MessageBox.Show("The resolution is not valid!\nThe values entered are not multiples of 16 or the width is lower than the height.", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    MessageBox.Show("The resolution is not valid!\nPlease use the following format WidthxHeight", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     return;
                 }
+                else
+                {
+                    int width = int.Parse(cboResolution.Text.Substring(0, cboResolution.Text.IndexOf('x')));
+                    int height = int.Parse(cboResolution.Text.Substring(cboResolution.Text.IndexOf('x') + 1));
+                    if ((width / 16) != (int)(width / 16) || (height / 16) != (int)(height / 16) || width < height)
+                    {
+                        MessageBox.Show("The resolution is not valid!\nThe values entered are not multiples of 16 or the width is lower than the height.", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        return;
+                    }
+                }
+                //Check the values for the brake pipe
+                double result = -1;
+                double.TryParse(txtBrakePipe.Text, out result);
+                if (result < 0)
+                {
+                    MessageBox.Show("The value for the brake pipe charging rate is not valid!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    return;
+                }
+
+                // Retain settings for convenience
+                RegistryKey RK = Registry.CurrentUser.CreateSubKey(regKey);
+                if (RK != null)
+                {
+                    RK.SetValue("WorldObjectDensity", (int)this.sliderWOD.Value);
+                    RK.SetValue("SoundDetailLevel", (int)this.sliderSound.Value);
+                    RK.SetValue("WindowSize", (string)this.cboResolution.Text);
+                    RK.SetValue("TrainLights", this.chkTrainLights.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("Precipitation", this.chkPrecipitation.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("Wire", this.chkOverheadWire.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("BrakePipeChargingRate", double.Parse(txtBrakePipe.Text));
+                    RK.SetValue("GraduatedRelease", this.chkGraduated.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("DynamicShadows", this.chkDinamicShadows.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("WindowGlass", this.chkUseGlass.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("MSTSBINSound", this.chkUseMSTSbin.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("Fullscreen", this.chkFullScreen.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("Warnings", this.chkWarningLog.IsChecked.Value ? 1 : 0);
+                    RK.SetValue("BackgroundImage", this.txtBgImage.Text);
+                }
+                SaveFolders();
+                Close();
             }
-            //Check the values for the brake pipe
-            double result = -1;
-            double.TryParse(txtBrakePipe.Text, out result);
-            if (result < 0)
-            {
-                MessageBox.Show("The value for the brake pipe charging rate is not valid!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                return;
-            }
-            
-            // Retain settings for convenience
-            RegistryKey RK = Registry.CurrentUser.CreateSubKey(regKey);
-            if (RK != null)
-            {
-                RK.SetValue("WorldObjectDensity", (int)this.sliderWOD.Value);
-                RK.SetValue("SoundDetailLevel", (int)this.sliderSound.Value);
-                RK.SetValue("WindowSize", (string)this.cboResolution.Text);
-                RK.SetValue("TrainLights", this.chkTrainLights.IsChecked.Value ? 1 : 0);
-                RK.SetValue("Precipitation", this.chkPrecipitation.IsChecked.Value ? 1 : 0);
-                RK.SetValue("Wire", this.chkOverheadWire.IsChecked.Value ? 1 : 0);
-                RK.SetValue("BrakePipeChargingRate", txtBrakePipe.Text);
-                RK.SetValue("GraduatedRelease", this.chkGraduated.IsChecked.Value ? 1 : 0);
-                RK.SetValue("DynamicShadows", this.chkDinamicShadows.IsChecked.Value ? 1 : 0);
-                RK.SetValue("WindowGlass", this.chkUseGlass.IsChecked.Value ? 1 : 0);
-                RK.SetValue("MSTSBINSound", this.chkUseMSTSbin.IsChecked.Value ? 1 : 0);
-                RK.SetValue("Fullscreen", this.chkFullScreen.IsChecked.Value ? 1 : 0);
-                RK.SetValue("Warnings", this.chkWarningLog.IsChecked.Value ? 1 : 0);
-                RK.SetValue("BackgroundImage", this.txtBgImage.Text);
-            }
-            SaveFolders();
-            Close();
         }
 
         private void imgLogo2_MouseDown(object sender, MouseButtonEventArgs e)
@@ -174,36 +178,27 @@ namespace MenuWPF
 
         #endregion
 
-        #region Train Store
+        #region Folders
 
         private void btnAddFolder_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             AddFolderWindow winAddFolder = new AddFolderWindow();
 
-            var darkwindow = new Window()
-            {
-                Background = System.Windows.Media.Brushes.Black,
-                Opacity = 0.75,
-                AllowsTransparency = true,
-                WindowStyle = WindowStyle.None,
-                WindowState = WindowState.Maximized
-            };
-            darkwindow.Show();
+            
             winAddFolder.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             if (winAddFolder.ShowDialog() == true)
             {
                 Folders.Add(new MainWindow.Folder(winAddFolder.FolderName, winAddFolder.FolderPath));
                 listBoxFolders.Items.Add(winAddFolder.FolderName);
             }
-            darkwindow.Close();
         }
 
         private void btnRemoveFolder_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (listBoxFolders.SelectedItem != null)
             {
-                listBoxFolders.Items.RemoveAt(listBoxFolders.SelectedIndex);
                 Folders.RemoveAt(listBoxFolders.SelectedIndex);
+                listBoxFolders.Items.RemoveAt(listBoxFolders.SelectedIndex);
             }
         }
 

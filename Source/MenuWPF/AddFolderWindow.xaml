@@ -5,7 +5,7 @@
 	x:Class="MenuWPF.AddFolderWindow"
 	x:Name="Window"
 	Title="Add Folder"
-	Width="640" Height="222" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="openrails.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Background="#00000000" WindowStyle="None" AllowsTransparency="True">
+	Width="640" Height="180" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="openrails.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Background="#00000000" WindowStyle="None" AllowsTransparency="True">
 
 	<Border x:Name="brdMain" BorderBrush="Black" BorderThickness="1" Background="#7FFFFFFF" CornerRadius="20" Margin="0,0,20,20">
 		<Border.Effect>
@@ -16,7 +16,7 @@
 				<RowDefinition Height="20"/>
 				<RowDefinition Height="2*"/>
 				<RowDefinition Height="2*"/>
-				<RowDefinition Height="100"/>
+				<RowDefinition Height="60"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="120"/>
@@ -24,11 +24,11 @@
 			</Grid.ColumnDefinitions>
 			<Label x:Name="lblPath" Content="Folder Path:" HorizontalAlignment="Right" Margin="0,3,0,0" Grid.Row="1" d:LayoutOverrides="Height" IsEnabled="False" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" Foreground="Black" FontSize="16"/>
 			<Label x:Name="lblName" Content="Folder Name:" Margin="0,4,0,0" Grid.Row="2" IsEnabled="False" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" Foreground="Black" FontSize="16" d:LayoutOverrides="Height" HorizontalAlignment="Right"/>
-			<TextBox x:Name="txtPath" Grid.Column="1" Margin="0,4,100,4" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" d:LayoutOverrides="Height" Background="{x:Null}" VerticalContentAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" FontSize="16" FontStyle="Italic" Foreground="#FF0C009D" IsReadOnly="True"/>
+			<TextBox x:Name="txtPath" Grid.Column="1" Margin="0,4,100,4" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" d:LayoutOverrides="Height" Background="{x:Null}" VerticalContentAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" FontSize="16" FontStyle="Italic" Foreground="Black" IsReadOnly="True"/>
 			<Button x:Name="btnBrowse" Content="Browse ..." Margin="0,4,16,3" Style="{DynamicResource ButtonStyle2}" Background="{x:Null}" Click="btnBrowse_Click" FontSize="13.333" HorizontalAlignment="Right" Width="80" Grid.Column="1" Grid.Row="1" ToolTip="Browse for folder" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold"/>
-			<TextBox x:Name="txtName" Grid.Column="1" Margin="0,4,16,4" Grid.Row="2" TextWrapping="Wrap" FontSize="16" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" Background="White" Foreground="#FF0C009D" VerticalContentAlignment="Center" Text="MSTSfolder"/>
-			<Button x:Name="btnOK" Content="OK" Margin="0,0,130,0" Style="{DynamicResource RoundButton}" Background="#6600AD0B" Click="btnOK_Click" FontSize="18.667" HorizontalAlignment="Right" Width="100" Grid.Column="1" Grid.Row="3" ToolTip="Add the folder" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" VerticalAlignment="Bottom" Height="100" Cursor="Hand"/>
-			<Button x:Name="btnCancel" Content="Cancel" Margin="0,0,30,0" Style="{DynamicResource RedRoundButton}" Background="#66FF0000" Click="btnCancel_Click" FontSize="18.667" HorizontalAlignment="Right" Width="100" Grid.Column="1" Grid.Row="3" ToolTip="Cancel" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" VerticalAlignment="Bottom" Height="100" Cursor="Hand"/>
+			<TextBox x:Name="txtName" Grid.Column="1" Margin="0,4,16,4" Grid.Row="2" TextWrapping="Wrap" FontSize="16" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" Background="White" Foreground="Black" VerticalContentAlignment="Center" Text="MSTSfolder"/>
+			<Button x:Name="btnOK" Content="OK" Margin="0,0,110,0" Style="{DynamicResource StandardButton}" Background="{x:Null}" Click="btnOK_Click" FontSize="13.333" HorizontalAlignment="Right" Width="70" Grid.Column="1" Grid.Row="3" ToolTip="Add the folder" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" VerticalAlignment="Center" Height="32" Cursor="Hand"/>
+			<Button x:Name="btnCancel" Content="Cancel" Margin="0,0,20,0" Style="{DynamicResource StandardButton}" Background="{x:Null}" Click="btnCancel_Click" FontSize="13.333" HorizontalAlignment="Right" Width="80" Grid.Column="1" Grid.Row="3" ToolTip="Cancel" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" VerticalAlignment="Center" Cursor="Hand" Foreground="Black" Height="32"/>
 		</Grid>
 	</Border>
 </Window>

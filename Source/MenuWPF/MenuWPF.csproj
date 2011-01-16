@@ -74,6 +74,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="ProgressionWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="EngineInfoWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -100,6 +104,9 @@
     </Compile>
     <Compile Include="AddFolderWindow.xaml.cs">
       <DependentUpon>AddFolderWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ProgressionWindow.xaml.cs">
+      <DependentUpon>ProgressionWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="EngineInfoWindow.xaml.cs">
       <DependentUpon>EngineInfoWindow.xaml</DependentUpon>

@@ -5,7 +5,7 @@
 	x:Class="MenuWPF.OptionsWindow"
 	x:Name="winOptions"
 	Title="Options"
-	Width="1024" Height="768" Icon="openrails.ico" WindowStartupLocation="CenterScreen" WindowState="Normal" WindowStyle="None" ResizeMode="NoResize" BorderThickness="3">
+	Width="1024" Height="768" Icon="openrails.ico" WindowStartupLocation="CenterScreen" WindowState="Normal" BorderThickness="3">
 	<Window.Resources>
     <Style TargetType="{x:Type TabItem}">
       <Setter Property="Template">
@@ -14,7 +14,7 @@
             <Grid>
               <Border
                  x:Name="Border"
-                 Background="#BF90EE90"
+                 Background="#BFFFFFFF"
                  BorderBrush="Black"
                  BorderThickness="0,0,0,0"
                  CornerRadius="20,20,0,0" >
@@ -58,7 +58,7 @@
     				<Grid>
     					<Border
     						x:Name="Border"
-    						Background="#BFEE8FED"
+    						Background="#FFA8C0C2"
     						BorderBrush="Black"
     						BorderThickness="0,0,0,0"
     						CornerRadius="20,20,0,0" >
@@ -80,7 +80,7 @@
     				<Grid>
     					<Border
     						x:Name="Border"
-    						Background="#BFEEBF8F"
+    						Background="#BFADADAD"
     						BorderBrush="Black"
     						BorderThickness="0,0,0,0"
     						CornerRadius="20,20,0,0" >
@@ -110,20 +110,17 @@
 			<ColumnDefinition MinWidth="82" Width="115"/>
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="50" MaxHeight="50" MinHeight="50"/>
+			<RowDefinition Height="1" MaxHeight="1" MinHeight="1"/>
 			<RowDefinition/>
-			<RowDefinition Height="100" MinHeight="75"/>
+			<RowDefinition Height="60" MinHeight="60"/>
 		</Grid.RowDefinitions>
-		<Image x:Name="imgLogo1" Source="BANNER_1.jpg" Stretch="Fill"/>
-		<Image x:Name="imgLogo2" Margin="0" Grid.Column="1" Source="BANNER_2.jpg" Stretch="Fill" MouseDown="imgLogo2_MouseDown" />
-		<Image x:Name="imgLogo3" Margin="0" Source="BANNER_3.jpg" Grid.Column="2" Stretch="Fill"/>
 		<TabControl x:Name="tabOptions" Grid.ColumnSpan="3" Margin="16,16,16,0" Grid.Row="1" BorderThickness="0" Background="{x:Null}" Padding="0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}">
 			<TabItem Header="Simulation" FontWeight="Bold" FontSize="13.333" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="15,-3,-23,0" Background="{x:Null}">
 				<Grid>
 					<Border x:Name="brdGeneral" BorderBrush="Black" BorderThickness="0" CornerRadius="20">
 						<Border.Background>
 							<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-								<GradientStop Color="#BF90EE90" Offset="0"/>
+								<GradientStop Color="#BFFFFFFF" Offset="0"/>
 								<GradientStop Color="#BFFFFFFF" Offset="1"/>
 							</LinearGradientBrush>
 						</Border.Background>
@@ -235,7 +232,7 @@
 					</Border>
 				</Grid>
 			</TabItem>
-			<TabItem Header="Train Store" Style="{DynamicResource OrangeTabItem}" Margin="23,-3,-24,0" BorderThickness="0,0,0,0" FontSize="13.333" FontWeight="Bold" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}">
+			<TabItem Header="Folders" Style="{DynamicResource OrangeTabItem}" Margin="23,-3,-24,0" BorderThickness="0,0,0,0" FontSize="13.333" FontWeight="Bold" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}">
 				<Grid Margin="0">
 					<Border x:Name="brdTrainStore" BorderBrush="Black" BorderThickness="0" Margin="0" CornerRadius="20">
 						<Border.Background>
@@ -250,20 +247,13 @@
 								<RowDefinition/>
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition/>
-								<ColumnDefinition/>
+								<ColumnDefinition Width="2*"/>
+								<ColumnDefinition Width="3*"/>
 							</Grid.ColumnDefinitions>
-							<ListBox x:Name="listBoxFolders" Background="#3F0090FF" MinWidth="400" MinHeight="150" FontSize="14.667" FontWeight="Bold" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="16,0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Height="174.88">
-								<ListBox.Foreground>
-									<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-										<GradientStop Color="Black" Offset="0"/>
-										<GradientStop Color="#FF002A8F" Offset="1"/>
-									</LinearGradientBrush>
-								</ListBox.Foreground>
-							</ListBox>
+							<ListBox x:Name="listBoxFolders" Background="#3FFFFFFF" MinWidth="400" MinHeight="175" FontSize="14.667" FontWeight="Bold" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="16,0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Height="200" Foreground="Black"/>
 							<Label Content="Folders:" HorizontalAlignment="Left" Height="30" Margin="16,10,0,0" VerticalAlignment="Top" Width="75" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" FontSize="16"/>
 							<Button x:Name="btnAddFolder" Content="Add" Margin="16,0,0,16" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnAddFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="60" ToolTip="Add a new folder"/>
-							<Button x:Name="btnRemoveFolder" Content="Remove" Margin="90,0,0,16" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnRemoveFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="80" ToolTip="Remove selected folder"/>
+							<Button x:Name="btnRemoveFolder" Content="Remove" Margin="90,0,0,16" Style="{DynamicResource StandardButton}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnRemoveFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="80" ToolTip="Remove selected folder"/>
 						</Grid>
 					</Border>
 				</Grid>
@@ -273,7 +263,7 @@
 					<Border x:Name="brdSounds" BorderBrush="Black" BorderThickness="0" Margin="0" CornerRadius="20">
 						<Border.Background>
 							<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-								<GradientStop Color="#BFEE8FED" Offset="0"/>
+								<GradientStop Color="#FFA8C0C2" Offset="0"/>
 								<GradientStop Color="#BFFFFFFF" Offset="1"/>
 							</LinearGradientBrush>
 						</Border.Background>
@@ -317,12 +307,12 @@
 					</Border>
 				</Grid>
 			</TabItem>
-			<TabItem FontWeight="Bold" FontSize="13.333" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Header="Video" Margin="48,-3,-80,0" Style="{DynamicResource BlueTabItem}">
+			<TabItem FontWeight="Bold" FontSize="13.333" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Header="Graphics" Margin="48,-3,-80,0" Style="{DynamicResource BlueTabItem}">
 				<Grid Margin="0">
 					<Border x:Name="brdVideo" BorderBrush="Black" BorderThickness="0" Margin="0" CornerRadius="20">
 						<Border.Background>
 							<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-								<GradientStop Color="#BFEEBF8F" Offset="0"/>
+								<GradientStop Color="#BFADADAD" Offset="0"/>
 								<GradientStop Color="#BFFFFFFF" Offset="1"/>
 							</LinearGradientBrush>
 						</Border.Background>
@@ -384,36 +374,9 @@
 				</Grid>
 			</TabItem>			
 		</TabControl>
-		<Button x:Name="buttonOK" Content="Save" Grid.Column="1" Margin="0" Grid.Row="2" Width="100" Height="100" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Foreground="Black" Click="buttonOK_Click" Cursor="Hand" HorizontalAlignment="Right" ToolTip="Save options" />
-		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="2" Margin="0" Grid.Row="2" Style="{DynamicResource RedRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="buttonCancel_Click" Cursor="Hand" Width="100" ToolTip="Reject changes">
-			<Button.Background>
-				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
-					<GradientStop Color="#FF0063AF" Offset="0"/>
-					<GradientStop Color="#FFEBEBEB" Offset="0.5"/>
-					<GradientStop Color="#FFDDDDDD" Offset="0.5"/>
-					<GradientStop Color="#FF00BA25" Offset="1"/>
-				</LinearGradientBrush>
-			</Button.Background>
-		</Button>
-		<Button x:Name="btnPrevious" Content="&lt;Back" Margin="16,0,295,0" Grid.Row="2" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnPrevious_Click" Cursor="Hand" HorizontalAlignment="Left" Width="100" Grid.ColumnSpan="2" ToolTip="Previous tab">
-			<Button.Background>
-				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
-					<GradientStop Color="#FF0063AF" Offset="0"/>
-					<GradientStop Color="#FFEBEBEB" Offset="0.5"/>
-					<GradientStop Color="#FFDDDDDD" Offset="0.5"/>
-					<GradientStop Color="#FF00BA25" Offset="1"/>
-				</LinearGradientBrush>
-			</Button.Background>
-		</Button>
-		<Button x:Name="btnNext" Content="Next&gt;" Grid.Column="1" Grid.Row="2" Style="{DynamicResource BlueRoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnNext_Click" Cursor="Hand" HorizontalAlignment="Left" Width="100" Margin="50,0,0,0" ToolTip="Next tab">
-			<Button.Background>
-				<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
-					<GradientStop Color="#FF0063AF" Offset="0"/>
-					<GradientStop Color="#FFEBEBEB" Offset="0.5"/>
-					<GradientStop Color="#FFDDDDDD" Offset="0.5"/>
-					<GradientStop Color="#FF00BA25" Offset="1"/>
-				</LinearGradientBrush>
-			</Button.Background>
-		</Button>
+		<Button x:Name="buttonOK" Content="Save" Grid.Column="1" Margin="0,0,16,0" Grid.Row="2" HorizontalContentAlignment="Center" Style="{DynamicResource StandardButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Foreground="Black" Click="buttonOK_Click" Cursor="Hand" HorizontalAlignment="Right" ToolTip="Save options" VerticalAlignment="Center" Width="80" Height="40" Background="#7FFFFFFF" />
+		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="2" Margin="0" Grid.Row="2" Style="{DynamicResource StandardButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="buttonCancel_Click" Cursor="Hand" Width="86" ToolTip="Reject changes" Background="#7FFFFFFF" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40"/>
+		<Button x:Name="btnPrevious" Content="&lt;Back" Margin="36,0,295,0" Grid.Row="2" Style="{DynamicResource StandardButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnPrevious_Click" Cursor="Hand" HorizontalAlignment="Left" Width="90" Grid.ColumnSpan="2" ToolTip="Previous tab" Background="#7FFFFFFF" VerticalAlignment="Center" Height="40"/>
+		<Button x:Name="btnNext" Content="Next&gt;" Grid.Column="1" Grid.Row="2" Style="{DynamicResource StandardButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnNext_Click" Cursor="Hand" HorizontalAlignment="Left" Width="90" Margin="70,0,0,0" ToolTip="Next tab" Background="#7FFFFFFF" VerticalAlignment="Center" Height="40"/>
 	</Grid>
 </Window>
