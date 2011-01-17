@@ -45,7 +45,7 @@ namespace ORTS
 		public static Vector3 NearPoint;
 		public static Vector3 FarPoint;
 
-        public static RailDriverState RDState = null;
+		public static RailDriverState RDState = null;
 
 		public static void Initialize()
 		{
@@ -66,11 +66,11 @@ namespace ORTS
 			Commands[(int)UserCommands.GameDebugWeatherChange] = new UserCommandKeyInput(Keys.P, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameDebugLockShadows] = new UserCommandKeyInput(Keys.S, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameDebugLogRenderFrame] = new UserCommandKeyInput(Keys.F12, KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameDebugSignalling] = new UserCommandKeyInput(Keys.F11, KeyModifiers.Alt);
 			Commands[(int)UserCommands.WindowTrackMonitor] = new UserCommandKeyInput(Keys.F4);
 			Commands[(int)UserCommands.WindowSwitch] = new UserCommandKeyInput(Keys.F8);
 			Commands[(int)UserCommands.WindowTrainOperations] = new UserCommandKeyInput(Keys.F9);
 			Commands[(int)UserCommands.WindowNextStation] = new UserCommandKeyInput(Keys.F10);
-         Commands[(int)UserCommands.WindowDriverAid] = new UserCommandKeyInput(Keys.F11);
 			Commands[(int)UserCommands.WindowCompass] = new UserCommandKeyInput('0');
 			Commands[(int)UserCommands.CameraCab] = new UserCommandKeyInput('1');
 			Commands[(int)UserCommands.CameraOutsideFront] = new UserCommandKeyInput('2');
@@ -119,8 +119,8 @@ namespace ORTS
 			Commands[(int)UserCommands.ControlInitializeBrakes] = new UserCommandKeyInput('?');
 			Commands[(int)UserCommands.ControlHandbrakeFull] = new UserCommandKeyInput('\'', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlHandbrakeNone] = new UserCommandKeyInput(';', KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandKeyInput(']', KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput('[', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandKeyInput(']', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput('[', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput('\\');
 			Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput('\\', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlEmergency] = new UserCommandKeyInput(Keys.Back);
@@ -134,20 +134,20 @@ namespace ORTS
 			Commands[(int)UserCommands.ControlHeadlightDecrease] = new UserCommandKeyInput('h', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlDispatcherExtend] = new UserCommandKeyInput(Keys.Tab, KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlDispatcherRelease] = new UserCommandKeyInput(Keys.Tab, KeyModifiers.Shift | KeyModifiers.Control);
-            Commands[(int)UserCommands.ControlInjector1Increase] = new UserCommandKeyInput('k');
-            Commands[(int)UserCommands.ControlInjector1Decrease] = new UserCommandKeyInput('k', KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlInjector1] = new UserCommandKeyInput('i');
-            Commands[(int)UserCommands.ControlInjector2Increase] = new UserCommandKeyInput('l');
-            Commands[(int)UserCommands.ControlInjector2Decrease] = new UserCommandKeyInput('l', KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlInjector2] = new UserCommandKeyInput('o');
-            Commands[(int)UserCommands.ControlBlowerIncrease] = new UserCommandKeyInput('n');
-            Commands[(int)UserCommands.ControlBlowerDecrease] = new UserCommandKeyInput('n', KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput('m');
-            Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput('m', KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlFiringRateIncrease] = new UserCommandKeyInput('r');
-            Commands[(int)UserCommands.ControlFiringRateDecrease] = new UserCommandKeyInput('r', KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput('c');
-            Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput('f', KeyModifiers.Control);
+			Commands[(int)UserCommands.ControlInjector1Increase] = new UserCommandKeyInput('k');
+			Commands[(int)UserCommands.ControlInjector1Decrease] = new UserCommandKeyInput('k', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlInjector1] = new UserCommandKeyInput('i');
+			Commands[(int)UserCommands.ControlInjector2Increase] = new UserCommandKeyInput('l');
+			Commands[(int)UserCommands.ControlInjector2Decrease] = new UserCommandKeyInput('l', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlInjector2] = new UserCommandKeyInput('o');
+			Commands[(int)UserCommands.ControlBlowerIncrease] = new UserCommandKeyInput('n');
+			Commands[(int)UserCommands.ControlBlowerDecrease] = new UserCommandKeyInput('n', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput('m');
+			Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput('m', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlFiringRateIncrease] = new UserCommandKeyInput('r');
+			Commands[(int)UserCommands.ControlFiringRateDecrease] = new UserCommandKeyInput('r', KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput('c');
+			Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput('f', KeyModifiers.Control);
 #if CHECK_KEYMAP_DUPLICATES
 			var firstUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Min();
 			var lastUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Max();
@@ -208,8 +208,8 @@ namespace ORTS
 		public static void Handled()
 		{
 			Changed = false;
-            if (RDState != null)
-                RDState.Handled();
+			if (RDState != null)
+				RDState.Handled();
 		}
 
 		public static string FormatCommandName(UserCommands command)
@@ -228,25 +228,25 @@ namespace ORTS
 		}
 		public static bool IsPressed(UserCommands command)
 		{
-            if (RDState != null && RDState.IsPressed(command))
-                return true;
+			if (RDState != null && RDState.IsPressed(command))
+				return true;
 			var setting = Commands[(int)command];
 			return setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState);
 		}
 
 		public static bool IsReleased(UserCommands command)
 		{
-            if (RDState != null && RDState.IsReleased(command))
-                return true;
-            var setting = Commands[(int)command];
+			if (RDState != null && RDState.IsReleased(command))
+				return true;
+			var setting = Commands[(int)command];
 			return !setting.IsKeyDown(KeyboardState) && setting.IsKeyDown(LastKeyboardState);
 		}
 
 		public static bool IsDown(UserCommands command)
 		{
-            if (RDState != null && RDState.IsDown(command))
-                return true;
-            var setting = Commands[(int)command];
+			if (RDState != null && RDState.IsDown(command))
+				return true;
+			var setting = Commands[(int)command];
 			return setting.IsKeyDown(KeyboardState);
 		}
 
@@ -286,12 +286,12 @@ namespace ORTS
 		GameDebugWeatherChange,
 		GameDebugLockShadows,
 		GameDebugLogRenderFrame,
+		GameDebugSignalling,
 		WindowTrackMonitor,
 		WindowSwitch,
 		WindowTrainOperations,
 		WindowNextStation,
 		WindowCompass,
-      WindowDriverAid,
 		CameraCab,
 		CameraOutsideFront,
 		CameraOutsideRear,
@@ -354,20 +354,20 @@ namespace ORTS
 		ControlHeadlightDecrease,
 		ControlDispatcherExtend,
 		ControlDispatcherRelease,
-        ControlInjector1Increase,
-        ControlInjector1Decrease,
-        ControlInjector1,
-        ControlInjector2Increase,
-        ControlInjector2Decrease,
-        ControlInjector2,
-        ControlBlowerIncrease,
-        ControlBlowerDecrease,
-        ControlDamperIncrease,
-        ControlDamperDecrease,
-        ControlFiringRateIncrease,
-        ControlFiringRateDecrease,
-        ControlCylinderCocks,
-        ControlFiring,
+		ControlInjector1Increase,
+		ControlInjector1Decrease,
+		ControlInjector1,
+		ControlInjector2Increase,
+		ControlInjector2Decrease,
+		ControlInjector2,
+		ControlBlowerIncrease,
+		ControlBlowerDecrease,
+		ControlDamperIncrease,
+		ControlDamperDecrease,
+		ControlFiringRateIncrease,
+		ControlFiringRateDecrease,
+		ControlCylinderCocks,
+		ControlFiring,
 	}
 
 	[Flags]

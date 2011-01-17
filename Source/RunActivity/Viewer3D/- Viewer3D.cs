@@ -378,7 +378,7 @@ namespace ORTS
 			if (UserInput.IsPressed(UserCommands.WindowTrainOperations)) TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;
 			if (UserInput.IsPressed(UserCommands.WindowNextStation)) NextStationWindow.Visible = !NextStationWindow.Visible;
 			if (UserInput.IsPressed(UserCommands.WindowCompass)) CompassWindow.Visible = !CompassWindow.Visible;
-			if (UserInput.IsPressed(UserCommands.WindowDriverAid)) DriverAidWindow.Visible = !DriverAidWindow.Visible;
+			if (UserInput.IsPressed(UserCommands.GameDebugSignalling)) DriverAidWindow.Visible = !DriverAidWindow.Visible;
 
 			if (UserInput.IsPressed(UserCommands.LocomotiveSwitch))
 			{
