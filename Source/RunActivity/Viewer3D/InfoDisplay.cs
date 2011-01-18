@@ -354,7 +354,7 @@ namespace ORTS
             TextBuilder.AppendFormat("Build = {0}", Program.Build); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Memory = {0:F0} MB (managed: {1:F0} MB, collections: {2:F0}/{3:F0}/{4:F0})", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2)); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("CPU = {0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ± {2:F1} ms, shader model {3})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedValue * 1000, Viewer.RenderProcess.FrameJitter.SmoothedValue * 1000, Viewer.Settings.ShaderModel); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("GPU = {0:F0} FPS ({1:F1} ?{2:F1} ms, shader model {3})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedValue * 1000, Viewer.RenderProcess.FrameJitter.SmoothedValue * 1000, Viewer.Settings.ShaderModel); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Adapter = {0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024); TextBuilder.AppendLine();
 			if (Viewer.Settings.DynamicShadows)
 			{
@@ -387,7 +387,7 @@ namespace ORTS
             int seconds = (int)clockTimeSeconds;
             // Reset clock before and after midnight
             if (hour >= 24)
-                hour -= 24;
+                hour %= 24;
             if (hour < 0)
                 hour += 24;
             if (minute < 0)
