@@ -6,9 +6,6 @@
 // This checks all keys for conflicts.
 //#define CHECK_KEYMAP_DUPLICATES
 
-// This dumps out the full keymap at startup based on the user's keyboard layout.
-//#define DUMP_KEYMAP
-
 // This logs every UserCommandInput change from pressed to released.
 //#define DEBUG_USER_INPUT
 
@@ -63,10 +60,11 @@ namespace ORTS
 			Commands[(int)UserCommands.GameClockBackwards] = new UserCommandKeyInput(Keys.OemMinus);
 			Commands[(int)UserCommands.GameODS] = new UserCommandKeyInput(Keys.F5);
 			Commands[(int)UserCommands.GameLogger] = new UserCommandKeyInput(Keys.F12);
-			Commands[(int)UserCommands.GameDebugWeatherChange] = new UserCommandKeyInput(Keys.P, KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameDebugKeys] = new UserCommandKeyInput(Keys.F1, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameDebugLockShadows] = new UserCommandKeyInput(Keys.S, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameDebugLogRenderFrame] = new UserCommandKeyInput(Keys.F12, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameDebugSignalling] = new UserCommandKeyInput(Keys.F11, KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameDebugWeatherChange] = new UserCommandKeyInput(Keys.P, KeyModifiers.Alt);
 			Commands[(int)UserCommands.WindowTrackMonitor] = new UserCommandKeyInput(Keys.F4);
 			Commands[(int)UserCommands.WindowSwitch] = new UserCommandKeyInput(Keys.F8);
 			Commands[(int)UserCommands.WindowTrainOperations] = new UserCommandKeyInput(Keys.F9);
@@ -163,14 +161,6 @@ namespace ORTS
 				}
 			}
 #endif
-#if DUMP_KEYMAP
-			Console.WriteLine();
-			Console.WriteLine("{0,-40}{1,-40}{2}", "Command", "Key", "Unique Inputs");
-			Console.WriteLine(new String('=', 40 * 3));
-			foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
-				Console.WriteLine("{0,-40}{1,-40}{2}", UserInput.FormatCommandName(command), Commands[(int)command], String.Join(", ", Commands[(int)command].UniqueInputs().OrderBy(s => s).ToArray()));
-			Console.WriteLine();
-#endif
 		}
 
 		public static void Update(Viewer3D viewer)
@@ -192,6 +182,16 @@ namespace ORTS
 					Matrix world = Matrix.CreateTranslation(0, 0, 0);
 					NearPoint = viewer.GraphicsDevice.Viewport.Unproject(nearsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
 					FarPoint = viewer.GraphicsDevice.Viewport.Unproject(farsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
+				}
+
+				if (UserInput.IsPressed(UserCommands.GameDebugKeys))
+				{
+					Console.WriteLine();
+					Console.WriteLine("{0,-40}{1,-40}{2}", "Command", "Key", "Unique Inputs");
+					Console.WriteLine(new String('=', 40 * 3));
+					foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+						Console.WriteLine("{0,-40}{1,-40}{2}", UserInput.FormatCommandName(command), Commands[(int)command], String.Join(", ", Commands[(int)command].UniqueInputs().OrderBy(s => s).ToArray()));
+					Console.WriteLine();
 				}
 			}
 #if DEBUG_USER_INPUT
@@ -283,10 +283,11 @@ namespace ORTS
 		GameClockBackwards,
 		GameODS,
 		GameLogger,
-		GameDebugWeatherChange,
+		GameDebugKeys,
 		GameDebugLockShadows,
 		GameDebugLogRenderFrame,
 		GameDebugSignalling,
+		GameDebugWeatherChange,
 		WindowTrackMonitor,
 		WindowSwitch,
 		WindowTrainOperations,
