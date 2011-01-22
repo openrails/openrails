@@ -145,8 +145,9 @@
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition MinWidth="100" Width="233"/>
 								<ColumnDefinition/>
+								<ColumnDefinition Width="2*"/>
 							</Grid.ColumnDefinitions>
-							<Slider x:Name="sliderWOD" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight" Cursor="Hand" Grid.Column="1" HorizontalAlignment="Left" Width="200" SmallChange="1" ValueChanged="sliderWOD_ValueChanged" />
+							<Slider x:Name="sliderWOD" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight" Cursor="Hand" Grid.Column="1" SmallChange="1" ValueChanged="sliderWOD_ValueChanged" />
 							<Label x:Name="lblWDO" Content="World Object Density" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
 							<Label x:Name="lblWarningLog" Content="Warning Log" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="2" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
 							<Label x:Name="lblTrainLights" Content="Train Lights" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="3" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
@@ -226,7 +227,7 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<Label x:Name="lblWDOValue" Content="0" HorizontalAlignment="Center" Grid.Row="1" VerticalAlignment="Center" Grid.Column="1" Margin="0,0,300,0" FontSize="18.667" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Label x:Name="lblWDOValue" Content="0" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Center" Grid.Column="2" Margin="16,0,0,0" FontSize="18.667" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
 							<TextBox x:Name="txtBrakePipe" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="7" TextWrapping="Wrap" Text="21" Width="162" VerticalAlignment="Center" HorizontalContentAlignment="Right" MaxLines="1" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
 						</Grid>
 					</Border>
@@ -288,8 +289,9 @@
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition MinWidth="100" Width="239"/>
 								<ColumnDefinition/>
+								<ColumnDefinition Width="2*"/>
 							</Grid.ColumnDefinitions>
-							<Slider x:Name="sliderSound" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" Maximum="5" AutoToolTipPlacement="BottomRight" Cursor="Hand" Grid.Column="1" HorizontalAlignment="Left" Width="275" ValueChanged="sliderSound1_ValueChanged" />
+							<Slider x:Name="sliderSound" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" Maximum="5" AutoToolTipPlacement="BottomRight" Cursor="Hand" Grid.Column="1" ValueChanged="sliderSound1_ValueChanged" />
 							<Label x:Name="lblSounds1" Content="Sound Detail Level" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold"/>
 							<Label Content="Use MSTS BIN Compatible Sound" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="2" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold"/>
 							<CheckBox x:Name="chkUseMSTSbin" Content="" HorizontalAlignment="Left" Grid.Row="2" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="14,0,0,0">
@@ -302,7 +304,7 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<Label x:Name="lblValue" Content="0" HorizontalAlignment="Center" Grid.Row="1" VerticalAlignment="Center" Grid.Column="1" Margin="0,0,140,0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" FontSize="18.667"/>
+							<Label x:Name="lblValue" Content="0" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Center" Grid.Column="2" Margin="16,0,0,0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" FontSize="18.667"/>
 						</Grid>
 					</Border>
 				</Grid>

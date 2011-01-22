@@ -749,23 +749,33 @@ namespace MenuWPF
                     {
                         string consist = ParseTag("Train_Config", sr.ReadToEnd());
                         sr.Close();
-                        StreamReader sr2 = new StreamReader(SelectedFolder.Path + @"\trains\consists\" + consist + ".con");
-                        string content = sr2.ReadToEnd();
-                        //string consistName = ParseTag("Name", content);
-                        string engineID = ParseTag("EngineData", ParseTag("Engine", content, "", true));
-                        engineID = engineID.Substring(0, engineID.IndexOf(" "));
-                        var engName = from en in EnginesWithConsists
-                                      where en.Key.ID == engineID
-                                      select en.Key.Name;
-                        if (engName.Count() > 0)
+                        try
                         {
-                            cboEngine.SelectedIndex = cboEngine.Items.IndexOf(engName.Single());
-                            System.Windows.Forms.Application.DoEvents();
-                            lblActLocomotive.Content = cboEngine.SelectedItem.ToString();
-                            cboConsist.SelectedIndex = cboConsist.Items.IndexOf(consist.ToLower());
-                            lblActConsist.Content = cboConsist.SelectedItem.ToString();
+                            StreamReader sr2 = new StreamReader(SelectedFolder.Path + @"\trains\consists\" + consist + ".con");
+                            string content = sr2.ReadToEnd();
+                            //string consistName = ParseTag("Name", content);
+                            string engineID = ParseTag("EngineData", ParseTag("Engine", content, "", true));
+                            engineID = engineID.Substring(0, engineID.IndexOf(" "));
+                            var engName = from en in EnginesWithConsists
+                                          where en.Key.ID == engineID
+                                          select en.Key.Name;
+                            if (engName.Count() > 0)
+                            {
+                                cboEngine.SelectedIndex = cboEngine.Items.IndexOf(engName.Single());
+                                System.Windows.Forms.Application.DoEvents();
+                                lblActLocomotive.Content = cboEngine.SelectedItem.ToString();
+                                cboConsist.SelectedIndex = cboConsist.Items.IndexOf(consist.ToLower());
+                                lblActConsist.Content = cboConsist.SelectedItem.ToString();
+                            }
+                            else
+                            {
+                                cboEngine.Text = "UNKNOWN";
+                                lblActLocomotive.Content = "UNKNOWN";
+                                cboConsist.SelectedIndex = -1;
+                                lblActConsist.Content = "n/a";
+                            }
                         }
-                        else
+                        catch
                         {
                             cboEngine.Text = "UNKNOWN";
                             lblActLocomotive.Content = "UNKNOWN";

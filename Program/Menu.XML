@@ -4,95 +4,6 @@
         <name>Menu</name>
     </assembly>
     <members>
-        <member name="M:ORTS.Program.SetBuildRevision">
-            <summary>
-            Set up the global Build and Revision variables
-            from assembly data and the revision.txt file.
-            </summary>
-        </member>
-        <member name="F:ORTS.OptionsForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.OptionsForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="F:ORTS.DetailsForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.DetailsForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.DetailsForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="F:ORTS.FormFolderName.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.FormFolderName.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="T:MSTS.ACTFile">
-            <summary>
-            Summary description for Class1.
-            </summary>
-        </member>
-        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
-            <summary>
-            Create a new 'ActivitySuccess' LocationEvent
-            </summary>
-        </member>
-        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
-            <summary>
-            Build a default EventTypeAllStops event
-            </summary>
-        </member>
-        <member name="F:ORTS.MainForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.MainForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
         <member name="F:ORTS.ExploreForm.components">
             <summary>
             Required designer variable.
@@ -110,20 +21,35 @@
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="T:ORTS.Properties.Resources">
+        <member name="T:MSTS.MSTSPath">
             <summary>
-              A strongly-typed resource class, for looking up localized strings, etc.
+            Deals with the MSTS file structure.
             </summary>
         </member>
-        <member name="P:ORTS.Properties.Resources.ResourceManager">
+        <member name="M:MSTS.MSTSPath.Base">
             <summary>
-              Returns the cached ResourceManager instance used by this class.
+            Returns the base path of the MSTS installation
             </summary>
+            <returns>no trailing \</returns>
         </member>
-        <member name="P:ORTS.Properties.Resources.Culture">
+        <member name="M:MSTS.MSTSPath.RouteFolder(System.String)">
             <summary>
-              Overrides the current thread's CurrentUICulture property for all
-              resource lookups using this strongly typed resource class.
+            Returns the route folder with out trailing \
+            </summary>
+            <param name="route"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.MSTSPath.TrainSoundPath(System.String,System.String)">
+            <summary>
+            Given a soundfile reference in a wag or eng file, return the path the sound file
+            </summary>
+            <param name="wagfilename"></param>
+            <param name="soundfile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSTS.MSTSPath.SMSSoundPath(System.String,System.String)">
+            <summary>
+            Given a soundfile reference in a cvf file, return the path to the sound file
             </summary>
         </member>
         <member name="T:MSTS.STFReader">
@@ -621,35 +547,109 @@
             <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. BlockDepth « block_depth
             </summary>
         </member>
-        <member name="T:MSTS.MSTSPath">
+        <member name="F:ORTS.FormFolderName.components">
             <summary>
-            Deals with the MSTS file structure.
+            Required designer variable.
             </summary>
         </member>
-        <member name="M:MSTS.MSTSPath.Base">
+        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
             <summary>
-            Returns the base path of the MSTS installation
+            Clean up any resources being used.
             </summary>
-            <returns>no trailing \</returns>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         </member>
-        <member name="M:MSTS.MSTSPath.RouteFolder(System.String)">
+        <member name="M:ORTS.FormFolderName.InitializeComponent">
             <summary>
-            Returns the route folder with out trailing \
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
             </summary>
-            <param name="route"></param>
-            <returns></returns>
         </member>
-        <member name="M:MSTS.MSTSPath.TrainSoundPath(System.String,System.String)">
+        <member name="M:ORTS.Program.SetBuildRevision">
             <summary>
-            Given a soundfile reference in a wag or eng file, return the path the sound file
+            Set up the global Build and Revision variables
+            from assembly data and the revision.txt file.
             </summary>
-            <param name="wagfilename"></param>
-            <param name="soundfile"></param>
-            <returns></returns>
         </member>
-        <member name="M:MSTS.MSTSPath.SMSSoundPath(System.String,System.String)">
+        <member name="T:ORTS.Properties.Resources">
             <summary>
-            Given a soundfile reference in a cvf file, return the path to the sound file
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:ORTS.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:ORTS.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="T:MSTS.ACTFile">
+            <summary>
+            Summary description for Class1.
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
+            <summary>
+            Create a new 'ActivitySuccess' LocationEvent
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
+            <summary>
+            Build a default EventTypeAllStops event
+            </summary>
+        </member>
+        <member name="F:ORTS.DetailsForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.DetailsForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.DetailsForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.MainForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.MainForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ORTS.OptionsForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.OptionsForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
             </summary>
         </member>
     </members>

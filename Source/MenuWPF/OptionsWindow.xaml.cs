@@ -94,11 +94,11 @@ namespace MenuWPF
                     }
                 }
                 //Check the values for the brake pipe
-                double result = -1;
-                double.TryParse(txtBrakePipe.Text, out result);
+                int result = -1;
+                int.TryParse(txtBrakePipe.Text, out result);
                 if (result < 0)
                 {
-                    MessageBox.Show("The value for the brake pipe charging rate is not valid!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    MessageBox.Show("The value for the brake pipe charging rate is not valid!\nMust be an integer greater than 0.", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     return;
                 }
 
@@ -112,7 +112,7 @@ namespace MenuWPF
                     RK.SetValue("TrainLights", this.chkTrainLights.IsChecked.Value ? 1 : 0);
                     RK.SetValue("Precipitation", this.chkPrecipitation.IsChecked.Value ? 1 : 0);
                     RK.SetValue("Wire", this.chkOverheadWire.IsChecked.Value ? 1 : 0);
-                    RK.SetValue("BrakePipeChargingRate", double.Parse(txtBrakePipe.Text));
+                    RK.SetValue("BrakePipeChargingRate", (int)double.Parse(txtBrakePipe.Text));
                     RK.SetValue("GraduatedRelease", this.chkGraduated.IsChecked.Value ? 1 : 0);
                     RK.SetValue("DynamicShadows", this.chkDinamicShadows.IsChecked.Value ? 1 : 0);
                     RK.SetValue("WindowGlass", this.chkUseGlass.IsChecked.Value ? 1 : 0);
