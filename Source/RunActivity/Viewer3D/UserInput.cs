@@ -132,20 +132,21 @@ namespace ORTS
 			Commands[(int)UserCommands.ControlHeadlightDecrease] = new UserCommandKeyInput('h', KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlDispatcherExtend] = new UserCommandKeyInput(Keys.Tab, KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlDispatcherRelease] = new UserCommandKeyInput(Keys.Tab, KeyModifiers.Shift | KeyModifiers.Control);
-			Commands[(int)UserCommands.ControlInjector1Increase] = new UserCommandKeyInput('k');
-			Commands[(int)UserCommands.ControlInjector1Decrease] = new UserCommandKeyInput('k', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlInjector1] = new UserCommandKeyInput('i');
-			Commands[(int)UserCommands.ControlInjector2Increase] = new UserCommandKeyInput('l');
-			Commands[(int)UserCommands.ControlInjector2Decrease] = new UserCommandKeyInput('l', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlInjector2] = new UserCommandKeyInput('o');
-			Commands[(int)UserCommands.ControlBlowerIncrease] = new UserCommandKeyInput('n');
-			Commands[(int)UserCommands.ControlBlowerDecrease] = new UserCommandKeyInput('n', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput('m');
-			Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput('m', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlFiringRateIncrease] = new UserCommandKeyInput('r');
-			Commands[(int)UserCommands.ControlFiringRateDecrease] = new UserCommandKeyInput('r', KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput('c');
-			Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput('f', KeyModifiers.Control);
+            Commands[(int)UserCommands.ControlInjector1Increase] = new UserCommandKeyInput('k');
+            Commands[(int)UserCommands.ControlInjector1Decrease] = new UserCommandKeyInput('k', KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlInjector1] = new UserCommandKeyInput('i');
+            Commands[(int)UserCommands.ControlInjector2Increase] = new UserCommandKeyInput('l');
+            Commands[(int)UserCommands.ControlInjector2Decrease] = new UserCommandKeyInput('l', KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlInjector2] = new UserCommandKeyInput('o');
+            Commands[(int)UserCommands.ControlBlowerIncrease] = new UserCommandKeyInput('n');
+            Commands[(int)UserCommands.ControlBlowerDecrease] = new UserCommandKeyInput('n', KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput('m');
+            Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput('m', KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlFiringRateIncrease] = new UserCommandKeyInput('r');
+            Commands[(int)UserCommands.ControlFiringRateDecrease] = new UserCommandKeyInput('r', KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlFireShovelFull] = new UserCommandKeyInput('r', KeyModifiers.Control);
+            Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput('c');
+            Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput('f', KeyModifiers.Control);
 #if CHECK_KEYMAP_DUPLICATES
 			var firstUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Min();
 			var lastUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Max();
@@ -355,20 +356,21 @@ namespace ORTS
 		ControlHeadlightDecrease,
 		ControlDispatcherExtend,
 		ControlDispatcherRelease,
-		ControlInjector1Increase,
-		ControlInjector1Decrease,
-		ControlInjector1,
-		ControlInjector2Increase,
-		ControlInjector2Decrease,
-		ControlInjector2,
-		ControlBlowerIncrease,
-		ControlBlowerDecrease,
-		ControlDamperIncrease,
-		ControlDamperDecrease,
-		ControlFiringRateIncrease,
-		ControlFiringRateDecrease,
-		ControlCylinderCocks,
-		ControlFiring,
+        ControlInjector1Increase,
+        ControlInjector1Decrease,
+        ControlInjector1,
+        ControlInjector2Increase,
+        ControlInjector2Decrease,
+        ControlInjector2,
+        ControlBlowerIncrease,
+        ControlBlowerDecrease,
+        ControlDamperIncrease,
+        ControlDamperDecrease,
+        ControlFiringRateIncrease,
+        ControlFiringRateDecrease,
+        ControlFireShovelFull,
+        ControlCylinderCocks,
+        ControlFiring,
 	}
 
 	[Flags]

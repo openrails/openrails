@@ -53,9 +53,10 @@ namespace ORTS
         float BoilerMassLB;         // total mass of water and steam in boiler
         float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
         float WaterFraction;        // fraction of boiler volume occupied by water
-        float Evaporation;          // steam generation rate
+        float EvaporationLBpS;          // steam generation rate
         float FireMassKG;
         float FireRatio;
+        float FlueTempK = 1000;
         bool SafetyOn = false;
 
         // eng file configuration parameters
@@ -71,6 +72,11 @@ namespace ORTS
         float MaxFiringRateKGpS;
         float SafetyValveUsageLBpS;
         float SafetyValveDropPSI;
+        float EvaporationAreaSqM;
+        float FuelCalorificKJpKG = 33400;
+        float BlowerMultiplier = 10;//25;
+        float ShovelMassKG = 6;
+        float BurnRateMultiplier = 1;
 
         // precomputed values
         float SteamUsageFactor;     // precomputed multiplier for calculating steam used in cylinders
@@ -87,8 +93,8 @@ namespace ORTS
         Interpolator WaterHeat;     // total heat in water given pressure
         Interpolator Heat2Pressure; // pressure given total heat in water (inverse of WaterHeat)
         Interpolator BurnRate;      // fuel burn rate given steam usage
-        Interpolator EvaporationRate;   // steam generation rate given fuel burn rate
-        Interpolator EvaporationFactor;
+        Interpolator Pressure2Temperature;
+        Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
 
 		public MSTSSteamLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
             : base(simulator, wagFile, previousCar)
@@ -120,10 +126,11 @@ namespace ORTS
             WaterHeat = SteamTable.WaterHeatInterpolator();
             CylinderSteamDensity = SteamTable.SteamDensityInterpolator();
             Heat2Pressure = SteamTable.WaterHeat2PressureInterpolator();
+            Pressure2Temperature = SteamTable.Pressure2TemperatureInterpolator();
             BoilerPressurePSI = MaxBoilerPressurePSI;
             SteamUsageLBpS = 0;
             //BoilerVolumeFT3 *= .25f;
-            WaterFraction = .8f;
+            WaterFraction = .85f;
             BoilerMassLB= WaterFraction*BoilerVolumeFT3*WaterDensity[MaxBoilerPressurePSI] + (1-WaterFraction)*BoilerVolumeFT3*SteamDensity[MaxBoilerPressurePSI];
             BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensity[BoilerPressurePSI]*WaterHeat[BoilerPressurePSI] + (1-WaterFraction) * BoilerVolumeFT3 * SteamDensity[BoilerPressurePSI]*SteamHeat[BoilerPressurePSI];
             //Console.WriteLine("initstate {0} {1}", BoilerMassLB, BoilerHeatBTU);
@@ -183,48 +190,59 @@ namespace ORTS
                 BackPressure.ScaleX(ExhaustLimitLBpH);
                 BackPressure.ScaleX(1 / 3600f);
             }
-            float maxevap = 775;
-            float maxburn = 180;
-            float grateArea = MaxBoilerOutputLBpH / maxevap;
-            if (EvaporationRate == null)
-            {   // this table is from page 112 of The Steam Locomotive by R. P. Johnson (the 13000 BTU line) 
-                EvaporationRate = new Interpolator(11);
-                EvaporationRate[0] = 0;
-                EvaporationRate[20] = 170;
-                EvaporationRate[40] = 315;
-                EvaporationRate[60] = 440;
-                EvaporationRate[80] = 550;
-                EvaporationRate[100] = 630;
-                EvaporationRate[120] = 700;
-                EvaporationRate[140] = 740;
-                EvaporationRate[160] = 770;
-                EvaporationRate[180] = 775;
-                EvaporationRate[200] = 760;
-                EvaporationRate.ScaleX(grateArea / 3600 / 2.2046f);
-                EvaporationRate.ScaleY(grateArea / 3600);
-            }
-            if (BurnRate == null)
+            if (BoilerEfficiency == null)
             {
-                BurnRate = new Interpolator(2);
-                BurnRate[0] = 2;
-                BurnRate[maxevap] = maxburn;    // inverse of maximum EvaporationRate
-                BurnRate.ScaleX(grateArea / 3600);
-                BurnRate.ScaleY(grateArea / 3600 / 2.2046f);
+                BoilerEfficiency = new Interpolator(4);
+                BoilerEfficiency[0] = .82f;
+                BoilerEfficiency[(1 - .82f) / .35f] = .82f;
+                BoilerEfficiency[(1 - .4f) / .35f] = .4f;
+                BoilerEfficiency[1 / .35f] = .4f;
             }
-            if (EvaporationFactor == null)
+            float baseTempK = Pressure2Temperature[MaxBoilerPressurePSI] / 1.8f + 255.37f;
+            if (EvaporationAreaSqM == 0)
             {
-                EvaporationFactor = new Interpolator(4);
-                EvaporationFactor[0] = .9f;
-                EvaporationFactor[1] = 1;
-                EvaporationFactor[2] = .6f;
-                EvaporationFactor[3] = .6f;
+                EvaporationAreaSqM = MaxBoilerOutputLBpH / 3600 * SteamHeat[MaxBoilerPressurePSI] * 1.055f / (.045f * (1400 - baseTempK));
+                //Trace.WriteLine(string.Format("fire {0} {1} {2}", FireMassKG, MaxFiringRateKGpS, SafetyValveUsageLBpS));
+                //Trace.WriteLine(string.Format("evap area {0} {1} {2} {3}", EvaporationAreaSqM, EvaporationAreaSqM * 3.281f * 3.281f, BoilerVolumeFT3, 75 * EvaporationAreaSqM * 3.281f * 3.281f * 3.281f));
+                BurnRate = new Interpolator(4);
+                BurnRate[0] = .02f;
+                BurnRate[.02f] = .02f;
+                BurnRate[2.5f] = 2.5f;
+                BurnRate[3] = 2.5f;
+                BurnRate.ScaleX(MaxBoilerOutputLBpH / 3600 / 1.4f);
+                BurnRate.ScaleY((1400 - baseTempK) * .045f * EvaporationAreaSqM / FuelCalorificKJpKG / .714f);
+                BoilerEfficiency.ScaleX(MaxBoilerOutputLBpH / 3600 / 1.4f);
+                //for (float x = 0; x < 1.25f; x += .1f)
+                //    Trace.WriteLine(string.Format(" {0} {1}", x, BurnRate[x*MaxBoilerOutputLBpH/3600]* BoilerEfficiency[x*MaxBoilerOutputLBpH/3600]));
             }
-            BlowerSteamUsageFactor = .1f * EvaporationRate.MaxX() / MaxBoilerPressurePSI;
-            InjectorRateLBpS = maxevap * grateArea / 3600;
+            else
+            {
+                BurnRate = new Interpolator(27);
+                for (int i = 0; i < 27; i++)
+                {
+                    float x = .1f * i;
+                    float y = x;
+                    if (y < .05)
+                        y = .05f;
+                    else if (y > 2.5f)
+                        y = 2.5f;
+                    BurnRate[x] = y / BoilerEfficiency[x];
+                }
+                float sy = (1400 - baseTempK) * .045f * EvaporationAreaSqM;
+                float sx = sy / (SteamHeat[MaxBoilerPressurePSI] * 1.055f);
+                BurnRate.ScaleX(sx);
+                BurnRate.ScaleY(sy / FuelCalorificKJpKG);
+                BoilerEfficiency.ScaleX(sx);
+                MaxBoilerOutputLBpH = 3600 * sx;
+            }
+            BurnRate.ScaleY(BurnRateMultiplier);
+            FlueTempK = baseTempK + BurnRate[BasicSteamUsageLBpS] * FuelCalorificKJpKG * BoilerEfficiency[0] / (.045f * EvaporationAreaSqM);
+            BlowerSteamUsageFactor = .04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
+            InjectorRateLBpS = MaxBoilerOutputLBpH / 3600;
             FireMassKG = IdealFireMassKG;
             if (MaxFiringRateKGpS == 0)
-                MaxFiringRateKGpS = maxburn * grateArea / 3600 / 2.2046f;
-            //Trace.WriteLine(string.Format("fire {0} {1} {2}", FireMassKG, MaxFiringRateKGpS, SafetyValveUsageLBpS));
+                MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
+            //Trace.WriteLine(string.Format("burn rate 2 {0} {1} {2}", BurnRate[1] * (1 - .82f) / .35f / .82f, baseTempK, BurnRate[1]));
         }
         public bool ZeroError(float v, string name, string wagFile)
         {
@@ -252,7 +270,11 @@ namespace ORTS
                 case "engine(safetyvalvessteamusage": SafetyValveUsageLBpS = stf.ReadFloatBlock(STFReader.UNITS.MassRate, null) / 3600; break;
                 case "engine(safetyvalvepressuredifference": SafetyValveDropPSI = stf.ReadFloatBlock(STFReader.UNITS.Pressure, null); break;
                 case "engine(idealfiremass": IdealFireMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(steamfiremanmaxpossiblefiringrate": MaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRate, null) / 2.2046f / 3600; break;
+                case "engine(evaporationarea": EvaporationAreaSqM = stf.ReadFloatBlock(STFReader.UNITS.Area, null); break;
+                case "engine(fuelcalorific": FuelCalorificKJpKG = stf.ReadFloatBlock(STFReader.UNITS.EnergyDensity, null); break;
+                case "engine(burnratemultiplier": BurnRateMultiplier = stf.ReadIntBlock(STFReader.UNITS.None, null); break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
@@ -264,7 +286,7 @@ namespace ORTS
                 case "engine(cylinderpressuredrop": CylinderPressureDrop = new Interpolator(stf); break;
                 case "engine(backpressure": BackPressure = new Interpolator(stf); break;
                 case "engine(burnrate": BurnRate = new Interpolator(stf); break;
-                case "engine(evaporationrate": EvaporationRate = new Interpolator(stf); break;
+                case "engine(boilerefficiency": BoilerEfficiency = new Interpolator(stf); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -283,7 +305,7 @@ namespace ORTS
             BoilerMassLB = locoCopy.BoilerMassLB;
             BoilerPressurePSI = locoCopy.BoilerPressurePSI;
             WaterFraction = locoCopy.WaterFraction;
-            Evaporation = locoCopy.Evaporation;
+            EvaporationLBpS = locoCopy.EvaporationLBpS;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             NumCylinders = locoCopy.NumCylinders;
@@ -297,6 +319,10 @@ namespace ORTS
             SafetyValveDropPSI = locoCopy.SafetyValveDropPSI;
             IdealFireMassKG = locoCopy.IdealFireMassKG;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
+            EvaporationAreaSqM = locoCopy.EvaporationAreaSqM;
+            FuelCalorificKJpKG = locoCopy.FuelCalorificKJpKG;
+            ShovelMassKG = locoCopy.ShovelMassKG;
+            BurnRateMultiplier = locoCopy.BurnRateMultiplier;
             ForceFactor1 = new Interpolator(locoCopy.ForceFactor1);
             ForceFactor2 = new Interpolator(locoCopy.ForceFactor2);
             CylinderPressureDrop = new Interpolator(locoCopy.CylinderPressureDrop);
@@ -308,8 +334,7 @@ namespace ORTS
             WaterHeat = new Interpolator(locoCopy.WaterHeat);
             Heat2Pressure = new Interpolator(locoCopy.Heat2Pressure);
             BurnRate = new Interpolator(locoCopy.BurnRate);
-            EvaporationRate = new Interpolator(locoCopy.EvaporationRate);
-            EvaporationFactor = new Interpolator(locoCopy.EvaporationFactor);
+            Pressure2Temperature = new Interpolator(locoCopy.Pressure2Temperature);
             CutoffController = (MSTSNotchController)locoCopy.CutoffController.Clone();
             Injector1Controller = (MSTSNotchController)locoCopy.Injector1Controller.Clone();
             Injector2Controller = (MSTSNotchController)locoCopy.Injector2Controller.Clone();
@@ -331,28 +356,7 @@ namespace ORTS
             outf.Write(BoilerMassLB);
             outf.Write(BoilerPressurePSI);
             outf.Write(WaterFraction);
-            outf.Write(Evaporation);
-            outf.Write(MaxBoilerPressurePSI);
-            outf.Write(BoilerVolumeFT3);
-            outf.Write(NumCylinders);
-            outf.Write(CylinderStrokeM);
-            outf.Write(CylinderDiameterM);
-            outf.Write(MaxBoilerOutputLBpH);
-            outf.Write(ExhaustLimitLBpH);
-            outf.Write(BasicSteamUsageLBpS);
-            outf.Write(SteamUsageFactor);
-            ForceFactor1.Save(outf);
-            ForceFactor2.Save(outf);
-            CylinderPressureDrop.Save(outf);
-            BackPressure.Save(outf);
-            CylinderSteamDensity.Save(outf);
-            SteamDensity.Save(outf);
-            WaterDensity.Save(outf);
-            SteamHeat.Save(outf);
-            WaterHeat.Save(outf);
-            Heat2Pressure.Save(outf);
-            BurnRate.Save(outf);
-            EvaporationRate.Save(outf);
+            outf.Write(EvaporationLBpS);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
             ControllerFactory.Save(Injector2Controller, outf);
@@ -373,28 +377,7 @@ namespace ORTS
             BoilerMassLB = inf.ReadSingle();
             BoilerPressurePSI = inf.ReadSingle();
             WaterFraction = inf.ReadSingle();
-            Evaporation = inf.ReadSingle();
-            MaxBoilerPressurePSI = inf.ReadSingle();
-            BoilerVolumeFT3 = inf.ReadSingle();
-            NumCylinders = inf.ReadInt32();
-            CylinderStrokeM = inf.ReadSingle();
-            CylinderDiameterM = inf.ReadSingle();
-            MaxBoilerOutputLBpH = inf.ReadSingle();
-            ExhaustLimitLBpH = inf.ReadSingle();
-            BasicSteamUsageLBpS = inf.ReadSingle();
-            SteamUsageFactor = inf.ReadSingle();
-            ForceFactor1 = new Interpolator(inf);
-            ForceFactor2 = new Interpolator(inf);
-            CylinderPressureDrop = new Interpolator(inf);
-            BackPressure = new Interpolator(inf);
-            CylinderSteamDensity = new Interpolator(inf);
-            SteamDensity = new Interpolator(inf);
-            WaterDensity = new Interpolator(inf);
-            SteamHeat = new Interpolator(inf);
-            WaterHeat = new Interpolator(inf);
-            Heat2Pressure = new Interpolator(inf);
-            BurnRate = new Interpolator(inf);
-            EvaporationRate = new Interpolator(inf);
+            EvaporationLBpS = inf.ReadSingle();
             CutoffController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             Injector1Controller = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             Injector2Controller = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
@@ -445,19 +428,19 @@ namespace ORTS
             float throttle = ThrottlePercent / 100;
             float cutoff = Math.Abs(Train.MUReverserPercent / 100);
             if (cutoff > ForceFactor2.MaxX())
-                cutoff= ForceFactor2.MaxX();
+                cutoff = ForceFactor2.MaxX();
             float speed = Math.Abs(Train.SpeedMpS);
-            if (speed > 2 && (Train.MUReverserPercent==100 || Train.MUReverserPercent==-100))
+            if (speed > 2 && (Train.MUReverserPercent == 100 || Train.MUReverserPercent == -100))
             {   // AI cutoff adjustment logic, also used for steam MU'd with non-steam
-                cutoff= throttle*ForceFactor2.MaxX()*2/speed;
+                cutoff = throttle * ForceFactor2.MaxX() * 2 / speed;
                 float min = ForceFactor2.MinX();
                 if (cutoff < min)
                 {
-                    throttle = cutoff/min;
-                    cutoff= min;
+                    throttle = cutoff / min;
+                    cutoff = min;
                 }
                 else
-                    throttle= 1;
+                    throttle = 1;
             }
             float cylinderPressure = throttle * BoilerPressurePSI - CylinderPressureDrop[SteamUsageLBpS];
             float backPressure = BackPressure[SteamUsageLBpS];
@@ -492,35 +475,39 @@ namespace ORTS
                 }
             }
             else
-                BlowerSteamUsageLBpS = SteamUsageLBpS < BasicSteamUsageLBpS ? BasicSteamUsageLBpS - SteamUsageLBpS : 0; // automatic blower
+                BlowerSteamUsageLBpS = SteamUsageLBpS < BasicSteamUsageLBpS ? (BasicSteamUsageLBpS - SteamUsageLBpS) / BlowerMultiplier : 0; // automatic blower
             // mass assumed constant for automatic firing and injectors
 
-            float burnRate = BurnRate[SteamUsageLBpS + BlowerSteamUsageLBpS];
-            if (!ManualFiring)
-                Evaporation = EvaporationRate[burnRate];  // automatic fire at maximum rate
-            else if (IdealFireMassKG > 0)
-            {   // coal fire
-                if (FireMassKG < IdealFireMassKG)
-                    burnRate *= FireMassKG / IdealFireMassKG;
+            float burnRate = BurnRate[SteamUsageLBpS + BlowerMultiplier * BlowerSteamUsageLBpS];
+            if (IdealFireMassKG > 0)
+            {
                 FireRatio = FireMassKG / IdealFireMassKG;
-                burnRate *= 1 - .5f * DamperController.CurrentValue;
-                Evaporation = EvaporationRate[burnRate];
-                Evaporation *= EvaporationFactor[FireRatio];
-                FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FiringRateController.CurrentValue - burnRate);
-                if (FireMassKG < 0)
-                    FireMassKG = 0;
-                else if (FireMassKG > 2 * IdealFireMassKG)
-                    FireMassKG = 2 * IdealFireMassKG;
+                if (FireRatio < 1)
+                    burnRate *= FireRatio;
+                else if (FireRatio > 1)
+                    burnRate *= 2 - FireRatio;
+                //burnRate *= 1 - .5f * DamperController.CurrentValue;
+                if (ManualFiring)
+                {
+                    FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FiringRateController.CurrentValue - burnRate);
+                    if (FireMassKG < 0)
+                        FireMassKG = 0;
+                    else if (FireMassKG > 2 * IdealFireMassKG)
+                        FireMassKG = 2 * IdealFireMassKG;
+                }
             }
+            float waterTemp = Pressure2Temperature[BoilerPressurePSI] / 1.8f + 255.37f;
+            float boilerKW = (FlueTempK - waterTemp) * .045f * EvaporationAreaSqM;
+            if (FireMassKG < 1)
+                FlueTempK = waterTemp + burnRate * FuelCalorificKJpKG * BoilerEfficiency[SteamUsageLBpS] / (.045f * EvaporationAreaSqM);
             else
-            {   // oil fire
-                FireRatio = burnRate / MaxFiringRateKGpS;
-                if (burnRate > MaxFiringRateKGpS)
-                    burnRate = MaxFiringRateKGpS;
-                Evaporation = EvaporationRate[burnRate];
-                Evaporation *= EvaporationFactor[FireRatio];
-            }
-            BoilerHeatBTU += elapsedClockSeconds * (Evaporation - SteamUsageLBpS - BasicSteamUsageLBpS) * steamHeat;
+                FlueTempK += elapsedClockSeconds * (burnRate * FuelCalorificKJpKG * BoilerEfficiency[SteamUsageLBpS] - boilerKW) / (1.26f * FireMassKG);
+            if (FlueTempK < 0)
+                FlueTempK = 0;
+            else if (FlueTempK > 10000)
+                FlueTempK = 10000;
+            EvaporationLBpS = boilerKW / (1.055f * steamHeat);
+            BoilerHeatBTU += elapsedClockSeconds * (EvaporationLBpS - SteamUsageLBpS - BasicSteamUsageLBpS - BlowerSteamUsageLBpS) * steamHeat;
             WaterFraction = (BoilerMassLB / BoilerVolumeFT3 - steamDensity) / (waterDensity - steamDensity);
             float waterHeat = (BoilerHeatBTU / BoilerVolumeFT3 - (1 - WaterFraction) * steamDensity * steamHeat) / (WaterFraction * waterDensity);
             BoilerPressurePSI = Heat2Pressure[waterHeat];
@@ -533,13 +520,14 @@ namespace ORTS
 
         public override string GetStatus()
         {
-			float evap = Evaporation * 3600;
+			float evap = EvaporationLBpS * 3600;
 			float usage = (SteamUsageLBpS + BlowerSteamUsageLBpS + BasicSteamUsageLBpS) * 3600;
             if (SafetyOn)
                 usage += SafetyValveUsageLBpS * 3600;
 			StringBuilder result = new StringBuilder();
             result.AppendFormat("Boiler Pressure = {0:F1} PSI\nSteam Generation = {1:F0} lb/h\nSteam Usage = {2:F0} lb/h", BoilerPressurePSI, evap, usage);
             //BoilerHeatBTU,BoilerMassLB,WaterFraction.ToString("F2"));
+            //result.AppendFormat("\nFlue Temp = {0:F0} F", 1.8f * (FlueTempK-255.37f));
             if (ManualFiring)
             {
                 result.AppendFormat("\nWater Level = {0:F0} %", WaterFraction * 100);
@@ -557,7 +545,7 @@ namespace ORTS
                 else
                     result.Append(" Off");
                 result.AppendFormat("\nBlower = {0:F0} %", BlowerController.CurrentValue * 100);
-                result.AppendFormat("\nDamper = {0:F0} %", DamperController.CurrentValue * 100);
+                //result.AppendFormat("\nDamper = {0:F0} %", DamperController.CurrentValue * 100);
                 result.AppendFormat("\nFiring Rate = {0:F0} %", FiringRateController.CurrentValue * 100);
             }
             return result.ToString();
@@ -685,6 +673,11 @@ namespace ORTS
             FiringRateController.StopDecrease();
         }
 
+        public void FireShovelFull()
+        {
+            FireMassKG+= ShovelMassKG;
+        }
+
         public void ToggleCylinderCocks()
         {
             CylinderCocksOpen = !CylinderCocksOpen;
@@ -785,6 +778,8 @@ namespace ORTS
                 SteamLocomotive.StartFiringRateDecrease();
             else if (UserInput.IsReleased(UserCommands.ControlFiringRateDecrease))
                 SteamLocomotive.StopFiringRateDecrease();
+            if (UserInput.IsPressed(UserCommands.ControlFireShovelFull))
+                SteamLocomotive.FireShovelFull();
             if (UserInput.IsPressed(UserCommands.ControlCylinderCocks))
                 SteamLocomotive.ToggleCylinderCocks();
             if (UserInput.IsPressed(UserCommands.ControlFiring))
