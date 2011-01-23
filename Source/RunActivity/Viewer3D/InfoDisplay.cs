@@ -199,6 +199,7 @@ namespace ORTS
 				var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
                 Viewer.TrackMonitorWindow.UpdateText(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, Viewer.PlayerTrain.distanceToSignal, Viewer.PlayerTrain.TMaspect, poiType, poiDistance);
 			}
+			else Viewer.TrackMonitorWindow.UpdateSpeed(Viewer.PlayerLocomotive.SpeedMpS); // always update last speed so that the projected speed will be right (By JTang)
 			if (Viewer.SwitchWindow.Visible)
 			{
 				Viewer.SwitchWindow.UpdateText(elapsedTime, Viewer.PlayerTrain);

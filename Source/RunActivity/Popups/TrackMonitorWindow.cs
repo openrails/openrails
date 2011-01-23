@@ -133,5 +133,11 @@ namespace ORTS.Popups
 			POILabel.Text = DispatcherPOILabels[poiType];
 			POIDistance.Text = poiType == DispatcherPOIType.Unknown || poiType == DispatcherPOIType.OffPath ? "" : FormatDistance(poiDistance, milepostUnitsMetric);
 		}
+
+		// added method to update the last speed, by JTang
+		public void UpdateSpeed(float speedMpS)
+		{
+			LastSpeedMpS = speedMpS;
+		}
 	}
 }
