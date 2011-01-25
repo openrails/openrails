@@ -222,7 +222,7 @@ namespace MenuWPF
                 EngineInfo info = eng.Single();
 
                 FlowDocument doc = new FlowDocument();
-                string[] lines = info.Description.Replace("\"", "").Replace("\t", "").Replace("\r\n", "").Replace("\\n\\n", "\n").Replace("+", "").Replace("\r", "").Split(new String[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                string[] lines = info.Description.Replace("\"", "").Replace("\t", "").Replace("\\n", "\n").Replace("+", "").Replace("\r", "").Split(new String[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (string line in lines)
                 {
                     Paragraph p = new Paragraph();
@@ -567,11 +567,17 @@ namespace MenuWPF
                 {
                     Folders.Add(new Folder("- Default -", MSTSPath.Base()));
                     cboFolder.Items.Add("- Default -");
+                    
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nGo to Options >> Folders, then click on 'Add' to point Open Rails at your Microsoft Train Simulator folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+            if (Folders.Count == 1)
+            {
+                cboFolder.SelectedIndex = 0;
+                System.Windows.Forms.Application.DoEvents();
             }
 
             Folders = Folders.OrderBy(f => f.Name).ToList();

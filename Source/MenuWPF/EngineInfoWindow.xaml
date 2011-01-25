@@ -10,7 +10,7 @@
 	</Window.Background>
 
 	<Grid x:Name="LayoutRoot">
-		<Border BorderBrush="Black" BorderThickness="1" Background="#7FFFFFFF" CornerRadius="20" Margin="10">
+		<Border BorderBrush="Black" BorderThickness="1" Background="#BFFFFFFF" CornerRadius="20" Margin="10">
 			<FlowDocumentScrollViewer x:Name="docEngineInfo" Margin="20" Style="{DynamicResource FlowDocumentScrollViewerStyle1}" VerticalScrollBarVisibility="Auto">
 				<FlowDocument>
 					<Paragraph><Run Text="FlowDocumentScrollViewer"/></Paragraph>

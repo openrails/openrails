@@ -4,7 +4,7 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
 	x:Class="MenuWPF.ProgressionWindow"
 	x:Name="Window"
-	Title="Add Folder"
+	Title="Loading"
 	Width="800" Height="150" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="openrails.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Background="#00000000" WindowStyle="None" AllowsTransparency="True">
 
 	<Border x:Name="brdMain" BorderBrush="Black" BorderThickness="1" Background="#7FFFFFFF" CornerRadius="20" Margin="0,0,20,20">
