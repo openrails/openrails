@@ -188,8 +188,18 @@ namespace MenuWPF
             winAddFolder.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             if (winAddFolder.ShowDialog() == true)
             {
-                Folders.Add(new MainWindow.Folder(winAddFolder.FolderName, winAddFolder.FolderPath));
-                listBoxFolders.Items.Add(winAddFolder.FolderName);
+                var fold = from f in Folders
+                           where f.Name == winAddFolder.FolderName
+                           select f;
+                if (fold.Count() == 0)
+                {
+                    Folders.Add(new MainWindow.Folder(winAddFolder.FolderName, winAddFolder.FolderPath));
+                    listBoxFolders.Items.Add(winAddFolder.FolderName);
+                }
+                else
+                {
+                    MessageBox.Show("A folder with that name already exists!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                }
             }
         }
 

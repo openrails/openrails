@@ -49,7 +49,16 @@ namespace MenuWPF
         List<Route> Routes;
         List<Activity> Activities;
 
-        public Folder SelectedFolder { get { return cboFolder.SelectedIndex < 0 ? null : Folders[cboFolder.SelectedIndex]; } }
+        public Folder SelectedFolder 
+        { 
+            get 
+            { 
+                return cboFolder.SelectedIndex < 0 ? null : GetSelectedFolder(); 
+            } 
+        }
+
+        
+
         public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
         public Activity SelectedActivity { get { return listBoxActivities.SelectedIndex < 0 ? null : Activities[listBoxActivities.SelectedIndex]; } set { if (listBoxActivities.SelectedIndex >= 0) Activities[listBoxActivities.SelectedIndex] = value; } }
         
@@ -504,6 +513,28 @@ namespace MenuWPF
 
         #region Folders
         //============================================================================================
+        /// <summary>
+        /// Gets the selected folder from the list.
+        /// </summary>
+        /// <returns>Folder SelectedFolder</returns>
+        private Folder GetSelectedFolder()
+        {
+            var fold = from f in Folders
+                       where f.Name == cboFolder.SelectedItem.ToString()
+                       select f;
+            try
+            {
+                return fold.First();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Loads all folders from the configuration file
+        /// </summary>
         private void LoadFolders()
         {
             Folders = new List<Folder>();
