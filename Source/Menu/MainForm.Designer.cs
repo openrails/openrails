@@ -50,6 +50,8 @@
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.labelRoutes = new System.Windows.Forms.Label();
+			this.labelActivities = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.groupBox1.SuspendLayout();
 			this.groupBox2.SuspendLayout();
@@ -253,6 +255,7 @@
 			// 
 			// groupBox2
 			// 
+			this.groupBox2.Controls.Add(this.labelRoutes);
 			this.groupBox2.Controls.Add(this.listBoxRoutes);
 			this.groupBox2.Controls.Add(this.buttonRouteDetails);
 			this.groupBox2.Location = new System.Drawing.Point(229, 12);
@@ -264,6 +267,7 @@
 			// 
 			// groupBox3
 			// 
+			this.groupBox3.Controls.Add(this.labelActivities);
 			this.groupBox3.Controls.Add(this.listBoxActivities);
 			this.groupBox3.Controls.Add(this.buttonActivityDetails);
 			this.groupBox3.Location = new System.Drawing.Point(446, 12);
@@ -272,6 +276,24 @@
 			this.groupBox3.TabIndex = 2;
 			this.groupBox3.TabStop = false;
 			this.groupBox3.Text = "Activities";
+			// 
+			// labelRoutes
+			// 
+			this.labelRoutes.Location = new System.Drawing.Point(6, 19);
+			this.labelRoutes.Name = "labelRoutes";
+			this.labelRoutes.Size = new System.Drawing.Size(199, 254);
+			this.labelRoutes.TabIndex = 2;
+			this.labelRoutes.Text = "No routes.";
+			this.labelRoutes.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			// 
+			// labelActivities
+			// 
+			this.labelActivities.Location = new System.Drawing.Point(6, 19);
+			this.labelActivities.Name = "labelActivities";
+			this.labelActivities.Size = new System.Drawing.Size(199, 254);
+			this.labelActivities.TabIndex = 3;
+			this.labelActivities.Text = "No activities.";
+			this.labelActivities.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// MainForm
 			// 
@@ -330,5 +352,7 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
+		private System.Windows.Forms.Label labelRoutes;
+		private System.Windows.Forms.Label labelActivities;
     }
 }

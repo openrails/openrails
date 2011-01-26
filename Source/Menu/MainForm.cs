@@ -353,9 +353,8 @@ namespace ORTS
 						}
 					}
 				}
-				catch (Exception error)
+				catch (Exception)
 				{
-					MessageBox.Show(error.ToString(), Application.ProductName);
 				}
 			}
 
@@ -369,6 +368,8 @@ namespace ORTS
 				listBoxRoutes.SelectedIndex = 0;
 			else
 				listBoxRoutes.ClearSelected();
+
+			labelRoutes.Visible = Routes.Count == 0;
 
 			if (Routes.Count == 0)
 				LoadActivities();
@@ -397,9 +398,8 @@ namespace ORTS
 						}
 					}
 				}
-				catch (Exception error)
+				catch (Exception)
 				{
-					MessageBox.Show(error.ToString(), Application.ProductName);
 				}
 			}
 
@@ -413,6 +413,8 @@ namespace ORTS
 				listBoxActivities.SelectedIndex = 0;
 			else
 				listBoxActivities.ClearSelected();
+
+			labelActivities.Visible = Activities.Count == 0;
 		}
 
 		void DisplayRouteDetails()
