@@ -1,19 +1,16 @@
-﻿/// COPYRIGHT 2009 by the Open Rails project.
-/// This code is provided to enable you to contribute improvements to the open rails program.  
-/// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from admin@openrails.org.
+﻿// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+// This code is provided to enable you to contribute improvements to the open rails program.  
+// Use of the code for any other purpose or distribution of the code to anyone else
+// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.IO;
-using MSTS;
+using System.Linq;
+using System.Windows.Forms;
 using Microsoft.Win32;
+using MSTS;
 
 namespace ORTS
 {
@@ -22,9 +19,11 @@ namespace ORTS
 		public const string FolderDataFileName = "folder.dat";
 
 		string FolderDataFile;
-		List<Folder> Folders;
-		List<Route> Routes;
-		List<Activity> Activities;
+		List<Folder> Folders = new List<Folder>();
+		List<Route> Routes = new List<Route>();
+		List<Activity> Activities = new List<Activity>();
+		Task<List<Route>> RouteLoader;
+		Task<List<Activity>> ActivityLoader;
 
 		public Folder SelectedFolder { get { return listBoxFolders.SelectedIndex < 0 ? null : Folders[listBoxFolders.SelectedIndex]; } }
 		public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
@@ -119,6 +118,10 @@ namespace ORTS
 		void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			SaveOptions();
+			if (RouteLoader != null)
+				RouteLoader.Cancel();
+			if (ActivityLoader != null)
+				ActivityLoader.Cancel();
 		}
 		#endregion
 
@@ -336,86 +339,83 @@ namespace ORTS
 
 		void LoadRoutes()
 		{
-			Routes = new List<Route>();
+			if (RouteLoader != null)
+				RouteLoader.Cancel();
 
-			if (SelectedFolder != null)
+			listBoxRoutes.Items.Clear();
+			var selectedFolder = SelectedFolder;
+			RouteLoader = new Task<List<Route>>(this, () =>
 			{
-				try
+				var routes = new List<Route>();
+				if (selectedFolder != null)
 				{
-					foreach (var directory in Directory.GetDirectories(SelectedFolder.Path + @"\ROUTES"))
+					var directory = Path.Combine(selectedFolder.Path, "ROUTES");
+					if (Directory.Exists(directory))
 					{
-						try
+						foreach (var routeDirectory in Directory.GetDirectories(directory))
 						{
-							var trkFile = new TRKFile(MSTSPath.GetTRKFileName(directory));
-							Routes.Add(new Route(trkFile.Tr_RouteFile.Name, directory, trkFile));
-						}
-						catch
-						{
+							try
+							{
+								var trkFile = new TRKFile(MSTSPath.GetTRKFileName(routeDirectory));
+								routes.Add(new Route(trkFile.Tr_RouteFile.Name, routeDirectory, trkFile));
+							}
+							catch { }
 						}
 					}
 				}
-				catch (Exception)
-				{
-				}
-			}
-
-			Routes = Routes.OrderBy(r => r.Name).ToList();
-
-			listBoxRoutes.Items.Clear();
-			foreach (var route in Routes)
-				listBoxRoutes.Items.Add(route.Name);
-
-			if (Routes.Count > 0)
-				listBoxRoutes.SelectedIndex = 0;
-			else
-				listBoxRoutes.ClearSelected();
-
-			labelRoutes.Visible = Routes.Count == 0;
-
-			if (Routes.Count == 0)
-				LoadActivities();
+				return routes.OrderBy(r => r.Name).ToList();
+			}, (routes) =>
+			{
+				Routes = routes;
+				labelRoutes.Visible = Routes.Count == 0;
+				foreach (var route in Routes)
+					listBoxRoutes.Items.Add(route.Name);
+				if (Routes.Count > 0)
+					listBoxRoutes.SelectedIndex = 0;
+				else
+					LoadActivities();
+			});
 		}
 
 		void LoadActivities()
 		{
-			Activities = new List<Activity>();
+			if (ActivityLoader != null)
+				ActivityLoader.Cancel();
 
-			if (SelectedRoute != null)
+			listBoxActivities.Items.Clear();
+			var selectedRoute = SelectedRoute;
+			ActivityLoader = new Task<List<Activity>>(this, () =>
 			{
-				try
+				var activities = new List<Activity>();
+				if (selectedRoute != null)
 				{
-					Activities.Add(new ExploreActivity());
-					foreach (var file in Directory.GetFiles(SelectedRoute.Path + @"\ACTIVITIES", "*.act"))
+					activities.Add(new ExploreActivity());
+					var directory = Path.Combine(selectedRoute.Path, "ACTIVITIES");
+					if (Directory.Exists(directory))
 					{
-						if (Path.GetFileName(file).StartsWith("ITR_e1_s1_w1_t1", StringComparison.OrdinalIgnoreCase))
-							continue;
-						try
+						foreach (var activityFile in Directory.GetFiles(directory, "*.act"))
 						{
-							var actFile = new ACTFile(file, true);
-							Activities.Add(new Activity(actFile.Tr_Activity.Tr_Activity_Header.Name, file, actFile));
-						}
-						catch(Exception)
-						{
+							if (Path.GetFileName(activityFile).StartsWith("ITR_e1_s1_w1_t1", StringComparison.OrdinalIgnoreCase))
+								continue;
+							try
+							{
+								var actFile = new ACTFile(activityFile, true);
+								activities.Add(new Activity(actFile.Tr_Activity.Tr_Activity_Header.Name, activityFile, actFile));
+							}
+							catch { }
 						}
 					}
 				}
-				catch (Exception)
-				{
-				}
-			}
-
-			Activities = Activities.OrderBy(a => a.Name).ToList();
-
-			listBoxActivities.Items.Clear();
-			foreach (var activity in Activities)
-				listBoxActivities.Items.Add(activity.Name);
-
-			if (Activities.Count > 0)
-				listBoxActivities.SelectedIndex = 0;
-			else
-				listBoxActivities.ClearSelected();
-
-			labelActivities.Visible = Activities.Count == 0;
+				return activities.OrderBy(a => a.Name).ToList();
+			}, (activities) =>
+			{
+				Activities = activities;
+				labelActivities.Visible = Activities.Count == 0;
+				foreach (var activity in Activities)
+					listBoxActivities.Items.Add(activity.Name);
+				if (Activities.Count > 0)
+					listBoxActivities.SelectedIndex = 0;
+			});
 		}
 
 		void DisplayRouteDetails()
@@ -448,7 +448,7 @@ namespace ORTS
 			{
 				if (form.ShowDialog(this) == DialogResult.OK)
 				{
-					SelectedActivity = form.ExploreActivity;
+					SelectedActivity = form.NewExploreActivity;
 					return true;
 				}
 				return false;

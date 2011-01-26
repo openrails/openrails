@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-			this.pathListBox = new System.Windows.Forms.ListBox();
-			this.consistListBox = new System.Windows.Forms.ListBox();
+			this.listPaths = new System.Windows.Forms.ListBox();
+			this.listConsists = new System.Windows.Forms.ListBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.startHourNumeric = new System.Windows.Forms.NumericUpDown();
 			this.label4 = new System.Windows.Forms.Label();
@@ -47,20 +47,20 @@
 			this.groupBox3.SuspendLayout();
 			this.SuspendLayout();
 			// 
-			// pathListBox
+			// listPaths
 			// 
-			this.pathListBox.FormattingEnabled = true;
-			this.pathListBox.Location = new System.Drawing.Point(6, 19);
-			this.pathListBox.Name = "pathListBox";
-			this.pathListBox.Size = new System.Drawing.Size(248, 95);
-			this.pathListBox.TabIndex = 0;
+			this.listPaths.FormattingEnabled = true;
+			this.listPaths.Location = new System.Drawing.Point(6, 19);
+			this.listPaths.Name = "listPaths";
+			this.listPaths.Size = new System.Drawing.Size(248, 95);
+			this.listPaths.TabIndex = 0;
 			// 
-			// consistListBox
+			// listConsists
 			// 
-			this.consistListBox.Location = new System.Drawing.Point(6, 19);
-			this.consistListBox.Name = "consistListBox";
-			this.consistListBox.Size = new System.Drawing.Size(248, 121);
-			this.consistListBox.TabIndex = 0;
+			this.listConsists.Location = new System.Drawing.Point(6, 19);
+			this.listConsists.Name = "listConsists";
+			this.listConsists.Size = new System.Drawing.Size(248, 121);
+			this.listConsists.TabIndex = 0;
 			// 
 			// label3
 			// 
@@ -154,7 +154,7 @@
 			// 
 			// groupBox1
 			// 
-			this.groupBox1.Controls.Add(this.pathListBox);
+			this.groupBox1.Controls.Add(this.listPaths);
 			this.groupBox1.Location = new System.Drawing.Point(12, 12);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.Size = new System.Drawing.Size(260, 120);
@@ -164,7 +164,7 @@
 			// 
 			// groupBox2
 			// 
-			this.groupBox2.Controls.Add(this.consistListBox);
+			this.groupBox2.Controls.Add(this.listConsists);
 			this.groupBox2.Location = new System.Drawing.Point(12, 138);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.Size = new System.Drawing.Size(260, 146);
@@ -206,6 +206,7 @@
 			this.Name = "ExploreForm";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Explore Route Details";
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExploreForm_FormClosing);
 			((System.ComponentModel.ISupportInitialize)(this.startHourNumeric)).EndInit();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox2.ResumeLayout(false);
@@ -217,8 +218,8 @@
 
         #endregion
 
-        private System.Windows.Forms.ListBox pathListBox;
-        private System.Windows.Forms.ListBox consistListBox;
+        private System.Windows.Forms.ListBox listPaths;
+        private System.Windows.Forms.ListBox listConsists;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.NumericUpDown startHourNumeric;
         private System.Windows.Forms.Label label4;

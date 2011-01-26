@@ -70,7 +70,10 @@ namespace MSTS
 	/// </summary>
 	public class PATFile
 	{
-        public List<TrackPDP> TrackPDPs = new List<TrackPDP>();
+		public string Name;
+		public string Start;
+		public string End;
+		public List<TrackPDP> TrackPDPs = new List<TrackPDP>();
         public List<TrPathNode> TrPathNodes = new List<TrPathNode>();
 
         /// <summary>
@@ -86,6 +89,9 @@ namespace MSTS
                         new STFReader.TokenProcessor("trackpdp", ()=>{ TrackPDPs.Add(new TrackPDP(stf)); }),
                     });}),
                     new STFReader.TokenProcessor("trackpath", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+						new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+						new STFReader.TokenProcessor("trpathstart", ()=>{ Start = stf.ReadStringBlock(null); }),
+						new STFReader.TokenProcessor("trpathend", ()=>{ End = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("trpathnodes", ()=>{
                             stf.MustMatch("(");
                             int count = stf.ReadInt(STFReader.UNITS.None, null);
