@@ -139,6 +139,7 @@ namespace ORTS
 				{
 					using (FormFolderName form = new FormFolderName())
 					{
+						form.textBoxDescription.Text = Path.GetFileName(folderBrowser.SelectedPath);
 						if (form.ShowDialog(this) == DialogResult.OK)
 						{
 							var folder = new Folder(form.textBoxDescription.Text, folderBrowser.SelectedPath);
