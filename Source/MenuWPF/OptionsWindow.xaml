@@ -251,7 +251,7 @@
 								<ColumnDefinition Width="2*"/>
 								<ColumnDefinition Width="3*"/>
 							</Grid.ColumnDefinitions>
-							<ListBox x:Name="listBoxFolders" Background="#3FFFFFFF" MinWidth="400" MinHeight="175" FontSize="14.667" FontWeight="Bold" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="16,0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Height="200" Foreground="Black"/>
+							<ListBox x:Name="listBoxFolders" Background="#3FFFFFFF" MinWidth="400" MinHeight="175" FontSize="14.667" FontWeight="Bold" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="16,40,16,50" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Foreground="Black"/>
 							<Label Content="Folders:" HorizontalAlignment="Left" Height="30" Margin="16,10,0,0" VerticalAlignment="Top" Width="75" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" FontSize="16"/>
 							<Button x:Name="btnAddFolder" Content="Add" Margin="16,0,0,16" Style="{DynamicResource ButtonStyle2}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnAddFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="60" ToolTip="Add a new folder"/>
 							<Button x:Name="btnRemoveFolder" Content="Remove" Margin="90,0,0,16" Style="{DynamicResource StandardButton}" VerticalAlignment="Bottom" Background="{x:Null}" Height="25" Click="btnRemoveFolder_Click" FontSize="13.333" HorizontalAlignment="Left" Width="80" ToolTip="Remove selected folder"/>
@@ -338,6 +338,7 @@
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition MinWidth="100" Width="175"/>
+								<ColumnDefinition Width="2*"/>
 								<ColumnDefinition/>
 							</Grid.ColumnDefinitions>
 							<ComboBox x:Name="cboResolution" Margin="10,0,0,0" Grid.Row="1" VerticalAlignment="Center" IsEditable="True" Grid.Column="1" HorizontalAlignment="Left" Width="157" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}">
@@ -369,8 +370,20 @@
 							<Label x:Name="lblResolution1" Content="Window Size" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
 							<Label Content="Full Screen" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="2" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
 							<Label Content="Background image" HorizontalAlignment="Right" Grid.Row="3" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<TextBox x:Name="txtBgImage" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="3" TextWrapping="Wrap" Width="500" VerticalAlignment="Center" Height="23.7333333333333" IsReadOnly="True" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Background="{x:Null}"/>
-							<Button x:Name="btnBrowse" Content="Browse ..." Grid.Column="1" Margin="0,0,167.6,0" Grid.Row="3" Style="{DynamicResource ButtonStyle2}" Background="{x:Null}" Click="btnBrowseImage_Click" FontSize="13.333" HorizontalAlignment="Right" Width="120.35" VerticalAlignment="Center"/>
+							<TextBox x:Name="txtBgImage" Grid.Column="1" Margin="10,0" Grid.Row="3" TextWrapping="Wrap" VerticalAlignment="Center" Height="23.7333333333333" IsReadOnly="True" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Background="{x:Null}"/>
+							<Button x:Name="btnBrowse" Content="Browse ..." Grid.Column="2" Margin="0" Grid.Row="3" Style="{DynamicResource ButtonStyle2}" Background="{x:Null}" Click="btnBrowseImage_Click" FontSize="13.333" HorizontalAlignment="Left" Width="120" VerticalAlignment="Center" Height="27"/>
+							<Button x:Name="btnReset" Content="Reset" Grid.Column="2" Margin="130,0,0,0" Grid.Row="3" Style="{DynamicResource ButtonStyle2}" Background="{x:Null}" Click="btnResetImage_Click" FontSize="13.333" Width="96" Height="27" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+							<Label Content="Old Menu Style" HorizontalAlignment="Right" Grid.Row="4" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="0" d:LayoutOverrides="Height"/>
+							<CheckBox x:Name="chkOldMenuStyle" Content="" HorizontalAlignment="Left" Grid.Row="4" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" d:LayoutOverrides="Height" VerticalAlignment="Center">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
 						</Grid>
 					</Border>
 				</Grid>

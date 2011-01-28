@@ -35,6 +35,7 @@ namespace MenuWPF
         private DataTable Paths;
         private String bgImage = "";
         private ProgressionWindow winProg;
+        private ImageSource defaultImage;
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
 
@@ -154,7 +155,7 @@ namespace MenuWPF
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
             // Set title to show revision or build info.
             //Content = String.Format(Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", AppDomain.CurrentDomain.FriendlyName, Revision, Build);
-
+            defaultImage = ((ImageBrush)this.Background).ImageSource;
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey);
             if (RK.GetValue("BackgroundImage", "") != null)
             {
@@ -343,6 +344,7 @@ namespace MenuWPF
             OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile, 0);
 
             winOptions.ShowDialog();
+            CheckBGImageChanged();
         }
 
         private void itemTrainStore_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -350,6 +352,7 @@ namespace MenuWPF
             OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile, 1);
 
             winOptions.ShowDialog();
+            CheckBGImageChanged();
         }
 
         private void itemAudio_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -357,6 +360,7 @@ namespace MenuWPF
             OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile, 2);
 
             winOptions.ShowDialog();
+            CheckBGImageChanged();
         }
 
         private void itemVideo_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -364,6 +368,7 @@ namespace MenuWPF
             OptionsWindow winOptions = new OptionsWindow(RegistryKey, FolderDataFile, 3);
 
             winOptions.ShowDialog();
+            CheckBGImageChanged();
         }
 
         private void itemStart_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -509,6 +514,28 @@ namespace MenuWPF
                 }
             }
         }
+
+        private void CheckBGImageChanged()
+        {
+            RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey);
+            if (RK.GetValue("BackgroundImage", "") != null)
+            {
+                if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
+                {
+                    bgImage = RK.GetValue("BackgroundImage", "").ToString();
+                    ((ImageBrush)this.Background).ImageSource = new BitmapImage(new Uri(bgImage, UriKind.Absolute));
+                }
+                else
+                {
+                    ((ImageBrush)this.Background).ImageSource = defaultImage;
+                }
+            }
+            else
+            {
+                ((ImageBrush)this.Background).ImageSource = defaultImage;
+            }
+            RK.Close();
+        }
         #endregion
 
         #region Folders
@@ -585,19 +612,6 @@ namespace MenuWPF
             
         }
 
-        //================================================================================
-        private void SaveFolders()
-        {
-            using (BinaryWriter outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
-            {
-                outf.Write(Folders.Count);
-                foreach (var folder in Folders)
-                {
-                    outf.Write(folder.Path);
-                    outf.Write(folder.Name);
-                }
-            }
-        }
         #endregion
 
         #region Routes
@@ -831,6 +845,7 @@ namespace MenuWPF
                         cboHeading.SelectedIndex = cboHeading.Items.IndexOf(rows[0]["End"].ToString());
                         lblActHeading.Content = cboHeading.SelectedItem.ToString();
                     }
+                    btnStart.Visibility = Visibility.Visible;
                 }
                 else
                 {
@@ -864,11 +879,14 @@ namespace MenuWPF
 
                     cboConsist.Visibility = Visibility.Visible;
                     lblActConsist.Visibility = Visibility.Hidden;
+                    if (listBoxActivities.SelectedIndex == 0) btnStart.Visibility = Visibility.Visible;
+                    else btnStart.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                btnStart.Visibility = Visibility.Hidden;
             }
         }
         #endregion
