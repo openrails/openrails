@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Windows.Media.Effects;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace MenuWPF
 {
@@ -36,6 +37,7 @@ namespace MenuWPF
         private String bgImage = "";
         private ProgressionWindow winProg;
         private ImageSource defaultImage;
+        private bool closedSwitch = false;
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
 
@@ -157,15 +159,15 @@ namespace MenuWPF
             //Content = String.Format(Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", AppDomain.CurrentDomain.FriendlyName, Revision, Build);
             defaultImage = ((ImageBrush)this.Background).ImageSource;
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey);
-            if (RK.GetValue("BackgroundImage", "") != null)
+            if (RK != null && RK.GetValue("BackgroundImage", "") != null)
             {
                 if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
                 {
                     bgImage = RK.GetValue("BackgroundImage", "").ToString();
                     ((ImageBrush)this.Background).ImageSource = new BitmapImage(new Uri(bgImage, UriKind.Absolute));
                 }
+                RK.Close();
             }
-            RK.Close();
             
             FolderDataFile = UserDataFolder + @"\" + FolderDataFileName;
             //Load the folders
@@ -191,13 +193,20 @@ namespace MenuWPF
 
         private void winMain_Closing(object sender, CancelEventArgs e)
         {
-            if (MessageBox.Show("Are you sure you want to quit Open Rails?", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+            if (closedSwitch == false)
             {
-                e.Cancel = false;
+                if (MessageBox.Show("Are you sure you want to quit Open Rails?", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+                {
+                    e.Cancel = false;
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
             }
             else
             {
-                e.Cancel = true;
+                e.Cancel = false;
             }
         }
 
@@ -389,6 +398,21 @@ namespace MenuWPF
         private void itemAbout_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             // TODO: Add event handler implementation here.
+        }
+
+        private void btnMenuStyle_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            using (RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey, true))
+            {
+                if (RK != null)
+                {
+                    RK.SetValue("LauncherMenu", 1);
+                }
+            }
+            Process.Start(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory), "Menu.exe"));
+            closedSwitch = true;
+            Close();
+            
         }
 
         #endregion
@@ -1165,7 +1189,6 @@ namespace MenuWPF
             }
             return tagValue;
         }
-
         
 
         #endregion

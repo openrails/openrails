@@ -582,6 +582,16 @@
             <para>Scaled to pounds per square inch.</para>
             </summary>
         </member>
+        <member name="F:MSTS.STFReader.UNITS.Area">
+            <summary>Valid Units: *(ft^2)
+            <para>Scaled to square meters.</para>
+            </summary>
+        </member>
+        <member name="F:MSTS.STFReader.UNITS.EnergyDensity">
+            <summary>Valid Units: kj/kg, j/g, btu/lb
+            <para>Scaled to kj/kg.</para>
+            </summary>
+        </member>
         <member name="F:MSTS.STFReader.UNITS.Any">
             <summary>This is only provided for backwards compatibility - all new users should limit the units to appropriate types
             </summary>

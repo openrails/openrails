@@ -384,7 +384,7 @@
 								<Rectangle.Fill>
 									<RadialGradientBrush>
 										<GradientStop Color="#00005393" Offset="1"/>
-										<GradientStop Color="#FFDDF500" Offset="0.815"/>
+										<GradientStop Color="#FF0096F5" Offset="0.815"/>
 									</RadialGradientBrush>
 								</Rectangle.Fill>
 								<Rectangle.RenderTransform>
@@ -399,11 +399,11 @@
 							<Rectangle x:Name="innerRectangle" Height="Auto" Margin="12" RadiusY="50" RadiusX="50" Stroke="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto" StrokeThickness="0">
 								<Rectangle.Fill>
 									<LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
-										<GradientStop Color="#FFF9FDAF"/>
-										<GradientStop Color="#FF9D5F03" Offset="1"/>
-										<GradientStop Color="#FFD7DE5A" Offset="0.153"/>
-										<GradientStop Color="#FFC3C43B" Offset="0.301"/>
-										<GradientStop Color="#FFB5C23D" Offset="0.486"/>
+										<GradientStop Color="#FFAFFDF8" Offset="0.004"/>
+										<GradientStop Color="#FF036F9D" Offset="1"/>
+										<GradientStop Color="#FF5ACFDE" Offset="0.153"/>
+										<GradientStop Color="#FF3BB4C4" Offset="0.301"/>
+										<GradientStop Color="#FF3D94C2" Offset="0.486"/>
 									</LinearGradientBrush>
 								</Rectangle.Fill>
 							</Rectangle>
@@ -419,7 +419,7 @@
 									</LinearGradientBrush>
 								</Rectangle.Fill>
 							</Rectangle>
-							<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+							<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Width="63.5633333333333" Style="{DynamicResource ContentPresenterStyle1}"/>
 						</Grid>
 						<ControlTemplate.Triggers>
 							<EventTrigger RoutedEvent="Mouse.MouseEnter">
@@ -626,7 +626,10 @@
 				</Trigger>
 			</Style.Triggers>
 		</Style>
+		<Style x:Key="ContentPresenterStyle1" TargetType="{x:Type ContentPresenter}" >
+			<Setter Property="Height" Value="Auto"/>
 		
+		</Style>
 		
 	</Application.Resources>
 </Application>

@@ -373,17 +373,6 @@
 							<TextBox x:Name="txtBgImage" Grid.Column="1" Margin="10,0" Grid.Row="3" TextWrapping="Wrap" VerticalAlignment="Center" Height="23.7333333333333" IsReadOnly="True" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Background="{x:Null}"/>
 							<Button x:Name="btnBrowse" Content="Browse ..." Grid.Column="2" Margin="0" Grid.Row="3" Style="{DynamicResource ButtonStyle2}" Background="{x:Null}" Click="btnBrowseImage_Click" FontSize="13.333" HorizontalAlignment="Left" Width="120" VerticalAlignment="Center" Height="27"/>
 							<Button x:Name="btnReset" Content="Reset" Grid.Column="2" Margin="130,0,0,0" Grid.Row="3" Style="{DynamicResource ButtonStyle2}" Background="{x:Null}" Click="btnResetImage_Click" FontSize="13.333" Width="96" Height="27" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-							<Label Content="Old Menu Style" HorizontalAlignment="Right" Grid.Row="4" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="0" d:LayoutOverrides="Height"/>
-							<CheckBox x:Name="chkOldMenuStyle" Content="" HorizontalAlignment="Left" Grid.Row="4" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" d:LayoutOverrides="Height" VerticalAlignment="Center">
-								<CheckBox.RenderTransform>
-									<TransformGroup>
-										<ScaleTransform ScaleX="2" ScaleY="2"/>
-										<SkewTransform/>
-										<RotateTransform/>
-										<TranslateTransform/>
-									</TransformGroup>
-								</CheckBox.RenderTransform>
-							</CheckBox>
 						</Grid>
 					</Border>
 				</Grid>

@@ -201,6 +201,19 @@
 				<Label x:Name="lblActSeason" Content="Label" HorizontalAlignment="Left" Grid.Column="1" Margin="10,0,0,0" Grid.Row="6" Foreground="Black" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Visibility="Hidden" FontWeight="Bold"/>
 				<Label x:Name="lblActWeather" Content="Label" HorizontalAlignment="Left" Grid.Column="3" Margin="12,0,0,0" Grid.Row="6" Foreground="Black" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" Visibility="Hidden" FontWeight="Bold"/>
 				<Button x:Name="btnStart" Content="Start" Margin="0" Grid.Row="8" Style="{DynamicResource RoundButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Width="100" Height="100" Background="#FF005683" Foreground="Black" BorderThickness="0" Grid.Column="3" Cursor="Hand" Click="btnStart_Click" d:LayoutOverrides="Height" VerticalAlignment="Bottom" HorizontalAlignment="Right" Visibility="Hidden" />
+				<Button x:Name="btnMenuStyle" Margin="0" Grid.Row="8" Width="100" Height="100" HorizontalAlignment="Left" VerticalAlignment="Bottom" Style="{DynamicResource BlueRoundButton}" Cursor="Hand" FontSize="12" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" Click="btnMenuStyle_Click">
+					<ContentPresenter>
+						<ContentPresenter.Content>
+						  <x:Type TypeName="ContentPresenter"/>
+						 </ContentPresenter.Content>
+						 <ContentPresenter.ContentTemplate>
+						  <DataTemplate>
+						   <TextBlock Text="Switch Menu Style" FontSize="14" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" TextWrapping="Wrap" TextAlignment="Center"/>
+						  </DataTemplate>
+						 </ContentPresenter.ContentTemplate>
+
+					</ContentPresenter>
+				</Button>
 			</Grid>
 		</Border>
 	</Grid>
