@@ -33,9 +33,9 @@
 			this.listBoxActivities = new System.Windows.Forms.ListBox();
 			this.checkBoxFullScreen = new System.Windows.Forms.CheckBox();
 			this.buttonStart = new System.Windows.Forms.Button();
-			this.label3 = new System.Windows.Forms.Label();
-			this.pictureBox1 = new System.Windows.Forms.PictureBox();
-			this.label4 = new System.Windows.Forms.Label();
+			this.labelLogo1 = new System.Windows.Forms.Label();
+			this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
+			this.labelLogo2 = new System.Windows.Forms.Label();
 			this.listBoxFolders = new System.Windows.Forms.ListBox();
 			this.buttonFolderAdd = new System.Windows.Forms.Button();
 			this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -47,15 +47,16 @@
 			this.buttonRouteDetails = new System.Windows.Forms.Button();
 			this.buttonActivityDetails = new System.Windows.Forms.Button();
 			this.buttonResume = new System.Windows.Forms.Button();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.groupBoxFolders = new System.Windows.Forms.GroupBox();
+			this.groupBoxRoutes = new System.Windows.Forms.GroupBox();
 			this.labelRoutes = new System.Windows.Forms.Label();
+			this.groupBoxActivities = new System.Windows.Forms.GroupBox();
 			this.labelActivities = new System.Windows.Forms.Label();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-			this.groupBox1.SuspendLayout();
-			this.groupBox2.SuspendLayout();
-			this.groupBox3.SuspendLayout();
+			this.buttonSwitchStyle = new System.Windows.Forms.Button();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
+			this.groupBoxFolders.SuspendLayout();
+			this.groupBoxRoutes.SuspendLayout();
+			this.groupBoxActivities.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// listBoxRoutes
@@ -89,7 +90,7 @@
 			this.checkBoxFullScreen.Location = new System.Drawing.Point(416, 301);
 			this.checkBoxFullScreen.Name = "checkBoxFullScreen";
 			this.checkBoxFullScreen.Size = new System.Drawing.Size(79, 17);
-			this.checkBoxFullScreen.TabIndex = 8;
+			this.checkBoxFullScreen.TabIndex = 10;
 			this.checkBoxFullScreen.Text = "Full Screen";
 			this.checkBoxFullScreen.UseVisualStyleBackColor = true;
 			// 
@@ -100,41 +101,41 @@
 			this.buttonStart.Location = new System.Drawing.Point(582, 297);
 			this.buttonStart.Name = "buttonStart";
 			this.buttonStart.Size = new System.Drawing.Size(75, 57);
-			this.buttonStart.TabIndex = 11;
+			this.buttonStart.TabIndex = 3;
 			this.buttonStart.Text = "Start";
 			this.buttonStart.UseVisualStyleBackColor = false;
 			this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
 			// 
-			// label3
+			// labelLogo1
 			// 
-			this.label3.AutoSize = true;
-			this.label3.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label3.ForeColor = System.Drawing.Color.Gray;
-			this.label3.Location = new System.Drawing.Point(219, 300);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(71, 29);
-			this.label3.TabIndex = 4;
-			this.label3.Text = "open";
+			this.labelLogo1.AutoSize = true;
+			this.labelLogo1.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.labelLogo1.ForeColor = System.Drawing.Color.Gray;
+			this.labelLogo1.Location = new System.Drawing.Point(219, 300);
+			this.labelLogo1.Name = "labelLogo1";
+			this.labelLogo1.Size = new System.Drawing.Size(71, 29);
+			this.labelLogo1.TabIndex = 6;
+			this.labelLogo1.Text = "open";
 			// 
-			// pictureBox1
+			// pictureBoxLogo
 			// 
-			this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-			this.pictureBox1.Location = new System.Drawing.Point(156, 297);
-			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(67, 68);
-			this.pictureBox1.TabIndex = 5;
-			this.pictureBox1.TabStop = false;
+			this.pictureBoxLogo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.Image")));
+			this.pictureBoxLogo.Location = new System.Drawing.Point(156, 297);
+			this.pictureBoxLogo.Name = "pictureBoxLogo";
+			this.pictureBoxLogo.Size = new System.Drawing.Size(67, 68);
+			this.pictureBoxLogo.TabIndex = 5;
+			this.pictureBoxLogo.TabStop = false;
 			// 
-			// label4
+			// labelLogo2
 			// 
-			this.label4.AutoSize = true;
-			this.label4.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label4.ForeColor = System.Drawing.Color.Gray;
-			this.label4.Location = new System.Drawing.Point(258, 325);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(62, 29);
-			this.label4.TabIndex = 5;
-			this.label4.Text = "rails";
+			this.labelLogo2.AutoSize = true;
+			this.labelLogo2.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.labelLogo2.ForeColor = System.Drawing.Color.Gray;
+			this.labelLogo2.Location = new System.Drawing.Point(258, 325);
+			this.labelLogo2.Name = "labelLogo2";
+			this.labelLogo2.Size = new System.Drawing.Size(62, 29);
+			this.labelLogo2.TabIndex = 7;
+			this.labelLogo2.Text = "rails";
 			// 
 			// listBoxFolders
 			// 
@@ -181,7 +182,7 @@
 			this.checkBoxWarnings.Location = new System.Drawing.Point(12, 297);
 			this.checkBoxWarnings.Name = "checkBoxWarnings";
 			this.checkBoxWarnings.Size = new System.Drawing.Size(87, 17);
-			this.checkBoxWarnings.TabIndex = 3;
+			this.checkBoxWarnings.TabIndex = 4;
 			this.checkBoxWarnings.Text = "Warning Log";
 			this.checkBoxWarnings.UseVisualStyleBackColor = true;
 			// 
@@ -190,7 +191,7 @@
 			this.buttonJoin.Location = new System.Drawing.Point(335, 326);
 			this.buttonJoin.Name = "buttonJoin";
 			this.buttonJoin.Size = new System.Drawing.Size(75, 23);
-			this.buttonJoin.TabIndex = 7;
+			this.buttonJoin.TabIndex = 9;
 			this.buttonJoin.Text = "Join";
 			// 
 			// checkBoxHost
@@ -199,7 +200,7 @@
 			this.checkBoxHost.Location = new System.Drawing.Point(416, 330);
 			this.checkBoxHost.Name = "checkBoxHost";
 			this.checkBoxHost.Size = new System.Drawing.Size(88, 17);
-			this.checkBoxHost.TabIndex = 9;
+			this.checkBoxHost.TabIndex = 11;
 			this.checkBoxHost.Text = "Host Remote";
 			this.checkBoxHost.UseVisualStyleBackColor = true;
 			// 
@@ -208,7 +209,7 @@
 			this.buttonOptions.Location = new System.Drawing.Point(335, 297);
 			this.buttonOptions.Name = "buttonOptions";
 			this.buttonOptions.Size = new System.Drawing.Size(75, 23);
-			this.buttonOptions.TabIndex = 6;
+			this.buttonOptions.TabIndex = 8;
 			this.buttonOptions.Text = "Options";
 			this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
 			// 
@@ -238,81 +239,91 @@
 			this.buttonResume.Location = new System.Drawing.Point(501, 297);
 			this.buttonResume.Name = "buttonResume";
 			this.buttonResume.Size = new System.Drawing.Size(75, 23);
-			this.buttonResume.TabIndex = 10;
+			this.buttonResume.TabIndex = 12;
 			this.buttonResume.Text = "Resume";
 			// 
-			// groupBox1
+			// groupBoxFolders
 			// 
-			this.groupBox1.Controls.Add(this.listBoxFolders);
-			this.groupBox1.Controls.Add(this.buttonFolderAdd);
-			this.groupBox1.Controls.Add(this.buttonFolderRemove);
-			this.groupBox1.Location = new System.Drawing.Point(12, 12);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(211, 279);
-			this.groupBox1.TabIndex = 0;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "Folders";
+			this.groupBoxFolders.Controls.Add(this.listBoxFolders);
+			this.groupBoxFolders.Controls.Add(this.buttonFolderAdd);
+			this.groupBoxFolders.Controls.Add(this.buttonFolderRemove);
+			this.groupBoxFolders.Location = new System.Drawing.Point(12, 12);
+			this.groupBoxFolders.Name = "groupBoxFolders";
+			this.groupBoxFolders.Size = new System.Drawing.Size(211, 279);
+			this.groupBoxFolders.TabIndex = 0;
+			this.groupBoxFolders.TabStop = false;
+			this.groupBoxFolders.Text = "Folders";
 			// 
-			// groupBox2
+			// groupBoxRoutes
 			// 
-			this.groupBox2.Controls.Add(this.labelRoutes);
-			this.groupBox2.Controls.Add(this.listBoxRoutes);
-			this.groupBox2.Controls.Add(this.buttonRouteDetails);
-			this.groupBox2.Location = new System.Drawing.Point(229, 12);
-			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(211, 279);
-			this.groupBox2.TabIndex = 1;
-			this.groupBox2.TabStop = false;
-			this.groupBox2.Text = "Routes";
-			// 
-			// groupBox3
-			// 
-			this.groupBox3.Controls.Add(this.labelActivities);
-			this.groupBox3.Controls.Add(this.listBoxActivities);
-			this.groupBox3.Controls.Add(this.buttonActivityDetails);
-			this.groupBox3.Location = new System.Drawing.Point(446, 12);
-			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(211, 279);
-			this.groupBox3.TabIndex = 2;
-			this.groupBox3.TabStop = false;
-			this.groupBox3.Text = "Activities";
+			this.groupBoxRoutes.Controls.Add(this.labelRoutes);
+			this.groupBoxRoutes.Controls.Add(this.listBoxRoutes);
+			this.groupBoxRoutes.Controls.Add(this.buttonRouteDetails);
+			this.groupBoxRoutes.Location = new System.Drawing.Point(229, 12);
+			this.groupBoxRoutes.Name = "groupBoxRoutes";
+			this.groupBoxRoutes.Size = new System.Drawing.Size(211, 279);
+			this.groupBoxRoutes.TabIndex = 1;
+			this.groupBoxRoutes.TabStop = false;
+			this.groupBoxRoutes.Text = "Routes";
 			// 
 			// labelRoutes
 			// 
 			this.labelRoutes.Location = new System.Drawing.Point(6, 19);
 			this.labelRoutes.Name = "labelRoutes";
 			this.labelRoutes.Size = new System.Drawing.Size(199, 254);
-			this.labelRoutes.TabIndex = 2;
+			this.labelRoutes.TabIndex = 0;
 			this.labelRoutes.Text = "No routes.";
 			this.labelRoutes.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			// 
+			// groupBoxActivities
+			// 
+			this.groupBoxActivities.Controls.Add(this.labelActivities);
+			this.groupBoxActivities.Controls.Add(this.listBoxActivities);
+			this.groupBoxActivities.Controls.Add(this.buttonActivityDetails);
+			this.groupBoxActivities.Location = new System.Drawing.Point(446, 12);
+			this.groupBoxActivities.Name = "groupBoxActivities";
+			this.groupBoxActivities.Size = new System.Drawing.Size(211, 279);
+			this.groupBoxActivities.TabIndex = 2;
+			this.groupBoxActivities.TabStop = false;
+			this.groupBoxActivities.Text = "Activities";
 			// 
 			// labelActivities
 			// 
 			this.labelActivities.Location = new System.Drawing.Point(6, 19);
 			this.labelActivities.Name = "labelActivities";
 			this.labelActivities.Size = new System.Drawing.Size(199, 254);
-			this.labelActivities.TabIndex = 3;
+			this.labelActivities.TabIndex = 0;
 			this.labelActivities.Text = "No activities.";
 			this.labelActivities.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			// 
+			// buttonSwitchStyle
+			// 
+			this.buttonSwitchStyle.Location = new System.Drawing.Point(12, 326);
+			this.buttonSwitchStyle.Name = "buttonSwitchStyle";
+			this.buttonSwitchStyle.Size = new System.Drawing.Size(138, 23);
+			this.buttonSwitchStyle.TabIndex = 5;
+			this.buttonSwitchStyle.Text = "Switch Menu Style";
+			this.buttonSwitchStyle.Click += new System.EventHandler(this.buttonSwitchStyle_Click);
 			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.ClientSize = new System.Drawing.Size(669, 366);
-			this.Controls.Add(this.groupBox3);
-			this.Controls.Add(this.groupBox2);
-			this.Controls.Add(this.groupBox1);
-			this.Controls.Add(this.buttonResume);
-			this.Controls.Add(this.buttonOptions);
-			this.Controls.Add(this.pictureBox1);
-			this.Controls.Add(this.label4);
-			this.Controls.Add(this.label3);
-			this.Controls.Add(this.buttonJoin);
+			this.Controls.Add(this.groupBoxFolders);
+			this.Controls.Add(this.groupBoxRoutes);
+			this.Controls.Add(this.groupBoxActivities);
 			this.Controls.Add(this.buttonStart);
 			this.Controls.Add(this.checkBoxWarnings);
-			this.Controls.Add(this.checkBoxHost);
+			this.Controls.Add(this.buttonSwitchStyle);
+			this.Controls.Add(this.pictureBoxLogo);
+			this.Controls.Add(this.labelLogo1);
+			this.Controls.Add(this.labelLogo2);
+			this.Controls.Add(this.buttonOptions);
+			this.Controls.Add(this.buttonJoin);
 			this.Controls.Add(this.checkBoxFullScreen);
+			this.Controls.Add(this.checkBoxHost);
+			this.Controls.Add(this.buttonResume);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
@@ -320,10 +331,10 @@
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Open Rails";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox2.ResumeLayout(false);
-			this.groupBox3.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).EndInit();
+			this.groupBoxFolders.ResumeLayout(false);
+			this.groupBoxRoutes.ResumeLayout(false);
+			this.groupBoxActivities.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -335,9 +346,9 @@
         private System.Windows.Forms.ListBox listBoxActivities;
         private System.Windows.Forms.CheckBox checkBoxFullScreen;
         private System.Windows.Forms.Button buttonStart;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label labelLogo1;
+        private System.Windows.Forms.PictureBox pictureBoxLogo;
+        private System.Windows.Forms.Label labelLogo2;
         private System.Windows.Forms.ListBox listBoxFolders;
         private System.Windows.Forms.Button buttonFolderAdd;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
@@ -349,10 +360,11 @@
         private System.Windows.Forms.Button buttonRouteDetails;
         private System.Windows.Forms.Button buttonActivityDetails;
         private System.Windows.Forms.Button buttonResume;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.GroupBox groupBoxFolders;
+        private System.Windows.Forms.GroupBox groupBoxRoutes;
+        private System.Windows.Forms.GroupBox groupBoxActivities;
 		private System.Windows.Forms.Label labelRoutes;
 		private System.Windows.Forms.Label labelActivities;
+		private System.Windows.Forms.Button buttonSwitchStyle;
     }
 }

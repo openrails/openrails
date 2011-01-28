@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -202,6 +203,19 @@ namespace ORTS
 		#endregion
 
 		#region Misc. buttons and options
+		void buttonSwitchStyle_Click(object sender, EventArgs e)
+		{
+			using (RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey, true))
+			{
+				if (RK != null)
+				{
+					RK.SetValue("LauncherMenu", 2);
+				}
+			}
+			Process.Start(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "MenuWPF.exe"));
+			Close();
+		}
+
 		void buttonOptions_Click(object sender, EventArgs e)
 		{
 			using (var form = new OptionsForm())
