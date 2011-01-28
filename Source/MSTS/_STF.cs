@@ -570,6 +570,14 @@ namespace MSTS
             /// <para>Scaled to pounds per square inch.</para>
             /// </summary>
             Pressure = 1 << 10,
+            /// <summary>Valid Units: *(ft^2)
+            /// <para>Scaled to square meters.</para>
+            /// </summary>
+            Area = 1 << 11,
+            /// <summary>Valid Units: kj/kg, j/g, btu/lb
+            /// <para>Scaled to kj/kg.</para>
+            /// </summary>
+            EnergyDensity = 1 << 12,
             /// <summary>This is only provided for backwards compatibility - all new users should limit the units to appropriate types
             /// </summary>
             Any = -2
@@ -694,6 +702,18 @@ namespace MSTS
                 switch (suffix)
                 {
                     case "*(ft^3)": return 1;
+                }
+            if ((valid_units & UNITS.Area) > 0)
+                switch (suffix)
+                {
+                    case "*(ft^2)": return .09290304f;
+                }
+            if ((valid_units & UNITS.EnergyDensity) > 0)
+                switch (suffix)
+                {
+                    case "kj/kg": return 1;
+                    case "j/g": return 1;
+                    case "btu/lb": return 1 / 2.326f;
                 }
             STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + valid_units.ToString() + " unit");
             return 1;
