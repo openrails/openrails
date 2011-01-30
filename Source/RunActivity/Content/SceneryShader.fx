@@ -14,6 +14,7 @@ float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light 
 float4x4 LightViewProjectionShadowProjection1;
 float4x4 LightViewProjectionShadowProjection2;
 float4x4 LightViewProjectionShadowProjection3;
+float4 ShadowMapLimit;
 texture  ShadowMapTexture0;
 texture  ShadowMapTexture1;
 texture  ShadowMapTexture2;
@@ -230,21 +231,22 @@ float3 _PS2GetShadowEffect(in VERTEX_OUTPUT In)
 }
 float3 _PS3GetShadowEffect(in VERTEX_OUTPUT In)
 {
+	float depth = length(In.RelPosition);
 	float3 rv;
-	float3 pos0 = mul(In.Shadow, LightViewProjectionShadowProjection0).xyz;
-	if ((pos0.x > 0.01) && (pos0.x < 0.99) && (pos0.y > 0.01) && (pos0.y < 0.99)) {
+	if (depth < ShadowMapLimit.x) {
+		float3 pos0 = mul(In.Shadow, LightViewProjectionShadowProjection0).xyz;
 		rv = float3(tex2D(ShadowMap0, pos0.xy).xy, pos0.z);
 	} else {
-		float3 pos1 = mul(In.Shadow, LightViewProjectionShadowProjection1).xyz;
-		if ((pos1.x > 0.01) && (pos1.x < 0.99) && (pos1.y > 0.01) && (pos1.y < 0.99)) {
+		if (depth < ShadowMapLimit.y) {
+			float3 pos1 = mul(In.Shadow, LightViewProjectionShadowProjection1).xyz;
 			rv = float3(tex2D(ShadowMap1, pos1.xy).xy, pos1.z);
 		} else {
-			float3 pos2 = mul(In.Shadow, LightViewProjectionShadowProjection2).xyz;
-			if ((pos2.x > 0.01) && (pos2.x < 0.99) && (pos2.y > 0.01) && (pos2.y < 0.99)) {
+			if (depth < ShadowMapLimit.z) {
+				float3 pos2 = mul(In.Shadow, LightViewProjectionShadowProjection2).xyz;
 				rv = float3(tex2D(ShadowMap2, pos2.xy).xy, pos2.z);
 			} else {
-				float3 pos3 = mul(In.Shadow, LightViewProjectionShadowProjection3).xyz;
-				if ((pos3.x > 0.01) && (pos3.x < 0.99) && (pos3.y > 0.01) && (pos3.y < 0.99)) {
+				if (depth < ShadowMapLimit.w) {
+					float3 pos3 = mul(In.Shadow, LightViewProjectionShadowProjection3).xyz;
 					rv = float3(tex2D(ShadowMap3, pos3.xy).xy, pos3.z);
 				}
 			}
@@ -252,6 +254,29 @@ float3 _PS3GetShadowEffect(in VERTEX_OUTPUT In)
 	}
 	return rv;
 }
+//void _PSApplyShadowColor(inout float3 Color, in VERTEX_OUTPUT In)
+//{
+	//float depth = length(In.RelPosition);
+	//if (depth < ShadowMapLimit.x) {
+		//Color.rgb *= 0.9;
+		//Color.r += 0.1;
+	//} else {
+		//if (depth < ShadowMapLimit.y) {
+			//Color.rgb *= 0.9;
+			//Color.g += 0.1;
+		//} else {
+			//if (depth < ShadowMapLimit.z) {
+				//Color.rgb *= 0.9;
+				//Color.b += 0.1;
+			//} else {
+				//if (depth < ShadowMapLimit.w) {
+					//Color.rgb *= 0.9;
+					//Color.rg += 0.1;
+				//}
+			//}
+		//}
+	//}
+//}
 float _PSGetShadowEffect(uniform bool ShaderModel3, in VERTEX_OUTPUT In)
 {
 	float3 moments;
@@ -267,6 +292,8 @@ float _PSGetShadowEffect(uniform bool ShaderModel3, in VERTEX_OUTPUT In)
 	float m_d = moments.x - moments.z;
 	float p = pow(variance / (variance + m_d * m_d), 20);
 	return saturate(not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
+	//bool not_shadowed = (moments.z <= moments.x + 0.0001);
+	//return not_shadowed * saturate(In.Normal_Light.w * 5 - 2);
 }
 
 // Gets the overcast effect.
@@ -346,6 +373,7 @@ float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
 	return float4(litColor, Color.a);
 }
 
@@ -394,6 +422,7 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
 	return float4(litColor, Color.a);
 }
 

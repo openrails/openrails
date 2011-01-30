@@ -44,13 +44,15 @@ namespace ORTS
 
 		EffectParameter[] LightViewProjectionShadowProjection;
 		EffectParameter[] ShadowMapTextures;
-		public void SetShadowMap(Matrix[] lightViewProjectionShadowProjection, Texture2D[] shadowMapTextures)
+		EffectParameter ShadowMapLimit;
+		public void SetShadowMap(Matrix[] lightViewProjectionShadowProjection, Texture2D[] shadowMapTextures, float[] limits)
 		{
 			for (var i = 0; i < RenderProcess.ShadowMapCount; i++)
 			{
 				LightViewProjectionShadowProjection[i].SetValue(lightViewProjectionShadowProjection[i]);
 				ShadowMapTextures[i].SetValue(shadowMapTextures[i]);
 			}
+			ShadowMapLimit.SetValue(new Vector4(limits[0], limits[1], limits[2], limits[3]));
 		}
 
 		EffectParameter zbias_lighting;
@@ -111,6 +113,7 @@ namespace ORTS
 				LightViewProjectionShadowProjection[i] = Parameters["LightViewProjectionShadowProjection" + i];
 				ShadowMapTextures[i] = Parameters["ShadowMapTexture" + i];
 			}
+			ShadowMapLimit = Parameters["ShadowMapLimit"];
 
 			Fog = Parameters["Fog"];
 

@@ -70,6 +70,7 @@ namespace ORTS
 		public static int ShadowMapCount = -1; // number of shadow maps
 		public static int[] ShadowMapDistance; // distance of shadow map center from camera
 		public static int[] ShadowMapDiameter; // diameter of shadow map
+		public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
 
 		double LastUpdateTime = 0;
 
@@ -104,6 +105,7 @@ namespace ORTS
 				ShadowMapCount = ShadowMapCountMaximum;
 			ShadowMapDistance = new int[ShadowMapCount];
 			ShadowMapDiameter = new int[ShadowMapCount];
+			ShadowMapLimit = new float[ShadowMapCount];
 
 			ShadowPrimitiveCount = new int[ShadowMapCount];
 			ShadowPrimitivePerFrame = new int[ShadowMapCount];
@@ -159,6 +161,7 @@ namespace ORTS
 
 				ShadowMapDistance[shadowMapIndex] = (int)center;
 				ShadowMapDiameter[shadowMapIndex] = (int)diameter;
+				ShadowMapLimit[shadowMapIndex] = C;
 				LastC = C;
 			}
 		}
