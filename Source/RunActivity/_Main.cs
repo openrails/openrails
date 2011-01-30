@@ -111,8 +111,10 @@ namespace ORTS
 		/// </summary>
 		static void Start(IEnumerable<string> options, string[] args)
 		{
+#if !CRASH_ON_ERRORS
 			try
 			{
+#endif
 				ActivityPath = args[0];
 
 				Console.WriteLine("Mode:     {0}", args.Length == 1 ? "Activity" : "Explore");
@@ -159,12 +161,14 @@ namespace ORTS
 #if DEBUG_VIEWER
 				DebugViewer.Dispose();
 #endif
+#if !CRASH_ON_ERRORS
 			}
 			catch (Exception error)
 			{
 				Trace.WriteLine(error);
 				MessageBox.Show(error.ToString(), Application.ProductName);
 			}
+#endif
 		}
 
 
@@ -176,8 +180,10 @@ namespace ORTS
 		/// </summary>
 		public static void Save()
 		{
+#if !CRASH_ON_ERRORS
 			try
 			{
+#endif
 				using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
 				{
 					outf.Write(ActivityPath);
@@ -188,12 +194,14 @@ namespace ORTS
 					Viewer.Save(outf);
 					Console.WriteLine("\nSaved");
 				}
+#if !CRASH_ON_ERRORS
 			}
 			catch (Exception error)
 			{
 				Trace.WriteLine(error);
 				MessageBox.Show(error.ToString(), Application.ProductName);
 			}
+#endif
 		}
 
 		/// <summary>
@@ -201,8 +209,10 @@ namespace ORTS
 		/// </summary>
 		static void Resume(IEnumerable<string> options)
 		{
+#if !CRASH_ON_ERRORS
 			try
 			{
+#endif
 				using (BinaryReader inf = new BinaryReader(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Open, FileAccess.Read)))
 				{
 					ActivityPath = inf.ReadString();
@@ -243,12 +253,14 @@ namespace ORTS
 					Viewer.Restore(inf);
 				}
 				Viewer.Run();
+#if !CRASH_ON_ERRORS
 			}
 			catch (Exception error)
 			{
 				Trace.WriteLine(error);
 				MessageBox.Show(error.ToString(), Application.ProductName);
 			}
+#endif
 		}
 
 

@@ -59,9 +59,12 @@ namespace ORTS
 				// Wait for a new Update() command
 				State.WaitTillStarted();
 
+#if !CRASH_ON_ERRORS
 				try
 				{
+#endif
 					Update();
+#if !CRASH_ON_ERRORS
 				}
 				catch (Exception error)
 				{
@@ -75,6 +78,7 @@ namespace ORTS
 						return;
 					}
 				}
+#endif
 
 				// Signal finished so RenderProcess can start drawing
 				State.SignalFinish();
