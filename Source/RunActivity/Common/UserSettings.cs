@@ -72,7 +72,13 @@ namespace ORTS
 			// This special command-line option prevents the registry values from being used.
 			var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
 			// Pull apart the command-line options so we can find them by setting name.
-			var optionsDictionary = options.ToDictionary(o => o.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant(), o => o.Contains('=') || o.Contains(':') ? o.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes");
+			var optionsDictionary = new Dictionary<string, string>();
+			foreach (var option in options)
+			{
+				var k = option.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant();
+				var v = option.Contains('=') || option.Contains(':') ? option.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes";
+				optionsDictionary[k] = v;
+			}
 
 			RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
 			foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
