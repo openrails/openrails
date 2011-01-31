@@ -92,7 +92,7 @@ VS_OUT VSlightGlow( VS_IN In )
     float3 sideVector = normalize(cross(normal, upVector));    
     
     position += (texCoords.x-0.5f) * sideVector * scale;
-    position += (0.0f+texCoords.y) * upVector * scale;
+    position += (texCoords.y-0.5f) * upVector * scale;
    
     Out.Position = mul( mWorldViewProj, float4(position, 1));
 

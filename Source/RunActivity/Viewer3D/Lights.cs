@@ -336,9 +336,7 @@ namespace ORTS
                 lightAzimuth = MathHelper.ToRadians(360 + azimuth[i / 6, 0].X);
                 normal = new Vector3((float)Math.Sin(lightAzimuth), 0.0f, -(float)Math.Cos(lightAzimuth));
                 // Convert position to XNA
-                // Note: MSTS cars are offset 0.275 m above tracks
-                lightPosition = new Vector3(position[i / 6, 0].X, position[i / 6, 0].Y + 0.275f, -position[i / 6, 0].Z);
-                //radius[i / 6, 0] *= 1.0f; // Adjust scale if necessary
+                lightPosition = new Vector3(position[i / 6, 0].X, position[i / 6, 0].Y, -position[i / 6, 0].Z);
                 headlightStatus = headlight[i / 6];
                 locationInTrain = unit[i / 6];
                 fadeIn = fadein[i / 6];
