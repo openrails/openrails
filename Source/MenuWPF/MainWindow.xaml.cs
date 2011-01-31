@@ -551,11 +551,13 @@ namespace MenuWPF
                 }
                 else
                 {
+                    bgImage = defaultImage;
                     ((ImageBrush)this.Background).ImageSource = defaultImage;
                 }
             }
             else
             {
+                bgImage = defaultImage;
                 ((ImageBrush)this.Background).ImageSource = defaultImage;
             }
             RK.Close();
