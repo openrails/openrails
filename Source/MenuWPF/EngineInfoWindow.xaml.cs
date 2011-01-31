@@ -18,14 +18,12 @@ namespace MenuWPF
 	/// </summary>
 	public partial class EngineInfoWindow : Window
 	{
-		public EngineInfoWindow(FlowDocument doc, string bgImage)
+		public EngineInfoWindow(FlowDocument doc, ImageSource bgImage)
 		{
 			this.InitializeComponent();
             docEngineInfo.Document = doc;
-            if (!String.IsNullOrEmpty(bgImage))
-            {
-                ((ImageBrush)this.Background).ImageSource = new BitmapImage(new Uri(bgImage, UriKind.Absolute));
-            }
+            ((ImageBrush)this.Background).ImageSource = bgImage;
+            
 			// Insert code required on object creation below this point.
 		}
 	}

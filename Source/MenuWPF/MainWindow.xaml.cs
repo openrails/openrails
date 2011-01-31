@@ -34,7 +34,7 @@ namespace MenuWPF
         private BackgroundWorker bgWork;
         private Dictionary<EngineInfo, List<string>> EnginesWithConsists;
         private DataTable Paths;
-        private String bgImage = "";
+        private ImageSource bgImage;
         private ProgressionWindow winProg;
         private ImageSource defaultImage;
         private bool closedSwitch = false;
@@ -163,8 +163,8 @@ namespace MenuWPF
             {
                 if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
                 {
-                    bgImage = RK.GetValue("BackgroundImage", "").ToString();
-                    ((ImageBrush)this.Background).ImageSource = new BitmapImage(new Uri(bgImage, UriKind.Absolute));
+                    bgImage = new BitmapImage(new Uri(RK.GetValue("BackgroundImage", "").ToString(), UriKind.Absolute));
+                    ((ImageBrush)this.Background).ImageSource = bgImage;
                 }
                 RK.Close();
             }
@@ -318,7 +318,7 @@ namespace MenuWPF
             try
             {
                 cboHeading.Items.Clear();
-                DataRow[] rows = Paths.Select("Start = '" + cboPath.SelectedItem.ToString() + "'", "End");
+                DataRow[] rows = Paths.Select("Start = '" + cboPath.SelectedItem.ToString().Replace("'", "''") + "'", "End");
                 foreach (DataRow dr in rows)
                 {
                     if (!cboHeading.Items.Contains(dr["End"].ToString()))
@@ -546,8 +546,8 @@ namespace MenuWPF
             {
                 if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
                 {
-                    bgImage = RK.GetValue("BackgroundImage", "").ToString();
-                    ((ImageBrush)this.Background).ImageSource = new BitmapImage(new Uri(bgImage, UriKind.Absolute));
+                    bgImage = new BitmapImage(new Uri(RK.GetValue("BackgroundImage", "").ToString(), UriKind.Absolute));
+                    ((ImageBrush)this.Background).ImageSource = bgImage;
                 }
                 else
                 {
@@ -1151,7 +1151,7 @@ namespace MenuWPF
                 }
 
                 tagValue = tagValue.Substring(0, counter).Trim();
-                tagValue = tagValue.Replace("\"", "").Trim();
+                tagValue = tagValue.Replace("\"", "");
             }
             return tagValue;
         }
