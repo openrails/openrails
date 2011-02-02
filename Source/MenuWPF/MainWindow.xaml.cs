@@ -212,13 +212,30 @@ namespace MenuWPF
 
         private void btnStart_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
-            if (SelectedFolder != null)
+            if (SelectedFolder == null)
             {
-                MainStart();
+                MessageBox.Show("Please select a folder first!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+            else if (cboEngine.SelectedIndex == -1)
+            {
+                MessageBox.Show("Player service has unknown locomotive!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+            else if (cboConsist.SelectedIndex == -1)
+            {
+                MessageBox.Show("Player service has no consist!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+            else if (cboPath.SelectedIndex == -1 || String.IsNullOrEmpty(cboPath.Text))
+            {
+                MessageBox.Show("Invalid starting location!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+            else if (cboHeading.SelectedIndex == -1 || String.IsNullOrEmpty(cboHeading.Text))
+            {
+                MessageBox.Show("Invalid heading direction!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
             else
             {
-                MessageBox.Show("Please select a folder first!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                MainStart();
+
             }
 		}
 
@@ -251,7 +268,10 @@ namespace MenuWPF
             try
             {
                 Paths = FillPaths(Routes[listBoxRoutes.SelectedIndex].Path);
-
+                if (gridParams.Visibility == Visibility.Hidden)
+                {
+                    gridParams.Visibility = Visibility.Visible;
+                }
                 //Fill the starting location comboBox
                 DataRow[] rows = Paths.Select("", "Start");
                 foreach (DataRow dr in rows)
@@ -285,13 +305,24 @@ namespace MenuWPF
             }
             catch
             {
+                if (listBoxRoutes.SelectedIndex == -1)
+                {
+                    gridParams.Visibility = Visibility.Hidden;
+                    btnMenuStyle.Visibility = Visibility.Visible;
+                    listBoxActivities.ItemsSource = null;
+                    docActivityDescription.Document.Blocks.Clear();
+                    docRouteDetail.Document.Blocks.Clear();
+                }
             }
         }
 
         private void listBoxActivities_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //Load activity details
-            DisplayActivityDetails();
+            if (listBoxActivities.SelectedIndex != -1)
+            {
+                DisplayActivityDetails();
+            }
         }
         private void cboEngine_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
@@ -688,8 +719,13 @@ namespace MenuWPF
                     else
                         listBoxRoutes.UnselectAll();
 
-                    if (Routes.Count == 0)   //for what does this serve ? If no route, no game !! ??
-                        LoadActivities();
+                    //if (Routes.Count == 0)   //for what does this serve ? If no route, no game !! ??
+                        //LoadActivities();
+                }
+                catch (IOException)
+                {
+                    listBoxRoutes.ItemsSource = null;
+                    //The Routes directory does not exist
                 }
                 catch (Exception error)
                 {
@@ -751,6 +787,10 @@ namespace MenuWPF
                         {
                         }
                     }
+                }
+                catch (IOException)
+                {
+                    //The Activity Folder does not exist
                 }
                 catch (Exception error)
                 {
@@ -930,7 +970,7 @@ namespace MenuWPF
             paths.Columns.Add("End");
             paths.Columns.Add("PathFileName");
 
-            string[] patfiles = Directory.GetFiles(route + @"\paths");
+            string[] patfiles = Directory.GetFiles(route + @"\paths", "*.pat");
             cboPath.Items.Clear();
             cboHeading.Items.Clear();
             foreach (string file in patfiles)
@@ -994,7 +1034,7 @@ namespace MenuWPF
             if (this.Dispatcher.CheckAccess())
             {
                 
-                string[] confiles = Directory.GetFiles(SelectedFolder.Path + @"\trains\consists");
+                string[] confiles = Directory.GetFiles(SelectedFolder.Path + @"\trains\consists", "*.con");
                 winProg.MaxValue = confiles.Length;
                 EnginesWithConsists = new Dictionary<EngineInfo, List<string>>(new EngineInfoEqualityComparer());
                 foreach (string file in confiles)
@@ -1084,7 +1124,7 @@ namespace MenuWPF
             {
                 eng.Coupling = (CouplingType)Enum.Parse(typeof(CouplingType), ParseTag("Type", ParseTag("Coupling", engContent)), true);
                 eng.Description = ParseTag("Description", engContent);
-                eng.FreightAnim = ParseTag("FreightAnim", engContent);
+                /*eng.FreightAnim = ParseTag("FreightAnim", engContent);
                 //eng.ID = ParseTag("Wagon", engContent);
                 string len = ParseTag("Size", engContent);
                 len = len.Substring(len.LastIndexOf(" ") + 1);
@@ -1104,9 +1144,9 @@ namespace MenuWPF
                 
                 string mp = ParseTag("MaxPower", engContent).ToLower();
                 if (mp.Contains("kw")) eng.MaxPower = double.Parse(mp.Substring(0, mp.IndexOf("kw")).Replace('.', ',').Trim());
-                else if (mp.Contains("hp")) eng.MaxPower = double.Parse(mp.Substring(0, mp.IndexOf("hp")).Replace('.', ',').Trim());
+                else if (mp.Contains("hp")) eng.MaxPower = double.Parse(mp.Substring(0, mp.IndexOf("hp")).Replace('.', ',').Trim());*/
                 eng.Name = ParseTag("Name", engContent);
-                eng.Shape = ParseTag("WagonShape", engContent);
+                //eng.Shape = ParseTag("WagonShape", engContent);
                 eng.Type = (EngineType)Enum.Parse(typeof(EngineType), ParseTag("Type", ParseTag("Engine (", engContent.Substring(engContent.IndexOf("Engine") + 6), "Engine(", true)), true);
                 
             }
