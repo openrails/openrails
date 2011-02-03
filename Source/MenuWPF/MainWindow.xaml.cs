@@ -158,6 +158,7 @@ namespace MenuWPF
             // Set title to show revision or build info.
             //Content = String.Format(Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", AppDomain.CurrentDomain.FriendlyName, Revision, Build);
             defaultImage = ((ImageBrush)this.Background).ImageSource;
+            bgImage = ((ImageBrush)this.Background).ImageSource;
             RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey);
             if (RK != null && RK.GetValue("BackgroundImage", "") != null)
             {

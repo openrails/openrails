@@ -19,7 +19,7 @@
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="120"/>
 			</Grid.ColumnDefinitions>
-			<Label x:Name="lblPath" Content="Loading train data base ..." HorizontalAlignment="Right" Margin="0,0,-200,0" IsEnabled="False" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" Foreground="Black" FontSize="16" VerticalAlignment="Bottom" Width="300"/>
+			<Label x:Name="lblPath" Content="Loading train database ..." HorizontalAlignment="Right" Margin="0,0,-200,0" IsEnabled="False" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontWeight="Bold" Foreground="Black" FontSize="16" VerticalAlignment="Bottom" Width="300"/>
 			<ProgressBar x:Name="progBar" Height="30" Margin="20,8,-637,0" Grid.Row="1" VerticalAlignment="Top" d:LayoutOverrides="VerticalAlignment">
 				<ProgressBar.Foreground>
 					<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
