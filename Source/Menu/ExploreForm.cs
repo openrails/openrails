@@ -78,16 +78,17 @@ namespace ORTS
 
 			LoadConsists();
 
-			seasonListBox.SelectedIndex = exploreActivity.Season;
-			weatherListBox.SelectedIndex = exploreActivity.Weather;
-			startHourNumeric.Value = exploreActivity.StartHour;
+			listSeason.SelectedIndex = exploreActivity.Season;
+			listWeather.SelectedIndex = exploreActivity.Weather;
+			numericHour.Value = exploreActivity.StartHour;
+			numericMinute.Value = exploreActivity.StartMinute;
 		}
 
 		public MainForm.ExploreActivity NewExploreActivity
 		{
 			get
 			{
-				return new MainForm.ExploreActivity(listPaths.SelectedIndex >= 0 ? Paths[listPaths.SelectedIndex].FileName : "", listConsists.SelectedIndex >= 0 ? Consists[listConsists.SelectedIndex].FileName : "", seasonListBox.SelectedIndex, weatherListBox.SelectedIndex, (int)startHourNumeric.Value);
+				return new MainForm.ExploreActivity(listPaths.SelectedIndex >= 0 ? Paths[listPaths.SelectedIndex].FileName : "", listConsists.SelectedIndex >= 0 ? Consists[listConsists.SelectedIndex].FileName : "", listSeason.SelectedIndex, listWeather.SelectedIndex, (int)numericHour.Value, (int)numericMinute.Value);
 			}
 		}
 

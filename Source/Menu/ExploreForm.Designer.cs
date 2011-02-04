@@ -28,178 +28,207 @@
         /// </summary>
         private void InitializeComponent()
         {
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExploreForm));
 			this.listPaths = new System.Windows.Forms.ListBox();
 			this.listConsists = new System.Windows.Forms.ListBox();
-			this.label3 = new System.Windows.Forms.Label();
-			this.startHourNumeric = new System.Windows.Forms.NumericUpDown();
-			this.label4 = new System.Windows.Forms.Label();
-			this.seasonListBox = new System.Windows.Forms.ListBox();
-			this.label5 = new System.Windows.Forms.Label();
-			this.weatherListBox = new System.Windows.Forms.ListBox();
-			this.cancelButton = new System.Windows.Forms.Button();
-			this.okButton = new System.Windows.Forms.Button();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.groupBox3 = new System.Windows.Forms.GroupBox();
-			((System.ComponentModel.ISupportInitialize)(this.startHourNumeric)).BeginInit();
-			this.groupBox1.SuspendLayout();
-			this.groupBox2.SuspendLayout();
-			this.groupBox3.SuspendLayout();
+			this.labelTime = new System.Windows.Forms.Label();
+			this.numericHour = new System.Windows.Forms.NumericUpDown();
+			this.listSeason = new System.Windows.Forms.ListBox();
+			this.listWeather = new System.Windows.Forms.ListBox();
+			this.buttonCancel = new System.Windows.Forms.Button();
+			this.buttonOk = new System.Windows.Forms.Button();
+			this.groupBoxPaths = new System.Windows.Forms.GroupBox();
+			this.groupBoxConsists = new System.Windows.Forms.GroupBox();
+			this.groupBoxEnvironment = new System.Windows.Forms.GroupBox();
+			this.numericMinute = new System.Windows.Forms.NumericUpDown();
+			this.labelSeason = new System.Windows.Forms.Label();
+			this.labelWeather = new System.Windows.Forms.Label();
+			((System.ComponentModel.ISupportInitialize)(this.numericHour)).BeginInit();
+			this.groupBoxPaths.SuspendLayout();
+			this.groupBoxConsists.SuspendLayout();
+			this.groupBoxEnvironment.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericMinute)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// listPaths
 			// 
+			this.listPaths.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.listPaths.FormattingEnabled = true;
+			this.listPaths.IntegralHeight = false;
 			this.listPaths.Location = new System.Drawing.Point(6, 19);
 			this.listPaths.Name = "listPaths";
-			this.listPaths.Size = new System.Drawing.Size(248, 95);
+			this.listPaths.Size = new System.Drawing.Size(288, 244);
 			this.listPaths.TabIndex = 0;
 			// 
 			// listConsists
 			// 
+			this.listConsists.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.listConsists.IntegralHeight = false;
 			this.listConsists.Location = new System.Drawing.Point(6, 19);
 			this.listConsists.Name = "listConsists";
-			this.listConsists.Size = new System.Drawing.Size(248, 121);
+			this.listConsists.Size = new System.Drawing.Size(288, 375);
 			this.listConsists.TabIndex = 0;
 			// 
-			// label3
+			// labelTime
 			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(6, 16);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(55, 13);
-			this.label3.TabIndex = 0;
-			this.label3.Text = "Start Time";
+			this.labelTime.AutoSize = true;
+			this.labelTime.Location = new System.Drawing.Point(6, 16);
+			this.labelTime.Name = "labelTime";
+			this.labelTime.Size = new System.Drawing.Size(55, 13);
+			this.labelTime.TabIndex = 0;
+			this.labelTime.Text = "Start Time";
 			// 
-			// startHourNumeric
+			// numericHour
 			// 
-			this.startHourNumeric.Location = new System.Drawing.Point(9, 32);
-			this.startHourNumeric.Maximum = new decimal(new int[] {
+			this.numericHour.Location = new System.Drawing.Point(6, 32);
+			this.numericHour.Maximum = new decimal(new int[] {
             23,
             0,
             0,
             0});
-			this.startHourNumeric.Name = "startHourNumeric";
-			this.startHourNumeric.Size = new System.Drawing.Size(55, 20);
-			this.startHourNumeric.TabIndex = 1;
+			this.numericHour.Name = "numericHour";
+			this.numericHour.Size = new System.Drawing.Size(43, 20);
+			this.numericHour.TabIndex = 1;
 			// 
-			// label4
+			// listSeason
 			// 
-			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(70, 16);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(43, 13);
-			this.label4.TabIndex = 2;
-			this.label4.Text = "Season";
-			// 
-			// seasonListBox
-			// 
-			this.seasonListBox.AllowDrop = true;
-			this.seasonListBox.FormattingEnabled = true;
-			this.seasonListBox.IntegralHeight = false;
-			this.seasonListBox.Items.AddRange(new object[] {
+			this.listSeason.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)));
+			this.listSeason.FormattingEnabled = true;
+			this.listSeason.IntegralHeight = false;
+			this.listSeason.Items.AddRange(new object[] {
             "Spring",
             "Summer",
             "Autumn",
             "Winter"});
-			this.seasonListBox.Location = new System.Drawing.Point(73, 32);
-			this.seasonListBox.Name = "seasonListBox";
-			this.seasonListBox.Size = new System.Drawing.Size(70, 73);
-			this.seasonListBox.TabIndex = 3;
+			this.listSeason.Location = new System.Drawing.Point(104, 32);
+			this.listSeason.Name = "listSeason";
+			this.listSeason.Size = new System.Drawing.Size(92, 87);
+			this.listSeason.TabIndex = 4;
 			// 
-			// label5
+			// listWeather
 			// 
-			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(146, 16);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(48, 13);
-			this.label5.TabIndex = 4;
-			this.label5.Text = "Weather";
-			// 
-			// weatherListBox
-			// 
-			this.weatherListBox.AllowDrop = true;
-			this.weatherListBox.FormattingEnabled = true;
-			this.weatherListBox.IntegralHeight = false;
-			this.weatherListBox.Items.AddRange(new object[] {
+			this.listWeather.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)));
+			this.listWeather.FormattingEnabled = true;
+			this.listWeather.IntegralHeight = false;
+			this.listWeather.Items.AddRange(new object[] {
             "Clear",
             "Snow",
             "Rain"});
-			this.weatherListBox.Location = new System.Drawing.Point(149, 32);
-			this.weatherListBox.Name = "weatherListBox";
-			this.weatherListBox.Size = new System.Drawing.Size(70, 73);
-			this.weatherListBox.TabIndex = 5;
+			this.listWeather.Location = new System.Drawing.Point(202, 32);
+			this.listWeather.Name = "listWeather";
+			this.listWeather.Size = new System.Drawing.Size(92, 87);
+			this.listWeather.TabIndex = 6;
 			// 
-			// cancelButton
+			// buttonCancel
 			// 
-			this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.cancelButton.Location = new System.Drawing.Point(198, 407);
-			this.cancelButton.Name = "cancelButton";
-			this.cancelButton.Size = new System.Drawing.Size(75, 23);
-			this.cancelButton.TabIndex = 4;
-			this.cancelButton.Text = "Cancel";
-			this.cancelButton.UseVisualStyleBackColor = true;
+			this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+			this.buttonCancel.Location = new System.Drawing.Point(543, 418);
+			this.buttonCancel.Name = "buttonCancel";
+			this.buttonCancel.Size = new System.Drawing.Size(75, 23);
+			this.buttonCancel.TabIndex = 4;
+			this.buttonCancel.Text = "Cancel";
+			this.buttonCancel.UseVisualStyleBackColor = true;
 			// 
-			// okButton
+			// buttonOk
 			// 
-			this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-			this.okButton.Location = new System.Drawing.Point(117, 407);
-			this.okButton.Name = "okButton";
-			this.okButton.Size = new System.Drawing.Size(75, 23);
-			this.okButton.TabIndex = 3;
-			this.okButton.Text = "OK";
-			this.okButton.UseVisualStyleBackColor = true;
+			this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
+			this.buttonOk.Location = new System.Drawing.Point(462, 418);
+			this.buttonOk.Name = "buttonOk";
+			this.buttonOk.Size = new System.Drawing.Size(75, 23);
+			this.buttonOk.TabIndex = 3;
+			this.buttonOk.Text = "OK";
+			this.buttonOk.UseVisualStyleBackColor = true;
 			// 
-			// groupBox1
+			// groupBoxPaths
 			// 
-			this.groupBox1.Controls.Add(this.listPaths);
-			this.groupBox1.Location = new System.Drawing.Point(12, 12);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(260, 120);
-			this.groupBox1.TabIndex = 0;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "Path";
+			this.groupBoxPaths.Controls.Add(this.listPaths);
+			this.groupBoxPaths.Location = new System.Drawing.Point(12, 12);
+			this.groupBoxPaths.Name = "groupBoxPaths";
+			this.groupBoxPaths.Size = new System.Drawing.Size(300, 269);
+			this.groupBoxPaths.TabIndex = 0;
+			this.groupBoxPaths.TabStop = false;
+			this.groupBoxPaths.Text = "Path";
 			// 
-			// groupBox2
+			// groupBoxConsists
 			// 
-			this.groupBox2.Controls.Add(this.listConsists);
-			this.groupBox2.Location = new System.Drawing.Point(12, 138);
-			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(260, 146);
-			this.groupBox2.TabIndex = 1;
-			this.groupBox2.TabStop = false;
-			this.groupBox2.Text = "Consist";
+			this.groupBoxConsists.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.groupBoxConsists.Controls.Add(this.listConsists);
+			this.groupBoxConsists.Location = new System.Drawing.Point(318, 12);
+			this.groupBoxConsists.Name = "groupBoxConsists";
+			this.groupBoxConsists.Size = new System.Drawing.Size(300, 400);
+			this.groupBoxConsists.TabIndex = 1;
+			this.groupBoxConsists.TabStop = false;
+			this.groupBoxConsists.Text = "Consist";
 			// 
-			// groupBox3
+			// groupBoxEnvironment
 			// 
-			this.groupBox3.Controls.Add(this.weatherListBox);
-			this.groupBox3.Controls.Add(this.seasonListBox);
-			this.groupBox3.Controls.Add(this.startHourNumeric);
-			this.groupBox3.Controls.Add(this.label3);
-			this.groupBox3.Controls.Add(this.label4);
-			this.groupBox3.Controls.Add(this.label5);
-			this.groupBox3.Location = new System.Drawing.Point(12, 290);
-			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(260, 111);
-			this.groupBox3.TabIndex = 2;
-			this.groupBox3.TabStop = false;
-			this.groupBox3.Text = "Environment";
+			this.groupBoxEnvironment.Controls.Add(this.numericHour);
+			this.groupBoxEnvironment.Controls.Add(this.numericMinute);
+			this.groupBoxEnvironment.Controls.Add(this.labelTime);
+			this.groupBoxEnvironment.Controls.Add(this.listSeason);
+			this.groupBoxEnvironment.Controls.Add(this.labelSeason);
+			this.groupBoxEnvironment.Controls.Add(this.listWeather);
+			this.groupBoxEnvironment.Controls.Add(this.labelWeather);
+			this.groupBoxEnvironment.Location = new System.Drawing.Point(12, 287);
+			this.groupBoxEnvironment.Name = "groupBoxEnvironment";
+			this.groupBoxEnvironment.Size = new System.Drawing.Size(300, 125);
+			this.groupBoxEnvironment.TabIndex = 2;
+			this.groupBoxEnvironment.TabStop = false;
+			this.groupBoxEnvironment.Text = "Environment";
+			// 
+			// numericMinute
+			// 
+			this.numericMinute.Location = new System.Drawing.Point(55, 32);
+			this.numericMinute.Maximum = new decimal(new int[] {
+            59,
+            0,
+            0,
+            0});
+			this.numericMinute.Name = "numericMinute";
+			this.numericMinute.Size = new System.Drawing.Size(43, 20);
+			this.numericMinute.TabIndex = 2;
+			// 
+			// labelSeason
+			// 
+			this.labelSeason.AutoSize = true;
+			this.labelSeason.Location = new System.Drawing.Point(101, 16);
+			this.labelSeason.Name = "labelSeason";
+			this.labelSeason.Size = new System.Drawing.Size(43, 13);
+			this.labelSeason.TabIndex = 7;
+			this.labelSeason.Text = "Season";
+			// 
+			// labelWeather
+			// 
+			this.labelWeather.AutoSize = true;
+			this.labelWeather.Location = new System.Drawing.Point(199, 16);
+			this.labelWeather.Name = "labelWeather";
+			this.labelWeather.Size = new System.Drawing.Size(48, 13);
+			this.labelWeather.TabIndex = 8;
+			this.labelWeather.Text = "Weather";
 			// 
 			// ExploreForm
 			// 
-			this.AcceptButton = this.okButton;
+			this.AcceptButton = this.buttonOk;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-			this.CancelButton = this.cancelButton;
-			this.ClientSize = new System.Drawing.Size(285, 442);
-			this.Controls.Add(this.groupBox3);
-			this.Controls.Add(this.groupBox2);
-			this.Controls.Add(this.groupBox1);
-			this.Controls.Add(this.okButton);
-			this.Controls.Add(this.cancelButton);
+			this.CancelButton = this.buttonCancel;
+			this.ClientSize = new System.Drawing.Size(630, 453);
+			this.Controls.Add(this.groupBoxPaths);
+			this.Controls.Add(this.groupBoxConsists);
+			this.Controls.Add(this.groupBoxEnvironment);
+			this.Controls.Add(this.buttonOk);
+			this.Controls.Add(this.buttonCancel);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Location = new System.Drawing.Point(200, 200);
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
@@ -207,11 +236,12 @@
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Explore Route Details";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExploreForm_FormClosing);
-			((System.ComponentModel.ISupportInitialize)(this.startHourNumeric)).EndInit();
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox2.ResumeLayout(false);
-			this.groupBox3.ResumeLayout(false);
-			this.groupBox3.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericHour)).EndInit();
+			this.groupBoxPaths.ResumeLayout(false);
+			this.groupBoxConsists.ResumeLayout(false);
+			this.groupBoxEnvironment.ResumeLayout(false);
+			this.groupBoxEnvironment.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericMinute)).EndInit();
 			this.ResumeLayout(false);
 
         }
@@ -220,16 +250,17 @@
 
         private System.Windows.Forms.ListBox listPaths;
         private System.Windows.Forms.ListBox listConsists;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.NumericUpDown startHourNumeric;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ListBox seasonListBox;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.ListBox weatherListBox;
-        private System.Windows.Forms.Button cancelButton;
-        private System.Windows.Forms.Button okButton;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Label labelTime;
+		private System.Windows.Forms.NumericUpDown numericHour;
+		private System.Windows.Forms.ListBox listSeason;
+        private System.Windows.Forms.ListBox listWeather;
+        private System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.Button buttonOk;
+        private System.Windows.Forms.GroupBox groupBoxPaths;
+        private System.Windows.Forms.GroupBox groupBoxConsists;
+        private System.Windows.Forms.GroupBox groupBoxEnvironment;
+		private System.Windows.Forms.NumericUpDown numericMinute;
+		private System.Windows.Forms.Label labelWeather;
+		private System.Windows.Forms.Label labelSeason;
     }
 }

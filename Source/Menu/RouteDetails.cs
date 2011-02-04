@@ -42,25 +42,26 @@ namespace ORTS
 			: this()
         {
             Text = "Route Details";
-			grpDescription.Text = route.TRKFile.Tr_RouteFile.Name;
-			txtDescription.Text = route.TRKFile.Tr_RouteFile.Description.Replace("\n", "\r\n");
-			grpBriefing.Visible = false;
-			grpEnvironment.Visible = false;
-			this.Height -= grpEnvironment.Bottom - grpDescription.Bottom;
+			groupBoxDescription.Text = route.TRKFile.Tr_RouteFile.Name;
+			textDescription.Text = route.TRKFile.Tr_RouteFile.Description.Replace("\n", "\r\n");
+			groupBoxDescription.Height *= 2;
+			groupBoxBriefing.Visible = false;
+			groupEnvironment.Visible = false;
+			this.Height -= groupEnvironment.Bottom - groupBoxDescription.Bottom;
         }
 
 		public DetailsForm(MainForm.Activity activity)
 			: this()
 		{
             Text = "Activity Details";
-			grpDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Name;
-			txtDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Description.Replace("\n", "\r\n");
-			txtBriefing.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Briefing.Replace("\n", "\r\n");
-			txtStartTime.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
-			txtDuration.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
-			txtSeason.Text = Seasons[Math.Min(4, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Season)];
-			txtWeather.Text = Weathers[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Weather)];
-			txtDifficulty.Text = Difficulties[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty)];
+			groupBoxDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Name;
+			textDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Description.Replace("\n", "\r\n");
+			textBriefing.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Briefing.Replace("\n", "\r\n");
+			textStartTime.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
+			textDuration.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
+			textSeason.Text = Seasons[Math.Min(4, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Season)];
+			textWeather.Text = Weathers[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Weather)];
+			textDifficulty.Text = Difficulties[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty)];
         }
 
     }

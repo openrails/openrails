@@ -75,10 +75,11 @@ namespace ORTS
 			public readonly string Path;
 			public readonly string Consist;
 			public readonly int StartHour;
+			public readonly int StartMinute;
 			public readonly int Season;
 			public readonly int Weather;
 
-			public ExploreActivity(string path, string consist, int season, int weather, int startHour)
+			public ExploreActivity(string path, string consist, int season, int weather, int startHour, int startMinute)
 				: base("- Explore Route -", null, null)
 			{
 				Path = path;
@@ -86,10 +87,11 @@ namespace ORTS
 				Season = season;
 				Weather = weather;
 				StartHour = startHour;
+				StartMinute = startMinute;
 			}
 
 			public ExploreActivity()
-				: this("", "", 0, 0, 12)
+				: this("", "", 0, 0, 12, 0)
 			{
 			}
 		}
@@ -111,9 +113,12 @@ namespace ORTS
 
 			CleanupPre021();
 
-			LoadOptions();
-
 			LoadFolders();
+		}
+
+		void MainForm_Shown(object sender, EventArgs e)
+		{
+			LoadOptions();
 		}
 
 		void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -270,10 +275,13 @@ namespace ORTS
 			{
 				if (RK != null)
 				{
-					checkBoxFullScreen.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? true : false;
+					checkBoxWindowed.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? false : true;
 					checkBoxWarnings.Checked = (int)RK.GetValue("Warnings", 1) == 1 ? true : false;
 				}
 			}
+
+			var savedGameFile = Path.Combine(Program.UserDataFolder, "save.bin");
+			buttonResume.Enabled = File.Exists(savedGameFile);
 		}
 
 		void SaveOptions()
@@ -283,7 +291,7 @@ namespace ORTS
 			{
 				if (RK != null)
 				{
-					RK.SetValue("Fullscreen", checkBoxFullScreen.Checked ? 1 : 0);
+					RK.SetValue("Fullscreen", checkBoxWindowed.Checked ? 0 : 1);
 					RK.SetValue("Warnings", checkBoxWarnings.Checked ? 1 : 0);
 				}
 			}

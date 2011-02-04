@@ -45,7 +45,7 @@ namespace ORTS
 						case DialogResult.OK:
 							var exploreActivity = MainForm.SelectedActivity as MainForm.ExploreActivity;
 							if (exploreActivity != null)
-								parameter = String.Format("\"{0}\" \"{1}\" {2} {3} {4}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.Season, exploreActivity.Weather);
+								parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather);
 							else
 								parameter = String.Format("\"{0}\"", MainForm.SelectedActivity.FileName);
 							break;
