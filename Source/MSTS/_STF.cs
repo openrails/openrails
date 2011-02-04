@@ -751,12 +751,11 @@ namespace MSTS
             STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val;
 		}
-        /// <summary>Read an integer constant from the STF format '( {int_constant} ... )'
+		/// <summary>Read an hexidecimal encoded number from the STF format '( {int_constant} ... )'
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
         /// <param name="default_val">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a integer constant.</returns>
-        public int ReadIntBlock(UNITS valid_units, int? default_val)
+        public uint ReadHexBlock(uint? default_val)
 		{
             if (EOF)
             {
@@ -771,14 +770,41 @@ namespace MSTS
             }
             if (s == "(")
             {
-                int result = ReadInt(valid_units, default_val);
+                uint result = ReadHex(default_val);
                 SkipRestOfBlock();
                 return result;
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
             return default_val.GetValueOrDefault(0);
         }
-        /// <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
+		/// <summary>Read an integer constant from the STF format '( {int_constant} ... )'
+		/// </summary>
+		/// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+		/// <param name="default_val">the default value if the constant is not found in the block.</param>
+		/// <returns>The STF block with the first {item} converted to a integer constant.</returns>
+		public int ReadIntBlock(UNITS valid_units, int? default_val)
+		{
+			if (EOF)
+			{
+				STFException.TraceError(this, "Unexpected end of file");
+				return default_val.GetValueOrDefault(0);
+			}
+			string s = ReadItem();
+			if (s == ")" && default_val.HasValue)
+			{
+				StepBackOneItem();
+				return default_val.Value;
+			}
+			if (s == "(")
+			{
+				int result = ReadInt(valid_units, default_val);
+				SkipRestOfBlock();
+				return result;
+			}
+			STFException.TraceError(this, "Block Not Found - instead found " + s);
+			return default_val.GetValueOrDefault(0);
+		}
+		/// <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
         /// </summary>
         /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
         /// <param name="default_val">the default value if the constant is not found in the block.</param>

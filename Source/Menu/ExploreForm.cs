@@ -110,7 +110,8 @@ namespace ORTS
 						try
 						{
 							var patFile = new PATFile(pathFile);
-							paths.Add(new Path(pathFile, patFile.Name, patFile.Start, patFile.End));
+							if (patFile.IsPlayerPath)
+								paths.Add(new Path(pathFile, patFile.Name, patFile.Start, patFile.End));
 						}
 						catch { }
 					}

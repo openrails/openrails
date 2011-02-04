@@ -73,6 +73,8 @@ namespace MSTS
 		public string Name;
 		public string Start;
 		public string End;
+		public uint Flags;
+		public bool IsPlayerPath { get { return (Flags & 0x20) == 0; } }
 		public List<TrackPDP> TrackPDPs = new List<TrackPDP>();
         public List<TrPathNode> TrPathNodes = new List<TrPathNode>();
 
@@ -90,6 +92,7 @@ namespace MSTS
                     });}),
                     new STFReader.TokenProcessor("trackpath", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
 						new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+						new STFReader.TokenProcessor("trpathflags", ()=>{ Flags = stf.ReadHexBlock(null); }),
 						new STFReader.TokenProcessor("trpathstart", ()=>{ Start = stf.ReadStringBlock(null); }),
 						new STFReader.TokenProcessor("trpathend", ()=>{ End = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("trpathnodes", ()=>{
