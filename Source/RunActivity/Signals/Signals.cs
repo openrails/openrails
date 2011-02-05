@@ -34,11 +34,11 @@ namespace ORTS
 
 
 
-		public Signals(Simulator simulator)
+		public Signals(Simulator simulator, SIGCFGFile sigcfg)
 		{
 			trackDB = simulator.TDB.TrackDB;
 			BuildSignalList(simulator.TDB.TrackDB.TrItemTable, simulator.TDB.TrackDB.TrackNodes);
-			if (foundSignals > 0) AddCFG(simulator.SIGCFG);  // Add links to the sigcfg.dat file
+            if (foundSignals > 0) AddCFG(sigcfg);  // Add links to the sigcfg.dat file
 		}
 
 		// Restore state to resume a saved game

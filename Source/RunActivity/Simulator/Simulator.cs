@@ -71,7 +71,7 @@ namespace ORTS
 		public RailDriverHandler RailDriver = null;
 		public SeasonType Season;
 		public WeatherType Weather;
-		public SIGCFGFile SIGCFG;
+		SIGCFGFile SIGCFG;
 		public string ExplorePathFile;
 		public string ExploreConFile;
 
@@ -163,7 +163,7 @@ namespace ORTS
 		{
 			// Switches
 			AlignSwitchesToDefault();  // ie straight through routing
-			Signals = new Signals(this);
+			Signals = new Signals(this, SIGCFG);
 
 			InterlockingSystem = new InterlockingSystem(this);
 

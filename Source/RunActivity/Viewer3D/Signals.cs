@@ -37,12 +37,12 @@ namespace ORTS
 
 			UID = mstsSignal.UID;
 			var signalShape = Path.GetFileName(path).ToUpper();
-			if (!viewer.Simulator.SIGCFG.SignalShapes.ContainsKey(signalShape))
+			if (!viewer.SIGCFG.SignalShapes.ContainsKey(signalShape))
 			{
 				Trace.TraceError("{0} signal {1} has invalid shape {2}.", Location.ToString(), mstsSignal.UID, signalShape);
 				return;
 			}
-			var mstsSignalShape = viewer.Simulator.SIGCFG.SignalShapes[signalShape];
+            var mstsSignalShape = viewer.SIGCFG.SignalShapes[signalShape];
 
 			// Move the optional signal components way off into the sky. We're
 			// re-position all the ones that are visible on this signal later.
@@ -142,10 +142,10 @@ namespace ORTS
 				if (MatrixIndex == -1)
 					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName));
 
-				if (!viewer.Simulator.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
+                if (!viewer.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
 					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid SigSubSType {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
 
-				var mstsSignalType = viewer.Simulator.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
+                var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
 				if (SignalTypes.ContainsKey(mstsSignalType.Name))
 					SignalTypeData = SignalTypes[mstsSignalType.Name];
 				else
@@ -234,7 +234,7 @@ namespace ORTS
 
 			public SignalTypeData(Viewer3D viewer, MSTS.SignalType mstsSignalType)
 			{
-				if (!viewer.Simulator.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
+                if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
 				{
 					Trace.TraceError("Signal type {0} has invalid light texture {1}.", mstsSignalType.Name, mstsSignalType.LightTextureName);
 					Material = Materials.YellowMaterial;
@@ -244,14 +244,14 @@ namespace ORTS
 				}
 				else
 				{
-					var mstsLightTexture = viewer.Simulator.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
+                    var mstsLightTexture = viewer.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
 					Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetTextureFolder(viewer, 0) + @"\" + mstsLightTexture.TextureFile);
 					Type = (SignalTypeDataType)mstsSignalType.FnType;
 					if (mstsSignalType.Lights != null)
 					{
 						foreach (var mstsSignalLight in mstsSignalType.Lights)
 						{
-							var mstsLight = viewer.Simulator.SIGCFG.LightsTable[mstsSignalLight.Name];
+                            var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
 							Lights.Add(new SignalLightMesh(viewer, new Vector3(mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
 						}
 						// Only load aspects if we've got lights. Not much point otherwise.

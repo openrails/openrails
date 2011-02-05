@@ -83,6 +83,7 @@ namespace ORTS
 		// Route Information
 		public Tiles Tiles = null;
 		public ENVFile ENVFile;
+        public SIGCFGFile SIGCFG;
 		public TTypeDatFile TTypeDatFile;
 		public bool MilepostUnitsMetric;
 		// Cameras
@@ -165,8 +166,16 @@ namespace ORTS
 				WorldSounds = new WorldSounds(this);
 				IngameSounds = new SoundSource(this, Simulator.RoutePath + "\\Sound\\ingame.sms");
 			}
-			ReadENVFile();
-			TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
+
+            Trace.Write(" ENV");
+            ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
+
+            Trace.Write(" SIGCFG");
+            SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat");
+
+            Trace.Write(" TTYPE");
+            TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
+
 			Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
 			MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
 			SetupBackgroundProcesses();
@@ -555,16 +564,6 @@ namespace ORTS
 			Stop();
 			// Show the user that it's all gone horribly wrong.
 			System.Windows.Forms.MessageBox.Show(error.ToString());
-		}
-
-		/// <summary>
-		/// Determine the correct environment files for this activity and read it in.
-		/// </summary>
-		private void ReadENVFile()
-		{
-			string envFileName = Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather);
-
-			ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + envFileName);
 		}
 
 		/// <summary>
