@@ -1,121 +1,89 @@
-//--------------------------------------------------------------//
-// LIGHT GLOW SHADER
-// Displays train lights
-//
-// Principal Author: Rick Grout
-//--------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
+//                     L I G H T   G L O W   S H A D E R                      //
+////////////////////////////////////////////////////////////////////////////////
 
-// Values transferred from the game
-float4x4 mWorldViewProj;
-float fadeTime;
-int stateChange;				// 1=Off->Dim; 2=Dim->Bright; 3=Bright->Dim; 4=Dim->Off
+////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-// Textures
-texture lightGlow_Tex;
+// General values
+float4x4 WorldViewProjection;  // model -> world -> view -> projection
 
-// Texture settings
-sampler lightGlowMap = sampler_state
+float2 Fade; // overall fade (0 = off, 1 = on); transition fade (0 = original, 1 = transition)
+
+texture LightGlowTexture;
+sampler LightGlow = sampler_state
 {
-   Texture = <lightGlow_Tex>;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   MIPFILTER = LINEAR;
-   MIPMAPLODBIAS = 0.000000;
-   AddressU = Clamp;
-   AddressV = Clamp;
+	Texture = (LightGlowTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
+	AddressU = Clamp;
+	AddressV = Wrap;
 };
 
-// Shader Input and Output Structures
-//
-// Vertex Shader Input
-struct VS_IN
+////////////////////    V E R T E X   I N P U T S    ///////////////////////////
+
+struct VERTEX_INPUT
 {
-    float3 Position : POSITION0;
-    float3 Normal : NORMAL;
-    float3 Color : TEXCOORD0;
-    float4 AlphScaleTex : POSITION1;
-    float4 Flags : COLOR0;
+	float3 PositionO        : POSITION0; // original position x, y, z
+	float3 PositionT        : POSITION1; // transition position x, y, z
+	float4 NormalO_Duration : NORMAL0;   // original normal x, y, z; transition time (0 = none)
+	float3 NormalT          : NORMAL1;   // transition normal x, y, z
+	float4 ColorO           : COLOR0;    // original color r, g, b, a
+	float4 ColorT           : COLOR1;    // transition color r, g, b, a
+	float4 TexCoords_Radius : TEXCOORD0; // tex coords u, v; original radius; transition radius
 };
 
-// Vertex Shader Output
-struct VS_OUT
+////////////////////    V E R T E X   O U T P U T S    /////////////////////////
+
+struct VERTEX_OUTPUT
 {
-    float4 Position : POSITION0;
-    float2 TexCoords : TEXCOORD0;
-    float4 Color : COLOR0;
+	float4 Position  : POSITION0;
+	float4 Color     : COLOR0;
+	float2 TexCoords : TEXCOORD0;
 };
 
+////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-/////////////////////    V E R T E X     S H A D E R S    ////////////////////////////
-
-VS_OUT VSlightGlow( VS_IN In )
+VERTEX_OUTPUT VSLightGlow(in VERTEX_INPUT In)
 {
-	VS_OUT Out = ( VS_OUT ) 0;
-
-	// Fade-in / Fade-out	
-    float alpha = In.AlphScaleTex.x;
-	float fadeinTime = In.Flags.z;
-	float fadeoutTime = In.Flags.w;
-	// Dim lights
-	if (In.Flags.x == 2)
-	{
-		if (stateChange == 0)
-			alpha = 0;
-		if (stateChange == 1 || stateChange == 3)
-			alpha *= clamp(fadeTime/fadeinTime, 0, 1);
-		if (stateChange == 4 || stateChange == 2)
-			alpha *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
-	}
-	// Bright lights
-	if (In.Flags.x == 3)
-	{
-		if (stateChange == 0 || stateChange == 1 || stateChange == 4)
-			alpha = 0;
-		if (stateChange == 2)
-			alpha *= clamp(fadeTime/fadeinTime, 0, 1);
-		if (stateChange == 3)
-			alpha *= clamp(1-(fadeTime/fadeoutTime), 0, 1);
-	}
-		
-    float4 color = float4(In.Color, alpha);
-    Out.Color = color;
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
     
-    float2 texCoords = (In.AlphScaleTex.zw);
-    Out.TexCoords = texCoords;
+    float radius = lerp(In.TexCoords_Radius.z, In.TexCoords_Radius.w, saturate(Fade.y));
+    float3 position = lerp(In.PositionO, In.PositionT, saturate(Fade.y));
+    float3 normal = lerp(In.NormalO_Duration.xyz, In.NormalT.xyz, saturate(Fade.y));
+ 	float3 upVector = float3(0, 1, 0);
+    float3 sideVector = normalize(cross(upVector, normal));
+    upVector = normalize(cross(sideVector, normal));
+    position += (In.TexCoords_Radius.x - 0.5f) * sideVector * radius;
+    position += (In.TexCoords_Radius.y - 0.5f) * upVector * radius;
+    Out.Position = mul(WorldViewProjection, float4(position, 1));
+	
+    Out.Color = lerp(In.ColorO, In.ColorT, saturate(Fade.y));
+    Out.Color.a *= Fade.x;
     
-    float scale = In.AlphScaleTex.y;
- 
-    float3 position = In.Position;
-    float3 normal = In.Normal;
+    Out.TexCoords = In.TexCoords_Radius.xy;
 
- 	float3 upVector = float3(0, -1, 0);
-    float3 sideVector = normalize(cross(normal, upVector));    
-    
-    position += (texCoords.x-0.5f) * sideVector * scale;
-    position += (texCoords.y-0.5f) * upVector * scale;
-   
-    Out.Position = mul( mWorldViewProj, float4(position, 1));
-
-    return Out;
+	return Out;
 }
 
-//////////////////////    P I X E L     S H A D E R S    /////////////////////////////
+////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
-float4 PSlightGlow( VS_OUT In ) : COLOR
+float4 PSLightGlow(in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 lightColor = tex2D(lightGlowMap, In.TexCoords.xy);
-	lightColor *= In.Color;
-
-    return lightColor;
+	return In.Color * tex2D(LightGlow, In.TexCoords.xy);
 }
 
-////////////////////////////    T E C H N I Q U E S    ///////////////////////////////
+////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
-technique LightGlow
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSlightGlow ( );
-      PixelShader = compile ps_2_0 PSlightGlow ( );
-   }
+////////////////////////////////////////////////////////////////////////////////
+// IMPORTANT: ATI graphics cards/drivers do NOT like mixing shader model      //
+//            versions within a technique/pass. Always use the same vertex    //
+//            and pixel shader versions within each technique/pass.           //
+////////////////////////////////////////////////////////////////////////////////
+
+technique LightGlow {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSLightGlow();
+		PixelShader = compile ps_2_0 PSLightGlow();
+	}
 }

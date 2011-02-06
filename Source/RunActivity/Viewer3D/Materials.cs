@@ -191,27 +191,27 @@ namespace ORTS
 			SceneryShader.LightVector = sunDirection;
 
 			// Headlight illumination
-			if (renderProcess.Viewer.PlayerLocomotiveViewer != null
-				&& renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
-				&& renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightMesh.hasHeadlight)
-			{
+            if (renderProcess.Viewer.PlayerLocomotiveViewer != null
+                && renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
+                && renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.HasHeadlight)
+            {
 				currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
 				if (currentLightState != lastLightState)
 				{
 					if (currentLightState == 2 && lastLightState == 1)
 					{
 						fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
-						fadeDuration = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadein;
+						fadeDuration = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.LightConeFadeIn;
 					}
 					else if (currentLightState == 1 && lastLightState == 2)
 					{
 						fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
-						fadeDuration = -renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.lightconeFadeout;
+						fadeDuration = -renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.LightConeFadeOut;
 					}
 					lastLightState = currentLightState;
 				}
-				headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeLoc;
-				headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.xnaLightconeDir;
+				headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.XNALightConeLoc;
+				headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.XNALightConeDir;
 
 				SceneryShader.SetHeadlight(ref headlightPosition, ref headlightDirection, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration);
 			}
@@ -913,19 +913,18 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-            var weatherType = RenderProcess.Viewer.PrecipDrawer.weatherType;
             PrecipShader.CurrentTechnique = PrecipShader.Techniques["RainTechnique"];
 			if (ShaderPasses == null) ShaderPasses = PrecipShader.Techniques["RainTechnique"].Passes.GetEnumerator();
-            PrecipShader.WeatherType = weatherType;
+            PrecipShader.WeatherType = (int)RenderProcess.Viewer.Simulator.Weather;
             PrecipShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
             PrecipShader.ViewportHeight = RenderProcess.Viewer.DisplaySize.Y;
             PrecipShader.CurrentTime = (float)RenderProcess.Viewer.Simulator.ClockTime;
-            switch (weatherType)
+            switch (RenderProcess.Viewer.Simulator.Weather)
             {
-                case 1:
+                case MSTS.WeatherType.Snow:
                     PrecipShader.PrecipTexture = snowTexture;
                     break;
-                case 2:
+                case MSTS.WeatherType.Rain:
                     PrecipShader.PrecipTexture = rainTexture;
                     break;
                 // Safe? or need a default here? If so, what?
@@ -939,7 +938,7 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-			if (RenderProcess.Viewer.PrecipDrawer.weatherType == 0)
+			if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Clear)
 				return;
 
             PrecipShader.Begin();
@@ -1165,24 +1164,6 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            // Lights fade-in / fade-out
-            currentLightState = RenderProcess.Viewer.PlayerLocomotive.Headlight;
-            if (currentLightState != lastLightState)
-            {
-                if (currentLightState == 1 && lastLightState == 0)
-                    LightGlowShader.StateChange = 1;
-                else if (currentLightState == 2 && lastLightState == 1)
-                    LightGlowShader.StateChange = 2;
-                else if (currentLightState == 1 && lastLightState == 2)
-                    LightGlowShader.StateChange = 3;
-                else if (currentLightState == 0 && lastLightState == 1)
-                    LightGlowShader.StateChange = 4;
-                // Reset fade timer
-                fadeTimer = RenderProcess.Viewer.Simulator.ClockTime;
-                lastLightState = currentLightState;
-            }
-            LightGlowShader.FadeTime = (float)(RenderProcess.Viewer.Simulator.ClockTime - fadeTimer);
-
             LightGlowShader.Begin();
             foreach (EffectPass pass in LightGlowShader.CurrentTechnique.Passes)
             {
@@ -1192,6 +1173,7 @@ namespace ORTS
                 {
                     Matrix wvp = item.XNAMatrix * XNAViewMatrix * Camera.XNASkyProjection;
                     LightGlowShader.SetMatrix(ref wvp);
+                    LightGlowShader.SetFade(((LightGlowMesh)item.RenderPrimitive).Fade);
                     LightGlowShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

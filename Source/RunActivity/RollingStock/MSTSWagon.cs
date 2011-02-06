@@ -153,7 +153,7 @@ namespace ORTS
                 case "wagon(lights":
                     if (Simulator.Settings.TrainLights)
                     {
-                        try { Lights = new Lights(stf, this); }
+                        try { Lights = new LightCollection(stf); }
                         catch { Lights = null; }
                     }
                     else

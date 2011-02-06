@@ -355,38 +355,31 @@ namespace ORTS
 	[CallOnThread("Render")]
 	public class LightGlowShader : Effect
     {
-        EffectParameter mWorldViewProj = null;
-        EffectParameter lightGlow_Tex = null;
-        EffectParameter stateChange = null;
-        EffectParameter fadeTime = null;
+        EffectParameter worldViewProjection = null;
+        EffectParameter lightGlowTexture = null;
+        EffectParameter fade = null;
 
         public Texture2D LightGlowTexture
         {
-            set { lightGlow_Tex.SetValue(value); }
-        }
-
-        public int StateChange
-        {
-            set { stateChange.SetValue(value); }
-        }
-
-        public float FadeTime
-        {
-            set { fadeTime.SetValue(value); }
+            set { lightGlowTexture.SetValue(value); }
         }
 
         public LightGlowShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("LightGlowShader"))
         {
-            mWorldViewProj = Parameters["mWorldViewProj"];
-            lightGlow_Tex = Parameters["lightGlow_Tex"];
-            stateChange = Parameters["stateChange"];
-            fadeTime = Parameters["fadeTime"];
+            worldViewProjection = Parameters["WorldViewProjection"];
+            lightGlowTexture = Parameters["LightGlowTexture"];
+            fade = Parameters["Fade"];
         }
 
         public void SetMatrix(ref Matrix wvp)
         {
-            mWorldViewProj.SetValueTranspose(wvp);
+            worldViewProjection.SetValueTranspose(wvp);
+        }
+
+        public void SetFade(Vector2 fadeValues)
+        {
+            fade.SetValue(fadeValues);
         }
     }
     #endregion

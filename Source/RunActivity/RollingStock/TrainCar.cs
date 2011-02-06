@@ -30,7 +30,7 @@ namespace ORTS
         // This is here so the viewer can see and exploit the car before this one for articulation.
         public readonly TrainCar PreviousCar;
 
-        public Lights Lights = null;
+        public LightCollection Lights = null;
         public int Headlight = 0;
 
         // instance variables set by train train physics when it creates the traincar

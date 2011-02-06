@@ -34,7 +34,6 @@ namespace ORTS
         // Some of these are candidates for external access in the future
         private Vector2 windDir;
         private float windStrength;
-        public int weatherType;
         public float intensity; // Particles per second
         #endregion
 
@@ -55,8 +54,6 @@ namespace ORTS
             precipMesh.windDir = windDir = new Vector2(1, 0); // Westerly.
             windStrength = 2.0f;
             precipMesh.windStrength = windStrength;
-            // Get data for current activity
-            weatherType = (int)Viewer.Simulator.Weather;
 
             WeatherControl weather = new WeatherControl(Viewer);
             precipMesh.intensity = weather.intensity;
@@ -80,19 +77,19 @@ namespace ORTS
 
             if (UserInput.IsPressed(UserCommands.GameDebugWeatherChange))
             {
-                switch (weatherType)
+                switch (Viewer.Simulator.Weather)
                 {
-                    case (int)WeatherType.Clear:
-                        weatherType = (int)WeatherType.Rain;
+                    case WeatherType.Clear:
+                        Viewer.Simulator.Weather = WeatherType.Rain;
                         break;
-                    case (int)WeatherType.Rain:
-                        weatherType = (int)WeatherType.Snow;
+                    case WeatherType.Rain:
+                        Viewer.Simulator.Weather = WeatherType.Snow;
                         break;
-                    case (int)WeatherType.Snow:
-                        weatherType = (int)WeatherType.Clear;
+                    case WeatherType.Snow:
+                        Viewer.Simulator.Weather = WeatherType.Clear;
                         break;
                     default:
-                        weatherType = (int)WeatherType.Clear;
+                        Viewer.Simulator.Weather = WeatherType.Clear;
                         break;
                 }
 				precipMesh.Initialize(Viewer.Simulator.ClockTime);
