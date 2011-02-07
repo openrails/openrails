@@ -504,7 +504,6 @@ namespace ORTS
                 else if (lightGlowDrawer.Weather == WeatherType.Snow)
                     Enabled &= Light.Weather == LightWeatherCondition.Snow;
             }
-            // TODO: Check Weather here.
             if (Light.Coupling != LightCouplingCondition.Ignore)
             {
                 Enabled &= lightGlowDrawer.CarCoupledFront == (Light.Coupling == LightCouplingCondition.Front || Light.Coupling == LightCouplingCondition.Both);

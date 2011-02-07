@@ -1157,8 +1157,8 @@ namespace ORTS
             LightGlowShader.LightGlowTexture = lightGlowTexture;
 
 			graphicsDevice.RenderState.AlphaBlendEnable = true;
-			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-			graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
+            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
+            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
 			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
 		}
 
@@ -1185,8 +1185,8 @@ namespace ORTS
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
 			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-			graphicsDevice.RenderState.SeparateAlphaBlendEnabled = false;
+            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+            graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
 			graphicsDevice.RenderState.SourceBlend = Blend.One;
 		}
 
