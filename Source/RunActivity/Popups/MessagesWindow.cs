@@ -35,6 +35,14 @@ namespace ORTS.Popups
 			base.LocationChanged();
 		}
 
+        public override bool Interactive
+        {
+            get
+            {
+                return false;
+            }
+        }
+
 		protected override ControlLayout Layout(ControlLayout layout)
 		{
 			var vbox = base.Layout(layout).AddLayoutVertical();

@@ -37,6 +37,7 @@ namespace ORTS.Popups
 
 		protected virtual void VisibilityChanged()
 		{
+            Owner.WriteWindowZOrder();
 		}
 
 		protected virtual void LocationChanged()
@@ -69,6 +70,14 @@ namespace ORTS.Popups
 				}
 			}
 		}
+
+        public virtual bool Interactive
+        {
+            get
+            {
+                return true;
+            }
+        }
 
 		public Rectangle Location
 		{

@@ -1,10 +1,9 @@
-﻿/// COPYRIGHT 2010 by the Open Rails project.
-/// This code is provided to enable you to contribute improvements to the open rails program.  
-/// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from admin@openrails.org.
+﻿// COPYRIGHT 2010, 2011 by the Open Rails project.
+// This code is provided to enable you to contribute improvements to the open rails program.  
+// Use of the code for any other purpose or distribution of the code to anyone else
+// is prohibited without specific written permission from admin@openrails.org.
 
-/// Author: Laurie Heath
-/// Author: James Ross
+// Add DEBUG_WINDOW_ZORDER to project defines to record window visibility and z-order changes.
 
 using System;
 using System.Collections.Generic;
@@ -105,7 +104,7 @@ namespace ORTS.Popups
 		internal void Add(Window window)
 		{
 			Windows.Add(window);
-		}
+        }
 
 		public bool HasVisiblePopupWindows()
 		{
@@ -135,11 +134,12 @@ namespace ORTS.Popups
 			if (UserInput.IsMouseLeftButtonPressed())
 			{
 				mouseDownPosition = new Point(UserInput.MouseState.X, UserInput.MouseState.Y);
-				mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Location.Contains(mouseDownPosition));
-				if (mouseActiveWindow != null)
+                mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
+                if ((mouseActiveWindow != null) && (mouseActiveWindow != Windows.Last()))
 				{
 					Windows.Remove(mouseActiveWindow);
 					Windows.Add(mouseActiveWindow);
+                    WriteWindowZOrder();
 				}
 			}
 
@@ -163,5 +163,16 @@ namespace ORTS.Popups
 					mouseActiveWindow = null;
 			}
 		}
+
+        [Conditional("DEBUG_WINDOW_ZORDER")]
+        internal void WriteWindowZOrder()
+        {
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Windows: (bottom-to-top order, [V] = visible, [NI] = non-interactive)");
+            Console.WriteLine("  Visible: {0}", String.Join(", ", VisibleWindows.Select(w => w.GetType().Name).ToArray()));
+            Console.WriteLine("  All:     {0}", String.Join(", ", Windows.Select(w => String.Format("{0}{1}{2}", w.GetType().Name, w.Interactive ? "" : "[NI]", w.Visible ? "[V]" : "")).ToArray()));
+            Console.WriteLine();
+        }
 	}
 }
