@@ -503,7 +503,7 @@ namespace MSTS
         public TrainCfg(STFReader stf)
         {
             stf.MustMatch("(");
-            stf.ReadString();  // Discard the "" lowertoken after the braces
+            Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
