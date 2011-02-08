@@ -72,7 +72,6 @@ namespace ORTS
 		public SkyDrawer SkyDrawer;
 		public PrecipDrawer PrecipDrawer = null;
 		public WireDrawer WireDrawer = null;
-		public LightGlowDrawer LightGlowDrawer;
 		public WeatherControl weatherControl;
 		TerrainDrawer TerrainDrawer;
 		public SceneryDrawer SceneryDrawer;

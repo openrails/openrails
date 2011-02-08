@@ -40,7 +40,7 @@ namespace ORTS
             TrainCarViewer carViewer = car.GetViewer(Viewer);
             LoadedCars.Add(car, carViewer);
             if (car.Lights != null)
-                carViewer.lightGlowDrawer = new LightGlowDrawer(Viewer, car);
+                carViewer.lightDrawer = new LightDrawer(Viewer, car);
             return carViewer;
         }
 
@@ -90,7 +90,7 @@ namespace ORTS
                     TrainCarViewer carViewer = car.GetViewer(Viewer);
                     UpdatedLoadedCars.Add(car, carViewer);
                     if (car.Lights != null)
-                        carViewer.lightGlowDrawer = new LightGlowDrawer(Viewer, car);
+                        carViewer.lightDrawer = new LightDrawer(Viewer, car);
                 }
             // next time LoadPrep runs, it will fetch the UpdatedLoadedCars list of viewers.
         }
@@ -108,8 +108,8 @@ namespace ORTS
 				}
 				// Do the lights separately for proper alpha sorting
 				foreach (TrainCarViewer car in LoadedCars.Values)
-                    if (car.lightGlowDrawer != null)
-						car.lightGlowDrawer.PrepareFrame(frame, elapsedTime);
+                    if (car.lightDrawer != null)
+						car.lightDrawer.PrepareFrame(frame, elapsedTime);
 			}
 			catch (Exception error)  // possible thread safety violation - try again next time
 			{

@@ -18,7 +18,6 @@ using MSTS;
 
 namespace ORTS
 {
-    #region LightState
     /// <summary>
     /// A LightState object encapsulates the data for each State in the States subblock.
     /// </summary>
@@ -48,9 +47,8 @@ namespace ORTS
             });
         }
     }
-    #endregion
 
-    #region Light
+    #region Light enums
     public enum LightType
     {
         Glow,
@@ -122,6 +120,7 @@ namespace ORTS
         Rear,
         Both,
     }
+    #endregion
 
     /// <summary>
     /// The Light class encapsulates the data for each Light object 
@@ -129,6 +128,7 @@ namespace ORTS
     /// </summary>
     public class Light
     {
+        public int Index;
         public LightType Type;
         public LightHeadlightCondition Headlight;
         public LightUnitCondition Unit;
@@ -143,8 +143,9 @@ namespace ORTS
         public float FadeOut;
         public List<LightState> States = new List<LightState>();
 
-        public Light(STFReader stf)
+        public Light(int index, STFReader stf)
         {
+            Index = index;
             stf.MustMatch("(");
             stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("type", ()=>{ Type = (LightType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
@@ -178,9 +179,7 @@ namespace ORTS
             });
         }
     }
-    #endregion
 
-    #region Lights
     /// <summary>
     /// A Lights object is created for any engine or wagon having a 
     /// Lights block in its ENG/WAG file. It contains a collection of
@@ -196,16 +195,14 @@ namespace ORTS
             stf.MustMatch("(");
             stf.ReadInt(STFReader.UNITS.None, null); // count; ignore this because its not always correct
             stf.ParseBlock(new[] {
-                new STFReader.TokenProcessor("light", ()=>{ Lights.Add(new Light(stf)); }),
+                new STFReader.TokenProcessor("light", ()=>{ Lights.Add(new Light(Lights.Count, stf)); }),
             });
             if (Lights.Count == 0)
                 throw new InvalidDataException("lights with no lights");
         }
     }
-    #endregion
 
-    #region LightGlowDrawer
-    public class LightGlowDrawer
+    public class LightDrawer
     {
         readonly Viewer3D Viewer;
         readonly TrainCar Car;
@@ -220,16 +217,17 @@ namespace ORTS
         public int TrainHeadlight;
         public bool IsDay;
         public WeatherType Weather;
-        List<LightGlowMesh> LightGlowMeshes = new List<LightGlowMesh>();
+        List<LightMesh> LightMeshes = new List<LightMesh>();
 
         Vector3 LightConeLoc;
+        LightMesh Headlight;
         public bool HasHeadlight;
         public Vector3 XNALightConeLoc;
         public Vector3 XNALightConeDir;
         public float LightConeFadeIn;
         public float LightConeFadeOut;
 
-        public LightGlowDrawer(Viewer3D viewer, TrainCar car)
+        public LightDrawer(Viewer3D viewer, TrainCar car)
         {
             Viewer = viewer;
             Car = car;
@@ -242,41 +240,76 @@ namespace ORTS
                 {
                     if (light.Type == LightType.Cone)
                     {
-                        if (HasHeadlight)
-                        {
-                            Trace.WriteLine("Ignored extra 'cone' light.");
-                            continue;
-                        }
-                        HasHeadlight = true;
-                        LightConeLoc = light.States[0].Position;
-                        LightConeLoc.Z *= -1;
-                        LightConeFadeIn = light.FadeIn;
-                        LightConeFadeOut = light.FadeOut;
+                        LightMeshes.Add(new LightConeMesh(this, Viewer.RenderProcess, light));
                     }
                     else
                     {
-                        LightGlowMeshes.Add(new LightGlowMesh(this, Viewer.RenderProcess, light));
+                        LightMeshes.Add(new LightGlowMesh(this, Viewer.RenderProcess, light));
                     }
                 }
             }
+            HasHeadlight = LightMeshes.Any(lm => lm is LightConeMesh);
 #if DEBUG_LIGHT_STATES
             Console.WriteLine();
 #endif
+            UpdateHeadlightCone();
+        }
+
+        void UpdateHeadlightCone()
+        {
+            var headlight = LightMeshes.FirstOrDefault(lm => lm is LightConeMesh && lm.Enabled);
+
+            if (headlight != null)
+            {
+                LightConeLoc = headlight.Light.States[0].Position;
+                LightConeLoc.Z *= -1;
+            }
+
+            // Fade-in should be NEW headlight.
+            if ((Headlight == null) && (headlight != null))
+                LightConeFadeIn = headlight.Light.FadeIn;
+            else
+                LightConeFadeIn = 0;
+
+            // Fade-out should be OLD headlight.
+            if ((Headlight != null) && (headlight == null))
+                LightConeFadeOut = Headlight.Light.FadeOut;
+            else
+                LightConeFadeOut = 0;
+
+#if DEBUG_LIGHT_STATES
+            if (Headlight != null)
+                Console.WriteLine("Old headlight: index = {0}, fade-in = {1:F1}, fade-out = {2:F1}", Headlight.Light.Index, Headlight.Light.FadeIn, Headlight.Light.FadeOut);
+            else
+                Console.WriteLine("Old headlight: <none>");
+            if (headlight != null)
+                Console.WriteLine("New headlight: index = {0}, fade-in = {1:F1}, fade-out = {2:F1}", headlight.Light.Index, headlight.Light.FadeIn, headlight.Light.FadeOut);
+            else
+                Console.WriteLine("New headlight: <none>");
+            if ((Headlight != null) || (headlight != null))
+            {
+                Console.WriteLine("Headlight changed from {0} to {1}, fade-in = {2:F1}, fade-out = {3:F1}", Headlight != null ? Headlight.Light.Index.ToString() : "<none>", headlight != null ? headlight.Light.Index.ToString() : "<none>", LightConeFadeIn, LightConeFadeOut);
+                Console.WriteLine();
+            }
+#endif
+
+            Headlight = headlight;
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (UpdateState())
             {
-                foreach (var lightGlowMesh in LightGlowMeshes)
-                    lightGlowMesh.UpdateState(this);
+                foreach (var lightMesh in LightMeshes)
+                    lightMesh.UpdateState(this);
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
 #endif
+                UpdateHeadlightCone();
             }
 
-            foreach (var lightGlowMesh in LightGlowMeshes)
-                lightGlowMesh.PrepareFrame(frame, elapsedTime);
+            foreach (var lightMesh in LightMeshes)
+                lightMesh.PrepareFrame(frame, elapsedTime);
 
             int dTileX = Car.WorldPosition.TileX - Viewer.Camera.TileX;
             int dTileZ = Car.WorldPosition.TileZ - Viewer.Camera.TileZ;
@@ -289,9 +322,10 @@ namespace ORTS
             float viewingDistance = 1500; // Arbitrary.
             if (Viewer.Camera.InFOV(mstsLocation, objectRadius))
                 if (Viewer.Camera.InRange(mstsLocation, viewingDistance + objectRadius))
-                    foreach (var lightGlowMesh in LightGlowMeshes)
-                        if (lightGlowMesh.Enabled || lightGlowMesh.FadeOut)
-                            frame.AddPrimitive(LightMaterial, lightGlowMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+                    foreach (var lightMesh in LightMeshes)
+                        if (lightMesh is LightGlowMesh)
+                            if (lightMesh.Enabled || lightMesh.FadeOut)
+                                frame.AddPrimitive(LightMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
 
             // Set the headlight cone location and direction vectors
             if (HasHeadlight)
@@ -305,8 +339,8 @@ namespace ORTS
         }
 
 #if DEBUG_LIGHT_STATES
-        public const string MeshStateLabel = "    Enabled     Type        Headlight   Unit        Penalty     Control     Service     Time        Weather     Coupling  ";
-        public const string MeshStateFormat = "    {0,-10  }  {1,-10   }  {2,-10   }  {3,-10   }  {4,-10   }  {5,-10   }  {6,-10   }  {7,-10   }  {8,-10   }  {9,-10   }";
+        public const string MeshStateLabel = "Index       Enabled     Type        Headlight   Unit        Penalty     Control     Service     Time        Weather     Coupling  ";
+        public const string MeshStateFormat = "{0,-10  }  {1,-10   }  {2,-10   }  {3,-10   }  {4,-10   }  {5,-10   }  {6,-10   }  {7,-10   }  {8,-10   }  {9,-10   }  {10,-10  }";
 #endif
 
         bool UpdateState()
@@ -346,7 +380,7 @@ namespace ORTS
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
                 Console.WriteLine();
-                Console.WriteLine("LightGlowDrawer: {0} {1,9} {2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}",
+                Console.WriteLine("LightDrawer: {0} {1,9} {2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}",
                     Car.Train != null ? Car.Train.FrontTDBTraveller.WorldLocation : Car.WorldPosition.WorldLocation, Car.Train != null ? "train car" : "car", Car.Train != null ? Car.Train.Cars.IndexOf(Car) : 0, Car.Flipped ? " Flipped" : "",
                     CarInService ? " Service" : "",
                     CarIsPlayer ? " Player" : " AI",
@@ -359,6 +393,7 @@ namespace ORTS
                     Weather == WeatherType.Snow ? " Snow" : Weather == WeatherType.Rain ? " Rain" : "");
                 if (Car.Lights != null)
                 {
+                    Console.WriteLine();
                     Console.WriteLine(MeshStateLabel);
                     Console.WriteLine(new String('=', MeshStateLabel.Length));
                 }
@@ -369,145 +404,78 @@ namespace ORTS
             return false;
         }
     }
-    #endregion
 
-    #region LightGlowMesh
-    public class LightGlowMesh : RenderPrimitive
+    public abstract class LightMesh : RenderPrimitive
     {
-        static VertexDeclaration LightVertexDeclaration;
-
+        public Light Light;
         public bool Enabled;
         public Vector2 Fade;
         public bool FadeIn;
         public bool FadeOut;
-        float FadeTime;
-        int State;
-        int StateCount;
-        float StateTime;
-        Light Light;
-        LightGlowVertex[] LightVertices;
+        protected float FadeTime;
+        protected int State;
+        protected int StateCount;
+        protected float StateTime;
 
-        public LightGlowMesh(LightGlowDrawer lightGlowDrawer, RenderProcess renderProcess, Light light)
+        public LightMesh(Light light)
         {
-            Debug.Assert(light.Type == LightType.Glow, "LightGlowMesh is only for LightType.Glow lights.");
             Light = light;
-
-            if (LightVertexDeclaration == null)
-                LightVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, LightGlowVertex.VertexElements);
-
-#if DEBUG_LIGHT_TRANSITIONS
-            Console.WriteLine();
-            Console.WriteLine("LightGlowMesh transitions:");
-#endif
-            if (light.Cycle)
-            {
-                StateCount = 2 * light.States.Count - 2;
-                LightVertices = new LightGlowVertex[6 * StateCount];
-                for (var i = 0; i < light.States.Count - 1; i++)
-                    SetUpTransition(i, light, i, i + 1);
-                for (var i = light.States.Count - 1; i > 0; i--)
-                    SetUpTransition(light.States.Count * 2 - 1 - i, light, i, i - 1);
-            }
-            else
-            {
-                StateCount = light.States.Count;
-                LightVertices = new LightGlowVertex[6 * StateCount];
-                for (var i = 0; i < light.States.Count; i++)
-                    SetUpTransition(i, light, i, (i + 1) % light.States.Count);
-            }
-#if DEBUG_LIGHT_TRANSITIONS
-            Console.WriteLine();
-#endif
-
-            UpdateState(lightGlowDrawer);
         }
 
-        void SetUpTransition(int state, Light light, int stateIndex1, int stateIndex2)
-        {
-            var state1 = light.States[stateIndex1];
-            var state2 = light.States[stateIndex2];
-
-#if DEBUG_LIGHT_TRANSITIONS
-            Console.WriteLine("    Transition {0} is from state {1} to state {2} over {3:F1}s", state, stateIndex1, stateIndex2, state1.Duration);
-#endif
-
-            // FIXME: Is conversion of "azimuth" to a normal right?
-
-            var position1 = state1.Position; position1.Z *= -1;
-            var normal1 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state1.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state1.Azimuth.Y)));
-            var color1 = ColorToVector(state1.Color);
-
-            var position2 = state2.Position; position2.Z *= -1;
-            var normal2 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state2.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state2.Azimuth.Y)));
-            var color2 = ColorToVector(state2.Color);
-
-            LightVertices[state * 6 + 0] = new LightGlowVertex(new Vector2(1, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 1] = new LightGlowVertex(new Vector2(0, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 2] = new LightGlowVertex(new Vector2(1, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 3] = new LightGlowVertex(new Vector2(1, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 4] = new LightGlowVertex(new Vector2(0, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 5] = new LightGlowVertex(new Vector2(0, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-        }
-
-        static Vector4 ColorToVector(uint color)
-        {
-            return new Vector4((float)((color & 0x00ff0000) >> 16) / 255, (float)((color & 0x0000ff00) >> 8) / 255, (float)(color & 0x000000ff) / 255, (float)((color & 0xff000000) >> 24) / 255);
-        }
-
-        internal void UpdateState(LightGlowDrawer lightGlowDrawer)
+        internal void UpdateState(LightDrawer lightDrawer)
         {
             var oldEnabled = Enabled;
             Enabled = true;
             if (Light.Headlight != LightHeadlightCondition.Ignore)
             {
                 if (Light.Headlight == LightHeadlightCondition.Off)
-                    Enabled &= lightGlowDrawer.TrainHeadlight == 0;
+                    Enabled &= lightDrawer.TrainHeadlight == 0;
                 else if (Light.Headlight == LightHeadlightCondition.Dim)
-                    Enabled &= lightGlowDrawer.TrainHeadlight == 1;
+                    Enabled &= lightDrawer.TrainHeadlight == 1;
                 else if (Light.Headlight == LightHeadlightCondition.Bright)
-                    Enabled &= lightGlowDrawer.TrainHeadlight == 2;
+                    Enabled &= lightDrawer.TrainHeadlight == 2;
                 else if (Light.Headlight == LightHeadlightCondition.DimBright)
-                    Enabled &= lightGlowDrawer.TrainHeadlight >= 1;
+                    Enabled &= lightDrawer.TrainHeadlight >= 1;
                 else if (Light.Headlight == LightHeadlightCondition.OffDim)
-                    Enabled &= lightGlowDrawer.TrainHeadlight <= 1;
+                    Enabled &= lightDrawer.TrainHeadlight <= 1;
                 else if (Light.Headlight == LightHeadlightCondition.OffBright)
-                    Enabled &= lightGlowDrawer.TrainHeadlight != 1;
+                    Enabled &= lightDrawer.TrainHeadlight != 1;
             }
             if (Light.Unit != LightUnitCondition.Ignore)
             {
                 if (Light.Unit == LightUnitCondition.First || Light.Unit == LightUnitCondition.LastFlip)
-                    Enabled &= lightGlowDrawer.CarIsFirst;
+                    Enabled &= lightDrawer.CarIsFirst;
                 else if (Light.Unit == LightUnitCondition.Last || Light.Unit == LightUnitCondition.FirstFlip)
-                    Enabled &= lightGlowDrawer.CarIsLast;
+                    Enabled &= lightDrawer.CarIsLast;
                 else if (Light.Unit == LightUnitCondition.Middle)
-                    Enabled &= !lightGlowDrawer.CarIsFirst && !lightGlowDrawer.CarIsLast;
+                    Enabled &= !lightDrawer.CarIsFirst && !lightDrawer.CarIsLast;
             }
             // TODO: Check Penalty here.
             if (Light.Control != LightControlCondition.Ignore)
             {
-                Enabled &= lightGlowDrawer.CarIsPlayer == (Light.Control == LightControlCondition.Player);
+                Enabled &= lightDrawer.CarIsPlayer == (Light.Control == LightControlCondition.Player);
             }
             if (Light.Service != LightServiceCondition.Ignore)
             {
-                Enabled &= lightGlowDrawer.CarInService == (Light.Service == LightServiceCondition.Yes);
+                Enabled &= lightDrawer.CarInService == (Light.Service == LightServiceCondition.Yes);
             }
             if (Light.TimeOfDay != LightTimeOfDayCondition.Ignore)
             {
-                Enabled &= lightGlowDrawer.IsDay == (Light.TimeOfDay == LightTimeOfDayCondition.Day);
+                Enabled &= lightDrawer.IsDay == (Light.TimeOfDay == LightTimeOfDayCondition.Day);
             }
             if (Light.Weather != LightWeatherCondition.Ignore)
             {
-                if (lightGlowDrawer.Weather == WeatherType.Clear)
+                if (lightDrawer.Weather == WeatherType.Clear)
                     Enabled &= Light.Weather == LightWeatherCondition.Clear;
-                else if (lightGlowDrawer.Weather == WeatherType.Rain)
+                else if (lightDrawer.Weather == WeatherType.Rain)
                     Enabled &= Light.Weather == LightWeatherCondition.Rain;
-                else if (lightGlowDrawer.Weather == WeatherType.Snow)
+                else if (lightDrawer.Weather == WeatherType.Snow)
                     Enabled &= Light.Weather == LightWeatherCondition.Snow;
             }
             if (Light.Coupling != LightCouplingCondition.Ignore)
             {
-                Enabled &= lightGlowDrawer.CarCoupledFront == (Light.Coupling == LightCouplingCondition.Front || Light.Coupling == LightCouplingCondition.Both);
-                Enabled &= lightGlowDrawer.CarCoupledRear == (Light.Coupling == LightCouplingCondition.Rear || Light.Coupling == LightCouplingCondition.Both);
+                Enabled &= lightDrawer.CarCoupledFront == (Light.Coupling == LightCouplingCondition.Front || Light.Coupling == LightCouplingCondition.Both);
+                Enabled &= lightDrawer.CarCoupledRear == (Light.Coupling == LightCouplingCondition.Rear || Light.Coupling == LightCouplingCondition.Both);
             }
 
             if (oldEnabled != Enabled)
@@ -518,7 +486,7 @@ namespace ORTS
             }
 
 #if DEBUG_LIGHT_STATES
-            Console.WriteLine(LightGlowDrawer.MeshStateFormat, Enabled, Light.Type, Light.Headlight, Light.Unit, Light.Penalty, Light.Control, Light.Service, Light.TimeOfDay, Light.Weather, Light.Coupling);
+            Console.WriteLine(LightDrawer.MeshStateFormat, Light.Index, Enabled, Light.Type, Light.Headlight, Light.Unit, Light.Penalty, Light.Control, Light.Service, Light.TimeOfDay, Light.Weather, Light.Coupling);
 #endif
         }
 
@@ -557,6 +525,102 @@ namespace ORTS
                 }
             }
         }
+    }
+
+    public class LightConeMesh : LightMesh
+    {
+        static VertexDeclaration LightVertexDeclaration;
+
+        VertexPositionColor[] LightVertices;
+
+        public LightConeMesh(LightDrawer lightDrawer, RenderProcess renderProcess, Light light)
+            : base(light)
+        {
+            Debug.Assert(light.Type == LightType.Cone, "LightConeMesh is only for LightType.Cone lights.");
+
+            if (LightVertexDeclaration == null)
+                LightVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionColor.VertexElements);
+
+            UpdateState(lightDrawer);
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+        }
+    }
+
+    public class LightGlowMesh : LightMesh
+    {
+        static VertexDeclaration LightVertexDeclaration;
+
+        LightGlowVertex[] LightVertices;
+
+        public LightGlowMesh(LightDrawer lightDrawer, RenderProcess renderProcess, Light light)
+            : base(light)
+        {
+            Debug.Assert(light.Type == LightType.Glow, "LightGlowMesh is only for LightType.Glow lights.");
+
+            if (LightVertexDeclaration == null)
+                LightVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, LightGlowVertex.VertexElements);
+
+#if DEBUG_LIGHT_TRANSITIONS
+            Console.WriteLine();
+            Console.WriteLine("LightGlowMesh transitions:");
+#endif
+            if (light.Cycle)
+            {
+                StateCount = 2 * light.States.Count - 2;
+                LightVertices = new LightGlowVertex[6 * StateCount];
+                for (var i = 0; i < light.States.Count - 1; i++)
+                    SetUpTransition(i, light, i, i + 1);
+                for (var i = light.States.Count - 1; i > 0; i--)
+                    SetUpTransition(light.States.Count * 2 - 1 - i, light, i, i - 1);
+            }
+            else
+            {
+                StateCount = light.States.Count;
+                LightVertices = new LightGlowVertex[6 * StateCount];
+                for (var i = 0; i < light.States.Count; i++)
+                    SetUpTransition(i, light, i, (i + 1) % light.States.Count);
+            }
+#if DEBUG_LIGHT_TRANSITIONS
+            Console.WriteLine();
+#endif
+
+            UpdateState(lightDrawer);
+        }
+
+        void SetUpTransition(int state, Light light, int stateIndex1, int stateIndex2)
+        {
+            var state1 = light.States[stateIndex1];
+            var state2 = light.States[stateIndex2];
+
+#if DEBUG_LIGHT_TRANSITIONS
+            Console.WriteLine("    Transition {0} is from state {1} to state {2} over {3:F1}s", state, stateIndex1, stateIndex2, state1.Duration);
+#endif
+
+            // FIXME: Is conversion of "azimuth" to a normal right?
+
+            var position1 = state1.Position; position1.Z *= -1;
+            var normal1 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state1.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state1.Azimuth.Y)));
+            var color1 = ColorToVector(state1.Color);
+
+            var position2 = state2.Position; position2.Z *= -1;
+            var normal2 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state2.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state2.Azimuth.Y)));
+            var color2 = ColorToVector(state2.Color);
+
+            LightVertices[state * 6 + 0] = new LightGlowVertex(new Vector2(1, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+            LightVertices[state * 6 + 1] = new LightGlowVertex(new Vector2(0, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+            LightVertices[state * 6 + 2] = new LightGlowVertex(new Vector2(1, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+            LightVertices[state * 6 + 3] = new LightGlowVertex(new Vector2(1, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+            LightVertices[state * 6 + 4] = new LightGlowVertex(new Vector2(0, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+            LightVertices[state * 6 + 5] = new LightGlowVertex(new Vector2(0, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+        }
+
+        static Vector4 ColorToVector(uint color)
+        {
+            return new Vector4((float)((color & 0x00ff0000) >> 16) / 255, (float)((color & 0x0000ff00) >> 8) / 255, (float)(color & 0x000000ff) / 255, (float)((color & 0xff000000) >> 24) / 255);
+        }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
@@ -564,9 +628,7 @@ namespace ORTS
             graphicsDevice.DrawUserPrimitives<LightGlowVertex>(PrimitiveType.TriangleList, LightVertices, State * 6, 2);
         }
     }
-    #endregion
 
-    #region LightGlowVertex definition
     struct LightGlowVertex
     {
         public Vector3 PositionO;
@@ -608,5 +670,4 @@ namespace ORTS
         // Size of one vertex in bytes
         public static int SizeInBytes = sizeof(float) * (3 + 3 + 3 + 4 + 4 + 4 + 4);
     }
-    #endregion
 }

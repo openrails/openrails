@@ -192,26 +192,32 @@ namespace ORTS
 
 			// Headlight illumination
             if (renderProcess.Viewer.PlayerLocomotiveViewer != null
-                && renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer != null
-                && renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.HasHeadlight)
+                && renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer != null
+                && renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.HasHeadlight)
             {
 				currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
 				if (currentLightState != lastLightState)
 				{
-					if (currentLightState == 2 && lastLightState == 1)
+                    if (currentLightState > lastLightState)
 					{
-						fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
-						fadeDuration = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.LightConeFadeIn;
+                        if (renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.LightConeFadeIn > 0)
+                        {
+                            fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
+                            fadeDuration = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.LightConeFadeIn;
+                        }
 					}
-					else if (currentLightState == 1 && lastLightState == 2)
+                    else
 					{
-						fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
-						fadeDuration = -renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.LightConeFadeOut;
+                        if (renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.LightConeFadeOut > 0)
+                        {
+                            fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
+                            fadeDuration = -renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.LightConeFadeOut;
+                        }
 					}
 					lastLightState = currentLightState;
 				}
-				headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.XNALightConeLoc;
-				headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightGlowDrawer.XNALightConeDir;
+				headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.XNALightConeLoc;
+				headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.XNALightConeDir;
 
 				SceneryShader.SetHeadlight(ref headlightPosition, ref headlightDirection, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration);
 			}
