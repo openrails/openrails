@@ -4,6 +4,9 @@
         <name>Menu</name>
     </assembly>
     <members>
+<<<<<<< .mine
+        <member name="M:ORTS.Program.SetBuildRevision">
+=======
         <member name="M:ORTS.Program.SetBuildRevision">
             <summary>
             Set up the global Build and Revision variables
@@ -11,57 +14,34 @@
             </summary>
         </member>
         <member name="F:ORTS.OptionsForm.components">
+>>>>>>> .r580
+            <summary>
+            Set up the global Build and Revision variables
+            from assembly data and the revision.txt file.
+            </summary>
+        </member>
+        <member name="F:ORTS.ExploreForm.components">
             <summary>
             Required designer variable.
             </summary>
         </member>
-        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
+        <member name="M:ORTS.ExploreForm.Dispose(System.Boolean)">
             <summary>
             Clean up any resources being used.
             </summary>
             <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         </member>
-        <member name="M:ORTS.OptionsForm.InitializeComponent">
+        <member name="M:ORTS.ExploreForm.InitializeComponent">
             <summary>
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="F:ORTS.DetailsForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.DetailsForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.DetailsForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="F:ORTS.FormFolderName.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.FormFolderName.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
+<<<<<<< .mine
         <member name="T:MSTS.CONFile">
+=======
+        <member name="F:ORTS.FormFolderName.components">
+>>>>>>> .r580
             <summary>
             Work with consist files
             </summary>
@@ -81,7 +61,41 @@
             Build a default EventTypeAllStops event
             </summary>
         </member>
+        <member name="F:ORTS.OptionsForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+<<<<<<< .mine
+        <member name="M:ORTS.OptionsForm.Dispose(System.Boolean)">
+=======
+        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
+>>>>>>> .r580
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+<<<<<<< .mine
+        <member name="M:ORTS.OptionsForm.InitializeComponent">
+=======
+        <member name="M:ORTS.FormFolderName.InitializeComponent">
+>>>>>>> .r580
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+<<<<<<< .mine
         <member name="F:ORTS.MainForm.components">
+=======
+        <member name="T:MSTS.CONFile">
+            <summary>
+            Work with consist files
+            </summary>
+        </member>
+        <member name="T:MSTS.ACTFile">
+>>>>>>> .r580
             <summary>
             Required designer variable.
             </summary>
@@ -93,6 +107,35 @@
             <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         </member>
         <member name="M:ORTS.MainForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+<<<<<<< .mine
+        <member name="F:ORTS.FormFolderName.components">
+=======
+        <member name="F:ORTS.MainForm.components">
+>>>>>>> .r580
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+<<<<<<< .mine
+        <member name="M:ORTS.FormFolderName.Dispose(System.Boolean)">
+=======
+        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
+>>>>>>> .r580
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+<<<<<<< .mine
+        <member name="M:ORTS.FormFolderName.InitializeComponent">
+=======
+        <member name="M:ORTS.MainForm.InitializeComponent">
+>>>>>>> .r580
             <summary>
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
@@ -368,6 +411,12 @@
             <param name="default_val">the default value if the item is not found in the block.</param>
             <returns>The first item inside the STF block.</returns>
         </member>
+        <member name="M:MSTS.STFReader.ReadHexBlock(System.Nullable{System.UInt32})">
+            <summary>Read an hexidecimal encoded number from the STF format '( {int_constant} ... )'
+            </summary>
+            <param name="default_val">the default value if the constant is not found in the block.</param>
+            <returns>The STF block with the first {item} converted to a integer constant.</returns>
+        </member>
         <member name="M:MSTS.STFReader.ReadIntBlock(MSTS.STFReader.UNITS,System.Nullable{System.Int32})">
             <summary>Read an integer constant from the STF format '( {int_constant} ... )'
             </summary>
@@ -620,49 +669,98 @@
             <summary>The stepback* variables store the previous state, so StepBackOneItem() can jump back on {item}. BlockDepth « block_depth
             </summary>
         </member>
+<<<<<<< .mine
+        <member name="F:ORTS.DetailsForm.components">
+=======
         <member name="T:MSTS.MSTSPath">
+>>>>>>> .r580
             <summary>
             Deals with the MSTS file structure.
             </summary>
         </member>
+<<<<<<< .mine
+        <member name="M:ORTS.DetailsForm.Dispose(System.Boolean)">
+=======
         <member name="M:MSTS.MSTSPath.Base">
+>>>>>>> .r580
             <summary>
             Returns the base path of the MSTS installation
             </summary>
             <returns>no trailing \</returns>
         </member>
+<<<<<<< .mine
+        <member name="M:ORTS.DetailsForm.InitializeComponent">
+=======
         <member name="M:MSTS.MSTSPath.RouteFolder(System.String)">
+>>>>>>> .r580
             <summary>
             Returns the route folder with out trailing \
             </summary>
             <param name="route"></param>
             <returns></returns>
         </member>
+<<<<<<< .mine
+        <member name="M:MSTS.PATTraveller.#ctor(System.String)">
+=======
         <member name="M:MSTS.MSTSPath.TrainSoundPath(System.String,System.String)">
+>>>>>>> .r580
             <summary>
+<<<<<<< .mine
+            Initializes the traveller to the first waypoint 
+            in the specified path file.
+=======
             Given a soundfile reference in a wag or eng file, return the path the sound file
+>>>>>>> .r580
             </summary>
+<<<<<<< .mine
+            <param name="PATFilePath"></param>
+=======
             <param name="wagfilename"></param>
             <param name="soundfile"></param>
             <returns></returns>
+>>>>>>> .r580
         </member>
+<<<<<<< .mine
+        <member name="T:MSTS.PATFile">
+=======
         <member name="M:MSTS.MSTSPath.SMSSoundPath(System.String,System.String)">
+>>>>>>> .r580
             <summary>
+<<<<<<< .mine
+            Work with consist files, contains an ArrayList of ConsistTrainset
+=======
             Given a soundfile reference in a cvf file, return the path to the sound file
+>>>>>>> .r580
             </summary>
         </member>
+<<<<<<< .mine
+        <member name="M:MSTS.PATFile.#ctor(System.String)">
+=======
         <member name="M:MSTS.PATTraveller.#ctor(System.String)">
+>>>>>>> .r580
             <summary>
+<<<<<<< .mine
+            Open a PAT file, 
+            filePath includes full path and extension
+=======
             Initializes the traveller to the first waypoint 
             in the specified path file.
+>>>>>>> .r580
             </summary>
+<<<<<<< .mine
+            <param name="filePath"></param>
+=======
             <param name="PATFilePath"></param>
+>>>>>>> .r580
         </member>
+<<<<<<< .mine
+=======
         <member name="T:MSTS.PATFile">
             <summary>
             Work with consist files, contains an ArrayList of ConsistTrainset
             </summary>
         </member>
+>>>>>>> .r580
         <member name="M:MSTS.PATFile.#ctor(System.String)">
             <summary>
             Open a PAT file, 

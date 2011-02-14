@@ -195,9 +195,17 @@ namespace ORTS.Interlocking
          for (int i = 0; i < thisNode.Inpins + thisNode.Outpins; i++)
          {
             connections[i] = tracknodes[thisNode.TrPins[i].Link];
+
+            if (connections[i] == null)
+            {
+               // in rare cases, we cannot find a connection (malformed network?)
+               // in such cases we cannot compute the switch geometry (for the moment, anyways)
+               return;
+            }
          }
           
   
+         
 
          
          // we now have the 3 connected nodes that are connected to this switch.
