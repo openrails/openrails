@@ -206,7 +206,8 @@ namespace ORTS
     {
         readonly Viewer3D Viewer;
         readonly TrainCar Car;
-        readonly Material LightMaterial;
+        readonly Material LightGlowMaterial;
+        readonly Material LightConeMaterial;
 
         public bool CarInService;
         public bool CarIsPlayer;
@@ -219,61 +220,58 @@ namespace ORTS
         public WeatherType Weather;
         List<LightMesh> LightMeshes = new List<LightMesh>();
 
-        Vector3 LightConeLoc;
-        LightMesh Headlight;
-        public bool HasHeadlight;
-        public Vector3 XNALightConeLoc;
-        public Vector3 XNALightConeDir;
+        LightMesh ActiveLightCone;
+        public bool HasLightCone;
         public float LightConeFadeIn;
         public float LightConeFadeOut;
+        public Vector3 LightConePosition;
+        public Vector3 LightConeDirection;
+        public float LightConeDistance;
+        public float LightConeMinDotProduct;
 
         public LightDrawer(Viewer3D viewer, TrainCar car)
         {
             Viewer = viewer;
             Car = car;
-            LightMaterial = Materials.Load(Viewer.RenderProcess, "LightGlowMaterial");
+            LightGlowMaterial = Materials.Load(Viewer.RenderProcess, "LightGlowMaterial");
+            LightConeMaterial = Materials.Load(Viewer.RenderProcess, "LightConeMaterial");
 
             UpdateState();
             if (Car.Lights != null)
             {
                 foreach (var light in Car.Lights.Lights)
                 {
-                    if (light.Type == LightType.Cone)
+                    switch (light.Type)
                     {
-                        LightMeshes.Add(new LightConeMesh(this, Viewer.RenderProcess, light));
-                    }
-                    else
-                    {
-                        LightMeshes.Add(new LightGlowMesh(this, Viewer.RenderProcess, light));
+                        case LightType.Glow:
+                            LightMeshes.Add(new LightGlowMesh(this, Viewer.RenderProcess, light));
+                            break;
+                        case LightType.Cone:
+                            LightMeshes.Add(new LightConeMesh(this, Viewer.RenderProcess, light));
+                            break;
                     }
                 }
             }
-            HasHeadlight = LightMeshes.Any(lm => lm is LightConeMesh);
+            HasLightCone = LightMeshes.Any(lm => lm is LightConeMesh);
 #if DEBUG_LIGHT_STATES
             Console.WriteLine();
 #endif
-            UpdateHeadlightCone();
+            UpdateActiveLightCone();
         }
 
-        void UpdateHeadlightCone()
+        void UpdateActiveLightCone()
         {
-            var headlight = LightMeshes.FirstOrDefault(lm => lm is LightConeMesh && lm.Enabled);
-
-            if (headlight != null)
-            {
-                LightConeLoc = headlight.Light.States[0].Position;
-                LightConeLoc.Z *= -1;
-            }
+            var newLightCone = LightMeshes.FirstOrDefault(lm => lm is LightConeMesh && lm.Enabled);
 
             // Fade-in should be NEW headlight.
-            if ((Headlight == null) && (headlight != null))
-                LightConeFadeIn = headlight.Light.FadeIn;
+            if ((ActiveLightCone == null) && (newLightCone != null))
+                LightConeFadeIn = newLightCone.Light.FadeIn;
             else
                 LightConeFadeIn = 0;
 
             // Fade-out should be OLD headlight.
-            if ((Headlight != null) && (headlight == null))
-                LightConeFadeOut = Headlight.Light.FadeOut;
+            if ((ActiveLightCone != null) && (newLightCone == null))
+                LightConeFadeOut = ActiveLightCone.Light.FadeOut;
             else
                 LightConeFadeOut = 0;
 
@@ -293,7 +291,7 @@ namespace ORTS
             }
 #endif
 
-            Headlight = headlight;
+            ActiveLightCone = newLightCone;
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -305,7 +303,7 @@ namespace ORTS
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
 #endif
-                UpdateHeadlightCone();
+                UpdateActiveLightCone();
             }
 
             foreach (var lightMesh in LightMeshes)
@@ -323,18 +321,24 @@ namespace ORTS
             if (Viewer.Camera.InFOV(mstsLocation, objectRadius))
                 if (Viewer.Camera.InRange(mstsLocation, viewingDistance + objectRadius))
                     foreach (var lightMesh in LightMeshes)
-                        if (lightMesh is LightGlowMesh)
-                            if (lightMesh.Enabled || lightMesh.FadeOut)
-                                frame.AddPrimitive(LightMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+                        if (lightMesh.Enabled || lightMesh.FadeOut)
+                            if (lightMesh is LightGlowMesh)
+                                frame.AddPrimitive(LightGlowMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+                            //else if (lightMesh is LightConeMesh)
+                            //    frame.AddPrimitive(LightConeMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
 
-            // Set the headlight cone location and direction vectors
-            if (HasHeadlight)
+            // Set the active light cone info for the material code.
+            if (HasLightCone && ActiveLightCone != null)
             {
-                XNALightConeLoc = Vector3.Transform(LightConeLoc, xnaDTileTranslation);
-                XNALightConeDir = XNALightConeLoc - xnaDTileTranslation.Translation;
-                XNALightConeDir.Normalize();
-                // TODO: Tilt the light cone downward at the correct angle.
-                XNALightConeDir.Y = -0.5f;
+                var angle = MathHelper.ToRadians(ActiveLightCone.Light.States[0].Angle);
+                var position = ActiveLightCone.Light.States[0].Position;
+                position.Z *= -1;
+                LightConePosition = Vector3.Transform(position, xnaDTileTranslation);
+                LightConeDirection = Vector3.Transform(-Vector3.UnitZ, Car.WorldPosition.XNAMatrix);
+                LightConeDirection -= Car.WorldPosition.XNAMatrix.Translation;
+                LightConeDirection.Normalize();
+                LightConeDistance = (float)(ActiveLightCone.Light.States[0].Radius / Math.Sin(angle));
+                LightConeMinDotProduct = (float)Math.Cos(angle);
             }
         }
 
@@ -527,28 +531,6 @@ namespace ORTS
         }
     }
 
-    public class LightConeMesh : LightMesh
-    {
-        static VertexDeclaration LightVertexDeclaration;
-
-        VertexPositionColor[] LightVertices;
-
-        public LightConeMesh(LightDrawer lightDrawer, RenderProcess renderProcess, Light light)
-            : base(light)
-        {
-            Debug.Assert(light.Type == LightType.Cone, "LightConeMesh is only for LightType.Cone lights.");
-
-            if (LightVertexDeclaration == null)
-                LightVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionColor.VertexElements);
-
-            UpdateState(lightDrawer);
-        }
-
-        public override void Draw(GraphicsDevice graphicsDevice)
-        {
-        }
-    }
-
     public class LightGlowMesh : LightMesh
     {
         static VertexDeclaration LightVertexDeclaration;
@@ -669,5 +651,88 @@ namespace ORTS
 
         // Size of one vertex in bytes
         public static int SizeInBytes = sizeof(float) * (3 + 3 + 3 + 4 + 4 + 4 + 4);
+    }
+
+    public class LightConeMesh : LightMesh
+    {
+        const int CircleSegments = 16;
+
+        static VertexDeclaration VertexDeclaration;
+        static VertexBuffer VertexBuffer;
+        static IndexBuffer IndexBuffer;
+
+        public LightConeMesh(LightDrawer lightDrawer, RenderProcess renderProcess, Light light)
+            : base(light)
+        {
+            Debug.Assert(light.Type == LightType.Cone, "LightConeMesh is only for LightType.Cone lights.");
+            Debug.Assert(light.States.Count == 1, "LightConeMesh only supports 1 state.");
+            Debug.Assert(light.States[0].Azimuth.Y == 0, "LightConeMesh only supports Azimuth = 0.");
+            Debug.Assert(light.States[0].Elevation.Y == 0, "LightConeMesh only supports Elevation = 0.");
+
+            if (VertexDeclaration == null)
+            {
+                VertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionColor.VertexElements);
+            }
+            if (VertexBuffer == null)
+            {
+                var position = light.States[0].Position;
+                position.Z *= -1;
+                var radius = light.States[0].Radius;
+                var distance = (float)(radius / Math.Sin(MathHelper.ToRadians(light.States[0].Angle)));
+                var color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+
+                var vertexData = new VertexPositionColor[CircleSegments + 2];
+                for (var i = 0; i < CircleSegments; i++)
+                {
+                    var angle = MathHelper.TwoPi * i / CircleSegments;
+                    vertexData[i] = new VertexPositionColor(new Vector3(position.X + (float)(radius * Math.Cos(angle)), position.Y + (float)(radius * Math.Sin(angle)), position.Z - distance), color);
+                }
+                vertexData[CircleSegments + 0] = new VertexPositionColor(position, color);
+                vertexData[CircleSegments + 1] = new VertexPositionColor(new Vector3(position.X, position.Y, position.Z - distance), color);
+                VertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, typeof(VertexPositionColor), vertexData.Length, BufferUsage.WriteOnly);
+                VertexBuffer.SetData(vertexData);
+            }
+            if (IndexBuffer == null)
+            {
+                var indexData = new short[6 * CircleSegments];
+                for (var i = 0; i < CircleSegments; i++)
+                {
+                    var i2 = (i + 1) % CircleSegments;
+                    indexData[i * 6 + 0] = (short)(CircleSegments + 0);
+                    indexData[i * 6 + 1] = (short)i2;
+                    indexData[i * 6 + 2] = (short)i;
+                    indexData[i * 6 + 3] = (short)i;
+                    indexData[i * 6 + 4] = (short)i2;
+                    indexData[i * 6 + 5] = (short)(CircleSegments + 1);
+                }
+                IndexBuffer = new IndexBuffer(renderProcess.GraphicsDevice, typeof(short), indexData.Length, BufferUsage.WriteOnly);
+                IndexBuffer.SetData(indexData);
+            }
+
+            UpdateState(lightDrawer);
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            graphicsDevice.VertexDeclaration = VertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColor.SizeInBytes);
+            graphicsDevice.Indices = IndexBuffer;
+
+            graphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
+            graphicsDevice.RenderState.StencilFunction = CompareFunction.Always;
+            graphicsDevice.RenderState.StencilPass = StencilOperation.Increment;
+            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.Greater;
+            graphicsDevice.RenderState.DestinationBlend = Blend.One;
+            graphicsDevice.RenderState.SourceBlend = Blend.Zero;
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+
+            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            graphicsDevice.RenderState.StencilFunction = CompareFunction.Less;
+            graphicsDevice.RenderState.StencilPass = StencilOperation.Zero;
+            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
+            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            graphicsDevice.RenderState.SourceBlend = Blend.One;
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+        }
     }
 }

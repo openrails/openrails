@@ -19,19 +19,20 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS
 {
-    #region Materials class
 	public class Materials
     {
         public static SceneryShader SceneryShader = null;
         public static SkyShader SkyShader = null;
         public static PrecipShader PrecipShader = null;
         public static LightGlowShader LightGlowShader = null;
+        public static LightConeShader LightConeShader = null;
         public static SpriteBatchMaterial SpriteBatchMaterial = null;
 		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
 		private static SkyMaterial SkyMaterial = null;
         private static PrecipMaterial PrecipMaterial = null;
         private static DynatrackMaterial DynatrackMaterial = null;
         private static LightGlowMaterial LightGlowMaterial = null;
+        private static LightConeMaterial LightConeMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
         private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
@@ -59,12 +60,14 @@ namespace ORTS
             SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightGlowShader = new LightGlowShader(renderProcess.GraphicsDevice, renderProcess.Content);
+            LightConeShader = new LightConeShader(renderProcess.GraphicsDevice, renderProcess.Content);
             SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
             // WaterMaterial here.
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
             DynatrackMaterial = new DynatrackMaterial(renderProcess);
             LightGlowMaterial = new LightGlowMaterial(renderProcess);
+            LightConeMaterial = new LightConeMaterial(renderProcess);
             MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
             YellowMaterial = new YellowMaterial(renderProcess);
             ShadowMapMaterial = new ShadowMapMaterial(renderProcess);
@@ -150,6 +153,8 @@ namespace ORTS
                     return DynatrackMaterial;
                 case "LightGlowMaterial":
                     return LightGlowMaterial;
+                case "LightConeMaterial":
+                    return LightConeMaterial;
                 case "ForestMaterial":
                     if (!ForestMaterials.ContainsKey(textureName))
                     {
@@ -180,9 +185,7 @@ namespace ORTS
         public static float ViewingDistance = 3000;  // TODO, this is awkward, viewer must set this to control fog
 
         static internal Vector3 sunDirection;
-        static Vector3 headlightPosition;
-        static Vector3 headlightDirection;
-        static int lastLightState = 0, currentLightState = 0;
+        static int lastLightState = 0;
 		static double fadeStartTimer = 0;
 		static float fadeDuration = -1;
 		internal static void UpdateShaders(RenderProcess renderProcess, GraphicsDevice graphicsDevice)
@@ -193,33 +196,31 @@ namespace ORTS
 			// Headlight illumination
             if (renderProcess.Viewer.PlayerLocomotiveViewer != null
                 && renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer != null
-                && renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.HasHeadlight)
+                && renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.HasLightCone)
             {
-				currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
+                var lightDrawer = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer;
+				var currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
 				if (currentLightState != lastLightState)
 				{
                     if (currentLightState > lastLightState)
 					{
-                        if (renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.LightConeFadeIn > 0)
+                        if (lightDrawer.LightConeFadeIn > 0)
                         {
                             fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
-                            fadeDuration = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.LightConeFadeIn;
+                            fadeDuration = lightDrawer.LightConeFadeIn;
                         }
 					}
                     else
 					{
-                        if (renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.LightConeFadeOut > 0)
+                        if (lightDrawer.LightConeFadeOut > 0)
                         {
                             fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
-                            fadeDuration = -renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.LightConeFadeOut;
+                            fadeDuration = -lightDrawer.LightConeFadeOut;
                         }
 					}
 					lastLightState = currentLightState;
 				}
-				headlightPosition = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.XNALightConeLoc;
-				headlightDirection = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.XNALightConeDir;
-
-				SceneryShader.SetHeadlight(ref headlightPosition, ref headlightDirection, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration);
+                SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration);
 			}
 			// End headlight illumination
 
@@ -229,9 +230,7 @@ namespace ORTS
 			SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref Materials.FogColor);
 		}
     }
-    #endregion
 
-    #region Shared texture manager
     public class SharedTextureManager
     {
         private static Dictionary<string, Texture2D> SharedTextures = new Dictionary<string, Texture2D>();
@@ -261,9 +260,7 @@ namespace ORTS
             }
         }
     }
-    #endregion
 
-    #region Material base class
 	public abstract class Material
 	{
 		readonly string Key;
@@ -287,9 +284,7 @@ namespace ORTS
 		public virtual bool GetBlending(RenderPrimitive renderPrimitive) { return false; }
 		public virtual Texture2D GetShadowTexture(RenderPrimitive renderPrimitive) { return null; }
 	}
-    #endregion
 
-    #region Empty material
 	public class EmptyMaterial : Material
 	{
 		public EmptyMaterial()
@@ -297,9 +292,7 @@ namespace ORTS
 		{
 		}
 	}
-    #endregion
 
-    #region Sprite batch material
 	public class SpriteBatchMaterial : Material
 	{
 		public SpriteBatch SpriteBatch;
@@ -340,9 +333,7 @@ namespace ORTS
             return true;
         }
 	}
-    #endregion
 
-    #region Scenery material
 	public class SceneryMaterial : Material
     {
 		readonly int Options = 0;
@@ -632,9 +623,7 @@ namespace ORTS
 			return Texture;
 		}
 	}
-    #endregion
 
-    #region Terrain material
 	public class TerrainMaterial : Material
     {
         readonly SceneryShader SceneryShader;
@@ -689,9 +678,7 @@ namespace ORTS
             SceneryShader.End();
         }
 	}
-    #endregion
 
-    #region Sky material
     public class SkyMaterial : Material
     {
         SkyShader SkyShader;
@@ -897,9 +884,7 @@ namespace ORTS
             Materials.FogColor.B = (byte)(floatColor.Z * 255);
         }
     }
-    #endregion
 
-    #region Precipitation material
 	public class PrecipMaterial : Material
     {
         PrecipShader PrecipShader;
@@ -977,9 +962,7 @@ namespace ORTS
 			return true;
 		}
 	}
-	#endregion
 
-    #region Dynatrack material
 	public class DynatrackMaterial : Material
     {
         SceneryShader SceneryShader;
@@ -1076,10 +1059,8 @@ namespace ORTS
 		{
 			return true;
 		} // end GetBlending()
-    } // end class DynatrackMaterial
-    #endregion
+    }
 
-    #region Forest material
 	public class ForestMaterial : Material
     {
         public readonly RenderProcess RenderProcess;  // for diagnostics only
@@ -1138,9 +1119,7 @@ namespace ORTS
 			return TreeTexture;
 		}
 	}
-    #endregion
 
-    #region LightGlow material
 	public class LightGlowMaterial : Material
     {
         LightGlowShader LightGlowShader;
@@ -1201,9 +1180,65 @@ namespace ORTS
 			return true;
 		}
 	}
-    #endregion
-    
-    #region Water material
+
+    public class LightConeMaterial : Material
+    {
+        readonly RenderProcess RenderProcess;
+        readonly LightConeShader LightConeShader;
+
+        public LightConeMaterial(RenderProcess renderProcess)
+            : base(null)
+        {
+            RenderProcess = renderProcess;
+            LightConeShader = Materials.LightConeShader;
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            LightConeShader.CurrentTechnique = LightConeShader.Techniques["LightCone"];
+
+            graphicsDevice.RenderState.AlphaBlendEnable = true;
+            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
+            graphicsDevice.RenderState.StencilEnable = true;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            LightConeShader.Begin();
+            foreach (EffectPass pass in LightConeShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                foreach (var item in renderItems)
+                {
+                    Matrix wvp = item.XNAMatrix * XNAViewMatrix * Camera.XNASkyProjection;
+                    LightConeShader.SetMatrix(ref wvp);
+                    LightConeShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                pass.End();
+            }
+            LightConeShader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            graphicsDevice.RenderState.AlphaBlendEnable = false;
+            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
+            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
+            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+            graphicsDevice.RenderState.SourceBlend = Blend.One;
+            graphicsDevice.RenderState.StencilEnable = false;
+            graphicsDevice.RenderState.StencilFunction = CompareFunction.Always;
+            graphicsDevice.RenderState.StencilPass = StencilOperation.Keep;
+        }
+
+        //public override bool GetBlending(RenderPrimitive renderPrimitive)
+        //{
+        //    return true;
+        //}
+    }
+
 	public class WaterMaterial : Material
     {
         public readonly RenderProcess RenderProcess;  // for diagnostics only
@@ -1268,9 +1303,7 @@ namespace ORTS
 			return true;
 		}
 	}
-    #endregion
 
-    #region Shadow Map material
 	public class ShadowMapMaterial : Material
     {
 		public readonly RenderProcess RenderProcess;  // for diagnostics only
@@ -1375,9 +1408,7 @@ namespace ORTS
 			rs.CullMode = CullMode.CullCounterClockwiseFace;
 		}
 	}
-    #endregion
 
-	#region Popup Window material
 	public class PopupWindowMaterial : Material
 	{
 		public SpriteFont DefaultFont;
@@ -1441,12 +1472,7 @@ namespace ORTS
 			return true;
 		}
 	}
-	#endregion
 
-	#region Yellow (testing) material
-    /// <summary>
-    /// This material is used for debug and testing.
-    /// </summary>
 	public class YellowMaterial : Material
     {
         static BasicEffect basicEffect = null;
@@ -1506,5 +1532,4 @@ namespace ORTS
             basicEffect.End();
         }
 	}
-    #endregion
 }

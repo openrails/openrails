@@ -30,8 +30,8 @@ float4 Fog;  // rgb = color of fog; a = distance from camera, everything is
 float3 LightVector;  // Direction vector to sun (world)
 
 // Headlight values
-float4 HeadlightPosition;   // xyz = position; w = lighting scaling.
-float3 HeadlightDirection;  // xyz = direction.
+float4 HeadlightPosition;   // xyz = position; w = lighting fading.
+float4 HeadlightDirection;  // xyz = direction (length = distance to light); w = min dot product.
 
 float  overcast;       // Lower saturation & brightness when overcast
 float3 viewerPos;      // Viewer's world coordinates.
@@ -326,24 +326,14 @@ float _PSGetNightEffect()
 // fade-in/fade-out animations.
 void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_OUTPUT In)
 {
-	// Decides the width of the lit cone (larger number = wider lit cone).
-	const float headlightWidth = 0.12;
-	// Speed of fade at edge of lit cone (larger number = narrower fade at cone edge).
-	const float headlightSideFade = 5;
-	// Overall strength of headlights (larger number = brighter everywhere in lit cone).
-	const float headlightStrength = 2.0;
-	// Max distance of lit cone (larger number = longer, slower distance fade of lit cone).
-	const float headlightDepth = 500;
-
 	float3 surfaceNormal = normalize(In.Normal_Light.xyz);
 	float3 headlightToSurface = normalize(In.LightDir_Fog.xyz);
-	float coneDot = dot(headlightToSurface, normalize(HeadlightDirection));
+	float coneDot = dot(headlightToSurface, normalize(HeadlightDirection.xyz));
 
 	float shading = step(0, coneDot);
 	shading *= step(0, dot(surfaceNormal, -headlightToSurface));
-	shading *= saturate((coneDot - 1 + headlightWidth) * headlightSideFade);
-	shading *= headlightStrength;
-	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / headlightDepth);
+	shading *= saturate(1 - (1 - coneDot) / (1 - HeadlightDirection.w));
+	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / length(HeadlightDirection.xyz));
 	shading *= HeadlightPosition.w;
 	Color += OriginalColor * shading;
 }

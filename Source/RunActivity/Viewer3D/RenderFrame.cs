@@ -582,7 +582,7 @@ namespace ORTS
 		void DrawSimple(GraphicsDevice graphicsDevice, bool logging)
 		{
 			if (logging) Console.WriteLine("  DrawSimple {");
-			graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Materials.FogColor, 1, 0);
+			graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Materials.FogColor, 1, 0);
 			DrawSequences(graphicsDevice, logging);
 			if (logging) Console.WriteLine("  }");
 		}

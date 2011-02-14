@@ -12,7 +12,6 @@
 ///     
 
 
-#region Using Statements
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
@@ -21,15 +20,10 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Storage;
-#endregion
 
 namespace ORTS
 {
-    #region Scenery shader
-    /// <summary>
-    /// Wrapper for SceneryShader.fx
-    /// </summary>
-	[CallOnThread("Render")]
+    [CallOnThread("Render")]
 	public class SceneryShader : Effect
     {
 		EffectParameter World;
@@ -71,12 +65,12 @@ namespace ORTS
 
 		EffectParameter HeadlightPosition;
 		EffectParameter HeadlightDirection;
-		public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float fadeTime, float fadeDuration)
+		public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration)
 		{
 			var lighting = fadeTime / fadeDuration;
 			if (lighting < 0) lighting = 1 + lighting;
 			HeadlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, 1)));
-			HeadlightDirection.SetValue(direction);
+            HeadlightDirection.SetValue(new Vector4(direction * distance, minDotProduct));
 		}
 
         EffectParameter overcast;
@@ -131,13 +125,8 @@ namespace ORTS
             normalMap_Tex = Parameters["normalMap_Tex"];
         }
     }
-    #endregion
-
-    #region Shadow mapping shader
-    /// <summary>
-    /// Wrapper for ShadowMap.fx
-    /// </summary>
-	[CallOnThread("Render")]
+    
+    [CallOnThread("Render")]
 	public class ShadowMapShader : Effect
 	{
 		EffectParameter View = null;
@@ -162,10 +151,8 @@ namespace ORTS
 			ImageBlurStep = Parameters["ImageBlurStep"];
 		}
 	}
-    #endregion
-
-    #region Sky shader
-	[CallOnThread("Render")]
+    
+    [CallOnThread("Render")]
 	public class SkyShader : Effect
     {
         EffectParameter mModelToProjection = null;
@@ -289,10 +276,8 @@ namespace ORTS
             View.SetValue(view);
         }
     }
-    #endregion
-
-    #region Precipitation shader
-	[CallOnThread("Render")]
+    
+    [CallOnThread("Render")]
 	public class PrecipShader : Effect
     {
         EffectParameter mProjection = null;
@@ -349,10 +334,8 @@ namespace ORTS
             mWorld.SetValue(world);
         }
     }
-    #endregion
-
-    #region LightGlow shader
-	[CallOnThread("Render")]
+    
+    [CallOnThread("Render")]
 	public class LightGlowShader : Effect
     {
         EffectParameter worldViewProjection = null;
@@ -382,12 +365,24 @@ namespace ORTS
             fade.SetValue(fadeValues);
         }
     }
-    #endregion
 
-	#region Popup window shader
-	/// <summary>
-	/// Wrapper for PopupWindow.fx
-	/// </summary>
+    [CallOnThread("Render")]
+    public class LightConeShader : Effect
+    {
+        EffectParameter worldViewProjection = null;
+
+        public LightConeShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("LightConeShader"))
+        {
+            worldViewProjection = Parameters["WorldViewProjection"];
+        }
+
+        public void SetMatrix(ref Matrix wvp)
+        {
+            worldViewProjection.SetValue(wvp);
+        }
+    }
+
 	[CallOnThread("Render")]
 	public class PopupWindowShader : Effect
 	{
@@ -434,12 +429,7 @@ namespace ORTS
 			Parameters["Window_Tex"].SetValue(content.Load<Texture2D>("Window"));
 		}
 	}
-	#endregion
 
-    #region CAB shader
-    /// <summary>
-    /// Wrapper for CabShader.fx
-    /// </summary>
 	[CallOnThread("Render")]
 	public class CabShader : Effect
     {
@@ -506,6 +496,4 @@ namespace ORTS
             _DashLight2Col.SetValue(DashLight2Col);
         }
     }
-    #endregion
-
 }

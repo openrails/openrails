@@ -214,8 +214,6 @@ namespace ORTS
 			GDM.PreferredBackBufferHeight = (int)WindowSize.Y; // screen.Bounds.Height; // 1050;
 			GDM.IsFullScreen = isFullScreen;
 			GDM.PreferMultiSampling = true;
-			//GDM.PreferredBackBufferFormat = SurfaceFormat.Bgr32;
-			//GDM.PreferredDepthStencilFormat = DepthFormat.Depth32;
 			GDM.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
 		}
 
@@ -223,6 +221,7 @@ namespace ORTS
 		{
 			// This stops ResolveBackBuffer() clearing the back buffer.
 			e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+            e.GraphicsDeviceInformation.PresentationParameters.AutoDepthStencilFormat = DepthFormat.Depth24Stencil8;
 			UpdateAdapterInformation(e.GraphicsDeviceInformation.Adapter);
 		}
 
