@@ -74,6 +74,7 @@ namespace ORTS
 		SIGCFGFile SIGCFG;
 		public string ExplorePathFile;
 		public string ExploreConFile;
+		public LevelCrossings LevelCrossings = null;
 
 		/// <summary>
 		/// Reference to the InterlockingSystem object, responsible for
@@ -164,7 +165,7 @@ namespace ORTS
 			// Switches
 			AlignSwitchesToDefault();  // ie straight through routing
 			Signals = new Signals(this, SIGCFG);
-
+			LevelCrossings = new LevelCrossings(this);
 			InterlockingSystem = new InterlockingSystem(this);
 
 			// Trains

@@ -306,7 +306,8 @@ namespace MSTS
             trXING,
             trSIDING,
             trHAZZARD,
-            trPICKUP
+            trPICKUP,
+			trCarSpawner // added for road traffic spawner, used in the future
         }
         public trItemType ItemType = trItemType.trEMPTY;
         public uint TrItemId;
@@ -543,7 +544,14 @@ namespace MSTS
     }
 
     public class LevelCrItem : TrItem
+
     {
+		public uint Direction;                // 0 or 1 depending on which way signal is facing
+		public int revDir
+		{
+			get { return Direction == 0 ? 1 : 0; }
+		}
+
         public LevelCrItem(STFReader stf, int idx)
         {
             ItemType = trItemType.trXING;

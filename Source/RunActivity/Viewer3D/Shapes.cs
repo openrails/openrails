@@ -240,6 +240,102 @@ namespace ORTS
         }
     } // class SwitchTrackShape
 
+	public class LevelCrossingShape : PoseableShape
+	{
+		public LevelCrossingObj crossingObj;  // has data on current aligment for the switch
+
+		List<LevelCrossingObject> crossingObjects; //all objects with the same shape
+		protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
+
+		public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, LevelCrossingObj trj, LevelCrossingObject[] levelObjects)
+			: base(viewer, path, position, ShapeFlags.AutoZBias)
+		{
+			crossingObjects = new List<LevelCrossingObject>(); //sister gropu of crossing if there are parallel lines
+			crossingObj = trj; // the LevelCrossingObj, which handles details of the crossing data
+			crossingObj.inrange = true;//in viewing range
+			int i, j, max, id, found;
+			max = levelObjects.GetLength(0); //how many crossings are in the route
+			found = 0; // trItem is found or not
+			i = 0;
+			while (true) 
+			{
+				id = crossingObj.getTrItemID(i);
+				if (id < 0) break;
+				found = 0;
+				//loop through all crossings, to see if they are related to this shape 
+				// maybe more than one, so they will form a sister group and know each other
+				for (j = 0; j < max; j++)
+				{
+					if (id == levelObjects[j].trItem)
+					{
+						found++;
+						levelObjects[j].levelCrossingObj = crossingObj;
+						if (crossingObjects.Contains(levelObjects[j])) continue;
+						crossingObjects.Add(levelObjects[j]);
+						levelObjects[j].groups = crossingObjects;
+					}
+				}
+				i++;
+			}
+			
+		}
+
+		//do animation, the speed is constant no matter what the frame rate is
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		{
+			if (crossingObj.movingDirection == 0)
+			{
+				if (AnimationKey > 0.001) AnimationKey -= 40.0f/Viewer.RenderProcess.FrameRate.SmoothedValue* crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
+				if (AnimationKey < 0.001) AnimationKey = 0;
+			}
+			else
+			{
+				if (AnimationKey < 0.999) AnimationKey += 40.0f / Viewer.RenderProcess.FrameRate.SmoothedValue * crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f; //0.0005
+				if (AnimationKey > 0.999) AnimationKey = 1.0f;
+			}
+
+
+			// Update the pose
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+				AnimateMatrix(iMatrix, AnimationKey);
+
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+		}
+	} // class LevelCrossingShape
+
+	public class RoadCarShape : PoseableShape
+	{
+		protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
+		int movingDirection = 0;
+
+		public RoadCarShape(Viewer3D viewer, string path, WorldPosition position)
+			: base(viewer, path, position, ShapeFlags.AutoZBias)
+		{
+		}
+
+		//do animation, the speed is constant no matter what the frame rate is
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		{
+			if (movingDirection == 0)
+			{
+				if (AnimationKey > 0.001) AnimationKey -= 0.02f * elapsedTime.ClockSeconds * 1000.0f;
+				if (AnimationKey < 0.001) AnimationKey = 0;
+			}
+			else
+			{
+				if (AnimationKey < 0.999) AnimationKey += 0.02f * elapsedTime.ClockSeconds * 1000.0f; //0.0005
+				if (AnimationKey > 0.999) AnimationKey = 1.0f;
+			}
+
+
+			// Update the pose
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+				AnimateMatrix(iMatrix, AnimationKey);
+
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+		}
+	} // class LevelCrossingShape
+
     /// <summary>
     /// Conserves memory by sharing the basic shape data with multiple instances in the scene.
     /// </summary>

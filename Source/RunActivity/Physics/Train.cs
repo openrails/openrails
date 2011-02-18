@@ -297,6 +297,7 @@ namespace ORTS
 			}
 
 			if (!spad) UpdateSignalState();
+			UpdateCrossingState(); //update crossings in viewing range
 
 		} // end Update
 
@@ -342,6 +343,17 @@ namespace ORTS
 			if (!t.TN.TrEndNode) return false;
 			else return true; // Signal end-of-route
 		} // end IsEndOfRoute
+
+		//
+		//  the train moves, so all crossings should be updated. 
+		//  To save time, simulator.LevelCrossings.UpdateCrossings only updates crossings in
+		//  the viewing range, and only 1/20 of those were indeeded updated each frame
+		//
+		private void UpdateCrossingState()
+		{
+			simulator.LevelCrossings.UpdateCrossings(this, SpeedMpS);
+			return;
+		}
 
 		/// <summary>
 		/// Stops the train ASAP

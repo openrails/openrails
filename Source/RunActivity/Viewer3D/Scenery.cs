@@ -110,6 +110,7 @@ namespace ORTS
                         {
                             // if not, unload the wFile
                             Trace.Write("w");
+							WorldFiles[i].DisposeCrossing(); //added to tell some crossings they are out of range
                             WorldFiles[i] = null;
                             // World sounds - By GeorgeS
                             if (Viewer.WorldSounds != null) Viewer.WorldSounds.RemoveByTile(tile.TileX, tile.TileZ);
@@ -278,6 +279,10 @@ namespace ORTS
 					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
 					SceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
 				}
+				else if (worldObject.GetType() == typeof(MSTS.LevelCrossingObj))
+				{
+					SceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, (LevelCrossingObj) worldObject, viewer.Simulator.LevelCrossings.LevelCrossingObjects));
+				}
 				else // It's some other type of object - not one of the above.
 				{
 					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
@@ -286,6 +291,20 @@ namespace ORTS
             }
 
         } // WorldFile constructor
+
+		//treat level crossing which is out of range
+		public void DisposeCrossing()
+		{
+			LevelCrossingShape tempCrossingShape;
+			foreach (StaticShape shape in SceneryObjects)
+			{
+				if (shape.GetType() == typeof(LevelCrossingShape)) 
+				{
+					tempCrossingShape = (LevelCrossingShape)shape;
+					tempCrossingShape.crossingObj.inrange = false;
+				}
+			}
+		}
 
         private void DyntrackAddAtomic(Viewer3D viewer, DyntrackObj dTrackObj, WorldPosition worldMatrix)
         {

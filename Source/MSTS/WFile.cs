@@ -72,7 +72,9 @@ namespace MSTS
                             case TokenID.Forest: // Unicode
                                 Add(new ForestObj(subBlock, currentWatermark));
                                 break;
-                            case TokenID.LevelCr: Add(new StaticObj(subBlock, currentWatermark)); break; // TODO temp code
+							case TokenID.LevelCr: 
+								Add(new LevelCrossingObj(subBlock, currentWatermark)); 
+								break; // Crossing
                             case TokenID.Dyntrack: // Unicode
                                 Add(new DyntrackObj(subBlock, currentWatermark, true));
                                 break;
@@ -421,6 +423,111 @@ namespace MSTS
 					}
 				}
 			}
+		}
+	}
+
+	//level crossing data
+	public class LevelCrossingObj : WorldObject
+	{
+		public LevelCrParameters levelCrParameters;
+		public LevelCrData levelCrData;
+		public LevelCrTiming levelCrTiming;
+		public List<TrItemId> trItemIDList;
+		int crashProbability;
+		public int movingDirection;
+		public bool inrange = false;
+		public float animSpeed = 0.005f; //compute the speed based on LevelCrTiming
+		public LevelCrossingObj(SBR block, int detailLevel)
+		{
+
+			StaticDetailLevel = detailLevel;
+			trItemIDList = new List<TrItemId>();
+			movingDirection = 0; //up by default;
+
+			while (!block.EndOfBlock())
+			{
+				using (SBR subBlock = block.ReadSubBlock())
+				{
+					switch (subBlock.ID)
+					{
+						case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+						case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
+						case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
+						case TokenID.LevelCrData: levelCrData = new LevelCrData(subBlock); break;
+						case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock);
+							animSpeed = 1.0f / (800.0f * levelCrTiming.animTiming);//hard code to make 4 seconds move realistic in 40 frame/second
+							break;
+						case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+						case TokenID.FileName: FileName = subBlock.ReadString(); break;
+						case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+						case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+						default: subBlock.Skip(); break;
+					}
+				}
+			}
+		}
+
+		public int getTrItemID(int current) {
+			int i = 0;
+			foreach (TrItemId tID in trItemIDList) {
+				if (tID.db == 0)
+				{
+					if (current == i) return tID.dbID;
+					i++;
+				}
+			}
+			return -1;
+		}
+		public class LevelCrParameters 
+		{
+			int crParameter1, crParameter2; // not known the exact name yet
+
+			public LevelCrParameters(SBR block)
+            {
+				block.VerifyID(TokenID.LevelCrParameters);
+				crParameter1 = block.ReadInt();
+				crParameter2 = block.ReadInt();
+                block.VerifyEndOfBlock();
+            }
+
+		}
+
+		public class LevelCrData
+		{
+			int crData1, crData2; //not known the exact name yet
+			public LevelCrData(SBR block)
+            {
+				block.VerifyID(TokenID.LevelCrData);
+				crData1 = block.ReadInt(); // 00000001, should be taken care later, 
+				crData2 = block.ReadInt();
+                block.VerifyEndOfBlock();
+            }
+		}
+
+		public class LevelCrTiming
+		{
+			public float initialTiming, seriousTiming, animTiming; 
+			public LevelCrTiming(SBR block)
+            {
+				block.VerifyID(TokenID.LevelCrTiming);
+				initialTiming = block.ReadFloat(); 
+				seriousTiming = block.ReadFloat();
+				animTiming = block.ReadFloat();
+				block.VerifyEndOfBlock();
+            }
+		}
+
+		public class TrItemId 
+		{
+			public int db, dbID;
+			public TrItemId(SBR block)
+            {
+				block.VerifyID(TokenID.TrItemId);
+				db = block.ReadInt();
+				dbID = block.ReadInt();
+                block.VerifyEndOfBlock();
+            }
 		}
 	}
 
