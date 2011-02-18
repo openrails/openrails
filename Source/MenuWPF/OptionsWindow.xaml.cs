@@ -23,9 +23,20 @@ namespace MenuWPF
 	public partial class OptionsWindow : Window
     {
         #region Members & Constructor
-        string regKey;
-        string foldersFile;
-        List<MenuWPF.MainWindow.Folder> Folders;
+
+        private string regKey;
+        private string foldersFile;
+        private List<MenuWPF.MainWindow.Folder> Folders;
+        private bool folderschanged = false;
+
+        public bool FoldersChanged
+        {
+            get
+            {
+                return folderschanged;
+            }
+        }
+
 
 		public OptionsWindow(string registryKey, string foldersFile, int indexTab)
 		{
@@ -198,6 +209,7 @@ namespace MenuWPF
                 {
                     Folders.Add(new MainWindow.Folder(winAddFolder.FolderName, winAddFolder.FolderPath));
                     listBoxFolders.Items.Add(winAddFolder.FolderName);
+                    folderschanged = true;
                 }
                 else
                 {
@@ -212,6 +224,7 @@ namespace MenuWPF
             {
                 Folders.RemoveAt(listBoxFolders.SelectedIndex);
                 listBoxFolders.Items.RemoveAt(listBoxFolders.SelectedIndex);
+                folderschanged = true;
             }
         }
 

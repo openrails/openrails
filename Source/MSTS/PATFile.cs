@@ -69,15 +69,48 @@ namespace MSTS
 	/// Work with consist files, contains an ArrayList of ConsistTrainset
 	/// </summary>
 	public class PATFile
-	{
-		public string Name;
-		public string Start;
-		public string End;
-		public uint Flags;
-		public bool IsPlayerPath { get { return (Flags & 0x20) == 0; } }
-		public List<TrackPDP> TrackPDPs = new List<TrackPDP>();
-        public List<TrPathNode> TrPathNodes = new List<TrPathNode>();
+    {
+        #region Fields
 
+        private List<TrackPDP> trackPDPs = new List<TrackPDP>();
+        private List<TrPathNode> trPathNodes = new List<TrPathNode>();
+
+        #endregion
+
+        #region Properties
+
+        public string PathID { get; set; }
+        public string Name { get; set; }
+        public string Start { get; set; }
+        public string End { get; set; }
+        public uint Flags { get; set; }
+		public bool IsPlayerPath { get { return (Flags & 0x20) == 0; } }
+
+        public List<TrackPDP> TrackPDPs
+        {
+            get
+            {
+                return trackPDPs;
+            }
+            set
+            {
+                trackPDPs = value;
+            }
+        }
+
+        public List<TrPathNode> TrPathNodes
+        {
+            get
+            {
+                return trPathNodes;
+            }
+            set
+            {
+                trPathNodes = value;
+            }
+        }
+
+        #endregion
         /// <summary>
 		/// Open a PAT file, 
 		/// filePath includes full path and extension
@@ -88,10 +121,11 @@ namespace MSTS
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("trackpdps", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("trackpdp", ()=>{ TrackPDPs.Add(new TrackPDP(stf)); }),
+                        new STFReader.TokenProcessor("trackpdp", ()=>{ trackPDPs.Add(new TrackPDP(stf)); }),
                     });}),
                     new STFReader.TokenProcessor("trackpath", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-						new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+						new STFReader.TokenProcessor("trpathname", ()=>{ PathID = stf.ReadStringBlock(null); }),
+                        new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
 						new STFReader.TokenProcessor("trpathflags", ()=>{ Flags = stf.ReadHexBlock(null); }),
 						new STFReader.TokenProcessor("trpathstart", ()=>{ Start = stf.ReadStringBlock(null); }),
 						new STFReader.TokenProcessor("trpathend", ()=>{ End = stf.ReadStringBlock(null); }),
@@ -99,7 +133,7 @@ namespace MSTS
                             stf.MustMatch("(");
                             int count = stf.ReadInt(STFReader.UNITS.None, null);
                             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                                new STFReader.TokenProcessor("trpathnode", ()=>{ --count; TrPathNodes.Add(new TrPathNode(stf)); }),
+                                new STFReader.TokenProcessor("trpathnode", ()=>{ --count; trPathNodes.Add(new TrPathNode(stf)); }),
                             });
                             if (count != 0)
                                 STFException.TraceError(stf, "TrPathNodes count incorrect");
@@ -107,6 +141,11 @@ namespace MSTS
                     });}),
                 });
           }
+
+        public override string ToString()
+        {
+            return this.Name;
+        }
 	} // Class CONFile
 
 	public class TrackPDP

@@ -123,6 +123,12 @@
     <Compile Include="..\MSTS\ACTFile.cs">
       <Link>MSTS\ACTFile.cs</Link>
     </Compile>
+    <Compile Include="..\MSTS\CONFile.cs">
+      <Link>MSTS\CONFile.cs</Link>
+    </Compile>
+    <Compile Include="..\MSTS\PATFile.cs">
+      <Link>MSTS\PATFile.cs</Link>
+    </Compile>
     <Compile Include="..\MSTS\TRKFile.cs">
       <Link>MSTS\TRKFile.cs</Link>
     </Compile>

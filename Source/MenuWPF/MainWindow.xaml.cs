@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Windows.Media.Effects;
 using System.Drawing;
 using System.Diagnostics;
+using System.Collections;
 
 namespace MenuWPF
 {
@@ -32,7 +33,7 @@ namespace MenuWPF
 
         public const string FolderDataFileName = "folder.dat";
         private BackgroundWorker bgWork;
-        private Dictionary<EngineInfo, List<string>> EnginesWithConsists;
+        private Dictionary<EngineInfo, List<CONFile>> EnginesWithConsists;
         private DataTable Paths;
         private ImageSource bgImage;
         private ProgressionWindow winProg;
@@ -334,9 +335,9 @@ namespace MenuWPF
                           where f.Key.Name == cboEngine.SelectedItem.ToString()
                           select f.Value;
 
-                foreach (string consist in con.Single())
+                foreach (CONFile consist in con.Single())
                 {
-                    cboConsist.Items.Add(consist.ToLower());
+                    cboConsist.Items.Add(consist);
                 }
                 cboConsist.SelectedIndex = 0;
             }
@@ -367,9 +368,12 @@ namespace MenuWPF
 
         private void cboFolder_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            winProg = new ProgressionWindow();
-            bgWork.RunWorkerAsync();
-            winProg.Show();
+            if (bgWork.IsBusy == false)
+            {
+                winProg = new ProgressionWindow();
+                bgWork.RunWorkerAsync();
+                winProg.Show();
+            }
         }
 
         private void winMain_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -386,6 +390,14 @@ namespace MenuWPF
 
             winOptions.ShowDialog();
             CheckBGImageChanged();
+            if (winOptions.FoldersChanged)
+            {
+                LoadFolders();
+                if (Folders.Count > 1)
+                {
+                    cboFolder.SelectedIndex = 0;
+                }
+            }
         }
 
         private void itemTrainStore_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -394,6 +406,14 @@ namespace MenuWPF
 
             winOptions.ShowDialog();
             CheckBGImageChanged();
+            if (winOptions.FoldersChanged)
+            {
+                LoadFolders();
+                if (Folders.Count > 1)
+                {
+                    cboFolder.SelectedIndex = 0;
+                }
+            }
         }
 
         private void itemAudio_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -402,6 +422,14 @@ namespace MenuWPF
 
             winOptions.ShowDialog();
             CheckBGImageChanged();
+            if (winOptions.FoldersChanged)
+            {
+                LoadFolders();
+                if (Folders.Count > 1)
+                {
+                    cboFolder.SelectedIndex = 0;
+                }
+            }
         }
 
         private void itemVideo_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -410,6 +438,14 @@ namespace MenuWPF
 
             winOptions.ShowDialog();
             CheckBGImageChanged();
+            if (winOptions.FoldersChanged)
+            {
+                LoadFolders();
+                if (Folders.Count > 1)
+                {
+                    cboFolder.SelectedIndex = 0;
+                }
+            }
         }
 
         private void itemStart_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -477,7 +513,7 @@ namespace MenuWPF
                         MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                         return;
                     }
-                    parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + cboConsist.SelectedItem.ToString() + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
+                    parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
                 }
                 else
                     parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
@@ -623,11 +659,12 @@ namespace MenuWPF
         private void LoadFolders()
         {
             Folders = new List<Folder>();
-
+            
             if (File.Exists(FolderDataFile))
             {
                 try
                 {
+                    cboFolder.Items.Clear();
                     using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
                     {
                         var count = inf.ReadInt32();
@@ -721,12 +758,15 @@ namespace MenuWPF
                         listBoxRoutes.UnselectAll();
 
                     //if (Routes.Count == 0)   //for what does this serve ? If no route, no game !! ??
-                        //LoadActivities();
+                    //LoadActivities();
                 }
                 catch (IOException)
                 {
                     listBoxRoutes.ItemsSource = null;
                     //The Routes directory does not exist
+                }
+                catch (NullReferenceException)
+                {
                 }
                 catch (Exception error)
                 {
@@ -882,7 +922,10 @@ namespace MenuWPF
                                 cboEngine.SelectedIndex = cboEngine.Items.IndexOf(engName.Single());
                                 System.Windows.Forms.Application.DoEvents();
                                 lblActLocomotive.Content = cboEngine.SelectedItem.ToString();
-                                cboConsist.SelectedIndex = cboConsist.Items.IndexOf(consist.ToLower());
+                                var selcon = from cons in (cboConsist.Items.SourceCollection).Cast<CONFile>()
+                                             where cons.FileName.Equals(consist, StringComparison.CurrentCultureIgnoreCase)
+                                             select cons;
+                                cboConsist.SelectedIndex = cboConsist.Items.IndexOf(selcon.SingleOrDefault());
                                 lblActConsist.Content = cboConsist.SelectedItem.ToString();
                             }
                             else
@@ -976,10 +1019,10 @@ namespace MenuWPF
             cboHeading.Items.Clear();
             foreach (string file in patfiles)
             {
-                using (StreamReader sr = new StreamReader(file))
+                var patFile = new PATFile(file);
+                if (patFile.IsPlayerPath)
                 {
-                    string content = sr.ReadToEnd();
-                    paths.Rows.Add(ParseTag("TrPathName", content), ParseTag("TrPathStart", content), ParseTag("TrPathEnd", content), file);
+                    paths.Rows.Add(patFile.PathID, patFile.Start, patFile.End, file);
                 }
 
             }
@@ -1037,7 +1080,7 @@ namespace MenuWPF
                 
                 string[] confiles = Directory.GetFiles(SelectedFolder.Path + @"\trains\consists", "*.con");
                 winProg.MaxValue = confiles.Length;
-                EnginesWithConsists = new Dictionary<EngineInfo, List<string>>(new EngineInfoEqualityComparer());
+                EnginesWithConsists = new Dictionary<EngineInfo, List<CONFile>>(new EngineInfoEqualityComparer());
                 foreach (string file in confiles)
                 {
                     using (StreamReader sr = new StreamReader(file))
@@ -1073,14 +1116,15 @@ namespace MenuWPF
                                 //Check if it contains a Cabview => player driveable engine
                                 if (engineContent.ToLower().Contains("cabview") && engineContent.ToLower().IndexOf("cabview") < engineContent.ToLower().IndexOf("description"))
                                 {
+                                    
                                     if (EnginesWithConsists.ContainsKey(engKey))
                                     {
-                                        EnginesWithConsists[engKey].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
+                                        EnginesWithConsists[engKey].Add(new CONFile(file));
                                     }
                                     else
                                     {
-                                        EnginesWithConsists.Add(engKey, new List<string>());
-                                        EnginesWithConsists[engKey].Add(System.IO.Path.GetFileName(file).Replace(".con", ""));
+                                        EnginesWithConsists.Add(engKey, new List<CONFile>());
+                                        EnginesWithConsists[engKey].Add(new CONFile(file));
                                         //cboEngine.Items.Add(engKey.Name);
                                     }
                                     
