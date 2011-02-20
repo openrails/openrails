@@ -7,6 +7,7 @@
 //#define DEBUG_LIGHT_STATES
 //#define DEBUG_LIGHT_TRANSITIONS
 //#define DEBUG_LIGHT_CONE
+//#define DEBUG_LIGHT_CONE_FULL
 
 using System;
 using System.Collections.Generic;
@@ -277,17 +278,17 @@ namespace ORTS
                 LightConeFadeOut = 0;
 
 #if DEBUG_LIGHT_STATES
-            if (Headlight != null)
-                Console.WriteLine("Old headlight: index = {0}, fade-in = {1:F1}, fade-out = {2:F1}", Headlight.Light.Index, Headlight.Light.FadeIn, Headlight.Light.FadeOut);
+            if (ActiveLightCone != null)
+                Console.WriteLine("Old headlight: index = {0}, fade-in = {1:F1}, fade-out = {2:F1}, position = {3}, angle = {4:F1}, radius = {5:F1}", ActiveLightCone.Light.Index, ActiveLightCone.Light.FadeIn, ActiveLightCone.Light.FadeOut, ActiveLightCone.Light.States[0].Position, ActiveLightCone.Light.States[0].Angle, ActiveLightCone.Light.States[0].Radius);
             else
                 Console.WriteLine("Old headlight: <none>");
-            if (headlight != null)
-                Console.WriteLine("New headlight: index = {0}, fade-in = {1:F1}, fade-out = {2:F1}", headlight.Light.Index, headlight.Light.FadeIn, headlight.Light.FadeOut);
+            if (newLightCone != null)
+                Console.WriteLine("New headlight: index = {0}, fade-in = {1:F1}, fade-out = {2:F1}, position = {3}, angle = {4:F1}, radius = {5:F1}", newLightCone.Light.Index, newLightCone.Light.FadeIn, newLightCone.Light.FadeOut, newLightCone.Light.States[0].Position, newLightCone.Light.States[0].Angle, newLightCone.Light.States[0].Radius);
             else
                 Console.WriteLine("New headlight: <none>");
-            if ((Headlight != null) || (headlight != null))
+            if ((ActiveLightCone != null) || (newLightCone != null))
             {
-                Console.WriteLine("Headlight changed from {0} to {1}, fade-in = {2:F1}, fade-out = {3:F1}", Headlight != null ? Headlight.Light.Index.ToString() : "<none>", headlight != null ? headlight.Light.Index.ToString() : "<none>", LightConeFadeIn, LightConeFadeOut);
+                Console.WriteLine("Headlight changed from {0} to {1}, fade-in = {2:F1}, fade-out = {3:F1}", ActiveLightCone != null ? ActiveLightCone.Light.Index.ToString() : "<none>", newLightCone != null ? newLightCone.Light.Index.ToString() : "<none>", LightConeFadeIn, LightConeFadeOut);
                 Console.WriteLine();
             }
 #endif
@@ -735,6 +736,11 @@ namespace ORTS
             graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColor.SizeInBytes);
             graphicsDevice.Indices = IndexBuffer;
 
+#if DEBUG_LIGHT_CONE_FULL
+            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            graphicsDevice.RenderState.SourceBlend = Blend.One;
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+#else
             graphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
             graphicsDevice.RenderState.StencilFunction = CompareFunction.Always;
             graphicsDevice.RenderState.StencilPass = StencilOperation.Increment;
@@ -750,6 +756,7 @@ namespace ORTS
             graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
             graphicsDevice.RenderState.SourceBlend = Blend.One;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+#endif
         }
     }
 }
