@@ -6,6 +6,7 @@
 // Uncomment either or both of these for debugging information about lights.
 //#define DEBUG_LIGHT_STATES
 //#define DEBUG_LIGHT_TRANSITIONS
+//#define DEBUG_LIGHT_CONE
 
 using System;
 using System.Collections.Generic;
@@ -324,22 +325,36 @@ namespace ORTS
                         if (lightMesh.Enabled || lightMesh.FadeOut)
                             if (lightMesh is LightGlowMesh)
                                 frame.AddPrimitive(LightGlowMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
-                            //else if (lightMesh is LightConeMesh)
-                            //    frame.AddPrimitive(LightConeMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+#if DEBUG_LIGHT_CONE
+                            else if (lightMesh is LightConeMesh)
+                                frame.AddPrimitive(LightConeMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+#endif
 
             // Set the active light cone info for the material code.
             if (HasLightCone && ActiveLightCone != null)
             {
-                var angle = MathHelper.ToRadians(ActiveLightCone.Light.States[0].Angle);
-                var position = ActiveLightCone.Light.States[0].Position;
-                position.Z *= -1;
+                Vector3 position;
+                float angle;
+                float radius;
+                float distance;
+                CalculateLightCone(ActiveLightCone.Light.States[0], out position, out angle, out radius, out distance);
+
                 LightConePosition = Vector3.Transform(position, xnaDTileTranslation);
                 LightConeDirection = Vector3.Transform(-Vector3.UnitZ, Car.WorldPosition.XNAMatrix);
                 LightConeDirection -= Car.WorldPosition.XNAMatrix.Translation;
                 LightConeDirection.Normalize();
-                LightConeDistance = (float)(ActiveLightCone.Light.States[0].Radius / Math.Sin(angle));
+                LightConeDistance = distance;
                 LightConeMinDotProduct = (float)Math.Cos(angle);
             }
+        }
+
+        public static void CalculateLightCone(LightState lightState, out Vector3 position, out float angle, out float radius, out float distance)
+        {
+            position = lightState.Position;
+            position.Z *= -1;
+            angle = MathHelper.ToRadians(lightState.Angle) / 2;
+            radius = lightState.Radius / 2;
+            distance = (float)(radius / Math.Sin(angle));
         }
 
 #if DEBUG_LIGHT_STATES
@@ -665,9 +680,9 @@ namespace ORTS
             : base(light)
         {
             Debug.Assert(light.Type == LightType.Cone, "LightConeMesh is only for LightType.Cone lights.");
-            Debug.Assert(light.States.Count == 1, "LightConeMesh only supports 1 state.");
-            Debug.Assert(light.States[0].Azimuth.Y == 0, "LightConeMesh only supports Azimuth = 0.");
-            Debug.Assert(light.States[0].Elevation.Y == 0, "LightConeMesh only supports Elevation = 0.");
+            if (light.States.Count != 1) Trace.TraceWarning("LightConeMesh only supports 1 state.");
+            if (light.States[0].Azimuth.Y != 0) Trace.TraceWarning("LightConeMesh only supports Azimuth = 0.");
+            if (light.States[0].Elevation.Y != 0) Trace.TraceWarning("LightConeMesh only supports Elevation = 0.");
 
             if (VertexDeclaration == null)
             {
@@ -675,17 +690,19 @@ namespace ORTS
             }
             if (VertexBuffer == null)
             {
-                var position = light.States[0].Position;
-                position.Z *= -1;
-                var radius = light.States[0].Radius;
-                var distance = (float)(radius / Math.Sin(MathHelper.ToRadians(light.States[0].Angle)));
+                Vector3 position;
+                float angle;
+                float radius;
+                float distance;
+                LightDrawer.CalculateLightCone(light.States[0], out position, out angle, out radius, out distance);
+
                 var color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
 
                 var vertexData = new VertexPositionColor[CircleSegments + 2];
                 for (var i = 0; i < CircleSegments; i++)
                 {
-                    var angle = MathHelper.TwoPi * i / CircleSegments;
-                    vertexData[i] = new VertexPositionColor(new Vector3(position.X + (float)(radius * Math.Cos(angle)), position.Y + (float)(radius * Math.Sin(angle)), position.Z - distance), color);
+                    var a = MathHelper.TwoPi * i / CircleSegments;
+                    vertexData[i] = new VertexPositionColor(new Vector3(position.X + (float)(radius * Math.Cos(a)), position.Y + (float)(radius * Math.Sin(a)), position.Z - distance), color);
                 }
                 vertexData[CircleSegments + 0] = new VertexPositionColor(position, color);
                 vertexData[CircleSegments + 1] = new VertexPositionColor(new Vector3(position.X, position.Y, position.Z - distance), color);
