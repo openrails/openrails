@@ -122,6 +122,8 @@ namespace ORTS
             private get { return particlesPerSecond; }
         }
 
+
+
         float particlesToEmit = 0;
 
         Random rng = new Random();
@@ -235,10 +237,10 @@ namespace ORTS
             FreeRetiredParticles();
 
             //Add a particle.
-            float timeLastFrame = (float)currentTime - elapsedTime.RealSeconds;
+            float timeLastFrame = (float)currentTime - elapsedTime.ClockSeconds;
             float time = (float)currentTime;
 
-            particlesToEmit += (elapsedTime.RealSeconds * ParticlesPerSecond);
+            particlesToEmit += (elapsedTime.ClockSeconds * ParticlesPerSecond);
 
             int numParticlesAdded = 0;
 
