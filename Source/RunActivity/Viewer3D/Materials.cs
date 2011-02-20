@@ -224,7 +224,7 @@ namespace ORTS
 					}
 					lastLightState = currentLightState;
 				}
-                SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration);
+                SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration, ref lightDrawer.LightConeColor);
 			}
 			// End headlight illumination
 

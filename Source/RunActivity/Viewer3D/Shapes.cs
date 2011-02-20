@@ -147,7 +147,7 @@ namespace ORTS
                     Vector3 v = Vector3.Lerp(XNA1, XNA2, amount);
                     xnaPose.Translation = v;
                 }
-                if (position1.GetType() == typeof(tcb_key)) // a tcb_key sets an absolute rotation, vs rotating the existing matrix
+                else if (position1.GetType() == typeof(tcb_key)) // a tcb_key sets an absolute rotation, vs rotating the existing matrix
                 {
                     tcb_key MSTS1 = (tcb_key)position1;
                     tcb_key MSTS2 = (tcb_key)position2;
@@ -285,7 +285,7 @@ namespace ORTS
 		{
 			if (crossingObj.movingDirection == 0)
 			{
-				if (AnimationKey > 0.001) AnimationKey -= 40.0f/Viewer.RenderProcess.FrameRate.SmoothedValue* crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
+                if (AnimationKey > 0.001) AnimationKey -= 40.0f / Viewer.RenderProcess.FrameRate.SmoothedValue * crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
 				if (AnimationKey < 0.001) AnimationKey = 0;
 			}
 			else

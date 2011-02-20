@@ -32,6 +32,7 @@ float3 LightVector;  // Direction vector to sun (world)
 // Headlight values
 float4 HeadlightPosition;   // xyz = position; w = lighting fading.
 float4 HeadlightDirection;  // xyz = direction (length = distance to light); w = min dot product.
+float4 HeadlightColor;      // rgba = color
 
 float  overcast;       // Lower saturation & brightness when overcast
 float3 viewerPos;      // Viewer's world coordinates.
@@ -335,7 +336,7 @@ void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_O
 	shading *= saturate(1 - (1 - coneDot) / (2 * (1 - HeadlightDirection.w))); // We want 50% brightness at the given dot product.
 	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / length(HeadlightDirection.xyz));
 	shading *= HeadlightPosition.w;
-	Color += OriginalColor * shading;
+	Color += lerp(HeadlightColor.rgb, OriginalColor, HeadlightColor.a) * shading;
 }
 
 // Applies distance fog to the pixel.

@@ -230,6 +230,7 @@ namespace ORTS
         public Vector3 LightConeDirection;
         public float LightConeDistance;
         public float LightConeMinDotProduct;
+        public Vector4 LightConeColor;
 
         public LightDrawer(Viewer3D viewer, TrainCar car)
         {
@@ -338,7 +339,8 @@ namespace ORTS
                 float angle;
                 float radius;
                 float distance;
-                CalculateLightCone(ActiveLightCone.Light.States[0], out position, out angle, out radius, out distance);
+                Color color;
+                CalculateLightCone(ActiveLightCone.Light.States[0], out position, out angle, out radius, out distance, out color);
 
                 LightConePosition = Vector3.Transform(position, xnaDTileTranslation);
                 LightConeDirection = Vector3.Transform(-Vector3.UnitZ, Car.WorldPosition.XNAMatrix);
@@ -346,16 +348,18 @@ namespace ORTS
                 LightConeDirection.Normalize();
                 LightConeDistance = distance;
                 LightConeMinDotProduct = (float)Math.Cos(angle);
+                LightConeColor = color.ToVector4();
             }
         }
 
-        public static void CalculateLightCone(LightState lightState, out Vector3 position, out float angle, out float radius, out float distance)
+        public static void CalculateLightCone(LightState lightState, out Vector3 position, out float angle, out float radius, out float distance, out Color color)
         {
             position = lightState.Position;
             position.Z *= -1;
             angle = MathHelper.ToRadians(lightState.Angle) / 2;
             radius = lightState.Radius / 2;
             distance = (float)(radius / Math.Sin(angle));
+            color = new Color() { PackedValue = lightState.Color };
         }
 
 #if DEBUG_LIGHT_STATES
@@ -601,11 +605,11 @@ namespace ORTS
 
             var position1 = state1.Position; position1.Z *= -1;
             var normal1 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state1.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state1.Azimuth.Y)));
-            var color1 = ColorToVector(state1.Color);
+            var color1 = new Color() { PackedValue = state1.Color }.ToVector4();
 
             var position2 = state2.Position; position2.Z *= -1;
             var normal2 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state2.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state2.Azimuth.Y)));
-            var color2 = ColorToVector(state2.Color);
+            var color2 = new Color() { PackedValue = state2.Color }.ToVector4();
 
             LightVertices[state * 6 + 0] = new LightGlowVertex(new Vector2(1, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
             LightVertices[state * 6 + 1] = new LightGlowVertex(new Vector2(0, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
@@ -613,11 +617,6 @@ namespace ORTS
             LightVertices[state * 6 + 3] = new LightGlowVertex(new Vector2(1, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
             LightVertices[state * 6 + 4] = new LightGlowVertex(new Vector2(0, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
             LightVertices[state * 6 + 5] = new LightGlowVertex(new Vector2(0, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-        }
-
-        static Vector4 ColorToVector(uint color)
-        {
-            return new Vector4((float)((color & 0x00ff0000) >> 16) / 255, (float)((color & 0x0000ff00) >> 8) / 255, (float)(color & 0x000000ff) / 255, (float)((color & 0xff000000) >> 24) / 255);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -695,9 +694,10 @@ namespace ORTS
                 float angle;
                 float radius;
                 float distance;
-                LightDrawer.CalculateLightCone(light.States[0], out position, out angle, out radius, out distance);
+                Color color;
+                LightDrawer.CalculateLightCone(light.States[0], out position, out angle, out radius, out distance, out color);
 
-                var color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
 
                 var vertexData = new VertexPositionColor[CircleSegments + 2];
                 for (var i = 0; i < CircleSegments; i++)

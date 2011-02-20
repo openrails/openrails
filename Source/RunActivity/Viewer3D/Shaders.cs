@@ -64,13 +64,15 @@ namespace ORTS
         public Vector3 LightVector { set { lightVector.SetValue(value); } }
 
 		EffectParameter HeadlightPosition;
-		EffectParameter HeadlightDirection;
-		public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration)
+        EffectParameter HeadlightDirection;
+        EffectParameter HeadlightColor;
+        public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration, ref Vector4 color)
 		{
 			var lighting = fadeTime / fadeDuration;
 			if (lighting < 0) lighting = 1 + lighting;
 			HeadlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, 1)));
             HeadlightDirection.SetValue(new Vector4(direction * distance, minDotProduct));
+            HeadlightColor.SetValue(color);
 		}
 
         EffectParameter overcast;
@@ -116,7 +118,8 @@ namespace ORTS
             lightVector = Parameters["LightVector"];
 
 			HeadlightPosition = Parameters["HeadlightPosition"];
-			HeadlightDirection = Parameters["HeadlightDirection"];
+            HeadlightDirection = Parameters["HeadlightDirection"];
+            HeadlightColor = Parameters["HeadlightColor"];
 
             overcast = Parameters["overcast"];
             viewerPos = Parameters["viewerPos"];
