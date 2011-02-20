@@ -907,10 +907,8 @@ namespace ORTS
             
             graphicsDevice.RenderState.DepthBufferWriteEnable = false;
 
-            graphicsDevice.RenderState.CullMode = CullMode.None;
             graphicsDevice.RenderState.AlphaBlendEnable = true;
             graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-            graphicsDevice.RenderState.PointSpriteEnable = true;
             graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
         }
 
@@ -926,17 +924,15 @@ namespace ORTS
 
                 foreach (var item in renderItems)
                 {
-                    if (texture != null)
-                    {
-                        ParticleEmitter emitter = (ParticleEmitter)item.RenderPrimitive;
-                        particleEmitterShader.EmitDirection = emitter.EmitterData.Direction;
-                        particleEmitterShader.EmitSize = emitter.EmitterData.NozzleWidth;
-                        particleEmitterShader.Texture = texture;
+                    ParticleEmitter emitter = (ParticleEmitter)item.RenderPrimitive;
+                    particleEmitterShader.ColorTint = emitter.ColorTint;
+                    particleEmitterShader.EmitDirection = emitter.EmitterData.Direction;
+                    particleEmitterShader.EmitSize = emitter.EmitterData.NozzleWidth;
+                    particleEmitterShader.Texture = texture;
 
-                        particleEmitterShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                        particleEmitterShader.CommitChanges();
-                        item.RenderPrimitive.Draw(graphicsDevice);
-                    }
+                    particleEmitterShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    particleEmitterShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
                 }
 
                 pass.End();
@@ -947,6 +943,11 @@ namespace ORTS
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
+            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+            graphicsDevice.RenderState.AlphaBlendEnable = false;
+            graphicsDevice.RenderState.SourceBlend = Blend.One;
+            graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
+            
         }
 
         public override bool GetBlending(RenderPrimitive renderPrimitive)

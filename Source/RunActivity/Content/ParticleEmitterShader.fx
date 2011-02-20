@@ -7,6 +7,7 @@
 float4x4 worldViewProjection;  // model -> world -> view -> projection
 float4x4 invView;				// inverse view
 
+float4 colorTint;
 float3 emitDirection;
 float emitSize;
 
@@ -116,7 +117,7 @@ float4 PSParticles(in PIXEL_INPUT In) : COLOR0
 	float4 tex = tex2D(ParticleSamp, In.TexCoord);
 	tex.a -= 0.033f;	// Get rid of the non zero edge on the texture. No idea why it's there.
 	tex.a *= alpha;
-	return tex;//float4(tex.rgb, tex.a * alpha);
+	return tex * colorTint;
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////

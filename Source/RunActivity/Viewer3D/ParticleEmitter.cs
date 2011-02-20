@@ -72,7 +72,8 @@ namespace ORTS
             
             Matrix XNAPrecipWorldLocation = Matrix.Identity;// Matrix.CreateTranslation(ViewerXNAPosition);
 
-            frame.AddPrimitive(ParticleMaterial, emitter, RenderPrimitiveGroup.Particles, ref XNAPrecipWorldLocation);
+            if(emitter.HasParticlesToRender())
+                frame.AddPrimitive(ParticleMaterial, emitter, RenderPrimitiveGroup.Particles, ref XNAPrecipWorldLocation);
         }
 
         public void SetTexture(Texture2D texture)
@@ -122,7 +123,7 @@ namespace ORTS
             private get { return particlesPerSecond; }
         }
 
-
+        public Color ColorTint { get; set; }
 
         float particlesToEmit = 0;
 
@@ -136,8 +137,6 @@ namespace ORTS
 
         public WorldPosition WorldPosition { get;  set; }
 
-        int count = 0;
-
         int firstActiveParticle;
         int firstNewParticle;
         int firstFreeParticle;
@@ -148,6 +147,7 @@ namespace ORTS
 
         public ParticleEmitter(RenderProcess renderProcess, ParticleEmitterData data)
         {
+            ColorTint = Color.White;
             EmitterData = data;
             this.renderProcess = renderProcess;
 
@@ -323,6 +323,11 @@ namespace ORTS
             firstNewParticle = firstFreeParticle;
         }
 
+        public bool HasParticlesToRender()
+        {
+            return firstActiveParticle != firstFreeParticle;
+        }
+
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             if (firstNewParticle != firstFreeParticle)
@@ -330,7 +335,7 @@ namespace ORTS
                 AddNewParticlesToVertexBuffer();
             }
 
-            if (firstActiveParticle != firstFreeParticle)
+            if (HasParticlesToRender())
             {
                 graphicsDevice.Indices = ib;
                 graphicsDevice.VertexDeclaration = vd;
