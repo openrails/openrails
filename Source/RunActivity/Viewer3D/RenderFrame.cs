@@ -23,6 +23,7 @@ namespace ORTS
 		WorldBlended,
 		Lights, // TODO: May not be needed once alpha sorting works.
 		Precipitation, // TODO: May not be needed once alpha sorting works.
+        Particles,
 		CabBlended,
 		TextOverlayOpaque,
 		TextOverlayBlended,
@@ -36,6 +37,7 @@ namespace ORTS
 		World,
 		Lights, // TODO: May not be needed once alpha sorting works.
 		Precipitation, // TODO: May not be needed once alpha sorting works.
+        Particles,
 		Overlay
 	}
 
@@ -46,6 +48,7 @@ namespace ORTS
 			RenderPrimitiveSequence.WorldBlended,
 			RenderPrimitiveSequence.Lights,
 			RenderPrimitiveSequence.Precipitation,
+            RenderPrimitiveSequence.Particles,
 			RenderPrimitiveSequence.TextOverlayBlended,
 		};
 		public static readonly RenderPrimitiveSequence[] SequenceForOpaque = new[] {
@@ -53,6 +56,7 @@ namespace ORTS
 			RenderPrimitiveSequence.WorldOpaque,
 			RenderPrimitiveSequence.Lights,
 			RenderPrimitiveSequence.Precipitation,
+            RenderPrimitiveSequence.Particles,
 			RenderPrimitiveSequence.TextOverlayOpaque,
 		};
 
@@ -520,7 +524,7 @@ namespace ORTS
 			// Prepare renderer for drawing the shadow map.
 			graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget[shadowMapIndex]);
 			graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
-			graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
+            graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
 
 			// Prepare for normal (non-blocking) rendering of scenery.
 			Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);

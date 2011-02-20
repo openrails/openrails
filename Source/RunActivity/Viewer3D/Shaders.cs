@@ -23,7 +23,7 @@ using Microsoft.Xna.Framework.Storage;
 
 namespace ORTS
 {
-    [CallOnThread("Render")]
+	[CallOnThread("Render")]
 	public class SceneryShader : Effect
     {
 		EffectParameter World;
@@ -125,8 +125,8 @@ namespace ORTS
             normalMap_Tex = Parameters["normalMap_Tex"];
         }
     }
-    
-    [CallOnThread("Render")]
+
+	[CallOnThread("Render")]
 	public class ShadowMapShader : Effect
 	{
 		EffectParameter View = null;
@@ -151,8 +151,8 @@ namespace ORTS
 			ImageBlurStep = Parameters["ImageBlurStep"];
 		}
 	}
-    
-    [CallOnThread("Render")]
+
+	[CallOnThread("Render")]
 	public class SkyShader : Effect
     {
         EffectParameter mModelToProjection = null;
@@ -276,8 +276,63 @@ namespace ORTS
             View.SetValue(view);
         }
     }
-    
+
     [CallOnThread("Render")]
+    public class ParticleEmitterShader : Effect
+    {
+        EffectParameter emitDirection = null;
+        EffectParameter emitSize = null;
+        EffectParameter tileXY = null;
+        EffectParameter currentTime = null;
+        EffectParameter wvp = null;
+        EffectParameter invView = null;
+        EffectParameter texture = null;
+
+        public float CurrentTime
+        {
+            set { currentTime.SetValue(value); }
+        }
+
+        public Vector2 CameraTileXY
+        {
+            set { tileXY.SetValue(value); }
+        }
+
+        public Texture2D Texture
+        {
+            set { texture.SetValue(value); }
+        }
+
+        public Vector3 EmitDirection
+        {
+            set { emitDirection.SetValue(value); }
+        }
+
+        public float EmitSize
+        {
+            set { emitSize.SetValue(value); }
+        }
+
+        public ParticleEmitterShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("ParticleEmitterShader"))
+        {
+            emitDirection = Parameters["emitDirection"];
+            emitSize = Parameters["emitSize"];
+            currentTime = Parameters["currentTime"];
+            wvp = Parameters["worldViewProjection"];
+            invView = Parameters["invView"];
+            tileXY = Parameters["cameraTileXY"];
+            texture = Parameters["particle_Tex"];
+        }
+
+        public void SetMatrix(Matrix world, ref Matrix view, ref Matrix projection)
+        {
+            wvp.SetValue(world * view * projection);
+            invView.SetValue(Matrix.Invert(view));
+        }
+    }
+
+	[CallOnThread("Render")]
 	public class PrecipShader : Effect
     {
         EffectParameter mProjection = null;
@@ -334,8 +389,8 @@ namespace ORTS
             mWorld.SetValue(world);
         }
     }
-    
-    [CallOnThread("Render")]
+
+	[CallOnThread("Render")]
 	public class LightGlowShader : Effect
     {
         EffectParameter worldViewProjection = null;

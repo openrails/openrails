@@ -55,6 +55,8 @@ namespace ORTS
                 case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+
+                case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 // for example
                 //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
@@ -178,6 +180,21 @@ namespace ORTS
         public MSTSDieselLocomotiveViewer(Viewer3D viewer, MSTSDieselLocomotive car)
             : base(viewer, car)
         {
+            // Now all the particle drawers have been setup, assign them textures based
+            // on what emitters we know about.
+            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
+
+            foreach (KeyValuePair<string, List<ParticleEmitterDrawer>> pair in ParticleDrawers)
+            {
+                if (pair.Key == "Exhaust1")
+                {
+                    foreach (ParticleEmitterDrawer drawer in pair.Value)
+                    {
+                        drawer.SetTexture(SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, dieselTexture));
+                        drawer.SetEmissionRate(20);
+                    }
+                }
+            }
         }
 
         /// <summary>

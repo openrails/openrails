@@ -23,12 +23,13 @@ namespace ORTS
     {
         public static SceneryShader SceneryShader = null;
         public static SkyShader SkyShader = null;
+        public static ParticleEmitterShader ParticleEmitterShader = null;
         public static PrecipShader PrecipShader = null;
         public static LightGlowShader LightGlowShader = null;
         public static LightConeShader LightConeShader = null;
         public static SpriteBatchMaterial SpriteBatchMaterial = null;
 		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
-		private static SkyMaterial SkyMaterial = null;
+		private static SkyMaterial SkyMaterial = null;        
         private static PrecipMaterial PrecipMaterial = null;
         private static DynatrackMaterial DynatrackMaterial = null;
         private static LightGlowMaterial LightGlowMaterial = null;
@@ -58,6 +59,7 @@ namespace ORTS
             SceneryShader.NormalMap_Tex = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, 
                                                         renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
             SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
+            ParticleEmitterShader = new ParticleEmitterShader(renderProcess.GraphicsDevice, renderProcess.Content);
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightGlowShader = new LightGlowShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightConeShader = new LightConeShader(renderProcess.GraphicsDevice, renderProcess.Content);
@@ -147,6 +149,8 @@ namespace ORTS
 					}
                 case "SkyMaterial":
                     return SkyMaterial;
+                case "ParticleEmitterMaterial":
+                        return new ParticleEmitterMaterial(renderProcess);
                 case "PrecipMaterial":
                     return PrecipMaterial;
                 case "DynatrackMaterial":
@@ -885,6 +889,72 @@ namespace ORTS
         }
     }
 
+    public class ParticleEmitterMaterial : Material
+    {
+        ParticleEmitterShader particleEmitterShader;
+        public Texture2D texture = null;
+        public RenderProcess renderProcess;
+
+        public ParticleEmitterMaterial(RenderProcess renderProcess) : base(null)
+        {
+            this.renderProcess = renderProcess;
+            particleEmitterShader = Materials.ParticleEmitterShader;
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            particleEmitterShader.CurrentTime = (float)renderProcess.Viewer.Simulator.GameTime;
+            
+            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
+
+            graphicsDevice.RenderState.CullMode = CullMode.None;
+            graphicsDevice.RenderState.AlphaBlendEnable = true;
+            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            graphicsDevice.RenderState.PointSpriteEnable = true;
+            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            particleEmitterShader.CameraTileXY = new Vector2(renderProcess.Viewer.Camera.TileX, renderProcess.Viewer.Camera.TileZ);
+
+            particleEmitterShader.Begin();
+
+            foreach (EffectPass pass in particleEmitterShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+
+                foreach (var item in renderItems)
+                {
+                    if (texture != null)
+                    {
+                        ParticleEmitter emitter = (ParticleEmitter)item.RenderPrimitive;
+                        particleEmitterShader.EmitDirection = emitter.EmitterData.Direction;
+                        particleEmitterShader.EmitSize = emitter.EmitterData.NozzleWidth;
+                        particleEmitterShader.Texture = texture;
+
+                        particleEmitterShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                        particleEmitterShader.CommitChanges();
+                        item.RenderPrimitive.Draw(graphicsDevice);
+                    }
+                }
+
+                pass.End();
+            }
+
+            particleEmitterShader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+        }
+
+        public override bool GetBlending(RenderPrimitive renderPrimitive)
+        {
+            return true;
+        }
+    }
+
 	public class PrecipMaterial : Material
     {
         PrecipShader PrecipShader;
@@ -1180,7 +1250,7 @@ namespace ORTS
 			return true;
 		}
 	}
-
+    
     public class LightConeMaterial : Material
     {
         readonly RenderProcess RenderProcess;

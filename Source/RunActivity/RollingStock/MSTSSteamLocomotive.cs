@@ -21,6 +21,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework.Input;
 using MSTS;
+using System.Collections.Generic;
 
 namespace ORTS
 {
@@ -287,6 +288,7 @@ namespace ORTS
                 case "engine(backpressure": BackPressure = new Interpolator(stf); break;
                 case "engine(burnrate": BurnRate = new Interpolator(stf); break;
                 case "engine(boilerefficiency": BoilerEfficiency = new Interpolator(stf); break;
+                case "engine(effects(steamspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -718,6 +720,21 @@ namespace ORTS
         public MSTSSteamLocomotiveViewer(Viewer3D viewer, MSTSSteamLocomotive car)
             : base(viewer, car)
         {
+            // Now all the particle drawers have been setup, assign them textures based
+            // on what emitters we know about.
+            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
+
+            foreach (KeyValuePair<string, List<ParticleEmitterDrawer>> pair in ParticleDrawers)
+            {
+                if (pair.Key == "StackFX")
+                {
+                    foreach (ParticleEmitterDrawer drawer in pair.Value)
+                    {
+                        drawer.SetTexture(SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, steamTexture));
+                        drawer.SetEmissionRate(20);
+                    }
+                }
+            }
         }
 
         /// <summary>

@@ -97,6 +97,8 @@ namespace ORTS
         public float NumWheels = 4;
         public bool AntiSlip = false;
 
+        public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
+
         public CVFFile CVFFile = null;
         public ExtendedCVF ExCVF = null;
 
@@ -203,6 +205,23 @@ namespace ORTS
             }
         }
 
+        protected void ParseEffects(string lowercasetoken, STFReader stf)
+        {
+            stf.MustMatch("(");
+            string s;
+
+            while ((s = stf.ReadItem()) != ")")
+            {
+                ParticleEmitterData data = new ParticleEmitterData(stf);
+                if (!EffectData.ContainsKey(s))
+                {
+                    EffectData.Add(s, new List<ParticleEmitterData>());
+                }
+
+                EffectData[s].Add(data);
+            }
+        }
+
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
         /// </summary>
@@ -271,6 +290,7 @@ namespace ORTS
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             NumWheels = locoCopy.NumWheels;
             AntiSlip = locoCopy.AntiSlip;
+            EffectData = locoCopy.EffectData;
 
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
@@ -994,6 +1014,7 @@ namespace ORTS
     {
         MSTSLocomotive Locomotive;
 
+        protected Dictionary<string, List<ParticleEmitterDrawer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterDrawer>>();
         List<int> WiperPartIndexes = new List<int>();
 
         float WiperAnimationKey = 0;
@@ -1006,6 +1027,16 @@ namespace ORTS
             : base(viewer, car)
         {
             Locomotive = car;
+
+            foreach (KeyValuePair<string, List<ParticleEmitterData>> pair in Locomotive.EffectData)
+            {
+                ParticleDrawers.Add(pair.Key, new List<ParticleEmitterDrawer>());
+
+                foreach (ParticleEmitterData data in pair.Value)
+                {
+                    ParticleDrawers[pair.Key].Add(new ParticleEmitterDrawer(viewer, data));
+                }                
+            }
 
             if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
                 _CabRenderer = new CabRenderer(viewer, Locomotive);
@@ -1153,6 +1184,16 @@ namespace ORTS
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             float elapsedClockSeconds = elapsedTime.ClockSeconds;
+
+            foreach (List<ParticleEmitterDrawer> drawers in ParticleDrawers.Values)
+            {
+                foreach (ParticleEmitterDrawer drawer in drawers)
+                {
+                    drawer.WorldPosition = Locomotive.WorldPosition;
+                    drawer.PrepareFrame(frame, elapsedTime);
+                }
+            }
+
             // Wiper animation
             if (WiperPartIndexes.Count > 0)  // skip this if there are no wipers
             {
