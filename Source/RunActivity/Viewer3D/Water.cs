@@ -63,14 +63,16 @@ namespace ORTS
 
 			int dTileX = TileX - Viewer.Camera.TileX;
 			int dTileZ = TileZ - Viewer.Camera.TileZ;
-			Vector3 mstsLocation = new Vector3(1024 + dTileX * 2048, 0, 1024 - dTileZ * 2048);
+			Vector3 mstsLocation = new Vector3(1024 + dTileX * 2048, 0, 1024 + dTileZ * 2048);
 
             // Distance cull
 			if (Viewer.Camera.CanSee(mstsLocation, 1448f, 2000f))
             {
-				foreach (var waterLayer in WaterLayers)
+                xnaMatrix.M41 = mstsLocation.X - 1024;
+                xnaMatrix.M43 = 1024 - mstsLocation.Z;
+                foreach (var waterLayer in WaterLayers)
 				{
-					xnaMatrix.Translation = new Vector3(mstsLocation.X - 1024, mstsLocation.Y + waterLayer.Key, mstsLocation.Z - 1024);
+					xnaMatrix.M42 = mstsLocation.Y + waterLayer.Key;
 					frame.AddPrimitive(waterLayer.Value, this, RenderPrimitiveGroup.World, ref xnaMatrix);
 				}
             }
