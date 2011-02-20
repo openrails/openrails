@@ -375,7 +375,7 @@ namespace ORTS
 
 				foreach (RenderItem item in renderItems)
 				{
-					SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewProj);
+					SceneryShader.SetMatrix(ref item.XNAMatrix, ref XNAViewMatrix, ref viewProj);
 					SceneryShader.CommitChanges();
 					item.RenderPrimitive.Draw(graphicsDevice);
 				}

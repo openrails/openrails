@@ -28,9 +28,11 @@ namespace ORTS
 
 			var rate = SmoothPeriodS / periodS;
 			value = newValue;
-			if (Double.IsNaN(smoothedValue))
-				smoothedValue = value;
-			else
+            if (float.IsNaN(smoothedValue) || float.IsInfinity(smoothedValue))
+                smoothedValue = value;
+            else if (rate < 1)
+                smoothedValue = value;
+            else
 				smoothedValue = (smoothedValue * (rate - 1) + value) / rate;
 		}
 

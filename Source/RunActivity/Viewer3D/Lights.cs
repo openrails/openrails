@@ -321,7 +321,7 @@ namespace ORTS
             float objectRadius = 20; // Even more arbitrary.
             float viewingDistance = 1500; // Arbitrary.
             if (Viewer.Camera.InFOV(mstsLocation, objectRadius))
-                if (Viewer.Camera.InRange(mstsLocation, viewingDistance + objectRadius))
+                if (Viewer.Camera.InRange(mstsLocation, objectRadius, viewingDistance))
                     foreach (var lightMesh in LightMeshes)
                         if (lightMesh.Enabled || lightMesh.FadeOut)
                             if (lightMesh is LightGlowMesh)

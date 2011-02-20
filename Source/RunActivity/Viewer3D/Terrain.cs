@@ -134,7 +134,8 @@ namespace ORTS
             // its OK to iterate through this array because LoaderProcess never changes the size
             foreach (TerrainTile tile in TerrainTiles)
                 if (tile != null)
-                    tile.PrepareFrame(frame, elapsedTime);
+                    if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
+                        tile.PrepareFrame(frame, elapsedTime);
         }
 
     } // TerrainDrawer
@@ -297,7 +298,7 @@ namespace ORTS
 			Vector3 mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
 			Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
 			mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-			frame.AddAutoPrimitive(mstsLocation, 150f, 2000f, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
+			frame.AddAutoPrimitive(mstsLocation, 180f, 2000f, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
 		}
 
         /// <summary>

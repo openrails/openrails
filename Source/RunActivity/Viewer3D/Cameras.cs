@@ -123,7 +123,7 @@ namespace ORTS
 			var fovWidthRadians = MathHelper.ToRadians(45.0f);
 			xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, Viewer.Settings.ViewingDistance);
 			XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, farPlaneDistance);    // TODO remove? 
-			frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // precompute the right edge of the view frustrum
+			frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // Precompute the right edge of the view frustrum.
 			frustumRightProjected.Z = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);
 		}
 
@@ -136,15 +136,13 @@ namespace ORTS
 		{
 			xnaView = GetCameraView();
 			frame.SetCamera(ref xnaView, ref xnaProjection);
-
 			frustumLeft.X = -xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
 			frustumLeft.Y = -xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
-			frustumLeft.Z = xnaView.M31 * frustumRightProjected.X - xnaView.M33 * frustumRightProjected.Z;
-			frustumRight.X = xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
+			frustumLeft.Z = -xnaView.M31 * frustumRightProjected.X + xnaView.M33 * frustumRightProjected.Z;
+            frustumLeft.Normalize();
+            frustumRight.X = xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
 			frustumRight.Y = xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
-			frustumRight.Z = -xnaView.M31 * frustumRightProjected.X - xnaView.M33 * frustumRightProjected.Z;
-
-			frustumLeft.Normalize();
+			frustumRight.Z = xnaView.M31 * frustumRightProjected.X + xnaView.M33 * frustumRightProjected.Z;
 			frustumRight.Normalize();
 		}
 
@@ -154,25 +152,27 @@ namespace ORTS
 			mstsObjectCenter.X -= cameraLocation.Location.X;
 			mstsObjectCenter.Y -= cameraLocation.Location.Y;
 			mstsObjectCenter.Z -= cameraLocation.Location.Z;
-			objectRadius *= 2;
-
-			if (frustumLeft.X * mstsObjectCenter.X + frustumLeft.Y * mstsObjectCenter.Y + frustumLeft.Z * mstsObjectCenter.Z > objectRadius)
+            // TODO: This *2 is a complete fiddle because some objects don't currently pass in a correct radius and e.g. track sections vanish.
+            objectRadius *= 2;
+			if (frustumLeft.X * mstsObjectCenter.X + frustumLeft.Y * mstsObjectCenter.Y - frustumLeft.Z * mstsObjectCenter.Z > objectRadius)
 				return false;
-
-			if (frustumRight.X * mstsObjectCenter.X + frustumRight.Y * mstsObjectCenter.Y + frustumRight.Z * mstsObjectCenter.Z > objectRadius)
+			if (frustumRight.X * mstsObjectCenter.X + frustumRight.Y * mstsObjectCenter.Y - frustumRight.Z * mstsObjectCenter.Z > objectRadius)
 				return false;
-
 			return true;
 		}
 
-		// cull for distance
-		public bool InRange(Vector3 mstsObjectCenter, float viewingRange)
+		// Cull for distance
+		public bool InRange(Vector3 mstsObjectCenter, float objectRadius, float objectViewingDistance)
 		{
-			var dx = mstsObjectCenter.X - cameraLocation.Location.X;
-			var dz = mstsObjectCenter.Z - cameraLocation.Location.Z;
-			var distanceSquared = dx * dx + dz * dz;
+			mstsObjectCenter.X -= cameraLocation.Location.X;
+			mstsObjectCenter.Z -= cameraLocation.Location.Z;
 
-			return distanceSquared < viewingRange * viewingRange;
+            if (objectViewingDistance > Viewer.Settings.ViewingDistance)
+                objectViewingDistance = Viewer.Settings.ViewingDistance;
+
+            var distanceSquared = mstsObjectCenter.X * mstsObjectCenter.X + mstsObjectCenter.Z * mstsObjectCenter.Z;
+
+            return distanceSquared < (objectRadius + objectViewingDistance) * (objectRadius + objectViewingDistance);
 		}
 
 		/// <summary>
@@ -183,15 +183,12 @@ namespace ORTS
 		/// </summary>
 		public bool CanSee(Vector3 mstsObjectCenter, float objectRadius, float objectViewingDistance)
 		{
-			// whichever is less, camera or object
-			if (objectViewingDistance > Viewer.Settings.ViewingDistance)
-				objectViewingDistance = Viewer.Settings.ViewingDistance;
+            if (!InRange(mstsObjectCenter, objectRadius, objectViewingDistance))
+                return false;
 
-			// account for the object's size
-			var minDistance = objectViewingDistance + objectRadius;
+			if (!InFOV(mstsObjectCenter, objectRadius))
+                return false;
 
-			if (!InRange(mstsObjectCenter, minDistance)) return false;
-			if (!InFOV(mstsObjectCenter, objectRadius)) return false;
 			return true;
 		}
 

@@ -91,7 +91,7 @@ namespace ORTS
             {
                 if (--lodIndex < 0) return; // No LOD in-range
                 lod = (LODItem)dtrackMesh.TrProfile.LODItems[lodIndex];
-            } while (!Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, lod.CutoffRadius));
+            } while (!Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, 0, lod.CutoffRadius));
             dtrackMesh.LastIndex = lodIndex; // Mark index farthest in-range LOD
 
             // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:

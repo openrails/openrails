@@ -883,7 +883,7 @@ namespace ORTS
 			{
 				// Start with the furthest away distance, then look for a nearer one in range of the camera.
 				var chosenDistanceLevelIndex = lodControl.DistanceLevels.Length - 1;
-				while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius + lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
+				while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
 					chosenDistanceLevelIndex--;
 				var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
 				foreach (var subObject in chosenDistanceLevel.SubObjects)

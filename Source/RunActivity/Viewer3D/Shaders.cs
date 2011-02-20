@@ -29,7 +29,7 @@ namespace ORTS
 		EffectParameter World;
 		EffectParameter View;
 		EffectParameter WorldViewProjection;
-		public void SetMatrix(Matrix world, ref Matrix view, ref Matrix viewProj)
+		public void SetMatrix(ref Matrix world, ref Matrix view, ref Matrix viewProj)
 		{
 			World.SetValue(world);
 			View.SetValue(view);

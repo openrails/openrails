@@ -165,18 +165,19 @@ namespace ORTS
             // THREAD SAFETY WARNING - LoaderProcess could write to this array at any time
             // its OK to iterate through this array because LoaderProcess never changes the size
             foreach (WorldFile wFile in WorldFiles)
+            {
                 if (wFile != null)
                 {
-                    wFile.PrepareFrame(frame, elapsedTime);
-                    foreach (DynatrackDrawer dTrack in wFile.dTrackList)
+                    if (Viewer.Camera.InFOV(new Vector3((wFile.TileX - Viewer.Camera.TileX) * 2048, 0, (wFile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
                     {
-                        dTrack.PrepareFrame(frame, elapsedTime);
-                    }
-                    foreach (ForestDrawer forest in wFile.forestList)
-                    {
-                        forest.PrepareFrame(frame, elapsedTime);
+                        wFile.PrepareFrame(frame, elapsedTime);
+                        foreach (DynatrackDrawer dTrack in wFile.dTrackList)
+                            dTrack.PrepareFrame(frame, elapsedTime);
+                        foreach (ForestDrawer forest in wFile.forestList)
+                            forest.PrepareFrame(frame, elapsedTime);
                     }
                 }
+            }
         }
     } // SceneryDrawer
 
@@ -410,7 +411,7 @@ namespace ORTS
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            foreach ( StaticShape shape in SceneryObjects )
+            foreach (StaticShape shape in SceneryObjects)
                 shape.PrepareFrame(frame, elapsedTime);
         }
 

@@ -572,7 +572,7 @@ namespace ORTS
 				ShaderPasses.Current.Begin();
                 foreach(RenderItem item in renderItems)
                 {
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewProj);
+                    SceneryShader.SetMatrix(ref item.XNAMatrix, ref XNAViewMatrix, ref viewProj);
                     SceneryShader.ZBias = item.RenderPrimitive.ZBias;
                     SceneryShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -668,7 +668,7 @@ namespace ORTS
 				ShaderPasses.Current.Begin();
 				foreach (RenderItem item in renderItems)
 				{
-					SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+					SceneryShader.SetMatrix(ref item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
 					SceneryShader.ZBias = item.RenderPrimitive.ZBias;
 					SceneryShader.CommitChanges();
 					item.RenderPrimitive.Draw(graphicsDevice);
@@ -1027,7 +1027,7 @@ namespace ORTS
                                 lod.AlphaBlendEnable;
 
                     Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+                    SceneryShader.SetMatrix(ref item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
                     SceneryShader.ZBias = item.RenderPrimitive.ZBias;
 					SceneryShader.Apply();
 
@@ -1097,7 +1097,7 @@ namespace ORTS
                 ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
-					shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+					shader.SetMatrix(ref item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
 					shader.ZBias = item.RenderPrimitive.ZBias;
 					shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -1281,7 +1281,7 @@ namespace ORTS
                 ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
-					shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
+					shader.SetMatrix(ref item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
 					shader.ZBias = item.RenderPrimitive.ZBias;
 					shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);

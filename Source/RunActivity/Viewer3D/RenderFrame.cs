@@ -372,17 +372,16 @@ namespace ORTS
 		/// <param name="flags"></param>
 		public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
 		{
-			if (RenderProcess.Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
-				AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
+            if (RenderProcess.Viewer.Camera.InRange(mstsLocation, objectRadius, objectViewingDistance))
+            {
+                if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, objectRadius))
+                    AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
 
-			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
-			{
-				for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-				{
-					if (IsInShadowMap(shadowMapIndex, mstsLocation, objectRadius, objectViewingDistance))
-						AddShadowPrimitive(shadowMapIndex, material, primitive, ref xnaMatrix, flags);
-				}
-			}
+                if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
+                    for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+                        if (IsInShadowMap(shadowMapIndex, mstsLocation, objectRadius, objectViewingDistance))
+                            AddShadowPrimitive(shadowMapIndex, material, primitive, ref xnaMatrix, flags);
+            }
 		}
 
 		/// <summary>
@@ -458,8 +457,8 @@ namespace ORTS
 			if (ShadowMapRenderTarget == null)
 				return false;
 
-			var xnaLocation = new Vector3(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
-			return ShadowMapBound[shadowMapIndex].Intersects(new BoundingSphere(xnaLocation, objectRadius));
+            mstsLocation.Z *= -1;
+            return ShadowMapBound[shadowMapIndex].Intersects(new BoundingSphere(mstsLocation, objectRadius));
 		}
 
 		static RenderPrimitiveSequence GetRenderSequence(RenderPrimitiveGroup group, bool blended)
