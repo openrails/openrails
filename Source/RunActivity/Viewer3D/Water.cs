@@ -37,7 +37,7 @@ namespace ORTS
 			if (viewer.Tiles.GetTile(tileX, tileZ) == null)
 				return;
 
-			if (WaterLayers == null)
+            if (WaterLayers == null && Viewer.ENVFile.WaterLayers != null)
 				LoadWaterMaterial();
 
 			if (PatchVertexDeclaration == null)
@@ -48,11 +48,7 @@ namespace ORTS
 
 		private void LoadWaterMaterial()
 		{
-			// TODO, for now, top layer only
-			WaterLayers = Viewer.ENVFile.WaterLayers.Select(layer =>
-			{
-				return new KeyValuePair<float, Material>(layer.Height, Materials.Load(Viewer.RenderProcess, "WaterMaterial", Viewer.Simulator.RoutePath + @"\envfiles\textures\" + layer.TextureName));
-			});
+            WaterLayers = Viewer.ENVFile.WaterLayers.Select(layer => new KeyValuePair<float, Material>(layer.Height, Materials.Load(Viewer.RenderProcess, "WaterMaterial", Viewer.Simulator.RoutePath + @"\envfiles\textures\" + layer.TextureName)));
 		}
 
         private Matrix xnaMatrix = Matrix.Identity;
