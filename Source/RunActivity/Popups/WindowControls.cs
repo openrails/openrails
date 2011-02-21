@@ -16,6 +16,7 @@ namespace ORTS.Popups
 	public abstract class Control
 	{
 		public Rectangle Position;
+        public object Tag;
 		public event Action<Control, Point> Click;
 
 		protected Control(int x, int y, int width, int height)
@@ -170,6 +171,63 @@ namespace ORTS.Popups
 			spriteBatch.Draw(WindowManager.LabelShadowTexture, new Rectangle(offset.X + Position.X + ShadowExtraSizeX - ShadowSize - ShadowExtraSizeY + Position.Width, offset.Y + Position.Y - ShadowExtraSizeY, ShadowSize + ShadowExtraSizeY, Position.Height + 2 * ShadowExtraSizeY), new Rectangle(2 * ShadowSize, 0, ShadowSize, 2 * ShadowSize), Color);
 		}
 	}
+
+    public class TextFlow : Control
+    {
+        static readonly char[] Whitespace = new[] { ' ', '\t', '\r', '\n' };
+
+		public string Text;
+		public Color Color;
+        List<string> Lines = new List<string>();
+
+		public TextFlow(int x, int y, int width, string text)
+			: base(x, y, width, 0)
+		{
+			Text = text.Replace('\t', ' ');
+			Color = Color.White;
+            Reflow();
+		}
+
+        public TextFlow(int width, string text)
+			: this(0, 0, width, text)
+		{
+		}
+
+        void Reflow()
+        {
+            Lines.Clear();
+            var position = 0;
+            while (position < Text.Length)
+            {
+                var wrap = position;
+                var search = position;
+                while (search != -1 && Text[search] != '\n' && Materials.PopupWindowMaterial.DefaultFont.MeasureString(Text.Substring(position, search - position)).X < Position.Width)
+                {
+                    wrap = search;
+                    search = Text.IndexOfAny(Whitespace, search + 1);
+                }
+                if (search == -1)
+                    wrap = Text.Length;
+                else if (Text[search] == '\n')
+                    wrap = search;
+                else if (wrap == position)
+                    wrap = search;
+                Lines.Add(Text.Substring(position, wrap - position));
+                position = wrap + 1;
+            }
+            Position.Height = Lines.Count * Materials.PopupWindowMaterial.DefaultFont.LineSpacing;
+        }
+
+        internal override void Draw(SpriteBatch spriteBatch, Point offset)
+        {
+            var pos = new Vector2(offset.X + Position.X, offset.Y + Position.Y);
+            foreach (var line in Lines)
+            {
+                spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, line, pos, Color);
+                pos.Y += Materials.PopupWindowMaterial.DefaultFont.LineSpacing;
+            }
+        }
+    }
 
 	public class Image : Control
 	{
@@ -456,7 +514,7 @@ namespace ORTS.Popups
 			// Left gutter
 			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + ScrollbarSize, offset.Y + Position.Y + Position.Height - ScrollbarSize, thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
 			// Thumb
-			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + ScrollbarSize + thumbOffset, offset.Y + Position.Y + Position.Height - ScrollbarSize, ScrollbarSize, ScrollbarSize), new Rectangle(ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
+            spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + ScrollbarSize + thumbOffset, offset.Y + Position.Y + Position.Height - ScrollbarSize, ScrollbarSize, ScrollbarSize), new Rectangle(ScrollSize > 0 ? ScrollbarSize : 2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
 			// Right gutter
 			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + 2 * ScrollbarSize + thumbOffset, offset.Y + Position.Y + Position.Height - ScrollbarSize, Position.Width - 3 * ScrollbarSize - thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
 			// Right button
@@ -502,14 +560,14 @@ namespace ORTS.Popups
 					else if (e.MouseDownPosition.X > Position.Right - ScrollbarSize)
 					{
 						// Mouse down occured on right button.
-						var newScrollPosition = Math.Min(ScrollPosition + 10, ScrollSize);
+						var newScrollPosition = Math.Min(ScrollPosition + 10, Math.Max(0, ScrollSize));
 						Client.MoveBy(ScrollPosition - newScrollPosition, 0);
 						ScrollPosition = newScrollPosition;
 					}
 					else if (e.MouseDownPosition.X > Position.Left + 2 * ScrollbarSize + thumbOffset)
 					{
 						// Mouse down occured on right gutter.
-						var newScrollPosition = Math.Min(ScrollPosition + 100, ScrollSize);
+                        var newScrollPosition = Math.Min(ScrollPosition + 100, Math.Max(0, ScrollSize));
 						Client.MoveBy(ScrollPosition - newScrollPosition, 0);
 						ScrollPosition = newScrollPosition;
 					}
@@ -557,7 +615,7 @@ namespace ORTS.Popups
 			// Top gutter
 			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + ScrollbarSize, thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
 			// Thumb
-			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + ScrollbarSize + thumbOffset, ScrollbarSize, ScrollbarSize), new Rectangle(ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
+            spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + ScrollbarSize + thumbOffset, ScrollbarSize, ScrollbarSize), new Rectangle(ScrollSize > 0 ? ScrollbarSize : 2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
 			// Bottom gutter
 			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + 2 * ScrollbarSize + thumbOffset, Position.Height - 3 * ScrollbarSize - thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
 			// Bottom button
@@ -603,14 +661,14 @@ namespace ORTS.Popups
 					else if (e.MouseDownPosition.Y > Position.Bottom - ScrollbarSize)
 					{
 						// Mouse down occured on bottom button.
-						var newScrollPosition = Math.Min(ScrollPosition + 10, ScrollSize);
+                        var newScrollPosition = Math.Min(ScrollPosition + 10, Math.Max(0, ScrollSize));
 						Client.MoveBy(0, ScrollPosition - newScrollPosition);
 						ScrollPosition = newScrollPosition;
 					}
 					else if (e.MouseDownPosition.Y > Position.Top + 2 * ScrollbarSize + thumbOffset)
 					{
 						// Mouse down occured on bottom gutter.
-						var newScrollPosition = Math.Min(ScrollPosition + 100, ScrollSize);
+                        var newScrollPosition = Math.Min(ScrollPosition + 100, Math.Max(0, ScrollSize));
 						Client.MoveBy(0, ScrollPosition - newScrollPosition);
 						ScrollPosition = newScrollPosition;
 					}

@@ -55,7 +55,7 @@ namespace ORTS.Popups
 		{
 		}
 
-		public bool Visible
+        public bool Visible
 		{
 			get
 			{
@@ -79,13 +79,17 @@ namespace ORTS.Popups
             }
         }
 
-		public Rectangle Location
+        public Rectangle Location
 		{
 			get
 			{
 				return location;
 			}
 		}
+
+        public virtual void TabAction()
+        {
+        }
 
 		public void MoveTo(int x, int y)
 		{

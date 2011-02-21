@@ -53,7 +53,7 @@ namespace ORTS
     public class Activity
     {
         public DateTime StartTime;
-        List<ActivityTask> Tasks = new List<ActivityTask>();
+        public List<ActivityTask> Tasks = new List<ActivityTask>();
         public ActivityTask Current = null;
         double prevTrainSpeed = -1;
 

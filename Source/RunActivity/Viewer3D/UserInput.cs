@@ -49,7 +49,6 @@ namespace ORTS
 			Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(Keys.Escape);
 			Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(Keys.Enter, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(Keys.Pause);
-			Commands[(int)UserCommands.GameHelp] = new UserCommandKeyInput(Keys.F1);
 			Commands[(int)UserCommands.GameSave] = new UserCommandKeyInput(Keys.F2);
 			Commands[(int)UserCommands.GameSpeedUp] = new UserCommandKeyInput(Keys.PageUp, KeyModifiers.Control | KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameSpeedDown] = new UserCommandKeyInput(Keys.PageDown, KeyModifiers.Control | KeyModifiers.Alt);
@@ -65,12 +64,14 @@ namespace ORTS
 			Commands[(int)UserCommands.GameDebugLogRenderFrame] = new UserCommandKeyInput(Keys.F12, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameDebugSignalling] = new UserCommandKeyInput(Keys.F11, KeyModifiers.Alt);
 			Commands[(int)UserCommands.GameDebugWeatherChange] = new UserCommandKeyInput(Keys.P, KeyModifiers.Alt);
-			Commands[(int)UserCommands.WindowTrackMonitor] = new UserCommandKeyInput(Keys.F4);
+            Commands[(int)UserCommands.WindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
+            Commands[(int)UserCommands.WindowHelp] = new UserCommandModifiableKeyInput(Keys.F1, Commands[(int)UserCommands.WindowTab]);
+            Commands[(int)UserCommands.WindowTrackMonitor] = new UserCommandKeyInput(Keys.F4);
 			Commands[(int)UserCommands.WindowSwitch] = new UserCommandKeyInput(Keys.F8);
 			Commands[(int)UserCommands.WindowTrainOperations] = new UserCommandKeyInput(Keys.F9);
 			Commands[(int)UserCommands.WindowNextStation] = new UserCommandKeyInput(Keys.F10);
 			Commands[(int)UserCommands.WindowCompass] = new UserCommandKeyInput('0');
-			Commands[(int)UserCommands.CameraCab] = new UserCommandKeyInput('1');
+            Commands[(int)UserCommands.CameraCab] = new UserCommandKeyInput('1');
 			Commands[(int)UserCommands.CameraOutsideFront] = new UserCommandKeyInput('2');
 			Commands[(int)UserCommands.CameraOutsideRear] = new UserCommandKeyInput('3');
 			Commands[(int)UserCommands.CameraTrackside] = new UserCommandKeyInput('4');
@@ -273,7 +274,6 @@ namespace ORTS
 		GameQuit,
 		GameFullscreen,
 		GamePause,
-		GameHelp,
 		GameSave,
 		GameSpeedUp,
 		GameSpeedDown,
@@ -289,12 +289,14 @@ namespace ORTS
 		GameDebugLogRenderFrame,
 		GameDebugSignalling,
 		GameDebugWeatherChange,
-		WindowTrackMonitor,
+        WindowTab,
+        WindowHelp,
+        WindowTrackMonitor,
 		WindowSwitch,
 		WindowTrainOperations,
 		WindowNextStation,
 		WindowCompass,
-		CameraCab,
+        CameraCab,
 		CameraOutsideFront,
 		CameraOutsideRear,
 		CameraTrackside,

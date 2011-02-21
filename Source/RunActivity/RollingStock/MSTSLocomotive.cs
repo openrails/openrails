@@ -96,6 +96,7 @@ namespace ORTS
         public float ContinuousForceTimeFactor = 1800;
         public float NumWheels = 4;
         public bool AntiSlip = false;
+        public string EngineOperatingProcedures;
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
 
@@ -265,6 +266,7 @@ namespace ORTS
                 case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(numwheels": NumWheels = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
+                case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
