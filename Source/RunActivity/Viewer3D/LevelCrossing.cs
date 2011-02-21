@@ -311,7 +311,8 @@ namespace ORTS
 			for (int i = eachUpdate * refreshCount; i < eachUpdate * refreshCount + eachUpdate && i < noCrossing; i++)
 			{
 				//if the crossing is not in viewing range, go back
-				if (LevelCrossingObjects[i].levelCrossingObj == null ||
+                if (LevelCrossingObjects[i] == null ||
+                    LevelCrossingObjects[i].levelCrossingObj == null ||
 					LevelCrossingObjects[i].levelCrossingObj.inrange == false) continue;
 
 				//distance from the front and rear of the train to a crossing

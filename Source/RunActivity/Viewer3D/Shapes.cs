@@ -266,7 +266,7 @@ namespace ORTS
 				// maybe more than one, so they will form a sister group and know each other
 				for (j = 0; j < max; j++)
 				{
-					if (id == levelObjects[j].trItem)
+                    if (levelObjects[j] != null && id == levelObjects[j].trItem)
 					{
 						found++;
 						levelObjects[j].levelCrossingObj = crossingObj;

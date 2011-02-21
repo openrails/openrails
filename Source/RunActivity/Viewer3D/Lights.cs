@@ -320,16 +320,15 @@ namespace ORTS
             Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
 
             float objectRadius = 20; // Even more arbitrary.
-            float viewingDistance = 1500; // Arbitrary.
-            if (Viewer.Camera.InFOV(mstsLocation, objectRadius))
-                if (Viewer.Camera.InRange(mstsLocation, objectRadius, viewingDistance))
-                    foreach (var lightMesh in LightMeshes)
-                        if (lightMesh.Enabled || lightMesh.FadeOut)
-                            if (lightMesh is LightGlowMesh)
-                                frame.AddPrimitive(LightGlowMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+            float objectViewingDistance = 1500; // Arbitrary.
+            if (Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
+                foreach (var lightMesh in LightMeshes)
+                    if (lightMesh.Enabled || lightMesh.FadeOut)
+                        if (lightMesh is LightGlowMesh)
+                            frame.AddPrimitive(LightGlowMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
 #if DEBUG_LIGHT_CONE
-                            else if (lightMesh is LightConeMesh)
-                                frame.AddPrimitive(LightConeMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+                        else if (lightMesh is LightConeMesh)
+                            frame.AddPrimitive(LightConeMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
 #endif
 
             // Set the active light cone info for the material code.
@@ -444,7 +443,36 @@ namespace ORTS
         public LightMesh(Light light)
         {
             Light = light;
+
+#if DEBUG_LIGHT_TRANSITIONS
+            Console.WriteLine();
+            Console.WriteLine("LightMesh transitions:");
+#endif
+            if (Light.Cycle)
+            {
+                SetStateCount(2 * Light.States.Count - 2);
+                for (var i = 0; i < Light.States.Count - 1; i++)
+                    SetUpTransition(i, i, i + 1);
+                for (var i = light.States.Count - 1; i > 0; i--)
+                    SetUpTransition(light.States.Count * 2 - 1 - i, i, i - 1);
+            }
+            else
+            {
+                SetStateCount(Light.States.Count);
+                for (var i = 0; i < Light.States.Count; i++)
+                    SetUpTransition(i, i, (i + 1) % Light.States.Count);
+            }
+#if DEBUG_LIGHT_TRANSITIONS
+            Console.WriteLine();
+#endif
         }
+
+        protected virtual void SetStateCount(int stateCount)
+        {
+            StateCount = stateCount;
+        }
+
+        protected abstract void SetUpTransition(int state, int stateIndex1, int stateIndex2);
 
         internal void UpdateState(LightDrawer lightDrawer)
         {
@@ -565,37 +593,19 @@ namespace ORTS
             if (LightVertexDeclaration == null)
                 LightVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, LightGlowVertex.VertexElements);
 
-#if DEBUG_LIGHT_TRANSITIONS
-            Console.WriteLine();
-            Console.WriteLine("LightGlowMesh transitions:");
-#endif
-            if (light.Cycle)
-            {
-                StateCount = 2 * light.States.Count - 2;
-                LightVertices = new LightGlowVertex[6 * StateCount];
-                for (var i = 0; i < light.States.Count - 1; i++)
-                    SetUpTransition(i, light, i, i + 1);
-                for (var i = light.States.Count - 1; i > 0; i--)
-                    SetUpTransition(light.States.Count * 2 - 1 - i, light, i, i - 1);
-            }
-            else
-            {
-                StateCount = light.States.Count;
-                LightVertices = new LightGlowVertex[6 * StateCount];
-                for (var i = 0; i < light.States.Count; i++)
-                    SetUpTransition(i, light, i, (i + 1) % light.States.Count);
-            }
-#if DEBUG_LIGHT_TRANSITIONS
-            Console.WriteLine();
-#endif
-
             UpdateState(lightDrawer);
         }
 
-        void SetUpTransition(int state, Light light, int stateIndex1, int stateIndex2)
+        protected override void SetStateCount(int stateCount)
         {
-            var state1 = light.States[stateIndex1];
-            var state2 = light.States[stateIndex2];
+            base.SetStateCount(stateCount);
+            LightVertices = new LightGlowVertex[6 * StateCount];
+        }
+
+        protected override void SetUpTransition(int state, int stateIndex1, int stateIndex2)
+        {
+            var state1 = Light.States[stateIndex1];
+            var state2 = Light.States[stateIndex2];
 
 #if DEBUG_LIGHT_TRANSITIONS
             Console.WriteLine("    Transition {0} is from state {1} to state {2} over {3:F1}s", state, stateIndex1, stateIndex2, state1.Duration);
@@ -685,9 +695,7 @@ namespace ORTS
             if (light.States[0].Elevation.Y != 0) Trace.TraceWarning("LightConeMesh only supports Elevation = 0.");
 
             if (VertexDeclaration == null)
-            {
                 VertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionColor.VertexElements);
-            }
             if (VertexBuffer == null)
             {
                 Vector3 position;
@@ -728,6 +736,21 @@ namespace ORTS
             }
 
             UpdateState(lightDrawer);
+        }
+
+        protected override void SetStateCount(int stateCount)
+        {
+            base.SetStateCount(stateCount);
+        }
+
+        protected override void SetUpTransition(int state, int stateIndex1, int stateIndex2)
+        {
+            var state1 = Light.States[stateIndex1];
+            var state2 = Light.States[stateIndex2];
+
+#if DEBUG_LIGHT_TRANSITIONS
+            Console.WriteLine("    Transition {0} is from state {1} to state {2} over {3:F1}s", state, stateIndex1, stateIndex2, state1.Duration);
+#endif
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
