@@ -129,7 +129,7 @@ namespace ORTS
 		public static void InitializeShadowMapLocations(Viewer3D viewer)
 		{
 			var ratio = (float)viewer.DisplaySize.X / viewer.DisplaySize.Y;
-			var fov = 45.0f;
+			var fov = MathHelper.ToRadians(45.0f);
 			var n = (float)0.5;
 			var f = (float)viewer.Settings.ShadowMapDistance;
 
@@ -159,8 +159,8 @@ namespace ORTS
 
 				// This shadow map goes from LastC to C; calculate the correct center and diameter for the sphere from the view frustum.
 				var center = (LastC + C) / 2;
-				var dist = (float)Math.Tan(fov / 2) * C;
-				var diameter = 2 * (float)Math.Sqrt(dist * dist + (dist * ratio) * (dist * ratio) + (C - center) * (C - center));
+				var height = (float)Math.Sin(fov / 2) * C;
+				var diameter = 2 * (float)Math.Sqrt(height * height + (height * ratio) * (height * ratio) + (C - center) * (C - center));
 
 				ShadowMapDistance[shadowMapIndex] = (int)center;
 				ShadowMapDiameter[shadowMapIndex] = (int)diameter;
