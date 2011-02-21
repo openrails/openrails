@@ -336,7 +336,7 @@ void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_O
 	shading *= saturate(1 - (1 - coneDot) / (2 * (1 - HeadlightDirection.w))); // We want 50% brightness at the given dot product.
 	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / length(HeadlightDirection.xyz));
 	shading *= HeadlightPosition.w;
-	Color += lerp(HeadlightColor.rgb, OriginalColor, HeadlightColor.a) * shading;
+	Color += OriginalColor * HeadlightColor.rgb * HeadlightColor.a * shading;
 }
 
 // Applies distance fog to the pixel.
