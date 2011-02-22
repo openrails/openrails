@@ -246,10 +246,12 @@ namespace ORTS
 
 		List<LevelCrossingObject> crossingObjects; //all objects with the same shape
 		protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
+		private int animatedDir; //if the animation speed is negative, use it to indicate where the gate should move
 
 		public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, LevelCrossingObj trj, LevelCrossingObject[] levelObjects)
 			: base(viewer, path, position, ShapeFlags.AutoZBias)
 		{
+			animatedDir = 0;
 			crossingObjects = new List<LevelCrossingObject>(); //sister gropu of crossing if there are parallel lines
 			crossingObj = trj; // the LevelCrossingObj, which handles details of the crossing data
 			crossingObj.inrange = true;//in viewing range
@@ -285,13 +287,36 @@ namespace ORTS
 		{
 			if (crossingObj.movingDirection == 0)
 			{
-                if (AnimationKey > 0.001) AnimationKey -= 40.0f / Viewer.RenderProcess.FrameRate.SmoothedValue * crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
+				if (AnimationKey > 0.001) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
 				if (AnimationKey < 0.001) AnimationKey = 0;
 			}
 			else
 			{
-				if (AnimationKey < 0.999) AnimationKey += 40.0f / Viewer.RenderProcess.FrameRate.SmoothedValue * crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f; //0.0005
-				if (AnimationKey > 0.999) AnimationKey = 1.0f;
+				if (crossingObj.animSpeed < 0) //loop animation
+				{
+					if (AnimationKey > 0.999f) animatedDir = 1;
+					if (AnimationKey < 0.001f) animatedDir = 0;
+					if (animatedDir == 0 && AnimationKey > 0.0f) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
+					else if (animatedDir == 0 && AnimationKey > 0.999f)
+					{
+						animatedDir = 1;
+						AnimationKey = 0.999f;
+					}
+					else if (animatedDir == 1 && AnimationKey < 1.0f)
+					{
+						AnimationKey += crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
+					}
+					else
+					{
+						animatedDir = 0;
+						AnimationKey = 0.001f;
+					}
+				}
+				else
+				{
+					if (AnimationKey < 0.999) AnimationKey += crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f; //0.0005
+					if (AnimationKey > 0.999) AnimationKey = 1.0f;
+				}
 			}
 
 

@@ -437,6 +437,7 @@ namespace MSTS
 		public int movingDirection;
 		public bool inrange = false;
 		public float animSpeed = 0.005f; //compute the speed based on LevelCrTiming
+		public float warningTime;
 		public LevelCrossingObj(SBR block, int detailLevel)
 		{
 
@@ -451,7 +452,9 @@ namespace MSTS
 					switch (subBlock.ID)
 					{
 						case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-						case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
+						case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock);
+							warningTime = levelCrParameters.crParameter1;
+							break;
 						case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
 						case TokenID.LevelCrData: levelCrData = new LevelCrData(subBlock); break;
 						case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock);
@@ -481,14 +484,15 @@ namespace MSTS
 		}
 		public class LevelCrParameters 
 		{
-			int crParameter1, crParameter2; // not known the exact name yet
+			public float crParameter1, crParameter2; // not known the exact name yet
 
 			public LevelCrParameters(SBR block)
             {
 				block.VerifyID(TokenID.LevelCrParameters);
-				crParameter1 = block.ReadInt();
-				crParameter2 = block.ReadInt();
+				crParameter1 = block.ReadFloat();
+				crParameter2 = block.ReadFloat();
                 block.VerifyEndOfBlock();
+				
             }
 
 		}

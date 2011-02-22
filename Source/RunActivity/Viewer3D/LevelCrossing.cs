@@ -307,6 +307,8 @@ namespace ORTS
 			float frontDist, rearDist;
 			//each frame only updates 1/20 crossings
 			int eachUpdate = noCrossing / 20 + 1;
+			float distance; //distance to activate the gate
+
 			// only update the distance for 1/20 of the crossings each time.
 			for (int i = eachUpdate * refreshCount; i < eachUpdate * refreshCount + eachUpdate && i < noCrossing; i++)
 			{
@@ -321,7 +323,8 @@ namespace ORTS
 				frontDist = LevelCrossingObjects[i].DistanceTo(train.FrontTDBTraveller);
 				rearDist = LevelCrossingObjects[i].DistanceTo(train.RearTDBTraveller);
 
-
+				//compute activiting distance
+				distance = LevelCrossingObjects[i].levelCrossingObj.warningTime * SpeedMpS;
 				//if the train is moving backward
 				if (SpeedMpS < 0)
 				{
@@ -330,7 +333,7 @@ namespace ORTS
 					{
 						//copy the rearTDBTraveller and move it 300m in the moving direction (-300), and find the distance
 						t = new TDBTraveller(train.RearTDBTraveller);
-						t.Move(-300);
+						t.Move(LevelCrossingObjects[i].levelCrossingObj.warningTime*SpeedMpS);
 						rearDist = LevelCrossingObjects[i].DistanceTo(t);
 
 						//if by moving -300, the train has positive rear distance, 
@@ -375,10 +378,10 @@ namespace ORTS
 						continue;
 					}
 					//if train is far away, do nothing
-					if (rearDist >= 0 && frontDist >= 300)
+					if (rearDist >= 0 && frontDist >= distance)
 					{
 					}
-					else if (rearDist >= 0 && frontDist < 300 && frontDist > 0) // train is within 300m
+					else if (rearDist >= 0 && frontDist < distance && frontDist > 0) // train is within warning range
 					{
 						LevelCrossingObjects[i].TrainApproaching(train);
 					}
