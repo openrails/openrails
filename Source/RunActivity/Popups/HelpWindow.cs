@@ -40,8 +40,6 @@ namespace ORTS.Popups
                         owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Briefing.Length > 0)
                     {
                         scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Briefing));
-                        //foreach (var line in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Briefing.Split('\n'))
-                        //    scrollbox.Add(new Label(scrollbox.RemainingWidth, TextHeight, line.Replace('\t', ' ')));
                     }
                 }));
                 Tabs.Add(new TabData(Tab.ActivityTimetable, "Timetable", (cl) =>
@@ -68,9 +66,9 @@ namespace ORTS.Popups
                                 var hbox = scrollbox.AddLayoutHorizontal(TextHeight);
                                 hbox.Add(new Label(colWidth * 3, hbox.RemainingHeight, stopAt.PlatformEnd1.Station));
                                 hbox.Add(new Label(colWidth, hbox.RemainingHeight, stopAt.SchArrive.ToString("HH:mm:ss"), LabelAlignment.Center));
-                                hbox.Add(new Label(colWidth, hbox.RemainingHeight, stopAt.ActArrive.HasValue ? stopAt.ActArrive.Value.ToString("HH:mm:ss") : "", LabelAlignment.Center));
+                                hbox.Add(new Label(colWidth, hbox.RemainingHeight, stopAt.ActArrive.HasValue ? stopAt.ActArrive.Value.ToString("HH:mm:ss") : stopAt.IsCompleted.HasValue ? "(missed)" : "", LabelAlignment.Center));
                                 hbox.Add(new Label(colWidth, hbox.RemainingHeight, stopAt.SchDepart.ToString("HH:mm:ss"), LabelAlignment.Center));
-                                hbox.Add(new Label(colWidth, hbox.RemainingHeight, stopAt.ActDepart.HasValue ? stopAt.ActDepart.Value.ToString("HH:mm:ss") : "", LabelAlignment.Center));
+                                hbox.Add(new Label(colWidth, hbox.RemainingHeight, stopAt.ActDepart.HasValue ? stopAt.ActDepart.Value.ToString("HH:mm:ss") : stopAt.IsCompleted.HasValue ? "(missed)" : "", LabelAlignment.Center));
                             }
                         }
                     }
@@ -89,8 +87,6 @@ namespace ORTS.Popups
                     ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
                 {
                     scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
-                    //foreach (var line in ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Split('\n'))
-                    //    scrollbox.Add(new Label(scrollbox.RemainingWidth, TextHeight, line.Replace('\t', ' ')));
                 }
             }));
             Tabs.Add(new TabData(Tab.KeyboardShortcuts, "Key Commands", (cl) =>
