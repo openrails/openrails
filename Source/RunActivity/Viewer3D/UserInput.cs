@@ -78,7 +78,9 @@ namespace ORTS
 			Commands[(int)UserCommands.CameraPassenger] = new UserCommandKeyInput('5');
 			Commands[(int)UserCommands.CameraBrakeman] = new UserCommandKeyInput('6');
 			Commands[(int)UserCommands.CameraFree] = new UserCommandKeyInput('8');
-			Commands[(int)UserCommands.CameraToggleShowCab] = new UserCommandKeyInput('1', KeyModifiers.Shift);
+            Commands[(int)UserCommands.CameraHeadOutForward] = new UserCommandKeyInput(Keys.Home);
+            Commands[(int)UserCommands.CameraHeadOutBack] = new UserCommandKeyInput(Keys.End);
+            Commands[(int)UserCommands.CameraToggleShowCab] = new UserCommandKeyInput('1', KeyModifiers.Shift);
 			Commands[(int)UserCommands.CameraMoveFast] = new UserCommandModifierInput(KeyModifiers.Shift);
 			Commands[(int)UserCommands.CameraMoveSlow] = new UserCommandModifierInput(KeyModifiers.Control);
 			Commands[(int)UserCommands.CameraPanLeft] = new UserCommandModifiableKeyInput(Keys.Left, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
@@ -93,8 +95,8 @@ namespace ORTS
 			Commands[(int)UserCommands.CameraRotateDown] = new UserCommandModifiableKeyInput(Keys.Down, KeyModifiers.Alt, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
 			Commands[(int)UserCommands.CameraCarNext] = new UserCommandKeyInput(Keys.PageUp, KeyModifiers.Alt);
 			Commands[(int)UserCommands.CameraCarPrevious] = new UserCommandKeyInput(Keys.PageDown, KeyModifiers.Alt);
-			Commands[(int)UserCommands.CameraCarFirst] = new UserCommandKeyInput(Keys.Home);
-			Commands[(int)UserCommands.CameraCarLast] = new UserCommandKeyInput(Keys.End);
+            Commands[(int)UserCommands.CameraCarFirst] = new UserCommandKeyInput(Keys.Home, KeyModifiers.Alt);
+            Commands[(int)UserCommands.CameraCarLast] = new UserCommandKeyInput(Keys.End, KeyModifiers.Alt);
 			Commands[(int)UserCommands.SwitchAhead] = new UserCommandKeyInput('g');
 			Commands[(int)UserCommands.SwitchBehind] = new UserCommandKeyInput('g', KeyModifiers.Shift);
 			Commands[(int)UserCommands.SwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
@@ -303,6 +305,8 @@ namespace ORTS
 		CameraPassenger,
 		CameraBrakeman,
 		CameraFree,
+        CameraHeadOutForward,
+        CameraHeadOutBack,
 		CameraToggleShowCab,
 		CameraMoveFast,
 		CameraMoveSlow,

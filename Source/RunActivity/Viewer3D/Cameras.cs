@@ -482,6 +482,8 @@ namespace ORTS
 		public enum HeadDirection { Forward, Backward }
 		bool Forwards;
 
+        public bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.HeadOutViewpoints.Count > 0; } }
+
 		public HeadOutCamera(Viewer3D viewer, HeadDirection headDirection)
 			: base(viewer)
 		{
@@ -524,17 +526,11 @@ namespace ORTS
 			attachedCar = front ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
 			rotationYRadians = front == attachedCar.Flipped ? (float)Math.PI : 0;
 
-			onboardLocation.X = 1.8f;
-			if (attachedCar != null && attachedCar.FrontCabViewpoints.Count > 0 && attachedCar.FrontCabViewpoints[0].Location != null)
-			{
-				onboardLocation.Y = attachedCar.FrontCabViewpoints[0].Location.Y;
-				onboardLocation.Z = attachedCar.FrontCabViewpoints[0].Location.Z;
-			}
-			else
-			{
-				onboardLocation.Y = 3.3f;
-				onboardLocation.Z = attachedCar.Length / 2 - 1;
-			}
+            if (attachedCar != null &&
+                attachedCar.HeadOutViewpoints.Count > 0)
+            {
+                onboardLocation = attachedCar.HeadOutViewpoints[0].Location;
+            }
 
 			if (front == attachedCar.Flipped)
 				onboardLocation.Z *= -1;

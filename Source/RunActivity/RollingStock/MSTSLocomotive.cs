@@ -267,6 +267,7 @@ namespace ORTS
                 case "engine(numwheels": NumWheels = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
+                case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero) }); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }

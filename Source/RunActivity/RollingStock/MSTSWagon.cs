@@ -200,6 +200,8 @@ namespace ORTS
                 FrontCabViewpoints.Add(frontCabViewPoint);
             foreach (ViewPoint rearCabViewPoint in copy.RearCabViewpoints)
                 RearCabViewpoints.Add(rearCabViewPoint);
+            foreach (ViewPoint headOutViewPoint in copy.HeadOutViewpoints)
+                HeadOutViewpoints.Add(headOutViewPoint);
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
 

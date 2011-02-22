@@ -89,7 +89,7 @@ namespace ORTS
 		public Camera Camera; // Current camera
 		Camera AboveGroundCamera; // Previous camera for when automatically switching to cab.
 		private CabCamera CabCamera; // Camera 1
-		private HeadOutCamera HeadOutFwdCamera; // Camera 1+Up
+		private HeadOutCamera HeadOutForwardCamera; // Camera 1+Up
 		private HeadOutCamera HeadOutBackCamera; // Camera 2+Down
 		private TrackingCamera FrontCamera; // Camera 2
 		private TrackingCamera BackCamera; // Camera 3
@@ -285,7 +285,7 @@ namespace ORTS
 			WellKnownCameras.Add(BackCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Rear));
 			WellKnownCameras.Add(PassengerCamera = new PassengerCamera(this));
 			WellKnownCameras.Add(BrakemanCamera = new BrakemanCamera(this));
-			WellKnownCameras.Add(HeadOutFwdCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
+			WellKnownCameras.Add(HeadOutForwardCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
 			WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
 			WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
 
@@ -363,9 +363,9 @@ namespace ORTS
 		[CallOnThread("Updater")]
 		public void HandleUserInput(ElapsedTime elapsedTime)
 		{
-			Camera.HandleUserInput(elapsedTime);
-
-			if (PlayerLocomotiveViewer != null)
+            Camera.HandleUserInput(elapsedTime);
+           
+            if (PlayerLocomotiveViewer != null)
 				PlayerLocomotiveViewer.HandleUserInput(elapsedTime);
 
 			InfoDisplay.HandleUserInput(elapsedTime);
@@ -397,18 +397,15 @@ namespace ORTS
 				Camera.Activate();
 			}
 
-			// Change view point - cab, passenger, outside, etc
-			if (UserInput.IsPressed(UserCommands.CameraCab)) { if (CabCamera.HasCABViews) CabCamera.Activate(); }
+            if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.HasCABViews) CabCamera.Activate();
 			if (UserInput.IsPressed(UserCommands.CameraOutsideFront)) FrontCamera.Activate();
-			if (UserInput.IsPressed(UserCommands.CameraOutsideRear)) BackCamera.Activate();
-			if (UserInput.IsPressed(UserCommands.CameraTrackside)) TracksideCamera.Activate();
-			if (UserInput.IsPressed(UserCommands.CameraPassenger)) { if (PassengerCamera.HasPassengerCamera) PassengerCamera.Activate(); }
-			if (UserInput.IsPressed(UserCommands.CameraBrakeman)) BrakemanCamera.Activate();
-			if (UserInput.IsPressed(UserCommands.CameraFree)) new FreeRoamCamera(this, Camera).Activate();
-
-			bool mayheadout = (Camera == CabCamera) || (Camera == HeadOutFwdCamera) || (Camera == HeadOutBackCamera);
-			if (UserInput.IsPressed(UserCommands.CameraCarFirst) && mayheadout) HeadOutFwdCamera.Activate();
-			if (UserInput.IsPressed(UserCommands.CameraCarLast) && mayheadout) HeadOutBackCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraOutsideRear)) BackCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraTrackside)) TracksideCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraPassenger) && PassengerCamera.HasPassengerCamera) PassengerCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraBrakeman)) BrakemanCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraFree)) new FreeRoamCamera(this, Camera).Activate();
+            if (UserInput.IsPressed(UserCommands.CameraHeadOutForward) && HeadOutForwardCamera.IsAvailable) HeadOutForwardCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraHeadOutBack) && HeadOutBackCamera.IsAvailable) HeadOutBackCamera.Activate();
 
 			if (UserInput.IsPressed(UserCommands.SwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);
 			if (UserInput.IsPressed(UserCommands.SwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);

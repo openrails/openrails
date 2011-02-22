@@ -79,6 +79,7 @@ namespace ORTS
         public List<ViewPoint> FrontCabViewpoints = new List<ViewPoint>();
         public List<ViewPoint> RearCabViewpoints = new List<ViewPoint>();
         public List<ViewPoint> PassengerViewpoints = new List<ViewPoint>();
+        public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Load 3D geometry into this 3D viewer and return it as a TrainCarViewer
         public virtual TrainCarViewer GetViewer(Viewer3D viewer) { return null; }
