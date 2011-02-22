@@ -79,7 +79,7 @@ namespace ORTS
 			Commands[(int)UserCommands.CameraBrakeman] = new UserCommandKeyInput('6');
 			Commands[(int)UserCommands.CameraFree] = new UserCommandKeyInput('8');
             Commands[(int)UserCommands.CameraHeadOutForward] = new UserCommandKeyInput(Keys.Home);
-            Commands[(int)UserCommands.CameraHeadOutBack] = new UserCommandKeyInput(Keys.End);
+            Commands[(int)UserCommands.CameraHeadOutBackward] = new UserCommandKeyInput(Keys.End);
             Commands[(int)UserCommands.CameraToggleShowCab] = new UserCommandKeyInput('1', KeyModifiers.Shift);
 			Commands[(int)UserCommands.CameraMoveFast] = new UserCommandModifierInput(KeyModifiers.Shift);
 			Commands[(int)UserCommands.CameraMoveSlow] = new UserCommandModifierInput(KeyModifiers.Control);
@@ -306,7 +306,7 @@ namespace ORTS
 		CameraBrakeman,
 		CameraFree,
         CameraHeadOutForward,
-        CameraHeadOutBack,
+        CameraHeadOutBackward,
 		CameraToggleShowCab,
 		CameraMoveFast,
 		CameraMoveSlow,

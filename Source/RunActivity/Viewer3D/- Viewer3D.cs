@@ -405,7 +405,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.CameraBrakeman)) BrakemanCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraFree)) new FreeRoamCamera(this, Camera).Activate();
             if (UserInput.IsPressed(UserCommands.CameraHeadOutForward) && HeadOutForwardCamera.IsAvailable) HeadOutForwardCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraHeadOutBack) && HeadOutBackCamera.IsAvailable) HeadOutBackCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraHeadOutBackward) && HeadOutBackCamera.IsAvailable) HeadOutBackCamera.Activate();
 
 			if (UserInput.IsPressed(UserCommands.SwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);
 			if (UserInput.IsPressed(UserCommands.SwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
