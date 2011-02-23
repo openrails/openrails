@@ -280,6 +280,7 @@ namespace ORTS
 			{
 				TextBuilder.AppendFormat("Dynamic Brake = {0}", dynamicBrakeStatus); TextBuilder.AppendLine();
 			}
+            TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.PlayerLocomotive.SpeedMpS)).ToString("F1"));
 			if (locomotiveStatus != null)
 			{
 				TextBuilder.AppendLine(locomotiveStatus);
