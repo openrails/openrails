@@ -1196,8 +1196,6 @@ namespace ORTS
         LightGlowShader LightGlowShader;
         Texture2D lightGlowTexture;
         public RenderProcess RenderProcess;
-        int lastLightState = 0, currentLightState = 0;
-        double fadeTimer = 0;
 
 		public LightGlowMaterial(RenderProcess renderProcess)
 			: base(null)
@@ -1229,7 +1227,7 @@ namespace ORTS
                 {
                     Matrix wvp = item.XNAMatrix * XNAViewMatrix * Camera.XNASkyProjection;
                     LightGlowShader.SetMatrix(ref wvp);
-                    LightGlowShader.SetFade(((LightGlowMesh)item.RenderPrimitive).Fade);
+                    LightGlowShader.SetFade(((LightMesh)item.RenderPrimitive).Fade);
                     LightGlowShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -1283,6 +1281,7 @@ namespace ORTS
                 {
                     Matrix wvp = item.XNAMatrix * XNAViewMatrix * Camera.XNASkyProjection;
                     LightConeShader.SetMatrix(ref wvp);
+                    LightConeShader.SetFade(((LightMesh)item.RenderPrimitive).Fade);
                     LightConeShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -1303,11 +1302,6 @@ namespace ORTS
             graphicsDevice.RenderState.StencilFunction = CompareFunction.Always;
             graphicsDevice.RenderState.StencilPass = StencilOperation.Keep;
         }
-
-        //public override bool GetBlending(RenderPrimitive renderPrimitive)
-        //{
-        //    return true;
-        //}
     }
 
 	public class WaterMaterial : Material

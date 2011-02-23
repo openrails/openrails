@@ -222,7 +222,7 @@ namespace ORTS
         public WeatherType Weather;
         List<LightMesh> LightMeshes = new List<LightMesh>();
 
-        LightMesh ActiveLightCone;
+        LightConeMesh ActiveLightCone;
         public bool HasLightCone;
         public float LightConeFadeIn;
         public float LightConeFadeOut;
@@ -264,7 +264,7 @@ namespace ORTS
 
         void UpdateActiveLightCone()
         {
-            var newLightCone = LightMeshes.FirstOrDefault(lm => lm is LightConeMesh && lm.Enabled);
+            var newLightCone = (LightConeMesh)LightMeshes.FirstOrDefault(lm => lm is LightConeMesh && lm.Enabled);
 
             // Fade-in should be NEW headlight.
             if ((ActiveLightCone == null) && (newLightCone != null))
@@ -334,31 +334,26 @@ namespace ORTS
             // Set the active light cone info for the material code.
             if (HasLightCone && ActiveLightCone != null)
             {
-                Vector3 position;
-                float angle;
-                float radius;
-                float distance;
-                Color color;
-                CalculateLightCone(ActiveLightCone.Light.States[0], out position, out angle, out radius, out distance, out color);
-
-                LightConePosition = Vector3.Transform(position, xnaDTileTranslation);
-                LightConeDirection = Vector3.Transform(-Vector3.UnitZ, Car.WorldPosition.XNAMatrix);
+                LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), xnaDTileTranslation);
+                LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), Car.WorldPosition.XNAMatrix);
                 LightConeDirection -= Car.WorldPosition.XNAMatrix.Translation;
                 LightConeDirection.Normalize();
-                LightConeDistance = distance;
-                LightConeMinDotProduct = (float)Math.Cos(angle);
-                LightConeColor = color.ToVector4();
+                LightConeDistance = MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
+                LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));
+                LightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
             }
         }
 
-        public static void CalculateLightCone(LightState lightState, out Vector3 position, out float angle, out float radius, out float distance, out Color color)
+        public static void CalculateLightCone(LightState lightState, out Vector3 position, out Vector3 direction, out float angle, out float radius, out float distance, out Vector4 color)
         {
             position = lightState.Position;
             position.Z *= -1;
+            direction = -Vector3.UnitZ;
+            direction = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-lightState.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-lightState.Azimuth.Y)));
             angle = MathHelper.ToRadians(lightState.Angle) / 2;
             radius = lightState.Radius / 2;
             distance = (float)(radius / Math.Sin(angle));
-            color = new Color() { PackedValue = lightState.Color };
+            color = new Color() { PackedValue = lightState.Color }.ToVector4();
         }
 
 #if DEBUG_LIGHT_STATES
@@ -443,36 +438,32 @@ namespace ORTS
         public LightMesh(Light light)
         {
             Light = light;
+            StateCount = Light.Cycle ? 2 * Light.States.Count - 2 : Light.States.Count;
+            UpdateStates(State, (State + 1) % StateCount);
+        }
 
+        protected void SetUpTransitions(Action<int, int, int> transitionHandler)
+        {
 #if DEBUG_LIGHT_TRANSITIONS
             Console.WriteLine();
             Console.WriteLine("LightMesh transitions:");
 #endif
             if (Light.Cycle)
             {
-                SetStateCount(2 * Light.States.Count - 2);
                 for (var i = 0; i < Light.States.Count - 1; i++)
-                    SetUpTransition(i, i, i + 1);
-                for (var i = light.States.Count - 1; i > 0; i--)
-                    SetUpTransition(light.States.Count * 2 - 1 - i, i, i - 1);
+                    transitionHandler(i, i, i + 1);
+                for (var i = Light.States.Count - 1; i > 0; i--)
+                    transitionHandler(Light.States.Count * 2 - 1 - i, i, i - 1);
             }
             else
             {
-                SetStateCount(Light.States.Count);
                 for (var i = 0; i < Light.States.Count; i++)
-                    SetUpTransition(i, i, (i + 1) % Light.States.Count);
+                    transitionHandler(i, i, (i + 1) % Light.States.Count);
             }
 #if DEBUG_LIGHT_TRANSITIONS
             Console.WriteLine();
 #endif
         }
-
-        protected virtual void SetStateCount(int stateCount)
-        {
-            StateCount = stateCount;
-        }
-
-        protected abstract void SetUpTransition(int state, int stateIndex1, int stateIndex2);
 
         internal void UpdateState(LightDrawer lightDrawer)
         {
@@ -551,6 +542,7 @@ namespace ORTS
                 {
                     StateTime -= Light.States[State % Light.States.Count].Duration;
                     State = (State + 1) % StateCount;
+                    UpdateStates(State, (State + 1) % StateCount);
                     Fade.Y = 0;
                 }
                 if (Light.States[State % Light.States.Count].Transition)
@@ -577,62 +569,75 @@ namespace ORTS
                 }
             }
         }
+
+        protected virtual void UpdateStates(int stateIndex1, int stateIndex2)
+        {
+        }
     }
 
     public class LightGlowMesh : LightMesh
     {
-        static VertexDeclaration LightVertexDeclaration;
-
-        LightGlowVertex[] LightVertices;
+        static VertexDeclaration VertexDeclaration;
+        VertexBuffer VertexBuffer;
+        static IndexBuffer IndexBuffer;
 
         public LightGlowMesh(LightDrawer lightDrawer, RenderProcess renderProcess, Light light)
             : base(light)
         {
             Debug.Assert(light.Type == LightType.Glow, "LightGlowMesh is only for LightType.Glow lights.");
 
-            if (LightVertexDeclaration == null)
-                LightVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, LightGlowVertex.VertexElements);
+            if (VertexDeclaration == null)
+                VertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, LightGlowVertex.VertexElements);
+            if (VertexBuffer == null)
+            {
+                var vertexData = new LightGlowVertex[6 * StateCount];
+                SetUpTransitions((state, stateIndex1, stateIndex2) =>
+                {
+                    var state1 = Light.States[stateIndex1];
+                    var state2 = Light.States[stateIndex2];
+
+#if DEBUG_LIGHT_TRANSITIONS
+                    Console.WriteLine("    Transition {0} is from state {1} to state {2} over {3:F1}s", state, stateIndex1, stateIndex2, state1.Duration);
+#endif
+
+                    // FIXME: Is conversion of "azimuth" to a normal right?
+
+                    var position1 = state1.Position; position1.Z *= -1;
+                    var normal1 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state1.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state1.Azimuth.Y)));
+                    var color1 = new Color() { PackedValue = state1.Color }.ToVector4();
+
+                    var position2 = state2.Position; position2.Z *= -1;
+                    var normal2 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state2.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state2.Azimuth.Y)));
+                    var color2 = new Color() { PackedValue = state2.Color }.ToVector4();
+
+                    vertexData[6 * state + 0] = new LightGlowVertex(new Vector2(1, 1), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+                    vertexData[6 * state + 1] = new LightGlowVertex(new Vector2(0, 0), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+                    vertexData[6 * state + 2] = new LightGlowVertex(new Vector2(1, 0), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+                    vertexData[6 * state + 3] = new LightGlowVertex(new Vector2(1, 1), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+                    vertexData[6 * state + 4] = new LightGlowVertex(new Vector2(0, 1), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+                    vertexData[6 * state + 5] = new LightGlowVertex(new Vector2(0, 0), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
+                });
+                VertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, typeof(LightGlowVertex), vertexData.Length, BufferUsage.WriteOnly);
+                VertexBuffer.SetData(vertexData);
+            }
+            if (IndexBuffer == null)
+            {
+                var indexData = new short[] {
+                    0, 1, 2, 3, 4, 5
+                };
+                IndexBuffer = new IndexBuffer(renderProcess.GraphicsDevice, typeof(short), indexData.Length, BufferUsage.WriteOnly);
+                IndexBuffer.SetData(indexData);
+            }
 
             UpdateState(lightDrawer);
         }
 
-        protected override void SetStateCount(int stateCount)
-        {
-            base.SetStateCount(stateCount);
-            LightVertices = new LightGlowVertex[6 * StateCount];
-        }
-
-        protected override void SetUpTransition(int state, int stateIndex1, int stateIndex2)
-        {
-            var state1 = Light.States[stateIndex1];
-            var state2 = Light.States[stateIndex2];
-
-#if DEBUG_LIGHT_TRANSITIONS
-            Console.WriteLine("    Transition {0} is from state {1} to state {2} over {3:F1}s", state, stateIndex1, stateIndex2, state1.Duration);
-#endif
-
-            // FIXME: Is conversion of "azimuth" to a normal right?
-
-            var position1 = state1.Position; position1.Z *= -1;
-            var normal1 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state1.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state1.Azimuth.Y)));
-            var color1 = new Color() { PackedValue = state1.Color }.ToVector4();
-
-            var position2 = state2.Position; position2.Z *= -1;
-            var normal2 = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-state2.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-state2.Azimuth.Y)));
-            var color2 = new Color() { PackedValue = state2.Color }.ToVector4();
-
-            LightVertices[state * 6 + 0] = new LightGlowVertex(new Vector2(1, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 1] = new LightGlowVertex(new Vector2(0, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 2] = new LightGlowVertex(new Vector2(1, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 3] = new LightGlowVertex(new Vector2(1, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 4] = new LightGlowVertex(new Vector2(0, 1), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-            LightVertices[state * 6 + 5] = new LightGlowVertex(new Vector2(0, 0), 0, position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
-        }
-
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = LightVertexDeclaration;
-            graphicsDevice.DrawUserPrimitives<LightGlowVertex>(PrimitiveType.TriangleList, LightVertices, State * 6, 2);
+            graphicsDevice.VertexDeclaration = VertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, LightGlowVertex.SizeInBytes);
+            graphicsDevice.Indices = IndexBuffer;
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 6 * State, 0, 6, 0, 2);
         }
     }
 
@@ -641,7 +646,6 @@ namespace ORTS
         public Vector3 PositionO;
         public Vector3 PositionT;
         public Vector3 NormalO;
-        public float Duration;
         public Vector3 NormalT;
         public Vector4 ColorO;
         public Vector4 ColorT;
@@ -649,7 +653,7 @@ namespace ORTS
         public float RadiusO;
         public float RadiusT;
 
-        public LightGlowVertex(Vector2 texCoords, float duration, Vector3 position1, Vector3 position2, Vector3 normal1, Vector3 normal2, Vector4 color1, Vector4 color2, float radius1, float radius2)
+        public LightGlowVertex(Vector2 texCoords, Vector3 position1, Vector3 position2, Vector3 normal1, Vector3 normal2, Vector4 color1, Vector4 color2, float radius1, float radius2)
         {
             PositionO = position1;
             PositionT = position2;
@@ -658,24 +662,21 @@ namespace ORTS
             ColorO = color1;
             ColorT = color2;
             TexCoords = texCoords;
-            Duration = duration;
             RadiusO = radius1;
             RadiusT = radius2;
         }
 
-        // Vertex elements definition
         public static readonly VertexElement[] VertexElements = {
-            new VertexElement(0, sizeof(float) * (0), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 0),
+            new VertexElement(0, sizeof(float) * 0, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 0),
             new VertexElement(0, sizeof(float) * (3), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 1),
-            new VertexElement(0, sizeof(float) * (3 + 3), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Normal, 0),
+            new VertexElement(0, sizeof(float) * (3 + 3), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Normal, 0),
             new VertexElement(0, sizeof(float) * (3 + 3 + 3), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Normal, 1),
-            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 0),
-            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 4 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 1),
-            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 4 + 4 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 0)
-       };
+            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 3), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 0),
+            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 3 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 1),
+            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 3 + 4 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 0),
+        };
 
-        // Size of one vertex in bytes
-        public static int SizeInBytes = sizeof(float) * (3 + 3 + 3 + 4 + 4 + 4 + 4);
+        public static int SizeInBytes = sizeof(float) * (3 + 3 + 3 + 3 + 4 + 4 + 4);
     }
 
     public class LightConeMesh : LightMesh
@@ -683,7 +684,7 @@ namespace ORTS
         const int CircleSegments = 16;
 
         static VertexDeclaration VertexDeclaration;
-        static VertexBuffer VertexBuffer;
+        VertexBuffer VertexBuffer;
         static IndexBuffer IndexBuffer;
 
         public LightConeMesh(LightDrawer lightDrawer, RenderProcess renderProcess, Light light)
@@ -695,27 +696,41 @@ namespace ORTS
             if (light.States[0].Elevation.Y != 0) Trace.TraceWarning("LightConeMesh only supports Elevation = 0.");
 
             if (VertexDeclaration == null)
-                VertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionColor.VertexElements);
+                VertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, LightConeVertex.VertexElements);
             if (VertexBuffer == null)
             {
-                Vector3 position;
-                float angle;
-                float radius;
-                float distance;
-                Color color;
-                LightDrawer.CalculateLightCone(light.States[0], out position, out angle, out radius, out distance, out color);
-
-                color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-
-                var vertexData = new VertexPositionColor[CircleSegments + 2];
-                for (var i = 0; i < CircleSegments; i++)
+                var vertexData = new LightConeVertex[(CircleSegments + 2) * StateCount];
+                SetUpTransitions((state, stateIndex1, stateIndex2) =>
                 {
-                    var a = MathHelper.TwoPi * i / CircleSegments;
-                    vertexData[i] = new VertexPositionColor(new Vector3(position.X + (float)(radius * Math.Cos(a)), position.Y + (float)(radius * Math.Sin(a)), position.Z - distance), color);
-                }
-                vertexData[CircleSegments + 0] = new VertexPositionColor(position, color);
-                vertexData[CircleSegments + 1] = new VertexPositionColor(new Vector3(position.X, position.Y, position.Z - distance), color);
-                VertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, typeof(VertexPositionColor), vertexData.Length, BufferUsage.WriteOnly);
+                    var state1 = Light.States[stateIndex1];
+                    var state2 = Light.States[stateIndex2];
+
+#if DEBUG_LIGHT_TRANSITIONS
+                    Console.WriteLine("    Transition {0} is from state {1} to state {2} over {3:F1}s", state, stateIndex1, stateIndex2, state1.Duration);
+#endif
+
+                    Vector3 position1, position2, direction1, direction2;
+                    float angle1, angle2, radius1, radius2, distance1, distance2;
+                    Vector4 color1, color2;
+                    LightDrawer.CalculateLightCone(state1, out position1, out direction1, out angle1, out radius1, out distance1, out color1);
+                    LightDrawer.CalculateLightCone(state2, out position2, out direction2, out angle2, out radius2, out distance2, out color2);
+                    var direction1Right = Vector3.Cross(direction1, Vector3.UnitY);
+                    var direction1Up = Vector3.Cross(direction1Right, direction1);
+                    var direction2Right = Vector3.Cross(direction2, Vector3.UnitY);
+                    var direction2Up = Vector3.Cross(direction2Right, direction2);
+
+                    for (var i = 0; i < CircleSegments; i++)
+                    {
+                        var a1 = MathHelper.TwoPi * i / CircleSegments;
+                        var a2 = MathHelper.TwoPi * (i + 1) / CircleSegments;
+                        var v1 = position1 + direction1 * distance1 + direction1Right * (float)(radius1 * Math.Cos(a1)) + direction1Up * (float)(radius1 * Math.Sin(a1));
+                        var v2 = position2 + direction2 * distance2 + direction2Right * (float)(radius2 * Math.Cos(a2)) + direction2Up * (float)(radius2 * Math.Sin(a2));
+                        vertexData[(CircleSegments + 2) * state + i] = new LightConeVertex(v1, v2, color1, color2);
+                    }
+                    vertexData[(CircleSegments + 2) * state + CircleSegments + 0] = new LightConeVertex(position1, position2, color1, color2);
+                    vertexData[(CircleSegments + 2) * state + CircleSegments + 1] = new LightConeVertex(new Vector3(position1.X, position1.Y, position1.Z - distance1), new Vector3(position2.X, position2.Y, position2.Z - distance2), color1, color2);
+                });
+                VertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, typeof(LightConeVertex), vertexData.Length, BufferUsage.WriteOnly);
                 VertexBuffer.SetData(vertexData);
             }
             if (IndexBuffer == null)
@@ -724,12 +739,12 @@ namespace ORTS
                 for (var i = 0; i < CircleSegments; i++)
                 {
                     var i2 = (i + 1) % CircleSegments;
-                    indexData[i * 6 + 0] = (short)(CircleSegments + 0);
-                    indexData[i * 6 + 1] = (short)i2;
-                    indexData[i * 6 + 2] = (short)i;
-                    indexData[i * 6 + 3] = (short)i;
-                    indexData[i * 6 + 4] = (short)i2;
-                    indexData[i * 6 + 5] = (short)(CircleSegments + 1);
+                    indexData[6 * i + 0] = (short)(CircleSegments + 0);
+                    indexData[6 * i + 1] = (short)i2;
+                    indexData[6 * i + 2] = (short)i;
+                    indexData[6 * i + 3] = (short)i;
+                    indexData[6 * i + 4] = (short)i2;
+                    indexData[6 * i + 5] = (short)(CircleSegments + 1);
                 }
                 IndexBuffer = new IndexBuffer(renderProcess.GraphicsDevice, typeof(short), indexData.Length, BufferUsage.WriteOnly);
                 IndexBuffer.SetData(indexData);
@@ -738,31 +753,16 @@ namespace ORTS
             UpdateState(lightDrawer);
         }
 
-        protected override void SetStateCount(int stateCount)
-        {
-            base.SetStateCount(stateCount);
-        }
-
-        protected override void SetUpTransition(int state, int stateIndex1, int stateIndex2)
-        {
-            var state1 = Light.States[stateIndex1];
-            var state2 = Light.States[stateIndex2];
-
-#if DEBUG_LIGHT_TRANSITIONS
-            Console.WriteLine("    Transition {0} is from state {1} to state {2} over {3:F1}s", state, stateIndex1, stateIndex2, state1.Duration);
-#endif
-        }
-
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.VertexDeclaration = VertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColor.SizeInBytes);
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, LightConeVertex.SizeInBytes);
             graphicsDevice.Indices = IndexBuffer;
 
 #if DEBUG_LIGHT_CONE_FULL
             graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
             graphicsDevice.RenderState.SourceBlend = Blend.One;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 #else
             graphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
             graphicsDevice.RenderState.StencilFunction = CompareFunction.Always;
@@ -770,7 +770,7 @@ namespace ORTS
             graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.Greater;
             graphicsDevice.RenderState.DestinationBlend = Blend.One;
             graphicsDevice.RenderState.SourceBlend = Blend.Zero;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 
             graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
             graphicsDevice.RenderState.StencilFunction = CompareFunction.Less;
@@ -778,8 +778,46 @@ namespace ORTS
             graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
             graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
             graphicsDevice.RenderState.SourceBlend = Blend.One;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 #endif
         }
+
+        public Vector3 Position1, Position2, Direction1, Direction2;
+        public float Angle1, Angle2, Radius1, Radius2, Distance1, Distance2;
+        public Vector4 Color1, Color2;
+
+        protected override void UpdateStates(int stateIndex1, int stateIndex2)
+        {
+            var state1 = Light.States[stateIndex1];
+            var state2 = Light.States[stateIndex2];
+
+            LightDrawer.CalculateLightCone(state1, out Position1, out Direction1, out Angle1, out Radius1, out Distance1, out Color1);
+            LightDrawer.CalculateLightCone(state2, out Position2, out Direction2, out Angle2, out Radius2, out Distance2, out Color2);
+        }
+    }
+
+    struct LightConeVertex
+    {
+        public Vector3 PositionO;
+        public Vector3 PositionT;
+        public Vector4 ColorO;
+        public Vector4 ColorT;
+
+        public LightConeVertex(Vector3 position1, Vector3 position2, Vector4 color1, Vector4 color2)
+        {
+            PositionO = position1;
+            PositionT = position2;
+            ColorO = color1;
+            ColorT = color2;
+        }
+
+        public static readonly VertexElement[] VertexElements = {
+            new VertexElement(0, sizeof(float) * 0, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 0),
+            new VertexElement(0, sizeof(float) * (3), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 1),
+            new VertexElement(0, sizeof(float) * (3 + 3), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 0),
+            new VertexElement(0, sizeof(float) * (3 + 3 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 1),
+        };
+
+        public static int SizeInBytes = sizeof(float) * (3 + 3 + 4 + 4);
     }
 }

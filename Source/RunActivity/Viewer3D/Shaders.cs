@@ -435,16 +435,23 @@ namespace ORTS
     public class LightConeShader : Effect
     {
         EffectParameter worldViewProjection = null;
+        EffectParameter fade = null;
 
         public LightConeShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("LightConeShader"))
         {
             worldViewProjection = Parameters["WorldViewProjection"];
+            fade = Parameters["Fade"];
         }
 
         public void SetMatrix(ref Matrix wvp)
         {
             worldViewProjection.SetValue(wvp);
+        }
+
+        public void SetFade(Vector2 fadeValues)
+        {
+            fade.SetValue(fadeValues);
         }
     }
 
