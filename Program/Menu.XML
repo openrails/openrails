@@ -4,23 +4,6 @@
         <name>Menu</name>
     </assembly>
     <members>
-        <member name="F:ORTS.MainForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:ORTS.MainForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
         <member name="F:ORTS.OptionsForm.components">
             <summary>
             Required designer variable.
@@ -36,6 +19,26 @@
             <summary>
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:MSTS.CONFile">
+            <summary>
+            Work with consist files
+            </summary>
+        </member>
+        <member name="T:MSTS.ACTFile">
+            <summary>
+            Summary description for Class1.
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
+            <summary>
+            Create a new 'ActivitySuccess' LocationEvent
+            </summary>
+        </member>
+        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
+            <summary>
+            Build a default EventTypeAllStops event
             </summary>
         </member>
         <member name="F:ORTS.ExploreForm.components">
@@ -72,24 +75,22 @@
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="M:MSTS.PATTraveller.#ctor(System.String)">
+        <member name="F:ORTS.MainForm.components">
             <summary>
-            Initializes the traveller to the first waypoint 
-            in the specified path file.
-            </summary>
-            <param name="PATFilePath"></param>
-        </member>
-        <member name="T:MSTS.PATFile">
-            <summary>
-            Work with consist files, contains an ArrayList of ConsistTrainset
+            Required designer variable.
             </summary>
         </member>
-        <member name="M:MSTS.PATFile.#ctor(System.String)">
+        <member name="M:ORTS.MainForm.Dispose(System.Boolean)">
             <summary>
-            Open a PAT file, 
-            filePath includes full path and extension
+            Clean up any resources being used.
             </summary>
-            <param name="filePath"></param>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ORTS.MainForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
         </member>
         <member name="T:MSTS.STFReader">
             <summary>Used for reading data from Structured Text Format (MSTS1 style) files.
@@ -633,12 +634,6 @@
             Given a soundfile reference in a cvf file, return the path to the sound file
             </summary>
         </member>
-        <member name="M:ORTS.Program.SetBuildRevision">
-            <summary>
-            Set up the global Build and Revision variables
-            from assembly data and the revision.txt file.
-            </summary>
-        </member>
         <member name="F:ORTS.FormFolderName.components">
             <summary>
             Required designer variable.
@@ -656,24 +651,29 @@
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="T:MSTS.CONFile">
+        <member name="M:MSTS.PATTraveller.#ctor(System.String)">
             <summary>
-            Work with consist files
+            Initializes the traveller to the first waypoint 
+            in the specified path file.
+            </summary>
+            <param name="PATFilePath"></param>
+        </member>
+        <member name="T:MSTS.PATFile">
+            <summary>
+            Work with consist files, contains an ArrayList of ConsistTrainset
             </summary>
         </member>
-        <member name="T:MSTS.ACTFile">
+        <member name="M:MSTS.PATFile.#ctor(System.String)">
             <summary>
-            Summary description for Class1.
+            Open a PAT file, 
+            filePath includes full path and extension
             </summary>
+            <param name="filePath"></param>
         </member>
-        <member name="M:MSTS.EventCategoryLocation.#ctor(System.Int32,System.Int32,System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:ORTS.Program.SetBuildRevision">
             <summary>
-            Create a new 'ActivitySuccess' LocationEvent
-            </summary>
-        </member>
-        <member name="M:MSTS.EventCategoryAction.#ctor(System.Int32)">
-            <summary>
-            Build a default EventTypeAllStops event
+            Set up the global Build and Revision variables
+            from assembly data and the revision.txt file.
             </summary>
         </member>
     </members>
