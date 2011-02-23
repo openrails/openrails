@@ -268,7 +268,7 @@ namespace ORTS
 			TextBuilder.AppendFormat(showMUReverser ? "Direction = {1:F0} {0}" : "Direction = {0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent)); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Throttle = {0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Train Brake = {0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus()); TextBuilder.AppendLine();
-			 if (showRetainers)
+			if (showRetainers)
 			{
 				TextBuilder.AppendFormat("Retainers = {0}% {1}", playerTrain.RetainerPercent, playerTrain.RetainerSetting); TextBuilder.AppendLine();
 			}
@@ -280,7 +280,6 @@ namespace ORTS
 			{
 				TextBuilder.AppendFormat("Dynamic Brake = {0}", dynamicBrakeStatus); TextBuilder.AppendLine();
 			}
-            TextBuilder.Append("Speed = "); TextBuilder.AppendLine(MpH.FromMpS(Math.Abs(Viewer.PlayerLocomotive.SpeedMpS)).ToString("F1"));
 			if (locomotiveStatus != null)
 			{
 				TextBuilder.AppendLine(locomotiveStatus);
