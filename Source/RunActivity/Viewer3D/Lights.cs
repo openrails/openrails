@@ -326,8 +326,11 @@ namespace ORTS
                     if (lightMesh.Enabled || lightMesh.FadeOut)
                         if (lightMesh is LightGlowMesh)
                             frame.AddPrimitive(LightGlowMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+
 #if DEBUG_LIGHT_CONE
-                        else if (lightMesh is LightConeMesh)
+            foreach (var lightMesh in LightMeshes)
+                if (lightMesh.Enabled || lightMesh.FadeOut)
+                    if (lightMesh is LightConeMesh)
                             frame.AddPrimitive(LightConeMaterial, lightMesh, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
 #endif
 

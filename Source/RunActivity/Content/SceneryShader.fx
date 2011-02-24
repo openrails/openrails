@@ -333,7 +333,7 @@ void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_O
 
 	float shading = step(0, coneDot);
 	shading *= step(0, dot(surfaceNormal, -headlightToSurface));
-	shading *= saturate(1 - (1 - coneDot) / (2 * (1 - HeadlightDirection.w))); // We want 50% brightness at the given dot product.
+	shading *= saturate(0.5 * (1 - HeadlightDirection.w) / (1 - coneDot)); // We want 50% brightness at the given dot product.
 	shading *= saturate(1 - length(In.LightDir_Fog.xyz) / length(HeadlightDirection.xyz));
 	shading *= HeadlightPosition.w;
 	Color += OriginalColor * HeadlightColor.rgb * HeadlightColor.a * shading;
