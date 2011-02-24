@@ -396,7 +396,7 @@ namespace MSTS
         {
             stf.MustMatch("(");
             Index = stf.ReadInt(STFReader.UNITS.None, null);
-            Name = stf.ReadString();
+            Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("drawlights", ()=>{ DrawLights = ReadDrawLights(stf); }),
             });
@@ -468,7 +468,7 @@ namespace MSTS
                 STFException.TraceError(stf, "Unknown Aspect " + aspectName);
                 Aspect = SignalHead.SIGASP.UNKNOWN;
             }
-            DrawStateName = stf.ReadString();
+            DrawStateName = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("speedmph", ()=>{ SpeedMpS = MpH.ToMpS(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
                 new STFReader.TokenProcessor("speedkph", ()=>{ SpeedMpS = KpH.ToMpS(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),

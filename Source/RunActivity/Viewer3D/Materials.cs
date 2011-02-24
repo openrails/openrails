@@ -56,8 +56,8 @@ namespace ORTS
 		public static void Initialize(RenderProcess renderProcess)
         {
             SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            SceneryShader.NormalMap_Tex = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, 
-                                                        renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
+            if (File.Exists(renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace"))
+                SceneryShader.NormalMap_Tex = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
             SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
             ParticleEmitterShader = new ParticleEmitterShader(renderProcess.GraphicsDevice, renderProcess.Content);
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
