@@ -164,16 +164,17 @@ namespace ORTS
 		{
 			// Switches
 			AlignSwitchesToDefault();  // ie straight through routing
-			Signals = new Signals(this, SIGCFG);
-			LevelCrossings = new LevelCrossings(this);
-			InterlockingSystem = new InterlockingSystem(this);
 
 			// Trains
 			Trace.Write(" CON");
 			Trains.Clear();
 			InitializePlayerTrain();
 			InitializeStaticConsists();
-			AI = new AI(this);
+
+            Signals = new Signals(this, SIGCFG);
+            LevelCrossings = new LevelCrossings(this);
+            InterlockingSystem = new InterlockingSystem(this);
+            AI = new AI(this);
 		}
 
 		public void Stop()
@@ -190,8 +191,12 @@ namespace ORTS
 			Weather = (WeatherType)inf.ReadInt32();
 			RestoreSwitchSettings(inf);
 			RestoreTrains(inf);
-			//Signals = new Signals(this, inf);
-			AI = new AI(this, inf);
+
+            Signals = new Signals(this, SIGCFG, inf);
+            LevelCrossings = new LevelCrossings(this);
+            InterlockingSystem = new InterlockingSystem(this);
+            AI = new AI(this, inf);
+
 			ActivityRun = ORTS.Activity.Restore(inf);
 		}
 
@@ -632,7 +637,7 @@ namespace ORTS
 				patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 			}
 
-			Train train = new Train();
+			Train train = new Train(this);
 
 			// This is the position of the back end of the train in the database.
 			PATTraveller patTraveller = new PATTraveller(patFileName);
@@ -680,7 +685,7 @@ namespace ORTS
 
 			Trains.Add(train);
 			train.AITrainBrakePercent = 100;
-			train.InitializeSignals(this);
+            train.InitializeSignals();
 		}
 
 
@@ -697,7 +702,7 @@ namespace ORTS
 				try
 				{
 					// construct train data
-					Train train = new Train();
+					Train train = new Train(this);
 					int consistDirection;
 					switch (activityObject.Direction)  // TODO, we don't really understand this
 					{
@@ -748,7 +753,7 @@ namespace ORTS
 
 					train.CalculatePositionOfCars(0);
 					train.InitializeBrakes();
-					train.InitializeSignals(this);
+                    train.InitializeSignals();
 
 					Trains.Add(train);
 
@@ -860,7 +865,7 @@ namespace ORTS
 
 			TrainCar lead = train.LeadLocomotive;
 			// move rest of cars to the new train
-			Train train2 = new Train();
+			Train train2 = new Train(this);
 			for (int k = i; k < train.Cars.Count; ++k)
 			{
 				TrainCar newcar = train.Cars[k];
@@ -880,7 +885,7 @@ namespace ORTS
 			train2.RearTDBTraveller = new TDBTraveller(train.RearTDBTraveller);
 			train2.CalculatePositionOfCars(0);  // fix the front traveller
 			train.RepositionRearTraveller();    // fix the rear traveller
-			train2.InitializeSignals(this);
+            train2.InitializeSignals();
 
 			Trains.Add(train2);
 			train2.LeadLocomotive = lead;

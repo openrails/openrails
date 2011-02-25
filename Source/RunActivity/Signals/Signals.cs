@@ -42,7 +42,8 @@ namespace ORTS
 		}
 
 		// Restore state to resume a saved game
-		public Signals(Simulator simulator, BinaryReader inf)
+		public Signals(Simulator simulator, SIGCFGFile sigcfg, BinaryReader inf)
+            : this(simulator, sigcfg)
 		{
 		}
 

@@ -170,7 +170,7 @@ namespace ORTS
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
             PATFile patFile = new PATFile(pathFileName);
-            AITrain train = new AITrain(sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName), sd.Time);
+            AITrain train = new AITrain(Simulator, sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName), sd.Time);
 
             if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
                 train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
@@ -234,7 +234,7 @@ namespace ORTS
 
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
-			train.InitializeSignals(Simulator);
+            train.InitializeSignals();
 
             //AITrains.Add(train);
             Simulator.Trains.Add(train);

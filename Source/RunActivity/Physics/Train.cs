@@ -73,7 +73,7 @@ namespace ORTS
 		/// <summary>
 		/// Reference to the Simulator object.
 		/// </summary>
-		protected Simulator simulator;
+		protected Simulator Simulator;
 
 
 		// For AI control of the train
@@ -113,74 +113,15 @@ namespace ORTS
 			}
 		}
 
-		public Train()
-		{
-		}
-
-		public void InitializeSignals(Simulator simulator)
-		{
-
-			this.simulator = simulator;
-
-			if (simulator.Signals != null)
-			{
-				nextSignal = simulator.Signals.FindNearestSignal(FrontTDBTraveller);
-				distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
-				nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
-				// if (isPlayerTrain) nextSignal.SetSignalState(Signal.SIGNALSTATE.STOP);
-			}
-		}
-
-		//
-		//  This method is invoked whenever the train direction has changed or 'G' key pressed 
-		//
-		public void ResetSignal(bool askPermisiion)
-		{
-			nextSignal.Reset(FrontTDBTraveller, askPermisiion);
-			nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
-			spad = false;
-		}
-
-		// Sets the Lead locomotive to the next in the consist
-		public void LeadNextLocomotive()
-		{
-			// First driveable
-			int firstLead = -1;
-			// Next driveale to the current
-			int nextLead = -1;
-			// Count of driveable locos
-			int coud = 0;
-
-			for (int i = 0; i < Cars.Count; i++)
-			{
-				if (Cars[i].IsDriveable)
-				{
-					// Count the driveables
-					coud++;
-
-					// Get the first driveable
-					if (firstLead == -1)
-						firstLead = i;
-
-					// If later than current select the next
-					if (LeadLocomotiveIndex < i && nextLead == -1)
-					{
-						nextLead = i;
-					}
-				}
-			}
-
-			// If found one after the current
-			if (nextLead != -1)
-				LeadLocomotiveIndex = nextLead;
-			// If not, and have more than one, set the first
-			else if (coud > 1)
-				LeadLocomotiveIndex = firstLead;
-		}
+        public Train(Simulator simulator)
+        {
+            Simulator = simulator;
+        }
 
 		// restore game state
 		public Train(Simulator simulator, BinaryReader inf)
 		{
+            Simulator = simulator;
 			RestoreCars(simulator, inf);
 			SpeedMpS = inf.ReadSingle();
 			MUDirection = (Direction)inf.ReadInt32();
@@ -236,7 +177,65 @@ namespace ORTS
 				Cars.Add(RollingStock.Restore(simulator, inf, this, i == 0 ? null : Cars[i - 1]));
 		}
 
-		/// <summary>
+        public void InitializeSignals()
+        {
+            if (Simulator.Signals != null)
+            {
+                nextSignal = Simulator.Signals.FindNearestSignal(FrontTDBTraveller);
+                distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
+                nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+                // if (isPlayerTrain) nextSignal.SetSignalState(Signal.SIGNALSTATE.STOP);
+            }
+        }
+
+        //
+        //  This method is invoked whenever the train direction has changed or 'G' key pressed 
+        //
+        public void ResetSignal(bool askPermisiion)
+        {
+            nextSignal.Reset(FrontTDBTraveller, askPermisiion);
+            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+            spad = false;
+        }
+
+        // Sets the Lead locomotive to the next in the consist
+        public void LeadNextLocomotive()
+        {
+            // First driveable
+            int firstLead = -1;
+            // Next driveale to the current
+            int nextLead = -1;
+            // Count of driveable locos
+            int coud = 0;
+
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                if (Cars[i].IsDriveable)
+                {
+                    // Count the driveables
+                    coud++;
+
+                    // Get the first driveable
+                    if (firstLead == -1)
+                        firstLead = i;
+
+                    // If later than current select the next
+                    if (LeadLocomotiveIndex < i && nextLead == -1)
+                    {
+                        nextLead = i;
+                    }
+                }
+            }
+
+            // If found one after the current
+            if (nextLead != -1)
+                LeadLocomotiveIndex = nextLead;
+            // If not, and have more than one, set the first
+            else if (coud > 1)
+                LeadLocomotiveIndex = firstLead;
+        }
+
+        /// <summary>
 		/// Someone is sending an event notification to all cars on this train.
 		/// ie doors open, pantograph up, lights on etc.
 		/// </summary>
@@ -351,7 +350,7 @@ namespace ORTS
 		//
 		private void UpdateCrossingState()
 		{
-			simulator.LevelCrossings.UpdateCrossings(this, SpeedMpS);
+			Simulator.LevelCrossings.UpdateCrossings(this, SpeedMpS);
 			return;
 		}
 
@@ -1128,7 +1127,7 @@ namespace ORTS
 
 				TrackNode node = traveller.TN;
 
-				if (node != null && simulator.InterlockingSystem.Tracks.ContainsKey(node))
+				if (node != null && Simulator.InterlockingSystem.Tracks.ContainsKey(node))
 				{
 					node.InterlockingTrack.Occupy();
 				}

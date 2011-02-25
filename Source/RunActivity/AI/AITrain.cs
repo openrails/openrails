@@ -39,7 +39,8 @@ namespace ORTS
 		public AI AI;
 		public List<AISwitchInfo> SwitchList = new List<AISwitchInfo>();
 
-		public AITrain(int uid, AI ai, AIPath path, int start)
+		public AITrain(Simulator simulator, int uid, AI ai, AIPath path, int start)
+            : base(simulator)
 		{
 			UiD = uid;
 			AI = ai;
@@ -395,7 +396,7 @@ namespace ORTS
 			if (n1 > n2 || n2 > Cars.Count)
 				return;
 			// move rest of cars to the new train
-			Train train2 = new Train();
+			Train train2 = new Train(Simulator);
 			for (int k = n1; k < n2; ++k)
 			{
 				TrainCar newcar = Cars[k];
@@ -420,7 +421,7 @@ namespace ORTS
 				train2.CalculatePositionOfCars(0);  // fix the front traveller
 				RepositionRearTraveller();    // fix the rear traveller
 			}
-			train2.InitializeSignals(simulator);
+            train2.InitializeSignals();
 			AI.Simulator.Trains.Add(train2);
 			if (nCars != 0)
 				Update(0);   // stop the wheels from moving etc
