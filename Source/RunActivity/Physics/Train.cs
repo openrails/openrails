@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -179,13 +180,12 @@ namespace ORTS
 
         public void InitializeSignals()
         {
-            if (Simulator.Signals != null)
-            {
-                nextSignal = Simulator.Signals.FindNearestSignal(FrontTDBTraveller);
-                distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
-                nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
-                // if (isPlayerTrain) nextSignal.SetSignalState(Signal.SIGNALSTATE.STOP);
-            }
+            Debug.Assert(Simulator.Signals != null, "Cannot InitializeSignals() without Simulator.Signals.");
+
+            nextSignal = Simulator.Signals.FindNearestSignal(FrontTDBTraveller);
+            distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
+            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+            // if (isPlayerTrain) nextSignal.SetSignalState(Signal.SIGNALSTATE.STOP);
         }
 
         //

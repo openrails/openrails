@@ -65,16 +65,16 @@ namespace ORTS
 		public TRKFile TRK;
 		public TRPFile TRP; // Track profile file
 		public TSectionDatFile TSectionDat;
-		public List<Train> Trains = new List<Train>();
-		public Signals Signals = null;
-		public AI AI = null;
-		public RailDriverHandler RailDriver = null;
+		public List<Train> Trains;
+		public Signals Signals;
+		public AI AI;
+		public RailDriverHandler RailDriver;
 		public SeasonType Season;
 		public WeatherType Weather;
 		SIGCFGFile SIGCFG;
 		public string ExplorePathFile;
 		public string ExploreConFile;
-		public LevelCrossings LevelCrossings = null;
+		public LevelCrossings LevelCrossings;
 
 		/// <summary>
 		/// Reference to the InterlockingSystem object, responsible for
@@ -159,19 +159,11 @@ namespace ORTS
 			Weather = (WeatherType)int.Parse(weather);
 		}
 
-		// restart the simulator the the beginning of the activity
 		public void Start()
 		{
-			// Switches
-			AlignSwitchesToDefault();  // ie straight through routing
-
-			// Trains
-			Trace.Write(" CON");
-			Trains.Clear();
-			InitializePlayerTrain();
-			InitializeStaticConsists();
-
+            AlignSwitchesToDefault();
             Signals = new Signals(this, SIGCFG);
+            InitializeTrains();
             LevelCrossings = new LevelCrossings(this);
             InterlockingSystem = new InterlockingSystem(this);
             AI = new AI(this);
@@ -183,38 +175,46 @@ namespace ORTS
 				RailDriver.Shutdown();
 		}
 
-		// resume game after a save
 		public void Restore(BinaryReader inf)
 		{
-			ClockTime = inf.ReadDouble();
-			Season = (SeasonType)inf.ReadInt32();
-			Weather = (WeatherType)inf.ReadInt32();
-			RestoreSwitchSettings(inf);
-			RestoreTrains(inf);
+            ClockTime = inf.ReadDouble();
+            Season = (SeasonType)inf.ReadInt32();
+            Weather = (WeatherType)inf.ReadInt32();
 
+            RestoreSwitchSettings(inf);
             Signals = new Signals(this, SIGCFG, inf);
+            RestoreTrains(inf);
             LevelCrossings = new LevelCrossings(this);
             InterlockingSystem = new InterlockingSystem(this);
             AI = new AI(this, inf);
 
-			ActivityRun = ORTS.Activity.Restore(inf);
+            ActivityRun = ORTS.Activity.Restore(inf);
 		}
 
-		// save game state so we can resume later
 		public void Save(BinaryWriter outf)
 		{
 			outf.Write(ClockTime);
 			outf.Write((int)Season);
 			outf.Write((int)Weather);
-			SaveSwitchSettings(outf);
-			SaveTrains(outf);
-			//Signals.Save(outf);
+
+            SaveSwitchSettings(outf);
+			Signals.Save(outf);
+            SaveTrains(outf);
+            // LevelCrossings
+            // InterlockingSystem
 			AI.Save(outf);
-			ORTS.Activity.Save(outf, ActivityRun);
+
+            ORTS.Activity.Save(outf, ActivityRun);
 		}
 
+        void InitializeTrains()
+        {
+            Trains = new List<Train>();
+            InitializePlayerTrain();
+            InitializeStaticConsists();
+        }
 
-		/// <summary>
+        /// <summary>
 		/// Which locomotive does the activity specify for the player.
 		/// </summary>
 		public TrainCar InitialPlayerLocomotive()
@@ -619,7 +619,9 @@ namespace ORTS
 
 		private void InitializePlayerTrain()
 		{
-			// set up the player locomotive
+            Debug.Assert(Trains != null, "Cannot InitializePlayerTrain() without Simulator.Trains.");
+           
+            // set up the player locomotive
 			// first extract the player service definition from the activity file
 			// this gives the consist and path
 			string patFileName;
@@ -800,7 +802,7 @@ namespace ORTS
 		private void RestoreTrains(BinaryReader inf)
 		{
 			int count = inf.ReadInt32();
-			Trains.Clear();
+			Trains = new List<Train>();
 			for (int i = 0; i < count; ++i)
 			{
 				int trainType = inf.ReadInt32();
@@ -812,10 +814,12 @@ namespace ORTS
 				{
 					Trace.TraceWarning("Don't know how to restore train type: " + trainType.ToString());
 					Debug.Fail("Don't know how to restore train type: " + trainType.ToString());  // in debug mode, halt on this error
-					Trains.Add(new Train(this, inf)); // for release version, we'll try to press on anyway
+                    Trains.Add(new Train(this, inf)); // for release version, we'll try to press on anyway
 				}
 			}
-		}
+            foreach (var train in Trains)
+                train.InitializeSignals();
+        }
 
 		/// <summary>
 		/// The front end of a railcar is at MSTS world coordinates x1,y1,z1

@@ -53,6 +53,7 @@ namespace ORTS
         // restore game state
         public AI(Simulator simulator, BinaryReader inf)
         {
+            Debug.Assert(simulator.Trains != null, "Cannot restore AI without Simulator.Trains.");
             Simulator = simulator;
             FirstUpdate = false;
             foreach (Train train in Simulator.Trains)
