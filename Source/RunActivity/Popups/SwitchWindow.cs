@@ -24,12 +24,20 @@ namespace ORTS.Popups
 		Image SwitchForwards;
 		Image SwitchBackwards;
 
+        static Texture2D SwitchStates;
+
 		public SwitchWindow(WindowManager owner)
 			: base(owner, Window.DecorationSize.X + 2 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
 		{
-			Align(AlignAt.Start, AlignAt.Middle);
-			SwitchForwards.Texture = SwitchBackwards.Texture = owner.Viewer.RenderProcess.Content.Load<Texture2D>("SwitchStates");
-		}
+            Align(AlignAt.Start, AlignAt.Middle);
+        }
+
+        protected internal override void Initialize()
+        {
+            base.Initialize();
+            if (SwitchStates == null)
+                SwitchStates = Owner.Viewer.RenderProcess.Content.Load<Texture2D>("SwitchStates");
+        }
 
 		protected override ControlLayout Layout(ControlLayout layout)
 		{
@@ -37,7 +45,8 @@ namespace ORTS.Popups
 			{
 				vbox.Add(SwitchForwards = new Image(vbox.RemainingWidth / 4, 0, vbox.RemainingWidth / 2, vbox.RemainingWidth / 2));
 				vbox.Add(SwitchBackwards = new Image(vbox.RemainingWidth / 4, 0, vbox.RemainingWidth / 2, vbox.RemainingWidth / 2));
-				SwitchForwards.Click += new Action<Control, Point>(SwitchForwards_Click);
+                SwitchForwards.Texture = SwitchBackwards.Texture = SwitchStates;
+                SwitchForwards.Click += new Action<Control, Point>(SwitchForwards_Click);
 				SwitchBackwards.Click += new Action<Control, Point>(SwitchBackwards_Click);
 			}
 			return vbox;

@@ -6,6 +6,8 @@
 /// Author: James Ross
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -18,8 +20,8 @@ namespace ORTS.Popups
 		public Matrix XNAWorld;
 		protected WindowManager Owner;
 		bool visible = false;
-		Rectangle location = new Rectangle(0, 0, 100, 100);
-		string Caption;
+        Rectangle location;
+		readonly string Caption;
 		ControlLayout WindowLayout;
 		VertexBuffer WindowVertexBuffer;
 		IndexBuffer WindowIndexBuffer;
@@ -30,12 +32,30 @@ namespace ORTS.Popups
 			location = new Rectangle(0, 0, width, height);
 			Caption = caption;
 			Owner.Add(this);
-			VisibilityChanged();
-			LocationChanged();
-			SizeChanged();
 		}
 
-		protected virtual void VisibilityChanged()
+        protected internal virtual void Initialize()
+        {
+            VisibilityChanged();
+            LocationChanged();
+            SizeChanged();
+        }
+
+        protected internal virtual void Save(BinaryWriter outf)
+        {
+            outf.Write(visible);
+            outf.Write((float)location.X / (Owner.ScreenSize.X - location.Width));
+            outf.Write((float)location.Y / (Owner.ScreenSize.Y - location.Height));
+        }
+
+        protected internal virtual void Restore(BinaryReader inf)
+        {
+            visible = inf.ReadBoolean();
+            location.X = (int)(inf.ReadSingle() * (Owner.ScreenSize.X - location.Width));
+            location.Y = (int)(inf.ReadSingle() * (Owner.ScreenSize.Y - location.Height));
+        }
+
+        protected virtual void VisibilityChanged()
 		{
             Owner.WriteWindowZOrder();
 		}
@@ -79,6 +99,14 @@ namespace ORTS.Popups
             }
         }
 
+        public virtual bool TopMost
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public Rectangle Location
 		{
 			get
@@ -93,7 +121,7 @@ namespace ORTS.Popups
 
 		public void MoveTo(int x, int y)
 		{
-			x = (int)MathHelper.Clamp(x, 0, Owner.ScreenSize.X - location.Width);
+            x = (int)MathHelper.Clamp(x, 0, Owner.ScreenSize.X - location.Width);
 			y = (int)MathHelper.Clamp(y, 0, Owner.ScreenSize.Y - location.Height);
 
 			if ((location.X != x) || (location.Y != y))
@@ -129,14 +157,15 @@ namespace ORTS.Popups
 
 		public void Align(AlignAt horizontal, AlignAt vertical)
 		{
-			MoveTo(horizontal == AlignAt.Start ? 0 : horizontal == AlignAt.Middle ? (Owner.ScreenSize.X - location.Width) / 2 : Owner.ScreenSize.X - location.Width,
+            MoveTo(horizontal == AlignAt.Start ? 0 : horizontal == AlignAt.Middle ? (Owner.ScreenSize.X - location.Width) / 2 : Owner.ScreenSize.X - location.Width,
 				vertical == AlignAt.Start ? 0 : vertical == AlignAt.Middle ? (Owner.ScreenSize.Y - location.Height) / 2 : Owner.ScreenSize.Y - location.Height);
 		}
 
-		protected void Layout()
+		protected internal void Layout()
 		{
 			WindowLayout = new WindowControlLayout(this, location.Width, location.Height);
-			Layout(WindowLayout);
+            if (Owner.ScreenSize != Point.Zero)
+                Layout(WindowLayout);
 		}
 
 		protected virtual ControlLayout Layout(ControlLayout layout)

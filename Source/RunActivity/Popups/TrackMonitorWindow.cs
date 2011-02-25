@@ -36,6 +36,7 @@ namespace ORTS.Popups
 		float LastSpeedMpS;
 		SmoothedData AccelerationMpSpS = new SmoothedData();
 
+        static Texture2D SignalAspects;
 		static readonly Dictionary<TrackMonitorSignalAspect, Rectangle> SignalAspectSources = InitSignalAspectSources();
 		static Dictionary<TrackMonitorSignalAspect, Rectangle> InitSignalAspectSources()
 		{
@@ -63,9 +64,15 @@ namespace ORTS.Popups
 		public TrackMonitorWindow(WindowManager owner)
 			: base(owner, 150, 98, "Track Monitor")
 		{
-			Align(AlignAt.End, AlignAt.Start);
-			SignalAspect.Texture = owner.Viewer.RenderProcess.Content.Load<Texture2D>("SignalAspects");
-		}
+            Align(AlignAt.End, AlignAt.Start);
+        }
+
+        protected internal override void Initialize()
+        {
+            base.Initialize();
+            if (SignalAspects == null)
+                SignalAspects = Owner.Viewer.RenderProcess.Content.Load<Texture2D>("SignalAspects");
+        }
 
 		protected override ControlLayout Layout(ControlLayout layout)
 		{
@@ -87,7 +94,8 @@ namespace ORTS.Popups
 				hbox.Add(SignalDistance = new Label(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", LabelAlignment.Right));
 				hbox.AddSpace(2, 0);
 				hbox.Add(SignalAspect = new Image(hbox.RemainingWidth, hbox.RemainingHeight));
-			}
+                SignalAspect.Texture = SignalAspects;
+            }
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
 				hbox.Add(POILabel = new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "POI:"));

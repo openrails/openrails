@@ -14,8 +14,6 @@ namespace ORTS.Popups
 {
 	public class NextStationWindow : Window
 	{
-		readonly Viewer3D Viewer;
-
 		Label CurrentTime;
 		Label StationPlatform;
 
@@ -39,9 +37,8 @@ namespace ORTS.Popups
 		public NextStationWindow(WindowManager owner)
 			: base(owner, 400, 135, "Next Station")
 		{
-			Viewer = owner.Viewer;
-			Align(AlignAt.Start, AlignAt.End);
-		}
+            Align(AlignAt.Start, AlignAt.End);
+        }
 
 		protected override ControlLayout Layout(ControlLayout layout)
 		{
@@ -96,7 +93,7 @@ namespace ORTS.Popups
 		public void UpdateText(ElapsedTime elapsedTime, double clockTime, Func<double, string> timeFormatter)
 		{
 			CurrentTime.Text = timeFormatter(clockTime);
-			Activity act = Viewer.Simulator.ActivityRun;
+            Activity act = Owner.Viewer.Simulator.ActivityRun;
 			if (act != null)
 			{
 				ActivityTaskPassengerStopAt at = null;
@@ -164,7 +161,7 @@ namespace ORTS.Popups
 
 		public void UpdateSound()
 		{
-			Activity act = Viewer.Simulator.ActivityRun;
+            Activity act = Owner.Viewer.Simulator.ActivityRun;
 			if (act != null)
 			{
 				ActivityTask at = act.Current;
@@ -172,7 +169,7 @@ namespace ORTS.Popups
 				{
 					if (at.SoundNotify != -1)
 					{
-						if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(at.SoundNotify);
+                        if (Owner.Viewer.IngameSounds != null) Owner.Viewer.IngameSounds.HandleEvent(at.SoundNotify);
 						at.SoundNotify = -1;
 					}
 				}

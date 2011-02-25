@@ -28,10 +28,15 @@ namespace ORTS.Popups
 		public TrainOperationsWindow(WindowManager owner)
 			: base(owner, 600, Window.DecorationSize.Y + CarListHeight + CarListPadding + ControlLayoutScrollbox.ScrollbarSize, "Train Operations")
 		{
-			Align(AlignAt.Middle, AlignAt.Middle);
-			if (CouplerTexture == null)
-				CouplerTexture = owner.Viewer.RenderProcess.Content.Load<Texture2D>("TrainOperationsCoupler");
-		}
+            Align(AlignAt.Middle, AlignAt.Middle);
+        }
+
+        protected internal override void Initialize()
+        {
+            base.Initialize();
+            if (CouplerTexture == null)
+                CouplerTexture = Owner.Viewer.RenderProcess.Content.Load<Texture2D>("TrainOperationsCoupler");
+        }
 
 		protected override ControlLayout Layout(ControlLayout layout)
 		{

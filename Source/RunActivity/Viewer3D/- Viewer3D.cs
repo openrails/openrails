@@ -97,7 +97,6 @@ namespace ORTS
 		private PassengerCamera PassengerCamera; // Camera 5
 		private BrakemanCamera BrakemanCamera; // Camera 6
 		private List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
-		private int CameraToRestore = 1; // Providing Camera save functionality by GeorgeS
 		public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
 		private MouseState originalMouseState;      // Current mouse coordinates.
 
@@ -124,7 +123,27 @@ namespace ORTS
 			var windowSizeParts = Settings.WindowSize.Split(new[] { 'x' }, 2);
 			WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
 			WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
-		}
+
+            WindowManager = new WindowManager(this);
+            MessagesWindow = new MessagesWindow(WindowManager);
+            HelpWindow = new HelpWindow(WindowManager);
+            TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
+            SwitchWindow = new SwitchWindow(WindowManager);
+            TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
+            NextStationWindow = new NextStationWindow(WindowManager);
+            CompassWindow = new CompassWindow(WindowManager);
+            DriverAidWindow = new DriverAidWindow(WindowManager);
+
+            WellKnownCameras = new List<Camera>();
+            WellKnownCameras.Add(CabCamera = new CabCamera(this));
+            WellKnownCameras.Add(FrontCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Front));
+            WellKnownCameras.Add(BackCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Rear));
+            WellKnownCameras.Add(PassengerCamera = new PassengerCamera(this));
+            WellKnownCameras.Add(BrakemanCamera = new BrakemanCamera(this));
+            WellKnownCameras.Add(HeadOutForwardCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
+            WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
+            WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
+        }
 
 		/// <summary>
 		/// Save game
@@ -133,10 +152,16 @@ namespace ORTS
 		{
 			outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
 			outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
-			// Saving Camera by GeorgeS
-			CameraToRestore = WellKnownCameras.IndexOf(Camera);
-			outf.Write(CameraToRestore);
-		}
+
+            WindowManager.Save(outf);
+
+            outf.Write(WellKnownCameras.IndexOf(Camera));
+            foreach (var camera in WellKnownCameras)
+                camera.Save(outf);
+            Camera.Save(outf);
+
+            MessagesWindow.AddMessage("Game saved.", 5);
+        }
 
 		/// <summary>
 		/// Restore after game resumes
@@ -145,9 +170,18 @@ namespace ORTS
 		{
 			Train playerTrain = Simulator.Trains[inf.ReadInt32()];
 			PlayerLocomotive = playerTrain.Cars[inf.ReadInt32()];
-			// Restoring Camera part I by GeorgeS
-			CameraToRestore = inf.ReadInt32();
-		}
+
+            WindowManager.Restore(inf);
+
+            var cameraToRestore = inf.ReadInt32();
+            foreach (var camera in WellKnownCameras)
+                camera.Restore(inf);
+            if (cameraToRestore == -1)
+                new FreeRoamCamera(this, Camera).Activate();
+            else
+                WellKnownCameras[cameraToRestore].Activate();
+            Camera.Restore(inf);
+        }
 
 		[ThreadName("Render")]
 		public void Initialize()
@@ -257,16 +291,7 @@ namespace ORTS
 			InfoDisplay = new InfoDisplay(this);
 			UserInput.Initialize();
 
-			// Initialse popup windows.
-			WindowManager = new WindowManager(this);
-			MessagesWindow = new MessagesWindow(WindowManager);
-			HelpWindow = new HelpWindow(WindowManager);
-			TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
-			SwitchWindow = new SwitchWindow(WindowManager);
-			TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
-			NextStationWindow = new NextStationWindow(WindowManager);
-			CompassWindow = new CompassWindow(WindowManager);
-			DriverAidWindow = new DriverAidWindow(WindowManager);
+            WindowManager.Initialize();
 
 			SkyDrawer = new SkyDrawer(this);
 			TerrainDrawer = new TerrainDrawer(this);
@@ -278,21 +303,10 @@ namespace ORTS
 
 			PlayerLocomotiveViewer = GetPlayerLocomotiveViewer();
 
-			// Set up cameras.
-			WellKnownCameras = new List<Camera>();
-			WellKnownCameras.Add(CabCamera = new CabCamera(this));
-			WellKnownCameras.Add(FrontCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Front));
-			WellKnownCameras.Add(BackCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Rear));
-			WellKnownCameras.Add(PassengerCamera = new PassengerCamera(this));
-			WellKnownCameras.Add(BrakemanCamera = new BrakemanCamera(this));
-			WellKnownCameras.Add(HeadOutForwardCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
-			WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
-			WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
-
-			if (CameraToRestore != -1)
-				WellKnownCameras[CameraToRestore].Activate();
-			else
-				new FreeRoamCamera(this, Camera).Activate();
+            if (Camera == null)
+                FrontCamera.Activate();
+            else
+                Camera.Activate();
 
 			if (Settings.FullScreen)
 				ToggleFullscreen();

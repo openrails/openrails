@@ -27,7 +27,7 @@ namespace ORTS.Popups
 		public HelpWindow(WindowManager owner)
 			: base(owner, 600, 450, "Help")
 		{
-			Align(AlignAt.Middle, AlignAt.Middle);
+            Align(AlignAt.Middle, AlignAt.Middle);
 
             if (owner.Viewer.Simulator.Activity != null)
             {
@@ -100,8 +100,6 @@ namespace ORTS.Popups
                     line.Add(new Label(width, line.RemainingHeight, UserInput.Commands[(int)command].ToString()));
                 }
             }));
-
-            Layout();
         }
 
         public override void TabAction()

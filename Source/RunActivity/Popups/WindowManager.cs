@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -26,29 +27,54 @@ namespace ORTS.Popups
 		public static Texture2D LabelShadowTexture;
 
 		public readonly Viewer3D Viewer;
-		readonly List<Window> Windows = new List<Window>();
-		readonly SpriteBatch SpriteBatch;
+        readonly List<Window> Windows = new List<Window>();
+        List<Window> WindowsZOrder = new List<Window>();
+        SpriteBatch SpriteBatch;
 		Matrix XNAView = Matrix.Identity;
 		Matrix XNAProjection = Matrix.Identity;
-		internal Point ScreenSize = Point.Zero;
+        internal Point ScreenSize = new Point(10000, 10000); // Arbitrary but necessary.
 		ResolveTexture2D Screen;
 
 		public WindowManager(Viewer3D viewer)
 		{
 			Viewer = viewer;
-			SpriteBatch = new SpriteBatch(viewer.GraphicsDevice);
-			ScreenChanged();
+        }
 
-			if (WhiteTexture == null)
-			{
-				WhiteTexture = new Texture2D(viewer.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-				WhiteTexture.SetData(new[] { Color.White });
-			}
-			if (ScrollbarTexture == null)
-				ScrollbarTexture = viewer.RenderProcess.Content.Load<Texture2D>("WindowScrollbar");
-			if (LabelShadowTexture == null)
-				LabelShadowTexture = viewer.RenderProcess.Content.Load<Texture2D>("WindowLabelShadow");
-		}
+        public void Initialize()
+        {
+            SpriteBatch = new SpriteBatch(Viewer.GraphicsDevice);
+
+            if (WhiteTexture == null)
+            {
+                WhiteTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+                WhiteTexture.SetData(new[] { Color.White });
+            }
+            if (ScrollbarTexture == null)
+                ScrollbarTexture = Viewer.RenderProcess.Content.Load<Texture2D>("WindowScrollbar");
+            if (LabelShadowTexture == null)
+                LabelShadowTexture = Viewer.RenderProcess.Content.Load<Texture2D>("WindowLabelShadow");
+
+            ScreenChanged();
+            UpdateTopMost();
+
+            foreach (var window in Windows)
+            {
+                window.Initialize();
+                window.Layout();
+            }
+        }
+
+        public void Save(BinaryWriter outf)
+        {
+            foreach (var window in Windows)
+                window.Save(outf);
+        }
+
+        public void Restore(BinaryReader inf)
+        {
+            foreach (var window in Windows)
+                window.Restore(inf);
+        }
 
 		[CallOnThread("Updater")]
 		public void ScreenChanged()
@@ -104,18 +130,19 @@ namespace ORTS.Popups
 		internal void Add(Window window)
 		{
 			Windows.Add(window);
+            WindowsZOrder.Add(window);
         }
 
 		public bool HasVisiblePopupWindows()
 		{
-			return Windows.Any(w => w.Visible);
+            return WindowsZOrder.Any(w => w.Visible);
 		}
 
 		public IEnumerable<Window> VisibleWindows
 		{
 			get
 			{
-				return Windows.Where(w => w.Visible);
+                return WindowsZOrder.Where(w => w.Visible);
 			}
 		}
 
@@ -135,10 +162,11 @@ namespace ORTS.Popups
 			{
 				mouseDownPosition = new Point(UserInput.MouseState.X, UserInput.MouseState.Y);
                 mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
-                if ((mouseActiveWindow != null) && (mouseActiveWindow != Windows.Last()))
+                if ((mouseActiveWindow != null) && (mouseActiveWindow != WindowsZOrder.Last()))
 				{
-					Windows.Remove(mouseActiveWindow);
-					Windows.Add(mouseActiveWindow);
+                    WindowsZOrder.Remove(mouseActiveWindow);
+                    WindowsZOrder.Add(mouseActiveWindow);
+                    UpdateTopMost();
                     WriteWindowZOrder();
 				}
 			}
@@ -164,6 +192,12 @@ namespace ORTS.Popups
 			}
 		}
 
+        void UpdateTopMost()
+        {
+            // Make sure all top-most windows sit above all normal windows.
+            WindowsZOrder = WindowsZOrder.Where(w => !w.TopMost).Concat(WindowsZOrder.Where(w => w.TopMost)).ToList();
+        }
+
         [Conditional("DEBUG_WINDOW_ZORDER")]
         internal void WriteWindowZOrder()
         {
@@ -171,8 +205,8 @@ namespace ORTS.Popups
             Console.WriteLine();
             Console.WriteLine("Windows: (bottom-to-top order, [V] = visible, [NI] = non-interactive)");
             Console.WriteLine("  Visible: {0}", String.Join(", ", VisibleWindows.Select(w => w.GetType().Name).ToArray()));
-            Console.WriteLine("  All:     {0}", String.Join(", ", Windows.Select(w => String.Format("{0}{1}{2}", w.GetType().Name, w.Interactive ? "" : "[NI]", w.Visible ? "[V]" : "")).ToArray()));
+            Console.WriteLine("  All:     {0}", String.Join(", ", WindowsZOrder.Select(w => String.Format("{0}{1}{2}", w.GetType().Name, w.Interactive ? "" : "[NI]", w.Visible ? "[V]" : "")).ToArray()));
             Console.WriteLine();
         }
-	}
+    }
 }

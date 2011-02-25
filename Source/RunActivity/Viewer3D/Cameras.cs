@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -64,16 +65,26 @@ namespace ORTS
 		protected Camera(Viewer3D viewer)
 		{
 			Viewer = viewer;
-			ScreenChanged();
 		}
 
 		protected Camera(Viewer3D viewer, Camera previousCamera) // maintain visual continuity
 			: this(viewer)
 		{
-			cameraLocation = previousCamera.CameraWorldLocation;
+            if (previousCamera != null)
+                cameraLocation = previousCamera.CameraWorldLocation;
 		}
 
-		/// <summary>
+        protected internal virtual void Save(BinaryWriter outf)
+        {
+            cameraLocation.Save(outf);
+        }
+
+        protected internal virtual void Restore(BinaryReader inf)
+        {
+            cameraLocation.Restore(inf);
+        }
+
+        /// <summary>
 		/// Switches the <see cref="Viewer3D"/> to this camera, updating the view information.
 		/// </summary>
 		public void Activate()
@@ -252,6 +263,18 @@ namespace ORTS
 		{
 		}
 
+        protected internal override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            targetLocation.Save(outf);
+        }
+
+        protected internal override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            targetLocation.Restore(inf);
+        }
+
 		protected override Matrix GetCameraView()
 		{
 			return Matrix.CreateLookAt(XNALocation(cameraLocation), XNALocation(targetLocation), Vector3.UnitY);
@@ -260,8 +283,8 @@ namespace ORTS
 
 	public abstract class RotatingCamera : Camera
 	{
-		protected float rotationYRadians = 0;
-		protected float rotationXRadians = 0;
+        protected float rotationXRadians = 0;
+        protected float rotationYRadians = 0;
 
 		protected RotatingCamera(Viewer3D viewer)
 			: base(viewer)
@@ -271,11 +294,28 @@ namespace ORTS
 		protected RotatingCamera(Viewer3D viewer, Camera previousCamera)
 			: base(viewer, previousCamera)
 		{
-			float h, a, b;
-			ORTSMath.MatrixToAngles(previousCamera.XNAView, out h, out a, out b);
-			rotationXRadians = -b;
-			rotationYRadians = -h;
+            if (previousCamera != null)
+            {
+                float h, a, b;
+                ORTSMath.MatrixToAngles(previousCamera.XNAView, out h, out a, out b);
+                rotationXRadians = -b;
+                rotationYRadians = -h;
+            }
 		}
+
+        protected internal override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            outf.Write(rotationXRadians);
+            outf.Write(rotationYRadians);
+        }
+
+        protected internal override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            rotationXRadians = inf.ReadSingle();
+            rotationYRadians = inf.ReadSingle();
+        }
 
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
@@ -284,9 +324,9 @@ namespace ORTS
 			// Rotation
 			if (UserInput.IsMouseRightButtonDown())
 			{
-				rotationXRadians += UserInput.MouseMoveY() * elapsedTime.RealSeconds;
 				rotationYRadians += UserInput.MouseMoveX() * elapsedTime.RealSeconds;
-			}
+                rotationXRadians += UserInput.MouseMoveY() * elapsedTime.RealSeconds;
+            }
 			if (UserInput.IsDown(UserCommands.CameraRotateLeft))
 				rotationYRadians -= speed * SpeedAdjustmentForRotation;
 			if (UserInput.IsDown(UserCommands.CameraRotateRight))
@@ -355,6 +395,29 @@ namespace ORTS
 		{
 		}
 
+        protected internal override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            if (attachedCar != null && attachedCar.Train != null && attachedCar.Train == Viewer.PlayerTrain)
+                outf.Write(Viewer.PlayerTrain.Cars.IndexOf(attachedCar));
+            else
+                outf.Write((int)-1);
+            outf.Write(onboardLocation.X);
+            outf.Write(onboardLocation.Y);
+            outf.Write(onboardLocation.Z);
+        }
+
+        protected internal override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            var carIndex = inf.ReadInt32();
+            if (carIndex!= -1 && Viewer.PlayerTrain != null)
+                attachedCar = Viewer.PlayerTrain.Cars[carIndex];
+            onboardLocation.X = inf.ReadSingle();
+            onboardLocation.Y = inf.ReadSingle();
+            onboardLocation.Z = inf.ReadSingle();
+        }
+
 		public override void HandleUserInput(ElapsedTime elapsedTime)
 		{
 			var train = attachedCar.Train;
@@ -370,8 +433,8 @@ namespace ORTS
 
 			if (newCar != null)
 			{
-				if (newCar.Flipped != attachedCar.Flipped)
-					FlipCamera();
+                if (newCar.Flipped != attachedCar.Flipped)
+                    FlipCamera();
 				attachedCar = newCar;
 			}
 			else
@@ -405,7 +468,7 @@ namespace ORTS
 			return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
 		}
 
-		void FlipCamera()
+		protected virtual void FlipCamera()
 		{
 			onboardLocation.X *= -1;
 			onboardLocation.Z *= -1;
@@ -480,7 +543,7 @@ namespace ORTS
 	public class HeadOutCamera : AttachedCamera
 	{
 		public enum HeadDirection { Forward, Backward }
-		bool Forwards;
+		readonly bool Forwards;
 
         public bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.HeadOutViewpoints.Count > 0; } }
 
@@ -551,6 +614,18 @@ namespace ORTS
 			: base(viewer)
 		{
 		}
+
+        protected internal override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            outf.Write(iLocation);
+        }
+
+        protected internal override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            iLocation = inf.ReadInt32();
+        }
 
 		public override Camera.Styles Style { get { return Styles.Cab; } }
 
@@ -645,7 +720,7 @@ namespace ORTS
 		float positionYRadians;
 
 		public enum AttachedTo { Front, Rear }
-		bool Front;
+		readonly bool Front;
 
 		public override bool IsUnderground
 		{
@@ -661,20 +736,40 @@ namespace ORTS
 			: base(viewer)
 		{
 			Front = attachedTo == AttachedTo.Front;
-			attachedCar = Front ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
-			positionYRadians = StartPositionYRadians + (Front == attachedCar.Flipped ? (float)Math.PI : 0);
-			rotationXRadians = positionXRadians;
-			rotationYRadians = positionYRadians - (float)Math.PI;
 		}
 
-		protected override void OnActivate(bool sameCamera)
-		{
-			// We're not attached to the viewer's train, let's fix that.
-			if (attachedCar.Train != Viewer.PlayerTrain)
-				attachedCar = Front ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
-			UpdateOnboardLocation();
-			base.OnActivate(sameCamera);
-		}
+        protected internal override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            outf.Write(positionDistance);
+            outf.Write(positionXRadians);
+            outf.Write(positionYRadians);
+        }
+
+        protected internal override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            positionDistance = inf.ReadSingle();
+            positionXRadians = inf.ReadSingle();
+            positionYRadians = inf.ReadSingle();
+        }
+
+        protected override void OnActivate(bool sameCamera)
+        {
+            if (attachedCar == null)
+            {
+                attachedCar = Front ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
+                positionYRadians = StartPositionYRadians + (Front == attachedCar.Flipped ? (float)Math.PI : 0);
+                rotationXRadians = positionXRadians;
+                rotationYRadians = positionYRadians - (float)Math.PI;
+            }
+            else if (attachedCar.Train != Viewer.PlayerTrain)
+            {
+                attachedCar = Front ? Viewer.PlayerTrain.FirstCar : Viewer.PlayerTrain.LastCar;
+            }
+            UpdateOnboardLocation();
+            base.OnActivate(sameCamera);
+        }
 
 		/// <summary>
 		/// From distance and elevation variables
@@ -733,7 +828,16 @@ namespace ORTS
 			}
 
 			base.HandleUserInput(elapsedTime);
-		}
+
+            if (UserInput.IsPressed(UserCommands.CameraCarFirst) || UserInput.IsPressed(UserCommands.CameraCarLast) || UserInput.IsPressed(UserCommands.CameraCarNext) || UserInput.IsPressed(UserCommands.CameraCarPrevious))
+                UpdateOnboardLocation();
+        }
+
+        protected override void FlipCamera()
+        {
+            base.FlipCamera();
+            positionYRadians += (float)Math.PI;
+        }
 	}
 
 	public class PassengerCamera : AttachedCamera
@@ -841,7 +945,6 @@ namespace ORTS
 			: base(viewer)
 		{
 			Random = new Random();
-			AttachedCar = Viewer.PlayerTrain.FirstCar;
 		}
 
 		protected override void OnActivate(bool sameCamera)
@@ -851,7 +954,7 @@ namespace ORTS
 				cameraLocation.TileX = 0;
 				cameraLocation.TileZ = 0;
 			}
-			if (AttachedCar.Train != Viewer.PlayerTrain)
+            if (AttachedCar == null || AttachedCar.Train != Viewer.PlayerTrain)
 				AttachedCar = Viewer.PlayerTrain.FirstCar;
 			base.OnActivate(sameCamera);
 		}

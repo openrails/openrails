@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -205,5 +206,23 @@ namespace ORTS
 		{
 			return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4}}}", TileX, TileZ, Location.X, Location.Y, Location.Z);
 		}
-	}
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(TileX);
+            outf.Write(TileZ);
+            outf.Write(Location.X);
+            outf.Write(Location.Y);
+            outf.Write(Location.Z);
+        }
+
+        public void Restore(BinaryReader inf)
+        {
+            TileX = inf.ReadInt32();
+            TileZ = inf.ReadInt32();
+            Location.X = inf.ReadSingle();
+            Location.Y = inf.ReadSingle();
+            Location.Z = inf.ReadSingle();
+        }
+    }
 }

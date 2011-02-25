@@ -3,11 +3,12 @@
 // Use of the code for any other purpose or distribution of the code to anyone else
 // is prohibited without specific written permission from admin@openrails.org.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
-using System;
-using System.Linq;
 
 namespace ORTS.Popups
 {
@@ -26,7 +27,23 @@ namespace ORTS.Popups
 			Visible = true;
 		}
 
-		protected override void LocationChanged()
+        protected internal override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            outf.Write(Messages.Count);
+            foreach (var message in Messages)
+                message.Save(outf);
+        }
+
+        protected internal override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            var count = inf.ReadInt32();
+            for (var i = 0; i < count; i++)
+                Messages.Add(new Message(inf));
+        }
+
+        protected override void LocationChanged()
 		{
 			// SizeTo does not clamp the size so we should do it first; MoveTo clamps position.
 			SizeTo(Owner.ScreenSize.X - 2 * HorizontalPadding, Owner.ScreenSize.Y - 2 * VerticalPadding);
@@ -40,6 +57,14 @@ namespace ORTS.Popups
             get
             {
                 return false;
+            }
+        }
+
+        public override bool TopMost
+        {
+            get
+            {
+                return true;
             }
         }
 
@@ -75,7 +100,21 @@ namespace ORTS.Popups
 				ClockTime = clockTime;
 				ExpiryTime = clockTime + duration;
 			}
-		}
+
+            public Message(BinaryReader inf)
+            {
+                Text = inf.ReadString();
+                ClockTime = inf.ReadDouble();
+                ExpiryTime = inf.ReadDouble();
+            }
+
+            public void Save(BinaryWriter outf)
+            {
+                outf.Write(Text);
+                outf.Write(ClockTime);
+                outf.Write(ExpiryTime);
+            }
+        }
 
 		public void AddMessage(string text, double duration)
 		{
