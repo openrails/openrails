@@ -94,7 +94,11 @@ namespace ORTS
 		[ThreadName("Render")]
 		protected override void Initialize()
 		{
-			Thread.CurrentThread.Name = "Render Process";
+            try
+            {
+                Thread.CurrentThread.Name = "Render Process";
+            }
+            catch { }
 
 			Materials.Initialize(this);
 			Viewer.Initialize(this);
@@ -214,13 +218,8 @@ namespace ORTS
 		protected override void Draw(GameTime gameTime)
 		{
             if (Viewer.Settings.Profiling)
-            {
                 if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount)
-                {
-                    Viewer.Settings.ProfilingFrameCount = ProfileFrames;
                     Viewer.Stop();
-                }
-            }
 
 			if (gameTime.ElapsedRealTime.TotalSeconds > 0.001)
 			{  // a zero elapsed time indicates the window needs to be redrawn with the same content
@@ -308,6 +307,8 @@ namespace ORTS
 		/// </summary>
 		private void Terminate()
 		{
+            if (Viewer.Settings.Profiling)
+                Viewer.Settings.ProfilingFrameCount = ProfileFrames;
 			Viewer.UpdaterProcess.Stop();
 			Viewer.LoaderProcess.Stop();
 			Viewer.SoundProcess.Stop();

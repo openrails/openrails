@@ -242,6 +242,8 @@ namespace ORTS
                         Trace.WriteLine(error);
                     }
                     results[i] = Simulator != null ? Simulator.Settings.ProfilingFrameCount > 0 : false;
+                    Console.WriteLine();
+                    Console.WriteLine();
 
                     // Force a cleanup.
                     Viewer = null;
