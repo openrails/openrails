@@ -996,7 +996,8 @@ namespace ORTS
 			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
 			graphicsDevice.RenderState.PointSpriteEnable = true;
 			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-		}
+            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
+        }
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
@@ -1026,7 +1027,8 @@ namespace ORTS
 			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
 			graphicsDevice.RenderState.PointSpriteEnable = false;
 			graphicsDevice.RenderState.SourceBlend = Blend.One;
-		}
+            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+        }
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
 		{
