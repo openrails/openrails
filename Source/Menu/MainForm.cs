@@ -11,14 +11,12 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using MSTS;
+using ORTS.Menu;
 
 namespace ORTS
 {
 	public partial class MainForm : Form
 	{
-		public const string FolderDataFileName = "folder.dat";
-
 		string FolderDataFile;
 		List<Folder> Folders = new List<Folder>();
 		List<Route> Routes = new List<Route>();
@@ -30,73 +28,7 @@ namespace ORTS
 		public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
 		public Activity SelectedActivity { get { return listBoxActivities.SelectedIndex < 0 ? null : Activities[listBoxActivities.SelectedIndex]; } set { if (listBoxActivities.SelectedIndex >= 0) Activities[listBoxActivities.SelectedIndex] = value; } }
 
-		public class Folder
-		{
-			public readonly string Name;
-			public readonly string Path;
-
-			public Folder(string name, string path)
-			{
-				Name = name;
-				Path = path;
-			}
-		}
-
-		public class Route
-		{
-			public readonly string Name;
-			public readonly string Path;
-			public readonly TRKFile TRKFile;
-
-			public Route(string name, string path, TRKFile trkFile)
-			{
-				Name = name;
-				Path = path;
-				TRKFile = trkFile;
-			}
-		}
-
-		public class Activity
-		{
-			public readonly string Name;
-			public readonly string FileName;
-			public readonly ACTFile ACTFile;
-
-			public Activity(string name, string fileName, ACTFile actFile)
-			{
-				Name = name;
-				FileName = fileName;
-				ACTFile = actFile;
-			}
-		}
-
-		public class ExploreActivity : Activity
-		{
-			public readonly string Path;
-			public readonly string Consist;
-			public readonly int StartHour;
-			public readonly int StartMinute;
-			public readonly int Season;
-			public readonly int Weather;
-
-			public ExploreActivity(string path, string consist, int season, int weather, int startHour, int startMinute)
-				: base("- Explore Route -", null, null)
-			{
-				Path = path;
-				Consist = consist;
-				Season = season;
-				Weather = weather;
-				StartHour = startHour;
-				StartMinute = startMinute;
-			}
-
-			public ExploreActivity()
-				: this("", "", 0, 0, 12, 0)
-			{
-			}
-		}
-
-		#region Main Form
+        #region Main Form
 		public MainForm()
 		{
 			InitializeComponent();
@@ -108,8 +40,6 @@ namespace ORTS
 
 			// Set title to show revision or build info.
 			Text = String.Format(Program.Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", Application.ProductName, Program.Revision, Program.Build);
-
-			FolderDataFile = Program.UserDataFolder + @"\" + FolderDataFileName;
 
 			CleanupPre021();
 
@@ -299,42 +229,17 @@ namespace ORTS
 
 		void LoadFolders()
 		{
-			Folders = new List<Folder>();
+            try
+            {
+                Folders = Folder.GetFolders().OrderBy(f => f.Name).ToList();
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show(error.ToString());
+            }
 
-			if (File.Exists(FolderDataFile))
-			{
-				try
-				{
-					using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
-					{
-						var count = inf.ReadInt32();
-						for (var i = 0; i < count; ++i)
-						{
-							var path = inf.ReadString();
-							var name = inf.ReadString();
-							Folders.Add(new Folder(name, path));
-						}
-					}
-				}
-				catch (Exception error)
-				{
-					MessageBox.Show(error.ToString());
-				}
-			}
-
-			if (Folders.Count == 0)
-			{
-				try
-				{
-					Folders.Add(new Folder("- Default -", MSTSPath.Base()));
-				}
-				catch (Exception)
-				{
-					MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", Application.ProductName);
-				}
-			}
-
-			Folders = Folders.OrderBy(f => f.Name).ToList();
+            if (Folders.Count == 0)
+                MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", Application.ProductName);
 
 			listBoxFolders.Items.Clear();
 			foreach (var folder in Folders)
@@ -366,27 +271,7 @@ namespace ORTS
 
 			listBoxRoutes.Items.Clear();
 			var selectedFolder = SelectedFolder;
-			RouteLoader = new Task<List<Route>>(this, () =>
-			{
-				var routes = new List<Route>();
-				if (selectedFolder != null)
-				{
-					var directory = Path.Combine(selectedFolder.Path, "ROUTES");
-					if (Directory.Exists(directory))
-					{
-						foreach (var routeDirectory in Directory.GetDirectories(directory))
-						{
-							try
-							{
-								var trkFile = new TRKFile(MSTSPath.GetTRKFileName(routeDirectory));
-								routes.Add(new Route(trkFile.Tr_RouteFile.Name, routeDirectory, trkFile));
-							}
-							catch { }
-						}
-					}
-				}
-				return routes.OrderBy(r => r.Name).ToList();
-			}, (routes) =>
+			RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.Name).ToList(), (routes) =>
 			{
 				Routes = routes;
 				labelRoutes.Visible = Routes.Count == 0;
@@ -406,38 +291,15 @@ namespace ORTS
 
 			listBoxActivities.Items.Clear();
 			var selectedRoute = SelectedRoute;
-			ActivityLoader = new Task<List<Activity>>(this, () =>
-			{
-				var activities = new List<Activity>();
-				if (selectedRoute != null)
-				{
-					activities.Add(new ExploreActivity());
-					var directory = Path.Combine(selectedRoute.Path, "ACTIVITIES");
-					if (Directory.Exists(directory))
-					{
-						foreach (var activityFile in Directory.GetFiles(directory, "*.act"))
-						{
-							if (Path.GetFileName(activityFile).StartsWith("ITR_e1_s1_w1_t1", StringComparison.OrdinalIgnoreCase))
-								continue;
-							try
-							{
-								var actFile = new ACTFile(activityFile, true);
-								activities.Add(new Activity(actFile.Tr_Activity.Tr_Activity_Header.Name, activityFile, actFile));
-							}
-							catch { }
-						}
-					}
-				}
-				return activities.OrderBy(a => a.Name).ToList();
-			}, (activities) =>
-			{
-				Activities = activities;
-				labelActivities.Visible = Activities.Count == 0;
-				foreach (var activity in Activities)
-					listBoxActivities.Items.Add(activity.Name);
-				if (Activities.Count > 0)
-					listBoxActivities.SelectedIndex = 0;
-			});
+            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedRoute).OrderBy(a => a.Name).ToList(), (activities) =>
+            {
+                Activities = activities;
+                labelActivities.Visible = Activities.Count == 0;
+                foreach (var activity in Activities)
+                    listBoxActivities.Items.Add(activity.Name);
+                if (Activities.Count > 0)
+                    listBoxActivities.SelectedIndex = 0;
+            });
 		}
 
 		void DisplayRouteDetails()

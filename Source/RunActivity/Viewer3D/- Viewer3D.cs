@@ -557,7 +557,7 @@ namespace ORTS
 
 		public void Stop()
 		{
-			InfoDisplay.Stop();
+            InfoDisplay.Stop();
 			RenderProcess.Stop();
 		}
 
@@ -572,7 +572,8 @@ namespace ORTS
 			// Stop the world!
 			Stop();
 			// Show the user that it's all gone horribly wrong.
-			System.Windows.Forms.MessageBox.Show(error.ToString());
+            if (Settings.ShowErrorDialogs)
+                System.Windows.Forms.MessageBox.Show(error.ToString());
 		}
 
 		/// <summary>

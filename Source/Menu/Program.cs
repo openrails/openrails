@@ -4,11 +4,9 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
 using System.IO;
-using Microsoft.Win32;
+using System.Windows.Forms;
+using ORTS.Menu;
 
 namespace ORTS
 {
@@ -43,7 +41,7 @@ namespace ORTS
 					switch (MainForm.ShowDialog())
 					{
 						case DialogResult.OK:
-							var exploreActivity = MainForm.SelectedActivity as MainForm.ExploreActivity;
+							var exploreActivity = MainForm.SelectedActivity as ExploreActivity;
 							if (exploreActivity != null)
 								parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather);
 							else

@@ -9,16 +9,9 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.IO;
-using Microsoft.Win32;
-using MSTS;
+using ORTS.Menu;
 
 namespace ORTS
 {
@@ -38,7 +31,7 @@ namespace ORTS
 			Font = SystemFonts.MessageBoxFont;
 		}
 
-		public DetailsForm(MainForm.Route route)
+		public DetailsForm(Route route)
 			: this()
         {
             Text = "Route Details";
@@ -50,7 +43,7 @@ namespace ORTS
 			this.Height -= groupEnvironment.Bottom - groupBoxDescription.Bottom;
         }
 
-		public DetailsForm(MainForm.Activity activity)
+		public DetailsForm(Activity activity)
 			: this()
 		{
             Text = "Activity Details";

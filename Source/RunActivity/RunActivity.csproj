@@ -171,6 +171,15 @@
     <Compile Include="..\MSTS\_STF.cs">
       <Link>MSTS\_STF.cs</Link>
     </Compile>
+    <Compile Include="..\ORTS\Menu\Activities.cs">
+      <Link>ORTS\Menu\Activities.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\Menu\Folders.cs">
+      <Link>ORTS\Menu\Folders.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\Menu\Routes.cs">
+      <Link>ORTS\Menu\Routes.cs</Link>
+    </Compile>
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />
     <Compile Include="AI\AITrain.cs" />

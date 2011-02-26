@@ -30,12 +30,14 @@ namespace ORTS
 		public bool MSTSBINSound { get; set; }
 		public bool Precipitation { get; set; }
 		public bool Profiling { get; set; }
-		public int ShaderModel { get; set; }
+        public int ProfilingFrameCount { get; set; }
+        public int ShaderModel { get; set; }
 		public bool ShadowAllShapes { get; set; }
 		public bool ShadowMapBlur { get; set; }
 		public int ShadowMapCount { get; set; }
 		public int ShadowMapDistance { get; set; }
 		public int ShadowMapResolution { get; set; }
+        public bool ShowErrorDialogs { get; set; }
 		public int SoundDetailLevel { get; set; }
 		public bool TrainLights { get; set; }
 		public bool VerticalSync { get; set; }
@@ -58,13 +60,15 @@ namespace ORTS
 		{
 			// Initialize defaults for all user settings here.
 			BrakePipeChargingRate = 21;
-			WindowSize = "1024x768";
-			WorldObjectDensity = 10;
+            ProfilingFrameCount = 1000;
 			ShadowMapBlur = true;
 			ShadowMapCount = 4;
 			ShadowMapResolution = 1024;
+            ShowErrorDialogs = true;
 			SoundDetailLevel = 5;
 			ViewingDistance = 2000;
+			WindowSize = "1024x768";
+			WorldObjectDensity = 10;
 		}
 
 		void LoadUserSettings(IEnumerable<string> options)
@@ -91,15 +95,19 @@ namespace ORTS
 				var propertyNameLower = property.Name.ToLowerInvariant();
 				var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
 
-				// Map registry option for boolean types so 1 is true; everything else is false;
+				// Map registry option for boolean types so 1 is true; everything else is false.
 				if ((regValue != null) && (regValue is int) && (property.PropertyType == typeof(bool)))
 					regValue = (int)regValue == 1;
 
-				// Map command-line option for boolean types so true/yes/on/1 are all true; everything else is false;
+				// Map command-line option for boolean types so true/yes/on/1 are all true; everything else is false.
 				if ((optValue != null) && (property.PropertyType == typeof(bool)))
 					optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
 
-				var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
+                // Parse command-line option for int types.
+                else if ((optValue != null) && (property.PropertyType == typeof(int)))
+                    optValue = int.Parse((string)optValue);
+
+                var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
 				try
 				{
 					property.SetValue(this, value, new object[0]);

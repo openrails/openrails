@@ -209,13 +209,18 @@ namespace ORTS
 		/// In a single processor environment, it does the update/draw in
 		/// sequence using this thread alone.
 		/// </summary>
-		int ProfileFrames = 1000;
+		int ProfileFrames = 0;
 		[ThreadName("Render")]
 		protected override void Draw(GameTime gameTime)
 		{
-			if (Viewer.Settings.Profiling)
-				if (--ProfileFrames == 0)
-					Viewer.Stop();
+            if (Viewer.Settings.Profiling)
+            {
+                if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount)
+                {
+                    Viewer.Settings.ProfilingFrameCount = ProfileFrames;
+                    Viewer.Stop();
+                }
+            }
 
 			if (gameTime.ElapsedRealTime.TotalSeconds > 0.001)
 			{  // a zero elapsed time indicates the window needs to be redrawn with the same content

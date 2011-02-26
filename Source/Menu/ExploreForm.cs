@@ -9,14 +9,15 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using MSTS;
+using ORTS.Menu;
 
 namespace ORTS
 {
 	public partial class ExploreForm : Form
 	{
-		readonly MainForm.Folder Folder;
-		readonly MainForm.Route Route;
-		readonly MainForm.ExploreActivity ExploreActivity;
+		readonly Folder Folder;
+		readonly Route Route;
+		readonly ExploreActivity ExploreActivity;
 
 		List<Path> Paths = new List<Path>();
 		List<Consist> Consists = new List<Consist>();
@@ -61,7 +62,7 @@ namespace ORTS
 			}
 		}
 
-		public ExploreForm(MainForm.Folder folder, MainForm.Route route, MainForm.ExploreActivity exploreActivity)
+		public ExploreForm(Folder folder, Route route, ExploreActivity exploreActivity)
 		{
 			InitializeComponent();
 
@@ -84,11 +85,11 @@ namespace ORTS
 			numericMinute.Value = exploreActivity.StartMinute;
 		}
 
-		public MainForm.ExploreActivity NewExploreActivity
+		public ExploreActivity NewExploreActivity
 		{
 			get
 			{
-				return new MainForm.ExploreActivity(listPaths.SelectedIndex >= 0 ? Paths[listPaths.SelectedIndex].FileName : "", listConsists.SelectedIndex >= 0 ? Consists[listConsists.SelectedIndex].FileName : "", listSeason.SelectedIndex, listWeather.SelectedIndex, (int)numericHour.Value, (int)numericMinute.Value);
+				return new ExploreActivity(listPaths.SelectedIndex >= 0 ? Paths[listPaths.SelectedIndex].FileName : "", listConsists.SelectedIndex >= 0 ? Consists[listConsists.SelectedIndex].FileName : "", listSeason.SelectedIndex, listWeather.SelectedIndex, (int)numericHour.Value, (int)numericMinute.Value);
 			}
 		}
 
