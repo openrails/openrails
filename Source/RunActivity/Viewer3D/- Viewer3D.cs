@@ -411,11 +411,11 @@ namespace ORTS
 				Camera.Activate();
 			}
 
-            if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.HasCABViews) CabCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.IsAvailable) CabCamera.Activate();
 			if (UserInput.IsPressed(UserCommands.CameraOutsideFront)) FrontCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraOutsideRear)) BackCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraTrackside)) TracksideCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraPassenger) && PassengerCamera.HasPassengerCamera) PassengerCamera.Activate();
+            if (UserInput.IsPressed(UserCommands.CameraPassenger) && PassengerCamera.IsAvailable) PassengerCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraBrakeman)) BrakemanCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraFree)) new FreeRoamCamera(this, Camera).Activate();
             if (UserInput.IsPressed(UserCommands.CameraHeadOutForward) && HeadOutForwardCamera.IsAvailable) HeadOutForwardCamera.Activate();

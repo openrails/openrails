@@ -163,9 +163,10 @@ namespace ORTS.Popups
 
 		protected internal void Layout()
 		{
-			WindowLayout = new WindowControlLayout(this, location.Width, location.Height);
+			var windowLayout = new WindowControlLayout(this, location.Width, location.Height);
             if (Owner.ScreenSize != Point.Zero)
-                Layout(WindowLayout);
+                Layout(windowLayout);
+            WindowLayout = windowLayout;
 		}
 
 		protected virtual ControlLayout Layout(ControlLayout layout)
