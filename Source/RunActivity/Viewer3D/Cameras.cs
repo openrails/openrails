@@ -911,6 +911,7 @@ namespace ORTS
 
             var viewPoint = attachedCar.PassengerViewpoints[0];
             onboardLocation = viewPoint.Location;
+            rotationXRadians = MSTSMath.M.Radians(viewPoint.StartDirection.X);
             rotationYRadians = MSTSMath.M.Radians(viewPoint.StartDirection.Y);
 
 			base.OnActivate(sameCamera);
