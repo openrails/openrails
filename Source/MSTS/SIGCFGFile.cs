@@ -209,7 +209,7 @@ namespace MSTS
         public SignalType(STFReader stf)
         {
             stf.MustMatch("(");
-            Name = stf.ReadString();
+            Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalfntype", ()=>{ ReadFnType(stf); }),
                 new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock(null); }),
@@ -545,7 +545,7 @@ namespace MSTS
                 Description = stf.ReadString();
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("sigsubtype", ()=>{ SignalSubType = SignalSubTypes.IndexOf(stf.ReadStringBlock(null).ToUpper()); }),
-                    new STFReader.TokenProcessor("sigsubstype", ()=>{ SignalSubSignalType = stf.ReadStringBlock(null); }),
+                    new STFReader.TokenProcessor("sigsubstype", ()=>{ SignalSubSignalType = stf.ReadStringBlock(null).ToLowerInvariant(); }),
                     new STFReader.TokenProcessor("signalflags", ()=>{
                         stf.MustMatch("(");
                         while (!stf.EndOfBlock())

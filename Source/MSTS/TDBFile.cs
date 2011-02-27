@@ -419,7 +419,7 @@ namespace MSTS
                     Flags1 = stf.ReadString();
                     Direction = stf.ReadUInt(STFReader.UNITS.None, null);
                     SigData1 = stf.ReadFloat(STFReader.UNITS.None, null);
-                    SignalType = stf.ReadString();
+                    SignalType = stf.ReadString().ToLowerInvariant();
                     // To do get index to Sigtypes table corresponding to this sigmal
                     stf.SkipRestOfBlock();
                 }),
