@@ -855,16 +855,7 @@ namespace ORTS
 		{
 			get
 			{
-				var train = Viewer.PlayerTrain;
-
-				// find first car with a passenger view
-				attachedCar = null;
-				foreach (TrainCar car in train.Cars)
-					if (car.PassengerViewpoints.Count > 0)
-					{
-						attachedCar = car;
-						break;
-					}
+                attachedCar = Viewer.PlayerTrain.Cars.FirstOrDefault(c => c.PassengerViewpoints.Count > 0);
 				return attachedCar != null;
 			}
 		}
@@ -884,31 +875,43 @@ namespace ORTS
 			if (UserInput.IsDown(UserCommands.CameraPanDown))
 				rotationXRadians += speed * SpeedAdjustmentForRotation;
 
-			// Do this here so we can clamp the angles below.
-			base.HandleUserInput(elapsedTime);
+            // Specially select all cars with passenger viewpoints and flip through only them.
+            var trainCars = attachedCar.Train.Cars.Where(c => c.PassengerViewpoints.Count > 0).ToList();
+            TrainCar newCar = null;
+            if (UserInput.IsPressed(UserCommands.CameraCarNext))
+                newCar = attachedCar == trainCars.First() ? attachedCar : trainCars[trainCars.IndexOf(attachedCar) - 1];
+            else if (UserInput.IsPressed(UserCommands.CameraCarPrevious))
+                newCar = attachedCar == trainCars.Last() ? attachedCar : trainCars[trainCars.IndexOf(attachedCar) + 1];
+            else if (UserInput.IsPressed(UserCommands.CameraCarFirst))
+                newCar = trainCars.First();
+            else if (UserInput.IsPressed(UserCommands.CameraCarLast))
+                newCar = trainCars.Last();
 
-			rotationXRadians = MathHelper.Clamp(rotationXRadians, -(float)Math.PI / 2.1f, (float)Math.PI / 2.1f);
-			rotationYRadians = MathHelper.Clamp(rotationYRadians, -(float)Math.PI / 2, (float)Math.PI / 2);
+            if (newCar != null)
+            {
+                if (newCar.Flipped != attachedCar.Flipped)
+                    FlipCamera();
+                attachedCar = newCar;
+            }
+            else
+            {
+                base.HandleUserInput(elapsedTime);
+            }
+
+            var viewPoint = attachedCar.PassengerViewpoints[0];
+            rotationXRadians = MathHelper.Clamp(rotationXRadians, MSTSMath.M.Radians(viewPoint.StartDirection.X - viewPoint.RotationLimit.X), MSTSMath.M.Radians(viewPoint.StartDirection.X + viewPoint.RotationLimit.X));
+            rotationYRadians = MathHelper.Clamp(rotationYRadians, MSTSMath.M.Radians(viewPoint.StartDirection.Y - viewPoint.RotationLimit.Y), MSTSMath.M.Radians(viewPoint.StartDirection.Y + viewPoint.RotationLimit.Y));
 		}
 
 		protected override void OnActivate(bool sameCamera)
 		{
-			var train = Viewer.PlayerTrain;
-
-			// find first car with a passenger view
-			attachedCar = null;
-			foreach (TrainCar car in train.Cars)
-				if (car.PassengerViewpoints.Count > 0)
-				{
-					attachedCar = car;
-					break;
-				}
+            attachedCar = Viewer.PlayerTrain.Cars.FirstOrDefault(c => c.PassengerViewpoints.Count > 0);
 			if (attachedCar == null)
-				return; // no cars have a passenger view
+				return;
 
-			rotationYRadians = MSTSMath.M.Radians(attachedCar.PassengerViewpoints[0].StartDirection.Y);
-			// TODO finish X and Z rotation
-			onboardLocation = attachedCar.PassengerViewpoints[0].Location;
+            var viewPoint = attachedCar.PassengerViewpoints[0];
+            onboardLocation = viewPoint.Location;
+            rotationYRadians = MSTSMath.M.Radians(viewPoint.StartDirection.Y);
 
 			base.OnActivate(sameCamera);
 		}
