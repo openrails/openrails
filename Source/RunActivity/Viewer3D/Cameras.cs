@@ -573,6 +573,10 @@ namespace ORTS
 				rotationYRadians -= speed * SpeedAdjustmentForRotation;
 			if (UserInput.IsDown(UserCommands.CameraPanRight))
 				rotationYRadians += speed * SpeedAdjustmentForRotation;
+            if (UserInput.IsDown(UserCommands.CameraPanUp))
+                rotationXRadians -= speed * SpeedAdjustmentForRotation;
+            if (UserInput.IsDown(UserCommands.CameraPanDown))
+                rotationXRadians += speed * SpeedAdjustmentForRotation;
 
 			// Do this here so we can clamp the angles below.
 			base.HandleUserInput(elapsedTime);

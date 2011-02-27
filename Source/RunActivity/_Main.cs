@@ -227,21 +227,25 @@ namespace ORTS
                 var results = new bool[activities.Count];
                 for (var i = 0; i < activities.Count; i++)
                 {
+#if !CRASH_ON_ERRORS
                     try
                     {
+#endif
                         var settings = GetSettings(false, options, new[] { activities[i].FileName }, ref showErrorDialogs);
                         CreateSimulator(settings);
                         Simulator.Start();
                         Viewer = new Viewer3D(Simulator);
                         Viewer.Initialize();
                         Viewer.Run();
+                        results[i] = true;
                         Simulator.Stop();
+#if !CRASH_ON_ERRORS
                     }
                     catch (Exception error)
                     {
                         Trace.WriteLine(error);
                     }
-                    results[i] = Simulator != null ? Simulator.Settings.ProfilingFrameCount > 0 : false;
+#endif
                     Console.WriteLine();
                     Console.WriteLine();
 
