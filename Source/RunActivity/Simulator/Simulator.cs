@@ -75,6 +75,8 @@ namespace ORTS
 		public string ExplorePathFile;
 		public string ExploreConFile;
 		public LevelCrossings LevelCrossings;
+		public RDBFile RDB;
+		public CarSpawnerFile CarSpawnerFile;
 
 		/// <summary>
 		/// Reference to the InterlockingSystem object, responsible for
@@ -134,6 +136,13 @@ namespace ORTS
 			RailDriver = new RailDriverHandler(BasePath);
 
 			Trace.Write(" ACT");
+			
+			Trace.Write(" RDB");
+			RDB = new RDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb");
+
+			Trace.Write(" CARSPAWN");
+			CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\"); 
+
 		}
 		public void SetActivity(string activityPath)
 		{

@@ -225,6 +225,8 @@
     <Compile Include="Interlocking\InterlockingTrack.cs" />
     <Compile Include="Interlocking\MovementAuthority\Route.cs" />
     <Compile Include="Interlocking\MovementAuthority\RouteCollection.cs" />
+    <Compile Include="MSTS\CarSpawnerFile.cs" />
+    <Compile Include="MSTS\RDBFile.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
@@ -263,11 +265,13 @@
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Simulator\Activity.cs" />
     <Compile Include="Simulator\RailDriverHandler.cs" />
+    <Compile Include="Simulator\RDBTraveller.cs" />
     <Compile Include="Simulator\TDBTraveller.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Common\DataLogger.cs" />
     <Compile Include="Viewer3D\LevelCrossing.cs" />
     <Compile Include="Viewer3D\ParticleEmitter.cs" />
+    <Compile Include="Viewer3D\RoadCars.cs" />
     <Compile Include="Viewer3D\Signals.cs" />
     <Compile Include="Viewer3D\SoundHelper.cs" />
     <Compile Include="Viewer3D\Wire.cs" />

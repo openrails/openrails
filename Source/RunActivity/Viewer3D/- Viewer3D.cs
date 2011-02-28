@@ -76,6 +76,7 @@ namespace ORTS
 		TerrainDrawer TerrainDrawer;
 		public SceneryDrawer SceneryDrawer;
 		public TrainDrawer TrainDrawer;
+		public RoadCarHandler RoadCarHandler;
 		public ISoundEngine SoundEngine = null;  // IrrKlang Sound Device
 		public SoundSource IngameSounds = null;  // By GeorgeS
 		public WorldSounds WorldSounds = null;   // By GeorgeS
@@ -300,6 +301,7 @@ namespace ORTS
 			if (Settings.Wire) WireDrawer = new WireDrawer(this);
 			TrainDrawer = new TrainDrawer(this);
 			weatherControl = new WeatherControl(this);
+			RoadCarHandler = new RoadCarHandler(this);
 
 			PlayerLocomotiveViewer = GetPlayerLocomotiveViewer();
 
@@ -535,6 +537,7 @@ namespace ORTS
 			TerrainDrawer.PrepareFrame(frame, elapsedTime);
 			SceneryDrawer.PrepareFrame(frame, elapsedTime);
 			TrainDrawer.PrepareFrame(frame, elapsedTime);
+			RoadCarHandler.PrepareFrame(frame, elapsedTime);
 			// By GeorgeS
 			//if (WorldSounds != null) WorldSounds.Update(elapsedTime);
 			if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);

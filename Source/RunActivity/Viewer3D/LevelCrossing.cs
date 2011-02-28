@@ -39,7 +39,7 @@ namespace ORTS
 		/// UpdateCrossingState requires a copy of rearTDBTraveller if the train moves backward,
 		/// thus declare the variable here to have a bit cache friendness
 		/// </summary>
-		private TDBTraveller t;
+		private TDBTraveller traveller;
 		/// <summary>
 		/// Gets an array of all the LevelCrossingObjects.
 		/// </summary>
@@ -308,56 +308,66 @@ namespace ORTS
 			//each frame only updates 1/20 crossings
 			int eachUpdate = noCrossing / 20 + 1;
 			float distance; //distance to activate the gate
+			float endDist; //gate will open if >endDist from the end
 
 			// only update the distance for 1/20 of the crossings each time.
 			for (int i = eachUpdate * refreshCount; i < eachUpdate * refreshCount + eachUpdate && i < noCrossing; i++)
 			{
 				//if the crossing is not in viewing range, go back
-                if (LevelCrossingObjects[i] == null ||
-                    LevelCrossingObjects[i].levelCrossingObj == null ||
+				if (LevelCrossingObjects[i] == null ||
+					LevelCrossingObjects[i].levelCrossingObj == null ||
 					LevelCrossingObjects[i].levelCrossingObj.inrange == false) continue;
-
-				//distance from the front and rear of the train to a crossing
-				//even when the train is moving backward, front is still the original front of the train
-				//if a crossing is not reachable, both will be -1
-				frontDist = LevelCrossingObjects[i].DistanceTo(train.FrontTDBTraveller);
-				rearDist = LevelCrossingObjects[i].DistanceTo(train.RearTDBTraveller);
 
 				//compute activiting distance
 				distance = LevelCrossingObjects[i].levelCrossingObj.warningTime * SpeedMpS;
+				endDist = LevelCrossingObjects[i].endDist;
+				if (distance > 0 && distance < endDist) distance = endDist;
+				else if (distance < 0 && distance > -endDist) distance = -endDist; //mini warning distance
+
 				//if the train is moving backward
 				if (SpeedMpS < 0)
 				{
-					//if both -1, means it may be reachable. positive means the train is leaving a crossing--a bit confusing
-					if (rearDist < 0 && frontDist < 0)
-					{
-						//copy the rearTDBTraveller and move it 300m in the moving direction (-300), and find the distance
-						t = new TDBTraveller(train.RearTDBTraveller);
-						t.Move(LevelCrossingObjects[i].levelCrossingObj.warningTime*SpeedMpS);
-						rearDist = LevelCrossingObjects[i].DistanceTo(t);
+					//copy the rearTDBTraveller and move it 300m in the moving direction (-300), and find the distance
 
-						//if by moving -300, the train has positive rear distance, 
-						//it means the train is within 300m of a crossing
-						if (rearDist > 0)
-						{
-							LevelCrossingObjects[i].TrainApproaching(train);
-						}
-						else
-						{
-							LevelCrossingObjects[i].TrainLeaving(train);
-						}
+					//distance from the front and rear of the train to a crossing
+					//even when the train is moving backward, front is still the original front of the train
+					//if a crossing is not reachable, both will be -1
+					//if by moving -distance, the train has positive rear distance, 
+					//it means the train is within distance of a crossing
+					traveller = new TDBTraveller(train.RearTDBTraveller); //the frontDist is the rearend dist since it moves backward
+					traveller.Move(distance); //distance is negative
+					frontDist = LevelCrossingObjects[i].DistanceTo(traveller);
+					if (frontDist < 0) //not reached
+					{
+						LevelCrossingObjects[i].TrainLeaving(train);
 						continue;
 					}
-					//if both distance are larger than 0, the train is not approaching a crossing, 
-					//call trainleaving anyway, since if a train is not on a crossing before, it won't do anything
-					if (rearDist >= 0 && frontDist >= 0)
+					traveller = new TDBTraveller(train.FrontTDBTraveller);
+					traveller.Move(endDist);
+					rearDist = LevelCrossingObjects[i].DistanceTo(traveller);
+					//both -1, the crossing is not reachable (or has just passed the crossing), so call trainleaving anyway
+
+					//if train is far away, do nothing
+					if (frontDist >= 0 && rearDist < 0)
+					{
+						LevelCrossingObjects[i].TrainApproaching(train);
+					}
+					else
 					{
 						LevelCrossingObjects[i].TrainLeaving(train);
 					}
 				}
 				else if (SpeedMpS <= 0.1) //train is stopping and not in a gate
 				{
-					if (rearDist >= 0 && frontDist <= 0.1)//train is stopping at a crossing gate or is very close to it
+					traveller = new TDBTraveller(train.FrontTDBTraveller);
+					traveller.Move(endDist);
+					frontDist = LevelCrossingObjects[i].DistanceTo(traveller);
+
+					traveller = new TDBTraveller(train.RearTDBTraveller);
+					traveller.Move(-endDist);
+					rearDist = LevelCrossingObjects[i].DistanceTo(traveller);
+
+					if (rearDist >= 0 && frontDist <= 0)//train is stopping at a crossing gate or is very close to it
 					{
 						LevelCrossingObjects[i].TrainApproaching(train);
 					}
@@ -368,22 +378,32 @@ namespace ORTS
 				}
 				else // train moves forward
 				{
+					traveller = new TDBTraveller(train.FrontTDBTraveller);
+					traveller.Move(distance);
+					frontDist = LevelCrossingObjects[i].DistanceTo(traveller);
+					if (frontDist > 10) //too far away, not reached
+					{
+						LevelCrossingObjects[i].TrainLeaving(train);
+						continue;
+					}
+
+					traveller = new TDBTraveller(train.RearTDBTraveller);
+					traveller.Move(-endDist);
+					rearDist = LevelCrossingObjects[i].DistanceTo(traveller);
+
 					//both -1, the crossing is not reachable (or has just passed the crossing), so call trainleaving anyway
 					if (rearDist < 0 && frontDist < 0)
 					{
-						if (LevelCrossingObjects[i].levelCrossingObj != null)
-						{
-							LevelCrossingObjects[i].TrainLeaving(train);
-						}
+						LevelCrossingObjects[i].TrainLeaving(train);
 						continue;
 					}
 					//if train is far away, do nothing
 					if (rearDist >= 0 && frontDist >= distance)
 					{
 					}
-					else if (rearDist >= 0 && frontDist < distance && frontDist > 0) // train is within warning range
+					else if (rearDist >= 0 && frontDist > 0) // train is within warning range
 					{
-						LevelCrossingObjects[i].TrainApproaching(train);
+						LevelCrossingObjects[i].TrainLeaving(train);
 					}
 					else if (rearDist >= 0 && frontDist < 0)//train is in a crossing range
 					{
@@ -409,6 +429,8 @@ namespace ORTS
 		public LevelCrossingObj levelCrossingObj; //LevelCrossingObj has LevelCrossingShape
 		public List<Train> trains; // trains that on the crossing
 		public List<LevelCrossingObject> groups; //sister crossings working together (parrallel lines)
+		public float endDist = 10;
+		public CarSpawner carSpawner = null; //spawner that will cross the gate
 
 		public List<Train> mytrain; //the train that is on the track of the crossing, not on the sister crossings
 
@@ -504,7 +526,13 @@ namespace ORTS
 		{
 			int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
 			return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z);
-		}  //DistanceTo
+		}  //DistanceTo a track
+
+		public float DistanceTo(RDBTraveller rdbTraveller)
+		{
+			int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
+			return rdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z);
+		}  //DistanceTo a car
 
 		/// <summary>
 		/// Gets the correspnding TrItem from the TDB.

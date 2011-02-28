@@ -175,6 +175,8 @@ namespace ORTS
                             dTrack.PrepareFrame(frame, elapsedTime);
                         foreach (ForestDrawer forest in wFile.forestList)
                             forest.PrepareFrame(frame, elapsedTime);
+						foreach (CarSpawner spawner in wFile.carSpawners)
+							spawner.SpawnCars(elapsedTime.ClockSeconds);
                     }
                 }
             }
@@ -200,6 +202,7 @@ namespace ORTS
         }
         public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
         public List<ForestDrawer> forestList = new List<ForestDrawer>();
+		public List<CarSpawner> carSpawners = new List<CarSpawner>();
 
         /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
@@ -283,6 +286,10 @@ namespace ORTS
 				else if (worldObject.GetType() == typeof(MSTS.LevelCrossingObj))
 				{
 					SceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, (LevelCrossingObj) worldObject, viewer.Simulator.LevelCrossings.LevelCrossingObjects));
+				}
+				else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
+				{
+					carSpawners.Add(new CarSpawner((CarSpawnerObj)worldObject, worldMatrix));
 				}
 				else // It's some other type of object - not one of the above.
 				{
