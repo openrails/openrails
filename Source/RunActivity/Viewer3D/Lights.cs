@@ -66,7 +66,7 @@ namespace ORTS
         DimBright, // MSTSBin
         OffDim, // MSTSBin
         OffBright, // MSTSBin
-        MSTSBinXXX, // MSTSBin // TODO: MSTSBin labels this the same as DimBright. Not sure what it means.
+        // TODO: DimBright?, // MSTSBin labels this the same as DimBright. Not sure what it means.
     }
 
     public enum LightUnitCondition
@@ -75,8 +75,8 @@ namespace ORTS
         Middle,
         First,
         Last,
-        LastFlip, // MSTSBin // TODO: MSTSBin cab switched?
-        FirstFlip, // MSTSBin // TODO: MSTSBin cab switched?
+        // TODO: LastBack, // MSTSBin cab switched
+        // TODO: FirstBack, // MSTSBin cab switched
     }
 
     public enum LightPenaltyCondition
@@ -486,42 +486,69 @@ namespace ORTS
                     Enabled &= lightDrawer.TrainHeadlight <= 1;
                 else if (Light.Headlight == LightHeadlightCondition.OffBright)
                     Enabled &= lightDrawer.TrainHeadlight != 1;
+                else
+                    Enabled &= false;
             }
             if (Light.Unit != LightUnitCondition.Ignore)
             {
-                if (Light.Unit == LightUnitCondition.First || Light.Unit == LightUnitCondition.LastFlip)
+                if (Light.Unit == LightUnitCondition.Middle)
+                    Enabled &= !lightDrawer.CarIsFirst && !lightDrawer.CarIsLast; 
+                else if (Light.Unit == LightUnitCondition.First)
                     Enabled &= lightDrawer.CarIsFirst;
-                else if (Light.Unit == LightUnitCondition.Last || Light.Unit == LightUnitCondition.FirstFlip)
+                else if (Light.Unit == LightUnitCondition.Last)
                     Enabled &= lightDrawer.CarIsLast;
-                else if (Light.Unit == LightUnitCondition.Middle)
-                    Enabled &= !lightDrawer.CarIsFirst && !lightDrawer.CarIsLast;
+                else
+                    Enabled &= false;
             }
             // TODO: Check Penalty here.
             if (Light.Control != LightControlCondition.Ignore)
             {
-                Enabled &= lightDrawer.CarIsPlayer == (Light.Control == LightControlCondition.Player);
+                if (Light.Control == LightControlCondition.AI)
+                    Enabled &= !lightDrawer.CarIsPlayer;
+                else if (Light.Control == LightControlCondition.Player)
+                    Enabled &= lightDrawer.CarIsPlayer;
+                else
+                    Enabled &= false;
             }
             if (Light.Service != LightServiceCondition.Ignore)
             {
-                Enabled &= lightDrawer.CarInService == (Light.Service == LightServiceCondition.Yes);
+                if (Light.Service == LightServiceCondition.No)
+                    Enabled &= !lightDrawer.CarInService;
+                else if (Light.Service == LightServiceCondition.Yes)
+                    Enabled &= lightDrawer.CarInService;
+                else
+                    Enabled &= false;
             }
             if (Light.TimeOfDay != LightTimeOfDayCondition.Ignore)
             {
-                Enabled &= lightDrawer.IsDay == (Light.TimeOfDay == LightTimeOfDayCondition.Day);
+                if (Light.TimeOfDay == LightTimeOfDayCondition.Day)
+                    Enabled &= lightDrawer.IsDay;
+                else if (Light.TimeOfDay == LightTimeOfDayCondition.Night)
+                    Enabled &= !lightDrawer.IsDay;
+                else
+                    Enabled &= false;
             }
             if (Light.Weather != LightWeatherCondition.Ignore)
             {
-                if (lightDrawer.Weather == WeatherType.Clear)
-                    Enabled &= Light.Weather == LightWeatherCondition.Clear;
-                else if (lightDrawer.Weather == WeatherType.Rain)
-                    Enabled &= Light.Weather == LightWeatherCondition.Rain;
-                else if (lightDrawer.Weather == WeatherType.Snow)
-                    Enabled &= Light.Weather == LightWeatherCondition.Snow;
+                if (Light.Weather == LightWeatherCondition.Clear)
+                    Enabled &= lightDrawer.Weather == WeatherType.Clear;
+                else if (Light.Weather == LightWeatherCondition.Rain)
+                    Enabled &= lightDrawer.Weather == WeatherType.Rain;
+                else if (Light.Weather == LightWeatherCondition.Snow)
+                    Enabled &= lightDrawer.Weather == WeatherType.Snow;
+                else
+                    Enabled &= false;
             }
             if (Light.Coupling != LightCouplingCondition.Ignore)
             {
-                Enabled &= lightDrawer.CarCoupledFront == (Light.Coupling == LightCouplingCondition.Front || Light.Coupling == LightCouplingCondition.Both);
-                Enabled &= lightDrawer.CarCoupledRear == (Light.Coupling == LightCouplingCondition.Rear || Light.Coupling == LightCouplingCondition.Both);
+                if (Light.Coupling == LightCouplingCondition.Front)
+                    Enabled &= lightDrawer.CarCoupledFront && !lightDrawer.CarCoupledRear;
+                else if (Light.Coupling == LightCouplingCondition.Rear)
+                    Enabled &= !lightDrawer.CarCoupledFront && lightDrawer.CarCoupledRear;
+                else if (Light.Coupling == LightCouplingCondition.Both)
+                    Enabled &= lightDrawer.CarCoupledFront && lightDrawer.CarCoupledRear;
+                else
+                    Enabled &= false;
             }
 
             if (oldEnabled != Enabled)

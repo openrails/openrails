@@ -692,9 +692,9 @@ namespace ORTS
         {
             get
             {
-                var elevationAtTrain = Viewer.Tiles.GetElevation(AttachedCar.WorldPosition.WorldLocation);
+                var elevationAtTrain = Viewer.Tiles.GetElevation(attachedCar.WorldPosition.WorldLocation);
                 var elevationAtCamera = Viewer.Tiles.GetElevation(cameraLocation);
-                return AttachedCar.WorldPosition.WorldLocation.Location.Y + TerrainAltitudeMargin < elevationAtTrain || cameraLocation.Location.Y + TerrainAltitudeMargin < elevationAtCamera;
+                return attachedCar.WorldPosition.WorldLocation.Location.Y + TerrainAltitudeMargin < elevationAtTrain || cameraLocation.Location.Y + TerrainAltitudeMargin < elevationAtCamera;
             }
         }
 
