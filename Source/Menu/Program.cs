@@ -16,8 +16,8 @@ namespace ORTS
 
 		public static string Revision;        // ie 078
 		public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
-		public static string RegistryKey;     // ie "SOFTWARE\\OpenRails\\ORTS"
-		public static string UserDataFolder;  // ie "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS"
+		public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
+		public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
 
 		[STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
 		static void Main(string[] args)
@@ -26,9 +26,9 @@ namespace ORTS
 
 			SetBuildRevision();
 
-			UserDataFolder = Path.GetDirectoryName(Path.GetDirectoryName(Application.UserAppDataPath));
+			UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
 
-			RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+			RegistryKey = @"SOFTWARE\OpenRails\ORTS";
 
 			try
 			{

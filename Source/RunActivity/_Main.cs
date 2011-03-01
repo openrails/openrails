@@ -37,8 +37,8 @@ namespace ORTS
         public static string[] Arguments;
         public static string Revision;        // ie 078
         public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
-        public static string RegistryKey;     // ie "SOFTWARE\\OpenRails\\ORTS"
-        public static string UserDataFolder;  // ie "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS"
+        public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
+        public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator;
         private static Viewer3D Viewer;
@@ -53,7 +53,7 @@ namespace ORTS
         {
             SetBuildRevision();
 
-            UserDataFolder = Path.GetDirectoryName(Path.GetDirectoryName(Application.UserAppDataPath));
+            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
 
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
 

@@ -44,8 +44,8 @@ namespace MenuWPF
 
         public static string Revision;        // ie 078
         public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
-        public static string RegistryKey;     // ie "SOFTWARE\\OpenRails\\ORTS"
-        public static string UserDataFolder;  // ie "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS"
+        public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
+        public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         #endregion
 
         string FolderDataFile;
@@ -153,7 +153,7 @@ namespace MenuWPF
             bgWork.DoWork += new DoWorkEventHandler(bgWork_DoWork);
             bgWork.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgWork_RunWorkerCompleted);
             SetBuildRevision();
-            UserDataFolder = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.UserAppDataPath));
+            UserDataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), System.Windows.Forms.Application.ProductName);
             
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
             // Set title to show revision or build info.
