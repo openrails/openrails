@@ -1,4 +1,9 @@
-﻿// Define this to check every material is resetting the RenderState correctly.
+﻿// COPYRIGHT 2010, 2011 by the Open Rails project.
+// This code is provided to enable you to contribute improvements to the open rails program.  
+// Use of the code for any other purpose or distribution of the code to anyone else
+// is prohibited without specific written permission from admin@openrails.org.
+
+// Define this to check every material is resetting the RenderState correctly.
 //#define DEBUG_RENDER_STATE
 
 // Define this to use the experimental collection that reduces reallocation
@@ -505,7 +510,12 @@ namespace ORTS
 				Console.WriteLine("}");
 				Console.WriteLine();
 			}
-		}
+
+            RenderProcess.Viewer.WindowManager.Draw(graphicsDevice);
+#if DEBUG_RENDER_STATE
+            DebugRenderState(graphicsDevice.RenderState, "WindowManager");
+#endif
+        }
 
 		void DrawShadows(GraphicsDevice graphicsDevice, bool logging)
 		{
@@ -597,17 +607,19 @@ namespace ORTS
 				Materials.SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
 			}
 
+            var renderItems = new List<RenderItem>();
 			for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
 			{
 				if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);
 				var sequence = RenderItems[i];
-				foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
+				foreach (var sequenceMaterial in sequence)
 				{
+                    if (sequenceMaterial.Value.Count == 0)
+                        continue;
 					if (sequenceMaterial.Key == DummyBlendedMaterial)
 					{
 						// Blended: multiple materials, group by material as much as possible without destroying ordering.
 						Material lastMaterial = null;
-						var renderItems = new List<RenderItem>();
 						foreach (var renderItem in sequenceMaterial.Value)
 						{
 							if (lastMaterial != renderItem.Material)
@@ -616,14 +628,14 @@ namespace ORTS
 								{
 									if (logging) Console.WriteLine("      {0,-5} * {1}", renderItems.Count, lastMaterial);
 									lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
-								}
+                                    renderItems.Clear();
+                                }
 								if (lastMaterial != null)
 									lastMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 								if (lastMaterial != null)
 									DebugRenderState(graphicsDevice.RenderState, lastMaterial.ToString());
 #endif
-								renderItems.Clear();
 								renderItem.Material.SetState(graphicsDevice, lastMaterial);
 								lastMaterial = renderItem.Material;
 							}
@@ -633,7 +645,8 @@ namespace ORTS
 						{
 							if (logging) Console.WriteLine("      {0,-5} * {1}", renderItems.Count, lastMaterial);
 							lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
-						}
+                            renderItems.Clear();
+                        }
 						if (lastMaterial != null)
 							lastMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE

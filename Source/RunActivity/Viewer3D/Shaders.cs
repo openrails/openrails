@@ -137,15 +137,30 @@ namespace ORTS
 		EffectParameter ImageTexture = null;
 		EffectParameter ImageBlurStep = null;
 
-		public void SetData(ref Matrix view, ref Matrix wvp, Texture2D imageTexture)
-		{
-			View.SetValue(view);
-			WorldViewProjection.SetValue(wvp);
-			ImageTexture.SetValue(imageTexture);
-			ImageBlurStep.SetValue(imageTexture != null ? imageTexture.Width : 0);
-		}
+        public void SetData(ref Matrix view)
+        {
+            View.SetValue(view);
+        }
 
-		public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
+        public void SetData(ref Matrix wvp, Texture2D imageTexture)
+        {
+            WorldViewProjection.SetValue(wvp);
+            ImageTexture.SetValue(imageTexture);
+        }
+
+        public void SetBlurData(ref Matrix view, ref Matrix wvp)
+        {
+            View.SetValue(view);
+            WorldViewProjection.SetValue(wvp);
+        }
+
+        public void SetBlurData(Texture2D imageTexture)
+        {
+            ImageTexture.SetValue(imageTexture);
+            ImageBlurStep.SetValue(imageTexture != null ? imageTexture.Width : 0);
+        }
+
+        public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
 			: base(graphicsDevice, content.Load<Effect>("ShadowMap"))
 		{
 			View = Parameters["View"];

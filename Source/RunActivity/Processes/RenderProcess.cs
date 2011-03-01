@@ -249,7 +249,6 @@ namespace ORTS
 			{
 #endif
 				CurrentFrame.Draw(GraphicsDevice);
-				Viewer.WindowManager.Draw(GraphicsDevice);
 
 				for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
 				{

@@ -789,25 +789,26 @@ namespace ORTS
             graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, LightConeVertex.SizeInBytes);
             graphicsDevice.Indices = IndexBuffer;
 
+            var rs = graphicsDevice.RenderState;
 #if DEBUG_LIGHT_CONE_FULL
-            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-            graphicsDevice.RenderState.SourceBlend = Blend.One;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.One;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 #else
-            graphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
-            graphicsDevice.RenderState.StencilFunction = CompareFunction.Always;
-            graphicsDevice.RenderState.StencilPass = StencilOperation.Increment;
-            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.Greater;
-            graphicsDevice.RenderState.DestinationBlend = Blend.One;
-            graphicsDevice.RenderState.SourceBlend = Blend.Zero;
+            rs.CullMode = CullMode.CullClockwiseFace;
+            rs.StencilFunction = CompareFunction.Always;
+            rs.StencilPass = StencilOperation.Increment;
+            rs.DepthBufferFunction = CompareFunction.Greater;
+            rs.DestinationBlend = Blend.One;
+            rs.SourceBlend = Blend.Zero;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 
-            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-            graphicsDevice.RenderState.StencilFunction = CompareFunction.Less;
-            graphicsDevice.RenderState.StencilPass = StencilOperation.Zero;
-            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
-            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-            graphicsDevice.RenderState.SourceBlend = Blend.One;
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            rs.StencilFunction = CompareFunction.Less;
+            rs.StencilPass = StencilOperation.Zero;
+            rs.DepthBufferFunction = CompareFunction.LessEqual;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.One;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 #endif
         }

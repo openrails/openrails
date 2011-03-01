@@ -357,10 +357,11 @@ namespace ORTS
 			SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["SignalLight"];
 			SceneryShader.ImageMap_Tex = Texture;
 
-			graphicsDevice.RenderState.AlphaBlendEnable = true;
-			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-			graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
-			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+			rs.DestinationBlend = Blend.InverseSourceAlpha;
+			rs.SeparateAlphaBlendEnabled = true;
+			rs.SourceBlend = Blend.SourceAlpha;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -387,10 +388,11 @@ namespace ORTS
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-			graphicsDevice.RenderState.SeparateAlphaBlendEnabled = false;
-			graphicsDevice.RenderState.SourceBlend = Blend.One;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+			rs.DestinationBlend = Blend.Zero;
+			rs.SeparateAlphaBlendEnabled = false;
+			rs.SourceBlend = Blend.One;
 		}
 	}
 }

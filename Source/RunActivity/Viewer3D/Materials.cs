@@ -382,7 +382,8 @@ namespace ORTS
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            var rs = graphicsDevice.RenderState;
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
 			graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
 
 			if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = SceneryShader.Techniques["DarkShade"].Passes.GetEnumerator();
@@ -502,22 +503,22 @@ namespace ORTS
 			if (alphaTest != 0)
 			{
 				// Transparency test
-				graphicsDevice.RenderState.AlphaTestEnable = true;
-				graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
-				graphicsDevice.RenderState.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+				rs.AlphaTestEnable = true;
+				rs.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
+				rs.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
 			}
 			else if (shaders >= 4)
 			{
 				// Translucency
-				graphicsDevice.RenderState.AlphaTestEnable = true;
-				graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
-				graphicsDevice.RenderState.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
-				graphicsDevice.RenderState.AlphaBlendEnable = true;
-				graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-				graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-				graphicsDevice.RenderState.SeparateAlphaBlendEnabled = true;
-				graphicsDevice.RenderState.AlphaSourceBlend = Blend.Zero;
-				graphicsDevice.RenderState.AlphaDestinationBlend = Blend.One;
+				rs.AlphaTestEnable = true;
+				rs.AlphaFunction = CompareFunction.GreaterEqual;
+				rs.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
+				rs.AlphaBlendEnable = true;
+				rs.SourceBlend = Blend.SourceAlpha;
+				rs.DestinationBlend = Blend.InverseSourceAlpha;
+				rs.SeparateAlphaBlendEnabled = true;
+				rs.AlphaSourceBlend = Blend.Zero;
+				rs.AlphaDestinationBlend = Blend.One;
 			}
 
 			// Texture addressing
@@ -593,15 +594,16 @@ namespace ORTS
 			SceneryShader.LightingSpecular = 0;
 			SceneryShader.Apply();
 
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.AlphaDestinationBlend = Blend.Zero;
-			graphicsDevice.RenderState.AlphaFunction = CompareFunction.Always;
-			graphicsDevice.RenderState.AlphaSourceBlend = Blend.One;
-			graphicsDevice.RenderState.AlphaTestEnable = false;
-			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-			graphicsDevice.RenderState.ReferenceAlpha = 0;
-			graphicsDevice.RenderState.SeparateAlphaBlendEnabled = false;
-			graphicsDevice.RenderState.SourceBlend = Blend.One;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+			rs.AlphaDestinationBlend = Blend.Zero;
+			rs.AlphaFunction = CompareFunction.Always;
+			rs.AlphaSourceBlend = Blend.One;
+			rs.AlphaTestEnable = false;
+			rs.DestinationBlend = Blend.Zero;
+			rs.ReferenceAlpha = 0;
+			rs.SeparateAlphaBlendEnabled = false;
+			rs.SourceBlend = Blend.One;
 		}
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
@@ -653,9 +655,10 @@ namespace ORTS
 			graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 			graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
 
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.AlphaTestEnable = false;
-			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+			rs.AlphaTestEnable = false;
+			rs.CullMode = CullMode.CullCounterClockwiseFace;
 
 			graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
 			graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
@@ -719,11 +722,8 @@ namespace ORTS
                 RenderProcess.Viewer.SkyDrawer.overcast);
             Materials.FogCoeff = RenderProcess.Viewer.SkyDrawer.fogCoeff;
 
-            SkyShader.CurrentTechnique = SkyShader.Techniques["SkyTechnique"];
             SkyShader.SkyTexture = skyTexture;
             SkyShader.StarTexture = skyTexture;
-
-            // Variables passed from SkyDrawer
             SkyShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
             if (RenderProcess.Viewer.SkyDrawer.latitude > 0)
                 SkyShader.StarTexture = starTextureN;
@@ -732,17 +732,18 @@ namespace ORTS
             SkyShader.SunpeakColor = RenderProcess.Viewer.SkyDrawer.sunpeakColor;
             SkyShader.SunriseColor = RenderProcess.Viewer.SkyDrawer.sunriseColor;
             SkyShader.SunsetColor = RenderProcess.Viewer.SkyDrawer.sunsetColor;
-            SkyShader.Time = (float)RenderProcess.Viewer.Simulator.ClockTime/100000;
+            SkyShader.Time = (float)RenderProcess.Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyConstants.skyRadius / 20;
-
-            // Save existing render state
-            bool fogEnable = graphicsDevice.RenderState.FogEnable;
-            CullMode cullMode = graphicsDevice.RenderState.CullMode;
-            // Set render state for drawing sky
-            graphicsDevice.RenderState.FogEnable = false;
-            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            SkyShader.MoonTexture = moonTexture;
+            SkyShader.MoonMaskTexture = moonMask;
+            SkyShader.Random = RenderProcess.Viewer.SkyDrawer.moonPhase;
+            SkyShader.CloudTexture = cloudTexture;
+            SkyShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
+            SkyShader.WindSpeed = RenderProcess.Viewer.SkyDrawer.windSpeed;
+            SkyShader.WindDirection = RenderProcess.Viewer.SkyDrawer.windDirection;
 
             // Sky dome
+            SkyShader.CurrentTechnique = SkyShader.Techniques["SkyTechnique"];
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 1;
 
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
@@ -764,31 +765,21 @@ namespace ORTS
             SkyShader.End();
 
             // Moon
+            SkyShader.CurrentTechnique = SkyShader.Techniques["MoonTechnique"];
+            RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 2;
+
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.CullMode = CullMode.CullClockwiseFace;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
             // Send the transform matrices to the shader
             int skyRadius = RenderProcess.Viewer.SkyDrawer.SkyMesh.skyRadius;
             int cloudRadiusDiff = RenderProcess.Viewer.SkyDrawer.SkyMesh.cloudDomeRadiusDiff;
             XNAMoonMatrix = Matrix.CreateTranslation(RenderProcess.Viewer.SkyDrawer.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
-            // Shader setup
-            SkyShader.CurrentTechnique = SkyShader.Techniques["MoonTechnique"];
-            SkyShader.MoonTexture = moonTexture;
-            SkyShader.MoonMaskTexture = moonMask;
-            SkyShader.Random = RenderProcess.Viewer.SkyDrawer.moonPhase;
-
-            // Save the existing alpha render state
-            bool alphaBlendEnable = graphicsDevice.RenderState.AlphaBlendEnable;
-            Blend destinationBlend = graphicsDevice.RenderState.DestinationBlend;
-            Blend sourceBlend = graphicsDevice.RenderState.SourceBlend;
-            bool alphaTestEnable = graphicsDevice.RenderState.AlphaTestEnable;
-            // Set alpha render state for drawing the moon and clouds
-            graphicsDevice.RenderState.AlphaBlendEnable = true;
-            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-            graphicsDevice.RenderState.AlphaTestEnable = false;
-            graphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
-
-            RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 2;
             SkyShader.Begin();
 			ShaderPasses.Reset();
 			while (ShaderPasses.MoveNext())
@@ -799,7 +790,6 @@ namespace ORTS
                     Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
                     SkyShader.SetMatrix(ref wvp, ref XNAViewMatrix);
                     SkyShader.CommitChanges();
-
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
 				ShaderPasses.Current.End();
@@ -807,16 +797,11 @@ namespace ORTS
             SkyShader.End();
 
             // Clouds
-           
-            // Shader setup
             SkyShader.CurrentTechnique = SkyShader.Techniques["CloudTechnique"];
-            SkyShader.CloudTexture = cloudTexture;
-            SkyShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
-            SkyShader.WindSpeed = RenderProcess.Viewer.SkyDrawer.windSpeed;
-            SkyShader.WindDirection = RenderProcess.Viewer.SkyDrawer.windDirection;
-            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-
             RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 3;
+
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
+
             SkyShader.Begin();
 			ShaderPasses.Reset();
 			while (ShaderPasses.MoveNext())
@@ -827,20 +812,19 @@ namespace ORTS
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     SkyShader.SetMatrix(ref wvp, ref XNAViewMatrix);
                     SkyShader.CommitChanges();
-
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
 				ShaderPasses.Current.End();
             }
             SkyShader.End();
+        }
 
-            // Restore the pre-existing render state
-            graphicsDevice.RenderState.AlphaBlendEnable = alphaBlendEnable;
-            graphicsDevice.RenderState.DestinationBlend = destinationBlend;
-            graphicsDevice.RenderState.SourceBlend = sourceBlend;
-            graphicsDevice.RenderState.AlphaTestEnable = alphaTestEnable;
-            graphicsDevice.RenderState.CullMode = cullMode;
-            graphicsDevice.RenderState.FogEnable = fogEnable;
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
@@ -904,12 +888,12 @@ namespace ORTS
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             particleEmitterShader.CurrentTime = (float)renderProcess.Viewer.Simulator.GameTime;
-            
-            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
 
-            graphicsDevice.RenderState.AlphaBlendEnable = true;
-            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-            graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DepthBufferWriteEnable = false;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -943,11 +927,11 @@ namespace ORTS
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
-            graphicsDevice.RenderState.AlphaBlendEnable = false;
-            graphicsDevice.RenderState.SourceBlend = Blend.One;
-            graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-            
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DepthBufferWriteEnable = true;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 
         public override bool GetBlending(RenderPrimitive renderPrimitive)
@@ -992,11 +976,12 @@ namespace ORTS
                 // Safe? or need a default here? If so, what?
             }
 
-			graphicsDevice.RenderState.AlphaBlendEnable = true;
-			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-			graphicsDevice.RenderState.PointSpriteEnable = true;
-			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DepthBufferWriteEnable = false;
+			rs.DestinationBlend = Blend.InverseSourceAlpha;
+			rs.PointSpriteEnable = true;
+			rs.SourceBlend = Blend.SourceAlpha;
         }
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1020,14 +1005,14 @@ namespace ORTS
             PrecipShader.End();
         }
 
-        // Is this needed? PrecipMaterial doesn't change any of these render states.
 		public override void ResetState(GraphicsDevice graphicsDevice)
         {
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-			graphicsDevice.RenderState.PointSpriteEnable = false;
-			graphicsDevice.RenderState.SourceBlend = Blend.One;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DepthBufferWriteEnable = true;
+			rs.DestinationBlend = Blend.Zero;
+			rs.PointSpriteEnable = false;
+			rs.SourceBlend = Blend.One;
         }
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
@@ -1067,12 +1052,14 @@ namespace ORTS
 		{
 			SceneryShader.CurrentTechnique = SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
 
-			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            var rs = graphicsDevice.RenderState;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+			rs.SourceBlend = Blend.SourceAlpha;
 		} // end SetState()
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
+            var rs = graphicsDevice.RenderState;
             foreach (var item in renderItems)   // Is this ever more than one for dynamic track?
                                                 // I guess there's nothing to be gained from changing it.
             {
@@ -1096,7 +1083,7 @@ namespace ORTS
                     SceneryShader.LightingSpecular = lod.LightingSpecular;
                     graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias =
                                 lod.MipMapLevelOfDetailBias;
-                    graphicsDevice.RenderState.AlphaBlendEnable =
+                    rs.AlphaBlendEnable =
                                 lod.AlphaBlendEnable;
 
                     Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
@@ -1122,10 +1109,10 @@ namespace ORTS
 			SceneryShader.LightingSpecular = 0;
 			SceneryShader.Apply();
 
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.AlphaTestEnable = false; // Not used at all
-			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-			graphicsDevice.RenderState.SourceBlend = Blend.One;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+			rs.DestinationBlend = Blend.Zero;
+			rs.SourceBlend = Blend.One;
 		} // end ResetState()
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
@@ -1153,9 +1140,10 @@ namespace ORTS
 			if (ShaderPasses == null) ShaderPasses = Materials.SceneryShader.Techniques["Forest"].Passes.GetEnumerator();
 			Materials.SceneryShader.ImageMap_Tex = TreeTexture;
 
-			graphicsDevice.RenderState.AlphaTestEnable = true;
-			graphicsDevice.RenderState.AlphaFunction = CompareFunction.GreaterEqual;
-			graphicsDevice.RenderState.ReferenceAlpha = 200;
+            var rs = graphicsDevice.RenderState;
+			rs.AlphaFunction = CompareFunction.GreaterEqual;
+            rs.AlphaTestEnable = true;
+			rs.ReferenceAlpha = 200;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1182,9 +1170,10 @@ namespace ORTS
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
-			graphicsDevice.RenderState.AlphaTestEnable = false;
-			graphicsDevice.RenderState.AlphaFunction = CompareFunction.Always;
-			graphicsDevice.RenderState.ReferenceAlpha = 0;
+            var rs = graphicsDevice.RenderState;
+			rs.AlphaFunction = CompareFunction.Always;
+            rs.AlphaTestEnable = false;
+			rs.ReferenceAlpha = 0;
 		}
 
 		public override Texture2D GetShadowTexture(RenderPrimitive renderPrimitive)
@@ -1212,10 +1201,11 @@ namespace ORTS
             LightGlowShader.CurrentTechnique = LightGlowShader.Techniques["LightGlow"];
             LightGlowShader.LightGlowTexture = lightGlowTexture;
 
-			graphicsDevice.RenderState.AlphaBlendEnable = true;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
-            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DepthBufferWriteEnable = false;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+			rs.SourceBlend = Blend.SourceAlpha;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1240,10 +1230,11 @@ namespace ORTS
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
-            graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-			graphicsDevice.RenderState.SourceBlend = Blend.One;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DepthBufferWriteEnable = true;
+            rs.DestinationBlend = Blend.Zero;
+			rs.SourceBlend = Blend.One;
 		}
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
@@ -1268,9 +1259,10 @@ namespace ORTS
         {
             LightConeShader.CurrentTechnique = LightConeShader.Techniques["LightCone"];
 
-            graphicsDevice.RenderState.AlphaBlendEnable = true;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
-            graphicsDevice.RenderState.StencilEnable = true;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DepthBufferWriteEnable = false;
+            rs.StencilEnable = true;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1294,15 +1286,16 @@ namespace ORTS
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.RenderState.AlphaBlendEnable = false;
-            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-            graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-            graphicsDevice.RenderState.DepthBufferFunction = CompareFunction.LessEqual;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
-            graphicsDevice.RenderState.SourceBlend = Blend.One;
-            graphicsDevice.RenderState.StencilEnable = false;
-            graphicsDevice.RenderState.StencilFunction = CompareFunction.Always;
-            graphicsDevice.RenderState.StencilPass = StencilOperation.Keep;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            rs.DestinationBlend = Blend.Zero;
+            rs.DepthBufferFunction = CompareFunction.LessEqual;
+            rs.DepthBufferWriteEnable = true;
+            rs.SourceBlend = Blend.One;
+            rs.StencilEnable = false;
+            rs.StencilFunction = CompareFunction.Always;
+            rs.StencilPass = StencilOperation.Keep;
         }
     }
 
@@ -1329,9 +1322,10 @@ namespace ORTS
 			graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 			graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
 
-			graphicsDevice.RenderState.AlphaBlendEnable = true;
-			graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-			graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+			rs.DestinationBlend = Blend.InverseSourceAlpha;
+			rs.SourceBlend = Blend.SourceAlpha;
 
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
@@ -1360,9 +1354,10 @@ namespace ORTS
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.SourceBlend = Blend.One;
-			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+			rs.DestinationBlend = Blend.Zero;
+			rs.SourceBlend = Blend.One;
 		}
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)
@@ -1378,6 +1373,9 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPassesShadowMapForest;
 		IEnumerator<EffectPass> ShaderPassesShadowMapBlocker;
 		IEnumerator<EffectPass> ShaderPasses;
+        IEnumerator<EffectPass> ShaderPassesBlur;
+        VertexDeclaration BlurVertexDeclaration;
+        VertexBuffer BlurVertexBuffer;
 
 		public enum Mode
 		{
@@ -1390,6 +1388,16 @@ namespace ORTS
 			: base(null)
 		{
 			RenderProcess = renderProcess;
+
+            var shadowMapResolution = renderProcess.Viewer.Settings.ShadowMapResolution;
+            BlurVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
+            BlurVertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, typeof(VertexPositionNormalTexture), 4, BufferUsage.WriteOnly);
+            BlurVertexBuffer.SetData(new[] {
+				new VertexPositionNormalTexture(new Vector3(-1, +1, 0), Vector3.Zero, new Vector2(0, 0)),
+				new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(shadowMapResolution, 0)),
+				new VertexPositionNormalTexture(new Vector3(+1, -1, 0), Vector3.Zero, new Vector2(shadowMapResolution, shadowMapResolution)),
+				new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, shadowMapResolution)),
+			});
         }
 
 		public void SetState(GraphicsDevice graphicsDevice, Mode mode)
@@ -1401,8 +1409,8 @@ namespace ORTS
 			if (ShaderPassesShadowMapBlocker == null) ShaderPassesShadowMapBlocker = shader.Techniques["ShadowMapBlocker"].Passes.GetEnumerator();
 			ShaderPasses = mode == Mode.Forest ? ShaderPassesShadowMapForest : mode == Mode.Blocker ? ShaderPassesShadowMapBlocker : ShaderPassesShadowMap;
 
-			var rs = graphicsDevice.RenderState;
-			rs.CullMode = mode == Mode.Blocker ? CullMode.CullClockwiseFace : CullMode.CullCounterClockwiseFace;
+            var rs = graphicsDevice.RenderState;
+            rs.CullMode = mode == Mode.Blocker ? CullMode.CullClockwiseFace : CullMode.CullCounterClockwiseFace;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1410,7 +1418,8 @@ namespace ORTS
 			var shader = Materials.ShadowMapShader;
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
-			shader.Begin();
+            shader.SetData(ref XNAViewMatrix);
+            shader.Begin();
 			ShaderPasses.Reset();
 			while (ShaderPasses.MoveNext())
 			{
@@ -1418,7 +1427,7 @@ namespace ORTS
 				foreach (var item in renderItems)
 				{
 					var wvp = item.XNAMatrix * viewproj;
-					shader.SetData(ref XNAViewMatrix, ref wvp, item.Material.GetShadowTexture(item.RenderPrimitive));
+					shader.SetData(ref wvp, item.Material.GetShadowTexture(item.RenderPrimitive));
 					shader.CommitChanges();
 					item.RenderPrimitive.Draw(graphicsDevice);
 				}
@@ -1429,50 +1438,51 @@ namespace ORTS
 
 		public Texture2D ApplyBlur(GraphicsDevice graphicsDevice, Texture2D shadowMap, RenderTarget2D renderTarget, DepthStencilBuffer stencilBuffer, DepthStencilBuffer normalStencilBuffer)
 		{
-			var shader = Materials.ShadowMapShader;
-			shader.CurrentTechnique = shader.Techniques["ShadowMapBlur"];
-
-			var rs = graphicsDevice.RenderState;
-			rs.CullMode = CullMode.None;
-			rs.DepthBufferEnable = false;
-			rs.DepthBufferWriteEnable = false;
-
 			var wvp = Matrix.Identity;
 
-			shader.Begin();
-			foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+			var shader = Materials.ShadowMapShader;
+			shader.CurrentTechnique = shader.Techniques["ShadowMapBlur"];
+            shader.SetBlurData(ref wvp, ref wvp);
+            if (ShaderPassesBlur == null) ShaderPassesBlur = shader.CurrentTechnique.Passes.GetEnumerator();
+
+            var rs = graphicsDevice.RenderState;
+            rs.CullMode = CullMode.None;
+            rs.DepthBufferEnable = false;
+            rs.DepthBufferWriteEnable = false;
+            graphicsDevice.VertexDeclaration = BlurVertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(BlurVertexBuffer, 0, VertexPositionNormalTexture.SizeInBytes);
+            graphicsDevice.DepthStencilBuffer = stencilBuffer;
+
+            shader.Begin();
+            ShaderPassesBlur.Reset();
+			while (ShaderPassesBlur.MoveNext())
 			{
 				graphicsDevice.SetRenderTarget(0, renderTarget);
-				graphicsDevice.DepthStencilBuffer = stencilBuffer;
-				shader.SetData(ref wvp, ref wvp, shadowMap);
-				shader.CommitChanges();
 
-				pass.Begin();
-				graphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleFan, new[] {
-					new VertexPositionNormalTexture(new Vector3(-1, +1, 0), Vector3.Zero, new Vector2(0, 0)),
-					new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(shadowMap.Width, 0)),
-					new VertexPositionNormalTexture(new Vector3(+1, -1, 0), Vector3.Zero, new Vector2(shadowMap.Width, shadowMap.Height)),
-					new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, shadowMap.Height)),
-				}, 0, 2);
-				pass.End();
+                shader.SetBlurData(shadowMap);
+                shader.CommitChanges();
 
-				graphicsDevice.DepthStencilBuffer = normalStencilBuffer;
+                ShaderPassesBlur.Current.Begin();
+				graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, 2);
+                ShaderPassesBlur.Current.End();
+
 				graphicsDevice.SetRenderTarget(0, null);
 				shadowMap = renderTarget.GetTexture();
 			}
 			shader.End();
 
-			rs.CullMode = CullMode.CullCounterClockwiseFace;
-			rs.DepthBufferEnable = true;
-			rs.DepthBufferWriteEnable = true;
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            rs.DepthBufferEnable = true;
+            rs.DepthBufferWriteEnable = true;
+            graphicsDevice.DepthStencilBuffer = normalStencilBuffer;
 
 			return shadowMap;
 		}
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
-			var rs = graphicsDevice.RenderState;
-			rs.CullMode = CullMode.CullCounterClockwiseFace;
+            var rs = graphicsDevice.RenderState;
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
 		}
 	}
 
@@ -1499,12 +1509,12 @@ namespace ORTS
 			shader.Screen = screen;
 			shader.GlassColor = Color.Black;
 
-			var rs = graphicsDevice.RenderState;
-			rs.AlphaBlendEnable = true;
-			rs.CullMode = CullMode.None;
-			rs.DepthBufferEnable = false;
-			rs.DestinationBlend = Blend.InverseSourceAlpha;
-			rs.SourceBlend = Blend.SourceAlpha;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.CullMode = CullMode.None;
+            rs.DepthBufferEnable = false;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
 		}
 
         public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1527,11 +1537,12 @@ namespace ORTS
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
-			graphicsDevice.RenderState.AlphaBlendEnable = false;
-			graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-			graphicsDevice.RenderState.DepthBufferEnable = true;
-			graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-			graphicsDevice.RenderState.SourceBlend = Blend.One;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+			rs.CullMode = CullMode.CullCounterClockwiseFace;
+			rs.DepthBufferEnable = true;
+			rs.DestinationBlend = Blend.Zero;
+			rs.SourceBlend = Blend.One;
 		}
 
 		public override bool GetBlending(RenderPrimitive renderPrimitive)

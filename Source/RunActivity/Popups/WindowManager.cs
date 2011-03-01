@@ -20,7 +20,7 @@ namespace ORTS.Popups
 	{
 		public const SpriteBlendMode BeginSpriteBlendMode = SpriteBlendMode.AlphaBlend;
 		public const SpriteSortMode BeginSpriteSortMode = SpriteSortMode.Immediate;
-		public const SaveStateMode BeginSaveStateMode = SaveStateMode.SaveState;
+		public const SaveStateMode BeginSaveStateMode = SaveStateMode.None;
 
 		public static Texture2D WhiteTexture;
 		public static Texture2D ScrollbarTexture;
@@ -110,6 +110,7 @@ namespace ORTS.Popups
 			// Project into a flat view of the same size as the viewport.
 			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
+            var rs = graphicsDevice.RenderState;
 			var material = Materials.PopupWindowMaterial;
 			foreach (var window in VisibleWindows)
 			{
@@ -125,6 +126,12 @@ namespace ORTS.Popups
 				window.Draw(SpriteBatch);
 				SpriteBatch.End();
 			}
+            rs.AlphaBlendEnable = false;
+            rs.AlphaFunction = CompareFunction.Always;
+            rs.AlphaTestEnable = false;
+            rs.DepthBufferEnable = true;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
 		}
 
 		internal void Add(Window window)
