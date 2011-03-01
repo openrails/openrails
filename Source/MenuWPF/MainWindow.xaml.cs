@@ -154,6 +154,7 @@ namespace MenuWPF
             bgWork.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgWork_RunWorkerCompleted);
             SetBuildRevision();
             UserDataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), System.Windows.Forms.Application.ProductName);
+            if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
             
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
             // Set title to show revision or build info.

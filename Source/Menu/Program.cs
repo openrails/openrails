@@ -27,6 +27,7 @@ namespace ORTS
 			SetBuildRevision();
 
 			UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
+            if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
 
 			RegistryKey = @"SOFTWARE\OpenRails\ORTS";
 
