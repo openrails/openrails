@@ -114,6 +114,9 @@
     <Compile Include="..\MSTS\CAMCFGFile.cs">
       <Link>MSTS\CAMCFGFile.cs</Link>
     </Compile>
+    <Compile Include="..\MSTS\CarSpawnerFile.cs">
+      <Link>MSTS\CarSpawnerFile.cs</Link>
+    </Compile>
     <Compile Include="..\MSTS\CONFile.cs">
       <Link>MSTS\CONFile.cs</Link>
     </Compile>
@@ -125,6 +128,9 @@
     </Compile>
     <Compile Include="..\MSTS\PATFile.cs">
       <Link>MSTS\PATFile.cs</Link>
+    </Compile>
+    <Compile Include="..\MSTS\RDBFile.cs">
+      <Link>MSTS\RDBFile.cs</Link>
     </Compile>
     <Compile Include="..\MSTS\SDFile.cs">
       <Link>MSTS\SDFile.cs</Link>
@@ -225,8 +231,6 @@
     <Compile Include="Interlocking\InterlockingTrack.cs" />
     <Compile Include="Interlocking\MovementAuthority\Route.cs" />
     <Compile Include="Interlocking\MovementAuthority\RouteCollection.cs" />
-    <Compile Include="MSTS\CarSpawnerFile.cs" />
-    <Compile Include="MSTS\RDBFile.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
