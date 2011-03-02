@@ -237,7 +237,7 @@ namespace MenuWPF
             }
             else
             {
-                MainStart();
+                MainStart(false);
 
             }
 		}
@@ -484,6 +484,11 @@ namespace MenuWPF
             
         }
 
+        private void itemResume_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            MainStart(true);
+        }
+
         #endregion
 
         #region Methods
@@ -493,31 +498,38 @@ namespace MenuWPF
         /// Old method of Windows Form Application to start the program, 
         /// now included in the main window.
         /// </summary>
-        void MainStart()
+        void MainStart(bool resume)
         {
             try
             {
                 string parameter;
 
-                if (SelectedActivity is ExploreActivity)
+                if (resume)
                 {
-                    int hour = 10;
-                    int mins = 0;
-                    Regex reg = new Regex("^([0-1][0-9]|[2][0-3]):([0-5][0-9])$"); //Match a string format of HH:MM
-                    if (reg.IsMatch(cboStartingTime.Text))
-                    {
-                        int.TryParse(cboStartingTime.Text.Trim().Substring(0, cboStartingTime.Text.Trim().IndexOf(':')), out hour);
-                        int.TryParse(cboStartingTime.Text.Trim().Substring(cboStartingTime.Text.Trim().IndexOf(':') + 1), out mins);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                        return;
-                    }
-                    parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
+                    parameter = "-resume";
                 }
                 else
-                    parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
+                {
+                    if (SelectedActivity is ExploreActivity)
+                    {
+                        int hour = 10;
+                        int mins = 0;
+                        Regex reg = new Regex("^([0-1][0-9]|[2][0-3]):([0-5][0-9])$"); //Match a string format of HH:MM
+                        if (reg.IsMatch(cboStartingTime.Text))
+                        {
+                            int.TryParse(cboStartingTime.Text.Trim().Substring(0, cboStartingTime.Text.Trim().IndexOf(':')), out hour);
+                            int.TryParse(cboStartingTime.Text.Trim().Substring(cboStartingTime.Text.Trim().IndexOf(':') + 1), out mins);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                            return;
+                        }
+                        parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
+                    }
+                    else
+                        parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
+                }
 
                 // find the RunActivity program, normally in the startup path, 
                 //  but while debugging it will be in an adjacent directory
@@ -1277,6 +1289,8 @@ namespace MenuWPF
             }
             return tagValue;
         }
+
+        
         
 
         #endregion

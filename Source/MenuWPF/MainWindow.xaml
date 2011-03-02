@@ -76,6 +76,7 @@
 				<Menu x:Name="menuMain" HorizontalAlignment="Left" VerticalAlignment="Top" Background="{x:Null}" FontFamily="{DynamicResource {x:Static SystemFonts.MenuFontFamilyKey}}" FontSize="16" Margin="10,0,0,0">
 					<MenuItem FontFamily="{DynamicResource {x:Static SystemFonts.MenuFontFamilyKey}}" Header="ORTS" Cursor="Hand">
 						<MenuItem x:Name="itemStart" Background="#7FFFFFFF" Cursor="Hand" FontFamily="{DynamicResource {x:Static SystemFonts.MenuFontFamilyKey}}" Header="Start" Click="itemStart_Click"/>
+						<MenuItem x:Name="itemResume" Background="#7FFFFFFF" Cursor="Hand" FontFamily="{DynamicResource {x:Static SystemFonts.MenuFontFamilyKey}}" Header="Resume" Click="itemResume_Click"/>
 						<MenuItem x:Name="itemQuit" Background="#7FFFFFFF" Cursor="Hand" FontFamily="{DynamicResource {x:Static SystemFonts.MenuFontFamilyKey}}" Header="Quit" Click="itemQuit_Click"/>
 					</MenuItem>
 					<MenuItem x:Name="menuItemOptions" Header="Options" Cursor="Hand">
