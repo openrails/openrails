@@ -155,6 +155,10 @@ namespace ORTS
 #endif
                 using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
                 {
+                    // Save some version identifiers so we can validate on load.
+                    outf.Write(Revision);
+                    outf.Write(Build);
+                    // Now save the real data...
                     outf.Write(Arguments.Length);
                     foreach (var argument in Arguments)
                         outf.Write(argument);
@@ -185,6 +189,25 @@ namespace ORTS
 #endif
                 using (BinaryReader inf = new BinaryReader(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Open, FileAccess.Read)))
                 {
+                    // Read in validation data.
+                    var revision = "<unknown>";
+                    var build = "<unknown>";
+                    var versionOkay = false;
+                    try
+                    {
+                        revision = inf.ReadString().Replace("\0", "");
+                        build = inf.ReadString().Replace("\0", "");
+                        versionOkay = (revision == Revision) && (build == Build);
+                    }
+                    catch { }
+                    if (!versionOkay)
+                    {
+                        if (revision.Length + build.Length > 0)
+                            throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Revision, Build, revision, build));
+                        throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Revision, Build));
+                    }
+
+                    // Read in the real data...
                     var args = new string[inf.ReadInt32()];
                     for (var i = 0; i < args.Length; i++)
                         args[i] = inf.ReadString();
