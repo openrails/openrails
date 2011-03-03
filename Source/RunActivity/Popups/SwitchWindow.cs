@@ -65,15 +65,15 @@ namespace ORTS.Popups
 		public void UpdateText(ElapsedTime elapsedTime, Train train)
 		{
 			UpdateSwitch(SwitchForwards, train, true);
-			UpdateSwitch(SwitchBackwards, train, false);
+            UpdateSwitch(SwitchBackwards, train, false);
 		}
 
 		void UpdateSwitch(Image image, Train train, bool front)
 		{
 			image.Source = new Rectangle(0, 0, SwitchImageSize, SwitchImageSize);
 
-			var traveller = new TDBTraveller(front ? train.FrontTDBTraveller : train.RearTDBTraveller);
-			if (!front)
+            var traveller = new TDBTraveller(front ^ train.LeadLocomotive.Flipped ? train.FrontTDBTraveller : train.RearTDBTraveller);
+            if (!(front ^ train.LeadLocomotive.Flipped))
 				traveller.ReverseDirection();
 
 			TrackNode SwitchPreviousNode = traveller.TN;

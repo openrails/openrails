@@ -567,8 +567,7 @@ namespace ORTS
 		/// </summary>
 		public void SwitchTrackBehind(Train train)
 		{
-			TrJunctionNode nextSwitchTrack;
-			nextSwitchTrack = train.RearTDBTraveller.TrJunctionNodeBehind();
+            TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.FrontTDBTraveller.TrJunctionNodeAhead() : train.RearTDBTraveller.TrJunctionNodeBehind();
 			if (SwitchIsOccupied(nextSwitchTrack))
 				return;
 
@@ -586,9 +585,8 @@ namespace ORTS
 		/// </summary>
 		public void SwitchTrackAhead(Train train)
 		{
-			TrJunctionNode nextSwitchTrack;
-			nextSwitchTrack = train.FrontTDBTraveller.TrJunctionNodeAhead();
-			if (SwitchIsOccupied(nextSwitchTrack))
+            TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.RearTDBTraveller.TrJunctionNodeBehind() : train.FrontTDBTraveller.TrJunctionNodeAhead();
+            if (SwitchIsOccupied(nextSwitchTrack))
 				return;
 
 			if (nextSwitchTrack != null)
