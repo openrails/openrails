@@ -75,6 +75,11 @@ namespace ORTS
             HeadlightColor.SetValue(color);
 		}
 
+        public void SetHeadlightOff()
+        {
+            HeadlightPosition.SetValue(Vector4.Zero);
+        }
+
         EffectParameter overcast;
         public float Overcast { set { overcast.SetValue(value); } }
 

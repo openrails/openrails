@@ -409,7 +409,7 @@ namespace ORTS
 				Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
 				Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
 				Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
-				PlayerLocomotiveViewer = Simulator.PlayerLocomotive.GetViewer(this);
+                PlayerLocomotiveViewer = TrainDrawer.GetViewer(Simulator.PlayerLocomotive);
 				Camera.Activate();
 			}
 

@@ -203,29 +203,37 @@ namespace ORTS
                 && renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.HasLightCone)
             {
                 var lightDrawer = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer;
-				var currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
-				if (currentLightState != lastLightState)
-				{
+                var currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
+                if (currentLightState != lastLightState)
+                {
                     if (currentLightState > lastLightState)
-					{
+                    {
                         if (lightDrawer.LightConeFadeIn > 0)
                         {
                             fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
                             fadeDuration = lightDrawer.LightConeFadeIn;
                         }
-					}
+                    }
                     else
-					{
+                    {
                         if (lightDrawer.LightConeFadeOut > 0)
                         {
                             fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
                             fadeDuration = -lightDrawer.LightConeFadeOut;
                         }
-					}
-					lastLightState = currentLightState;
-				}
-                SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration, ref lightDrawer.LightConeColor);
-			}
+                    }
+                    lastLightState = currentLightState;
+                }
+                if (currentLightState == 0 && lightDrawer.LightConeFadeOut == 0)
+                    // This occurs when switching locos and needs to be handled or we get lingering light.
+                    SceneryShader.SetHeadlightOff();
+                else
+                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration, ref lightDrawer.LightConeColor);
+            }
+            else
+            {
+                SceneryShader.SetHeadlightOff();
+            }
 			// End headlight illumination
 
 			SceneryShader.Overcast = renderProcess.Viewer.SkyDrawer.overcast;
