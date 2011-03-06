@@ -747,7 +747,9 @@ namespace ORTS
         {
             if (Viewer.TTypeDatFile.Count > 0)  // TODO, still have to figure out if this should be part of the car, or train, or track
             {
-                LoadTrackSound(Viewer.TTypeDatFile[0].InsideSound);
+                if (!string.IsNullOrEmpty(MSTSWagon.InteriorSoundFileName))
+                    LoadTrackSound(Viewer.TTypeDatFile[0].InsideSound);
+
                 LoadTrackSound(Viewer.TTypeDatFile[0].OutsideSound);
             }
         }

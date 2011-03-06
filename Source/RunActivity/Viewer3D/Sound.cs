@@ -32,7 +32,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using IrrKlang;
 using Microsoft.Xna.Framework;
 
 
@@ -81,6 +80,19 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Construct a SoundSource stationary at the specified worldLocation
+        /// </summary>
+        /// <param name="viewer"></param>
+        /// <param name="worldLocation"></param>
+        /// <param name="smsFilePath"></param>
+        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, string smsFilePath, bool isLinearRolloff)
+        {
+            IsEnvSound = true;
+            _isLinearRolloff = isLinearRolloff;
+            Initialize(viewer, worldLocation, smsFilePath);
+        }
+
+        /// <summary>
         /// No need to play the sounds, stop them
         /// </summary>
         public void Uninitialize()
@@ -94,14 +106,16 @@ namespace ORTS
         public MSTSWagon Car = null;          // the sound may be from a train car
 
         public string SMSFolder;              // the wave files will be relative to this folder
-        public bool Active = false;
-        public bool setDeactivate = true;     // For initially mute sounds - by GeorgeS
+        public string SMSFileName;
+        public bool Active = true;
         private MSTS.Activation ActivationConditions;
         private MSTS.Deactivation DeactivationConditions;
         public bool IsEnvSound = false;
+        public int IsExternal = 1;
 
-        private float distanceSquared;
-        private bool wasOutOfDistance = false;
+        private float _distanceSquared;
+        private bool _wasOutOfDistance = true;
+        private bool _isLinearRolloff = false;
 
         List<SoundStream> SoundStreams = new List<SoundStream>();
 
@@ -110,6 +124,7 @@ namespace ORTS
             Viewer = viewer;
             WorldLocation = worldLocation;
             SMSFolder = Path.GetDirectoryName(smsFilePath);
+            SMSFileName = Path.GetFileName(smsFilePath);
             MSTS.SMSFile smsFile = MSTS.SharedSMSFileManager.Get(smsFilePath);
 
 
@@ -132,10 +147,15 @@ namespace ORTS
                 ActivationConditions = mstsScalabiltyGroup.Activation;
                 DeactivationConditions = mstsScalabiltyGroup.Deactivation;
 
+                if (ActivationConditions.ExternalCam)
+                    IsExternal = 1;
+                else
+                    IsExternal = 0;
+
                 int cou = 1;
                 foreach (MSTS.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
                 {
-                    SoundStreams.Add(new SoundStream(mstsStream, this, cou++));
+                    SoundStreams.Add(new SoundStream(mstsStream, this, cou++, _isLinearRolloff));
                 }
             }
         }
@@ -169,9 +189,8 @@ namespace ORTS
             }
         }
 
-        public void Update()
+        public void InitInitials()
         {
-
             if (Car != null)
             {
                 WorldLocation = Car.WorldPosition.WorldLocation;
@@ -179,35 +198,70 @@ namespace ORTS
 
             if (isOutOfDistance())
             {
-                
-                if (!wasOutOfDistance)
-                {
-                    wasOutOfDistance = true;
-                    foreach (SoundStream stream in SoundStreams)
-                        stream.Deactivate();
 
-                    Active = false;
+                if (!_wasOutOfDistance)
+                {
+                    _wasOutOfDistance = true;
+                    foreach (SoundStream stream in SoundStreams)
+                        stream.HardDeactivate();
                 }
-                return;
+            }
+            else
+            {
+                if (_wasOutOfDistance)
+                {
+                    foreach (SoundStream stream in SoundStreams)
+                        stream.HardActivate();
+                }
+            }
+
+            _wasOutOfDistance = false;
+
+            // run the initial triggers
+            foreach (SoundStream stream in SoundStreams)
+                foreach (ORTSTrigger trigger in stream.Triggers)
+                    trigger.Initialize();
+        }
+        
+        public void Update()
+        {
+            if (Car != null)
+            {
+                WorldLocation = Car.WorldPosition.WorldLocation;
                 
             }
 
-            wasOutOfDistance = false;
+            if (isOutOfDistance())
+            {
+
+                if (!_wasOutOfDistance)
+                {
+                    _wasOutOfDistance = true;
+                    foreach (SoundStream stream in SoundStreams)
+                        stream.HardDeactivate();
+                }
+
+                return;
+            }
+            else
+            {
+                if (_wasOutOfDistance)
+                {
+                    foreach (SoundStream stream in SoundStreams)
+                        stream.HardActivate();
+                }
+            }
+
+            _wasOutOfDistance = false;
 
             if (!Active)
             {
                 if (Activate())
                 {
                     Active = true;
-                    setDeactivate = false;
-
-                    // run the initial triggers
-                    foreach( SoundStream stream in SoundStreams )
-                        foreach (ORTSTrigger trigger in stream.Triggers)
-                            trigger.Initialize();
 
                     // restore any looping sounds
-                    foreach( SoundStream stream in SoundStreams )
+                    foreach(SoundStream stream in SoundStreams)
                         stream.Activate();
                 }
             }
@@ -215,8 +269,6 @@ namespace ORTS
             {
                 if (DeActivate())
                 {
-                    setDeactivate = true;
-
                     foreach (SoundStream stream in SoundStreams)
                         stream.Deactivate();
 
@@ -235,23 +287,23 @@ namespace ORTS
 
                 Vector3 XNARelativePosition = new Vector3(RelativePosition.X, RelativePosition.Y, -RelativePosition.Z);
                 XNARelativePosition = Vector3.Transform(XNARelativePosition, Viewer.Camera.XNAView);
-
+                
                 foreach (SoundStream stream in SoundStreams)
                 {
-                    stream.Update(new Vector3D(XNARelativePosition.X / 10, XNARelativePosition.Y / 10, XNARelativePosition.Z / 10));
+                    stream.Update(XNARelativePosition.X , XNARelativePosition.Y , XNARelativePosition.Z );
                     // If initially not active, Deactivate it - by GeorgeS
-                    if (setDeactivate)
-                        stream.Deactivate();
+                    //if (setDeactivate)
+                    //    stream.Deactivate();
                 }
             }
             else
             {
                 foreach (SoundStream stream in SoundStreams)
                 {
-                    stream.Update(new Vector3D(0, 0, 0));
+                    stream.Update(0, 0, 0);
                     // If initially not active, Deactivate it - by GeorgeS
-                    if (setDeactivate)
-                        stream.Deactivate();
+                    //if (setDeactivate)
+                    //    stream.Deactivate();
                 }
             }
         } // Update
@@ -259,14 +311,25 @@ namespace ORTS
         public bool isOutOfDistance()
         {
             if (WorldLocation == null)
+            {
+                _distanceSquared = 0;
                 return false;
+            }
+
+            if (float.IsNaN(WorldLocation.Location.X) ||
+                float.IsNaN(WorldLocation.Location.X) ||
+                float.IsNaN(WorldLocation.Location.X))
+            {
+                _distanceSquared = 25000;
+                return true;
+            }
             
-            distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
+            _distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
 
             if (IsEnvSound)
                 return false;
 
-            return distanceSquared > 15000;
+            return _distanceSquared > 22000;
         }
 
         /// <summary>
@@ -276,12 +339,16 @@ namespace ORTS
         /// <returns></returns>
         public bool Activate()
         {
+            if (ActivationConditions == null)
+                return false;
+
             if (ConditionsMet(ActivationConditions))
             {
                 if (WorldLocation != null)
                 {
                     //float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
-                    if (distanceSquared < ActivationConditions.Distance * ActivationConditions.Distance)
+                    if (_distanceSquared < ActivationConditions.Distance * ActivationConditions.Distance &&
+                        _distanceSquared < 25000)
                         return true;
                 }
                 else
@@ -297,17 +364,29 @@ namespace ORTS
         /// <returns></returns>
         public bool DeActivate()
         {
+            if (DeactivationConditions == null)
+                return false;
+            
             if (ConditionsMet(DeactivationConditions))
                 return true;
 
             if (WorldLocation != null)
             {
                 //float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
-                if (distanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance)
+                if (_distanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance ||
+                    _distanceSquared > 25000)
                     return true;
             }
 
             return false;
+        }
+
+        public bool IsntThisCabView
+        {
+            get
+            {
+                return (Viewer.Camera.Style == Camera.Styles.Cab) && (Viewer.Camera.AttachedCar != Car);
+            }
         }
 
         /// <summary>
@@ -323,7 +402,7 @@ namespace ORTS
 
             Camera.Styles viewpoint = Viewer.Camera.Style;
 
-            if (!IsEnvSound && (viewpoint == Camera.Styles.Cab) && (Viewer.Camera.AttachedCar != Car))
+            if (!IsEnvSound && IsntThisCabView)
             {
                 viewpoint = Camera.Styles.External;
             }
@@ -350,16 +429,14 @@ namespace ORTS
         public float Volume
         {
             get { return volume / MSTSStream.Volume; }
-            set { volume = value * MSTSStream.Volume;  if (ISound != null) ISound.Volume = volume; }
+            set { volume = value * MSTSStream.Volume;  if (ALSoundSource != null) ALSoundSource.Volume = volume; }
         }
         private float volume = 1;
 
         public List<ORTSTrigger> Triggers = new List<ORTSTrigger>();
-        public bool IsPlaying = false;
 
-        private Queue<KeyValuePair<ISoundSource, bool>> _qPlay = new Queue<KeyValuePair<ISoundSource, bool>>();
-        public ISoundSource _playingSound = null;
-        private double _stoppedAt = 0;
+        public ALSoundSource ALSoundSource { get; private set; }
+        
         private int DiscreteTriggers = 0;
         private int VariableTriggers = 0;
         private bool DiscreteVariableTrigger = false;
@@ -367,16 +444,15 @@ namespace ORTS
         protected MSTS.SMSStream MSTSStream;
 
         private ORTSInitialTrigger _InitialTrigger = null;
-        private ISound ISound = null;
-        private float SampleRate; // ie 11025 - set by play command
-        private  ISoundSource RepeatingSound = null; // allows us to reactivate
         
-        public SoundStream( MSTS.SMSStream mstsStream, SoundSource soundSource, int index )
+        public SoundStream( MSTS.SMSStream mstsStream, SoundSource soundSource, int index, bool isLinearRolloff )
         {
             float Threshold = float.NaN;
             Index = index;
             SoundSource = soundSource;
             MSTSStream = mstsStream;
+
+            ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, isLinearRolloff);
 
             if (mstsStream.Triggers != null) 
                 foreach( MSTS.Trigger trigger in mstsStream.Triggers )
@@ -433,15 +509,27 @@ namespace ORTS
                 }  // for each mstsStream.Trigger
         }
 
+        public void Update(float x, float y, float z, float spx, float spy, float spz)
+        {
+            ALSoundSource.SetVelocity(spx, spy, spz);
+            Update(x, y, z);
+        }
+
         /// <summary>
         /// Update frequency and volume relative to curves
-        /// Position is in IRRKLANG space relative to listener
+        /// Position is in Sound space relative to listener
         /// </summary>
-        public void Update( IrrKlang.Vector3D IRRposition )
+        public void Update(float x, float y, float z)
         {
+            if (ALSoundSource == null)
+            {
+                return;
+            }
+
+            ALSoundSource.SetPosition(x, y, z);
+
             foreach (ORTSTrigger trigger in Triggers)
                 trigger.TryTrigger();
-
             
             // Run Initial if no other is Signaled
             var qt = from t in Triggers
@@ -454,7 +542,7 @@ namespace ORTS
             {
                 int stc = qt.Count();
                 // If no triggers active, Initialize the Initial
-                if (!IsPlaying)
+                if (!ALSoundSource.isPlaying)
                 {
                     var vtq = (from t in Triggers
                                where t is ORTSVariableTrigger
@@ -482,14 +570,9 @@ namespace ORTS
                 }
             }
 
-            if (ISound != null)
-            {
-                ISound.Position = IRRposition;
-            }
-
-            CheckSoundQueue();
-
             SetFreqAndVolume();
+
+            ALSoundSource.Update();
         }
 
         /// <summary>
@@ -498,13 +581,14 @@ namespace ORTS
         private void SetFreqAndVolume()
         {
             MSTSWagon car = SoundSource.Car;
-            if (car != null && ISound != null)
+            if (car != null && ALSoundSource != null)
             {
                 if (MSTSStream.FrequencyCurve != null)
                 {
                     float x = ReadValue(MSTSStream.FrequencyCurve.Control, car);
-                    float y = Interpolate(x, MSTSStream.FrequencyCurve.CurvePoints);
-                    ISound.PlaybackSpeed = y / SampleRate;
+                    float y = Interpolate(x, MSTSStream.FrequencyCurve);
+
+                    ALSoundSource.PlaybackSpeed = y / ALSoundSource.SampleRate;
                     if (y > 16000)
                     {
                         Console.Write("");
@@ -513,7 +597,10 @@ namespace ORTS
                 if (MSTSStream.VolumeCurve != null)
                 {
                     float x = ReadValue(MSTSStream.VolumeCurve.Control, car);
-                    float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
+                    float y = Interpolate(x, MSTSStream.VolumeCurve);
+
+                    if (SoundSource.IsntThisCabView)
+                        y *= .80f;
                     Volume = y;
                 }
 
@@ -522,22 +609,27 @@ namespace ORTS
                 // This is for a sound which was initially deactivated
                 else
                 {
-                    Volume = 1;
+                    if (SoundSource.IsntThisCabView)
+                        Volume = .80f;
+                    else
+                        Volume = 1;
                 }
 
                 // By GeorgeS
                 // BTW, if the sound must be deactivated, set it's volume to 0
+                /*
                 if (SoundSource.setDeactivate)
                 {
                     Volume = 0;
                 }
+                 */
             }
-            else if (ISound != null && SoundSource.IsEnvSound)
+            else if (ALSoundSource != null && SoundSource.IsEnvSound)
             {
                 if (MSTSStream.VolumeCurve != null)
                 {
                     float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
-                    float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
+                    float y = Interpolate(x, MSTSStream.VolumeCurve);
                     Volume = y;
                 }
             }
@@ -548,10 +640,20 @@ namespace ORTS
         /// // TODO do we need to implement support for Granularity()
         /// </summary>
         /// <param name="x"></param>
-        /// <param name="curvePoints"></param>
+        /// <param name="Curve"></param>
         /// <returns></returns>
-        private float Interpolate(float x, MSTS.CurvePoint[] curvePoints)
+        private float Interpolate(float x, MSTS.VolumeCurve Curve)
         {
+            MSTS.CurvePoint[] curvePoints = Curve.CurvePoints;
+
+            if (Curve.Granularity == 0)
+            {
+                if (x < curvePoints[0].X)
+                    return curvePoints[0].Y;
+                if (x > curvePoints[curvePoints.Length - 1].X)
+                    return curvePoints[curvePoints.Length - 1].Y;
+            }
+
             int i = 1;
             while (i < curvePoints.Length - 1
                 && curvePoints[i].X < x) ++i;
@@ -588,24 +690,11 @@ namespace ORTS
 
         public void Stop()
         {
-            if (ISound != null)
+            if (ALSoundSource != null)
             {
                 //Console.WriteLine("Stopping: " + _playingSound.Name.Substring(_playingSound.Name.LastIndexOf('\\')));
-                ISound.Stop();
-                ISound = null;
+                ALSoundSource.Stop();
             }
-
-            RepeatingSound = null;
-            _playingSound = null;
-        }
-
-        /// <summary>
-        /// Clears (already stopped) sound information - by GeorgeS
-        /// </summary>
-        public void StopRepeating()
-        {
-            RepeatingSound = null;
-            _playingSound = null;
         }
 
         /// <summary>
@@ -613,11 +702,11 @@ namespace ORTS
         /// </summary>
         public void Activate()
         {
-            if (ISound != null)
+            if (ALSoundSource != null)
             {
                 // Precalc volume to avoid glitches
                 SetFreqAndVolume();
-                ISound.Volume = volume;
+                ALSoundSource.Active = true;
             }
         }
 
@@ -626,63 +715,37 @@ namespace ORTS
         /// </summary>
         public void Deactivate()
         {
-            if (ISound != null)
+            if (ALSoundSource != null)
             {
-                ISound.Volume = 0;
+                ALSoundSource.Active = false;
             }
         }
 
-        /// <summary>
-        /// Check the playable sound queue. If the previous stopped and available a next sound
-        /// it begins to play. Timed solution!
-        /// </summary>
-        public void CheckSoundQueue()
+        public void HardActivate()
         {
-            if (_playingSound != null)
+            if (ALSoundSource != null)
             {
-                if (!WAVIrrKlangFileFactory.isPlaying(_playingSound.Name))
-                {
-                    if (_stoppedAt == 0)
-                    {
-						_stoppedAt = SoundSource.Viewer.RealTime;
-                        //_stoppedAt += WAVIrrKlangFileFactory.Weigth(_playingSound.Name) * .025;
-
-                    }
-					else if (_stoppedAt + .8 < SoundSource.Viewer.RealTime)
-                    {
-                        _stoppedAt = 0;
-                        Stop();
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            }
-
-            if (_qPlay.Count > 0)
-            {
-                KeyValuePair<ISoundSource, bool> kvp = _qPlay.Dequeue();
-                Play3D(kvp.Value, kvp.Key);
+                ALSoundSource.HardActive = true;
             }
         }
 
-        public bool isInQueueOrPlaying(string Name)
+        public void HardDeactivate()
         {
-            return (_playingSound != null && _playingSound.Name == Name) || (
-                        _qPlay.Count != 0 &&
-                        _qPlay.ElementAt(_qPlay.Count - 1).Key.Name == Name);
+            if (ALSoundSource != null)
+            {
+                ALSoundSource.HardActive = false;
+            }
         }
-        
+
         /// <summary>
         /// Play the specified sound 
         /// at the default volume.
         /// </summary>
         /// <param name="repeat"></param>
         /// <param name="iSoundSource"></param>
-        public void Play3D( bool repeat, IrrKlang.ISoundSource iSoundSource )
+        public void Play3D()
         {
-
+            /*
             // Queue instead of stopping
             if (ISound != null)
             {
@@ -720,7 +783,7 @@ namespace ORTS
             {
                 location = new Vector3(0, 0, 0);
             }
-            SampleRate = iSoundSource.AudioFormat.SampleRate;  // ie 11025
+
             if (viewer.SoundEngine != null)
             {
                 // Changed repeat to false, looping implemented with other method - by GeorgeS
@@ -765,32 +828,10 @@ namespace ORTS
             {
                 ISound.Paused = false;
             }
-
-            if (repeat)
-            {
-                RepeatingSound = iSoundSource;  // remember this so we can reactivate if needed
-                // In order to properly stop the looping - By GeorgeS
-            }
-            else
-                RepeatingSound = null;
+            */
         }
 
     } // class ORTSStream
-
-    // In order to properly stop the looping - By GeorgeS
-    class ORTSSoundStopReceiver : ISoundStopEventReceiver
-    {
-        public void OnSoundStopped(ISound sound, StopEventCause reason, object userData)
-        {
-            SoundStream ss = userData as SoundStream;
-            if (ss != null)
-            {
-                ss.StopRepeating();
-                ss.CheckSoundQueue();
-                Trace.TraceInformation("Sound stopped: " + ss._playingSound.Name);
-            }
-        }
-    }
 
 /////////////////////////////////////////////////////////
 /// SOUND TRIGGERS
@@ -1187,7 +1228,11 @@ namespace ORTS
         }
         public override void Run()
         {
-            Play3D(false);
+            string p = GetNextFile();
+            if (p != "")
+            {
+                ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal);
+            }
         }
     } 
 
@@ -1205,35 +1250,10 @@ namespace ORTS
         public override void  Run( )
         {
             // Support for Loop functions - by GeorgeS
-            Play3D(true);
-            IsPlaying = true;
-            _SoundStream.IsPlaying = true;
-            WAVIrrKlangFileFactory.StartLoop(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
-        }
-
-        // Support for Loop functions - by GeorgeS
-        // Must implement here because this class knows which file playing now
-        public void ReleaseLoopRelease()
-        {
-            _SoundStream.IsPlaying = false;
-            IsPlaying = false;
-            WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
-        }
-
-        // Support for Loop functions - by GeorgeS
-        // Must implement here because this class knows which file playing now
-        public void ReleaseLoopReleaseWithJump()
-        {
-            _SoundStream.IsPlaying = false;
-            IsPlaying = false;
-            WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
-        }
-
-        public override string FileName
-        {
-            get
+            string p = GetNextFile();
+            if (p != "")
             {
-                return Files[iFile];
+                ORTSStream.ALSoundSource.Queue(p, PlayMode.Loop, ORTSStream.SoundSource.IsExternal);
             }
         }
     } 
@@ -1249,38 +1269,10 @@ namespace ORTS
             : base(ortsStream)
         {
         }
-        // Support for Loop functions - by GeorgeS
+        
         public override void Run()
         {
-            // StartLoopRelease trigers
-
-            FileName = "";
-
-            // Must find the sound triggers in order to control
-            var qstl = from ORTSTrigger t in ORTSStream.Triggers
-                       where t.SoundCommand is ORTSStartLoopRelease &&
-                       t.SoundCommand.IsPlaying
-                       select t.SoundCommand;
-
-            // Release All
-            foreach (ORTSStartLoopRelease sc in qstl)
-            {
-                sc.ReleaseLoopRelease();
-                FileName += sc.FileName + " ";
-            }
-
-            // Not just the ReleaseLoops may be released
-            var qsl = from ORTSTrigger t in ORTSStream.Triggers
-                    where t.SoundCommand is ORTSStartLoop &&
-                    t.SoundCommand.IsPlaying
-                    select t.SoundCommand;
-
-            // Release All
-            foreach (ORTSStartLoop sc in qsl)
-            {
-                sc.ReleaseLoopRelease();
-                FileName += sc.FileName + " ";
-            }
+            ORTSStream.ALSoundSource.Queue("", PlayMode.Release, ORTSStream.SoundSource.IsExternal);
         }
     }
 
@@ -1301,35 +1293,10 @@ namespace ORTS
         // Support for Loop functions - by GeorgeS
         public override void Run()
         {
-            _SoundStream.IsPlaying = true;
-            IsPlaying = true;
-            WAVIrrKlangFileFactory.StartLoopRelease(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
-            Play3D(true);
-        }
-
-        // Support for Loop functions - by GeorgeS
-        // Must implement here because this class knows which file playing now
-        public void ReleaseLoopRelease()
-        {
-            _SoundStream.IsPlaying = false;
-            IsPlaying = false;
-            WAVIrrKlangFileFactory.Release(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
-        }
-
-        // Support for Loop functions - by GeorgeS
-        // Must implement here because this class knows which file playing now
-        public void ReleaseLoopReleaseWithJump()
-        {
-            _SoundStream.IsPlaying = false;
-            IsPlaying = false;
-            WAVIrrKlangFileFactory.ReleaseWithJump(ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile] + '*' + UID.ToString());
-        }
-
-        public override string FileName
-        {
-            get
+            string p = GetNextFile();
+            if (p != "")
             {
-                return Files[iFile];
+                ORTSStream.ALSoundSource.Queue(p, PlayMode.LoopRelease, ORTSStream.SoundSource.IsExternal);
             }
         }
     }
@@ -1345,38 +1312,9 @@ namespace ORTS
         {
         }
 
-        // Support for Loop functions - by GeorgeS
         public override void Run()
         {
-            // StartLoopRelease trigers
-
-            FileName = "";
-
-            // Must find the sound triggers in order to control
-            var qstl = from ORTSTrigger t in ORTSStream.Triggers
-                       where t.SoundCommand is ORTSStartLoopRelease &&
-                       t.SoundCommand.IsPlaying
-                       select t.SoundCommand;
-
-            // Release All
-            foreach (ORTSStartLoopRelease sc in qstl)
-            {
-                sc.ReleaseLoopReleaseWithJump();
-                FileName = sc.FileName + " ";
-            }
-
-            // Not just the ReleaseLoops may be released
-            var qsl = from ORTSTrigger t in ORTSStream.Triggers
-                      where t.SoundCommand is ORTSStartLoop &&
-                      t.SoundCommand.IsPlaying
-                      select t.SoundCommand;
-
-            // Release All
-            foreach (ORTSStartLoop sc in qsl)
-            {
-                sc.ReleaseLoopReleaseWithJump();
-                FileName = sc.FileName + " ";
-            }
+            ORTSStream.ALSoundSource.Queue("", PlayMode.ReleaseWithJump, ORTSStream.SoundSource.IsExternal);
         }
     }
 
@@ -1459,7 +1397,6 @@ namespace ORTS
     /// </summary>
     public abstract class ORTSSoundCommand
     {
-        public bool IsPlaying;
         protected SoundStream ORTSStream;
 
         public ORTSSoundCommand(SoundStream ortsStream)
@@ -1531,8 +1468,6 @@ namespace ORTS
         protected String[] Files;
         protected MSTS.SoundCommand.SelectionMethods SelectionMethod;
         protected int iFile = 0;
-        // This UID identifies the SoundCommand to irrKlang - by GeorgeS
-        protected Guid UID = Guid.NewGuid();
 
         public ORTSSoundPlayCommand(SoundStream ortsStream, MSTS.SoundPlayCommand mstsSoundPlayCommand)
             : base(ortsStream)
@@ -1541,7 +1476,7 @@ namespace ORTS
             SelectionMethod = mstsSoundPlayCommand.SelectionMethod;
         }
 
-        protected void Play3D( bool repeat)
+        protected string GetNextFile()
         {
             if (SelectionMethod == MSTS.SoundCommand.SelectionMethods.SequentialSelection)
             {
@@ -1564,20 +1499,13 @@ namespace ORTS
                     filePath = Program.Simulator.BasePath + @"\Sound\" + Files[iFile];
                 }
             }
-            if (File.Exists(filePath) && ORTSStream.SoundSource.Viewer.SoundEngine != null )
+            if (File.Exists(filePath))
             {
-                filePath += '*' + UID.ToString();
-                if (!ORTSStream.isInQueueOrPlaying(filePath))
-                {
-                    IrrKlang.ISoundSource iSoundSource = ORTSStream.SoundSource.Viewer.SoundEngine.GetSoundSource(filePath, true);
-                    // Loop play support - by GeorgeS
-                    // Must be set to support looping and not to fail with OutOfMemory
-                    if (iSoundSource != null)
-                    {
-                        iSoundSource.StreamMode = StreamMode.Streaming;
-                        ORTSStream.Play3D(repeat, iSoundSource);
-                    }
-                }
+                return filePath;
+            }
+            else
+            {
+                return "";
             }
 #endif
         }
@@ -1635,7 +1563,7 @@ namespace ORTS
                             WorldLocation wl = new WorldLocation(TileX, TileZ, fss.X, fss.Y, fss.Z);
                             SoundSource ss = null;
                             if (File.Exists(soundfolder + fss.SoundSourceFileName))
-                                ss = new SoundSource(Viewer, wl, soundfolder + fss.SoundSourceFileName);
+                                ss = new SoundSource(Viewer, wl, soundfolder + fss.SoundSourceFileName, true);
                             if (ss != null)
                                 ls.Add(ss);
                         }

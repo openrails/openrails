@@ -97,10 +97,21 @@ namespace ORTS
         {
 			Thread.CurrentThread.Name = "Sound Process";
 
-			while (true)
+            lock (_SoundSources)
+            {
+                foreach (List<SoundSource> src in _SoundSources.Values)
+                {
+                    foreach (SoundSource ss in src)
+                    {
+                        ss.InitInitials();
+                    }
+                }
+            }
+
+            while (true)
             {
                 // Sleeping a while
-                Thread.Sleep(200);
+                Thread.Sleep(150);
 
 				Profiler.Start();
 
