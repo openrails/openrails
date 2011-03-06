@@ -104,12 +104,12 @@ namespace ORTS.Popups
 			return vbox;
 		}
 
-		string FormatSpeed(float speed, bool metric)
+		public static string FormatSpeed(float speed, bool metric)
 		{
 			return String.Format(metric ? "{0:F1}kph" : "{0:F1}mph", MpS.FromMpS(speed, metric));
 		}
 
-		string FormatDistance(float distance, bool metric)
+		public static string FormatDistance(float distance, bool metric)
 		{
 			if (metric)
 			{

@@ -264,8 +264,9 @@ namespace ORTS
 			var bunched = !stretched && playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1;
 
 			TextBuilder.AppendFormat("Version = {0}", Program.Revision); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat("Time = {0}", FormattedTime(Viewer.Simulator.ClockTime)); TextBuilder.AppendLine();
-			TextBuilder.AppendFormat(showMUReverser ? "Direction = {1:F0} {0}" : "Direction = {0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent)); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Time = {0}", FormattedTime(Viewer.Simulator.ClockTime)); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Speed = {0}", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric)); TextBuilder.AppendLine();
+            TextBuilder.AppendFormat(showMUReverser ? "Direction = {1:F0} {0}" : "Direction = {0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent)); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Throttle = {0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent); TextBuilder.AppendLine();
 			TextBuilder.AppendFormat("Train Brake = {0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus()); TextBuilder.AppendLine();
 			if (showRetainers)
