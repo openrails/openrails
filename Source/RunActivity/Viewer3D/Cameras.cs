@@ -932,7 +932,7 @@ namespace ORTS
                 return;
             }
 
-            var trainForwards = Viewer.PlayerLocomotive.SpeedMpS >= 0;
+            var trainForwards = (Viewer.PlayerLocomotive.SpeedMpS >= 0) ^ Viewer.PlayerLocomotive.Flipped;
             var firstCarLocation = Viewer.PlayerTrain.FirstCar.WorldPosition.WorldLocation;
             var lastCarLocation = Viewer.PlayerTrain.LastCar.WorldPosition.WorldLocation;
             targetLocation = attachedCar.WorldPosition.WorldLocation;
