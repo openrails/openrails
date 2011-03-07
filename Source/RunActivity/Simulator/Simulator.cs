@@ -136,9 +136,13 @@ namespace ORTS
 			RailDriver = new RailDriverHandler(BasePath);
 
 			Trace.Write(" ACT");
-			
-			Trace.Write(" RDB");
-			RDB = new RDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb");
+
+            var rdbFile = RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb";
+            if (File.Exists(rdbFile))
+            {
+                Trace.Write(" RDB");
+                RDB = new RDBFile(rdbFile);
+            }
 
 			Trace.Write(" CARSPAWN");
 			CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\"); 

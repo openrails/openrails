@@ -289,8 +289,11 @@ namespace ORTS
 				}
 				else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
 				{
-					carSpawners.Add(new CarSpawner((CarSpawnerObj)worldObject, worldMatrix));
-				}
+                    if (viewer.Simulator.RDB != null)
+                        carSpawners.Add(new CarSpawner((CarSpawnerObj)worldObject, worldMatrix));
+                    else
+                        Trace.TraceWarning("Ignored car spawner {1} in {0} because route has no RDB.", WFileName, worldObject.UID);
+                }
 				else // It's some other type of object - not one of the above.
 				{
 					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
