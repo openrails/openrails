@@ -138,9 +138,9 @@ namespace ORTS
 			float dist;
 			int i, numRandomCars;
 
-			numRandomCars = (int)roadLength / 20; //randomly create this many cars
+			numRandomCars = (int)roadLength / 30; //randomly create this many cars
 			//but not exceed 4 minutes of cars
-			if (240 / (int)CarFrequency < numRandomCars) numRandomCars = 240 / (int)CarFrequency;
+			if (120 / (int)CarFrequency < numRandomCars) numRandomCars = 120 / (int)CarFrequency;
 
 			for (i = 0; i < numRandomCars; i++)
 			{
@@ -174,6 +174,7 @@ namespace ORTS
 			for (i = 0; i < crSize; i++) //check to find all crossings
 			{
 				crossingObj = Program.Simulator.LevelCrossings.LevelCrossingObjects[i];
+				if (crossingObj == null) continue;
 				if (added.Contains(crossingObj)) continue;
 				dist = crossingObj.DistanceTo(CarRDBTraveller);
 				if (dist < 0) continue;
@@ -416,8 +417,6 @@ namespace ORTS
 		public float force; //spring force between the car and previous
 		public float carWheelPos;
 
-		public bool dummy = false;
-
 		//default constructor
 		public RoadCar()
 		{
@@ -512,7 +511,7 @@ namespace ORTS
 				{
 					SpeedMpS += (desiredSpeed - SpeedMpS) / 2;
 				}
-				else if (distToGate < 8 + safeDist / 2)//stop immediately
+				else if (distToGate < 10 + safeDist / 2)//stop immediately
 				{
 					SpeedMpS = 0;
 					return;
@@ -652,11 +651,6 @@ namespace ORTS
 			{
 				car = cars[i];
 
-				if (car.dummy == true)
-				{
-					car.carShape.PrepareFrame(frame, elapsedTime);
-					continue;
-				}
 				car.Update(elapsedTime.ClockSeconds);
 				//if car is out, remove it (copy the last car to occupy its position in the car array
 				if (car.outOfRoad == true)
