@@ -85,7 +85,7 @@ namespace ORTS
             if (File.Exists(orFile))
                 wagFilePath = orFile;
             using (STFReader stf = new STFReader(wagFilePath, true))
-                while (!stf.EOF)
+                while (!stf.Eof)
                 {
                     string token = stf.ReadItem();
                     Parse(stf.Tree.ToLower(), stf);

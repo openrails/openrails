@@ -257,7 +257,7 @@ namespace MSTS
 		{
             using (STFReader stf = new STFReader(pathNameExt, false))
             {
-                if (stf.SIMISsignature != "SIMISA@@@@@@@@@@JINX0T0t______")
+                if (stf.SimisSignature != "SIMISA@@@@@@@@@@JINX0T0t______")
                 {
                     Trace.TraceWarning("Ignoring invalid TSECTION.DAT in route folder.");
                     return;

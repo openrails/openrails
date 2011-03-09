@@ -105,7 +105,7 @@ namespace MSTS
     /// </code></example>
     /// <example><code lang="C#" title="Alternate functional method to parse STF using C#">
     ///        using (STFReader stf = new STFReader(filename, false))
-    ///            while (!stf.EOF)
+    ///            while (!stf.Eof)
     ///                switch (stf.ReadItem().ToLower())
     ///                {
     ///                    case "item_single_constant": float isc = stf.ReadFloat(STFReader.UNITS.None, 0); break;
@@ -149,7 +149,7 @@ namespace MSTS
         {
             streamSTF = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
             FileName = filename;
-            SIMISsignature = streamSTF.ReadLine();
+            SimisSignature = streamSTF.ReadLine();
             LineNumber = 2;
             if (useTree) tree = new List<string>();
         }
@@ -202,7 +202,7 @@ namespace MSTS
 
         /// <summary>Property that returns true when the EOF has been reached
         /// </summary>
-        public bool EOF { get { return PeekChar() == -1; } }
+        public bool Eof { get { return PeekChar() == -1; } }
         /// <summary>Filename property for the file being parsed - for reporting purposes
         /// </summary>
         public string FileName { get; private set; }
@@ -211,7 +211,7 @@ namespace MSTS
         public int LineNumber { get; private set; }
         /// <summary>SIMIS header read from the first line of the file being parsed
         /// </summary>
-        public string SIMISsignature { get; private set; }
+        public string SimisSignature { get; private set; }
         /// <summary>Property returning the last {item} read using ReadItem() prefixed with string describing the nested block hierachy.
         /// <para>The string returned is formatted 'rootnode(nestednode(childnode(previous_item'.</para>
         /// </summary>
@@ -290,7 +290,7 @@ namespace MSTS
         /// <returns>The {item} read from the STF file</returns>
         public void MustMatch(string target)
         {
-            if (EOF)
+            if (Eof)
                 STFException.TraceError(this, "Unexpected end of file instead of " + target);
             else
             {
@@ -314,7 +314,7 @@ namespace MSTS
             if (includeReader != null)
             {
                 bool eob = includeReader.EndOfBlock();
-                if (includeReader.EOF)
+                if (includeReader.Eof)
                 {
                     if (tree.Count != 0)
                         STFException.TraceError(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
@@ -373,7 +373,7 @@ namespace MSTS
             }
             // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket
             int depth = 1;
-            while (!EOF && depth > 0)
+            while (!Eof && depth > 0)
             {
                 string token = ReadItem(true, false);
                 if (token == "(")
@@ -396,128 +396,128 @@ namespace MSTS
 
         /// <summary>Read an hexidecimal encoded number {constant_item}
         /// </summary>
-        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file.</returns>
-        public uint ReadHex(uint? default_val)
+        public uint ReadHex(uint? defaultValue)
         {
             string item = ReadItem();
 
-            if ((default_val.HasValue) && (item == ")"))
+            if ((defaultValue.HasValue) && (item == ")"))
             {
-                STFException.TraceWarning(this, "When expecting a hex string, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a hex string, we found a ) marker. Using the default " + defaultValue.ToString());
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
 
             uint val;
             if (uint.TryParse(item, parseHex, parseNFI, out val)) return val;
             STFException.TraceWarning(this, "Cannot parse the constant hex string " + item);
             if (item == ")") StepBackOneItem();
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an signed integer {constant_item}
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public int ReadInt(UNITS valid_units, int? default_val)
+        public int ReadInt(UNITS validUnits, int? defaultValue)
 		{
             string item = ReadItem();
 
-            if ((default_val.HasValue) && (item == ")"))
+            if ((defaultValue.HasValue) && (item == ")"))
             {
-                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + defaultValue.ToString());
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
 
             int val;
-            double scale = ParseUnitSuffix(ref item, valid_units);
+            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
             if (int.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (int)(scale * val);
 
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an unsigned integer {constant_item}
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public uint ReadUInt(UNITS valid_units, uint? default_val)
+        public uint ReadUInt(UNITS validUnits, uint? defaultValue)
 		{
             string item = ReadItem();
 
-            if ((default_val.HasValue) && (item == ")"))
+            if ((defaultValue.HasValue) && (item == ")"))
             {
-                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + defaultValue.ToString());
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
 
             uint val;
-            double scale = ParseUnitSuffix(ref item, valid_units);
+            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
             if (uint.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (uint)(scale * val);
 
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an single precision floating point number {constant_item}
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public float ReadFloat(UNITS valid_units, float? default_val)
+        public float ReadFloat(UNITS validUnits, float? defaultValue)
 		{
             string item = ReadItem();
 
-            if ((default_val.HasValue) && (item == ")"))
+            if ((defaultValue.HasValue) && (item == ")"))
             {
-                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + defaultValue.ToString());
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
 
             float val;
-            double scale = ParseUnitSuffix(ref item, valid_units);
+            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0f;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
             if (float.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
 
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an double precision floating point number {constant_item}
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-        /// <param name="default_val">the default value if an unexpected ')' token is found</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public double ReadDouble(UNITS valid_units, double? default_val)
+        public double ReadDouble(UNITS validUnits, double? defaultValue)
 		{
             string item = ReadItem();
 
-            if ((default_val.HasValue) && (item == ")"))
+            if ((defaultValue.HasValue) && (item == ")"))
             {
-                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + default_val.ToString());
+                STFException.TraceWarning(this, "When expecting a number, we found a ) marker. Using the default " + defaultValue.ToString());
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
 
             double val;
-            double scale = ParseUnitSuffix(ref item, valid_units);
+            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
             if (double.TryParse(item, parseNum, parseNFI, out val)) return scale * val;
 
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
 		}
         /// <summary>Enumeration limiting which units are valid when parsing a numeric constant.
         /// </summary>
@@ -588,11 +588,11 @@ namespace MSTS
         /// <remarks>This function is marked internal so it can be used to support arithmetic processing once the elements are seperated (eg. 5*2m)
         /// </remarks>
         /// <param name="constant">string with suffix (ie "23 mph"), after the function call the suffix is removed.</param>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
         /// <returns>The scaler that should be used to modify the constant to standard OR units.</returns>
-        internal double ParseUnitSuffix(ref string constant, UNITS valid_units)
+        internal double ParseUnitSuffix(ref string constant, UNITS validUnits)
         {
-            if (valid_units == UNITS.None)
+            if (validUnits == UNITS.None)
                 return 1;
 
             // Enclose the prefixed numeric string with beg,end
@@ -612,8 +612,8 @@ namespace MSTS
             }
             if (i == constant.Length)
             {
-                if ((valid_units & UNITS.Compulsary) > 0)
-                    STFException.TraceWarning(this, "Missing a suffix for data expecting " + valid_units.ToString() + " units");
+                if ((validUnits & UNITS.Compulsary) > 0)
+                    STFException.TraceWarning(this, "Missing a suffix for data expecting " + validUnits.ToString() + " units");
                 return 1; // There is no suffix, it's all numeric
             }
             while ((i < constant.Length) && (constant[i] == ' ')) ++i; // skip the spaces
@@ -634,7 +634,7 @@ namespace MSTS
             constant = constant.Substring(beg, end - beg);
 
             // Select and return the scalar value
-            if ((valid_units & UNITS.Distance) > 0)
+            if ((validUnits & UNITS.Distance) > 0)
                 switch (suffix)
                 {
                     case "m": return 1;
@@ -647,7 +647,7 @@ namespace MSTS
                     case "\"": return 0.0254;
                     case "in/2": return 0.0127; // This is a strange unit used to measure radius
                 }
-            if ((valid_units & UNITS.Speed) > 0)
+            if ((validUnits & UNITS.Speed) > 0)
                 switch (suffix)
                 {
                     case "m/s": return 1;
@@ -656,86 +656,86 @@ namespace MSTS
                     case "kmh": return 0.27778;
                     case "km/h": return 0.27778;
                 }
-            if ((valid_units & UNITS.Mass) > 0)
+            if ((validUnits & UNITS.Mass) > 0)
                 switch (suffix)
                 {
                     case "kg": return 1;
                     case "t": return 1e3;
                     case "lb": return 0.45359237;
                 }
-            if ((valid_units & UNITS.MassRate) > 0)
+            if ((validUnits & UNITS.MassRate) > 0)
                 switch (suffix)
                 {
                     case "lb/h": return 1;
                 }
-            if ((valid_units & UNITS.Force) > 0)
+            if ((validUnits & UNITS.Force) > 0)
                 switch (suffix)
                 {
                     case "n": return 1;
                     case "kn": return 1e3;
                     case "lbf": return 4.44822162;
                 }
-            if ((valid_units & UNITS.Power) > 0)
+            if ((validUnits & UNITS.Power) > 0)
                 switch (suffix)
                 {
                     case "w": return 1;
                     case "kw": return 1e3;
                     case "hp": return 745.7;
                 }
-            if ((valid_units & UNITS.Stiffness) > 0)
+            if ((validUnits & UNITS.Stiffness) > 0)
                 switch (suffix)
                 {
                     case "n/m": return 1;
                 }
-            if ((valid_units & UNITS.Resistance) > 0)
+            if ((validUnits & UNITS.Resistance) > 0)
                 switch (suffix)
                 {
                     case "n/m/s": return 1;
                     case "/m/s": return 1;
                 }
-            if ((valid_units & UNITS.Pressure) > 0)
+            if ((validUnits & UNITS.Pressure) > 0)
                 switch (suffix)
                 {
                     case "psi": return 1;
                 }
-            if ((valid_units & UNITS.Volume) > 0)
+            if ((validUnits & UNITS.Volume) > 0)
                 switch (suffix)
                 {
                     case "*(ft^3)": return 1;
                 }
-            if ((valid_units & UNITS.Area) > 0)
+            if ((validUnits & UNITS.Area) > 0)
                 switch (suffix)
                 {
                     case "*(ft^2)": return .09290304f;
                 }
-            if ((valid_units & UNITS.EnergyDensity) > 0)
+            if ((validUnits & UNITS.EnergyDensity) > 0)
                 switch (suffix)
                 {
                     case "kj/kg": return 1;
                     case "j/g": return 1;
                     case "btu/lb": return 1 / 2.326f;
                 }
-            STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + valid_units.ToString() + " unit");
+            STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");
             return 1;
         }
 
 
         /// <summary>Read an string constant from the STF format '( {string_constant} ... )'
         /// </summary>
-        /// <param name="default_val">the default value if the item is not found in the block.</param>
+        /// <param name="defaultValue">the default value if the item is not found in the block.</param>
         /// <returns>The first item inside the STF block.</returns>
-        public string ReadStringBlock(string default_val)
+        public string ReadStringBlock(string defaultValue)
 		{
-            if (EOF)
+            if (Eof)
             {
                 STFException.TraceError(this, "Unexpected end of file");
-                return default_val;
+                return defaultValue;
             }
             string s = ReadItem();
-            if (s == ")" && (default_val != null))
+            if (s == ")" && (defaultValue != null))
             {
                 StepBackOneItem();
-                return default_val;
+                return defaultValue;
             }
             if (s == "(")
             {
@@ -744,164 +744,164 @@ namespace MSTS
                 if (result == "#\u00b6")
                 {
                     STFException.TraceError(this, "Found a comment when an {constant item} was expected.");
-                    return (default_val != null) ? default_val : result;
+                    return (defaultValue != null) ? defaultValue : result;
                 }
                 return result;
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
-            return default_val;
+            return defaultValue;
 		}
 		/// <summary>Read an hexidecimal encoded number from the STF format '( {int_constant} ... )'
         /// </summary>
-        /// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a integer constant.</returns>
-        public uint ReadHexBlock(uint? default_val)
+        public uint ReadHexBlock(uint? defaultValue)
 		{
-            if (EOF)
+            if (Eof)
             {
                 STFException.TraceError(this, "Unexpected end of file");
-                return default_val.GetValueOrDefault(0);
+                return defaultValue.GetValueOrDefault(0);
             }
             string s = ReadItem();
-            if (s == ")" && default_val.HasValue)
+            if (s == ")" && defaultValue.HasValue)
             {
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
             if (s == "(")
             {
-                uint result = ReadHex(default_val);
+                uint result = ReadHex(defaultValue);
                 SkipRestOfBlock();
                 return result;
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
         }
 		/// <summary>Read an integer constant from the STF format '( {int_constant} ... )'
 		/// </summary>
-		/// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-		/// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
 		/// <returns>The STF block with the first {item} converted to a integer constant.</returns>
-		public int ReadIntBlock(UNITS valid_units, int? default_val)
+		public int ReadIntBlock(UNITS validUnits, int? defaultValue)
 		{
-			if (EOF)
+			if (Eof)
 			{
 				STFException.TraceError(this, "Unexpected end of file");
-				return default_val.GetValueOrDefault(0);
+				return defaultValue.GetValueOrDefault(0);
 			}
 			string s = ReadItem();
-			if (s == ")" && default_val.HasValue)
+			if (s == ")" && defaultValue.HasValue)
 			{
 				StepBackOneItem();
-				return default_val.Value;
+				return defaultValue.Value;
 			}
 			if (s == "(")
 			{
-				int result = ReadInt(valid_units, default_val);
+				int result = ReadInt(validUnits, defaultValue);
 				SkipRestOfBlock();
 				return result;
 			}
 			STFException.TraceError(this, "Block Not Found - instead found " + s);
-			return default_val.GetValueOrDefault(0);
+			return defaultValue.GetValueOrDefault(0);
 		}
 		/// <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-        /// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a unsigned integer constant.</returns>
-        public uint ReadUIntBlock(UNITS valid_units, uint? default_val)
+        public uint ReadUIntBlock(UNITS validUnits, uint? defaultValue)
         {
-            if (EOF)
+            if (Eof)
             {
                 STFException.TraceError(this, "Unexpected end of file");
-                return default_val.GetValueOrDefault(0);
+                return defaultValue.GetValueOrDefault(0);
             }
             string s = ReadItem();
-            if (s == ")" && default_val.HasValue)
+            if (s == ")" && defaultValue.HasValue)
             {
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
             if (s == "(")
             {
-                uint result = ReadUInt(valid_units, default_val);
+                uint result = ReadUInt(validUnits, defaultValue);
                 SkipRestOfBlock();
                 return result;
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an single precision constant from the STF format '( {float_constant} ... )'
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-        /// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a single precision constant.</returns>
-        public float ReadFloatBlock(UNITS valid_units, float? default_val)
+        public float ReadFloatBlock(UNITS validUnits, float? defaultValue)
         {
-            if (EOF)
+            if (Eof)
             {
                 STFException.TraceError(this, "Unexpected end of file");
-                return default_val.GetValueOrDefault(0);
+                return defaultValue.GetValueOrDefault(0);
             }
             string s = ReadItem();
-            if (s == ")" && default_val.HasValue)
+            if (s == ")" && defaultValue.HasValue)
             {
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
             if (s == "(")
             {
-                float result = ReadFloat(valid_units, default_val);
+                float result = ReadFloat(validUnits, defaultValue);
                 SkipRestOfBlock();
                 return result;
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an double precision constant from the STF format '( {double_constant} ... )'
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-        /// <param name="default_val">the default value if the constant is not found in the block.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a double precision constant.</returns>
-        public double ReadDoubleBlock(UNITS valid_units, double? default_val)
+        public double ReadDoubleBlock(UNITS validUnits, double? defaultValue)
 		{
-            if (EOF)
+            if (Eof)
             {
                 STFException.TraceError(this, "Unexpected end of file");
-                return default_val.GetValueOrDefault(0);
+                return defaultValue.GetValueOrDefault(0);
             }
             string s = ReadItem();
-            if (s == ")" && default_val.HasValue)
+            if (s == ")" && defaultValue.HasValue)
             {
                 StepBackOneItem();
-                return default_val.Value;
+                return defaultValue.Value;
             }
             if (s == "(")
             {
-                double result = ReadDouble(valid_units, default_val);
+                double result = ReadDouble(validUnits, defaultValue);
                 SkipRestOfBlock();
                 return result;
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
-            return default_val.GetValueOrDefault(0);
+            return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Reads the first item from a block in the STF format '( {double_constant} ... )' and return true if is not-zero or 'true'
         /// </summary>
-        /// <param name="default_val">the default value if a item is not found in the block.</param>
+        /// <param name="defaultValue">the default value if a item is not found in the block.</param>
         /// <returns><para>true - If the first {item} in the block is non-zero or 'true'.</para>
         /// <para>false - If the first {item} in the block is zero or 'false'.</para></returns>
-        public bool ReadBoolBlock(bool default_val)
+        public bool ReadBoolBlock(bool defaultValue)
         {
-            if (EOF)
+            if (Eof)
             {
                 STFException.TraceError(this, "Unexpected end of file");
-                return default_val;
+                return defaultValue;
             }
             string s = ReadItem();
             if (s == ")")
             {
                 StepBackOneItem();
-                return default_val;
+                return defaultValue;
             }
             if (s == "(")
             {
@@ -909,45 +909,45 @@ namespace MSTS
                 {
                     case "true": SkipRestOfBlock(); return true;
                     case "false": SkipRestOfBlock(); return false;
-                    case ")": return default_val;
+                    case ")": return defaultValue;
                     default:
                         int v;
-                        if (int.TryParse(s, NumberStyles.Any, parseNFI, out v)) default_val = (v != 0);
+                        if (int.TryParse(s, NumberStyles.Any, parseNFI, out v)) defaultValue = (v != 0);
                         SkipRestOfBlock();
-                        return default_val;
+                        return defaultValue;
                 }
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
-            return default_val;
+            return defaultValue;
         }
         /// <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
         /// </summary>
-        /// <param name="valid_units">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
-        /// <param name="default_val">The default vector if any of the values are not specified</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">The default vector if any of the values are not specified</param>
         /// <returns>The STF block as a Vector3</returns>
-        public Vector3 ReadVector3Block(UNITS valid_units, Vector3 default_val)
+        public Vector3 ReadVector3Block(UNITS validUnits, Vector3 defaultValue)
         {
-            if (EOF)
+            if (Eof)
             {
                 STFException.TraceError(this, "Unexpected end of file");
-                return default_val;
+                return defaultValue;
             }
             string s = ReadItem();
             if (s == ")")
             {
                 StepBackOneItem();
-                return default_val;
+                return defaultValue;
             }
             if (s == "(")
             {
-                default_val.X = ReadFloat(valid_units, default_val.X);
-                default_val.Y = ReadFloat(valid_units, default_val.Y);
-                default_val.Z = ReadFloat(valid_units, default_val.Z);
+                defaultValue.X = ReadFloat(validUnits, defaultValue.X);
+                defaultValue.Y = ReadFloat(validUnits, defaultValue.Y);
+                defaultValue.Z = ReadFloat(validUnits, defaultValue.Z);
                 SkipRestOfBlock();
-                return default_val;
+                return defaultValue;
             }
             STFException.TraceError(this, "Block Not Found - instead found " + s);
-            return default_val;
+            return defaultValue;
         }
 
         /// <summary>Parse an STF file until the EOF, using the array of lower case tokens, with a processor delegate/lambda
@@ -956,7 +956,7 @@ namespace MSTS
         public void ParseFile(TokenProcessor[] processors)
         { // Press F10 'Step Over' to jump to the next token
 #line hidden
-            while (!EOF)
+            while (!Eof)
             {
                 string token = ReadItem().ToLower();
                 if (token == "(") { SkipRestOfBlock(); continue; }
@@ -973,7 +973,7 @@ namespace MSTS
         public void ParseFile(ParsingBreak breakout, TokenProcessor[] processors)
         { // Press F10 'Step Over' to jump to the next token
 #line hidden
-            while (!EOF)
+            while (!Eof)
             {
 #line default
                 if (breakout()) break; // Press F11 'Step Into' to debug the Breakout delegate
@@ -1148,7 +1148,7 @@ namespace MSTS
             {
                 string item = includeReader.ReadItem( skip_mode, string_mode);
                 UpdateTreeAndStepBack(item);
-                if ((!includeReader.EOF) || (item.Length > 0)) return item;
+                if ((!includeReader.Eof) || (item.Length > 0)) return item;
                 if (tree.Count != 0)
                     STFException.TraceError(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
                 includeReader.Dispose();

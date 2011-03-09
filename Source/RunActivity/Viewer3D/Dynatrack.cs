@@ -142,7 +142,7 @@ namespace ORTS
                         using (STFReader stf = new STFReader(filespec, false))
                         {
                             // "EXPERIMENTAL" header is temporary
-                            if (stf.SIMISsignature != "EXPERIMENTAL")
+                            if (stf.SimisSignature != "EXPERIMENTAL")
                             {
                                 STFException.TraceError(stf, "Invalid header - file will not be processed. Using DEFAULT profile.");
                                 TrackProfile = new TrProfile(); // Default profile if no file

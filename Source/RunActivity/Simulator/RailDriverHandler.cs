@@ -267,7 +267,7 @@ namespace ORTS
                 }
             }
             STFReader reader = new STFReader(file, false);
-            while (!reader.EOF)
+            while (!reader.Eof)
             {
                 string token = reader.ReadItem();
                 if (token == "Position")
