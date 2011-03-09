@@ -11,8 +11,6 @@ namespace ORTS.Menu
 {
     public class Folder
     {
-        public const string FolderDataFileName = "folder.dat";
-
         public readonly string Name;
         public readonly string Path;
 
@@ -22,14 +20,21 @@ namespace ORTS.Menu
             Path = path;
         }
 
+        public static string FolderDataFile
+        {
+            get
+            {
+                return Program.UserDataFolder + @"\folder.dat";
+            }
+        }
+
         public static List<Folder> GetFolders()
         {
-            var dataFile = Program.UserDataFolder + @"\" + FolderDataFileName;
             var folders = new List<Folder>();
 
-            if (File.Exists(dataFile))
+            if (File.Exists(FolderDataFile))
             {
-                using (var inf = new BinaryReader(File.Open(dataFile, FileMode.Open)))
+                using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
                 {
                     var count = inf.ReadInt32();
                     for (var i = 0; i < count; ++i)
@@ -51,6 +56,19 @@ namespace ORTS.Menu
             }
 
             return folders;
+        }
+
+        public static void SetFolders(List<Folder> folders)
+        {
+            using (BinaryWriter outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
+            {
+                outf.Write(folders.Count);
+                foreach (var folder in folders)
+                {
+                    outf.Write(folder.Path);
+                    outf.Write(folder.Name);
+                }
+            }
         }
     }
 }
