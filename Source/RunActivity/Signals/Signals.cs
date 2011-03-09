@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
-using System.IO;
 using MSTS;
 using ORTS.Popups;
 
@@ -1045,7 +1046,10 @@ namespace ORTS
 		public void SetSignalType(TrItem[] TrItems, SIGCFGFile sigCFG)
 		{
 			SignalItem sigItem = (SignalItem)TrItems[SignalObject.trackNodes[mainSignal.trackNode].TrVectorNode.TrItemRefs[trItemIndex]];
-			signalType = sigCFG.SignalTypes[sigItem.SignalType];
+            if (sigCFG.SignalTypes.ContainsKey(sigItem.SignalType))
+                signalType = sigCFG.SignalTypes[sigItem.SignalType];
+            else
+                Trace.TraceWarning("SignalObject trItem={0}, trackNode={1} has SignalHead with undefined SignalType {2}.", mainSignal.trItem, mainSignal.trackNode, sigItem.SignalType);
 		}
 
 		public SIGFN sigFunction

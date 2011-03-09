@@ -199,7 +199,7 @@ namespace MSTS
 		public FnTypes FnType;
 		public bool Abs, NoGantry, Semaphore;  // Don't know what Abs is for but found in Marias Pass route
 		public float FlashTimeOn = 1, FlashTimeOff = 1;  // On/Off duration for flashing light. (In seconds.)
-		public string LightTextureName;
+		public string LightTextureName = "";
 		public IList<SignalLight> Lights;
 		public IDictionary<string, SignalDrawState> DrawStates;
 		public IList<SignalAspect> Aspects;
@@ -212,7 +212,7 @@ namespace MSTS
             Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalfntype", ()=>{ ReadFnType(stf); }),
-                new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("signallights", ()=>{ Lights = ReadLights(stf); }),
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
                 new STFReader.TokenProcessor("signalaspects", ()=>{ Aspects = ReadAspects(stf); }),
