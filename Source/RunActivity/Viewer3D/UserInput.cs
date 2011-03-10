@@ -543,7 +543,7 @@ namespace ORTS
 				if (keyName.Length > 0)
 				{
 					// GetKeyNameText prefers "NUM 9" to "PAGE UP" and so on. Sucks.
-					if (keyName.StartsWith("NUM ") || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase))
+					if (keyName.StartsWith("NUM ", StringComparison.OrdinalIgnoreCase) || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase))
 						key.Append(xnaName);
 					else
 						key.Append(keyName);
