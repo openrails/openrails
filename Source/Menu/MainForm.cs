@@ -17,6 +17,7 @@ namespace ORTS
 {
 	public partial class MainForm : Form
 	{
+        bool Initialized;
 		List<Folder> Folders = new List<Folder>();
 		List<Route> Routes = new List<Route>();
 		List<Activity> Activities = new List<Activity>();
@@ -46,10 +47,16 @@ namespace ORTS
 		void MainForm_Shown(object sender, EventArgs e)
 		{
 			LoadOptions();
-            LoadFolders();
 
-            if (Folders.Count == 0)
-                MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", Application.ProductName);
+            if (!Initialized)
+            {
+                Initialized = true;
+
+                LoadFolders();
+
+                if (Folders.Count == 0)
+                    MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", Application.ProductName);
+            }
         }
 
 		void MainForm_FormClosing(object sender, FormClosingEventArgs e)
