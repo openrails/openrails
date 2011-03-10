@@ -94,11 +94,7 @@ namespace ORTS
 		[ThreadName("Render")]
 		protected override void Initialize()
 		{
-            try
-            {
-                Thread.CurrentThread.Name = "Render Process";
-            }
-            catch { }
+            ProcessState.SetThreadName("Render Process");
 
 			Materials.Initialize(this);
 			Viewer.Initialize(this);

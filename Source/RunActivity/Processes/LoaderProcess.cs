@@ -52,7 +52,7 @@ namespace ORTS
 		[ThreadName("Loader")]
 		void LoadLoop()
 		{
-			Thread.CurrentThread.Name = "Loader Process";
+			ProcessState.SetThreadName("Loader Process");
 
 			while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
 			{

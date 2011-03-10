@@ -64,7 +64,7 @@ namespace ORTS
 		[ThreadName("Updater")]
 		void UpdateLoop()
 		{
-			Thread.CurrentThread.Name = "Updater Process";
+			ProcessState.SetThreadName("Updater Process");
 
 			while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
 			{

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -52,5 +53,22 @@ namespace ORTS
         ManualResetEvent StartEvent = new ManualResetEvent(false);
         ManualResetEvent FinishedEvent = new ManualResetEvent(true);
 
+        public static void SetThreadName(string name)
+        {
+            // This is so that you can identify threads from debuggers like Visual Studio.
+            try
+            {
+                Thread.CurrentThread.Name = name;
+            }
+            catch { }
+
+            // This is so that you can identify threads from programs like Process Monitor. The call
+            // should always fail but will appear in Process Monitor's log against the correct thread.
+            try
+            {
+                File.ReadAllBytes(@"DEBUG\THREAD\" + name);
+            }
+            catch { }
+        }
     }
 }
