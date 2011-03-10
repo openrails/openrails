@@ -46,7 +46,7 @@ namespace ORTS
 				LightViewProjectionShadowProjection[i].SetValue(lightViewProjectionShadowProjection[i]);
 				ShadowMapTextures[i].SetValue(shadowMapTextures[i]);
 			}
-			ShadowMapLimit.SetValue(new Vector4(limits[0], limits[1], limits[2], limits[3]));
+            ShadowMapLimit.SetValue(new Vector4(limits[0], limits.Length > 1 ? limits[1] : 0, limits.Length > 2 ? limits[2] : 0, limits.Length > 3 ? limits[3] : 0));
 		}
 
 		EffectParameter zbias_lighting;
