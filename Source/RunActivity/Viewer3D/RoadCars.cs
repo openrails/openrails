@@ -149,7 +149,13 @@ namespace ORTS
 				RoadCarHandler.Viewer.RoadCarHandler.AddCarShape(temp); // a bit awkward
 				dist = (float)Program.Random.NextDouble() * roadLength;
 				temp.Move(dist); //move them along the road
-				if (temp.outOfRoad == false) listOfCar.Add(dist, temp);//add to the list
+				try
+				{
+					if (temp.outOfRoad == false) listOfCar.Add(dist, temp);//add to the list
+				}
+				catch (Exception e)
+				{
+				}
 			}
 			//take care of previous car of each car
 			if (listOfCar.Count > 0)
@@ -178,8 +184,14 @@ namespace ORTS
 				if (added.Contains(crossingObj)) continue;
 				dist = crossingObj.DistanceTo(CarRDBTraveller);
 				if (dist < 0) continue;
-				listOfCrossing.Add(dist, crossingObj);
-				crossingObj.carSpawner = this;
+				try
+				{
+					listOfCrossing.Add(dist, crossingObj);
+					crossingObj.carSpawner = this;
+				}
+				catch (Exception e)
+				{
+				}
 			}
 
 			//the road has crossings, build the distance chart and crossings
