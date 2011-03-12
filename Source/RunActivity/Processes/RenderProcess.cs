@@ -43,7 +43,7 @@ namespace ORTS
 	public class RenderProcess : Microsoft.Xna.Framework.Game
 	{
 		public const int ShadowMapCountMaximum = 4;
-		public const int ShadowMapMipCount = 4;
+		public const int ShadowMapMipCount = 1;
 
 		System.Windows.Forms.Form Form;    // the 3D view is drawn on this form
 		public readonly Viewer3D Viewer;

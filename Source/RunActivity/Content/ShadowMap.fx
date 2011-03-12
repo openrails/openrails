@@ -21,11 +21,12 @@ sampler Image = sampler_state
 	MipFilter = Linear;
 	MaxAnisotropy = 16;
 };
-sampler ImagePoint = sampler_state
+
+sampler ShadowMap = sampler_state
 {
 	Texture = (ImageTexture);
-	MagFilter = Point;
-	MinFilter = Point;
+	MagFilter = Linear;
+	MinFilter = Linear;
 	MipFilter = Point;
 };
 
@@ -44,6 +45,14 @@ struct VERTEX_OUTPUT
 {
 	float4 Position       : POSITION;
 	float3 TexCoord_Depth : TEXCOORD0;
+};
+
+struct VERTEX_OUTPUT_BLUR
+{
+	float4 Position       : POSITION;
+	float2 SampleCentre : TEXCOORD0;
+	float2 Sample_01 : TEXCOORD1;
+	float2 Sample_23 : TEXCOORD2;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -84,12 +93,31 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT VSShadowMapBlur(in VERTEX_INPUT In)
+VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT In)
 {
-	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	VERTEX_OUTPUT_BLUR Out;
+	
+	const float2 halfPixelOffset = float2(0.5, 0.5);
 
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.TexCoord_Depth.xy = In.TexCoord;
+	Out.SampleCentre = (In.TexCoord + halfPixelOffset) / ImageBlurStep;
+	Out.Sample_01 = (In.TexCoord + halfPixelOffset - float2(1.5, 0)) / ImageBlurStep;
+	Out.Sample_23 = (In.TexCoord + halfPixelOffset + float2(1.5, 0)) / ImageBlurStep;
+
+	return Out;
+}
+
+VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT In)
+{
+	VERTEX_OUTPUT_BLUR Out;
+	
+	const float2 halfPixelOffset = float2(0.5, 0.5);
+	float2 offsetTexCoord = In.TexCoord + halfPixelOffset;
+
+	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.SampleCentre = offsetTexCoord / ImageBlurStep;
+	Out.Sample_01 = (offsetTexCoord - float2(0, 1.5)) / ImageBlurStep;
+	Out.Sample_23 = (offsetTexCoord + float2(0, 1.5)) / ImageBlurStep;
 
 	return Out;
 }
@@ -98,44 +126,22 @@ VERTEX_OUTPUT VSShadowMapBlur(in VERTEX_INPUT In)
 
 float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
 {
-	if (tex2D(Image, In.TexCoord_Depth.xy).a < 0.25)
-		discard;
-	return float4(In.TexCoord_Depth.z, In.TexCoord_Depth.z * In.TexCoord_Depth.z, 0, 0);
+	float alpha = tex2D(Image, In.TexCoord_Depth.xy).a;
+	return float4(In.TexCoord_Depth.z, In.TexCoord_Depth.z * In.TexCoord_Depth.z, 0, alpha);
 }
 
-float4 PSShadowMapBlocker(in VERTEX_OUTPUT In) : COLOR0
+float4 PSShadowMapBlocker() : COLOR0
 {
 	return 0;
 }
 
-float4 PSShadowMapBlurX(in VERTEX_OUTPUT In) : COLOR0
+float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : COLOR0
 {
-	float4 Color = 0;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(4, 0)) / ImageBlurStep) * 0.02;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(3, 0)) / ImageBlurStep) * 0.05;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(2, 0)) / ImageBlurStep) * 0.12;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(1, 0)) / ImageBlurStep) * 0.19;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 0)) / ImageBlurStep) * 0.24;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(1, 0)) / ImageBlurStep) * 0.19;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(2, 0)) / ImageBlurStep) * 0.12;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(3, 0)) / ImageBlurStep) * 0.05;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(4, 0)) / ImageBlurStep) * 0.02;
-	return Color;
-}
-
-float4 PSShadowMapBlurY(in VERTEX_OUTPUT In) : COLOR0
-{
-	float4 Color = 0;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 4)) / ImageBlurStep) * 0.02;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 3)) / ImageBlurStep) * 0.05;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 2)) / ImageBlurStep) * 0.12;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 1)) / ImageBlurStep) * 0.19;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy + float2(0, 0)) / ImageBlurStep) * 0.24;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(0, 1)) / ImageBlurStep) * 0.19;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(0, 2)) / ImageBlurStep) * 0.12;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(0, 3)) / ImageBlurStep) * 0.05;
-	Color += tex2D(ImagePoint, (In.TexCoord_Depth.xy - float2(0, 4)) / ImageBlurStep) * 0.02;
-	return Color;
+	float2 centreTap =	tex2D(ShadowMap, In.SampleCentre).rg	* 0.4414401;	
+	float2 tap01 =		tex2D(ShadowMap, In.Sample_01).rg * 0.2774689;
+	float2 tap23 =		tex2D(ShadowMap, In.Sample_23).rg * 0.2774689;
+		
+	return float4(tap01 + centreTap + tap23, 0, 0);
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
@@ -163,11 +169,11 @@ technique ShadowMapBlocker {
 
 technique ShadowMapBlur {
 	pass Blur_X {
-		VertexShader = compile vs_2_0 VSShadowMapBlur();
-		PixelShader = compile ps_2_0 PSShadowMapBlurX();
+		VertexShader = compile vs_2_0 VSShadowMapHorzBlur();
+		PixelShader = compile ps_2_0 PSShadowMapBlur();
 	}
 	pass Blur_Y {
-		VertexShader = compile vs_2_0 VSShadowMapBlur();
-		PixelShader = compile ps_2_0 PSShadowMapBlurY();
+		VertexShader = compile vs_2_0 VSShadowMapVertBlur();
+		PixelShader = compile ps_2_0 PSShadowMapBlur();
 	}
 }
