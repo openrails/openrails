@@ -127,7 +127,11 @@ VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT In)
 float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
 {
 	float alpha = tex2D(Image, In.TexCoord_Depth.xy).a;
-	return float4(In.TexCoord_Depth.z, In.TexCoord_Depth.z * In.TexCoord_Depth.z, 0, alpha);
+	
+	if(alpha < 0.25)
+		discard;
+	
+	return float4(In.TexCoord_Depth.z, In.TexCoord_Depth.z * In.TexCoord_Depth.z, 0, 0);
 }
 
 float4 PSShadowMapBlocker() : COLOR0
