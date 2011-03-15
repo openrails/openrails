@@ -36,6 +36,7 @@ namespace ORTS
         Image1, Image1s, Image2
     }
 
+    #region Dynatrack
     public class Dynatrack
     {
         /// <summary>
@@ -147,7 +148,9 @@ namespace ORTS
                 localV = localProjectedV; // Next subsection
             }
         } // end Decompose
+
     } // end class Dynatrack
+    #endregion
 
     #region DynatrackDrawer
     public class DynatrackDrawer
@@ -174,7 +177,7 @@ namespace ORTS
 
             // Instantiate classes
             dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition, endPosition);
-       } // end DynatrackDrawer constructor
+        } // end DynatrackDrawer constructor
         #endregion
 
         /// <summary>
@@ -314,6 +317,35 @@ namespace ORTS
                 } // end switch
             }
         } // end TRPFile constructor
+
+        /// <summary>
+        /// Creates a TRPFile instance from a track profile file (XML or STF) or canned.
+        /// (Precedence is XML [.XML], STF [.DAT], default [canned]).
+        /// </summary>
+        /// <param name="routePath">Path to route.</param>
+        /// <param name="trpFile">TRPFile created (out).</param>
+        public static void CreateTrackProfile(string routePath, out TRPFile trpFile)
+        {
+            //Establish default track profile
+            //Trace.Write(" TRP");
+            if (Directory.Exists(routePath) && File.Exists(routePath + @"\TrProfile.xml"))
+            {
+                // XML-style
+                trpFile = new TRPFile(routePath + @"\TrProfile.xml");
+            }
+            else if (Directory.Exists(routePath) && File.Exists(routePath + @"\TrProfile.dat"))
+            {
+                // MSTS-style
+                trpFile = new TRPFile(routePath + @"\TrProfile.dat");
+            }
+            else
+            {
+                // default
+                trpFile = new TRPFile("");
+            }
+            // FOR DEBUGGING: Writes XML file from current TRP
+            //TRP.TrackProfile.SaveAsXML(@"C:/Users/Walt/Desktop/TrProfile.xml");
+        } // end CreateTrackProfile
 
         // ValidationEventHandler callback function
         void ValidationCallback(object sender, ValidationEventArgs args)
