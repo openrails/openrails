@@ -29,6 +29,17 @@ namespace ORTS.Popups
 		{
             Align(AlignAt.Middle, AlignAt.Middle);
 
+            Tabs.Add(new TabData(Tab.KeyboardShortcuts, "Key Commands", (cl) =>
+            {
+                var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
+                foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+                {
+                    var line = scrollbox.AddLayoutHorizontal(TextHeight);
+                    var width = line.RemainingWidth / 2;
+                    line.Add(new Label(width, line.RemainingHeight, UserInput.FormatCommandName(command)));
+                    line.Add(new Label(width, line.RemainingHeight, UserInput.Commands[(int)command].ToString()));
+                }
+            }));
             if (owner.Viewer.Simulator.Activity != null)
             {
                 Tabs.Add(new TabData(Tab.ActivityBriefing, "Briefing", (cl) =>
@@ -87,17 +98,6 @@ namespace ORTS.Popups
                     ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
                 {
                     scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
-                }
-            }));
-            Tabs.Add(new TabData(Tab.KeyboardShortcuts, "Key Commands", (cl) =>
-            {
-                var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
-                foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
-                {
-                    var line = scrollbox.AddLayoutHorizontal(TextHeight);
-                    var width = line.RemainingWidth / 2;
-                    line.Add(new Label(width, line.RemainingHeight, UserInput.FormatCommandName(command)));
-                    line.Add(new Label(width, line.RemainingHeight, UserInput.Commands[(int)command].ToString()));
                 }
             }));
         }
