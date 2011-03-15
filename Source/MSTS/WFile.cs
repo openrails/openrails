@@ -460,9 +460,8 @@ namespace MSTS
 							break;
 						case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
 						case TokenID.LevelCrData: levelCrData = new LevelCrData(subBlock);
-							if (levelCrData.crData1 == 0) { visible = true; silent = false; }
-							else if (levelCrData.crData1 == 1) { visible = false; silent = true; }
-							else if (levelCrData.crData1 == 6) { visible = true; silent = true; }
+                            visible = (levelCrData.crData1 & 0x1) == 0;
+                            silent = !visible || (levelCrData.crData1 & 0x6) == 0x6;
 							break;
 						case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock);
 							animSpeed = 1.0f / (800.0f * levelCrTiming.animTiming);//hard code to make 4 seconds move realistic in 40 frame/second
