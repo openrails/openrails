@@ -289,10 +289,10 @@ namespace ORTS
 				}
 				else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
 				{
-                    if (viewer.Simulator.RDB != null)
+                    if (viewer.Simulator.RDB != null && viewer.Simulator.CarSpawnerFile != null)
                         carSpawners.Add(new CarSpawner((CarSpawnerObj)worldObject, worldMatrix));
                     else
-                        Trace.TraceWarning("Ignored car spawner {1} in {0} because route has no RDB.", WFileName, worldObject.UID);
+                        Trace.TraceWarning("Ignored car spawner {1} in {0} because route has no RDB or carspawn.dat.", WFileName, worldObject.UID);
                 }
 				else // It's some other type of object - not one of the above.
 				{
@@ -313,6 +313,10 @@ namespace ORTS
 				{
 					tempCrossingShape = (LevelCrossingShape)shape;
 					tempCrossingShape.crossingObj.inrange = false;
+					if (tempCrossingShape.Sound != null)
+					{
+						tempCrossingShape.Viewer.SoundProcess.RemoveSoundSource(tempCrossingShape.Sound); //remove the sound
+					}
 				}
 			}
 		}

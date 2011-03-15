@@ -248,6 +248,7 @@ namespace ORTS
 		protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
 		private int animatedDir; //if the animation speed is negative, use it to indicate where the gate should move
 		private bool visible = true;
+		private bool silent = false;
 		public SoundSource Sound;
 
 		public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, LevelCrossingObj trj, LevelCrossingObject[] levelObjects)
@@ -261,10 +262,14 @@ namespace ORTS
 			max = levelObjects.GetLength(0); //how many crossings are in the route
 			found = 0; // trItem is found or not
 			visible = trj.visible;
-			Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
-			List<SoundSource> ls = new List<SoundSource>();
-			ls.Add(Sound);
-			viewer.SoundProcess.AddSoundSource(this, ls);
+			silent = trj.silent;
+			if (!silent)
+			{
+				Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
+				List<SoundSource> ls = new List<SoundSource>();
+				ls.Add(Sound);
+				viewer.SoundProcess.AddSoundSource(this, ls);
+			}
 			i = 0;
 			while (true) 
 			{
@@ -299,14 +304,14 @@ namespace ORTS
 			if (visible != true) return;
 			if (crossingObj.movingDirection == 0)
 			{
-				if (AnimationKey > 0.999) Sound.HandleEvent(4);
+				if (!silent && AnimationKey > 0.999) Sound.HandleEvent(4);
 				if (AnimationKey > 0.001) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
 				if (AnimationKey < 0.001) AnimationKey = 0;
 			}
 			else
 			{
 
-				if (AnimationKey < 0.001) Sound.HandleEvent(3);
+				if (!silent && AnimationKey < 0.001) Sound.HandleEvent(3);
 				//Sound.Update();
 				if (crossingObj.animSpeed < 0) //loop animation
 				{

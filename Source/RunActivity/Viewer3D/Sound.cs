@@ -534,12 +534,19 @@ namespace ORTS
             }
             else if (ISound != null && SoundSource.IsEnvSound)
             {
-                if (MSTSStream.VolumeCurve != null)
-                {
-                    float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
-                    float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
-                    Volume = y;
-                }
+				if (MSTSStream.VolumeCurve != null)
+				{
+					float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
+					float y = Interpolate(x, MSTSStream.VolumeCurve.CurvePoints);
+					Volume = y;
+				}
+				else //added to make crossing.sms works, since it does not define volumecurve
+				{
+					float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
+					float y = (30 - x) / 50;
+					if (y < 0) y = 0f;
+					Volume = y;
+				}
             }
         }
 

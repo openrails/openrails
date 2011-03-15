@@ -144,8 +144,12 @@ namespace ORTS
                 RDB = new RDBFile(rdbFile);
             }
 
-			Trace.Write(" CARSPAWN");
-			CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\"); 
+			var carSpawnFile = RoutePath + @"\carspawn.dat";
+			if (File.Exists(carSpawnFile))
+			{
+				Trace.Write(" CARSPAWN");
+				CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\");
+			}
 
 		}
 		public void SetActivity(string activityPath)
