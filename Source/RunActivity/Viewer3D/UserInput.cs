@@ -39,7 +39,7 @@ namespace ORTS
         // they're all exactly as shown here. Numeric keypad omitted as most keys are just duplicates of
         // the main keys (in two sets, based on Num Lock) and we don't use them. Scancodes are in hex.
         //
-        // [01 ]   [3B ][3C ][3D ][3E ]   [3F ][40 ][41 ][42 ]   [43 ][44 ][57 ][58 ]   [37 ][46 ][45 ]
+        // [01 ]   [3B ][3C ][3D ][3E ]   [3F ][40 ][41 ][42 ]   [43 ][44 ][57 ][58 ]   [37 ][46 ][11D]
         // 
         // [29 ][02 ][03 ][04 ][05 ][06 ][07 ][08 ][09 ][0A ][0B ][0C ][0D ][0E     ]   [52 ][47 ][49 ]
         // [0F   ][10 ][11 ][12 ][13 ][14 ][15 ][16 ][17 ][18 ][19 ][1A ][1B ][1C   ]   [53 ][4F ][51 ]
@@ -51,7 +51,7 @@ namespace ORTS
         {
             Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(0x01);
             Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
-            Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(0x45);
+            Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(0x11D);
             Commands[(int)UserCommands.GameSave] = new UserCommandKeyInput(0x3C);
             Commands[(int)UserCommands.GameSpeedUp] = new UserCommandKeyInput(0x49, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.GameSpeedDown] = new UserCommandKeyInput(0x51, KeyModifiers.Control | KeyModifiers.Alt);
@@ -499,7 +499,12 @@ namespace ORTS
         {
             get
             {
-                return (Keys)MapVirtualKey(ScanCode, MapType.ScanToVirtual);
+                var sc = ScanCode;
+                if (ScanCode >= 0x0100)
+                    sc = 0xE100 | (ScanCode & 0x7F);
+                else if (ScanCode >= 0x0080)
+                    sc = 0xE000 | (ScanCode & 0x7F);
+                return (Keys)MapVirtualKey(sc, MapType.ScanToVirtualEx);
             }
         }
 
