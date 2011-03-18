@@ -207,17 +207,25 @@ namespace ORTS
             for (int i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
                     Parts[0].SumWgt++;
-            if (Articulated)
+            if (Articulated && PreviousCar != null)
             {
                 // Articulated car, so let's steal some wheels from the previous car.
                 var prevPart = PreviousCar.Parts.FirstOrDefault(p => p.OffsetM > 0);
-                var prevPartIndex = PreviousCar.Parts.IndexOf(prevPart);
-                var prevAxles = PreviousCar.WheelAxles.Where(a => a.BogieIndex == prevPartIndex);
                 var offset = PreviousCar.Length / 2 + Length / 2;
-                var part = new TrainCarPart(prevPart.OffsetM - offset, 0) { SumWgt = prevPart.SumWgt };
-                Parts.Add(part);
-                var partIndex = Parts.IndexOf(part);
-                WheelAxles.AddRange(prevAxles.Select(a => new WheelAxle(a.OffsetM - offset, partIndex, 0) { Part = part }));
+                if (prevPart == null)
+                {
+                    WheelAxles.Add(new WheelAxle(- offset, 0, 0) { Part = Parts[0] });
+                }
+                else
+                {
+                    var prevPartIndex = PreviousCar.Parts.IndexOf(prevPart);
+                    var prevAxles = PreviousCar.WheelAxles.Where(a => a.BogieIndex == prevPartIndex);
+                    var part = new TrainCarPart(prevPart.OffsetM - offset, 0) { SumWgt = prevPart.SumWgt };
+                    Parts.Add(part);
+                    var partIndex = Parts.IndexOf(part);
+                    WheelAxles.AddRange(prevAxles.Select(a => new WheelAxle(a.OffsetM - offset, partIndex, 0) { Part = part }));
+                }
+                WheelAxles.Sort(WheelAxles[0]);
             }
             else if (!Articulated && (Parts[0].SumWgt < 1.5))
             {
