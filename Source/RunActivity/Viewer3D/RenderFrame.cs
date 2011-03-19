@@ -277,25 +277,28 @@ namespace ORTS
 			for (int i = 0; i < RenderItems.Length; i++)
 				RenderItems[i] = new Dictionary<Material, RenderItemCollection>();
 
-			if (ShadowMap == null)
-			{
-				var shadowMapSize = RenderProcess.Viewer.Settings.ShadowMapResolution;
-				ShadowMap = new Texture2D[RenderProcess.ShadowMapCount];
-				ShadowMapRenderTarget = new RenderTarget2D[RenderProcess.ShadowMapCount];
-				for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-					ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, RenderProcess.ShadowMapMipCount, SurfaceFormat.Rg32, RenderTargetUsage.PreserveContents);
-				ShadowMapStencilBuffer = new DepthStencilBuffer(RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, DepthFormat.Depth16);
-				NormalStencilBuffer = RenderProcess.GraphicsDevice.DepthStencilBuffer;
-			}
+            if (RenderProcess.Viewer.Settings.DynamicShadows)
+            {
+                if (ShadowMap == null)
+                {
+                    var shadowMapSize = RenderProcess.Viewer.Settings.ShadowMapResolution;
+                    ShadowMap = new Texture2D[RenderProcess.ShadowMapCount];
+                    ShadowMapRenderTarget = new RenderTarget2D[RenderProcess.ShadowMapCount];
+                    for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+                        ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, RenderProcess.ShadowMapMipCount, SurfaceFormat.Rg32, RenderTargetUsage.PreserveContents);
+                    ShadowMapStencilBuffer = new DepthStencilBuffer(RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, DepthFormat.Depth16);
+                    NormalStencilBuffer = RenderProcess.GraphicsDevice.DepthStencilBuffer;
+                }
 
-			ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
-			ShadowMapLightProj = new Matrix[RenderProcess.ShadowMapCount];
-			ShadowMapLightViewProjShadowProj = new Matrix[RenderProcess.ShadowMapCount];
-			ShadowMapBound = new BoundingFrustum[RenderProcess.ShadowMapCount];
+                ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
+                ShadowMapLightProj = new Matrix[RenderProcess.ShadowMapCount];
+                ShadowMapLightViewProjShadowProj = new Matrix[RenderProcess.ShadowMapCount];
+                ShadowMapBound = new BoundingFrustum[RenderProcess.ShadowMapCount];
 
-			RenderShadowItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
-			for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-				RenderShadowItems[shadowMapIndex] = new RenderItemCollection();
+                RenderShadowItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+                    RenderShadowItems[shadowMapIndex] = new RenderItemCollection();
+            }
 		}
 
 		public void Clear()
@@ -303,8 +306,9 @@ namespace ORTS
 			for (int i = 0; i < RenderItems.Length; i++)
 				foreach (Material mat in RenderItems[i].Keys)
 					RenderItems[i][mat].Clear();
-			for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-				RenderShadowItems[shadowMapIndex].Clear();
+            if (RenderProcess.Viewer.Settings.DynamicShadows)
+                for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
+                    RenderShadowItems[shadowMapIndex].Clear();
 		}
 
 		public void SetCamera(ref Matrix xnaViewMatrix, ref Matrix xnaProjectionMatrix)

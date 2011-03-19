@@ -100,12 +100,16 @@ namespace ORTS
 			Viewer.Initialize(this);
 
 			ShadowMapCount = Viewer.Settings.ShadowMapCount;
-			if ((ShadowMapCount > 1) && (Viewer.Settings.ShaderModel < 3))
+            if (!Viewer.Settings.DynamicShadows)
+                ShadowMapCount = 0;
+			else if ((ShadowMapCount > 1) && (Viewer.Settings.ShaderModel < 3))
 				ShadowMapCount = 1;
 			else if (ShadowMapCount < 0)
 				ShadowMapCount = 0;
 			else if (ShadowMapCount > ShadowMapCountMaximum)
 				ShadowMapCount = ShadowMapCountMaximum;
+            if (ShadowMapCount < 1)
+                Viewer.Settings.DynamicShadows = false;
 			ShadowMapDistance = new int[ShadowMapCount];
 			ShadowMapDiameter = new int[ShadowMapCount];
 			ShadowMapLimit = new float[ShadowMapCount];
