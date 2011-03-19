@@ -42,7 +42,7 @@ namespace MenuWPF
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
 
-        public static string Revision;        // ie 078
+        public static string Version;         // ie "0.6.1"
         public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
         public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
         public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
@@ -566,32 +566,35 @@ namespace MenuWPF
 		{
             try
             {
+                using (StreamReader f = new StreamReader("Version.txt"))
+                {
+                    Version = f.ReadLine();
+                }
+
                 using (StreamReader f = new StreamReader("Revision.txt"))
                 {
-                    string line = f.ReadLine();
-                    string rev = line.Substring(11);
-                    int i = rev.IndexOf('$');
-                    Revision = rev.Substring(0, i).Trim();
+                    var line = f.ReadLine();
+                    var revision = line.Substring(11, line.IndexOf('$', 11) - 11).Trim();
+                    if (revision != "000")
+                        Version += "." + revision;
+                    else
+                        Version = "";
 
                     System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                    Version version = assembly.GetName().Version;
-
-                    Build = version.ToString();
+                    Build = assembly.GetName().Version.ToString();  // from assembly
                     Build = Build + " " + f.ReadLine();  // date
                     Build = Build + " " + f.ReadLine(); // time
                 }
             }
             catch
             {
-                Revision = "";
+                Version = "";
                 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                Version version = assembly.GetName().Version;
-
-                Build = version.ToString();
+                Build = assembly.GetName().Version.ToString();
             }
             finally
             {
-                this.Title += " BUILD: " + Build;
+                this.Title = String.Format(Version.Length > 0 ? "{0} {1}" : "{0} BUILD {2}", this.Title, Version, Build);
             }
 		}
 

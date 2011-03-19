@@ -120,7 +120,7 @@ namespace ORTS
 			//Here's where the logger stores the data from each frame
 			if (Viewer.Settings.DataLogger)
 			{
-				Logger.Data(Program.Revision);
+				Logger.Data(Program.Version);
 				Logger.Data(FrameNumber.ToString("F0"));
 				Logger.Data(GetWorkingSetSize().ToString("F0"));
 				Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
@@ -263,7 +263,7 @@ namespace ORTS
 			var stretched = playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1;
 			var bunched = !stretched && playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1;
 
-			TextBuilder.AppendFormat("Version = {0}", Program.Revision); TextBuilder.AppendLine();
+			TextBuilder.AppendFormat("Version = {0}", Program.Version.Length > 0 ? Program.Version : Program.Build); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Time = {0}", FormattedTime(Viewer.Simulator.ClockTime)); TextBuilder.AppendLine();
             TextBuilder.AppendFormat("Speed = {0}", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric)); TextBuilder.AppendLine();
             TextBuilder.AppendFormat(showMUReverser ? "Direction = {1:F0} {0}" : "Direction = {0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent)); TextBuilder.AppendLine();

@@ -35,7 +35,7 @@ namespace ORTS
     static class Program
     {
         public static string[] Arguments;
-        public static string Revision;        // ie 078
+        public static string Version;         // ie "0.6.1"
         public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
         public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
         public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
@@ -156,7 +156,7 @@ namespace ORTS
                 using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
                 {
                     // Save some version identifiers so we can validate on load.
-                    outf.Write(Revision);
+                    outf.Write(Version);
                     outf.Write(Build);
                     // Now save the real data...
                     outf.Write(Arguments.Length);
@@ -197,14 +197,14 @@ namespace ORTS
                     {
                         revision = inf.ReadString().Replace("\0", "");
                         build = inf.ReadString().Replace("\0", "");
-                        versionOkay = (revision == Revision) && (build == Build);
+                        versionOkay = (revision == Version) && (build == Build);
                     }
                     catch { }
                     if (!versionOkay)
                     {
                         if (revision.Length + build.Length > 0)
-                            throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Revision, Build, revision, build));
-                        throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Revision, Build));
+                            throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build));
+                        throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build));
                     }
 
                     // Read in the real data...
@@ -368,7 +368,7 @@ namespace ORTS
 
             Console.WriteLine("{0} is starting...", Application.ProductName);
             Console.WriteLine();
-            Console.WriteLine("Version: {0}", Revision);
+            Console.WriteLine("Version: {0}", Version.Length > 0 ? Version : "<none>");
             Console.WriteLine("Build:   {0}", Build);
             Console.WriteLine();
         }
@@ -381,12 +381,19 @@ namespace ORTS
         {
             try
             {
+                using (StreamReader f = new StreamReader("Version.txt"))
+                {
+                    Version = f.ReadLine();
+                }
+
                 using (StreamReader f = new StreamReader("Revision.txt"))
                 {
-                    string line = f.ReadLine();
-                    string rev = line.Substring(11);
-                    int i = rev.IndexOf('$');
-                    Revision = rev.Substring(0, i).Trim();
+                    var line = f.ReadLine();
+                    var revision = line.Substring(11, line.IndexOf('$', 11) - 11).Trim();
+                    if (revision != "000")
+                        Version += "." + revision;
+                    else
+                        Version = "";
 
                     Build = Application.ProductVersion;  // from assembly
                     Build = Build + " " + f.ReadLine();  // date
@@ -395,7 +402,7 @@ namespace ORTS
             }
             catch
             {
-                Revision = "";
+                Version = "";
                 Build = Application.ProductVersion;
             }
         }

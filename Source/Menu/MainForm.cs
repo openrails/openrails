@@ -39,7 +39,7 @@ namespace ORTS
 			Font = SystemFonts.MessageBoxFont;
 
 			// Set title to show revision or build info.
-			Text = String.Format(Program.Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", Application.ProductName, Program.Revision, Program.Build);
+			Text = String.Format(Program.Version.Length > 0 ? "{0} {1}" : "{0} BUILD {2}", Application.ProductName, Program.Version, Program.Build);
 
 			CleanupPre021();
 		}

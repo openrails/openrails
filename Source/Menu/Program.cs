@@ -14,7 +14,7 @@ namespace ORTS
 	{
 		const string RunActivityProgram = "runactivity.exe";
 
-		public static string Revision;        // ie 078
+		public static string Version;         // ie "0.6.1"
 		public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
 		public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
 		public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
@@ -87,12 +87,19 @@ namespace ORTS
 		{
 			try
 			{
-				using (StreamReader f = new StreamReader("Revision.txt"))
-				{
-					string line = f.ReadLine();
-					string rev = line.Substring(11);
-					int i = rev.IndexOf('$');
-					Revision = rev.Substring(0, i).Trim();
+                using (StreamReader f = new StreamReader("Version.txt"))
+                {
+                    Version = f.ReadLine();
+                }
+
+                using (StreamReader f = new StreamReader("Revision.txt"))
+                {
+					var line = f.ReadLine();
+                    var revision = line.Substring(11, line.IndexOf('$', 11) - 11).Trim();
+                    if (revision != "000")
+                        Version += "." + revision;
+                    else
+                        Version = "";
 
 					Build = Application.ProductVersion;  // from assembly
 					Build = Build + " " + f.ReadLine();  // date
@@ -101,7 +108,7 @@ namespace ORTS
 			}
 			catch
 			{
-				Revision = "";
+				Version = "";
 				Build = Application.ProductVersion;
 			}
 		}
