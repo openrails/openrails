@@ -35,17 +35,20 @@ namespace ORTS
 
         public static RailDriverState RDState = null;
 
-        // Keyboard scancodes are basically constant; some buttons are special (e.g. 0x56) but generally
-        // they're all exactly as shown here. Numeric keypad omitted as most keys are just duplicates of
-        // the main keys (in two sets, based on Num Lock) and we don't use them. Scancodes are in hex.
+        // Keyboard scancodes are basically constant; some keyboards have extra buttons (e.g. UK ones tend to have an
+        // extra button next to Left Shift) or move one or two around (e.g. UK ones tend to move 0x2B down one row)
+        // but generally this layout is right. Numeric keypad omitted as most keys are just duplicates of the main
+        // keys (in two sets, based on Num Lock) and we don't use them. Scancodes are in hex.
+        //
+        // Break/Pause (0x11D) is handled specially and doesn't use the expect 0x45 scancode.
         //
         // [01 ]   [3B ][3C ][3D ][3E ]   [3F ][40 ][41 ][42 ]   [43 ][44 ][57 ][58 ]   [37 ][46 ][11D]
         // 
         // [29 ][02 ][03 ][04 ][05 ][06 ][07 ][08 ][09 ][0A ][0B ][0C ][0D ][0E     ]   [52 ][47 ][49 ]
-        // [0F   ][10 ][11 ][12 ][13 ][14 ][15 ][16 ][17 ][18 ][19 ][1A ][1B ][1C   ]   [53 ][4F ][51 ]
-        // [3A     ][1E ][1F ][20 ][21 ][22 ][23 ][24 ][25 ][26 ][27 ][28 ][2B ]
-        // [2A  ][56 ][2C ][2D ][2E ][2F ][30 ][31 ][32 ][33 ][34 ][35 ][36         ]        [48 ]
-        // [1D   ][00  ][38  ][39                          ][00  ][00  ][00  ][1D   ]   [4B ][50 ][4D ]
+        // [0F   ][10 ][11 ][12 ][13 ][14 ][15 ][16 ][17 ][18 ][19 ][1A ][1B ][2B   ]   [53 ][4F ][51 ]
+        // [3A     ][1E ][1F ][20 ][21 ][22 ][23 ][24 ][25 ][26 ][27 ][28 ][1C      ]
+        // [2A       ][2C ][2D ][2E ][2F ][30 ][31 ][32 ][33 ][34 ][35 ][36         ]        [48 ]
+        // [1D   ][    ][38  ][39                          ][    ][    ][    ][1D   ]   [4B ][50 ][4D ]
 
         public static void Initialize()
         {
@@ -125,8 +128,8 @@ namespace ORTS
             Commands[(int)UserCommands.ControlHandbrakeNone] = new UserCommandKeyInput(0x27, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlRetainersOn] = new UserCommandKeyInput(0x1B, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput(0x1A, KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x56);
-            Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x56, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
+            Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlEmergency] = new UserCommandKeyInput(0x0E);
             Commands[(int)UserCommands.ControlSander] = new UserCommandKeyInput(0x2D);
             Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput(0x2F);
@@ -548,8 +551,9 @@ namespace ORTS
             keyName = keyName.Substring(0, keyNameLength);
             if (keyName.Length > 0)
             {
-                // GetKeyNameText prefers "NUM 9" to "PAGE UP" and so on. Sucks.
-                if (keyName.StartsWith("NUM ", StringComparison.OrdinalIgnoreCase) || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase))
+                // Pause is mapped to "Right Control" and GetKeyNameText prefers "NUM 9" to "PAGE UP" too so pick the
+                // XNA key name in these cases.
+                if ((ScanCode == 0x11D) || keyName.StartsWith("NUM ", StringComparison.OrdinalIgnoreCase) || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase))
                     key.Append(xnaName);
                 else
                     key.Append(keyName);
