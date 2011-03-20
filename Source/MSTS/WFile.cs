@@ -67,6 +67,7 @@ namespace MSTS
                             case TokenID.CollideObject:
                             case TokenID.Static: Add(new StaticObj(subBlock, currentWatermark)); break;
                             case TokenID.TrackObj: Add(new TrackObj(subBlock, currentWatermark)); break;
+							case TokenID.CarSpawner: //unicode 
 							case (TokenID)357: Add(new CarSpawnerObj(subBlock, currentWatermark)); //car spawner
 								break; //car spawner. The tokenid number is wrong
                             case TokenID.Siding: subBlock.Skip(); break; // TODO

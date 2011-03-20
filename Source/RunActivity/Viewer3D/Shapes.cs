@@ -265,10 +265,19 @@ namespace ORTS
 			silent = trj.silent;
 			if (!silent)
 			{
-				Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
-				List<SoundSource> ls = new List<SoundSource>();
-				ls.Add(Sound);
-				viewer.SoundProcess.AddSoundSource(this, ls);
+				try
+				{
+					Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
+					List<SoundSource> ls = new List<SoundSource>();
+					ls.Add(Sound);
+					viewer.SoundProcess.AddSoundSource(this, ls);
+				}
+				catch (Exception e) // if the sms is wrong
+				{
+					Trace.WriteLine(e.Message + " Crossing gates will be silent.");
+					Sound = null;
+					silent = true;
+				}
 			}
 			i = 0;
 			while (true) 
