@@ -45,6 +45,7 @@ namespace ORTS
         public enum Styles { External, Cab, Passenger }
         public virtual Styles Style { get { return Styles.External; } }
         public virtual TrainCar AttachedCar { get { return null; } }
+        public virtual bool IsAvailable { get { return true; } }
         public virtual bool IsUnderground { get { return false; } }
 
         protected Camera(Viewer3D viewer)
@@ -541,7 +542,7 @@ namespace ORTS
         protected readonly bool Forwards;
         public enum HeadDirection { Forward, Backward }
 
-        public bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
+        public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
 
         public HeadOutCamera(Viewer3D viewer, HeadDirection headDirection)
             : base(viewer)
@@ -592,9 +593,8 @@ namespace ORTS
         protected int sideLocation = 0;
         public int SideLocation { get { return sideLocation; } }
 
-        public bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.FrontCabViewpoints.Count > 0; } }
-
         public override Styles Style { get { return Styles.Cab; } }
+        public override bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.FrontCabViewpoints.Count > 0; } }
 
         public override bool IsUnderground
         {
@@ -790,9 +790,8 @@ namespace ORTS
 
     public class PassengerCamera : AttachedCamera
     {
-        public bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
-
         public override Styles Style { get { return Styles.Passenger; } }
+        public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
 
         public PassengerCamera(Viewer3D viewer)
             : base(viewer)
