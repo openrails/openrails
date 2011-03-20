@@ -219,7 +219,7 @@ namespace ORTS
             }
 
             // Initialize position based on pan setting ,ie if attaching to a car with the pan up.
-            PanAnimationKey = car.Pan ? 1.0f : 0.0f;
+            PanAnimationKey = car.Pan ? TrainCarShape.SharedShape.Animations[0].FrameCount : 0;
             foreach (int iMatrix in PantographPartIndexes)
                 TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
         }
@@ -249,22 +249,22 @@ namespace ORTS
             {
                 if (ElectricLocomotive.Pan)  // up
                 {
-                    if (PanAnimationKey < 0.999)
+                    if (PanAnimationKey < TrainCarShape.SharedShape.Animations[0].FrameCount)
                     {
                         // moving up
                         PanAnimationKey += 2f * elapsedTime.ClockSeconds;
-                        if (PanAnimationKey > 0.999) PanAnimationKey = 1.0f;
+                        if (PanAnimationKey > TrainCarShape.SharedShape.Animations[0].FrameCount) PanAnimationKey = TrainCarShape.SharedShape.Animations[0].FrameCount;
                         foreach (int iMatrix in PantographPartIndexes)
                             TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
                     }
                 }
                 else // down
                 {
-                    if (PanAnimationKey > 0.001)
+                    if (PanAnimationKey > 0)
                     {
                         // moving down
                         PanAnimationKey -= 2f * elapsedTime.ClockSeconds;
-                        if (PanAnimationKey < 0.001) PanAnimationKey = 0;
+                        if (PanAnimationKey < 0) PanAnimationKey = 0;
                         foreach (int iMatrix in PantographPartIndexes)
                             TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
                     }
