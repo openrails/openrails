@@ -637,14 +637,13 @@ namespace ORTS
 		/// </summary>
 		public void RepositionRearTraveller()
 		{
-
             var traveller = new TDBTraveller(FrontTDBTraveller);
 			traveller.ReverseDirection();
             // The traveller location represents the front of the train.
             var length = 0f;
 
 			// process the cars first to last
-            for (var i = 0; i < Cars.Count; --i)
+            for (var i = 0; i < Cars.Count; ++i)
             {
                 var car = Cars[i];
                 if (car.WheelAxlesLoaded)
@@ -715,7 +714,7 @@ namespace ORTS
             var length = 0f;
 
 			// process the cars last to first
-			for (int i = Cars.Count - 1; i >= 0; --i)
+            for (var i = Cars.Count - 1; i >= 0; --i)
 			{
                 var car = Cars[i];
                 if (i < Cars.Count - 1)
