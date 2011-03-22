@@ -24,7 +24,9 @@ namespace ORTS
 
 	public class LevelCrossings
 	{
-		private TrackDB trackDB;
+        const float MaximumLevelCrossingActivationDistance = 2000;
+
+        private TrackDB trackDB;
 		/// <summary>
 		/// determines how many levelcrossingobjects should be updated each frame, now hardcoded to be 1/20
 		/// </summary>
@@ -320,10 +322,10 @@ namespace ORTS
                 if (predictedDist > 0 && predictedDist < minimumDist) predictedDist = minimumDist;
 
                 // Distances forward from the front and rearwards from the rear.
-                var frontDist = LevelCrossingObjects[i].DistanceTo(train.FrontTDBTraveller);
+                var frontDist = LevelCrossingObjects[i].DistanceTo(train.FrontTDBTraveller, MaximumLevelCrossingActivationDistance);
                 if (frontDist < 0)
                 {
-                    frontDist = -LevelCrossingObjects[i].DistanceTo(TDBTraveller.Reversed(train.FrontTDBTraveller));
+                    frontDist = -LevelCrossingObjects[i].DistanceTo(TDBTraveller.Reversed(train.FrontTDBTraveller), MaximumLevelCrossingActivationDistance);
                     if (frontDist > 0)
                     {
                         // Train cannot find crossing.
@@ -464,20 +466,27 @@ namespace ORTS
 			else return false;
 		}//hasTrain
 
-		/// <summary>
-		/// Returns the distance from the TDBtraveller to this crossing. 
-		/// </summary>
-		public float DistanceTo(TDBTraveller tdbTraveller)
-		{
-			int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
-			return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z);
-		}  //DistanceTo a track
+        public float DistanceTo(TDBTraveller tdbTraveller)
+        {
+            return DistanceTo(tdbTraveller, float.MaxValue);
+        }
 
-		public float DistanceTo(RDBTraveller rdbTraveller)
+        public float DistanceTo(TDBTraveller tdbTraveller, float maxDistance)
+        {
+            int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
+            return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z, maxDistance);
+        }
+
+        public float DistanceTo(RDBTraveller rdbTraveller)
+        {
+            return DistanceTo(rdbTraveller, float.MaxValue);
+        }
+
+        public float DistanceTo(RDBTraveller rdbTraveller, float maxDistance)
 		{
 			int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
-			return rdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z);
-		}  //DistanceTo a car
+            return rdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z, maxDistance);
+		}
 
 		/// <summary>
 		/// Gets the correspnding TrItem from the TDB.
