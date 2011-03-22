@@ -99,6 +99,13 @@ namespace ORTS
             return String.Format("TN={0} TS={1}", iTrackNode, iTrVectorSection);
         }
 
+        public static TDBTraveller Reversed(TDBTraveller copy)
+        {
+            var t = new TDBTraveller(copy);
+            t.ReverseDirection();
+            return t;
+        }
+
         public TDBTraveller(TDBTraveller copy)
         {
             TDB = copy.TDB;

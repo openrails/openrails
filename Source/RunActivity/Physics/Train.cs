@@ -43,6 +43,7 @@ namespace ORTS
 		public TrainCar LastCar { get { return Cars[Cars.Count - 1]; } }
 		public TDBTraveller RearTDBTraveller;   // positioned at the back of the last car in the train
 		public TDBTraveller FrontTDBTraveller; // positioned at the front of the train by CalculatePositionOfCars
+        public float Length; // length of train from FrontTDBTraveller to RearTDBTraveller
 		public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
 		public Train UncoupledFrom = null;  // train not to coupled back onto
 		public float TotalCouplerSlackM = 0;
@@ -637,60 +638,64 @@ namespace ORTS
 		public void RepositionRearTraveller()
 		{
 
-			TDBTraveller traveller = new TDBTraveller(FrontTDBTraveller);
+            var traveller = new TDBTraveller(FrontTDBTraveller);
 			traveller.ReverseDirection();
+            // The traveller location represents the front of the train.
+            var length = 0f;
 
 			// process the cars first to last
-			for (int i = 0; i < Cars.Count; ++i)
-			{
-				TrainCar car = Cars[i];
+            for (var i = 0; i < Cars.Count; --i)
+            {
+                var car = Cars[i];
+                if (car.WheelAxlesLoaded)
+                {
+                    car.ComputePosition(traveller, false);
+                }
+                else
+                {
+                    var bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
-				if (car.WheelAxlesLoaded)
-				{
-					car.ComputePosition(traveller, false);
-					if (i < Cars.Count - 1)
-						traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
-					continue;
-				}
+                    // traveller is positioned at the front of the car
+                    // advance to the first bogie 
+                    traveller.Move((car.Length - bogieSpacing) / 2.0f);
+                    var tileX = traveller.TileX;
+                    var tileZ = traveller.TileZ;
+                    var x = traveller.X;
+                    var y = traveller.Y;
+                    var z = traveller.Z;
+                    traveller.Move(bogieSpacing);
 
-				float bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
+                    // normalize across tile boundaries
+                    while (tileX > traveller.TileX) { x += 2048; --tileX; }
+                    while (tileX < traveller.TileX) { x -= 2048; ++tileX; }
+                    while (tileZ > traveller.TileZ) { z += 2048; --tileZ; }
+                    while (tileZ < traveller.TileZ) { z -= 2048; ++tileZ; }
 
-				// traveller is positioned at the front of the car
-				// advance to the first bogie 
-				traveller.Move((car.Length - bogieSpacing) / 2.0f);
-				int tileX = traveller.TileX;
-				int tileZ = traveller.TileZ;
-				float x = traveller.X;
-				float y = traveller.Y;
-				float z = traveller.Z;
-				traveller.Move(bogieSpacing);
+                    // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
+                    car.WorldPosition.XNAMatrix = Matrix.Identity;
+                    if (!car.Flipped)
+                    {
+                        //  Rotate matrix 180' around Y axis.
+                        car.WorldPosition.XNAMatrix.M11 = -1;
+                        car.WorldPosition.XNAMatrix.M33 = -1;
+                    }
+                    car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y + 0.275f, traveller.Z, x, y + 0.275f, z);
+                    car.WorldPosition.TileX = traveller.TileX;
+                    car.WorldPosition.TileZ = traveller.TileZ;
 
-				// normalize across tile boundaries
-				while (tileX > traveller.TileX) { x += 2048; --tileX; }
-				while (tileX < traveller.TileX) { x -= 2048; ++tileX; }
-				while (tileZ > traveller.TileZ) { z += 2048; --tileZ; }
-				while (tileZ < traveller.TileZ) { z -= 2048; ++tileZ; }
-
-
-				// note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
-				car.WorldPosition.XNAMatrix = Matrix.Identity;
-				if (!car.Flipped)
-				{
-					//  Rotate matrix 180' around Y axis.
-					car.WorldPosition.XNAMatrix.M11 = -1;
-					car.WorldPosition.XNAMatrix.M33 = -1;
-				}
-				car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y + 0.275f, traveller.Z, x, y + 0.275f, z);
-				car.WorldPosition.TileX = traveller.TileX;
-				car.WorldPosition.TileZ = traveller.TileZ;
-
-				traveller.Move((car.Length - bogieSpacing) / 2.0f);
-				if (i < Cars.Count - 1)
-					traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
-			}
+                    traveller.Move((car.Length - bogieSpacing) / 2.0f);
+                }
+                if (i < Cars.Count - 1)
+                {
+                    traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
+                    length += car.CouplerSlackM + car.GetCouplerZeroLengthM();
+                }
+                length += car.Length;
+            }
 
 			traveller.ReverseDirection();
 			RearTDBTraveller = traveller;
+            Length = length;
 		} // RepositionRearTraveller
 
 
@@ -700,66 +705,70 @@ namespace ORTS
 		/// <param name="distance"></param>
 		public void CalculatePositionOfCars(float distance)
 		{
-			TrackNode tn = RearTDBTraveller.TN;
+            var tn = RearTDBTraveller.TN;
 			RearTDBTraveller.Move(distance);
 			if (distance < 0 && tn != RearTDBTraveller.TN)
 				AlignTrailingPointSwitch(tn, RearTDBTraveller.TN);
 
-			TDBTraveller traveller = new TDBTraveller(RearTDBTraveller);
+			var traveller = new TDBTraveller(RearTDBTraveller);
 			// The traveller location represents the back of the train.
+            var length = 0f;
 
 			// process the cars last to first
 			for (int i = Cars.Count - 1; i >= 0; --i)
 			{
-				TrainCar car = Cars[i];
+                var car = Cars[i];
+                if (i < Cars.Count - 1)
+                {
+                    traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
+                    length += car.CouplerSlackM + car.GetCouplerZeroLengthM();
+                }
+                if (car.WheelAxlesLoaded)
+                {
+                    car.ComputePosition(traveller, true);
+                }
+                else
+                {
+                    var bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
-				if (i < Cars.Count - 1)
-					traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
+                    // traveller is positioned at the back of the car
+                    // advance to the first bogie 
+                    traveller.Move((car.Length - bogieSpacing) / 2.0f);
+                    var tileX = traveller.TileX;
+                    var tileZ = traveller.TileZ;
+                    var x = traveller.X;
+                    var y = traveller.Y;
+                    var z = traveller.Z;
+                    traveller.Move(bogieSpacing);
 
-				if (car.WheelAxlesLoaded)
-				{
-					car.ComputePosition(traveller, true);
-					continue;
-				}
-
-				float bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
-
-				// traveller is positioned at the back of the car
-				// advance to the first bogie 
-				traveller.Move((car.Length - bogieSpacing) / 2.0f);
-				int tileX = traveller.TileX;
-				int tileZ = traveller.TileZ;
-				float x = traveller.X;
-				float y = traveller.Y;
-				float z = traveller.Z;
-				traveller.Move(bogieSpacing);
-
-				// normalize across tile boundaries
-				while (tileX > traveller.TileX) { x += 2048; --tileX; }
-				while (tileX < traveller.TileX) { x -= 2048; ++tileX; }
-				while (tileZ > traveller.TileZ) { z += 2048; --tileZ; }
-				while (tileZ < traveller.TileZ) { z -= 2048; ++tileZ; }
+                    // normalize across tile boundaries
+                    while (tileX > traveller.TileX) { x += 2048; --tileX; }
+                    while (tileX < traveller.TileX) { x -= 2048; ++tileX; }
+                    while (tileZ > traveller.TileZ) { z += 2048; --tileZ; }
+                    while (tileZ < traveller.TileZ) { z -= 2048; ++tileZ; }
 
 
-				// note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
-				car.WorldPosition.XNAMatrix = Matrix.Identity;
-				if (car.Flipped)
-				{
-					//  Rotate matrix 180' around Y axis.
-					car.WorldPosition.XNAMatrix.M11 = -1;
-					car.WorldPosition.XNAMatrix.M33 = -1;
-				}
-				car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y + 0.275f, traveller.Z, x, y + 0.275f, z);
-				car.WorldPosition.TileX = traveller.TileX;
-				car.WorldPosition.TileZ = traveller.TileZ;
-				//Console.WriteLine("{0}", car.WorldPosition.XNAMatrix.ToString());
+                    // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
+                    car.WorldPosition.XNAMatrix = Matrix.Identity;
+                    if (car.Flipped)
+                    {
+                        //  Rotate matrix 180' around Y axis.
+                        car.WorldPosition.XNAMatrix.M11 = -1;
+                        car.WorldPosition.XNAMatrix.M33 = -1;
+                    }
+                    car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y + 0.275f, traveller.Z, x, y + 0.275f, z);
+                    car.WorldPosition.TileX = traveller.TileX;
+                    car.WorldPosition.TileZ = traveller.TileZ;
 
-				traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the front of the car 
-			}
+                    traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the front of the car 
+                }
+                length += car.Length;
+            }
 
 			if (distance > 0 && traveller.TN != FrontTDBTraveller.TN)
 				AlignTrailingPointSwitch(FrontTDBTraveller.TN, traveller.TN);
 			FrontTDBTraveller = traveller;
+            Length = length;
 		} // CalculatePositionOfCars
 
 		// aligns a trailing point switch that was just moved over to match the track the train is on
