@@ -542,8 +542,7 @@ namespace ORTS
 				}
 				else //added to make crossing.sms works, since it does not define volumecurve
 				{
-					float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
-					float y = (30 - x) / 50;
+					float y = 0.6f - WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 16000;
 					if (y < 0) y = 0f;
 					Volume = y;
 				}

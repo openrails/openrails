@@ -362,7 +362,7 @@ namespace ORTS
 						dist = temp; //if the data is curated with significant diff, use the new data
 					}
 				}
-				listOfTracks.Add(dist, height > 0 ? height : 0);
+				listOfTracks.Add(dist, height > 0 && height < 1 ? height : 0);//if track is too high, ignore as well
 
 			}
 			catch (Exception e)
@@ -459,8 +459,10 @@ namespace ORTS
 
 			//compute the rotation matrix
 			carShape.movablePosition.XNAMatrix = Matrix.Identity;
-			carShape.movablePosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(
-				copy2.X, copy2.Y + 0.1f + added1, copy2.Z, copy1.X, copy1.Y + 0.1f + added2, copy1.Z);
+			carShape.movablePosition.XNAMatrix *= RotationMatrixFromMSTSCoordinates(
+				copy2.X, copy2.Y + 0.1f + added1, copy2.Z, copy1.X, copy1.Y + 0.1f + added2, copy1.Z,
+				copy2.TileX, copy2.TileZ, copy1.TileX, copy1.TileZ);
+			carShape.movablePosition.XNAMatrix *= Matrix.CreateTranslation(CarRDBTraveller.X, CarRDBTraveller.Y, -CarRDBTraveller.Z);
 
 			//add to the travelled dist
 			travelledDist += dist; //add to the travelled dist
@@ -594,6 +596,41 @@ namespace ORTS
 				outOfRoad = true;
 			}
 		} // end Update
+
+		/// <summary>
+		/// The front end of a railcar is at MSTS world coordinates x1,y1,z1, TileX1, TileZ1
+		/// The other end is at x2,y2,z2, TileX2, TileZ2
+		/// Return a rotation (not translation) matrix for the center of the railcar.
+		/// </summary>
+		public static Matrix RotationMatrixFromMSTSCoordinates(float x1, float y1, float z1, float x2, float y2, float z2, int TileX1, int TileZ1, int TileX2, int TileZ2)
+		{
+			// translate 1st coordinate to be relative to 0,0,0
+			float dx = (float)((TileX1 - TileX2) * 2048 + x1 - x2);
+			float dy = (float)(y1 - y2);
+			float dz = (float)((TileZ1 - TileZ2) * 2048 + z1 - z2);
+
+			// compute the rotational matrix  
+			float length = (float)Math.Sqrt(dx * dx + dz * dz + dy * dy);
+			float run = (float)Math.Sqrt(dx * dx + dz * dz);
+			// normalize to coordinate to a length of one, ie dx is change in x for a run of 1
+			dx /= length;
+			dy /= length;   // ie if it is tilted back 5 degrees, this is sin 5 = 0.087
+			run /= length;  //                              and   this is cos 5 = 0.996
+			dz /= length;
+			// setup matrix values
+
+			Matrix xnaTilt = new Matrix(1, 0, 0, 0,
+									 0, run, dy, 0,
+									 0, -dy, run, 0,
+									 0, 0, 0, 1);
+
+			Matrix xnaRotation = new Matrix(dz, 0, dx, 0,
+											0, 1, 0, 0,
+											-dx, 0, dz, 0,
+											0, 0, 0, 1);
+
+			return xnaTilt * xnaRotation;
+		}
 	}// class RoadCar
 
 	/// <summary>
