@@ -106,10 +106,8 @@ namespace ORTS
         static void Start(IEnumerable<string> options, string[] args)
         {
             var showErrorDialogs = true;
-#if !CRASH_ON_ERRORS
-            try
+            Action start = () =>
             {
-#endif
                 var settings = GetSettings(false, options, args, ref showErrorDialogs);
                 CreateSimulator(settings);
                 Simulator.Start();
@@ -129,15 +127,24 @@ namespace ORTS
 #if DEBUG_VIEWER
 				DebugViewer.Dispose();
 #endif
-#if !CRASH_ON_ERRORS
-            }
-            catch (Exception error)
+            };
+            if (Debugger.IsAttached)
             {
-                Trace.WriteLine(error);
-                if (showErrorDialogs)
-                    MessageBox.Show(error.ToString(), Application.ProductName);
+                start();
             }
-#endif
+            else
+            {
+                try
+                {
+                    start();
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(error);
+                    if (showErrorDialogs)
+                        MessageBox.Show(error.ToString(), Application.ProductName);
+                }
+            }
         }
 
         /// <summary>
@@ -149,10 +156,8 @@ namespace ORTS
         public static void Save()
         {
             var showErrorDialogs = Simulator.Settings.ShowErrorDialogs;
-#if !CRASH_ON_ERRORS
-            try
+            Action save = () =>
             {
-#endif
                 using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
                 {
                     // Save some version identifiers so we can validate on load.
@@ -166,15 +171,24 @@ namespace ORTS
                     Viewer.Save(outf);
                     Console.WriteLine("\nSaved");
                 }
-#if !CRASH_ON_ERRORS
-            }
-            catch (Exception error)
+            };
+            if (Debugger.IsAttached)
             {
-                Trace.WriteLine(error);
-                if (showErrorDialogs)
-                    MessageBox.Show(error.ToString(), Application.ProductName);
+                save();
             }
-#endif
+            else
+            {
+                try
+                {
+                    save();
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(error);
+                    if (showErrorDialogs)
+                        MessageBox.Show(error.ToString(), Application.ProductName);
+                }
+            }
         }
 
         /// <summary>
@@ -183,10 +197,8 @@ namespace ORTS
         static void Resume(IEnumerable<string> options)
         {
             var showErrorDialogs = true;
-#if !CRASH_ON_ERRORS
-            try
+            Action resume = () =>
             {
-#endif
                 using (BinaryReader inf = new BinaryReader(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Open, FileAccess.Read)))
                 {
                     // Read in validation data.
@@ -220,15 +232,24 @@ namespace ORTS
                     Viewer.Restore(inf);
                 }
                 Viewer.Run();
-#if !CRASH_ON_ERRORS
-            }
-            catch (Exception error)
+            };
+            if (Debugger.IsAttached)
             {
-                Trace.WriteLine(error);
-                if (showErrorDialogs)
-                    MessageBox.Show(error.ToString(), Application.ProductName);
+                resume();
             }
-#endif
+            else
+            {
+                try
+                {
+                    resume();
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(error);
+                    if (showErrorDialogs)
+                        MessageBox.Show(error.ToString(), Application.ProductName);
+                }
+            }
         }
 
         /// <summary>
@@ -237,64 +258,78 @@ namespace ORTS
         static void TestAll(IEnumerable<string> options, string[] args)
         {
             var showErrorDialogs = true;
-#if !CRASH_ON_ERRORS
-            try
-            {
-#endif
-                options = new List<string>(options) { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" };
-                var activities = (args.Length == 0 ? Folder.GetFolders() : args.Select(a => new Folder(Path.GetFileName(a), a)))
-                    .SelectMany(f => Route.GetRoutes(f))
-                    .SelectMany(r => ORTS.Menu.Activity.GetActivities(r))
-                    .Where(a => !(a is ExploreActivity))
-                    .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-                var results = new bool[activities.Count];
-                for (var i = 0; i < activities.Count; i++)
+            Action testAll = () =>
                 {
-#if !CRASH_ON_ERRORS
-                    try
+                    options = new List<string>(options) { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" };
+                    var activities = (args.Length == 0 ? Folder.GetFolders() : args.Select(a => new Folder(Path.GetFileName(a), a)))
+                        .SelectMany(f => Route.GetRoutes(f))
+                        .SelectMany(r => ORTS.Menu.Activity.GetActivities(r))
+                        .Where(a => !(a is ExploreActivity))
+                        .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                    var results = new bool[activities.Count];
+                    for (var i = 0; i < activities.Count; i++)
                     {
-#endif
-                        var settings = GetSettings(false, options, new[] { activities[i].FileName }, ref showErrorDialogs);
-                        CreateSimulator(settings);
-                        Simulator.Start();
-                        Viewer = new Viewer3D(Simulator);
-                        Viewer.Initialize();
-                        Viewer.Run();
-                        results[i] = true;
-                        Simulator.Stop();
-#if !CRASH_ON_ERRORS
+                        Action run = () =>
+                        {
+                            var settings = GetSettings(false, options, new[] { activities[i].FileName }, ref showErrorDialogs);
+                            CreateSimulator(settings);
+                            Simulator.Start();
+                            Viewer = new Viewer3D(Simulator);
+                            Viewer.Initialize();
+                            Viewer.Run();
+                            results[i] = true;
+                            Simulator.Stop();
+                        };
+                        if (Debugger.IsAttached)
+                        {
+                            run();
+                        }
+                        else
+                        {
+                            try
+                            {
+                                run();
+                            }
+                            catch (Exception error)
+                            {
+                                Trace.WriteLine(error);
+                            }
+                        }
+                        Console.WriteLine();
+                        Console.WriteLine();
+
+                        // Force a cleanup.
+                        Viewer = null;
+                        Simulator = null;
+                        GC.Collect();
                     }
-                    catch (Exception error)
+
+                    Console.WriteLine();
+                    for (var i = 0; i < activities.Count; i++)
                     {
-                        Trace.WriteLine(error);
+                        Console.WriteLine("{0,-4}  {1}", results[i] ? "PASS" : "fail", activities[i].FileName);
                     }
-#endif
                     Console.WriteLine();
-                    Console.WriteLine();
-
-                    // Force a cleanup.
-                    Viewer = null;
-                    Simulator = null;
-                    GC.Collect();
-                }
-
-                Console.WriteLine();
-                for (var i = 0; i < activities.Count; i++)
-                {
-                    Console.WriteLine("{0,-4}  {1}", results[i] ? "PASS" : "fail", activities[i].FileName);
-                }
-                Console.WriteLine();
-                Console.WriteLine("Tested {0} activities; {1} passed, {2} failed.", results.Length, results.Count(r => r), results.Count(r => !r));
-#if !CRASH_ON_ERRORS
-            }
-            catch (Exception error)
+                    Console.WriteLine("Tested {0} activities; {1} passed, {2} failed.", results.Length, results.Count(r => r), results.Count(r => !r));
+                };
+            if (Debugger.IsAttached)
             {
-                Trace.WriteLine(error);
-                if (showErrorDialogs)
-                    MessageBox.Show(error.ToString(), Application.ProductName);
+                testAll();
             }
-#endif
+            else
+            {
+                try
+                {
+                    testAll();
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(error);
+                    if (showErrorDialogs)
+                        MessageBox.Show(error.ToString(), Application.ProductName);
+                }
+            }
         }
 
         static UserSettings GetSettings(bool resume, IEnumerable<string> options, string[] args, ref bool showErrorDialogs)
