@@ -31,7 +31,7 @@ namespace ORTS
 		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
 		private static SkyMaterial SkyMaterial = null;        
         private static PrecipMaterial PrecipMaterial = null;
-        private static DynatrackMaterial DynatrackMaterial = null;
+        //WaltN:private static DynatrackMaterial DynatrackMaterial = null;
         private static LightGlowMaterial LightGlowMaterial = null;
         private static LightConeMaterial LightConeMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
@@ -67,7 +67,7 @@ namespace ORTS
             // WaterMaterial here.
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
-            DynatrackMaterial = new DynatrackMaterial(renderProcess);
+            //WaltN:DynatrackMaterial = new DynatrackMaterial(renderProcess);
             LightGlowMaterial = new LightGlowMaterial(renderProcess);
             LightConeMaterial = new LightConeMaterial(renderProcess);
             MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
@@ -153,8 +153,9 @@ namespace ORTS
                         return new ParticleEmitterMaterial(renderProcess);
                 case "PrecipMaterial":
                     return PrecipMaterial;
-                case "DynatrackMaterial":
+/*WaltN:        case "DynatrackMaterial":
                     return DynatrackMaterial;
+*/
                 case "LightGlowMaterial":
                     return LightGlowMaterial;
                 case "LightConeMaterial":
@@ -583,6 +584,7 @@ namespace ORTS
 			while (ShaderPasses.MoveNext())
             {
 				ShaderPasses.Current.Begin();
+
                 foreach(RenderItem item in renderItems)
                 {
                     SceneryShader.SetMatrix(ref item.XNAMatrix, ref XNAViewMatrix, ref viewProj);
@@ -1028,7 +1030,7 @@ namespace ORTS
 			return true;
 		}
 	}
-
+/*WaltN:
 	public class DynatrackMaterial : Material
     {
         SceneryShader SceneryShader;
@@ -1041,6 +1043,14 @@ namespace ORTS
 		public DynatrackMaterial(RenderProcess renderProcess)
 			: base(null)
 		{
+            Viewer3D viewer = renderProcess.Viewer;
+            if (viewer.Simulator.TRP == null)
+            {
+                // First to need a track profile creates it
+                Trace.Write(" TRP");
+                // Creates profile and loads materials into SceneryMaterials
+                TRPFile.CreateTrackProfile(viewer.RenderProcess, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
+            }
             TrProfile profile = renderProcess.Viewer.Simulator.TRP.TrackProfile;
             
             RenderProcess = renderProcess;
@@ -1128,7 +1138,7 @@ namespace ORTS
 			return true;
 		} // end GetBlending()
     }
-
+*/
 	public class ForestMaterial : Material
     {
         public readonly RenderProcess RenderProcess;  // for diagnostics only

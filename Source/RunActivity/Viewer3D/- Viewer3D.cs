@@ -210,12 +210,11 @@ namespace ORTS
             Trace.Write(" TTYPE");
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
 
-            Trace.Write(" TRP");
-            TRPFile.CreateTrackProfile(Simulator.RoutePath, out Simulator.TRP);
-
             Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
 			MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
 			SetupBackgroundProcesses();
+
+
 		}
 
 		[ThreadName("Render")]

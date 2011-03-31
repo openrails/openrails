@@ -826,11 +826,23 @@ namespace ORTS
             public VertexDeclaration Declaration;
             public int VertexCount;        // the number of vertices in the vertex buffer for each set
 
+            // Constructor added for Dynatrack ...WaltN
+            public VertexBufferSet( VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice )
+            {
+                VertexCount = vertexData.Length;
+                Declaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
+                Buffer = new VertexBuffer(  graphicsDevice, 
+                                            VertexPositionNormalTexture.SizeInBytes * VertexCount,
+                                            BufferUsage.WriteOnly);
+                Buffer.SetData(vertexData);
+            }
+
+
             public VertexBufferSet( vertex_set vertex_set, SFile sFile, sub_object sub_object, GraphicsDevice graphicsDevice )
             {
                 VertexCount = vertex_set.VtxCount;
                 VertexPositionNormalTexture[] vertexData = new VertexPositionNormalTexture[VertexCount];
-                        // TODO - deal with vertex sets that have various numbers of texture coordinates - ie 0, 1, 2 etc
+                // TODO - deal with vertex sets that have various numbers of texture coordinates - ie 0, 1, 2 etc
                 for (int i = 0; i < VertexCount; ++i)
                 {
                     MSTS.vertex MSTSvertex = sub_object.vertices[i + vertex_set.StartVtxIdx];
