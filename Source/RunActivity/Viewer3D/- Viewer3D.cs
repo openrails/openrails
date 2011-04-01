@@ -71,7 +71,7 @@ namespace ORTS
 		public CompassWindow CompassWindow; // 0 window
 		public SkyDrawer SkyDrawer;
 		public PrecipDrawer PrecipDrawer = null;
-		public WireDrawer WireDrawer = null;
+		//public WireDrawer WireDrawer = null; //commented out as new implementation is in
 		public WeatherControl weatherControl;
 		TerrainDrawer TerrainDrawer;
 		public SceneryDrawer SceneryDrawer;
@@ -300,7 +300,7 @@ namespace ORTS
 			TerrainDrawer = new TerrainDrawer(this);
 			SceneryDrawer = new SceneryDrawer(this);
 			if (Settings.Precipitation) PrecipDrawer = new PrecipDrawer(this);
-			if (Settings.Wire) WireDrawer = new WireDrawer(this);
+			//if (Settings.Wire) WireDrawer = new WireDrawer(this); //commented out as new implementation is in
 			TrainDrawer = new TrainDrawer(this);
 			weatherControl = new WeatherControl(this);
 			RoadCarHandler = new RoadCarHandler(this);
@@ -328,7 +328,7 @@ namespace ORTS
 			TerrainDrawer.LoadPrep();
 			SceneryDrawer.LoadPrep();
 			TrainDrawer.LoadPrep();
-			if (WireDrawer != null) WireDrawer.LoadPrep();
+			//if (WireDrawer != null) WireDrawer.LoadPrep(); //commented out as new implementation is in
 		}
 
 		/// <summary>
@@ -345,7 +345,7 @@ namespace ORTS
 			TerrainDrawer.Load(renderProcess);
 			SceneryDrawer.Load(renderProcess);
 			TrainDrawer.Load(renderProcess);
-			if (WireDrawer != null) WireDrawer.Load(renderProcess);
+			//if (WireDrawer != null) WireDrawer.Load(renderProcess);//commented out as new implementation is in
 		}
 
 		string adapterDescription;
@@ -551,7 +551,7 @@ namespace ORTS
 			// By GeorgeS
 			//if (WorldSounds != null) WorldSounds.Update(elapsedTime);
 			if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
-			if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);
+			//if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);//commented out as new implementation is in
 			InfoDisplay.PrepareFrame(frame, elapsedTime);
 			// By GeorgeS
 			//if (IngameSounds != null) IngameSounds.Update(elapsedTime);

@@ -67,6 +67,8 @@ namespace MSTS
                 new STFReader.TokenProcessor("routestart", ()=>{ if (RouteStart == null) RouteStart = new RouteStart(stf); }),
                 new STFReader.TokenProcessor("environment", ()=>{ Environment = new TRKEnvironment(stf); }),
                 new STFReader.TokenProcessor("milepostunitskilometers", ()=>{ MilepostUnitsMetric = true; }),
+				new STFReader.TokenProcessor("electrified", ()=>{ Electrified = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("overheadwireheight", ()=>{ OverheadWireHeight = stf.ReadDoubleBlock(STFReader.UNITS.None, 6.0);}),
             });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -81,9 +83,11 @@ namespace MSTS
         public string Description;
         public RouteStart RouteStart;
         public TRKEnvironment Environment;
-		  public bool MilepostUnitsMetric = false;
+		public bool MilepostUnitsMetric = false;
         public double MaxLineVoltage = 0;
-    }
+		public bool Electrified = true;
+		public double OverheadWireHeight = 6.0;
+	}
 
 
     public class RouteStart

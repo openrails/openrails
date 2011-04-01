@@ -261,17 +261,32 @@ namespace ORTS
                         // switch tracks need a link to the simulator engine so they can animate the points
                         TrJunctionNode TRJ = viewer.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, (int)trackObj.UID);
                         SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, TRJ));
-
+						if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
+						{
+							WorldPosition copy = new WorldPosition(worldMatrix);
+							Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, copy);
+						}
                     }
                     else // it's some type of track other than a switch track
                     {
                         SceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+						if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
+						{
+							WorldPosition copy = new WorldPosition(worldMatrix);
+							Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, copy);
+						}
                     }
                 }
                 else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
                 {
-                    // Add DyntrackDrawers for individual subsections
+					if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
+					{
+						WorldPosition copy = new WorldPosition(worldMatrix);
+						Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, copy);
+					}
+					// Add DyntrackDrawers for individual subsections
                     Dynatrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+
                 } // end else if DyntrackObj
                 else if (worldObject.GetType() == typeof(MSTS.ForestObj))
                 {

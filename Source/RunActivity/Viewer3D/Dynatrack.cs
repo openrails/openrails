@@ -158,26 +158,36 @@ namespace ORTS
         #endregion
 
         #region Constructor
-        /// <summary>
-        /// DynatrackDrawer constructor
-        /// </summary>
-        public DynatrackDrawer(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
-        {
-            Viewer = viewer;
-            worldPosition = position;
+		/// <summary>
+		/// DynatrackDrawer constructor
+		/// </summary>
+		public DynatrackDrawer(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
+		{
+			Viewer = viewer;
+			worldPosition = position;
 
-            if (viewer.Simulator.TRP == null)
-            {
-                // First to need a track profile creates it
-                Trace.Write(" TRP");
-                // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer.RenderProcess, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
-            }
+			if (viewer.Simulator.TRP == null)
+			{
+				// First to need a track profile creates it
+				Trace.Write(" TRP");
+				// Creates profile and loads materials into SceneryMaterials
+				TRPFile.CreateTrackProfile(viewer.RenderProcess, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
+			}
 
-            // Instantiate classes
-            dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition, endPosition);
-        } // end DynatrackDrawer constructor
-        #endregion
+			// Instantiate classes
+			dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition, endPosition);
+		} // end DynatrackDrawer constructor
+		
+		/// <summary>
+		/// DynatrackDrawer default constructor, without DyntrackObj
+		/// </summary>
+		public DynatrackDrawer(Viewer3D viewer, WorldPosition position, WorldPosition endPosition)
+		{
+			Viewer = viewer;
+			worldPosition = position;
+
+		} // end DynatrackDrawer constructor
+		#endregion
 
         /// <summary>
         /// PrepareFrame adds any object mesh in-FOV to the RenderItemCollection. 
@@ -201,7 +211,7 @@ namespace ORTS
 
             // Scan LODs in reverse order, and find first LOD in-range
             LODItem lod;
-            int lodIndex = 3;// dtrackMesh.LODGrid.Length;
+			int lodIndex = dtrackMesh.TrProfile.LODItems.Count;
             do
             {
                 if (--lodIndex < 0) return; // No LOD in-range
@@ -662,6 +672,20 @@ namespace ORTS
             lod.Accum(pl.Vertices.Count);
         } // end TrProfile() constructor
 
+		/// <summary>
+		/// TrProfile constructor (default - builds from self-contained data)
+		/// <param name="renderProcess">RenderProcess.</param>
+		/// </summary>
+		public TrProfile(RenderProcess renderProcess, int x)
+		{
+			// Default TrProfile constructor
+			RenderProcess = renderProcess;
+			RoutePath = renderProcess.Viewer.Simulator.RoutePath;
+			Name = "Default Dynatrack profile";
+
+
+		} // end TrProfile() constructor for inherited class
+
     } // end class TrProfile
 
     public class LODItem
@@ -858,13 +882,13 @@ namespace ORTS
 
         public ShapePrimitive[] ShapePrimitives; // Array of ShapePrimitives
 
-        VertexPositionNormalTexture[] VertexList; // Array of vertices
-        short[] TriangleListIndices;// Array of indices to vertices for triangles
-        uint VertexIndex = 0;       // Index of current position in VertexList
-        uint IndexIndex = 0;        // Index of current position in TriangleListIndices
+		public VertexPositionNormalTexture[] VertexList; // Array of vertices
+		public short[] TriangleListIndices;// Array of indices to vertices for triangles
+        public uint VertexIndex = 0;       // Index of current position in VertexList
+		public uint IndexIndex = 0;        // Index of current position in TriangleListIndices
         //int VertexStride;           // in bytes
         //Provided by ShapePrimitive:int NumVertices;            // Number of vertices in the track profile
-        short NumIndices;           // Number of triangle indices
+		public short NumIndices;           // Number of triangle indices
 
         // LOD member variables:
         public int DrawIndex;       // Used by Draw to determine which LOD to draw.
@@ -874,16 +898,16 @@ namespace ORTS
         public Vector3 MSTSLODCenter; // Center of bounding sphere
 
         // Geometry member variables:
-        int NumSections;            // Number of cross sections needed to make up a track section.
-        float SegmentLength;        // meters if straight; radians if circular arc
-        Vector3 DDY;                // Elevation (y) change from one cross section to next
-        Vector3 OldV;               // Deviation from centerline for previous cross section
-        Vector3 OldRadius;          // Radius vector to centerline for previous cross section
+		public int NumSections;            // Number of cross sections needed to make up a track section.
+		public float SegmentLength;        // meters if straight; radians if circular arc
+		public Vector3 DDY;                // Elevation (y) change from one cross section to next
+		public Vector3 OldV;               // Deviation from centerline for previous cross section
+		public Vector3 OldRadius;          // Radius vector to centerline for previous cross section
 
         //TODO: Candidates for re-packaging:
-        Matrix sectionRotation;     // Rotates previous profile into next profile position on curve.
-        Vector3 center;             // Center coordinates of curve radius
-        Vector3 radius;             // Radius vector to cross section on curve centerline
+		public Matrix sectionRotation;     // Rotates previous profile into next profile position on curve.
+		public Vector3 center;             // Center coordinates of curve radius
+		public Vector3 radius;             // Radius vector to cross section on curve centerline
 
         // This structure holds the basic geometric parameters of a DT section.
         public struct DtrackData
@@ -893,11 +917,17 @@ namespace ORTS
             public float param2;    // Radius for circular arc
             public float deltaY;    // Change in elevation (y) from beginning to end of section
         }
-        DtrackData DTrackData;      // Was: DtrackData[] dtrackData;
+        public DtrackData DTrackData;      // Was: DtrackData[] dtrackData;
 
         public uint UiD; // Used for debugging only
 
         public TrProfile TrProfile;
+
+
+		public DynatrackMesh()
+		{
+
+		}
 
         /// <summary>
         /// Constructor.
@@ -1103,7 +1133,7 @@ namespace ORTS
         /// </summary>
         /// <param name="stride">Index increment between section-to-section vertices.</param>
         /// <param name="pl">Polyline.</param>
-        void LinearGen(uint stride, Polyline pl)
+        public void LinearGen(uint stride, Polyline pl)
         {
             Vector3 displacement = new Vector3(0, 0, -SegmentLength) + DDY;
             float wrapLength = displacement.Length();
@@ -1123,7 +1153,7 @@ namespace ORTS
         /// </summary>
         /// <param name="stride">Index increment between section-to-section vertices.</param>
         /// <param name="pl">Polyline.</param>
-        void CircArcGen(uint stride, Polyline pl)
+        public void CircArcGen(uint stride, Polyline pl)
         {
             // Get the previous vertex about the local coordinate system
             OldV = VertexList[VertexIndex - stride].Position - center - OldRadius;
