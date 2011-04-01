@@ -414,9 +414,7 @@ namespace ORTS
 
         protected virtual List<TrainCar> GetCameraCars()
         {
-            if (attachedCar == null)
-                return Viewer.PlayerTrain.Cars;
-            return attachedCar.Train.Cars;
+            return Viewer.PlayerTrain.Cars;
         }
 
         protected virtual void SetCameraCar(TrainCar car)

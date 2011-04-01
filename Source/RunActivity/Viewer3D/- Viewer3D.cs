@@ -412,10 +412,7 @@ namespace ORTS
 				Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
 				Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
                 PlayerLocomotiveViewer = TrainDrawer.GetViewer(Simulator.PlayerLocomotive);
-                if (!Camera.IsAvailable)
-                    FrontCamera.Activate();
-                else
-                    Camera.Activate();
+                ReactivateCamera();
 			}
 
             if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.IsAvailable) CabCamera.Activate();
@@ -460,6 +457,14 @@ namespace ORTS
 			if (UserInput.RDState != null)
 				UserInput.RDState.Handled();
 		}
+
+        void ReactivateCamera()
+        {
+            if (!Camera.IsAvailable)
+                FrontCamera.Activate();
+            else
+                Camera.Activate();
+        }
 
 
 		//
@@ -652,7 +657,8 @@ namespace ORTS
 				if (null != pickRay.Intersects(boundingSphere))
 				{
 					Simulator.UncoupleBehind(car);
-					break;
+                    ReactivateCamera();
+                    break;
 				}
 				traveller.Move(d);
 			}
