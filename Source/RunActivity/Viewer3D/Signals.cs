@@ -249,11 +249,16 @@ namespace ORTS
 					Type = (SignalTypeDataType)mstsSignalType.FnType;
 					if (mstsSignalType.Lights != null)
 					{
-						foreach (var mstsSignalLight in mstsSignalType.Lights)
-						{
+                        foreach (var mstsSignalLight in mstsSignalType.Lights)
+                        {
+                            if (!viewer.SIGCFG.LightsTable.ContainsKey(mstsSignalLight.Name))
+                            {
+                                Trace.TraceError("Signal type {0} has invalid light {1}.", mstsSignalType.Name, mstsSignalLight.Name);
+                                continue;
+                            }
                             var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
-							Lights.Add(new SignalLightMesh(viewer, new Vector3(mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
-						}
+                            Lights.Add(new SignalLightMesh(viewer, new Vector3(mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
+                        }
 						// Only load aspects if we've got lights. Not much point otherwise.
 						if (mstsSignalType.Aspects != null)
 						{

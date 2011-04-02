@@ -152,7 +152,7 @@ namespace MSTS
 		public LightTexture(STFReader stf)
 		{
 			stf.MustMatch("(");
-			Name = stf.ReadString();
+			Name = stf.ReadString().ToLowerInvariant();
 			TextureFile = stf.ReadString();
             u0 = stf.ReadFloat(STFReader.UNITS.None, null);
             v0 = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -170,7 +170,7 @@ namespace MSTS
 		public LightTableEntry(STFReader stf)
 		{
 			stf.MustMatch("(");
-			Name = stf.ReadString();
+			Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("colour", ()=>{
 				    stf.MustMatch("(");
@@ -212,7 +212,7 @@ namespace MSTS
             Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalfntype", ()=>{ ReadFnType(stf); }),
-                new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock("").ToLowerInvariant(); }),
                 new STFReader.TokenProcessor("signallights", ()=>{ Lights = ReadLights(stf); }),
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
                 new STFReader.TokenProcessor("signalaspects", ()=>{ Aspects = ReadAspects(stf); }),
@@ -367,7 +367,7 @@ namespace MSTS
         {
             stf.MustMatch("(");
             Index = stf.ReadUInt(STFReader.UNITS.None, null);
-            Name = stf.ReadString();
+            Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("radius", ()=>{ Radius = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("position", ()=>{
