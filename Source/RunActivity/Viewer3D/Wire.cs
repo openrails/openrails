@@ -299,8 +299,9 @@ namespace ORTS
 
 			// MAKE RAILSIDES
 			lod = new LODItemWire("Railsides");
-			lod.CutoffRadiusMin = 0.0f;
-			lod.CutoffRadiusMax = 700.0f;
+			//lod.CutoffRadiusMin = 0.0f;
+			//lod.CutoffRadiusMax = 700.0f;
+            lod.CutoffRadius = 700.0f;
 
 			lod.ShaderName = "TexDiff";
 			lod.LightModelName = "OptSpecular0";

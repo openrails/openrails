@@ -216,7 +216,7 @@ namespace ORTS
             {
                 if (--lodIndex < 0) return; // No LOD in-range
                 lod = (LODItem)dtrackMesh.TrProfile.LODItems[lodIndex];
-            } while (!Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, 0, lod.CutoffRadiusMax));
+            } while (!Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, 0, lod.CutoffRadius));
             dtrackMesh.LastIndex = lodIndex; // Mark index farthest in-range LOD
 
             // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
@@ -565,8 +565,7 @@ namespace ORTS
                         
             // MAKE BALLAST
             lod = new LODItem("Ballast");
-            lod.CutoffRadiusMin = 0.0f;
-            lod.CutoffRadiusMax = 2000.0f;
+            lod.CutoffRadius = 2000.0f;
 
             lod.ShaderName = "BlendATexDiff";
             lod.LightModelName = "OptSpecular0";
@@ -592,8 +591,7 @@ namespace ORTS
             
             // MAKE RAILTOPS
             lod = new LODItem("Railtops");
-            lod.CutoffRadiusMin = 0.0f;
-            lod.CutoffRadiusMax = 1200.0f;
+            lod.CutoffRadius = 1200.0f;
             lod.ShaderName = "TexDiff";
             lod.LightModelName = "OptSpecular25";
             lod.AlphaTestMode = 0;
@@ -625,8 +623,7 @@ namespace ORTS
 
             // MAKE RAILSIDES
             lod = new LODItem("Railsides");
-            lod.CutoffRadiusMin = 0.0f;
-            lod.CutoffRadiusMax = 700.0f;
+            lod.CutoffRadius = 700.0f;
 
             lod.ShaderName = "TexDiff";
             lod.LightModelName = "OptSpecular0";
@@ -702,8 +699,7 @@ namespace ORTS
 
         public string TexName; // Texture file name
 
-        public float CutoffRadiusMin; // Distance below which LODItem is not seen
-        public float CutoffRadiusMax; // Distance beyond which LODItem is not seen
+        public float CutoffRadius; // Distance beyond which LODItem is not seen
         
         public Material LODMaterial; // SceneryMaterial reference
 
