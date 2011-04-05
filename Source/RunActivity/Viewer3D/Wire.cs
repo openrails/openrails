@@ -287,6 +287,7 @@ namespace ORTS
 		public WireProfile(RenderProcess RenderProcess) // Nasty: void return type is not allowed. (See MSDN for compiler error CS0542.)
 			: base(RenderProcess, 0)//call the dummy base constructor so that no data is pre-populated
 		{
+            LODMethod = LODMethods.ComponentAdditive;
 			LODItemWire lod; // Local LODItem instance
 			Polyline pl; // Local polyline instance
 			Polyline vertical;

@@ -224,11 +224,26 @@ namespace ORTS
             xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
             // (Transformation is now with respect to camera-tile origin)
 
-            // Add all in-view LODs to the RenderItems collection
-            for (int i = 0; i <= dtrackMesh.LastIndex; i++)
-            {
-                //TBD: Add check whether camera is closer than lod.CutoffRadiusMin, in which case ignore
-                frame.AddPrimitive(dtrackMesh.ShapePrimitives[i].Material, dtrackMesh.ShapePrimitives[i], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+            switch (dtrackMesh.TrProfile.LODMethod)
+            { 
+                case TrProfile.LODMethods.None:
+                case TrProfile.LODMethods.ComponentAdditive:
+                    // Add all in-view LODs to the RenderItems collection
+                    for (int i = 0; i <= dtrackMesh.LastIndex; i++)
+                    {
+                        frame.AddPrimitive(dtrackMesh.ShapePrimitives[i].Material, dtrackMesh.ShapePrimitives[i], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                    }
+                    break;
+                case TrProfile.LODMethods.CompleteReplacement:
+                    // Add only the LODs with a common CutoffRadius
+                    float commonCutoffRadius = lod.CutoffRadius;
+                    for (int i = dtrackMesh.LastIndex; i >= 0; i--)
+                    {
+                        lod = (LODItem)dtrackMesh.TrProfile.LODItems[i];
+                        if (lod.CutoffRadius != commonCutoffRadius) break;
+                        frame.AddPrimitive(dtrackMesh.ShapePrimitives[i].Material, dtrackMesh.ShapePrimitives[i], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                    }
+                    break;
             }
         } // end PrepareFrame
     } // end DynatrackDrawer
@@ -397,6 +412,7 @@ namespace ORTS
 
         public string Name;                          // e.g., "Default track profile"
         public int ReplicationPitch; //TBD: Replication pitch alternative
+        public LODMethods LODMethod = LODMethods.None; // LOD method of control
 
 /*
         /// <summary>
@@ -547,6 +563,27 @@ namespace ORTS
         } // end LODDefaultTexture
 */
         /// <summary>
+        /// Enumeration of LOD control methods
+        /// </summary>
+        public enum LODMethods
+        {
+            /// <summary>
+            /// None -- No LODMethod specified; defaults to ComponentAdditive.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// ComponentAdditive -- Each LOD is a COMPONENT that is ADDED as the camera gets closer.
+            /// </summary>
+            ComponentAdditive = 1,
+
+            /// <summary>
+            /// CompleteReplacement -- Each LOD group is a COMPLETE model that REPLACES another as the camera moves.
+            /// </summary>
+            CompleteReplacement = 2
+        } // end enum LODMethods
+
+        /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
         /// <param name="renderProcess">RenderProcess.</param>
         /// </summary>
@@ -556,6 +593,7 @@ namespace ORTS
             RenderProcess = renderProcess;
             RoutePath = renderProcess.Viewer.Simulator.RoutePath;
             Name = "Default Dynatrack profile";
+            LODMethod = LODMethods.ComponentAdditive;
 
             LODItem lod; // Local LODItem instance
             Polyline pl; // Local polyline instance
