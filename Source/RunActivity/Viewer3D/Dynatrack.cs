@@ -413,6 +413,11 @@ namespace ORTS
         public string Name;                          // e.g., "Default track profile"
         public int ReplicationPitch; //TBD: Replication pitch alternative
         public LODMethods LODMethod = LODMethods.None; // LOD method of control
+        public float ChordSpan; // Base method: No. of profiles generated such that span is ChordSpan degrees
+        // If a PitchControl is defined, then the base method is compared to the PitchControl method,
+        // and the ChordSpan is adjusted to compensate.
+        public PitchControls PitchControl = PitchControls.None; // Method of control for profile replication pitch
+        public float PitchControlScalar; // Scalar parameter for PitchControls
 
 /*
         /// <summary>
@@ -584,6 +589,27 @@ namespace ORTS
         } // end enum LODMethods
 
         /// <summary>
+        /// Enumeration of cross section replication pitch control methods.
+        /// </summary>
+        public enum PitchControls
+        {
+            /// <summary>
+            /// None -- No pitch control method specified.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// ChordLength -- Constant length of chord.
+            /// </summary>
+            ChordLength,
+
+            /// <summary>
+            /// Chord Displacement -- Constant maximum displacement of chord from arc.
+            /// </summary>
+            ChordDisplacement
+        } // end enum PitchControls
+
+        /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
         /// <param name="renderProcess">RenderProcess.</param>
         /// </summary>
@@ -594,6 +620,12 @@ namespace ORTS
             RoutePath = renderProcess.Viewer.Simulator.RoutePath;
             Name = "Default Dynatrack profile";
             LODMethod = LODMethods.ComponentAdditive;
+            ChordSpan = 1.0f; // Base Method: Generates profiles spanning no more than 1 degree
+
+            PitchControl = PitchControls.ChordLength;       // Target chord length
+            PitchControlScalar = 10.0f;                     // Hold to no more than 10 meters
+            //PitchControl = PitchControls.ChordDisplacement; // Target chord displacement from arc
+            //PitchControlScalar = 0.034f;                    // Hold to no more than 34 mm (half rail width)
 
             LODItem lod; // Local LODItem instance
             Polyline pl; // Local polyline instance
@@ -957,10 +989,11 @@ namespace ORTS
 
         public TrProfile TrProfile;
 
-
+        /// <summary>
+        /// Default constructor
+        /// </summary>
 		public DynatrackMesh()
 		{
-
 		}
 
         /// <summary>
@@ -1146,11 +1179,35 @@ namespace ORTS
         void CircArcGen()
         {
             // Define the number of track cross sections in addition to the base.
-            // Assume one skewed straight section per degree of curvature
-            NumSections = (int)Math.Abs(MathHelper.ToDegrees(DTrackData.param1));
+            NumSections = (int)(Math.Abs(MathHelper.ToDegrees(DTrackData.param1)) / TrProfile.ChordSpan);
             if (NumSections == 0) NumSections++; // Very small radius track - zero avoidance
-            //numSections = 10; //TESTING
-            // TODO: Generalize count to profile file specification
+
+            // Use pitch control methods
+            switch (TrProfile.PitchControl)
+            {
+                case TrProfile.PitchControls.None:
+                    break; // Good enough
+                case TrProfile.PitchControls.ChordLength:
+                    // Calculate chord length for NumSections
+                    float l = 2.0f * DTrackData.param2 * (float)Math.Sin(0.5f * Math.Abs(DTrackData.param1) / NumSections);
+                    if (l > TrProfile.PitchControlScalar)
+                    {
+                        // Number of sections determined by chord length of PitchControlScalar meters
+                        float chordAngle = 2.0f * (float)Math.Asin(0.5f * TrProfile.PitchControlScalar / DTrackData.param2);
+                        NumSections = (int)Math.Abs((DTrackData.param1 / chordAngle));
+                    }
+                    break;
+                case TrProfile.PitchControls.ChordDisplacement:
+                    // Calculate chord displacement for NumSections
+                    float d = DTrackData.param2 * (float)(1.0f - Math.Cos(0.5f * Math.Abs(DTrackData.param1) / NumSections));
+                    if (d > TrProfile.PitchControlScalar)
+                    {
+                        // Number of sections determined by chord displacement of PitchControlScalar meters
+                        float chordAngle = 2.0f * (float)Math.Acos(1.0f - TrProfile.PitchControlScalar / DTrackData.param2);
+                        NumSections = (int)Math.Abs((DTrackData.param1 / chordAngle));
+                    }
+                    break;
+            }
 
             SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (radians)
             DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
