@@ -58,7 +58,14 @@ namespace ORTS
 			WorldPosition wcopy = new WorldPosition(nextRoot);
 			Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
 			worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
-			if (Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).RoadShape == true) return;
+			try
+			{
+				if (Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).RoadShape == true) return;
+			}
+			catch (Exception e)
+			{
+				return;
+			}
 			SectionIdx[] SectionIdxs = Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).SectionIdxs;
 
 			foreach (SectionIdx id in SectionIdxs)
