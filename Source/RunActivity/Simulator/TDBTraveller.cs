@@ -413,7 +413,7 @@ namespace ORTS
        /// Creates a forward-travelling TDBTraveller.
        /// </summary>
        /// <param name="trackNode">The TrackNode from which to create the TDBTraveller.</param>
-        /// <param name="trackSection">The TrackSection from which to create the TDBTraveller.</param>
+        /// <param name="vectorSection">The TrVectorSection from which to create the TDBTraveller.</param>
        /// <param name="tdb"></param>
        /// <param name="tsectiondat"></param>
         public TDBTraveller(TrackNode trackNode, TrVectorSection vectorSection, TDBFile tdb, TSectionDatFile tsectiondat)
