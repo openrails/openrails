@@ -1029,7 +1029,6 @@ namespace ORTS
                     "(SectionIdx = " + dtrack.SectionIdx + ")");
             }
             // Populate member DTrackData (a DtrackData struct)
-            //DTrackData = new DtrackData(); //WaltN: Don't need a new instance
             DTrackData.IsCurved = (int)dtrack.trackSections[0].isCurved;
             DTrackData.param1 = dtrack.trackSections[0].param1;
             DTrackData.param2 = dtrack.trackSections[0].param2;

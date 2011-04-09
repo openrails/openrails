@@ -31,7 +31,6 @@ namespace ORTS
 		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
 		private static SkyMaterial SkyMaterial = null;        
         private static PrecipMaterial PrecipMaterial = null;
-        //WaltN:private static DynatrackMaterial DynatrackMaterial = null;
         private static LightGlowMaterial LightGlowMaterial = null;
         private static LightConeMaterial LightConeMaterial = null;
         private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
@@ -67,7 +66,6 @@ namespace ORTS
             // WaterMaterial here.
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
-            //WaltN:DynatrackMaterial = new DynatrackMaterial(renderProcess);
             LightGlowMaterial = new LightGlowMaterial(renderProcess);
             LightConeMaterial = new LightConeMaterial(renderProcess);
             MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
@@ -153,9 +151,6 @@ namespace ORTS
                         return new ParticleEmitterMaterial(renderProcess);
                 case "PrecipMaterial":
                     return PrecipMaterial;
-/*WaltN:        case "DynatrackMaterial":
-                    return DynatrackMaterial;
-*/
                 case "LightGlowMaterial":
                     return LightGlowMaterial;
                 case "LightConeMaterial":
@@ -1030,115 +1025,7 @@ namespace ORTS
 			return true;
 		}
 	}
-/*WaltN:
-	public class DynatrackMaterial : Material
-    {
-        SceneryShader SceneryShader;
-        Texture2D Image1;
-        Texture2D Image1s;
-        Texture2D Image2;
-        string TexturePath;
-        public RenderProcess RenderProcess;
 
-		public DynatrackMaterial(RenderProcess renderProcess)
-			: base(null)
-		{
-            Viewer3D viewer = renderProcess.Viewer;
-            if (viewer.Simulator.TRP == null)
-            {
-                // First to need a track profile creates it
-                Trace.Write(" TRP");
-                // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer.RenderProcess, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
-            }
-            TrProfile profile = renderProcess.Viewer.Simulator.TRP.TrackProfile;
-            
-            RenderProcess = renderProcess;
-            SceneryShader = Materials.SceneryShader;
-            TexturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + profile.Image1Name; 
-            Image1 = SharedTextureManager.Get(renderProcess.GraphicsDevice, TexturePath);
-            TexturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures\snow" + @"\" + profile.Image1sName; 
-            if (File.Exists(TexturePath))
-                Image1s = SharedTextureManager.Get(renderProcess.GraphicsDevice, TexturePath);
-            else // Use file in base texture folder
-                Image1s = Image1;
-            TexturePath = RenderProcess.Viewer.Simulator.RoutePath + @"\textures" + @"\" + profile.Image2Name; 
-            Image2 = SharedTextureManager.Get(renderProcess.GraphicsDevice, TexturePath);
-        } // end DynatrackMaterial() (constructor)
-
-		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-			SceneryShader.CurrentTechnique = SceneryShader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
-
-            var rs = graphicsDevice.RenderState;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-			rs.SourceBlend = Blend.SourceAlpha;
-		} // end SetState()
-
-		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-        {
-            var rs = graphicsDevice.RenderState;
-            foreach (var item in renderItems)   // Is this ever more than one for dynamic track?
-                                                // I guess there's nothing to be gained from changing it.
-            {
-                DynatrackMesh mesh = (DynatrackMesh)item.RenderPrimitive;
-                for (int lodIndex = 0; lodIndex <= mesh.LastIndex; lodIndex++)
-                {
-                    LODItem lod = (LODItem)mesh.TrProfile.LODItems[lodIndex];
-                    // The following are controlled by options in the track profile
-                    if (lod.Texture == DynatrackTextures.Image1)
-                    {
-                        if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Snow ||
-                                RenderProcess.Viewer.Simulator.Season == MSTS.SeasonType.Winter)
-                            SceneryShader.ImageMap_Tex = Image1s;
-                        else
-                            SceneryShader.ImageMap_Tex = Image1;
-                    }
-                    else if (lod.Texture == DynatrackTextures.Image2)
-                        SceneryShader.ImageMap_Tex = Image2;
-                    // else SceneryShader.ImageMap_Tex will remain unchanged
-
-                    SceneryShader.LightingSpecular = lod.LightingSpecular;
-                    graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias =
-                                lod.MipMapLevelOfDetailBias;
-                    rs.AlphaBlendEnable =
-                                lod.AlphaBlendEnable;
-
-                    Matrix viewproj = XNAViewMatrix * XNAProjectionMatrix;
-                    SceneryShader.SetMatrix(ref item.XNAMatrix, ref XNAViewMatrix, ref viewproj);
-                    SceneryShader.ZBias = item.RenderPrimitive.ZBias;
-					SceneryShader.Apply();
-
-                    mesh.DrawIndex = lodIndex; // Communicate to Draw which LOD to draw.
-                    SceneryShader.Begin();
-                    foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
-                    {
-                        pass.Begin();
-                        item.RenderPrimitive.Draw(graphicsDevice);
-                        pass.End();
-                    }
-                    SceneryShader.End();
-                } // end for i
-            }
-        } // end Render() (DynatrackMaterial)
-
-		public override void ResetState(GraphicsDevice graphicsDevice)
-		{
-			SceneryShader.LightingSpecular = 0;
-			SceneryShader.Apply();
-
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-			rs.DestinationBlend = Blend.Zero;
-			rs.SourceBlend = Blend.One;
-		} // end ResetState()
-
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
-		{
-			return true;
-		} // end GetBlending()
-    }
-*/
 	public class ForestMaterial : Material
     {
         public readonly RenderProcess RenderProcess;  // for diagnostics only
