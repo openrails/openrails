@@ -198,7 +198,9 @@
     <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\enums.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
+    <Compile Include="Common\Filter.cs" />
     <Compile Include="Common\FxCopAttributes.cs" />
+    <Compile Include="Common\Integrator.cs" />
     <Compile Include="Common\Interpolator.cs" />
     <Compile Include="Common\Helpers.cs" />
     <Compile Include="Common\Math.cs" />
@@ -249,7 +251,9 @@
     <Compile Include="Processes\SoundProcess.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />
     <Compile Include="Physics\Train.cs" />
+    <Compile Include="RollingStock\Axle.cs" />
     <Compile Include="RollingStock\ControllerFactory.cs" />
+    <Compile Include="RollingStock\ElectricMotor.cs" />
     <Compile Include="RollingStock\IBrakeController.cs" />
     <Compile Include="RollingStock\IController.cs" />
     <Compile Include="RollingStock\MSTSBrakeController.cs" />
@@ -265,6 +269,7 @@
     <Compile Include="RollingStock\MSTSSteamLocomotive.cs" />
     <Compile Include="RollingStock\MSTSWagon.cs" />
     <Compile Include="Processes\ProcessState.cs" />
+    <Compile Include="RollingStock\SeriesMotor.cs" />
     <Compile Include="RollingStock\TrainCar.cs" />
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Simulator\Activity.cs" />

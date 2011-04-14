@@ -299,8 +299,18 @@ namespace ORTS
 
             if (Viewer.PlayerLocomotive.WheelSlip)
                 TextBuilder.AppendLine("Wheel Slip");
+            else
+                TextBuilder.AppendLine();
+
+            if (((MSTSLocomotive)Viewer.PlayerLocomotive).LocomotiveAxle.IsWheelSlipWarning)
+                TextBuilder.AppendLine("Wheel Slip Warning!");
+            else
+                TextBuilder.AppendLine();
+
             if (Viewer.PlayerLocomotive.GetSanderOn())
                 TextBuilder.AppendLine("Sander On");
+            else
+                TextBuilder.AppendLine();
         }
 
 		private void AddBrakeInfo()
@@ -327,6 +337,20 @@ namespace ORTS
 			TextBuilder.AppendLine();
 			TextBuilder.AppendLine("FORCE INFORMATION");
 			Train playerTrain = Viewer.PlayerLocomotive.Train;
+            TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Wheel slip: {0:F2} %", ((MSTSLocomotive)Viewer.PlayerLocomotive).LocomotiveAxle.SlipSpeedPercent);
+            TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Wheel slip derivation: {0:F2} %/s", ((MSTSLocomotive)Viewer.PlayerLocomotive).LocomotiveAxle.SlipDerivationPercentpS);
+            TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Axle drive force: {0:F2} N", ((MSTSLocomotive)Viewer.PlayerLocomotive).LocomotiveAxle.DriveForceN);
+            TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Axle brake force: {0:F2} N", ((MSTSLocomotive)Viewer.PlayerLocomotive).LocomotiveAxle.BrakeForceN);
+            TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Axle frict force: {0:F2} N", ((MSTSLocomotive)Viewer.PlayerLocomotive).LocomotiveAxle.FrictionForceN * ((MSTSLocomotive)Viewer.PlayerLocomotive).LocomotiveAxle.AxleSpeedMpS);
+            TextBuilder.AppendLine();
+            TextBuilder.AppendFormat("Axle out   force: {0:F2} N", ((MSTSLocomotive)Viewer.PlayerLocomotive).LocomotiveAxle.AxleForceN);
+            TextBuilder.AppendLine();
+            TextBuilder.AppendLine();
 			int n = playerTrain.Cars.Count;
 			if (n > 10)
 				n = 11;

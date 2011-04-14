@@ -108,11 +108,27 @@ namespace ORTS
         public MSTSBrakeController  EngineBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController  DynamicBrakeController;
+        
+        public Axle LocomotiveAxle;
+        public IIRFilter CurrentFilter;
+        public IIRFilter AdhesionFilter;
+        
+        public float FilteredMotiveForceN = 0.0f;
 
         public MSTSLocomotive(Simulator simulator, string wagPath, TrainCar previousCar)
             : base(simulator, wagPath, previousCar)
         {
 			BrakePipeChargingRatePSIpS = simulator.Settings.BrakePipeChargingRate;
+
+            LocomotiveAxle = new Axle();
+            LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
+            //CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.05f), 0.01f);
+            LocomotiveAxle.FrictionForceN = 1000.0f;
+            LocomotiveAxle.AdhesionK = 0.5f;
+            CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1.0f),0.001f);
+            AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
+            UseAdvancedAdhesion = true;
+            //LocomotiveAxle.AxleWeightN;
             //Console.WriteLine("loco {0} {1} {2}", MaxPowerW, MaxForceN, MaxSpeedMpS);
         }
 
@@ -419,6 +435,7 @@ namespace ORTS
             // Variable1 is wheel rotation in m/sec for steam locomotives
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
+            //Variable2 = Math.Abs(WheelSpeedMpS);
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
@@ -426,7 +443,10 @@ namespace ORTS
                 if (f > 0)
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
             }
-            LimitMotiveForce();
+            LimitMotiveForce(elapsedClockSeconds);
+
+            //Force to display
+            FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
 
             if (MainResPressurePSI < CompressorRestartPressurePSI && !CompressorOn)
                 SignalEvent(EventID.CompressorOn);
@@ -440,28 +460,140 @@ namespace ORTS
 
         /// <summary>
         /// Adjusts the MotiveForce to account for adhesion limits
-        /// The basic force limits are calculated the same way MSTS calculates them, but
-        /// the weather handleing is different
+        /// If UseAdvancedAdhesion is true, dynamic adhesion model is computed
+        /// If UseAdvancedAdhesion is false, the basic force limits are calculated the same way MSTS calculates them, but
+        /// the weather handleing is different and Curtius-Kniffler curves are considered as a static limit
         /// </summary>
+        public void LimitMotiveForce(float elapsedClockSeconds)
+        {
+            if (NumWheels <= 0)
+                return;
+            //float max0 = MassKG * 9.8f * Adhesion3 / NumWheels;   //Not used
+
+            //Curtius-Kniffler computation for the basic model
+            float currentSpeedMpS = Math.Abs(SpeedMpS);
+            float uMax = (7.5f / (currentSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
+            float adhesionUtil = 0.95f;   //Adhesion utilization
+
+            float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
+            float max1;
+
+            if (UseAdvancedAdhesion)
+            {
+                //Set the weather coeff
+                if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
+                {
+                    if (Train.SlipperySpotDistanceM < 0)
+                    {
+                        Train.SlipperySpotLengthM = 10 + 40 * (float)Program.Random.NextDouble();
+                        Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Program.Random.NextDouble();
+                    }
+                    if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
+                        max0 = .8f;
+                    if (Program.Simulator.Weather == WeatherType.Rain)
+                        max0 = .6f;
+                    else
+                        max0 = .5f;
+                }
+                else
+                    max0 = 1.0f;
+                //add sander
+                if (Sander)
+                    max0 *= 1.5f;
+                //Set adhesion coeff to the model
+                    //Pure condition
+                    //LocomotiveAxle.AdhesionConditions = max0;
+                    //Filtered condition
+                    //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0, elapsedClockSeconds);
+                //Filtered random condition
+                LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2*Program.Random.NextDouble()),elapsedClockSeconds);
+                //Set axle inertia (this should be placed within the ENG parser)
+                // but make sure the value is sufficietn
+                if (MaxPowerW < 2000000.0f)
+                {
+                    if (NumWheels > 4.0f)
+                        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheels * 4000.0f;
+                    else
+                        LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                }
+                else
+                {
+                    if (NumWheels > 4.0f)
+                        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheels * MaxPowerW / 500.0f;
+                    else
+                        LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                }
+
+                //Set axle model parameters
+                LocomotiveAxle.BrakeForceN = FrictionForceN;
+                LocomotiveAxle.AxleWeightN = 9.81f * MassKG;        //will be computed each time considering the tilting
+                LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
+                
+                LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
+                MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
+                WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
+                WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
+
+                LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
+            }
+            else
+            {
+                if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
+                {
+                    if (Train.SlipperySpotDistanceM < 0)
+                    {
+                        Train.SlipperySpotLengthM = 10 + 40 * (float)Program.Random.NextDouble();
+                        Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Program.Random.NextDouble();
+                    }
+                    if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
+                        max0 *= .8f;
+                    if (Program.Simulator.Weather == WeatherType.Rain)
+                        max0 *= .8f;
+                    else
+                        max0 *= .7f;
+                }
+                //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
+                max1 = (Sander ? 1.5f : 1.0f) * max0; //Increase adhesion when sander is on
+                WheelSlip = false;
+
+                if (MotiveForceN > max1)
+                {
+                    WheelSlip = true;
+                    if (AntiSlip)
+                        MotiveForceN = max1;
+                    else
+                        MotiveForceN = Adhesion1 * max0;        //Lowers the adhesion limit to 20% of its full
+                }
+                else if (MotiveForceN < -max1)
+                {
+                    WheelSlip = true;
+                    if (AntiSlip)
+                        MotiveForceN = -max1;
+                    else
+                        MotiveForceN = -Adhesion1 * max0;       //Lowers the adhesion limit to 20% of its full
+                }
+            }
+        }
         public void LimitMotiveForce()
         {
             if (NumWheels <= 0)
                 return;
-
             //float max0 = MassKG * 9.8f * Adhesion3 / NumWheels;   //Not used
-            
+
             //Curtius-Kniffler computation
             float currentSpeedMpS = Math.Abs(SpeedMpS);
             float uMax = (7.5f / (currentSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
             float adhesionUtil = 0.95f;   //Adhesion utilization
-            
+
             float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
+            float max1;
+
             if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
             {
                 if (Train.SlipperySpotDistanceM < 0)
                 {
                     Train.SlipperySpotLengthM = 10 + 40 * (float)Program.Random.NextDouble();
-                    Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float) Program.Random.NextDouble();
+                    Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Program.Random.NextDouble();
                 }
                 if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                     max0 *= .8f;
@@ -471,8 +603,9 @@ namespace ORTS
                     max0 *= .7f;
             }
             //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
-            float max1 = (Sander ? 1.5f : 1.0f) * max0; //Increase adhesion when sander is on
+            max1 = (Sander ? 1.5f : 1.0f) * max0; //Increase adhesion when sander is on
             WheelSlip = false;
+
             if (MotiveForceN > max1)
             {
                 WheelSlip = true;
@@ -490,6 +623,7 @@ namespace ORTS
                     MotiveForceN = -Adhesion1 * max0;       //Lowers the adhesion limit to 20% of its full
             }
         }
+
         public override bool GetSanderOn()
         {
             return Sander;
@@ -781,17 +915,26 @@ namespace ORTS
             {
                 case CABViewControlTypes.SPEEDOMETER:
                     {
-                        data = SpeedMpS;
+                        //data = SpeedMpS;
+                        data = WheelSpeedMpS;
                         if (cvc.Units == CABViewControlUnits.KM_PER_HOUR)
                             data *= 3.6f;
                         else
                             data *= 2.2369f;
-
+                        data = Math.Abs(data);
                         break;
                     }
                 case CABViewControlTypes.AMMETER:
                 case CABViewControlTypes.LOAD_METER:
                     {
+                        if (LocomotiveAxle != null)
+                        {
+                            if (FilteredMotiveForceN != 0)
+                                data = this.FilteredMotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                            else
+                                data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)cvc.MaxValue;
+                            break;
+                        }
                         data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
                         break;
                     }
@@ -885,6 +1028,12 @@ namespace ORTS
                         data = Headlight;
                         break;
                     }
+                //case CABViewControlTypes.WHEELSLIP:
+                //    {
+                //        data = WheelSlip ? 1 : 0;
+                //        break;
+                //    }
+    
                 case CABViewControlTypes.DIRECTION:
                 case CABViewControlTypes.DIRECTION_DISPLAY:
                     {

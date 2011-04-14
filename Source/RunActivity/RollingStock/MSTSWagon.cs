@@ -56,6 +56,8 @@ namespace ORTS
         public float Adhesion1 = .27f;   // 1st MSTS adheasion value
         public float Adhesion2 = .49f;   // 2nd MSTS adheasion value
         public float Adhesion3 = 2;   // 3rd MSTS adheasion value
+        public float WheelSpeedMpS = 0;
+        public bool UseAdvancedAdhesion;
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
@@ -619,9 +621,15 @@ namespace ORTS
 
         private void UpdateAnimation( RenderFrame frame, ElapsedTime elapsedTime )
         {
-            float distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds ;
-            if (MSTSWagon.WheelSlip)
-                distanceTravelledM *= 4;
+            float distanceTravelledM = 0;
+            if ((MSTSWagon.IsDriveable)&&(MSTSWagon.UseAdvancedAdhesion))
+            {
+                distanceTravelledM = MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
+            }
+            else
+            {
+                distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
+            }
 
             // Running gear animation
             if (RunningGearPartIndexes.Count > 0 && MSTSWagon.DriverWheelRadiusM > 0.001 )  // skip this if there is no running gear and only engines can have running gear

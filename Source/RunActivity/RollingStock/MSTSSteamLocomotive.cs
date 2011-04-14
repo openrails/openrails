@@ -244,6 +244,7 @@ namespace ORTS
             if (MaxFiringRateKGpS == 0)
                 MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
             //Trace.WriteLine(string.Format("burn rate 2 {0} {1} {2}", BurnRate[1] * (1 - .82f) / .35f / .82f, baseTempK, BurnRate[1]));
+            UseAdvancedAdhesion = true;
         }
         public bool ZeroError(float v, string name, string wagFile)
         {
@@ -450,7 +451,7 @@ namespace ORTS
                 (backPressure * ForceFactor1[cutoff] + cylinderPressure * ForceFactor2[cutoff]);
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
-            LimitMotiveForce();
+            LimitMotiveForce(elapsedClockSeconds);
             if (speed == 0 && cutoff < .5f)
                 MotiveForceN = 0;   // valves assumed to be closed
             // usage calculated as moving average to minimize chance of oscillation
