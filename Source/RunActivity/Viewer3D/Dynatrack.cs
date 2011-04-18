@@ -254,7 +254,7 @@ namespace ORTS
     // chain of line segments successively interconnected. A polyline of n segments is defined by n+1 "vertices."
     // (Use of a polyline allows for use of more than single segments.  For example, a ballast LOD could be 
     // defined as left slope, level, right slope - a single polyline of four vertices.)
-
+    #region TRPFile
     /// <summary>
     ///  Track profile file class
     /// </summary>
@@ -272,16 +272,17 @@ namespace ORTS
         /// <param name="trpFile">TRPFile created (out).</param>
         public static void CreateTrackProfile(RenderProcess renderProcess, string routePath, out TRPFile trpFile)
         {
+            string path = routePath + @"\TrackProfiles";
             //Establish default track profile
-            if (Directory.Exists(routePath) && File.Exists(routePath + @"\TrProfile.xml"))
+            if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.xml"))
             {
                 // XML-style
-                trpFile = new TRPFile(renderProcess, routePath + @"\TrProfile.xml");
+                trpFile = new TRPFile(renderProcess, path + @"\TrProfile.xml");
             }
-            else if (Directory.Exists(routePath) && File.Exists(routePath + @"\TrProfile.dat"))
+            else if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.stf"))
             {
                 // MSTS-style
-                trpFile = new TRPFile(renderProcess, routePath + @"\TrProfile.dat");
+                trpFile = new TRPFile(renderProcess, path + @"\TrProfile.stf");
             }
             else
             {
@@ -318,11 +319,11 @@ namespace ORTS
                 string fext = filespec.Substring(filespec.LastIndexOf('.')); // File extension
                 switch (fext.ToUpper())
                 {
-                    case ".DAT": // MSTS-style
+                    case ".STF": // MSTS-style
                         using (STFReader stf = new STFReader(filespec, false))
                         {
                             // "EXPERIMENTAL" header is temporary
-                            if (stf.SimisSignature != "EXPERIMENTAL")
+                            if (stf.SimisSignature != "SIMISA@@@@@@@@@@JINX0p0t______")
                             {
                                 STFException.TraceError(stf, "Invalid header - file will not be processed. Using DEFAULT profile.");
                                 TrackProfile = new TrProfile(renderProcess); // Default profile if no file
@@ -336,19 +337,19 @@ namespace ORTS
                                 }
                                 catch (Exception e)
                                 {
-                                    STFException.TraceError(stf, "Track profile DAT constructor failed because " + e.Message + ". Using DEFAULT profile.");
+                                    STFException.TraceError(stf, "Track profile STF constructor failed because " + e.Message + ". Using DEFAULT profile.");
                                     TrackProfile = new TrProfile(renderProcess); // Default profile if no file
                                 }
                                 finally
                                 {
                                     if (TrackProfile == null)
                                     {
-                                        STFException.TraceError(stf, "Track profile DAT constructor failed. Using DEFAULT profile.");
+                                        STFException.TraceError(stf, "Track profile STF constructor failed. Using DEFAULT profile.");
                                         TrackProfile = new TrProfile(renderProcess); // Default profile if no file
                                     }
                                 }
                         }
-                        Trace.Write("(.DAT)");
+                        Trace.Write("(.STF)");
                         break;
                     case ".XML": // XML-style
                         // Convention: .xsd filename must be the same as .xml filename and in same path.
@@ -401,6 +402,8 @@ namespace ORTS
         }
 
     } // end class TRPFile
+
+    #endregion
 
     #region TrProfile
 
@@ -501,7 +504,7 @@ namespace ORTS
             lod.AlphaTestMode = 0;
             lod.TexAddrModeName = "Wrap";
             lod.ESD_Alternative_Texture = 1;
-            lod.MipMapLevelOfDetailBias = -1;
+            lod.MipMapLevelOfDetailBias = -1f;
             lod.LoadMaterial(RenderProcess, lod);
 
             LODItems.Add(lod); // Append to LODItems array
