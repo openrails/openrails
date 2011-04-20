@@ -100,10 +100,16 @@ namespace ORTS
             Path.WriteNode(outf, StopNode);
          }
 
-        public string GetStatus()
+        public struct Status
+        {
+            public int TrainID;
+            public Train Train;
+            public string Path;
+        }
+
+        public Status GetStatus()
         {
             StringBuilder s = new StringBuilder();
-            s.Append(string.Format("{0} {1:F1} ", TrainID, Train.SpeedMpS));
             int tvnIndex = -1;
             for (AIPathNode node = Path.FirstNode; node != null; node = node.NextMainNode)
             {
@@ -142,8 +148,7 @@ namespace ORTS
                 else if (tvnIndex >= 0)
                     s.Append("=");
             }
-            s.Append(string.Format(" {0} {1:F1}", Train.GetNextSignalAspect(), Train.distanceToSignal));
-            return s.ToString();
+            return new Status { TrainID = TrainID, Train = Train, Path = s.ToString() };
         }
 
         /// <summary>

@@ -281,7 +281,9 @@ namespace ORTS
                 return string.Format("{0:F0}%", 100 * CurrentValue);
             if (!notch.Smooth)
                 return notch.GetName();
-            return string.Format("{0} {1:F0}%", notch.GetName(), 100 * GetNotchFraction());
+            if (notch.GetName().Length > 0)
+                return string.Format("{0} {1:F0}%", notch.GetName(), 100 * GetNotchFraction());
+            return string.Format("{0:F0}%", 100 * GetNotchFraction());
         }
 
         public virtual void Save(BinaryWriter outf)

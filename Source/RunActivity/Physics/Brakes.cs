@@ -16,7 +16,9 @@ namespace ORTS
 
         public abstract void AISetPercent(float percent);
 
-        public abstract string GetStatus(int detailLevel);
+        public abstract string GetStatus();
+        public abstract string GetFullStatus();
+        public abstract string[] GetDebugStatus();
 
         public abstract void Save(BinaryWriter outf);
 
@@ -102,19 +104,33 @@ namespace ORTS
             EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
         }
 
-        public override string GetStatus(int detailLevel)
+        public override string GetStatus()
         {
             if (BrakeLine1PressurePSI < 0)
                 return "";
-            string s = "";
-            if (detailLevel > 0)
-                s = s + string.Format("BC {0:F0} ",CylPressurePSI);
-            s = s + string.Format("BP {0:F0}", BrakeLine1PressurePSI);
-            if (detailLevel > 1)
-                s = s + string.Format(" AR {0:F0} ER {1:F0} State {2}",AuxResPressurePSI, EmergResPressurePSI, TripleValveState);
-            if (detailLevel > 0 && HandbrakePercent > 0)
-                s = s + string.Format(" handbrake {0:F0}%", HandbrakePercent);
-            return s;
+            return string.Format("BP {0:F0}", BrakeLine1PressurePSI);
+        }
+
+        public override string GetFullStatus()
+        {
+            if (BrakeLine1PressurePSI < 0)
+                return "";
+            return string.Format("BC {0:F0} BP {1:F0}" + (HandbrakePercent > 0 ? " Handbrake {2:F0}%" : ""), CylPressurePSI, BrakeLine1PressurePSI, HandbrakePercent);
+        }
+
+        public override string[] GetDebugStatus()
+        {
+            if (BrakeLine1PressurePSI < 0)
+                return new string[0];
+            var rv = new string[HandbrakePercent > 0 ? 6 : 5];
+            rv[0] = string.Format("BC {0:F0}", CylPressurePSI);
+            rv[1] = string.Format("BP {0:F0}", BrakeLine1PressurePSI);
+            rv[2] = string.Format("AR {0:F0}", AuxResPressurePSI);
+            rv[3] = string.Format("ER {0:F0}", EmergResPressurePSI);
+            rv[4] = string.Format("State {0}", TripleValveState);
+            if (HandbrakePercent > 0)
+                rv[5] = string.Format("Handbrake {0:F0}%", HandbrakePercent);
+            return rv;
         }
 
         public float CylPSIPressure
@@ -494,9 +510,19 @@ namespace ORTS
             MaxPressurePSI = thiscopy.MaxPressurePSI;
         }
 
-        public override string GetStatus(int detailLevel)
+        public override string GetStatus()
         {
-			return string.Format("{0:F0} PSI", BrakeLine1PressurePSI);
+            return string.Format("{0:F0}", BrakeLine1PressurePSI);
+        }
+
+        public override string GetFullStatus()
+        {
+            return GetStatus();
+        }
+
+        public override string[] GetDebugStatus()
+        {
+            return new[] { GetStatus() };
         }
 
         public override void Parse(string lowercasetoken, STFReader stf)

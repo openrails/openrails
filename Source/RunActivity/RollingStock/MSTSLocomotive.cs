@@ -741,19 +741,20 @@ namespace ORTS
             TrainBrakeController.SetEmergency();
             SignalEvent(EventID.TrainBrakeEmergency);
         }
+
         public override string GetTrainBrakeStatus()
         {            
             string s = TrainBrakeController.GetStatus();
             if (BrakeSystem.GetType() == typeof(AirSinglePipe))
-                s += string.Format(" EQ {0:F0} PSI", Train.BrakeLine1PressurePSI);
+                s += string.Format(" EQ {0:F0} psi", Train.BrakeLine1PressurePSI);
             else
-                s += string.Format(" BP {0:F0} PSI", Train.BrakeLine1PressurePSI);
-            s += " (cars: " + BrakeSystem.GetStatus(1);
+                s += string.Format(" BP {0:F0} psi", Train.BrakeLine1PressurePSI);
+            s += " (cars: " + BrakeSystem.GetFullStatus();
             TrainCar lastCar = Train.Cars[Train.Cars.Count - 1];
             if (lastCar == this)
                 lastCar = Train.Cars[0];
             if (lastCar != this)
-                s += " to " + lastCar.BrakeSystem.GetStatus(0);
+                s += " to " + lastCar.BrakeSystem.GetStatus();
 			s += ")";
             return s;
         }
