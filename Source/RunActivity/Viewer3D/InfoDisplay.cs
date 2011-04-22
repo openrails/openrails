@@ -327,7 +327,13 @@ namespace ORTS
 			}
 			if (locomotiveStatus != null)
 			{
-                TextColumns[(int)Columns.Labels].AppendLine(locomotiveStatus);
+                var lines = locomotiveStatus.Split('\n');
+                foreach (var line in lines)
+                {
+                    var parts = line.Split(new[] { " = " }, 2, StringSplitOptions.None);
+                    TextColumns[(int)Columns.Labels].AppendLine(parts[0]);
+                    TextColumns[(int)Columns.BasicInfo].AppendLine(parts.Length > 1 ? parts[1] : "");
+                }
 			}
             TextColumns[(int)Columns.Labels].AppendLine("Coupler Slack");
             TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F2} m ({1} pulling, {2} pushing) {3}\n", playerTrain.TotalCouplerSlackM, playerTrain.NPull, playerTrain.NPush, stretched ? "Stretched" : bunched ? "Bunched" : "");
