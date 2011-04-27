@@ -313,7 +313,7 @@ namespace ORTS
 				if (nextSignal.GetAspect() == SignalHead.SIGASP.STOP && nextSignal.HasPermissionToProceed() == Signal.PERMISSION.DENIED)
 				{
 					spad = true;
-					Stop();             // Signal Passed At Danger so Stop train!
+					//Stop();             // Signal Passed At Danger so Stop train!
 					return;
 				}
 				nextSignal.NextSignal();
@@ -958,9 +958,9 @@ namespace ORTS
 		{
 			for (int i = 0; i < Cars.Count; i++)
 				if (Cars[i].SpeedMpS > 0)
-					Cars[i].TotalForceN -= Cars[i].FrictionForceN;
+					Cars[i].TotalForceN -= (Cars[i].FrictionForceN  + Cars[i].BrakeForceN);
 				else if (Cars[i].SpeedMpS < 0)
-					Cars[i].TotalForceN += Cars[i].FrictionForceN;
+					Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN;
 			if (Cars.Count < 2)
 				return;
 			SetupCouplerForceEquations();
@@ -1036,14 +1036,14 @@ namespace ORTS
 			for (int i = 0; i < Cars.Count; i++)
 			{
 				TrainCar car = Cars[i];
-				if (car.SpeedMpS != 0 || car.TotalForceN <= car.FrictionForceN)
+				if (car.SpeedMpS != 0 || car.TotalForceN <= (car.FrictionForceN + car.BrakeForceN))
 					continue;
 				int j = i;
 				float f = 0;
 				float m = 0;
 				for (; ; )
 				{
-					f += car.TotalForceN - car.FrictionForceN;
+					f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN);
 					m += car.MassKG;
 					if (j == Cars.Count - 1 || car.CouplerSlackM < car.GetMaximumCouplerSlack2M())
 						break;
@@ -1063,14 +1063,14 @@ namespace ORTS
 			for (int i = Cars.Count - 1; i >= 0; i--)
 			{
 				TrainCar car = Cars[i];
-				if (car.SpeedMpS != 0 || car.TotalForceN > -car.FrictionForceN)
+				if (car.SpeedMpS != 0 || car.TotalForceN > (-1.0f*(car.FrictionForceN + car.BrakeForceN)))
 					continue;
 				int j = i;
 				float f = 0;
 				float m = 0;
 				for (; ; )
 				{
-					f += car.TotalForceN + car.FrictionForceN;
+					f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN;
 					m += car.MassKG;
 					if (j == 0 || car.CouplerSlackM > -car.GetMaximumCouplerSlack2M())
 						break;

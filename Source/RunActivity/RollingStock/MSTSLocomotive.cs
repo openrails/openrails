@@ -123,8 +123,8 @@ namespace ORTS
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
             //CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.05f), 0.01f);
-            LocomotiveAxle.FrictionForceN = 1000.0f;
-            LocomotiveAxle.AdhesionK = 0.5f;
+            LocomotiveAxle.DampingNs = 5000.0f;
+            LocomotiveAxle.AdhesionK = 0.7f;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1.0f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
             UseAdvancedAdhesion = true;
@@ -525,7 +525,9 @@ namespace ORTS
                 }
 
                 //Set axle model parameters
-                LocomotiveAxle.BrakeForceN = FrictionForceN;
+                
+                //LocomotiveAxle.BrakeForceN = FrictionForceN;
+                LocomotiveAxle.BrakeForceN = BrakeForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * MassKG;        //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
                 

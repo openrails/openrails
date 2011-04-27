@@ -64,13 +64,13 @@ namespace ORTS
         protected float totalForceN;
 
         /// <summary>
-        /// Friction force covered by FrictionForceN interface
+        /// Damping force covered by DampingForceN interface
         /// </summary>
-        protected float frictionForceN;
+        protected float dampingNs;
         /// <summary>
-        /// Read/Write positive only friction force to the axle, in Newtons
+        /// Read/Write positive only damping force to the axle, in Newton-second
         /// </summary>
-        public float FrictionForceN { set { frictionForceN = Math.Abs(value); } get { return frictionForceN; } }
+        public float DampingNs { set { dampingNs = Math.Abs(value); } get { return dampingNs; } }
 
         /// <summary>
         /// Axle drive type covered by DriveType interface
@@ -526,13 +526,13 @@ namespace ORTS
                     //Axle revolutions integration
                     if (TrainSpeedMpS == 0.0f)
                     {
-                        frictionForceN = 0.0f;
+                        dampingNs = 0.0f;
                         brakeForceN = 0.0f;
                     }
                     axleSpeedMpS = axleRevolutionsInt.Integrate(timeSpan,
                         axleDiameterM * axleDiameterM / (4.0f * (totalInertiaKgm2))
                         * (2.0f * transmitionRatio / axleDiameterM * motor.DevelopedTorqueNm * transmitionEfficiency
-                        - Math.Abs(brakeForceN) - (axleSpeedMpS > 0.0 ? Math.Abs(frictionForceN) : 0.0f)) - AxleForceN);
+                        - Math.Abs(brakeForceN) - (axleSpeedMpS > 0.0 ? Math.Abs(dampingNs) : 0.0f)) - AxleForceN);
 
                     //update motor values
                     motor.RevolutionsRad = axleSpeedMpS * 2.0f * transmitionRatio / (axleDiameterM);
@@ -553,16 +553,32 @@ namespace ORTS
                     }
                     else
                     {
-                        axleSpeedMpS = axleRevolutionsInt.Integrate(timeSpan,
-                                (
-                                    (   
-                                    driveForceN * transmitionEfficiency
-                                    - brakeForceN 
-                                    - axleSpeedMpS * frictionForceN 
-                                    - AxleForceN
-                                    )
-                                / totalInertiaKgm2)
-                                );
+                        if (axleSpeedMpS > 0.0f)
+                        {
+                            axleSpeedMpS = axleRevolutionsInt.Integrate(timeSpan,
+                                    (
+                                        (
+                                        driveForceN * transmitionEfficiency
+                                        - brakeForceN
+                                        - slipDerivationMpSS * dampingNs
+                                        - AxleForceN
+                                        )
+                                    / totalInertiaKgm2)
+                                    );
+                        }
+                        else
+                        {
+                            axleSpeedMpS = axleRevolutionsInt.Integrate(timeSpan,
+                                    (
+                                        (
+                                        driveForceN * transmitionEfficiency
+                                        + brakeForceN
+                                        - slipDerivationMpSS * dampingNs
+                                        - AxleForceN
+                                        )
+                                    / totalInertiaKgm2)
+                                    );
+                        }
                     }
                     break;
                 default:

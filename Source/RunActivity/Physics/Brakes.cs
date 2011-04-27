@@ -305,7 +305,8 @@ namespace ORTS
             float f = MaxBrakeForceN * CylPressurePSI / MaxCylPressurePSI;
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
-            Car.FrictionForceN += f;
+            Car.BrakeForceN = f;
+            //Car.FrictionForceN += f;
         }
 
         public override void SetRetainer(RetainerSetting setting)
@@ -430,7 +431,8 @@ namespace ORTS
             float f = MaxBrakeForceN * CylPressurePSI / MaxCylPressurePSI;
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
-            Car.FrictionForceN += f;
+            Car.BrakeForceN = f;
+            //Car.FrictionForceN += f;
         }
     }
     public class EPBrakeSystem : AirSinglePipe
@@ -485,7 +487,8 @@ namespace ORTS
             float f = MaxBrakeForceN * CylPressurePSI / MaxCylPressurePSI;
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
-            Car.FrictionForceN += f;
+            Car.BrakeForceN = f;
+            //Car.FrictionForceN += f;
         }
     }
 
@@ -562,7 +565,8 @@ namespace ORTS
             float brakePercent = 100 * (1 - BrakeLine1PressurePSI / MaxPressurePSI);
             if (brakePercent > 100) brakePercent = 100;
             if (brakePercent < 0) brakePercent = 0;
-            Car.FrictionForceN += MaxBrakeForceN * brakePercent/100f; 
+            Car.BrakeForceN = MaxBrakeForceN * brakePercent / 100f; 
+            //Car.FrictionForceN += MaxBrakeForceN * brakePercent/100f; 
         }
 
         public override void SetHandbrakePercent(float percent)
