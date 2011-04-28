@@ -418,7 +418,7 @@ namespace ORTS
                 TextColumns[(int)Columns.Labels].AppendLine("Axle brake force");
                 TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.BrakeForceN);
                 TextColumns[(int)Columns.Labels].AppendLine("Axle friction force");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.FrictionForceN * mstsLocomotive.LocomotiveAxle.AxleSpeedMpS);
+                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.DampingNs * mstsLocomotive.LocomotiveAxle.AxleSpeedMpS);
                 TextColumns[(int)Columns.Labels].AppendLine("Axle out force");
                 TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.AxleForceN);
                 TextColumns[(int)Columns.Labels].AppendLine();
