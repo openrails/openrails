@@ -995,4 +995,32 @@ namespace ORTS
         }
 
     }// class SharedShape
+
+	public class Siding
+	{
+		public readonly Viewer3D Viewer;
+		public readonly WorldPosition Location;
+		public readonly string SidingName;
+
+		/// <summary>
+		/// Construct and initialize the class
+		/// This constructor is for Sidings in TDB and W Files
+		/// </summary>
+		public Siding(Viewer3D viewer, WorldPosition position, SidingObj sidingObj)
+		{
+			Viewer = viewer;
+			Location = position;
+			int i = 0, trID = 0;
+			while (true) {
+				trID = sidingObj.getTrItemID(i);
+				if (trID < 0) break;
+				SidingItem sidingItem = (SidingItem)Viewer.Simulator.TDB.TrackDB.TrItemTable[trID];
+				if (sidingItem == null) continue;
+				SidingName = sidingItem.SidingName;
+				i++; //Siding has two trItems, now only needs the sidingname, S/P data are not used yet
+			}
+		}
+
+	} // class StaticShape
+
 }

@@ -124,10 +124,6 @@ namespace MSTS
 
 	public class CarSpawnerItem : TrItem
 	{
-		public string SidingName;
-		public string Flags1;
-		public uint Flags2;
-
 		public CarSpawnerItem(STFReader stf, int idx)
 		{
 			ItemType = trItemType.trCarSpawner;

@@ -27,7 +27,8 @@ namespace ORTS
         public static PrecipShader PrecipShader = null;
         public static LightGlowShader LightGlowShader = null;
         public static LightConeShader LightConeShader = null;
-        public static SpriteBatchMaterial SpriteBatchMaterial = null;
+		public static SpriteBatchMaterial SpriteBatchMaterial = null;
+		public static SpriteBatchLineMaterial SpriteBatchLineMaterial = null;
 		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
 		private static SkyMaterial SkyMaterial = null;        
         private static PrecipMaterial PrecipMaterial = null;
@@ -62,8 +63,9 @@ namespace ORTS
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightGlowShader = new LightGlowShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightConeShader = new LightConeShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
-            // WaterMaterial here.
+			SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
+			SpriteBatchLineMaterial = new SpriteBatchLineMaterial(renderProcess);
+			// WaterMaterial here.
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
             LightGlowMaterial = new LightGlowMaterial(renderProcess);
@@ -105,9 +107,11 @@ namespace ORTS
 
             switch (materialName)
             {
-                case "SpriteBatch":
-                    return SpriteBatchMaterial;
-                case "Terrain":
+				case "SpriteBatch":
+					return SpriteBatchMaterial;
+				case "SpriteBatchLine":
+					return SpriteBatchLineMaterial;
+				case "Terrain":
                     if (!TerrainMaterials.ContainsKey(textureName))
                     {
                         TerrainMaterial material = new TerrainMaterial(renderProcess, textureName);
@@ -305,6 +309,7 @@ namespace ORTS
 	{
 		public SpriteBatch SpriteBatch;
 		public SpriteFont DefaultFont;
+		public SpriteFont LargeFont;
 		public RenderProcess RenderProcess;  // for diagnostics only
 
 		public SpriteBatchMaterial(RenderProcess renderProcess)
@@ -313,6 +318,7 @@ namespace ORTS
 			RenderProcess = renderProcess;
 			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
 			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
+			LargeFont = renderProcess.Content.Load<SpriteFont>("ArialLarge");
 		}
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -340,6 +346,51 @@ namespace ORTS
         {
             return true;
         }
+	}
+
+	//Material to draw lines, which needs to open z-buffer
+	public class SpriteBatchLineMaterial : Material
+	{
+		public SpriteBatch SpriteBatch;
+		public Texture2D Texture;
+		public RenderProcess RenderProcess;  // for diagnostics only
+		private bool OldBufferState;
+
+		public SpriteBatchLineMaterial(RenderProcess renderProcess)
+			: base(null)
+		{
+			RenderProcess = renderProcess;
+			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
+			Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+			Texture.SetData(new[] { Color.White });
+		}
+
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
+			Vector3 screenScaling = new Vector3(scaling);
+			Matrix xForm = Matrix.CreateScale(screenScaling);
+			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
+			SpriteBatch.GraphicsDevice.RenderState.DepthBufferEnable = true;//want to line to have z-buffer effect
+		}
+
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		{
+			foreach (var item in renderItems)
+			{
+				item.RenderPrimitive.Draw(graphicsDevice);
+			}
+		}
+
+		public override void ResetState(GraphicsDevice graphicsDevice)
+		{
+			SpriteBatch.End();//DepthBufferEnable will be restored to previous state
+		}
+
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
+		{
+			return true;
+		}
 	}
 
 	public class SceneryMaterial : Material

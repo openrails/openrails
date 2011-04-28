@@ -115,7 +115,7 @@ namespace ORTS
                 case "wagon(size":
                     stf.MustMatch("(");
                     stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    Height = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     Length = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
@@ -191,6 +191,7 @@ namespace ORTS
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
             Length = copy.Length;
+			Height = copy.Height;
             MassKG = copy.MassKG;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;

@@ -6,6 +6,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -60,7 +61,14 @@ namespace ORTS
         readonly Action[] TextPages;
         readonly DataLogger Logger = new DataLogger();
 
-        int TextPage = 1;
+		List<TextPrimitive> CarNameTextList = new List<TextPrimitive>();
+		List<LinePrimitive> CarNameLineList = new List<LinePrimitive>();
+		List<TextPrimitive> SidingNameTextList = new List<TextPrimitive>();
+		List<LinePrimitive> SidingNameLineList = new List<LinePrimitive>();
+
+		bool DrawCarNumber = false;
+		bool DrawSiding = false;
+		int TextPage = 1;
 
 		Matrix Matrix = Matrix.Identity;
         int FrameNumber = 0;
@@ -142,7 +150,11 @@ namespace ORTS
 				else
 					DataLoggerStop();
             }
-        }
+			if (UserInput.IsPressed(UserCommands.DisplayCarNumber))
+				DrawCarNumber = !DrawCarNumber;
+			if (UserInput.IsPressed(UserCommands.DisplayStationInfo))
+				DrawSiding = !DrawSiding;
+		}
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
@@ -196,6 +208,8 @@ namespace ORTS
 				Logger.Data(Viewer.Camera.Location.Z.ToString("F4"));
 				Logger.End();
 			}
+			if (DrawCarNumber == true) UpdateCarNumberText(frame, elapsedTime);
+			if (DrawSiding == true) UpdateSidingNameText(frame, elapsedTime);
 		}
 
 		void UpdateDialogs(ElapsedTime elapsedTime)
@@ -208,37 +222,38 @@ namespace ORTS
 				Viewer.CompassWindow.Update((float)heading);
 			}
 
-         if (Viewer.DriverAidWindow.Visible)
-         {
+			if (Viewer.DriverAidWindow.Visible)
+			{
 
-            // update driver aid window - convert m/s to km/h, and take absolute so
-            // speed is non-negative.
-            float trainSpeed = Math.Abs(Viewer.PlayerTrain.SpeedMpS * 3.6f);
+				// update driver aid window - convert m/s to km/h, and take absolute so
+				// speed is non-negative.
+				float trainSpeed = Math.Abs(Viewer.PlayerTrain.SpeedMpS * 3.6f);
 
 
-            // for now, use 120 = clear, 0 = anything else. 
-            // TODO: get actual target speed of signal ahead. Currently, signals
-            // clear automatically on their own so the by itself, the driver aid 
-            // isn't showing all that much.
-            int targetSpeed = 0;
-            if (Viewer.PlayerTrain.TMaspect == TrackMonitorSignalAspect.Clear)
-            {
-               targetSpeed = 120;
-            }
+				// for now, use 120 = clear, 0 = anything else. 
+				// TODO: get actual target speed of signal ahead. Currently, signals
+				// clear automatically on their own so the by itself, the driver aid 
+				// isn't showing all that much.
+				int targetSpeed = 0;
+				if (Viewer.PlayerTrain.TMaspect == TrackMonitorSignalAspect.Clear)
+				{
+					targetSpeed = 120;
+				}
 
-            // temporary: this shows what it would look like if you had to stop
-            // at every signal, demonstrating stuff needed to get things working
-            // inside the driver aid window
-            targetSpeed = 20;
+				// temporary: this shows what it would look like if you had to stop
+				// at every signal, demonstrating stuff needed to get things working
+				// inside the driver aid window
+				targetSpeed = 20;
 
-            float deceleration = 0.3f;
+				float deceleration = 0.3f;
 
-            
 
-            float brakeCurveSpeed = BrakeCurves.ComputeCurve(Viewer.PlayerTrain.SpeedMpS, Viewer.PlayerTrain.distanceToSignal, targetSpeed / 3.6f, deceleration) * 3.6f;
-            
-            Viewer.DriverAidWindow.Update(trainSpeed, Viewer.PlayerTrain.distanceToSignal, targetSpeed, brakeCurveSpeed);
-         }
+
+				float brakeCurveSpeed = BrakeCurves.ComputeCurve(Viewer.PlayerTrain.SpeedMpS, Viewer.PlayerTrain.distanceToSignal, targetSpeed / 3.6f, deceleration) * 3.6f;
+
+				Viewer.DriverAidWindow.Update(trainSpeed, Viewer.PlayerTrain.distanceToSignal, targetSpeed, brakeCurveSpeed);
+			}
+			
 		}
 
 		void UpdateDialogsText(ElapsedTime elapsedTime)
@@ -286,7 +301,134 @@ namespace ORTS
                 TextPages[TextPage]();
         }
 
-        void TextPageCommon()
+		//draw car numbers above train cars when F7 is hit
+		void UpdateCarNumberText(RenderFrame frame,  ElapsedTime elapsedTime)
+		{
+			if (Viewer.Camera.IsAvailable != true) return;
+			int NumberOfViewableCars = Viewer.TrainDrawer.ViewableCars.Count();
+			int i = 0;
+
+			//if not enough to hold all numbers, create a new array with enough space
+			if (NumberOfViewableCars > CarNameTextList.Capacity) 
+			{
+				var textMaterial = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
+				var lineMaterial = (SpriteBatchLineMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatchLine");
+				CarNameTextList = new List<TextPrimitive>(NumberOfViewableCars);//create new number list 
+				CarNameLineList = new List<LinePrimitive>(NumberOfViewableCars);//create new Line list 
+				for (i = 0; i < CarNameTextList.Capacity; i++)
+				{
+					CarNameTextList.Add(new TextPrimitive(textMaterial, new Vector2(0, 0), Color.Blue, 1.0f, Color.White, true));//use large font
+					CarNameLineList.Add(new LinePrimitive(lineMaterial, 0, 0, 0, 0, Color.Blue, 1, 2));//line width of 2
+				}
+			}
+
+			i = 0;
+			float X, Y, LineSpacing = CarNameTextList[i].Material.DefaultFont.LineSpacing;
+
+			//loop through all viewable cars and draw numbers+lines one by one
+			foreach (TrainCar tcar in Viewer.TrainDrawer.ViewableCars)
+			{
+				if (tcar.CarID == "AI") continue; //AI trains are not shown in MSTS
+				if (CarNameTextList[i] == null) continue;//should not be, but just in case
+				CarNameTextList[i].Text = tcar.CarID;
+
+				//project 3D space to 2D (for the top of the line)
+				Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
+					tcar.WorldPosition.XNAMatrix.Translation + new Vector3((tcar.WorldPosition.TileX - Viewer.Camera.TileX) * 2048, 10, (-tcar.WorldPosition.TileZ + Viewer.Camera.TileZ) * 2048), 
+					Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+				if (cameraVector.Z > 1 || cameraVector.Z < 0) continue; //out of range or behind the camera
+				X = cameraVector.X;
+				Y = cameraVector.Y;//remember them
+
+				//project for the bottom of the line, using train car height
+				cameraVector = Viewer.GraphicsDevice.Viewport.Project(
+					tcar.WorldPosition.XNAMatrix.Translation + new Vector3((tcar.WorldPosition.TileX - Viewer.Camera.TileX) * 2048, tcar.Height, (-tcar.WorldPosition.TileZ + Viewer.Camera.TileZ) * 2048),
+					Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+				
+				//place the line at the right location
+				CarNameLineList[i].UpdateLocation(X, Y, cameraVector.X, cameraVector.Y); //update line start and end
+				CarNameLineList[i].Depth = cameraVector.Z;
+				frame.AddPrimitive(CarNameLineList[i].Material, CarNameLineList[i], RenderPrimitiveGroup.World, ref Matrix);
+
+				//place the text at the right location
+				CarNameTextList[i].Position.X = X;
+				CarNameTextList[i].Position.Y = Y - LineSpacing; //place the font above the line
+					
+				frame.AddPrimitive(CarNameTextList[i].Material, CarNameTextList[i], RenderPrimitiveGroup.World, ref Matrix);
+				
+				i++;
+			}
+		}
+
+		//draw names above sidings when F6 is hit
+		void UpdateSidingNameText(RenderFrame frame, ElapsedTime elapsedTime)
+		{
+			if (Viewer.Camera.IsAvailable != true) return;
+			int NumberOfSidings = 0;
+			int i = 0;
+
+			//find how many sidings are in the range
+			foreach (WorldFile w in Viewer.SceneryDrawer.WorldFiles)
+			{
+				if (w == null || w.sidings == null) continue;
+				NumberOfSidings += w.sidings.Count;
+			}
+
+			//if not enough to hold all numbers
+			if (NumberOfSidings > SidingNameTextList.Capacity)
+			{
+				var textMaterial = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
+				var lineMaterial = (SpriteBatchLineMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatchLine");
+				SidingNameTextList = new List<TextPrimitive>(NumberOfSidings);//create new number list 
+				SidingNameLineList = new List<LinePrimitive>(NumberOfSidings);//create new Line list 
+				for (i = 0; i < NumberOfSidings; i++)
+				{
+					SidingNameTextList.Add(new TextPrimitive(textMaterial, new Vector2(0, 0), Color.Red, 0.0f, Color.White, true));//use large font
+					SidingNameLineList.Add(new LinePrimitive(lineMaterial, 0, 0, 0, 0, Color.Red, 1, 2));//line width of 2
+				}
+			}
+			i = 0;
+			float X, Y, LineSpacing = SidingNameTextList[i].Material.DefaultFont.LineSpacing;
+
+			//loop through all wfile and each sidings to draw siding names and lines
+			foreach (WorldFile w in Viewer.SceneryDrawer.WorldFiles)
+			{
+				if (w == null || w.sidings == null) continue;
+				foreach (Siding sd in w.sidings)
+				{
+					if (sd == null) continue;
+					SidingNameTextList[i].Text = sd.SidingName;
+
+					//project 3D space to 2D (for the bottom of the line)
+					Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
+						sd.Location.XNAMatrix.Translation + new Vector3((sd.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (-sd.Location.TileZ + Viewer.Camera.TileZ) * 2048),
+						Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+					if (cameraVector.Z > 0.9999 || cameraVector.Z < 0.0001) continue; //out of range or behind the camera
+					X = cameraVector.X;
+					Y = cameraVector.Y;//remember them
+
+					//project for the top of the line
+					cameraVector = Viewer.GraphicsDevice.Viewport.Project(
+						sd.Location.XNAMatrix.Translation + new Vector3((sd.Location.TileX - Viewer.Camera.TileX) * 2048, 30, (-sd.Location.TileZ + Viewer.Camera.TileZ) * 2048),
+						Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+					if (cameraVector.Z > 0.9999 || cameraVector.Z < 0.0001) continue; //out of range or. behind the camera
+
+					//place the line at the right location
+					SidingNameLineList[i].UpdateLocation(X, Y, cameraVector.X, cameraVector.Y - i * LineSpacing); //update line start and end
+					SidingNameLineList[i].Depth = cameraVector.Z;
+					frame.AddPrimitive(SidingNameLineList[i].Material, SidingNameLineList[i], RenderPrimitiveGroup.World, ref Matrix);
+
+					//place the siding name at the right location
+					SidingNameTextList[i].Position.X = cameraVector.X;
+					SidingNameTextList[i].Position.Y = cameraVector.Y - (i + 1) * LineSpacing; //place the font above the line
+					frame.AddPrimitive(SidingNameTextList[i].Material, SidingNameTextList[i], RenderPrimitiveGroup.World, ref Matrix);
+
+					i++;
+				}
+			}
+		}
+
+		void TextPageCommon()
         {
             var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
             var playerTrain = Viewer.PlayerLocomotive.Train;
@@ -606,10 +748,11 @@ namespace ORTS
     public class TextPrimitive : RenderPrimitive
     {
         public readonly SpriteBatchMaterial Material;
-		public readonly Vector2 Position;
+		public Vector2 Position; //text should be able to be moved around, for example train car information (By JTang)
 		public readonly Color Color;
 		public readonly Color ShadowColor;
         public string Text;
+		public SpriteFont Font; //specify font (Arial or ArialLarge at this stage)
 
 		public TextPrimitive(SpriteBatchMaterial material, Vector2 position, Color color, float shadowStrength, Color shadowColor)
 		{
@@ -617,6 +760,18 @@ namespace ORTS
 			Position = position;
 			Color = color;
 			ShadowColor = new Color(shadowColor, shadowStrength);
+			Font = Material.DefaultFont;
+		}
+
+		//another constructor to give a choice of loading large font
+		public TextPrimitive(SpriteBatchMaterial material, Vector2 position, Color color, float shadowStrength, Color shadowColor, bool large)
+		{
+			Material = material;
+			Position = position;
+			Color = color;
+			ShadowColor = new Color(shadowColor, shadowStrength);
+			if (large) Font = Material.LargeFont;
+			else Font = Material.DefaultFont;
 		}
 
         /// <summary>
@@ -626,16 +781,68 @@ namespace ORTS
         {
 			if (ShadowColor.A > 0.01f)
 			{
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X - 1, Position.Y - 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 0, Position.Y - 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y - 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X - 1, Position.Y + 0), ShadowColor);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y + 0), ShadowColor);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X - 1, Position.Y + 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 0, Position.Y + 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Material.DefaultFont, Text, new Vector2(Position.X + 1, Position.Y + 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X - 1, Position.Y - 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 0, Position.Y - 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 1, Position.Y - 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X - 1, Position.Y + 0), ShadowColor);
+				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 1, Position.Y + 0), ShadowColor);
+				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X - 1, Position.Y + 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 0, Position.Y + 1), ShadowColor);
+				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 1, Position.Y + 1), ShadowColor);
 			}
-			Material.SpriteBatch.DrawString(Material.DefaultFont, Text, Position, Color);
-        }
+			Material.SpriteBatch.DrawString(Font, Text, Position, Color);
+		}
     }
+
+	//2D straight lines
+	public class LinePrimitive : RenderPrimitive
+	{
+		public readonly SpriteBatchLineMaterial Material;
+		public Vector2 PositionStart; 
+		public Vector2 PositionEnd;
+		public readonly Color Color;
+		public float Depth; //z buffer value: 0 always show, 1 always not show, in between, depends
+		public int Width; //line width
+
+		//constructor: startX, startY: X,Y of the start point, endXY the end point, depth: z buffer value (between 0, 1)
+		public LinePrimitive(SpriteBatchLineMaterial material, float startX, float startY, float endX, float endY, Color color, float depth, int width)
+		{
+			Material = material;
+			Color = color;
+			Depth = depth;
+			Width = width;
+			PositionEnd = new Vector2(endX, endY);
+			PositionStart = new Vector2(startX, startY);
+		}
+		public void UpdateLocation(float startX, float startY, float endX, float endY)
+		{
+			PositionEnd.X = endX;
+			PositionEnd.Y = endY;
+			PositionStart.X = startX;
+			PositionStart.Y = startY;
+		}
+
+		//draw 2D straight lines
+		public void DrawLine(SpriteBatch batch, Color color, Vector2 point1,
+									Vector2 point2, float Layer)
+		{
+			float angle = (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
+			float length = (point2 - point1).Length();
+
+			batch.Draw(Material.Texture, point1, null, color,
+					   angle, Vector2.Zero, new Vector2(length, Width),
+					   SpriteEffects.None, Layer);
+		}
+
+		/// <summary>
+		/// This is called when the game should draw itself.
+		/// </summary>
+		public override void Draw(GraphicsDevice graphicsDevice)
+		{
+			DrawLine(Material.SpriteBatch, Color, PositionStart, PositionEnd, Depth);
+		}
+
+	}
+
+
 }

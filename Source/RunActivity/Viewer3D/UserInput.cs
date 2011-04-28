@@ -156,6 +156,8 @@ namespace ORTS
             Commands[(int)UserCommands.ControlFireShovelFull] = new UserCommandKeyInput(0x13, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
             Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput(0x21, KeyModifiers.Control);
+			Commands[(int)UserCommands.DisplayCarNumber] = new UserCommandKeyInput(0x41);
+			Commands[(int)UserCommands.DisplayStationInfo] = new UserCommandKeyInput(0x40);
 #if CHECK_KEYMAP_DUPLICATES
             var firstUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Min();
             var lastUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Max();
@@ -384,6 +386,8 @@ namespace ORTS
         ControlFireShovelFull,
         ControlCylinderCocks,
         ControlFiring,
+		DisplayCarNumber,
+		DisplayStationInfo,
     }
 
     [Flags]

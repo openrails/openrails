@@ -664,6 +664,7 @@ namespace ORTS
 					TrainCar car = RollingStock.Load(this, wagonFilePath, previousCar);
 					car.Flipped = wagon.Flip;
 					car.UiD = wagon.UiD;
+					car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
 					train.Cars.Add(car);
 					car.Train = train;
 					previousCar = car;
@@ -727,6 +728,7 @@ namespace ORTS
 							TrainCar car = RollingStock.Load(this, wagonFilePath, previousCar);
 							car.Flipped = !wagon.Flip;
 							car.UiD = wagon.UiD;
+							car.CarID = activityObject.ID + " - " + car.UiD;
 							train.Cars.Add(car);
 							car.Train = train;
 							previousCar = car;

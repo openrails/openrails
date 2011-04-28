@@ -203,6 +203,7 @@ namespace ORTS
         public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
         public List<ForestDrawer> forestList = new List<ForestDrawer>();
 		public List<CarSpawner> carSpawners = new List<CarSpawner>();
+		public List<Siding> sidings = new List<Siding>();
 
         /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
@@ -304,11 +305,15 @@ namespace ORTS
 				}
 				else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
 				{
-                    if (viewer.Simulator.RDB != null && viewer.Simulator.CarSpawnerFile != null)
-                        carSpawners.Add(new CarSpawner((CarSpawnerObj)worldObject, worldMatrix));
-                    else
-                        Trace.TraceWarning("Ignored car spawner {1} in {0} because route has no RDB or carspawn.dat.", WFileName, worldObject.UID);
-                }
+					if (viewer.Simulator.RDB != null && viewer.Simulator.CarSpawnerFile != null)
+						carSpawners.Add(new CarSpawner((CarSpawnerObj)worldObject, worldMatrix));
+					else
+						Trace.TraceWarning("Ignored car spawner {1} in {0} because route has no RDB or carspawn.dat.", WFileName, worldObject.UID);
+				}
+				else if (worldObject.GetType() == typeof(MSTS.SidingObj))
+				{
+					sidings.Add(new Siding(viewer, worldMatrix, (SidingObj)worldObject));
+				}
 				else // It's some other type of object - not one of the above.
 				{
 					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
