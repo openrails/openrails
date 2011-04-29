@@ -267,17 +267,38 @@ namespace ORTS
         }
     }
 
+    public class CameraAngleClamper
+    {
+        float minAngle;
+        float maxAngle;
+        public CameraAngleClamper(float min, float max)
+        {
+            minAngle = min;
+            maxAngle = max;
+        }
+
+        public float Clamp(float angle)
+        {
+            return MathHelper.Clamp(angle, minAngle, maxAngle);
+        }
+    }
+
     public abstract class RotatingCamera : Camera
     {
         protected float rotationXRadians = 0;
         protected float rotationYRadians = 0;
 
-        protected RotatingCamera(Viewer3D viewer)
+        private CameraAngleClamper rotationXClamper = null;
+        private CameraAngleClamper rotationYClamper = null;
+
+        protected RotatingCamera(Viewer3D viewer, CameraAngleClamper xClamper, CameraAngleClamper yClamper)
             : base(viewer)
         {
+            rotationXClamper = xClamper;
+            rotationYClamper = yClamper;
         }
 
-        protected RotatingCamera(Viewer3D viewer, Camera previousCamera)
+        protected RotatingCamera(Viewer3D viewer, Camera previousCamera, CameraAngleClamper xClamper, CameraAngleClamper yClamper)
             : base(viewer, previousCamera)
         {
             if (previousCamera != null)
@@ -287,6 +308,9 @@ namespace ORTS
                 rotationXRadians = -b;
                 rotationYRadians = -h;
             }
+
+            rotationXClamper = xClamper;
+            rotationYClamper = yClamper;
         }
 
         protected internal override void Save(BinaryWriter outf)
@@ -301,7 +325,7 @@ namespace ORTS
             base.Restore(inf);
             rotationXRadians = inf.ReadSingle();
             rotationYRadians = inf.ReadSingle();
-        }
+        }        
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
@@ -321,6 +345,12 @@ namespace ORTS
                 rotationYRadians -= speed * SpeedAdjustmentForRotation;
             if (UserInput.IsDown(UserCommands.CameraRotateRight))
                 rotationYRadians += speed * SpeedAdjustmentForRotation;
+
+            if(rotationXClamper != null)
+                rotationXRadians = rotationXClamper.Clamp(rotationXRadians);
+
+            if(rotationYClamper != null)
+                rotationYRadians = rotationYClamper.Clamp(rotationYRadians);
 
             // Movement
             Vector3 movement = new Vector3(0, 0, 0);
@@ -360,7 +390,7 @@ namespace ORTS
     public class FreeRoamCamera : RotatingCamera
     {
         public FreeRoamCamera(Viewer3D viewer, Camera previousCamera)
-            : base(viewer, previousCamera)
+            : base(viewer, previousCamera, new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f), null)
         {
         }
     }
@@ -372,8 +402,8 @@ namespace ORTS
 
         protected Vector3 attachedLocation;
 
-        protected AttachedCamera(Viewer3D viewer)
-            : base(viewer)
+        protected AttachedCamera(Viewer3D viewer, CameraAngleClamper xClamper, CameraAngleClamper yClamper)
+            : base(viewer, xClamper, yClamper)
         {
         }
 
@@ -441,6 +471,17 @@ namespace ORTS
             else
                 base.HandleUserInput(elapsedTime);
         }
+        
+        private void FixCameraLocation()
+        {
+            var elevationAtCamera = Viewer.Tiles.GetElevation(cameraLocation);
+
+            System.Console.WriteLine(elevationAtCamera.ToString() + " : " + cameraLocation.Location.Y.ToString());
+            if (elevationAtCamera > cameraLocation.Location.Y)
+            {
+                cameraLocation.Location.Y = elevationAtCamera;
+            }
+        }
 
         public override void Update(ElapsedTime elapsedTime)
         {
@@ -463,6 +504,8 @@ namespace ORTS
                 cameraLocation.Location.Z *= -1;
                 cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
                 cameraLocation.Location.Z *= -1;
+
+                //FixCameraLocation();
             }
             base.Update(elapsedTime);
         }
@@ -492,9 +535,9 @@ namespace ORTS
     }
 
     public class BrakemanCamera : AttachedCamera
-    {
+    {        
         public BrakemanCamera(Viewer3D viewer)
-            : base(viewer)
+            : base(viewer, new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f), new CameraAngleClamper(-MathHelper.Pi / 2, MathHelper.Pi))
         {
         }
 
@@ -528,10 +571,7 @@ namespace ORTS
             if (UserInput.IsDown(UserCommands.CameraPanRight))
                 rotationYRadians += speed * SpeedAdjustmentForRotation;
 
-            base.HandleUserInput(elapsedTime);
-
-            rotationXRadians = MathHelper.Clamp(rotationXRadians, -MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f);
-            rotationYRadians = MathHelper.Clamp(rotationYRadians, -MathHelper.Pi / 2, MathHelper.Pi);
+            base.HandleUserInput(elapsedTime);            
         }
     }
 
@@ -543,7 +583,13 @@ namespace ORTS
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
 
         public HeadOutCamera(Viewer3D viewer, HeadDirection headDirection)
-            : base(viewer)
+            : base(
+                viewer, 
+                new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f), 
+                (headDirection == HeadDirection.Forward ? 
+                    new CameraAngleClamper(0, MathHelper.Pi):
+                    new CameraAngleClamper(-MathHelper.Pi, 0))
+            )
         {
             Forwards = headDirection == HeadDirection.Forward;
             rotationYRadians = Forwards ? 0 : -MathHelper.Pi;
@@ -576,13 +622,7 @@ namespace ORTS
                 rotationYRadians += speed * SpeedAdjustmentForRotation;
 
             // Do this here so we can clamp the angles below.
-            base.HandleUserInput(elapsedTime);
-
-            rotationXRadians = MathHelper.Clamp(rotationXRadians, -MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f);
-            if (Forwards)
-                rotationYRadians = MathHelper.Clamp(rotationYRadians, 0, MathHelper.Pi);
-            else
-                rotationYRadians = MathHelper.Clamp(rotationYRadians, -MathHelper.Pi, 0);
+            base.HandleUserInput(elapsedTime);            
         }
     }
 
@@ -609,7 +649,7 @@ namespace ORTS
         }
 
         public CabCamera(Viewer3D viewer)
-            : base(viewer)
+            : base(viewer, null, null)
         {
         }
 
@@ -689,15 +729,15 @@ namespace ORTS
         public override bool IsUnderground
         {
             get
-            {
+            {                
                 var elevationAtTrain = Viewer.Tiles.GetElevation(attachedCar.WorldPosition.WorldLocation);
                 var elevationAtCamera = Viewer.Tiles.GetElevation(cameraLocation);
-                return attachedCar.WorldPosition.WorldLocation.Location.Y + TerrainAltitudeMargin < elevationAtTrain || cameraLocation.Location.Y + TerrainAltitudeMargin < elevationAtCamera;
+                return attachedCar.WorldPosition.WorldLocation.Location.Y + TerrainAltitudeMargin < elevationAtTrain || cameraLocation.Location.Y + TerrainAltitudeMargin < elevationAtCamera;                
             }
         }
 
         public TrackingCamera(Viewer3D viewer, AttachedTo attachedTo)
-            : base(viewer)
+            : base(viewer, new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f), null)
         {
             Front = attachedTo == AttachedTo.Front;
             positionYRadians = StartPositionYRadians + (Front ? 0 : MathHelper.Pi);
@@ -775,7 +815,7 @@ namespace ORTS
                 if (positionDistance > 100) positionDistance = 100;
             }
 
-            base.HandleUserInput(elapsedTime);
+            base.HandleUserInput(elapsedTime);            
 
             attachedLocation.X = 0;
             attachedLocation.Y = 2;
@@ -792,7 +832,7 @@ namespace ORTS
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
 
         public PassengerCamera(Viewer3D viewer)
-            : base(viewer)
+            : base(viewer, null, null)
         {
         }
 
