@@ -61,13 +61,13 @@ namespace ORTS
         readonly Action[] TextPages;
         readonly DataLogger Logger = new DataLogger();
 
-		List<TextPrimitive> CarNameTextList = new List<TextPrimitive>();
-		List<LinePrimitive> CarNameLineList = new List<LinePrimitive>();
-		List<TextPrimitive> SidingNameTextList = new List<TextPrimitive>();
-		List<LinePrimitive> SidingNameLineList = new List<LinePrimitive>();
-
 		bool DrawCarNumber = false;
 		bool DrawSiding = false;
+		SpriteBatchMaterial TextMaterial; 
+		SpriteBatchLineMaterial LineMaterial;
+		List<Vector2>[] alignedTextCarName; 
+		List<Vector2>[] alignedTextSidingName;
+
 		int TextPage = 1;
 
 		Matrix Matrix = Matrix.Identity;
@@ -106,11 +106,13 @@ namespace ORTS
 			Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
             Debug.Assert(TextColumnOffsets.Length == ColumnCount, "TextColumnOffsets must have ColumnCount entries.");
             Viewer = viewer;
-			var material = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
+			TextMaterial = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
+			LineMaterial = (SpriteBatchLineMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatchLine");
+
             for (var i = 0; i < TextColumns.Length; i++)
             {
                 TextColumns[i] = new StringBuilder();
-                TextPrimitives[i] = new TextPrimitive(material, new Vector2(TextOffset + TextColumnOffsets[i], TextOffset), Color.White, 0.25f, Color.Black);
+				TextPrimitives[i] = new TextPrimitive(TextMaterial, new Vector2(TextOffset + TextColumnOffsets[i], TextOffset), Color.White, 0.25f, Color.Black);
             }
 
             TextPages = new Action[] {
@@ -151,9 +153,15 @@ namespace ORTS
 					DataLoggerStop();
             }
 			if (UserInput.IsPressed(UserCommands.DisplayCarNumber))
+			{
 				DrawCarNumber = !DrawCarNumber;
+				if (DrawCarNumber == false) alignedTextCarName = null;
+			}
 			if (UserInput.IsPressed(UserCommands.DisplayStationInfo))
+			{
 				DrawSiding = !DrawSiding;
+				if (DrawSiding == false) alignedTextSidingName = null;
+			}
 		}
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -306,57 +314,46 @@ namespace ORTS
 		{
 			if (Viewer.Camera.IsAvailable != true) return;
 			int NumberOfViewableCars = Viewer.TrainDrawer.ViewableCars.Count();
-			int i = 0;
 
-			//if not enough to hold all numbers, create a new array with enough space
-			if (NumberOfViewableCars > CarNameTextList.Capacity) 
+			float X, Y, TopY, LineSpacing = TextMaterial.MediumFont.LineSpacing*3/4;
+			if (LineSpacing < 10) LineSpacing = 10; //make minimum vertical spacing among texts
+
+			//alignedText is for table cells that display names nicely
+			if (alignedTextCarName == null || Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1 != alignedTextCarName.Length)
 			{
-				var textMaterial = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
-				var lineMaterial = (SpriteBatchLineMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatchLine");
-				CarNameTextList = new List<TextPrimitive>(NumberOfViewableCars);//create new number list 
-				CarNameLineList = new List<LinePrimitive>(NumberOfViewableCars);//create new Line list 
-				for (i = 0; i < CarNameTextList.Capacity; i++)
-				{
-					CarNameTextList.Add(new TextPrimitive(textMaterial, new Vector2(0, 0), Color.Blue, 1.0f, Color.White, true));//use large font
-					CarNameLineList.Add(new LinePrimitive(lineMaterial, 0, 0, 0, 0, Color.Blue, 1, 2));//line width of 2
-				}
+				alignedTextCarName = new List<Vector2>[Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1];
+				for (var i = 0; i < alignedTextCarName.Length; i++) alignedTextCarName[i] = new List<Vector2>();
+			}
+			else
+			{
+				foreach (List<Vector2> ls in alignedTextCarName) ls.Clear();
 			}
 
-			i = 0;
-			float X, Y, LineSpacing = CarNameTextList[i].Material.DefaultFont.LineSpacing;
-
+			TextPrimitive NameText;
 			//loop through all viewable cars and draw numbers+lines one by one
 			foreach (TrainCar tcar in Viewer.TrainDrawer.ViewableCars)
 			{
 				if (tcar.CarID == "AI") continue; //AI trains are not shown in MSTS
-				if (CarNameTextList[i] == null) continue;//should not be, but just in case
-				CarNameTextList[i].Text = tcar.CarID;
 
 				//project 3D space to 2D (for the top of the line)
 				Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-					tcar.WorldPosition.XNAMatrix.Translation + new Vector3((tcar.WorldPosition.TileX - Viewer.Camera.TileX) * 2048, 10, (-tcar.WorldPosition.TileZ + Viewer.Camera.TileZ) * 2048), 
+					tcar.WorldPosition.XNAMatrix.Translation + new Vector3((tcar.WorldPosition.TileX - Viewer.Camera.TileX) * 2048, tcar.Height, (-tcar.WorldPosition.TileZ + Viewer.Camera.TileZ) * 2048), 
 					Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
 				if (cameraVector.Z > 1 || cameraVector.Z < 0) continue; //out of range or behind the camera
 				X = cameraVector.X;
 				Y = cameraVector.Y;//remember them
 
-				//project for the bottom of the line, using train car height
+				////project for the top of the line
 				cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-					tcar.WorldPosition.XNAMatrix.Translation + new Vector3((tcar.WorldPosition.TileX - Viewer.Camera.TileX) * 2048, tcar.Height, (-tcar.WorldPosition.TileZ + Viewer.Camera.TileZ) * 2048),
+					tcar.WorldPosition.XNAMatrix.Translation + new Vector3((tcar.WorldPosition.TileX - Viewer.Camera.TileX) * 2048, 10, (-tcar.WorldPosition.TileZ + Viewer.Camera.TileZ) * 2048),
 					Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
 				
-				//place the line at the right location
-				CarNameLineList[i].UpdateLocation(X, Y, cameraVector.X, cameraVector.Y); //update line start and end
-				CarNameLineList[i].Depth = cameraVector.Z;
-				frame.AddPrimitive(CarNameLineList[i].Material, CarNameLineList[i], RenderPrimitiveGroup.World, ref Matrix);
+				//want to place the text above the train car, but will not conflict with others
+				TopY = AlignVertical(cameraVector.Y, X, X + TextMaterial.MediumFont.MeasureString(tcar.CarID).X, LineSpacing, alignedTextCarName);
 
-				//place the text at the right location
-				CarNameTextList[i].Position.X = X;
-				CarNameTextList[i].Position.Y = Y - LineSpacing; //place the font above the line
-					
-				frame.AddPrimitive(CarNameTextList[i].Material, CarNameTextList[i], RenderPrimitiveGroup.World, ref Matrix);
-				
-				i++;
+				frame.AddPrimitive(LineMaterial, new LinePrimitive(LineMaterial, X, Y, X, cameraVector.Y + LineSpacing, Color.Blue, cameraVector.Z, 2), RenderPrimitiveGroup.World, ref Matrix);
+				NameText = new TextPrimitive(TextMaterial, new Vector2(X, TopY), Color.Blue, 1.0f, Color.White, tcar.CarID, TextPrimitive.FontSize.Medium);
+				frame.AddPrimitive(TextMaterial, NameText, RenderPrimitiveGroup.World, ref Matrix);
 			}
 		}
 
@@ -364,32 +361,20 @@ namespace ORTS
 		void UpdateSidingNameText(RenderFrame frame, ElapsedTime elapsedTime)
 		{
 			if (Viewer.Camera.IsAvailable != true) return;
-			int NumberOfSidings = 0;
-			int i = 0;
+			float X, Y, TopY, LineSpacing = TextMaterial.MediumFont.LineSpacing * 3 / 4;
+			if (LineSpacing < 10) LineSpacing = 10; //make minimum vertical spacing among texts
 
-			//find how many sidings are in the range
-			foreach (WorldFile w in Viewer.SceneryDrawer.WorldFiles)
+			TextPrimitive NameText;
+			//alignedText is for table cells that display names nicely
+			if (alignedTextSidingName == null || Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1 != alignedTextSidingName.Length)
 			{
-				if (w == null || w.sidings == null) continue;
-				NumberOfSidings += w.sidings.Count;
+				alignedTextSidingName = new List<Vector2>[Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1];
+				for (var i = 0; i < alignedTextSidingName.Length; i++) alignedTextSidingName[i] = new List<Vector2>();
 			}
-
-			//if not enough to hold all numbers
-			if (NumberOfSidings > SidingNameTextList.Capacity)
+			else
 			{
-				var textMaterial = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
-				var lineMaterial = (SpriteBatchLineMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatchLine");
-				SidingNameTextList = new List<TextPrimitive>(NumberOfSidings);//create new number list 
-				SidingNameLineList = new List<LinePrimitive>(NumberOfSidings);//create new Line list 
-				for (i = 0; i < NumberOfSidings; i++)
-				{
-					SidingNameTextList.Add(new TextPrimitive(textMaterial, new Vector2(0, 0), Color.Red, 0.0f, Color.White, true));//use large font
-					SidingNameLineList.Add(new LinePrimitive(lineMaterial, 0, 0, 0, 0, Color.Red, 1, 2));//line width of 2
-				}
+				foreach (List<Vector2> ls in alignedTextSidingName) ls.Clear();
 			}
-			i = 0;
-			float X, Y, LineSpacing = SidingNameTextList[i].Material.DefaultFont.LineSpacing;
-
 			//loop through all wfile and each sidings to draw siding names and lines
 			foreach (WorldFile w in Viewer.SceneryDrawer.WorldFiles)
 			{
@@ -397,37 +382,75 @@ namespace ORTS
 				foreach (Siding sd in w.sidings)
 				{
 					if (sd == null) continue;
-					SidingNameTextList[i].Text = sd.SidingName;
 
+					//the location w.r.t. the camera
+					Vector3 locationWRTCamera = sd.Location.WorldLocation.Location + new Vector3((sd.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (sd.Location.TileZ - Viewer.Camera.TileZ) * 2048);
+					
+					//if the siding is out of viewing range
+					if (!Viewer.Camera.InFOV(locationWRTCamera, 10)) continue;
+					
 					//project 3D space to 2D (for the bottom of the line)
 					Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
 						sd.Location.XNAMatrix.Translation + new Vector3((sd.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (-sd.Location.TileZ + Viewer.Camera.TileZ) * 2048),
 						Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
-					if (cameraVector.Z > 0.9999 || cameraVector.Z < 0.0001) continue; //out of range or behind the camera
+					if (cameraVector.Z > 1 || cameraVector.Z < 0) continue; //out of range or behind the camera
 					X = cameraVector.X;
 					Y = cameraVector.Y;//remember them
 
-					//project for the top of the line
+					////project for the top of the line
 					cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-						sd.Location.XNAMatrix.Translation + new Vector3((sd.Location.TileX - Viewer.Camera.TileX) * 2048, 30, (-sd.Location.TileZ + Viewer.Camera.TileZ) * 2048),
-						Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
-					if (cameraVector.Z > 0.9999 || cameraVector.Z < 0.0001) continue; //out of range or. behind the camera
+					    sd.Location.XNAMatrix.Translation + new Vector3((sd.Location.TileX - Viewer.Camera.TileX) * 2048, 20, (-sd.Location.TileZ + Viewer.Camera.TileZ) * 2048),
+					    Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+					//if (cameraVector.Z > 1 || cameraVector.Z < 0) continue; //out of range or. behind the camera
+					TopY = AlignVertical(cameraVector.Y, X, X + TextMaterial.MediumFont.MeasureString(sd.SidingName).X, LineSpacing, alignedTextSidingName);//want to display text 20 pixel above the siding
 
-					//place the line at the right location
-					SidingNameLineList[i].UpdateLocation(X, Y, cameraVector.X, cameraVector.Y - i * LineSpacing); //update line start and end
-					SidingNameLineList[i].Depth = cameraVector.Z;
-					frame.AddPrimitive(SidingNameLineList[i].Material, SidingNameLineList[i], RenderPrimitiveGroup.World, ref Matrix);
-
-					//place the siding name at the right location
-					SidingNameTextList[i].Position.X = cameraVector.X;
-					SidingNameTextList[i].Position.Y = cameraVector.Y - (i + 1) * LineSpacing; //place the font above the line
-					frame.AddPrimitive(SidingNameTextList[i].Material, SidingNameTextList[i], RenderPrimitiveGroup.World, ref Matrix);
-
-					i++;
+					frame.AddPrimitive(LineMaterial, new LinePrimitive(LineMaterial, X, Y, X, TopY + LineSpacing, Color.Red, cameraVector.Z, 2), RenderPrimitiveGroup.World, ref Matrix);
+					NameText = new TextPrimitive(TextMaterial, new Vector2(X, TopY), Color.Red, 0.0f, Color.White, sd.SidingName, TextPrimitive.FontSize.Medium);
+					frame.AddPrimitive(TextMaterial, NameText, RenderPrimitiveGroup.World, ref Matrix);
 				}
 			}
 		}
 
+		//helper function to make the train car and siding name align nicely on the screen
+		//the basic idea is to space the screen vertically as table cell, each cell holds a list of text assigned
+		//new text in will check its destinated cell, if it overlap with a text in the cell, it will move up a cell and continue
+		//once it is determined in a cell, it will be pushed in the list of text of that cell, and the new Y will be returned.
+		float AlignVertical(float wantY, float startX, float endX, float spacing, List<Vector2>[] alignedTextY)
+		{
+			if (alignedTextY == null || wantY < 0) return wantY; //data checking
+			int position = (int)(wantY / spacing);//the cell of the text it wants in
+			if (position > alignedTextY.Length) return wantY;//position is larger than the number of cells
+			int desidedPosition = position;
+			while (position < alignedTextY.Length && position >= 0)
+			{
+				if (alignedTextY[position].Count == 0)
+				{
+					alignedTextY[position].Add(new Vector2(startX, endX));//add info for the text (i.e. start and end location)
+					if (position == desidedPosition) return wantY;
+					else return position * spacing;//the cell location is the new Y
+				}
+				bool conflict = false;
+				//check if it is intersect any one in the cell
+				foreach (Vector2 v in alignedTextY[position])
+				{
+					//check conflict with a text, v.x is the start of the text, v.y is the end of the text
+					if ((startX > v.X && startX < v.Y) || (endX > v.X && endX < v.Y) || (v.X > startX && v.X < endX) || (v.Y > startX && v.Y < endX))
+					{
+						conflict = true;
+						break;
+					}
+				}
+				if (conflict == false) //no conflict
+				{
+					alignedTextY[position].Add(new Vector2(startX, endX));//add info for the text (i.e. start and end location)
+					if (position == desidedPosition) return wantY;
+					else return position * spacing;//the cell location is the new Y
+				}
+				position--;
+			}
+			if (position == desidedPosition) return wantY;
+			else return position * spacing;//the cell location is the new Y
+		}
 		void TextPageCommon()
         {
             var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
@@ -747,6 +770,7 @@ namespace ORTS
 
     public class TextPrimitive : RenderPrimitive
     {
+		public enum FontSize { Default, Medium, Large };
         public readonly SpriteBatchMaterial Material;
 		public Vector2 Position; //text should be able to be moved around, for example train car information (By JTang)
 		public readonly Color Color;
@@ -763,15 +787,23 @@ namespace ORTS
 			Font = Material.DefaultFont;
 		}
 
-		//another constructor to give a choice of loading large font
-		public TextPrimitive(SpriteBatchMaterial material, Vector2 position, Color color, float shadowStrength, Color shadowColor, bool large)
+		//another constructor to give a choice of loading default/medium/large font and text
+		public TextPrimitive(SpriteBatchMaterial material, Vector2 position, Color color, float shadowStrength, Color shadowColor, string text, FontSize size)
 		{
+			Text = text;
 			Material = material;
 			Position = position;
 			Color = color;
 			ShadowColor = new Color(shadowColor, shadowStrength);
-			if (large) Font = Material.LargeFont;
-			else Font = Material.DefaultFont;
+			switch (size)
+			{
+				case FontSize.Large: Font = Material.LargeFont;
+					break;
+				case FontSize.Medium: Font = Material.MediumFont;
+					break;
+				default: Font = Material.DefaultFont;
+					break;
+			}
 		}
 
         /// <summary>

@@ -309,6 +309,7 @@ namespace ORTS
 	{
 		public SpriteBatch SpriteBatch;
 		public SpriteFont DefaultFont;
+		public SpriteFont MediumFont;
 		public SpriteFont LargeFont;
 		public RenderProcess RenderProcess;  // for diagnostics only
 
@@ -318,6 +319,7 @@ namespace ORTS
 			RenderProcess = renderProcess;
 			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
 			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
+			MediumFont = renderProcess.Content.Load<SpriteFont>("ArialMedium");
 			LargeFont = renderProcess.Content.Load<SpriteFont>("ArialLarge");
 		}
 
