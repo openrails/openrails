@@ -291,6 +291,8 @@ namespace ORTS
         private CameraAngleClamper rotationXClamper = null;
         private CameraAngleClamper rotationYClamper = null;
 
+        protected float axisZSpeedBoost = 1.0f;
+
         protected RotatingCamera(Viewer3D viewer, CameraAngleClamper xClamper, CameraAngleClamper yClamper)
             : base(viewer)
         {
@@ -363,9 +365,9 @@ namespace ORTS
             if (UserInput.IsDown(UserCommands.CameraPanDown))
                 movement.Y -= speed;
             if (UserInput.IsDown(UserCommands.CameraPanIn))
-                movement.Z += speed;
+                movement.Z += speed * axisZSpeedBoost;
             if (UserInput.IsDown(UserCommands.CameraPanOut))
-                movement.Z -= speed;
+                movement.Z -= speed * axisZSpeedBoost;
 
             movement = Vector3.Transform(movement, Matrix.CreateRotationX(rotationXRadians));
             movement = Vector3.Transform(movement, Matrix.CreateRotationY(rotationYRadians));
@@ -389,9 +391,31 @@ namespace ORTS
 
     public class FreeRoamCamera : RotatingCamera
     {
+        const float maxCameraHeight = 1000;
+
         public FreeRoamCamera(Viewer3D viewer, Camera previousCamera)
             : base(viewer, previousCamera, new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f), null)
         {
+        }
+
+        public override void HandleUserInput(ElapsedTime elapsedTime)
+        {
+            base.HandleUserInput(elapsedTime);
+
+            if (UserInput.IsDown(UserCommands.CameraPanIn) || UserInput.IsDown(UserCommands.CameraPanOut))
+            {
+                var elevation = Viewer.Tiles.GetElevation(cameraLocation);
+                if (cameraLocation.Location.Y < elevation)
+                    axisZSpeedBoost = 1;
+                else
+                {
+                    cameraLocation.Location.Y = MathHelper.Min(cameraLocation.Location.Y, elevation + maxCameraHeight);
+
+                    float cameraRelativeHeight = cameraLocation.Location.Y - elevation;
+
+                    axisZSpeedBoost = ((cameraRelativeHeight / maxCameraHeight) * 50) + 1;                    
+                }                
+            }            
         }
     }
 
