@@ -207,14 +207,6 @@ namespace ORTS
 
         protected const float SpeedAdjustmentForRotation = 0.1f;
 
-        protected void Normalize()
-        {
-            while (cameraLocation.Location.X > 1024) { cameraLocation.Location.X -= 2048; ++cameraLocation.TileX; };
-            while (cameraLocation.Location.X < -1024) { cameraLocation.Location.X += 2048; --cameraLocation.TileX; };
-            while (cameraLocation.Location.Z > 1024) { cameraLocation.Location.Z -= 2048; ++cameraLocation.TileZ; };
-            while (cameraLocation.Location.Z < -1024) { cameraLocation.Location.Z += 2048; --cameraLocation.TileZ; };
-        }
-
         /// <summary>
         /// Returns a position in XNA space relative to the camera's tile
         /// </summary>
@@ -372,8 +364,7 @@ namespace ORTS
             movement = Vector3.Transform(movement, Matrix.CreateRotationX(rotationXRadians));
             movement = Vector3.Transform(movement, Matrix.CreateRotationY(rotationYRadians));
             cameraLocation.Location += movement;
-
-            Normalize();
+            cameraLocation.Normalize();
 
             base.HandleUserInput(elapsedTime);
         }

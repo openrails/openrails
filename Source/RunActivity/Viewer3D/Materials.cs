@@ -959,8 +959,6 @@ namespace ORTS
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            particleEmitterShader.CameraTileXY = new Vector2(renderProcess.Viewer.Camera.TileX, renderProcess.Viewer.Camera.TileZ);
-
             particleEmitterShader.Begin();
 
             foreach (EffectPass pass in particleEmitterShader.CurrentTechnique.Passes)
@@ -970,6 +968,7 @@ namespace ORTS
                 foreach (var item in renderItems)
                 {
                     ParticleEmitter emitter = (ParticleEmitter)item.RenderPrimitive;
+                    particleEmitterShader.CameraTileXY = emitter.CameraTileXZ;
                     particleEmitterShader.ColorTint = emitter.ColorTint;
                     particleEmitterShader.EmitDirection = emitter.EmitterData.Direction;
                     particleEmitterShader.EmitSize = emitter.EmitterData.NozzleWidth;

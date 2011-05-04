@@ -67,6 +67,9 @@ namespace ORTS
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            emitter.CameraTileXZ.X = Viewer.Camera.TileX;
+            emitter.CameraTileXZ.Y = Viewer.Camera.TileZ;
+
             emitter.Update(Viewer.Simulator.GameTime, elapsedTime);
             //ParticleMaterial.particleEmitterShader.
             
@@ -112,6 +115,8 @@ namespace ORTS
         static int VERTICES_PER_PARTICLE = 4;
         static int PRIMITIVES_PER_PARTICLE = 2;
         static int INDICES_PER_PARTICLE = 6;
+
+        public Vector2 CameraTileXZ = Vector2.Zero;
 
         public ParticleEmitterData EmitterData;
         int maxParticles;
