@@ -29,6 +29,7 @@ namespace ORTS
         public static LightConeShader LightConeShader = null;
 		public static SpriteBatchMaterial SpriteBatchMaterial = null;
 		public static SpriteBatchLineMaterial SpriteBatchLineMaterial = null;
+		public static ActivityInforMaterial DrawInforMaterial = null;
 		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
 		private static SkyMaterial SkyMaterial = null;        
         private static PrecipMaterial PrecipMaterial = null;
@@ -65,6 +66,7 @@ namespace ORTS
             LightConeShader = new LightConeShader(renderProcess.GraphicsDevice, renderProcess.Content);
 			SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
 			SpriteBatchLineMaterial = new SpriteBatchLineMaterial(renderProcess);
+			DrawInforMaterial = new ActivityInforMaterial(renderProcess);
 			// WaterMaterial here.
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
@@ -111,6 +113,8 @@ namespace ORTS
 					return SpriteBatchMaterial;
 				case "SpriteBatchLine":
 					return SpriteBatchLineMaterial;
+				case "DrawInforMaterial":
+					return DrawInforMaterial;
 				case "Terrain":
                     if (!TerrainMaterials.ContainsKey(textureName))
                     {
@@ -356,7 +360,6 @@ namespace ORTS
 		public SpriteBatch SpriteBatch;
 		public Texture2D Texture;
 		public RenderProcess RenderProcess;  // for diagnostics only
-		private bool OldBufferState;
 
 		public SpriteBatchLineMaterial(RenderProcess renderProcess)
 			: base(null)
@@ -1568,4 +1571,85 @@ namespace ORTS
             basicEffect.End();
         }
 	}
+
+	//Material to draw train car numbers and sidings, and work orders
+	public class ActivityInforMaterial : Material
+	{
+		public SpriteBatch SpriteBatch;
+		public Texture2D Texture;
+		public SpriteFont Font;
+		public RenderProcess RenderProcess;  // for diagnostics only
+		Viewer3D Viewer;
+
+		//texts are aligned as table cells, but they can be either in table A or table B
+		public List<Vector2>[] AlignedTextA;
+		public List<Vector2>[] AlignedTextB;
+		public float LineSpacing;
+
+		public ActivityInforMaterial(RenderProcess renderProcess)
+			: base(null)
+		{
+			RenderProcess = renderProcess;
+			Viewer = RenderProcess.Viewer;
+			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
+			Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+			Texture.SetData(new[] { Color.White });
+			Font = renderProcess.Content.Load<SpriteFont>("ArialMedium");
+			LineSpacing = Font.LineSpacing *3 / 4;
+			if (LineSpacing < 10) LineSpacing = 10; //if spacing between text lines is too small
+		}
+
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
+			Vector3 screenScaling = new Vector3(scaling);
+			Matrix xForm = Matrix.CreateScale(screenScaling);
+			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
+			SpriteBatch.GraphicsDevice.RenderState.DepthBufferEnable = true;//want the line to have z-buffer effect
+		}
+
+		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+		{
+			//texts are put to a virtual table on the screen, which has one column each row, and texts in the same row
+			//do not overlap each other. to put more information, we created two tables, and a primitive can use either of them. 
+			//For example, train car name use AlignedTextA, and siding names use AlignedTextB
+			//each rending process, we will clear the text in the tables before put texts in
+			if (AlignedTextA == null || Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1 != AlignedTextA.Length)
+			{
+				AlignedTextA = new List<Vector2>[Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1];
+				for (var i = 0; i < AlignedTextA.Length; i++) AlignedTextA[i] = new List<Vector2>();
+			}
+			else
+			{
+				foreach (List<Vector2> ls in AlignedTextA) ls.Clear();
+			}
+
+			if (AlignedTextB == null || Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1 != AlignedTextB.Length)
+			{
+				AlignedTextB = new List<Vector2>[Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1];
+				for (var i = 0; i < AlignedTextB.Length; i++) AlignedTextB[i] = new List<Vector2>();
+			}
+			else
+			{
+				foreach (List<Vector2> ls in AlignedTextB) ls.Clear();
+			}
+
+			foreach (var item in renderItems)
+			{
+				item.RenderPrimitive.Draw(graphicsDevice);
+			}
+		}
+
+		public override void ResetState(GraphicsDevice graphicsDevice)
+		{
+			SpriteBatch.End();//DepthBufferEnable will be restored to previous state
+		}
+
+		public override bool GetBlending(RenderPrimitive renderPrimitive)
+		{
+			return true;
+		}
+
+	}
+
 }
