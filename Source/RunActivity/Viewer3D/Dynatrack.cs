@@ -208,12 +208,12 @@ namespace ORTS
             if (!Viewer.Camera.InFOV(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius)) return;
 
             // Scan LODs in reverse order, and find first LOD in-range
-            LODItem lod;
-			int lodIndex = dtrackMesh.TrProfile.LODItems.Count;
+            LOD lod;
+			int lodIndex = dtrackMesh.TrProfile.LODs.Count;
             do
             {
                 if (--lodIndex < 0) return; // No LOD in-range
-                lod = (LODItem)dtrackMesh.TrProfile.LODItems[lodIndex];
+                lod = (LOD)dtrackMesh.TrProfile.LODs[lodIndex];
             } while (!Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, 0, lod.CutoffRadius));
             dtrackMesh.LastIndex = lodIndex; // Mark index farthest in-range LOD
 
@@ -222,24 +222,31 @@ namespace ORTS
             xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
             // (Transformation is now with respect to camera-tile origin)
 
+            // Add in-view LODs to the RenderItems collection
             switch (dtrackMesh.TrProfile.LODMethod)
             { 
                 case TrProfile.LODMethods.None:
                 case TrProfile.LODMethods.ComponentAdditive:
-                    // Add all in-view LODs to the RenderItems collection
+                    // Add all LODs from the largest CutOffRadius to the last in-view
                     for (int i = 0; i <= dtrackMesh.LastIndex; i++)
                     {
-                        frame.AddPrimitive(dtrackMesh.ShapePrimitives[i].Material, dtrackMesh.ShapePrimitives[i], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                        lod = (LOD)dtrackMesh.TrProfile.LODs[i];
+                        // Add all the LODItems in this LOD
+                        for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
+                        {
+                            frame.AddPrimitive(dtrackMesh.ShapePrimitives[j].Material, dtrackMesh.ShapePrimitives[j], 
+                                RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                        }
                     }
                     break;
                 case TrProfile.LODMethods.CompleteReplacement:
-                    // Add only the LODs with a common CutoffRadius
-                    float commonCutoffRadius = lod.CutoffRadius;
-                    for (int i = dtrackMesh.LastIndex; i >= 0; i--)
+                    // Add only the LOD that is the last in-view
+                    lod = (LOD)dtrackMesh.TrProfile.LODs[dtrackMesh.LastIndex];
+                    // Add all the LODItems in this LOD
+                    for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
                     {
-                        lod = (LODItem)dtrackMesh.TrProfile.LODItems[i];
-                        if (lod.CutoffRadius != commonCutoffRadius) break;
-                        frame.AddPrimitive(dtrackMesh.ShapePrimitives[i].Material, dtrackMesh.ShapePrimitives[i], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                        frame.AddPrimitive(dtrackMesh.ShapePrimitives[j].Material, dtrackMesh.ShapePrimitives[j], 
+                            RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
                     }
                     break;
             }
@@ -249,11 +256,12 @@ namespace ORTS
 
     #region DynatrackProfile
 
-    // A track profile consists of a number of groups used for LOD considerations.  Here, these groups
-    // are called "LODItems."  Each group consists of one of more "polylines".  A polyline is a 
-    // chain of line segments successively interconnected. A polyline of n segments is defined by n+1 "vertices."
-    // (Use of a polyline allows for use of more than single segments.  For example, a ballast LOD could be 
-    // defined as left slope, level, right slope - a single polyline of four vertices.)
+    // A track profile consists of a number of groups used for LOD considerations.  There are LODs,
+    // Levels-Of-Detail, each of which contains subgroups.  Here, these subgroups are called "LODItems."  
+    // Each group consists of one of more "polylines".  A polyline is a chain of line segments successively 
+    // interconnected. A polyline of n segments is defined by n+1 "vertices."  (Use of a polyline allows 
+    // for use of more than single segments.  For example, a ballast LOD could be defined as left slope, 
+    // level, right slope - a single polyline of four vertices.)
     #region TRPFile
     /// <summary>
     ///  Track profile file class
@@ -317,6 +325,7 @@ namespace ORTS
             else
             {
                 string fext = filespec.Substring(filespec.LastIndexOf('.')); // File extension
+                /*
                 switch (fext.ToUpper())
                 {
                     case ".STF": // MSTS-style
@@ -380,6 +389,7 @@ namespace ORTS
                         Trace.Write("(default)");
                         break;
                 } // end switch
+                */
             }
         } // end TRPFile constructor
 
@@ -414,9 +424,7 @@ namespace ORTS
         RenderProcess RenderProcess;
         string RoutePath;
 
-        public ArrayList LODItems = new ArrayList(); // Array of profile items corresponding to levels-of-detail
-
-        public string Name;                          // e.g., "Default track profile"
+        public string Name; // e.g., "Default track profile"
         public int ReplicationPitch; //TBD: Replication pitch alternative
         public LODMethods LODMethod = LODMethods.None; // LOD method of control
         public float ChordSpan; // Base method: No. of profiles generated such that span is ChordSpan degrees
@@ -424,6 +432,7 @@ namespace ORTS
         // and the ChordSpan is adjusted to compensate.
         public PitchControls PitchControl = PitchControls.None; // Method of control for profile replication pitch
         public float PitchControlScalar; // Scalar parameter for PitchControls
+        public ArrayList LODs = new ArrayList(); // Array of Levels-Of-Detail
         #endregion
 
         #region Enumerations
@@ -482,6 +491,7 @@ namespace ORTS
             // Default TrProfile constructor
             RenderProcess = renderProcess;
             RoutePath = renderProcess.Viewer.Simulator.RoutePath;
+
             Name = "Default Dynatrack profile";
             LODMethod = LODMethods.ComponentAdditive;
             ChordSpan = 1.0f; // Base Method: Generates profiles spanning no more than 1 degree
@@ -491,102 +501,109 @@ namespace ORTS
             //PitchControl = PitchControls.ChordDisplacement; // Target chord displacement from arc
             //PitchControlScalar = 0.034f;                    // Hold to no more than 34 mm (half rail width)
 
-            LODItem lod; // Local LODItem instance
-            Polyline pl; // Local polyline instance
-                        
-            // MAKE BALLAST
-            lod = new LODItem("Ballast");
-            lod.TexName = "acleantrack1.ace";
-            lod.CutoffRadius = 2000.0f;
+            LOD lod;            // Local LOD instance
+            LODItem lodItem;    // Local LODItem instance
+            Polyline pl;        // Local Polyline instance
 
-            lod.ShaderName = "BlendATexDiff";
-            lod.LightModelName = "OptSpecular0";
-            lod.AlphaTestMode = 0;
-            lod.TexAddrModeName = "Wrap";
-            lod.ESD_Alternative_Texture = 1;
-            lod.MipMapLevelOfDetailBias = -1f;
-            lod.LoadMaterial(RenderProcess, lod);
-
-            LODItems.Add(lod); // Append to LODItems array
+            // BALLAST
+            lod = new LOD(2000.0f); // Create LOD for ballast with specified CutoffRadius
+            // Single LODItem in this case
+            lodItem = new LODItem("Ballast");
+            lodItem.TexName = "acleantrack1.ace";
+            lodItem.ShaderName = "BlendATexDiff";
+            lodItem.LightModelName = "OptSpecular0";
+            lodItem.AlphaTestMode = 0;
+            lodItem.TexAddrModeName = "Wrap";
+            lodItem.ESD_Alternative_Texture = 1;
+            lodItem.MipMapLevelOfDetailBias = -1f;
+            lodItem.LoadMaterial(RenderProcess, lodItem);
 
             pl = new Polyline(this, "ballast", 2);
             pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
             pl.Vertices.Add(new Vertex(-2.5f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
             pl.Vertices.Add(new Vertex(2.5f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
-            lod.Polylines.Add(pl);
-            lod.Accum(pl.Vertices.Count);
-            
-            // MAKE RAILTOPS
-            lod = new LODItem("Railtops");
-            lod.TexName = "acleantrack2.ace";
-            lod.CutoffRadius = 1200.0f;
-            lod.ShaderName = "TexDiff";
-            lod.LightModelName = "OptSpecular25";
-            lod.AlphaTestMode = 0;
-            lod.TexAddrModeName = "Wrap";
-            lod.ESD_Alternative_Texture = 0;
-            lod.MipMapLevelOfDetailBias = 0;
-            lod.LoadMaterial(RenderProcess, lod);
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
 
-            LODItems.Add(lod); // Append to LODItems array
+            lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
+            LODs.Add(lod); // Append this LOD to LODs array
+            
+            // RAILTOPS
+            lod = new LOD(1200.0f); // Create LOD for railtops with specified CutoffRadius
+            // Single LODItem in this case
+            lodItem = new LODItem("Railtops");
+            lodItem.TexName = "acleantrack2.ace";
+            lodItem.ShaderName = "TexDiff";
+            lodItem.LightModelName = "OptSpecular25";
+            lodItem.AlphaTestMode = 0;
+            lodItem.TexAddrModeName = "Wrap";
+            lodItem.ESD_Alternative_Texture = 0;
+            lodItem.MipMapLevelOfDetailBias = 0;
+            lodItem.LoadMaterial(RenderProcess, lodItem);
 
             pl = new Polyline(this, "right", 2);
             pl.DeltaTexCoord = new Vector2(.0744726f, 0f);
             pl.Vertices.Add(new Vertex(-.8675f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f));
             pl.Vertices.Add(new Vertex(-.7175f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f));
-            lod.Polylines.Add(pl);
-            lod.Accum(pl.Vertices.Count);
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
    
             pl = new Polyline(this, "left", 2);
             pl.DeltaTexCoord = new Vector2(.0744726f, 0f);
             pl.Vertices.Add(new Vertex(.7175f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f));
             pl.Vertices.Add(new Vertex(.8675f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f));
-            lod.Polylines.Add(pl);
-            lod.Accum(pl.Vertices.Count);
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
 
-            // MAKE RAILSIDES
-            lod = new LODItem("Railsides");
-            lod.TexName = "acleantrack2.ace";
-            lod.CutoffRadius = 700.0f;
-            lod.ShaderName = "TexDiff";
-            lod.LightModelName = "OptSpecular0";
-            lod.AlphaTestMode = 0;
-            lod.TexAddrModeName = "Wrap";
-            lod.ESD_Alternative_Texture = 0;
-            lod.MipMapLevelOfDetailBias = 0;
-            lod.LoadMaterial(RenderProcess, lod);
+            lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
+            LODs.Add(lod); // Append this LOD to LODs array
 
-            LODItems.Add(lod); // Append to LODItems array
+            // RAILSIDES
+            lod = new LOD(700.0f); // Create LOD for railsides with specified CutoffRadius
+            lodItem = new LODItem("Railsides");
+            lodItem.TexName = "acleantrack2.ace";
+            lodItem.ShaderName = "TexDiff";
+            lodItem.LightModelName = "OptSpecular0";
+            lodItem.AlphaTestMode = 0;
+            lodItem.TexAddrModeName = "Wrap";
+            lodItem.ESD_Alternative_Texture = 0;
+            lodItem.MipMapLevelOfDetailBias = 0;
+            lodItem.LoadMaterial(RenderProcess, lodItem);
 
             pl = new Polyline(this, "left_outer", 2);
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
             pl.Vertices.Add(new Vertex(-.8675f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
             pl.Vertices.Add(new Vertex(-.8675f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
-            lod.Polylines.Add(pl);
-            lod.Accum(pl.Vertices.Count);
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
 
             pl = new Polyline(this, "left_inner", 2);
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
             pl.Vertices.Add(new Vertex(-.7175f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
             pl.Vertices.Add(new Vertex(-.7175f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
-            lod.Polylines.Add(pl);
-            lod.Accum(pl.Vertices.Count);
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
 
             pl = new Polyline(this, "right_inner", 2); 
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
             pl.Vertices.Add(new Vertex(.7175f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
             pl.Vertices.Add(new Vertex(.7175f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
-            lod.Polylines.Add(pl);
-            lod.Accum(pl.Vertices.Count);
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
             
             pl = new Polyline(this, "right_outer", 2); 
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
             pl.Vertices.Add(new Vertex(.8675f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
             pl.Vertices.Add(new Vertex(.8675f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
-            lod.Polylines.Add(pl);
-            lod.Accum(pl.Vertices.Count);
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
+
+            lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
+            LODs.Add(lod); // Append this LOD to LODs array
+
         } // end TrProfile() constructor
 
+/*
         /// <summary>
         /// TrProfile constructor from STFReader-style profile file
         /// </summary>
@@ -681,7 +698,7 @@ namespace ORTS
             }
             if (LODItems.Count == 0) throw new Exception("missing LODItems");
         } // end TrProfile(XmlReader) constructor
-
+*/
         /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
         /// <param name="renderProcess">RenderProcess.</param>
@@ -748,6 +765,27 @@ namespace ORTS
 
     #endregion
 
+    #region LOD
+
+    public class LOD
+    {
+        public float CutoffRadius; // Distance beyond which LODItem is not seen
+        public ArrayList LODItems = new ArrayList(); // Array of arrays of LODItems
+        public int PrimIndexStart = 0; // Start index of ShapePrimitive block for this LOD
+        public int PrimIndexStop = 0;
+
+        /// <summary>
+        /// LOD class constructor
+        /// </summary>
+        /// <param name="cutoffRadius">Distance beyond which LODItem is not seen</param>
+        public LOD(float cutoffRadius)
+        {
+            CutoffRadius = cutoffRadius;
+        }
+    } // end class LOD
+
+    #endregion
+
     #region LODItem
 
     public class LODItem
@@ -764,8 +802,6 @@ namespace ORTS
         public float MipMapLevelOfDetailBias;
 
         public string TexName; // Texture file name
-
-        public float CutoffRadius; // Distance beyond which LODItem is not seen
         
         public Material LODMaterial; // SceneryMaterial reference
 
@@ -784,7 +820,7 @@ namespace ORTS
         {
             Name = name;
         } // end LODItem() constructor
-
+/*
         /// <summary>
         /// LODITem constructor (used for STF-style profile)
         /// </summary>
@@ -816,7 +852,7 @@ namespace ORTS
 
             LoadMaterial(renderProcess, this);
         } // end LODItem() constructor
-
+*/
         #endregion
 
         #region LODItem Helpers
@@ -969,7 +1005,6 @@ namespace ORTS
 		public short NumIndices;           // Number of triangle indices
 
         // LOD member variables:
-        public int DrawIndex;       // Used by Draw to determine which LOD to draw.
         public int LastIndex;       // Marks last LOD that is in-range
         public Vector3 XNAEnd;      // Location of termination-of-section (as opposed to root)
         public float ObjectRadius;  // Radius of bounding sphere
@@ -1040,15 +1075,29 @@ namespace ORTS
             XNAEnd = endPosition.XNAMatrix.Translation;
 
             TrProfile = renderProcess.Viewer.Simulator.TRP.TrackProfile;
-
-            // Allocate ShapePrimitives array for the LOD count
-            ShapePrimitives = new ShapePrimitive[TrProfile.LODItems.Count];
-
-            // Build the mesh, filling the vertex and triangle index buffers.
-            for (int iLOD = 0; iLOD < TrProfile.LODItems.Count; iLOD++)
+            // Count all of the LODItems in all the LODs
+            int count = 0;
+            for (int i = 0; i < TrProfile.LODs.Count; i++)
             {
-                // Build vertexList and triangleListIndices
-                ShapePrimitives[iLOD] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD); 
+                LOD lod = (LOD)TrProfile.LODs[i];
+                count += lod.LODItems.Count;
+            }
+            // Allocate ShapePrimitives array for the LOD count
+            ShapePrimitives = new ShapePrimitive[count];
+
+            // Build the meshes for all the LODs, filling the vertex and triangle index buffers.
+            int primIndex = 0;
+            for (int iLOD = 0; iLOD < TrProfile.LODs.Count; iLOD++)
+            {
+                LOD lod = (LOD)TrProfile.LODs[iLOD];
+                lod.PrimIndexStart = primIndex; // Store start index for this LOD
+                for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
+                {
+                    // Build vertexList and triangleListIndices
+                    ShapePrimitives[iLOD] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
+                    primIndex++;
+                }
+                lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
             }
 
             if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
@@ -1065,16 +1114,18 @@ namespace ORTS
         /// <param name="viewer">Viewer.</param>
         /// <param name="worldPosition">WorldPosition.</param>
         /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
-        public ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLOD)
+        /// <param name="iLODItem">Index of LOD mesh following LODs[iLOD]</param>
+        public ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();
             else CircArcGen();
 
             // Count vertices and indices
-            LODItem lod = (LODItem)TrProfile.LODItems[iLOD];
-            NumVertices = (int)(lod.NumVertices * (NumSections + 1));
-            NumIndices = (short)(lod.NumSegments * NumSections * 6);
+            LOD lod = (LOD)TrProfile.LODs[iLOD];
+            LODItem lodItem = (LODItem)lod.LODItems[iLODItem];
+            NumVertices = (int)(lodItem.NumVertices * (NumSections + 1));
+            NumIndices = (short)(lodItem.NumSegments * NumSections * 6);
             // (Cells x 2 triangles/cell x 3 indices/triangle)
 
             // Allocate memory for vertices and indices
@@ -1085,7 +1136,7 @@ namespace ORTS
             VertexIndex = 0;
             IndexIndex = 0;
             // Initial load of baseline cross section polylines for this LOD only:
-            foreach (Polyline pl in lod.Polylines)
+            foreach (Polyline pl in lodItem.Polylines)
             {
                 foreach (Vertex v in pl.Vertices)
                 {
@@ -1102,7 +1153,7 @@ namespace ORTS
             uint stride = VertexIndex;
             for (uint i = 0; i < NumSections; i++)
             {
-                foreach (Polyline pl in lod.Polylines)
+                foreach (Polyline pl in lodItem.Polylines)
                 {
                     uint plv = 0; // Polyline vertex index
                     foreach (Vertex v in pl.Vertices)
@@ -1131,7 +1182,7 @@ namespace ORTS
 
             // Create and populate a new ShapePrimitive
             ShapePrimitive shapePrimitive = new ShapePrimitive();
-            shapePrimitive.Material = lod.LODMaterial;
+            shapePrimitive.Material = lodItem.LODMaterial;
             shapePrimitive.Hierarchy = new int[1];
             shapePrimitive.Hierarchy[0] = -1;
             shapePrimitive.iHierarchy = 0;

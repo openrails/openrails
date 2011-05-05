@@ -256,6 +256,14 @@ namespace ORTS
 
 	} // end WireDrawer
 
+    //WHN added
+    public class LODWire:LOD
+    {
+        public LODWire(float cutoffRadius)
+            : base(cutoffRadius)
+        {
+        }
+    }
 
 	public class LODItemWire:LODItem
 	{
@@ -295,36 +303,36 @@ namespace ORTS
 			: base(RenderProcess, 0)//call the dummy base constructor so that no data is pre-populated
 		{
             LODMethod = LODMethods.ComponentAdditive;
-			LODItemWire lod; // Local LODItem instance
+            LODWire lod; // Local LOD instance //WHN added
+			LODItemWire lodItem; // Local LODItem instance
 			Polyline pl; // Local polyline instance
 			Polyline vertical;
 			string texturePath; //WaltN = RoutePath + @"\textures";
 			string textureName; // Local full path to texture (component of material key)
 			int options; // Local encoded material properties (as with MSTS)
 
-
 			expectedSegmentLength = 40; //segment of wire is expected to be 40 meters
 
 			// MAKE RAILSIDES
-			lod = new LODItemWire("Railsides");
-			//lod.CutoffRadiusMin = 0.0f;
-			//lod.CutoffRadiusMax = 700.0f;
-            lod.CutoffRadius = 700.0f;
+            lod = new LODWire(700.0f);
+            lodItem = new LODItemWire("Railsides"); //WHN changed lod to lodItem
+            //lodItem.CutoffRadiusMin = 0.0f; //WHN changed lod to lodItem
+            //lodItem.CutoffRadiusMax = 700.0f; //WHN changed lod to lodItem
+            //lodItem.CutoffRadius = 700.0f; //WHN changed lod to lodItem and commented out
 
-			lod.ShaderName = "TexDiff";
-			lod.LightModelName = "OptSpecular0";
-			lod.AlphaTestMode = 0;
-			lod.TexAddrModeName = "Wrap";
-			lod.ESD_Alternative_Texture = 0;
-			lod.MipMapLevelOfDetailBias = 0;
-			options = Helpers.EncodeMaterialOptions(lod); //131;
+            lodItem.ShaderName = "TexDiff"; //WHN changed lod to lodItem
+            lodItem.LightModelName = "OptSpecular0"; //WHN changed lod to lodItem
+            lodItem.AlphaTestMode = 0; //WHN changed lod to lodItem
+            lodItem.TexAddrModeName = "Wrap"; //WHN changed lod to lodItem
+            lodItem.ESD_Alternative_Texture = 0; //WHN changed lod to lodItem
+            lodItem.MipMapLevelOfDetailBias = 0; //WHN changed lod to lodItem
+            options = Helpers.EncodeMaterialOptions(lodItem); //131; //WHN changed lod to lodItem
 
-			lod.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
-			texturePath = Helpers.GetTextureFolder(RenderProcess.Viewer, lod.ESD_Alternative_Texture);
-			textureName = texturePath + @"\" + lod.TexName;
+            lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace"; //WHN changed lod to lodItem
+            texturePath = Helpers.GetTextureFolder(RenderProcess.Viewer, lodItem.ESD_Alternative_Texture); //WHN changed lod to lodItem
+            textureName = texturePath + @"\" + lodItem.TexName; //WHN changed lod to lodItem
 
-			lod.LODMaterial = Materials.Load(RenderProcess, "SceneryMaterial", textureName, options, lod.MipMapLevelOfDetailBias);
-			LODItems.Add(lod); // Append to LODItems array
+            lodItem.LODMaterial = Materials.Load(RenderProcess, "SceneryMaterial", textureName, options, lodItem.MipMapLevelOfDetailBias); //WHN changed lod to lodItem
 
 			float topHeight = (float)Program.Simulator.TRK.Tr_RouteFile.OverheadWireHeight;
 
@@ -337,8 +345,8 @@ namespace ORTS
 			pl.Vertices.Add(new Vertex(0.02f, topHeight, 0.0f, 1f, 0f, 0f, u1, v1));
 			pl.Vertices.Add(new Vertex(-0.02f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
 			pl.Vertices.Add(new Vertex(-0.02f, topHeight + 0.04f, 0.0f, -1f, 0f, 0f, u1, v1));
-			lod.Polylines.Add(pl);
-			lod.Accum(pl.Vertices.Count);
+            lodItem.Polylines.Add(pl); //WHN changed lod to lodItem
+            lodItem.Accum(pl.Vertices.Count); //WHN changed lod to lodItem
 
 			pl = new Polyline(this, "TopWire1", 5);
 			pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
@@ -349,8 +357,8 @@ namespace ORTS
 			pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, 1f, 0f, 0f, u1, v1));
 			pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
 			pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.04f, 0.0f, -1f, 0f, 0f, u1, v1));
-			lod.Polylines.Add(pl);
-			lod.Accum(pl.Vertices.Count);
+            lodItem.Polylines.Add(pl); //WHN changed lod to lodItem
+            lodItem.Accum(pl.Vertices.Count); //WHN changed lod to lodItem
 
 			vertical = new Polyline(this, "TopWireVertical", 5);
 			vertical.DeltaTexCoord = new Vector2(0.00f, 0.00f);
@@ -360,10 +368,13 @@ namespace ORTS
 			vertical.Vertices.Add(new Vertex(.008f, topHeight, -.008f, 0f, 0f, -1f, u1, v1));
 			vertical.Vertices.Add(new Vertex(.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
 			vertical.Vertices.Add(new Vertex(-.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
-			lod.VerticalPolylines = new ArrayList();
-			lod.VerticalPolylines.Add(vertical);
-			lod.VerticalAccum(vertical.Vertices.Count);
+            lodItem.VerticalPolylines = new ArrayList(); //WHN changed lod to lodItem
+            lodItem.VerticalPolylines.Add(vertical); //WHN changed lod to lodItem
+			lodItem.VerticalAccum(vertical.Vertices.Count); //WHN changed lod to lodItem
 
+            lod.LODItems.Add(lodItem); // Append to LODItems array //WHN changed lod to lodItem, moved to here
+            base.LODs.Add(lod); // Append this lod to LODs array
+            
 		} // end WireProfile() constructor
 
 
@@ -416,10 +427,10 @@ namespace ORTS
 
 
 			// Allocate ShapePrimitives array for the LOD count
-			ShapePrimitives = new ShapePrimitive[TrProfile.LODItems.Count];
+			ShapePrimitives = new ShapePrimitive[((LOD)TrProfile.LODs[0]).LODItems.Count]; //WHN change
 
 			// Build the mesh, filling the vertex and triangle index buffers.
-			for (int iLOD = 0; iLOD < TrProfile.LODItems.Count; iLOD++)
+			for (int iLOD = 0; iLOD < ((LOD)TrProfile.LODs[0]).LODItems.Count; iLOD++) //WHN change
 			{
 				// Build vertexList and triangleListIndices
 				ShapePrimitives[iLOD] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD);
@@ -438,15 +449,16 @@ namespace ORTS
 		/// </summary>
 		/// <param name="viewer">Viewer.</param>
 		/// <param name="worldPosition">WorldPosition.</param>
-		/// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
-		new public ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLOD)
+		/// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
+		public ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLODItem)
+        //WHN deleted new because base BuildMesh has an additional int parameter
 		{
 			// Call for track section to initialize itself
 			if (DTrackData.IsCurved == 0) LinearGen();
 			else CircArcGen();
 
 			// Count vertices and indices
-			LODItemWire lod = (LODItemWire)TrProfile.LODItems[iLOD];
+			LODItemWire lod = (LODItemWire)((LOD)TrProfile.LODs[0]).LODItems[iLODItem]; // WHN change
 			NumVertices = (int)(lod.NumVertices * (NumSections + 1) + 2* lod.VerticalNumVertices * NumSections);
 			NumIndices = (short)(lod.NumSegments * NumSections * 6 + lod.VerticalNumSegments * NumSections* 6);
 			// (Cells x 2 triangles/cell x 3 indices/triangle)
