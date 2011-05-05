@@ -64,7 +64,6 @@ namespace ORTS.Popups
 		public TrackMonitorWindow(WindowManager owner)
 			: base(owner, 150, 98, "Track Monitor")
 		{
-            Align(AlignAt.End, AlignAt.Start);
         }
 
         protected internal override void Initialize()

@@ -29,7 +29,6 @@ namespace ORTS.Popups
 		public SwitchWindow(WindowManager owner)
 			: base(owner, Window.DecorationSize.X + 2 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
 		{
-            Align(AlignAt.Start, AlignAt.Middle);
         }
 
         protected internal override void Initialize()

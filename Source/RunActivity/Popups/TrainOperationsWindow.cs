@@ -28,7 +28,6 @@ namespace ORTS.Popups
 		public TrainOperationsWindow(WindowManager owner)
 			: base(owner, 600, Window.DecorationSize.Y + CarListHeight + CarListPadding + ControlLayoutScrollbox.ScrollbarSize, "Train Operations")
 		{
-            Align(AlignAt.Middle, AlignAt.Middle);
         }
 
         protected internal override void Initialize()

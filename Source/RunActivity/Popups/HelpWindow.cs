@@ -27,8 +27,6 @@ namespace ORTS.Popups
 		public HelpWindow(WindowManager owner)
 			: base(owner, 600, 450, "Help")
 		{
-            Align(AlignAt.Middle, AlignAt.Middle);
-
             Tabs.Add(new TabData(Tab.KeyboardShortcuts, "Key Commands", (cl) =>
             {
                 var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);

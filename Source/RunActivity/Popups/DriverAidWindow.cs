@@ -28,7 +28,6 @@ namespace ORTS.Popups
       public DriverAidWindow(WindowManager owner)
          : base(owner, 150, 135, "Driver Aid")
       {
-         Align(AlignAt.End, AlignAt.End);
       }
 
       protected override ControlLayout Layout(ControlLayout layout)

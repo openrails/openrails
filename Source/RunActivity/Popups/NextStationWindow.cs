@@ -38,7 +38,6 @@ namespace ORTS.Popups
 		public NextStationWindow(WindowManager owner)
 			: base(owner, 400, 135, "Next Station")
 		{
-            Align(AlignAt.Start, AlignAt.End);
         }
 
 		protected override ControlLayout Layout(ControlLayout layout)

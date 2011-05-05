@@ -8,6 +8,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -22,6 +23,7 @@ namespace ORTS.Popups
 		bool visible = false;
         Rectangle location;
 		readonly string Caption;
+        readonly PropertyInfo SettingsProperty;
 		ControlLayout WindowLayout;
 		VertexBuffer WindowVertexBuffer;
 		IndexBuffer WindowIndexBuffer;
@@ -30,6 +32,18 @@ namespace ORTS.Popups
 		{
 			Owner = owner;
 			location = new Rectangle(0, 0, width, height);
+
+            SettingsProperty = Owner.Viewer.Settings.GetType().GetProperty("WindowPosition_" + GetType().Name.Replace("Window", ""));
+            if (SettingsProperty != null)
+            {
+                var value = SettingsProperty.GetValue(Owner.Viewer.Settings, null) as int[];
+                if ((value != null) && (value.Length >= 2))
+                {
+                    location.X = (int)Math.Round((float)value[0] * (Owner.ScreenSize.X - location.Width) / 100);
+                    location.Y = (int)Math.Round((float)value[1] * (Owner.ScreenSize.Y - location.Height) / 100);
+                }
+            }
+
 			Caption = caption;
 			Owner.Add(this);
 		}
@@ -62,7 +76,13 @@ namespace ORTS.Popups
 
 		protected virtual void LocationChanged()
 		{
-			XNAWorld = Matrix.CreateWorld(new Vector3(location.X, location.Y, 0), -Vector3.UnitZ, Vector3.UnitY);
+            if (SettingsProperty != null)
+            {
+                SettingsProperty.SetValue(Owner.Viewer.Settings, new[] { (int)Math.Round(100f * location.X / (Owner.ScreenSize.X - location.Width)), (int)Math.Round(100f * location.Y / (Owner.ScreenSize.Y - location.Height)) }, null);
+                Owner.Viewer.Settings.Save(SettingsProperty.Name);
+            }
+
+            XNAWorld = Matrix.CreateWorld(new Vector3(location.X, location.Y, 0), -Vector3.UnitZ, Vector3.UnitY);
 		}
 
 		protected virtual void SizeChanged()
@@ -146,19 +166,6 @@ namespace ORTS.Popups
 				MoveTo(location.X, location.Y);
 				SizeChanged();
 			}
-		}
-
-		public enum AlignAt
-		{
-			Start,
-			Middle,
-			End,
-		};
-
-		public void Align(AlignAt horizontal, AlignAt vertical)
-		{
-            MoveTo(horizontal == AlignAt.Start ? 0 : horizontal == AlignAt.Middle ? (Owner.ScreenSize.X - location.Width) / 2 : Owner.ScreenSize.X - location.Width,
-				vertical == AlignAt.Start ? 0 : vertical == AlignAt.Middle ? (Owner.ScreenSize.Y - location.Height) / 2 : Owner.ScreenSize.Y - location.Height);
 		}
 
 		protected internal void Layout()
