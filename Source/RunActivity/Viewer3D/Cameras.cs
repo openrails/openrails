@@ -328,8 +328,8 @@ namespace ORTS
             // Rotation
             if (UserInput.IsMouseRightButtonDown())
             {
-                rotationXRadians += UserInput.MouseMoveY() * elapsedTime.RealSeconds;
-                rotationYRadians += UserInput.MouseMoveX() * elapsedTime.RealSeconds;
+                rotationXRadians += speed * SpeedAdjustmentForRotation * UserInput.MouseMoveY();
+                rotationYRadians += speed * SpeedAdjustmentForRotation * UserInput.MouseMoveX();
             }
             if (UserInput.IsDown(UserCommands.CameraRotateUp))
                 rotationXRadians -= speed * SpeedAdjustmentForRotation;

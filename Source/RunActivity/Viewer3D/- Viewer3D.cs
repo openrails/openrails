@@ -449,7 +449,7 @@ namespace ORTS
 			}
 			else
 			{
-				isMouseShouldVisible = WindowManager.HasVisiblePopupWindows();
+                isMouseShouldVisible = false;
 			}
 
 			RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;

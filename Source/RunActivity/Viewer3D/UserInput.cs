@@ -178,9 +178,10 @@ namespace ORTS
         public static void Update(Viewer3D viewer)
         {
             LastKeyboardState = KeyboardState;
-            KeyboardState = Keyboard.GetState();
             LastMouseState = MouseState;
-            MouseState = Mouse.GetState();
+            // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
+            KeyboardState = viewer.RenderProcess.IsActive ? Keyboard.GetState() : new KeyboardState();
+            MouseState = viewer.RenderProcess.IsActive ? Mouse.GetState() : new MouseState(0, 0, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             if (LastKeyboardState != KeyboardState
                 || LastMouseState.LeftButton != MouseState.LeftButton
                 || LastMouseState.RightButton != MouseState.RightButton
