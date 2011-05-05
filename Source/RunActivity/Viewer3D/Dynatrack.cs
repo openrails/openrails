@@ -325,7 +325,7 @@ namespace ORTS
             else
             {
                 string fext = filespec.Substring(filespec.LastIndexOf('.')); // File extension
-                /*
+
                 switch (fext.ToUpper())
                 {
                     case ".STF": // MSTS-style
@@ -360,6 +360,7 @@ namespace ORTS
                         }
                         Trace.Write("(.STF)");
                         break;
+/*
                     case ".XML": // XML-style
                         // Convention: .xsd filename must be the same as .xml filename and in same path.
                         // Form filespec for .xsd file
@@ -383,14 +384,14 @@ namespace ORTS
                         }
                         Trace.Write("(.XML)");
                         break;
+*/
                     default:
                         // File extension not supported; create a default track profile
                         TrackProfile = new TrProfile(renderProcess);
                         Trace.Write("(default)");
                         break;
                 } // end switch
-                */
-            }
+            } // else
         } // end TRPFile constructor
 
         // ValidationEventHandler callback function
@@ -601,9 +602,8 @@ namespace ORTS
             lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
             LODs.Add(lod); // Append this LOD to LODs array
 
-        } // end TrProfile() constructor
+        } // end TrProfile() default constructor
 
-/*
         /// <summary>
         /// TrProfile constructor from STFReader-style profile file
         /// </summary>
@@ -618,10 +618,11 @@ namespace ORTS
                 new STFReader.TokenProcessor("chordspan", ()=>{ ChordSpan = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("pitchcontrol", ()=> { PitchControl = GetPitchControl(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("pitchcontrolscalar", ()=>{ PitchControlScalar = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("loditem", ()=> { LODItems.Add(new LODItem(renderProcess, stf)); }),
+                new STFReader.TokenProcessor("lod", ()=> { LODs.Add(new LOD(renderProcess, stf)); }),
+                //new STFReader.TokenProcessor("loditem", ()=> { LODItems.Add(new LODItem(renderProcess, stf)); }),
             });
 
-            if (LODItems.Count == 0) throw new Exception("missing LODItems");
+            if (LODs.Count == 0) throw new Exception("missing LODs");
 
         } // end TrProfile(STFReader) constructor
 
@@ -630,6 +631,7 @@ namespace ORTS
         /// </summary>
         public TrProfile(RenderProcess renderProcess, XmlReader reader)
         {
+/*
             if (reader.IsStartElement())
             {
                 if (reader.Name == "TrProfile")
@@ -697,8 +699,9 @@ namespace ORTS
                 }
             }
             if (LODItems.Count == 0) throw new Exception("missing LODItems");
-        } // end TrProfile(XmlReader) constructor
 */
+        } // end TrProfile(XmlReader) constructor
+
         /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
         /// <param name="renderProcess">RenderProcess.</param>
@@ -782,6 +785,19 @@ namespace ORTS
         {
             CutoffRadius = cutoffRadius;
         }
+
+        public LOD(RenderProcess renderProcess, STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("cutoffradius", ()=>{ CutoffRadius = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("loditem", ()=>{
+                    LODItem lodItem = new LODItem(renderProcess, stf);
+                    LODItems.Add(lodItem); // Append to Polylines array
+                    }),
+            });
+            if (CutoffRadius == 0) throw new Exception("missing CutoffRadius");
+        }
     } // end class LOD
 
     #endregion
@@ -820,7 +836,7 @@ namespace ORTS
         {
             Name = name;
         } // end LODItem() constructor
-/*
+
         /// <summary>
         /// LODITem constructor (used for STF-style profile)
         /// </summary>
@@ -830,7 +846,6 @@ namespace ORTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("texname", ()=>{ TexName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("cutoffradius", ()=>{ CutoffRadius = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("shadername", ()=>{ ShaderName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("lightmodelname", ()=>{ LightModelName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("alphatestmode", ()=>{ AlphaTestMode = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
@@ -846,13 +861,12 @@ namespace ORTS
 
             // Checks for required member variables:
             // Name not required.
-            if (CutoffRadius == 0) throw new Exception("missing CutoffRadius");
             // MipMapLevelOfDetail bias initializes to 0.
             if (Polylines.Count == 0) throw new Exception("missing Polylines");
 
             LoadMaterial(renderProcess, this);
         } // end LODItem() constructor
-*/
+
         #endregion
 
         #region LODItem Helpers
