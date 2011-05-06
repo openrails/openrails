@@ -173,6 +173,7 @@ namespace ORTS.Popups
 			var windowLayout = new WindowControlLayout(this, location.Width, location.Height);
             if (Owner.ScreenSize != Point.Zero)
                 Layout(windowLayout);
+            windowLayout.Initialize(Owner);
             WindowLayout = windowLayout;
 		}
 

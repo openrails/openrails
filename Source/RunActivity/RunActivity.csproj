@@ -247,6 +247,7 @@
     <Compile Include="Popups\TrackMonitorWindow.cs" />
     <Compile Include="Popups\TrainOperationsWindow.cs" />
     <Compile Include="Popups\Window.cs" />
+    <Compile Include="Popups\WindowText.cs" />
     <Compile Include="Processes\Profiler.cs" />
     <Compile Include="Processes\SoundProcess.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />

@@ -31,7 +31,11 @@ namespace ORTS.Popups
 				click(this, mouseControlLocation);
 		}
 
-		internal abstract void Draw(SpriteBatch spriteBatch, Point offset);
+        public virtual void Initialize(WindowManager windowManager)
+        {
+        }
+
+        internal abstract void Draw(SpriteBatch spriteBatch, Point offset);
 
 		internal virtual bool HandleMouseDown(WindowMouseEvent e)
 		{
@@ -106,6 +110,7 @@ namespace ORTS.Popups
 		public string Text;
 		public LabelAlignment Align;
 		public Color Color;
+        protected WindowTextFont Font;
 
 		public Label(int x, int y, int width, int height, string text, LabelAlignment align)
 			: base(x, y, width, height)
@@ -130,18 +135,15 @@ namespace ORTS.Popups
 		{
 		}
 
+        public override void Initialize(WindowManager windowManager)
+        {
+            base.Initialize(windowManager);
+            Font = windowManager.TextFontDefault;
+        }
+
 		internal override void Draw(SpriteBatch spriteBatch, Point offset)
 		{
-			var pos = new Vector2(offset.X + Position.X, offset.Y + Position.Y);
-			if (Align != LabelAlignment.Left)
-			{
-				var size = Materials.PopupWindowMaterial.DefaultFont.MeasureString(Text);
-				if (Align == LabelAlignment.Right)
-					pos.X += Position.Width - size.X;
-				else
-					pos.X += (int)(Position.Width - size.X) / 2;
-			}
-			spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, Text, pos, Color);
+            Font.Draw(spriteBatch, Position, offset, Text, Align, Color);
 		}
 	}
 
@@ -178,14 +180,14 @@ namespace ORTS.Popups
 
 		public string Text;
 		public Color Color;
-        List<string> Lines = new List<string>();
+        protected WindowTextFont Font;
+        List<string> Lines;
 
 		public TextFlow(int x, int y, int width, string text)
 			: base(x, y, width, 0)
 		{
 			Text = text.Replace('\t', ' ');
 			Color = Color.White;
-            Reflow();
 		}
 
         public TextFlow(int width, string text)
@@ -193,15 +195,21 @@ namespace ORTS.Popups
 		{
 		}
 
-        void Reflow()
+        public override void Initialize(WindowManager windowManager)
         {
-            Lines.Clear();
+            base.Initialize(windowManager);
+            Font = windowManager.TextFontDefault;
+        }
+
+        void Reflow(GraphicsDevice graphicsDevice)
+        {
+            Lines = new List<string>();
             var position = 0;
             while (position < Text.Length)
             {
                 var wrap = position;
                 var search = position;
-                while (search != -1 && Text[search] != '\n' && Materials.PopupWindowMaterial.DefaultFont.MeasureString(Text.Substring(position, search - position)).X < Position.Width)
+                while (search != -1 && Text[search] != '\n' && Font.MeasureString(graphicsDevice, Text.Substring(position, search - position)) < Position.Width)
                 {
                     wrap = search;
                     search = Text.IndexOfAny(Whitespace, search + 1);
@@ -215,16 +223,18 @@ namespace ORTS.Popups
                 Lines.Add(Text.Substring(position, wrap - position));
                 position = wrap + 1;
             }
-            Position.Height = Lines.Count * Materials.PopupWindowMaterial.DefaultFont.LineSpacing;
+            Position.Height = Lines.Count * Font.Height;
         }
 
         internal override void Draw(SpriteBatch spriteBatch, Point offset)
         {
-            var pos = new Vector2(offset.X + Position.X, offset.Y + Position.Y);
+            if (Lines == null)
+                Reflow(spriteBatch.GraphicsDevice);
+
             foreach (var line in Lines)
             {
-                spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, line, pos, Color);
-                pos.Y += Materials.PopupWindowMaterial.DefaultFont.LineSpacing;
+                Font.Draw(spriteBatch, Position, offset, line, LabelAlignment.Left, Color);
+                offset.Y += Materials.PopupWindowMaterial.DefaultFont.LineSpacing;
             }
         }
     }
@@ -365,6 +375,13 @@ namespace ORTS.Popups
 			sb.Initialize();
 			return sb.Client;
 		}
+
+        public override void Initialize(WindowManager windowManager)
+        {
+            base.Initialize(windowManager);
+            foreach (var control in Controls)
+                control.Initialize(windowManager);
+        }
 
 		internal override void Draw(SpriteBatch spriteBatch, Point offset)
 		{

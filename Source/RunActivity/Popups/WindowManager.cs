@@ -27,6 +27,9 @@ namespace ORTS.Popups
 		public static Texture2D LabelShadowTexture;
 
 		public readonly Viewer3D Viewer;
+        public readonly WindowTextManager TextManager;
+        public readonly WindowTextFont TextFontDefault;
+
         readonly List<Window> Windows = new List<Window>();
         List<Window> WindowsZOrder = new List<Window>();
         SpriteBatch SpriteBatch;
@@ -38,6 +41,8 @@ namespace ORTS.Popups
 		public WindowManager(Viewer3D viewer)
 		{
 			Viewer = viewer;
+            TextManager = new WindowTextManager();
+            TextFontDefault = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular);
         }
 
         public void Initialize()
