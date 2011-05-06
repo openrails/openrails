@@ -264,8 +264,7 @@ namespace ORTS
                         SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, TRJ));
 						if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
 						{
-							WorldPosition copy = new WorldPosition(worldMatrix);
-							Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, copy);
+							Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
 						}
                     }
                     else // it's some type of track other than a switch track
@@ -273,8 +272,7 @@ namespace ORTS
                         SceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
 						if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
 						{
-							WorldPosition copy = new WorldPosition(worldMatrix);
-							Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, copy);
+							Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
 						}
                     }
                 }
@@ -282,8 +280,7 @@ namespace ORTS
                 {
 					if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
 					{
-						WorldPosition copy = new WorldPosition(worldMatrix);
-						Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, copy);
+						Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 					}
 					// Add DyntrackDrawers for individual subsections
                     Dynatrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);

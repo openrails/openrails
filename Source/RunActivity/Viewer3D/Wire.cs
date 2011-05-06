@@ -42,9 +42,9 @@ namespace ORTS
 		/// <param name="viewer">Viewer reference.</param>
 		/// <param name="dTrackList">DynatrackDrawer list.</param>
 		/// <param name="dTrackObj">Dynamic track section to decompose.</param>
-		/// <param name="worldMatrix">Position matrix.</param>
+		/// <param name="worldMatrixInput">Position matrix.</param>
 		public static void DecomposeStaticWire(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
-			WorldPosition worldMatrix)
+			WorldPosition worldMatrixInput)
 		{
 			// The following vectors represent local positioning relative to root of original (5-part) section:
 			Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -52,7 +52,8 @@ namespace ORTS
 			Vector3 displacement;  // Local displacement (from y=0 plane)
 			Vector3 heading = Vector3.Forward; // Local heading (unit vector)
 
-			float realRun; // Actual run for subsection based on path
+			WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Make a copy so it will not be messed
+
 			WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
 
 			WorldPosition wcopy = new WorldPosition(nextRoot);
@@ -87,8 +88,6 @@ namespace ORTS
 				for (int i = 0; i < sections.Length; i++)
 				{
 					float length, radius;
-					//if (Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).FileName.Contains("A1t45dYardCrvRgt.s"))
-					//	System.Console.WriteLine("Section " + i);
 					uint sid = id.TrackSections[i];
 					TrackSection section = Program.Simulator.TSectionDat.TrackSections[sid];
 					WorldPosition root = new WorldPosition(nextRoot);
@@ -135,9 +134,9 @@ namespace ORTS
 		/// <param name="viewer">Viewer reference.</param>
 		/// <param name="dTrackList">DynatrackDrawer list.</param>
 		/// <param name="dTrackObj">Dynamic track section to decompose.</param>
-		/// <param name="worldMatrix">Position matrix.</param>
+		/// <param name="worldMatrixInput">Position matrix.</param>
 		public static void DecomposeDynamicWire(Viewer3D viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
-			WorldPosition worldMatrix)
+			WorldPosition worldMatrixInput)
 		{
 			// DYNAMIC TRACK
 			// =============
@@ -158,6 +157,8 @@ namespace ORTS
 			Vector3 displacement;  // Local displacement (from y=0 plane)
 			Vector3 heading = Vector3.Forward; // Local heading (unit vector)
 
+			WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Make a copy so it will not be messed
+
 			float realRun; // Actual run for subsection based on path
 
 
@@ -175,8 +176,6 @@ namespace ORTS
 
 				// Create new DT object copy; has only one meaningful subsection
 				DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
-
-				//uint uid = subsection.trackSections[0].UiD; // for testing
 
 				// Create a new WorldPosition for this subsection, initialized to nextRoot,
 				// which is the WorldPosition for the end of the last subsection.
@@ -218,22 +217,6 @@ namespace ORTS
 				// Update nextRoot with new translation component
 				nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
 
-				// THE FOLLOWING COMMENTED OUT CODE IS NOT COMPATIBLE WITH THE NEW MESH GENERATION METHOD.
-				// IF deltaY IS STORED AS ANYTHING OTHER THAN 0, THE VALUE WILL GET USED FOR MESH GENERATION,
-				// AND BOTH THE TRANSFORMATION AND THE ELEVATION CHANGE WILL GET USED, IN ESSENCE DOUBLE COUNTING.
-				/*
-				// Update subsection ancillary data
-				subsection.trackSections[0].realRun = realRun;
-				if (iTkSection == 0)
-				{
-					subsection.trackSections[0].deltaY = displacement.Y;
-				}
-				else
-				{
-					// Increment-to-increment change in elevation
-					subsection.trackSections[0].deltaY = nextRoot.XNAMatrix.Translation.Y - root.XNAMatrix.Translation.Y;
-				}
-				*/
 
 				// Create a new DynatrackDrawer for the subsection
 				dTrackList.Add(new WireDrawer(viewer, root, nextRoot,radius, length));
@@ -307,32 +290,19 @@ namespace ORTS
 			LODItemWire lodItem; // Local LODItem instance
 			Polyline pl; // Local polyline instance
 			Polyline vertical;
-			string texturePath; //WaltN = RoutePath + @"\textures";
-			string textureName; // Local full path to texture (component of material key)
-			int options; // Local encoded material properties (as with MSTS)
 
 			expectedSegmentLength = 40; //segment of wire is expected to be 40 meters
 
-			// MAKE RAILSIDES
-            lod = new LODWire(700.0f);
-            lodItem = new LODItemWire("Railsides"); //WHN changed lod to lodItem
-            //lodItem.CutoffRadiusMin = 0.0f; //WHN changed lod to lodItem
-            //lodItem.CutoffRadiusMax = 700.0f; //WHN changed lod to lodItem
-            //lodItem.CutoffRadius = 700.0f; //WHN changed lod to lodItem and commented out
-
-            lodItem.ShaderName = "TexDiff"; //WHN changed lod to lodItem
-            lodItem.LightModelName = "OptSpecular0"; //WHN changed lod to lodItem
-            lodItem.AlphaTestMode = 0; //WHN changed lod to lodItem
-            lodItem.TexAddrModeName = "Wrap"; //WHN changed lod to lodItem
-            lodItem.ESD_Alternative_Texture = 0; //WHN changed lod to lodItem
-            lodItem.MipMapLevelOfDetailBias = 0; //WHN changed lod to lodItem
-            options = Helpers.EncodeMaterialOptions(lodItem); //131; //WHN changed lod to lodItem
-
-            lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace"; //WHN changed lod to lodItem
-            texturePath = Helpers.GetTextureFolder(RenderProcess.Viewer, lodItem.ESD_Alternative_Texture); //WHN changed lod to lodItem
-            textureName = texturePath + @"\" + lodItem.TexName; //WHN changed lod to lodItem
-
-            lodItem.LODMaterial = Materials.Load(RenderProcess, "SceneryMaterial", textureName, options, lodItem.MipMapLevelOfDetailBias); //WHN changed lod to lodItem
+			lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
+			lodItem = new LODItemWire("Wire");
+			lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
+			lodItem.ShaderName = "TexDiff";
+			lodItem.LightModelName = "OptSpecular0";
+			lodItem.AlphaTestMode = 0;
+			lodItem.TexAddrModeName = "Wrap";
+			lodItem.ESD_Alternative_Texture = 0;
+			lodItem.MipMapLevelOfDetailBias = 0;
+			lodItem.LoadMaterial(RenderProcess, lodItem);
 
 			float topHeight = (float)Program.Simulator.TRK.Tr_RouteFile.OverheadWireHeight;
 
@@ -425,19 +395,34 @@ namespace ORTS
 
 			XNAEnd = endPosition.XNAMatrix.Translation;
 
-
-			// Allocate ShapePrimitives array for the LOD count
-			ShapePrimitives = new ShapePrimitive[((LOD)TrProfile.LODs[0]).LODItems.Count]; //WHN change
-
-			// Build the mesh, filling the vertex and triangle index buffers.
-			for (int iLOD = 0; iLOD < ((LOD)TrProfile.LODs[0]).LODItems.Count; iLOD++) //WHN change
+			// Count all of the LODItems in all the LODs
+			int count = 0;
+			for (int i = 0; i < TrProfile.LODs.Count; i++)
 			{
-				// Build vertexList and triangleListIndices
-				ShapePrimitives[iLOD] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD);
+				LOD lod = (LOD)TrProfile.LODs[i];
+				count += lod.LODItems.Count;
+			}
+			// Allocate ShapePrimitives array for the LOD count
+			ShapePrimitives = new ShapePrimitive[count];
+
+			// Build the meshes for all the LODs, filling the vertex and triangle index buffers.
+			int primIndex = 0;
+			for (int iLOD = 0; iLOD < TrProfile.LODs.Count; iLOD++)
+			{
+				LOD lod = (LOD)TrProfile.LODs[iLOD];
+				lod.PrimIndexStart = primIndex; // Store start index for this LOD
+				for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
+				{
+					// Build vertexList and triangleListIndices
+					ShapePrimitives[iLOD] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
+					primIndex++;
+				}
+				lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
 			}
 
 			if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
 			else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
+
 
 		} // end WireMesh constructor
 
@@ -449,8 +434,9 @@ namespace ORTS
 		/// </summary>
 		/// <param name="viewer">Viewer.</param>
 		/// <param name="worldPosition">WorldPosition.</param>
+		/// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
 		/// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
-		public ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLODItem)
+		public new ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
         //WHN deleted new because base BuildMesh has an additional int parameter
 		{
 			// Call for track section to initialize itself
@@ -458,9 +444,10 @@ namespace ORTS
 			else CircArcGen();
 
 			// Count vertices and indices
-			LODItemWire lod = (LODItemWire)((LOD)TrProfile.LODs[0]).LODItems[iLODItem]; // WHN change
-			NumVertices = (int)(lod.NumVertices * (NumSections + 1) + 2* lod.VerticalNumVertices * NumSections);
-			NumIndices = (short)(lod.NumSegments * NumSections * 6 + lod.VerticalNumSegments * NumSections* 6);
+			LODWire lod = (LODWire)TrProfile.LODs[iLOD];
+			LODItemWire lodItem = (LODItemWire)lod.LODItems[iLODItem];
+			NumVertices = (int)(lodItem.NumVertices * (NumSections + 1) + 2 * lodItem.VerticalNumVertices * NumSections);
+			NumIndices = (short)(lodItem.NumSegments * NumSections * 6 + lodItem.VerticalNumSegments * NumSections * 6);
 			// (Cells x 2 triangles/cell x 3 indices/triangle)
 
 			// Allocate memory for vertices and indices
@@ -471,7 +458,7 @@ namespace ORTS
 			VertexIndex = 0;
 			IndexIndex = 0;
 			// Initial load of baseline cross section polylines for this LOD only:
-			foreach (Polyline pl in lod.Polylines)
+			foreach (Polyline pl in lodItem.Polylines)
 			{
 				foreach (Vertex v in pl.Vertices)
 				{
@@ -488,7 +475,7 @@ namespace ORTS
 			uint stride = VertexIndex;
 			for (uint i = 0; i < NumSections; i++)
 			{
-				foreach (Polyline pl in lod.Polylines)
+				foreach (Polyline pl in lodItem.Polylines)
 				{
 					uint plv = 0; // Polyline vertex index
 					foreach (Vertex v in pl.Vertices)
@@ -515,7 +502,7 @@ namespace ORTS
 				OldRadius = radius; // Get ready for next segment
 			} // end for i
 
-			if (lod.VerticalPolylines != null && lod.VerticalPolylines.Count > 0)
+			if (lodItem.VerticalPolylines != null && lodItem.VerticalPolylines.Count > 0)
 			{
 
 				// Now generate and load subsequent cross sections
@@ -530,7 +517,7 @@ namespace ORTS
 					// Initial load of baseline cross section polylines for this LOD only:
 					if (i == 0)
 					{
-						foreach (Polyline pl in lod.VerticalPolylines)
+						foreach (Polyline pl in lodItem.VerticalPolylines)
 						{
 							foreach (Vertex v in pl.Vertices)
 							{
@@ -544,7 +531,7 @@ namespace ORTS
 					}
 					else
 					{
-						foreach (Polyline pl in lod.VerticalPolylines)
+						foreach (Polyline pl in lodItem.VerticalPolylines)
 						{
 							foreach (Vertex v in pl.Vertices)
 							{
@@ -570,13 +557,13 @@ namespace ORTS
 						}
 					}
 
-					foreach (Polyline pl in lod.VerticalPolylines)
+					foreach (Polyline pl in lodItem.VerticalPolylines)
 					{
 						uint plv = 0; // Polyline vertex index
 						foreach (Vertex v in pl.Vertices)
 						{
 							LinearVerticalGen(stride, pl); // Generation call
-							
+
 							if (plv > 0)
 							{
 								// Sense for triangles is clockwise
@@ -604,7 +591,7 @@ namespace ORTS
 
 			// Create and populate a new ShapePrimitive
 			ShapePrimitive shapePrimitive = new ShapePrimitive();
-			shapePrimitive.Material = lod.LODMaterial;
+			shapePrimitive.Material = lodItem.LODMaterial;
 			shapePrimitive.Hierarchy = new int[1];
 			shapePrimitive.Hierarchy[0] = -1;
 			shapePrimitive.iHierarchy = 0;
