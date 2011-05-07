@@ -901,6 +901,7 @@ namespace ORTS
         protected TrainCar attachedCar;
         public override TrainCar AttachedCar { get { return attachedCar; } }
 
+        protected TrainCar LastCheckCar;
         protected readonly Random Random;
         protected WorldLocation TrackCameraLocation;
         protected float CameraAltitudeOffset = 0;
@@ -977,28 +978,44 @@ namespace ORTS
 
         public override void Update(ElapsedTime elapsedTime)
         {
-            // TODO: What should we do here?
-            if (Viewer.PlayerLocomotive == null)
+            var train = attachedCar.Train;
+
+            if (train.LeadLocomotive == null)
             {
                 base.Update(elapsedTime);
                 return;
             }
 
-            var trainForwards = (Viewer.PlayerLocomotive.SpeedMpS >= 0) ^ Viewer.PlayerLocomotive.Flipped;
-            var firstCarLocation = Viewer.PlayerTrain.FirstCar.WorldPosition.WorldLocation;
-            var lastCarLocation = Viewer.PlayerTrain.LastCar.WorldPosition.WorldLocation;
+            var trainForwards = (train.LeadLocomotive.SpeedMpS >= 0) ^ train.LeadLocomotive.Flipped;
             targetLocation = attachedCar.WorldPosition.WorldLocation;
 
-            // Switch to new position if BOTH ends of the train are too far away.
-            if ((WorldLocation.GetDistance2D(firstCarLocation, cameraLocation).Length() > MaximumDistance) && (WorldLocation.GetDistance2D(lastCarLocation, cameraLocation).Length() > MaximumDistance))
+            // Train is close enough if the last car we used is part of the same train and still close enough.
+            var trainClose = (LastCheckCar != null) && (LastCheckCar.Train == train) && (WorldLocation.GetDistance2D(LastCheckCar.WorldPosition.WorldLocation, cameraLocation).Length() < MaximumDistance);
+
+            // Otherwise, let's check out every car and remember which is the first one close enough for next time.
+            if (!trainClose)
             {
-                var tdb = new TDBTraveller(trainForwards ? Viewer.PlayerTrain.FrontTDBTraveller : Viewer.PlayerTrain.RearTDBTraveller);
+                foreach (var car in train.Cars)
+                {
+                    if (WorldLocation.GetDistance2D(car.WorldPosition.WorldLocation, cameraLocation).Length() < MaximumDistance)
+                    {
+                        LastCheckCar = car;
+                        trainClose = true;
+                        break;
+                    }
+                }
+            }
+
+            // Switch to new position.
+            if (!trainClose || (TrackCameraLocation == null))
+            {
+                var tdb = new TDBTraveller(trainForwards ? train.FrontTDBTraveller : train.RearTDBTraveller);
                 if (!trainForwards)
                     tdb.ReverseDirection();
                 tdb.Move(MaximumDistance * 0.75f);
                 var newLocation = tdb.WorldLocation;
                 TrackCameraLocation = new WorldLocation(newLocation);
-                var directionForward = WorldLocation.GetDistance(targetLocation, newLocation);
+                var directionForward = WorldLocation.GetDistance((trainForwards ? train.FirstCar : train.LastCar).WorldPosition.WorldLocation, newLocation);
                 if (Random.Next(2) == 0)
                 {
                     newLocation.Location.X += -directionForward.Z / SidewaysScale; // Use swaped -X and Z to move to the left of the track.
