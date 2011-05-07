@@ -223,32 +223,22 @@ namespace ORTS
             // (Transformation is now with respect to camera-tile origin)
 
             // Add in-view LODs to the RenderItems collection
-            switch (dtrackMesh.TrProfile.LODMethod)
-            { 
-                case TrProfile.LODMethods.None:
-                case TrProfile.LODMethods.ComponentAdditive:
-                    // Add all LODs from the largest CutOffRadius to the last in-view
-                    for (int i = 0; i <= dtrackMesh.LastIndex; i++)
-                    {
-                        lod = (LOD)dtrackMesh.TrProfile.LODs[i];
-                        // Add all the LODItems in this LOD
-                        for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
-                        {
-                            frame.AddPrimitive(dtrackMesh.ShapePrimitives[j].Material, dtrackMesh.ShapePrimitives[j], 
-                                RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
-                        }
-                    }
-                    break;
-                case TrProfile.LODMethods.CompleteReplacement:
-                    // Add only the LOD that is the last in-view
-                    lod = (LOD)dtrackMesh.TrProfile.LODs[dtrackMesh.LastIndex];
-                    // Add all the LODItems in this LOD
-                    for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
-                    {
-                        frame.AddPrimitive(dtrackMesh.ShapePrimitives[j].Material, dtrackMesh.ShapePrimitives[j], 
-                            RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
-                    }
-                    break;
+            if (dtrackMesh.TrProfile.LODMethod == TrProfile.LODMethods.CompleteReplacement)
+                // CompleteReplacement case
+                lodIndex = dtrackMesh.LastIndex; // Add only the LOD that is the last in-view
+            else
+                // ComponentAdditive case
+                lodIndex = 0; // Add all LODs from the largest CutOffRadius to the last in-view
+            while (lodIndex <= dtrackMesh.LastIndex)
+            {
+                // Add all the LODItems in this LOD
+                lod = (LOD)dtrackMesh.TrProfile.LODs[lodIndex];
+                for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
+                {
+                    frame.AddPrimitive(dtrackMesh.ShapePrimitives[j].Material, dtrackMesh.ShapePrimitives[j],
+                        RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                }
+                lodIndex++;
             }
         } // end PrepareFrame
     } // end DynatrackDrawer
@@ -360,7 +350,7 @@ namespace ORTS
                         }
                         Trace.Write("(.STF)");
                         break;
-/*
+
                     case ".XML": // XML-style
                         // Convention: .xsd filename must be the same as .xml filename and in same path.
                         // Form filespec for .xsd file
@@ -384,7 +374,7 @@ namespace ORTS
                         }
                         Trace.Write("(.XML)");
                         break;
-*/
+
                     default:
                         // File extension not supported; create a default track profile
                         TrackProfile = new TrProfile(renderProcess);
@@ -619,7 +609,6 @@ namespace ORTS
                 new STFReader.TokenProcessor("pitchcontrol", ()=> { PitchControl = GetPitchControl(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("pitchcontrolscalar", ()=>{ PitchControlScalar = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("lod", ()=> { LODs.Add(new LOD(renderProcess, stf)); }),
-                //new STFReader.TokenProcessor("loditem", ()=> { LODItems.Add(new LODItem(renderProcess, stf)); }),
             });
 
             if (LODs.Count == 0) throw new Exception("missing LODs");
@@ -631,7 +620,6 @@ namespace ORTS
         /// </summary>
         public TrProfile(RenderProcess renderProcess, XmlReader reader)
         {
-/*
             if (reader.IsStartElement())
             {
                 if (reader.Name == "TrProfile")
@@ -648,8 +636,8 @@ namespace ORTS
                     //TODO: Need to handle ill-formed XML profile
                 }
             }
-
-            LODItem lod = null;
+            LOD lod = null;
+            LODItem lodItem = null;
             Polyline pl = null;
             Vertex v;
             string[] s;
@@ -660,26 +648,30 @@ namespace ORTS
                 {
                     switch (reader.Name)
                     {
+                        case "LOD":
+                            lod = new LOD(float.Parse(reader.GetAttribute("CutoffRadius")));
+                            LODs.Add(lod);
+                            break;
                         case "LODItem":
-                            lod = new LODItem(reader.GetAttribute("Name"));
-                            lod.TexName = reader.GetAttribute("TexName");
-                            lod.CutoffRadius = float.Parse(reader.GetAttribute("CutoffRadius"));
-                            lod.ShaderName = reader.GetAttribute("ShaderName");
-                            lod.LightModelName = reader.GetAttribute("LightModelName");
-                            lod.AlphaTestMode = int.Parse(reader.GetAttribute("AlphaTestMode"));
-                            lod.TexAddrModeName = reader.GetAttribute("TexAddrModeName");
-                            lod.ESD_Alternative_Texture = int.Parse(reader.GetAttribute("ESD_Alternative_Texture"));
-                            lod.MipMapLevelOfDetailBias = float.Parse(reader.GetAttribute("MipMapLevelOfDetailBias"));
+                            lodItem = new LODItem(reader.GetAttribute("Name"));
+                            lodItem.TexName = reader.GetAttribute("TexName");
+                            
+                            lodItem.ShaderName = reader.GetAttribute("ShaderName");
+                            lodItem.LightModelName = reader.GetAttribute("LightModelName");
+                            lodItem.AlphaTestMode = int.Parse(reader.GetAttribute("AlphaTestMode"));
+                            lodItem.TexAddrModeName = reader.GetAttribute("TexAddrModeName");
+                            lodItem.ESD_Alternative_Texture = int.Parse(reader.GetAttribute("ESD_Alternative_Texture"));
+                            lodItem.MipMapLevelOfDetailBias = float.Parse(reader.GetAttribute("MipMapLevelOfDetailBias"));
 
-                            lod.LoadMaterial(renderProcess, lod);
-                            LODItems.Add(lod);
+                            lodItem.LoadMaterial(renderProcess, lodItem);
+                            lod.LODItems.Add(lodItem);
                             break;
                         case "Polyline":
                             pl = new Polyline();
                             pl.Name = reader.GetAttribute("Name");
                             s = reader.GetAttribute("DeltaTexCoord").Split(sep);
                             pl.DeltaTexCoord = new Vector2(float.Parse(s[0]), float.Parse(s[1]));
-                            lod.Polylines.Add(pl);
+                            lodItem.Polylines.Add(pl);
                             break;
                         case "Vertex":
                             v = new Vertex();
@@ -690,16 +682,15 @@ namespace ORTS
                             s = reader.GetAttribute("TexCoord").Split(sep);
                             v.TexCoord = new Vector2(float.Parse(s[0]), float.Parse(s[1]));
                             pl.Vertices.Add(v);
-                            lod.NumVertices++; // Bump vertex count
-                            if (pl.Vertices.Count > 1) lod.NumSegments++;
+                            lodItem.NumVertices++; // Bump vertex count
+                            if (pl.Vertices.Count > 1) lodItem.NumSegments++;
                             break;
                         default:
                             break;
                     }
                 }
             }
-            if (LODItems.Count == 0) throw new Exception("missing LODItems");
-*/
+            if (LODs.Count == 0) throw new Exception("missing LODs");
         } // end TrProfile(XmlReader) constructor
 
         /// <summary>
@@ -1108,7 +1099,7 @@ namespace ORTS
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[iLOD] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
