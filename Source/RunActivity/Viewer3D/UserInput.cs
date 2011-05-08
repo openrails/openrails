@@ -136,8 +136,9 @@ namespace ORTS
             Commands[(int)UserCommands.ControlHorn] = new UserCommandKeyInput(0x39);
             Commands[(int)UserCommands.ControlBell] = new UserCommandKeyInput(0x30);
             Commands[(int)UserCommands.ControlLight] = new UserCommandKeyInput(0x26);
-            Commands[(int)UserCommands.ControlPantograph] = new UserCommandKeyInput(0x19);
-            Commands[(int)UserCommands.ControlHeadlightIncrease] = new UserCommandKeyInput(0x23);
+			Commands[(int)UserCommands.ControlPantographFirst] = new UserCommandKeyInput(0x19);
+			Commands[(int)UserCommands.ControlPantographSecond] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlHeadlightIncrease] = new UserCommandKeyInput(0x23);
             Commands[(int)UserCommands.ControlHeadlightDecrease] = new UserCommandKeyInput(0x23, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDispatcherExtend] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDispatcherRelease] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift | KeyModifiers.Control);
@@ -367,8 +368,9 @@ namespace ORTS
         ControlHorn,
         ControlBell,
         ControlLight,
-        ControlPantograph,
-        ControlHeadlightIncrease,
+		ControlPantographFirst,
+		ControlPantographSecond,
+		ControlHeadlightIncrease,
         ControlHeadlightDecrease,
         ControlDispatcherExtend,
         ControlDispatcherRelease,

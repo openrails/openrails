@@ -414,11 +414,12 @@ namespace ORTS
 				for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
 				{
 					// Build vertexList and triangleListIndices
-					ShapePrimitives[iLOD] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
+					ShapePrimitives[primIndex] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
 					primIndex++;
 				}
 				lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
 			}
+
 
 			if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
 			else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length

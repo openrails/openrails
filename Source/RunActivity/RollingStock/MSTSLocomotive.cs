@@ -899,8 +899,8 @@ namespace ORTS
                 if (eventID == EventID.HeadlightOn) {  Headlight = 2; break; }
                 if (eventID == EventID.CompressorOn) { CompressorOn = true; break; }
                 if (eventID == EventID.CompressorOff) { CompressorOn = false; break; }
-                if (eventID == EventID.LightSwitchToggle) { break; }
-            } while (false);
+				if (eventID == EventID.LightSwitchToggle) { break; }
+			} while (false);
 
             base.SignalEvent(eventID );
         }

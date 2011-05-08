@@ -36,7 +36,6 @@ namespace ORTS
     /// </summary>
     public class MSTSElectricLocomotive: MSTSLocomotive
     {
-        public bool Pan = false;     // false = down;
 
 		public MSTSElectricLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
 			: base(simulator, wagFile, previousCar)
@@ -118,14 +117,6 @@ namespace ORTS
         /// </summary>
         public override void SignalEvent( EventID eventID)
         {
-            // Modified according to replacable IDs - by GeorgeS
-            //switch (eventID)
-            do
-            {
-                if (eventID == EventID.PantographUp) { Pan = true; break; }  // pan up
-                if (eventID == EventID.PantographDown) { Pan = false; break; } // pan down
-                if (eventID == EventID.PantographToggle) { Pan = !Pan; break; } // pan toggle
-            } while (false) ;
             base.SignalEvent(eventID);
         }
 
@@ -177,51 +168,10 @@ namespace ORTS
     {
         MSTSElectricLocomotive ElectricLocomotive;
 
-        List<int> PantographPartIndexes = new List<int>();  // these index into a matrix in the shape file
-
-        float PanAnimationKey = 0;
-
         public MSTSElectricLocomotiveViewer(Viewer3D viewer, MSTSElectricLocomotive car)
             : base(viewer, car)
         {
             ElectricLocomotive = car;
-
-            // Find the animated parts
-            if (TrainCarShape.SharedShape.Animations != null) // skip if the file doesn't contain proper animations
-            {
-                for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
-                {
-                    string matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
-                    switch (matrixName)
-                    {
-                        case "PANTOGRAPHBOTTOM1":
-                        case "PANTOGRAPHBOTTOM1A":
-                        case "PANTOGRAPHBOTTOM1B":
-                        case "PANTOGRAPHMIDDLE1":
-                        case "PANTOGRAPHMIDDLE1A":
-                        case "PANTOGRAPHMIDDLE1B":
-                        case "PANTOGRAPHTOP1":
-                        case "PANTOGRAPHTOP1A":
-                        case "PANTOGRAPHTOP1B":
-                        case "PANTOGRAPHBOTTOM2":
-                        case "PANTOGRAPHBOTTOM2A":
-                        case "PANTOGRAPHBOTTOM2B":
-                        case "PANTOGRAPHMIDDLE2":
-                        case "PANTOGRAPHMIDDLE2A":
-                        case "PANTOGRAPHMIDDLE2B":
-                        case "PANTOGRAPHTOP2":
-                        case "PANTOGRAPHTOP2A":
-                        case "PANTOGRAPHTOP2B":
-                            PantographPartIndexes.Add(iMatrix);
-                            break;
-                    }
-                }
-            }
-
-            // Initialize position based on pan setting ,ie if attaching to a car with the pan up.
-            PanAnimationKey = car.Pan ? TrainCarShape.SharedShape.Animations[0].FrameCount : 0;
-            foreach (int iMatrix in PantographPartIndexes)
-                TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
         }
 
         /// <summary>
@@ -230,9 +180,6 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // Pantograph
-            if (UserInput.IsPressed(UserCommands.ControlPantograph))
-                ElectricLocomotive.Train.SignalEvent(ElectricLocomotive.Pan ? EventID.PantographDown : EventID.PantographUp);
 
             base.HandleUserInput( elapsedTime);
         }
@@ -244,32 +191,7 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // Pan Animation
-            if (PantographPartIndexes.Count > 0)  // skip this if there are no pantographs
-            {
-                if (ElectricLocomotive.Pan)  // up
-                {
-                    if (PanAnimationKey < TrainCarShape.SharedShape.Animations[0].FrameCount)
-                    {
-                        // moving up
-                        PanAnimationKey += 2f * elapsedTime.ClockSeconds;
-                        if (PanAnimationKey > TrainCarShape.SharedShape.Animations[0].FrameCount) PanAnimationKey = TrainCarShape.SharedShape.Animations[0].FrameCount;
-                        foreach (int iMatrix in PantographPartIndexes)
-                            TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
-                    }
-                }
-                else // down
-                {
-                    if (PanAnimationKey > 0)
-                    {
-                        // moving down
-                        PanAnimationKey -= 2f * elapsedTime.ClockSeconds;
-                        if (PanAnimationKey < 0) PanAnimationKey = 0;
-                        foreach (int iMatrix in PantographPartIndexes)
-                            TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKey);
-                    }
-                }
-            }
+
             base.PrepareFrame(frame, elapsedTime);
         }
 

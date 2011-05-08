@@ -34,6 +34,11 @@ namespace ORTS
     /// </summary>
     public class MSTSWagon: TrainCar
     {
+		public bool Pan = false;     // false = down; some wagon has pantograph
+		public bool FrontPanUp = false; // if the Front pantograph is up
+		public bool AftPanUp = false; // if the Aft pantograph is up
+		public int NumPantograph = 0;
+
         // simulation parameters
         public float Variable1 = 0.0f;  // used to convey status to soundsource
         public float Variable2 = 0.0f;
@@ -375,6 +380,20 @@ namespace ORTS
         /// </summary>
         public override void SignalEvent(EventID eventID)
         {
+			// Modified according to replacable IDs - by GeorgeS
+			//switch (eventID)
+			do
+			{
+				if (eventID == EventID.PantographUp) { Pan = true; if (FrontPanUp == false && AftPanUp == false) AftPanUp = true; break; }  // pan up
+				if (eventID == EventID.PantographDown) { Pan = false; FrontPanUp = AftPanUp = false;  break; } // pan down
+				if (eventID == EventID.PantographToggle) {	
+					Pan = !Pan;
+					if (Pan && FrontPanUp == false && AftPanUp == false) AftPanUp = true;
+					if (Pan == false) FrontPanUp = AftPanUp = false;
+					break; 
+				} // pan down
+			} while (false);
+
             foreach (CarEventHandler eventHandler in EventHandlers)
                 eventHandler.HandleCarEvent(eventID);
         }
@@ -494,6 +513,14 @@ namespace ORTS
         protected float WheelRotationR = 0f;  // radians track rolling of wheels
         float DriverRotationKey;  // advances animation with the driver rotation
 
+		List<int> PantographPartIndexesAft = new List<int>();  // matrixes for the Panto***2* parts
+		List<int> PantographPartIndexesFront = new List<int>();  // matrixes for the Panto***1* parts
+		List<int> PantographPartIndexes;  // matrix to the one that should be raised, can point to aft, front, or merged
+
+
+		float PanAnimationKeyAft = 0;
+		float PanAnimationKeyFront = 0;
+
         protected PoseableShape TrainCarShape = null;
         protected AnimatedShape FreightShape = null;
         protected AnimatedShape InteriorShape = null;
@@ -511,6 +538,8 @@ namespace ORTS
             _Viewer3D = viewer;
             string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
             string shapePath = wagonFolderSlash + car.MainShapeFileName;
+			
+			PantographPartIndexes = PantographPartIndexesAft;
 
             TrainCarShape = new PoseableShape(viewer, shapePath, car.WorldPosition, ShapeFlags.ShadowCaster);
 
@@ -585,11 +614,94 @@ namespace ORTS
             }
 
             car.SetupWheels();
+
+			// Find the animated parts
+            if (TrainCarShape.SharedShape.Animations != null) // skip if the file doesn't contain proper animations
+            {
+                for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
+                {
+                    string matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
+                    switch (matrixName)
+                    {
+                        case "PANTOGRAPHBOTTOM1":
+                        case "PANTOGRAPHBOTTOM1A":
+                        case "PANTOGRAPHBOTTOM1B":
+                        case "PANTOGRAPHMIDDLE1":
+                        case "PANTOGRAPHMIDDLE1A":
+                        case "PANTOGRAPHMIDDLE1B":
+                        case "PANTOGRAPHTOP1":
+                        case "PANTOGRAPHTOP1A":
+                        case "PANTOGRAPHTOP1B":
+							PantographPartIndexesFront.Add(iMatrix);
+							break;
+                        case "PANTOGRAPHBOTTOM2":
+                        case "PANTOGRAPHBOTTOM2A":
+                        case "PANTOGRAPHBOTTOM2B":
+                        case "PANTOGRAPHMIDDLE2":
+                        case "PANTOGRAPHMIDDLE2A":
+                        case "PANTOGRAPHMIDDLE2B":
+                        case "PANTOGRAPHTOP2":
+                        case "PANTOGRAPHTOP2A":
+                        case "PANTOGRAPHTOP2B":
+                            PantographPartIndexesAft.Add(iMatrix);
+                            break;
+                    }
+                }
+            }
+
+			//determine how many panto
+			if (PantographPartIndexesFront.Count > 0) car.NumPantograph++;
+			if (PantographPartIndexesAft.Count > 0) car.NumPantograph++;
+
+			//we always want to raise aft by default, so rename panto1 to aft if there is only one set of pant
+			if (car.NumPantograph == 1)
+			{
+				PantographPartIndexesAft = new List<int>(PantographPartIndexesFront);
+				PantographPartIndexesFront.Clear();
+			}
+
+			//now handle the direction of the car; if reverse, then the pantoaft should use Panto***1*
+			if (car.Direction == Direction.Reverse && car.NumPantograph == 2)
+			{
+				List<int> temp = PantographPartIndexesFront;
+				PantographPartIndexesFront = PantographPartIndexesAft;
+				PantographPartIndexesAft = temp;
+			}
+
+			if (car.NumPantograph > 0)
+			{				
+				// Initialize position based on pan setting ,ie if attaching to a car with the pan up.
+				PanAnimationKeyFront = car.FrontPanUp ? TrainCarShape.SharedShape.Animations[0].FrameCount : 0;
+				PanAnimationKeyAft = car.AftPanUp ? TrainCarShape.SharedShape.Animations[0].FrameCount : 0;
+				foreach (int iMatrix in PantographPartIndexesFront)
+					TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyFront);
+				foreach (int iMatrix in PantographPartIndexesAft)
+					TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyAft);
+			}
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-        }
+			// Pantograph
+			if (UserInput.IsPressed(UserCommands.ControlPantographSecond))
+			{
+				MSTSWagon.FrontPanUp = !MSTSWagon.FrontPanUp;
+				if (Viewer.Simulator.PlayerLocomotive == this.Car) //inform everyone else in the train
+					foreach (TrainCar car in Car.Train.Cars)
+						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = MSTSWagon.FrontPanUp;
+				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.PantographUp);
+				else Car.SignalEvent(EventID.PantographDown);
+			}
+			if (UserInput.IsPressed(UserCommands.ControlPantographFirst))
+			{
+				MSTSWagon.AftPanUp = !MSTSWagon.AftPanUp;
+				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
+					foreach (TrainCar car in Car.Train.Cars)
+						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).AftPanUp = MSTSWagon.AftPanUp;
+				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.PantographUp);
+				else Car.SignalEvent(EventID.PantographDown);
+			}
+		}
 
 
         /// <summary>
@@ -602,6 +714,62 @@ namespace ORTS
 			// Commented out - sound update on a different thread
             //if (Viewer.SettingsInt[(int)IntSettings.SoundDetailLevel] > 0)
 			//	UpdateSound(elapsedTime);
+			// Pan Animation
+			if (MSTSWagon.NumPantograph > 0) //if there is one or two pantographs
+			{
+
+				if (PantographPartIndexesAft.Count > 0)  // skip this if there are no pantographs
+				{
+					if (MSTSWagon.AftPanUp)  // up of aft panto
+					{
+						if (PanAnimationKeyAft < TrainCarShape.SharedShape.Animations[0].FrameCount)
+						{
+							// moving up
+							PanAnimationKeyAft += 2f * elapsedTime.ClockSeconds;
+							if (PanAnimationKeyAft > TrainCarShape.SharedShape.Animations[0].FrameCount) PanAnimationKeyAft = TrainCarShape.SharedShape.Animations[0].FrameCount;
+							foreach (int iMatrix in PantographPartIndexesAft)
+								TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyAft);
+						}
+					}
+					else // down
+					{
+						if (PanAnimationKeyAft > 0)
+						{
+							// moving down
+							PanAnimationKeyAft -= 2f * elapsedTime.ClockSeconds;
+							if (PanAnimationKeyAft < 0) PanAnimationKeyAft = 0;
+							foreach (int iMatrix in PantographPartIndexesAft)
+								TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyAft);
+						}
+					}
+				}
+				if (PantographPartIndexesFront.Count > 0)  // skip this if there are no pantographs
+				{
+					if (MSTSWagon.FrontPanUp)  // up of front panto
+					{
+						if (PanAnimationKeyFront < TrainCarShape.SharedShape.Animations[0].FrameCount)
+						{
+							// moving up
+							PanAnimationKeyFront += 2f * elapsedTime.ClockSeconds;
+							if (PanAnimationKeyFront > TrainCarShape.SharedShape.Animations[0].FrameCount) PanAnimationKeyFront = TrainCarShape.SharedShape.Animations[0].FrameCount;
+							foreach (int iMatrix in PantographPartIndexesFront)
+								TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyFront);
+						}
+					}
+					else // down
+					{
+						if (PanAnimationKeyFront > 0)
+						{
+							// moving down
+							PanAnimationKeyFront -= 2f * elapsedTime.ClockSeconds;
+							if (PanAnimationKeyFront < 0) PanAnimationKeyFront = 0;
+							foreach (int iMatrix in PantographPartIndexesFront)
+								TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyFront);
+						}
+					}
+				}
+
+			}
             UpdateAnimation(frame, elapsedTime);
         }
 
