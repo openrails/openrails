@@ -85,7 +85,7 @@ namespace ORTS
                     Start(options, data);
                     break;
                 case "resume":
-                    Resume(options);
+                    Resume(options, data);
                     break;
                 case "testall":
                     TestAll(options, data);
@@ -194,12 +194,13 @@ namespace ORTS
         /// <summary>
         /// Resume a saved game.
         /// </summary>
-        static void Resume(IEnumerable<string> options)
+        static void Resume(IEnumerable<string> options, string[] args)
         {
             var showErrorDialogs = true;
             Action resume = () =>
             {
-                using (BinaryReader inf = new BinaryReader(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Open, FileAccess.Read)))
+                var saveFile = args.Length == 0 ? UserDataFolder + "\\SAVE.BIN" : args[0];
+                using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
                 {
                     // Read in validation data.
                     var revision = "<unknown>";
@@ -220,11 +221,11 @@ namespace ORTS
                     }
 
                     // Read in the real data...
-                    var args = new string[inf.ReadInt32()];
-                    for (var i = 0; i < args.Length; i++)
-                        args[i] = inf.ReadString();
+                    var savedArgs = new string[inf.ReadInt32()];
+                    for (var i = 0; i < savedArgs.Length; i++)
+                        savedArgs[i] = inf.ReadString();
 
-                    var settings = GetSettings(true, options, args, ref showErrorDialogs);
+                    var settings = GetSettings(true, options, savedArgs, ref showErrorDialogs);
                     CreateSimulator(settings);
                     Simulator.Restore(inf);
                     Viewer = new Viewer3D(Simulator);
