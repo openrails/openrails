@@ -207,31 +207,37 @@ namespace ORTS
             // Ignore any mesh not in field-of-view
             if (!Viewer.Camera.InFOV(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius)) return;
 
-            // Scan LODs in reverse order, and find first LOD in-range
+            // Scan LODs in forward order, and find first LOD in-range
             LOD lod;
-			int lodIndex = dtrackMesh.TrProfile.LODs.Count;
-            do
+            int lodIndex;
+            for (lodIndex = 0; lodIndex < dtrackMesh.TrProfile.LODs.Count; lodIndex++)
             {
-                if (--lodIndex < 0) return; // No LOD in-range
                 lod = (LOD)dtrackMesh.TrProfile.LODs[lodIndex];
-            } while (!Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, 0, lod.CutoffRadius));
-            dtrackMesh.LastIndex = lodIndex; // Mark index farthest in-range LOD
+                if (Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, 0, lod.CutoffRadius)) break;
+            }
+            if (lodIndex == dtrackMesh.TrProfile.LODs.Count) return;
+            // lodIndex marks first in-range LOD
 
             // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
             Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
             xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
             // (Transformation is now with respect to camera-tile origin)
 
+            int lastIndex;
             // Add in-view LODs to the RenderItems collection
             if (dtrackMesh.TrProfile.LODMethod == TrProfile.LODMethods.CompleteReplacement)
-                // CompleteReplacement case
-                lodIndex = dtrackMesh.LastIndex; // Add only the LOD that is the last in-view
-            else
-                // ComponentAdditive case
-                lodIndex = 0; // Add all LODs from the largest CutOffRadius to the last in-view
-            while (lodIndex <= dtrackMesh.LastIndex)
             {
-                // Add all the LODItems in this LOD
+                // CompleteReplacement case
+                lastIndex = lodIndex; // Add only the LOD that is the first in-view
+            }
+            else
+            {
+                // ComponentAdditive case
+                // Add all LODs from the smallest in-view CutOffRadius to the last
+                lastIndex = dtrackMesh.TrProfile.LODs.Count - 1;
+            }
+            while (lodIndex <= lastIndex)
+            {
                 lod = (LOD)dtrackMesh.TrProfile.LODs[lodIndex];
                 for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
                 {
@@ -496,23 +502,43 @@ namespace ORTS
             LODItem lodItem;    // Local LODItem instance
             Polyline pl;        // Local Polyline instance
 
-            // BALLAST
-            lod = new LOD(2000.0f); // Create LOD for ballast with specified CutoffRadius
-            // Single LODItem in this case
-            lodItem = new LODItem("Ballast");
-            lodItem.TexName = "acleantrack1.ace";
-            lodItem.ShaderName = "BlendATexDiff";
+            // RAILSIDES
+            lod = new LOD(700.0f); // Create LOD for railsides with specified CutoffRadius
+            lodItem = new LODItem("Railsides");
+            lodItem.TexName = "acleantrack2.ace";
+            lodItem.ShaderName = "TexDiff";
             lodItem.LightModelName = "OptSpecular0";
             lodItem.AlphaTestMode = 0;
             lodItem.TexAddrModeName = "Wrap";
-            lodItem.ESD_Alternative_Texture = 1;
-            lodItem.MipMapLevelOfDetailBias = -1f;
+            lodItem.ESD_Alternative_Texture = 0;
+            lodItem.MipMapLevelOfDetailBias = 0;
             lodItem.LoadMaterial(RenderProcess, lodItem);
 
-            pl = new Polyline(this, "ballast", 2);
-            pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
-            pl.Vertices.Add(new Vertex(-2.5f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
-            pl.Vertices.Add(new Vertex(2.5f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
+            pl = new Polyline(this, "left_outer", 2);
+            pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
+            pl.Vertices.Add(new Vertex(-.8675f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
+            pl.Vertices.Add(new Vertex(-.8675f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
+
+            pl = new Polyline(this, "left_inner", 2);
+            pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
+            pl.Vertices.Add(new Vertex(-.7175f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
+            pl.Vertices.Add(new Vertex(-.7175f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
+
+            pl = new Polyline(this, "right_inner", 2);
+            pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
+            pl.Vertices.Add(new Vertex(.7175f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
+            pl.Vertices.Add(new Vertex(.7175f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
+            lodItem.Polylines.Add(pl);
+            lodItem.Accum(pl.Vertices.Count);
+
+            pl = new Polyline(this, "right_outer", 2);
+            pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
+            pl.Vertices.Add(new Vertex(.8675f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
+            pl.Vertices.Add(new Vertex(.8675f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
@@ -549,43 +575,23 @@ namespace ORTS
             lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
             LODs.Add(lod); // Append this LOD to LODs array
 
-            // RAILSIDES
-            lod = new LOD(700.0f); // Create LOD for railsides with specified CutoffRadius
-            lodItem = new LODItem("Railsides");
-            lodItem.TexName = "acleantrack2.ace";
-            lodItem.ShaderName = "TexDiff";
+            // BALLAST
+            lod = new LOD(2000.0f); // Create LOD for ballast with specified CutoffRadius
+            // Single LODItem in this case
+            lodItem = new LODItem("Ballast");
+            lodItem.TexName = "acleantrack1.ace";
+            lodItem.ShaderName = "BlendATexDiff";
             lodItem.LightModelName = "OptSpecular0";
             lodItem.AlphaTestMode = 0;
             lodItem.TexAddrModeName = "Wrap";
-            lodItem.ESD_Alternative_Texture = 0;
-            lodItem.MipMapLevelOfDetailBias = 0;
+            lodItem.ESD_Alternative_Texture = 1;
+            lodItem.MipMapLevelOfDetailBias = -1f;
             lodItem.LoadMaterial(RenderProcess, lodItem);
 
-            pl = new Polyline(this, "left_outer", 2);
-            pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
-            pl.Vertices.Add(new Vertex(-.8675f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
-            pl.Vertices.Add(new Vertex(-.8675f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
-            lodItem.Polylines.Add(pl);
-            lodItem.Accum(pl.Vertices.Count);
-
-            pl = new Polyline(this, "left_inner", 2);
-            pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
-            pl.Vertices.Add(new Vertex(-.7175f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
-            pl.Vertices.Add(new Vertex(-.7175f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
-            lodItem.Polylines.Add(pl);
-            lodItem.Accum(pl.Vertices.Count);
-
-            pl = new Polyline(this, "right_inner", 2); 
-            pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
-            pl.Vertices.Add(new Vertex(.7175f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
-            pl.Vertices.Add(new Vertex(.7175f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
-            lodItem.Polylines.Add(pl);
-            lodItem.Accum(pl.Vertices.Count);
-            
-            pl = new Polyline(this, "right_outer", 2); 
-            pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
-            pl.Vertices.Add(new Vertex(.8675f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
-            pl.Vertices.Add(new Vertex(.8675f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
+            pl = new Polyline(this, "ballast", 2);
+            pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
+            pl.Vertices.Add(new Vertex(-2.5f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
+            pl.Vertices.Add(new Vertex(2.5f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
@@ -1010,7 +1016,7 @@ namespace ORTS
 		public short NumIndices;           // Number of triangle indices
 
         // LOD member variables:
-        public int LastIndex;       // Marks last LOD that is in-range
+        //public int FirstIndex;       // Marks first LOD that is in-range
         public Vector3 XNAEnd;      // Location of termination-of-section (as opposed to root)
         public float ObjectRadius;  // Radius of bounding sphere
         public Vector3 MSTSLODCenter; // Center of bounding sphere
