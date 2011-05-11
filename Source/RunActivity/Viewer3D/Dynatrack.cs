@@ -675,17 +675,17 @@ namespace ORTS
                         case "Polyline":
                             pl = new Polyline();
                             pl.Name = reader.GetAttribute("Name");
-                            s = reader.GetAttribute("DeltaTexCoord").Split(sep);
+                            s = reader.GetAttribute("DeltaTexCoord").Split(sep, StringSplitOptions.RemoveEmptyEntries);
                             pl.DeltaTexCoord = new Vector2(float.Parse(s[0]), float.Parse(s[1]));
                             lodItem.Polylines.Add(pl);
                             break;
                         case "Vertex":
                             v = new Vertex();
-                            s = reader.GetAttribute("Position").Split(sep);
+                            s = reader.GetAttribute("Position").Split(sep, StringSplitOptions.RemoveEmptyEntries);
                             v.Position = new Vector3(float.Parse(s[0]), float.Parse(s[1]), float.Parse(s[2]));
-                            s = reader.GetAttribute("Normal").Split(sep);
+                            s = reader.GetAttribute("Normal").Split(sep, StringSplitOptions.RemoveEmptyEntries);
                             v.Normal = new Vector3(float.Parse(s[0]), float.Parse(s[1]), float.Parse(s[2]));
-                            s = reader.GetAttribute("TexCoord").Split(sep);
+                            s = reader.GetAttribute("TexCoord").Split(sep, StringSplitOptions.RemoveEmptyEntries);
                             v.TexCoord = new Vector2(float.Parse(s[0]), float.Parse(s[1]));
                             pl.Vertices.Add(v);
                             lodItem.NumVertices++; // Bump vertex count
