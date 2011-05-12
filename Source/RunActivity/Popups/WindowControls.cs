@@ -5,11 +5,11 @@
 
 /// Author: James Ross
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 
 namespace ORTS.Popups
 {
@@ -309,10 +309,9 @@ namespace ORTS.Popups
 
 		protected T InternalAdd<T>(T control) where T : Control
 		{
-			// Offset control by our location. Don't touch its size!
-			control.Position.X += Position.X + CurrentLeft;
-			control.Position.Y += Position.Y + CurrentTop;
-			//Console.WriteLine(String.Format("{0} added {1} at {2}", GetType().Name, control.GetType().Name, control.Position));
+			// Offset control by our position and current values. Don't touch its size!
+			control.Position.X += Position.Left + CurrentLeft;
+			control.Position.Y += Position.Top + CurrentTop;
 			controls.Add(control);
 			return control;
 		}
@@ -465,7 +464,7 @@ namespace ORTS.Popups
 		{
 			get
 			{
-				return controls.Sum(c => c.Position.Width);
+				return controls.Count > 0 ? controls.Max(c => c.Position.Right) - Position.Left : 0;
 			}
 		}
 	}
@@ -489,7 +488,7 @@ namespace ORTS.Popups
 		{
 			get
 			{
-				return controls.Sum(c => c.Position.Height);
+				return controls.Count > 0 ? controls.Max(c => c.Position.Bottom) - Position.Top : 0;
 			}
 		}
 	}
@@ -538,17 +537,15 @@ namespace ORTS.Popups
 			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + Position.Height - ScrollbarSize, ScrollbarSize, ScrollbarSize), new Rectangle(3 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White);
 
 			// Draw contents inside a scissor rectangle (so they're clipped to the client area).
-			spriteBatch.End();
-			var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
+            WindowManager.Flush(spriteBatch);
+            var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
 			spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width, Position.Height - ScrollbarSize);
 			spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = true;
-			spriteBatch.Begin(WindowManager.BeginSpriteBlendMode, WindowManager.BeginSpriteSortMode, WindowManager.BeginSaveStateMode);
-			base.Draw(spriteBatch, offset);
-			spriteBatch.End();
-			spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
+            base.Draw(spriteBatch, offset);
+            WindowManager.Flush(spriteBatch);
+            spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
 			spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = false;
-			spriteBatch.Begin(WindowManager.BeginSpriteBlendMode, WindowManager.BeginSpriteSortMode, WindowManager.BeginSaveStateMode);
-		}
+        }
 
 		internal override bool HandleUserInput(WindowMouseEvent e)
 		{
@@ -622,34 +619,32 @@ namespace ORTS.Popups
 			Client = InternalAdd(new ControlLayoutVertical(RemainingWidth, RemainingHeight));
 		}
 
-		internal override void Draw(SpriteBatch spriteBatch, Point offset)
-		{
-			var thumbOffset = (int)((float)(Position.Height - 3 * ScrollbarSize) * (float)ScrollPosition / (float)ScrollSize);
-			var rotateOrigin = new Vector2(0, ScrollbarSize);
+        internal override void Draw(SpriteBatch spriteBatch, Point offset)
+        {
+            var thumbOffset = (int)((float)(Position.Height - 3 * ScrollbarSize) * (float)ScrollPosition / (float)ScrollSize);
+            var rotateOrigin = new Vector2(0, ScrollbarSize);
 
-			// Top button
-			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y, ScrollbarSize, ScrollbarSize), new Rectangle(0, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
-			// Top gutter
-			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + ScrollbarSize, thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
-			// Thumb
+            // Top button
+            spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y, ScrollbarSize, ScrollbarSize), new Rectangle(0, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
+            // Top gutter
+            spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + ScrollbarSize, thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
+            // Thumb
             spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + ScrollbarSize + thumbOffset, ScrollbarSize, ScrollbarSize), new Rectangle(ScrollSize > 0 ? ScrollbarSize : 2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
-			// Bottom gutter
-			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + 2 * ScrollbarSize + thumbOffset, Position.Height - 3 * ScrollbarSize - thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
-			// Bottom button
-			spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + Position.Height - ScrollbarSize, ScrollbarSize, ScrollbarSize), new Rectangle(3 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
+            // Bottom gutter
+            spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + 2 * ScrollbarSize + thumbOffset, Position.Height - 3 * ScrollbarSize - thumbOffset, ScrollbarSize), new Rectangle(2 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
+            // Bottom button
+            spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - ScrollbarSize, offset.Y + Position.Y + Position.Height - ScrollbarSize, ScrollbarSize, ScrollbarSize), new Rectangle(3 * ScrollbarSize, 0, ScrollbarSize, ScrollbarSize), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
 
-			// Draw contents inside a scissor rectangle (so they're clipped to the client area).
-			spriteBatch.End();
-			var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
-			spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width - ScrollbarSize, Position.Height);
-			spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = true;
-			spriteBatch.Begin(WindowManager.BeginSpriteBlendMode, WindowManager.BeginSpriteSortMode, WindowManager.BeginSaveStateMode);
-			base.Draw(spriteBatch, offset);
-			spriteBatch.End();
-			spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
-			spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = false;
-			spriteBatch.Begin(WindowManager.BeginSpriteBlendMode, WindowManager.BeginSpriteSortMode, WindowManager.BeginSaveStateMode);
-		}
+            // Draw contents inside a scissor rectangle (so they're clipped to the client area).
+            WindowManager.Flush(spriteBatch);
+            var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
+            spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width - ScrollbarSize, Position.Height);
+            spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = true;
+            base.Draw(spriteBatch, offset);
+            WindowManager.Flush(spriteBatch);
+            spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
+            spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = false;
+        }
 
 		internal override bool HandleUserInput(WindowMouseEvent e)
 		{

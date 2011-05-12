@@ -134,6 +134,8 @@ namespace ORTS.Popups
             x += position.X + offset.X;
             y += position.Y + offset.Y;
 
+            WindowManager.Flush(spriteBatch);
+            spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceColor;
             for (var i = 0; i < text.Length; i++)
             {
                 spriteBatch.Draw(Characters.Texture, new Vector2(x, y), Characters.Boxes[chIndexes[i]], color, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
@@ -141,6 +143,8 @@ namespace ORTS.Popups
                 x += Characters.AbcWidths[chIndexes[i]].Y;
                 x += Characters.AbcWidths[chIndexes[i]].Z;
             }
+            WindowManager.Flush(spriteBatch);
+            spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
         }
 #else
         [CallOnThread("Updater")]
@@ -313,22 +317,20 @@ namespace ORTS.Popups
 
                 // TODO: Copy texture/bitmap and boxes data from merge source.
                 var rectangle = new System.Drawing.Rectangle(0, 0, Boxes.Max(r => r.Right), Boxes.Max(r => r.Bottom));
-                var bitmap = new System.Drawing.Bitmap(rectangle.Width, rectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                var bitmap = new System.Drawing.Bitmap(rectangle.Width, rectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
                 var buffer = new int[rectangle.Width * rectangle.Height];
                 using (var g = System.Drawing.Graphics.FromImage(bitmap))
                 {
-                    // Clear image to transparent black.
-                    g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-                    g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(0)), rectangle);
-                    g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+                    // Clear to black.
+                    g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.Black), rectangle);
 
                     // Draw the text using system text drawing (yay, ClearType).
                     for (var i = 0; i < Characters.Length; i++)
                         System.Windows.Forms.TextRenderer.DrawText(g, Characters[i].ToString(), font, new System.Drawing.Point(Boxes[i].X, Boxes[i].Y), System.Drawing.Color.White, flags);
                 }
-                var bits = bitmap.LockBits(rectangle, System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                var bits = bitmap.LockBits(rectangle, System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
                 System.Runtime.InteropServices.Marshal.Copy(bits.Scan0, buffer, 0, buffer.Length);
-                Texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppArgb
+                Texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
                 Texture.SetData(buffer);
                 bitmap.UnlockBits(bits);
             }

@@ -18,13 +18,19 @@ namespace ORTS.Popups
 {
 	public class WindowManager
 	{
-		public const SpriteBlendMode BeginSpriteBlendMode = SpriteBlendMode.AlphaBlend;
-		public const SpriteSortMode BeginSpriteSortMode = SpriteSortMode.Immediate;
-		public const SaveStateMode BeginSaveStateMode = SaveStateMode.None;
-
 		public static Texture2D WhiteTexture;
 		public static Texture2D ScrollbarTexture;
 		public static Texture2D LabelShadowTexture;
+
+        // This is all a bit of a hack, since SpriteBatch does not expose its own internal Flush() method. What we do
+        // is draw with a different texture to anything else; the change of texture triggers an internal flush. The
+        // texture is initialised to transparent black so although we draw it in a visible area, it will not actually
+        // be visible on screen.
+        static Texture2D FlushTexture;
+        public static void Flush(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Draw(FlushTexture, Vector2.Zero, Color.Black);
+        }
 
 		public readonly Viewer3D Viewer;
         public readonly WindowTextManager TextManager;
@@ -53,6 +59,11 @@ namespace ORTS.Popups
             {
                 WhiteTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
                 WhiteTexture.SetData(new[] { Color.White });
+            }
+            if (FlushTexture == null)
+            {
+                FlushTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+                FlushTexture.SetData(new[] { Color.TransparentBlack });
             }
             if (ScrollbarTexture == null)
                 ScrollbarTexture = Viewer.RenderProcess.Content.Load<Texture2D>("WindowScrollbar");
@@ -127,7 +138,7 @@ namespace ORTS.Popups
 				material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
 				material.ResetState(graphicsDevice);
 
-				SpriteBatch.Begin(BeginSpriteBlendMode, BeginSpriteSortMode, BeginSaveStateMode);
+                SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
 				window.Draw(SpriteBatch);
 				SpriteBatch.End();
 			}
