@@ -38,6 +38,9 @@ namespace ORTS
 		public bool FrontPanUp = false; // if the Front pantograph is up
 		public bool AftPanUp = false; // if the Aft pantograph is up
 		public int NumPantograph = 0;
+		public bool DoorLeftOpen = false;
+		public bool DoorRightOpen = false;
+		public bool MirrorOpen = false;
 
         // simulation parameters
         public float Variable1 = 0.0f;  // used to convey status to soundsource
@@ -527,7 +530,16 @@ namespace ORTS
         protected List<SoundSource> SoundSources = new List<SoundSource>();
 
         List<int> WheelPartIndexes = new List<int>();   // these index into a matrix in the shape file
-        List<int> RunningGearPartIndexes = new List<int>();
+		List<int> RunningGearPartIndexes = new List<int>();
+
+		float DoorAnimationKeyLeft = 0;
+		float DoorAnimationKeyRight = 0;
+
+		List<int> DoorLeftPartIndexes = new List<int>(); //left door
+		List<int> DoorRightPartIndexes = new List<int>();//right door
+
+		float MirrorAnimationKey = 0;
+		List<int> MirrorPartIndexes = new List<int>(); //mirror
 
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
 
@@ -601,53 +613,68 @@ namespace ORTS
                     {
                     }
                 }
-                else if (!matrixName.StartsWith("PANTOGRAPH")
-                     && !matrixName.StartsWith("WIPER")
-                     && !matrixName.StartsWith("MIRROR")
-                     && !matrixName.StartsWith("DOOR_")) // don't want to animate every object
-                {
-                    if (TrainCarShape.SharedShape.Animations != null
-                               && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
-                               && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
-                        RunningGearPartIndexes.Add(iMatrix);
-                }
+				else if (matrixName.StartsWith("WIPER")) // wipers
+				{//will be captured later by MSTSLocomotive
+				}
+				else if (matrixName.StartsWith("DOOR") || matrixName.StartsWith("DEUR")) // doors (left / right)
+				{
+					if (TrainCarShape.SharedShape.Animations != null
+							   && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
+							   && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)
+					{
+						if (matrixName.StartsWith("DOOR_D") || matrixName.StartsWith("DOOR_E") || matrixName.StartsWith("DOOR_F")) DoorLeftPartIndexes.Add(iMatrix);
+						else if (matrixName.StartsWith("DOOR_A") || matrixName.StartsWith("DOOR_B") || matrixName.StartsWith("DOOR_C")) DoorLeftPartIndexes.Add(iMatrix);
+						else DoorLeftPartIndexes.Add(iMatrix); //some train may not follow the above convention of left/right, put them as left by default
+					}
+				}
+				else if (matrixName.StartsWith("PANTOGRAPH")) //pantographs (1/2)
+				{
+					if (TrainCarShape.SharedShape.Animations == null) continue;
+					switch (matrixName)
+					{
+						case "PANTOGRAPHBOTTOM1":
+						case "PANTOGRAPHBOTTOM1A":
+						case "PANTOGRAPHBOTTOM1B":
+						case "PANTOGRAPHMIDDLE1":
+						case "PANTOGRAPHMIDDLE1A":
+						case "PANTOGRAPHMIDDLE1B":
+						case "PANTOGRAPHTOP1":
+						case "PANTOGRAPHTOP1A":
+						case "PANTOGRAPHTOP1B":
+							PantographPartIndexesFront.Add(iMatrix);
+							break;
+						case "PANTOGRAPHBOTTOM2":
+						case "PANTOGRAPHBOTTOM2A":
+						case "PANTOGRAPHBOTTOM2B":
+						case "PANTOGRAPHMIDDLE2":
+						case "PANTOGRAPHMIDDLE2A":
+						case "PANTOGRAPHMIDDLE2B":
+						case "PANTOGRAPHTOP2":
+						case "PANTOGRAPHTOP2A":
+						case "PANTOGRAPHTOP2B":
+							PantographPartIndexesAft.Add(iMatrix);
+							break;
+					}
+				}
+				else if (matrixName.StartsWith("MIRROR")) // mirrors
+				{
+					if (TrainCarShape.SharedShape.Animations != null
+							   && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
+							   && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)
+					{
+						MirrorPartIndexes.Add(iMatrix); 
+					}
+				}
+				else
+				{
+					if (TrainCarShape.SharedShape.Animations != null
+						&& TrainCarShape.SharedShape.Animations[0].FrameCount > 0
+						&& TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
+						RunningGearPartIndexes.Add(iMatrix);
+				}
             }
 
             car.SetupWheels();
-
-			// Find the animated parts
-            if (TrainCarShape.SharedShape.Animations != null) // skip if the file doesn't contain proper animations
-            {
-                for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
-                {
-                    string matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
-                    switch (matrixName)
-                    {
-                        case "PANTOGRAPHBOTTOM1":
-                        case "PANTOGRAPHBOTTOM1A":
-                        case "PANTOGRAPHBOTTOM1B":
-                        case "PANTOGRAPHMIDDLE1":
-                        case "PANTOGRAPHMIDDLE1A":
-                        case "PANTOGRAPHMIDDLE1B":
-                        case "PANTOGRAPHTOP1":
-                        case "PANTOGRAPHTOP1A":
-                        case "PANTOGRAPHTOP1B":
-							PantographPartIndexesFront.Add(iMatrix);
-							break;
-                        case "PANTOGRAPHBOTTOM2":
-                        case "PANTOGRAPHBOTTOM2A":
-                        case "PANTOGRAPHBOTTOM2B":
-                        case "PANTOGRAPHMIDDLE2":
-                        case "PANTOGRAPHMIDDLE2A":
-                        case "PANTOGRAPHMIDDLE2B":
-                        case "PANTOGRAPHTOP2":
-                        case "PANTOGRAPHTOP2A":
-                        case "PANTOGRAPHTOP2B":
-                            PantographPartIndexesAft.Add(iMatrix);
-                            break;
-                    }
-                }
-            }
 
 			//determine how many panto
 			if (PantographPartIndexesFront.Count > 0) car.NumPantograph++;
@@ -678,6 +705,15 @@ namespace ORTS
 				foreach (int iMatrix in PantographPartIndexesAft)
 					TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyAft);
 			}
+
+			//now handle the direction of the car; if reverse, then the left/right door should be switched
+			if (car.Direction == Direction.Reverse && DoorRightPartIndexes.Count > 0)
+			{
+				List<int> temp = DoorRightPartIndexes;
+				DoorRightPartIndexes = DoorLeftPartIndexes;
+				DoorLeftPartIndexes = temp;
+			}
+
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -701,8 +737,59 @@ namespace ORTS
 				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.PantographUp);
 				else Car.SignalEvent(EventID.PantographDown);
 			}
+			if (UserInput.IsPressed(UserCommands.ControlDoor)) //control door (or only left)
+			{
+				MSTSWagon.DoorLeftOpen = !MSTSWagon.DoorLeftOpen;
+				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
+					foreach (TrainCar car in Car.Train.Cars)
+						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).DoorLeftOpen = MSTSWagon.DoorLeftOpen;
+				/*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
+				else Car.SignalEvent(EventID.DoorClose);*/
+				//comment out, but can be added back to animate sound
+			}
+			if (UserInput.IsPressed(UserCommands.ControlDoorRight)) //control right door
+			{
+				MSTSWagon.DoorRightOpen = !MSTSWagon.DoorRightOpen;
+				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
+					foreach (TrainCar car in Car.Train.Cars)
+						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).DoorRightOpen = MSTSWagon.DoorRightOpen;
+				/*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
+				else Car.SignalEvent(EventID.DoorClose);*/
+				//comment out, but can be added back to animate sound
+			}
+			if (UserInput.IsPressed(UserCommands.ControlMirror)) //control right door
+			{
+				MSTSWagon.MirrorOpen = !MSTSWagon.MirrorOpen;
+			}
 		}
 
+		//a helper function to animate panto, door, etc. 
+		private void AnimatePart(List<int> parts, ref float key, bool condition, ElapsedTime elapsedTime)
+		{
+			if (parts.Count > 0)  // skip this if there are no pantographs
+			{
+				if (condition)  // panto up/door open, etc.
+				{
+					if (key < TrainCarShape.SharedShape.Animations[0].FrameCount)
+					{
+						key += 2f * elapsedTime.ClockSeconds;
+						if (key > TrainCarShape.SharedShape.Animations[0].FrameCount) key = TrainCarShape.SharedShape.Animations[0].FrameCount;
+						foreach (int iMatrix in parts)
+							TrainCarShape.AnimateMatrix(iMatrix, key);
+					}
+				}
+				else 
+				{
+					if (key > 0)
+					{
+						key -= 2f * elapsedTime.ClockSeconds;
+						if (key < 0) key = 0;
+						foreach (int iMatrix in parts)
+							TrainCarShape.AnimateMatrix(iMatrix, key);
+					}
+				}
+			}
+		}
 
         /// <summary>
         /// Called at the full frame rate
@@ -711,66 +798,26 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-			// Commented out - sound update on a different thread
-            //if (Viewer.SettingsInt[(int)IntSettings.SoundDetailLevel] > 0)
-			//	UpdateSound(elapsedTime);
-			// Pan Animation
 			if (MSTSWagon.NumPantograph > 0) //if there is one or two pantographs
 			{
-
-				if (PantographPartIndexesAft.Count > 0)  // skip this if there are no pantographs
-				{
-					if (MSTSWagon.AftPanUp)  // up of aft panto
-					{
-						if (PanAnimationKeyAft < TrainCarShape.SharedShape.Animations[0].FrameCount)
-						{
-							// moving up
-							PanAnimationKeyAft += 2f * elapsedTime.ClockSeconds;
-							if (PanAnimationKeyAft > TrainCarShape.SharedShape.Animations[0].FrameCount) PanAnimationKeyAft = TrainCarShape.SharedShape.Animations[0].FrameCount;
-							foreach (int iMatrix in PantographPartIndexesAft)
-								TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyAft);
-						}
-					}
-					else // down
-					{
-						if (PanAnimationKeyAft > 0)
-						{
-							// moving down
-							PanAnimationKeyAft -= 2f * elapsedTime.ClockSeconds;
-							if (PanAnimationKeyAft < 0) PanAnimationKeyAft = 0;
-							foreach (int iMatrix in PantographPartIndexesAft)
-								TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyAft);
-						}
-					}
-				}
-				if (PantographPartIndexesFront.Count > 0)  // skip this if there are no pantographs
-				{
-					if (MSTSWagon.FrontPanUp)  // up of front panto
-					{
-						if (PanAnimationKeyFront < TrainCarShape.SharedShape.Animations[0].FrameCount)
-						{
-							// moving up
-							PanAnimationKeyFront += 2f * elapsedTime.ClockSeconds;
-							if (PanAnimationKeyFront > TrainCarShape.SharedShape.Animations[0].FrameCount) PanAnimationKeyFront = TrainCarShape.SharedShape.Animations[0].FrameCount;
-							foreach (int iMatrix in PantographPartIndexesFront)
-								TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyFront);
-						}
-					}
-					else // down
-					{
-						if (PanAnimationKeyFront > 0)
-						{
-							// moving down
-							PanAnimationKeyFront -= 2f * elapsedTime.ClockSeconds;
-							if (PanAnimationKeyFront < 0) PanAnimationKeyFront = 0;
-							foreach (int iMatrix in PantographPartIndexesFront)
-								TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyFront);
-						}
-					}
-				}
-
+				AnimatePart(PantographPartIndexesAft, ref PanAnimationKeyAft, MSTSWagon.AftPanUp, elapsedTime);
+				AnimatePart(PantographPartIndexesFront, ref PanAnimationKeyFront, MSTSWagon.FrontPanUp, elapsedTime);
 			}
-            UpdateAnimation(frame, elapsedTime);
+
+			if ( DoorLeftPartIndexes.Count > 0)  // skip this if there is no doors (left door)
+			{
+				AnimatePart(DoorLeftPartIndexes, ref DoorAnimationKeyLeft, MSTSWagon.DoorLeftOpen, elapsedTime);
+			}
+			if (DoorRightPartIndexes.Count > 0)  // skip this if there is no right doors
+			{
+				AnimatePart(DoorRightPartIndexes, ref DoorAnimationKeyRight, MSTSWagon.DoorRightOpen, elapsedTime);
+			}
+			if (MirrorPartIndexes.Count > 0)  // skip this if there is no doors (left door)
+			{
+				AnimatePart(MirrorPartIndexes, ref MirrorAnimationKey, MSTSWagon.MirrorOpen, elapsedTime);
+			}
+
+			UpdateAnimation(frame, elapsedTime);
         }
 
 

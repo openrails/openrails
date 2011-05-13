@@ -156,7 +156,10 @@ namespace ORTS
             Commands[(int)UserCommands.ControlFiringRateDecrease] = new UserCommandKeyInput(0x13, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlFireShovelFull] = new UserCommandKeyInput(0x13, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
-            Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput(0x21, KeyModifiers.Control);
+			Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput(0x21, KeyModifiers.Control);
+			Commands[(int)UserCommands.ControlDoor] = new UserCommandKeyInput(0x10);
+			Commands[(int)UserCommands.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
 			Commands[(int)UserCommands.DisplayCarNumber] = new UserCommandKeyInput(0x41);
 			Commands[(int)UserCommands.DisplayStationInfo] = new UserCommandKeyInput(0x40);
 #if CHECK_KEYMAP_DUPLICATES
@@ -366,8 +369,11 @@ namespace ORTS
         ControlSander,
         ControlWiper,
         ControlHorn,
-        ControlBell,
-        ControlLight,
+		ControlBell,
+		ControlDoor,
+		ControlDoorRight,
+		ControlMirror,
+		ControlLight,
 		ControlPantographFirst,
 		ControlPantographSecond,
 		ControlHeadlightIncrease,
