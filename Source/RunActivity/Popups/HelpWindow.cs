@@ -10,10 +10,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.Popups
 {
@@ -30,6 +30,34 @@ namespace ORTS.Popups
             Tabs.Add(new TabData(Tab.KeyboardShortcuts, "Key Commands", (cl) =>
             {
                 var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
+                var chWidth = scrollbox.RemainingWidth / UserInput.KeyboardLayout[0].Length;
+                var chHeight = 3 * chWidth;
+                foreach (var keyboardLine in UserInput.KeyboardLayout)
+                {
+                    scrollbox.AddSpace(0, 2);
+                    var line = scrollbox.AddLayoutHorizontal(chHeight);
+                    var index = keyboardLine.IndexOf('[');
+                    var lastIndex = -1;
+                    while (index != -1)
+                    {
+                        var indexEnd = keyboardLine.IndexOf(']', index);
+
+                        var scanCodeString = keyboardLine.Substring(index + 1, 3).Trim();
+                        var scanCode = scanCodeString.Length > 0 ? int.Parse(scanCodeString, NumberStyles.HexNumber) : 0;
+                        var keyName = UserInput.GetScanCodeKeyName(scanCode);
+                        // Only allow F-keys to show >1 character names. The rest we'll remove for now.
+                        if ((keyName.Length > 1) && !new[] { 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43, 0x44, 0x57, 0x58 }.Contains(scanCode))
+                            keyName = "";
+
+                        var color = UserInput.GetScanCodeColor(scanCode);
+                        if (color == Color.TransparentBlack)
+                            color = Color.Black;
+                        line.Add(new Key(chWidth * (index - lastIndex - 1) + 2, 0, chWidth * (indexEnd - index + 1) - 2, chHeight, keyName, color));
+                        lastIndex = indexEnd;
+                        index = keyboardLine.IndexOf('[', indexEnd);
+                    }
+                }
+                scrollbox.AddSpace(0, chWidth);
                 foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
                 {
                     var line = scrollbox.AddLayoutHorizontal(TextHeight);
@@ -183,6 +211,24 @@ namespace ORTS.Popups
             if (task is ActivityTaskPassengerStopAt)
                 return ((ActivityTaskPassengerStopAt)task).ActArrive != null;
             return false;
+        }
+    }
+
+    class Key : Label
+    {
+        public Color KeyColor;
+
+        public Key(int x, int y, int width, int height, string text, Color keyColor)
+            : base(x, y, width, height, text, LabelAlignment.Center)
+        {
+            KeyColor = keyColor;
+        }
+
+        internal override void Draw(SpriteBatch spriteBatch, Point offset)
+        {
+            spriteBatch.Draw(WindowManager.WhiteTexture, new Rectangle(offset.X + Position.Left, offset.Y + Position.Top, Position.Width, Position.Height), Color.White);
+            spriteBatch.Draw(WindowManager.WhiteTexture, new Rectangle(offset.X + Position.Left + 1, offset.Y + Position.Top + 1, Position.Width - 2, Position.Height - 2), KeyColor);
+            base.Draw(spriteBatch, offset);
         }
     }
 }

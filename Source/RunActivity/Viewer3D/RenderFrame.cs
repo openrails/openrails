@@ -320,7 +320,7 @@ namespace ORTS
 		static bool LockShadows;
 		public void PrepareFrame(ElapsedTime elapsedTime)
 		{
-			if (UserInput.IsPressed(UserCommands.GameDebugLockShadows))
+			if (UserInput.IsPressed(UserCommands.DebugLockShadows))
 				LockShadows = !LockShadows;
 
 			if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && !LockShadows)
@@ -491,7 +491,7 @@ namespace ORTS
 #if DEBUG_RENDER_STATE
 			DebugRenderState(graphicsDevice.RenderState, "RenderFrame.Draw");
 #endif
-			var logging = UserInput.IsPressed(UserCommands.GameDebugLogRenderFrame);
+			var logging = UserInput.IsPressed(UserCommands.DebugLogRenderFrame);
 			if (logging)
 			{
 				Console.WriteLine();

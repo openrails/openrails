@@ -153,16 +153,16 @@ namespace ORTS
             // The ( + ) key speeds the time forward, the ( - ) key reverses the time.
             // When the Ctrl key is also pressed, the + and - keys control the amount of overcast.
 
-			if (UserInput.IsDown(UserCommands.GameOvercastIncrease))
+			if (UserInput.IsDown(UserCommands.DebugOvercastIncrease))
 				overcast = MathHelper.Clamp(overcast + 0.005f, 0, 1);
-			if (UserInput.IsDown(UserCommands.GameOvercastDecrease))
+			if (UserInput.IsDown(UserCommands.DebugOvercastDecrease))
 				overcast = MathHelper.Clamp(overcast - 0.005f, 0, 1);
-			if (UserInput.IsDown(UserCommands.GameClockForwards))
+			if (UserInput.IsDown(UserCommands.DebugClockForwards))
 			{
 				Viewer.Simulator.ClockTime += 120; // Two-minute (120 second) increments
 				if (Viewer.PrecipDrawer != null) Viewer.PrecipDrawer.Reset();
 			}
-			if (UserInput.IsDown(UserCommands.GameClockBackwards))
+			if (UserInput.IsDown(UserCommands.DebugClockBackwards))
 			{
 				Viewer.Simulator.ClockTime -= 120;
 				if (Viewer.PrecipDrawer != null) Viewer.PrecipDrawer.Reset();

@@ -75,7 +75,7 @@ namespace ORTS
             // The following keyboard commands are used for viewing sky and weather effects in "demo" mode
             // Use Alt+P to toggle precipitation through Clear, Rain and Snow states
 
-            if (UserInput.IsPressed(UserCommands.GameDebugWeatherChange))
+            if (UserInput.IsPressed(UserCommands.DebugWeatherChange))
             {
                 switch (Viewer.Simulator.Weather)
                 {

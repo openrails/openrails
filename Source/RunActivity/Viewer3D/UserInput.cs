@@ -11,11 +11,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace ORTS
@@ -35,6 +37,31 @@ namespace ORTS
 
         public static RailDriverState RDState = null;
 
+        public static readonly string[] KeyboardLayout = new[] {
+            "[01 ]   [3B ][3C ][3D ][3E ]   [3F ][40 ][41 ][42 ]   [43 ][44 ][57 ][58 ]   [37 ][46 ][11D]",
+            "                                                                                            ",
+            "[29 ][02 ][03 ][04 ][05 ][06 ][07 ][08 ][09 ][0A ][0B ][0C ][0D ][0E     ]   [52 ][47 ][49 ]",
+            "[0F   ][10 ][11 ][12 ][13 ][14 ][15 ][16 ][17 ][18 ][19 ][1A ][1B ][2B   ]   [53 ][4F ][51 ]",
+            "[3A     ][1E ][1F ][20 ][21 ][22 ][23 ][24 ][25 ][26 ][27 ][28 ][1C      ]                  ",
+            "[2A       ][2C ][2D ][2E ][2F ][30 ][31 ][32 ][33 ][34 ][35 ][36         ]        [48 ]     ",
+            "[1D   ][    ][38  ][39                          ][    ][    ][    ][1D   ]   [4B ][50 ][4D ]",
+        };
+
+        enum MapType
+        {
+            VirtualToCharacter = 2,
+            VirtualToScan = 0,
+            VirtualToScanEx = 4,
+            ScanToVirtual = 1,
+            ScanToVirtualEx = 3,
+        }
+
+        [DllImport("user32.dll")]
+        static extern int MapVirtualKey(int code, MapType mapType);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern int GetKeyNameText(int scanCode, [Out] string name, int nameLength);
+
         // Keyboard scancodes are basically constant; some keyboards have extra buttons (e.g. UK ones tend to have an
         // extra button next to Left Shift) or move one or two around (e.g. UK ones tend to move 0x2B down one row)
         // but generally this layout is right. Numeric keypad omitted as most keys are just duplicates of the main
@@ -53,30 +80,44 @@ namespace ORTS
         public static void Initialize()
         {
             Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(0x01);
-            Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
             Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(0x11D);
             Commands[(int)UserCommands.GameSave] = new UserCommandKeyInput(0x3C);
-            Commands[(int)UserCommands.GameSpeedUp] = new UserCommandKeyInput(0x49, KeyModifiers.Control | KeyModifiers.Alt);
-            Commands[(int)UserCommands.GameSpeedDown] = new UserCommandKeyInput(0x51, KeyModifiers.Control | KeyModifiers.Alt);
-            Commands[(int)UserCommands.GameSpeedReset] = new UserCommandKeyInput(0x47, KeyModifiers.Control | KeyModifiers.Alt);
-            Commands[(int)UserCommands.GameOvercastIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Control);
-            Commands[(int)UserCommands.GameOvercastDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Control);
-            Commands[(int)UserCommands.GameClockForwards] = new UserCommandKeyInput(0x0D);
-            Commands[(int)UserCommands.GameClockBackwards] = new UserCommandKeyInput(0x0C);
-            Commands[(int)UserCommands.GameODS] = new UserCommandKeyInput(0x3F);
-            Commands[(int)UserCommands.GameLogger] = new UserCommandKeyInput(0x58);
-            Commands[(int)UserCommands.GameDebugKeys] = new UserCommandKeyInput(0x3B, KeyModifiers.Alt);
-            Commands[(int)UserCommands.GameDebugLockShadows] = new UserCommandKeyInput(0x1F, KeyModifiers.Alt);
-            Commands[(int)UserCommands.GameDebugLogRenderFrame] = new UserCommandKeyInput(0x58, KeyModifiers.Alt);
-            Commands[(int)UserCommands.GameDebugSignalling] = new UserCommandKeyInput(0x57, KeyModifiers.Alt);
-            Commands[(int)UserCommands.GameDebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
-            Commands[(int)UserCommands.WindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
-            Commands[(int)UserCommands.WindowHelp] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommands.WindowTab]);
-            Commands[(int)UserCommands.WindowTrackMonitor] = new UserCommandKeyInput(0x3E);
-            Commands[(int)UserCommands.WindowSwitch] = new UserCommandKeyInput(0x42);
-            Commands[(int)UserCommands.WindowTrainOperations] = new UserCommandKeyInput(0x43);
-            Commands[(int)UserCommands.WindowNextStation] = new UserCommandKeyInput(0x44);
-            Commands[(int)UserCommands.WindowCompass] = new UserCommandKeyInput(0x0B);
+            Commands[(int)UserCommands.GameSwitchAhead] = new UserCommandKeyInput(0x22);
+            Commands[(int)UserCommands.GameSwitchBehind] = new UserCommandKeyInput(0x22, KeyModifiers.Shift);
+            Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
+            Commands[(int)UserCommands.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
+            Commands[(int)UserCommands.GameLocomotiveSwitch] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
+            Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
+
+            Commands[(int)UserCommands.DisplayNextWindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
+            Commands[(int)UserCommands.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommands.DisplayNextWindowTab]);
+            Commands[(int)UserCommands.DisplayTrackMonitorWindow] = new UserCommandKeyInput(0x3E);
+            Commands[(int)UserCommands.DisplayHUD] = new UserCommandKeyInput(0x3F);
+            Commands[(int)UserCommands.DisplayStationLabels] = new UserCommandKeyInput(0x40);
+            Commands[(int)UserCommands.DisplayCarLabels] = new UserCommandKeyInput(0x41);
+            Commands[(int)UserCommands.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);
+            Commands[(int)UserCommands.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);
+            Commands[(int)UserCommands.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
+            Commands[(int)UserCommands.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
+
+            Commands[(int)UserCommands.DebugLocomotiveFlip] = new UserCommandKeyInput(0x21, KeyModifiers.Shift | KeyModifiers.Control);
+            Commands[(int)UserCommands.DebugResetSignal] = new UserCommandKeyInput(0x0F);
+            Commands[(int)UserCommands.DebugSpeedUp] = new UserCommandKeyInput(0x49, KeyModifiers.Control | KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugSpeedDown] = new UserCommandKeyInput(0x51, KeyModifiers.Control | KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugSpeedReset] = new UserCommandKeyInput(0x47, KeyModifiers.Control | KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugOvercastIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Control);
+            Commands[(int)UserCommands.DebugOvercastDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Control);
+            Commands[(int)UserCommands.DebugClockForwards] = new UserCommandKeyInput(0x0D);
+            Commands[(int)UserCommands.DebugClockBackwards] = new UserCommandKeyInput(0x0C);
+            Commands[(int)UserCommands.DebugLogger] = new UserCommandKeyInput(0x58);
+            Commands[(int)UserCommands.DebugDumpKeymap] = new UserCommandKeyInput(0x3B, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugLockShadows] = new UserCommandKeyInput(0x1F, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugLogRenderFrame] = new UserCommandKeyInput(0x58, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugSignalling] = new UserCommandKeyInput(0x57, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugDispatcherExtend] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
+            Commands[(int)UserCommands.DebugDispatcherRelease] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift | KeyModifiers.Control);
+
             Commands[(int)UserCommands.CameraCab] = new UserCommandKeyInput(0x02);
             Commands[(int)UserCommands.CameraOutsideFront] = new UserCommandKeyInput(0x03);
             Commands[(int)UserCommands.CameraOutsideRear] = new UserCommandKeyInput(0x04);
@@ -103,13 +144,7 @@ namespace ORTS
             Commands[(int)UserCommands.CameraCarPrevious] = new UserCommandKeyInput(0x51, KeyModifiers.Alt);
             Commands[(int)UserCommands.CameraCarFirst] = new UserCommandKeyInput(0x47, KeyModifiers.Alt);
             Commands[(int)UserCommands.CameraCarLast] = new UserCommandKeyInput(0x4F, KeyModifiers.Alt);
-            Commands[(int)UserCommands.SwitchAhead] = new UserCommandKeyInput(0x22);
-            Commands[(int)UserCommands.SwitchBehind] = new UserCommandKeyInput(0x22, KeyModifiers.Shift);
-            Commands[(int)UserCommands.SwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
-            Commands[(int)UserCommands.UncoupleWithMouse] = new UserCommandKeyInput(0x16);
-            Commands[(int)UserCommands.LocomotiveSwitch] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
-            Commands[(int)UserCommands.LocomotiveFlip] = new UserCommandKeyInput(0x21, KeyModifiers.Shift | KeyModifiers.Control);
-            Commands[(int)UserCommands.ResetSignal] = new UserCommandKeyInput(0x0F);
+
             Commands[(int)UserCommands.ControlForwards] = new UserCommandKeyInput(0x11);
             Commands[(int)UserCommands.ControlBackwards] = new UserCommandKeyInput(0x1F);
             Commands[(int)UserCommands.ControlReverserForward] = new UserCommandKeyInput(0x11);
@@ -135,13 +170,14 @@ namespace ORTS
             Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput(0x2F);
             Commands[(int)UserCommands.ControlHorn] = new UserCommandKeyInput(0x39);
             Commands[(int)UserCommands.ControlBell] = new UserCommandKeyInput(0x30);
+            Commands[(int)UserCommands.ControlDoorLeft] = new UserCommandKeyInput(0x10);
+            Commands[(int)UserCommands.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlLight] = new UserCommandKeyInput(0x26);
 			Commands[(int)UserCommands.ControlPantographFirst] = new UserCommandKeyInput(0x19);
 			Commands[(int)UserCommands.ControlPantographSecond] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlHeadlightIncrease] = new UserCommandKeyInput(0x23);
             Commands[(int)UserCommands.ControlHeadlightDecrease] = new UserCommandKeyInput(0x23, KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlDispatcherExtend] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
-            Commands[(int)UserCommands.ControlDispatcherRelease] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift | KeyModifiers.Control);
             Commands[(int)UserCommands.ControlInjector1Increase] = new UserCommandKeyInput(0x25);
             Commands[(int)UserCommands.ControlInjector1Decrease] = new UserCommandKeyInput(0x25, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlInjector1] = new UserCommandKeyInput(0x17);
@@ -157,11 +193,7 @@ namespace ORTS
             Commands[(int)UserCommands.ControlFireShovelFull] = new UserCommandKeyInput(0x13, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
 			Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput(0x21, KeyModifiers.Control);
-			Commands[(int)UserCommands.ControlDoor] = new UserCommandKeyInput(0x10);
-			Commands[(int)UserCommands.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
-			Commands[(int)UserCommands.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
-			Commands[(int)UserCommands.DisplayCarNumber] = new UserCommandKeyInput(0x41);
-			Commands[(int)UserCommands.DisplayStationInfo] = new UserCommandKeyInput(0x40);
+
 #if CHECK_KEYMAP_DUPLICATES
             var firstUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Min();
             var lastUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Max();
@@ -201,14 +233,56 @@ namespace ORTS
                     FarPoint = viewer.GraphicsDevice.Viewport.Unproject(farsource, viewer.Camera.XNAProjection, viewer.Camera.XNAView, world);
                 }
 
-                if (UserInput.IsPressed(UserCommands.GameDebugKeys))
+                if (UserInput.IsPressed(UserCommands.DebugDumpKeymap))
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("{0,-40}{1,-40}{2}", "Command", "Key", "Unique Inputs");
-                    Console.WriteLine(new String('=', 40 * 3));
-                    foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
-                        Console.WriteLine("{0,-40}{1,-40}{2}", UserInput.FormatCommandName(command), Commands[(int)command], String.Join(", ", Commands[(int)command].UniqueInputs().OrderBy(s => s).ToArray()));
-                    Console.WriteLine();
+                    using (var writer = new StreamWriter(File.OpenWrite("Keyboard.txt")))
+                    {
+                        writer.WriteLine("{0,-40}{1,-40}{2}", "Command", "Key", "Unique Inputs");
+                        writer.WriteLine(new String('=', 40 * 3));
+                        foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+                            writer.WriteLine("{0,-40}{1,-40}{2}", UserInput.FormatCommandName(command), Commands[(int)command], String.Join(", ", Commands[(int)command].UniqueInputs().OrderBy(s => s).ToArray()));
+                    }
+                    viewer.MessagesWindow.AddMessage("Keyboard command list saved to 'keyboard.txt'.", 10);
+
+                    var chWidth = 50;
+                    var chHeight = 3 * chWidth;
+                    var chGap = 5;
+                    var chFont = new System.Drawing.Font(System.Drawing.SystemFonts.MessageBoxFont.FontFamily, chHeight * 0.6f, System.Drawing.GraphicsUnit.Pixel);
+                    var keyboardLayoutBitmap = new System.Drawing.Bitmap(KeyboardLayout[0].Length * chWidth, KeyboardLayout.Length * chHeight);
+                    using (var g = System.Drawing.Graphics.FromImage(keyboardLayoutBitmap))
+                    {
+                        for (var i = 0; i < KeyboardLayout.Length; i++)
+                        {
+                            var keyboardLine = KeyboardLayout[i];
+                            //scrollbox.AddSpace(0, 2);
+                            //var line = scrollbox.AddLayoutHorizontal(chHeight);
+                            var index = keyboardLine.IndexOf('[');
+                            var lastIndex = -1;
+                            while (index != -1)
+                            {
+                                var indexEnd = keyboardLine.IndexOf(']', index);
+
+                                var scanCodeString = keyboardLine.Substring(index + 1, 3).Trim();
+                                var scanCode = scanCodeString.Length > 0 ? int.Parse(scanCodeString, NumberStyles.HexNumber) : 0;
+                                var keyName = UserInput.GetScanCodeKeyName(scanCode);
+                                // Only allow F-keys to show >1 character names. The rest we'll remove for now.
+                                if ((keyName.Length > 1) && !new[] { 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43, 0x44, 0x57, 0x58 }.Contains(scanCode))
+                                    keyName = "";
+
+                                var color = UserInput.GetScanCodeColor(scanCode);
+                                if (color == Color.TransparentBlack)
+                                    color = Color.White;
+                                g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb((int)color.PackedValue)), index * chWidth + chGap, i * chHeight + chGap, (indexEnd - index + 1) * chWidth - 2 * chGap, chHeight - 2 * chGap);
+                                g.DrawRectangle(System.Drawing.Pens.Black, index * chWidth + chGap, i * chHeight + chGap, (indexEnd - index + 1) * chWidth - 2 * chGap, chHeight - 2 * chGap);
+                                var w = (indexEnd - index + 1) * chWidth - 2 * chGap - g.MeasureString(keyName, chFont).Width;
+                                g.DrawString(keyName, chFont, color == Color.White ? System.Drawing.Brushes.Black : System.Drawing.Brushes.White, index * chWidth + chGap + w / 2, i * chHeight + chGap);
+                                lastIndex = indexEnd;
+                                index = keyboardLine.IndexOf('[', indexEnd);
+                            }
+                        }
+                    }
+                    keyboardLayoutBitmap.Save("Keyboard.png", System.Drawing.Imaging.ImageFormat.Png);
+                    viewer.MessagesWindow.AddMessage("Keyboard map saved to 'keyboard.png'.", 10);
                 }
             }
 #if DEBUG_USER_INPUT
@@ -283,35 +357,109 @@ namespace ORTS
         public static bool IsMouseRightButtonDown() { return MouseState.RightButton == ButtonState.Pressed; }
         public static bool IsMouseRightButtonPressed() { return MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released; }
         public static bool IsMouseRightButtonReleased() { return MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed; }
+
+        public static Keys GetScanCodeKeys(int scanCode)
+        {
+            var sc = scanCode;
+            if (scanCode >= 0x0100)
+                sc = 0xE100 | (scanCode & 0x7F);
+            else if (scanCode >= 0x0080)
+                sc = 0xE000 | (scanCode & 0x7F);
+            return (Keys)MapVirtualKey(sc, MapType.ScanToVirtualEx);
+        }
+
+        public static string GetScanCodeKeyName(int scanCode)
+        {
+            var xnaName = Enum.GetName(typeof(Keys), GetScanCodeKeys(scanCode));
+            var keyName = new String('\0', 32);
+            var keyNameLength = GetKeyNameText(scanCode << 16, keyName, keyName.Length);
+            keyName = keyName.Substring(0, keyNameLength);
+            if (keyName.Length > 0)
+            {
+                // Pause is mapped to "Right Control" and GetKeyNameText prefers "NUM 9" to "PAGE UP" too so pick the
+                // XNA key name in these cases.
+                if ((scanCode == 0x11D) || keyName.StartsWith("NUM ", StringComparison.OrdinalIgnoreCase) || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase))
+                    return xnaName;
+
+                return keyName;
+            }
+
+            // If we failed to convert the scan code to a name, show the scan code for debugging.
+            return String.Format(" [sc=0x{0:X2}]", scanCode);
+        }
+
+        public static Color GetScanCodeColor(int scanCode)
+        {
+            // These should be placed in order of priority - the first found match is used.
+            var prefixesToColors = new List<KeyValuePair<string, Color>>()
+            {
+                new KeyValuePair<string, Color>("ControlReverser", Color.DarkGreen),
+                new KeyValuePair<string, Color>("ControlThrottle", Color.DarkGreen),
+                new KeyValuePair<string, Color>("ControlTrainBrake", Color.DarkRed),
+                new KeyValuePair<string, Color>("ControlEngineBrake", Color.DarkRed),
+                new KeyValuePair<string, Color>("ControlDynamicBrake", Color.DarkRed),
+                new KeyValuePair<string, Color>("ControlBrakeHose", Color.DarkRed),
+                new KeyValuePair<string, Color>("ControlEmergency", Color.DarkRed),
+                new KeyValuePair<string, Color>("ControlBailOff", Color.DarkRed),
+                new KeyValuePair<string, Color>("ControlInitializeBrakes", Color.DarkRed),
+                new KeyValuePair<string, Color>("Control", Color.DarkBlue),
+                new KeyValuePair<string, Color>("Camera", Color.Orange),
+                new KeyValuePair<string, Color>("Display", Color.DarkGoldenrod),
+                //new KeyValuePair<string, Color>("Game", Color.Blue),
+                new KeyValuePair<string, Color>("", Color.Gray),
+            };
+
+            foreach (var prefixToColor in prefixesToColors)
+                foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+                    if ((Commands[(int)command] is UserCommandKeyInput) && (Commands[(int)command] as UserCommandKeyInput).ScanCode == scanCode)
+                        if (command.ToString().StartsWith(prefixToColor.Key))
+                            return prefixToColor.Value;
+
+            return Color.TransparentBlack;
+        }
     }
 
     public enum UserCommands
     {
         GameQuit,
-        GameFullscreen,
         GamePause,
         GameSave,
-        GameSpeedUp,
-        GameSpeedDown,
-        GameSpeedReset,
-        GameOvercastIncrease,
-        GameOvercastDecrease,
-        GameClockForwards,
-        GameClockBackwards,
-        GameODS,
-        GameLogger,
-        GameDebugKeys,
-        GameDebugLockShadows,
-        GameDebugLogRenderFrame,
-        GameDebugSignalling,
-        GameDebugWeatherChange,
-        WindowTab,
-        WindowHelp,
-        WindowTrackMonitor,
-        WindowSwitch,
-        WindowTrainOperations,
-        WindowNextStation,
-        WindowCompass,
+        GameSwitchAhead,
+        GameSwitchBehind,
+        GameSwitchWithMouse,
+        GameUncoupleWithMouse,
+        GameLocomotiveSwitch,
+        GameFullscreen,
+
+        DisplayNextWindowTab,
+        DisplayHelpWindow,
+        DisplayTrackMonitorWindow,
+        DisplayHUD,
+        DisplayCarLabels,
+        DisplayStationLabels,
+        DisplaySwitchWindow,
+        DisplayTrainOperationsWindow,
+        DisplayNextStationWindow,
+        DisplayCompassWindow,
+
+        DebugLocomotiveFlip,
+        DebugResetSignal,
+        DebugSpeedUp,
+        DebugSpeedDown,
+        DebugSpeedReset,
+        DebugOvercastIncrease,
+        DebugOvercastDecrease,
+        DebugClockForwards,
+        DebugClockBackwards,
+        DebugLogger,
+        DebugDumpKeymap,
+        DebugLockShadows,
+        DebugLogRenderFrame,
+        DebugSignalling,
+        DebugWeatherChange,
+        DebugDispatcherExtend,
+        DebugDispatcherRelease,
+
         CameraCab,
         CameraOutsideFront,
         CameraOutsideRear,
@@ -338,13 +486,7 @@ namespace ORTS
         CameraCarPrevious,
         CameraCarFirst,
         CameraCarLast,
-        SwitchAhead,
-        SwitchBehind,
-        SwitchWithMouse,
-        UncoupleWithMouse,
-        LocomotiveSwitch,
-        LocomotiveFlip,
-        ResetSignal,
+
         ControlForwards,
         ControlBackwards,
         ControlReverserForward,
@@ -370,7 +512,7 @@ namespace ORTS
         ControlWiper,
         ControlHorn,
 		ControlBell,
-		ControlDoor,
+		ControlDoorLeft,
 		ControlDoorRight,
 		ControlMirror,
 		ControlLight,
@@ -378,8 +520,6 @@ namespace ORTS
 		ControlPantographSecond,
 		ControlHeadlightIncrease,
         ControlHeadlightDecrease,
-        ControlDispatcherExtend,
-        ControlDispatcherRelease,
         ControlInjector1Increase,
         ControlInjector1Decrease,
         ControlInjector1,
@@ -395,8 +535,6 @@ namespace ORTS
         ControlFireShovelFull,
         ControlCylinderCocks,
         ControlFiring,
-		DisplayCarNumber,
-		DisplayStationInfo,
     }
 
     [Flags]
@@ -478,21 +616,6 @@ namespace ORTS
         public readonly bool Control;
         public readonly bool Alt;
 
-        enum MapType
-        {
-             VirtualToCharacter = 2,
-             VirtualToScan   = 0,
-             VirtualToScanEx = 4,
-             ScanToVirtual   = 1,
-             ScanToVirtualEx = 3,
-        }
-
-        [DllImport("user32.dll")]
-        static extern int MapVirtualKey(int code, MapType mapType);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        static extern int GetKeyNameText(int scanCode, [Out] string name, int nameLength);
-
         protected UserCommandKeyInput(int scancode, bool shift, bool control, bool alt)
         {
             ScanCode = scancode;
@@ -515,12 +638,7 @@ namespace ORTS
         {
             get
             {
-                var sc = ScanCode;
-                if (ScanCode >= 0x0100)
-                    sc = 0xE100 | (ScanCode & 0x7F);
-                else if (ScanCode >= 0x0080)
-                    sc = 0xE000 | (ScanCode & 0x7F);
-                return (Keys)MapVirtualKey(sc, MapType.ScanToVirtualEx);
+                return UserInput.GetScanCodeKeys(ScanCode);
             }
         }
 
@@ -558,24 +676,7 @@ namespace ORTS
             if (Control) key.Append("Control + ");
             if (Alt) key.Append("Alt + ");
 
-            var xnaName = Enum.GetName(typeof(Keys), Key);
-            var keyName = new String('\0', 32);
-            var keyNameLength = GetKeyNameText(ScanCode << 16, keyName, keyName.Length);
-            keyName = keyName.Substring(0, keyNameLength);
-            if (keyName.Length > 0)
-            {
-                // Pause is mapped to "Right Control" and GetKeyNameText prefers "NUM 9" to "PAGE UP" too so pick the
-                // XNA key name in these cases.
-                if ((ScanCode == 0x11D) || keyName.StartsWith("NUM ", StringComparison.OrdinalIgnoreCase) || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase))
-                    key.Append(xnaName);
-                else
-                    key.Append(keyName);
-            }
-            else
-            {
-                // If we failed to convert the scan code to a name, show the scan code for debugging.
-                key.AppendFormat(" [sc=0x{0:X2}]", ScanCode);
-            }
+            key.Append(UserInput.GetScanCodeKeyName(ScanCode));
 
             return key.ToString();
         }

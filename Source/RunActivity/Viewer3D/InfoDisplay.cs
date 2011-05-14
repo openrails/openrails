@@ -139,10 +139,10 @@ namespace ORTS
 
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.GameODS))
+            if (UserInput.IsPressed(UserCommands.DisplayHUD))
                 TextPage = (TextPage + 1) % TextPages.Length;
 
-            if (UserInput.IsPressed(UserCommands.GameLogger))
+            if (UserInput.IsPressed(UserCommands.DebugLogger))
             {
 				Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
 				if (Viewer.Settings.DataLogger)
@@ -150,9 +150,9 @@ namespace ORTS
 				else
 					DataLoggerStop();
             }
-			if (UserInput.IsPressed(UserCommands.DisplayCarNumber))
+			if (UserInput.IsPressed(UserCommands.DisplayCarLabels))
 				DrawCarNumber = !DrawCarNumber;
-			if (UserInput.IsPressed(UserCommands.DisplayStationInfo))
+			if (UserInput.IsPressed(UserCommands.DisplayStationLabels))
 				DrawSiding = !DrawSiding;
 		}
 

@@ -1292,9 +1292,9 @@ namespace ORTS
                 if (EventID.IsMSTSBin)
                     Locomotive.SignalEvent(EventID.LightSwitchToggle);
             }
-			if (UserInput.IsPressed(UserCommands.ControlDispatcherExtend))
+			if (UserInput.IsPressed(UserCommands.DebugDispatcherExtend))
                 Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization();
-			if (UserInput.IsPressed(UserCommands.ControlDispatcherRelease))
+			if (UserInput.IsPressed(UserCommands.DebugDispatcherRelease))
                 Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
 
             // By GeorgeS

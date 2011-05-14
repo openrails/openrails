@@ -737,7 +737,7 @@ namespace ORTS
 				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.PantographUp);
 				else Car.SignalEvent(EventID.PantographDown);
 			}
-			if (UserInput.IsPressed(UserCommands.ControlDoor)) //control door (or only left)
+			if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
 			{
 				MSTSWagon.DoorLeftOpen = !MSTSWagon.DoorLeftOpen;
 				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train

@@ -393,19 +393,19 @@ namespace ORTS
 			if (UserInput.IsPressed(UserCommands.GameQuit)) { Stop(); return; }
 			if (UserInput.IsPressed(UserCommands.GameFullscreen)) { ToggleFullscreen(); }
 			if (UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
-			if (UserInput.IsPressed(UserCommands.GameSpeedUp)) Simulator.GameSpeed *= 1.5f;
-			if (UserInput.IsPressed(UserCommands.GameSpeedDown)) Simulator.GameSpeed /= 1.5f;
-			if (UserInput.IsPressed(UserCommands.GameSpeedReset)) Simulator.GameSpeed = 1;
+			if (UserInput.IsPressed(UserCommands.DebugSpeedUp)) Simulator.GameSpeed *= 1.5f;
+			if (UserInput.IsPressed(UserCommands.DebugSpeedDown)) Simulator.GameSpeed /= 1.5f;
+			if (UserInput.IsPressed(UserCommands.DebugSpeedReset)) Simulator.GameSpeed = 1;
 			if (UserInput.IsPressed(UserCommands.GameSave)) { Program.Save(); }
-            if (UserInput.IsPressed(UserCommands.WindowHelp)) if (UserInput.IsDown(UserCommands.WindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.WindowTrackMonitor)) if (UserInput.IsDown(UserCommands.WindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.WindowSwitch)) if (UserInput.IsDown(UserCommands.WindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.WindowTrainOperations)) if (UserInput.IsDown(UserCommands.WindowTab)) TrainOperationsWindow.TabAction(); else TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.WindowNextStation)) if (UserInput.IsDown(UserCommands.WindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.WindowCompass)) if (UserInput.IsDown(UserCommands.WindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.GameDebugSignalling)) if (UserInput.IsDown(UserCommands.WindowTab)) DriverAidWindow.TabAction(); else DriverAidWindow.Visible = !DriverAidWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayHelpWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayCompassWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) DriverAidWindow.TabAction(); else DriverAidWindow.Visible = !DriverAidWindow.Visible;
 
-			if (UserInput.IsPressed(UserCommands.LocomotiveSwitch))
+			if (UserInput.IsPressed(UserCommands.GameLocomotiveSwitch))
 			{
 				Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
 				Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
@@ -425,11 +425,11 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.CameraHeadOutForward) && HeadOutForwardCamera.IsAvailable) HeadOutForwardCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraHeadOutBackward) && HeadOutBackCamera.IsAvailable) HeadOutBackCamera.Activate();
 
-			if (UserInput.IsPressed(UserCommands.SwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);
-			if (UserInput.IsPressed(UserCommands.SwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
-			if (UserInput.IsPressed(UserCommands.LocomotiveFlip)) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
-			if (UserInput.IsPressed(UserCommands.ResetSignal)) PlayerTrain.ResetSignal(true);
-			if (!Simulator.Paused && UserInput.IsDown(UserCommands.SwitchWithMouse))
+			if (UserInput.IsPressed(UserCommands.GameSwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);
+			if (UserInput.IsPressed(UserCommands.GameSwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
+			if (UserInput.IsPressed(UserCommands.DebugLocomotiveFlip)) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
+			if (UserInput.IsPressed(UserCommands.DebugResetSignal)) PlayerTrain.ResetSignal(true);
+			if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
 			{
 				isMouseShouldVisible = true;
 				if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
@@ -438,7 +438,7 @@ namespace ORTS
 					UserInput.Handled();
 				}
 			}
-			else if (!Simulator.Paused && UserInput.IsDown(UserCommands.UncoupleWithMouse))
+			else if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameUncoupleWithMouse))
 			{
 				isMouseShouldVisible = true;
 				if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)

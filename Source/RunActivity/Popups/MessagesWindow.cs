@@ -80,7 +80,7 @@ namespace ORTS.Popups
 				var width = hbox.RemainingWidth;
 				hbox.Add(message.LabelShadow = new LabelShadow(hbox.RemainingWidth, hbox.RemainingHeight));
 				hbox.Add(message.LabelTime = new Label(-width, 0, TextSize * 4, TextSize, InfoDisplay.FormattedTime(message.ClockTime)));
-				hbox.Add(message.LabelText = new Label(-width, 0, width - TextSize * 4, TextSize, message.Text));
+                hbox.Add(message.LabelText = new Label(-width + TextSize * 4, 0, width - TextSize * 4, TextSize, message.Text));
 			}
 			return vbox;
 		}

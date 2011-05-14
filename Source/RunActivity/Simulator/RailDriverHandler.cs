@@ -353,17 +353,17 @@ namespace ORTS
             Commands[(int)UserCommands.GameQuit] = new RailDriverUserCommand(0, 0x01);
             Commands[(int)UserCommands.GameSave] = new RailDriverUserCommand(0, 0x02);
             //Commands[(int)UserCommands. F3] = new RailDriverUserCommand(0, 0x04);
-            Commands[(int)UserCommands.WindowTrackMonitor] = new RailDriverUserCommand(0, 0x08);
+            Commands[(int)UserCommands.DisplayTrackMonitorWindow] = new RailDriverUserCommand(0, 0x08);
             //Commands[(int)UserCommands. F6] = new RailDriverUserCommand(0, 0x10);
             //Commands[(int)UserCommands. F7] = new RailDriverUserCommand(0, 0x20);
-            Commands[(int)UserCommands.WindowSwitch] = new RailDriverUserCommand(0, 0x40);
-            Commands[(int)UserCommands.WindowTrainOperations] = new RailDriverUserCommand(0, 0x80);
-            Commands[(int)UserCommands.WindowNextStation] = new RailDriverUserCommand(1, 0x01);
+            Commands[(int)UserCommands.DisplaySwitchWindow] = new RailDriverUserCommand(0, 0x40);
+            Commands[(int)UserCommands.DisplayTrainOperationsWindow] = new RailDriverUserCommand(0, 0x80);
+            Commands[(int)UserCommands.DisplayNextStationWindow] = new RailDriverUserCommand(1, 0x01);
             //Commands[(int)UserCommands. F11] = new RailDriverUserCommand(1, 0x02);
             //Commands[(int)UserCommands.GameLogger] = new RailDriverUserCommand(1, 0x04);
-            Commands[(int)UserCommands.WindowCompass] = new RailDriverUserCommand(1, 0x08);
-            Commands[(int)UserCommands.SwitchAhead] = new RailDriverUserCommand(1, 0x10);
-            Commands[(int)UserCommands.SwitchBehind] = new RailDriverUserCommand(1, 0x20);
+            Commands[(int)UserCommands.DisplayCompassWindow] = new RailDriverUserCommand(1, 0x08);
+            Commands[(int)UserCommands.GameSwitchAhead] = new RailDriverUserCommand(1, 0x10);
+            Commands[(int)UserCommands.GameSwitchBehind] = new RailDriverUserCommand(1, 0x20);
             // bottom row of blue buttons left to right
             //Commands[(int)UserCommands.RailDriverOnOff] = new RailDriverUserCommand(1, 0x40); handled elsewhere
             Commands[(int)UserCommands.CameraToggleShowCab] = new RailDriverUserCommand(1, 0x80);
@@ -376,7 +376,7 @@ namespace ORTS
             Commands[(int)UserCommands.CameraPassenger] = new RailDriverUserCommand(2, 0x40);
             Commands[(int)UserCommands.CameraBrakeman] = new RailDriverUserCommand(2, 0x80);
             //Commands[(int)UserCommands. hide popups] = new RailDriverUserCommand(3, 0x01);
-            Commands[(int)UserCommands.ResetSignal] = new RailDriverUserCommand(3, 0x02);
+            Commands[(int)UserCommands.DebugResetSignal] = new RailDriverUserCommand(3, 0x02);
             //Commands[(int)UserCommands. load passengers] = new RailDriverUserCommand(3, 0x04);
             //Commands[(int)UserCommands. ok] = new RailDriverUserCommand(3, 0x08);
             // controls to right of blue buttons
