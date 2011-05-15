@@ -345,7 +345,7 @@ namespace ORTS
             return NextTrJunctionNode(traveller);
         }
 
-        public TrJunctionNode NextTrJunctionNode(TDBTraveller traveller)
+        public static TrJunctionNode NextTrJunctionNode(TDBTraveller traveller)
         {
             while (traveller.NextSection())
             {
@@ -438,13 +438,13 @@ namespace ORTS
 
         }
 
+        /// <summary>
+        /// Move the traveller along the track by the specified distance, or until the end of the track is reached.
+        /// </summary>
+        /// <param name="distanceToGo">The distance to travel along the track. Positive values travel in the direction of the traveller and negative values in the opposite direction.</param>
+        /// <returns>The remaining distance if the traveller reached the end of the track.</returns>
         public float Move(float distanceToGo)
-        // moves the traveller along the track traversing the track database
-        // direction was set by the constructor
-        // on success returns 0.0
-        // on failure, returns distance remaining after the move, ie if it runs into an obstacle
         // TODO - must remove the trig from these calculations
-        // Note- distanceToGo can be positive or negative relative to the direction of travel 
         {
             bool negative = distanceToGo < 0;
             if (negative)
@@ -460,6 +460,31 @@ namespace ORTS
                 if (!NextSection())
                     break;  // no more sections
             }
+
+            if (negative)
+            {
+                ReverseDirection();
+                distanceToGo *= -1;
+            }
+
+            return distanceToGo;
+        }
+
+        /// <summary>
+        /// Move the traveller along the track by the specified distance within the current track section only.
+        /// </summary>
+        /// <param name="distanceToGo">The distance to travel along the track section. Positive values travel in the direction of the traveller and negative values in the opposite direction.</param>
+        /// <returns>The remaining distance if the traveller reached the end of the track section.</returns>
+        public float MoveInSection(float distanceToGo)
+        {
+            bool negative = distanceToGo < 0;
+            if (negative)
+            {
+                ReverseDirection();
+                distanceToGo *= -1;
+            }
+
+            distanceToGo = MoveInSegment(distanceToGo);
 
             if (negative)
             {
@@ -761,7 +786,6 @@ namespace ORTS
         // returns distance to go after movement
         // don't move past the end of the current sement
         {
-            Debug.Assert(distanceToGo >= -.00001);
             if (TN.TrJunctionNode != null)  // if we are at a junction node
                 return distanceToGo;        //    they have zero length, so transit distance is 0
             if (TS == null) // else we are at a end of track node

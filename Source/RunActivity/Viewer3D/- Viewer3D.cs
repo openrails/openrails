@@ -65,9 +65,10 @@ namespace ORTS
 		public HelpWindow HelpWindow; // F1 window
         public TrackMonitorWindow TrackMonitorWindow; // F4 window
         public SwitchWindow SwitchWindow; // F8 window
-		public TrainOperationsWindow TrainOperationsWindow; // F9 window
+        public TrainOperationsWindow TrainOperationsWindow; // F9 window
 		public NextStationWindow NextStationWindow; // F10 window
-		public DriverAidWindow DriverAidWindow; // F11 window
+        public DriverAidWindow DriverAidWindow; // Alt-F11 window
+        public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
 		public CompassWindow CompassWindow; // 0 window
 		public SkyDrawer SkyDrawer;
 		public PrecipDrawer PrecipDrawer = null;
@@ -134,6 +135,7 @@ namespace ORTS
             NextStationWindow = new NextStationWindow(WindowManager);
             CompassWindow = new CompassWindow(WindowManager);
             DriverAidWindow = new DriverAidWindow(WindowManager);
+            SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
 
             WellKnownCameras = new List<Camera>();
             WellKnownCameras.Add(CabCamera = new CabCamera(this));
@@ -403,7 +405,8 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayCompassWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) DriverAidWindow.TabAction(); else DriverAidWindow.Visible = !DriverAidWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DebugDriverAid)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) DriverAidWindow.TabAction(); else DriverAidWindow.Visible = !DriverAidWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
 
 			if (UserInput.IsPressed(UserCommands.GameLocomotiveSwitch))
 			{

@@ -109,8 +109,11 @@ namespace ORTS.Popups
 			}
 
 			// Reposition all the windows.
-			foreach (var window in Windows)
-				window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
+            foreach (var window in Windows)
+            {
+                window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
+                window.ScreenChanged();
+            }
 		}
 
         double LastPrepareRealTime;

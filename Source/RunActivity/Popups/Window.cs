@@ -97,6 +97,10 @@ namespace ORTS.Popups
 		{
 		}
 
+        internal virtual void ScreenChanged()
+        {
+        }
+
         public bool Visible
 		{
 			get
