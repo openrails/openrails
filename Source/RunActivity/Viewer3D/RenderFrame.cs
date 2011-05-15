@@ -514,11 +514,6 @@ namespace ORTS
 				Console.WriteLine("}");
 				Console.WriteLine();
 			}
-
-            RenderProcess.Viewer.WindowManager.Draw(graphicsDevice);
-#if DEBUG_RENDER_STATE
-            DebugRenderState(graphicsDevice.RenderState, "WindowManager");
-#endif
         }
 
 		void DrawShadows(GraphicsDevice graphicsDevice, bool logging)

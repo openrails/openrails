@@ -16,7 +16,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace ORTS.Popups
 {
-	public class WindowManager
+	public class WindowManager : RenderPrimitive
 	{
 		public static Texture2D WhiteTexture;
 		public static Texture2D ScrollbarTexture;
@@ -36,10 +36,12 @@ namespace ORTS.Popups
         public readonly WindowTextManager TextManager;
         public readonly WindowTextFont TextFontDefault;
 
+        readonly Material WindowManagerMaterial = new BasicBlendedMaterial("WindowManager");
         readonly List<Window> Windows = new List<Window>();
         List<Window> WindowsZOrder = new List<Window>();
         SpriteBatch SpriteBatch;
-		Matrix XNAView = Matrix.Identity;
+        Matrix Identity = Matrix.Identity;
+        Matrix XNAView = Matrix.Identity;
 		Matrix XNAProjection = Matrix.Identity;
         internal Point ScreenSize = new Point(10000, 10000); // Arbitrary but necessary.
 		ResolveTexture2D Screen;
@@ -111,8 +113,25 @@ namespace ORTS.Popups
 				window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
 		}
 
-		[CallOnThread("Render")]
-		public void Draw(GraphicsDevice graphicsDevice)
+        double LastPrepareRealTime;
+        [CallOnThread("Updater")]
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            var updateFull = false;
+            if (Viewer.RealTime - LastPrepareRealTime >= 0.25)
+            {
+                updateFull = true;
+                LastPrepareRealTime = Viewer.RealTime;
+            }
+
+            foreach (var window in VisibleWindows)
+                window.PrepareFrame(frame, elapsedTime, updateFull);
+
+            frame.AddPrimitive(WindowManagerMaterial, this, RenderPrimitiveGroup.Overlay, ref Identity);
+        }
+
+        [CallOnThread("Render")]
+		public override void Draw(GraphicsDevice graphicsDevice)
 		{
 			// Nothing visible? Nothing more to do!
 			if (Windows.All(w => !w.Visible))
@@ -179,8 +198,8 @@ namespace ORTS.Popups
 
 		double LastUpdateRealTime;
 		[CallOnThread("Updater")]
-		public void HandleUserInput()
-		{
+        public void HandleUserInput(ElapsedTime elapsedTime)
+        {
 			if (UserInput.IsMouseLeftButtonPressed())
 			{
 				mouseDownPosition = new Point(UserInput.MouseState.X, UserInput.MouseState.Y);

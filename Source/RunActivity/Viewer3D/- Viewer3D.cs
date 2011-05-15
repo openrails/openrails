@@ -63,8 +63,8 @@ namespace ORTS
 		public WindowManager WindowManager = null;
 		public MessagesWindow MessagesWindow; // Game message window (special, always visible)
 		public HelpWindow HelpWindow; // F1 window
-		public TrackMonitorWindow TrackMonitorWindow; // F4 window
-		public SwitchWindow SwitchWindow; // F8 window
+        public TrackMonitorWindow TrackMonitorWindow; // F4 window
+        public SwitchWindow SwitchWindow; // F8 window
 		public TrainOperationsWindow TrainOperationsWindow; // F9 window
 		public NextStationWindow NextStationWindow; // F10 window
 		public DriverAidWindow DriverAidWindow; // F11 window
@@ -387,7 +387,7 @@ namespace ORTS
 				PlayerLocomotiveViewer.HandleUserInput(elapsedTime);
 
 			InfoDisplay.HandleUserInput(elapsedTime);
-			WindowManager.HandleUserInput();
+			WindowManager.HandleUserInput(elapsedTime);
 
 			// Check for game control keys
 			if (UserInput.IsPressed(UserCommands.GameQuit)) { Stop(); return; }
@@ -502,60 +502,56 @@ namespace ORTS
 		/// </summary>
 		[CallOnThread("Updater")]
 		public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-		{
-			// Mute sound when paused
-			if (SoundEngine != null)
-			{
-				if (Simulator.Paused)
-					SoundEngine.SoundVolume = 0;
-				else
-					SoundEngine.SoundVolume = 1;
-			}
+        {
+            // Mute sound when paused
+            if (SoundEngine != null)
+            {
+                if (Simulator.Paused)
+                    SoundEngine.SoundVolume = 0;
+                else
+                    SoundEngine.SoundVolume = 1;
+            }
 
-			if (ScreenHasChanged())
-			{
-				Camera.ScreenChanged();
-				RenderProcess.InitializeShadowMapLocations(RenderProcess.Viewer);
-			}
+            if (ScreenHasChanged())
+            {
+                Camera.ScreenChanged();
+                RenderProcess.InitializeShadowMapLocations(RenderProcess.Viewer);
+            }
 
-			// Update camera first...
-			Camera.Update(elapsedTime);
-			// No above camera means we're allowed to auto-switch to cab view.
-			if ((AboveGroundCamera == null) && Camera.IsUnderground)
-			{
-				AboveGroundCamera = Camera;
-				CabCamera.Activate();
-			}
-			else if (AboveGroundCamera != null)
-			{
-				// Make sure to keep the old camera updated...
-				AboveGroundCamera.Update(elapsedTime);
-				// ...so we can tell when to come back to it.
-				if (!AboveGroundCamera.IsUnderground)
-				{
-					// But only if the user hasn't selected another camera!
-					if (Camera == CabCamera)
-						AboveGroundCamera.Activate();
-					AboveGroundCamera = null;
-				}
-			}
-			// We're now ready to prepare frame for the camera.
-			Camera.PrepareFrame(frame, elapsedTime);
+            // Update camera first...
+            Camera.Update(elapsedTime);
+            // No above camera means we're allowed to auto-switch to cab view.
+            if ((AboveGroundCamera == null) && Camera.IsUnderground)
+            {
+                AboveGroundCamera = Camera;
+                CabCamera.Activate();
+            }
+            else if (AboveGroundCamera != null)
+            {
+                // Make sure to keep the old camera updated...
+                AboveGroundCamera.Update(elapsedTime);
+                // ...so we can tell when to come back to it.
+                if (!AboveGroundCamera.IsUnderground)
+                {
+                    // But only if the user hasn't selected another camera!
+                    if (Camera == CabCamera)
+                        AboveGroundCamera.Activate();
+                    AboveGroundCamera = null;
+                }
+            }
+            // We're now ready to prepare frame for the camera.
+            Camera.PrepareFrame(frame, elapsedTime);
 
-			frame.PrepareFrame(elapsedTime);
-			SkyDrawer.PrepareFrame(frame, elapsedTime);
-			TerrainDrawer.PrepareFrame(frame, elapsedTime);
-			SceneryDrawer.PrepareFrame(frame, elapsedTime);
-			TrainDrawer.PrepareFrame(frame, elapsedTime);
-			RoadCarHandler.PrepareFrame(frame, elapsedTime);
-			// By GeorgeS
-			//if (WorldSounds != null) WorldSounds.Update(elapsedTime);
-			if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
-			//if (WireDrawer != null) WireDrawer.PrepareFrame(frame, elapsedTime);//commented out as new implementation is in
-			InfoDisplay.PrepareFrame(frame, elapsedTime);
-			// By GeorgeS
-			//if (IngameSounds != null) IngameSounds.Update(elapsedTime);
-		}
+            frame.PrepareFrame(elapsedTime);
+            SkyDrawer.PrepareFrame(frame, elapsedTime);
+            TerrainDrawer.PrepareFrame(frame, elapsedTime);
+            SceneryDrawer.PrepareFrame(frame, elapsedTime);
+            TrainDrawer.PrepareFrame(frame, elapsedTime);
+            RoadCarHandler.PrepareFrame(frame, elapsedTime);
+            if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
+            InfoDisplay.PrepareFrame(frame, elapsedTime);
+            WindowManager.PrepareFrame(frame, elapsedTime);
+        }
 
 
 		/// <summary>

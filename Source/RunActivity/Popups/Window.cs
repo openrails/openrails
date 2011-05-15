@@ -72,7 +72,9 @@ namespace ORTS.Popups
         protected virtual void VisibilityChanged()
 		{
             Owner.WriteWindowZOrder();
-		}
+            if (Visible && (WindowLayout != null))
+                PrepareFrame(ElapsedTime.Zero, true);
+        }
 
 		protected virtual void LocationChanged()
 		{
@@ -186,7 +188,14 @@ namespace ORTS.Popups
 			return content;
 		}
 
-		public override void Draw(GraphicsDevice graphicsDevice)
+        [CallOnThread("Updater")]
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool updateFull)
+        {
+            if (Visible)
+                PrepareFrame(elapsedTime, updateFull);
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
 		{
 			if (WindowVertexBuffer == null)
 			{
@@ -233,7 +242,13 @@ namespace ORTS.Popups
 			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 0, 20);
 		}
 
-		public void Draw(SpriteBatch spriteBatch)
+        [CallOnThread("Updater")]
+        public virtual void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+        }
+
+        [CallOnThread("Render")]
+		public virtual void Draw(SpriteBatch spriteBatch)
 		{
 			WindowLayout.Draw(spriteBatch, Location.Location);
 		}

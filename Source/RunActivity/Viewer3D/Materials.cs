@@ -309,48 +309,67 @@ namespace ORTS
 		}
 	}
 
-	public class SpriteBatchMaterial : Material
+    public class BasicMaterial : Material
+    {
+        public BasicMaterial(string key)
+			: base(key)
+		{
+		}
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            foreach (var item in renderItems)
+                item.RenderPrimitive.Draw(graphicsDevice);
+        }
+    }
+
+    public class BasicBlendedMaterial : BasicMaterial
+    {
+        public BasicBlendedMaterial(string key)
+            : base(key)
+        {
+        }
+
+        public override bool GetBlending(RenderPrimitive renderPrimitive)
+        {
+            return true;
+        }
+    }
+
+    public class SpriteBatchMaterial : BasicBlendedMaterial
 	{
-		public SpriteBatch SpriteBatch;
-		public SpriteFont DefaultFont;
-		public SpriteFont MediumFont;
-		public SpriteFont LargeFont;
-		public RenderProcess RenderProcess;  // for diagnostics only
+        public SpriteBatch SpriteBatch;
+        public SpriteFont DefaultFont;
+        public SpriteFont MediumFont;
+        public SpriteFont LargeFont;
+        public RenderProcess RenderProcess;  // for diagnostics only
 
 		public SpriteBatchMaterial(RenderProcess renderProcess)
 			: base(null)
 		{
-			RenderProcess = renderProcess;
-			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
-			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
-			MediumFont = renderProcess.Content.Load<SpriteFont>("ArialMedium");
-			LargeFont = renderProcess.Content.Load<SpriteFont>("ArialLarge");
-		}
+            RenderProcess = renderProcess;
+            SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
+            DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
+            MediumFont = renderProcess.Content.Load<SpriteFont>("ArialMedium");
+            LargeFont = renderProcess.Content.Load<SpriteFont>("ArialLarge");
+        }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
-			Vector3 screenScaling = new Vector3(scaling);
-			Matrix xForm = Matrix.CreateScale(screenScaling);
-			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
-		}
-
-		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-		{
-            foreach (var item in renderItems)
-            {
-                item.RenderPrimitive.Draw(graphicsDevice);
-            }
+			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
 		}
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
 			SpriteBatch.End();
-		}
 
-        public override bool GetBlending(RenderPrimitive renderPrimitive)
-        {
-            return true;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.AlphaFunction = CompareFunction.Always;
+            rs.AlphaTestEnable = false;
+            rs.DepthBufferEnable = true;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 	}
 
