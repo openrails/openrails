@@ -10,8 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -30,34 +28,19 @@ namespace ORTS.Popups
             Tabs.Add(new TabData(Tab.KeyboardShortcuts, "Key Commands", (cl) =>
             {
                 var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
-                var chWidth = scrollbox.RemainingWidth / UserInput.KeyboardLayout[0].Length;
-                var chHeight = 3 * chWidth;
-                foreach (var keyboardLine in UserInput.KeyboardLayout)
+                var keyWidth = scrollbox.RemainingWidth / UserInput.KeyboardLayout[0].Length;
+                var keyHeight = 3 * keyWidth;
+                UserInput.DrawKeyboardMap((rowBox) =>
                 {
-                    scrollbox.AddSpace(0, 2);
-                    var line = scrollbox.AddLayoutHorizontal(chHeight);
-                    var index = keyboardLine.IndexOf('[');
-                    var lastIndex = -1;
-                    while (index != -1)
-                    {
-                        var indexEnd = keyboardLine.IndexOf(']', index);
+                }, (keyBox, keyScanCode, keyName) =>
+                {
+                    var color = UserInput.GetScanCodeColor(keyScanCode);
+                    if (color == Color.TransparentBlack)
+                        color = Color.Black;
 
-                        var scanCodeString = keyboardLine.Substring(index + 1, 3).Trim();
-                        var scanCode = scanCodeString.Length > 0 ? int.Parse(scanCodeString, NumberStyles.HexNumber) : 0;
-                        var keyName = UserInput.GetScanCodeKeyName(scanCode);
-                        // Only allow F-keys to show >1 character names. The rest we'll remove for now.
-                        if ((keyName.Length > 1) && !new[] { 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43, 0x44, 0x57, 0x58 }.Contains(scanCode))
-                            keyName = "";
-
-                        var color = UserInput.GetScanCodeColor(scanCode);
-                        if (color == Color.TransparentBlack)
-                            color = Color.Black;
-                        line.Add(new Key(chWidth * (index - lastIndex - 1) + 2, 0, chWidth * (indexEnd - index + 1) - 2, chHeight, keyName, color));
-                        lastIndex = indexEnd;
-                        index = keyboardLine.IndexOf('[', indexEnd);
-                    }
-                }
-                scrollbox.AddSpace(0, chWidth);
+                    UserInput.Scale(ref keyBox, keyWidth, keyHeight);
+                    scrollbox.Add(new Key(keyBox.Left - scrollbox.CurrentLeft, keyBox.Top - scrollbox.CurrentTop, keyBox.Width - 1, keyBox.Height - 1, keyName, color));
+                });
                 foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
                 {
                     var line = scrollbox.AddLayoutHorizontal(TextHeight);

@@ -245,42 +245,41 @@ namespace ORTS
                     }
                     viewer.MessagesWindow.AddMessage("Keyboard command list saved to 'keyboard.txt'.", 10);
 
-                    var chWidth = 50;
-                    var chHeight = 3 * chWidth;
-                    var chGap = 5;
-                    var chFont = new System.Drawing.Font(System.Drawing.SystemFonts.MessageBoxFont.FontFamily, chHeight * 0.6f, System.Drawing.GraphicsUnit.Pixel);
-                    var keyboardLayoutBitmap = new System.Drawing.Bitmap(KeyboardLayout[0].Length * chWidth, KeyboardLayout.Length * chHeight);
+                    var keyWidth = 50;
+                    var keyHeight = 4 * keyWidth;
+                    var keySpacing = 5;
+                    var keyFontLabel = new System.Drawing.Font(System.Drawing.SystemFonts.MessageBoxFont.FontFamily, keyHeight * 0.33f, System.Drawing.GraphicsUnit.Pixel);
+                    var keyFontCommand = new System.Drawing.Font(System.Drawing.SystemFonts.MessageBoxFont.FontFamily, keyHeight * 0.22f, System.Drawing.GraphicsUnit.Pixel);
+                    var keyboardLayoutBitmap = new System.Drawing.Bitmap(KeyboardLayout[0].Length * keyWidth, KeyboardLayout.Length * keyHeight);
                     using (var g = System.Drawing.Graphics.FromImage(keyboardLayoutBitmap))
                     {
-                        for (var i = 0; i < KeyboardLayout.Length; i++)
+                        DrawKeyboardMap(null, (keyBox, keyScanCode, keyName) =>
                         {
-                            var keyboardLine = KeyboardLayout[i];
-                            //scrollbox.AddSpace(0, 2);
-                            //var line = scrollbox.AddLayoutHorizontal(chHeight);
-                            var index = keyboardLine.IndexOf('[');
-                            var lastIndex = -1;
-                            while (index != -1)
+                            var keyCommands = GetScanCodeCommands(keyScanCode);
+                            var keyCommandNames = String.Join("\n", keyCommands.Select(c => String.Join(" ", FormatCommandName(c).Split(' ').Skip(1).ToArray())).ToArray());
+
+                            var keyColor = UserInput.GetScanCodeColor(keyScanCode);
+                            var keyTextColor = System.Drawing.Brushes.Black;
+                            if (keyColor == Color.TransparentBlack)
                             {
-                                var indexEnd = keyboardLine.IndexOf(']', index);
-
-                                var scanCodeString = keyboardLine.Substring(index + 1, 3).Trim();
-                                var scanCode = scanCodeString.Length > 0 ? int.Parse(scanCodeString, NumberStyles.HexNumber) : 0;
-                                var keyName = UserInput.GetScanCodeKeyName(scanCode);
-                                // Only allow F-keys to show >1 character names. The rest we'll remove for now.
-                                if ((keyName.Length > 1) && !new[] { 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43, 0x44, 0x57, 0x58 }.Contains(scanCode))
-                                    keyName = "";
-
-                                var color = UserInput.GetScanCodeColor(scanCode);
-                                if (color == Color.TransparentBlack)
-                                    color = Color.White;
-                                g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb((int)color.PackedValue)), index * chWidth + chGap, i * chHeight + chGap, (indexEnd - index + 1) * chWidth - 2 * chGap, chHeight - 2 * chGap);
-                                g.DrawRectangle(System.Drawing.Pens.Black, index * chWidth + chGap, i * chHeight + chGap, (indexEnd - index + 1) * chWidth - 2 * chGap, chHeight - 2 * chGap);
-                                var w = (indexEnd - index + 1) * chWidth - 2 * chGap - g.MeasureString(keyName, chFont).Width;
-                                g.DrawString(keyName, chFont, color == Color.White ? System.Drawing.Brushes.Black : System.Drawing.Brushes.White, index * chWidth + chGap + w / 2, i * chHeight + chGap);
-                                lastIndex = indexEnd;
-                                index = keyboardLine.IndexOf('[', indexEnd);
+                                keyColor = Color.White;
                             }
-                        }
+                            else
+                            {
+                                keyColor.R += (byte)((255 - keyColor.R) * 2 / 3);
+                                keyColor.G += (byte)((255 - keyColor.G) * 2 / 3);
+                                keyColor.B += (byte)((255 - keyColor.B) * 2 / 3);
+                            }
+                            var w = g.MeasureString(keyName, keyFontLabel).Width;
+
+                            Scale(ref keyBox, keyWidth, keyHeight);
+                            keyBox.Inflate(-keySpacing, -keySpacing);
+
+                            g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb((int)keyColor.PackedValue)), keyBox.Left, keyBox.Top, keyBox.Width, keyBox.Height);
+                            g.DrawRectangle(System.Drawing.Pens.Black, keyBox.Left, keyBox.Top, keyBox.Width, keyBox.Height);
+                            g.DrawString(keyName, keyFontLabel, keyTextColor, keyBox.Right - g.MeasureString(keyName, keyFontLabel).Width + keySpacing, keyBox.Top - 3 * keySpacing);
+                            g.DrawString(keyCommandNames, keyFontCommand, keyTextColor, keyBox.Left, keyBox.Bottom - keyCommands.Count() * keyFontCommand.Height);
+                        });
                     }
                     keyboardLayoutBitmap.Save("Keyboard.png", System.Drawing.Imaging.ImageFormat.Png);
                     viewer.MessagesWindow.AddMessage("Keyboard map saved to 'keyboard.png'.", 10);
@@ -308,12 +307,14 @@ namespace ORTS
         {
             var name = command.ToString();
             var nameU = name.ToUpperInvariant();
+            var nameL = name.ToLowerInvariant();
             for (var i = name.Length - 1; i > 0; i--)
             {
-                if ((name[i] == nameU[i]) && (name[i - 1] != nameU[i - 1]))
+                if (((name[i - 1] != nameU[i - 1]) && (name[i] == nameU[i])) ||
+                    (name[i - 1] == nameL[i - 1]) && (name[i] != nameL[i]))
                 {
                     name = name.Insert(i, " ");
-                    nameU = nameU.Insert(i, " ");
+                    nameL = nameL.Insert(i, " ");
                 }
             }
             return name;
@@ -389,6 +390,11 @@ namespace ORTS
             return String.Format(" [sc=0x{0:X2}]", scanCode);
         }
 
+        public static IEnumerable<UserCommands> GetScanCodeCommands(int scanCode)
+        {
+            return Enum.GetValues(typeof(UserCommands)).OfType<UserCommands>().Where(uc => (Commands[(int)uc] is UserCommandKeyInput) && ((Commands[(int)uc] as UserCommandKeyInput).ScanCode == scanCode));
+        }
+
         public static Color GetScanCodeColor(int scanCode)
         {
             // These should be placed in order of priority - the first found match is used.
@@ -411,12 +417,50 @@ namespace ORTS
             };
 
             foreach (var prefixToColor in prefixesToColors)
-                foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
-                    if ((Commands[(int)command] is UserCommandKeyInput) && (Commands[(int)command] as UserCommandKeyInput).ScanCode == scanCode)
-                        if (command.ToString().StartsWith(prefixToColor.Key))
-                            return prefixToColor.Value;
+                foreach (var command in GetScanCodeCommands(scanCode))
+                    if (command.ToString().StartsWith(prefixToColor.Key))
+                        return prefixToColor.Value;
 
             return Color.TransparentBlack;
+        }
+
+        public static void DrawKeyboardMap(Action<Rectangle> drawRow, Action<Rectangle, int, string> drawKey)
+        {
+            for (var y = 0; y < KeyboardLayout.Length; y++)
+            {
+                var keyboardLine = KeyboardLayout[y];
+                if (drawRow != null)
+                    drawRow(new Rectangle(0, y, keyboardLine.Length, 1));
+
+                var x = keyboardLine.IndexOf('[');
+                var lastIndex = -1;
+                while (x != -1)
+                {
+                    var x2 = keyboardLine.IndexOf(']', x);
+
+                    var scanCodeString = keyboardLine.Substring(x + 1, 3).Trim();
+                    var keyScanCode = scanCodeString.Length > 0 ? int.Parse(scanCodeString, NumberStyles.HexNumber) : 0;
+
+                    var keyName = UserInput.GetScanCodeKeyName(keyScanCode);
+                    // Only allow F-keys to show >1 character names. The rest we'll remove for now.
+                    if ((keyName.Length > 1) && !new[] { 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43, 0x44, 0x57, 0x58 }.Contains(keyScanCode))
+                        keyName = "";
+
+                    if (drawKey != null)
+                        drawKey(new Rectangle(x, y, x2 - x + 1, 1), keyScanCode, keyName);
+
+                    lastIndex = x2;
+                    x = keyboardLine.IndexOf('[', x2);
+                }
+            }
+        }
+
+        public static void Scale(ref Rectangle rectangle, int scaleX, int scaleY)
+        {
+            rectangle.X *= scaleX;
+            rectangle.Y *= scaleY;
+            rectangle.Width *= scaleX;
+            rectangle.Height *= scaleY;
         }
     }
 
