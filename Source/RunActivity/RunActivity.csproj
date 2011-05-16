@@ -126,6 +126,9 @@
     <Compile Include="..\MSTS\ENVFile.cs">
       <Link>MSTS\ENVFile.cs</Link>
     </Compile>
+    <Compile Include="..\MSTS\FFile.cs">
+      <Link>MSTS\FFile.cs</Link>
+    </Compile>
     <Compile Include="..\MSTS\PATFile.cs">
       <Link>MSTS\PATFile.cs</Link>
     </Compile>

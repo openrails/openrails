@@ -12,6 +12,7 @@
 //#define SUPERSMOOTHNORMALS
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
@@ -60,7 +61,7 @@ namespace ORTS
         /// LoadPrep() )
         /// Executes in the LoaderProcess thread.
         /// </summary>
-        public void Load( RenderProcess renderProcess )
+        public void Load(RenderProcess renderProcess)
         {
             if (viewerTileX != lastViewerTileX || viewerTileZ != lastViewerTileZ)   // if the camera has moved into a new tile
             {
@@ -99,7 +100,7 @@ namespace ORTS
             }
         }
 
-           /// <summary>
+        /// <summary>
         /// If the specified tile isn't already loaded, then
         /// load it into any available location in the 
         /// TerrainTiles array.
@@ -109,23 +110,23 @@ namespace ORTS
         private void LoadAt(int tileX, int tileZ)
         {
             // return if this tile is already loaded
-            foreach( TerrainTile tile in TerrainTiles )   // check every tile
+            foreach (TerrainTile tile in TerrainTiles)   // check every tile
                 if (tile != null)
                     if (tile.TileX == tileX && tile.TileZ == tileZ)  // return if its the one we want
                         return;
 
             // find an available spot in the TerrainTiles array
             // THREAD SAFETY WARNING - UpdateProcess could read this array at any time
-            for( int i = 0; i < TerrainTiles.Length; ++i )
-                if ( TerrainTiles[i] == null)  // we found one
+            for (int i = 0; i < TerrainTiles.Length; ++i)
+                if (TerrainTiles[i] == null)  // we found one
                 {
                     Trace.Write("T");
-                    TerrainTiles[i] = new TerrainTile( Viewer, tileX, tileZ);
+                    TerrainTiles[i] = new TerrainTile(Viewer, tileX, tileZ);
                     return;
                 }
 
             // otherwise we didn't find an available spot - this shouldn't happen
-            System.Diagnostics.Debug.Assert( false, "Program Bug - didn't expect TerrainTiles array to be full.");
+            System.Diagnostics.Debug.Assert(false, "Program Bug - didn't expect TerrainTiles array to be full.");
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -139,8 +140,8 @@ namespace ORTS
         }
 
     } // TerrainDrawer
-    
-    public class TerrainTile: IDisposable
+
+    public class TerrainTile : IDisposable
     {
         public int TileX, TileZ;
         private TerrainPatch[,] TerrainPatches = new TerrainPatch[16, 16];
@@ -155,22 +156,21 @@ namespace ORTS
             Tile tile = viewer.Tiles.GetTile(tileX, tileZ);
             if (!tile.IsEmpty)
             {
-                if( tile.TFile.ContainsWater )
+                if (tile.TFile.ContainsWater)
                     WaterTile = new WaterTile(viewer, TileX, TileZ);
-                 
 
-                TFile TFile = tile.TFile;
+
                 for (int x = 0; x < 16; ++x)
                     for (int z = 0; z < 16; ++z)
                     {
-                        if (!tile.IsEmpty && TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
+                        if (!tile.IsEmpty && tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
                         {
-                            TerrainPatch patch = new TerrainPatch(viewer, TFile, tile.YFile, x, z, tileX, tileZ);
+                            TerrainPatch patch = new TerrainPatch(viewer, tile, x, z, tileX, tileZ);
                             TerrainPatches[x, z] = patch;
                         }
                         else
                         {
-                           TerrainPatches[x, z] = null;
+                            TerrainPatches[x, z] = null;
                         }
                     }
             }
@@ -184,7 +184,7 @@ namespace ORTS
                 for (int z = 0; z < 16; ++z)
                 {
                     TerrainPatch patch = TerrainPatches[x, z];
-                    if( patch != null)
+                    if (patch != null)
                         patch.PrepareFrame(frame);
                 }
         }
@@ -197,10 +197,10 @@ namespace ORTS
             //if (WaterTile != null)
             //    WaterTile.Dispose();
 
-            for( int x = 0; x < 16; ++x )
-                for( int z = 0; z < 16; ++z )
+            for (int x = 0; x < 16; ++x)
+                for (int z = 0; z < 16; ++z)
                 {
-                    TerrainPatch patch = TerrainPatches[x,z];
+                    TerrainPatch patch = TerrainPatches[x, z];
                     if (patch != null)
                     {
                         TerrainPatches[x, z] = null;
@@ -212,44 +212,43 @@ namespace ORTS
         #endregion
     } // Terrain Tile
 
-    
+
     public class TerrainPatch : RenderPrimitive
     {
-        Viewer3D Viewer;
+        readonly Viewer3D Viewer;
 
-        private int TileX, TileZ;               
-        private Vector3 XNAPatchLocation;      // in XNA world coordinates relative to the center of the tile
-        private VertexBuffer PatchVertexBuffer;  // separate vertex buffer for each patch
-		private float AverageElevation;
+        readonly int TileX, TileZ;
+        readonly Vector3 XNAPatchLocation;        // in XNA world coordinates relative to the center of the tile
+        readonly VertexBuffer PatchVertexBuffer;  // separate vertex buffer for each patch
+        readonly IndexBuffer PatchIndexBuffer;    // separate index buffer for each patch if there are tunnels
+        readonly int PatchPrimitiveCount;
+        readonly float AverageElevation;
 
-        public Material PatchMaterial;
+        public readonly Material PatchMaterial;
 
         // these can be shared since they are the same for all patches
-        public static VertexDeclaration PatchVertexDeclaration = null; 
-        public static IndexBuffer PatchIndexBuffer = null;
-        public static int PatchVertexStride;  // in bytes
+        public static VertexDeclaration SharedPatchVertexDeclaration;
+        public static int SharedPatchVertexStride;  // in bytes
 
         // these are only used while the contructor runs and are discarded after
         int PatchX, PatchZ;
-        TFile TFile;
-        YFile YFile;
-        
-        float X,Y, W, B, C, H;  // A 2 x 3 matrix for texture translation
+        Tile Tile;
 
-        public TerrainPatch(Viewer3D viewer, TFile tFile, YFile yFile, int x, int z, int tileX, int tileZ)
+        float X, Y, W, B, C, H;  // A 2 x 3 matrix for texture translation
+
+        public TerrainPatch(Viewer3D viewer, Tile tile, int x, int z, int tileX, int tileZ)
         {
             Viewer = viewer;
             TileX = tileX;
             TileZ = tileZ;
             PatchX = x;
             PatchZ = z;
-            TFile = tFile;
-            YFile = yFile;
+            Tile = tile;
             int weather = (int)Viewer.Simulator.Weather;
             int season = (int)Viewer.Simulator.Season;
 
-            terrain_patchset_patch patch = tFile.terrain.terrain_patchsets[0].GetPatch(x, z);
-            terrain_shader terrain_shader = (terrain_shader)tFile.terrain.terrain_shaders[patch.iShader];
+            terrain_patchset_patch patch = Tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z);
+            terrain_shader terrain_shader = (terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader];
             string terrtexName = terrain_shader.terrain_texslots[0].Filename;
 
             if (weather == (int)WeatherType.Snow || season == (int)SeasonType.Winter)
@@ -263,9 +262,9 @@ namespace ORTS
             else
                 PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Viewer.Simulator.RoutePath + @"\terrtex\" + terrtexName);
 
-            float cx =  -1024+(int)patch.CenterX;
-            float cz =  -1024-(int)patch.CenterZ;
-			XNAPatchLocation = new Vector3(cx, TFile.Floor, cz);
+            float cx = -1024 + (int)patch.CenterX;
+            float cz = -1024 - (int)patch.CenterZ;
+            XNAPatchLocation = new Vector3(cx, Tile.TFile.Floor, cz);
             X = patch.X;
             Y = patch.Y;
             W = patch.W;
@@ -274,44 +273,34 @@ namespace ORTS
             H = patch.H;
 
             // vertex type declaration to be shared by all terrain patches
-            if (PatchVertexDeclaration == null)
-            {
-                SetupPatchVertexDeclaration();
-            }
+            if (SharedPatchVertexDeclaration == null)
+                SetupPatchVertexDeclaration(Viewer.GraphicsDevice);
 
-            // Set up one indexBuffer to be shared by all terrain patches
-            if (PatchIndexBuffer == null)
-            {
-                SetupPatchIndexBuffer();
-            }
+            PatchIndexBuffer = GetIndexBuffer(out PatchPrimitiveCount);
+            PatchVertexBuffer = GetVertexBuffer(out AverageElevation);
 
-            SetupVertexBuffer();
-
-            TFile = null;
-            YFile = null;
+            Tile = null;
         }
 
-		public void PrepareFrame(RenderFrame frame)
-		{
-			int dTileX = TileX - Viewer.Camera.TileX;
-			int dTileZ = TileZ - Viewer.Camera.TileZ;
-			Vector3 mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
-			Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
-			mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-			frame.AddAutoPrimitive(mstsLocation, 180f, 2000f, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
-		}
+        public void PrepareFrame(RenderFrame frame)
+        {
+            int dTileX = TileX - Viewer.Camera.TileX;
+            int dTileZ = TileZ - Viewer.Camera.TileZ;
+            Vector3 mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
+            Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
+            mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
+            frame.AddAutoPrimitive(mstsLocation, 180f, 2000f, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
+        }
 
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            // TODO ADD THESE LINES USING EXPERIMENTAL FAST MATERIALS
-             //graphicsDevice.VertexDeclaration = TerrainPatch.PatchVertexDeclaration;
-             //graphicsDevice.Indices = TerrainPatch.PatchIndexBuffer;
-
-            graphicsDevice.Vertices[0].SetSource(this.PatchVertexBuffer, 0, PatchVertexStride);
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList,0, 0, 17 * 17, 0, 16 * 16 * 2 );
+            graphicsDevice.VertexDeclaration = TerrainPatch.SharedPatchVertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(PatchVertexBuffer, 0, SharedPatchVertexStride);
+            graphicsDevice.Indices = PatchIndexBuffer;
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 17 * 17, 0, PatchPrimitiveCount);
         }
 
         /// <summary>
@@ -331,8 +320,19 @@ namespace ORTS
                 // its outside this tile, so we will have to look it up
                 return Viewer.Tiles.GetElevation(TileX, TileZ, hx, hz);
 
-            uint e = YFile.GetElevationIndex(hx, hz);
-            return (float)e * TFile.Resolution + TFile.Floor;
+            uint e = Tile.YFile.GetElevationIndex(hx, hz);
+            return (float)e * Tile.TFile.Resolution + Tile.TFile.Floor;
+        }
+
+        bool IsVertexHidden(int x, int z)
+        {
+            int hx = PatchX * 16 + x;
+            int hz = PatchZ * 16 + z;
+            if (hx > 255 || hx < 0 || hz > 255 || hz < 0)
+                // its outside this tile, so we will have to look it up
+                return Viewer.Tiles.IsVertexHidden(TileX, TileZ, hx, hz);
+
+            return Tile.FFile.IsVertexHidden(hx, hz);
         }
 
         private Vector3 TerrainNormal(int x, int z)
@@ -395,11 +395,11 @@ namespace ORTS
 
             Vector3 center = new Vector3(vx, Elevation(x, z), vz);
 
-            Vector3 n =     new Vector3(vx,         Elevation(x, z - 1),  vz - t);    Vector3 toN = Vector3.Normalize(n - center);
-            Vector3 e =     new Vector3(vx + t,     Elevation(x + 1, z),  vz);        Vector3 toE = Vector3.Normalize(e - center);
-            Vector3 s =     new Vector3(vx,         Elevation(x, z + 1),  vz + t);    Vector3 toS = Vector3.Normalize(s - center);
-            Vector3 w =     new Vector3(vx - t,     Elevation(x - 1, z),  vz);        Vector3 toW = Vector3.Normalize(w - center);
-                        
+            Vector3 n = new Vector3(vx, Elevation(x, z - 1), vz - t); Vector3 toN = Vector3.Normalize(n - center);
+            Vector3 e = new Vector3(vx + t, Elevation(x + 1, z), vz); Vector3 toE = Vector3.Normalize(e - center);
+            Vector3 s = new Vector3(vx, Elevation(x, z + 1), vz + t); Vector3 toS = Vector3.Normalize(s - center);
+            Vector3 w = new Vector3(vx - t, Elevation(x - 1, z), vz); Vector3 toW = Vector3.Normalize(w - center);
+
             if (x % 2 == z % 2)
             {
                 Vector3 ne = new Vector3(vx + t, Elevation(x + 1, z - 1), vz - t); Vector3 toNE = Vector3.Normalize(ne - center);
@@ -420,7 +420,7 @@ namespace ORTS
                 return normal;
             }
             else
-            {                
+            {
                 Vector3 neFaceNormal = Vector3.Normalize(Vector3.Cross(toE, toN));
                 Vector3 seFaceNormal = Vector3.Normalize(Vector3.Cross(toS, toE));
                 Vector3 swFaceNormal = Vector3.Normalize(Vector3.Cross(toW, toS));
@@ -430,66 +430,77 @@ namespace ORTS
             }
         }
 
-        private void SetupPatchVertexDeclaration()
+        static void SetupPatchVertexDeclaration(GraphicsDevice graphicsDevice)
         {
-            PatchVertexDeclaration = new VertexDeclaration(Viewer.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
-            PatchVertexStride = VertexPositionNormalTexture.SizeInBytes;
+            SharedPatchVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
+            SharedPatchVertexStride = VertexPositionNormalTexture.SizeInBytes;
         }
 
-        private void SetupPatchIndexBuffer()
+        IndexBuffer GetIndexBuffer(out int primitiveCount)
         {
-            int indexCount = 16 * 16 * 2 * 3;  // 16 x 16 squares * 2 triangles per square * 3 indices per triangle
-            short[] indexData = new short[indexCount];
+            // 16 x 16 squares * 2 triangles per square * 3 indices per triangle
+            var indexData = new List<short>(16 * 16 * 2 * 3);
 
-            int iIndex = 0;
             // for each 8 meter rectangle
-            for (int x = 0; x < 16; ++x)
-                for (int z = 0; z < 16; ++z)
+            for (var z = 0; z < 16; ++z)
+                for (var x = 0; x < 16; ++x)
                 {
-                    short nw = (short)(x + z * 17);  // vertice index in the north west corner
-                    short ne = (short)(nw + 1);
-                    short sw = (short)(nw + 17);
-                    short se = (short)(sw + 1);
+                    var nw = (short)(z * 17 + x);  // vertice index in the north west corner
+                    var ne = (short)(nw + 1);
+                    var sw = (short)(nw + 17);
+                    var se = (short)(sw + 1);
 
-                    if (((x & 1) == (z & 1)))  // triangles alternate
+                    if (((z & 1) == (x & 1)))  // triangles alternate
                     {
-                        indexData[iIndex++] = nw;
-                        indexData[iIndex++] = sw;
-                        indexData[iIndex++] = se;
-                        indexData[iIndex++] = se;
-                        indexData[iIndex++] = ne;
-                        indexData[iIndex++] = nw;
+                        if (!IsVertexHidden(x, z) && !IsVertexHidden(x + 1, z + 1) && !IsVertexHidden(x, z + 1))
+                        {
+                            indexData.Add(nw);
+                            indexData.Add(se);
+                            indexData.Add(sw);
+                        }
+                        if (!IsVertexHidden(x, z) && !IsVertexHidden(x + 1, z) && !IsVertexHidden(x + 1, z + 1))
+                        {
+                            indexData.Add(nw);
+                            indexData.Add(ne);
+                            indexData.Add(se);
+                        }
                     }
                     else
                     {
-                        indexData[iIndex++] = sw;
-                        indexData[iIndex++] = se;
-                        indexData[iIndex++] = ne;
-                        indexData[iIndex++] = ne;
-                        indexData[iIndex++] = nw;
-                        indexData[iIndex++] = sw;
+                        if (!IsVertexHidden(x + 1, z) && !IsVertexHidden(x + 1, z + 1) && !IsVertexHidden(x, z + 1))
+                        {
+                            indexData.Add(ne);
+                            indexData.Add(se);
+                            indexData.Add(sw);
+                        }
+                        if (!IsVertexHidden(x, z) && !IsVertexHidden(x + 1, z) && !IsVertexHidden(x, z + 1))
+                        {
+                            indexData.Add(nw);
+                            indexData.Add(ne);
+                            indexData.Add(sw);
+                        }
                     }
                 }
-            PatchIndexBuffer = new IndexBuffer(Viewer.GraphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
-            PatchIndexBuffer.SetData(indexData);
+
+            primitiveCount = indexData.Count / 3;
+            var indexBuffer = new IndexBuffer(Viewer.GraphicsDevice, sizeof(short) * indexData.Count, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+            indexBuffer.SetData(indexData.ToArray());
+            return indexBuffer;
         }
 
-        private void SetupVertexBuffer()
+        VertexBuffer GetVertexBuffer(out float averageElevation)
         {
-			var totalElevation = 0f;
-            VertexPositionNormalTexture[] vertexData = new VertexPositionNormalTexture[17 * 17];
-            int iV = 0;
+            var totalElevation = 0f;
+            var vertexData = new List<VertexPositionNormalTexture>(17 * 17);
 
-            // for each vertex
-            for (int x = 0; x < 17; ++x)
-                for (int z = 0; z < 17; ++z)
+            for (int z = 0; z < 17; ++z)
+                for (int x = 0; x < 17; ++x)
                 {
                     float w = -64 + x * 8;
                     float n = -64 + z * 8;
 
                     float u = (float)x;
                     float v = (float)z;
-
 
                     // Rotate, Flip, and stretch the texture using the matrix coordinates stored in terrain_patchset_patch 
                     // transform uv by the 2x3 matrix made up of X,Y  W,B  C,H
@@ -498,23 +509,16 @@ namespace ORTS
 
                     // V represents the north/south shift
 
-                    float y = Elevation(x, z) - TFile.Floor;
-					totalElevation += y;
+                    float y = Elevation(x, z) - Tile.TFile.Floor;
+                    totalElevation += y;
 
-                    vertexData[iV].Position = new Vector3(w, y, n);
-                    vertexData[iV].TextureCoordinate = new Vector2(U, V);
-                    vertexData[iV].Normal = TerrainNormal(x, z);
-                    
-                    iV++;
+                    vertexData.Add(new VertexPositionNormalTexture(new Vector3(w, y, n), TerrainNormal(x, z), new Vector2(U, V)));
                 }
 
-            PatchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Length, BufferUsage.WriteOnly);
-            PatchVertexBuffer.SetData(vertexData);
-			AverageElevation = totalElevation / 289;
+            averageElevation = totalElevation / vertexData.Count;
+            var patchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Count, BufferUsage.WriteOnly);
+            patchVertexBuffer.SetData(vertexData.ToArray());
+            return patchVertexBuffer;
         }
-
-
     } // Terrain Patch
-
-
 } // namespace
