@@ -61,105 +61,124 @@ namespace ORTS
                     if (train.MUDirection == Direction.Reverse)
                         position.ReverseDirection();
 
+                    var distanceTravelled = 0f;
+
+                    var distanceToEnd = 0f;
+                    {
+                        var nextSection = new TDBTraveller(position);
+                        while (true)
+                        {
+                            distanceToEnd += MaximumSectionDistance - nextSection.MoveInSection(MaximumSectionDistance);
+                            if (!nextSection.NextSection() || nextSection.TN.TrEndNode || distanceToEnd > DisplayDistance + DisplaySegmentLength)
+                                break;
+                        }
+                    }
+
+                    var distanceToSwitch = new List<DistanceToSwitch>();
+                    {
+                        var nextSection = new TDBTraveller(position);
+                        var nextDistance = 0f;
+                        var lastSectionID = nextSection.TrackNodeIndex;
+                        while (true)
+                        {
+                            nextDistance += MaximumSectionDistance - nextSection.MoveInSection(MaximumSectionDistance);
+                            if (!nextSection.NextSection() || nextSection.TN.TrEndNode || nextDistance > DisplayDistance)
+                                break;
+                            if (nextSection.TN.TrJunctionNode != null)
+                                distanceToSwitch.Add(new DistanceToSwitch() { Distance = nextDistance, TN = nextSection.TN, LastSectionID = lastSectionID });
+                            lastSectionID = nextSection.TrackNodeIndex;
+                        }
+                    }
+
+                    var distanceToSignal = new List<DistanceToSignal>();
+                    {
+                        var nextSection = new TDBTraveller(position);
+                        var nextDistance = 0f;
+                        while (true)
+                        {
+                            var signalNode = Owner.Viewer.Simulator.Signals.FindNearestSignal(nextSection);
+                            if (signalNode.GetAspect() == SignalHead.SIGASP.UNKNOWN)
+                                break;
+                            var signalDistance = signalNode.DistanceToSignal(nextSection);
+                            nextDistance += signalDistance;
+                            distanceToSignal.Add(new DistanceToSignal() { Distance = nextDistance, MonitorAspect = signalNode.GetMonitorAspect(), Aspect = signalNode.GetAspect() });
+                            // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
+                            nextSection.Move(signalDistance + 0.0001f);
+                        }
+                    }
+
                     var position1 = position.WorldLocation;
-                    var distance = 0f;
-                    var distanceToEnd = -1f;
-                    var distanceToSwitch = -1f;
-                    TrackNode switchTrackNode = null;
-                    bool switchAgainst = false;
-                    var distanceToSignal = -1f;
-                    Signal signalNode = null;
                     do
                     {
-                        if (distanceToEnd < 0)
+                        var distanceToTravel = DisplaySegmentLength;
+                        var distanceType = DistanceToType.Nothing;
+                        if (distanceToEnd > 0 && distanceTravelled + distanceToTravel > distanceToEnd)
                         {
-                            distanceToEnd = 0;
-                            var nextSection = new TDBTraveller(position);
-                            while (true)
-                            {
-                                distanceToEnd += MaximumSectionDistance - nextSection.MoveInSection(MaximumSectionDistance);
-                                if (!nextSection.NextSection() || nextSection.TN.TrEndNode || distanceToEnd > DisplayDistance + DisplaySegmentLength)
-                                    break;
-                            }
+                            distanceToTravel = distanceToEnd - distanceTravelled;
+                            distanceType = DistanceToType.EndOfLine;
                         }
-                        if (distanceToSwitch < 0)
+                        if (distanceToSwitch.Count > 0 && distanceTravelled + distanceToTravel > distanceToSwitch[0].Distance)
                         {
-                            distanceToSwitch = 0;
-                            var nextSection = new TDBTraveller(position);
-                            var lastSectionID = nextSection.TrackNodeIndex;
-                            while (true)
-                            {
-                                distanceToSwitch += MaximumSectionDistance - nextSection.MoveInSection(MaximumSectionDistance);
-                                if (!nextSection.NextSection() || nextSection.TN.TrEndNode || distanceToEnd > DisplayDistance || nextSection.TN.TrJunctionNode != null)
-                                    break;
-                                lastSectionID = nextSection.TrackNodeIndex;
-                            }
-                            if (nextSection.TN == null || nextSection.TN.TrJunctionNode == null)
-                            {
-                                distanceToSwitch = -1;
-                            }
-                            else
-                            {
-                                switchTrackNode = nextSection.TN;
-                                switchAgainst = false;
-                                for (var pin = switchTrackNode.Inpins; pin < switchTrackNode.Inpins + switchTrackNode.Outpins; pin++)
-                                {
-                                    if (switchTrackNode.TrPins[pin].Link == lastSectionID)
-                                    {
-                                        switchAgainst = (pin - switchTrackNode.Inpins) != switchTrackNode.TrJunctionNode.SelectedRoute;
-                                        break;
-                                    }
-                                }
-                            }
+                            distanceToTravel = distanceToSwitch[0].Distance - distanceTravelled;
+                            distanceType = DistanceToType.Switch;
                         }
-                        if (distanceToSignal < 0)
+                        if (distanceToSignal.Count > 0 && distanceTravelled + distanceToTravel > distanceToSignal[0].Distance)
                         {
-                            if (Owner.Viewer.Simulator.Signals.FindNextSignal(position) != -1)
-                            {
-                                signalNode = Owner.Viewer.Simulator.Signals.FindNearestSignal(position);
-                                distanceToSignal = signalNode.DistanceToSignal(position);
-                            }
+                            distanceToTravel = distanceToSignal[0].Distance - distanceTravelled;
+                            distanceType = DistanceToType.Signal;
                         }
 
-                        var distanceTravelled = DisplaySegmentLength;
-                        if (distanceToEnd > 0 && distanceToEnd < distanceTravelled)
-                            distanceTravelled = distanceToEnd;
-                        if (distanceToSwitch > 0 && distanceToSwitch < distanceTravelled)
-                            distanceTravelled = distanceToSwitch;
-                        if (distanceToSignal > 0 && distanceToSignal < distanceTravelled)
-                            distanceTravelled = distanceToSignal;
+                        var signalError = false;
+                        var signalWarning = false;
+                        for (var i = 0; i < distanceToSignal.Count; i++)
+                        {
+                            if (distanceToSignal[i].MonitorAspect == TrackMonitorSignalAspect.Stop)
+                            {
+                                signalError |= distanceToSignal[i].Distance - distanceTravelled < 100;
+                                signalWarning |= distanceToSignal[i].Distance - distanceTravelled < 500;
+                            }
+                            if (distanceToSignal[i].Distance - distanceTravelled > 500)
+                                break;
+                        }
 
-                        position.Move(distanceTravelled);
-
-                        var switchError = distanceToSwitch > 0 && switchAgainst;
-                        var signalAspectStop = distanceToSignal > 0 && signalNode.GetMonitorAspect() == TrackMonitorSignalAspect.Stop;
-                        var signalAspectWarning = distanceToSignal > 0 && signalNode.GetMonitorAspect() == TrackMonitorSignalAspect.Warning;
-                        var signalWarning = signalAspectStop && distanceToSignal < 500;
-                        var signalError = signalAspectStop && distanceToSignal < 100;
-
+                        position.Move(distanceToTravel);
                         var position2 = position.WorldLocation;
                         primitives.Add(new DispatcherLineSegment(position1, position2, signalError ? Color.Red : signalWarning ? Color.Yellow : Color.White, 2));
-                        if (distanceTravelled == distanceToEnd)
-                            primitives.Add(new DispatcherLabel(position2, Color.Red, "End of Line"));
-                        if (distanceTravelled == distanceToSwitch)
-                            primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", switchTrackNode.Outpins, switchTrackNode.TrJunctionNode.SelectedRoute + 1)));
-                        if (distanceTravelled == distanceToSignal)
-                            primitives.Add(new DispatcherLabel(position2, signalAspectStop ? Color.Red : signalAspectWarning ? Color.Yellow : Color.White, String.Format("Signal ({0})", signalNode.GetAspect())));
-
-                        if (distanceTravelled == distanceToEnd)
-                            break;
-                        if (distanceTravelled == distanceToSwitch && switchError)
-                            break;
-                        if (distanceTravelled == distanceToSignal && signalAspectStop)
-                            break;
-
-                        distance += distanceTravelled;
-                        distanceToEnd -= distanceTravelled;
-                        distanceToSwitch -= distanceTravelled;
-                        distanceToSignal -= distanceTravelled;
                         position1 = position2;
+                        distanceTravelled += distanceToTravel;
+
+                        if (distanceType == DistanceToType.EndOfLine)
+                        {
+                            primitives.Add(new DispatcherLabel(position2, Color.Red, "End of Line"));
+                            break;
+                        }
+                        else if (distanceType == DistanceToType.Switch)
+                        {
+                            var switchError = false;
+                            for (var pin = distanceToSwitch[0].TN.Inpins; pin < distanceToSwitch[0].TN.Inpins + distanceToSwitch[0].TN.Outpins; pin++)
+                            {
+                                if (distanceToSwitch[0].TN.TrPins[pin].Link == distanceToSwitch[0].LastSectionID)
+                                {
+                                    switchError = (pin - distanceToSwitch[0].TN.Inpins) != distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute;
+                                    break;
+                                }
+                            }
+                            primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1)));
+                            distanceToSwitch.RemoveAt(0);
+                            if (switchError)
+                                break;
+                        }
+                        else if (distanceType == DistanceToType.Signal)
+                        {
+                            var signalAspectStop = distanceToSignal[0].MonitorAspect == TrackMonitorSignalAspect.Stop;
+                            var signalAspectWarning = distanceToSignal[0].MonitorAspect == TrackMonitorSignalAspect.Warning;
+                            primitives.Add(new DispatcherLabel(position2, signalAspectStop ? Color.Red : signalAspectWarning ? Color.Yellow : Color.White, String.Format("Signal ({0})", distanceToSignal[0].Aspect)));
+                            distanceToSignal.RemoveAt(0);
+                            if (signalError)
+                                break;
+                        }
                     }
-                    while (distance < DisplayDistance);
+                    while (distanceTravelled < DisplayDistance);
                 }
                 Primitives = primitives;
             }
@@ -175,6 +194,28 @@ namespace ORTS
             base.Draw(spriteBatch);
             foreach (var line in Primitives)
                 line.Draw(spriteBatch);
+        }
+
+        enum DistanceToType
+        {
+            Nothing,
+            EndOfLine,
+            Switch,
+            Signal,
+        }
+
+        struct DistanceToSwitch
+        {
+            public float Distance;
+            public TrackNode TN;
+            public int LastSectionID;
+        }
+
+        struct DistanceToSignal
+        {
+            public float Distance;
+            public SignalHead.SIGASP Aspect;
+            public TrackMonitorSignalAspect MonitorAspect;
         }
     }
 
