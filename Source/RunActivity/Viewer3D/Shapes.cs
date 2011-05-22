@@ -939,44 +939,47 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags)
         {
             // Locate relative to the camera
-			var dTileX = location.TileX - Viewer.Camera.TileX;
-			var dTileZ = location.TileZ - Viewer.Camera.TileZ;
-			var mstsLocation = location.Location;
-			mstsLocation.X += dTileX * 2048;
-			mstsLocation.Z += dTileZ * 2048;
-			var xnaDTileTranslation = location.XNAMatrix;
-			xnaDTileTranslation.M41 += dTileX * 2048;
-			xnaDTileTranslation.M43 -= dTileZ * 2048;
+            var dTileX = location.TileX - Viewer.Camera.TileX;
+            var dTileZ = location.TileZ - Viewer.Camera.TileZ;
+            var mstsLocation = location.Location;
+            mstsLocation.X += dTileX * 2048;
+            mstsLocation.Z += dTileZ * 2048;
+            var xnaDTileTranslation = location.XNAMatrix;
+            xnaDTileTranslation.M41 += dTileX * 2048;
+            xnaDTileTranslation.M43 -= dTileZ * 2048;
 
-			foreach (var lodControl in LodControls)
-			{
-				// Start with the furthest away distance, then look for a nearer one in range of the camera.
-				var chosenDistanceLevelIndex = lodControl.DistanceLevels.Length - 1;
-				while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
-					chosenDistanceLevelIndex--;
-				var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
-				foreach (var subObject in chosenDistanceLevel.SubObjects)
-				{
-					foreach (var shapePrimitive in subObject.ShapePrimitives)
-					{
-						var xnaMatrix = Matrix.Identity;
-						var iNode = shapePrimitive.iHierarchy;
-						while (iNode != -1)
-						{
-							if (shapePrimitive.Hierarchy[iNode] != -1) // MSTS ignores root matrix,  ('floating objects problem' )
-								Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[iNode], out xnaMatrix);
-							iNode = shapePrimitive.Hierarchy[iNode];
-						}
-						Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+            foreach (var lodControl in LodControls)
+            {
+                // Start with the furthest away distance, then look for a nearer one in range of the camera.
+                var chosenDistanceLevelIndex = lodControl.DistanceLevels.Length - 1;
+                // If this LOD group is not in the FOV, skip the whole LOD group.
+                if (!Viewer.Camera.InFOV(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex].ViewSphereRadius))
+                    continue;
+                while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
+                    chosenDistanceLevelIndex--;
+                var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
+                foreach (var subObject in chosenDistanceLevel.SubObjects)
+                {
+                    foreach (var shapePrimitive in subObject.ShapePrimitives)
+                    {
+                        var xnaMatrix = Matrix.Identity;
+                        var iNode = shapePrimitive.iHierarchy;
+                        while (iNode != -1)
+                        {
+                            if (shapePrimitive.Hierarchy[iNode] != -1) // MSTS ignores root matrix,  ('floating objects problem' )
+                                Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[iNode], out xnaMatrix);
+                            iNode = shapePrimitive.Hierarchy[iNode];
+                        }
+                        Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
 
-						// TODO make shadows depend on shape overrides
+                        // TODO make shadows depend on shape overrides
 
-						frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance, 
+                        frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance,
                             shapePrimitive.Material, shapePrimitive, RenderPrimitiveGroup.World, ref xnaMatrix, flags);
-					}
-				}
-			}
-		}// PrepareFrame()
+                    }
+                }
+            }
+        }
 
         public Matrix GetMatrixProduct(int iNode)
         {
