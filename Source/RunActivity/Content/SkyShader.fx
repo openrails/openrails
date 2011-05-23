@@ -1,9 +1,11 @@
-//--------------------------------------------------------------//
-// SKY SHADER
-// Includes sky, sun and moon
+// COPYRIGHT 2010 by the Open Rails project.
+// This code is provided to help you understand what Open Rails does and does
+// not do. Suggestions and contributions to improve Open Rails are always
+// welcome. Use of the code for any other purpose or distribution of the code
+// to anyone else is prohibited without specific written permission from
+// admin@openrails.org.
 //
-// Principal Author: Rick Grout
-//--------------------------------------------------------------//
+// This file is the responsibility of the 3D & Environment Team. 
 
 // Values transferred from the game
 float4x4 mModelToProjection; 

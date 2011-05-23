@@ -1,5 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
+COPYRIGHT 2009 by the Open Rails project.
+This code is provided to help you understand what Open Rails does and does
+not do. Suggestions and contributions to improve Open Rails are always
+welcome. Use of the code for any other purpose or distribution of the code
+to anyone else is prohibited without specific written permission from
+admin@openrails.org.
+
+This file is the responsibility of the 3D & Environment Team. 
+
 This file contains an xml description of a font, and will be read by the XNA
 Framework Content Pipeline. Follow the comments to customize the appearance
 of the font in your game, and to change the characters which are available to draw
