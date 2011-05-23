@@ -65,7 +65,7 @@ namespace ORTS
 		public HelpWindow HelpWindow; // F1 window
         public TrackMonitorWindow TrackMonitorWindow; // F4 window
         public SwitchWindow SwitchWindow; // F8 window
-        public TrainOperationsWindow TrainOperationsWindow; // F9 window
+		public TrainOperationsWindow TrainOperationsWindow; // F9 window
 		public NextStationWindow NextStationWindow; // F10 window
         public DriverAidWindow DriverAidWindow; // Alt-F11 window
         public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
@@ -513,6 +513,22 @@ namespace ORTS
                     SoundEngine.SoundVolume = 0;
                 else
                     SoundEngine.SoundVolume = 1;
+            }
+            // Update activity sounds; this shound probably go in the sound system somewhere?
+            {
+                Activity act = Simulator.ActivityRun;
+                if (act != null)
+                {
+                    ActivityTask at = act.Current;
+                    if (at != null)
+                    {
+                        if (at.SoundNotify != -1)
+                        {
+                            if (IngameSounds != null) IngameSounds.HandleEvent(at.SoundNotify);
+                            at.SoundNotify = -1;
+                        }
+                    }
+                }
             }
 
             if (ScreenHasChanged())

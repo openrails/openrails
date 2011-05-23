@@ -54,16 +54,21 @@ namespace ORTS.Popups
 			return hbox;
 		}
 
-		public void UpdateText(ElapsedTime elapsedTime, Train playerTrain)
-		{
-			if ((PlayerTrain != playerTrain) || (playerTrain.Cars.Count != LastPlayerTrainCars))
-			{
-				PlayerTrain = playerTrain;
-				LastPlayerTrainCars = playerTrain.Cars.Count;
-				Layout();
-			}
-			// FIXME
-		}
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
+
+            if (updateFull)
+            {
+                if ((PlayerTrain != Owner.Viewer.PlayerTrain) || (Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars))
+                {
+                    PlayerTrain = Owner.Viewer.PlayerTrain;
+                    LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
+                    Layout();
+                }
+                // FIXME
+            }
+        }
 	}
 
 	class TrainOperationsCoupler : Image

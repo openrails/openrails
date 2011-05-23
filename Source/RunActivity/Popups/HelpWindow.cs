@@ -174,13 +174,13 @@ namespace ORTS.Popups
         ActivityTask LastActivityTask;
         bool StoppedAt;
 
-        public void UpdateText(ElapsedTime elapsedTime)
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
-            if (Tabs[ActiveTab].Tab == Tab.ActivityTimetable &&
-                Owner.Viewer.Simulator.ActivityRun != null)
+            base.PrepareFrame(elapsedTime, updateFull);
+
+            if (updateFull && Tabs[ActiveTab].Tab == Tab.ActivityTimetable && Owner.Viewer.Simulator.ActivityRun != null)
             {
-                if (LastActivityTask != Owner.Viewer.Simulator.ActivityRun.Current ||
-                    StoppedAt != GetStoppedAt(LastActivityTask))
+                if (LastActivityTask != Owner.Viewer.Simulator.ActivityRun.Current || StoppedAt != GetStoppedAt(LastActivityTask))
                 {
                     LastActivityTask = Owner.Viewer.Simulator.ActivityRun.Current;
                     StoppedAt = GetStoppedAt(LastActivityTask);

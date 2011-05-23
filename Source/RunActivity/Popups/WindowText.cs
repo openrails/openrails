@@ -134,6 +134,7 @@ namespace ORTS.Popups
             x += position.X + offset.X;
             y += position.Y + offset.Y;
 
+            color = Color.Lerp(Color.Black, color, (float)color.A / 255);
             WindowManager.Flush(spriteBatch);
             spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceColor;
             for (var i = 0; i < text.Length; i++)

@@ -4,15 +4,14 @@
 // is prohibited without specific written permission from admin@openrails.org.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
 using ORTS.Popups;
 
 namespace ORTS
@@ -160,7 +159,6 @@ namespace ORTS
         {
 			FrameNumber++;
 			ElapsedTime += elapsedTime;
-			UpdateDialogs(elapsedTime);
 
             if (Viewer.RealTime - LastUpdateRealTime >= 0.25)
 			{
@@ -170,7 +168,6 @@ namespace ORTS
                 double elapsedRealSeconds = Viewer.RealTime - LastUpdateRealTime;
 				LastUpdateRealTime = Viewer.RealTime;
 				Profile(elapsedRealSeconds);
-				UpdateDialogsText(ElapsedTime);
 				UpdateText(elapsedRealSeconds);
 				ElapsedTime.Reset();
 			}
@@ -230,87 +227,6 @@ namespace ORTS
 							RenderPrimitiveGroup.World, ref Matrix);
 					}
 				}
-			}
-		}
-
-		void UpdateDialogs(ElapsedTime elapsedTime)
-		{
-			if (Viewer.CompassWindow.Visible)
-			{
-				var compassDir = new Vector2(Viewer.Camera.XNAView.M11, Viewer.Camera.XNAView.M13);
-				var heading = Math.Acos(compassDir.X);
-				if (compassDir.Y > 0) heading = 2 * Math.PI - heading;
-				Viewer.CompassWindow.Update((float)heading);
-			}
-
-			if (Viewer.DriverAidWindow.Visible)
-			{
-
-				// update driver aid window - convert m/s to km/h, and take absolute so
-				// speed is non-negative.
-				float trainSpeed = Math.Abs(Viewer.PlayerTrain.SpeedMpS * 3.6f);
-
-
-				// for now, use 120 = clear, 0 = anything else. 
-				// TODO: get actual target speed of signal ahead. Currently, signals
-				// clear automatically on their own so the by itself, the driver aid 
-				// isn't showing all that much.
-				int targetSpeed = 0;
-				if (Viewer.PlayerTrain.TMaspect == TrackMonitorSignalAspect.Clear)
-				{
-					targetSpeed = 120;
-				}
-
-				// temporary: this shows what it would look like if you had to stop
-				// at every signal, demonstrating stuff needed to get things working
-				// inside the driver aid window
-				targetSpeed = 20;
-
-				float deceleration = 0.3f;
-
-
-
-				float brakeCurveSpeed = BrakeCurves.ComputeCurve(Viewer.PlayerTrain.SpeedMpS, Viewer.PlayerTrain.distanceToSignal, targetSpeed / 3.6f, deceleration) * 3.6f;
-
-				Viewer.DriverAidWindow.Update(trainSpeed, Viewer.PlayerTrain.distanceToSignal, targetSpeed, brakeCurveSpeed);
-			}
-			
-		}
-
-		void UpdateDialogsText(ElapsedTime elapsedTime)
-		{
-			Viewer.MessagesWindow.UpdateMessages();
-            if (Viewer.HelpWindow.Visible)
-            {
-                Viewer.HelpWindow.UpdateText(elapsedTime);
-            }
-            if (Viewer.TrackMonitorWindow.Visible)
-			{
-				var poiDistance = 0f;
-				var poiBackwards = false;
-				var poiType = Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
-                Viewer.TrackMonitorWindow.UpdateText(elapsedTime, Viewer.MilepostUnitsMetric, Viewer.PlayerLocomotive.SpeedMpS, Viewer.PlayerTrain.distanceToSignal, Viewer.PlayerTrain.TMaspect, poiType, poiDistance);
-			}
-			else Viewer.TrackMonitorWindow.UpdateSpeed(Viewer.PlayerLocomotive.SpeedMpS); // always update last speed so that the projected speed will be right (By JTang)
-			if (Viewer.SwitchWindow.Visible)
-			{
-				Viewer.SwitchWindow.UpdateText(elapsedTime, Viewer.PlayerTrain);
-			}
-			if (Viewer.TrainOperationsWindow.Visible)
-			{
-				Viewer.TrainOperationsWindow.UpdateText(elapsedTime, Viewer.PlayerTrain);
-			}
-			if (Viewer.NextStationWindow.Visible)
-			{
-				Viewer.NextStationWindow.UpdateText(elapsedTime, Viewer.Simulator.ClockTime, FormattedTime);
-			}
-            Viewer.NextStationWindow.UpdateSound();
-			if (Viewer.CompassWindow.Visible)
-			{
-				double latitude = 0;
-				double longitude = 0;
-				new WorldLatLon().ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
-				Viewer.CompassWindow.UpdateText((float)latitude, (float)longitude);
 			}
 		}
 

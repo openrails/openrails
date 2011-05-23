@@ -103,6 +103,37 @@ namespace ORTS.Popups
 			return vbox;
 		}
 
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
+
+            var speedMpS = Owner.Viewer.PlayerLocomotive.SpeedMpS;
+            if (elapsedTime.ClockSeconds < AccelerationMpSpS.SmoothPeriodS)
+                AccelerationMpSpS.Update(elapsedTime.ClockSeconds, (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds);
+            LastSpeedMpS = speedMpS;
+
+            if (updateFull)
+            {
+                var poiDistance = 0f;
+                var poiBackwards = false;
+                var poiType = Owner.Viewer.Simulator.AI.Dispatcher.GetPlayerNextPOI(out poiDistance, out poiBackwards);
+                var milepostUnitsMetric = Owner.Viewer.MilepostUnitsMetric;
+                var signalDistance = Owner.Viewer.PlayerTrain.distanceToSignal;
+                var signalAspect = Owner.Viewer.PlayerTrain.TMaspect;
+
+                var speedProjectedMpS = speedMpS + 60 * AccelerationMpSpS.SmoothedValue;
+                speedProjectedMpS = speedMpS > float.Epsilon ? Math.Max(0, speedProjectedMpS) : speedMpS < -float.Epsilon ? Math.Min(0, speedProjectedMpS) : 0;
+                SpeedCurrent.Text = FormatSpeed(speedMpS, milepostUnitsMetric);
+                SpeedProjected.Text = FormatSpeed(speedProjectedMpS, milepostUnitsMetric);
+
+                SignalDistance.Text = signalAspect == TrackMonitorSignalAspect.None ? "" : FormatDistance(signalDistance, milepostUnitsMetric);
+                SignalAspect.Source = SignalAspectSources[signalAspect];
+
+                POILabel.Text = DispatcherPOILabels[poiType];
+                POIDistance.Text = poiType == DispatcherPOIType.Unknown || poiType == DispatcherPOIType.OffPath ? "" : FormatDistance(poiDistance, milepostUnitsMetric);
+            }
+        }
+
 		public static string FormatSpeed(float speed, bool metric)
 		{
 			return String.Format(metric ? "{0:F1}kph" : "{0:F1}mph", MpS.FromMpS(speed, metric));
@@ -121,30 +152,6 @@ namespace ORTS.Popups
 			if (Math.Abs(distance) < 160.9344)
 				return String.Format("{0:N0}yd", distance * 1.093613298337708);
 			return String.Format("{0:F1}mi", distance / 1609.344);
-		}
-
-		public void UpdateText(ElapsedTime elapsedTime, bool milepostUnitsMetric, float speedMpS, float signalDistance, TrackMonitorSignalAspect signalAspect, DispatcherPOIType poiType, float poiDistance)
-		{
-			AccelerationMpSpS.Update(elapsedTime.ClockSeconds, 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds);
-			LastSpeedMpS = speedMpS;
-			//var speedProjectedMpS = speedMpS + 60 * (speedMpS - LastSpeedMpS) / elapsedTime.ClockSeconds;
-			var speedProjectedMpS = speedMpS + AccelerationMpSpS.SmoothedValue;
-			speedProjectedMpS = speedMpS > float.Epsilon ? Math.Max(0, speedProjectedMpS) : speedMpS < -float.Epsilon ? Math.Min(0, speedProjectedMpS) : 0;
-			SpeedCurrent.Text = FormatSpeed(speedMpS, milepostUnitsMetric);
-			SpeedProjected.Text = FormatSpeed(speedProjectedMpS, milepostUnitsMetric);
-			LastSpeedMpS = speedMpS;
-
-			SignalDistance.Text = signalAspect == TrackMonitorSignalAspect.None ? "" : FormatDistance(signalDistance, milepostUnitsMetric);
-			SignalAspect.Source = SignalAspectSources[signalAspect];
-
-			POILabel.Text = DispatcherPOILabels[poiType];
-			POIDistance.Text = poiType == DispatcherPOIType.Unknown || poiType == DispatcherPOIType.OffPath ? "" : FormatDistance(poiDistance, milepostUnitsMetric);
-		}
-
-		// added method to update the last speed, by JTang
-		public void UpdateSpeed(float speedMpS)
-		{
-			LastSpeedMpS = speedMpS;
 		}
 	}
 }

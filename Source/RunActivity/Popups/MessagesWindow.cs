@@ -3,7 +3,6 @@
 // Use of the code for any other purpose or distribution of the code to anyone else
 // is prohibited without specific written permission from admin@openrails.org.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -81,9 +80,26 @@ namespace ORTS.Popups
 				hbox.Add(message.LabelShadow = new LabelShadow(hbox.RemainingWidth, hbox.RemainingHeight));
 				hbox.Add(message.LabelTime = new Label(-width, 0, TextSize * 4, TextSize, InfoDisplay.FormattedTime(message.ClockTime)));
                 hbox.Add(message.LabelText = new Label(-width + TextSize * 4, 0, width - TextSize * 4, TextSize, message.Text));
-			}
+            }
 			return vbox;
 		}
+
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
+
+            if (updateFull)
+            {
+                if (Messages.Any(m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime + FadeTime))
+                {
+                    Messages = Messages.Where(m => Owner.Viewer.Simulator.ClockTime < m.ExpiryTime + FadeTime).ToList();
+                    Layout();
+                }
+            }
+
+            foreach (var message in Messages.Where(m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime))
+                message.LabelShadow.Color.A = message.LabelTime.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp(255, 0, MathHelper.Clamp((float)((Owner.Viewer.Simulator.ClockTime - message.ExpiryTime) / FadeTime), 0, 1));
+        }
 
 		class Message
 		{
@@ -120,17 +136,6 @@ namespace ORTS.Popups
 		{
 			Messages.Add(new Message(text, Owner.Viewer.Simulator.ClockTime, duration));
 			Layout();
-		}
-
-		public void UpdateMessages()
-		{
-			if (Messages.Any(m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime + FadeTime))
-			{
-				Messages = Messages.Where(m => Owner.Viewer.Simulator.ClockTime < m.ExpiryTime + FadeTime).ToList();
-				Layout();
-			}
-			foreach (var message in Messages.Where(m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime))
-				message.LabelShadow.Color.A = message.LabelTime.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp(255, 0, (float)((Owner.Viewer.Simulator.ClockTime - message.ExpiryTime) / FadeTime));
 		}
 	}
 }

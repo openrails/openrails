@@ -7,10 +7,8 @@
 /// 
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
@@ -61,11 +59,17 @@ namespace ORTS.Popups
 			Owner.Viewer.Simulator.SwitchTrackBehind(Owner.Viewer.PlayerTrain);
 		}
 
-		public void UpdateText(ElapsedTime elapsedTime, Train train)
-		{
-			UpdateSwitch(SwitchForwards, train, true);
-            UpdateSwitch(SwitchBackwards, train, false);
-		}
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
+
+            if (updateFull)
+            {
+                var train = Owner.Viewer.PlayerTrain;
+                UpdateSwitch(SwitchForwards, train, true);
+                UpdateSwitch(SwitchBackwards, train, false);
+            }
+        }
 
 		void UpdateSwitch(Image image, Train train, bool front)
 		{

@@ -90,76 +90,81 @@ namespace ORTS.Popups
 			return vbox;
 		}
 
-		public void UpdateText(ElapsedTime elapsedTime, double clockTime, Func<double, string> timeFormatter)
-		{
-			CurrentTime.Text = timeFormatter(clockTime);
-            Activity act = Owner.Viewer.Simulator.ActivityRun;
-			if (act != null)
-			{
-				ActivityTaskPassengerStopAt at = null;
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
 
-                ActivityTaskPassengerStopAt Current = act.Current == null ? act.Last as ActivityTaskPassengerStopAt : act.Current as ActivityTaskPassengerStopAt;
-
-                at = Current != null ? Current.PrevTask as ActivityTaskPassengerStopAt : null;
-				if (at != null)
-				{
-					StationPreviousName.Text = at.PlatformEnd1.Station;
-					StationPreviousArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
-					StationPreviousArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "(missed)";
-                    StationPreviousArriveActual.Color = GetArrivalColor(at.SchArrive, at.ActArrive);
-					StationPreviousDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
-					StationPreviousDepartActual.Text = at.ActDepart.HasValue ? at.ActDepart.Value.ToString("HH:mm:ss") : "(missed)";
-                    StationPreviousDepartActual.Color = GetDepartColor(at.SchDepart, at.ActDepart);
-                }
-				else
-				{
-					StationPreviousName.Text = "";
-					StationPreviousArriveScheduled.Text = "";
-					StationPreviousArriveActual.Text = "";
-					StationPreviousDepartScheduled.Text = "";
-					StationPreviousDepartActual.Text = "";
-				}
-
-				at = Current;
-				if (at != null)
-				{
-					StationPlatform.Text = at.PlatformEnd1.PlatformName;
-					StationCurrentName.Text = at.PlatformEnd1.Station;
-					StationCurrentArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
-					StationCurrentArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "";
-                    StationCurrentArriveActual.Color = GetArrivalColor(at.SchArrive, at.ActArrive);
-                    StationCurrentDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
-					Message.Text = at.DisplayMessage;
-				}
-				else
-				{
-					StationPlatform.Text = "";
-					StationCurrentName.Text = "";
-					StationCurrentArriveScheduled.Text = "";
-					StationCurrentArriveActual.Text = "";
-					StationCurrentDepartScheduled.Text = "";
-					Message.Text = "";
-				}
-
-				at = Current != null ? Current.NextTask as ActivityTaskPassengerStopAt : null;
-				if (at != null)
-				{
-					StationNextName.Text = at.PlatformEnd1.Station;
-					StationNextArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
-					StationNextDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
-				}
-				else
-				{
-					StationNextName.Text = "";
-					StationNextArriveScheduled.Text = "";
-					StationNextDepartScheduled.Text = "";
-				}
-
-                if (act.IsFinished)
+            if (updateFull)
+            {
+                CurrentTime.Text = InfoDisplay.FormattedTime(Owner.Viewer.Simulator.ClockTime);
+                Activity act = Owner.Viewer.Simulator.ActivityRun;
+                if (act != null)
                 {
-                    Message.Text = "Activity completed.";
+                    ActivityTaskPassengerStopAt at = null;
+
+                    ActivityTaskPassengerStopAt Current = act.Current == null ? act.Last as ActivityTaskPassengerStopAt : act.Current as ActivityTaskPassengerStopAt;
+
+                    at = Current != null ? Current.PrevTask as ActivityTaskPassengerStopAt : null;
+                    if (at != null)
+                    {
+                        StationPreviousName.Text = at.PlatformEnd1.Station;
+                        StationPreviousArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
+                        StationPreviousArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "(missed)";
+                        StationPreviousArriveActual.Color = GetArrivalColor(at.SchArrive, at.ActArrive);
+                        StationPreviousDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
+                        StationPreviousDepartActual.Text = at.ActDepart.HasValue ? at.ActDepart.Value.ToString("HH:mm:ss") : "(missed)";
+                        StationPreviousDepartActual.Color = GetDepartColor(at.SchDepart, at.ActDepart);
+                    }
+                    else
+                    {
+                        StationPreviousName.Text = "";
+                        StationPreviousArriveScheduled.Text = "";
+                        StationPreviousArriveActual.Text = "";
+                        StationPreviousDepartScheduled.Text = "";
+                        StationPreviousDepartActual.Text = "";
+                    }
+
+                    at = Current;
+                    if (at != null)
+                    {
+                        StationPlatform.Text = at.PlatformEnd1.PlatformName;
+                        StationCurrentName.Text = at.PlatformEnd1.Station;
+                        StationCurrentArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
+                        StationCurrentArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "";
+                        StationCurrentArriveActual.Color = GetArrivalColor(at.SchArrive, at.ActArrive);
+                        StationCurrentDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
+                        Message.Text = at.DisplayMessage;
+                    }
+                    else
+                    {
+                        StationPlatform.Text = "";
+                        StationCurrentName.Text = "";
+                        StationCurrentArriveScheduled.Text = "";
+                        StationCurrentArriveActual.Text = "";
+                        StationCurrentDepartScheduled.Text = "";
+                        Message.Text = "";
+                    }
+
+                    at = Current != null ? Current.NextTask as ActivityTaskPassengerStopAt : null;
+                    if (at != null)
+                    {
+                        StationNextName.Text = at.PlatformEnd1.Station;
+                        StationNextArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
+                        StationNextDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
+                    }
+                    else
+                    {
+                        StationNextName.Text = "";
+                        StationNextArriveScheduled.Text = "";
+                        StationNextDepartScheduled.Text = "";
+                    }
+
+                    if (act.IsFinished)
+                    {
+                        Message.Text = "Activity completed.";
+                    }
                 }
-			}
+            }
 		}
 
         public static Color GetArrivalColor(DateTime expected, DateTime? actual)
@@ -175,22 +180,5 @@ namespace ORTS.Popups
                 return Color.LightGreen;
             return Color.LightSalmon;
         }
-
-        public void UpdateSound()
-		{
-            Activity act = Owner.Viewer.Simulator.ActivityRun;
-			if (act != null)
-			{
-				ActivityTask at = act.Current;
-				if (at != null)
-				{
-					if (at.SoundNotify != -1)
-					{
-                        if (Owner.Viewer.IngameSounds != null) Owner.Viewer.IngameSounds.HandleEvent(at.SoundNotify);
-						at.SoundNotify = -1;
-					}
-				}
-			}
-		}
 	}
 }

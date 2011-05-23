@@ -6,13 +6,14 @@
 /// Author: Charlie Salts (aka: CommanderMath)
 /// 
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using System;
+using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using System.Collections.Generic;
-using System.Diagnostics;
+using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
 
 namespace ORTS.Popups
 {
@@ -41,12 +42,40 @@ namespace ORTS.Popups
          return vbox;
       }
 
-      public void Update(float speed, float targetDistance, int targetSpeed, float brakeCurveSpeed)
+      public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
       {
-         DriverAid.UpdateSpeed(speed);
-         DriverAid.UpdateTargetDistance(targetDistance);
-         DriverAid.UpdateTargetSpeed(targetSpeed);
-         DriverAid.UpdateBrakeCurveSpeed(brakeCurveSpeed);
+          base.PrepareFrame(elapsedTime, updateFull);
+
+          // update driver aid window - convert m/s to km/h, and take absolute so
+          // speed is non-negative.
+          float trainSpeed = Math.Abs(Owner.Viewer.PlayerTrain.SpeedMpS * 3.6f);
+
+
+          // for now, use 120 = clear, 0 = anything else. 
+          // TODO: get actual target speed of signal ahead. Currently, signals
+          // clear automatically on their own so the by itself, the driver aid 
+          // isn't showing all that much.
+          int targetSpeed = 0;
+          if (Owner.Viewer.PlayerTrain.TMaspect == TrackMonitorSignalAspect.Clear)
+          {
+              targetSpeed = 120;
+          }
+
+          // temporary: this shows what it would look like if you had to stop
+          // at every signal, demonstrating stuff needed to get things working
+          // inside the driver aid window
+          targetSpeed = 20;
+
+          float deceleration = 0.3f;
+
+
+
+          float brakeCurveSpeed = BrakeCurves.ComputeCurve(Owner.Viewer.PlayerTrain.SpeedMpS, Owner.Viewer.PlayerTrain.distanceToSignal, targetSpeed / 3.6f, deceleration) * 3.6f;
+
+          DriverAid.UpdateSpeed(trainSpeed);
+          DriverAid.UpdateTargetDistance(Owner.Viewer.PlayerTrain.distanceToSignal);
+          DriverAid.UpdateTargetSpeed(targetSpeed);
+          DriverAid.UpdateBrakeCurveSpeed(brakeCurveSpeed);
       }
    }
 

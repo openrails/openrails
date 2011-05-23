@@ -6,6 +6,7 @@
 /// Author: James Ross
 /// 
 
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -38,15 +39,24 @@ namespace ORTS.Popups
 			return vbox;
 		}
 
-		public void Update(float heading)
-		{
-			Compass.Heading = MathHelper.ToDegrees(heading);
-		}
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
 
-		public void UpdateText(float latitude, float longitude)
-		{
-			Latitude.Text = MathHelper.ToDegrees(latitude).ToString("F6");
-			Longitude.Text = MathHelper.ToDegrees(longitude).ToString("F6");
+            var camera = Owner.Viewer.Camera;
+            var compassDir = new Vector2(camera.XNAView.M11, camera.XNAView.M13);
+            var heading = Math.Acos(compassDir.X);
+            if (compassDir.Y > 0) heading = 2 * Math.PI - heading;
+            Compass.Heading = MathHelper.ToDegrees((float)heading);
+
+            if (updateFull)
+            {
+                double latitude = 0;
+                double longitude = 0;
+                new WorldLatLon().ConvertWTC(camera.TileX, camera.TileZ, camera.Location, ref latitude, ref longitude);
+                Latitude.Text = MathHelper.ToDegrees((float)latitude).ToString("F6");
+                Longitude.Text = MathHelper.ToDegrees((float)longitude).ToString("F6");
+            }
 		}
 	}
 
