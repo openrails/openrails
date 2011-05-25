@@ -153,7 +153,7 @@ namespace ORTS
 
                         if (distanceType == DistanceToType.EndOfLine)
                         {
-                            primitives.Add(new DispatcherLabel(position2, Color.Red, "End of Line"));
+                            primitives.Add(new DispatcherLabel(position2, Color.Red, "End of Line", Owner.TextFontDefault));
                             break;
                         }
                         else if (distanceType == DistanceToType.Switch)
@@ -167,7 +167,7 @@ namespace ORTS
                                     break;
                                 }
                             }
-                            primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1)));
+                            primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefault));
                             distanceToSwitch.RemoveAt(0);
                             if (switchError)
                                 break;
@@ -176,7 +176,7 @@ namespace ORTS
                         {
                             var signalAspectStop = distanceToSignal[0].MonitorAspect == TrackMonitorSignalAspect.Stop;
                             var signalAspectWarning = distanceToSignal[0].MonitorAspect == TrackMonitorSignalAspect.Warning;
-                            primitives.Add(new DispatcherLabel(position2, signalAspectStop ? Color.Red : signalAspectWarning ? Color.Yellow : Color.White, String.Format("Signal ({0})", distanceToSignal[0].Aspect)));
+                            primitives.Add(new DispatcherLabel(position2, signalAspectStop ? Color.Red : signalAspectWarning ? Color.Yellow : Color.White, String.Format("Signal ({0})", distanceToSignal[0].Aspect), Owner.TextFontDefault));
                             distanceToSignal.RemoveAt(0);
                             if (signalError)
                                 break;
@@ -272,9 +272,11 @@ namespace ORTS
         {
             var start2d = Project3D(Normalize(Start, camera), viewport, camera);
             var end2d = Project3D(Normalize(End, camera), viewport, camera);
+            var line2d = end2d - start2d;
+            line2d.Normalize();
 
             Visible = (start2d.Z >= 0 && start2d.Z <= 1 && end2d.Z >= 0 && end2d.Z <= 1);
-            Start2D = Flatten(start2d);
+            Start2D = Flatten(start2d) + new Vector2(line2d.Y * Width / 2, -line2d.X * Width / 2);
             Angle = (float)Math.Atan2(end2d.Y - start2d.Y, end2d.X - start2d.X);
             Length = (end2d - start2d).Length();
         }
@@ -284,7 +286,6 @@ namespace ORTS
             if (Visible)
             {
                 spriteBatch.Draw(WindowManager.WhiteTexture, Start2D, null, Color, Angle, Vector2.Zero, new Vector2(Length, Width), SpriteEffects.None, 0);
-                //spriteBatch.Draw(WindowManager.WhiteTexture, Start2D, null, Color.Red, Angle, Vector2.Zero, new Vector2(Length / 2, Width), SpriteEffects.None, 0);
             }
         }
     }
@@ -298,18 +299,21 @@ namespace ORTS
         WorldLocation Position;
         Color Color;
         string Text;
+        WindowTextFont Font;
         Vector2 TextSize;
 
         bool Visible;
         float LabelOffset;
         Vector2 Position2D;
+        Point Position2DText;
 
-        public DispatcherLabel(WorldLocation position, Color color, string text)
+        public DispatcherLabel(WorldLocation position, Color color, string text, WindowTextFont font)
         {
             Position = position;
             Color = color;
             Text = text;
-            TextSize = Materials.SpriteBatchMaterial.DefaultFont.MeasureString(text);
+            Font = font;
+            TextSize = new Vector2(Font.MeasureString(text), Font.Height);
         }
 
         public override void PrepareFrame(List<Rectangle> labels, Viewport viewport, Camera camera)
@@ -328,6 +332,7 @@ namespace ORTS
 
                 LabelOffset = position2D.Y - rect2D.Y;
                 Position2D = new Vector2(rect2D.X, rect2D.Y);
+                Position2DText = new Point((int)Position2D.X + TextOffsetX, (int)Position2D.Y + TextOffsetY);
             }
         }
 
@@ -336,7 +341,7 @@ namespace ORTS
             if (Visible)
             {
                 spriteBatch.Draw(WindowManager.WhiteTexture, Position2D, null, Color, 0, Vector2.Zero, new Vector2(1, LabelOffset), SpriteEffects.None, 0);
-                spriteBatch.DrawString(Materials.SpriteBatchMaterial.DefaultFont, Text, new Vector2(Position2D.X + TextOffsetX, Position2D.Y + TextOffsetY), Color);
+                Font.Draw(spriteBatch, Position2DText, Text, Color);
             }
         }
     }

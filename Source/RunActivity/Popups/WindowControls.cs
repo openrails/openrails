@@ -201,9 +201,10 @@ namespace ORTS.Popups
         {
             base.Initialize(windowManager);
             Font = windowManager.TextFontDefault;
+            Reflow();
         }
 
-        void Reflow(GraphicsDevice graphicsDevice)
+        void Reflow()
         {
             Lines = new List<string>();
             var position = 0;
@@ -211,7 +212,7 @@ namespace ORTS.Popups
             {
                 var wrap = position;
                 var search = position;
-                while (search != -1 && Text[search] != '\n' && Font.MeasureString(graphicsDevice, Text.Substring(position, search - position)) < Position.Width)
+                while (search != -1 && Text[search] != '\n' && Font.MeasureString(Text.Substring(position, search - position)) < Position.Width)
                 {
                     wrap = search;
                     search = Text.IndexOfAny(Whitespace, search + 1);
@@ -230,13 +231,10 @@ namespace ORTS.Popups
 
         internal override void Draw(SpriteBatch spriteBatch, Point offset)
         {
-            if (Lines == null)
-                Reflow(spriteBatch.GraphicsDevice);
-
             foreach (var line in Lines)
             {
                 Font.Draw(spriteBatch, Position, offset, line, LabelAlignment.Left, Color);
-                offset.Y += Materials.PopupWindowMaterial.DefaultFont.LineSpacing;
+                offset.Y += Font.Height;
             }
         }
     }

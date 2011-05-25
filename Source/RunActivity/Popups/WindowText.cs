@@ -27,14 +27,16 @@ namespace ORTS.Popups
     {
         Dictionary<string, WindowTextFont> Fonts = new Dictionary<string, WindowTextFont>();
 
-        [CallOnThread("Loader")]
         public WindowTextFont Get(string fontFamily, float sizeInPt, FontStyle style)
         {
             var key = String.Format("{0}{1:F}{2}", fontFamily, sizeInPt, style);
-            WindowTextFont font;
-            if (Fonts.TryGetValue(key, out font))
-                return font;
-            return Fonts[key] = font = new WindowTextFont(fontFamily, sizeInPt, style);
+            lock (Fonts)
+            {
+                WindowTextFont font;
+                if (Fonts.TryGetValue(key, out font))
+                    return font;
+                return Fonts[key] = font = new WindowTextFont(fontFamily, sizeInPt, style);
+            }
         }
     }
 
@@ -43,47 +45,28 @@ namespace ORTS.Popups
         readonly Font Font;
         CharacterGroup Characters;
 
-        [CallOnThread("Loader")]
         public WindowTextFont(string fontFamily, float sizeInPt, FontStyle style)
         {
             var font = new Font(fontFamily, sizeInPt, style);
             Font = new Font(fontFamily, (int)font.GetHeight(), style, GraphicsUnit.Pixel);
-            Characters = new CharacterGroup();
-        }
-
-        public Texture2D Texture
-        {
-            get
-            {
-                return Characters.Texture;
-            }
+            Debug.Assert(Font.Height == (int)Math.Ceiling(Font.GetHeight()), "Font.Height is not expected value.");
+            Characters = new CharacterGroup(Font);
         }
 
         public int Height
         {
             get
             {
-                if (Characters.Characters.Length > 0)
-                    return Characters.Boxes[0].Height;
-
-                return (int)Math.Ceiling(Font.GetHeight());
+                return Font.Height;
             }
         }
 
-        public int MeasureString(GraphicsDevice graphicsDevice, string text)
+        public int MeasureString(string text)
         {
-            // We'll crash creating 0-byte buffers below and there's nothing to be done with an empty string anyway.
-            if (text.Length == 0)
+            if (String.IsNullOrEmpty(text))
                 return 0;
 
-            foreach (var ch in text)
-            {
-                if (!Characters.ContainsCharacter(ch))
-                {
-                    Characters = new CharacterGroup(graphicsDevice, Font, text.ToCharArray(), Characters);
-                    break;
-                }
-            }
+            EnsureCharacterData(text);
 
             var chIndexes = new int[text.Length];
             for (var i = 0; i < text.Length; i++)
@@ -100,20 +83,28 @@ namespace ORTS.Popups
         }
 
 #if WINDOWTEXT_SPRITEBATCH
+        [CallOnThread("Render")]
+        public void Draw(SpriteBatch spriteBatch, Point offset, string text, Color color)
+        {
+            Draw(spriteBatch, offset, 0, text, LabelAlignment.Left, color);
+        }
+
+        [CallOnThread("Render")]
         public void Draw(SpriteBatch spriteBatch, Rectangle position, Point offset, string text, LabelAlignment align, Color color)
         {
+            offset.X += position.Location.X;
+            offset.Y += position.Location.Y;
+            Draw(spriteBatch, offset, position.Width, text, align, color);
+        }
+
+        [CallOnThread("Render")]
+        void Draw(SpriteBatch spriteBatch, Point position, int width, string text, LabelAlignment align, Color color)
+        {
             // We'll crash creating 0-byte buffers below and there's nothing to be done with an empty string anyway.
-            if (text.Length == 0)
+            if (String.IsNullOrEmpty(text))
                 return;
 
-            foreach (var ch in text)
-            {
-                if (!Characters.ContainsCharacter(ch))
-                {
-                    Characters = new CharacterGroup(spriteBatch.GraphicsDevice, Font, text.ToCharArray(), Characters);
-                    break;
-                }
-            }
+            EnsureCharacterData(text);
 
             var chIndexes = new int[text.Length];
             for (var i = 0; i < text.Length; i++)
@@ -130,20 +121,36 @@ namespace ORTS.Popups
                     x += Characters.AbcWidths[chIndexes[i]].Z;
                 }
                 if (align == LabelAlignment.Center)
-                    x = (int)((position.Width - x) / 2);
+                    x = (int)((width - x) / 2);
                 else
-                    x = position.Width - x;
+                    x = width - x;
             }
 
-            x += position.X + offset.X;
-            y += position.Y + offset.Y;
+            x += position.X;
+            y += position.Y;
 
-            color = Color.Lerp(Color.Black, color, (float)color.A / 255);
+            var maskColor = Color.Lerp(Color.Black, Color.White, (float)color.A / 255);
+            var textColor = Color.Lerp(Color.Black, color, (float)color.A / 255);
+            var texture = Characters.GetTexture(spriteBatch.GraphicsDevice);
+
             WindowManager.Flush(spriteBatch);
+            var startX = x;
+            spriteBatch.GraphicsDevice.RenderState.SourceBlend = Blend.Zero;
             spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceColor;
             for (var i = 0; i < text.Length; i++)
             {
-                spriteBatch.Draw(Characters.Texture, new Vector2(x, y), Characters.Boxes[chIndexes[i]], color, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                spriteBatch.Draw(texture, new Vector2(x, y), Characters.Boxes[chIndexes[i]], maskColor, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                x += Characters.AbcWidths[chIndexes[i]].X;
+                x += Characters.AbcWidths[chIndexes[i]].Y;
+                x += Characters.AbcWidths[chIndexes[i]].Z;
+            }
+            WindowManager.Flush(spriteBatch);
+            x = startX;
+            spriteBatch.GraphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.One;
+            for (var i = 0; i < text.Length; i++)
+            {
+                spriteBatch.Draw(texture, new Vector2(x, y), Characters.Boxes[chIndexes[i]], textColor, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                 x += Characters.AbcWidths[chIndexes[i]].X;
                 x += Characters.AbcWidths[chIndexes[i]].Y;
                 x += Characters.AbcWidths[chIndexes[i]].Z;
@@ -156,12 +163,10 @@ namespace ORTS.Popups
         public DrawData PrepareFrame(GraphicsDevice graphicsDevice, float width, float height, string text, LabelAlignment align)
         {
             // We'll crash creating 0-byte buffers below and there's nothing to be done with an empty string anyway.
-            if (text.Length == 0)
+            if (String.IsNullOrEmpty(text))
                 return null;
 
-            foreach (var ch in text)
-                if (!Characters.ContainsCharacter(ch))
-                    Characters = new CharacterGroup(graphicsDevice, Font, (char)(ch - (ch % 32)), (char)(ch - (ch % 32) + 31), Characters);
+            EnsureCharacterData(text);
 
             var chIndexes = new int[text.Length];
             for (var i = 0; i < text.Length; i++)
@@ -208,6 +213,7 @@ namespace ORTS.Popups
             return new DrawData(Characters, vertexBuffer, vertexData.Length, indexBuffer, text.Length * 2);
         }
 
+        [CallOnThread("Render")]
         public void Draw(GraphicsDevice graphicsDevice, DrawData data)
         {
             if (data != null)
@@ -224,6 +230,28 @@ namespace ORTS.Popups
             return (LastDrawData != null) && (LastDrawData.Characters == Characters);
         }
 #endif
+
+        void EnsureCharacterData(string text)
+        {
+            foreach (var ch in text)
+            {
+                if (!Characters.ContainsCharacter(ch))
+                {
+                    lock (this)
+                    {
+                        foreach (var ch2 in text)
+                        {
+                            if (!Characters.ContainsCharacter(ch2))
+                            {
+                                Characters = new CharacterGroup(text.ToCharArray(), Characters);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
 
 #if !WINDOWTEXT_SPRITEBATCH
         public sealed class DrawData
@@ -247,49 +275,49 @@ namespace ORTS.Popups
         sealed internal class CharacterGroup
         {
             const int BoxSpacing = 1;
+            const System.Windows.Forms.TextFormatFlags Flags = System.Windows.Forms.TextFormatFlags.NoPadding | System.Windows.Forms.TextFormatFlags.NoPrefix | System.Windows.Forms.TextFormatFlags.SingleLine | System.Windows.Forms.TextFormatFlags.Top;
 
-            public readonly Texture2D Texture;
+            public readonly Font Font;
             public readonly char[] Characters;
             public readonly Rectangle[] Boxes;
             public readonly Vector3[] AbcWidths;
 
-            public CharacterGroup()
+            public CharacterGroup(Font font)
             {
+                Font = font;
                 Characters = new char[0];
                 Boxes = new Rectangle[0];
                 AbcWidths = new Vector3[0];
             }
 
-            public CharacterGroup(GraphicsDevice graphicsDevice, Font font, char[] characters, CharacterGroup mergeGroup)
-                : this(graphicsDevice, font, characters, mergeGroup.Characters, mergeGroup.Boxes, mergeGroup.AbcWidths)
+            public CharacterGroup(char[] characters, CharacterGroup mergeGroup)
+                : this(characters, mergeGroup.Font, mergeGroup.Characters, mergeGroup.Boxes, mergeGroup.AbcWidths)
             {
             }
 
-            CharacterGroup(GraphicsDevice graphicsDevice, Font font, char[] characters, char[] mergeCharacters, Rectangle[] mergeBoxes, Vector3[] mergeAbcWidths)
+            CharacterGroup(char[] characters, Font mergeFont, char[] mergeCharacters, Rectangle[] mergeBoxes, Vector3[] mergeAbcWidths)
             {
+                Font = mergeFont;
                 Characters = characters.Union(mergeCharacters).OrderBy(c => c).ToArray();
                 Boxes = new Rectangle[Characters.Length];
                 AbcWidths = new Vector3[Characters.Length];
 
-                // Set up flags for drawing text.
-                var flags = System.Windows.Forms.TextFormatFlags.NoPadding | System.Windows.Forms.TextFormatFlags.NoPrefix | System.Windows.Forms.TextFormatFlags.SingleLine | System.Windows.Forms.TextFormatFlags.Top;
-
                 // Boring device context for APIs.
                 var hdc = NativeMethods.CreateCompatibleDC(IntPtr.Zero);
-                NativeMethods.SelectObject(hdc, font.ToHfont());
+                NativeMethods.SelectObject(hdc, Font.ToHfont());
                 try
                 {
                     // Get character glyph indices to identify those not supported by this font.
                     var charactersGlyphs = new short[Characters.Length];
                     if (NativeMethods.GetGlyphIndices(hdc, new String(Characters), Characters.Length, charactersGlyphs, NativeMethods.GgiFlags.MarkNonexistingGlyphs) != Characters.Length) throw new Exception();
 
-                    // Copy what data we can from the merge CharacterGroup data. Load anything we don't have.
                     var mergeIndex = 0;
                     var x = BoxSpacing;
                     var y = BoxSpacing;
-                    var height = (int)Math.Ceiling(font.GetHeight()) + 1;
+                    var height = (int)Math.Ceiling(Font.GetHeight()) + 1;
                     for (var i = 0; i < Characters.Length; i++)
                     {
+                        // Copy ABC widths from merge data or calculate ourselves.
                         if ((mergeIndex < mergeCharacters.Length) && (mergeCharacters[mergeIndex] == Characters[i]))
                         {
                             AbcWidths[i] = mergeAbcWidths[mergeIndex];
@@ -303,7 +331,8 @@ namespace ORTS.Popups
                         }
                         else
                         {
-                            AbcWidths[i] = new Vector3(0, System.Windows.Forms.TextRenderer.MeasureText(String.Format(" {0} ", Characters[i]), font, System.Drawing.Size.Empty, flags).Width - System.Windows.Forms.TextRenderer.MeasureText("  ", font, System.Drawing.Size.Empty, flags).Width, 0);
+                            // This is a bit of a cheat, but is used when the chosen font does not have the character itself but it will render anyway (e.g. through font fallback).
+                            AbcWidths[i] = new Vector3(0, System.Windows.Forms.TextRenderer.MeasureText(String.Format(" {0} ", Characters[i]), Font, System.Drawing.Size.Empty, Flags).Width - System.Windows.Forms.TextRenderer.MeasureText("  ", Font, System.Drawing.Size.Empty, Flags).Width, 0);
                         }
                         Boxes[i] = new Rectangle(x, y, (int)(Math.Max(0, AbcWidths[i].X) + AbcWidths[i].Y + Math.Max(0, AbcWidths[i].Z)), height);
                         x += Boxes[i].Width + BoxSpacing;
@@ -313,31 +342,14 @@ namespace ORTS.Popups
                             y += height + BoxSpacing;
                         }
                     }
+
+                    // TODO: Copy boxes from the merge data.
                 }
                 finally
                 {
                     // Cleanup.
                     NativeMethods.DeleteDC(hdc);
                 }
-
-                // TODO: Copy texture/bitmap and boxes data from merge source.
-                var rectangle = new System.Drawing.Rectangle(0, 0, Boxes.Max(r => r.Right), Boxes.Max(r => r.Bottom));
-                var bitmap = new System.Drawing.Bitmap(rectangle.Width, rectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-                var buffer = new int[rectangle.Width * rectangle.Height];
-                using (var g = System.Drawing.Graphics.FromImage(bitmap))
-                {
-                    // Clear to black.
-                    g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.Black), rectangle);
-
-                    // Draw the text using system text drawing (yay, ClearType).
-                    for (var i = 0; i < Characters.Length; i++)
-                        System.Windows.Forms.TextRenderer.DrawText(g, Characters[i].ToString(), font, new System.Drawing.Point(Boxes[i].X, Boxes[i].Y), System.Drawing.Color.White, flags);
-                }
-                var bits = bitmap.LockBits(rectangle, System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
-                System.Runtime.InteropServices.Marshal.Copy(bits.Scan0, buffer, 0, buffer.Length);
-                Texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
-                Texture.SetData(buffer);
-                bitmap.UnlockBits(bits);
             }
 
             public bool ContainsCharacter(char character)
@@ -348,6 +360,39 @@ namespace ORTS.Popups
             public int IndexOfCharacter(char character)
             {
                 return Array.BinarySearch(Characters, character);
+            }
+
+            Texture2D Texture;
+            public Texture2D GetTexture(GraphicsDevice graphicsDevice)
+            {
+                var texture = Texture;
+                if (texture == null)
+                {
+                    lock (this)
+                    {
+                        if (Texture == null)
+                        {
+                            var rectangle = new System.Drawing.Rectangle(0, 0, Boxes.Max(r => r.Right), Boxes.Max(r => r.Bottom));
+                            var bitmap = new System.Drawing.Bitmap(rectangle.Width, rectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+                            var buffer = new int[rectangle.Width * rectangle.Height];
+                            using (var g = System.Drawing.Graphics.FromImage(bitmap))
+                            {
+                                // Clear to black.
+                                g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.Black), rectangle);
+
+                                // Draw the text using system text drawing (yay, ClearType).
+                                for (var i = 0; i < Characters.Length; i++)
+                                    System.Windows.Forms.TextRenderer.DrawText(g, Characters[i].ToString(), Font, new System.Drawing.Point(Boxes[i].X, Boxes[i].Y), System.Drawing.Color.White, Flags);
+                            }
+                            var bits = bitmap.LockBits(rectangle, System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+                            System.Runtime.InteropServices.Marshal.Copy(bits.Scan0, buffer, 0, buffer.Length);
+                            Texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
+                            Texture.SetData(buffer);
+                            bitmap.UnlockBits(bits);
+                        }
+                    }
+                }
+                return Texture;
             }
         }
     }
