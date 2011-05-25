@@ -153,7 +153,7 @@ namespace ORTS
 
                         if (distanceType == DistanceToType.EndOfLine)
                         {
-                            primitives.Add(new DispatcherLabel(position2, Color.Red, "End of Line", Owner.TextFontDefault));
+                            primitives.Add(new DispatcherLabel(position2, Color.Red, "End of Line", Owner.TextFontDefaultOutlined));
                             break;
                         }
                         else if (distanceType == DistanceToType.Switch)
@@ -167,7 +167,7 @@ namespace ORTS
                                     break;
                                 }
                             }
-                            primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefault));
+                            primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
                             distanceToSwitch.RemoveAt(0);
                             if (switchError)
                                 break;
@@ -176,7 +176,7 @@ namespace ORTS
                         {
                             var signalAspectStop = distanceToSignal[0].MonitorAspect == TrackMonitorSignalAspect.Stop;
                             var signalAspectWarning = distanceToSignal[0].MonitorAspect == TrackMonitorSignalAspect.Warning;
-                            primitives.Add(new DispatcherLabel(position2, signalAspectStop ? Color.Red : signalAspectWarning ? Color.Yellow : Color.White, String.Format("Signal ({0})", distanceToSignal[0].Aspect), Owner.TextFontDefault));
+                            primitives.Add(new DispatcherLabel(position2, signalAspectStop ? Color.Red : signalAspectWarning ? Color.Yellow : Color.White, String.Format("Signal ({0})", distanceToSignal[0].Aspect), Owner.TextFontDefaultOutlined));
                             distanceToSignal.RemoveAt(0);
                             if (signalError)
                                 break;

@@ -39,6 +39,7 @@ namespace ORTS.Popups
 		public readonly Viewer3D Viewer;
         public readonly WindowTextManager TextManager;
         public readonly WindowTextFont TextFontDefault;
+        public readonly WindowTextFont TextFontDefaultOutlined;
 
         readonly Material WindowManagerMaterial = new BasicBlendedMaterial("WindowManager");
         readonly List<Window> Windows = new List<Window>();
@@ -55,6 +56,7 @@ namespace ORTS.Popups
 			Viewer = viewer;
             TextManager = new WindowTextManager();
             TextFontDefault = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular);
+            TextFontDefaultOutlined = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular, 2);
         }
 
         public void Initialize()
