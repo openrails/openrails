@@ -37,6 +37,7 @@ using Microsoft.Xna.Framework.Input;
 using MSTS;
 using System.Xml;
 using Microsoft.Xna.Framework.Content;
+using System.Text;
 
 
 
@@ -924,7 +925,7 @@ namespace ORTS
                             data *= 3.6f;
                         else
                             data *= 2.2369f;
-                        data = Math.Abs(data);
+                        //data = Math.Abs(data);
                         break;
                     }
                 case CABViewControlTypes.AMMETER:
@@ -2216,11 +2217,11 @@ namespace ORTS
     /// <summary>
     /// Digital Cab Control renderer
     /// Uses fonts instead of graphic
-    /// Do not supports Justification
+    /// Does not support Justification
     /// </summary>
     public class CabViewDigitalRenderer : CabViewControlRenderer
     {
-        private string _Text;
+        private float _Num;
         SpriteFont _Font;
         private float _ScaleToScreen = 1f;
         private int _Digits = 1;
@@ -2230,6 +2231,7 @@ namespace ORTS
         {
             _Font = _Viewer.RenderProcess.Content.Load<SpriteFont>("Arial");
             _Digits = (int)Math.Log10(_CabViewControl.MaxValue) + 1;
+            
         }
 
         public override void PrepareFrame(RenderFrame frame)
@@ -2244,13 +2246,89 @@ namespace ORTS
 
 			_ScaleToScreen = (float)_Viewer.DisplaySize.Y / 480 * (fontratio);
 
-            float num = _Locomotive.GetDataOf(_CabViewControl);
-            _Text = num.ToString("00");
+            _Num = _Locomotive.GetDataOf(_CabViewControl);
         }
 
+        //Modified by Dionis 26/05/2011 in order to display colors and number formats
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            _Sprite2DCtlView.SpriteBatch.DrawString(_Font, _Text, _Position, Color.White, 0f, new Vector2(), _ScaleToScreen, SpriteEffects.None, 0);
+            StringBuilder sbAccuracy = new StringBuilder();
+            StringBuilder sbLeadingZeros = new StringBuilder();
+            string displayedText = "";
+            Color textColor;
+            try
+            {
+                if (((CVCDigital)_CabViewControl).OldValue != 0 && ((CVCDigital)_CabViewControl).OldValue > _Num && ((CVCDigital)_CabViewControl).DecreaseColor.A != 0)
+                {
+                    for (int i = 0; i < (int)((CVCDigital)_CabViewControl).Accuracy; i++)
+                    {
+                        sbAccuracy.Append("0");
+                    }
+                    for (int i = 0; i < (int)((CVCDigital)_CabViewControl).LeadingZeros; i++)
+                    {
+                        sbLeadingZeros.Append("0");
+                    }
+                    displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", Math.Abs(_Num));
+                    textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).DecreaseColor.A, B = (byte)((CVCDigital)_CabViewControl).DecreaseColor.B, G = (byte)((CVCDigital)_CabViewControl).DecreaseColor.G, R = (byte)((CVCDigital)_CabViewControl).DecreaseColor.R };
+
+                }
+                else if (_Num < 0 && ((CVCDigital)_CabViewControl).NegativeColor.A != 0)
+                {
+                    for (int i = 0; i < (int)((CVCDigital)_CabViewControl).Accuracy; i++)
+                    {
+                        sbAccuracy.Append("0");
+                    }
+                    for (int i = 0; i < (int)((CVCDigital)_CabViewControl).LeadingZeros; i++)
+                    {
+                        sbLeadingZeros.Append("0");
+                    }
+                    displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", Math.Abs(_Num));
+                    textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).NegativeColor.A, B = (byte)((CVCDigital)_CabViewControl).NegativeColor.B, G = (byte)((CVCDigital)_CabViewControl).NegativeColor.G, R = (byte)((CVCDigital)_CabViewControl).NegativeColor.R };
+
+                }
+                else
+                {
+                    for (int i = 0; i < (int)((CVCDigital)_CabViewControl).Accuracy; i++)
+                    {
+                        sbAccuracy.Append("0");
+                    }
+                    for (int i = 0; i < (int)((CVCDigital)_CabViewControl).LeadingZeros; i++)
+                    {
+                        sbLeadingZeros.Append("0");
+                    }
+                    if (((CVCDigital)_CabViewControl).PositiveColor.A != 0)
+                    {
+                        displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", _Num);
+                        textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).PositiveColor.A, B = (byte)((CVCDigital)_CabViewControl).PositiveColor.B, G = (byte)((CVCDigital)_CabViewControl).PositiveColor.G, R = (byte)((CVCDigital)_CabViewControl).PositiveColor.R };
+
+                    }
+                    else
+                    {
+                        displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", _Num);
+                        textColor = Color.White;
+
+                    }
+                }
+                _Sprite2DCtlView.SpriteBatch.DrawString(_Font,
+                                                        displayedText,
+                                                        _Position,
+                                                        textColor,
+                                                        0f,
+                                                        new Vector2(),
+                                                        _ScaleToScreen,
+                                                        SpriteEffects.None,
+                                                        0);
+                ((CVCDigital)_CabViewControl).OldValue = _Num;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
+            finally
+            {
+                sbAccuracy = null;
+                sbLeadingZeros = null;
+            }
         }
     }
 }

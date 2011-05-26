@@ -72,7 +72,43 @@ namespace MSTS
         THROTTLE_DISPLAY,
         CPH_DISPLAY,
         PANTO_DISPLAY,
-        DIRECTION_DISPLAY
+        DIRECTION_DISPLAY,
+        CP_HANDLE,
+        PANTOGRAPH2,
+        CLOCK,
+        SANDING,
+        ALERTER_DISPLAY,
+        TRACTION_BRAKING,
+        ACCELEROMETER,
+        WHEELSLIP,
+        FRICTION_BRAKING,
+        PENALTY_APP,
+        EMERGENCY_BRAKE,
+        RESET,
+        CAB_RADIO,
+        OVERSPEED,
+        SPEEDLIM_DISPLAY,
+        FUEL_GAUGE,
+        WHISTLE,
+        REGULATOR,
+        CYL_COCKS,
+        BLOWER,
+        STEAM_INJ1,
+        STEAM_INJ2,
+        DAMPERS_FRONT,
+        DAMPERS_BACK,
+        WATER_INJECTOR1,
+        WATER_INJECTOR2,
+        SMALL_EJECTOR,
+        STEAM_PR,
+        STEAMCHEST_PR,
+        TENDER_WATER,
+        BOILER_WATER,
+        REVERSER_PLATE,
+        STEAMHEAT_PRESSURE,
+        FIREBOX,
+        RPM,
+        FIREHOLE
     }
 
     public enum CABViewControlStyles
@@ -85,7 +121,9 @@ namespace MSTS
         SPRUNG,
         NOT_SPRUNG,
         WHILE_PRESSED,
-        ONOFF
+        ONOFF, 
+        _24HOUR, 
+        _12HOUR
     }
 
     public enum CABViewControlUnits
@@ -99,7 +137,19 @@ namespace MSTS
         VOLTS,
         KILOVOLTS,
         KM_PER_HOUR,
-        MILES_PER_HOUR
+        MILES_PER_HOUR, 
+        METRESµSECµSEC,
+        KMµHOURµHOUR, 
+        KMµHOURµSEC, 
+        METRESµSECµHOUR,
+        NEWTONS, 
+        KILO_NEWTONS,
+        KILO_LBS,
+        METRES_PER_SEC,
+        LITRES,
+        GALLONS,
+        INCHES_OF_MERCURY,
+        MILI_AMPS
     }
 
     public class CabViewControls : List<CabViewControl>
@@ -112,11 +162,14 @@ namespace MSTS
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
                 new STFReader.TokenProcessor("guage", ()=>{ Add(new CVCGauge(stf, basepath)); }),
                 new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("twostate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("multistatedisplay", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
-                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }),
-                new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }),
+                new STFReader.TokenProcessor("two_state", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("tri_state", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("multi_state_display", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
+                new STFReader.TokenProcessor("cab_signal_display", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
+                new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
+                new STFReader.TokenProcessor("combined_control", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCDiscrete(stf, basepath)); }), 
+                new STFReader.TokenProcessor("digital_clock", ()=>{ Add(new CVCDigital(stf, basepath)); })
             });
             //TODO Uncomment when parsed all type
             /*
@@ -125,6 +178,7 @@ namespace MSTS
         }
     }
     
+    #region CabViewControl
     public class CabViewControl
     {
         public double PositionX = 0;
@@ -134,7 +188,7 @@ namespace MSTS
 
         public double MinValue = 0;
         public double MaxValue = 0;
-
+        public double OldValue = 0;
         public string ACEFile = "";
 
         public CABViewControlTypes ControlType = CABViewControlTypes.NONE;
@@ -188,7 +242,13 @@ namespace MSTS
             stf.MustMatch("(");
             try
             {
-                ControlStyle = (CABViewControlStyles)Enum.Parse(typeof(CABViewControlStyles), stf.ReadString());
+                string sStyle = stf.ReadString();
+                int checkNumeric = 0;
+                if(int.TryParse(sStyle.Substring(0, 1), out checkNumeric) == true)
+                {
+                    sStyle = sStyle.Insert(0, "_");
+                }
+                ControlStyle = (CABViewControlStyles)Enum.Parse(typeof(CABViewControlStyles), sStyle);
             }
             catch (ArgumentException)
             {
@@ -203,7 +263,9 @@ namespace MSTS
             stf.MustMatch("(");
             try
             {
-                Units = (CABViewControlUnits)Enum.Parse(typeof(CABViewControlUnits), stf.ReadItem());
+                string sUnits = stf.ReadItem();
+                sUnits = sUnits.Replace('/', 'µ');
+                Units = (CABViewControlUnits)Enum.Parse(typeof(CABViewControlUnits), sUnits);
             }
             catch (ArgumentException)
             {
@@ -214,7 +276,9 @@ namespace MSTS
             stf.SkipRestOfBlock();
         }
     }
+    #endregion
 
+    #region Dial controls
     public class CVCDial : CabViewControl
     {
         public float FromDegree = 0;
@@ -244,7 +308,9 @@ namespace MSTS
             });
         }
     }
+    #endregion
 
+    #region Guages
     public class CVCGauge : CabViewControl
     {
         public Rectangle Area = new Rectangle();
@@ -278,18 +344,23 @@ namespace MSTS
             });
         }
     }
+    #endregion
 
-    public abstract class CVCWithFrames : CabViewControl
-    {
-        public int FramesCount = 0;
-        public int FramesX = 0;
-        public int FramesY = 0;
-
-        public List<double> Values = new List<double>();
-    }
-
+    #region Digital controls
     public class CVCDigital : CabViewControl
     {
+        public int LeadingZeros { get; set; }
+        public double Accuracy { get; set; }
+        public double AccuracySwitch { get; set; }
+        public int Justification { get; set; }
+        public color PositiveColor { get; set; }
+        public color NegativeColor { get; set; }
+        public color DecreaseColor { get; set; }
+
+        public CVCDigital()
+        {
+        }
+
         public CVCDigital(STFReader stf, string basepath)
         {
             stf.MustMatch("(");
@@ -300,8 +371,111 @@ namespace MSTS
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
-
+                new STFReader.TokenProcessor("leadingzeros", ()=>{ ParseLeadingZeros(stf); }),
+                new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
+                new STFReader.TokenProcessor("accuracyswitch", ()=>{ ParseAccuracySwitch(stf); }), 
+                new STFReader.TokenProcessor("justification", ()=>{ ParseJustification(stf); }),
+                new STFReader.TokenProcessor("positivecolour", ()=>{ 
+                    stf.MustMatch("(");
+                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    if(stf.EndOfBlock() == false)
+                    {
+                        stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }) });
+                    }
+                }),
+                new STFReader.TokenProcessor("negativecolour", ()=>{
+                    stf.MustMatch("(");
+                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    if(stf.EndOfBlock() == false)
+                    {
+                        stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ NegativeColor = ParseControlColor(stf); }) });
+                    }
+                }),
+                new STFReader.TokenProcessor("decreasecolour", ()=>{
+                    stf.MustMatch("(");
+                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    if(stf.EndOfBlock() == false)
+                    {
+                        stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
+                    }
+                })
             });
+        }
+
+        protected virtual void ParseLeadingZeros(STFReader stf)
+        {
+            stf.MustMatch("(");
+            LeadingZeros = stf.ReadInt(STFReader.UNITS.None, 0);
+            stf.SkipRestOfBlock();
+        }
+
+        protected virtual void ParseAccuracy(STFReader stf)
+        {
+            stf.MustMatch("(");
+            Accuracy = stf.ReadDouble(STFReader.UNITS.None, 0);
+            stf.SkipRestOfBlock();
+        }
+
+        protected virtual void ParseAccuracySwitch(STFReader stf)
+        {
+            stf.MustMatch("(");
+            AccuracySwitch = stf.ReadDouble(STFReader.UNITS.None, 0);
+            stf.SkipRestOfBlock();
+        }
+
+        protected virtual void ParseJustification(STFReader stf)
+        {
+            stf.MustMatch("(");
+            Justification = stf.ReadInt(STFReader.UNITS.None, 3);
+            stf.SkipRestOfBlock();
+        }
+
+        protected virtual color ParseControlColor(STFReader stf)
+        {
+            stf.MustMatch("(");
+            color colour = new color { A = 255, R = stf.ReadInt(STFReader.UNITS.None, 0), G = stf.ReadInt(STFReader.UNITS.None, 0), B = stf.ReadInt(STFReader.UNITS.None, 0) };
+            stf.SkipRestOfBlock();
+            return colour;
+        }
+    }
+
+    public class CVCDigitalClock : CVCDigital
+    {
+
+        public CVCDigitalClock(STFReader stf, string basepath)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
+                new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
+                new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); })
+            });
+        }
+
+        
+    }
+    #endregion
+
+    #region Frames controls
+    public abstract class CVCWithFrames : CabViewControl
+    {
+        private List<double> values = new List<double>();
+
+        public int FramesCount { get; set; }
+        public int FramesX { get; set; }
+        public int FramesY { get; set; }
+
+        public List<double> Values 
+        {
+            get
+            {
+                return values;
+            }
         }
     }
 
@@ -475,7 +649,9 @@ namespace MSTS
             } // End of Need check the Values collection for validity
         } // End of Constructor
     }
+    #endregion
 
+    #region Multistate Display Controls
     public class CVCMultiStateDisplay : CVCWithFrames
     {
 
@@ -507,7 +683,9 @@ namespace MSTS
             });
         }
     }
+    #endregion
 
+    #region other controls
     public class CVCSignal : CVCDiscrete
     {
         public CVCSignal(STFReader inf, string basepath)
@@ -524,6 +702,6 @@ namespace MSTS
             Values.Add(1);
         }
     }
-
+    #endregion
 } // namespace MSTS
 
