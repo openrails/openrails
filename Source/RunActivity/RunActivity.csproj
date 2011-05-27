@@ -211,6 +211,7 @@
     <Compile Include="Common\SmoothedData.cs" />
     <Compile Include="Common\SteamTable.cs" />
     <Compile Include="Common\SunMoonPos.cs" />
+    <Compile Include="Common\TextHelper.cs" />
     <Compile Include="Common\UserSettings.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
     <Compile Include="Debugging\DebugViewerForm.cs">
