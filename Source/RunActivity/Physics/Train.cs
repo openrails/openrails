@@ -71,6 +71,7 @@ namespace ORTS
 		public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
 		private bool spad = false;      // Signal Passed At Danger
 		public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
+        public TrackLayer EditTrain = null; //WaltN: Temporary facility for track-laying experiments
 
 		/// <summary>
 		/// Reference to the Simulator object.
@@ -287,13 +288,24 @@ namespace ORTS
 			//End-of-route detection
 			if (IsEndOfRoute(MUDirection))// FrontTDBTraveller.Direction))
 			{
-				Stop();
+                if (EditTrain == null) //WaltN: !RE_ENABLED This is the normal path
+                {
+                    Stop();
 
-				// TODO - Collision detection: If a train hits an object, there should be a
-				//        realistic response.  This includes a train impacting a bumper/buffer.
-				//        It's possible that collision detection will occur BEFORE end-of-
-				//        route detection and will obsolete this test in this location.
-				//        However, the case of an unterminated section should be kept in mind.
+                    // TODO - Collision detection: If a train hits an object, there should be a
+                    //        realistic response.  This includes a train impacting a bumper/buffer.
+                    //        It's possible that collision detection will occur BEFORE end-of-
+                    //        route detection and will obsolete this test in this location.
+                    //        However, the case of an unterminated section should be kept in mind.
+                }
+                else //WaltN: RE_ENABLED This is the track-laying path
+                {
+                    Stop();
+                    // Using FrontTDBTraveller if moving forward or RearTDBTraveller if moving backwards
+                    TDBTraveller t = (MUDirection == Direction.Forward) ? FrontTDBTraveller : RearTDBTraveller;
+                    // Initiate a route edit
+                    EditTrain.LaySection(t);
+                }
 			}
 
 			if (!spad) UpdateSignalState();

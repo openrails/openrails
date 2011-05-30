@@ -277,6 +277,7 @@
     <Compile Include="Processes\ProcessState.cs" />
     <Compile Include="RollingStock\SeriesMotor.cs" />
     <Compile Include="RollingStock\TrainCar.cs" />
+    <Compile Include="RouteEdit\RESandbox.cs" />
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Simulator\Activity.cs" />
     <Compile Include="Simulator\RailDriverHandler.cs" />

@@ -21,6 +21,10 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 /// </summary>
 /// 
+
+// Uncommenting the following will enable the experimental route-editing sandbox:
+//#define RE_ENABLED //WaltN
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -635,6 +639,11 @@ namespace ORTS
 			}
 
 			Train train = new Train(this);
+
+//WaltN: Temporary facility for track-laying experiments
+#if RE_ENABLED
+            train.EditTrain = new TrackLayer(TDB, TSectionDat); // Creates a TrackLayer for the player train
+#endif
 
 			// This is the position of the back end of the train in the database.
 			PATTraveller patTraveller = new PATTraveller(patFileName);
