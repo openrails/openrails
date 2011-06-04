@@ -113,7 +113,7 @@ namespace ORTS
             for (var i = 0; i < TextColumns.Length; i++)
             {
                 TextColumns[i] = new StringBuilder();
-				TextPrimitives[i] = new TextPrimitive(TextMaterial, new Vector2(TextOffset + TextColumnOffsets[i], TextOffset), Color.White, 0.25f, Color.Black);
+                TextPrimitives[i] = new TextPrimitive(TextMaterial, new Point(TextOffset + TextColumnOffsets[i], TextOffset), Color.White, viewer.WindowManager.TextFontDefaultOutlined);
             }
 
             TextPages = new Action[] {
@@ -561,60 +561,24 @@ namespace ORTS
 
     public class TextPrimitive : RenderPrimitive
     {
-		public enum FontSize { Default, Medium, Large };
         public readonly SpriteBatchMaterial Material;
-		public Vector2 Position; //text should be able to be moved around, for example train car information (By JTang)
-		public readonly Color Color;
-		public readonly Color ShadowColor;
+        public Point Position;
+        public readonly Color Color;
+        public readonly WindowTextFont Font;
         public string Text;
-		public SpriteFont Font; //specify font (Arial or ArialLarge at this stage)
 
-		public TextPrimitive(SpriteBatchMaterial material, Vector2 position, Color color, float shadowStrength, Color shadowColor)
-		{
-			Material = material;
-			Position = position;
-			Color = color;
-			ShadowColor = new Color(shadowColor, shadowStrength);
-			Font = Material.DefaultFont;
-		}
+        public TextPrimitive(SpriteBatchMaterial material, Point position, Color color, WindowTextFont font)
+        {
+            Material = material;
+            Position = position;
+            Color = color;
+            Font = font;
+        }
 
-		//another constructor to give a choice of loading default/medium/large font and text
-		public TextPrimitive(SpriteBatchMaterial material, Vector2 position, Color color, float shadowStrength, Color shadowColor, string text, FontSize size)
-		{
-			Text = text;
-			Material = material;
-			Position = position;
-			Color = color;
-			ShadowColor = new Color(shadowColor, shadowStrength);
-			switch (size)
-			{
-				case FontSize.Large: Font = Material.LargeFont;
-					break;
-				case FontSize.Medium: Font = Material.MediumFont;
-					break;
-				default: Font = Material.DefaultFont;
-					break;
-			}
-		}
-
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-			if (ShadowColor.A > 0.01f)
-			{
-				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X - 1, Position.Y - 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 0, Position.Y - 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 1, Position.Y - 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X - 1, Position.Y + 0), ShadowColor);
-				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 1, Position.Y + 0), ShadowColor);
-				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X - 1, Position.Y + 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 0, Position.Y + 1), ShadowColor);
-				Material.SpriteBatch.DrawString(Font, Text, new Vector2(Position.X + 1, Position.Y + 1), ShadowColor);
-			}
-			Material.SpriteBatch.DrawString(Font, Text, Position, Color);
-		}
+            Font.Draw(Material.SpriteBatch, Position, Text, Color);
+        }
     }
 
 	//2D straight lines

@@ -56,7 +56,7 @@ namespace ORTS.Popups
 			Viewer = viewer;
             TextManager = new WindowTextManager();
             TextFontDefault = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular);
-            TextFontDefaultOutlined = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular, 2);
+            TextFontDefaultOutlined = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular, 1);
         }
 
         public void Initialize()

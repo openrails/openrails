@@ -65,6 +65,7 @@ namespace ORTS.Popups
 	{
 		static Texture2D CompassTexture;
 		static int[] HeadingHalfWidths;
+        WindowTextFont Font;
 		public float Heading;
 
 		public PopupCompass(int width, int height)
@@ -72,40 +73,46 @@ namespace ORTS.Popups
 		{
 		}
 
-		internal override void Draw(SpriteBatch spriteBatch, Point offset)
-		{
-			if (CompassTexture == null)
-			{
-				CompassTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-				CompassTexture.SetData(new[] { Color.White });
-			}
-			if (HeadingHalfWidths == null)
-			{
-				HeadingHalfWidths = new int[12];
-				for (var i = 0; i < 12; i++)
-					HeadingHalfWidths[i] = (int)(Materials.PopupWindowMaterial.DefaultFont.MeasureString((i * 30).ToString()).X / 2);
-			}
-			const int headingScale = 2;
-			var height = (int)((Position.Height - 16) / 3);
-			for (float heading = 0; heading < 360; heading += 10)
-			{
-				var x = Position.Width / 2 + (int)(((heading - Heading + 360 + 180) % 360 - 180) * headingScale);
-				if ((x >= 0) && (x < Position.Width))
-				{
-					if (heading % 30 == 0)
-					{
-						var textHalfWidth = HeadingHalfWidths[(int)heading / 30];
-						if ((x - textHalfWidth >= 0) && (x + textHalfWidth < Position.Width))
-							spriteBatch.DrawString(Materials.PopupWindowMaterial.DefaultFont, heading.ToString(), new Vector2(offset.X + Position.X + x - textHalfWidth, offset.Y + Position.Y), Color.White);
-						spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + 16, 1, height * 2), Color.White);
-					}
-					else
-					{
-						spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + 16, 1, height), Color.White);
-					}
-				}
-			}
-			spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + Position.Width / 2, offset.Y + Position.Bottom - height, 1, height), Color.White);
-		}
+        public override void Initialize(WindowManager windowManager)
+        {
+            base.Initialize(windowManager);
+            Font = windowManager.TextFontDefault;
+        }
+
+        internal override void Draw(SpriteBatch spriteBatch, Point offset)
+        {
+            if (CompassTexture == null)
+            {
+                CompassTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+                CompassTexture.SetData(new[] { Color.White });
+            }
+            if (HeadingHalfWidths == null)
+            {
+                HeadingHalfWidths = new int[12];
+                for (var i = 0; i < 12; i++)
+                    HeadingHalfWidths[i] = Font.MeasureString((i * 30).ToString()) / 2;
+            }
+            const int headingScale = 2;
+            var height = (int)((Position.Height - 16) / 3);
+            for (float heading = 0; heading < 360; heading += 10)
+            {
+                var x = Position.Width / 2 + (int)(((heading - Heading + 360 + 180) % 360 - 180) * headingScale);
+                if ((x >= 0) && (x < Position.Width))
+                {
+                    if (heading % 30 == 0)
+                    {
+                        var textHalfWidth = HeadingHalfWidths[(int)heading / 30];
+                        if ((x - textHalfWidth >= 0) && (x + textHalfWidth < Position.Width))
+                            Font.Draw(spriteBatch, new Point(offset.X + Position.X + x - textHalfWidth, offset.Y + Position.Y), heading.ToString(), Color.White);
+                        spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + 16, 1, height * 2), Color.White);
+                    }
+                    else
+                    {
+                        spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + x, offset.Y + Position.Y + 16, 1, height), Color.White);
+                    }
+                }
+            }
+            spriteBatch.Draw(CompassTexture, new Rectangle(offset.X + Position.X + Position.Width / 2, offset.Y + Position.Bottom - height, 1, height), Color.White);
+        }
 	}
 }

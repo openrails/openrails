@@ -27,11 +27,36 @@ namespace ORTS.Popups
     {
         Dictionary<string, WindowTextFont> Fonts = new Dictionary<string, WindowTextFont>();
 
+        /// <summary>
+        /// Provides a <see cref="WindowTextFont"/> for the specified <paramref name="fontFamily"/>,
+        /// <paramref name="sizeInPt"/> and <paramref name="style"/>.
+        /// </summary>
+        /// <remarks>
+        /// All <see cref="WindowTextFont"/> instances are cached by the <see cref="WindowTextManager"/>.
+        /// </remarks>
+        /// <param name="fontFamily">Font family name (e.g. "Arial")</param>
+        /// <param name="sizeInPt">Size of the font, in points (e.g. 9)</param>
+        /// <param name="style">Style of the font (e.g. <c>FontStyle.Normal</c>)</param>
+        /// <returns>A <see cref="WindowTextFont"/> that can be used to draw text of the given font family,
+        /// size and style.</returns>
         public WindowTextFont Get(string fontFamily, float sizeInPt, FontStyle style)
         {
             return Get(fontFamily, sizeInPt, style, 0);
         }
 
+        /// <summary>
+        /// Provides a <see cref="WindowTextFont"/> for the specified <paramref name="fontFamily"/>,
+        /// <paramref name="sizeInPt"/> and <paramref name="style"/> with the specified <paramref name="outlineSize"/>.
+        /// </summary>
+        /// <remarks>
+        /// All <see cref="WindowTextFont"/> instances are cached by the <see cref="WindowTextManager"/>.
+        /// </remarks>
+        /// <param name="fontFamily">Font family name (e.g. "Arial")</param>
+        /// <param name="sizeInPt">Size of the font, in points (e.g. 9)</param>
+        /// <param name="style">Style of the font (e.g. <c>FontStyle.Normal</c>)</param>
+        /// <param name="outlineSize">Size of the outline, in pixels (e.g. 2)</param>
+        /// <returns>A <see cref="WindowTextFont"/> that can be used to draw text of the given font family,
+        /// size and style with the given outline size.</returns>
         public WindowTextFont Get(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
         {
             var key = String.Format("{0}:{1:F}:{2}:{3}", fontFamily, sizeInPt, style, outlineSize);
@@ -51,7 +76,7 @@ namespace ORTS.Popups
         readonly int OutlineSize;
         CharacterGroup Characters;
 
-        public WindowTextFont(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
+        internal WindowTextFont(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
         {
             var font = new Font(fontFamily, sizeInPt, style);
             Font = new Font(fontFamily, (int)font.GetHeight(), style, GraphicsUnit.Pixel);
@@ -60,6 +85,9 @@ namespace ORTS.Popups
             Characters = new CharacterGroup(Font, OutlineSize);
         }
 
+        /// <summary>
+        /// Gets the line height of the font.
+        /// </summary>
         public int Height
         {
             get
@@ -68,11 +96,13 @@ namespace ORTS.Popups
             }
         }
 
+        /// <summary>
+        /// Measures the width of a given string.
+        /// </summary>
+        /// <param name="text">Text to measure</param>
+        /// <returns>The length of the text in pixels.</returns>
         public int MeasureString(string text)
         {
-            if (String.IsNullOrEmpty(text))
-                return 0;
-
             EnsureCharacterData(text);
 
             var chIndexes = new int[text.Length];
@@ -85,6 +115,8 @@ namespace ORTS.Popups
                 x += Characters.AbcWidths[chIndexes[i]].X;
                 x += Characters.AbcWidths[chIndexes[i]].Y;
                 x += Characters.AbcWidths[chIndexes[i]].Z;
+                if (text[i] == '\n')
+                    x = 0;
             }
             return (int)x;
         }
@@ -119,90 +151,64 @@ namespace ORTS.Popups
         [CallOnThread("Render")]
         void Draw(SpriteBatch spriteBatch, Point position, int width, string text, LabelAlignment align, Color color, Color outline)
         {
-            // We'll crash creating 0-byte buffers below and there's nothing to be done with an empty string anyway.
-            if (String.IsNullOrEmpty(text))
-                return;
-
             EnsureCharacterData(text);
 
             var chIndexes = new int[text.Length];
             for (var i = 0; i < text.Length; i++)
                 chIndexes[i] = Characters.IndexOfCharacter(text[i]);
 
-            var x = 0f;
-            var y = 0f;
+            var current = Vector2.Zero;
             if (align != LabelAlignment.Left)
             {
                 for (var i = 0; i < text.Length; i++)
                 {
-                    x += Characters.AbcWidths[chIndexes[i]].X;
-                    x += Characters.AbcWidths[chIndexes[i]].Y;
-                    x += Characters.AbcWidths[chIndexes[i]].Z;
+                    current.X += Characters.AbcWidths[chIndexes[i]].X;
+                    current.X += Characters.AbcWidths[chIndexes[i]].Y;
+                    current.X += Characters.AbcWidths[chIndexes[i]].Z;
                 }
                 if (align == LabelAlignment.Center)
-                    x = (int)((width - x) / 2);
+                    current.X = (int)((width - current.X) / 2);
                 else
-                    x = width - x;
+                    current.X = width - current.X;
             }
 
-            x += position.X;
-            y += position.Y;
+            current.X += position.X - OutlineSize;
+            current.Y += position.Y - OutlineSize;
 
-            var startX = x;
-            var maskColor = Color.Lerp(Color.Black, Color.White, (float)color.A / 255);
-            var textColor = Color.Lerp(Color.Black, color, (float)color.A / 255);
+            var start = current;
+            var texture = Characters.GetTexture(spriteBatch.GraphicsDevice, color, outline);
             if (OutlineSize > 0)
             {
-                var outlineColor = Color.Lerp(Color.Black, outline, (float)color.A / 255);
-                var outlineTexture = Characters.GetOutlineTexture(spriteBatch.GraphicsDevice);
-                WindowManager.Flush(spriteBatch);
-                x = startX;
-                spriteBatch.GraphicsDevice.RenderState.SourceBlend = Blend.Zero;
-                spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceColor;
+                var outlineOffset = Characters.BoxesMaxBottom;
+                current = start;
                 for (var i = 0; i < text.Length; i++)
                 {
-                    spriteBatch.Draw(outlineTexture, new Vector2(x - OutlineSize, y - OutlineSize), Characters.Boxes[chIndexes[i]], maskColor, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                    x += Characters.AbcWidths[chIndexes[i]].X;
-                    x += Characters.AbcWidths[chIndexes[i]].Y;
-                    x += Characters.AbcWidths[chIndexes[i]].Z;
+                    var box = Characters.Boxes[chIndexes[i]];
+                    box.Y += outlineOffset;
+                    spriteBatch.Draw(texture, current, box, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                    current.X += Characters.AbcWidths[chIndexes[i]].X;
+                    current.X += Characters.AbcWidths[chIndexes[i]].Y;
+                    current.X += Characters.AbcWidths[chIndexes[i]].Z;
+                    if (text[i] == '\n')
+                    {
+                        current.X = start.X;
+                        current.Y += Font.Height;
+                    }
                 }
-                WindowManager.Flush(spriteBatch);
-                x = startX;
-                spriteBatch.GraphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-                spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.One;
-                for (var i = 0; i < text.Length; i++)
+            }
+            current = start;
+            for (var i = 0; i < text.Length; i++)
+            {
+                spriteBatch.Draw(texture, current, Characters.Boxes[chIndexes[i]], Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                current.X += Characters.AbcWidths[chIndexes[i]].X;
+                current.X += Characters.AbcWidths[chIndexes[i]].Y;
+                current.X += Characters.AbcWidths[chIndexes[i]].Z;
+                if (text[i] == '\n')
                 {
-                    spriteBatch.Draw(outlineTexture, new Vector2(x - OutlineSize, y - OutlineSize), Characters.Boxes[chIndexes[i]], outlineColor, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                    x += Characters.AbcWidths[chIndexes[i]].X;
-                    x += Characters.AbcWidths[chIndexes[i]].Y;
-                    x += Characters.AbcWidths[chIndexes[i]].Z;
+                    current.X = start.X;
+                    current.Y += Font.Height;
                 }
             }
-            var texture = Characters.GetTexture(spriteBatch.GraphicsDevice);
-            WindowManager.Flush(spriteBatch);
-            x = startX;
-            spriteBatch.GraphicsDevice.RenderState.SourceBlend = Blend.Zero;
-            spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceColor;
-            for (var i = 0; i < text.Length; i++)
-            {
-                spriteBatch.Draw(texture, new Vector2(x - OutlineSize, y - OutlineSize), Characters.Boxes[chIndexes[i]], maskColor, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                x += Characters.AbcWidths[chIndexes[i]].X;
-                x += Characters.AbcWidths[chIndexes[i]].Y;
-                x += Characters.AbcWidths[chIndexes[i]].Z;
-            }
-            WindowManager.Flush(spriteBatch);
-            x = startX;
-            spriteBatch.GraphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
-            spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.One;
-            for (var i = 0; i < text.Length; i++)
-            {
-                spriteBatch.Draw(texture, new Vector2(x - OutlineSize, y - OutlineSize), Characters.Boxes[chIndexes[i]], textColor, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                x += Characters.AbcWidths[chIndexes[i]].X;
-                x += Characters.AbcWidths[chIndexes[i]].Y;
-                x += Characters.AbcWidths[chIndexes[i]].Z;
-            }
-            WindowManager.Flush(spriteBatch);
-            spriteBatch.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
         }
 #else
         [CallOnThread("Updater")]
@@ -327,6 +333,8 @@ namespace ORTS.Popups
             public readonly int OutlineSize;
             public readonly char[] Characters;
             public readonly Rectangle[] Boxes;
+            public readonly int BoxesMaxRight;
+            public readonly int BoxesMaxBottom;
             public readonly Vector3[] AbcWidths;
 
             public CharacterGroup(Font font, int outlineSize)
@@ -335,6 +343,8 @@ namespace ORTS.Popups
                 OutlineSize = outlineSize;
                 Characters = new char[0];
                 Boxes = new Rectangle[0];
+                BoxesMaxRight = 0;
+                BoxesMaxBottom = 0;
                 AbcWidths = new Vector3[0];
             }
 
@@ -400,6 +410,8 @@ namespace ORTS.Popups
                     // Cleanup.
                     NativeMethods.DeleteDC(hdc);
                 }
+                BoxesMaxRight = Boxes.Max(b => b.Right);
+                BoxesMaxBottom = Boxes.Max(b => b.Bottom);
             }
 
             public bool ContainsCharacter(char character)
@@ -426,69 +438,88 @@ namespace ORTS.Popups
                         System.Windows.Forms.TextRenderer.DrawText(g, Characters[i].ToString(), Font, new System.Drawing.Point(Boxes[i].X + OutlineSize, Boxes[i].Y + OutlineSize), System.Drawing.Color.White, Flags);
                 }
                 var bits = bitmap.LockBits(rectangle, System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
-                System.Runtime.InteropServices.Marshal.Copy(bits.Scan0, buffer, 0, buffer.Length);
+                Marshal.Copy(bits.Scan0, buffer, 0, buffer.Length);
                 bitmap.UnlockBits(bits);
                 return buffer;
             }
 
-            Texture2D Texture;
-            public Texture2D GetTexture(GraphicsDevice graphicsDevice)
+            Dictionary<long, Texture2D> Textures = new Dictionary<long, Texture2D>();
+            /// <summary>
+            /// Constructs a texture containg all the characters for this <see cref="CharacterGroup"/> is their
+            /// respective <see cref="Boxes"/> in the specified <paramref name="color"/>.
+            /// </summary>
+            /// <remarks>
+            /// This function returns a texture with the alpha channel set using a compromise formula for ClearType
+            /// rendering. To render ClearType correctly, the blending must be performed using red, green and blue
+            /// channels but this is a performance burden, so the alpha channel is configured to allow a single-pass
+            /// rendering using typical alpha blending instead.
+            /// </remarks>
+            /// <param name="graphicsDevice"></param>
+            /// <param name="color"></param>
+            /// <param name="outline"></param>
+            /// <returns></returns>
+            public Texture2D GetTexture(GraphicsDevice graphicsDevice, Color color, Color outline)
             {
-                var texture = Texture;
-                if (texture == null)
+                Texture2D texture;
+                var textureKey = (long)color.PackedValue * 0x100000000 + (long)outline.PackedValue;
+                if (Textures.TryGetValue(textureKey, out texture))
+                    return texture;
+
+                lock (this)
                 {
-                    lock (this)
+                    if (Textures.TryGetValue(textureKey, out texture))
+                        return texture;
+
+                    var rectangle = new System.Drawing.Rectangle(0, 0, BoxesMaxRight, BoxesMaxBottom);
+                    var buffer = GetBitmapData(rectangle);
+
+                    for (var y = 0; y < rectangle.Height; y++)
                     {
-                        if (Texture == null)
+                        for (var x = 0; x < rectangle.Width; x++)
                         {
-                            var rectangle = new System.Drawing.Rectangle(0, 0, Boxes.Max(r => r.Right), Boxes.Max(r => r.Bottom));
-                            Texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
-                            Texture.SetData(GetBitmapData(rectangle));
+                            var offset = y * rectangle.Width * 4 + x * 4;
+                            // alpha = min(255, (red + green + blue) / 2).
+                            buffer[offset + 3] = (byte)Math.Min(255, (buffer[offset + 0] + buffer[offset + 1] + buffer[offset + 2]) / 2);
+                            // red|green|blue *= color.
+                            buffer[offset + 2] = (byte)(buffer[offset + 2] * color.R / 255);
+                            buffer[offset + 1] = (byte)(buffer[offset + 1] * color.G / 255);
+                            buffer[offset + 0] = (byte)(buffer[offset + 0] * color.B / 255);
                         }
                     }
-                }
-                return Texture;
-            }
 
-            Texture2D OutlineTexture;
-            public Texture2D GetOutlineTexture(GraphicsDevice graphicsDevice)
-            {
-                var outlineTexture = OutlineTexture;
-                if (outlineTexture == null)
-                {
-                    lock (this)
+                    if (OutlineSize > 0)
                     {
-                        if (OutlineTexture == null)
+                        var outlineBuffer = new byte[buffer.Length];
+                        for (var offsetX = -OutlineSize; offsetX <= OutlineSize; offsetX++)
                         {
-                            var rectangle = new System.Drawing.Rectangle(0, 0, Boxes.Max(r => r.Right), Boxes.Max(r => r.Bottom));
-                            var data = GetBitmapData(rectangle);
-                            var outlineData = new byte[4 * rectangle.Width * rectangle.Height];
-                            for (var offsetX = -OutlineSize; offsetX <= OutlineSize; offsetX++)
+                            for (var offsetY = -OutlineSize; offsetY <= OutlineSize; offsetY++)
                             {
-                                for (var offsetY = -OutlineSize; offsetY <= OutlineSize; offsetY++)
+                                if (Math.Sqrt(offsetX * offsetX + offsetY * offsetY) <= OutlineSize)
                                 {
-                                    if (Math.Sqrt(offsetX * offsetX + offsetY * offsetY) <= OutlineSize)
+                                    for (var x = OutlineSize; x < rectangle.Width - OutlineSize; x++)
                                     {
-                                        for (var x = OutlineSize; x < rectangle.Width - OutlineSize; x++)
+                                        for (var y = OutlineSize; y < rectangle.Height - OutlineSize; y++)
                                         {
-                                            for (var y = OutlineSize; y < rectangle.Height - OutlineSize; y++)
-                                            {
-                                                for (var i = 0; i < 4; i++)
-                                                {
-                                                    var val = outlineData[((y + offsetY) * rectangle.Width + x + offsetX) * 4 + i];
-                                                    outlineData[((y + offsetY) * rectangle.Width + x + offsetX) * 4 + i] = val + data[(y * rectangle.Width + x) * 4 + i] > 255 ? (byte)255 : (byte)(val + data[(y * rectangle.Width + x) * 4 + i]);
-                                                }
-                                            }
+                                            var offset = y * rectangle.Width * 4 + x * 4;
+                                            var outlineOffset = offset + offsetY * rectangle.Width * 4 + offsetX * 4;
+                                            outlineBuffer[outlineOffset + 3] = (byte)Math.Min(255, outlineBuffer[outlineOffset + 3] + buffer[offset + 3]);
                                         }
                                     }
                                 }
                             }
-                            OutlineTexture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
-                            OutlineTexture.SetData(outlineData);
                         }
+                        var combinedBuffer = new byte[buffer.Length * 2];
+                        Array.Copy(buffer, 0, combinedBuffer, 0, buffer.Length);
+                        Array.Copy(outlineBuffer, 0, combinedBuffer, buffer.Length, buffer.Length);
+                        buffer = combinedBuffer;
+                        rectangle.Height *= 2;
                     }
+
+                    texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
+                    texture.SetData(buffer);
+                    Textures[textureKey] = texture;
                 }
-                return OutlineTexture;
+                return texture;
             }
         }
     }

@@ -337,17 +337,11 @@ namespace ORTS
     public class SpriteBatchMaterial : BasicBlendedMaterial
     {
         public SpriteBatch SpriteBatch;
-        public SpriteFont DefaultFont;
-        public SpriteFont MediumFont;
-        public SpriteFont LargeFont;
 
         public SpriteBatchMaterial(RenderProcess renderProcess)
             : base(null)
         {
             SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
-            DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
-            MediumFont = renderProcess.Content.Load<SpriteFont>("ArialMedium");
-            LargeFont = renderProcess.Content.Load<SpriteFont>("ArialLarge");
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1461,7 +1455,6 @@ namespace ORTS
 
 	public class PopupWindowMaterial : Material
 	{
-		public SpriteFont DefaultFont;
 		IEnumerator<EffectPass> ShaderPassesPopupWindow;
 		IEnumerator<EffectPass> ShaderPassesPopupWindowGlass;
 		IEnumerator<EffectPass> ShaderPasses;
@@ -1469,7 +1462,6 @@ namespace ORTS
 		public PopupWindowMaterial(RenderProcess renderProcess)
 			: base(null)
 		{
-			DefaultFont = renderProcess.Content.Load<SpriteFont>("Arial");
 		}
 
 		public void SetState(GraphicsDevice graphicsDevice, Texture2D screen)
