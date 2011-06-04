@@ -478,12 +478,10 @@ namespace ORTS.Popups
                         for (var x = 0; x < rectangle.Width; x++)
                         {
                             var offset = y * rectangle.Width * 4 + x * 4;
-                            // alpha = min(255, (red + green + blue) / 2).
-                            buffer[offset + 3] = (byte)Math.Min(255, (buffer[offset + 0] + buffer[offset + 1] + buffer[offset + 2]) / 2);
-                            // red|green|blue *= color.
-                            buffer[offset + 2] = (byte)MathHelper.Lerp(outline.R, color.R, (float)buffer[offset + 2] / 255);
-                            buffer[offset + 1] = (byte)MathHelper.Lerp(outline.G, color.G, (float)buffer[offset + 1] / 255);
-                            buffer[offset + 0] = (byte)MathHelper.Lerp(outline.B, color.B, (float)buffer[offset + 0] / 255);
+                            // alpha = (red + green + blue) / 3.
+                            buffer[offset + 3] = (byte)((buffer[offset + 0] + buffer[offset + 1] + buffer[offset + 2]) / 3);
+                            // red|green|blue = 255;
+                            buffer[offset + 2] = buffer[offset + 1] = buffer[offset + 0] = 255;
                         }
                     }
 
