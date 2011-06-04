@@ -481,9 +481,9 @@ namespace ORTS.Popups
                             // alpha = min(255, (red + green + blue) / 2).
                             buffer[offset + 3] = (byte)Math.Min(255, (buffer[offset + 0] + buffer[offset + 1] + buffer[offset + 2]) / 2);
                             // red|green|blue *= color.
-                            buffer[offset + 2] = (byte)(buffer[offset + 2] * color.R / 255);
-                            buffer[offset + 1] = (byte)(buffer[offset + 1] * color.G / 255);
-                            buffer[offset + 0] = (byte)(buffer[offset + 0] * color.B / 255);
+                            buffer[offset + 2] = (byte)MathHelper.Lerp(outline.R, color.R, (float)buffer[offset + 2] / 255);
+                            buffer[offset + 1] = (byte)MathHelper.Lerp(outline.G, color.G, (float)buffer[offset + 1] / 255);
+                            buffer[offset + 0] = (byte)MathHelper.Lerp(outline.B, color.B, (float)buffer[offset + 0] / 255);
                         }
                     }
 
