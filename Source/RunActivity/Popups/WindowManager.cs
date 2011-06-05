@@ -25,6 +25,7 @@ namespace ORTS.Popups
 		public static Texture2D WhiteTexture;
 		public static Texture2D ScrollbarTexture;
 		public static Texture2D LabelShadowTexture;
+        public static Texture2D PauseTexture;
 
         // This is all a bit of a hack, since SpriteBatch does not expose its own internal Flush() method. What we do
         // is draw with a different texture to anything else; the change of texture triggers an internal flush. The
@@ -77,6 +78,39 @@ namespace ORTS.Popups
                 ScrollbarTexture = Viewer.RenderProcess.Content.Load<Texture2D>("WindowScrollbar");
             if (LabelShadowTexture == null)
                 LabelShadowTexture = Viewer.RenderProcess.Content.Load<Texture2D>("WindowLabelShadow");
+            if (PauseTexture == null)
+            {
+                var size = 256;
+                var background = new Color(Color.Black, 0.5f);
+                var borderRadius = size / 7;
+                var data = new Color[size * size * 2];
+                // Rounded corner background.
+                for (var y = 0; y < size; y++)
+                    for (var x = 0; x < size; x++)
+                        if ((x > borderRadius && x < size - borderRadius) || (y > borderRadius && y < size - borderRadius)
+                            || (Math.Sqrt((x - borderRadius) * (x - borderRadius) + (y - borderRadius) * (y - borderRadius)) < borderRadius)
+                            || (Math.Sqrt((x - size + borderRadius) * (x - size + borderRadius) + (y - borderRadius) * (y - borderRadius)) < borderRadius)
+                            || (Math.Sqrt((x - borderRadius) * (x - borderRadius) + (y - size + borderRadius) * (y - size + borderRadius)) < borderRadius)
+                            || (Math.Sqrt((x - size + borderRadius) * (x - size + borderRadius) + (y - size + borderRadius) * (y - size + borderRadius)) < borderRadius))
+                            data[y * size + x] = background;
+                Array.Copy(data, 0, data, size * size, size * size);
+                // Play ">" symbol.
+                for (var y = size / 7; y < size - size / 7; y++)
+                {
+                    for (var x = size / 7; x < size - size / 7 - 2 * Math.Abs(y - size / 2); x++)
+                        data[y * size + x] = Color.White;
+                }
+                // Pause "||" symbol.
+                for (var y = size + size / 7; y < 2 * size - size / 7; y++)
+                {
+                    for (var x = size * 2 / 7; x < size * 3 / 7; x++)
+                        data[y * size + x] = Color.White;
+                    for (var x = size * 4 / 7; x < size * 5 / 7; x++)
+                        data[y * size + x] = Color.White;
+                }
+                PauseTexture = new Texture2D(Viewer.GraphicsDevice, size, size * 2, 1, TextureUsage.None, SurfaceFormat.Color);
+                PauseTexture.SetData(data);
+            }
 
             ScreenChanged();
             UpdateTopMost();
@@ -117,7 +151,8 @@ namespace ORTS.Popups
 			// Reposition all the windows.
             foreach (var window in Windows)
             {
-                window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
+                if (oldScreenSize.X - window.Location.Width > 0 && oldScreenSize.Y - window.Location.Height > 0)
+                    window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
                 window.ScreenChanged();
             }
 		}

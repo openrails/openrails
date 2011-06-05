@@ -66,14 +66,15 @@ namespace ORTS
 		public double RealTime = 0;
 		InfoDisplay InfoDisplay;
 		public WindowManager WindowManager = null;
-		public MessagesWindow MessagesWindow; // Game message window (special, always visible)
+        public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
+        public MessagesWindow MessagesWindow; // Game message window (special, always visible)
+        public PauseWindow PauseWindow; // Game paused window (special)
 		public HelpWindow HelpWindow; // F1 window
         public TrackMonitorWindow TrackMonitorWindow; // F4 window
         public SwitchWindow SwitchWindow; // F8 window
 		public TrainOperationsWindow TrainOperationsWindow; // F9 window
 		public NextStationWindow NextStationWindow; // F10 window
         public DriverAidWindow DriverAidWindow; // Alt-F11 window
-        public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
 		public CompassWindow CompassWindow; // 0 window
 		public SkyDrawer SkyDrawer;
 		public PrecipDrawer PrecipDrawer = null;
@@ -132,15 +133,16 @@ namespace ORTS
 			WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
 
             WindowManager = new WindowManager(this);
+            SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
             MessagesWindow = new MessagesWindow(WindowManager);
+            PauseWindow = new PauseWindow(WindowManager);
             HelpWindow = new HelpWindow(WindowManager);
             TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
             SwitchWindow = new SwitchWindow(WindowManager);
             TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
             NextStationWindow = new NextStationWindow(WindowManager);
-            CompassWindow = new CompassWindow(WindowManager);
             DriverAidWindow = new DriverAidWindow(WindowManager);
-            SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
+            CompassWindow = new CompassWindow(WindowManager);
 
             WellKnownCameras = new List<Camera>();
             WellKnownCameras.Add(CabCamera = new CabCamera(this));

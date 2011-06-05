@@ -240,6 +240,7 @@
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
+    <Compile Include="Popups\PauseWindow.cs" />
     <Compile Include="Popups\SignallingDebugWindow.cs" />
     <Compile Include="Popups\DriverAidWindow.cs" />
     <Compile Include="Popups\HelpWindow.cs" />
