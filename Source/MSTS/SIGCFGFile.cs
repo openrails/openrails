@@ -362,6 +362,7 @@ namespace MSTS
 		public readonly string Name;
 		public float X, Y, Z;      // position
 		public float Radius;
+        public bool SemaphoreChange;
 
         public SignalLight(STFReader stf)
         {
@@ -377,6 +378,15 @@ namespace MSTS
                     Z = stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                 }),
+                new STFReader.TokenProcessor("signalflags", ()=>{
+                    stf.MustMatch("(");
+                    while (!stf.EndOfBlock())
+                        switch (stf.ReadString().ToLower())
+                        {
+                            case "semaphore_change": SemaphoreChange = true; break;
+                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown SignalLight Flag " + stf.ReadString()); break;
+                        }
+                }),
             });
         }
 
@@ -391,6 +401,7 @@ namespace MSTS
 		public readonly int Index;
 		public readonly string Name;
 		public IList<SignalDrawLight> DrawLights;
+        public float SemaphorePos;
 
         public SignalDrawState(STFReader stf)
         {
@@ -399,6 +410,7 @@ namespace MSTS
             Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("drawlights", ()=>{ DrawLights = ReadDrawLights(stf); }),
+                new STFReader.TokenProcessor("semaphorepos", ()=>{ SemaphorePos = stf.ReadFloatBlock(STFReader.UNITS.None, 0); }),
             });
         }
 

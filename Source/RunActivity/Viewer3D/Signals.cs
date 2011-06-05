@@ -130,6 +130,9 @@ namespace ORTS
 			readonly uint JunctionLinkRoute;
 #endif
 			float CumulativeTime;
+            float SemaphorePos;
+            float SemaphoreTarget;
+            float SemaphoreSpeed;
 
 			SignalHead.SIGASP LastState = SignalHead.SIGASP.UNKNOWN;
 			SignalHead.SIGASP DisplayState = SignalHead.SIGASP.UNKNOWN;
@@ -190,6 +193,11 @@ namespace ORTS
 #endif
 					LastState = SignalHead.state;
 					DisplayState = LastState;
+                    if (SignalTypeData.Aspects.ContainsKey(DisplayState))
+                    {
+                        SemaphoreTarget = SignalTypeData.Aspects[DisplayState].SemaphorePos;
+                        SemaphoreSpeed = SemaphoreTarget > SemaphorePos ? +1 : -1;
+                    }
 				}
 				CumulativeTime += elapsedTime.ClockSeconds;
 				while (CumulativeTime > SignalTypeData.FlashTimeTotal)
@@ -211,11 +219,17 @@ namespace ORTS
 				if ((DisplayState == SignalHead.SIGASP.UNKNOWN) || !SignalTypeData.Aspects.ContainsKey(DisplayState))
 					return;
 
+                // We reset the animation matrix before preparing the lights, because they need to be positioned
+                // based on the original matrix only.
+                SignalShape.AnimateMatrix(MatrixIndex, 0);
+
 				for (var i = 0; i < SignalTypeData.Lights.Count; i++)
 				{
-					if (!SignalTypeData.Aspects[DisplayState].DrawLights[i])
-						continue;
-					if (SignalTypeData.Aspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn))
+                    if (SemaphorePos != SemaphoreTarget && SignalTypeData.LightsSemaphoreChange[i])
+                        continue;
+                    if (!SignalTypeData.Aspects[DisplayState].DrawLights[i])
+                        continue;
+                    if (SignalTypeData.Aspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn))
 						continue;
 
 					var xnaMatrix = Matrix.Identity;
@@ -224,7 +238,16 @@ namespace ORTS
 
 					frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
 				}
-			}
+
+                // Now we update and re-animate the semaphore arm.
+                SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
+                if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
+                {
+                    SemaphorePos = SemaphoreTarget;
+                    SemaphoreSpeed = 0;
+                }
+                SignalShape.AnimateMatrix(MatrixIndex, SemaphorePos);
+            }
 		}
 
 		class SignalTypeData
@@ -232,9 +255,11 @@ namespace ORTS
 			public readonly Material Material;
 			public readonly SignalTypeDataType Type;
 			public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
+            public readonly List<bool> LightsSemaphoreChange = new List<bool>();
 			public readonly Dictionary<SignalHead.SIGASP, SignalAspectData> Aspects = new Dictionary<SignalHead.SIGASP, SignalAspectData>();
 			public readonly float FlashTimeOn;
 			public readonly float FlashTimeTotal;
+            public readonly bool Semaphore;
 
 			public SignalTypeData(Viewer3D viewer, MSTS.SignalType mstsSignalType)
 			{
@@ -261,7 +286,8 @@ namespace ORTS
                                 continue;
                             }
                             var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
-                            Lights.Add(new SignalLightMesh(viewer, new Vector3(mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
+                            Lights.Add(new SignalLightMesh(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
+                            LightsSemaphoreChange.Add(mstsSignalLight.SemaphoreChange);
                         }
 						// Only load aspects if we've got lights. Not much point otherwise.
 						if (mstsSignalType.Aspects != null)
@@ -285,6 +311,7 @@ namespace ORTS
 #endif
 					FlashTimeOn = mstsSignalType.FlashTimeOn;
 					FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
+                    Semaphore = mstsSignalType.Semaphore;
 				}
 			}
 		}
@@ -302,6 +329,7 @@ namespace ORTS
 		{
 			public readonly bool[] DrawLights;
 			public readonly bool[] FlashLights;
+            public readonly float SemaphorePos;
 
 			public SignalAspectData(MSTS.SignalType mstsSignalType, string drawState)
 			{
@@ -316,6 +344,7 @@ namespace ORTS
 						FlashLights[drawLight.LightIndex] = drawLight.Flashing;
 					}
 				}
+                SemaphorePos = mstsSignalType.DrawStates[drawState].SemaphorePos;
 			}
 		}
 	}
