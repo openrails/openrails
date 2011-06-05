@@ -176,7 +176,7 @@ namespace ORTS.Popups
             current.Y += position.Y - OutlineSize;
 
             var start = current;
-            var texture = Characters.GetTexture(spriteBatch.GraphicsDevice, color, outline);
+            var texture = Characters.GetTexture(spriteBatch.GraphicsDevice);
             if (OutlineSize > 0)
             {
                 var outlineOffset = Characters.BoxesMaxBottom;
@@ -185,7 +185,7 @@ namespace ORTS.Popups
                 {
                     var box = Characters.Boxes[chIndexes[i]];
                     box.Y += outlineOffset;
-                    spriteBatch.Draw(texture, current, box, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                    spriteBatch.Draw(texture, current, box, outline, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
                     current.X += Characters.AbcWidths[chIndexes[i]].X;
                     current.X += Characters.AbcWidths[chIndexes[i]].Y;
                     current.X += Characters.AbcWidths[chIndexes[i]].Z;
@@ -199,7 +199,7 @@ namespace ORTS.Popups
             current = start;
             for (var i = 0; i < text.Length; i++)
             {
-                spriteBatch.Draw(texture, current, Characters.Boxes[chIndexes[i]], Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                spriteBatch.Draw(texture, current, Characters.Boxes[chIndexes[i]], color, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
                 current.X += Characters.AbcWidths[chIndexes[i]].X;
                 current.X += Characters.AbcWidths[chIndexes[i]].Y;
                 current.X += Characters.AbcWidths[chIndexes[i]].Z;
@@ -329,9 +329,9 @@ namespace ORTS.Popups
             const int BoxSpacing = 1;
             const System.Windows.Forms.TextFormatFlags Flags = System.Windows.Forms.TextFormatFlags.NoPadding | System.Windows.Forms.TextFormatFlags.NoPrefix | System.Windows.Forms.TextFormatFlags.SingleLine | System.Windows.Forms.TextFormatFlags.Top;
 
-            public readonly Font Font;
-            public readonly int OutlineSize;
-            public readonly char[] Characters;
+            readonly Font Font;
+            readonly int OutlineSize;
+            readonly char[] Characters;
             public readonly Rectangle[] Boxes;
             public readonly int BoxesMaxRight;
             public readonly int BoxesMaxBottom;
@@ -443,31 +443,17 @@ namespace ORTS.Popups
                 return buffer;
             }
 
-            Dictionary<long, Texture2D> Textures = new Dictionary<long, Texture2D>();
-            /// <summary>
-            /// Constructs a texture containg all the characters for this <see cref="CharacterGroup"/> is their
-            /// respective <see cref="Boxes"/> in the specified <paramref name="color"/>.
-            /// </summary>
-            /// <remarks>
-            /// This function returns a texture with the alpha channel set using a compromise formula for ClearType
-            /// rendering. To render ClearType correctly, the blending must be performed using red, green and blue
-            /// channels but this is a performance burden, so the alpha channel is configured to allow a single-pass
-            /// rendering using typical alpha blending instead.
-            /// </remarks>
-            /// <param name="graphicsDevice"></param>
-            /// <param name="color"></param>
-            /// <param name="outline"></param>
-            /// <returns></returns>
-            public Texture2D GetTexture(GraphicsDevice graphicsDevice, Color color, Color outline)
+            Texture2D Texture;
+            public Texture2D GetTexture(GraphicsDevice graphicsDevice)
             {
-                Texture2D texture;
-                var textureKey = (long)color.PackedValue * 0x100000000 + (long)outline.PackedValue;
-                if (Textures.TryGetValue(textureKey, out texture))
+                var texture = Texture;
+                if (texture != null)
                     return texture;
 
                 lock (this)
                 {
-                    if (Textures.TryGetValue(textureKey, out texture))
+                    texture = Texture;
+                    if (texture != null)
                         return texture;
 
                     var rectangle = new System.Drawing.Rectangle(0, 0, BoxesMaxRight, BoxesMaxBottom);
@@ -480,14 +466,17 @@ namespace ORTS.Popups
                             var offset = y * rectangle.Width * 4 + x * 4;
                             // alpha = (red + green + blue) / 3.
                             buffer[offset + 3] = (byte)((buffer[offset + 0] + buffer[offset + 1] + buffer[offset + 2]) / 3);
-                            // red|green|blue = 255;
-                            buffer[offset + 2] = buffer[offset + 1] = buffer[offset + 0] = 255;
+                            // red|green|blue = Color.White;
+                            buffer[offset + 2] = 255;
+                            buffer[offset + 1] = 255;
+                            buffer[offset + 0] = 255;
                         }
                     }
 
                     if (OutlineSize > 0)
                     {
                         var outlineBuffer = new byte[buffer.Length];
+                        Array.Copy(buffer, outlineBuffer, buffer.Length);
                         for (var offsetX = -OutlineSize; offsetX <= OutlineSize; offsetX++)
                         {
                             for (var offsetY = -OutlineSize; offsetY <= OutlineSize; offsetY++)
@@ -515,7 +504,7 @@ namespace ORTS.Popups
 
                     texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
                     texture.SetData(buffer);
-                    Textures[textureKey] = texture;
+                    Texture = texture;
                 }
                 return texture;
             }
