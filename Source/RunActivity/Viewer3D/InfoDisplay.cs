@@ -64,8 +64,12 @@ namespace ORTS
         readonly Action[] TextPages;
         readonly DataLogger Logger = new DataLogger();
 
-		bool DrawCarNumber = false;
-		bool DrawSiding = false;
+        bool DrawCarNumber = false;
+        // F6 reveals labels for both sidings and platforms.
+        // Booleans for both so they can also be used independently.
+        bool DrawSiding = false;
+        bool DrawPlatform = false;
+
 		SpriteBatchMaterial TextMaterial; 
 		ActivityInforMaterial DrawInforMaterial;
 
@@ -155,84 +159,104 @@ namespace ORTS
             }
 			if (UserInput.IsPressed(UserCommands.DisplayCarLabels))
 				DrawCarNumber = !DrawCarNumber;
-			if (UserInput.IsPressed(UserCommands.DisplayStationLabels))
-				DrawSiding = !DrawSiding;
-		}
-
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-			FrameNumber++;
-			ElapsedTime += elapsedTime;
-
-            if (Viewer.RealTime - LastUpdateRealTime >= 0.25)
-			{
-                for (var i = 0; i < TextColumns.Length; i++)
-                    TextColumns[i].Length = 0;
-
-                double elapsedRealSeconds = Viewer.RealTime - LastUpdateRealTime;
-				LastUpdateRealTime = Viewer.RealTime;
-				Profile(elapsedRealSeconds);
-				UpdateText(elapsedRealSeconds);
-				ElapsedTime.Reset();
-			}
-
-            for (var i = 0; i < TextColumns.Length; i++)
-            {
-                TextPrimitives[i].Text = TextColumns[i].ToString();
-                frame.AddPrimitive(TextPrimitives[i].Material, TextPrimitives[i], RenderPrimitiveGroup.Overlay, ref Matrix);
+            if (UserInput.IsPressed(UserCommands.DisplayStationLabels)) {
+                    // Cycles round 4 states
+                    // none > both > sidings only > platforms only > none
+                    // MSTS users will first see the 2 states they expect and then discover the extra two. 
+                    if (DrawSiding == false && DrawPlatform == false) {
+                        DrawSiding = true;
+                        DrawPlatform = true;
+                    } else {
+                        if (DrawSiding == true && DrawPlatform == true) {
+                        DrawSiding = false;
+                        DrawPlatform = true;
+                    } else {
+                        if (DrawSiding == false && DrawPlatform == true) {
+                        DrawSiding = true;
+                        DrawPlatform = false;
+                    } else {
+                        DrawSiding = false;
+                        DrawPlatform = false;
+                    }
+                    }
+                }
             }
-
-			//Here's where the logger stores the data from each frame
-			if (Viewer.Settings.DataLogger)
-			{
-				Logger.Data(Program.Version);
-				Logger.Data(FrameNumber.ToString("F0"));
-				Logger.Data(GetWorkingSetSize().ToString("F0"));
-				Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
-				Logger.Data(GC.CollectionCount(0).ToString("F0"));
-				Logger.Data(GC.CollectionCount(1).ToString("F0"));
-				Logger.Data(GC.CollectionCount(2).ToString("F0"));
-				Logger.Data(ProcessorCount.ToString("F0"));
-				Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
-				Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
-				Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4"));
-				Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
-				Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
-				Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
-				Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
-				Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
-				Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
-				Logger.Data(Viewer.Camera.TileX.ToString("F0"));
-				Logger.Data(Viewer.Camera.TileZ.ToString("F0"));
-				Logger.Data(Viewer.Camera.Location.X.ToString("F4"));
-				Logger.Data(Viewer.Camera.Location.Y.ToString("F4"));
-				Logger.Data(Viewer.Camera.Location.Z.ToString("F4"));
-				Logger.End();
-			}
-			if (DrawCarNumber == true)
-			{
-				foreach (TrainCar tcar in Viewer.TrainDrawer.ViewableCars) {
-					frame.AddPrimitive(DrawInforMaterial, 
-						new ActivityInforPrimitive(DrawInforMaterial, tcar), 
-							RenderPrimitiveGroup.World, ref Matrix);
-				}
-
-			//	UpdateCarNumberText(frame, elapsedTime);
-			}
-			if (DrawSiding == true)
-			{
-				foreach (WorldFile w in Viewer.SceneryDrawer.WorldFiles)
-				{
-					if (w == null || w.sidings == null) continue;
-					foreach (Siding sd in w.sidings)
-					{
-						if (sd != null) frame.AddPrimitive(DrawInforMaterial,
-							new ActivityInforPrimitive(DrawInforMaterial, sd),
-							RenderPrimitiveGroup.World, ref Matrix);
-					}
-				}
-			}
 		}
+
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime) {
+        FrameNumber++;
+        ElapsedTime += elapsedTime;
+
+        if (Viewer.RealTime - LastUpdateRealTime >= 0.25) {
+        for (var i = 0; i < TextColumns.Length; i++)
+            TextColumns[i].Length = 0;
+
+        double elapsedRealSeconds = Viewer.RealTime - LastUpdateRealTime;
+        LastUpdateRealTime = Viewer.RealTime;
+        Profile(elapsedRealSeconds);
+        UpdateText(elapsedRealSeconds);
+        ElapsedTime.Reset();
+        }
+
+        for (var i = 0; i < TextColumns.Length; i++) {
+        TextPrimitives[i].Text = TextColumns[i].ToString();
+        frame.AddPrimitive(TextPrimitives[i].Material, TextPrimitives[i], RenderPrimitiveGroup.Overlay, ref Matrix);
+        }
+
+        //Here's where the logger stores the data from each frame
+        if (Viewer.Settings.DataLogger) {
+        Logger.Data(Program.Version);
+        Logger.Data(FrameNumber.ToString("F0"));
+        Logger.Data(GetWorkingSetSize().ToString("F0"));
+        Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
+        Logger.Data(GC.CollectionCount(0).ToString("F0"));
+        Logger.Data(GC.CollectionCount(1).ToString("F0"));
+        Logger.Data(GC.CollectionCount(2).ToString("F0"));
+        Logger.Data(ProcessorCount.ToString("F0"));
+        Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
+        Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
+        Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4"));
+        Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
+        Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
+        Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
+        Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
+        Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
+        Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
+        Logger.Data(Viewer.Camera.TileX.ToString("F0"));
+        Logger.Data(Viewer.Camera.TileZ.ToString("F0"));
+        Logger.Data(Viewer.Camera.Location.X.ToString("F4"));
+        Logger.Data(Viewer.Camera.Location.Y.ToString("F4"));
+        Logger.Data(Viewer.Camera.Location.Z.ToString("F4"));
+        Logger.End();
+        }
+        if (DrawCarNumber == true) {
+        foreach (TrainCar tcar in Viewer.TrainDrawer.ViewableCars) {
+        frame.AddPrimitive(DrawInforMaterial,
+            new ActivityInforPrimitive(DrawInforMaterial, tcar),
+                RenderPrimitiveGroup.World, ref Matrix);
+        }
+
+        //	UpdateCarNumberText(frame, elapsedTime);
+        }
+        if (DrawSiding == true || DrawPlatform == true) {
+            foreach (WorldFile w in Viewer.SceneryDrawer.WorldFiles) {
+                if (DrawSiding == true && w != null && w.sidings != null) {
+                    foreach (SidingLabel sd in w.sidings) {
+                        if (sd != null) frame.AddPrimitive(DrawInforMaterial,
+                            new ActivityInforPrimitive(DrawInforMaterial, sd, Color.Coral),
+                            RenderPrimitiveGroup.World, ref Matrix);
+                    }
+                }
+                if (DrawPlatform == true && w != null && w.platforms != null) {
+                    foreach (PlatformLabel pd in w.platforms) {
+                        if (pd != null) frame.AddPrimitive(DrawInforMaterial,
+                            new ActivityInforPrimitive(DrawInforMaterial, pd, Color.CornflowerBlue),
+                            RenderPrimitiveGroup.World, ref Matrix);
+                        }
+                    }
+                }
+            }
+        }
 
 		void UpdateText(double elapsedRealSeconds)
         {
@@ -632,41 +656,43 @@ namespace ORTS
 	}
 
 	//2D straight lines
-	public class ActivityInforPrimitive : RenderPrimitive
-	{
-		public readonly ActivityInforMaterial Material;
-		public SpriteFont Font;
-		public Viewer3D Viewer;
-		TrainCar TrainCar = null;
-		Siding Siding = null;
-		float LineSpacing;
-		//constructor: create one that draw car numbers
-		public ActivityInforPrimitive(ActivityInforMaterial material, TrainCar tcar)
-		{
-			Material = material;
-			Font = material.Font;
-			Viewer = material.RenderProcess.Viewer;
-			TrainCar = tcar;
-			LineSpacing = Material.LineSpacing;
-		}
-		//constructor: create one that draw siding names
-		public ActivityInforPrimitive(ActivityInforMaterial material, Siding sd)
-		{
-			Material = material;
-			Font = material.Font;
-			Viewer = material.RenderProcess.Viewer;
-			Siding = sd;
-			LineSpacing = Material.LineSpacing;
-		}
-		/// <summary>
-		/// This is called when the game should draw itself.
-		/// </summary>
-		public override void Draw(GraphicsDevice graphicsDevice)
-		{
-			if (TrainCar != null) UpdateCarNumberText();
-			if (Siding != null) UpdateSidingNameText();
+    public class ActivityInforPrimitive : RenderPrimitive {
+        public readonly ActivityInforMaterial Material;
+        public SpriteFont Font;
+        public Viewer3D Viewer;
+        TrainCar TrainCar = null;
+        TrItemLabel TrItemLabel = null;
+        Color LabelColor;
+        float LineSpacing;
 
-		}
+        //constructor: create one that draw car numbers
+        public ActivityInforPrimitive(ActivityInforMaterial material, TrainCar tcar) {
+            Material = material;
+            Font = material.Font;
+            Viewer = material.RenderProcess.Viewer;
+            TrainCar = tcar;
+            LineSpacing = Material.LineSpacing;
+        }
+
+        /// <summary>
+        /// Information for showing labels of track items such as sidings and platforms
+        /// </summary>
+        public ActivityInforPrimitive(ActivityInforMaterial material, TrItemLabel pd, Color labelColor) {
+            Material = material;
+            Font = material.Font;
+            Viewer = material.RenderProcess.Viewer;
+            TrItemLabel = pd;
+            LineSpacing = Material.LineSpacing;
+            LabelColor = labelColor;
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        public override void Draw(GraphicsDevice graphicsDevice) {
+            if (TrainCar != null) UpdateCarNumberText();
+            if (TrItemLabel != null) UpdateTrItemNameText();
+        }
 
 		//draw car numbers above train cars when F7 is hit
 		void UpdateCarNumberText()
@@ -712,47 +738,49 @@ namespace ORTS
 					   SpriteEffects.None, cameraVector.Z);
 		}
 
-		//draw names above sidings when F6 is hit
-		void UpdateSidingNameText()
-		{
-			float X, BottomY, TopY;
+        /// <summary>
+        /// When F6 is pressed, draws names above track items such as sidings and platforms.
+        /// </summary>
+        void UpdateTrItemNameText() {
+        float X, BottomY, TopY;
 
-			//loop through all wfile and each sidings to draw siding names and lines
+        //loop through all wfile and each platform to draw platform names and lines
 
-			//the location w.r.t. the camera
-			Vector3 locationWRTCamera = Siding.Location.WorldLocation.Location + new Vector3((Siding.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (Siding.Location.TileZ - Viewer.Camera.TileZ) * 2048);
+        //the location w.r.t. the camera
+        Vector3 locationWRTCamera = TrItemLabel.Location.WorldLocation.Location + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (TrItemLabel.Location.TileZ - Viewer.Camera.TileZ) * 2048);
 
-			//if the siding is out of viewing range
-			if (!Viewer.Camera.InFOV(locationWRTCamera, 10)) return;
+        //if the platform is out of viewing range
+        if (!Viewer.Camera.InFOV(locationWRTCamera, 10)) return;
 
-			//project 3D space to 2D (for the bottom of the line)
-			Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-				Siding.Location.XNAMatrix.Translation + new Vector3((Siding.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (-Siding.Location.TileZ + Viewer.Camera.TileZ) * 2048),
-				Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
-			if (cameraVector.Z > 1 || cameraVector.Z < 0) return; //out of range or behind the camera
-			X = cameraVector.X;
-			BottomY = cameraVector.Y;//remember them
+        //project 3D space to 2D (for the bottom of the line)
+        Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
+            TrItemLabel.Location.XNAMatrix.Translation + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (-TrItemLabel.Location.TileZ + Viewer.Camera.TileZ) * 2048),
+            Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+        if (cameraVector.Z > 1 || cameraVector.Z < 0) return; //out of range or behind the camera
+        X = cameraVector.X;
+        BottomY = cameraVector.Y;//remember them
 
-			////project for the top of the line
-			cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-				Siding.Location.XNAMatrix.Translation + new Vector3((Siding.Location.TileX - Viewer.Camera.TileX) * 2048, 20, (-Siding.Location.TileZ + Viewer.Camera.TileZ) * 2048),
-				Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+        ////project for the top of the line
+        cameraVector = Viewer.GraphicsDevice.Viewport.Project(
+            TrItemLabel.Location.XNAMatrix.Translation + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 20, (-TrItemLabel.Location.TileZ + Viewer.Camera.TileZ) * 2048),
+            Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
 
-			//want to draw the text at cameraVector.Y, but need to check if it overlap other texts in Material.AlignedTextB
-			//and determine the new location if conflict occurs
-			TopY = AlignVertical(cameraVector.Y, X, X + Font.MeasureString(Siding.SidingName).X, LineSpacing, Material.AlignedTextB);
+        //want to draw the text at cameraVector.Y, but need to check if it overlap other texts in Material.AlignedTextB
+        //and determine the new location if conflict occurs
+        TopY = AlignVertical(cameraVector.Y, X, X + Font.MeasureString(TrItemLabel.ItemName).X, LineSpacing, Material.AlignedTextB);
 
-			//draw the siding name in red
-			Material.SpriteBatch.DrawString(Font, Siding.SidingName, new Vector2(X, TopY), Color.Red);
+        //draw the platform name in red
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X, TopY), LabelColor);
 
-			//draw a vertical line with length TopY + LineSpacing - BottomY
-			//the term LineSpacing is used so that the text is above the line head
-			Material.SpriteBatch.Draw(Material.Texture, new Vector2(X, BottomY), null, Color.Red,
-					   -(float)Math.PI / 2, Vector2.Zero, new Vector2(Math.Abs(TopY + LineSpacing - BottomY), 2),
-					   SpriteEffects.None, cameraVector.Z);
+        //draw a vertical line with length TopY + LineSpacing - BottomY
+        //the term LineSpacing is used so that the text is above the line head
+        Material.SpriteBatch.Draw(Material.Texture, new Vector2(X, BottomY), null, LabelColor,
+                   -(float)Math.PI / 2, Vector2.Zero, new Vector2(Math.Abs(TopY + LineSpacing - BottomY), 2),
+                   SpriteEffects.None, cameraVector.Z);
 
-		}
-		//helper function to make the train car and siding name align nicely on the screen
+        }
+        
+        //helper function to make the train car and siding name align nicely on the screen
 		//the basic idea is to space the screen vertically as table cell, each cell holds a list of text assigned.
 		//new text in will check its destinated cell, if it overlap with a text in the cell, it will move up a cell and continue
 		//once it is determined in a cell, it will be pushed in the list of text of that cell, and the new Y will be returned.

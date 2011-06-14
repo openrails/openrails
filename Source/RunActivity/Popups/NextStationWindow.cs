@@ -126,7 +126,7 @@ namespace ORTS.Popups
                     at = Current;
                     if (at != null)
                     {
-                        StationPlatform.Text = at.PlatformEnd1.PlatformName;
+                        StationPlatform.Text = at.PlatformEnd1.ItemName;
                         StationCurrentName.Text = at.PlatformEnd1.Station;
                         StationCurrentArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
                         StationCurrentArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "";

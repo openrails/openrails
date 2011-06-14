@@ -201,7 +201,8 @@ namespace ORTS
         public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
         public List<ForestDrawer> forestList = new List<ForestDrawer>();
 		public List<CarSpawner> carSpawners = new List<CarSpawner>();
-		public List<Siding> sidings = new List<Siding>();
+		public List<SidingLabel> sidings = new List<SidingLabel>();
+        public List<PlatformLabel> platforms = new List<PlatformLabel>();
 
         /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
@@ -305,11 +306,13 @@ namespace ORTS
 					else
 						Trace.TraceWarning("Ignored car spawner {1} in {0} because route has no RDB or carspawn.dat.", WFileName, worldObject.UID);
 				}
-				else if (worldObject.GetType() == typeof(MSTS.SidingObj))
-				{
-					sidings.Add(new Siding(viewer, worldMatrix, (SidingObj)worldObject));
-				}
-				else // It's some other type of object - not one of the above.
+				else if (worldObject.GetType() == typeof(MSTS.SidingObj)) {
+					sidings.Add(new SidingLabel(viewer, worldMatrix, (SidingObj)worldObject));
+				} 
+                else if (worldObject.GetType() == typeof(MSTS.PlatformObj)) {
+                    platforms.Add(new PlatformLabel(viewer, worldMatrix, (PlatformObj)worldObject));
+                } 
+                else // It's some other type of object - not one of the above.
 				{
 					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
 					SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));

@@ -73,6 +73,7 @@ namespace MSTS
 								break; //car spawner. The tokenid number is wrong
 							case (TokenID)361://for binary file
 							case TokenID.Siding: Add(new SidingObj(subBlock, currentWatermark)); break;
+                            case TokenID.Platform: Add(new PlatformObj(subBlock, currentWatermark)); break;
                             case TokenID.Forest: // Unicode
                                 Add(new ForestObj(subBlock, currentWatermark));
                                 break;
@@ -607,60 +608,70 @@ namespace MSTS
 		}
 	}//CarSpawner
 
-	//Siding data
-	public class SidingObj : WorldObject
-	{
-		public List<TrItemId> trItemIDList;
-		public SidingObj(SBR block, int detailLevel)
-		{
-			StaticDetailLevel = detailLevel;
+    /// <summary>
+    /// Super-class for similar track items SidingObj and PlatformObj.
+    /// </summary>
+    public class TrObject : WorldObject {
+        public List<TrItemId> trItemIDList;
+        public TrObject(SBR block, int detailLevel) {
+        StaticDetailLevel = detailLevel;
 
-			trItemIDList = new List<TrItemId>();
+        trItemIDList = new List<TrItemId>();
 
-			while (!block.EndOfBlock())
-			{
-				using (SBR subBlock = block.ReadSubBlock())
-				{
-					switch (subBlock.ID)
-					{
-						case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-						case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
-						case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-						case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-						case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-						default: subBlock.Skip(); break;
-					}
-				}
-			}
-		}
+        while (!block.EndOfBlock()) {
+        using (SBR subBlock = block.ReadSubBlock()) {
+        switch (subBlock.ID) {
+            case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+            case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+            case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+            case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+            case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+            case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+            default: subBlock.Skip(); break;
+        }
+        }
+        }
+        }
 
-		public int getTrItemID(int current)
-		{
-			int i = 0;
-			foreach (TrItemId tID in trItemIDList)
-			{
-				if (tID.db == 0)
-				{
-					if (current == i) return tID.dbID;
-					i++;
-				}
-			}
-			return -1;
-		}
+        public int getTrItemID(int current) {
+        int i = 0;
+        foreach (TrItemId tID in trItemIDList) {
+        if (tID.db == 0) {
+        if (current == i) return tID.dbID;
+        i++;
+        }
+        }
+        return -1;
+        }
 
-		public class TrItemId
-		{
-			public int db, dbID;
-			public TrItemId(SBR block)
-			{
-				block.VerifyID(TokenID.TrItemId);
-				db = block.ReadInt();
-				dbID = block.ReadInt();
-				block.VerifyEndOfBlock();
-			}
-		}
-	}//Siding
+        public class TrItemId {
+            public int db, dbID;
+            public TrItemId(SBR block) {
+            block.VerifyID(TokenID.TrItemId);
+            db = block.ReadInt();
+            dbID = block.ReadInt();
+            block.VerifyEndOfBlock();
+            }
+        }
+    }//TrObject
+
+    /// <summary>
+    /// Empty sub-class distinguishes siding objects from platform objects.
+    /// </summary>
+    public class SidingObj : TrObject {
+        public SidingObj(SBR block, int detailLevel) :
+            base(block, detailLevel) {
+        }
+    }//SidingObj
+
+    /// <summary>
+    /// Empty sub-class distinguishes platform objects from siding objects.
+    /// </summary>
+    public class PlatformObj : TrObject {
+        public PlatformObj(SBR block, int detailLevel) :
+            base(block, detailLevel) {
+        }
+    }//PlatformObj
 	
 	// These relate to the general properties settable for scenery objects in RE
     public enum StaticFlag

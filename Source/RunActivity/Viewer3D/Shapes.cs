@@ -1017,11 +1017,53 @@ namespace ORTS
 				if (trID < 0) break;
 				SidingItem sidingItem = (SidingItem)Viewer.Simulator.TDB.TrackDB.TrItemTable[trID];
 				if (sidingItem == null) continue;
-				SidingName = sidingItem.SidingName;
+				SidingName = sidingItem.ItemName;
 				i++; //Siding has two trItems, now only needs the sidingname, S/P data are not used yet
 			}
 		}
-
 	} // class StaticShape
 
+    public class TrItemLabel {
+        public readonly Viewer3D Viewer;
+        public readonly WorldPosition Location;
+        public readonly string ItemName;
+
+        /// <summary>
+        /// Construct and initialize the class.
+        /// This constructor is for the labels of track items in TDB and W Files such as sidings and platforms.
+        /// </summary>
+        public TrItemLabel(Viewer3D viewer, WorldPosition position, TrObject trObj) {
+        Viewer = viewer;
+        Location = position;
+        int i = 0, trID = 0;
+        while (true) {
+        trID = trObj.getTrItemID(i);
+        if (trID < 0) break;
+        TrItem trItem = (TrItem)Viewer.Simulator.TDB.TrackDB.TrItemTable[trID];
+        if (trItem == null) continue;
+        ItemName = trItem.ItemName;
+        i++;
+        }
+        }
+    } //TrItemLabel
+
+    /// <summary>
+    /// Construct and initialize the class.
+    /// This constructor is for the labels of sidings.
+    /// </summary>
+    public class SidingLabel : TrItemLabel {
+        public SidingLabel(Viewer3D viewer, WorldPosition position, SidingObj sidingObj)
+            : base(viewer, position, sidingObj) {
+        }
+    } //SidingLabel
+
+    /// <summary>
+    /// Construct and initialize the class
+    /// This constructor is for the labels of platforms.
+    /// </summary>
+    public class PlatformLabel : TrItemLabel {
+        public PlatformLabel(Viewer3D viewer, WorldPosition position, PlatformObj platformObj)
+            : base(viewer, position, platformObj) {
+        }
+    } //PlatformLabel
 }
