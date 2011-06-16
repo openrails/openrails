@@ -185,7 +185,8 @@ namespace ORTS.Popups
                 {
                     var box = Characters.Boxes[chIndexes[i]];
                     box.Y += outlineOffset;
-                    spriteBatch.Draw(texture, current, box, outline, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                    if (text[i] > ' ')
+                        spriteBatch.Draw(texture, current, box, outline, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
                     current.X += Characters.AbcWidths[chIndexes[i]].X;
                     current.X += Characters.AbcWidths[chIndexes[i]].Y;
                     current.X += Characters.AbcWidths[chIndexes[i]].Z;
@@ -199,7 +200,8 @@ namespace ORTS.Popups
             current = start;
             for (var i = 0; i < text.Length; i++)
             {
-                spriteBatch.Draw(texture, current, Characters.Boxes[chIndexes[i]], color, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                if (text[i] > ' ')
+                    spriteBatch.Draw(texture, current, Characters.Boxes[chIndexes[i]], color, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
                 current.X += Characters.AbcWidths[chIndexes[i]].X;
                 current.X += Characters.AbcWidths[chIndexes[i]].Y;
                 current.X += Characters.AbcWidths[chIndexes[i]].Z;
