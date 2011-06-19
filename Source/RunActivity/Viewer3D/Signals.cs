@@ -219,9 +219,12 @@ namespace ORTS
 				if ((DisplayState == SignalHead.SIGASP.UNKNOWN) || !SignalTypeData.Aspects.ContainsKey(DisplayState))
 					return;
 
-                // We reset the animation matrix before preparing the lights, because they need to be positioned
-                // based on the original matrix only.
-                SignalShape.AnimateMatrix(MatrixIndex, 0);
+                if (SignalTypeData.Semaphore)
+                {
+                    // We reset the animation matrix before preparing the lights, because they need to be positioned
+                    // based on the original matrix only.
+                    SignalShape.AnimateMatrix(MatrixIndex, 0);
+                }
 
 				for (var i = 0; i < SignalTypeData.Lights.Count; i++)
 				{
@@ -239,14 +242,17 @@ namespace ORTS
 					frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
 				}
 
-                // Now we update and re-animate the semaphore arm.
-                SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
-                if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
+                if (SignalTypeData.Semaphore)
                 {
-                    SemaphorePos = SemaphoreTarget;
-                    SemaphoreSpeed = 0;
+                    // Now we update and re-animate the semaphore arm.
+                    SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
+                    if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
+                    {
+                        SemaphorePos = SemaphoreTarget;
+                        SemaphoreSpeed = 0;
+                    }
+                    SignalShape.AnimateMatrix(MatrixIndex, SemaphorePos);
                 }
-                SignalShape.AnimateMatrix(MatrixIndex, SemaphorePos);
             }
 		}
 
