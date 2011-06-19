@@ -9,7 +9,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -19,8 +22,6 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Net;
 using Microsoft.Xna.Framework.Storage;
-using System.Threading;
-using System.Diagnostics;
 
 
 namespace ORTS
@@ -34,7 +35,18 @@ namespace ORTS
 
         public static ElapsedTime operator +(ElapsedTime a, ElapsedTime b)
         {
-            return new ElapsedTime() { ClockSeconds = a.ClockSeconds + b.ClockSeconds, RealSeconds = a.RealSeconds + b.RealSeconds };
+            return new ElapsedTime(a.ClockSeconds + b.ClockSeconds, a.RealSeconds + b.RealSeconds);
+        }
+
+        public ElapsedTime()
+            : this(0, 0)
+        {
+        }
+
+        public ElapsedTime(float clockSeconds, float realSeconds)
+        {
+            ClockSeconds = clockSeconds;
+            RealSeconds = realSeconds;
         }
 
         public void Reset()
@@ -83,8 +95,6 @@ namespace ORTS
         public static int[] ShadowMapDistance; // distance of shadow map center from camera
         public static int[] ShadowMapDiameter; // diameter of shadow map
         public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
-
-        double LastUpdateTime = 0;
 
         public RenderProcess(Viewer3D viewer3D)
         {
@@ -189,14 +199,6 @@ namespace ORTS
         [ThreadName("Render")]
         protected override void Update(GameTime gameTime)
         {
-            double totalRealSeconds = gameTime.TotalRealTime.TotalSeconds;
-            // Keep the everything running at a slower pace while the window is minimized.
-            if (Form.WindowState == System.Windows.Forms.FormWindowState.Minimized && totalRealSeconds - LastUpdateTime > 0.1)
-            {
-                FrameUpdate(totalRealSeconds);
-            }
-            LastUpdateTime = totalRealSeconds;
-
             if (IsMouseVisible != base.IsMouseVisible)
                 base.IsMouseVisible = IsMouseVisible;
 
@@ -210,6 +212,18 @@ namespace ORTS
             {
                 Terminate();
                 this.Exit();
+            }
+
+            if (gameTime.TotalRealTime.TotalSeconds > 0.001)
+            {
+                Viewer.UpdaterProcess.WaitTillFinished();
+
+                // Must be done in XNA Game thread.
+                UserInput.Update(Viewer);
+
+                // Swap frames and start the next update (non-threaded updater does the whole update).
+                SwapFrames(ref CurrentFrame, ref NextFrame);
+                Viewer.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalRealTime.TotalSeconds);
             }
 
             base.Update(gameTime);
@@ -230,12 +244,6 @@ namespace ORTS
                 if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount)
                     Viewer.Stop();
 
-            if (gameTime.ElapsedRealTime.TotalSeconds > 0.001)
-            {  // a zero elapsed time indicates the window needs to be redrawn with the same content
-                // ie after restoring from minimized, or uncovering a window
-                FrameUpdate(gameTime.TotalRealTime.TotalSeconds);
-            }
-
             Profiler.Start();
 
             if ((Viewer.DisplaySize.X != GraphicsDevice.Viewport.Width) || (Viewer.DisplaySize.Y != GraphicsDevice.Viewport.Height))
@@ -244,14 +252,6 @@ namespace ORTS
                 Viewer.DisplaySize.Y = GraphicsDevice.Viewport.Height;
                 Viewer.WindowManager.ScreenChanged();
             }
-
-            /* When using SynchronizeWithVerticalRetrace = true, then this isn't required
-            // if the loader is running slow, limit render's frame rates to give loader some GPU time
-            if (LoaderSlow )
-            {
-                Thread.Sleep(10);
-            }
-             */
 
             if (Debugger.IsAttached)
             {
@@ -288,19 +288,6 @@ namespace ORTS
                 ShadowPrimitivePerFrame[shadowMapIndex] = ShadowPrimitiveCount[shadowMapIndex];
                 ShadowPrimitiveCount[shadowMapIndex] = 0;
             }
-        }
-
-        private void FrameUpdate(double totalRealSeconds)
-        {
-            // Wait for updater to finish.
-            Viewer.UpdaterProcess.WaitTillFinished();
-
-            // Time to read the keyboard - must be done in XNA Game thread.
-            UserInput.Update(Viewer);
-
-            // Swap frames and start the next update (non-threaded updater does the whole update).
-            SwapFrames(ref CurrentFrame, ref NextFrame);
-            Viewer.UpdaterProcess.StartUpdate(NextFrame, totalRealSeconds);
         }
 
         private void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)

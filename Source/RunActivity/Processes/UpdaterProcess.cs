@@ -137,17 +137,22 @@ namespace ORTS
 
         RenderFrame CurrentFrame;
         double TotalRealSeconds;
-        double LastTotalRealSeconds;
+        double LastTotalRealSeconds = -1;
 
         [ThreadName("Updater")]
         public void Update()
         {
             Profiler.Start();
 
+            // The first time we update, the TotalRealSeconds will be ~time
+            // taken to load everything. We'd rather not skip that far through
+            // the simulation so the first time we deliberately have an
+            // elapsed real and clock time of 0.0s.
+            if (LastTotalRealSeconds == -1)
+                LastTotalRealSeconds = TotalRealSeconds;
+
             Viewer.RealTime = TotalRealSeconds;
-            var elapsedTime = new ElapsedTime();
-            elapsedTime.RealSeconds = (float)(TotalRealSeconds - LastTotalRealSeconds);
-            elapsedTime.ClockSeconds = Viewer.Simulator.GetElapsedClockSeconds(elapsedTime.RealSeconds);
+            var elapsedTime = new ElapsedTime(Viewer.Simulator.GetElapsedClockSeconds((float)(TotalRealSeconds - LastTotalRealSeconds)), (float)(TotalRealSeconds - LastTotalRealSeconds));
             LastTotalRealSeconds = TotalRealSeconds;
 
             try
