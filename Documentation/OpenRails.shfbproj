@@ -27,8 +27,7 @@
       <DocumentationSource sourceFile="..\Source\Menu\Menu.csproj" platform="AnyCPU" />
       <DocumentationSource sourceFile="..\Source\RunActivity\RunActivity.csproj" platform="x86" />
     </DocumentationSources>
-    <SandcastlePath>
-    </SandcastlePath>
+    <SandcastlePath>C:\Program Files\EWSoftware\Sandcastle Help File Builder\</SandcastlePath>
     <PlugInConfigurations>
       <PlugInConfig id="Hierarchical Table of Contents" enabled="True">
         <configuration />
@@ -80,7 +79,7 @@
     <RootNamespaceTitle>C# Documentation</RootNamespaceTitle>
     <FeedbackEMailAddress>docfeedback%40openrails.org</FeedbackEMailAddress>
     <PresentationStyle>vs2005</PresentationStyle>
-    <HtmlHelp1xCompilerPath>%PROGRAMFILES%\HTML Help Workshop\</HtmlHelp1xCompilerPath>
+    <HtmlHelp1xCompilerPath>C:\Program Files\HTML Help Workshop\</HtmlHelp1xCompilerPath>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in
        order for Visual Studio to perform the build.  The others are optional

@@ -553,7 +553,7 @@ namespace ORTS
                     }
                     else
                     {
-                        if (axleSpeedMpS > 0.0f)
+                        if (TrainSpeedMpS > 0.0f)
                         {
                             axleSpeedMpS = axleRevolutionsInt.Integrate(timeSpan,
                                     (
@@ -630,7 +630,7 @@ namespace ORTS
             if (K == 0.0)
                 K = 1;
             slipSpeed *= 3.6f;
-            return 2.0f * K * umax * umax * slipSpeed / (umax * umax * slipSpeed * slipSpeed + K * K);
+            return 2.0f * K * umax * umax * (slipSpeed / (umax * umax * slipSpeed * slipSpeed + K * K));
         }
 
         /// <summary>

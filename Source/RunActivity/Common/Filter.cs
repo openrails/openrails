@@ -294,6 +294,9 @@ namespace ORTS
         /// <returns>Filtered value</returns>
         public float Filter(float NewSample, float samplingPeriod)
         {
+            if (samplingPeriod <= 0.0f)
+                return 0.0f;
+
             switch(FilterType)
             {
                 case FilterTypes.Butterworth:

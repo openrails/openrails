@@ -73,9 +73,15 @@ namespace ORTS
         /// </summary>
         public bool IsLimited { set { isLimited = value; } get { return isLimited; } }
 
+        /// <summary>
+        /// Minimal step of integration
+        /// </summary>
+        public float MinStep { set; get; }
+
         public Integrator()
         {
             Method = IntegratorMethods.EulerBackward;
+            MinStep = 0.01f;
             max = 1000.0f;
             min = -1000.0f;
             isLimited = false;
@@ -92,6 +98,7 @@ namespace ORTS
         public Integrator(float initCondition)
         {
             Method = IntegratorMethods.EulerBackward;
+            MinStep = 0.01f;
             max = 1000.0f;
             min = -1000.0f;
             isLimited = false;
@@ -109,6 +116,7 @@ namespace ORTS
         public Integrator(float initCondition, IntegratorMethods method)
         {
             Method = method;
+            MinStep = 0.01f;
             max = 1000.0f;
             min = -1000.0f;
             isLimited = false;
@@ -133,43 +141,57 @@ namespace ORTS
         /// <returns>Value of integration in the next step (t + timeSpan)</returns>
         public float Integrate(float timeSpan, float value)
         {
-            switch (Method)
+            float step = 0.0f;
+            float end = timeSpan;
+            int count = 0;
+
+            if (timeSpan > MinStep)
             {
-                case IntegratorMethods.EulerBackward:
-                    integralValue += timeSpan * value;
-                    break;
-                case IntegratorMethods.EulerBackMod:
-                    integralValue += timeSpan / 2.0f * (previousValues[0] + value);
-                    previousValues[0] = value;
-                    break;
-                case IntegratorMethods.EulerForward:
-                    throw new NotImplementedException("Not implemented yet!");
-                    break;
-                case IntegratorMethods.RungeKutta2:
-                    throw new NotImplementedException("Not implemented yet!");
-                    break;
-                case IntegratorMethods.RungeKutta4:
-                    throw new NotImplementedException("Not implemented yet!");
-                    break;
-                case IntegratorMethods.NewtonRhapson:
-                    throw new NotImplementedException("Not implemented yet!");
-                    break;
-                case IntegratorMethods.AdamsMoulton:
-                    //prediction
-                    float predicted = integralValue + timeSpan / 24.0f *(55.0f * previousValues[0] - 59.0f * previousValues[1] + 37.0f * previousValues[2] - 9.0f * previousValues[3]);
-                    //correction
-                    integralValue = integralValue + timeSpan / 24.0f * (9.0f * predicted + 19.0f * previousValues[0] - 5.0f * previousValues[1] + previousValues[2]);
-                    for(int i = 3; i > 0 ; i--)
-                    {
-                        previousStep[i] = previousStep[i - 1];
-                        previousValues[i] = previousValues[i - 1];
-                    }
-                    previousValues[0] = value;
-                    previousStep[0] = timeSpan;
-                    break;
-                default:
-                    throw new NotImplementedException("Not implemented yet!");
-                    break;
+                count = Convert.ToInt32(Math.Round(timeSpan / MinStep, 0));
+                timeSpan = timeSpan / count;
+            }
+
+
+            while ((step += timeSpan) <= end)
+            {
+                switch (Method)
+                {
+                    case IntegratorMethods.EulerBackward:
+                        integralValue += timeSpan * value;
+                        break;
+                    case IntegratorMethods.EulerBackMod:
+                        integralValue += timeSpan / 2.0f * (previousValues[0] + value);
+                        previousValues[0] = value;
+                        break;
+                    case IntegratorMethods.EulerForward:
+                        throw new NotImplementedException("Not implemented yet!");
+                        break;
+                    case IntegratorMethods.RungeKutta2:
+                        throw new NotImplementedException("Not implemented yet!");
+                        break;
+                    case IntegratorMethods.RungeKutta4:
+                        throw new NotImplementedException("Not implemented yet!");
+                        break;
+                    case IntegratorMethods.NewtonRhapson:
+                        throw new NotImplementedException("Not implemented yet!");
+                        break;
+                    case IntegratorMethods.AdamsMoulton:
+                        //prediction
+                        float predicted = integralValue + timeSpan / 24.0f * (55.0f * previousValues[0] - 59.0f * previousValues[1] + 37.0f * previousValues[2] - 9.0f * previousValues[3]);
+                        //correction
+                        integralValue = integralValue + timeSpan / 24.0f * (9.0f * predicted + 19.0f * previousValues[0] - 5.0f * previousValues[1] + previousValues[2]);
+                        for (int i = 3; i > 0; i--)
+                        {
+                            previousStep[i] = previousStep[i - 1];
+                            previousValues[i] = previousValues[i - 1];
+                        }
+                        previousValues[0] = value;
+                        previousStep[0] = timeSpan;
+                        break;
+                    default:
+                        throw new NotImplementedException("Not implemented yet!");
+                        break;
+                }
             }
             //Limit if enabled
             if (isLimited)

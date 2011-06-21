@@ -123,7 +123,6 @@ namespace ORTS
 
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
-            //CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.05f), 0.01f);
             LocomotiveAxle.DampingNs = 5000.0f;
             LocomotiveAxle.AdhesionK = 0.7f;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1.0f),0.001f);
@@ -479,7 +478,7 @@ namespace ORTS
             float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
             float max1;
 
-            if (UseAdvancedAdhesion)
+            if ((UseAdvancedAdhesion)&&(!Simulator.Paused))
             {
                 //Set the weather coeff
                 if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
