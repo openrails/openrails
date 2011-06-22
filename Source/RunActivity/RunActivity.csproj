@@ -65,10 +65,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="irrKlang.NET2.0, Version=1.1.3.0, Culture=neutral, PublicKeyToken=a854741bd80517c7, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\irrKlang.NET2.0.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86">
       <Private>False</Private>
       <SpecificVersion>True</SpecificVersion>
@@ -284,13 +280,14 @@
     <Compile Include="Simulator\RailDriverHandler.cs" />
     <Compile Include="Simulator\RDBTraveller.cs" />
     <Compile Include="Simulator\TDBTraveller.cs" />
+    <Compile Include="Viewer3D\ALSoundHelper.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Common\DataLogger.cs" />
+    <Compile Include="Viewer3D\OpenAL.cs" />
     <Compile Include="Viewer3D\LevelCrossing.cs" />
     <Compile Include="Viewer3D\ParticleEmitter.cs" />
     <Compile Include="Viewer3D\RoadCars.cs" />
     <Compile Include="Viewer3D\Signals.cs" />
-    <Compile Include="Viewer3D\SoundHelper.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\Dynatrack.cs">
       <SubType>Code</SubType>

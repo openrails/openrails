@@ -34,7 +34,6 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.CompilerServices;
-using IrrKlang;
 using Microsoft.Win32;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -84,7 +83,6 @@ namespace ORTS
 		public SceneryDrawer SceneryDrawer;
 		public TrainDrawer TrainDrawer;
 		public RoadCarHandler RoadCarHandler;
-		public ISoundEngine SoundEngine = null;  // IrrKlang Sound Device
 		public SoundSource IngameSounds = null;  // By GeorgeS
 		public WorldSounds WorldSounds = null;   // By GeorgeS
 		// Route Information
@@ -200,11 +198,8 @@ namespace ORTS
 			Materials.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
 			if (Settings.SoundDetailLevel > 0)
 			{
-				SoundEngine = new ISoundEngine();
-				SoundEngine.SetListenerPosition(new IrrKlang.Vector3D(0, 0, 0), new IrrKlang.Vector3D(0, 0, 1));
-				SoundEngine.SoundVolume = 0;  // while loading
+                ALSoundSource.MuteAll();  // while loading
 				// Swap out original file factory to support loops - by GeorgeS
-				SoundEngine.AddFileFactory(new WAVIrrKlangFileFactory());
 				// By GeorgeS
 				WorldSounds = new WorldSounds(this);
 				IngameSounds = new SoundSource(this, Simulator.RoutePath + "\\Sound\\ingame.sms");
@@ -292,13 +287,6 @@ namespace ORTS
 				Settings.ShadowMapDistance = Settings.ViewingDistance / 2;
 
 			PlayerLocomotive = Simulator.InitialPlayerLocomotive();
-
-			if (Settings.SoundDetailLevel > 0)
-			{
-				ISound ambientSound = SoundEngine.Play2D(Simulator.BasePath + @"\SOUND\gen_urb1.wav", true);  // TODO temp code
-				if (ambientSound != null)
-					ambientSound.Volume = 0.2f;
-			}
 
 			InfoDisplay = new InfoDisplay(this);
 			UserInput.Initialize();
@@ -512,31 +500,12 @@ namespace ORTS
 		/// </summary>
 		[CallOnThread("Updater")]
 		public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-            // Mute sound when paused
-            if (SoundEngine != null)
-            {
-                if (Simulator.Paused)
-                    SoundEngine.SoundVolume = 0;
-                else
-                    SoundEngine.SoundVolume = 1;
-            }
-            // Update activity sounds; this shound probably go in the sound system somewhere?
-            {
-                Activity act = Simulator.ActivityRun;
-                if (act != null)
-                {
-                    ActivityTask at = act.Current;
-                    if (at != null)
-                    {
-                        if (at.SoundNotify != -1)
-                        {
-                            if (IngameSounds != null) IngameSounds.HandleEvent(at.SoundNotify);
-                            at.SoundNotify = -1;
-                        }
-                    }
-                }
-            }
+		{
+			// Mute sound when paused
+            if (Simulator.Paused)
+                ALSoundSource.MuteAll();
+            else
+                ALSoundSource.UnMuteAll();
 
             if (ScreenHasChanged())
             {
@@ -586,8 +555,7 @@ namespace ORTS
 		[CallOnThread("Render")]
 		public void Unload(RenderProcess renderProcess)
 		{
-			if (SoundEngine != null)
-				SoundEngine.StopAllSounds();
+            SoundProcess.RemoveAllSources();
 		}
 
 		public void Stop()

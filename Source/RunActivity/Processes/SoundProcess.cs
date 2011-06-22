@@ -106,14 +106,42 @@ namespace ORTS
         {
 			ProcessState.SetThreadName("Sound Process");
 
-			while (true)
+            lock (_SoundSources)
+            {
+                foreach (List<SoundSource> src in _SoundSources.Values)
+                {
+                    foreach (SoundSource ss in src)
+                    {
+                        ss.InitInitials();
+                    }
+                }
+            }
+
+            while (true)
             {
                 // Sleeping a while
                 Thread.Sleep(200);
 
 				Profiler.Start();
 
-				// Update all sound in our list
+                // Update activity sounds
+                {
+                    Activity act = Viewer.Simulator.ActivityRun;
+                    if (act != null)
+                    {
+                        ActivityTask at = act.Current;
+                        if (at != null)
+                        {
+                            if (at.SoundNotify != -1)
+                            {
+                                if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(at.SoundNotify);
+                                at.SoundNotify = -1;
+                            }
+                        }
+                    }
+                }
+
+                // Update all sound in our list
                 lock (_SoundSources)
                 {
                     foreach (List<SoundSource> src in _SoundSources.Values)
@@ -127,6 +155,11 @@ namespace ORTS
 
 				Profiler.Stop();
 			}
+        }
+
+        internal void RemoveAllSources()
+        {
+            // TODO: Clear all and exit
         }
     }
 }
