@@ -78,6 +78,11 @@ namespace ORTS
         /// </summary>
         public float MinStep { set; get; }
 
+        /// <summary>
+        /// Max count of substeps when timespan dividing
+        /// </summary>
+        public int MaxSubsteps { set; get; }
+
         public Integrator()
         {
             Method = IntegratorMethods.EulerBackward;
@@ -87,6 +92,7 @@ namespace ORTS
             isLimited = false;
             integralValue = 0.0f;
             initialCondition = 0.0f;
+            MaxSubsteps = 10;
             for(int i = 0; i < 4; i++)
                 previousValues[i] = 0.0f;
             oldTime = 0.0f;
@@ -104,6 +110,7 @@ namespace ORTS
             isLimited = false;
             initialCondition = initCondition;
             integralValue = initialCondition;
+            MaxSubsteps = 10;
             for (int i = 0; i < 4; i++)
                 previousValues[i] = initCondition;
             oldTime = 0.0f;
@@ -122,6 +129,7 @@ namespace ORTS
             isLimited = false;
             initialCondition = initCondition;
             integralValue = initialCondition;
+            MaxSubsteps = 10;
             for (int i = 0; i < 4; i++)
                 previousValues[i] = initCondition;
             oldTime = 0.0f;
@@ -145,9 +153,17 @@ namespace ORTS
             float end = timeSpan;
             int count = 0;
 
+            //Skip when timeSpan is less then zero
+            if (timeSpan <= 0.0f)
+            {
+                return integralValue;
+            }
+
             if (timeSpan > MinStep)
             {
                 count = Convert.ToInt32(Math.Round(timeSpan / MinStep, 0));
+                if (count > MaxSubsteps)
+                    count = MaxSubsteps;
                 timeSpan = timeSpan / count;
             }
 
@@ -192,6 +208,9 @@ namespace ORTS
                         throw new NotImplementedException("Not implemented yet!");
                         break;
                 }
+                //To make sure the loop exits
+                //if (count-- < 0)
+                //    break;
             }
             //Limit if enabled
             if (isLimited)
