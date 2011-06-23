@@ -264,7 +264,7 @@ namespace MSTS
             try
             {
                 string sUnits = stf.ReadItem();
-                sUnits = sUnits.Replace('/', 'µ');
+                sUnits = sUnits.Replace('/', '?');
                 Units = (CABViewControlUnits)Enum.Parse(typeof(CABViewControlUnits), sUnits);
             }
             catch (ArgumentException)

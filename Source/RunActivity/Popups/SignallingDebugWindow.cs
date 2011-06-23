@@ -167,8 +167,12 @@ namespace ORTS
                                     break;
                                 }
                             }
-                            primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
-                            distanceToSwitch.RemoveAt(0);
+							distanceToSwitch[0].TN.TrJunctionNode.GetAngle(Owner.Viewer.Simulator.TSectionDat);//get switch angle
+
+							if (distanceToSwitch[0].TN.TrJunctionNode.angle > 0) primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set, angle {2})", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1,
+								distanceToSwitch[0].TN.TrJunctionNode.angle), Owner.TextFontDefaultOutlined));
+							else primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set, angle unknown)", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
+							distanceToSwitch.RemoveAt(0);
                             if (switchError)
                                 break;
                         }

@@ -209,6 +209,40 @@ namespace MSTS
             stf.SkipRestOfBlock();
         }
         public uint ShapeIndex;
+
+		public double angle = -1;
+		public bool AngleComputed = false; //the angle has been set through section file
+
+		public double GetAngle(TSectionDatFile TSectionDat) //get the angle from sections
+		{
+			if (AngleComputed == false)
+			{
+				AngleComputed = true;
+				try //so many things can be in conflict for trackshapes, tracksections etc.
+				{
+					SectionIdx[] SectionIdxs = TSectionDat.TrackShapes.Get(ShapeIndex).SectionIdxs;
+
+					foreach (SectionIdx id in SectionIdxs)
+					{
+						uint[] sections = id.TrackSections;
+
+						for (int i = 0; i < sections.Length; i++)
+						{
+							uint sid = id.TrackSections[i];
+							TrackSection section = TSectionDat.TrackSections[sid];
+
+							if (section.SectionCurve != null)
+							{
+								angle = Math.Abs(section.SectionCurve.Angle);
+								break;
+							}
+						}
+					}
+				}
+				catch (Exception e) { } 
+			}
+			return angle;
+		}
     }
 
     public class TrVectorNode

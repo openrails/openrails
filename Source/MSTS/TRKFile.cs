@@ -69,7 +69,8 @@ namespace MSTS
                 new STFReader.TokenProcessor("milepostunitskilometers", ()=>{ MilepostUnitsMetric = true; }),
 				new STFReader.TokenProcessor("electrified", ()=>{ Electrified = stf.ReadBoolBlock(false); }),
                 new STFReader.TokenProcessor("overheadwireheight", ()=>{ OverheadWireHeight = stf.ReadDoubleBlock(STFReader.UNITS.None, 6.0);}),
-            });
+ 				new STFReader.TokenProcessor("speedlimit", ()=>{ SpeedLimit = stf.ReadDoubleBlock(STFReader.UNITS.None, 500.0); }),
+           });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
             if (Name == null) throw new STFException(stf, "Missing Name");
@@ -87,6 +88,7 @@ namespace MSTS
         public double MaxLineVoltage = 0;
 		public bool Electrified = true;
 		public double OverheadWireHeight = 6.0;
+		public double SpeedLimit = 500.0f; //global speed limit m/s.
 	}
 
 
