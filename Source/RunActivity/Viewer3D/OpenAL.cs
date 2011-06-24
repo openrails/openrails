@@ -13,6 +13,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.IO;
+using System.Diagnostics;
 
 namespace ORTS
 {
@@ -588,6 +589,12 @@ namespace ORTS
                 return false;
             }
 
+            if (wfi.ulDataSize == 0 || ((int)wfi.ulDataSize) == -1)
+            {
+                Trace.TraceError("Wave file {0} has invalid length, could not read.", Name);
+                return false;
+            }
+
             byte[] buffer = wfi.ReadData(ToMono);
             if (buffer == null)
             {
@@ -599,7 +606,28 @@ namespace ORTS
                 return false;
             }
 
-            if ((int)wfi.ulFirstCue == -1 || (int)wfi.ulLastCue == -1)
+            if (buffer.Length != wfi.ulDataSize)
+            {
+                Trace.TraceWarning("Wave file {0} has invalid length, File buffer length:{1}, File length from header:{2}; using buffer length for further operations.", 
+                    Name, buffer.Length, wfi.ulDataSize);
+                wfi.ulDataSize = (uint)buffer.Length;
+            }
+
+            if ((int)wfi.ulFirstCue != -1 && (int)wfi.ulLastCue != -1)
+            {
+                uint adjPos1 = wfi.ulFirstCue * wfi.nBitsPerSample / 8 * wfi.nChannels;
+                uint adjPos2 = wfi.ulLastCue * wfi.nBitsPerSample / 8 * wfi.nChannels;
+
+                if (adjPos1 > wfi.ulDataSize || adjPos2 > wfi.ulDataSize)
+                {
+                    Trace.TraceWarning("Wave file {0} has invalid CUE data, Length: {1}, CUE1: {2}, CUE2: {3}, BitsPerSample: {4}, Channels: {5}; falling back to single buffer.",
+                        Name, wfi.ulDataSize, adjPos1, adjPos2, wfi.nBitsPerSample, wfi.nChannels);
+                    wfi.ulFirstCue = 0xFFFFFFFF;
+                    wfi.ulLastCue = 0xFFFFFFFF;
+                }
+            }
+
+            if (wfi.ulFirstCue == 0xFFFFFFFF || wfi.ulLastCue == 0xFFFFFFFF)
             {
                 BufferLens[0] = (int)wfi.ulDataSize;
 
