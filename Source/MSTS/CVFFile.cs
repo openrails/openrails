@@ -162,14 +162,14 @@ namespace MSTS
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
                 new STFReader.TokenProcessor("guage", ()=>{ Add(new CVCGauge(stf, basepath)); }),
                 new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("two_state", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("tri_state", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("multi_state_display", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
-                new STFReader.TokenProcessor("cab_signal_display", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
+                new STFReader.TokenProcessor("twostate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("multistatedisplay", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
+                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
                 new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
-                new STFReader.TokenProcessor("combined_control", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
+                new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
                 new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCDiscrete(stf, basepath)); }), 
-                new STFReader.TokenProcessor("digital_clock", ()=>{ Add(new CVCDigital(stf, basepath)); })
+                new STFReader.TokenProcessor("digitalclock", ()=>{ Add(new CVCDigital(stf, basepath)); })
             });
             //TODO Uncomment when parsed all type
             /*
