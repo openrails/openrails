@@ -198,7 +198,7 @@ namespace ORTS
                             else if (switchObj != null)
                             {
                                 var angle = switchObj.TrackNode.TrJunctionNode.GetAngle(Owner.Viewer.Simulator.TSectionDat);
-                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format(angle == -1 ? "Switch ({0}-way, {1} set, angle unknown)" : "Switch ({0}-way, {1} set, angle {2})", switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1, angle), Owner.TextFontDefaultOutlined));
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format(angle == -1 ? "Switch ({0}-way, {1} set, angle unknown)" : "Switch ({0}-way, {1} set, angle {2:F1})", switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1, angle), Owner.TextFontDefaultOutlined));
                             }
                             else if (signalObj != null)
                             {
