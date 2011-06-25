@@ -1694,7 +1694,6 @@ namespace ORTS
 
     public class CabRenderer : RenderPrimitive
     {
-        private SpriteBatchMaterial _Sprite2DCabView;
         private Rectangle _CabRect = new Rectangle();
         private Matrix _Scale = Matrix.Identity;
         private Texture2D _CabTexture;
@@ -1713,7 +1712,6 @@ namespace ORTS
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
 			//Sequence = RenderPrimitiveSequence.CabView;
-            _Sprite2DCabView = new SpriteBatchMaterial(viewer.RenderProcess);
             _Viewer = viewer;
             _Locomotive = car;
 
@@ -1819,7 +1817,7 @@ namespace ORTS
                     _Locomotive.ExCVF.Light2.TranslatedPosition(_Viewer.DisplaySize));
             }
 
-            frame.AddPrimitive(_Sprite2DCabView, this, RenderPrimitiveGroup.Cab, ref _Scale);
+            frame.AddPrimitive(Materials.SpriteBatchMaterial, this, RenderPrimitiveGroup.Cab, ref _Scale);
 
             if (_Location == 0)
             {
@@ -1842,7 +1840,7 @@ namespace ORTS
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
 
-            _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
+            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
 
             if (_Location == 0 && _Shader != null)
             {
@@ -1858,7 +1856,6 @@ namespace ORTS
     public class CabViewControlRenderer : RenderPrimitive
     {
         protected CabViewControl _CabViewControl;
-        protected SpriteBatchMaterial _Sprite2DCtlView;
         protected Matrix _Matrix = Matrix.Identity;
         protected Texture2D _Texture;
         protected Viewer3D _Viewer;
@@ -1872,7 +1869,6 @@ namespace ORTS
         public CabViewControlRenderer(CabViewControl cvc, Viewer3D viewer, MSTSLocomotive car, CabShader shader)
         {
             _CabViewControl = cvc;
-            _Sprite2DCtlView = new SpriteBatchMaterial(viewer.RenderProcess);
             _Shader = shader;
 
             CABTextureManager.LoadTextures(viewer, _CabViewControl.ACEFile);
@@ -1901,7 +1897,7 @@ namespace ORTS
 
         public virtual void PrepareFrame(RenderFrame frame)
         {
-            frame.AddPrimitive(_Sprite2DCtlView, this, RenderPrimitiveGroup.Cab, ref _Matrix);
+            frame.AddPrimitive(Materials.SpriteBatchMaterial, this, RenderPrimitiveGroup.Cab, ref _Matrix);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -1979,7 +1975,7 @@ namespace ORTS
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
-            _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _Position, null, Color.White, _Rotation, _Origin, _ScaleToScreen, SpriteEffects.None, 0);
+            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _Position, null, Color.White, _Rotation, _Origin, _ScaleToScreen, SpriteEffects.None, 0);
             if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
@@ -2075,7 +2071,7 @@ namespace ORTS
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
-            _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
             if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
@@ -2137,7 +2133,7 @@ namespace ORTS
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
-            _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
             if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
@@ -2308,15 +2304,7 @@ namespace ORTS
 
                     }
                 }
-                _Sprite2DCtlView.SpriteBatch.DrawString(_Font,
-                                                        displayedText,
-                                                        _Position,
-                                                        textColor,
-                                                        0f,
-                                                        new Vector2(),
-                                                        _ScaleToScreen,
-                                                        SpriteEffects.None,
-                                                        0);
+                Materials.SpriteBatchMaterial.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(), _ScaleToScreen, SpriteEffects.None, 0);
                 ((CVCDigital)_CabViewControl).OldValue = _Num;
             }
             catch (Exception ex)

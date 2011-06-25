@@ -961,7 +961,14 @@ namespace ORTS
                 return;
             }
 
-            SoundSources.Add(new SoundSource(Viewer, MSTSWagon, smsFilePath));
+            try
+            {
+                SoundSources.Add(new SoundSource(Viewer, MSTSWagon, smsFilePath));
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+            }
         }
 
         /// <summary>
