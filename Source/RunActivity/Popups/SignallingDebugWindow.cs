@@ -21,11 +21,14 @@ namespace ORTS
     [CallOnThread("Updater")]
     public class SignallingDebugWindow : LayeredWindow
     {
+        const float SignalErrorDistance = 100;
+        const float SignalWarningDistance = 500;
         const float DisplayDistance = 1000;
         const float DisplaySegmentLength = 10;
         const float MaximumSectionDistance = 10000;
 
         Viewport Viewport;
+        Dictionary<int, TrackSectionCacheEntry> Cache = new Dictionary<int, TrackSectionCacheEntry>();
         List<DispatcherPrimitive> Primitives = new List<DispatcherPrimitive>();
 
         public SignallingDebugWindow(WindowManager owner)
@@ -59,136 +62,163 @@ namespace ORTS
                 Func<Vector3, Vector3> Project3D = (position) => Viewport.Project(position, camera.XNAProjection, camera.XNAView, Matrix.Identity);
                 Func<Vector3, Vector2> Flatten = (position) => new Vector2(position.X, position.Y);
 
+                foreach (var cache in Cache.Values)
+                    cache.Age++;
+
                 foreach (var train in Owner.Viewer.Simulator.Trains)
                 {
                     var position = new TDBTraveller(train.MUDirection == Direction.Forward ? train.FrontTDBTraveller : train.RearTDBTraveller);
                     if (train.MUDirection == Direction.Reverse)
                         position.ReverseDirection();
 
-                    var distanceTravelled = 0f;
-
-                    var distanceToEnd = 0f;
+                    var caches = new List<TrackSectionCacheEntry>();
+                    // Work backwards until we end up on a different track section.
+                    var cacheNode = new TDBTraveller(position);
+                    cacheNode.ReverseDirection();
+                    var initialNodeOffsetCount = 0;
+                    while (cacheNode.TrackNodeIndex == position.TrackNodeIndex && cacheNode.NextSection())
+                        initialNodeOffsetCount++;
+                    // Now do it again, but don't go the last track section (because it is from a different track node).
+                    cacheNode = new TDBTraveller(position);
+                    cacheNode.ReverseDirection();
+                    for (var i = 1; i < initialNodeOffsetCount; i++)
+                        cacheNode.NextSection();
+                    // Push the location right up to the end of the section.
+                    cacheNode.MoveInSection(MaximumSectionDistance);
+                    // Now back facing the right way, calculate the distance to the train location.
+                    cacheNode.ReverseDirection();
+                    var initialNodeOffset = cacheNode.DistanceTo(position.TileX, position.TileZ, position.X, position.Y, position.Z);
+                    // Go and collect all the cache entries for the visible range of vector nodes (straights, curves).
+                    var totalDistance = 0f;
+                    while (!cacheNode.TN.TrEndNode && totalDistance - initialNodeOffset < DisplayDistance)
                     {
-                        var nextSection = new TDBTraveller(position);
-                        while (true)
+                        if (cacheNode.TN.TrVectorNode != null)
                         {
-                            distanceToEnd += MaximumSectionDistance - nextSection.MoveInSection(MaximumSectionDistance);
-                            if (!nextSection.NextSection() || nextSection.TN.TrEndNode || distanceToEnd > DisplayDistance + DisplaySegmentLength)
-                                break;
+                            var cache = GetCacheEntry(cacheNode);
+                            cache.Age = 0;
+                            caches.Add(cache);
+                            totalDistance += cache.Length;
                         }
+                        var nodeIndex = cacheNode.TrackNodeIndex;
+                        while (cacheNode.TrackNodeIndex == nodeIndex && cacheNode.NextSection());
                     }
 
-                    var distanceToSwitch = new List<DistanceToSwitch>();
+                    var switchErrorDistance = initialNodeOffset + DisplayDistance + SignalWarningDistance;
+                    var signalErrorDistance = initialNodeOffset + DisplayDistance + SignalWarningDistance;
+                    var currentDistance = 0f;
+                    foreach (var cache in caches)
                     {
-                        var nextSection = new TDBTraveller(position);
-                        var nextDistance = 0f;
-                        var lastSectionID = nextSection.TrackNodeIndex;
-                        while (true)
+                        foreach (var obj in cache.Objects)
                         {
-                            nextDistance += MaximumSectionDistance - nextSection.MoveInSection(MaximumSectionDistance);
-                            if (!nextSection.NextSection() || nextSection.TN.TrEndNode || nextDistance > DisplayDistance)
-                                break;
-                            if (nextSection.TN.TrJunctionNode != null)
-                                distanceToSwitch.Add(new DistanceToSwitch() { Distance = nextDistance, TN = nextSection.TN, LastSectionID = lastSectionID });
-                            lastSectionID = nextSection.TrackNodeIndex;
-                        }
-                    }
+                            var objDistance = currentDistance + obj.Distance;
+                            if (objDistance < initialNodeOffset)
+                                continue;
 
-                    var distanceToSignal = new List<DistanceToSignal>();
-                    {
-                        var nextSection = new TDBTraveller(position);
-                        var nextDistance = 0f;
-                        while (true)
-                        {
-                            var signalNode = Owner.Viewer.Simulator.Signals.FindNearestSignal(nextSection);
-                            if (signalNode.GetAspect() == SignalHead.SIGASP.UNKNOWN)
-                                break;
-                            var signalDistance = signalNode.DistanceToSignal(nextSection);
-                            nextDistance += signalDistance;
-                            distanceToSignal.Add(new DistanceToSignal() { Distance = nextDistance, MonitorAspect = signalNode.GetMonitorAspect(), Aspect = signalNode.GetAspect() });
-                            // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
-                            nextSection.Move(signalDistance + 0.0001f);
-                        }
-                    }
-
-                    var position1 = position.WorldLocation;
-                    do
-                    {
-                        var distanceToTravel = DisplaySegmentLength;
-                        var distanceType = DistanceToType.Nothing;
-                        if (distanceToEnd > 0 && distanceTravelled + distanceToTravel > distanceToEnd)
-                        {
-                            distanceToTravel = distanceToEnd - distanceTravelled;
-                            distanceType = DistanceToType.EndOfLine;
-                        }
-                        if (distanceToSwitch.Count > 0 && distanceTravelled + distanceToTravel > distanceToSwitch[0].Distance)
-                        {
-                            distanceToTravel = distanceToSwitch[0].Distance - distanceTravelled;
-                            distanceType = DistanceToType.Switch;
-                        }
-                        if (distanceToSignal.Count > 0 && distanceTravelled + distanceToTravel > distanceToSignal[0].Distance)
-                        {
-                            distanceToTravel = distanceToSignal[0].Distance - distanceTravelled;
-                            distanceType = DistanceToType.Signal;
-                        }
-
-                        var signalError = false;
-                        var signalWarning = false;
-                        for (var i = 0; i < distanceToSignal.Count; i++)
-                        {
-                            if (distanceToSignal[i].MonitorAspect == TrackMonitorSignalAspect.Stop)
+                            var switchObj = obj as TrackSectionSwitch;
+                            var signalObj = obj as TrackSectionSignal;
+                            if (switchObj != null)
                             {
-                                signalError |= distanceToSignal[i].Distance - distanceTravelled < 100;
-                                signalWarning |= distanceToSignal[i].Distance - distanceTravelled < 500;
-                            }
-                            if (distanceToSignal[i].Distance - distanceTravelled > 500)
-                                break;
-                        }
-
-                        position.Move(distanceToTravel);
-                        var position2 = position.WorldLocation;
-                        primitives.Add(new DispatcherLineSegment(position1, position2, signalError ? Color.Red : signalWarning ? Color.Yellow : Color.White, 2));
-                        position1 = position2;
-                        distanceTravelled += distanceToTravel;
-
-                        if (distanceType == DistanceToType.EndOfLine)
-                        {
-                            primitives.Add(new DispatcherLabel(position2, Color.Red, "End of Line", Owner.TextFontDefaultOutlined));
-                            break;
-                        }
-                        else if (distanceType == DistanceToType.Switch)
-                        {
-                            var switchError = false;
-                            for (var pin = distanceToSwitch[0].TN.Inpins; pin < distanceToSwitch[0].TN.Inpins + distanceToSwitch[0].TN.Outpins; pin++)
-                            {
-                                if (distanceToSwitch[0].TN.TrPins[pin].Link == distanceToSwitch[0].LastSectionID)
+                                for (var pin = switchObj.TrackNode.Inpins; pin < switchObj.TrackNode.Inpins + switchObj.TrackNode.Outpins; pin++)
                                 {
-                                    switchError = (pin - distanceToSwitch[0].TN.Inpins) != distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute;
+                                    if (switchObj.TrackNode.TrPins[pin].Link == switchObj.NodeIndex)
+                                    {
+                                        if (pin - switchObj.TrackNode.Inpins != switchObj.TrackNode.TrJunctionNode.SelectedRoute)
+                                            switchErrorDistance = objDistance;
+                                        break;
+                                    }
+                                }
+                                if (switchErrorDistance < DisplayDistance)
+                                    break;
+                            }
+                            else if (signalObj != null)
+                            {
+                                if (signalObj.Signal.GetMonitorAspect() == TrackMonitorSignalAspect.Stop)
+                                {
+                                    signalErrorDistance = objDistance;
                                     break;
                                 }
                             }
-							distanceToSwitch[0].TN.TrJunctionNode.GetAngle(Owner.Viewer.Simulator.TSectionDat);//get switch angle
-
-							if (distanceToSwitch[0].TN.TrJunctionNode.angle > 0) primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set, angle {2})", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1,
-								distanceToSwitch[0].TN.TrJunctionNode.angle), Owner.TextFontDefaultOutlined));
-							else primitives.Add(new DispatcherLabel(position2, switchError ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set, angle unknown)", distanceToSwitch[0].TN.Outpins, distanceToSwitch[0].TN.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
-							distanceToSwitch.RemoveAt(0);
-                            if (switchError)
-                                break;
                         }
-                        else if (distanceType == DistanceToType.Signal)
-                        {
-                            var signalAspectStop = distanceToSignal[0].MonitorAspect == TrackMonitorSignalAspect.Stop;
-                            var signalAspectWarning = distanceToSignal[0].MonitorAspect == TrackMonitorSignalAspect.Warning;
-                            primitives.Add(new DispatcherLabel(position2, signalAspectStop ? Color.Red : signalAspectWarning ? Color.Yellow : Color.White, String.Format("Signal ({0})", distanceToSignal[0].Aspect), Owner.TextFontDefaultOutlined));
-                            distanceToSignal.RemoveAt(0);
-                            if (signalError)
-                                break;
-                        }
+                        if (switchErrorDistance < DisplayDistance || signalErrorDistance < DisplayDistance)
+                            break;
+                        currentDistance += cache.Length;
                     }
-                    while (distanceTravelled < DisplayDistance);
+
+                    var currentPosition = new TDBTraveller(position);
+                    currentPosition.Move(-initialNodeOffset);
+                    currentDistance = 0;
+                    foreach (var cache in caches)
+                    {
+                        var lastObjDistance = 0f;
+                        foreach (var obj in cache.Objects)
+                        {
+                            var objDistance = currentDistance + obj.Distance;
+
+                            for (var step = lastObjDistance; step < obj.Distance; step += DisplaySegmentLength)
+                            {
+                                var stepDistance = currentDistance + step;
+                                var stepLength = DisplaySegmentLength > obj.Distance - step ? obj.Distance - step : DisplaySegmentLength;
+                                var previousLocation = currentPosition.WorldLocation;
+                                currentPosition.Move(stepLength);
+                                if (stepDistance + stepLength >= initialNodeOffset && stepDistance <= initialNodeOffset + DisplayDistance)
+                                    primitives.Add(new DispatcherLineSegment(previousLocation, currentPosition.WorldLocation, signalErrorDistance - stepDistance < SignalErrorDistance ? Color.Red : signalErrorDistance - stepDistance < SignalWarningDistance ? Color.Yellow : Color.White, 2));
+                            }
+                            lastObjDistance = obj.Distance;
+
+                            if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
+                                break;
+                        }
+                        currentDistance += cache.Length;
+                        if (currentDistance >= switchErrorDistance || currentDistance >= signalErrorDistance)
+                            break;
+                    }
+
+                    currentPosition = new TDBTraveller(position);
+                    currentPosition.Move(-initialNodeOffset);
+                    currentDistance = 0;
+                    foreach (var cache in caches)
+                    {
+                        var lastObjDistance = 0f;
+                        foreach (var obj in cache.Objects)
+                        {
+                            currentPosition.Move(obj.Distance - lastObjDistance);
+                            lastObjDistance = obj.Distance;
+
+                            var objDistance = currentDistance + obj.Distance;
+                            if (objDistance < initialNodeOffset || objDistance > initialNodeOffset + DisplayDistance)
+                                continue;
+
+                            var eolObj = obj as TrackSectionEndOfLine;
+                            var switchObj = obj as TrackSectionSwitch;
+                            var signalObj = obj as TrackSectionSignal;
+                            if (eolObj != null)
+                            {
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, Color.Red, "End of Line", Owner.TextFontDefaultOutlined));
+                            }
+                            else if (switchObj != null)
+                            {
+                                var angle = switchObj.TrackNode.TrJunctionNode.GetAngle(Owner.Viewer.Simulator.TSectionDat);
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format(angle == -1 ? "Switch ({0}-way, {1} set, angle unknown)" : "Switch ({0}-way, {1} set, angle {2})", switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1, angle), Owner.TextFontDefaultOutlined));
+                            }
+                            else if (signalObj != null)
+                            {
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, signalObj.Signal.GetMonitorAspect() == TrackMonitorSignalAspect.Stop ? Color.Red : signalObj.Signal.GetMonitorAspect() == TrackMonitorSignalAspect.Warning ? Color.Yellow : Color.White, String.Format("Signal ({0})", signalObj.Signal.GetAspect()), Owner.TextFontDefaultOutlined));
+                            }
+
+                            if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
+                                break;
+                        }
+                        currentDistance += cache.Length;
+                        if (currentDistance >= switchErrorDistance || currentDistance >= signalErrorDistance)
+                            break;
+                    }
                 }
                 Primitives = primitives;
+
+                // Clean up any cache entries who haven't been using for 30 seconds.
+                var oldCaches = Cache.Where(kvp => kvp.Value.Age > 30 * 4).ToArray();
+                foreach (var oldCache in oldCaches)
+                    Cache.Remove(oldCache.Key);
             }
 
             var labels = new List<Rectangle>();
@@ -204,6 +234,53 @@ namespace ORTS
                 line.Draw(spriteBatch);
         }
 
+        TrackSectionCacheEntry GetCacheEntry(TDBTraveller position)
+        {
+            TrackSectionCacheEntry rv;
+            if (Cache.TryGetValue(position.TrackNodeIndex, out rv) && (rv.Direction == position.Direction))
+                return rv;
+            Cache[position.TrackNodeIndex] = rv = new TrackSectionCacheEntry()
+            {
+                Direction = position.Direction,
+                Length = 0,
+                Objects = new List<TrackSectionObject>(),
+            };
+            var nodeIndex = position.TrackNodeIndex;
+            var trackNode = new TDBTraveller(position);
+            while (true)
+            {
+                rv.Length += MaximumSectionDistance - trackNode.MoveInSection(MaximumSectionDistance);
+                if (!trackNode.NextSection())
+                    break;
+                if (trackNode.TN.TrEndNode)
+                    rv.Objects.Add(new TrackSectionEndOfLine() { Distance = rv.Length });
+                else if (trackNode.TN.TrJunctionNode != null)
+                    rv.Objects.Add(new TrackSectionSwitch() { Distance = rv.Length, TrackNode = trackNode.TN, NodeIndex = nodeIndex });
+                else
+                    rv.Objects.Add(new TrackSectionObject() { Distance = rv.Length }); // Always have an object at the end.
+                if (trackNode.TrackNodeIndex != nodeIndex)
+                    break;
+            }
+            trackNode = new TDBTraveller(position);
+            var distance = 0f;
+            while (true)
+            {
+                var signal = Owner.Viewer.Simulator.Signals.FindNearestSignal(trackNode);
+                if (signal.GetAspect() == SignalHead.SIGASP.UNKNOWN)
+                    break;
+                var signalDistance = signal.DistanceToSignal(trackNode);
+                distance += signalDistance;
+                trackNode.Move(signalDistance);
+                if (trackNode.TrackNodeIndex != nodeIndex)
+                    break;
+                rv.Objects.Add(new TrackSectionSignal() { Distance = distance, Signal = signal });
+                // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
+                trackNode.Move(0.0001f);
+            }
+            rv.Objects = rv.Objects.OrderBy(tso => tso.Distance).ToList();
+            return rv;
+        }
+
         enum DistanceToType
         {
             Nothing,
@@ -212,18 +289,31 @@ namespace ORTS
             Signal,
         }
 
-        struct DistanceToSwitch
-        {
-            public float Distance;
-            public TrackNode TN;
-            public int LastSectionID;
+        class TrackSectionCacheEntry {
+            public int Age;
+            public int Direction;
+            public float Length;
+            public List<TrackSectionObject> Objects;
         }
 
-        struct DistanceToSignal
+        class TrackSectionObject
         {
             public float Distance;
-            public SignalHead.SIGASP Aspect;
-            public TrackMonitorSignalAspect MonitorAspect;
+        }
+
+        class TrackSectionEndOfLine : TrackSectionObject
+        {
+        }
+
+        class TrackSectionSwitch : TrackSectionObject
+        {
+            public TrackNode TrackNode;
+            public int NodeIndex;
+        }
+
+        class TrackSectionSignal : TrackSectionObject
+        {
+            public Signal Signal;
         }
     }
 
