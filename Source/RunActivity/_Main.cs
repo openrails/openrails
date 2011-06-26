@@ -51,14 +51,12 @@ namespace ORTS
         /// </summary>
         static void Main(string[] args)
         {
-            SetBuildRevision();
+            InitBuildRevision();
 
             UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
 
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-
-            EnableLogging();
 
             // Look for an action to perform.
             var action = "";
@@ -77,18 +75,21 @@ namespace ORTS
             if ((action.Length == 0) && (data.Length > 0))
                 action = "start";
 
+            var settings = GetSettings(options);
+            InitLogging(settings);
+
             // Do the action specified or write out some help.
             switch (action)
             {
                 case "start":
                 case "start-profile":
-                    Start(options, data);
+                    Start(settings, data);
                     break;
                 case "resume":
-                    Resume(options, data);
+                    Resume(settings, data);
                     break;
                 case "testall":
-                    TestAll(options, data);
+                    TestAll(data);
                     break;
                 default:
                     Console.WriteLine("Missing activity file name");
@@ -103,13 +104,11 @@ namespace ORTS
         /// <summary>
         /// Run the specified activity from the beginning.
         /// </summary>
-        static void Start(IEnumerable<string> options, string[] args)
+        static void Start(UserSettings settings, string[] args)
         {
-            var showErrorDialogs = true;
             Action start = () =>
             {
-                var settings = GetSettings(false, options, args, ref showErrorDialogs);
-                CreateSimulator(settings);
+                InitSimulator(settings, args);
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator);
                 Viewer.Initialize();
@@ -141,7 +140,7 @@ namespace ORTS
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    if (showErrorDialogs)
+                    if (settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
                 }
             }
@@ -155,7 +154,6 @@ namespace ORTS
         /// </summary>
         public static void Save()
         {
-            var showErrorDialogs = Simulator.Settings.ShowErrorDialogs;
             Action save = () =>
             {
                 using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
@@ -169,7 +167,9 @@ namespace ORTS
                         outf.Write(argument);
                     Simulator.Save(outf);
                     Viewer.Save(outf);
-                    Console.WriteLine("\nSaved");
+                    Console.WriteLine();
+                    Console.WriteLine("Saved");
+                    Console.WriteLine();
                 }
             };
             if (Debugger.IsAttached)
@@ -185,7 +185,7 @@ namespace ORTS
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    if (showErrorDialogs)
+                    if (Simulator.Settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
                 }
             }
@@ -194,9 +194,8 @@ namespace ORTS
         /// <summary>
         /// Resume a saved game.
         /// </summary>
-        static void Resume(IEnumerable<string> options, string[] args)
+        static void Resume(UserSettings settings, string[] args)
         {
-            var showErrorDialogs = true;
             Action resume = () =>
             {
                 var saveFile = args.Length == 0 ? UserDataFolder + "\\SAVE.BIN" : args[0];
@@ -225,8 +224,7 @@ namespace ORTS
                     for (var i = 0; i < savedArgs.Length; i++)
                         savedArgs[i] = inf.ReadString();
 
-                    var settings = GetSettings(true, options, savedArgs, ref showErrorDialogs);
-                    CreateSimulator(settings);
+                    InitSimulator(settings, savedArgs, "Resume");
                     Simulator.Restore(inf);
                     Viewer = new Viewer3D(Simulator);
                     Viewer.Initialize();
@@ -247,7 +245,7 @@ namespace ORTS
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    if (showErrorDialogs)
+                    if (settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
                 }
             }
@@ -256,64 +254,63 @@ namespace ORTS
         /// <summary>
         /// Tests OR against every activity in every route in every folder.
         /// </summary>
-        static void TestAll(IEnumerable<string> options, string[] args)
+        static void TestAll(string[] args)
         {
-            var showErrorDialogs = true;
+            var settings = GetSettings(new[] { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" });
+            InitLogging(settings);
             Action testAll = () =>
+            {
+                var activities = (args.Length == 0 ? Folder.GetFolders() : args.Select(a => new Folder(Path.GetFileName(a), a)))
+                    .SelectMany(f => Route.GetRoutes(f))
+                    .SelectMany(r => ORTS.Menu.Activity.GetActivities(r))
+                    .Where(a => !(a is ExploreActivity))
+                    .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                var results = new bool[activities.Count];
+                Action<int> run = (i) =>
                 {
-                    options = new List<string>(options) { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" };
-                    var activities = (args.Length == 0 ? Folder.GetFolders() : args.Select(a => new Folder(Path.GetFileName(a), a)))
-                        .SelectMany(f => Route.GetRoutes(f))
-                        .SelectMany(r => ORTS.Menu.Activity.GetActivities(r))
-                        .Where(a => !(a is ExploreActivity))
-                        .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-                    var results = new bool[activities.Count];
-                    for (var i = 0; i < activities.Count; i++)
-                    {
-                        Action run = () =>
-                        {
-                            var settings = GetSettings(false, options, new[] { activities[i].FileName }, ref showErrorDialogs);
-                            CreateSimulator(settings);
-                            Simulator.Start();
-                            Viewer = new Viewer3D(Simulator);
-                            Viewer.Initialize();
-                            Viewer.Run();
-                            results[i] = true;
-                            Simulator.Stop();
-                        };
-                        if (Debugger.IsAttached)
-                        {
-                            run();
-                        }
-                        else
-                        {
-                            try
-                            {
-                                run();
-                            }
-                            catch (Exception error)
-                            {
-                                Trace.WriteLine(error);
-                            }
-                        }
-                        Console.WriteLine();
-                        Console.WriteLine();
-
-                        // Force a cleanup.
-                        Viewer = null;
-                        Simulator = null;
-                        GC.Collect();
-                    }
-
-                    Console.WriteLine();
-                    for (var i = 0; i < activities.Count; i++)
-                    {
-                        Console.WriteLine("{0,-4}  {1}", results[i] ? "PASS" : "fail", activities[i].FileName);
-                    }
-                    Console.WriteLine();
-                    Console.WriteLine("Tested {0} activities; {1} passed, {2} failed.", results.Length, results.Count(r => r), results.Count(r => !r));
+                    InitSimulator(settings, new[] { activities[i].FileName }, "");
+                    Simulator.Start();
+                    Viewer = new Viewer3D(Simulator);
+                    Viewer.Initialize();
+                    Viewer.Run();
+                    results[i] = true;
+                    Simulator.Stop();
                 };
+                for (var i = 0; i < activities.Count; i++)
+                {
+                    if (Debugger.IsAttached)
+                    {
+                        run(i);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            run(i);
+                        }
+                        catch (Exception error)
+                        {
+                            Trace.WriteLine(error);
+                        }
+                    }
+                    Console.WriteLine();
+                    Console.WriteLine();
+
+                    // Force a cleanup.
+                    Viewer = null;
+                    Simulator = null;
+                    GC.Collect();
+                }
+
+                Console.WriteLine();
+                for (var i = 0; i < activities.Count; i++)
+                {
+                    Console.WriteLine("{0,-4}  {1}", results[i] ? "PASS" : "fail", activities[i].FileName);
+                }
+                Console.WriteLine();
+                Console.WriteLine("Tested {0} activities; {1} passed, {2} failed.", results.Length, results.Count(r => r), results.Count(r => !r));
+            };
             if (Debugger.IsAttached)
             {
                 testAll();
@@ -327,93 +324,13 @@ namespace ORTS
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    if (showErrorDialogs)
+                    if (settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
                 }
             }
         }
 
-        static UserSettings GetSettings(bool resume, IEnumerable<string> options, string[] args, ref bool showErrorDialogs)
-        {
-            Arguments = args;
-
-            Console.WriteLine("Mode:     {0}{1}", resume ? "Resume " : "", args.Length == 1 ? "Activity" : "Explore");
-            if (args.Length == 1)
-            {
-                Console.WriteLine("Activity: {0}", args[0]);
-            }
-            else
-            {
-                Console.WriteLine("Path:     {0}", args[0]);
-                Console.WriteLine("Consist:  {0}", args[1]);
-                Console.WriteLine("Time:     {0}", args[2]);
-                Console.WriteLine("Season:   {0}", args[3]);
-                Console.WriteLine("Weather:  {0}", args[4]);
-            }
-            Console.WriteLine();
-            var settings = new UserSettings(RegistryKey, options);
-            if (settings.MSTSBINSound)
-                EventID.SetMSTSBINCompatible();
-            showErrorDialogs = settings.ShowErrorDialogs;
-            Console.WriteLine();
-            Console.WriteLine("========================================");
-            Console.WriteLine();
-            return settings;
-        }
-
-        static void CreateSimulator(UserSettings settings)
-        {
-            Simulator = new Simulator(settings, Arguments[0]);
-            if (Arguments.Length == 1)
-                Simulator.SetActivity(Arguments[0]);
-            else
-                Simulator.SetExplore(Arguments[0], Arguments[1], Arguments[2], Arguments[3], Arguments[4]);
-        }
-
-        /// <summary>
-        /// Check the registry and return true if the OpenRailsLog.TXT
-        /// file should be created.
-        /// </summary>
-        static bool IsWarningsOn()
-        {
-            // TODO Read from Registry
-            return true;
-        }
-
-        /// <summary>
-        /// Set up to capture all console and error I/O into a  log file.
-        /// </summary>
-        static void EnableLogging()
-        {
-            if (IsWarningsOn())
-            {
-                string logFileName = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\OpenRailsLog.txt";
-                File.Delete(logFileName);
-
-                // Make Console.Out go to the log file AND the output stream.
-                Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
-                // Make Console.Error go to the new Console.Out.
-                Console.SetError(Console.Out);
-            }
-
-            // Captures Trace.Trace* calls and others and formats.
-            var traceListener = new ORTraceListener(Console.Out);
-            traceListener.TraceOutputOptions = TraceOptions.Callstack;
-            // Trace.Listeners and Debug.Listeners are the same list.
-            Trace.Listeners.Add(traceListener);
-
-            Console.WriteLine("{0} is starting...", Application.ProductName);
-            Console.WriteLine();
-            Console.WriteLine("Version: {0}", Version.Length > 0 ? Version : "<none>");
-            Console.WriteLine("Build:   {0}", Build);
-            Console.WriteLine();
-        }
-
-        /// <summary>
-        /// Set up the global Build and Revision variables
-        /// from assembly data and the revision.txt file.
-        /// </summary>
-        static void SetBuildRevision()
+        static void InitBuildRevision()
         {
             try
             {
@@ -441,6 +358,86 @@ namespace ORTS
                 Version = "";
                 Build = Application.ProductVersion;
             }
+        }
+
+        static UserSettings GetSettings(IEnumerable<string> options)
+        {
+            return new UserSettings(RegistryKey, options);
+        }
+
+        static void InitLogging(UserSettings settings)
+        {
+            var logFileName = "";
+            if ((settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
+            {
+                var fileName = settings.LoggingFilename;
+                try
+                {
+                    fileName = String.Format(fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, DateTime.Now);
+                }
+                catch { }
+                foreach (var ch in Path.GetInvalidFileNameChars())
+                    fileName = fileName.Replace(ch, '.');
+
+                logFileName = Path.Combine(settings.LoggingPath, fileName);
+                // Ensure we start with an empty file.
+                File.Delete(logFileName);
+                // Make Console.Out go to the log file AND the output stream.
+                Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
+                // Make Console.Error go to the new Console.Out.
+                Console.SetError(Console.Out);
+            }
+
+            // Captures Trace.Trace* calls and others and formats.
+            var traceListener = new ORTraceListener(Console.Out);
+            traceListener.TraceOutputOptions = TraceOptions.Callstack;
+            // Trace.Listeners and Debug.Listeners are the same list.
+            Trace.Listeners.Add(traceListener);
+
+            Console.WriteLine("{0} is starting...", Application.ProductName);
+            Console.WriteLine();
+            Console.WriteLine("Version    = {0}", Version.Length > 0 ? Version : "<none>");
+            Console.WriteLine("Build      = {0}", Build);
+            if (logFileName.Length > 0)
+                Console.WriteLine("Logfile    = {0}", logFileName);
+            LogSeparator();
+            settings.Log();
+            LogSeparator();
+        }
+
+        static void InitSimulator(UserSettings settings, string[] args)
+        {
+            InitSimulator(settings, args, "");
+        }
+
+        static void InitSimulator(UserSettings settings, string[] args, string mode)
+        {
+            Console.WriteLine(mode.Length > 0 ? "Mode       = {0} {1}" : "Mode       = {1}", mode, args.Length == 1 ? "Activity" : "Explore");
+            if (args.Length == 1)
+            {
+                Console.WriteLine("Activity   = {0}", args[0]);
+            }
+            else
+            {
+                Console.WriteLine("Path       = {0}", args[0]);
+                Console.WriteLine("Consist    = {0}", args[1]);
+                Console.WriteLine("Time       = {0}", args[2]);
+                Console.WriteLine("Season     = {0}", args[3]);
+                Console.WriteLine("Weather    = {0}", args[4]);
+            }
+            LogSeparator();
+
+            Arguments = args;
+            Simulator = new Simulator(settings, args[0]);
+            if (args.Length == 1)
+                Simulator.SetActivity(args[0]);
+            else
+                Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+        }
+
+        static void LogSeparator()
+        {
+            Console.WriteLine(new String('-', 80));
         }
     }
 }

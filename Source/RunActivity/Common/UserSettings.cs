@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.Win32;
 
 namespace ORTS
@@ -16,6 +15,14 @@ namespace ORTS
 	public class UserSettings
 	{
 		readonly string RegistryKey;
+        readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
+
+        enum Source
+        {
+            Default,
+            CommandLine,
+            Registry,
+        }
 
 		#region User Settings
 
@@ -27,7 +34,9 @@ namespace ORTS
 		public bool DynamicShadows { get; set; }
 		public bool FullScreen { get; set; }
 		public bool GraduatedRelease { get; set; }
-		public bool MSTSBINSound { get; set; }
+        public string LoggingFilename { get; set; }
+        public string LoggingPath { get; set; }
+        public bool MSTSBINSound { get; set; }
 		public bool Precipitation { get; set; }
 		public bool Profiling { get; set; }
         public int ProfilingFrameCount { get; set; }
@@ -68,6 +77,8 @@ namespace ORTS
         {
             // Initialize defaults for all user settings here.
             BrakePipeChargingRate = 21;
+            LoggingPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            LoggingFilename = "OpenRailsLog.txt";
             ProfilingFrameCount = 1000;
             ShadowMapBlur = true;
             ShadowMapCount = 4;
@@ -87,7 +98,7 @@ namespace ORTS
             WindowPosition_TrainOperations = new[] { 50, 50 };
         }
 
-		void LoadUserSettings(IEnumerable<string> options)
+        void LoadUserSettings(IEnumerable<string> options)
 		{
 			// This special command-line option prevents the registry values from being used.
 			var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
@@ -139,22 +150,31 @@ namespace ORTS
                         throw new ArgumentException();
 
 					property.SetValue(this, value, new object[0]);
+                    Sources.Add(property.Name, value.Equals(defValue) ? Source.Default : optValue != null ? Source.CommandLine : regValue != null ? Source.Registry : Source.Default);
 				}
 				catch (ArgumentException)
 				{
 					Trace.TraceWarning("Unable to load {0} value from type {1}.", property.Name, value.GetType().FullName);
 					value = defValue;
-				}
-
-				// Need to use object.Equals(object) here because values are boxed.
-                if (property.PropertyType == typeof(int[]))
-                    Console.WriteLine("{0,-30} = {1,-10} {2}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), value.Equals(defValue) ? "" : optValue != null ? "(command-line)" : regValue != null ? "(registry)" : "");
-                else
-                    Console.WriteLine("{0,-30} = {1,-10} {2}", property.Name, value, value.Equals(defValue) ? "" : optValue != null ? "(command-line)" : regValue != null ? "(registry)" : "");
+                    Sources.Add(property.Name, Source.Default);
+                }
             }
 			if (RK != null)
 				RK.Close();
 		}
+
+        public void Log()
+        {
+            foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
+            {
+                var value = property.GetValue(this, null);
+                var source = Sources[property.Name];
+                if (property.PropertyType == typeof(int[]))
+                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source == Source.CommandLine ? "(command-line)" : source == Source.Registry ? "(registry)" : "");
+                else
+                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source == Source.CommandLine ? "(command-line)" : source == Source.Registry ? "(registry)" : "");
+            }
+        }
 
         public void Save()
         {
