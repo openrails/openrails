@@ -24,6 +24,7 @@ namespace ORTS
         HeadlightOn = 112, HeadlightDim = 113, HeadlightOff = 114;
 
         public static bool IsMSTSBin = false;
+        private static bool _isInitialized = false;
 
         public static void SetMSTSBINCompatible()
         {
@@ -38,6 +39,16 @@ namespace ORTS
         private int _id;
         public EventID(int ID)
         {
+            if (!_isInitialized)
+            {
+                try
+                {
+                    if (Program.Simulator.Settings.MSTSBINSound)
+                        SetMSTSBINCompatible();
+                    _isInitialized = true;
+                }
+                catch { }
+            }
             _id = ID;
         }
         
