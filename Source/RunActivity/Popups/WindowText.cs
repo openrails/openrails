@@ -73,6 +73,7 @@ namespace ORTS.Popups
     public sealed class WindowTextFont
     {
         readonly Font Font;
+        readonly int FontHeight;
         readonly int OutlineSize;
         CharacterGroup Characters;
 
@@ -81,6 +82,7 @@ namespace ORTS.Popups
             var font = new Font(fontFamily, sizeInPt, style);
             Font = new Font(fontFamily, (int)font.GetHeight(), style, GraphicsUnit.Pixel);
             Debug.Assert(Font.Height == (int)Math.Ceiling(Font.GetHeight()), "Font.Height is not expected value.");
+            FontHeight = Font.Height;
             OutlineSize = outlineSize;
             Characters = new CharacterGroup(Font, OutlineSize);
         }
@@ -92,7 +94,7 @@ namespace ORTS.Popups
         {
             get
             {
-                return Font.Height;
+                return FontHeight;
             }
         }
 
@@ -193,7 +195,7 @@ namespace ORTS.Popups
                     if (text[i] == '\n')
                     {
                         current.X = start.X;
-                        current.Y += Font.Height;
+                        current.Y += Height;
                     }
                 }
             }
@@ -208,7 +210,7 @@ namespace ORTS.Popups
                 if (text[i] == '\n')
                 {
                     current.X = start.X;
-                    current.Y += Font.Height;
+                    current.Y += Height;
                 }
             }
         }
