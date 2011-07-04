@@ -769,7 +769,17 @@ namespace ORTS
         //and determine the new location if conflict occurs
         TopY = AlignVertical(cameraVector.Y, X, X + Font.MeasureString(TrItemLabel.ItemName).X, LineSpacing, Material.AlignedTextB);
 
-        //draw the platform name in red
+        //outline the siding/platform name in white by pre-drawing all 8 points of compass
+        //Isn't this a clumsy way to do it?
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 0, TopY + 1), Color.White);
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 1, TopY + 1), Color.White);
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 1, TopY + 0), Color.White);
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 1, TopY - 1), Color.White);
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 0, TopY - 1), Color.White);
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X - 1, TopY - 1), Color.White);
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X - 1, TopY - 0), Color.White);
+        Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X - 1, TopY + 1), Color.White);
+        //draw the siding/platform name in colour
         Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X, TopY), LabelColor);
 
         //draw a vertical line with length TopY + LineSpacing - BottomY

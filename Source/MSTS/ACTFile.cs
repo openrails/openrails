@@ -14,6 +14,7 @@ namespace MSTS
 	public enum SeasonType { Spring=0, Summer, Autumn, Winter };
 	public enum WeatherType { Clear=0, Snow, Rain };
 	public enum Difficulty { Easy=0, Medium, Hard };
+    public enum EventType { StopAtFinalStation=0, PickUpPassengers, MakeAPickup, ReachSpeed, PickUpWagons, DropOffWagonsAtLocation, AssembleTrain, AssembleTrainAtLocation };
 
 	/// <summary>
 	/// Summary description for Class1.
@@ -330,6 +331,9 @@ namespace MSTS
 		public int Activation_Level;
 		public Outcomes Outcomes = new Outcomes();
 		public string Name;
+        public EventType EventType;
+        public WagonList WagonList;
+        public int SidingId;
 
 		/// <summary>
 		/// Build a default EventTypeAllStops event
@@ -344,7 +348,7 @@ namespace MSTS
 
 		public EventCategoryAction(STFReader stf)
 		{
-			stf.MustMatch("(");
+        stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("eventtypeallstops", ()=>{ stf.SkipBlock(); }),
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
@@ -353,10 +357,57 @@ namespace MSTS
                 new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("eventtypedropoffwagonsatlocation", ()=>{ EventType = EventType.DropOffWagonsAtLocation; }),
+                new STFReader.TokenProcessor("eventtypepickupwagons", ()=>{ EventType = EventType.PickUpWagons; }),
+                new STFReader.TokenProcessor("eventtypeassembletrain", ()=>{ EventType = EventType.AssembleTrain; }),
+                new STFReader.TokenProcessor("eventtypeassembletrainatlocation", ()=>{ EventType = EventType.AssembleTrainAtLocation; }),
+                new STFReader.TokenProcessor("wagon_list", ()=>{ WagonList = new WagonList(stf, EventType); }),
+                new STFReader.TokenProcessor("sidingitem", ()=>{ SidingId = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
             });
-		}
+        }
 	}
 
+    public class WagonList {
+        public ArrayList Wagons = new ArrayList();
+        public uint UID;
+        public uint SidingItem;  
+        public string Description = "";
+
+        public WagonList(STFReader stf, EventType eventType) {
+            stf.MustMatch("(");
+            switch (eventType) {
+                case EventType.PickUpWagons: // These Wagon_Lists lack a Description attribute.
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("uid", ()=>{ UID = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
+                        new STFReader.TokenProcessor("sidingitem", ()=>{ SidingItem = stf.ReadUIntBlock(STFReader.UNITS.None, null);  Wagons.Add(new WorkOrderWagon(UID, SidingItem, ""));}),
+                    });
+                    break;
+                default:
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("uid", ()=>{ UID = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
+                        new STFReader.TokenProcessor("sidingitem", ()=>{ SidingItem = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
+                        new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(""); Wagons.Add(new WorkOrderWagon(UID, SidingItem, Description)); }),
+                    }); 
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Parses Wagon_List from the *.act file.
+    /// Do not confuse with class Wagon below, which parses TrainCfg from the *.con file.
+    /// </summary>
+    public class WorkOrderWagon {
+        public uint UID;
+        public uint SidingItem; 
+        public string Description;
+
+        public WorkOrderWagon(uint uId, uint sidingItem, string description) {
+            UID = uId;
+            SidingItem = sidingItem;
+            Description = description;
+        }
+    }
 
 	public class Outcomes: ArrayList
 	{
@@ -543,8 +594,16 @@ namespace MSTS
 			IsEngine = isEngine;
 			Flip = flip;
 		}
-
-	}
+        public string GetName(uint uId, ArrayList wagonList) {
+            foreach (var item in wagonList) {
+                var wagon = item as Wagon;
+                if (wagon.UiD == uId) {
+                    return wagon.Name;
+                }
+            }
+            return "<unknown name>";
+        }
+    }
 
     public class Player_Service_Definition
     {

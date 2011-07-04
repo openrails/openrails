@@ -1576,7 +1576,7 @@ namespace ORTS
         }
 	}
 
-	//Material to draw train car numbers and sidings, and work orders
+	//Material to draw train car numbers, sidings and platforms
 	public class ActivityInforMaterial : Material
 	{
 		public SpriteBatch SpriteBatch;

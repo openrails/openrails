@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Diagnostics;
 
 namespace ORTS.Popups
 {
@@ -95,10 +96,166 @@ namespace ORTS.Popups
                         }
                     }
                 }));
-                //Tabs.Add(new TabData(Tab.ActivityWorkOrders, "Work Orders", (cl) =>
-                //{
-                //    var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
-                //}));
+                Tabs.Add(new TabData(Tab.ActivityWorkOrders, "Work Orders", (cl) =>
+                {
+                    // <CJ comment>
+                    // Would like to add the scrollbox after the column headings, so that they remain visible as data is scrolled.
+                    // However, can't see how to do that.
+                    // If I knew how, I would also apply this to the timetable tab.
+                    // </CJ comment>
+                    var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
+                    var line = scrollbox.AddLayoutHorizontal(TextHeight * 1 / 2);
+                    var width = line.RemainingWidth / 5;
+                    line = scrollbox.AddLayoutHorizontal(TextHeight);
+                    line.Add(new Label(width, line.RemainingHeight, " Task", LabelAlignment.Center));
+                    line.Add(new Label(width, line.RemainingHeight, "Car(s)", LabelAlignment.Center));
+                    // Allow double width for "car(s)" to include wagon type.
+                    line.Add(new Label(width * 2, line.RemainingHeight, "Location", LabelAlignment.Center));
+                    line.Add(new Label(width, line.RemainingHeight, "Status", LabelAlignment.Center));
+                    line = scrollbox.AddLayoutHorizontal(TextHeight * 1);
+
+                    foreach (var Event in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.Events) {
+                        if (Event is MSTS.EventCategoryAction) {
+                            var actionEvent = Event as MSTS.EventCategoryAction;
+                            scrollbox.AddHorizontalSeparator();
+                            line = scrollbox.AddLayoutHorizontal(TextHeight * 1);
+                            switch (actionEvent.EventType) {
+                                case MSTS.EventType.DropOffWagonsAtLocation:
+                                    line.Add(new Label(width, line.RemainingHeight, " Drop Off"));
+                                    break;
+                                case MSTS.EventType.AssembleTrain:
+                                    line.Add(new Label(width, line.RemainingHeight, " Assemble Train"));
+                                    break;
+                                case MSTS.EventType.PickUpWagons:
+                                    line.Add(new Label(width, line.RemainingHeight, " Pick Up"));
+                                    break;
+                                case MSTS.EventType.AssembleTrainAtLocation:
+                                    line.Add(new Label(width, line.RemainingHeight, " Assemble Train"));
+                                    line = scrollbox.AddLayoutHorizontal(TextHeight * 1);
+                                    line.Add(new Label(width, line.RemainingHeight, " At Location"));
+                                    break;
+                                case MSTS.EventType.MakeAPickup:
+                                    // do nothing
+                                    break;
+                                case MSTS.EventType.PickUpPassengers:
+                                    // do nothing
+                                    break;
+                                case MSTS.EventType.ReachSpeed:
+                                    // do nothing
+                                    break;
+                                case MSTS.EventType.StopAtFinalStation:
+                                    // do nothing
+                                    break;
+                            }
+                            if (actionEvent.WagonList != null) {    // else passenger-only routes will crash when user selects Work Orders
+                                uint sidingId = 0;
+                                string wagonType = "";
+                                string location = "";
+                                Boolean locationShown = false;
+                                foreach (var wagonItem in actionEvent.WagonList.Wagons) {
+                                    var workOrderWagon = wagonItem as MSTS.WorkOrderWagon;
+                                    Boolean found = false;
+
+                                    // For "Car(s)" field, find wagon name and siding id
+                                    // Different way to find these for "drop off" and "pick up"
+                                    // "Drop off" wagons and sidings
+                                    if (actionEvent.EventType == MSTS.EventType.DropOffWagonsAtLocation
+                                        || actionEvent.EventType == MSTS.EventType.AssembleTrain
+                                        || actionEvent.EventType == MSTS.EventType.AssembleTrainAtLocation) {
+                                        // Consider only the user's train, Trains[0]
+                                        var playerTrain = owner.Viewer.Simulator.Trains[0];
+                                        foreach (var trainWagon in playerTrain.Cars) {
+                                            if (workOrderWagon.UID == trainWagon.UiD) {
+                                                line.Add(new Label(width, line.RemainingHeight, trainWagon.CarID));
+                                                // <CJ comment>
+                                                // Extracting the wagon type from the .WagFilePath property as done below is clumsy.
+                                                // The .con file contains the attributes "wagon type" and "wagon type filename" (which are usually identical).
+                                                // There is code to parse both of these attributes in ACTFile.cs
+                                                // but can't see how to access those objects from here.
+                                                // </CJ comment>
+                                                wagonType = trainWagon.WagFilePath;
+                                                wagonType = wagonType.Substring(1 + wagonType.LastIndexOf("\\"));  // Extract filename from full path
+                                                wagonType = wagonType.Substring(0, wagonType.IndexOf("."));        // Trim off extension ".wag"
+                                                // *.act file has an irregular data structure and location information (which is usually
+                                                // the siding name) is kept in different places depending on the type of event.
+                                                if (actionEvent.EventType == MSTS.EventType.AssembleTrain) {
+                                                    location = workOrderWagon.Description;
+                                                } else {
+                                                    sidingId = (System.UInt16)(actionEvent.SidingId);
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    } else { // For "pick up", the values are held elsewhere.
+                                        //
+                                        // ROUTES\<route folder>\ACTIVITIES\<activity file> contains:
+                                        //   Tr_Activity ( 
+                                        //     Tr_Activity_File ( 
+                                        //       ActivityObjects (
+                                        //         ActivityObject (
+                                        //           Train_Config (
+                                        //             TrainCfg ( 
+                                        //               Wagon ( 
+                                        //                 WagonData ( <wagon title> <wagon filename> )
+                                        //                 UiD ( <uid> ) ) ) )
+                                        //           ID ( <train id> ) ) ) )          
+                                        //
+                                        // Wagon.UiD contains train and wagon indexes packed into single 32-bit value, e.g. 32678 - 0
+                                        //
+                                        var trainIndex = (System.UInt16)(workOrderWagon.UID >> 16);         // Extract upper 16 bits
+                                        var wagonIndex = (System.UInt16)(workOrderWagon.UID & 0x0000FFFF);  // Extract lower 16 bits
+                                        line.Add(new Label(width, line.RemainingHeight, trainIndex.ToString() + " - " + wagonIndex.ToString()));
+                                        foreach (MSTS.ActivityObject ActivityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects) {
+                                            found = false;
+                                            MSTS.Train_Config train_config = ActivityObject.Train_Config;
+                                            MSTS.TrainCfg trainCfg = train_config.TrainCfg;
+                                            if (ActivityObject.ID == trainIndex) {
+                                                foreach (MSTS.Wagon trainWagon in trainCfg.Wagons) {
+                                                    if (trainWagon.UiD == wagonIndex) {
+                                                        wagonType = trainWagon.Name;
+                                                        found = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (found == true) { break; }
+                                        }
+                                        sidingId = workOrderWagon.SidingItem;
+                                    }
+                                    line.Add(new Label(width, line.RemainingHeight, wagonType));
+                                    
+                                    // For "location" field, add siding name
+                                    if (locationShown == true) {
+                                        // don't repeat the siding name
+                                    } else {
+                                        found = false;
+                                        foreach (var trItem in owner.Viewer.Simulator.TDB.TrackDB.TrItemTable) {
+                                            if (trItem is MSTS.SidingItem) {
+                                                MSTS.SidingItem siding = trItem as MSTS.SidingItem;
+                                                if (siding.TrItemId == sidingId) {
+                                                    line.Add(new Label(width, line.RemainingHeight, siding.ItemName));
+                                                    locationShown = true;
+                                                    found = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (found == false) {
+                                            line.Add(new Label(width, line.RemainingHeight, location));
+                                            locationShown = true;
+                                        }
+                                    }
+
+                                    // For "Status" field, add data here 
+                                    
+                                    // Add a new line and step across to "Wagon" field.
+                                    line = scrollbox.AddLayoutHorizontal(TextHeight * 1);
+                                    line.Add(new Label(width, line.RemainingHeight, ""));
+                                }
+                            }
+                        }
+                    }
+                }));
             }
             Tabs.Add(new TabData(Tab.LocomotiveProcedures, "Procedures", (cl) =>
             {
