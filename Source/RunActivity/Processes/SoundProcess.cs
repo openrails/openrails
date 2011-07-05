@@ -106,6 +106,11 @@ namespace ORTS
         {
 			ProcessState.SetThreadName("Sound Process");
 
+            while (Viewer.RealTime == 0)
+            {
+                Thread.Sleep(100);
+            }
+
             lock (_SoundSources)
             {
                 foreach (List<SoundSource> src in _SoundSources.Values)
@@ -119,9 +124,6 @@ namespace ORTS
 
             while (true)
             {
-                // Sleeping a while
-                Thread.Sleep(200);
-
 				Profiler.Start();
 
                 // Update activity sounds
@@ -154,7 +156,10 @@ namespace ORTS
                 }
 
 				Profiler.Stop();
-			}
+
+                // Sleeping a while
+                Thread.Sleep(200);
+            }
         }
 
         internal void RemoveAllSources()

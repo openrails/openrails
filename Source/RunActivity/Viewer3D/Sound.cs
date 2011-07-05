@@ -31,6 +31,7 @@
 #define PLAYENVSOUNDS
 //#define DEBUGSCR
 #define STEREOCAB
+#define DOPPLER
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,6 +50,7 @@ namespace ORTS
     
     public class SoundSource 
     {
+        private const int CUTOFFDISTANCE = 40000;
         /// <summary>
         /// Construct a SoundSource attached to a train car.
         /// </summary>
@@ -233,7 +235,6 @@ namespace ORTS
             if (Car != null)
             {
                 WorldLocation = Car.WorldPosition.WorldLocation;
-                
             }
 
             if (isOutOfDistance())
@@ -298,26 +299,46 @@ namespace ORTS
                 float spz = 0;
 
 #if DOPPLER
-                if (Car != null && Car.Train != null && Viewer.Camera.AttachedCar != null && 
-                    (Viewer.Camera.AttachedCar.Train != Car.Train || Viewer.Camera is TracksideCamera || Viewer.Camera is FreeRoamCamera) )
+                do
                 {
+                    // Stationary or otherwise invalid Car
+                    if (Car == null || Car.Train == null)
+                        break;
+
+                    // For sure we have a Camera
+                    if (Viewer == null || Viewer.Camera == null)
+                        break;
+
+                    // Check for the Train or Car equality
+                    if (Viewer.Camera.AttachedCar != null && Viewer.Camera.AttachedCar.Train != null)
+                    {
+                        // If the same train, no doppler
+                        if (Car.Train == Viewer.Camera.AttachedCar.Train && !(Viewer.Camera is TracksideCamera) && !(Viewer.Camera is FreeRoamCamera))
+                            break;
+                    }
+                    else
+                    {
+                        // If no train but the same Car, no doppler
+                        if (Car == Viewer.Camera.AttachedCar && !(Viewer.Camera is TracksideCamera) && !(Viewer.Camera is FreeRoamCamera))
+                            break;
+                    }
+
                     TDBTraveller tdb = new TDBTraveller(Car.Train.FrontTDBTraveller);
                     float speed = Car.SpeedMpS;
                     if (Car.Flipped)
                         speed *= -1;
-                    Vector3 SpeedRelativePosition = tdb.WorldLocation.Location;
-                    SpeedRelativePosition.X += 2048 * (tdb.WorldLocation.TileX - Viewer.Camera.TileX);
-                    SpeedRelativePosition.Z += 2048 * (tdb.WorldLocation.TileZ - Viewer.Camera.TileZ);
-                    spz = Vector3.DistanceSquared(SpeedRelativePosition, Viewer.Camera.Location);
+
+                    Vector3 tp = -Vector3.Transform(Viewer.Camera.XNALocation(tdb.WorldLocation), Viewer.Camera.XNAView);
 
                     tdb.Move(speed);
-                    Vector3 Speed2RelativePosition = tdb.WorldLocation.Location;
-                    Speed2RelativePosition.X += 2048 * (tdb.WorldLocation.TileX - Viewer.Camera.TileX);
-                    Speed2RelativePosition.Z += 2048 * (tdb.WorldLocation.TileZ - Viewer.Camera.TileZ);
 
-                    spz -= Vector3.DistanceSquared(Speed2RelativePosition, Viewer.Camera.Location);
-                    spz /= 200;
-                }
+                    tp += Vector3.Transform(Viewer.Camera.XNALocation(tdb.WorldLocation), Viewer.Camera.XNAView);
+
+                    spx = tp.X;
+                    spy = tp.Y;
+                    spz = tp.Z;
+
+                } while (false);
 #endif
                 foreach (SoundStream stream in SoundStreams)
                 {
@@ -326,6 +347,7 @@ namespace ORTS
             }
             else
             {
+                // Car is null, no doppler
                 foreach (SoundStream stream in SoundStreams)
                 {
                     stream.Update(0, 0, 0);
@@ -345,7 +367,7 @@ namespace ORTS
                 float.IsNaN(WorldLocation.Location.X) ||
                 float.IsNaN(WorldLocation.Location.X))
             {
-                _distanceSquared = 35000;
+                _distanceSquared = CUTOFFDISTANCE + 1;
                 return true;
             }
             
@@ -354,7 +376,7 @@ namespace ORTS
             if (IsEnvSound)
                 return false;
 
-            return _distanceSquared > 32000;
+            return _distanceSquared > CUTOFFDISTANCE;
         }
 
         /// <summary>
@@ -373,7 +395,7 @@ namespace ORTS
                 {
                     //float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
                     if (_distanceSquared < ActivationConditions.Distance * ActivationConditions.Distance &&
-                        _distanceSquared < 32000)
+                        _distanceSquared < CUTOFFDISTANCE)
                         return true;
                 }
                 else
@@ -399,7 +421,7 @@ namespace ORTS
             {
                 //float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
                 if (_distanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance ||
-                    _distanceSquared > 32000)
+                    _distanceSquared > CUTOFFDISTANCE)
                     return true;
             }
 
