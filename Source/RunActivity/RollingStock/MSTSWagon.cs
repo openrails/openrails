@@ -623,7 +623,7 @@ namespace ORTS
 							   && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)
 					{
 						if (matrixName.StartsWith("DOOR_D") || matrixName.StartsWith("DOOR_E") || matrixName.StartsWith("DOOR_F")) DoorLeftPartIndexes.Add(iMatrix);
-						else if (matrixName.StartsWith("DOOR_A") || matrixName.StartsWith("DOOR_B") || matrixName.StartsWith("DOOR_C")) DoorLeftPartIndexes.Add(iMatrix);
+						else if (matrixName.StartsWith("DOOR_A") || matrixName.StartsWith("DOOR_B") || matrixName.StartsWith("DOOR_C")) DoorRightPartIndexes.Add(iMatrix);
 						else DoorLeftPartIndexes.Add(iMatrix); //some train may not follow the above convention of left/right, put them as left by default
 					}
 				}
@@ -656,22 +656,34 @@ namespace ORTS
 							break;
 					}
 				}
-				else if (matrixName.StartsWith("MIRROR")) // mirrors
-				{
-					if (TrainCarShape.SharedShape.Animations != null
-							   && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
-							   && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)
-					{
-						MirrorPartIndexes.Add(iMatrix); 
-					}
-				}
-				else
-				{
-					if (TrainCarShape.SharedShape.Animations != null
-						&& TrainCarShape.SharedShape.Animations[0].FrameCount > 0
-						&& TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
-						RunningGearPartIndexes.Add(iMatrix);
-				}
+                else if (matrixName.StartsWith("MIRROR")) // mirrors
+                {
+                    if (TrainCarShape.SharedShape.Animations != null
+                               && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
+                               && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)
+                    {
+                        MirrorPartIndexes.Add(iMatrix);
+                    }
+                }
+                else if (matrixName.StartsWith("PANTO"))
+                {
+                    if (TrainCarShape.SharedShape.Animations == null) continue;
+                    if (matrixName.Contains("1"))
+                    {
+                        PantographPartIndexesFront.Add(iMatrix);
+                    }
+                    else if (matrixName.Contains("2"))
+                    {
+                        PantographPartIndexesAft.Add(iMatrix);
+                    }
+                }
+                else
+                {
+                    if (TrainCarShape.SharedShape.Animations != null
+                        && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
+                        && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
+                        RunningGearPartIndexes.Add(iMatrix);
+                }
             }
 
             car.SetupWheels();
