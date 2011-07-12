@@ -105,13 +105,16 @@ namespace ORTS.Popups
                     // </CJ comment>
                     var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
                     var line = scrollbox.AddLayoutHorizontal(TextHeight * 1 / 2);
-                    var width = line.RemainingWidth / 5;
+                    var width = line.RemainingWidth / 6;
                     line = scrollbox.AddLayoutHorizontal(TextHeight);
                     line.Add(new Label(width, line.RemainingHeight, " Task", LabelAlignment.Center));
                     line.Add(new Label(width, line.RemainingHeight, "Car(s)", LabelAlignment.Center));
-                    // Allow double width for "car(s)" to include wagon type.
-                    line.Add(new Label(width * 2, line.RemainingHeight, "Location", LabelAlignment.Center));
-                    line.Add(new Label(width, line.RemainingHeight, "Status", LabelAlignment.Center));
+                    // Add 2 empty strings to bump the width variable along.
+                    line.Add(new Label(width, line.RemainingHeight, ""));
+                    line.Add(new Label(width, line.RemainingHeight, ""));
+                    line.Add(new Label(width, line.RemainingHeight, "Location", LabelAlignment.Center));
+                    // Status will be added once events are being processed
+                    //line.Add(new Label(width, line.RemainingHeight, "Status", LabelAlignment.Center));
                     line = scrollbox.AddLayoutHorizontal(TextHeight * 1);
 
                     foreach (var Event in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.Events) {
@@ -135,7 +138,7 @@ namespace ORTS.Popups
                                     line.Add(new Label(width, line.RemainingHeight, " At Location"));
                                     break;
                                 case MSTS.EventType.MakeAPickup:
-                                    // do nothing
+                                    line.Add(new Label(width, line.RemainingHeight, " Pick Up"));
                                     break;
                                 case MSTS.EventType.PickUpPassengers:
                                     // do nothing
@@ -149,6 +152,7 @@ namespace ORTS.Popups
                             }
                             if (actionEvent.WagonList != null) {    // else passenger-only routes will crash when user selects Work Orders
                                 uint sidingId = 0;
+                                string wagonName = "";
                                 string wagonType = "";
                                 string location = "";
                                 Boolean locationShown = false;
@@ -166,7 +170,8 @@ namespace ORTS.Popups
                                         var playerTrain = owner.Viewer.Simulator.Trains[0];
                                         foreach (var trainWagon in playerTrain.Cars) {
                                             if (workOrderWagon.UID == trainWagon.UiD) {
-                                                line.Add(new Label(width, line.RemainingHeight, trainWagon.CarID));
+                                                //line.Add(new Label(width, line.RemainingHeight, trainWagon.CarID));
+                                                wagonName = trainWagon.CarID;
                                                 // <CJ comment>
                                                 // Extracting the wagon type from the .WagFilePath property as done below is clumsy.
                                                 // The .con file contains the attributes "wagon type" and "wagon type filename" (which are usually identical).
@@ -204,7 +209,8 @@ namespace ORTS.Popups
                                         //
                                         var trainIndex = (System.UInt16)(workOrderWagon.UID >> 16);         // Extract upper 16 bits
                                         var wagonIndex = (System.UInt16)(workOrderWagon.UID & 0x0000FFFF);  // Extract lower 16 bits
-                                        line.Add(new Label(width, line.RemainingHeight, trainIndex.ToString() + " - " + wagonIndex.ToString()));
+                                        //line.Add(new Label(width, line.RemainingHeight, trainIndex.ToString() + " - " + wagonIndex.ToString()));
+                                        wagonName = trainIndex.ToString() + " - " + wagonIndex.ToString();
                                         foreach (MSTS.ActivityObject ActivityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects) {
                                             found = false;
                                             MSTS.Train_Config train_config = ActivityObject.Train_Config;
@@ -222,7 +228,14 @@ namespace ORTS.Popups
                                         }
                                         sidingId = workOrderWagon.SidingItem;
                                     }
-                                    line.Add(new Label(width, line.RemainingHeight, wagonType));
+                                    // Add extra spaces to align single digit and double digit positions along consist
+                                    if (char.IsWhiteSpace(wagonName[wagonName.Length - 2])) {
+                                        wagonName += "  ";
+                                    }
+                                    line.Add(new Label(width, line.RemainingHeight, wagonName + "  " + wagonType));
+                                    // Add 2 empty strings to bump the width variable along.
+                                    line.Add(new Label(width, line.RemainingHeight, ""));
+                                    line.Add(new Label(width, line.RemainingHeight, ""));
                                     
                                     // For "location" field, add siding name
                                     if (locationShown == true) {
