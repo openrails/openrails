@@ -376,17 +376,18 @@ namespace MSTS
         public WagonList(STFReader stf, EventType eventType) {
             stf.MustMatch("(");
             switch (eventType) {
-                case EventType.PickUpWagons: // These Wagon_Lists lack a Description attribute.
+                case EventType.PickUpWagons: // "Pick Up" Wagon_Lists lack a Description attribute.
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("uid", ()=>{ UID = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
                         new STFReader.TokenProcessor("sidingitem", ()=>{ SidingItem = stf.ReadUIntBlock(STFReader.UNITS.None, null);  Wagons.Add(new WorkOrderWagon(UID, SidingItem, ""));}),
                     });
                     break;
-                default:
+                default:  // "Drop Off" Wagon_Lists sometimes lack a Description attribute, so create the wagon _before_ description
+                          // is parsed. Bad practice. However, not very dangerous as each Description usually contains the same data.
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("uid", ()=>{ UID = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
-                        new STFReader.TokenProcessor("sidingitem", ()=>{ SidingItem = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
-                        new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(""); Wagons.Add(new WorkOrderWagon(UID, SidingItem, Description)); }),
+                        new STFReader.TokenProcessor("sidingitem", ()=>{ SidingItem = stf.ReadUIntBlock(STFReader.UNITS.None, null); Wagons.Add(new WorkOrderWagon(UID, SidingItem, Description));}),
+                        new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(""); }),
                     }); 
                     break;
             }

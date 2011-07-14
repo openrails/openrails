@@ -152,17 +152,18 @@ namespace ORTS.Popups
                             }
                             if (actionEvent.WagonList != null) {    // else passenger-only routes will crash when user selects Work Orders
                                 uint sidingId = 0;
-                                string wagonName = "";
-                                string wagonType = "";
                                 string location = "";
                                 Boolean locationShown = false;
                                 foreach (var wagonItem in actionEvent.WagonList.Wagons) {
                                     var workOrderWagon = wagonItem as MSTS.WorkOrderWagon;
+                                    string wagonName = "";
+                                    string wagonType = ""; 
                                     Boolean found = false;
+                                    Boolean foundInPlayerTrain = false;
 
-                                    // For "Car(s)" field, find wagon name and siding id
+                                    // For "Car(s)" field, find wagon name, type and siding id
                                     // Different way to find these for "drop off" and "pick up"
-                                    // "Drop off" wagons and sidings
+                                    // "Drop off" wagons can usually, but not always, be found in the player's train.
                                     if (actionEvent.EventType == MSTS.EventType.DropOffWagonsAtLocation
                                         || actionEvent.EventType == MSTS.EventType.AssembleTrain
                                         || actionEvent.EventType == MSTS.EventType.AssembleTrainAtLocation) {
@@ -170,7 +171,7 @@ namespace ORTS.Popups
                                         var playerTrain = owner.Viewer.Simulator.Trains[0];
                                         foreach (var trainWagon in playerTrain.Cars) {
                                             if (workOrderWagon.UID == trainWagon.UiD) {
-                                                //line.Add(new Label(width, line.RemainingHeight, trainWagon.CarID));
+                                                foundInPlayerTrain = true;
                                                 wagonName = trainWagon.CarID;
                                                 // <CJ comment>
                                                 // Extracting the wagon type from the .WagFilePath property as done below is clumsy.
@@ -191,7 +192,8 @@ namespace ORTS.Popups
                                                 break;
                                             }
                                         }
-                                    } else { // For "pick up", the values are held elsewhere.
+                                    }
+                                    if (foundInPlayerTrain == false) { // Sometimes, the data can be found in the *.act file.
                                         //
                                         // ROUTES\<route folder>\ACTIVITIES\<activity file> contains:
                                         //   Tr_Activity ( 
@@ -209,7 +211,6 @@ namespace ORTS.Popups
                                         //
                                         var trainIndex = (System.UInt16)(workOrderWagon.UID >> 16);         // Extract upper 16 bits
                                         var wagonIndex = (System.UInt16)(workOrderWagon.UID & 0x0000FFFF);  // Extract lower 16 bits
-                                        //line.Add(new Label(width, line.RemainingHeight, trainIndex.ToString() + " - " + wagonIndex.ToString()));
                                         wagonName = trainIndex.ToString() + " - " + wagonIndex.ToString();
                                         foreach (MSTS.ActivityObject ActivityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects) {
                                             found = false;
@@ -229,8 +230,10 @@ namespace ORTS.Popups
                                         sidingId = workOrderWagon.SidingItem;
                                     }
                                     // Add extra spaces to align single digit and double digit positions along consist
-                                    if (char.IsWhiteSpace(wagonName[wagonName.Length - 2])) {
-                                        wagonName += "  ";
+                                    if (wagonName.Length > 2) {
+                                        if (char.IsWhiteSpace(wagonName[wagonName.Length - 2])) {
+                                            wagonName += "  ";
+                                        }
                                     }
                                     line.Add(new Label(width, line.RemainingHeight, wagonName + "  " + wagonType));
                                     // Add 2 empty strings to bump the width variable along.
