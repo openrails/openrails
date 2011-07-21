@@ -533,7 +533,7 @@ namespace ORTS
         {
             if (refCount == 0)
             {
-                OpenAL.AlInitialize(null);
+                Trace.WriteLine("OpenAL using device " + OpenAL.AlInitialize("DirectSound"));
             }
 
             refCount++;
