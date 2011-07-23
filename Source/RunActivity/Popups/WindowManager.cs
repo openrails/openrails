@@ -44,7 +44,7 @@ namespace ORTS.Popups
 
         readonly Material WindowManagerMaterial = new BasicBlendedMaterial("WindowManager");
         readonly List<Window> Windows = new List<Window>();
-        List<Window> WindowsZOrder = new List<Window>();
+        Window[] WindowsZOrder = new Window[0];
         SpriteBatch SpriteBatch;
         Matrix Identity = Matrix.Identity;
         Matrix XNAView = Matrix.Identity;
@@ -122,12 +122,14 @@ namespace ORTS.Popups
             }
         }
 
+        [CallOnThread("Updater")]
         public void Save(BinaryWriter outf)
         {
             foreach (var window in Windows)
                 window.Save(outf);
         }
 
+        [CallOnThread("Updater")]
         public void Restore(BinaryReader inf)
         {
             foreach (var window in Windows)
@@ -178,7 +180,7 @@ namespace ORTS.Popups
 		public override void Draw(GraphicsDevice graphicsDevice)
 		{
 			// Nothing visible? Nothing more to do!
-			if (Windows.All(w => !w.Visible))
+			if (!VisibleWindows.Any())
 				return;
 
 			// Construct a view where (0, 0) is the top-left and (width, height) is
@@ -216,7 +218,7 @@ namespace ORTS.Popups
 		internal void Add(Window window)
 		{
 			Windows.Add(window);
-            WindowsZOrder.Add(window);
+            WindowsZOrder = Windows.Concat(new[] { window }).ToArray();
         }
 
 		public bool HasVisiblePopupWindows()
@@ -250,8 +252,7 @@ namespace ORTS.Popups
                 mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
                 if ((mouseActiveWindow != null) && (mouseActiveWindow != WindowsZOrder.Last()))
 				{
-                    WindowsZOrder.Remove(mouseActiveWindow);
-                    WindowsZOrder.Add(mouseActiveWindow);
+                    WindowsZOrder = WindowsZOrder.Where(w => w != mouseActiveWindow).Concat(new[] { mouseActiveWindow }).ToArray();
                     UpdateTopMost();
                     WriteWindowZOrder();
 				}
@@ -281,7 +282,7 @@ namespace ORTS.Popups
         void UpdateTopMost()
         {
             // Make sure all top-most windows sit above all normal windows.
-            WindowsZOrder = WindowsZOrder.Where(w => !w.TopMost).Concat(WindowsZOrder.Where(w => w.TopMost)).ToList();
+            WindowsZOrder = WindowsZOrder.Where(w => !w.TopMost).Concat(WindowsZOrder.Where(w => w.TopMost)).ToArray();
         }
 
         [Conditional("DEBUG_WINDOW_ZORDER")]
