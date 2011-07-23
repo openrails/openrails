@@ -305,7 +305,13 @@ namespace MSTS
                     if (aspects.Count >= aspects.Capacity)
                         STFException.TraceWarning(stf, "Skipped extra SignalAspect");
                     else
-                        aspects.Add(new SignalAspect(stf));
+                    {
+                        var aspect = new SignalAspect(stf);
+                        if (aspects.Any(sa => sa.Aspect == aspect.Aspect))
+                            STFException.TraceWarning(stf, "Skipped SignalAspect with duplicate aspect " + aspect.Aspect);
+                        else
+                            aspects.Add(aspect);
+                    }
                 }),
             });
             return aspects;
