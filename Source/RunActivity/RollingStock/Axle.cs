@@ -585,12 +585,14 @@ namespace ORTS
                     totalInertiaKgm2 = inertiaKgm2;
                     break;
             }
+            if (timeSpan > 0.0f)
+            {
+                slipDerivationMpSS = (SlipSpeedMpS - previousSlipSpeedMpS) / timeSpan;
+                previousSlipSpeedMpS = SlipSpeedMpS;
 
-            slipDerivationMpSS = (SlipSpeedMpS - previousSlipSpeedMpS)/ timeSpan;
-            previousSlipSpeedMpS = SlipSpeedMpS;
-
-            slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / timeSpan;
-            previousSlipPercent = SlipSpeedPercent;
+                slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / timeSpan;
+                previousSlipPercent = SlipSpeedPercent;
+            }
             
         }
 
@@ -603,6 +605,19 @@ namespace ORTS
             if (motor != null)
                 motor.Reset();
 
+        }
+
+        /// <summary>
+        /// Resets all integral values to given initial condition
+        /// </summary>
+        /// <param name="initValue">Initial condition</param>
+        public void Reset(float initValue)
+        {
+            axleRevolutionsInt.InitialCondition = initValue;
+            axleRevolutionsInt.Reset();
+            axleRevolutionsInt.InitialCondition = 0.0f;
+            if (motor != null)
+                motor.Reset();
         }
 
         /// <summary>

@@ -338,6 +338,17 @@ namespace ORTS
                 y[i] = 0.0;
             }
         }
+        /// <summary>
+        /// Resets all buffers of the filter with given initial value
+        /// </summary>
+        /// <param name="initValue">Initial value</param>
+        public void Reset(float initValue)
+        {
+            for (float t = 0; t < (10.0f*cuttoffFreqRadpS); t += 0.1f)
+            {
+                Filter(initValue, 0.1f);
+            }
+        }
 
         /// <summary>
         /// First-Order IIR Filter — Calculation by Freescale Semiconductor, Inc.

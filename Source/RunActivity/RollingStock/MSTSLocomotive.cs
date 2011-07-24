@@ -334,6 +334,7 @@ namespace ORTS
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorOn);
             outf.Write(AverageForceN);
+            outf.Write(LocomotiveAxle.AxleSpeedMpS);
             ControllerFactory.Save(ThrottleController, outf);
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
@@ -353,10 +354,13 @@ namespace ORTS
             MainResPressurePSI = inf.ReadSingle();
             CompressorOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
+            LocomotiveAxle.Reset(inf.ReadSingle());
             ThrottleController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             TrainBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
             EngineBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
             DynamicBrakeController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
+            AdhesionFilter.Reset(0.5f);
+            
             base.Restore(inf);
         }
 
@@ -507,6 +511,7 @@ namespace ORTS
                     //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0, elapsedClockSeconds);
                 //Filtered random condition
                 LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2*Program.Random.NextDouble()),elapsedClockSeconds);
+                //LocomotiveAxle.AdhesionConditions = max0;
                 //Set axle inertia (this should be placed within the ENG parser)
                 // but make sure the value is sufficietn
                 if (MaxPowerW < 2000000.0f)
