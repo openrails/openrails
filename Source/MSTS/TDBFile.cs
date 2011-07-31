@@ -36,19 +36,15 @@ namespace MSTS
         /// <param name="tileZ"></param>
         /// <param name="UiD"></param>
         /// <returns></returns>
-        public TrJunctionNode GetTrJunctionNode(int tileX, int tileZ, int UiD )
+        public TrJunctionNode GetTrJunctionNode(int tileX, int tileZ, int UiD)
         {
-            foreach( TrackNode tn in TrackDB.TrackNodes )
+            foreach (TrackNode tn in TrackDB.TrackNodes)
                 if (tn != null && tn.TrJunctionNode != null)
-                {
-                    if ( tileX == tn.UiD.WorldTileX
-                        && tileZ == tn.UiD.WorldTileZ
-                        && UiD == tn.UiD.WorldID )
+                    if (tileX == tn.UiD.WorldTileX && tileZ == tn.UiD.WorldTileZ && UiD == tn.UiD.WorldID)
                         return tn.TrJunctionNode;
-                }
-            //throw new InvalidDataException("TDB Error, could not find junction.");
-            throw new InvalidDataException("TDB Error, could not find junction. (tileX = " + tileX.ToString() +
-                ", tileZ = " + tileZ.ToString() + ", UiD = " + UiD.ToString() + ")");
+
+            Trace.TraceWarning("Track node in tile {0},{1} with UiD {2} could not be found in TDB.", tileX, tileZ, UiD);
+            return null;
         }
 
         public TrackDB TrackDB;  // Warning, the first TDB entry is always null

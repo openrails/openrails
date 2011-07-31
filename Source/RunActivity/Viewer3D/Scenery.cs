@@ -255,32 +255,21 @@ namespace ORTS
 
                 if (worldObject.GetType() == typeof(MSTS.TrackObj))
                 {
-                    TrackObj trackObj = (TrackObj)worldObject;
-                    if (trackObj.JNodePosn != null)
-                    {
-                        // switch tracks need a link to the simulator engine so they can animate the points
-                        TrJunctionNode TRJ = viewer.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, (int)trackObj.UID);
-                        SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, TRJ));
-						if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
-						{
-							Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
-						}
-                    }
-                    else // it's some type of track other than a switch track
-                    {
+                    var trackObj = (TrackObj)worldObject;
+                    // Switch tracks need a link to the simulator engine so they can animate the points.
+                    var trJunctionNode = trackObj.JNodePosn != null ? viewer.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, (int)trackObj.UID) : null;
+                    // We might not have found the junction node; if so, fall back to the static track shape.
+                    if (trJunctionNode != null)
+                        SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
+                    else
                         SceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
-						if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
-						{
-							Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
-						}
-                    }
+                    if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                        Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
                 }
                 else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
                 {
-					if (Program.Simulator.Settings.Wire == true && Program.Simulator.TRK.Tr_RouteFile.Electrified == true)
-					{
+					if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
 						Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
-					}
 					// Add DyntrackDrawers for individual subsections
                     Dynatrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
