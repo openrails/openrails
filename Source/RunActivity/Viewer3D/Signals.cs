@@ -56,6 +56,12 @@ namespace ORTS
 				if (mstsSignalSubObj.Optional && !mstsSignalSubObj.Default && SharedShape.MatrixNames.Contains(mstsSignalSubObj.MatrixName))
 					XNAMatrices[SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName)].M42 += 10000;
 
+            if (mstsSignal.SignalUnits == null)
+            {
+                Trace.TraceError("{0} signal {1} has no SignalUnits.", Location.ToString(), mstsSignal.UID);
+                return;
+            }
+
 			for (var i = 0; i < mstsSignal.SignalUnits.Units.Length; i++)
 			{
 #if DEBUG_SIGNAL_SHAPES
