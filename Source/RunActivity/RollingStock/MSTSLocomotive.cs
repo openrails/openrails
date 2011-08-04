@@ -990,7 +990,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.THROTTLE:
                 case CABViewControlTypes.THROTTLE_DISPLAY:
-                    //case CABViewControlTypes.CPH_DISPLAY:
+                case CABViewControlTypes.CPH_DISPLAY:
                     {
                         data = ThrottlePercent / 100f;
                         break;
@@ -2167,6 +2167,40 @@ namespace ORTS
                         indx = FromPercent(data);
                         break;
                     }
+
+
+                case CABViewControlTypes.CPH_DISPLAY:
+                    {
+                        // For the combined control two data items are needed ; dynamic brake
+                        // and throttle ; throttle is implied when arriving at the case statement
+                        float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
+
+                        if (dynBrakePercent != -1)   // Throttle = 0 and dynamic brake activited
+                        {
+                            indx = (int)dynBrakePercent / 10;
+                            indx = 9 + indx;
+                            break;
+                        }
+
+                        // throttle processing
+                        indx = FromPercent(data);
+                        indx = indx / 2;
+
+                        if (data >= 0.0 && data < 1.0)
+                        {
+                            //indx = FromPercent(data);
+                            //indx = indx / 2;
+                            indx = 8 - indx;
+                        }
+                        else if (data == 1.0)
+                        {
+                            //indx = FromPercent(data);
+                            //indx = indx / 2;
+                            indx = 8 - indx;
+                        }
+                        break; // case
+                    }
+
                 case CABViewControlTypes.WIPERS:
                 case CABViewControlTypes.HORN:
                 case CABViewControlTypes.BELL:
