@@ -1007,6 +1007,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
+                case CABViewControlTypes.CP_HANDLE:
                     {
                         data = DynamicBrakePercent;
                         break;
@@ -2168,7 +2169,7 @@ namespace ORTS
                         break;
                     }
 
-
+                //TODO control logic still needs to be combinded
                 case CABViewControlTypes.CPH_DISPLAY:
                     {
                         // For the combined control two data items are needed ; dynamic brake
@@ -2188,17 +2189,30 @@ namespace ORTS
 
                         if (data >= 0.0 && data < 1.0)
                         {
-                            //indx = FromPercent(data);
-                            //indx = indx / 2;
                             indx = 8 - indx;
                         }
                         else if (data == 1.0)
                         {
-                            //indx = FromPercent(data);
-                            //indx = indx / 2;
                             indx = 8 - indx;
                         }
-                        break; // case
+                        break; 
+                    }
+
+                case CABViewControlTypes.CP_HANDLE:
+                    {
+                        float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
+
+                        if (dynBrakePercent != -1)   // Throttle = 0 and dynamic brake activited
+                        {
+                            indx = (int)dynBrakePercent / 10;
+                            indx = 9 + indx;
+                            break;
+                        }
+
+                        float dashThrottlePercent = (float)_Locomotive.Train.MUThrottlePercent;
+                        indx = (int)dashThrottlePercent / 10;
+                        indx = 8 - indx;
+                        break;
                     }
 
                 case CABViewControlTypes.WIPERS:
