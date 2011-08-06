@@ -67,33 +67,35 @@ namespace ORTS
             {
                 // Wait for a new Update() command
                 State.WaitTillStarted();
-
-                if (Debugger.IsAttached)
+                try
                 {
-                    Update();
-                }
-                else
-                {
-                    try
+                    if (Debugger.IsAttached)
                     {
                         Update();
                     }
-                    catch (Exception error)
+                    else
                     {
-                        if (!(error is ThreadAbortException))
+                        try
                         {
-                            // Unblock anyone waiting for us, report error and die.
-                            State.SignalFinish();
-                            Viewer.ProcessReportError(error);
-                            // Finally unblock any process that may have started us, while the message was showing
-                            State.SignalFinish();
-                            return;
+                            Update();
+                        }
+                        catch (Exception error)
+                        {
+                            if (!(error is ThreadAbortException))
+                            {
+                                // Unblock anyone waiting for us, report error and die.
+                                State.SignalFinish();
+                                Viewer.ProcessReportError(error);
+                                return;
+                            }
                         }
                     }
                 }
-
-                // Signal finished so RenderProcess can start drawing
-                State.SignalFinish();
+                finally
+                {
+                    // Signal finished so RenderProcess can start drawing
+                    State.SignalFinish();
+                }
             }
         }
 
