@@ -37,7 +37,7 @@ namespace ORTS
             Simulator = simulator;
             //Console.WriteLine("AI {0} {1} {2} {3}", ClockTime, st.Hour, st.Minute, st.Second);
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
-                foreach (Service_Definition sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition)
+                foreach (var sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
                 {
                     AITrain train = CreateAITrain(sd);
                     if (train == null)
@@ -165,7 +165,7 @@ namespace ORTS
             // first extract the service definition from the activity file
             // this gives the consist and path
             // TODO combine this with similar player train code
-            SRVFile srvFile = new SRVFile(Simulator.RoutePath + @"\SERVICES\" + sd.Service + ".SRV");
+            SRVFile srvFile = new SRVFile(Simulator.RoutePath + @"\SERVICES\" + sd.Name + ".SRV");
             string consistFileName = srvFile.Train_Config;
             CONFile conFile = new CONFile(Simulator.BasePath + @"\TRAINS\CONSISTS\" + consistFileName + ".CON");
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
@@ -202,7 +202,7 @@ namespace ORTS
 
             // add wagons
             TrainCar previousCar = null;
-            foreach (Wagon wagon in conFile.Train.TrainCfg.Wagons)
+            foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
 
                 string wagonFolder = Simulator.BasePath + @"\trains\trainset\" + wagon.Folder;

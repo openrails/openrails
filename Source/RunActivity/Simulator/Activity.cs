@@ -66,33 +66,19 @@ namespace ORTS
         {
             Player_Service_Definition sd;
             sd = actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition;
-            if (sd != null)
-            {
-                if (sd.Player_Traffic_Definition.ArrivalTime.Count != sd.Player_Traffic_Definition.DepartTime.Count ||
-                    sd.Player_Traffic_Definition.DepartTime.Count != sd.Player_Traffic_Definition.DistanceDownPath.Count ||
-                    sd.Player_Traffic_Definition.DistanceDownPath.Count != sd.Player_Traffic_Definition.PlatformStartID.Count)
-                {
-					throw new InvalidDataException("Invalid Player Traffice Definition in ACT file!");
-                }
-
-                if (sd.Player_Traffic_Definition.ArrivalTime.Count > 0)
-                {
-                    PlatformItem Platform;
+            if (sd != null) {
+                if (sd.Player_Traffic_Definition.Player_Traffic_List.Count > 0) {
+                    PlatformItem Platform = null;
                     ActivityTask task = null;
-                    for (int i = 0; i < sd.Player_Traffic_Definition.ArrivalTime.Count; i++)
-                    {
-                        Platform = Program.Simulator.TDB.TrackDB.TrItemTable[sd.Player_Traffic_Definition.PlatformStartID[i]] as PlatformItem;
-
-                        if (Platform != null)
-                        {
+                    foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List) {
+                        Platform = Program.Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem;
+                        if (Platform != null) {
                             Tasks.Add(new ActivityTaskPassengerStopAt(task,
-                                sd.Player_Traffic_Definition.ArrivalTime[i],
-                                sd.Player_Traffic_Definition.DepartTime[i],
+                                i.ArrivalTime,
+                                i.DepartTime,
                                 Platform, Program.Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem));
-                            task = Tasks[i];
                         }
                     }
-
                     Current = Tasks[0];
                 }
             }

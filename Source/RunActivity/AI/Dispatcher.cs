@@ -74,8 +74,10 @@ namespace ORTS
             TrackAuthorities.Add(auth);
             RequestAuth(auth, true, true);
             Player_Service_Definition psd = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition;
-            if (psd.DistanceDownPath.Count > 0)
-                auth.StationDistanceM = psd.DistanceDownPath;
+            auth.StationDistanceM = new List<float>();
+            foreach (var i in psd.Player_Traffic_Definition.Player_Traffic_List) {
+                auth.StationDistanceM.Add(i.DistanceDownPath);
+            }
 #if false
             if (AI.Simulator.TDB.TrackDB.TrItemTable != null)
             foreach (TrItem item in AI.Simulator.TDB.TrackDB.TrItemTable)

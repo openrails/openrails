@@ -241,8 +241,10 @@ namespace ORTS
         protected override void Draw(GameTime gameTime)
         {
             if (Viewer.Settings.Profiling)
-                if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount)
+                if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount) {
                     Viewer.Stop();
+                    Application.Exit();  // CJ Because my system hangs otherwise when testing using /ProfilingFrameCount=0 and I have to kill the process.
+                }
 
             Profiler.Start();
 

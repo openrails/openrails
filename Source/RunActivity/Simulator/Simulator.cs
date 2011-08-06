@@ -140,8 +140,9 @@ namespace ORTS
 		{
 			Activity = new ACTFile(activityPath);
 			ActivityRun = new Activity(Activity);
-			if (ActivityRun.Current == null)
-				ActivityRun = null;
+            // CJ
+            //if (ActivityRun.Current == null)
+            //    ActivityRun = null;
 
 			StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
 			TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
@@ -660,7 +661,7 @@ namespace ORTS
 
 			// add wagons
 			TrainCar previousCar = null;
-			foreach (Wagon wagon in conFile.Train.TrainCfg.Wagons)
+			foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
 			{
 
 				string wagonFolder = BasePath + @"\trains\trainset\" + wagon.Folder;
@@ -701,10 +702,13 @@ namespace ORTS
 		/// </summary>
 		private void InitializeStaticConsists()
 		{
-			if (Activity == null)
-				return;
-			// for each static consist
-			foreach (ActivityObject activityObject in Activity.Tr_Activity.Tr_Activity_File.ActivityObjects)
+			if (Activity == null) return;
+            if (Activity.Tr_Activity == null) return;
+            if (Activity.Tr_Activity.Tr_Activity_File == null) return;
+            if (Activity.Tr_Activity.Tr_Activity_File.ActivityObjects == null) return;
+            if (Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList == null) return;
+            // for each static consist
+			foreach (ActivityObject activityObject in Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList)
 			{
 				try
 				{
@@ -725,9 +729,9 @@ namespace ORTS
 					// static consists are listed back to front in the activities, so we have to reverse the order, and flip the cars
 					// when we add them to ORTS
 					TrainCar previousCar = null;
-					for (int iWagon = activityObject.Train_Config.TrainCfg.Wagons.Count - 1; iWagon >= 0; --iWagon)
+					for (int iWagon = activityObject.Train_Config.TrainCfg.WagonList.Count - 1; iWagon >= 0; --iWagon)
 					{
-						Wagon wagon = (Wagon)activityObject.Train_Config.TrainCfg.Wagons[iWagon];
+						Wagon wagon = (Wagon)activityObject.Train_Config.TrainCfg.WagonList[iWagon];
 						string wagonFolder = BasePath + @"\trains\trainset\" + wagon.Folder;
 						string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
 						if (wagon.IsEngine)

@@ -295,7 +295,7 @@ namespace MSTS
             else
             {
                 string s = ReadItem();
-                if (s != target)
+                if (!s.Equals(target, StringComparison.OrdinalIgnoreCase))
                     throw new STFException(this, target + " Not Found - instead found " + s);
             }
         }
