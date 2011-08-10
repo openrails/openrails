@@ -238,7 +238,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.ControlReverserForward))
             {
 #if DEBUG_NEUTRAL
-                //StartReverseIncrease();
+                StartReverseIncrease();
 #else
                 if (MSTSLocomotive.Direction != Direction.Forward && MSTSLocomotive.ThrottlePercent < 1)
                     MSTSLocomotive.SetDirection(Direction.Forward);
@@ -251,7 +251,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.ControlReverserBackwards))
             {
 #if DEBUG_NEUTRAL
-               //StartReverseDecrease();
+               StartReverseDecrease();
 #else
                 if (MSTSLocomotive.Direction != Direction.Reverse && MSTSLocomotive.ThrottlePercent < 1)
                     MSTSLocomotive.SetDirection(Direction.Reverse);

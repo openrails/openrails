@@ -26,6 +26,8 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
+//#define DEBUG_NEUTRAL
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -434,7 +436,23 @@ namespace ORTS
                     w = 0;
                 AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
             }
+#if !DEBUG_NEUTRAL
             MotiveForceN *= (Direction == Direction.Forward ? 1 : -1);
+#else
+            switch (Direction)
+            {
+                case Direction.Forward:
+                    //MotiveForceN *= 1;     //Not necessary
+                    break;
+                case Direction.Reverse:
+                    MotiveForceN *= -1;
+                    break;
+                case Direction.N:
+                default:
+                    MotiveForceN *= 0;
+                    break;
+            }
+#endif
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
