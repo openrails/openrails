@@ -9,6 +9,7 @@
  *  LocomotiveViewer - provides basic animation for running gear, wipers, etc
  * 
  */
+//#define DEBUG_NEUTRAL
 /// COPYRIGHT 2009 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
@@ -106,6 +107,7 @@ namespace ORTS
         /// and FrictionForceN values based on throttle settings
         /// etc for the locomotive.
         /// </summary>
+
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
@@ -166,13 +168,47 @@ namespace ORTS
     /// </summary>
     public class MSTSElectricLocomotiveViewer : MSTSLocomotiveViewer
     {
+
         MSTSElectricLocomotive ElectricLocomotive;
 
         public MSTSElectricLocomotiveViewer(Viewer3D viewer, MSTSElectricLocomotive car)
             : base(viewer, car)
         {
             ElectricLocomotive = car;
+
         }
+
+#if DEBUG_NEUTRAL
+        public void StartReverserIncrease()
+        {
+            switch ((ElectricLocomotive.Direction))
+            {
+// #if DEBUG_NEUTRAL
+                  case Direction.Reverse: ElectricLocomotive.SetDirection(Direction.N); break;
+                  case Direction.N: ElectricLocomotive.SetDirection(Direction.Forward); break;
+                  case Direction.Forward: ElectricLocomotive.SetDirection(Direction.Forward); break;
+//#else
+//                // Uncomment this for simple controls
+//               case Direction.Reverse: ElectricLocomotive.SetDirection(Direction.Forward); break;
+//#endif
+            }
+        }
+
+        public void StartReverserDecrease()
+        {
+            switch ((ElectricLocomotive.Direction))
+            {
+//#if DEBUG_NEUTRAL
+                 case Direction.Reverse: ElectricLocomotive.SetDirection(Direction.Reverse); break;
+                 case Direction.N: ElectricLocomotive.SetDirection(Direction.Reverse); break;
+                 case Direction.Forward: ElectricLocomotive.SetDirection(Direction.N); break;
+//#else
+                // Uncomment this for simple controls
+//                case Direction.Forward: ElectricLocomotive.SetDirection(Direction.Reverse); break;
+//#endif
+            }
+        }
+#endif
 
         /// <summary>
         /// A keyboard or mouse click has occured. Read the UserInput
@@ -180,9 +216,50 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
+            // for example
+            // if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
 
-            base.HandleUserInput( elapsedTime);
+            if (UserInput.IsPressed(UserCommands.ControlReverserForward))
+            {
+#if DEBUG_NEUTRAL
+                StartReverserIncrease();
+#else
+                if (MSTSLocomotive.Direction != Direction.Forward && MSTSLocomotive.ThrottlePercent < 1)
+                    MSTSLocomotive.SetDirection(Direction.Forward);
+                else
+                    // Sound buzzer control error
+                    if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
+#endif
+            }
+
+            if (UserInput.IsPressed(UserCommands.ControlReverserBackwards))
+            {
+#if DEBUG_NEUTRAL
+                StartReverserDecrease();
+#else
+                if (MSTSLocomotive.Direction != Direction.Reverse && MSTSLocomotive.ThrottlePercent < 1)
+                    MSTSLocomotive.SetDirection(Direction.Reverse);
+                else
+                    // Sound buzzer control error
+                    if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
+#endif
+            }
+
+
+            base.HandleUserInput(elapsedTime);
         }
+
+
+
+        ///// <summary>
+        ///// A keyboard or mouse click has occured. Read the UserInput
+        ///// structure to determine what was pressed.
+        ///// </summary>
+        //public override void HandleUserInput(ElapsedTime elapsedTime)
+        //{
+
+        //    base.HandleUserInput( elapsedTime);
+        //}
 
 
         /// <summary>

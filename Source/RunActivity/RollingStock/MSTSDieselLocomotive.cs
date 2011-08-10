@@ -15,6 +15,8 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
+//#define DEBUG_NEUTRAL
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -197,6 +199,33 @@ namespace ORTS
             }
         }
 
+#if DEBUG_NEUTRAL
+
+        public void StartReverseIncrease()
+        {
+            switch ((DieselLocomotive.Direction))
+            {
+                case Direction.Reverse: DieselLocomotive.SetDirection(Direction.N); break;
+                case Direction.N: DieselLocomotive.SetDirection(Direction.Forward); break;
+                case Direction.Forward: DieselLocomotive.SetDirection(Direction.Forward); break;
+            }
+        }
+
+
+
+
+        public void StartReverseDecrease()
+        {
+            switch ((DieselLocomotive.Direction))
+            {
+                case Direction.Reverse: DieselLocomotive.SetDirection(Direction.Reverse); break;
+                case Direction.N: DieselLocomotive.SetDirection(Direction.Reverse); break;
+                case Direction.Forward: DieselLocomotive.SetDirection(Direction.N); break;
+            }
+        }
+
+#endif 
+
         /// <summary>
         /// A keyboard or mouse click has occured. Read the UserInput
         /// structure to determine what was pressed.
@@ -206,8 +235,34 @@ namespace ORTS
             // for example
             // if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
 
+            if (UserInput.IsPressed(UserCommands.ControlReverserForward))
+            {
+#if DEBUG_NEUTRAL
+                //StartReverseIncrease();
+#else
+                if (MSTSLocomotive.Direction != Direction.Forward && MSTSLocomotive.ThrottlePercent < 1)
+                    MSTSLocomotive.SetDirection(Direction.Forward);
+                else
+                    // Sound buzzer control error
+                    if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
+#endif
+            }
+
+            if (UserInput.IsPressed(UserCommands.ControlReverserBackwards))
+            {
+#if DEBUG_NEUTRAL
+               //StartReverseDecrease();
+#else
+                if (MSTSLocomotive.Direction != Direction.Reverse && MSTSLocomotive.ThrottlePercent < 1)
+                    MSTSLocomotive.SetDirection(Direction.Reverse);
+                else
+                    // Sound buzzer control error
+                    if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
+#endif
+            }
+
             base.HandleUserInput(elapsedTime);
-        }
+        } // HandlerUserInput
 
         /// <summary>
         /// We are about to display a video frame.  Calculate positions for 

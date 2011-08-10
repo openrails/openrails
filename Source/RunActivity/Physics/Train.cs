@@ -14,13 +14,14 @@
  *      
  *  Individual TrainCars provide information on friction and motive force they are generating.
  *  This is consolidated by the train class into overall movement for the train.
- * 
+ */
+
 /// COPYRIGHT 2010 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
- */
 
+//#define DEBUG_NEUTRAL 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -55,7 +56,11 @@ namespace ORTS
 		public float SlipperySpotLengthM = 0;
 
 		// These signals pass through to all cars and locomotives on the train
+#if DEBUG_NEUTRAL
+            public Direction MUDirection = Direction.N; //set by player locomotive to control MU'd locomotives
+#else
 		public Direction MUDirection = Direction.Forward; //set by player locomotive to control MU'd locomotives
+#endif
 		public float MUThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives
 		public float MUReverserPercent = 100;  // steam engine direction/cutoff control for MU'd locomotives
 		public float MUDynamicBrakePercent = -1;  // dynamic brake control for MU'd locomotives, <0 for off

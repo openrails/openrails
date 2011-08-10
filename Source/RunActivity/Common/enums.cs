@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ORTS
 {
-    public enum Direction { Forward, Reverse }
+    public enum Direction { Forward, Reverse, N }
 
     public class DirectionControl
     {
