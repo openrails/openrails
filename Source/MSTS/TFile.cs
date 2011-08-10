@@ -330,10 +330,11 @@ namespace MSTS
         public bool ContainsWater { 
             get 
             {
-                foreach (terrain_patchset patchset in terrain.terrain_patchsets)
-                    foreach (terrain_patchset_patch patch in patchset.terrain_patchset_patches)
-                        if (patch.WaterEnabled)
-                            return true;
+                if (terrain.terrain_water_height_offset != null)
+                    foreach (terrain_patchset patchset in terrain.terrain_patchsets)
+                        foreach (terrain_patchset_patch patch in patchset.terrain_patchset_patches)
+                            if (patch.WaterEnabled)
+                                return true;
                 return false;
             }
         }
