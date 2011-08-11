@@ -282,7 +282,7 @@ namespace ORTS
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(numwheels": NumWheels = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
+                case "engine(numwheels": NumWheels = stf.ReadFloatBlock(STFReader.UNITS.Any, null); if (NumWheels < 1) STFException.TraceWarning(stf, "NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero) }); break;
