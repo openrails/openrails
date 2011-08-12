@@ -21,7 +21,7 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-//#define DEBUG_NEUTRAL
+#define DEBUG_NEUTRAL
  
 using System;
 using System.Collections.Generic;

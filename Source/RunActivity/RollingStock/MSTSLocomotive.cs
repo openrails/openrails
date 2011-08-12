@@ -26,7 +26,7 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-//#define DEBUG_NEUTRAL
+#define DEBUG_NEUTRAL
 
 using System;
 using System.Collections.Generic;
@@ -437,20 +437,62 @@ namespace ORTS
                 AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
             }
 #if !DEBUG_NEUTRAL
+//WJC MJ
             MotiveForceN *= (Direction == Direction.Forward ? 1 : -1);
 #else
-            switch (Direction)
+            if (this.IsLeadLocomotive())
             {
-                case Direction.Forward:
-                    //MotiveForceN *= 1;     //Not necessary
+                switch (Direction)
+                {
+                    case Direction.Forward:
+                        //MotiveForceN *= 1;     //Not necessary
+                        break;
+                    case Direction.Reverse:
+                        MotiveForceN *= -1;
+                        break;
+                    case Direction.N:
+                    default:
+                        MotiveForceN *= 0;
+                        break;
+                }
+            }
+            else
+            {
+                int carCount = 0;
+                int controlEngine = -1;
+
+                // When not LeadLocomotive; check if lead is in Neutral
+                // if so this loco will have no motive force
+                var LeadLocomotive = Simulator.Trains[0];
+
+                foreach (TrainCar car in LeadLocomotive.Cars)
+                {
+                    if (car.IsDriveable)
+                        if (controlEngine == -1)
+                        {
+                            controlEngine = carCount;
+                            if (car.Direction == Direction.N)
+                                MotiveForceN *= 0;
+                            else
+                            {
+                                switch (Direction)
+                                {
+                                    case Direction.Forward:
+                                        MotiveForceN *= 1;     //Not necessary
+                                        break;
+                                    case Direction.Reverse:
+                                        MotiveForceN *= -1;
+                                        break;
+                                    case Direction.N:
+                                    default:
+                                        MotiveForceN *= 0;
+                                        break;
+                                }
+                            }
+                        }
                     break;
-                case Direction.Reverse:
-                    MotiveForceN *= -1;
-                    break;
-                case Direction.N:
-                default:
-                    MotiveForceN *= 0;
-                    break;
+                } // foreach
+
             }
 #endif
 
@@ -1256,8 +1298,8 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.ControlForwards)) Locomotive.SetDirection(Direction.Forward);
-			if (UserInput.IsPressed(UserCommands.ControlBackwards)) Locomotive.SetDirection(Direction.Reverse);
+//WJC            if (UserInput.IsPressed(UserCommands.ControlForwards)) Locomotive.SetDirection(Direction.Forward);
+//WJC			if (UserInput.IsPressed(UserCommands.ControlBackwards)) Locomotive.SetDirection(Direction.Reverse);
 
 			if (UserInput.IsPressed(UserCommands.ControlThrottleIncrease)) Locomotive.StartThrottleIncrease();
 			if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) Locomotive.StopThrottleIncrease();
