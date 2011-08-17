@@ -9,7 +9,7 @@
  *  LocomotiveViewer - provides basic animation for running gear, wipers, etc
  * 
  */
-#define DEBUG_NEUTRAL
+//#define DEBUG_NEUTRAL
 /// COPYRIGHT 2009 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
@@ -156,6 +156,37 @@ namespace ORTS
             return data;
         }
 
+        public void StartReverseIncrease()
+        {
+            if (this.IsLeadLocomotive())
+            {
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Reverse: SetDirection(Direction.N); break;
+                        case Direction.N: SetDirection(Direction.Forward); break;
+                        case Direction.Forward: SetDirection(Direction.Forward); break;
+                    }
+                }
+            }
+        }
+
+        public void StartReverseDecrease()
+        {
+            if (this.IsLeadLocomotive())
+            {
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Reverse: SetDirection(Direction.Reverse); break;
+                        case Direction.N: SetDirection(Direction.Reverse); break;
+                        case Direction.Forward: SetDirection(Direction.N); break;
+                    }
+                }
+            }
+        }
+
+
     } // class ElectricLocomotive
 
     ///////////////////////////////////////////////////
@@ -175,30 +206,7 @@ namespace ORTS
             : base(viewer, car)
         {
             ElectricLocomotive = car;
-
         }
-
-#if DEBUG_NEUTRAL
-        public void StartReverserIncrease()
-        {
-            switch ((ElectricLocomotive.Direction))
-            {
-                  case Direction.Reverse: ElectricLocomotive.SetDirection(Direction.N); break;
-                  case Direction.N: ElectricLocomotive.SetDirection(Direction.Forward); break;
-                  case Direction.Forward: ElectricLocomotive.SetDirection(Direction.Forward); break;
-            }
-        }
-
-        public void StartReverserDecrease()
-        {
-            switch ((ElectricLocomotive.Direction))
-            {
-                 case Direction.Reverse: ElectricLocomotive.SetDirection(Direction.Reverse); break;
-                 case Direction.N: ElectricLocomotive.SetDirection(Direction.Reverse); break;
-                 case Direction.Forward: ElectricLocomotive.SetDirection(Direction.N); break;
-            }
-        }
-#endif
 
         /// <summary>
         /// A keyboard or mouse click has occured. Read the UserInput
@@ -213,11 +221,8 @@ namespace ORTS
             {
 
                 if (MSTSLocomotive.Direction != Direction.Forward && MSTSLocomotive.ThrottlePercent < 1)
-#if DEBUG_NEUTRAL
-                    StartReverserIncrease();
-#else
-                    MSTSLocomotive.SetDirection(Direction.Forward);
-#endif
+                    ElectricLocomotive.StartReverseIncrease();
+                    //MSTSLocomotive.SetDirection(Direction.Forward);
                 else
                     // Sound buzzer control error
                     if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
@@ -228,22 +233,15 @@ namespace ORTS
             {
 
                 if (MSTSLocomotive.Direction != Direction.Reverse && MSTSLocomotive.ThrottlePercent < 1)
-#if DEBUG_NEUTRAL
-                    StartReverserDecrease();
-#else
-                    MSTSLocomotive.SetDirection(Direction.Reverse);
-#endif
+                    ElectricLocomotive.StartReverseDecrease();
+                    //MSTSLocomotive.SetDirection(Direction.Reverse);
                 else
                     // Sound buzzer control error
                     if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
-
             }
-
 
             base.HandleUserInput(elapsedTime);
         }
-
-
 
         ///// <summary>
         ///// A keyboard or mouse click has occured. Read the UserInput

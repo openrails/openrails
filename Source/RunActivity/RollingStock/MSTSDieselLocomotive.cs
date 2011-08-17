@@ -15,7 +15,7 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-#define DEBUG_NEUTRAL
+//#define DEBUG_NEUTRAL
 
 using System;
 using System.Collections.Generic;
@@ -150,6 +150,36 @@ namespace ORTS
             }
         }
 
+        public void StartReverseIncrease()
+        {
+            if (this.IsLeadLocomotive())
+            {
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Reverse: SetDirection(Direction.N); break;
+                        case Direction.N: SetDirection(Direction.Forward); break;
+                        case Direction.Forward: SetDirection(Direction.Forward); break;
+                    }
+                }
+            }
+        }
+
+        public void StartReverseDecrease()
+        {
+            if (this.IsLeadLocomotive())
+            {
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Reverse: SetDirection(Direction.Reverse); break;
+                        case Direction.N: SetDirection(Direction.Reverse); break;
+                        case Direction.Forward: SetDirection(Direction.N); break;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Used when someone want to notify us of an event
         /// </summary>
@@ -199,32 +229,6 @@ namespace ORTS
             }
         }
 
-#if DEBUG_NEUTRAL
-
-        public void StartReverseIncrease()
-        {
-            switch ((DieselLocomotive.Direction))
-            {
-                case Direction.Reverse: DieselLocomotive.SetDirection(Direction.N); break;
-                case Direction.N: DieselLocomotive.SetDirection(Direction.Forward); break;
-                case Direction.Forward: DieselLocomotive.SetDirection(Direction.Forward); break;
-            }
-        }
-
-
-
-
-        public void StartReverseDecrease()
-        {
-            switch ((DieselLocomotive.Direction))
-            {
-                case Direction.Reverse: DieselLocomotive.SetDirection(Direction.Reverse); break;
-                case Direction.N: DieselLocomotive.SetDirection(Direction.Reverse); break;
-                case Direction.Forward: DieselLocomotive.SetDirection(Direction.N); break;
-            }
-        }
-#endif 
-
         /// <summary>
         /// A keyboard or mouse click has occured. Read the UserInput
         /// structure to determine what was pressed.
@@ -237,25 +241,18 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.ControlReverserForward))
             {
                 if (MSTSLocomotive.Direction != Direction.Forward && MSTSLocomotive.ThrottlePercent < 1)
-#if DEBUG_NEUTRAL
-                StartReverseIncrease();
-#else 
-                    MSTSLocomotive.SetDirection(Direction.Forward);
-#endif
+                    //MSTSLocomotive.SetDirection(Direction.Forward);
+                    DieselLocomotive.StartReverseIncrease();
                 else
                     // Sound buzzer control error
                     if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
-
             }
 
             if (UserInput.IsPressed(UserCommands.ControlReverserBackwards))
             {
                 if (MSTSLocomotive.Direction != Direction.Reverse && MSTSLocomotive.ThrottlePercent < 1)
-#if DEBUG_NEUTRAL
-               StartReverseDecrease();
-#else
-                    MSTSLocomotive.SetDirection(Direction.Reverse);
-#endif
+                    //MSTSLocomotive.SetDirection(Direction.Reverse);
+                    DieselLocomotive.StartReverseDecrease();
                 else
                     // Sound buzzer control error
                     if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
