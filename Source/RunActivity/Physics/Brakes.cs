@@ -39,8 +39,9 @@ namespace ORTS
                 return new VacuumSinglePipe(car);
             else if (type != null && type == "ep")
                 return new EPBrakeSystem(car);
-            else if (type != null && type == "air_twin_pipe")
-                return new AirTwinPipe(car);
+            // Commented Out Wjc for Cab Control bug
+            //else if (type != null && type == "air_twin_pipe")
+                //return new AirTwinPipe(car);
             else
                 return new AirSinglePipe(car);
         }
