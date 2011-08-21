@@ -95,6 +95,8 @@ namespace ORTS
         public float DynamicBrakeSpeed4 = 35;
         public float MaxDynamicBrakeForceN = 0;
         public bool DynamicBrakeAutoBailOff = false;
+        public bool HasCombCtrl = false;
+        public bool HasStepCtrl = false;
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
         public float NumWheels = 4;
@@ -258,11 +260,16 @@ namespace ORTS
                 case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(stf); break;
                 case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(stf); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
+                case "engine(enginecontrollers(combined_control": HasCombCtrl = true; break;
+                case "engine(diesel": HasStepCtrl = true; break;
+                
+
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
@@ -713,16 +720,34 @@ namespace ORTS
                     Train.MUReverserPercent = -100;
                 }
             }
-        }        
+        }
 
         public void StartThrottleIncrease()
         {
-            if (DynamicBrakePercent >= 0)
-            {
+            if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
+            if (HasCombCtrl && HasStepCtrl)
+            {
+                if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
+                {
+                    StartDynamicBrakeDecrease();
+                    StopDynamicBrakeDecrease();
+                }
+                if (DynamicBrakePercent == -1)
+                {
+                    ThrottleController.StartIncrease();
+                    ThrottleController.StopIncrease();
+                }
             }
-            ThrottleController.StartIncrease();
+
+            else if (!HasCombCtrl && HasStepCtrl)
+            {
+                ThrottleController.StartIncrease();
+                ThrottleController.StopIncrease();
+            }
+            else
+                ThrottleController.StartIncrease();
 
             // By GeorgeS
             if (EventID.IsMSTSBin)
@@ -731,23 +756,38 @@ namespace ORTS
 
         public void StopThrottleIncrease()
         {
-            if (DynamicBrakePercent >= 0)
-            {
+            if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
-            }
-
             ThrottleController.StopIncrease();
         }
 
         public void StartThrottleDecrease()
         {
-            if (DynamicBrakePercent >= 0)
-            {
+            if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
+
+            if (HasCombCtrl && HasStepCtrl)
+            {
+                if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
+                {
+                    StartDynamicBrakeIncrease();
+                    StopDynamicBrakeIncrease();
+                }
+                if (DynamicBrakePercent == -1)
+                {
+                    ThrottleController.StartDecrease();
+                    ThrottleController.StopDecrease();
+                }
             }
-            ThrottleController.StartDecrease();
+            else if (!HasCombCtrl && HasStepCtrl)
+            {
+                ThrottleController.StartDecrease();
+                ThrottleController.StopDecrease();
+            }
+            else
+                ThrottleController.StartDecrease();
 
             // By GeorgeS
             if (EventID.IsMSTSBin)
@@ -756,12 +796,9 @@ namespace ORTS
 
         public void StopThrottleDecrease()
         {
-            if (DynamicBrakePercent >= 0)
-            {
+            if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
-            }
-
             ThrottleController.StopDecrease();
         }
 
@@ -884,8 +921,9 @@ namespace ORTS
 
         public void StartDynamicBrakeIncrease()
         {
-            if(!CanUseDynamicBrake())
+            if (!CanUseDynamicBrake())
                 return;
+            
 
             if (DynamicBrakePercent < 0)
             {
@@ -894,7 +932,10 @@ namespace ORTS
                 return;
             }
             else
+            {
                 DynamicBrakeController.StartIncrease();
+                StopDynamicBrakeIncrease();
+            }
         }
 
         public void StopDynamicBrakeIncrease()
@@ -915,6 +956,7 @@ namespace ORTS
             else
             {
                 DynamicBrakeController.StartDecrease();
+                StopDynamicBrakeDecrease();
             }
         }
 
@@ -2222,14 +2264,27 @@ namespace ORTS
                 //case CABViewControlTypes.CPH_DISPLAY:
                 case CABViewControlTypes.ENGINE_BRAKE:
                 case CABViewControlTypes.TRAIN_BRAKE:
-                case CABViewControlTypes.DYNAMIC_BRAKE:
-                case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
+                //case CABViewControlTypes.DYNAMIC_BRAKE:
+                //case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     {
                         indx = FromPercent(data);
                         break;
                     }
 
-                //TODO control logic still needs to be combinded
+                // TODO display, # of values from controller need to lined up
+                // real physics parsed into table
+                case CABViewControlTypes.DYNAMIC_BRAKE:
+                case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
+                    {
+                        indx = (int)data / 10;
+                        if (data == -1) { indx = 0; break; }
+                        if (data == 0) { indx = 1; break; }
+                        indx += 1;
+                        break;
+                    }
+
+
+                //TODO see note above about dynamic display
                 case CABViewControlTypes.CPH_DISPLAY:
                     {
                         // For the combined control two data items are needed ; dynamic brake
