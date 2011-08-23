@@ -127,12 +127,15 @@ namespace ORTS
 
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
-            LocomotiveAxle.DampingNs = 5000.0f;
+            LocomotiveAxle.DampingNs = MassKG / 1000.0f;
             LocomotiveAxle.AdhesionK = 0.7f;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1.0f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
-            UseAdvancedAdhesion = true;
-            //LocomotiveAxle.AxleWeightN;
+            if (AntiSlip)
+                UseAdvancedAdhesion = false;
+            else
+                UseAdvancedAdhesion = true;
+
             //Console.WriteLine("loco {0} {1} {2}", MaxPowerW, MaxForceN, MaxSpeedMpS);
         }
 
@@ -578,23 +581,40 @@ namespace ORTS
                     //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0, elapsedClockSeconds);
                 //Filtered random condition
                 LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2*Program.Random.NextDouble()),elapsedClockSeconds);
-                //LocomotiveAxle.AdhesionConditions = max0;
+                LocomotiveAxle.AdhesionConditions = max0;
                 //Set axle inertia (this should be placed within the ENG parser)
                 // but make sure the value is sufficietn
-                if (MaxPowerW < 2000000.0f)
+                //if (MaxPowerW < 200000.0f)
+                //{
+                //    if (NumWheels > 4.0f)
+                //        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheels * 4000.0f;
+                //    else
+                //        LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                //}
+                //else
+                //{
+                //    if (NumWheels > 4.0f)
+                //        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheels * MaxPowerW / 500.0f;
+                //    else
+                //        LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                //}
+
+                //Compute axle inertia from parameters if possible
+                if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
                 {
-                    if (NumWheels > 4.0f)
-                        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheels * 4000.0f;
-                    else
-                        LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                    float upperLimit = WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
+                    upperLimit = upperLimit < 100.0f ? 100.0f : upperLimit;
+
+                    float lowerLimit = WheelAxles.Count * (9000.0f * DriverWheelRadiusM - 1750.0f);
+                    lowerLimit = lowerLimit < 100.0f ? 100.0f : lowerLimit;
+
+                    LocomotiveAxle.InertiaKgm2 = (upperLimit - lowerLimit) / (5000000.0f) * MaxPowerW + lowerLimit;
                 }
                 else
-                {
-                    if (NumWheels > 4.0f)
-                        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheels * MaxPowerW / 500.0f;
-                    else
-                        LocomotiveAxle.InertiaKgm2 = 32000.0f;
-                }
+                    LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                //Limit the inertia to 40000 kgm2
+                LocomotiveAxle.InertiaKgm2 = LocomotiveAxle.InertiaKgm2 > 40000.0f ? 40000.0f : LocomotiveAxle.InertiaKgm2;
+                
 
                 //Set axle model parameters
                 
@@ -602,8 +622,8 @@ namespace ORTS
                 LocomotiveAxle.BrakeForceN = BrakeForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * MassKG;        //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
-                
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
+                                
                 MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
                 WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
                 WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
