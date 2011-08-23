@@ -12,7 +12,11 @@ namespace ORTS
 {
 	public class MpH
     {
-		public static float FromMpS(float MpS)
+        public static float FromKpH(float KpH) {
+            return KpH * (0.621371192f /* mile/M */ );
+        }
+
+        public static float FromMpS(float MpS)
 		{
 			return MpS * (0.000621371192f /* mile/M */ * 3600f /* sec/hr */ );
 		}
