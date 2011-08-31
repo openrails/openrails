@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -84,7 +85,7 @@ namespace ORTS
         public static void Initialize()
         {
             Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(0x01);
-            Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(0x11D);
+            Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(Keys.Pause);
             Commands[(int)UserCommands.GameSave] = new UserCommandKeyInput(0x3C);
             Commands[(int)UserCommands.GameSwitchAhead] = new UserCommandKeyInput(0x22);
             Commands[(int)UserCommands.GameSwitchBehind] = new UserCommandKeyInput(0x22, KeyModifiers.Shift);
@@ -662,13 +663,16 @@ namespace ORTS
     public class UserCommandKeyInput : UserCommandInput
     {
         public readonly int ScanCode;
+        public readonly Keys VirtualKey;
         public readonly bool Shift;
         public readonly bool Control;
         public readonly bool Alt;
 
-        protected UserCommandKeyInput(int scancode, bool shift, bool control, bool alt)
+        protected UserCommandKeyInput(int scancode, Keys virtualKey, bool shift, bool control, bool alt)
         {
+            Debug.Assert((scancode >= 1 && scancode <= 127) || (virtualKey != Keys.None), "Scan code for keyboard input is outside the allowed range of 1-127.");
             ScanCode = scancode;
+            VirtualKey = virtualKey;
             Shift = shift;
             Control = control;
             Alt = alt;
@@ -679,8 +683,18 @@ namespace ORTS
         {
         }
 
+        public UserCommandKeyInput(Keys virtualKey)
+            : this(virtualKey, KeyModifiers.None)
+        {
+        }
+
         public UserCommandKeyInput(int scancode, KeyModifiers modifiers)
-            : this(scancode, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
+            : this(scancode, Keys.None, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
+        {
+        }
+
+        public UserCommandKeyInput(Keys virtualKey, KeyModifiers modifiers)
+            : this(0, virtualKey, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
         {
         }
 
@@ -688,7 +702,7 @@ namespace ORTS
         {
             get
             {
-                return UserInput.GetScanCodeKeys(ScanCode);
+                return VirtualKey == Keys.None ? UserInput.GetScanCodeKeys(ScanCode) : VirtualKey;
             }
         }
 
@@ -715,7 +729,10 @@ namespace ORTS
             if (Shift) key = key.Append("Shift+");
             if (Control) key = key.Append("Control+");
             if (Alt) key = key.Append("Alt+");
-            key.AppendFormat("0x{0:X2}", ScanCode);
+            if (VirtualKey == Keys.None)
+                key.AppendFormat("0x{0:X2}", ScanCode);
+            else
+                key.Append(VirtualKey);
             return new[] { key.ToString() };
         }
 
@@ -725,9 +742,10 @@ namespace ORTS
             if (Shift) key.Append("Shift + ");
             if (Control) key.Append("Control + ");
             if (Alt) key.Append("Alt + ");
-
-            key.Append(UserInput.GetScanCodeKeyName(ScanCode));
-
+            if (VirtualKey == Keys.None)
+                key.Append(UserInput.GetScanCodeKeyName(ScanCode));
+            else
+                key.Append(VirtualKey);
             return key.ToString();
         }
     }
@@ -739,7 +757,7 @@ namespace ORTS
         public readonly bool IgnoreAlt;
 
         UserCommandModifiableKeyInput(int scanCode, bool shift, bool control, bool alt, bool ignoreShift, bool ignoreControl, bool ignoreAlt)
-            : base(scanCode, shift, control, alt)
+            : base(scanCode, Keys.None, shift, control, alt)
         {
             IgnoreShift = ignoreShift;
             IgnoreControl = ignoreControl;
