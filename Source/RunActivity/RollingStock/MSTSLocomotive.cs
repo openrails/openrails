@@ -1443,6 +1443,8 @@ namespace ORTS
                         Locomotive.SetDirection(Direction.Forward);
                     else if (UserInput.RDState.DirectionPercent < -50)
                         Locomotive.SetDirection(Direction.Reverse);
+                    else
+                        Locomotive.SetDirection(Direction.N);
                     if (UserInput.RDState.Emergency)
                         Locomotive.SetEmergency();
                     if (UserInput.RDState.Wipers == 1 && Locomotive.Wiper)
