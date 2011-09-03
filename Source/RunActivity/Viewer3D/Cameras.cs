@@ -453,7 +453,7 @@ namespace ORTS
         {
             if (attachedCar == null || attachedCar.Train != Viewer.PlayerTrain)
             {
-                if (Viewer.PlayerTrain.MUDirection == Direction.Forward)
+                if (Viewer.PlayerTrain.MUDirection != Direction.Reverse)
                     SetCameraCar(GetCameraCars().First());
                 else
                     SetCameraCar(GetCameraCars().Last());
@@ -939,7 +939,7 @@ namespace ORTS
             }
             if (attachedCar == null || attachedCar.Train != Viewer.PlayerTrain)
             {
-                if (Viewer.PlayerTrain.MUDirection == Direction.Forward)
+                if (Viewer.PlayerTrain.MUDirection != Direction.Reverse)
                     attachedCar = Viewer.PlayerTrain.Cars.First();
                 else
                     attachedCar = Viewer.PlayerTrain.Cars.Last();

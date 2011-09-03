@@ -67,7 +67,7 @@ namespace ORTS
 
                 foreach (var train in Owner.Viewer.Simulator.Trains)
                 {
-                    var position = new TDBTraveller(train.MUDirection == Direction.Forward ? train.FrontTDBTraveller : train.RearTDBTraveller);
+                    var position = new TDBTraveller(train.MUDirection != Direction.Reverse ? train.FrontTDBTraveller : train.RearTDBTraveller);
                     if (train.MUDirection == Direction.Reverse)
                         position.ReverseDirection();
 
