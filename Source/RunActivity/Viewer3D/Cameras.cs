@@ -37,7 +37,7 @@ namespace ORTS
         Vector3 frustumLeft;
         Vector3 frustumRight;
 
-        public float RightFrustrumA { get { return (float)Math.Cos(MathHelper.ToRadians(45.0f) / 2 * ((float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y)); } }
+        public float RightFrustrumA { get { return (float)Math.Cos(MathHelper.ToRadians(Viewer.Settings.ViewingFOV) / 2 * ((float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y)); } }
 
         // This sucks. It's really not camera-related at all.
         public static Matrix XNASkyProjection;
@@ -121,9 +121,9 @@ namespace ORTS
         {
             var aspectRatio = (float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
             var farPlaneDistance = SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
-            var fovWidthRadians = MathHelper.ToRadians(45.0f);
-            xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, Viewer.Settings.ViewingDistance);
-            XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.5f, farPlaneDistance);    // TODO remove? 
+            var fovWidthRadians = MathHelper.ToRadians(Viewer.Settings.ViewingFOV);
+            xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.1f, Viewer.Settings.ViewingDistance);
+            XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.1f, farPlaneDistance);    // TODO remove? 
             frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // Precompute the right edge of the view frustrum.
             frustumRightProjected.Z = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);
         }

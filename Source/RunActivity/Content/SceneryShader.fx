@@ -266,26 +266,26 @@ float3 _PS3GetShadowEffect(in VERTEX_OUTPUT In)
 }
 //void _PSApplyShadowColor(inout float3 Color, in VERTEX_OUTPUT In)
 //{
-	//float depth = length(In.RelPosition);
-	//if (depth < ShadowMapLimit.x) {
-		//Color.rgb *= 0.9;
-		//Color.r += 0.1;
-	//} else {
-		//if (depth < ShadowMapLimit.y) {
-			//Color.rgb *= 0.9;
-			//Color.g += 0.1;
-		//} else {
-			//if (depth < ShadowMapLimit.z) {
-				//Color.rgb *= 0.9;
-				//Color.b += 0.1;
-			//} else {
-				//if (depth < ShadowMapLimit.w) {
-					//Color.rgb *= 0.9;
-					//Color.rg += 0.1;
-				//}
-			//}
-		//}
-	//}
+//	float depth = length(In.RelPosition);
+//	if (depth < ShadowMapLimit.x) {
+//		Color.rgb *= 0.9;
+//		Color.r += 0.1;
+//	} else {
+//		if (depth < ShadowMapLimit.y) {
+//			Color.rgb *= 0.9;
+//			Color.g += 0.1;
+//		} else {
+//			if (depth < ShadowMapLimit.z) {
+//				Color.rgb *= 0.9;
+//				Color.b += 0.1;
+//			} else {
+//				if (depth < ShadowMapLimit.w) {
+//					Color.rgb *= 0.9;
+//					Color.rg += 0.1;
+//				}
+//			}
+//		}
+//	}
 //}
 float _PSGetShadowEffect(uniform bool ShaderModel3, in VERTEX_OUTPUT In)
 {
@@ -302,8 +302,6 @@ float _PSGetShadowEffect(uniform bool ShaderModel3, in VERTEX_OUTPUT In)
 	float m_d = moments.x - moments.z;
 	float p = pow(variance / (variance + m_d * m_d), 20);
 	return saturate(not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
-	//bool not_shadowed = (moments.z <= moments.x + 0.0001);
-	//return not_shadowed * saturate(In.Normal_Light.w * 5 - 2);
 }
 
 // Gets the overcast effect.

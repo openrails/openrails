@@ -51,6 +51,7 @@ namespace ORTS
 		public bool TrainLights { get; set; }
 		public bool VerticalSync { get; set; }
 		public int ViewingDistance { get; set; }
+        public int ViewingFOV { get; set; }
 		public bool WindowGlass { get; set; }
 		public string WindowSize { get; set; }
 		public bool Wire { get; set; }
@@ -86,6 +87,7 @@ namespace ORTS
             ShowErrorDialogs = true;
             SoundDetailLevel = 5;
             ViewingDistance = 2000;
+            ViewingFOV = 60;
             WindowSize = "1024x768";
             WorldObjectDensity = 10;
 

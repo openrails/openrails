@@ -152,7 +152,7 @@ namespace ORTS
         public static void InitializeShadowMapLocations(Viewer3D viewer)
         {
             var ratio = (float)viewer.DisplaySize.X / viewer.DisplaySize.Y;
-            var fov = MathHelper.ToRadians(45.0f);
+            var fov = MathHelper.ToRadians(viewer.Settings.ViewingFOV);
             var n = (float)0.5;
             var f = (float)viewer.Settings.ShadowMapDistance;
 
