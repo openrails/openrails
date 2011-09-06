@@ -2293,8 +2293,6 @@ namespace ORTS
                         break;
                     }
 
-                // TODO display, # of values from controller need to lined up
-                // real physics parsed into table
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     {
@@ -2305,50 +2303,37 @@ namespace ORTS
                         break;
                     }
 
-
-                //TODO see note above about dynamic display
                 case CABViewControlTypes.CPH_DISPLAY:
-                    {
-                        // For the combined control two data items are needed ; dynamic brake
-                        // and throttle ; throttle is implied when arriving at the case statement
-                        float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
-
-                        if (dynBrakePercent != -1)   // Throttle = 0 and dynamic brake activited
-                        {
-                            indx = (int)dynBrakePercent / 10;
-                            indx = 9 + indx;
-                            break;
-                        }
-
-                        // throttle processing
-                        indx = FromPercent(data);
-                        indx = indx / 2;
-
-                        if (data >= 0.0 && data < 1.0)
-                        {
-                            indx = 8 - indx;
-                        }
-                        else if (data == 1.0)
-                        {
-                            indx = 8 - indx;
-                        }
-                        break; 
-                    }
-
                 case CABViewControlTypes.CP_HANDLE:
                     {
+                        int currentThrottleNotch = _Locomotive.ThrottleController.CurrentNotch;
+                        int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
                         float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
 
-                        if (dynBrakePercent != -1)   // Throttle = 0 and dynamic brake activited
+                        if (dynBrakePercent == -1)
                         {
-                            indx = (int)dynBrakePercent / 10;
-                            indx = 9 + indx;
-                            break;
+                            if (currentThrottleNotch == 0)
+                                indx = 8;
+                            else
+                                indx = 8 - currentThrottleNotch;
+                        }
+                        else
+                            indx = 9 + currentDynamicNotch;
+ 
+                        if (UserInput.RDState != null)
+                        {
+                            if (UserInput.RDState.DynamicBrakePercent >= -100f)
+                            {
+                                if (currentThrottleNotch == 0)
+                                    indx = 8;
+                                else
+                                    indx = 8 - currentThrottleNotch;
+                            }
+                            
+                            if (UserInput.RDState.DynamicBrakePercent >= 0)
+                                indx = 9 + currentDynamicNotch;
                         }
 
-                        float dashThrottlePercent = (float)_Locomotive.Train.MUThrottlePercent;
-                        indx = (int)dashThrottlePercent / 10;
-                        indx = 8 - indx;
                         break;
                     }
 
