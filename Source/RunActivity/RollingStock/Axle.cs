@@ -73,6 +73,13 @@ namespace ORTS
         public float DampingNs { set { dampingNs = Math.Abs(value); } get { return dampingNs; } }
 
         /// <summary>
+        /// Read/Write flag to enable/disable stability correction.
+        /// If enabled, AdhesionK is increased by 0.05 each time the slipSpeedDerivationPercent reaches 1000%/s
+        /// This causes the slip characteristics to be more flat what reduces oscilations.
+        /// </summary>
+        public bool StabilityCorrection { set; get; }
+
+        /// <summary>
         /// Axle drive type covered by DriveType interface
         /// </summary>
         protected AxleDriveType driveType;
@@ -250,8 +257,26 @@ namespace ORTS
         /// Read/Write correction parameter of adhesion, it has proportional impact on adhesion limit
         /// Should be set to 1.0 for most cases
         /// </summary>
-        public float AdhesionK { set; get; }
+        public float AdhesionK
+        {
+            set
+            {
+                adhesionK_orig = adhesionK = value;
+            }
+            get
+            {
+                return adhesionK;
+            }
 
+        }
+        private float adhesionK;
+        private float adhesionK_orig;
+
+        /// <summary>
+        /// Read/Write Adhesion2 parameter from the ENG/WAG file, used to correct the adhesion
+        /// Should not be zero
+        /// </summary>
+        public float Adhesion2 { set; get; }
         /// <summary>
         /// Axle speed value, covered by AxleSpeedMpS interface, in metric meters per second
         /// </summary>
@@ -446,6 +471,7 @@ namespace ORTS
             SlipWarningTresholdPercent = 70.0f;
             driveType = AxleDriveType.ForceDriven;
             axleRevolutionsInt.IsLimited = true;
+            Adhesion2 = 0.331455f;
             
             switch (driveType)
             {
@@ -482,6 +508,7 @@ namespace ORTS
             transmitionEfficiency = 0.99f;
             driveType = AxleDriveType.MotorDriven;
             axleRevolutionsInt.IsLimited = true;
+            Adhesion2 = 0.331455f;
             switch (driveType)
             {
                 case AxleDriveType.NotDriven:
@@ -513,7 +540,7 @@ namespace ORTS
         public virtual void Update(float timeSpan)
         {
             //Update axle force ( = k * loadTorqueNm)
-            axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions);                
+            axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);                
             switch (driveType)
             {
                 case AxleDriveType.NotDriven:
@@ -593,7 +620,14 @@ namespace ORTS
                 slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / timeSpan;
                 previousSlipPercent = SlipSpeedPercent;
             }
-            
+            //Stability Correction
+            if (StabilityCorrection)
+            {
+                if (slipDerivationPercentpS > 500.0f)
+                    adhesionK += 0.0001f * slipDerivationPercentpS;
+                else
+                    adhesionK = (adhesionK <= 0.7f) ? 0.7f : (adhesionK - 0.005f);
+            }
         }
 
         /// <summary>
@@ -602,6 +636,7 @@ namespace ORTS
         public void Reset()
         {
             axleRevolutionsInt.Reset();
+            adhesionK = adhesionK_orig;
             if (motor != null)
                 motor.Reset();
 
@@ -637,10 +672,10 @@ namespace ORTS
         /// <param name="K">Slip speed correction. If is set K = 0 then K = 0.7 is used</param>
         /// <param name="conditions">Relative weather conditions, usually from 0.2 to 1.0</param>
         /// <returns>Relative force transmitted to the rail</returns>
-        public static float SlipCharacteristics(float slipSpeed, float speed, float K, float conditions)
+        public static float SlipCharacteristics(float slipSpeed, float speed, float K, float conditions, float Adhesion2)
         {
             speed = Math.Abs(3.6f*speed);
-            float umax = (7.5f / (speed + 44.0f) + 0.161f); // Curtius - Kniffler equation
+            float umax = (7.5f / (speed + 44.0f) + 0.161f) * Adhesion2 / 0.331455f; // Curtius - Kniffler equation
             umax *= conditions;
             if (K == 0.0)
                 K = 1;

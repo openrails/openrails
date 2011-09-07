@@ -129,6 +129,7 @@ namespace ORTS
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
             LocomotiveAxle.DampingNs = MassKG / 1000.0f;
             LocomotiveAxle.AdhesionK = 0.7f;
+            LocomotiveAxle.StabilityCorrection = true;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1.0f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
             if (AntiSlip)
@@ -542,15 +543,12 @@ namespace ORTS
         {
             if (NumWheels <= 0)
                 return;
-            //float max0 = MassKG * 9.8f * Adhesion3 / NumWheels;   //Not used
 
             //Curtius-Kniffler computation for the basic model
             float currentSpeedMpS = Math.Abs(SpeedMpS);
-            float uMax = (7.5f / (currentSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
-            float adhesionUtil = 0.95f;   //Adhesion utilization
 
-            float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
-            float max1;
+            float max0 = 1.0f;  //Ahesion conditions [N]
+            float max1 = MassKG * 9.81f * Adhesion2;
 
             if ((UseAdvancedAdhesion)&&(!Simulator.Paused))
             {
@@ -565,22 +563,23 @@ namespace ORTS
                     if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                         max0 = .8f;
                     if (Program.Simulator.Weather == WeatherType.Rain)
-                        max0 = .6f;
+                        max0 = Adhesion1/Adhesion2;
                     else
-                        max0 = .5f;
+                        max0 = Adhesion1 / Adhesion2 * 0.7f;
                 }
                 else
                     max0 = 1.0f;
                 //add sander
                 if (Sander)
-                    max0 *= 1.5f;
+                    max0 *= (currentSpeedMpS > 10.0f) ? (Adhesion3 * (1.5f - 0.05f * currentSpeedMpS)) : Adhesion3;
+
                 //Set adhesion coeff to the model
                     //Pure condition
                     //LocomotiveAxle.AdhesionConditions = max0;
                     //Filtered condition
                     //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0, elapsedClockSeconds);
                 //Filtered random condition
-                LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2*Program.Random.NextDouble()),elapsedClockSeconds);
+                //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2*Program.Random.NextDouble()),elapsedClockSeconds);
                 LocomotiveAxle.AdhesionConditions = max0;
                 //Set axle inertia (this should be placed within the ENG parser)
                 // but make sure the value is sufficietn
@@ -602,7 +601,7 @@ namespace ORTS
                 //Compute axle inertia from parameters if possible
                 if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
                 {
-                    float upperLimit = WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
+                    float upperLimit = 2.0f * WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
                     upperLimit = upperLimit < 100.0f ? 100.0f : upperLimit;
 
                     float lowerLimit = WheelAxles.Count * (9000.0f * DriverWheelRadiusM - 1750.0f);
@@ -1051,7 +1050,7 @@ namespace ORTS
                             data *= 3.6f;
                         else
                             data *= 2.2369f;
-                        //data = Math.Abs(data);
+                        data = Math.Abs(data);
                         break;
                     }
                 case CABViewControlTypes.AMMETER:

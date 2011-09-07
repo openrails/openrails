@@ -236,9 +236,13 @@ namespace ORTS
                 Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
                 Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
                 Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
+                Logger.Data(FormattedTime(Viewer.Simulator.ClockTime));
                 Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
                 Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
                 Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
+                Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
+                Logger.Data(TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+                Logger.Data((Viewer.PlayerLocomotive.GravityForceN / (Viewer.PlayerLocomotive.MassKG * 9.81f)).ToString("F0"));
                 Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F0"));
                 Logger.End();
             }
@@ -418,8 +422,10 @@ namespace ORTS
                 TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.DriveForceN);
                 TextColumns[(int)Columns.Labels].AppendLine("Axle brake force");
                 TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.BrakeForceN);
-                TextColumns[(int)Columns.Labels].AppendLine("Axle friction force");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.DampingNs * mstsLocomotive.LocomotiveAxle.SlipDerivationMpSS);
+                //TextColumns[(int)Columns.Labels].AppendLine("Axle friction force");
+                //TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.DampingNs * mstsLocomotive.LocomotiveAxle.SlipDerivationMpSS);
+                TextColumns[(int)Columns.Labels].AppendLine("Stability Correction");
+                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F2} \n", mstsLocomotive.LocomotiveAxle.AdhesionK);
                 TextColumns[(int)Columns.Labels].AppendLine("Axle out force");
                 TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.AxleForceN);
                 TextColumns[(int)Columns.Labels].AppendLine();
@@ -577,9 +583,13 @@ namespace ORTS
 							"Updater Process",
 							"Loader Process",
 							"Sound Process",
+                            "Time",
                             "Player Direction",
                             "Player Reverser",
                             "Player Throttle",
+                            "Player Motive Force [N]",
+                            "Player Speed [Mps]",
+                            "Player Elevation [N/kN]",
                             "Player Wheelslip",
 						}));
                 file.Close();

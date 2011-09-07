@@ -1061,7 +1061,10 @@ namespace ORTS
 				float m = 0;
 				for (; ; )
 				{
-					f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN);
+                    if(car.IsDriveable)
+                        f += car.TotalForceN - (car.FrictionForceN);
+                    else
+					    f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN);
 					m += car.MassKG;
 					if (j == Cars.Count - 1 || car.CouplerSlackM < car.GetMaximumCouplerSlack2M())
 						break;
@@ -1088,7 +1091,10 @@ namespace ORTS
 				float m = 0;
 				for (; ; )
 				{
-					f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN;
+                    if(car.IsDriveable)
+					    f += car.TotalForceN + car.FrictionForceN;
+                    else
+                        f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN;
 					m += car.MassKG;
 					if (j == 0 || car.CouplerSlackM > -car.GetMaximumCouplerSlack2M())
 						break;

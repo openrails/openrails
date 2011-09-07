@@ -45,6 +45,10 @@ namespace ORTS
 		public MSTSDieselLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
             : base(simulator, wagFile, previousCar)
         {
+            if (AntiSlip)
+                UseAdvancedAdhesion = false;
+            else
+                UseAdvancedAdhesion = true;
         }
 
         /// <summary>
