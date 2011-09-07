@@ -30,10 +30,8 @@ using System.Linq;
 using System.Windows.Forms;
 using ORTS.Menu;
 
-namespace ORTS
-{
-    static class Program
-    {
+namespace ORTS {
+    static class Program {
         public static string[] Arguments;
         public static string Version;         // ie "0.6.1"
         public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
@@ -41,7 +39,7 @@ namespace ORTS
         public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator;
-        private static Viewer3D Viewer;
+        private static Viewer3D Viewer;       // Must stay private to ensure Simulator and Viewer do not conflict - see http://www.elvastower.com/forums/index.php?/topic/12105-multiprocessing-in-open-rails/ 
 #if DEBUG_VIEWER
 		private static DebugViewerForm DebugViewer;
 #endif
@@ -49,8 +47,7 @@ namespace ORTS
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             InitBuildRevision();
 
             UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
@@ -79,8 +76,7 @@ namespace ORTS
             InitLogging(settings);
 
             // Do the action specified or write out some help.
-            switch (action)
-            {
+            switch (action) {
                 case "start":
                 case "start-profile":
                     Start(settings, data);
@@ -104,10 +100,8 @@ namespace ORTS
         /// <summary>
         /// Run the specified activity from the beginning.
         /// </summary>
-        static void Start(UserSettings settings, string[] args)
-        {
-            Action start = () =>
-            {
+        static void Start(UserSettings settings, string[] args) {
+            Action start = () => {
                 InitSimulator(settings, args);
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator);
@@ -127,18 +121,12 @@ namespace ORTS
 				DebugViewer.Dispose();
 #endif
             };
-            if (Debugger.IsAttached)
-            {
+            if (Debugger.IsAttached) {
                 start();
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     start();
-                }
-                catch (Exception error)
-                {
+                } catch (Exception error) {
                     Trace.WriteLine(error);
                     if (settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
@@ -152,12 +140,9 @@ namespace ORTS
         /// the users local program storage, 
         /// ie.  "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS\\SAVE.BIN"
         /// </summary>
-        public static void Save()
-        {
-            Action save = () =>
-            {
-                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
-                {
+        public static void Save() {
+            Action save = () => {
+                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write))) {
                     // Save some version identifiers so we can validate on load.
                     outf.Write(Version);
                     outf.Write(Build);
@@ -172,18 +157,12 @@ namespace ORTS
                     Console.WriteLine();
                 }
             };
-            if (Debugger.IsAttached)
-            {
+            if (Debugger.IsAttached) {
                 save();
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     save();
-                }
-                catch (Exception error)
-                {
+                } catch (Exception error) {
                     Trace.WriteLine(error);
                     if (Simulator.Settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
@@ -194,26 +173,20 @@ namespace ORTS
         /// <summary>
         /// Resume a saved game.
         /// </summary>
-        static void Resume(UserSettings settings, string[] args)
-        {
-            Action resume = () =>
-            {
+        static void Resume(UserSettings settings, string[] args) {
+            Action resume = () => {
                 var saveFile = args.Length == 0 ? UserDataFolder + "\\SAVE.BIN" : args[0];
-                using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
-                {
+                using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read))) {
                     // Read in validation data.
                     var revision = "<unknown>";
                     var build = "<unknown>";
                     var versionOkay = false;
-                    try
-                    {
+                    try {
                         revision = inf.ReadString().Replace("\0", "");
                         build = inf.ReadString().Replace("\0", "");
                         versionOkay = (revision == Version) && (build == Build);
-                    }
-                    catch { }
-                    if (!versionOkay)
-                    {
+                    } catch { }
+                    if (!versionOkay) {
                         if (revision.Length + build.Length > 0)
                             throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build));
                         throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build));
@@ -232,18 +205,12 @@ namespace ORTS
                 }
                 Viewer.Run();
             };
-            if (Debugger.IsAttached)
-            {
+            if (Debugger.IsAttached) {
                 resume();
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     resume();
-                }
-                catch (Exception error)
-                {
+                } catch (Exception error) {
                     Trace.WriteLine(error);
                     if (settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
@@ -254,12 +221,10 @@ namespace ORTS
         /// <summary>
         /// Tests OR against every activity in every route in every folder.
         /// </summary>
-        static void TestAll(string[] args)
-        {
+        static void TestAll(string[] args) {
             var settings = GetSettings(new[] { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" });
             InitLogging(settings);
-            Action testAll = () =>
-            {
+            Action testAll = () => {
                 var activities = (args.Length == 0 ? Folder.GetFolders() : args.Select(a => new Folder(Path.GetFileName(a), a)))
                     .SelectMany(f => Route.GetRoutes(f))
                     .SelectMany(r => ORTS.Menu.Activity.GetActivities(r))
@@ -267,8 +232,7 @@ namespace ORTS
                     .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
                     .ToList();
                 var results = new bool[activities.Count];
-                Action<int> run = (i) =>
-                {
+                Action<int> run = (i) => {
                     InitSimulator(settings, new[] { activities[i].FileName }, "");
                     Simulator.Start();
                     Viewer = new Viewer3D(Simulator);
@@ -277,20 +241,13 @@ namespace ORTS
                     results[i] = true;
                     Simulator.Stop();
                 };
-                for (var i = 0; i < activities.Count; i++)
-                {
-                    if (Debugger.IsAttached)
-                    {
+                for (var i = 0; i < activities.Count; i++) {
+                    if (Debugger.IsAttached) {
                         run(i);
-                    }
-                    else
-                    {
-                        try
-                        {
+                    } else {
+                        try {
                             run(i);
-                        }
-                        catch (Exception error)
-                        {
+                        } catch (Exception error) {
                             Trace.WriteLine(error);
                         }
                     }
@@ -304,25 +261,18 @@ namespace ORTS
                 }
 
                 Console.WriteLine();
-                for (var i = 0; i < activities.Count; i++)
-                {
+                for (var i = 0; i < activities.Count; i++) {
                     Console.WriteLine("{0,-4}  {1}", results[i] ? "PASS" : "fail", activities[i].FileName);
                 }
                 Console.WriteLine();
                 Console.WriteLine("Tested {0} activities; {1} passed, {2} failed.", results.Length, results.Count(r => r), results.Count(r => !r));
             };
-            if (Debugger.IsAttached)
-            {
+            if (Debugger.IsAttached) {
                 testAll();
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     testAll();
-                }
-                catch (Exception error)
-                {
+                } catch (Exception error) {
                     Trace.WriteLine(error);
                     if (settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
@@ -330,17 +280,13 @@ namespace ORTS
             }
         }
 
-        static void InitBuildRevision()
-        {
-            try
-            {
-                using (StreamReader f = new StreamReader("Version.txt"))
-                {
+        static void InitBuildRevision() {
+            try {
+                using (StreamReader f = new StreamReader("Version.txt")) {
                     Version = f.ReadLine();
                 }
 
-                using (StreamReader f = new StreamReader("Revision.txt"))
-                {
+                using (StreamReader f = new StreamReader("Revision.txt")) {
                     var line = f.ReadLine();
                     var revision = line.Substring(11, line.IndexOf('$', 11) - 11).Trim();
                     if (revision != "000")
@@ -352,30 +298,23 @@ namespace ORTS
                     Build = Build + " " + f.ReadLine();  // date
                     Build = Build + " " + f.ReadLine(); // time
                 }
-            }
-            catch
-            {
+            } catch {
                 Version = "";
                 Build = Application.ProductVersion;
             }
         }
 
-        static UserSettings GetSettings(IEnumerable<string> options)
-        {
+        static UserSettings GetSettings(IEnumerable<string> options) {
             return new UserSettings(RegistryKey, options);
         }
 
-        static void InitLogging(UserSettings settings)
-        {
+        static void InitLogging(UserSettings settings) {
             var logFileName = "";
-            if ((settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
-            {
+            if ((settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath)) {
                 var fileName = settings.LoggingFilename;
-                try
-                {
+                try {
                     fileName = String.Format(fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, DateTime.Now);
-                }
-                catch { }
+                } catch { }
                 foreach (var ch in Path.GetInvalidFileNameChars())
                     fileName = fileName.Replace(ch, '.');
 
@@ -405,20 +344,15 @@ namespace ORTS
             LogSeparator();
         }
 
-        static void InitSimulator(UserSettings settings, string[] args)
-        {
+        static void InitSimulator(UserSettings settings, string[] args) {
             InitSimulator(settings, args, "");
         }
 
-        static void InitSimulator(UserSettings settings, string[] args, string mode)
-        {
+        static void InitSimulator(UserSettings settings, string[] args, string mode) {
             Console.WriteLine(mode.Length > 0 ? "Mode       = {0} {1}" : "Mode       = {1}", mode, args.Length == 1 ? "Activity" : "Explore");
-            if (args.Length == 1)
-            {
+            if (args.Length == 1) {
                 Console.WriteLine("Activity   = {0}", args[0]);
-            }
-            else
-            {
+            } else {
                 Console.WriteLine("Path       = {0}", args[0]);
                 Console.WriteLine("Consist    = {0}", args[1]);
                 Console.WriteLine("Time       = {0}", args[2]);
@@ -435,8 +369,7 @@ namespace ORTS
                 Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
         }
 
-        static void LogSeparator()
-        {
+        static void LogSeparator() {
             Console.WriteLine(new String('-', 80));
         }
     }

@@ -243,7 +243,7 @@ namespace ORTS
             if (Viewer.Settings.Profiling)
                 if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount) {
                     Viewer.Stop();
-                    Application.Exit();  // CJ Because my system hangs otherwise when testing using /ProfilingFrameCount=0 and I have to kill the process.
+                    Application.Exit();  // Added as system hangs otherwise when testing using /ProfilingFrameCount=0 and have to kill the process.
                 }
 
             Profiler.Start();

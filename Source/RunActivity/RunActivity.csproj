@@ -235,6 +235,7 @@
     <Compile Include="Interlocking\MovementAuthority\RouteCollection.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
+    <Compile Include="Popups\ActivityWindow.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
     <Compile Include="Popups\PauseWindow.cs" />
     <Compile Include="Popups\SignallingDebugWindow.cs" />

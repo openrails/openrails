@@ -64,6 +64,7 @@ namespace ORTS
         public int[] WindowPosition_Switch { get; set; }
         public int[] WindowPosition_TrackMonitor { get; set; }
         public int[] WindowPosition_TrainOperations { get; set; }
+        public int[] WindowPosition_Activity { get; set; }
 
 		#endregion
 
@@ -98,6 +99,7 @@ namespace ORTS
             WindowPosition_Switch = new[] { 0, 50 };
             WindowPosition_TrackMonitor = new[] { 100, 0 };
             WindowPosition_TrainOperations = new[] { 50, 50 };
+            WindowPosition_Activity = new[] { 50, 50 };
         }
 
         void LoadUserSettings(IEnumerable<string> options)

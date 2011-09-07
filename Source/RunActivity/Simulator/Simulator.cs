@@ -139,10 +139,9 @@ namespace ORTS
 		public void SetActivity(string activityPath)
 		{
 			Activity = new ACTFile(activityPath);
-			ActivityRun = new Activity(Activity);
-            // CJ
-            //if (ActivityRun.Current == null)
-            //    ActivityRun = null;
+			ActivityRun = new Activity(Activity, this);
+            if (ActivityRun.Current == null && ActivityRun.EventList.Count == 0)
+                ActivityRun = null;
 
 			StartTime st = Activity.Tr_Activity.Tr_Activity_Header.StartTime;
 			TimeSpan StartTime = new TimeSpan(st.Hour, st.Minute, st.Second);
