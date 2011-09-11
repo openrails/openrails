@@ -211,7 +211,7 @@ namespace ORTS
 				if (RK != null)
 				{
 					checkBoxWindowed.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? false : true;
-					checkBoxWarnings.Checked = (int)RK.GetValue("Warnings", 1) == 1 ? true : false;
+					checkBoxWarnings.Checked = (int)RK.GetValue("Logging", 1) == 1 ? true : false;
 				}
 			}
 
@@ -227,7 +227,7 @@ namespace ORTS
 				if (RK != null)
 				{
 					RK.SetValue("Fullscreen", checkBoxWindowed.Checked ? 0 : 1);
-					RK.SetValue("Warnings", checkBoxWarnings.Checked ? 1 : 0);
+                    RK.SetValue("Logging", checkBoxWarnings.Checked ? 1 : 0);
 				}
 			}
 		}

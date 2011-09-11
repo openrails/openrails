@@ -36,6 +36,7 @@ namespace ORTS
 		public bool DynamicShadows { get; set; }
 		public bool FullScreen { get; set; }
 		public bool GraduatedRelease { get; set; }
+        public bool Logging { get; set; }
         public string LoggingFilename { get; set; }
         public string LoggingPath { get; set; }
         public bool MSTSBINSound { get; set; }
@@ -82,6 +83,7 @@ namespace ORTS
         {
             // Initialize defaults for all user settings here.
             BrakePipeChargingRate = 21;
+            Logging = true;
             LoggingPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             LoggingFilename = "OpenRailsLog.txt";
             ProfilingFrameCount = 1000;
