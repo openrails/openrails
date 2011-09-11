@@ -559,7 +559,7 @@ namespace ORTS
                         Directory.CreateDirectory(RenderProcess.Viewer.Settings.ScreenshotPath);
                     var fileName = Path.Combine(RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString("yyyy-mm-dd hh-mm-ss") + ".png");
                     screenshot.Save(fileName, ImageFileFormat.Png);
-                    RenderProcess.Viewer.MessagesWindow.AddMessage(fileName, 10);
+                    RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Screenshot saved to '{0}'.", fileName), 10);
                 }
             }
         }
