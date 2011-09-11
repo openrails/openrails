@@ -6,8 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using Microsoft.Win32;
 
 namespace ORTS
@@ -40,6 +42,7 @@ namespace ORTS
 		public bool Precipitation { get; set; }
 		public bool Profiling { get; set; }
         public int ProfilingFrameCount { get; set; }
+        public string ScreenshotPath { get; set; }
         public int ShaderModel { get; set; }
 		public bool ShadowAllShapes { get; set; }
 		public bool ShadowMapBlur { get; set; }
@@ -82,6 +85,7 @@ namespace ORTS
             LoggingPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             LoggingFilename = "OpenRailsLog.txt";
             ProfilingFrameCount = 1000;
+            ScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
             ShadowMapBlur = true;
             ShadowMapCount = 4;
             ShadowMapResolution = 1024;

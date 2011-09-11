@@ -19,7 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -324,6 +326,7 @@ namespace ORTS
         }
 
         static bool LockShadows;
+        [CallOnThread("Updater")]
         public void PrepareFrame(ElapsedTime elapsedTime)
         {
             if (UserInput.IsPressed(UserCommands.DebugLockShadows))
@@ -545,6 +548,19 @@ namespace ORTS
             {
                 Console.WriteLine("}");
                 Console.WriteLine();
+            }
+
+            if (UserInput.IsPressed(UserCommands.GameScreenshot))
+            {
+                using (var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color))
+                {
+                    graphicsDevice.ResolveBackBuffer(screenshot);
+                    if (!Directory.Exists(RenderProcess.Viewer.Settings.ScreenshotPath))
+                        Directory.CreateDirectory(RenderProcess.Viewer.Settings.ScreenshotPath);
+                    var fileName = Path.Combine(RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString("yyyy-mm-dd hh-mm-ss") + ".png");
+                    screenshot.Save(fileName, ImageFileFormat.Png);
+                    RenderProcess.Viewer.MessagesWindow.AddMessage(fileName, 10);
+                }
             }
         }
 

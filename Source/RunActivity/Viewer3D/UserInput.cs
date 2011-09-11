@@ -85,14 +85,15 @@ namespace ORTS
         public static void Initialize()
         {
             Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(0x01);
-            Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(Keys.Pause);
             Commands[(int)UserCommands.GameSave] = new UserCommandKeyInput(0x3C);
+            Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(Keys.Pause);
+            Commands[(int)UserCommands.GameScreenshot] = new UserCommandKeyInput(Keys.PrintScreen);
+            Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
             Commands[(int)UserCommands.GameSwitchAhead] = new UserCommandKeyInput(0x22);
             Commands[(int)UserCommands.GameSwitchBehind] = new UserCommandKeyInput(0x22, KeyModifiers.Shift);
             Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
             Commands[(int)UserCommands.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
             Commands[(int)UserCommands.GameLocomotiveSwitch] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
-            Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
 
             Commands[(int)UserCommands.DisplayNextWindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
             Commands[(int)UserCommands.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommands.DisplayNextWindowTab]);
@@ -472,14 +473,15 @@ namespace ORTS
     public enum UserCommands
     {
         GameQuit,
-        GamePause,
         GameSave,
+        GamePause,
+        GameScreenshot,
+        GameFullscreen,
         GameSwitchAhead,
         GameSwitchBehind,
         GameSwitchWithMouse,
         GameUncoupleWithMouse,
         GameLocomotiveSwitch,
-        GameFullscreen,
 
         DisplayNextWindowTab,
         DisplayHelpWindow,
