@@ -160,36 +160,6 @@ namespace ORTS
             return data;
         }
 
-        public void StartReverseIncrease()
-        {
-            if (this.IsLeadLocomotive())
-            {
-                {
-                    switch (Direction)
-                    {
-                        case Direction.Reverse: SetDirection(Direction.N); break;
-                        case Direction.N: SetDirection(Direction.Forward); break;
-                        case Direction.Forward: SetDirection(Direction.Forward); break;
-                    }
-                }
-            }
-        }
-
-        public void StartReverseDecrease()
-        {
-            if (this.IsLeadLocomotive())
-            {
-                {
-                    switch (Direction)
-                    {
-                        case Direction.Reverse: SetDirection(Direction.Reverse); break;
-                        case Direction.N: SetDirection(Direction.Reverse); break;
-                        case Direction.Forward: SetDirection(Direction.N); break;
-                    }
-                }
-            }
-        }
-
 
     } // class ElectricLocomotive
 
@@ -218,45 +188,9 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // for example
-            // if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
-
-            if (UserInput.IsPressed(UserCommands.ControlReverserForward))
-            {
-
-                if (MSTSLocomotive.Direction != Direction.Forward && MSTSLocomotive.ThrottlePercent < 1)
-                    ElectricLocomotive.StartReverseIncrease();
-                    //MSTSLocomotive.SetDirection(Direction.Forward);
-                else
-                    // Sound buzzer control error
-                    if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
-
-            }
-
-            if (UserInput.IsPressed(UserCommands.ControlReverserBackwards))
-            {
-
-                if (MSTSLocomotive.Direction != Direction.Reverse && MSTSLocomotive.ThrottlePercent < 1)
-                    ElectricLocomotive.StartReverseDecrease();
-                    //MSTSLocomotive.SetDirection(Direction.Reverse);
-                else
-                    // Sound buzzer control error
-                    if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
-            }
 
             base.HandleUserInput(elapsedTime);
         }
-
-        ///// <summary>
-        ///// A keyboard or mouse click has occured. Read the UserInput
-        ///// structure to determine what was pressed.
-        ///// </summary>
-        //public override void HandleUserInput(ElapsedTime elapsedTime)
-        //{
-
-        //    base.HandleUserInput( elapsedTime);
-        //}
-
 
         /// <summary>
         /// We are about to display a video frame.  Calculate positions for 

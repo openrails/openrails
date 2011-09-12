@@ -15,8 +15,6 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-//#define DEBUG_NEUTRAL
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -157,36 +155,6 @@ namespace ORTS
             }
         }
 
-        public void StartReverseIncrease()
-        {
-            if (this.IsLeadLocomotive())
-            {
-                {
-                    switch (Direction)
-                    {
-                        case Direction.Reverse: SetDirection(Direction.N); break;
-                        case Direction.N: SetDirection(Direction.Forward); break;
-                        case Direction.Forward: SetDirection(Direction.Forward); break;
-                    }
-                }
-            }
-        }
-
-        public void StartReverseDecrease()
-        {
-            if (this.IsLeadLocomotive())
-            {
-                {
-                    switch (Direction)
-                    {
-                        case Direction.Reverse: SetDirection(Direction.Reverse); break;
-                        case Direction.N: SetDirection(Direction.Reverse); break;
-                        case Direction.Forward: SetDirection(Direction.N); break;
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// Used when someone want to notify us of an event
         /// </summary>
@@ -242,31 +210,10 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // for example
-            // if (UserInput.IsPressed(Keys.W)) Locomotive.SetDirection(Direction.Forward);
-
-            if (UserInput.IsPressed(UserCommands.ControlReverserForward))
-            {
-                if (MSTSLocomotive.Direction != Direction.Forward && MSTSLocomotive.ThrottlePercent < 1)
-                    //MSTSLocomotive.SetDirection(Direction.Forward);
-                    DieselLocomotive.StartReverseIncrease();
-                else
-                    // Sound buzzer control error
-                    if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
-            }
-
-            if (UserInput.IsPressed(UserCommands.ControlReverserBackwards))
-            {
-                if (MSTSLocomotive.Direction != Direction.Reverse && MSTSLocomotive.ThrottlePercent < 1)
-                    //MSTSLocomotive.SetDirection(Direction.Reverse);
-                    DieselLocomotive.StartReverseDecrease();
-                else
-                    // Sound buzzer control error
-                    if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
-            }
 
             base.HandleUserInput(elapsedTime);
-        } // HandlerUserInput
+        }
+
 
         /// <summary>
         /// We are about to display a video frame.  Calculate positions for 

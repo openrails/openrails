@@ -26,8 +26,6 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
-#define DEBUG_NEUTRAL
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -447,10 +445,7 @@ namespace ORTS
                     w = 0;
                 AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
             }
-#if !DEBUG_NEUTRAL
-//WJC MJ
-            MotiveForceN *= (Direction == Direction.Forward ? 1 : -1);
-#else
+
             if (this.IsLeadLocomotive())
             {
                 switch (Direction)
@@ -505,7 +500,6 @@ namespace ORTS
                 } // foreach
 
             }
-#endif
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
@@ -740,6 +734,38 @@ namespace ORTS
                 }
             }
         }
+
+        public void StartReverseIncrease()
+        {
+            if (this.IsLeadLocomotive())
+            {
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Reverse: SetDirection(Direction.N); break;
+                        case Direction.N: SetDirection(Direction.Forward); break;
+                        case Direction.Forward: SetDirection(Direction.Forward); break;
+                    }
+                }
+            }
+        }
+
+        public void StartReverseDecrease()
+        {
+            if (this.IsLeadLocomotive())
+            {
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Reverse: SetDirection(Direction.Reverse); break;
+                        case Direction.N: SetDirection(Direction.Reverse); break;
+                        case Direction.Forward: SetDirection(Direction.N); break;
+                    }
+                }
+            }
+        }
+
+
 
         public void StartThrottleIncrease()
         {
@@ -1359,9 +1385,11 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-//WJC            if (UserInput.IsPressed(UserCommands.ControlForwards)) Locomotive.SetDirection(Direction.Forward);
-//WJC			if (UserInput.IsPressed(UserCommands.ControlBackwards)) Locomotive.SetDirection(Direction.Reverse);
-
+            if (UserInput.IsPressed(UserCommands.ControlForwards))
+                Locomotive.StartReverseIncrease();
+            else if (UserInput.IsPressed(UserCommands.ControlBackwards))
+                Locomotive.StartReverseDecrease();
+                
 			if (UserInput.IsPressed(UserCommands.ControlThrottleIncrease)) Locomotive.StartThrottleIncrease();
 			if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) Locomotive.StopThrottleIncrease();
 			if (UserInput.IsPressed(UserCommands.ControlThrottleDecrease)) Locomotive.StartThrottleDecrease();
