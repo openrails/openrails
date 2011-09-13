@@ -33,7 +33,7 @@ namespace ORTS {
         public List<EventWrapper> EventList = new List<EventWrapper>();
         public Boolean IsComplete;          // true once activity is completed.
         public Boolean IsSuccessful;        // status of completed activity
-        public int StartTimeS;              // Clock time in seconds when activity was launched.
+        public Nullable<int> StartTimeS;    // Clock time in seconds when activity was launched.
         public EventWrapper TriggeredEvent; // Indicates the currently triggered event whose data the ActivityWindow will pop up to display.
 
         private Activity(BinaryReader inf) {
@@ -79,7 +79,6 @@ namespace ORTS {
                 EventWrapper eventAdded = EventList.Last();
                 eventAdded.OriginalActivationLevel = i.Activation_Level;
             }
-            StartTimeS = (int)Simulator.ClockTime;
         }
 
         public ActivityTask Last {
@@ -96,6 +95,8 @@ namespace ORTS {
 
         public void Update() {
             // Update freight events
+            // Set the clock first time through. Can't set in the Activity constructor as Simulator.ClockTime is still 0 then.
+            if (!StartTimeS.HasValue) { StartTimeS = (int)Simulator.ClockTime; }
             if (this.IsComplete == false) {
                 foreach (var i in EventList) {
                     // Once an event has fired, we don't respond to any more events until that has been acknowledged.
