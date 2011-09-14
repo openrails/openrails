@@ -1182,11 +1182,11 @@ namespace ORTS
                         data = Headlight;
                         break;
                     }
-                //case CABViewControlTypes.WHEELSLIP:
-                //    {
-                //        data = WheelSlip ? 1 : 0;
-                //        break;
-                //    }
+                case CABViewControlTypes.WHEELSLIP:
+                    {
+                        data = WheelSlip ? 1 : 0;
+                        break;
+                    }
     
                 case CABViewControlTypes.DIRECTION:
                 case CABViewControlTypes.DIRECTION_DISPLAY:
@@ -2418,6 +2418,7 @@ namespace ORTS
                 case CABViewControlTypes.HORN:
                 case CABViewControlTypes.BELL:
                 case CABViewControlTypes.SANDERS:
+                case CABViewControlTypes.WHEELSLIP:
                 case CABViewControlTypes.FRONT_HLIGHT:
                 case CABViewControlTypes.PANTOGRAPH:
                 case CABViewControlTypes.PANTO_DISPLAY:
