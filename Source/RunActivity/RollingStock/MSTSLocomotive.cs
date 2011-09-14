@@ -765,8 +765,6 @@ namespace ORTS
             }
         }
 
-
-
         public void StartThrottleIncrease()
         {
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
@@ -1379,6 +1377,58 @@ namespace ORTS
 
         }
 
+        void SoundBuzzer()
+        { if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10); }
+
+
+        void StartThrottleIncrease()
+        {
+            if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
+            { SoundBuzzer(); return; }
+            else
+                Locomotive.StartThrottleIncrease();
+        }
+
+        void StopThrottleIncrease()
+        {
+            if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
+            { SoundBuzzer(); return; }
+            else
+                Locomotive.StopThrottleIncrease();
+        }
+
+        void StartThrottleDecrease()
+        {
+            if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
+            { SoundBuzzer(); return; }
+            else
+                Locomotive.StartThrottleDecrease();
+        }
+
+        void StopThrottleDecrease()
+        {
+            if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
+            { SoundBuzzer(); return; }
+            else
+                Locomotive.StopThrottleDecrease();
+        }
+
+        void ReverserControlForwards()
+        {
+            if (Locomotive.Direction != Direction.Forward && Locomotive.ThrottlePercent < 1)
+                Locomotive.StartReverseIncrease();
+            else
+                SoundBuzzer();
+        }
+
+        void ReverserControlBackwords()
+        {
+            if (Locomotive.Direction != Direction.Reverse && Locomotive.ThrottlePercent < 1)
+                Locomotive.StartReverseDecrease();
+            else
+                SoundBuzzer();
+        }
+
         /// <summary>
         /// A keyboard or mouse click has occurred. Read the UserInput
         /// structure to determine what was pressed.
@@ -1386,14 +1436,14 @@ namespace ORTS
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             if (UserInput.IsPressed(UserCommands.ControlForwards))
-                Locomotive.StartReverseIncrease();
-            else if (UserInput.IsPressed(UserCommands.ControlBackwards))
-                Locomotive.StartReverseDecrease();
-                
-			if (UserInput.IsPressed(UserCommands.ControlThrottleIncrease)) Locomotive.StartThrottleIncrease();
-			if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) Locomotive.StopThrottleIncrease();
-			if (UserInput.IsPressed(UserCommands.ControlThrottleDecrease)) Locomotive.StartThrottleDecrease();
-			if (UserInput.IsReleased(UserCommands.ControlThrottleDecrease)) Locomotive.StopThrottleDecrease();
+                ReverserControlForwards();
+            if (UserInput.IsPressed(UserCommands.ControlBackwards))
+                ReverserControlBackwords();
+
+            if (UserInput.IsPressed(UserCommands.ControlThrottleIncrease)) StartThrottleIncrease();
+            if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) StopThrottleIncrease();
+            if (UserInput.IsPressed(UserCommands.ControlThrottleDecrease)) StartThrottleDecrease();
+            if (UserInput.IsReleased(UserCommands.ControlThrottleDecrease)) StopThrottleDecrease();
 
 			if (UserInput.IsPressed(UserCommands.ControlTrainBrakeIncrease)) Locomotive.StartTrainBrakeIncrease();
 			if (UserInput.IsReleased(UserCommands.ControlTrainBrakeIncrease)) Locomotive.StopTrainBrakeIncrease();
