@@ -59,6 +59,7 @@ namespace MSTS
         THROTTLE,
         PANTOGRAPH,
         TRAIN_BRAKE,
+        FRICTION_BRAKE,
         ENGINE_BRAKE,
         DYNAMIC_BRAKE,
         DYNAMIC_BRAKE_DISPLAY,

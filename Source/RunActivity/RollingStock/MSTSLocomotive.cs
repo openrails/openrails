@@ -1145,6 +1145,7 @@ namespace ORTS
                         data = EngineBrakeController.CurrentValue;
                         break;
                     }
+                case CABViewControlTypes.FRICTION_BRAKING:
                 case CABViewControlTypes.TRAIN_BRAKE:
                     {
                         data = TrainBrakeController.CurrentValue;
@@ -2367,6 +2368,12 @@ namespace ORTS
                 //case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     {
                         indx = FromPercent(data);
+                        break;
+                    }
+
+                case CABViewControlTypes.FRICTION_BRAKING:
+                    {
+                        indx = (data > 0) ? 1 : 0;
                         break;
                     }
 
