@@ -189,7 +189,7 @@ namespace ORTS
             InterlockingSystem = new InterlockingSystem(this);
             AI = new AI(this, inf);
 
-            ActivityRun = ORTS.Activity.Restore(inf);
+            ActivityRun = ORTS.Activity.Restore(inf, this);
 		}
 
 		public void Save(BinaryWriter outf)

@@ -36,7 +36,8 @@ namespace ORTS {
         public Nullable<int> StartTimeS;    // Clock time in seconds when activity was launched.
         public EventWrapper TriggeredEvent; // Indicates the currently triggered event whose data the ActivityWindow will pop up to display.
 
-        private Activity(BinaryReader inf) {
+        private Activity(BinaryReader inf, Simulator simulator) {
+            Simulator = simulator;
             RestoreThis(inf);
         }
 
@@ -167,13 +168,13 @@ namespace ORTS {
             }
         }
 
-        public static Activity Restore(BinaryReader inf) {
+        public static Activity Restore(BinaryReader inf, Simulator simulator) {
             Int32 rdval;
             rdval = inf.ReadInt32();
             if (rdval == -1) {
                 return null;
             } else {
-                Activity act = new Activity(inf);
+                Activity act = new Activity(inf, simulator);
                 return act;
             }
         }
