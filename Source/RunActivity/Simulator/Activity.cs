@@ -610,7 +610,7 @@ namespace ORTS {
     public class EventCategoryActionWrapper : EventWrapper {
         SidingItem SidingEnd1 = null;
         SidingItem SidingEnd2 = null;
-        List<int> ChangeWagonIdList = null;   // Wagons to be assembled, picked up or dropped off.
+        List<string> ChangeWagonIdList = null;   // Wagons to be assembled, picked up or dropped off.
 
         public EventCategoryActionWrapper(MSTS.Event @event, Simulator simulator)
             : base(@event, simulator) {
@@ -620,7 +620,7 @@ namespace ORTS {
                 SidingEnd2 = Simulator.TDB.TrackDB.TrItemTable[SidingEnd1.Flags2] as SidingItem;
             } else {
                 if (e.Type == EventType.DropOffWagonsAtLocation || e.Type == EventType.PickUpWagons || e.Type == EventType.AssembleTrainAtLocation) {
-                    // e.WagonList.SidingId == 0xFFFFFFFF indicates no siding was specified.
+                    // Note: e.WagonList.SidingId == 0xFFFFFFFF indicates no siding was specified.
                     if (e.WagonList.SidingId != null && e.WagonList.SidingId != 0xFFFFFFFF) {
                         SidingEnd1 = Simulator.TDB.TrackDB.TrItemTable[e.WagonList.SidingId.Value] as SidingItem;
                         SidingEnd2 = Simulator.TDB.TrackDB.TrItemTable[SidingEnd1.Flags2] as SidingItem;
@@ -634,9 +634,9 @@ namespace ORTS {
             var e = this.ParsedObject as EventCategoryAction;
             if (e.WagonList != null) {                     // only if event involves wagons
                 if (ChangeWagonIdList == null) {           // populate the list only once - the first time that ActivationLevel > 0 and so this method is called.
-                    ChangeWagonIdList = new List<int>();
+                    ChangeWagonIdList = new List<string>();
                     foreach (var item in e.WagonList.WorkOrderWagonList) {
-                        ChangeWagonIdList.Add((int)item.UID & 0x0000FFFF); // Extract lower 16 bits
+                        ChangeWagonIdList.Add(String.Format("{0} - {1}", ((int)item.UID & 0xFFFF0000) >> 16, (int)item.UID & 0x0000FFFF)); // form the .CarID
                     }
                 }
             }
@@ -667,7 +667,7 @@ namespace ORTS {
                 //    break;
 
                 case EventType.DropOffWagonsAtLocation:
-                    // Looks identical to PickUpWagons, but a better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
+                    // Looks identical to PickUpWagons, but a better name than DropOffWagonsAtLocation would be ArriveWithWagonsAtSiding.
                     if (atSiding(PlayerTrain.FrontTDBTraveller, PlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2)) {
                         triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
                     }
@@ -692,13 +692,13 @@ namespace ORTS {
         /// </summary>
         /// <param name="wagonIdList"></param>
         /// <returns>train or null</returns>
-        private Train matchesConsist(List<int> wagonIdList) {
+        private Train matchesConsist(List<string> wagonIdList) {
             foreach (var trainItem in Simulator.Trains) {
                 if (trainItem.Cars.Count == wagonIdList.Count) {
                     // Compare two lists to make sure wagons are in expected sequence.
                     bool listsMatch = true;
                     for (int i = 0; i < trainItem.Cars.Count; i++) {
-                        if (trainItem.Cars.ElementAt(i).UiD != wagonIdList.ElementAt(i)) { listsMatch = false;  break; }
+                        if (trainItem.Cars.ElementAt(i).CarID != wagonIdList.ElementAt(i)) { listsMatch = false;  break; }
                     }
                     if (listsMatch) return trainItem;
                 }
@@ -713,14 +713,15 @@ namespace ORTS {
         /// <param name="train"></param>
         /// <param name="wagonIdList"></param>
         /// <returns>True if all listed wagons are part of the given train.</returns>
-        private Boolean includesWagons(Train train, List<int> wagonIdList) {
-            foreach (var item in wagonIdList)
-                if (train.Cars.Find(car => car.UiD == item) == null) return false;
+        private Boolean includesWagons(Train train, List<string> wagonIdList) {
+            foreach (var item in wagonIdList) {
+                if (train.Cars.Find(car => car.CarID == item) == null) return false;
+            }
             return true;
         }
 
         /// <summary>
-        /// Like platforms, but checks that both ends of the train are within the siding.
+        /// Like platforms, checking that one end of the train is within the siding.
         /// </summary>
         /// <param name="frontPosition"></param>
         /// <param name="rearPosition"></param>
@@ -744,12 +745,12 @@ namespace ORTS {
             distanceEnd2 = helper.CalculateToPoint(sidingEnd2.TileX,
                     sidingEnd2.TileZ, sidingEnd2.X, sidingEnd2.Y, sidingEnd2.Z);
 
-            // If front not between the ends of the siding
-            if (!((distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind
+            // If front between the ends of the siding
+            if (((distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind
                 && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid)
                 || (distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid
                 && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))) {
-                return false;
+                return true;
             }
 
             // Rear calcs
@@ -760,15 +761,15 @@ namespace ORTS {
             distanceEnd2 = helper.CalculateToPoint(sidingEnd2.TileX,
                     sidingEnd2.TileZ, sidingEnd2.X, sidingEnd2.Y, sidingEnd2.Z);
 
-            // If rear not between the ends of the siding
-            if (!((distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind
+            // If rear between the ends of the siding
+            if (((distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind
                 && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid)
                 || (distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid
                 && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))) {
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
     }
 
