@@ -272,7 +272,7 @@ namespace ORTS
 				}
 				catch (Exception e) // if the sms is wrong
 				{
-					Trace.WriteLine(e.Message + " Crossing gates will be silent.");
+					Trace.TraceWarning(e.Message + " Crossing gates will be silent.");
 					Sound = null;
 					silent = true;
 				}

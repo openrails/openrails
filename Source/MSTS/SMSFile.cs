@@ -239,7 +239,7 @@ namespace MSTS
             });
             foreach (Trigger trigger in this)
                 if (trigger.SoundCommand == null)
-                    STFException.TraceError(stf, "Trigger lacks a sound command");
+                    STFException.TraceWarning(stf, "Trigger lacks a sound command");
         }
     }
 

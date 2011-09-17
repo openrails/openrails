@@ -158,7 +158,7 @@ namespace MSTS
        			string token = stf.ReadString();
                 if( token == ")" ) 
                 {
-                    STFException.TraceError(stf, "Missing track section");
+                    STFException.TraceWarning(stf, "Missing track section");
                     return;   // there are many TSECTION.DAT's with missing sections so we will accept this error
                 }
                 if (!uint.TryParse(token, out TrackSections[i]))

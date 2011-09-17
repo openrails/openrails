@@ -166,7 +166,7 @@ namespace ORTS
                 {
                     if (i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count)
                     {
-                        Trace.TraceError("Position or Direction missing in " + CVFFilePath);
+                        Trace.TraceWarning("Position or Direction missing in {0}", CVFFilePath);
                         break;
                     }
                     ViewPoint viewPoint = new ViewPoint();
@@ -191,10 +191,10 @@ namespace ORTS
                             ExCVF = IntermediateSerializer.Deserialize<ExtendedCVF>(rd, null);
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception error)
                     {
-                        Trace.TraceError(string.Format("Error reading Extended CAB View file {0}", ExtendedCVF));
-                        Trace.WriteLine(ex);
+                        Trace.WriteLine(ExtendedCVF);
+                        Trace.WriteLine(error);
                     }
                 }
                 */
@@ -1795,10 +1795,9 @@ namespace ORTS
             {
                 return arr[indx];
             }
-            catch
+            catch (IndexOutOfRangeException)
             {
-                Trace.TraceError(string.Format("Error accessing texture for: {0}", FileName));
-                Trace.TraceWarning(string.Format("The array length is {0}, while the index is {1}.", arr.Length, indx));
+                Trace.TraceWarning("Index {1} out of range for array length {2} while accessing texture for {0}", FileName, indx, arr.Length);
                 return Materials.MissingTexture;
             }
         }

@@ -68,7 +68,7 @@ namespace ORTS
                 BufferIDs[2] = 0;
                 _isValid = false;
                 StackTrace st = new StackTrace();
-                Trace.WriteLine(string.Format("Could not open wave file: {0} at {1}", Name, st.ToString()));
+                Trace.TraceWarning(string.Format("Could not open wave file: {0} at {1}", Name, st.ToString()));
             }
             else
             {
@@ -533,7 +533,7 @@ namespace ORTS
         {
             if (refCount == 0)
             {
-                Trace.WriteLine("OpenAL using device " + OpenAL.AlInitialize("DirectSound"));
+                Trace.TraceInformation("OpenAL using device " + OpenAL.AlInitialize("DirectSound"));
             }
 
             refCount++;
@@ -604,7 +604,7 @@ namespace ORTS
                     }
                     else if (_MustWarn)
                     {
-                        Trace.WriteLine(string.Format("\r\nSound stream activation failed at number: {0}", _ActiveCount));
+                        Trace.TraceWarning(string.Format("\r\nSound stream activation failed at number: {0}", _ActiveCount));
                         _MustWarn = false;
                     }
                 }

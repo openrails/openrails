@@ -291,7 +291,7 @@ namespace MSTS
         public void MustMatch(string target)
         {
             if (Eof)
-                STFException.TraceError(this, "Unexpected end of file instead of " + target);
+                STFException.TraceWarning(this, "Unexpected end of file instead of " + target);
             else
             {
                 string s = ReadItem();
@@ -317,7 +317,7 @@ namespace MSTS
                 if (includeReader.Eof)
                 {
                     if (tree.Count != 0)
-                        STFException.TraceError(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
+                        STFException.TraceWarning(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
                     includeReader.Dispose();
                     includeReader = null;
                 }
@@ -728,7 +728,7 @@ namespace MSTS
 		{
             if (Eof)
             {
-                STFException.TraceError(this, "Unexpected end of file");
+                STFException.TraceWarning(this, "Unexpected end of file");
                 return defaultValue;
             }
             string s = ReadItem();
@@ -743,12 +743,12 @@ namespace MSTS
                 SkipRestOfBlock();
                 if (result == "#\u00b6")
                 {
-                    STFException.TraceError(this, "Found a comment when an {constant item} was expected.");
+                    STFException.TraceWarning(this, "Found a comment when an {constant item} was expected.");
                     return (defaultValue != null) ? defaultValue : result;
                 }
                 return result;
             }
-            STFException.TraceError(this, "Block Not Found - instead found " + s);
+            STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue;
 		}
 		/// <summary>Read an hexidecimal encoded number from the STF format '( {int_constant} ... )'
@@ -759,7 +759,7 @@ namespace MSTS
 		{
             if (Eof)
             {
-                STFException.TraceError(this, "Unexpected end of file");
+                STFException.TraceWarning(this, "Unexpected end of file");
                 return defaultValue.GetValueOrDefault(0);
             }
             string s = ReadItem();
@@ -774,7 +774,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.TraceError(this, "Block Not Found - instead found " + s);
+            STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue.GetValueOrDefault(0);
         }
 		/// <summary>Read an integer constant from the STF format '( {int_constant} ... )'
@@ -786,7 +786,7 @@ namespace MSTS
 		{
 			if (Eof)
 			{
-				STFException.TraceError(this, "Unexpected end of file");
+				STFException.TraceWarning(this, "Unexpected end of file");
 				return defaultValue.GetValueOrDefault(0);
 			}
 			string s = ReadItem();
@@ -801,7 +801,7 @@ namespace MSTS
 				SkipRestOfBlock();
 				return result;
 			}
-			STFException.TraceError(this, "Block Not Found - instead found " + s);
+			STFException.TraceWarning(this, "Block Not Found - instead found " + s);
 			return defaultValue.GetValueOrDefault(0);
 		}
 		/// <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
@@ -813,7 +813,7 @@ namespace MSTS
         {
             if (Eof)
             {
-                STFException.TraceError(this, "Unexpected end of file");
+                STFException.TraceWarning(this, "Unexpected end of file");
                 return defaultValue.GetValueOrDefault(0);
             }
             string s = ReadItem();
@@ -828,7 +828,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.TraceError(this, "Block Not Found - instead found " + s);
+            STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an single precision constant from the STF format '( {float_constant} ... )'
@@ -840,7 +840,7 @@ namespace MSTS
         {
             if (Eof)
             {
-                STFException.TraceError(this, "Unexpected end of file");
+                STFException.TraceWarning(this, "Unexpected end of file");
                 return defaultValue.GetValueOrDefault(0);
             }
             string s = ReadItem();
@@ -855,7 +855,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.TraceError(this, "Block Not Found - instead found " + s);
+            STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an double precision constant from the STF format '( {double_constant} ... )'
@@ -867,7 +867,7 @@ namespace MSTS
 		{
             if (Eof)
             {
-                STFException.TraceError(this, "Unexpected end of file");
+                STFException.TraceWarning(this, "Unexpected end of file");
                 return defaultValue.GetValueOrDefault(0);
             }
             string s = ReadItem();
@@ -882,7 +882,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return result;
             }
-            STFException.TraceError(this, "Block Not Found - instead found " + s);
+            STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Reads the first item from a block in the STF format '( {double_constant} ... )' and return true if is not-zero or 'true'
@@ -894,7 +894,7 @@ namespace MSTS
         {
             if (Eof)
             {
-                STFException.TraceError(this, "Unexpected end of file");
+                STFException.TraceWarning(this, "Unexpected end of file");
                 return defaultValue;
             }
             string s = ReadItem();
@@ -917,7 +917,7 @@ namespace MSTS
                         return defaultValue;
                 }
             }
-            STFException.TraceError(this, "Block Not Found - instead found " + s);
+            STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue;
         }
         /// <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
@@ -929,7 +929,7 @@ namespace MSTS
         {
             if (Eof)
             {
-                STFException.TraceError(this, "Unexpected end of file");
+                STFException.TraceWarning(this, "Unexpected end of file");
                 return defaultValue;
             }
             string s = ReadItem();
@@ -946,7 +946,7 @@ namespace MSTS
                 SkipRestOfBlock();
                 return defaultValue;
             }
-            STFException.TraceError(this, "Block Not Found - instead found " + s);
+            STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue;
         }
 
@@ -1150,7 +1150,7 @@ namespace MSTS
                 UpdateTreeAndStepBack(item);
                 if ((!includeReader.Eof) || (item.Length > 0)) return item;
                 if (tree.Count != 0)
-                    STFException.TraceError(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
+                    STFException.TraceWarning(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
                 includeReader.Dispose();
                 includeReader = null;
             }
@@ -1243,7 +1243,7 @@ namespace MSTS
                         if (c != '"')
                         {
                             if (skip_mode) return "";
-                            STFException.TraceError(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
+                            STFException.TraceWarning(this, "Reading an item started with a double-quote character and followed by the + operator but then the next item must also be double-quoted.");
                             return UpdateTreeAndStepBack(itemBuilder.ToString());
                         }
                         c = ReadChar(); // Read the open quote
@@ -1286,7 +1286,7 @@ namespace MSTS
                             return ReadItem(skip_mode, string_mode); // Which will recurse down when includeReader is tested
                         }
                         else
-                            STFException.TraceError(this, "Found an include directive, but it was enclosed inside block parenthesis which is illegal.");
+                            STFException.TraceWarning(this, "Found an include directive, but it was enclosed inside block parenthesis which is illegal.");
                         break;
                     #endregion
                     #region Process special token - skip and comment
@@ -1357,19 +1357,14 @@ namespace MSTS
 	}
 
     public class STFException : Exception
-    // STF errors display the last few lines of the STF file when reporting errors.
     {
-        public static void TraceError(STFReader stf, string message)
-        {
-            Trace.TraceError("{2} in STF {0}:line {1}", stf.FileName, stf.LineNumber, message);
-        }
         public static void TraceWarning(STFReader stf, string message)
         {
-            Trace.TraceWarning("{2} in STF {0}:line {1}", stf.FileName, stf.LineNumber, message);
+            Trace.TraceWarning("{2} in {0}:{1}", stf.FileName, stf.LineNumber, message);
         }
 
         public STFException(STFReader stf, string message)
-            : base(String.Format("{2} in STF {0}:line {1}", stf.FileName, stf.LineNumber, message))
+            : base(String.Format("{2} in {0}:{1}", stf.FileName, stf.LineNumber, message))
         {
         }
     }

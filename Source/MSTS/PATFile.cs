@@ -136,7 +136,7 @@ namespace MSTS
                                 new STFReader.TokenProcessor("trpathnode", ()=>{ --count; trPathNodes.Add(new TrPathNode(stf)); }),
                             });
                             if (count != 0)
-                                STFException.TraceError(stf, "TrPathNodes count incorrect");
+                                STFException.TraceWarning(stf, "TrPathNodes count incorrect");
                         }),
                     });}),
                 });

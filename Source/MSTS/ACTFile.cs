@@ -290,7 +290,7 @@ namespace MSTS {
                     new STFReader.TokenProcessor("tr_activity", ()=>{ Tr_Activity = new Tr_Activity(stf, headerOnly); }),
                 });
                 if (Tr_Activity == null)
-                    STFException.TraceError(stf, "Missing Tr_Activity statement");
+                    STFException.TraceWarning(stf, "Missing Tr_Activity statement");
             }
         }
     }
@@ -308,7 +308,7 @@ namespace MSTS {
                 new STFReader.TokenProcessor("tr_activity_header", ()=>{ Tr_Activity_Header = new Tr_Activity_Header(stf); }),
             });
             if (!headerOnly && (Tr_Activity_File == null))
-                STFException.TraceError(stf, "Missing Tr_Activity_File statement");
+                STFException.TraceWarning(stf, "Missing Tr_Activity_File statement");
         }
     }
 

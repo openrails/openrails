@@ -351,6 +351,7 @@ namespace MSTS
                 }
             }
             if (TreeTexture == null)
+                //Trace.TraceWarning("Forest {0} is missing a TreeTexture.", UID);
             {
                 throw new System.Exception( block.ErrorMessage("Missing texture filename in forest region. UID=" + UID.ToString() ));
             }

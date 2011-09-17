@@ -232,7 +232,7 @@ namespace MSTS
                             case "abs": Abs = true; break;
                             case "no_gantry": NoGantry = true; break;
                             case "semaphore": Semaphore = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceError(stf, "Unknown Signal Type Flag " + stf.ReadString()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown SignalType flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -267,7 +267,7 @@ namespace MSTS
             lights.Sort(SignalLight.Comparer);
             for (var i = 0; i < lights.Count; i++)
                 if (lights[i].Index != i)
-                    STFException.TraceError(stf, "SignalLight index out of range: " + lights[i].Index);
+                    STFException.TraceWarning(stf, "SignalLight index out of range: " + lights[i].Index);
             return lights;
 		}
 
@@ -390,7 +390,7 @@ namespace MSTS
                         switch (stf.ReadString().ToLower())
                         {
                             case "semaphore_change": SemaphoreChange = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown SignalLight Flag " + stf.ReadString()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown SignalLight flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -458,7 +458,7 @@ namespace MSTS
                         switch (stf.ReadString().ToLower())
                         {
                             case "flashing": Flashing = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown DrawLight Flag " + stf.ReadString()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown DrawLight flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -483,7 +483,7 @@ namespace MSTS
             }
             catch (ArgumentException)
             {
-                STFException.TraceError(stf, "Unknown Aspect " + aspectName);
+                STFException.TraceWarning(stf, "Unknown aspect " + aspectName);
                 Aspect = SignalHead.SIGASP.UNKNOWN;
             }
             DrawStateName = stf.ReadString().ToLowerInvariant();
@@ -496,7 +496,7 @@ namespace MSTS
                         switch (stf.ReadString().ToLower())
                         {
                             case "asap": Asap = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown DrawLight Flag " + stf.ReadString()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Unknown DrawLight flag " + stf.ReadString()); break;
                         }
                 }),
             });

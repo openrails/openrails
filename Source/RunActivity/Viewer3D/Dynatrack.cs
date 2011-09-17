@@ -328,7 +328,7 @@ namespace ORTS
                             // "EXPERIMENTAL" header is temporary
                             if (stf.SimisSignature != "SIMISA@@@@@@@@@@JINX0p0t______")
                             {
-                                STFException.TraceError(stf, "Invalid header - file will not be processed. Using DEFAULT profile.");
+                                STFException.TraceWarning(stf, "Invalid header - file will not be processed. Using DEFAULT profile.");
                                 TrackProfile = new TrProfile(renderProcess); // Default profile if no file
                             }
                             else
@@ -340,14 +340,14 @@ namespace ORTS
                                 }
                                 catch (Exception e)
                                 {
-                                    STFException.TraceError(stf, "Track profile STF constructor failed because " + e.Message + ". Using DEFAULT profile.");
+                                    STFException.TraceWarning(stf, "Track profile STF constructor failed because " + e.Message + ". Using DEFAULT profile.");
                                     TrackProfile = new TrProfile(renderProcess); // Default profile if no file
                                 }
                                 finally
                                 {
                                     if (TrackProfile == null)
                                     {
-                                        STFException.TraceError(stf, "Track profile STF constructor failed. Using DEFAULT profile.");
+                                        STFException.TraceWarning(stf, "Track profile STF constructor failed. Using DEFAULT profile.");
                                         TrackProfile = new TrProfile(renderProcess); // Default profile if no file
                                     }
                                 }

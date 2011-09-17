@@ -794,16 +794,12 @@ namespace ORTS
 			outf.Write(Trains.Count);
 			foreach (Train train in Trains)
 			{
-				if (train.GetType() == typeof(Train))
-					outf.Write(0);
-				else if (train.GetType() == typeof(AITrain))
-					outf.Write(1);
-				else
-				{
-					Trace.TraceError("Don't know how to save train type: " + train.GetType().ToString());
-					Debug.Fail("Don't know how to save train type: " + train.GetType().ToString());  // in debug mode, halt on this error
-					outf.Write(1);  // for release version, we'll try to press on anyway
-				}
+                if (train.GetType() == typeof(Train))
+                    outf.Write(0);
+                else if (train.GetType() == typeof(AITrain))
+                    outf.Write(1);
+                else
+                    throw new InvalidDataException(String.Format("Unable to save a train of type {0}", train.GetType()));
 				train.Save(outf);
 			}
 		}

@@ -74,6 +74,7 @@ namespace ORTS
     {
         public readonly TextWriter Writer;
         public readonly bool OnlyErrors;
+        bool LastWrittenFormatted = false;
 
         public ORTraceListener(TextWriter writer)
             : this(writer, false)
@@ -111,35 +112,49 @@ namespace ORTS
                 return;
 
             var output = new StringBuilder();
-            output.AppendLine();
-            output.AppendLine();
-            output.AppendFormat("{0} : {1} : {2} : ", source, eventType, id);
-            output.AppendFormat(format, args);
-            if (eventCache.LogicalOperationStack.Contains(LogicalOperationWriteException))
-            {
-                var error = (Exception)args[0];
-                output.AppendLine(error.ToString());
-            }
-            else if (eventType < TraceEventType.Warning) // Only log a stack trace for critical and error levels.
+            if (!LastWrittenFormatted)
             {
                 output.AppendLine();
-                if ((TraceOutputOptions & TraceOptions.Callstack) != 0)
-                    output.AppendLine(new StackTrace(true).ToString());
+                output.AppendLine();
             }
+            output.Append(eventType);
+            output.Append(": ");
+            if (args.Length == 0)
+                output.Append(format);
+            else
+                output.AppendFormat(format, args);
+
+            // Log exception details if it is an exception.
+            if (eventCache.LogicalOperationStack.Contains(LogicalOperationWriteException))
+                output.AppendLine((args[0] as Exception).ToString());
+            else
+                output.AppendLine();
+
+            // Only log a stack trace for critical and error levels.
+            if ((eventType < TraceEventType.Warning) && (TraceOutputOptions & TraceOptions.Callstack) != 0)
+                output.AppendLine(new StackTrace(true).ToString());
+
             output.AppendLine();
             Writer.Write(output);
+            LastWrittenFormatted = true;
         }
 
         public override void Write(string message)
         {
             if (!OnlyErrors)
+            {
                 Writer.Write(message);
+                LastWrittenFormatted = false;
+            }
         }
 
         public override void WriteLine(string message)
         {
             if (!OnlyErrors)
+            {
                 Writer.WriteLine(message);
+                LastWrittenFormatted = false;
+            }
         }
 
         public override void WriteLine(object o)
@@ -153,6 +168,7 @@ namespace ORTS
             else if (!OnlyErrors)
             {
                 base.WriteLine(o);
+                LastWrittenFormatted = false;
             }
         }
 

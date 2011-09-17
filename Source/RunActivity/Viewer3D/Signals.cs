@@ -43,7 +43,7 @@ namespace ORTS
 			var signalShape = Path.GetFileName(path).ToUpper();
 			if (!viewer.SIGCFG.SignalShapes.ContainsKey(signalShape))
 			{
-				Trace.TraceError("{0} signal {1} has invalid shape {2}.", Location.ToString(), mstsSignal.UID, signalShape);
+				Trace.TraceWarning("{0} signal {1} has invalid shape {2}.", Location.ToString(), mstsSignal.UID, signalShape);
 				return;
 			}
             var mstsSignalShape = viewer.SIGCFG.SignalShapes[signalShape];
@@ -58,7 +58,7 @@ namespace ORTS
 
             if (mstsSignal.SignalUnits == null)
             {
-                Trace.TraceError("{0} signal {1} has no SignalUnits.", Location.ToString(), mstsSignal.UID);
+                Trace.TraceWarning("{0} signal {1} has no SignalUnits.", Location.ToString(), mstsSignal.UID);
                 return;
             }
 
@@ -93,7 +93,7 @@ namespace ORTS
 				}
 				catch (InvalidDataException error)
 				{
-					Trace.WriteLine(error);
+					Trace.TraceWarning(error.Message);
 				}
 #if DEBUG_SIGNAL_SHAPES
 				Console.WriteLine();
@@ -171,15 +171,9 @@ namespace ORTS
 				if (SignalTypeData.Type == SignalTypeDataType.Info)
 				{
 					if (mstsSignalItem.TrSignalDirs == null)
-					{
-						Trace.TraceError("{0} signal {1} unit {2} has no TrSignalDirs.", signalShape.Location, signalShape.UID, index);
-						return;
-					}
-					if (mstsSignalItem.TrSignalDirs.Length != 1)
-					{
-						Trace.TraceError("{0} signal {1} unit {2} has {3} TrSignalDirs; expected 1.", signalShape.Location, signalShape.UID, index, mstsSignalItem.TrSignalDirs.Length);
-						return;
-					}
+                        throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has no TrSignalDirs.", signalShape.Location, signalShape.UID, index));
+                    if (mstsSignalItem.TrSignalDirs.Length != 1)
+                        throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has {3} TrSignalDirs; expected 1.", signalShape.Location, signalShape.UID, index, mstsSignalItem.TrSignalDirs.Length));
 #if DEBUG_SIGNAL_SHAPES
 					Console.Write("  LINK node={0,-5} sd1={2,-1} path={1,-1} sd3={3,-1}", mstsSignalItem.TrSignalDirs[0].TrackNode, mstsSignalItem.TrSignalDirs[0].linkLRPath, mstsSignalItem.TrSignalDirs[0].sd1, mstsSignalItem.TrSignalDirs[0].sd3);
 #endif
@@ -277,7 +271,7 @@ namespace ORTS
 			{
                 if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
 				{
-					Trace.TraceError("Signal type {0} has invalid light texture {1}.", mstsSignalType.Name, mstsSignalType.LightTextureName);
+                    Trace.TraceWarning("Signal type {0} has invalid light texture {1}.", mstsSignalType.Name, mstsSignalType.LightTextureName);
 					Material = Materials.YellowMaterial;
 					Type = SignalTypeDataType.Normal;
 					FlashTimeOn = 1;
@@ -294,7 +288,7 @@ namespace ORTS
                         {
                             if (!viewer.SIGCFG.LightsTable.ContainsKey(mstsSignalLight.Name))
                             {
-                                Trace.TraceError("Signal type {0} has invalid light {1}.", mstsSignalType.Name, mstsSignalLight.Name);
+                                Trace.TraceWarning("Signal type {0} has invalid light {1}.", mstsSignalType.Name, mstsSignalLight.Name);
                                 continue;
                             }
                             var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
@@ -314,7 +308,7 @@ namespace ORTS
 				{
 					if (mstsSignalType.SignalDrawStates.Length != 2)
 					{
-						Trace.TraceError("Signal type {0} has {1} draw states; expected 2.", mstsSignalType.typeName, mstsSignalType.SignalDrawStates.Length);
+						Trace.TraceWarning("Signal type {0} has {1} draw states; expected 2.", mstsSignalType.typeName, mstsSignalType.SignalDrawStates.Length);
 						return;
 					}
 					Aspects.Add(SignalHead.SIGASP.STOP, new SignalAspectData(mstsSignalType, 0));

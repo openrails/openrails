@@ -591,7 +591,7 @@ namespace ORTS
 
             if (wfi.ulDataSize == 0 || ((int)wfi.ulDataSize) == -1)
             {
-                Trace.TraceError("Wave file {0} has invalid length, could not read.", Name);
+                Trace.TraceWarning("Wave file {0} has invalid length, could not read.", Name);
                 return false;
             }
 

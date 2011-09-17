@@ -400,7 +400,7 @@ namespace ORTS
                 case "epholdstart": Type = MSTSNotchType.Lap; break;
                 case "minimalreductionstart": Type = MSTSNotchType.Lap; break;
                 default:
-                    STFException.TraceError(stf, "Unknown notch type: " + type);
+                    STFException.TraceWarning(stf, "Unknown notch type: " + type);
                     break;
             }
         }

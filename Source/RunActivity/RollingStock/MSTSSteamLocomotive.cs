@@ -250,7 +250,7 @@ namespace ORTS
         {
             if (v > 0)
                 return false;
-            Trace.TraceError("Error in " + wagFile + "\r\n   Steam engine value "+name+" must be defined and greater than zero.");
+            Trace.TraceWarning("Steam engine value {1} must be defined and greater than zero in {0}", wagFile, name);
             return true;
         }
 

@@ -29,7 +29,7 @@ namespace MSTS
                     new STFReader.TokenProcessor("tracktype", ()=>{ Add(new TrackType(stf)); }),
                 });
                 if (count != Count)
-                    STFException.TraceError(stf, "Count mismatch.");
+                    STFException.TraceWarning(stf, "Count mismatch.");
             }
 		}
 

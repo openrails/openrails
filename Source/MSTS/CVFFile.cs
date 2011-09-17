@@ -561,8 +561,7 @@ namespace MSTS
                     {
                         // Give up, it won't work
                         // Because later we won't know how to display frames from that
-                        Trace.TraceError(string.Format("Invalid Frames information given for ACE {0} in file {1}.", ACEFile, stf.FileName));
-
+                        Trace.TraceWarning("Invalid Frames information given for ACE {0} in file {1}.", ACEFile, stf.FileName);
                         ACEFile = "";
                         return;
                     }

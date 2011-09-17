@@ -33,7 +33,7 @@ namespace MSTS
                     new STFReader.TokenProcessor("carspawneritem", ()=>{ spawnerDataItems.Add(new CarSpwanerItemData(stf, shapePath)); realCount++;}),
                 });
 				if (count != realCount)
-					STFException.TraceError(stf, "Count mismatch.");
+					STFException.TraceWarning(stf, "Count mismatch.");
 			}
 
 			shapeNames = new string[realCount];

@@ -969,7 +969,7 @@ namespace ORTS
                 smsFilePath = Viewer.Simulator.BasePath + @"\sound\" + filename;
             if (!File.Exists(smsFilePath))
             {
-                Trace.TraceError(wagonFolderSlash + " - can't find " + filename);
+                Trace.TraceWarning("Cannot find {1} car sound file {0}", filename, wagonFolderSlash);
                 return;
             }
 
@@ -1011,7 +1011,7 @@ namespace ORTS
                 path = Viewer.Simulator.BasePath + @"\SOUND\" + filename;
             if (!File.Exists(path))
             {
-                Trace.TraceError("ttype.dat - can't find " + filename);
+                Trace.TraceWarning("Cannot find track sound file {0}", filename);
                 return;
             }
             SoundSources.Add(new SoundSource(Viewer, MSTSWagon, path));

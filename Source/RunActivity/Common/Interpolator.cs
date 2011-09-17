@@ -51,7 +51,7 @@ namespace ORTS
                 STFException.TraceWarning(stf, "Ignoring extra odd value in Interpolator list.");
             int n = list.Count/2;
             if (n < 2)
-                STFException.TraceError(stf, "Interpolator must have at least two value pairs.");
+                STFException.TraceWarning(stf, "Interpolator must have at least two value pairs.");
             X = new float[n];
             Y = new float[n];
             Size = n;
@@ -255,7 +255,7 @@ namespace ORTS
             stf.SkipRestOfBlock();
             int n = xlist.Count;
             if (n < 2)
-                STFException.TraceError(stf, "Interpolator must have at least two x values.");
+                STFException.TraceWarning(stf, "Interpolator must have at least two x values.");
             X = new float[n];
             Y = new Interpolator[n];
             Size = n;

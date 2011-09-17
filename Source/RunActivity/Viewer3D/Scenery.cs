@@ -248,7 +248,7 @@ namespace ORTS
 					worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.QDirection);
 				else
 				{
-					Trace.TraceError("Object {1} is missing Matrix3x3 and QDirection in {0}", WFileName, worldObject.UID);
+                    Trace.TraceWarning("Object {1} is missing Matrix3x3 and QDirection in {0}", WFileName, worldObject.UID);
 					continue;
 				}
 

@@ -190,7 +190,6 @@ namespace ORTS {
 
         [ThreadName("Render")]
         public void Initialize() {
-            Console.WriteLine();
             Materials.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
             if (Settings.SoundDetailLevel > 0) {
                 ALSoundSource.MuteAll();  // while loading

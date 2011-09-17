@@ -128,7 +128,7 @@ namespace MSTS
             });
             // TODO We assume there is only 2 outputs to each junction
             if (TrVectorNode != null && TrPins.Length != 2)
-                Trace.TraceError("TDB DEBUG TVN={0} has {1} pins.", UiD, TrPins.Length);
+                Trace.TraceWarning("TDB DEBUG TVN={0} has {1} pins.", UiD, TrPins.Length);
         }
         public TrJunctionNode TrJunctionNode;
         public TrVectorNode TrVectorNode;
