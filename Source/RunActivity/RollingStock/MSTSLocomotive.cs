@@ -1668,63 +1668,71 @@ namespace ORTS
         /// <param name="FramesCount">Number of frames read from CVF</param>
         /// <param name="FileName">Name of the control ACE file</param>
         /// <returns>Array with Textures disassembled</returns>
-        private static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D tex, int width, int height, int FramesCount, string FileName)
+        private static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, int frameWidth, int frameHeight, int frameCount, string fileName)
         {
-            Texture2D dtex;
-            Color[] arr = new Color[width * height];
-            Texture2D[] dest;
+            var frames = new Texture2D[frameCount];
+            var frameIndex = 0;
 
             // Problem with texture sizes, could not disassemble
-            if (width == 0 || height == 0 || tex.Width / width == 0 || tex.Height / height == 0)
+            if (frameWidth == 0 || frameHeight == 0 || texture.Width / frameWidth == 0 || texture.Height / frameHeight == 0)
             {
-                Trace.TraceWarning(string.Format("Could not disassemble texture {0}. Texture width is {1}, height is {2}; Control width is {3}, height is {4}",
-                    FileName, tex.Width, tex.Height, width, height));
-
-                dest = new Texture2D[FramesCount];
-                for (int i = 0; i < FramesCount; i++)
-                    dest[i] = Materials.MissingTexture;
+                Trace.TraceWarning("Cab control texture {0} could not be disassembled. Texture size {1}x{2}; control size {3}x{4}.", fileName, texture.Width, texture.Height, frameWidth, frameHeight);
+            }
+            else if (texture.Format != SurfaceFormat.Color && texture.Format != SurfaceFormat.Dxt1)
+            {
+                Trace.TraceWarning("Cab control texture {0} has unsupported format {1}; only Color and Dxt1 are supported.", fileName, texture.Format);
             }
             else
             {
-                int wcou = tex.Width / width;
-                int hcou = tex.Height / height;
-                int texcou = FramesCount;
+                var frameCountHorizontal = texture.Width / frameWidth;
+                var frameCountVertical = texture.Height / frameHeight;
 
                 // Problem with texture size, disassemble and later fill with missing the rest
-                if (hcou * wcou != FramesCount)
+                if (frameCountVertical * frameCountHorizontal != frameCount)
                 {
-                    if (hcou * wcou > FramesCount)
-                        texcou = hcou * wcou;
+                    var originalFrames = frameCount;
+                    if (frameCount < frameCountVertical * frameCountHorizontal)
+                        frameCount = frameCountVertical * frameCountHorizontal;
 
-                    Trace.TraceWarning(string.Format("Frames count mismatch in {0}. Specified frames: {1}, texture frames: {2}. Using frames number {3}.",
-                        FileName, FramesCount, hcou * wcou, texcou));
+                    Trace.TraceWarning("Cab control texture {0} has mismatched frame count. Expected {1}; got {2}; using {3}.", fileName, frameCountVertical * frameCountHorizontal, originalFrames, frameCount);
                 }
 
-                dest = new Texture2D[texcou];
-                int indx = 0;
+                var frameTextureWidth = frameWidth;
+                var frameTextureHeight = frameHeight;
+                if (texture.Format == SurfaceFormat.Dxt1) frameTextureWidth = (int)Math.Ceiling((float)frameWidth / 4) * 4;
+                if (texture.Format == SurfaceFormat.Dxt1) frameTextureHeight = (int)Math.Ceiling((float)frameHeight / 4) * 4;
 
-                for (int j = 0; j < hcou; j++)
+                frames = new Texture2D[frameCount];
+                var buffer32 = new Color[frameTextureWidth * frameTextureHeight];
+                var bufferDXT1 = new byte[frameTextureWidth * frameTextureHeight / 2];
+
+                for (var y = 0; y < frameCountVertical; y++)
                 {
-                    for (int i = 0; i < wcou; i++)
+                    for (var x = 0; x < frameCountHorizontal; x++)
                     {
-                        tex.GetData<Color>(0, new Rectangle(i * width, j * height, width, height),
-                            arr, 0, width * height);
+                        var rect = new Rectangle(x * frameWidth, y * frameHeight, frameWidth, frameHeight);
+                        if (texture.Format == SurfaceFormat.Dxt1)
+                            texture.GetData(0, rect, bufferDXT1, 0, bufferDXT1.Length);
+                        else
+                            texture.GetData(0, rect, buffer32, 0, buffer32.Length);
 
-                        dtex = new Texture2D(graphicsDevice, width, height);
-                        dtex.SetData<Color>(arr);
-                        dest[indx] = dtex;
-                        indx++;
+                        var frame = frames[frameIndex++] = new Texture2D(graphicsDevice, frameTextureWidth, frameTextureHeight, 1, TextureUsage.None, texture.Format);
+                        if (texture.Format == SurfaceFormat.Dxt1)
+                            frame.SetData(bufferDXT1);
+                        else
+                            frame.SetData(buffer32);
                     }
                 }
-
-                // Fill missing the rest if has any
-                while (indx < FramesCount)
-                {
-                    dest[indx] = Materials.MissingTexture;
-                    indx++;
-                }
             }
-            return dest;
+
+            // Fill missing the rest if has any
+            while (frameIndex < frameCount)
+            {
+                frames[frameIndex] = Materials.MissingTexture;
+                frameIndex++;
+            }
+
+            return frames;
         }
         
         /// <summary>
