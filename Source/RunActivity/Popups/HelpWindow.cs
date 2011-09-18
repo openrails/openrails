@@ -111,111 +111,114 @@ namespace ORTS.Popups
                     cl.AddHorizontalSeparator();
                     var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
                     var separatorShown = false;
-                    foreach (var @event in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.Events.EventList)
+                    if (owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.Events != null)
                     {
-                        var eventAction = @event as MSTS.EventCategoryAction;
-                        if (eventAction != null)
+                        foreach (var @event in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.Events.EventList)
                         {
-                            if (separatorShown)
-                                scrollbox.AddHorizontalSeparator();
-                            var line = scrollbox.AddLayoutHorizontal(TextHeight);
-                            // Task column
-                            switch (eventAction.Type)
+                            var eventAction = @event as MSTS.EventCategoryAction;
+                            if (eventAction != null)
                             {
-                                case MSTS.EventType.AssembleTrain:
-                                case MSTS.EventType.AssembleTrainAtLocation:
-                                    line.Add(new Label(colWidth * 4, line.RemainingHeight, "Assemble Train"));
-                                    if (eventAction.Type == MSTS.EventType.AssembleTrainAtLocation)
-                                    {
-                                        line = scrollbox.AddLayoutHorizontal(TextHeight);
-                                        line.Add(new Label(colWidth * 4, line.RemainingHeight, "At Location"));
-                                    }
-                                    break;
-                                case MSTS.EventType.DropOffWagonsAtLocation:
-                                    line.Add(new Label(colWidth * 4, line.RemainingHeight, "Drop Off"));
-                                    break;
-                                case MSTS.EventType.PickUpPassengers:
-                                case MSTS.EventType.PickUpWagons:
-                                    line.Add(new Label(colWidth * 4, line.RemainingHeight, "Pick Up"));
-                                    break;
-                            }
-                            if (eventAction.WagonList != null)
-                            {
-                                var location = "";
-                                var locationShown = false;
-                                foreach (MSTS.WorkOrderWagon wagonItem in eventAction.WagonList.WorkOrderWagonList)
+                                if (separatorShown)
+                                    scrollbox.AddHorizontalSeparator();
+                                var line = scrollbox.AddLayoutHorizontal(TextHeight);
+                                // Task column
+                                switch (eventAction.Type)
                                 {
-                                    if (locationShown)
-                                    {
-                                        line = scrollbox.AddLayoutHorizontal(TextHeight);
-                                        line.AddSpace(colWidth * 4, 0);
-                                    }
-
-                                    // Car(s) column
-                                    // Wagon.UiD contains train and wagon indexes packed into single 32-bit value, e.g. 32678 - 0
-                                    var trainIndex = wagonItem.UID >> 16;         // Extract upper 16 bits
-                                    var wagonIndex = wagonItem.UID & 0x0000FFFF;  // Extract lower 16 bits
-                                    var wagonName = trainIndex.ToString() + " - " + wagonIndex.ToString();
-                                    var wagonType = "";
-                                    var wagonFound = false;
-                                    foreach (MSTS.ActivityObject activityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList)
-                                    {
-                                        if (activityObject.ID == trainIndex)
+                                    case MSTS.EventType.AssembleTrain:
+                                    case MSTS.EventType.AssembleTrainAtLocation:
+                                        line.Add(new Label(colWidth * 4, line.RemainingHeight, "Assemble Train"));
+                                        if (eventAction.Type == MSTS.EventType.AssembleTrainAtLocation)
                                         {
-                                            foreach (MSTS.Wagon trainWagon in activityObject.Train_Config.TrainCfg.WagonList)
+                                            line = scrollbox.AddLayoutHorizontal(TextHeight);
+                                            line.Add(new Label(colWidth * 4, line.RemainingHeight, "At Location"));
+                                        }
+                                        break;
+                                    case MSTS.EventType.DropOffWagonsAtLocation:
+                                        line.Add(new Label(colWidth * 4, line.RemainingHeight, "Drop Off"));
+                                        break;
+                                    case MSTS.EventType.PickUpPassengers:
+                                    case MSTS.EventType.PickUpWagons:
+                                        line.Add(new Label(colWidth * 4, line.RemainingHeight, "Pick Up"));
+                                        break;
+                                }
+                                if (eventAction.WagonList != null)
+                                {
+                                    var location = "";
+                                    var locationShown = false;
+                                    foreach (MSTS.WorkOrderWagon wagonItem in eventAction.WagonList.WorkOrderWagonList)
+                                    {
+                                        if (locationShown)
+                                        {
+                                            line = scrollbox.AddLayoutHorizontal(TextHeight);
+                                            line.AddSpace(colWidth * 4, 0);
+                                        }
+
+                                        // Car(s) column
+                                        // Wagon.UiD contains train and wagon indexes packed into single 32-bit value, e.g. 32678 - 0
+                                        var trainIndex = wagonItem.UID >> 16;         // Extract upper 16 bits
+                                        var wagonIndex = wagonItem.UID & 0x0000FFFF;  // Extract lower 16 bits
+                                        var wagonName = trainIndex.ToString() + " - " + wagonIndex.ToString();
+                                        var wagonType = "";
+                                        var wagonFound = false;
+                                        foreach (MSTS.ActivityObject activityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList)
+                                        {
+                                            if (activityObject.ID == trainIndex)
                                             {
-                                                if (trainWagon.UiD == wagonIndex)
+                                                foreach (MSTS.Wagon trainWagon in activityObject.Train_Config.TrainCfg.WagonList)
                                                 {
-                                                    wagonType = trainWagon.Name;
+                                                    if (trainWagon.UiD == wagonIndex)
+                                                    {
+                                                        wagonType = trainWagon.Name;
+                                                        wagonFound = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (wagonFound)
+                                                break;
+                                        }
+                                        if (!wagonFound)
+                                        {
+                                            foreach (var car in owner.Viewer.PlayerTrain.Cars)
+                                            {
+                                                if (car.UiD == wagonItem.UID)
+                                                {
+                                                    wagonType = Path.GetFileNameWithoutExtension(car.WagFilePath);
                                                     wagonFound = true;
                                                     break;
                                                 }
                                             }
                                         }
-                                        if (wagonFound)
-                                            break;
-                                    }
-                                    if (!wagonFound)
-                                    {
-                                        foreach (var car in owner.Viewer.PlayerTrain.Cars)
-                                        {
-                                            if (car.UiD == wagonItem.UID)
-                                            {
-                                                wagonType = Path.GetFileNameWithoutExtension(car.WagFilePath);
-                                                wagonFound = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    line.Add(new Label(colWidth * 3, line.RemainingHeight, wagonName));
-                                    line.Add(new Label(colWidth * 6, line.RemainingHeight, wagonType));
+                                        line.Add(new Label(colWidth * 3, line.RemainingHeight, wagonName));
+                                        line.Add(new Label(colWidth * 6, line.RemainingHeight, wagonType));
 
-                                    // Location column
-                                    if (locationShown)
-                                    {
-                                        line.AddSpace(colWidth * 6, 0);
-                                    }
-                                    else
-                                    {
-                                        var sidingId = eventAction.Type == MSTS.EventType.AssembleTrainAtLocation || eventAction.Type == MSTS.EventType.DropOffWagonsAtLocation ? (uint)eventAction.SidingId : wagonItem.SidingId;
-                                        foreach (var item in owner.Viewer.Simulator.TDB.TrackDB.TrItemTable)
+                                        // Location column
+                                        if (locationShown)
                                         {
-                                            var siding = item as MSTS.SidingItem;
-                                            if (siding != null && siding.TrItemId == sidingId)
-                                            {
-                                                location = siding.ItemName;
-                                                break;
-                                            }
+                                            line.AddSpace(colWidth * 6, 0);
                                         }
-                                        line.Add(new Label(colWidth * 6, line.RemainingHeight, location));
-                                        locationShown = true;
-                                    }
+                                        else
+                                        {
+                                            var sidingId = eventAction.Type == MSTS.EventType.AssembleTrainAtLocation || eventAction.Type == MSTS.EventType.DropOffWagonsAtLocation ? (uint)eventAction.SidingId : wagonItem.SidingId;
+                                            foreach (var item in owner.Viewer.Simulator.TDB.TrackDB.TrItemTable)
+                                            {
+                                                var siding = item as MSTS.SidingItem;
+                                                if (siding != null && siding.TrItemId == sidingId)
+                                                {
+                                                    location = siding.ItemName;
+                                                    break;
+                                                }
+                                            }
+                                            line.Add(new Label(colWidth * 6, line.RemainingHeight, location));
+                                            locationShown = true;
+                                        }
 
-                                    // Status column
-                                    line.Add(new Label(colWidth, line.RemainingHeight, ""));
+                                        // Status column
+                                        line.Add(new Label(colWidth, line.RemainingHeight, ""));
+                                    }
                                 }
+                                separatorShown = true;
                             }
-                            separatorShown = true;
                         }
                     }
                 }));
