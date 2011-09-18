@@ -293,7 +293,7 @@ namespace ORTS
 					if (viewer.Simulator.RDB != null && viewer.Simulator.CarSpawnerFile != null)
 						carSpawners.Add(new CarSpawner((CarSpawnerObj)worldObject, worldMatrix));
 					else
-						Trace.TraceWarning("Ignored car spawner {1} in {0} because route has no RDB or carspawn.dat.", WFileName, worldObject.UID);
+						Trace.TraceWarning("Car spawner {1} ignored because route has no RDB or carspawn.dat in {0}", WFileName, worldObject.UID);
 				}
 				else if (worldObject.GetType() == typeof(MSTS.SidingObj)) {
 					sidings.Add(new SidingLabel(viewer, worldMatrix, (SidingObj)worldObject));

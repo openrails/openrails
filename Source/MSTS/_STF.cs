@@ -1360,11 +1360,11 @@ namespace MSTS
     {
         public static void TraceWarning(STFReader stf, string message)
         {
-            Trace.TraceWarning("{2} in {0}:{1}", stf.FileName, stf.LineNumber, message);
+            Trace.TraceWarning("{2} in {0}:line {1}", stf.FileName, stf.LineNumber, message);
         }
 
         public STFException(STFReader stf, string message)
-            : base(String.Format("{2} in {0}:{1}", stf.FileName, stf.LineNumber, message))
+            : base(String.Format("{2} in {0}:line {1}", stf.FileName, stf.LineNumber, message))
         {
         }
     }

@@ -1787,13 +1787,13 @@ namespace ORTS
         {
             if (arr == null)
             {
-                Trace.TraceWarning(string.Format("Passed null Texture[] for accessing: {0}", FileName));
+                Trace.TraceWarning("Passed null Texture[] for accessing {0}", FileName);
                 return Materials.MissingTexture;
             }
             
             if (arr.Length < 1)
             {
-                Trace.TraceWarning(string.Format("Disassembled texture invalid for: {0}", FileName));
+                Trace.TraceWarning("Disassembled texture invalid for {0}", FileName);
                 return Materials.MissingTexture;
             }
             

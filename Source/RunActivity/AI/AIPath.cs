@@ -53,7 +53,7 @@ namespace ORTS
                     if (node.NextMainTVNIndex < 0)
                     {
                         node.NextMainNode = null;
-                        Trace.TraceWarning("Broken path in " + filename + "\r\n  Cannot find main track for path node " + i);
+                        Trace.TraceWarning("Cannot find main track for node {1} in path {0}", filename, i);
                     }
                 }
                 if (tpn.C != 0xffffffff)
@@ -65,7 +65,7 @@ namespace ORTS
                     if (node.NextSidingTVNIndex < 0)
                     {
                         node.NextSidingNode = null;
-						Trace.TraceWarning("Broken path in " + filename + "\r\n  Cannot find siding track for path node " + i);
+                        Trace.TraceWarning("Cannot find siding track for node {1} in path {0}", filename, i);
                     }
                 }
                 if (node.NextMainNode != null && node.NextSidingNode != null)
