@@ -48,13 +48,10 @@ namespace ORTS
 			}
             var mstsSignalShape = viewer.SIGCFG.SignalShapes[signalShape];
 
-			// Move the optional signal components way off into the sky. We're
-			// re-position all the ones that are visible on this signal later.
-			// For some reason many optional components aren't in the shape,
-			// so we need to handle that.
-			foreach (var mstsSignalSubObj in mstsSignalShape.SignalSubObjs)
-				if (mstsSignalSubObj.Optional && !mstsSignalSubObj.Default && SharedShape.MatrixNames.Contains(mstsSignalSubObj.MatrixName))
-					XNAMatrices[SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName)].M42 += 10000;
+            // Move all hidden signal sub objects way in to the sky.
+            for (var i = 0; i < mstsSignalShape.SignalSubObjs.Count; i++)
+                if ((((mstsSignal.SignalSubObj >> i) & 0x1) == 0) && SharedShape.MatrixNames.Contains(mstsSignalShape.SignalSubObjs[i].MatrixName))
+                    XNAMatrices[SharedShape.MatrixNames.IndexOf(mstsSignalShape.SignalSubObjs[i].MatrixName)].M42 += 10000;
 
             if (mstsSignal.SignalUnits == null)
             {
@@ -81,9 +78,6 @@ namespace ORTS
 					Trace.TraceWarning("{0} signal {1} unit {2} has invalid SubObj {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].SubObj);
 					continue;
 				}
-				// Ensure this head is displayed if it is optional.
-				if (mstsSignalSubObj.Optional && !mstsSignalSubObj.Default && SharedShape.MatrixNames.Contains(mstsSignalSubObj.MatrixName))
-					XNAMatrices[SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName)].M42 -= 10000;
 				SignalObject = signalAndHead.Value.Key;
 				var mstsSignalItem = (MSTS.SignalItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[mstsSignal.SignalUnits.Units[i].TrItem]);
 				try

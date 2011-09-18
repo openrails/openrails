@@ -405,6 +405,7 @@ namespace MSTS
 
 	public class SignalObj : WorldObject
 	{
+        public readonly uint SignalSubObj;
 		public readonly SignalUnits SignalUnits;
 
 		public SignalObj(SBR block, int detailLevel)
@@ -424,6 +425,7 @@ namespace MSTS
 						case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
 						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
 						case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                        case TokenID.SignalSubObj: SignalSubObj = subBlock.ReadUInt(); break;
 						case TokenID.SignalUnits: SignalUnits = new SignalUnits(subBlock); break;
 						default: subBlock.Skip(); break;
 					}
