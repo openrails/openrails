@@ -52,7 +52,7 @@ namespace ORTS {
                     foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List) {
                         Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem;
                         if (Platform != null) {
-                            Tasks.Add(new ActivityTaskPassengerStopAt(task,
+                            Tasks.Add(task = new ActivityTaskPassengerStopAt(task,
                                 i.ArrivalTime,
                                 i.DepartTime,
                                 Platform, Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem));
