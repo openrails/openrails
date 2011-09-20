@@ -1026,7 +1026,70 @@ namespace ORTS
                 return null;
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
-        
+
+ 
+
+        public class Alerter
+        {
+            int AlerterStartTime;
+            int AlerterAlarmTime;
+            public bool AlerterIsEnabled = false;
+            public bool AlerterResetReceived = false;
+
+            public void AlerterEnable(int alarmStart, int alarmEnd)
+            {
+                AlerterIsEnabled = true;
+                AlerterStartTime = alarmStart;
+                AlerterAlarmTime = alarmEnd;
+            }
+
+            public void AlerterDisAble()
+            {
+                AlerterIsEnabled = false;
+            }
+
+            public void AlerterReset()
+            {
+                if (AlerterResetReceived)
+                    AlerterResetReceived = false;
+                else
+                    AlerterResetReceived = true;
+            }
+            
+            public bool AlerterTimerTrigger(int clockTime)
+            {
+                if (AlerterIsEnabled && clockTime >= AlerterAlarmTime)
+                {
+                    //Console.WriteLine("alarm time exceeded");
+                    return true;
+                }
+                else
+                {
+                    //Console.WriteLine("alarm time not exceeded");
+                    return false;
+                }
+            }
+        } //End Class Alerter
+
+        Alerter timerAlerter1 = new Alerter();
+        Alerter timerAlerter2 = new Alerter();
+
+        public void AlerterEnable()
+        {
+            int startTime = (int)Simulator.ClockTime;
+            int alterterAlarm = startTime + 15;
+            int penaltyAlarm = startTime + 30;
+            timerAlerter1.AlerterEnable(startTime, alterterAlarm);
+            timerAlerter2.AlerterEnable(startTime, penaltyAlarm);
+        }
+
+        public void AlerterReset()
+        {
+            timerAlerter1.AlerterReset();
+            timerAlerter2.AlerterReset();
+            AlerterEnable();
+        }
+
         /// <summary>
         /// Used when someone want to notify us of an event
         /// </summary>
@@ -1061,6 +1124,8 @@ namespace ORTS
         /// </summary>
         /// <param name="cvc">The Cab View Control</param>
         /// <returns>The data converted to the requested unit</returns>
+        /// 
+
         public virtual float GetDataOf(CabViewControl cvc)
         {
             float data;
@@ -1173,6 +1238,32 @@ namespace ORTS
                         data = Bell ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.RESET:
+                    {
+                        if (timerAlerter1.AlerterResetReceived)
+                             data = 1;
+                        else
+                            data = 0;
+                        break;
+                    }
+ 
+                case CABViewControlTypes.ALERTER_DISPLAY:
+                    {
+                        if (timerAlerter1.AlerterIsEnabled && timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
+                        {
+                            data = 1;
+                            //Console.WriteLine("Alerter Display");
+                        }
+                        if (timerAlerter2.AlerterIsEnabled  && timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
+                        {
+                            data =2;
+                            //Console.WriteLine("Penalty Breaking");
+                            SetEmergency();
+                        }
+                        else
+                            data = 0;
+                        break;
+                    }
                 case CABViewControlTypes.SANDERS:
                     {
                         data = Sander ? 1 : 0;
@@ -1260,7 +1351,7 @@ namespace ORTS
             return data;
         }
 
-    } // LocomotiveSimulator
+    } // End Class MSTSLocomotive
 
     /// <summary>
     /// Extended CVF data, currently used for CAB light
@@ -1308,7 +1399,8 @@ namespace ORTS
         public Light Light1 = new Light() { Color = new Color(0xFF, 0xD8, 0xB2, 0xFF), Position = new Vector4(320, 360, 155, 2) };
         [ContentSerializer(Optional = true)]
         public Light Light2 = new Light();
-    }
+
+    } // End Class ExtendedCVF
 
     ///////////////////////////////////////////////////
     ///   3D VIEW
@@ -1378,7 +1470,7 @@ namespace ORTS
 
         }
 
-        void SoundBuzzer()
+        public void SoundBuzzer()
         { if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10); }
 
 
@@ -1476,6 +1568,14 @@ namespace ORTS
 			if (UserInput.IsReleased(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOff);
 			if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOn);
 			if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOff);
+
+            // Temporary until key board is wired in for Alerter testing ; comment out controls above
+            //if (UserInput.IsPressed(UserCommands.ControlHorn)) Locomotive.AlerterEnable();       // space bar
+            //if (UserInput.IsPressed(UserCommands.ControlSander)) Locomotive.AlerterDisAble();    // x
+            //if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.AlerterReset();        // b
+            //if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.AlerterReset();       //b
+
+
 			if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
             {
                 switch ((Locomotive.Headlight))
@@ -2425,6 +2525,17 @@ namespace ORTS
                                 indx = 9 + currentDynamicNotch;
                         }
 
+                        break;
+                    }
+
+                case CABViewControlTypes.ALERTER_DISPLAY:
+                    {
+                        indx = (int)data;
+                        break;
+                    }
+                case CABViewControlTypes.RESET:
+                    {
+                        indx = (int)data;
                         break;
                     }
 

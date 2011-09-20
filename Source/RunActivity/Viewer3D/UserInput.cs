@@ -176,9 +176,11 @@ namespace ORTS
             Commands[(int)UserCommands.ControlSander] = new UserCommandKeyInput(0x2D);
             Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput(0x2F);
             Commands[(int)UserCommands.ControlHorn] = new UserCommandKeyInput(0x39);
+
             Commands[(int)UserCommands.ControlBell] = new UserCommandKeyInput(0x30);
             Commands[(int)UserCommands.ControlDoorLeft] = new UserCommandKeyInput(0x10);
             Commands[(int)UserCommands.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
+
             Commands[(int)UserCommands.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlLight] = new UserCommandKeyInput(0x26);
 			Commands[(int)UserCommands.ControlPantographFirst] = new UserCommandKeyInput(0x19);
