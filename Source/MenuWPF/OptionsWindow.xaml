@@ -147,17 +147,18 @@
 								<ColumnDefinition/>
 								<ColumnDefinition Width="2*"/>
 							</Grid.ColumnDefinitions>
-							<Slider x:Name="sliderWOD" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight" Cursor="Hand" Grid.Column="1" SmallChange="1" ValueChanged="sliderWOD_ValueChanged" />
 							<Label x:Name="lblWDO" Content="World Object Density" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
 							<Label x:Name="lblWarningLog" Content="Warning Log" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="2" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<Label x:Name="lblTrainLights" Content="Train Lights" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="3" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<Label x:Name="lblPrecipitation" Content="Precipitation" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="4" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<Label x:Name="lblOverheadWire" Content="Overhead Wire" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="5" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<Label x:Name="lblGraduated" Content="Graduated Release Air Brakes" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="6" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<Label x:Name="lblBrakePipe" Content="Brake Pipe Charging Rate (PSI/s)" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="7" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<Label x:Name="lblDynamicShadows" Content="Dynamic Shadows" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="8" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<Label x:Name="lblUseGlass" Content="Use Glass On In-Game Windows" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="9" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<CheckBox x:Name="chkWarningLog" Content="" HorizontalAlignment="Left" d:LayoutOverrides="Height" Grid.Row="2" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
+							<Label x:Name="lblAlerter" Content="Alerter" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="3" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Label x:Name="lblTrainLights" Content="Train Lights" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="4" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Label x:Name="lblPrecipitation" Content="Precipitation" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="5" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Label x:Name="lblOverheadWire" Content="Overhead Wire" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="6" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Label x:Name="lblGraduated" Content="Graduated Release Air Brakes" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="7" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Label x:Name="lblBrakePipe" Content="Brake Pipe Charging Rate (PSI/s)" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="8" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Label x:Name="lblDynamicShadows" Content="Dynamic Shadows" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="9" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Label x:Name="lblUseGlass" Content="Use Glass On In-Game Windows" HorizontalAlignment="Right" d:LayoutOverrides="Height" Grid.Row="10" VerticalAlignment="Center" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<Slider x:Name="sliderWOD" d:LayoutOverrides="Height" Grid.Row="1" VerticalAlignment="Center" Margin="10,0,0,0" AutoToolTipPlacement="BottomRight" Cursor="Hand" Grid.Column="1" SmallChange="1" ValueChanged="sliderWOD_ValueChanged" />
+							<CheckBox x:Name="chkWarningLog" Content="" HorizontalAlignment="Left" Grid.Row="2" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
 								<CheckBox.RenderTransform>
 									<TransformGroup>
 										<ScaleTransform ScaleX="2" ScaleY="2"/>
@@ -167,7 +168,7 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<CheckBox x:Name="chkTrainLights" Content="" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
+							<CheckBox x:Name="chkAlerter" Content="" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
 								<CheckBox.RenderTransform>
 									<TransformGroup>
 										<ScaleTransform ScaleX="2" ScaleY="2"/>
@@ -177,7 +178,7 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<CheckBox x:Name="chkPrecipitation" Content="" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
+							<CheckBox x:Name="chkTrainLights" Content="" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
 								<CheckBox.RenderTransform>
 									<TransformGroup>
 										<ScaleTransform ScaleX="2" ScaleY="2"/>
@@ -187,7 +188,7 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<CheckBox x:Name="chkOverheadWire" Content="" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
+							<CheckBox x:Name="chkPrecipitation" Content="" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
 								<CheckBox.RenderTransform>
 									<TransformGroup>
 										<ScaleTransform ScaleX="2" ScaleY="2"/>
@@ -197,7 +198,7 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<CheckBox x:Name="chkGraduated" Content="" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
+							<CheckBox x:Name="chkOverheadWire" Content="" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
 								<CheckBox.RenderTransform>
 									<TransformGroup>
 										<ScaleTransform ScaleX="2" ScaleY="2"/>
@@ -207,7 +208,7 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<CheckBox x:Name="chkDinamicShadows" Content="" HorizontalAlignment="Left" Grid.Row="8" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
+							<CheckBox x:Name="chkGraduated" Content="" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
 								<CheckBox.RenderTransform>
 									<TransformGroup>
 										<ScaleTransform ScaleX="2" ScaleY="2"/>
@@ -217,7 +218,18 @@
 									</TransformGroup>
 								</CheckBox.RenderTransform>
 							</CheckBox>
-							<CheckBox x:Name="chkUseGlass" Content="" HorizontalAlignment="Left" Grid.Row="9" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
+                            <TextBox x:Name="txtBrakePipe" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="8" TextWrapping="Wrap" Text="21" Width="162" VerticalAlignment="Center" HorizontalContentAlignment="Right" MaxLines="1" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+							<CheckBox x:Name="chkDinamicShadows" Content="" HorizontalAlignment="Left" Grid.Row="9" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
+								<CheckBox.RenderTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="2" ScaleY="2"/>
+										<SkewTransform/>
+										<RotateTransform/>
+										<TranslateTransform/>
+									</TransformGroup>
+								</CheckBox.RenderTransform>
+							</CheckBox>
+							<CheckBox x:Name="chkUseGlass" Content="" HorizontalAlignment="Left" Grid.Row="10" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Grid.Column="1" Margin="16,0,0,0">
 								<CheckBox.RenderTransform>
 									<TransformGroup>
 										<ScaleTransform ScaleX="2" ScaleY="2"/>
@@ -228,7 +240,6 @@
 								</CheckBox.RenderTransform>
 							</CheckBox>
 							<Label x:Name="lblWDOValue" Content="0" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Center" Grid.Column="2" Margin="16,0,0,0" FontSize="18.667" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-							<TextBox x:Name="txtBrakePipe" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="7" TextWrapping="Wrap" Text="21" Width="162" VerticalAlignment="Center" HorizontalContentAlignment="Right" MaxLines="1" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
 						</Grid>
 					</Border>
 				</Grid>

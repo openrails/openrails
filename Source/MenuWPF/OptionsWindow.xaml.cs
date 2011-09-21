@@ -56,6 +56,7 @@ namespace MenuWPF
                 this.sliderWOD.Value = (int)RK.GetValue("WorldObjectDensity", (int)sliderWOD.Value);
                 this.sliderSound.Value = (int)RK.GetValue("SoundDetailLevel", (int)sliderSound.Value);
                 this.cboResolution.Text = (string)RK.GetValue("WindowSize", (string)cboResolution.Text);
+                this.chkAlerter.IsChecked = (1 == (int)RK.GetValue("Alerter", 0));
                 this.chkTrainLights.IsChecked = (1 == (int)RK.GetValue("TrainLights", 0));
                 this.chkPrecipitation.IsChecked = (1 == (int)RK.GetValue("Precipitation", 0));
                 this.chkOverheadWire.IsChecked = (1 == (int)RK.GetValue("Wire", 0));
@@ -120,6 +121,7 @@ namespace MenuWPF
                     RK.SetValue("WorldObjectDensity", (int)this.sliderWOD.Value);
                     RK.SetValue("SoundDetailLevel", (int)this.sliderSound.Value);
                     RK.SetValue("WindowSize", (string)this.cboResolution.Text);
+                    RK.SetValue("Alerter", this.chkAlerter.IsChecked.Value ? 1 : 0);
                     RK.SetValue("TrainLights", this.chkTrainLights.IsChecked.Value ? 1 : 0);
                     RK.SetValue("Precipitation", this.chkPrecipitation.IsChecked.Value ? 1 : 0);
                     RK.SetValue("Wire", this.chkOverheadWire.IsChecked.Value ? 1 : 0);

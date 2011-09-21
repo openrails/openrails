@@ -31,6 +31,7 @@ namespace ORTS
 		// Please put all user settings in here as auto-properties. Public properties
 		// of type 'string', 'int' and 'bool' are automatically loaded/saved.
 
+        public bool Alerter { get; set; }
 		public int BrakePipeChargingRate { get; set; }
 		public bool DataLogger { get; set; }
 		public bool DynamicShadows { get; set; }

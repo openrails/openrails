@@ -172,6 +172,7 @@ namespace ORTS
             Commands[(int)UserCommands.ControlRetainersOff] = new UserCommandKeyInput(0x1A, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlAlerter] = new UserCommandKeyInput(0x2C);
             Commands[(int)UserCommands.ControlEmergency] = new UserCommandKeyInput(0x0E);
             Commands[(int)UserCommands.ControlSander] = new UserCommandKeyInput(0x2D);
             Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput(0x2F);
@@ -562,6 +563,7 @@ namespace ORTS
         ControlRetainersOff,
         ControlBrakeHoseConnect,
         ControlBrakeHoseDisconnect,
+        ControlAlerter,
         ControlEmergency,
         ControlSander,
         ControlWiper,
