@@ -1471,8 +1471,12 @@ namespace ORTS
         }
 
         public void SoundBuzzer()
-        { if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10); }
-
+        {
+            if (Locomotive.HasStepCtrl)
+            {
+                if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
+            }
+        }
 
         void StartThrottleIncrease()
         {
