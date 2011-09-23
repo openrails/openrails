@@ -72,6 +72,8 @@ namespace ORTS
         public bool CabLightOn = false;
         public bool ShowCab = true;
 
+        bool AlerterIsActive = false;
+
         // wag file data
         public string CabSoundFileName = null;
         public string CVFFileName = null;
@@ -154,6 +156,13 @@ namespace ORTS
                 //If no controller so far, we create a default one
                 ThrottleController = new MSTSNotchController();
                 ThrottleController.StepSize = 0.1f;
+            }
+
+            // Is Altertor option checked in menu
+            if (Program.Simulator.Settings.Alerter)
+            {
+                int startTime = (int)Simulator.ClockTime;
+                AlerterStartUp();
             }
 
             if (CVFFileName != null)
@@ -525,7 +534,7 @@ namespace ORTS
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
             base.Update(elapsedClockSeconds);
-        }
+        } // End Method Update
 
         /// <summary>
         /// Adjusts the MotiveForce to account for adhesion limits
@@ -1036,11 +1045,15 @@ namespace ORTS
             public bool AlerterIsEnabled = false;
             public bool AlerterResetReceived = false;
 
-            public void AlerterEnable(int alarmStart, int alarmEnd)
+            public void AlerterEnableSetup(int alarmStart, int alarmEnd)
             {
-                AlerterIsEnabled = true;
                 AlerterStartTime = alarmStart;
                 AlerterAlarmTime = alarmEnd;
+            }
+
+            public void AlerterEnableSet()
+            {
+                AlerterIsEnabled = true;
             }
 
             public void AlerterDisAble()
@@ -1059,35 +1072,40 @@ namespace ORTS
             public bool AlerterTimerTrigger(int clockTime)
             {
                 if (AlerterIsEnabled && clockTime >= AlerterAlarmTime)
-                {
-                    //Console.WriteLine("alarm time exceeded");
                     return true;
-                }
                 else
-                {
-                    //Console.WriteLine("alarm time not exceeded");
                     return false;
-                }
             }
         } //End Class Alerter
 
         Alerter timerAlerter1 = new Alerter();
         Alerter timerAlerter2 = new Alerter();
 
-        public void AlerterEnable()
+        public void AlerterStartUp()
+        {
+            AlerterEnableGetTime();
+            timerAlerter1.AlerterEnableSet();
+            timerAlerter2.AlerterEnableSet();
+            AlerterIsActive = true;
+        }
+
+        public void AlerterEnableGetTime()
         {
             int startTime = (int)Simulator.ClockTime;
             int alterterAlarm = startTime + 15;
-            int penaltyAlarm = startTime + 30;
-            timerAlerter1.AlerterEnable(startTime, alterterAlarm);
-            timerAlerter2.AlerterEnable(startTime, penaltyAlarm);
+            int penaltyAlarm = startTime + 20;
+            timerAlerter1.AlerterEnableSetup(startTime, alterterAlarm);
+            timerAlerter2.AlerterEnableSetup(startTime, penaltyAlarm);
         }
 
         public void AlerterReset()
         {
-            timerAlerter1.AlerterReset();
-            timerAlerter2.AlerterReset();
-            AlerterEnable();
+            if (AlerterIsActive)
+            {
+                timerAlerter1.AlerterReset();
+                timerAlerter2.AlerterReset();
+                AlerterEnableGetTime();
+            }
         }
 
         /// <summary>
@@ -1241,7 +1259,7 @@ namespace ORTS
                 case CABViewControlTypes.RESET:
                     {
                         if (timerAlerter1.AlerterResetReceived)
-                             data = 1;
+                            data = 1;
                         else
                             data = 0;
                         break;
@@ -1249,17 +1267,28 @@ namespace ORTS
  
                 case CABViewControlTypes.ALERTER_DISPLAY:
                     {
-                        if (timerAlerter1.AlerterIsEnabled && timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
+                        bool alarm1Fired = false;
+                        bool alarm2Fired = false;
+
+                        if (timerAlerter1.AlerterIsEnabled)
                         {
+                            if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
+                                alarm1Fired = true;
+                        }
+
+                        if (timerAlerter2.AlerterIsEnabled)
+                        {
+                            if (timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
+                            {
+                                alarm2Fired = true;
+                                SetEmergency();
+                            }
+                        }
+
+                        if (alarm1Fired)
                             data = 1;
-                            //Console.WriteLine("Alerter Display");
-                        }
-                        if (timerAlerter2.AlerterIsEnabled  && timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
-                        {
-                            data =2;
-                            //Console.WriteLine("Penalty Breaking");
-                            SetEmergency();
-                        }
+                        else if (alarm2Fired)
+                            data = 2;
                         else
                             data = 0;
                         break;
@@ -1576,8 +1605,8 @@ namespace ORTS
             // Temporary until key board is wired in for Alerter testing ; comment out controls above
             //if (UserInput.IsPressed(UserCommands.ControlHorn)) Locomotive.AlerterEnable();       // space bar
             //if (UserInput.IsPressed(UserCommands.ControlSander)) Locomotive.AlerterDisAble();    // x
-            //if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.AlerterReset();        // b
-            //if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.AlerterReset();       //b
+            if (UserInput.IsPressed(UserCommands.ControlAlerter)) Locomotive.AlerterReset();        // z
+            if (UserInput.IsReleased(UserCommands.ControlAlerter)) Locomotive.AlerterReset();       //z
 
 
 			if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
