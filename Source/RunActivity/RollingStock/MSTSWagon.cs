@@ -64,7 +64,14 @@ namespace ORTS
         public float Adhesion1 = .27f;   // 1st MSTS adheasion value
         public float Adhesion2 = .49f;   // 2nd MSTS adheasion value
         public float Adhesion3 = 2;   // 3rd MSTS adheasion value
+        public float Curtius_KnifflerA = 7.5f;               //Curtius-Kniffler constants                   A
+        public float Curtius_KnifflerB = 44.0f;              // (adhesion coeficient)       umax = ---------------------  + C
+        public float Curtius_KnifflerC = 0.161f;             //                                      speedMpS * 3.6 + B
+        public float AdhesionK = 0.7f;   //slip characteristics slope
+        //public AntislipControl AntislipControl = AntislipControl.None;
+        public float AxleInertiaKgm2 = 0;   //axle inertia
         public float WheelSpeedMpS = 0;
+        public float SlipWarningTresholdPercent = 70;
         public bool UseAdvancedAdhesion;
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
@@ -158,6 +165,35 @@ namespace ORTS
                     Adhesion2 = stf.ReadFloat(STFReader.UNITS.Any, null);
                     Adhesion3 = stf.ReadFloat(STFReader.UNITS.Any, null);
                     stf.ReadFloat(STFReader.UNITS.Any, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(or_adhesion(curtius_kniffler":   
+                    stf.MustMatch("(");                      //e.g. Wagon ( OR_adhesion ( Curtius_Kniffler ( 7.5 44 0.161 0.7 ) ) )
+                    Curtius_KnifflerA = stf.ReadFloat(STFReader.UNITS.Any, null);   
+                    Curtius_KnifflerB = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    Curtius_KnifflerC = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    AdhesionK = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(or_adhesion(slipwarningtreshold":
+                    stf.MustMatch("(");
+                    SlipWarningTresholdPercent = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    stf.ReadFloat(STFReader.UNITS.Any, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(or_adhesion(antislip":
+                    stf.MustMatch("(");
+                    //AntislipControl = stf.ReadStringBlock(null);
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(or_adhesion(wheelset(axle(inertia":
+                    stf.MustMatch("(");                    
+                    AxleInertiaKgm2 = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(or_adhesion(wheelset(axle(radius":
+                    stf.MustMatch("(");
+                    AxleInertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(lights":

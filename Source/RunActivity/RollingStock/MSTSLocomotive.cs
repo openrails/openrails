@@ -69,6 +69,7 @@ namespace ORTS
         public float MainResPressurePSI = 130;
         public bool CompressorOn = false;
         public float AverageForceN = 0;
+        public bool PowerOn = false;
         // by GeorgeS
         public bool CabLightOn = false;
         public bool ShowCab = true;
@@ -131,7 +132,7 @@ namespace ORTS
             LocomotiveAxle.DampingNs = MassKG / 1000.0f;
             LocomotiveAxle.AdhesionK = 0.7f;
             LocomotiveAxle.StabilityCorrection = true;
-            CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1.0f),0.001f);
+            CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
             if (AntiSlip)
                 UseAdvancedAdhesion = false;
@@ -430,22 +431,28 @@ namespace ORTS
             // TODO  this is a wild simplification for electric and diesel electric
             float t = ThrottlePercent / 100f;
             float currentSpeedMpS = Math.Abs(SpeedMpS);
-            if (TractiveForceCurves == null)
+
+            //Only if a power is "ON" - pantograph up or diesel is running
+            if (PowerOn)
             {
-                float maxForceN = MaxForceN * t;
-                float maxPowerW = MaxPowerW * t * t;
-                if (maxForceN * currentSpeedMpS > maxPowerW)
-                    maxForceN = maxPowerW / currentSpeedMpS;
-                if (currentSpeedMpS > MaxSpeedMpS)
-                    maxForceN= 0;
-                MotiveForceN = maxForceN;
+                if (TractiveForceCurves == null)
+                {
+                    float maxForceN = MaxForceN * t;
+                    float maxPowerW = MaxPowerW * t * t;
+                    if (maxForceN * currentSpeedMpS > maxPowerW)
+                        maxForceN = maxPowerW / currentSpeedMpS;
+                    if (currentSpeedMpS > MaxSpeedMpS)
+                        maxForceN = 0;
+                    MotiveForceN = maxForceN;
+                }
+                else
+                {
+                    MotiveForceN = TractiveForceCurves.Get(t, currentSpeedMpS);
+                    if (MotiveForceN < 0)
+                        MotiveForceN = 0;
+                }
             }
-            else
-            {
-                MotiveForceN = TractiveForceCurves.Get(t, currentSpeedMpS);
-                if (MotiveForceN < 0)
-                    MotiveForceN = 0;
-            }
+
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0)
             {
@@ -1036,8 +1043,6 @@ namespace ORTS
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
 
- 
-
         public class Alerter
         {
             int AlerterStartTime;
@@ -1169,15 +1174,41 @@ namespace ORTS
                     {
                         if (LocomotiveAxle != null)
                         {
-                            if (FilteredMotiveForceN != 0)
-                                data = this.FilteredMotiveForceN / MaxForceN * (float)cvc.MaxValue;
-                            else
-                                data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)cvc.MaxValue;
+                            data = 0.0f;
+                            if (ThrottlePercent > 0)
+                            {
+                                if (FilteredMotiveForceN != 0)
+                                    data = this.FilteredMotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                                else
+                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)cvc.MaxValue;
+                                data = Math.Abs(data);
+                            }
+                            if (DynamicBrakePercent > 0)
+                            {
+                                if (FilteredMotiveForceN != 0)
+                                    data = this.FilteredMotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                                else
+                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)cvc.MaxValue;
+                                data = -Math.Abs(data);
+                            }
                             break;
                         }
                         data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
                         break;
                     }
+                //case CABViewControlTypes.LOAD_METER:
+                //    {
+                //        if (LocomotiveAxle != null)
+                //        {
+                //            if (FilteredMotiveForceN != 0)
+                //                data = this.FilteredMotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                //            else
+                //                data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)cvc.MaxValue;
+                //            break;
+                //        }
+                //        data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                //        break;
+                //    }
                 case CABViewControlTypes.MAIN_RES:
                     {
                         data = this.MainResPressurePSI;
@@ -1316,7 +1347,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        data = WheelSlip ? 1 : 0;
+                        data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
                         break;
                     }
     

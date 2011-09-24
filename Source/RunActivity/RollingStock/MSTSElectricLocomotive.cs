@@ -38,9 +38,19 @@ namespace ORTS
     public class MSTSElectricLocomotive: MSTSLocomotive
     {
 
+        public bool PantographFirstUp = false;
+        public bool PantographSecondUp = false;
+        public float PantographFirstDelay = 0.0f;
+        public float PantographSecondDelay = 0.0f;
+
+        public IIRFilter VoltageFilter;
+        public float VoltageV = 0.0f;
+
 		public MSTSElectricLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
 			: base(simulator, wagFile, previousCar)
         {
+            VoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
+
             if (AntiSlip)
                 UseAdvancedAdhesion = false;
             else
@@ -114,6 +124,33 @@ namespace ORTS
 
         public override void Update(float elapsedClockSeconds)
         {
+            if (!(PantographFirstUp || PantographSecondUp))
+                PowerOn = false;
+            else
+            {
+                if (PantographFirstUp)
+                {
+                    if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f)
+                    {
+                        PowerOn = true;
+                        PantographFirstDelay = 0.0f;
+                    }
+                }
+
+                if (PantographSecondUp)
+                {
+                    if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f)
+                    {
+                        PowerOn = true;
+                        PantographSecondDelay = 0.0f;
+                    }
+                }
+            }
+            if (PowerOn)
+                VoltageV = VoltageFilter.Filter((float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage, elapsedClockSeconds);
+            else
+                VoltageV = VoltageFilter.Filter(0.0f, elapsedClockSeconds);
+
             base.Update(elapsedClockSeconds);
             Variable2 = Variable1;
         }
@@ -126,6 +163,20 @@ namespace ORTS
             base.SignalEvent(eventID);
         }
 
+        public void SetPantographFirst()
+        {
+            if (!PantographFirstUp)
+                PantographFirstDelay += 3.0f;
+            PantographFirstUp = !PantographFirstUp;
+        }
+
+        public void SetPantographSecond()
+        {
+            if (!PantographSecondUp)
+                PantographSecondDelay += 3.0f;
+            PantographSecondUp = !PantographSecondUp;
+        }
+
         public override float GetDataOf(CabViewControl cvc)
         {
             float data;
@@ -136,7 +187,8 @@ namespace ORTS
                     {
                         if (Pan)
                         {
-                            data = (float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
+                            //data = (float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
+                            data = VoltageV;
                             if (cvc.Units == CABViewControlUnits.KILOVOLTS)
                                 data /= 1000;
                         }
@@ -158,6 +210,23 @@ namespace ORTS
             }
 
             return data;
+        }
+
+        public override string GetStatus()
+        {
+            StringBuilder result = new StringBuilder();
+
+            result.AppendLine();
+            result.AppendLine("Electric locomotive data:");
+            result.Append("Pantographs:           ");
+            if (PantographFirstUp)  result.Append("1st up     ");
+            if (PantographSecondUp) result.Append("2nd up");
+            result.Append("\n");
+
+            result.Append("Main power:             "); if (PowerOn) result.Append("ON");
+            result.Append("\n");
+
+            return result.ToString();
         }
 
 
@@ -188,6 +257,8 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
+            if (UserInput.IsPressed(UserCommands.ControlPantographFirst)) ElectricLocomotive.SetPantographFirst();
+            if (UserInput.IsPressed(UserCommands.ControlPantographSecond)) ElectricLocomotive.SetPantographSecond();
 
             base.HandleUserInput(elapsedTime);
         }

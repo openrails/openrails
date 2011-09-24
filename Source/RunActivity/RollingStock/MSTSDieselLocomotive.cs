@@ -40,9 +40,12 @@ namespace ORTS
         float MaxRPMChangeRate = 0;
         float PercentChangePerSec = .2f;
 
+        public float EngineRPM = 0.0f;        
+
 		public MSTSDieselLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
             : base(simulator, wagFile, previousCar)
         {
+
             if (AntiSlip)
                 UseAdvancedAdhesion = false;
             else
@@ -70,7 +73,10 @@ namespace ORTS
             if (IdleRPM != 0 && MaxRPM != 0 && MaxRPMChangeRate != 0)
             {
                 PercentChangePerSec = MaxRPMChangeRate / (MaxRPM - IdleRPM);
+                EngineRPM = IdleRPM;
             }
+
+
 
             // Diesel locos have step controllers ; here to go around parse prblms
             HasStepCtrl = true;
@@ -131,7 +137,118 @@ namespace ORTS
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            PowerOn = true;
+
             base.Update(elapsedClockSeconds );
+
+            // TODO  this is a wild simplification for diesel electric
+            float t = ThrottlePercent / 100f;
+            float currentSpeedMpS = Math.Abs(SpeedMpS);
+
+            if (PowerOn)
+            {
+                if (TractiveForceCurves == null)
+                {
+                    float maxForceN = MaxForceN * t;
+                    float maxPowerW = MaxPowerW * (EngineRPM - IdleRPM) / (MaxRPM - IdleRPM);
+                    if (maxForceN * currentSpeedMpS > maxPowerW)
+                        maxForceN = maxPowerW / currentSpeedMpS;
+                    if (currentSpeedMpS > MaxSpeedMpS)
+                        maxForceN = 0;
+                    MotiveForceN = maxForceN;
+                }
+                else
+                {
+                    MotiveForceN = TractiveForceCurves.Get(t, currentSpeedMpS);
+                    if (MotiveForceN < 0)
+                        MotiveForceN = 0;
+                }
+            }
+
+
+            if (MaxForceN > 0 && MaxContinuousForceN > 0)
+            {
+                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
+                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+                if (w < 0)
+                    w = 0;
+                AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
+            }
+
+            if (this.IsLeadLocomotive())
+            {
+                switch (Direction)
+                {
+                    case Direction.Forward:
+                        //MotiveForceN *= 1;     //Not necessary
+                        break;
+                    case Direction.Reverse:
+                        MotiveForceN *= -1;
+                        break;
+                    case Direction.N:
+                    default:
+                        MotiveForceN *= 0;
+                        break;
+                }
+            }
+            else
+            {
+                int carCount = 0;
+                int controlEngine = -1;
+
+                // When not LeadLocomotive; check if lead is in Neutral
+                // if so this loco will have no motive force
+                var LeadLocomotive = Simulator.Trains[0];
+
+                foreach (TrainCar car in LeadLocomotive.Cars)
+                {
+                    if (car.IsDriveable)
+                        if (controlEngine == -1)
+                        {
+                            controlEngine = carCount;
+                            if (car.Direction == Direction.N)
+                                MotiveForceN *= 0;
+                            else
+                            {
+                                switch (Direction)
+                                {
+                                    case Direction.Forward:
+                                        MotiveForceN *= 1;     //Not necessary
+                                        break;
+                                    case Direction.Reverse:
+                                        MotiveForceN *= -1;
+                                        break;
+                                    case Direction.N:
+                                    default:
+                                        MotiveForceN *= 0;
+                                        break;
+                                }
+                            }
+                        }
+                    break;
+                } // foreach
+            } // end when not lead loco
+
+            // Variable1 is wheel rotation in m/sec for steam locomotives
+            //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
+            Variable1 = ThrottlePercent / 100f;   // throttle setting
+            //Variable2 = Math.Abs(WheelSpeedMpS);
+
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
+                if (f > 0)
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
+            }
+
+            //Force is filtered due to inductance
+            FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+
+            MotiveForceN = FilteredMotiveForceN;
+
+            LimitMotiveForce(elapsedClockSeconds);
+
+            
 
             // Refined Variable2 setting to graduate
             if (Variable2 != Variable1)
@@ -152,6 +269,8 @@ namespace ORTS
 
                 if ((neg && Variable2 < Variable1) || (!neg && Variable2 > Variable1))
                     Variable2 = Variable1;
+
+                EngineRPM = Variable2 * (MaxRPM - IdleRPM) + IdleRPM;
             }
         }
 
@@ -164,10 +283,25 @@ namespace ORTS
             {
                 // for example
                 // case EventID.BellOn: Bell = true; break;
-                // case EventID.BellOff: Bell = false; break;
+                // case EveantID.BellOff: Bell = false; break;
                 default: break;
             }
             base.SignalEvent(eventID);
+        }
+
+        public override string GetStatus()
+        {
+            StringBuilder result = new StringBuilder();
+
+            result.AppendLine();
+            result.AppendLine("Diesel locomotive data:");
+            result.Append("Diesel engine:             "); if (PowerOn) result.Append("ON");
+            result.Append("\n");
+            result.AppendFormat("Diesel RPM:           {0:F0}", EngineRPM);
+            result.AppendLine();
+
+
+            return result.ToString();
         }
 
     } // class DieselLocomotive

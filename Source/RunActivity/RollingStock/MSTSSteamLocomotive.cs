@@ -407,6 +407,8 @@ namespace ORTS
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            PowerOn = true;
+
             if (this.IsLeadLocomotive())
             {
                 Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
@@ -423,6 +425,7 @@ namespace ORTS
             DamperController.Update(elapsedClockSeconds);
             FiringRateController.Update(elapsedClockSeconds);
 
+            
             base.Update(elapsedClockSeconds);
 
             Variable1 = Math.Abs(SpeedMpS);   // Steam loco's seem to need this.

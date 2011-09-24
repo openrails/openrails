@@ -254,6 +254,19 @@ namespace ORTS
         public float AdhesionConditions { set; get; }
 
         /// <summary>
+        /// Curtius-Kniffler equation A parameter
+        /// </summary>
+        public float CurtiusKnifflerA { set; get; }
+        /// <summary>
+        /// Curtius-Kniffler equation B parameter
+        /// </summary>
+        public float CurtiusKnifflerB { set; get; }
+        /// <summary>
+        /// Curtius-Kniffler equation C parameter
+        /// </summary>
+        public float CurtiusKnifflerC { set; get; }
+
+        /// <summary>
         /// Read/Write correction parameter of adhesion, it has proportional impact on adhesion limit
         /// Should be set to 1.0 for most cases
         /// </summary>
@@ -472,7 +485,11 @@ namespace ORTS
             driveType = AxleDriveType.ForceDriven;
             axleRevolutionsInt.IsLimited = true;
             Adhesion2 = 0.331455f;
-            
+
+            CurtiusKnifflerA = 7.5f;
+            CurtiusKnifflerB = 44.0f;
+            CurtiusKnifflerC = 0.161f;
+
             switch (driveType)
             {
                 case AxleDriveType.NotDriven:
@@ -509,6 +526,11 @@ namespace ORTS
             driveType = AxleDriveType.MotorDriven;
             axleRevolutionsInt.IsLimited = true;
             Adhesion2 = 0.331455f;
+
+            CurtiusKnifflerA = 7.5f;
+            CurtiusKnifflerB = 44.0f;
+            CurtiusKnifflerC = 0.161f;
+
             switch (driveType)
             {
                 case AxleDriveType.NotDriven:
@@ -672,10 +694,10 @@ namespace ORTS
         /// <param name="K">Slip speed correction. If is set K = 0 then K = 0.7 is used</param>
         /// <param name="conditions">Relative weather conditions, usually from 0.2 to 1.0</param>
         /// <returns>Relative force transmitted to the rail</returns>
-        public static float SlipCharacteristics(float slipSpeed, float speed, float K, float conditions, float Adhesion2)
+        public float SlipCharacteristics(float slipSpeed, float speed, float K, float conditions, float Adhesion2)
         {
             speed = Math.Abs(3.6f*speed);
-            float umax = (7.5f / (speed + 44.0f) + 0.161f) * Adhesion2 / 0.331455f; // Curtius - Kniffler equation
+            float umax = (CurtiusKnifflerA / (speed + CurtiusKnifflerB) + CurtiusKnifflerC);// *Adhesion2 / 0.331455f; // Curtius - Kniffler equation
             umax *= conditions;
             if (K == 0.0)
                 K = 1;
