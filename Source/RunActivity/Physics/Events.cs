@@ -11,6 +11,7 @@ namespace ORTS
         public static int SanderOn = 4, SanderOff = 5,
         WiperOn = 6, WiperOff = 7,
         HornOn = 8, HornOff = 9,
+        AlerterSndOn = 56, AlerterSndOff = 57,
         BellOn = 10, BellOff = 11,
         CompressorOn = 12, CompressorOff = 13, TrainBrakeRelease = 14,
         Forward = 15, Reverse = 16, TrainBrakeSet = 17, EngineBrakeSet = 18,

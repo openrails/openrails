@@ -58,6 +58,7 @@ namespace ORTS
     {
         // simulation parameters
         public bool Horn = false;
+        public bool AlerterSnd = false;
         public bool Bell = false;
         public bool Sander = false;  
         public bool Wiper = false;
@@ -507,8 +508,7 @@ namespace ORTS
                         }
                     break;
                 } // foreach
-
-            }
+            } // end when not lead loco
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
@@ -1096,6 +1096,7 @@ namespace ORTS
             int penaltyAlarm = startTime + 20;
             timerAlerter1.AlerterEnableSetup(startTime, alterterAlarm);
             timerAlerter2.AlerterEnableSetup(startTime, penaltyAlarm);
+            SignalEvent(EventID.AlerterSndOff);
         }
 
         public void AlerterReset()
@@ -1104,6 +1105,7 @@ namespace ORTS
             {
                 timerAlerter1.AlerterReset();
                 timerAlerter2.AlerterReset();
+                //SignalEvent(EventID.AlerterOff);
                 AlerterEnableGetTime();
             }
         }
@@ -1117,6 +1119,8 @@ namespace ORTS
             //switch (eventID)
             do
             {
+                if (eventID == EventID.AlerterSndOn) { AlerterSnd = true; break; }
+                if (eventID == EventID.AlerterSndOff) { AlerterSnd = false; break; }
                 if (eventID == EventID.BellOn) { Bell = true; break; }
                 if (eventID == EventID.BellOff) {  Bell = false; break; }
                 if (eventID == EventID.HornOn) { Horn = true; break; }
@@ -1274,6 +1278,7 @@ namespace ORTS
                         {
                             if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
                                 alarm1Fired = true;
+                                //SignalEvent(EventID.AlerterOn);
                         }
 
                         if (timerAlerter2.AlerterIsEnabled)
@@ -1286,11 +1291,17 @@ namespace ORTS
                         }
 
                         if (alarm1Fired)
+                        {
                             data = 1;
+                            SignalEvent(EventID.AlerterSndOn);
+                        }
                         else if (alarm2Fired)
                             data = 2;
                         else
+                        {
                             data = 0;
+                            SignalEvent(EventID.AlerterSndOff);
+                        }
                         break;
                     }
                 case CABViewControlTypes.SANDERS:
@@ -1602,9 +1613,6 @@ namespace ORTS
 			if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOn);
 			if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOff);
 
-            // Temporary until key board is wired in for Alerter testing ; comment out controls above
-            //if (UserInput.IsPressed(UserCommands.ControlHorn)) Locomotive.AlerterEnable();       // space bar
-            //if (UserInput.IsPressed(UserCommands.ControlSander)) Locomotive.AlerterDisAble();    // x
             if (UserInput.IsPressed(UserCommands.ControlAlerter)) Locomotive.AlerterReset();        // z
             if (UserInput.IsReleased(UserCommands.ControlAlerter)) Locomotive.AlerterReset();       //z
 
