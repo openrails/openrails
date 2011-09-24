@@ -59,6 +59,7 @@ namespace ORTS
         // simulation parameters
         public bool Horn = false;
         public bool AlerterSnd = false;
+        public bool VigilanceMonitor = false;
         public bool Bell = false;
         public bool Sander = false;  
         public bool Wiper = false;
@@ -164,7 +165,8 @@ namespace ORTS
             if (Program.Simulator.Settings.Alerter)
             {
                 int startTime = (int)Simulator.ClockTime;
-                AlerterStartUp();
+                if (VigilanceMonitor)
+                    AlerterStartUp();
             }
 
             if (CVFFileName != null)
@@ -281,6 +283,7 @@ namespace ORTS
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
                 case "engine(enginecontrollers(combined_control": HasCombCtrl = true; break;
                 case "engine(diesel": HasStepCtrl = true; break;
+                case "engine(vigilancemonitor": VigilanceMonitor = true; break;
                 
 
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
@@ -753,6 +756,7 @@ namespace ORTS
 
         public void StartReverseIncrease()
         {
+            AlerterReset();
             if (this.IsLeadLocomotive())
             {
                 {
@@ -768,6 +772,7 @@ namespace ORTS
 
         public void StartReverseDecrease()
         {
+            AlerterReset();
             if (this.IsLeadLocomotive())
             {
                 {
@@ -783,6 +788,7 @@ namespace ORTS
 
         public void StartThrottleIncrease()
         {
+            AlerterReset();
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
@@ -815,6 +821,7 @@ namespace ORTS
 
         public void StopThrottleIncrease()
         {
+            AlerterReset();
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
@@ -823,6 +830,7 @@ namespace ORTS
 
         public void StartThrottleDecrease()
         {
+            AlerterReset();
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
@@ -855,6 +863,7 @@ namespace ORTS
 
         public void StopThrottleDecrease()
         {
+            AlerterReset();
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
@@ -868,6 +877,7 @@ namespace ORTS
 
         public void StartTrainBrakeIncrease()
         {
+            AlerterReset();
             TrainBrakeController.StartIncrease();
             // By GeorgeS
             if (EventID.IsMSTSBin)
@@ -876,11 +886,13 @@ namespace ORTS
 
         public void StopTrainBrakeIncrease()
         {
+            AlerterReset();
             TrainBrakeController.StopIncrease();
         }
 
         public void StartTrainBrakeDecrease()
         {
+            AlerterReset();
             TrainBrakeController.StartDecrease();
             // By GeorgeS
             if (EventID.IsMSTSBin)
@@ -889,6 +901,7 @@ namespace ORTS
 
         public void StopTrainBrakeDecrease()
         {
+            AlerterReset();
             TrainBrakeController.StopDecrease();
         }
 
@@ -924,6 +937,7 @@ namespace ORTS
 
         public void StartEngineBrakeIncrease()
         {
+            AlerterReset();
             if (EngineBrakeController == null)
                 return;
 
@@ -932,6 +946,7 @@ namespace ORTS
 
         public void StopEngineBrakeIncrease()
         {
+            AlerterReset();
             if (EngineBrakeController == null)
                 return;
 
@@ -940,6 +955,7 @@ namespace ORTS
 
         public void StartEngineBrakeDecrease()
         {
+            AlerterReset();
             if (EngineBrakeController == null)
                 return;
 
@@ -948,6 +964,7 @@ namespace ORTS
 
         public void StopEngineBrakeDecrease()
         {
+            AlerterReset();
             if (EngineBrakeController == null)
                 return;
 
@@ -980,6 +997,7 @@ namespace ORTS
 
         public void StartDynamicBrakeIncrease()
         {
+            AlerterReset();
             if (!CanUseDynamicBrake())
                 return;
             
@@ -999,6 +1017,7 @@ namespace ORTS
 
         public void StopDynamicBrakeIncrease()
         {
+            AlerterReset();
             if (!CanUseDynamicBrake())
                 return;
 
@@ -1007,6 +1026,7 @@ namespace ORTS
 
         public void StartDynamicBrakeDecrease()
         {
+            AlerterReset();
             if (!CanUseDynamicBrake())
                 return;
 
@@ -1021,6 +1041,7 @@ namespace ORTS
 
         public void StopDynamicBrakeDecrease()
         {
+            AlerterReset();
             if (!CanUseDynamicBrake())
                 return;
 
@@ -1085,6 +1106,8 @@ namespace ORTS
 
         Alerter timerAlerter1 = new Alerter();
         Alerter timerAlerter2 = new Alerter();
+        //bool alarm1Fired = false;
+        //bool alarm2Fired = false;
 
         public void AlerterStartUp()
         {
@@ -1097,8 +1120,8 @@ namespace ORTS
         public void AlerterEnableGetTime()
         {
             int startTime = (int)Simulator.ClockTime;
-            int alterterAlarm = startTime + 15;
-            int penaltyAlarm = startTime + 20;
+            int alterterAlarm = startTime + 30;
+            int penaltyAlarm = startTime + 49;
             timerAlerter1.AlerterEnableSetup(startTime, alterterAlarm);
             timerAlerter2.AlerterEnableSetup(startTime, penaltyAlarm);
             SignalEvent(EventID.AlerterSndOff);
@@ -1108,11 +1131,15 @@ namespace ORTS
         {
             if (AlerterIsActive)
             {
-                timerAlerter1.AlerterReset();
-                timerAlerter2.AlerterReset();
-                //SignalEvent(EventID.AlerterOff);
                 AlerterEnableGetTime();
             }
+        }
+
+        public void AlerterResetExternal()
+        {
+            timerAlerter1.AlerterReset();
+            timerAlerter2.AlerterReset();
+            AlerterEnableGetTime();
         }
 
         /// <summary>
@@ -1153,8 +1180,43 @@ namespace ORTS
         /// <returns>The data converted to the requested unit</returns>
         /// 
 
+        public void CheckVigilance()
+        {
+
+            {
+                bool alarm1Fired = false;
+                bool alarm2Fired = false;
+
+                if (timerAlerter1.AlerterIsEnabled)
+                {
+                    if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
+                        alarm1Fired = true;
+                    //SignalEvent(EventID.AlerterOn);
+                }
+
+                if (timerAlerter2.AlerterIsEnabled)
+                {
+                    if (timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
+                    {
+                        alarm2Fired = true;
+                        SetEmergency();
+                    }
+                }
+
+                if (alarm1Fired)
+                {
+                    SignalEvent(EventID.AlerterSndOn);
+                }
+                else
+                {
+                    SignalEvent(EventID.AlerterSndOff);
+                }
+            }
+        }
+
         public virtual float GetDataOf(CabViewControl cvc)
         {
+            CheckVigilance();
             float data;
             switch (cvc.ControlType)
             {
@@ -1309,7 +1371,6 @@ namespace ORTS
                         {
                             if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
                                 alarm1Fired = true;
-                                //SignalEvent(EventID.AlerterOn);
                         }
 
                         if (timerAlerter2.AlerterIsEnabled)
@@ -1317,7 +1378,6 @@ namespace ORTS
                             if (timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
                             {
                                 alarm2Fired = true;
-                                SetEmergency();
                             }
                         }
 
@@ -1644,8 +1704,8 @@ namespace ORTS
 			if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOn);
 			if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOff);
 
-            if (UserInput.IsPressed(UserCommands.ControlAlerter)) Locomotive.AlerterReset();        // z
-            if (UserInput.IsReleased(UserCommands.ControlAlerter)) Locomotive.AlerterReset();       //z
+            if (UserInput.IsPressed(UserCommands.ControlAlerter)) Locomotive.AlerterResetExternal();        // z
+            if (UserInput.IsReleased(UserCommands.ControlAlerter)) Locomotive.AlerterResetExternal();       //z
 
 
 			if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
