@@ -310,8 +310,11 @@ namespace ORTS
 
 		private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead)
 		{
+            drivenTrain.ClearTrackOccupied();
+            train.ClearTrackOccupied();
 			drivenTrain.LeadLocomotive = lead;
 			drivenTrain.CalculatePositionOfCars(0);
+            drivenTrain.SetTrackOccupied();
 
 			FinishCoupling(drivenTrain, train);
 
@@ -320,7 +323,10 @@ namespace ORTS
 
 		private void FinishRearCoupling(Train drivenTrain, Train train)
 		{
+            drivenTrain.ClearTrackOccupied();
+            train.ClearTrackOccupied();
 			drivenTrain.RepositionRearTraveller();
+            drivenTrain.SetTrackOccupied();
 			FinishCoupling(drivenTrain, train);
 			drivenTrain.LastCar.SignalEvent(EventID.Couple);
 		}
@@ -873,6 +879,7 @@ namespace ORTS
 			++i;
 
 			TrainCar lead = train.LeadLocomotive;
+            train.ClearTrackOccupied();
 			// move rest of cars to the new train
 			Train train2 = new Train(this);
 			for (int k = i; k < train.Cars.Count; ++k)
@@ -895,6 +902,7 @@ namespace ORTS
 			train2.CalculatePositionOfCars(0);  // fix the front traveller
 			train.RepositionRearTraveller();    // fix the rear traveller
             train2.InitializeSignals();
+            train.SetTrackOccupied();
 
 			Trains.Add(train2);
 			train2.LeadLocomotive = lead;

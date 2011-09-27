@@ -259,8 +259,11 @@ namespace ORTS
                 Simulator.Trains.Remove(train);
                 Dispatcher.Release(train);
                 if (train.Cars.Count > 0 && train.Cars[0].Train == train)
+                {
+                    train.ClearTrackOccupied();
                     foreach (TrainCar car in train.Cars)
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+                }
             }
         }
 
