@@ -161,7 +161,7 @@ namespace MSTS
             int count = stf.ReadInt(STFReader.UNITS.None, null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
-                new STFReader.TokenProcessor("guage", ()=>{ Add(new CVCGauge(stf, basepath)); }),
+                new STFReader.TokenProcessor("gauge", ()=>{ Add(new CVCGauge(stf, basepath)); }),
                 new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
                 new STFReader.TokenProcessor("twostate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
                 new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
