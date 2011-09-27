@@ -17,7 +17,6 @@ float4 Light1Pos;     // Dashboard Light 1 cone position
 float4 Light2Pos;     // Dashboard Light 2 cone position
 float3 Light1Col;     // Light 1 color
 float3 Light2Col;     // Light 2 color
-//float  LightRange;   // Dashboard light illumination range
 bool   isLight;      // Dashboard light is on
 float overcast;
 
@@ -58,19 +57,15 @@ float3 _LightEffect(float2 orig)
 	float2 diffvect = Light1Pos.xy - orig;
 	diffvect.x /= Light1Pos.w;
 	float dist1 = length(diffvect);
-	//float dist1 = distance(Light1Pos.xy, orig);
 	float lum1 = saturate ((light1Range - dist1) / 200) * lightStrength;
 
 	float light2Range = Light2Pos.z;
 	diffvect = Light2Pos.xy - orig;
 	diffvect.x /= Light2Pos.w;
 	float dist2 = length(diffvect);
-	//float dist2 = distance(Light2Pos.xy, orig);
 	float lum2 = saturate ((light2Range - dist2) / 200) * lightStrength;
 
 	return saturate (lum1 * Light1Col + lum2 * Light2Col);
-	//return saturate (lum1 + lum2);
-	//return lum1;
 }
 
 float4 PixelShaderFunction(PIXEL_INPUT In) : COLOR0
@@ -79,7 +74,7 @@ float4 PixelShaderFunction(PIXEL_INPUT In) : COLOR0
 	const float NightBrightness = 0.2 + isLight * 0.15;
 	const float3 litcolor = { 1, 0.85, 0.7 };
 
-	float4 origColor = tex2D(ScreenS, In.TexCoords);
+	float4 origColor = tex2D(ScreenS, In.TexCoords) * In.Color;
 	float3 shadColor = origColor.rgb;
 	shadColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNightTex));
 	if (isLight)
@@ -89,7 +84,6 @@ float4 PixelShaderFunction(PIXEL_INPUT In) : COLOR0
 		shadColor += origColor * _LightEffect(Pos);
 	}
     return float4(min(shadColor, origColor * 1.2), origColor.a);
-    //return float4(shadColor, origColor.a);
 }
 
 technique CabShading
