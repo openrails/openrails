@@ -33,17 +33,13 @@ namespace ORTS
 		public int noSignals = 0;
 		private int foundSignals = 0;
 
-        public SignalGraph SignalGraph = null;
+
 
 		public Signals(Simulator simulator, SIGCFGFile sigcfg)
 		{
 			trackDB = simulator.TDB.TrackDB;
 			BuildSignalList(simulator.TDB.TrackDB.TrItemTable, simulator.TDB.TrackDB.TrackNodes);
-            if (foundSignals > 0)
-            {
-                AddCFG(sigcfg);  // Add links to the sigcfg.dat file
-                SignalGraph = new SignalGraph(simulator, this);
-            }
+            if (foundSignals > 0) AddCFG(sigcfg);  // Add links to the sigcfg.dat file
 		}
 
 		// Restore state to resume a saved game
@@ -61,7 +57,6 @@ namespace ORTS
 		{
 			if (foundSignals > 0)
 			{
-                SignalGraph.UpdateJunctionSignals();
 				foreach (SignalObject signal in signalObjects)
 				{
 					if (signal != null) // to cater for orphans. RE bug!
@@ -157,7 +152,6 @@ namespace ORTS
 										{
 											sigItem.sigObj = foundSignals;
 											lastSignal = AddSignal(index, i, (int)sigItem.Direction, lastSignal, TrItems, trackNodes);
-                                            sigItem.sigObj = lastSignal;
 										}
 									}
 								}
@@ -177,8 +171,7 @@ namespace ORTS
 										{
 											sigItem.sigObj = foundSignals;
 											lastSignal = AddSignal(index, i, (int)sigItem.Direction, lastSignal, TrItems, trackNodes);
-                                            sigItem.sigObj = lastSignal;
-                                        }
+										}
 									}
 								}
 							}
@@ -1260,7 +1253,6 @@ namespace ORTS
 				rearSigRef = -2;
 				prevSigRef = -2;
 				if (nextSigRef >= 0 && askPermisiion) signalObjects[nextSigRef].hasPermission = Signal.PERMISSION.GRANTED;
-                signals.SignalGraph.UpdateSignals();
 			}
 		}
 
@@ -1311,7 +1303,7 @@ namespace ORTS
 			if (nextSigRef >= 0)
 			{
 				// Train has entered block controled by this signal
-				//signalObjects[nextSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
+				signalObjects[nextSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
 				signalObjects[nextSigRef].hasPermission = PERMISSION.DENIED;
 				nextSigRef = signalObjects[nextSigRef].GetNextSignal();
 			}
@@ -1355,51 +1347,6 @@ namespace ORTS
 		{
 			if (nextSigRef > 0) return signalObjects[nextSigRef].hasPermission; else return PERMISSION.DENIED;
 		}
-
-        private Train Train = null;
-        private SignalGraphLocation FrontSGL = null;
-        private SignalGraphLocation RearSGL = null;
-        private float TrainLength = 0;
-        /// <summary>
-        /// Initiallizes the signal system track occupancy information for the specified train.
-        /// </summary>
-        /// <param name="train"></param>
-        public void SetTrackOccupied(Train train)
-        {
-            if (signals == null || signals.SignalGraph == null)
-                return;
-            Train = train;
-            RearSGL= signals.SignalGraph.FindLocation(train.RearTDBTraveller);
-            FrontSGL = new SignalGraphLocation(RearSGL);
-            FrontSGL.ChangeOccupancy(1);
-            FrontSGL.Move(train.Length, 1);
-            TrainLength = train.Length;
-        }
-        /// <summary>
-        /// Removes a train from the signal system track occupancy information.
-        /// </summary>
-        public void ClearTrackOccupied()
-        {
-            if (Train == null)
-                return;
-            RearSGL.Move(TrainLength, -1);
-            RearSGL.ChangeOccupancy(-1);
-            Train = null;
-        }
-        /// <summary>
-        /// Updates the signal system track occupancy information for a train whose rear traveller has moved distanceM meters forward.
-        /// The train length change is used to determine the distance the forward end of the train has moved.
-        /// </summary>
-        /// <param name="distanceM"></param>
-        public void UpdateTrackOccupancy(float distanceM)
-        {
-            if (Train == null || distanceM==0)
-                return;
-            float dl = Train.Length - TrainLength;
-            TrainLength = Train.Length;
-            FrontSGL.Move(distanceM + dl, 1);
-            RearSGL.Move(distanceM, -1);
-        }
 
 		//public TDBTraveller FrontTDBTraveler
 		//{

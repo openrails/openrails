@@ -192,17 +192,8 @@ namespace ORTS
 
             nextSignal = Simulator.Signals.FindNearestSignal(FrontTDBTraveller);
             distanceToSignal = nextSignal.DistanceToSignal(FrontTDBTraveller);
-            //nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
-            nextSignal.SetTrackOccupied(this);
+            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
             // if (isPlayerTrain) nextSignal.SetSignalState(Signal.SIGNALSTATE.STOP);
-        }
-        public void SetTrackOccupied()
-        {
-            nextSignal.SetTrackOccupied(this);
-        }
-        public void ClearTrackOccupied()
-        {
-            nextSignal.ClearTrackOccupied();
         }
 
         //
@@ -211,7 +202,7 @@ namespace ORTS
         public void ResetSignal(bool askPermisiion)
         {
             nextSignal.Reset(FrontTDBTraveller, askPermisiion);
-            //nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
             spad = false;
         }
 
@@ -323,7 +314,7 @@ namespace ORTS
                 }
 			}
 
-			if (!spad) UpdateSignalState(distanceM);
+			if (!spad) UpdateSignalState();
 			UpdateCrossingState(); //update crossings in viewing range
 
 		} // end Update
@@ -332,10 +323,8 @@ namespace ORTS
 		//
 		//  Update the distance to and aspect of next signal
 		//
-		private void UpdateSignalState(float distanceM)
+		private void UpdateSignalState()
 		{
-            if (nextSignal == null)
-                return;
 			float dist = nextSignal.DistanceToSignal(FrontTDBTraveller);
 			if (dist <= 0.0f)
 			{
@@ -348,8 +337,7 @@ namespace ORTS
 				nextSignal.NextSignal();
 				dist = nextSignal.DistanceToSignal(FrontTDBTraveller);
 			}
-			//nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
-            nextSignal.UpdateTrackOccupancy(distanceM);
+			nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
 			distanceToSignal = dist;
 			TMaspect = nextSignal.GetMonitorAspect();
 			CABAspect = nextSignal.GetAspect();     // By GeorgeS

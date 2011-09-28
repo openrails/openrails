@@ -395,7 +395,6 @@ namespace ORTS
 			//Console.WriteLine("uncouple {0} {1} {2} {3}", nCars, n1, n2, Cars.Count);
 			if (n1 > n2 || n2 > Cars.Count)
 				return;
-            ClearTrackOccupied();
 			// move rest of cars to the new train
 			Train train2 = new Train(Simulator);
 			for (int k = n1; k < n2; ++k)
@@ -422,13 +421,12 @@ namespace ORTS
 				train2.CalculatePositionOfCars(0);  // fix the front traveller
 				RepositionRearTraveller();    // fix the rear traveller
 			}
-            SetTrackOccupied();
             train2.InitializeSignals();
-            AI.Simulator.Trains.Add(train2);
+			AI.Simulator.Trains.Add(train2);
 			if (nCars != 0)
 				Update(0);   // stop the wheels from moving etc
 			train2.Update(0);  // stop the wheels from moving etc
-            if (nCars > 0)
+			if (nCars > 0)
 				Cars[nCars - 1].SignalEvent(EventID.Uncouple);
 			else if (nCars < 0)
 				Cars[0].SignalEvent(EventID.Uncouple);
