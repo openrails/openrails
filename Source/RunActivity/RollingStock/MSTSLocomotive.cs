@@ -2518,7 +2518,7 @@ namespace ORTS
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
-            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
             if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
@@ -2763,20 +2763,28 @@ namespace ORTS
             Color textColor;
             try
             {
-                if (((CVCDigital)_CabViewControl).OldValue != 0 && ((CVCDigital)_CabViewControl).OldValue > _Num && ((CVCDigital)_CabViewControl).DecreaseColor.A != 0)
+                if (((CVCDigital)_CabViewControl).OldValue != 0 && ((CVCDigital)_CabViewControl).OldValue
+                        > _Num && ((CVCDigital)_CabViewControl).DecreaseColor.A != 0)
                 {
                     for (int i = 0; i < (int)((CVCDigital)_CabViewControl).Accuracy; i++)
                     {
                         sbAccuracy.Append("0");
                     }
+
                     for (int i = 0; i < (int)((CVCDigital)_CabViewControl).LeadingZeros; i++)
                     {
                         sbLeadingZeros.Append("0");
                     }
-                    displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", Math.Abs(_Num));
-                    textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).DecreaseColor.A, B = (byte)((CVCDigital)_CabViewControl).DecreaseColor.B, G = (byte)((CVCDigital)_CabViewControl).DecreaseColor.G, R = (byte)((CVCDigital)_CabViewControl).DecreaseColor.R };
+
+                    displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + 
+                        (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", Math.Abs(_Num));
+                    textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).DecreaseColor.A,
+                        B = (byte)((CVCDigital)_CabViewControl).DecreaseColor.B,
+                        G = (byte)((CVCDigital)_CabViewControl).DecreaseColor.G,
+                        R = (byte)((CVCDigital)_CabViewControl).DecreaseColor.R };
 
                 }
+
                 else if (_Num < 0 && ((CVCDigital)_CabViewControl).NegativeColor.A != 0)
                 {
                     for (int i = 0; i < (int)((CVCDigital)_CabViewControl).Accuracy; i++)
@@ -2787,26 +2795,36 @@ namespace ORTS
                     {
                         sbLeadingZeros.Append("0");
                     }
-                    displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", Math.Abs(_Num));
-                    textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).NegativeColor.A, B = (byte)((CVCDigital)_CabViewControl).NegativeColor.B, G = (byte)((CVCDigital)_CabViewControl).NegativeColor.G, R = (byte)((CVCDigital)_CabViewControl).NegativeColor.R };
-
+                    displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + 
+                        (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", Math.Abs(_Num));
+                    textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).NegativeColor.A,
+                        B = (byte)((CVCDigital)_CabViewControl).NegativeColor.B,
+                        G = (byte)((CVCDigital)_CabViewControl).NegativeColor.G,
+                        R = (byte)((CVCDigital)_CabViewControl).NegativeColor.R };
                 }
+
                 else
                 {
                     for (int i = 0; i < (int)((CVCDigital)_CabViewControl).Accuracy; i++)
                     {
                         sbAccuracy.Append("0");
                     }
+
                     for (int i = 0; i < (int)((CVCDigital)_CabViewControl).LeadingZeros; i++)
                     {
                         sbLeadingZeros.Append("0");
                     }
+
                     if (((CVCDigital)_CabViewControl).PositiveColor.A != 0)
                     {
-                        displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", _Num);
-                        textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).PositiveColor.A, B = (byte)((CVCDigital)_CabViewControl).PositiveColor.B, G = (byte)((CVCDigital)_CabViewControl).PositiveColor.G, R = (byte)((CVCDigital)_CabViewControl).PositiveColor.R };
-
+                        displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + 
+                            (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", _Num);
+                        textColor = new Color { A = (byte)((CVCDigital)_CabViewControl).PositiveColor.A,
+                            B = (byte)((CVCDigital)_CabViewControl).PositiveColor.B,
+                            G = (byte)((CVCDigital)_CabViewControl).PositiveColor.G,
+                            R = (byte)((CVCDigital)_CabViewControl).PositiveColor.R };
                     }
+
                     else
                     {
                         displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", _Num);
@@ -2814,8 +2832,11 @@ namespace ORTS
 
                     }
                 }
-                Materials.SpriteBatchMaterial.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(), _ScaleToScreen, SpriteEffects.None, 0);
-                ((CVCDigital)_CabViewControl).OldValue = _Num;
+                Materials.SpriteBatchMaterial.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(),
+                    _ScaleToScreen, SpriteEffects.None, 0);
+                //((CVCDigital)_CabViewControl).OldValue = _Num;
+                // The line commente out above is a temporary fix for the flashing AMP on Dash 9
+                // commit v837 for a web link describint the details
             }
             catch (Exception ex)
             {
