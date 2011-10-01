@@ -25,44 +25,9 @@ namespace ORTS
     /// </summary>
     public class InfoDisplay
     {
-        // Set this to the maximum number of columns that'll be used.
-        const int ColumnCount = 9;
-
-        // Set to distance from top-left corner to place text.
-        const int TextOffset = 10;
-
-        // Set to the distance from the above offset to place each column. Length must equal ColumnCount.
-        static readonly int[] TextColumnOffsets = new[] {
-            0,
-            120,
-            1 * 60,
-            2 * 60,
-            3 * 60,
-            4 * 60,
-            5 * 60,
-            6 * 60,
-            7 * 60,
-        };
-
-        // Name each column and use to access the Text and TextPosition arrays.
-        enum Columns
-        {
-            Labels,
-            BasicInfo,
-            CarColumn1,
-            CarColumn2,
-            CarColumn3,
-            CarColumn4,
-            CarColumn5,
-            CarColumn6,
-            CarColumn7,
-        }
-
         readonly Viewer3D Viewer;
-        readonly StringBuilder[] TextColumns = new StringBuilder[ColumnCount];
-        readonly TextPrimitive[] TextPrimitives = new TextPrimitive[ColumnCount];
-        readonly Action[] TextPages;
         readonly DataLogger Logger = new DataLogger();
+        readonly int ProcessorCount = System.Environment.ProcessorCount;
 
         bool DrawCarNumber = false;
         // F6 reveals labels for both sidings and platforms.
@@ -73,14 +38,9 @@ namespace ORTS
         SpriteBatchMaterial TextMaterial;
         ActivityInforMaterial DrawInforMaterial;
 
-        int TextPage = 1;
-
-        Matrix Matrix = Matrix.Identity;
+        Matrix Identity = Matrix.Identity;
         int FrameNumber = 0;
         double LastUpdateRealTime = 0;   // update text message only 10 times per second
-        ElapsedTime ElapsedTime = new ElapsedTime();
-
-        readonly int ProcessorCount = System.Environment.ProcessorCount;
 
         [StructLayout(LayoutKind.Sequential, Size = 40)]
         struct PROCESS_MEMORY_COUNTERS
@@ -108,28 +68,9 @@ namespace ORTS
 
         public InfoDisplay(Viewer3D viewer)
         {
-            Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
-            Debug.Assert(TextColumnOffsets.Length == ColumnCount, "TextColumnOffsets must have ColumnCount entries.");
             Viewer = viewer;
             TextMaterial = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
             DrawInforMaterial = (ActivityInforMaterial)Materials.Load(Viewer.RenderProcess, "DrawInforMaterial");
-
-            for (var i = 0; i < TextColumns.Length; i++)
-            {
-                TextColumns[i] = new StringBuilder();
-                TextPrimitives[i] = new TextPrimitive(TextMaterial, new Point(TextOffset + TextColumnOffsets[i], TextOffset), Color.White, viewer.WindowManager.TextFontDefaultOutlined);
-            }
-
-            TextPages = new Action[] {
-                TextPageCommon,
-                TextPageEmpty,
-                TextPageBrakeInfo,
-				TextPageForceInfo,
-                TextPageDispatcherInfo,
-#if DEBUG
-				TextPageDebugInfo,
-#endif
-            };
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
@@ -146,9 +87,6 @@ namespace ORTS
 
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.DisplayHUD))
-                TextPage = (TextPage + 1) % TextPages.Length;
-
             if (UserInput.IsPressed(UserCommands.DebugLogger))
             {
                 Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
@@ -196,24 +134,12 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             FrameNumber++;
-            ElapsedTime += elapsedTime;
 
             if (Viewer.RealTime - LastUpdateRealTime >= 0.25)
             {
-                for (var i = 0; i < TextColumns.Length; i++)
-                    TextColumns[i].Length = 0;
-
                 double elapsedRealSeconds = Viewer.RealTime - LastUpdateRealTime;
                 LastUpdateRealTime = Viewer.RealTime;
                 Profile(elapsedRealSeconds);
-                UpdateText(elapsedRealSeconds);
-                ElapsedTime.Reset();
-            }
-
-            for (var i = 0; i < TextColumns.Length; i++)
-            {
-                TextPrimitives[i].Text = TextColumns[i].ToString();
-                frame.AddPrimitive(TextPrimitives[i].Material, TextPrimitives[i], RenderPrimitiveGroup.Overlay, ref Matrix);
             }
 
             //Here's where the logger stores the data from each frame
@@ -252,7 +178,7 @@ namespace ORTS
                 {
                     frame.AddPrimitive(DrawInforMaterial,
                         new ActivityInforPrimitive(DrawInforMaterial, tcar),
-                            RenderPrimitiveGroup.World, ref Matrix);
+                            RenderPrimitiveGroup.World, ref Identity);
                 }
 
                 //	UpdateCarNumberText(frame, elapsedTime);
@@ -267,7 +193,7 @@ namespace ORTS
                         {
                             if (sd != null) frame.AddPrimitive(DrawInforMaterial,
                                 new ActivityInforPrimitive(DrawInforMaterial, sd, Color.Coral),
-                                RenderPrimitiveGroup.World, ref Matrix);
+                                RenderPrimitiveGroup.World, ref Identity);
                         }
                     }
                     if (DrawPlatform == true && w != null && w.platforms != null)
@@ -276,261 +202,11 @@ namespace ORTS
                         {
                             if (pd != null) frame.AddPrimitive(DrawInforMaterial,
                                 new ActivityInforPrimitive(DrawInforMaterial, pd, Color.CornflowerBlue),
-                                RenderPrimitiveGroup.World, ref Matrix);
+                                RenderPrimitiveGroup.World, ref Identity);
                         }
                     }
                 }
             }
-        }
-
-        void UpdateText(double elapsedRealSeconds)
-        {
-            if (TextPage > 0)
-                TextPages[0]();
-            if (TextPage > 1)
-                TextPages[TextPage]();
-        }
-
-        void TextPageCommon()
-        {
-            var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
-            var playerTrain = Viewer.PlayerLocomotive.Train;
-            var showMUReverser = Math.Abs(playerTrain.MUReverserPercent) != 100;
-            var showRetainers = playerTrain.RetainerSetting != RetainerSetting.Exhaust;
-            var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
-            var dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
-            var locomotiveStatus = Viewer.PlayerLocomotive.GetStatus();
-            var stretched = playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1;
-            var bunched = !stretched && playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1;
-
-            TextColumns[(int)Columns.Labels].AppendLine("Version");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}\n", Program.Version.Length > 0 ? Program.Version : Program.Build);
-            TextColumns[(int)Columns.Labels].AppendLine("Time");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}\n", FormattedTime(Viewer.Simulator.ClockTime));
-            TextColumns[(int)Columns.Labels].AppendLine("Speed");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}\n", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-            TextColumns[(int)Columns.Labels].AppendLine("Direction");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat(showMUReverser ? "{1:F0} {0}\n" : "{0}\n", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
-            TextColumns[(int)Columns.Labels].AppendLine("Throttle");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}%\n", Viewer.PlayerLocomotive.ThrottlePercent);
-            TextColumns[(int)Columns.Labels].AppendLine("Train Brake");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}\n", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
-            if (showRetainers)
-            {
-                TextColumns[(int)Columns.Labels].AppendLine("Retainers");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}% {1}\n", playerTrain.RetainerPercent, playerTrain.RetainerSetting);
-            }
-            if (engineBrakeStatus != null)
-            {
-                TextColumns[(int)Columns.Labels].AppendLine("Engine Brake");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}\n", engineBrakeStatus);
-            }
-            if (dynamicBrakeStatus != null)
-            {
-                TextColumns[(int)Columns.Labels].AppendLine("Dynamic Brake");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}\n", dynamicBrakeStatus);
-            }
-            if (locomotiveStatus != null)
-            {
-                var lines = locomotiveStatus.Split('\n');
-                foreach (var line in lines)
-                {
-                    var parts = line.Split(new[] { " = " }, 2, StringSplitOptions.None);
-                    TextColumns[(int)Columns.Labels].AppendLine(parts[0]);
-                    TextColumns[(int)Columns.BasicInfo].AppendLine(parts.Length > 1 ? parts[1] : "");
-                }
-            }
-            TextColumns[(int)Columns.Labels].AppendLine("Coupler Slack");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F2} m ({1} pulling, {2} pushing) {3}\n", playerTrain.TotalCouplerSlackM, playerTrain.NPull, playerTrain.NPush, stretched ? "Stretched" : bunched ? "Bunched" : "");
-            TextColumns[(int)Columns.Labels].AppendLine("Coupler Force");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", playerTrain.MaximumCouplerForceN);
-
-            locomotiveStatus = Viewer.Simulator.AI.GetStatus();
-            if (locomotiveStatus != null)
-            {
-                TextColumns[(int)Columns.Labels].Append(locomotiveStatus);
-            }
-
-            TextColumns[(int)Columns.Labels].AppendLine();
-            TextColumns[(int)Columns.BasicInfo].AppendLine();
-
-            TextColumns[(int)Columns.Labels].AppendLine("FPS");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}\n", Viewer.RenderProcess.FrameRate.SmoothedValue);
-
-            TextColumns[(int)Columns.Labels].AppendLine();
-            TextColumns[(int)Columns.BasicInfo].AppendLine();
-
-            if (Viewer.PlayerLocomotive.WheelSlip)
-                TextColumns[(int)Columns.Labels].AppendLine("Wheel Slip");
-            else
-                TextColumns[(int)Columns.Labels].AppendLine();
-            TextColumns[(int)Columns.BasicInfo].AppendLine();
-
-            if ((mstsLocomotive != null) && mstsLocomotive.LocomotiveAxle.IsWheelSlipWarning)
-                TextColumns[(int)Columns.Labels].AppendLine("Wheel Slip Warning");
-            else
-                TextColumns[(int)Columns.Labels].AppendLine();
-            TextColumns[(int)Columns.BasicInfo].AppendLine();
-
-            if (Viewer.PlayerLocomotive.GetSanderOn())
-                TextColumns[(int)Columns.Labels].AppendLine("Sander On");
-            else
-                TextColumns[(int)Columns.Labels].AppendLine();
-            TextColumns[(int)Columns.BasicInfo].AppendLine();
-        }
-
-        void TextPageEmpty()
-        {
-        }
-
-        void TextPageBrakeInfo()
-        {
-            TextPageHeading("BRAKE INFORMATION");
-
-            var train = Viewer.PlayerLocomotive.Train;
-            TextColumns[(int)Columns.Labels].AppendLine("Main Reservoir");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} psi\n", train.BrakeLine2PressurePSI);
-            for (var col = Columns.CarColumn1; col <= Columns.CarColumn7; col++)
-                TextColumns[(int)col].AppendLine();
-
-            var n = Math.Min(10, train.Cars.Count);
-            for (var i = 0; i < n; i++)
-            {
-                var j = i == 0 ? 0 : i * (train.Cars.Count - 1) / (n - 1);
-                var car = train.Cars[j];
-                TextColumns[(int)Columns.Labels].AppendFormat("{0}\n", j + 1);
-                var cols = car.BrakeSystem.GetDebugStatus();
-                for (var col = Columns.CarColumn1; col <= Columns.CarColumn7; col++)
-                    if ((int)(col - Columns.CarColumn1) < cols.Length)
-                        TextColumns[(int)col].AppendLine(cols[(int)(col - Columns.CarColumn1)]);
-                    else
-                        TextColumns[(int)col].AppendLine();
-            }
-        }
-
-        void TextPageForceInfo()
-        {
-            TextPageHeading("FORCE INFORMATION");
-
-            var train = Viewer.PlayerLocomotive.Train;
-            var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
-            if (mstsLocomotive != null)
-            {
-                TextColumns[(int)Columns.Labels].AppendLine("Wheel slip");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}% ({1:F0}%/s)\n", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS);
-                TextColumns[(int)Columns.Labels].AppendLine("Axle drive force");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.DriveForceN);
-                TextColumns[(int)Columns.Labels].AppendLine("Axle brake force");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.BrakeForceN);
-                //TextColumns[(int)Columns.Labels].AppendLine("Axle friction force");
-                //TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.DampingNs * mstsLocomotive.LocomotiveAxle.SlipDerivationMpSS);
-                TextColumns[(int)Columns.Labels].AppendLine("Stability Correction");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F2} \n", mstsLocomotive.LocomotiveAxle.AdhesionK);
-                TextColumns[(int)Columns.Labels].AppendLine("Axle out force");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} N\n", mstsLocomotive.LocomotiveAxle.AxleForceN);
-                TextColumns[(int)Columns.Labels].AppendLine();
-                TextColumns[(int)Columns.BasicInfo].AppendLine();
-                for (var i = 0; i < 6; i++)
-                    for (var col = Columns.CarColumn1; col <= Columns.CarColumn7; col++)
-                        TextColumns[(int)col].AppendLine();
-            }
-
-            TextColumns[(int)Columns.Labels].AppendLine("Car");
-            TextColumns[(int)Columns.CarColumn1].AppendLine("Total");
-            TextColumns[(int)Columns.CarColumn2].AppendLine("Motive");
-            TextColumns[(int)Columns.CarColumn3].AppendLine("Friction");
-            TextColumns[(int)Columns.CarColumn4].AppendLine("Gravity");
-            TextColumns[(int)Columns.CarColumn5].AppendLine("Coupler");
-            TextColumns[(int)Columns.CarColumn6].AppendLine("Mass");
-            TextColumns[(int)Columns.CarColumn7].AppendLine("Notes");
-
-            var n = Math.Min(10, train.Cars.Count);
-            for (var i = 0; i < n; i++)
-            {
-                var j = i == 0 ? 0 : i * (train.Cars.Count - 1) / (n - 1);
-                var car = train.Cars[j];
-                TextColumns[(int)Columns.Labels].AppendFormat("{0}\n", j + 1);
-                TextColumns[(int)Columns.CarColumn1].AppendFormat("{0:F0}\n", car.TotalForceN);
-                TextColumns[(int)Columns.CarColumn2].AppendFormat("{0:F0}\n", car.MotiveForceN);
-                TextColumns[(int)Columns.CarColumn3].AppendFormat("{0:F0}\n", car.FrictionForceN);
-                TextColumns[(int)Columns.CarColumn4].AppendFormat("{0:F0}\n", car.GravityForceN);
-                TextColumns[(int)Columns.CarColumn5].AppendFormat("{0:F0}\n", car.CouplerForceU);
-                TextColumns[(int)Columns.CarColumn6].AppendFormat("{0:F0}\n", car.MassKG);
-                TextColumns[(int)Columns.CarColumn7].AppendFormat("{0}\n", car.Flipped ? "Flipped" : "");
-            }
-        }
-
-        void TextPageDispatcherInfo()
-        {
-            TextPageHeading("DISPATCHER INFORMATION");
-
-            TextColumns[(int)Columns.Labels].AppendLine("Train");
-            TextColumns[(int)Columns.CarColumn1].AppendLine("Speed");
-            TextColumns[(int)Columns.CarColumn2].AppendLine("Signal Aspect");
-            TextColumns[(int)Columns.CarColumn4].AppendLine("Distance");
-            TextColumns[(int)Columns.CarColumn5].AppendLine("Path");
-
-            foreach (TrackAuthority auth in Program.Simulator.AI.Dispatcher.TrackAuthorities)
-            {
-                var status = auth.GetStatus();
-                TextColumns[(int)Columns.Labels].AppendLine(status.TrainID.ToString());
-                TextColumns[(int)Columns.CarColumn1].AppendLine(TrackMonitorWindow.FormatSpeed(status.Train.SpeedMpS, Viewer.MilepostUnitsMetric));
-                TextColumns[(int)Columns.CarColumn2].AppendLine(status.Train.GetNextSignalAspect().ToString());
-                TextColumns[(int)Columns.CarColumn4].AppendLine(TrackMonitorWindow.FormatDistance(status.Train.distanceToSignal, Viewer.MilepostUnitsMetric));
-                TextColumns[(int)Columns.CarColumn5].AppendLine(status.Path);
-            }
-        }
-
-        void TextPageDebugInfo()
-        {
-            TextPageHeading("DEBUG INFORMATION");
-
-            TextColumns[(int)Columns.Labels].AppendLine("Logging Enabled");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}\n", Viewer.Settings.DataLogger);
-            TextColumns[(int)Columns.Labels].AppendLine("Build");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0}\n", Program.Build);
-            TextColumns[(int)Columns.Labels].AppendLine("Memory");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} MB (managed: {1:F0} MB, collections: {2:F0}/{3:F0}/{4:F0})\n", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
-            TextColumns[(int)Columns.Labels].AppendLine("CPU");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}% ({1} logical processors)\n", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount);
-            TextColumns[(int)Columns.Labels].AppendLine("GPU");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} FPS ({1:F1} \u00B1 {2:F1} ms, shader model {3})\n", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedValue * 1000, Viewer.RenderProcess.FrameJitter.SmoothedValue * 1000, Viewer.Settings.ShaderModel);
-            TextColumns[(int)Columns.Labels].AppendLine("Adapter");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0} ({1:F0} MB)\n", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024);
-            if (Viewer.Settings.DynamicShadows)
-            {
-                TextColumns[(int)Columns.Labels].AppendLine("Shadow Maps");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0} ({1}x{1})\n", String.Join(", ", Enumerable.Range(0, RenderProcess.ShadowMapCount).Select(i => String.Format("{0}m/{1}m", RenderProcess.ShadowMapDistance[i], RenderProcess.ShadowMapDiameter[i])).ToArray()), Viewer.Settings.ShadowMapResolution);
-                TextColumns[(int)Columns.Labels].AppendLine("Shadow Primitives");
-                TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} = {1}\n", Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.ShadowPrimitivePerFrame.Select(p => p.ToString("F0")).ToArray()));
-            }
-            TextColumns[(int)Columns.Labels].AppendLine("Render Primitives");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0} = {1}\n", Viewer.RenderProcess.PrimitivePerFrame.Sum(), String.Join(" + ", Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray()));
-            TextColumns[(int)Columns.Labels].AppendLine("Render Process");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}% ({1:F0}% wait)\n", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue);
-            TextColumns[(int)Columns.Labels].AppendLine("Updater Process");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}% ({1:F0}% wait)\n", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue);
-            TextColumns[(int)Columns.Labels].AppendLine("Loader Process");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}% ({1:F0}% wait)\n", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue);
-            TextColumns[(int)Columns.Labels].AppendLine("Sound Process");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}% ({1:F0}% wait)\n", Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.SoundProcess.Profiler.Wait.SmoothedValue);
-            TextColumns[(int)Columns.Labels].AppendLine("Total Process");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("{0:F0}% ({1:F0}% wait)\n", Viewer.RenderProcess.Profiler.Wall.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue + Viewer.LoaderProcess.Profiler.Wall.SmoothedValue + Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue + Viewer.LoaderProcess.Profiler.Wait.SmoothedValue + Viewer.SoundProcess.Profiler.Wait.SmoothedValue);
-            TextColumns[(int)Columns.Labels].AppendLine("Camera");
-            TextColumns[(int)Columns.BasicInfo].AppendFormat("TileX:{0:F0} TileZ:{1:F0} X:{2:F4} Y:{3:F4} Z:{4:F4}\n", Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location.X, Viewer.Camera.Location.Y, Viewer.Camera.Location.Z);
-        }
-
-        void TextPageHeading(string name)
-        {
-            TextColumns[(int)Columns.Labels].AppendLine();
-            TextColumns[(int)Columns.BasicInfo].AppendLine();
-            TextColumns[(int)Columns.Labels].AppendLine(name);
-            TextColumns[(int)Columns.BasicInfo].AppendLine();
-
-            var lines = TextColumns[(int)Columns.Labels].ToString().Split('\n').Length;
-            for (var col = Columns.CarColumn1; col <= Columns.CarColumn7; col++)
-                for (var i = 1; i < lines; i++)
-                    TextColumns[(int)col].AppendLine();
         }
 
         int GetWorkingSetSize()
@@ -789,7 +465,7 @@ namespace ORTS
 
             //project 3D space to 2D (for the bottom of the line)
             Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-                TrItemLabel.Location.XNAMatrix.Translation + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (-TrItemLabel.Location.TileZ + Viewer.Camera.TileZ) * 2048),
+            TrItemLabel.Location.XNAMatrix.Translation + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (-TrItemLabel.Location.TileZ + Viewer.Camera.TileZ) * 2048),
                 Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
             if (cameraVector.Z > 1 || cameraVector.Z < 0) return; //out of range or behind the camera
             X = cameraVector.X;
@@ -797,7 +473,7 @@ namespace ORTS
 
             ////project for the top of the line
             cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-                TrItemLabel.Location.XNAMatrix.Translation + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 20, (-TrItemLabel.Location.TileZ + Viewer.Camera.TileZ) * 2048),
+            TrItemLabel.Location.XNAMatrix.Translation + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 20, (-TrItemLabel.Location.TileZ + Viewer.Camera.TileZ) * 2048),
                 Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
 
             //want to draw the text at cameraVector.Y, but need to check if it overlap other texts in Material.AlignedTextB
@@ -820,8 +496,8 @@ namespace ORTS
             //draw a vertical line with length TopY + LineSpacing - BottomY
             //the term LineSpacing is used so that the text is above the line head
             Material.SpriteBatch.Draw(Material.Texture, new Vector2(X, BottomY), null, LabelColor,
-                       -(float)Math.PI / 2, Vector2.Zero, new Vector2(Math.Abs(TopY + LineSpacing - BottomY), 2),
-                       SpriteEffects.None, cameraVector.Z);
+                           -(float)Math.PI / 2, Vector2.Zero, new Vector2(Math.Abs(TopY + LineSpacing - BottomY), 2),
+                           SpriteEffects.None, cameraVector.Z);
 
         }
 

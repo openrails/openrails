@@ -241,6 +241,7 @@
     <Compile Include="Popups\SignallingDebugWindow.cs" />
     <Compile Include="Popups\DriverAidWindow.cs" />
     <Compile Include="Popups\HelpWindow.cs" />
+    <Compile Include="Popups\HUDWindow.cs" />
     <Compile Include="Popups\LayeredWindow.cs" />
     <Compile Include="Popups\MessagesWindow.cs" />
     <Compile Include="Popups\NextStationWindow.cs" />

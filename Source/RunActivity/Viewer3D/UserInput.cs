@@ -98,7 +98,7 @@ namespace ORTS
             Commands[(int)UserCommands.DisplayNextWindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
             Commands[(int)UserCommands.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommands.DisplayNextWindowTab]);
             Commands[(int)UserCommands.DisplayTrackMonitorWindow] = new UserCommandKeyInput(0x3E);
-            Commands[(int)UserCommands.DisplayHUD] = new UserCommandKeyInput(0x3F);
+            Commands[(int)UserCommands.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommands.DisplayNextWindowTab]);
             Commands[(int)UserCommands.DisplayStationLabels] = new UserCommandKeyInput(0x40);
             Commands[(int)UserCommands.DisplayCarLabels] = new UserCommandKeyInput(0x41);
             Commands[(int)UserCommands.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);
@@ -249,9 +249,9 @@ namespace ORTS
                     {
                         writer.WriteLine("{0,-40}{1,-40}{2}", "Command", "Key", "Unique Inputs");
                         writer.WriteLine(new String('=', 40 * 3));
-                        foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+                    foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
                             writer.WriteLine("{0,-40}{1,-40}{2}", UserInput.FormatCommandName(command), Commands[(int)command], String.Join(", ", Commands[(int)command].UniqueInputs().OrderBy(s => s).ToArray()));
-                    }
+                }
                     viewer.MessagesWindow.AddMessage("Keyboard command list saved to 'keyboard.txt'.", 10);
 
                     var keyWidth = 50;
@@ -377,7 +377,7 @@ namespace ORTS
             else if (scanCode >= 0x0080)
                 sc = 0xE000 | (scanCode & 0x7F);
             return (Keys)MapVirtualKey(sc, MapType.ScanToVirtualEx);
-        }
+    }
 
         public static string GetScanCodeKeyName(int scanCode)
         {
@@ -427,8 +427,8 @@ namespace ORTS
 
             foreach (var prefixToColor in prefixesToColors)
                 foreach (var command in GetScanCodeCommands(scanCode))
-                    if (command.ToString().StartsWith(prefixToColor.Key))
-                        return prefixToColor.Value;
+                        if (command.ToString().StartsWith(prefixToColor.Key))
+                            return prefixToColor.Value;
 
             return Color.TransparentBlack;
         }
@@ -460,7 +460,7 @@ namespace ORTS
 
                     lastIndex = x2;
                     x = keyboardLine.IndexOf('[', x2);
-                }
+    }
             }
         }
 
