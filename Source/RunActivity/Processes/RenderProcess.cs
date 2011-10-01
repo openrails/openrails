@@ -248,6 +248,9 @@ namespace ORTS
 
             Profiler.Start();
 
+            // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
+            GraphicsDevice.RenderState.DepthBufferEnable = true;
+
             if ((Viewer.DisplaySize.X != GraphicsDevice.Viewport.Width) || (Viewer.DisplaySize.Y != GraphicsDevice.Viewport.Height))
             {
                 Viewer.DisplaySize.X = GraphicsDevice.Viewport.Width;
@@ -272,6 +275,9 @@ namespace ORTS
                     Viewer.ProcessReportError(error);
                 }
             }
+
+            // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
+            GraphicsDevice.RenderState.DepthBufferEnable = false;
 
             Profiler.Stop();
         }

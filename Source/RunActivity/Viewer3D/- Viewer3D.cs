@@ -252,7 +252,19 @@ namespace ORTS {
             GDM.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
         }
 
-        void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e) {
+        void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
+        {
+            // This enables NVIDIA PerfHud to be run on Open Rails.
+            foreach (var adapter in GraphicsAdapter.Adapters)
+            {
+                if (adapter.Description.Contains("PerfHUD"))
+                {
+                    e.GraphicsDeviceInformation.Adapter = adapter;
+                    e.GraphicsDeviceInformation.DeviceType = DeviceType.Reference;
+                    break;
+                }
+            }
+
             // This stops ResolveBackBuffer() clearing the back buffer.
             e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
             e.GraphicsDeviceInformation.PresentationParameters.AutoDepthStencilFormat = DepthFormat.Depth24Stencil8;
