@@ -618,14 +618,6 @@ namespace ORTS {
             if (e.SidingId != null) {
                 SidingEnd1 = Simulator.TDB.TrackDB.TrItemTable[e.SidingId.Value] as SidingItem;
                 SidingEnd2 = Simulator.TDB.TrackDB.TrItemTable[SidingEnd1.Flags2] as SidingItem;
-            } else {
-                if (e.Type == EventType.DropOffWagonsAtLocation || e.Type == EventType.PickUpWagons || e.Type == EventType.AssembleTrainAtLocation) {
-                    // Note: e.WagonList.SidingId == 0xFFFFFFFF indicates no siding was specified.
-                    if (e.WagonList.SidingId != null && e.WagonList.SidingId != 0xFFFFFFFF) {
-                        SidingEnd1 = Simulator.TDB.TrackDB.TrItemTable[e.WagonList.SidingId.Value] as SidingItem;
-                        SidingEnd2 = Simulator.TDB.TrackDB.TrItemTable[SidingEnd1.Flags2] as SidingItem;
-                    }
-                }
             }
         }
 
@@ -667,18 +659,15 @@ namespace ORTS {
                 //    break;
 
                 case EventType.DropOffWagonsAtLocation:
-                    // Looks identical to PickUpWagons, but a better name than DropOffWagonsAtLocation would be ArriveWithWagonsAtSiding.
+                    // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
                     if (atSiding(PlayerTrain.FrontTDBTraveller, PlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2)) {
                         triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
                     }
                     break;
                 case EventType.PickUpPassengers:
                     break;
-                case EventType.PickUpWagons:
-                    // Same as DropOffWagonsAtLocation except MSTS allows siding to be unspecified.
-                    if (atSiding(PlayerTrain.FrontTDBTraveller, PlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2)) {
-                        triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
-                    }
+                case EventType.PickUpWagons: // PickUpWagons is independent of location or siding
+                    triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
                     break;
                 case EventType.ReachSpeed:
                     triggered = (Math.Abs(Simulator.PlayerLocomotive.SpeedMpS) >= e.SpeedMpS);

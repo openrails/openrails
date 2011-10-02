@@ -650,19 +650,19 @@ namespace MSTS {
 
     public class WagonList {
         public List<WorkOrderWagon> WorkOrderWagonList = new List<WorkOrderWagon>();
-        public Nullable<uint> UID;        // Nullable as can't use -1 to indicate not set.  
-        public Nullable<uint> SidingId;   // May be specified outside the Wagon_List instead.
-        public string Description = "";   // Value assumed if property not found.
+        Nullable<uint> uID;        // Nullable as can't use -1 to indicate not set.  
+        Nullable<uint> sidingId;   // May be specified outside the Wagon_List instead.
+        string description = "";   // Value assumed if property not found.
 
         public WagonList(STFReader stf, EventType eventType) {
             stf.MustMatch("(");
             // "Drop Off" Wagon_List sometimes lacks a Description attribute, so we create the wagon _before_ description
             // is parsed. Bad practice, but not very dangerous as each Description usually repeats the same data.
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("uid", ()=>{ UID = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("sidingitem", ()=>{ SidingId = stf.ReadUIntBlock(STFReader.UNITS.None, null); 
-                    WorkOrderWagonList.Add(new WorkOrderWagon(UID.Value, SidingId.Value, Description));}),
-                new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("uid", ()=>{ uID = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("sidingitem", ()=>{ sidingId = stf.ReadUIntBlock(STFReader.UNITS.None, null); 
+                    WorkOrderWagonList.Add(new WorkOrderWagon(uID.Value, sidingId.Value, description));}),
+                new STFReader.TokenProcessor("description", ()=>{ description = stf.ReadStringBlock(""); }),
             });
         }
     }
