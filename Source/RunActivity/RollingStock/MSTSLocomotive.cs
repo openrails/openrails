@@ -2342,6 +2342,33 @@ namespace ORTS
             return (float)((data - _CabViewControl.MinValue) / (_CabViewControl.MaxValue - _CabViewControl.MinValue));
         }
 
+        public float TranslateToPercentLoadMeter()
+        {
+            int minValuePos = 0;
+            float data = _Locomotive.GetDataOf(_CabViewControl);
+            //Console.WriteLine("Raw data load meter {0}", data);
+            if (data >= 0)
+            {
+                
+                if (data < minValuePos)
+                    return 0;
+
+                if (data > _CabViewControl.MaxValue)
+                    return 1;
+
+                return (float)((data - minValuePos) / (_CabViewControl.MaxValue - minValuePos));
+            }
+            else    // Dynamic Break
+            {
+                if (data > minValuePos)
+                    return 0;
+                if (data < _CabViewControl.MinValue)
+                    return -1;
+
+                return (float) - ((Math.Abs(data) - minValuePos) / (Math.Abs(_CabViewControl.MinValue) - minValuePos));
+            }
+        }
+
         public virtual void PrepareFrame(RenderFrame frame)
         {
             frame.AddPrimitive(Materials.SpriteBatchMaterial, this, RenderPrimitiveGroup.Cab, ref _Matrix);
@@ -2429,7 +2456,7 @@ namespace ORTS
                 _Shader.End();
             }
         }
-    }
+    } // End Class CabViewDialRenderer
 
     /// <summary>
     /// Gauge type renderer
@@ -2438,9 +2465,11 @@ namespace ORTS
     /// </summary>
     public class CabViewGaugeRenderer : CabViewControlRenderer
     {
+        protected CVCWithFrames _CVCWithFrames;
         private CVCGauge _Gauge;
         protected Rectangle _SourceRectangle = new Rectangle();
         protected Rectangle _DestRectangle = new Rectangle();
+        bool LoadMeterPositive = true;
 
         public CabViewGaugeRenderer(CVCGauge gauge, Viewer3D viewer, MSTSLocomotive car, CabShader shader)
             : base(gauge, viewer, car, shader)
@@ -2464,24 +2493,67 @@ namespace ORTS
             float xratio = (float)_Viewer.DisplaySize.X / 640;
             float yratio = (float)_Viewer.DisplaySize.Y / 480;
 
-            float percent = TranslateToPercent();
-
-            float xpos;
-            float ypos;
-
-            if (_Gauge.Orientation == 0)
+            float percent;
+            if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER)
             {
-                ypos = (int)_Gauge.Height;
-                if (_Gauge.Direction == 0)
+                // Test numbers
+                //percent = -0.25f;
+                //percent = 0.25f;
+                //percent = -0.5f;
+                //percent =  0.5f;
+                //percent = -0.75f;
+                //percent = -1.0f;
+                //percent =  1.0f;
+
+                percent = TranslateToPercentLoadMeter();
+                if (percent >= 0)
                 {
-                    xpos = ((float)_Gauge.Width * percent);
+                    LoadMeterPositive = true;
+                    _Gauge.Direction = 0;
                 }
                 else
                 {
-                    xpos = ((float)_Gauge.Width - (float)_Gauge.Width * percent);
+                    LoadMeterPositive = false;
+                    _Gauge.Direction = 1;
+                    Math.Abs(percent);
                 }
             }
             else
+                percent = TranslateToPercent();
+
+            float xpos = 0;
+            float ypos = 0;
+
+            if (_Gauge.Orientation == 0)    // gauage horiz
+            {
+                ypos = (int)_Gauge.Height;
+                if (_Gauge.Direction == 0)  // horiz increasing
+                {
+                    if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                        LoadMeterPositive)
+                    {
+                        // -1200 to + 1800 = 3000 abs 1200/3000 = 0.40 
+                        // range 76 x 0.40 = 30.4
+                        float adjustGaugeWidth = (float)_Gauge.Width - 30.4f;
+                        xpos = (adjustGaugeWidth * percent);
+                    }
+                    else
+                        xpos = ((float)_Gauge.Width * percent);
+                }
+
+                if (_Gauge.Direction == 1)  // horiz decreasing
+                {
+                    if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                        !LoadMeterPositive)
+                    {
+                        float adjustGaugeWidth = (float)_Gauge.Width - 45.6f;
+                        xpos = (adjustGaugeWidth * Math.Abs(percent));
+                    }
+                    else
+                        xpos = ((float)_Gauge.Width - (float)_Gauge.Width * percent);
+                }
+            } // end if _Gauge.Orientation
+            else                          // gauage vert
             {
                 xpos = (int)_Gauge.Width;
                 if (_Gauge.Direction == 0)
@@ -2495,13 +2567,37 @@ namespace ORTS
             }
 
             if (_Gauge.ControlStyle == CABViewControlStyles.SOLID || _Gauge.ControlStyle == CABViewControlStyles.LIQUID)
-            {
-                _DestRectangle.X = (int)(xratio * _CabViewControl.PositionX);
-                _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY);
-                _DestRectangle.Width = (int)(xratio * xpos);
-                _DestRectangle.Height = (int)(yratio * ypos);
-            }
-            else
+                if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER)
+                {
+                    _DestRectangle.X = (int)(xratio * _CabViewControl.PositionX);    // left hand start position
+
+                    if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                        LoadMeterPositive)
+                        // gauge width - area  offset to center
+                         _DestRectangle.X = (int)(xratio * (_CabViewControl.PositionX + (int)30.4f));
+                    
+                    if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                        !LoadMeterPositive)
+                    {
+                        var centDrec = (int)(xratio * (_CabViewControl.PositionX + (int)30.4f)); 
+                        _DestRectangle.X = centDrec - (int)(xratio * xpos);
+                    }
+                    
+                             
+                    _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY);
+                    _DestRectangle.Width = (int)(xratio * xpos);
+                    _DestRectangle.Height = (int)(yratio * ypos);
+                }
+                else
+                {
+                    _DestRectangle.X = (int)(xratio * _CabViewControl.PositionX);
+                    _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY);
+                    _DestRectangle.Width = (int)(xratio * xpos);
+                    _DestRectangle.Height = (int)(yratio * ypos);
+                }
+
+
+            else    // Is this code ever executed ???
             {
                 _DestRectangle.X = (int)(xratio * (_CabViewControl.PositionX + xpos));
                 _DestRectangle.Y = (int)(yratio * (_CabViewControl.PositionY + ypos));
@@ -2518,14 +2614,22 @@ namespace ORTS
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
-            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
+            if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                LoadMeterPositive)
+                    Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Green);
+
+            else if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                !LoadMeterPositive)
+                Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Yellow);
+            else
+                Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
             if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
                 _Shader.End();
             }
         }
-    }
+    } // End Class CabViewGaugeRenderer
 
     /// <summary>
     /// Discrete renderer for Lever, Twostate, Tristate, Multistate, Signal
