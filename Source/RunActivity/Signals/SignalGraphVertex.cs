@@ -67,6 +67,10 @@ namespace ORTS
         {
             return Edges[index];
         }
+        public int GetNumEdges()
+        {
+            return Edges.Length;
+        }
         /// <summary>
         /// Returns the next edge opposite edge e or null if the switch is not aligned properly.
         /// </summary>
@@ -95,6 +99,12 @@ namespace ORTS
                 Signals = new SignalObject[2];
             if (Signals[index] == null || sig.SignalHeads.Count > 0)
                 Signals[index] = sig;
+        }
+        public SignalObject GetSignal(int index)
+        {
+            if (Signals == null)
+                return null;
+            return Signals[index];
         }
         /// <summary>
         /// Returns the signal seen from edge e.

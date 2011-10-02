@@ -22,8 +22,8 @@ namespace ORTS
         List<SignalGraphVertex> Vertices = new List<SignalGraphVertex>();
         List<SignalGraphEdge> Edges = new List<SignalGraphEdge>();
         SignalGraphVertex[] VertexMap = null;
-        private TrackDB TrackDB;
-        private Signals Signals;
+        public TrackDB TrackDB;
+        public Signals Signals;
         bool dirty = true;  // true if all signals need to be updated to track circuit status
         /// <summary>
         /// Creates the signal graph from the TDB.
@@ -100,6 +100,8 @@ namespace ORTS
                 edgeMap[i] = e;
             }
             //UpdateSignals();
+            SignalGraphPathGenerator pg = new SignalGraphPathGenerator(this);
+            pg.GenerateSignalPaths();
         }
         /// <summary>
         /// Returns the TrPins index in node1 that equals node2.
@@ -127,6 +129,14 @@ namespace ORTS
             Vertices.Add(v);
             VertexMap[nodeIndex] = v;
             return v;
+        }
+        public SignalGraphVertex GetVertex(int index)
+        {
+            return Vertices[index];
+        }
+        public int getNumVertices()
+        {
+            return Vertices.Count;
         }
         /// <summary>
         /// Adds an edge to the signal graph connecting v1 and v2.
