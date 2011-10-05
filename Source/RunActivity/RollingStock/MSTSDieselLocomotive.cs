@@ -39,8 +39,16 @@ namespace ORTS
         float MaxRPM = 0;
         float MaxRPMChangeRate = 0;
         float PercentChangePerSec = .2f;
+        float IdleExhaust = 10.0f;
+        float MaxExhaust = 50.0f;
+        float ExhaustDynamics = 1.5f;
+        float EngineRPMderivation = 0.0f;
+        float EngineRPMold = 0.0f;
 
-        public float EngineRPM = 0.0f;        
+        float MaxDieselLevelL = 5000.0f;
+
+        public float EngineRPM = 0.0f;
+        public float ExhaustParticles = 10.0f;
 
 		public MSTSDieselLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
             : base(simulator, wagFile, previousCar)
@@ -64,6 +72,9 @@ namespace ORTS
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
 
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
+                case "engine(or_diesel(idleexhaust": IdleExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(or_diesel(maxexhaust": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(or_diesel(exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 // for example
                 //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
@@ -75,6 +86,7 @@ namespace ORTS
                 PercentChangePerSec = MaxRPMChangeRate / (MaxRPM - IdleRPM);
                 EngineRPM = IdleRPM;
             }
+
 
 
 
@@ -144,6 +156,15 @@ namespace ORTS
             // TODO  this is a wild simplification for diesel electric
             float t = ThrottlePercent / 100f;
             float currentSpeedMpS = Math.Abs(SpeedMpS);
+
+            ExhaustParticles = ((MaxExhaust - IdleExhaust) * t + IdleExhaust);
+            if (ExhaustParticles < 5.0f)
+                ExhaustParticles = 5.0f;
+
+            if (EngineRPMderivation > 0.0f)
+                ExhaustParticles *= ExhaustDynamics * MaxExhaust;
+            if (EngineRPMderivation < 0.0f)
+                ExhaustParticles = 3.0f;
 
             if (PowerOn)
             {
@@ -272,6 +293,12 @@ namespace ORTS
 
                 EngineRPM = Variable2 * (MaxRPM - IdleRPM) + IdleRPM;
             }
+
+            if (elapsedClockSeconds > 0.0f)
+            {
+                EngineRPMderivation = (EngineRPM - EngineRPMold)/elapsedClockSeconds;
+                EngineRPMold = EngineRPM;
+            }
         }
 
         /// <summary>
@@ -332,12 +359,13 @@ namespace ORTS
                     foreach (ParticleEmitterDrawer drawer in pair.Value)
                     {
                         drawer.SetTexture(SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, dieselTexture));
-                        drawer.SetEmissionRate(20);
+                        drawer.SetEmissionRate(car.ExhaustParticles);
                     }
                 }
             }
         }
 
+        
         /// <summary>
         /// A keyboard or mouse click has occured. Read the UserInput
         /// structure to determine what was pressed.
@@ -355,6 +383,18 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            foreach (KeyValuePair<string, List<ParticleEmitterDrawer>> pair in ParticleDrawers)
+            {
+                if (pair.Key == "Exhaust1")
+                {
+                    foreach (ParticleEmitterDrawer drawer in pair.Value)
+                    {
+                        //drawer.SetTexture(SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, dieselTexture));
+                        drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
+                    }
+                }
+            }
+
             base.PrepareFrame(frame, elapsedTime);
         }
 

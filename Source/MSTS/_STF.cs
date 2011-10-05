@@ -629,6 +629,7 @@ namespace MSTS
 
             // Extract the unit suffix
             string suffix = constant.Substring(suffixStart, suffixLength).ToLowerInvariant();
+            suffix = suffix.Trim();
 
             // Extract the prefixed numeric string
             constant = constant.Substring(beg, end - beg);
