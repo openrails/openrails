@@ -1400,6 +1400,13 @@ namespace ORTS
                         data = Sander ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.CLOCK:
+                    {
+                        data = 0;
+                        break;
+                    }
+
+
                 case CABViewControlTypes.FRONT_HLIGHT:
                     {
                         data = Headlight;
@@ -2834,21 +2841,34 @@ namespace ORTS
         SpriteFont _Font;
         private float _ScaleToScreen = 1f;
         private int _Digits = 1;
+        
 
         public CabViewDigitalRenderer (CVCDigital digital, Viewer3D viewer, MSTSLocomotive car, CabShader shader)
             : base (digital, viewer, car, shader)
         {
             _Font = _Viewer.RenderProcess.Content.Load<SpriteFont>("Arial");
-            _Digits = (int)Math.Log10(_CabViewControl.MaxValue) + 1;
+
+            if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
+                _Digits = 8;
+            else
+                _Digits = (int)Math.Log10(_CabViewControl.MaxValue) + 1;
             
         }
 
         public override void PrepareFrame(RenderFrame frame)
         {
+           
             float fontratio = (float)_CabViewControl.Height / 16;
-            float fpos = ((float)_CabViewControl.Width) - 6 * _Digits * fontratio;
+            float fpos = 0.0f;
+            if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
+                fpos = ((float)_CabViewControl.Width) - 8 * _Digits * fontratio;
+            else
+                fpos = ((float)_CabViewControl.Width) - 6 * _Digits * fontratio;
 
-            _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
+                if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
+                    _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
+                else
+                _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
             _Position.Y = (float)_Viewer.DisplaySize.Y / 480 * (float)_CabViewControl.PositionY;
 
             base.PrepareFrame(frame);
@@ -2863,6 +2883,7 @@ namespace ORTS
         {
             StringBuilder sbAccuracy = new StringBuilder();
             StringBuilder sbLeadingZeros = new StringBuilder();
+            //var  digtalClock =  _Locomotive.clockTime;
             string displayedText = "";
             Color textColor;
             try
@@ -2931,11 +2952,20 @@ namespace ORTS
 
                     else
                     {
-                        displayedText = String.Format("{0:0" + sbLeadingZeros.ToString() + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", _Num);
+                        displayedText = String.Format("{0:0" + sbLeadingZeros.ToString()
+                            + (((CVCDigital)_CabViewControl).Accuracy > 0 ? "." + sbAccuracy.ToString() : "") + "}", _Num);
                         textColor = Color.White;
 
                     }
                 }
+
+                if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
+                {
+                    int startTime = (int) _Locomotive.Simulator.ClockTime;
+                    displayedText = InfoDisplay.FormattedTime(startTime);
+                    textColor = Color.White;
+                }
+
                 Materials.SpriteBatchMaterial.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(),
                     _ScaleToScreen, SpriteEffects.None, 0);
                 //((CVCDigital)_CabViewControl).OldValue = _Num;
