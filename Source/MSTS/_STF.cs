@@ -578,6 +578,11 @@ namespace MSTS
             /// <para>Scaled to kj/kg.</para>
             /// </summary>
             EnergyDensity = 1 << 12,
+            /// <summary>
+            /// Valid Units: gal, l
+            /// <para>Scaled to litres.</para>
+            /// </summary>
+            Diesel = 1 << 13,
             /// <summary>This is only provided for backwards compatibility - all new users should limit the units to appropriate types
             /// </summary>
             Any = -2
@@ -703,6 +708,12 @@ namespace MSTS
                 switch (suffix)
                 {
                     case "*(ft^3)": return 1;
+                }
+            if ((validUnits & UNITS.Diesel) > 0)
+                switch (suffix)
+                {
+                    case "gal": return 3.785f;
+                    case "l": return 1;
                 }
             if ((validUnits & UNITS.Area) > 0)
                 switch (suffix)

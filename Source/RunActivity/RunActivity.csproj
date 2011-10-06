@@ -258,11 +258,11 @@
     <Compile Include="Physics\Train.cs" />
     <Compile Include="RollingStock\Axle.cs" />
     <Compile Include="RollingStock\ControllerFactory.cs" />
+    <Compile Include="RollingStock\MSTSDieselLocomotive.cs" />
     <Compile Include="RollingStock\ElectricMotor.cs" />
     <Compile Include="RollingStock\IBrakeController.cs" />
     <Compile Include="RollingStock\IController.cs" />
     <Compile Include="RollingStock\MSTSBrakeController.cs" />
-    <Compile Include="RollingStock\MSTSDieselLocomotive.cs" />
     <Compile Include="RollingStock\MSTSElectricLocomotive.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -546,6 +546,11 @@ namespace ORTS
             base.Update(elapsedClockSeconds);
         } // End Method Update
 
+        protected void UpdateParent(float elapsedClockSeconds)
+        {
+            base.Update(elapsedClockSeconds);
+        }
+
         /// <summary>
         /// Adjusts the MotiveForce to account for adhesion limits
         /// If UseAdvancedAdhesion is true, dynamic adhesion model is computed

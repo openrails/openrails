@@ -46,6 +46,10 @@ namespace ORTS
         float EngineRPMold = 0.0f;
 
         float MaxDieselLevelL = 5000.0f;
+        float DieselUsedPerHourAtMaxPowerL = 1.0f;
+        float DieselUsedPerHourAtIdleL = 1.0f;
+        float DieselLevelL = 5000.0f;
+        float DieselFlowLps = 0.0f;
 
         public float EngineRPM = 0.0f;
         public float ExhaustParticles = 10.0f;
@@ -53,6 +57,7 @@ namespace ORTS
 		public MSTSDieselLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
             : base(simulator, wagFile, previousCar)
         {
+            PowerOn = true;
 
             if (AntiSlip)
                 UseAdvancedAdhesion = false;
@@ -75,6 +80,11 @@ namespace ORTS
                 case "engine(or_diesel(idleexhaust": IdleExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(or_diesel(maxexhaust": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(or_diesel(exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+
+                case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
+                case "engine(dieselusedperhouratmaxpower": DieselUsedPerHourAtMaxPowerL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
+                case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
+
                 // for example
                 //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
@@ -86,6 +96,9 @@ namespace ORTS
                 PercentChangePerSec = MaxRPMChangeRate / (MaxRPM - IdleRPM);
                 EngineRPM = IdleRPM;
             }
+
+            if (MaxDieselLevelL != DieselLevelL)
+                DieselLevelL = MaxDieselLevelL;
 
 
 
@@ -149,9 +162,27 @@ namespace ORTS
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
-            PowerOn = true;
+            //base.Update(elapsedClockSeconds );
 
-            base.Update(elapsedClockSeconds );
+            TrainBrakeController.Update(elapsedClockSeconds);
+            if (EngineBrakeController != null)
+                EngineBrakeController.Update(elapsedClockSeconds);
+
+            if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
+            {
+                if (this.IsLeadLocomotive())
+                    DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+                else
+                    DynamicBrakeController.Update(elapsedClockSeconds);
+            }
+
+            //Currently the ThrottlePercent is global to the entire train
+            //So only the lead locomotive updates it, the others only updates the controller (actually useless)
+            if (this.IsLeadLocomotive())
+                ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+            else
+                ThrottleController.Update(elapsedClockSeconds);
+
 
             // TODO  this is a wild simplification for diesel electric
             float t = ThrottlePercent / 100f;
@@ -184,6 +215,14 @@ namespace ORTS
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
+                if (t == 0)
+                    DieselFlowLps = DieselUsedPerHourAtIdleL / 3600.0f;
+                else
+                    DieselFlowLps = ((DieselUsedPerHourAtMaxPowerL - DieselUsedPerHourAtIdleL) * t + DieselUsedPerHourAtIdleL) / 3600.0f;
+
+                DieselLevelL -= DieselFlowLps * elapsedClockSeconds;
+                if (DieselLevelL <= 0.0f)
+                    PowerOn = false;
             }
 
 
@@ -252,7 +291,14 @@ namespace ORTS
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
-            Variable1 = ThrottlePercent / 100f;   // throttle setting
+            if (PowerOn)
+                Variable1 = ThrottlePercent / 100f;   // throttle setting
+            else
+            {
+                Variable1 = -IdleRPM/(MaxRPM - IdleRPM);
+                ExhaustParticles = 0;
+
+            }
             //Variable2 = Math.Abs(WheelSpeedMpS);
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
@@ -267,9 +313,7 @@ namespace ORTS
 
             MotiveForceN = FilteredMotiveForceN;
 
-            LimitMotiveForce(elapsedClockSeconds);
-
-            
+            LimitMotiveForce(elapsedClockSeconds);          
 
             // Refined Variable2 setting to graduate
             if (Variable2 != Variable1)
@@ -290,15 +334,16 @@ namespace ORTS
 
                 if ((neg && Variable2 < Variable1) || (!neg && Variable2 > Variable1))
                     Variable2 = Variable1;
-
-                EngineRPM = Variable2 * (MaxRPM - IdleRPM) + IdleRPM;
             }
+
+            EngineRPM = Variable2 * (MaxRPM - IdleRPM) + IdleRPM;
 
             if (elapsedClockSeconds > 0.0f)
             {
                 EngineRPMderivation = (EngineRPM - EngineRPMold)/elapsedClockSeconds;
                 EngineRPMold = EngineRPM;
             }
+            base.UpdateParent(elapsedClockSeconds);
         }
 
         /// <summary>
@@ -322,9 +367,13 @@ namespace ORTS
 
             result.AppendLine();
             result.AppendLine("Diesel locomotive data:");
-            result.Append("Diesel engine:             "); if (PowerOn) result.Append("ON");
+            result.Append("Diesel engine:             "); if (PowerOn) result.Append("ON"); else result.Append("OFF");
             result.Append("\n");
-            result.AppendFormat("Diesel RPM:           {0:F0}", EngineRPM);
+            result.AppendFormat("Diesel RPM:           {0:F0}\n", EngineRPM);
+            result.Append("\n");
+            result.AppendFormat("Diesel level:         {0:F0} litres ({1:F0} gal)", DieselLevelL, DieselLevelL / 3.785f);
+            result.Append("\n");
+            result.AppendFormat("Diesel flow:          {0:F1} l/h ({1:F1} gal/h)", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
             result.AppendLine();
 
 
