@@ -207,14 +207,18 @@ namespace ORTS.Popups
             if (locomotiveStatus != null)
             {
                 var lines = locomotiveStatus.Split('\n');
-                foreach (var line in lines.Where(s => s.Length > 0))
+                foreach (var line in lines)
                 {
-                    var parts = line.Split(new[] { " = " }, 2, StringSplitOptions.None);
-                    TableAddLabelValue(table, parts[0], parts.Length > 1 ? parts[1] : "");
+                    if (line.Length > 0)
+                    {
+                        var parts = line.Split(new[] { " = " }, 2, StringSplitOptions.None);
+                        TableAddLabelValue(table, parts[0], parts.Length > 1 ? parts[1] : "");
+                    }
                 }
             }
             TableAddLabelValue(table, "Coupler slack", "{0:F2} m ({1} pulling, {2} pushing) {3}", playerTrain.TotalCouplerSlackM, playerTrain.NPull, playerTrain.NPush, stretched ? "Stretched" : bunched ? "Bunched" : "");
             TableAddLabelValue(table, "Coupler force", "{0:F0} N", playerTrain.MaximumCouplerForceN);
+            TableAddLine(table);
             TableAddLabelValue(table, "FPS", "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
             TableAddLine(table);
             locomotiveStatus = Viewer.Simulator.AI.GetStatus();
@@ -222,7 +226,8 @@ namespace ORTS.Popups
             {
                 var lines = locomotiveStatus.Split('\n');
                 foreach (var line in lines.Where(s => s.Length > 0))
-                    TableAddLine(table, line);
+                    if (line.Length > 0)
+                        TableAddLine(table, line);
             }
             if (Viewer.PlayerLocomotive.WheelSlip)
                 TableAddLine(table, "Wheel slip");
