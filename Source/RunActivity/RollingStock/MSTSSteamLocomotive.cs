@@ -526,21 +526,21 @@ namespace ORTS
 
         public override string GetStatus()
         {
-			float evap = EvaporationLBpS * 3600;
-			float usage = (SteamUsageLBpS + BlowerSteamUsageLBpS + BasicSteamUsageLBpS) * 3600;
+            var evap = EvaporationLBpS * 3600;
+            var usage = (SteamUsageLBpS + BlowerSteamUsageLBpS + BasicSteamUsageLBpS) * 3600;
             if (SafetyOn)
                 usage += SafetyValveUsageLBpS * 3600;
-			StringBuilder result = new StringBuilder();
-            result.AppendFormat("Boiler Pressure = {0:F1} PSI\nSteam Generation = {1:F0} lb/h\nSteam Usage = {2:F0} lb/h", BoilerPressurePSI, evap, usage);
+			var result = new StringBuilder();
+            result.AppendFormat("Boiler pressure = {0:F1} PSI\nSteam generation = {1:F0} lb/h\nSteam usage = {2:F0} lb/h", BoilerPressurePSI, evap, usage);
             //BoilerHeatBTU,BoilerMassLB,WaterFraction.ToString("F2"));
-            //result.AppendFormat("\nFlue Temp = {0:F0} F", 1.8f * (FlueTempK-255.37f));
+            //result.AppendFormat("\nFlue temp = {0:F0} F", 1.8f * (FlueTempK-255.37f));
             if (ManualFiring)
             {
-                result.AppendFormat("\nWater Level = {0:F0} %", WaterFraction * 100);
+                result.AppendFormat("\nWater level = {0:F0} %", WaterFraction * 100);
                 if (IdealFireMassKG > 0)
-                    result.AppendFormat("\nFire Mass = {0:F0} %", FireMassKG / IdealFireMassKG * 100);
+                    result.AppendFormat("\nFire mass = {0:F0} %", FireMassKG / IdealFireMassKG * 100);
                 else
-                    result.AppendFormat("\nFire Ratio = {0:F0} %", FireRatio * 100);
+                    result.AppendFormat("\nFire ratio = {0:F0} %", FireRatio * 100);
                 result.Append("\nInjectors =");
                 if (Injector1On)
                     result.AppendFormat(" {0:F0} %", Injector1Controller.CurrentValue*100);
@@ -552,7 +552,7 @@ namespace ORTS
                     result.Append(" Off");
                 result.AppendFormat("\nBlower = {0:F0} %", BlowerController.CurrentValue * 100);
                 //result.AppendFormat("\nDamper = {0:F0} %", DamperController.CurrentValue * 100);
-                result.AppendFormat("\nFiring Rate = {0:F0} %", FiringRateController.CurrentValue * 100);
+                result.AppendFormat("\nFiring rate = {0:F0} %", FiringRateController.CurrentValue * 100);
             }
             return result.ToString();
         }

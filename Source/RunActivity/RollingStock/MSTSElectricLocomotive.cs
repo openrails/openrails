@@ -214,18 +214,9 @@ namespace ORTS
 
         public override string GetStatus()
         {
-            StringBuilder result = new StringBuilder();
-
-            result.AppendLine();
-            result.AppendLine("Electric locomotive data:");
-            result.Append("Pantographs:           ");
-            if (PantographFirstUp)  result.Append("1st up     ");
-            if (PantographSecondUp) result.Append("2nd up");
-            result.Append("\n");
-
-            result.Append("Main power:             "); if (PowerOn) result.Append("ON");
-            result.Append("\n");
-
+            var result = new StringBuilder();
+            result.AppendFormat("Pantographs = {0}{1}\n", PantographFirstUp ? "1st up " : "", PantographSecondUp ? "2nd up " : "");
+            result.AppendFormat("Electric power = {0}", PowerOn ? "On" : "Off");
             return result.ToString();
         }
 

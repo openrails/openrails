@@ -123,14 +123,14 @@ namespace ORTS
         {
             if (BrakeLine1PressurePSI < 0)
                 return new string[0];
-            var rv = new string[HandbrakePercent > 0 ? 6 : 5];
+            var rv = new string[7];
             rv[0] = string.Format("BC {0:F0}", CylPressurePSI);
             rv[1] = string.Format("BP {0:F0}", BrakeLine1PressurePSI);
             rv[2] = string.Format("AR {0:F0}", AuxResPressurePSI);
             rv[3] = string.Format("ER {0:F0}", EmergResPressurePSI);
             rv[4] = string.Format("State {0}", TripleValveState);
-            if (HandbrakePercent > 0)
-                rv[5] = string.Format("Handbrake {0:F0}%", HandbrakePercent);
+            rv[5] = string.Empty; // Spacer because the state above needs 2 columns.
+            rv[6] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
             return rv;
         }
 

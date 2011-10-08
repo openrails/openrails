@@ -363,20 +363,11 @@ namespace ORTS
 
         public override string GetStatus()
         {
-            StringBuilder result = new StringBuilder();
-
-            result.AppendLine();
-            result.AppendLine("Diesel locomotive data:");
-            result.Append("Diesel engine:             "); if (PowerOn) result.Append("ON"); else result.Append("OFF");
-            result.Append("\n");
-            result.AppendFormat("Diesel RPM:           {0:F0}\n", EngineRPM);
-            result.Append("\n");
-            result.AppendFormat("Diesel level:         {0:F0} litres ({1:F0} gal)", DieselLevelL, DieselLevelL / 3.785f);
-            result.Append("\n");
-            result.AppendFormat("Diesel flow:          {0:F1} l/h ({1:F1} gal/h)", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
-            result.AppendLine();
-
-
+            var result = new StringBuilder();
+            result.AppendFormat("Diesel engine = {0}\n", PowerOn ? "On" : "Off");
+            result.AppendFormat("Diesel RPM = {0:F0}\n", EngineRPM);
+            result.AppendFormat("Diesel level = {0:F0} L ({1:F0} gal)\n", DieselLevelL, DieselLevelL / 3.785f);
+            result.AppendFormat("Diesel flow = {0:F1} L/h ({1:F1} gal/h)", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
             return result.ToString();
         }
 

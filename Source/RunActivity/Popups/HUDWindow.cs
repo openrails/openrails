@@ -191,52 +191,45 @@ namespace ORTS.Popups
             TableAddLabelValue(table, "Speed", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
             TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
-            TableAddLabelValue(table, "Train Brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
+            TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
             {
                 TableAddLabelValue(table, "Retainers", "{0}% {1}", playerTrain.RetainerPercent, playerTrain.RetainerSetting);
             }
             if (engineBrakeStatus != null)
             {
-                TableAddLabelValue(table, "Engine Brake", "{0}", engineBrakeStatus);
+                TableAddLabelValue(table, "Engine brake", "{0}", engineBrakeStatus);
             }
             if (dynamicBrakeStatus != null)
             {
-                TableAddLabelValue(table, "Dynamic Brake", "{0}", dynamicBrakeStatus);
+                TableAddLabelValue(table, "Dynamic brake", "{0}", dynamicBrakeStatus);
             }
             if (locomotiveStatus != null)
             {
                 var lines = locomotiveStatus.Split('\n');
-                foreach (var line in lines)
+                foreach (var line in lines.Where(s => s.Length > 0))
                 {
                     var parts = line.Split(new[] { " = " }, 2, StringSplitOptions.None);
                     TableAddLabelValue(table, parts[0], parts.Length > 1 ? parts[1] : "");
                 }
             }
-            TableAddLabelValue(table, "Coupler Slack", "{0:F2} m ({1} pulling, {2} pushing) {3}", playerTrain.TotalCouplerSlackM, playerTrain.NPull, playerTrain.NPush, stretched ? "Stretched" : bunched ? "Bunched" : "");
-            TableAddLabelValue(table, "Coupler Force", "{0:F0} N", playerTrain.MaximumCouplerForceN);
+            TableAddLabelValue(table, "Coupler slack", "{0:F2} m ({1} pulling, {2} pushing) {3}", playerTrain.TotalCouplerSlackM, playerTrain.NPull, playerTrain.NPush, stretched ? "Stretched" : bunched ? "Bunched" : "");
+            TableAddLabelValue(table, "Coupler force", "{0:F0} N", playerTrain.MaximumCouplerForceN);
+            TableAddLabelValue(table, "FPS", "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
+            TableAddLine(table);
             locomotiveStatus = Viewer.Simulator.AI.GetStatus();
             if (locomotiveStatus != null)
             {
                 var lines = locomotiveStatus.Split('\n');
-                foreach (var line in lines)
+                foreach (var line in lines.Where(s => s.Length > 0))
                     TableAddLine(table, line);
             }
-            TableAddLine(table);
-            TableAddLabelValue(table, "FPS", "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
-            TableAddLine(table);
             if (Viewer.PlayerLocomotive.WheelSlip)
-                TableAddLine(table, "Wheel Slip");
-            else
-                TableAddLine(table);
-            if ((mstsLocomotive != null) && mstsLocomotive.LocomotiveAxle.IsWheelSlipWarning)
-                TableAddLine(table, "Wheel Slip Warning");
-            else
-                TableAddLine(table);
+                TableAddLine(table, "Wheel slip");
+            else if ((mstsLocomotive != null) && mstsLocomotive.LocomotiveAxle.IsWheelSlipWarning)
+                TableAddLine(table, "Wheel slip warning");
             if (Viewer.PlayerLocomotive.GetSanderOn())
-                TableAddLine(table, "Sander On");
-            else
-                TableAddLine(table);
+                TableAddLine(table, "Sander on");
         }
 
         void TextPageBrakeInfo(TableData table)
@@ -244,7 +237,7 @@ namespace ORTS.Popups
             TextPageHeading(table, "BRAKE INFORMATION");
 
             var train = Viewer.PlayerLocomotive.Train;
-            TableAddLabelValue(table, "Main Reservoir", "{0:F0} psi", train.BrakeLine2PressurePSI);
+            TableAddLabelValue(table, "Main reservoir", "{0:F0} psi", train.BrakeLine2PressurePSI);
 
             var n = Math.Min(10, train.Cars.Count);
             for (var i = 0; i < n; i++)
@@ -298,7 +291,7 @@ namespace ORTS.Popups
         {
             TextPageHeading(table, "DISPATCHER INFORMATION");
 
-            TableSetCells(table, 0, "Train", "Speed", "Signal Aspect", "", "Distance", "Path");
+            TableSetCells(table, 0, "Train", "Speed", "Signal aspect", "", "Distance", "Path");
             TableAddLine(table);
 
             foreach (TrackAuthority auth in Program.Simulator.AI.Dispatcher.TrackAuthorities)
@@ -313,7 +306,7 @@ namespace ORTS.Popups
         {
             TextPageHeading(table, "DEBUG INFORMATION");
 
-            TableAddLabelValue(table, "Logging Enabled", "{0}", Viewer.Settings.DataLogger);
+            TableAddLabelValue(table, "Logging enabled", "{0}", Viewer.Settings.DataLogger);
             TableAddLabelValue(table, "Build", "{0}", Program.Build);
             TableAddLabelValue(table, "Memory", "{0:F0} MB (managed: {1:F0} MB, collections: {2:F0}/{3:F0}/{4:F0})", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
             TableAddLabelValue(table, "CPU", "{0:F0}% ({1} logical processors)", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, ProcessorCount);
@@ -323,17 +316,17 @@ namespace ORTS.Popups
             {
                 TableSetCells(table, 3, Enumerable.Range(0, RenderProcess.ShadowMapCount).Select(i => String.Format("{0}/{1}", RenderProcess.ShadowMapDistance[i], RenderProcess.ShadowMapDiameter[i])).ToArray());
                 TableSetCell(table, 3 + RenderProcess.ShadowMapCount, "({0}x{0})", Viewer.Settings.ShadowMapResolution);
-                TableAddLine(table, "Shadow Maps");
+                TableAddLine(table, "Shadow maps");
                 TableSetCells(table, 3, Viewer.RenderProcess.ShadowPrimitivePerFrame.Select(p => p.ToString("F0")).ToArray());
-                TableAddLabelValue(table, "Shadow Primitives", "{0:F0}", Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum());
+                TableAddLabelValue(table, "Shadow primitives", "{0:F0}", Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum());
             }
             TableSetCells(table, 3, Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray());
-            TableAddLabelValue(table, "Render Primitives", "{0:F0}", Viewer.RenderProcess.PrimitivePerFrame.Sum());
-            TableAddLabelValue(table, "Render Process", "{0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue);
-            TableAddLabelValue(table, "Updater Process", "{0:F0}% ({1:F0}% wait)", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue);
-            TableAddLabelValue(table, "Loader Process", "{0:F0}% ({1:F0}% wait)", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue);
-            TableAddLabelValue(table, "Sound Process", "{0:F0}% ({1:F0}% wait)", Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.SoundProcess.Profiler.Wait.SmoothedValue);
-            TableAddLabelValue(table, "Total Process", "{0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue + Viewer.LoaderProcess.Profiler.Wall.SmoothedValue + Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue + Viewer.LoaderProcess.Profiler.Wait.SmoothedValue + Viewer.SoundProcess.Profiler.Wait.SmoothedValue);
+            TableAddLabelValue(table, "Render primitives", "{0:F0}", Viewer.RenderProcess.PrimitivePerFrame.Sum());
+            TableAddLabelValue(table, "Render process", "{0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue);
+            TableAddLabelValue(table, "Updater process", "{0:F0}% ({1:F0}% wait)", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue);
+            TableAddLabelValue(table, "Loader process", "{0:F0}% ({1:F0}% wait)", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue);
+            TableAddLabelValue(table, "Sound process", "{0:F0}% ({1:F0}% wait)", Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.SoundProcess.Profiler.Wait.SmoothedValue);
+            TableAddLabelValue(table, "Total process", "{0:F0}% ({1:F0}% wait)", Viewer.RenderProcess.Profiler.Wall.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue + Viewer.LoaderProcess.Profiler.Wall.SmoothedValue + Viewer.SoundProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue + Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue + Viewer.LoaderProcess.Profiler.Wait.SmoothedValue + Viewer.SoundProcess.Profiler.Wait.SmoothedValue);
             TableSetCells(table, 0, "Camera", "", Viewer.Camera.TileX.ToString("F0"), Viewer.Camera.TileZ.ToString("F0"), Viewer.Camera.Location.X.ToString("F3"), Viewer.Camera.Location.Y.ToString("F3"), Viewer.Camera.Location.Z.ToString("F3"));
             TableAddLine(table);
         }

@@ -1064,8 +1064,10 @@ namespace ORTS
 
         public override string GetDynamicBrakeStatus()
         {
-            if (DynamicBrakeController == null || DynamicBrakePercent < 0)
+            if (DynamicBrakeController == null)
                 return null;
+            if (DynamicBrakePercent < 0)
+                return string.Empty;
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
 
