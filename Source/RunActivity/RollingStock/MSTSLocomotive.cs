@@ -1233,7 +1233,7 @@ namespace ORTS
                         data = WheelSpeedMpS;
                         if (cvc.Units == CABViewControlUnits.KM_PER_HOUR)
                             data *= 3.6f;
-                        else
+                        else // MPH
                             data *= 2.2369f;
                         data = Math.Abs(data);
                         break;
@@ -2635,6 +2635,8 @@ namespace ORTS
             else if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
                 !LoadMeterPositive)
                 Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Yellow);
+            else if (_CabViewControl.ControlType == CABViewControlTypes.REVERSER_PLATE)
+                Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
             else
                 Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
             if (_Shader != null)
@@ -2643,7 +2645,7 @@ namespace ORTS
                 _Shader.End();
             }
         }
-    } // End Class CabViewGaugeRenderer
+    } // End Class CabViewGaugeRenderer 
 
     /// <summary>
     /// Discrete renderer for Lever, Twostate, Tristate, Multistate, Signal
@@ -2971,6 +2973,17 @@ namespace ORTS
                     int startTime = (int) _Locomotive.Simulator.ClockTime;
                     displayedText = InfoDisplay.FormattedTime(startTime);
                     textColor = Color.White;
+                }
+
+                if (_CabViewControl.ControlType == CABViewControlTypes.SPEEDOMETER &&
+                    _Locomotive.GetDataOf(_CabViewControl) < 74.0f)
+                {
+                    textColor = Color.White;
+                }
+                if (_CabViewControl.ControlType == CABViewControlTypes.SPEEDOMETER &&
+                    _Locomotive.GetDataOf(_CabViewControl) > 74.0f)               
+                {
+                    textColor = Color.Yellow;
                 }
 
                 Materials.SpriteBatchMaterial.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(),
