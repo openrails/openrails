@@ -17,12 +17,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using MSTS;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
-using System.IO;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using MSTS;
 
 namespace ORTS
 {
@@ -429,8 +430,8 @@ namespace ORTS
                 {
                     foreach (ParticleEmitterDrawer drawer in pair.Value)
                     {
-                        //drawer.SetTexture(SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, dieselTexture));
                         drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
+                        drawer.SetEmissionColor(Color.Black);
                     }
                 }
             }

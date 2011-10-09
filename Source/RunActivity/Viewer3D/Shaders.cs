@@ -298,7 +298,6 @@ namespace ORTS
     [CallOnThread("Render")]
     public class ParticleEmitterShader : Effect
     {
-        EffectParameter colorTint = null;
         EffectParameter emitDirection = null;
         EffectParameter emitSize = null;
         EffectParameter tileXY = null;
@@ -332,15 +331,9 @@ namespace ORTS
             set { emitSize.SetValue(value); }
         }
 
-        public Color ColorTint
-        {
-            set { colorTint.SetValue(value.ToVector4()); }
-        }
-
         public ParticleEmitterShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("ParticleEmitterShader"))
         {
-            colorTint = Parameters["colorTint"];
             emitDirection = Parameters["emitDirection"];
             emitSize = Parameters["emitSize"];
             currentTime = Parameters["currentTime"];

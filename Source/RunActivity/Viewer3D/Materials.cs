@@ -976,7 +976,6 @@ namespace ORTS
                 {
                     ParticleEmitter emitter = (ParticleEmitter)item.RenderPrimitive;
                     particleEmitterShader.CameraTileXY = emitter.CameraTileXZ;
-                    particleEmitterShader.ColorTint = emitter.ColorTint;
                     particleEmitterShader.EmitDirection = emitter.EmitterData.Direction;
                     particleEmitterShader.EmitSize = emitter.EmitterData.NozzleWidth;
                     particleEmitterShader.Texture = texture;

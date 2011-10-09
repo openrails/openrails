@@ -89,6 +89,11 @@ namespace ORTS
             emitter.ParticlesPerSecond = particlesPerSecond;
         }
 
+        public void SetEmissionColor(Color particleColor)
+        {
+            emitter.ParticleColor = particleColor;
+        }
+
         public void Reset()
         {
         }
@@ -100,7 +105,7 @@ namespace ORTS
         {
             public Vector4 position_time;
             public Short4 tileXY_ID;
-            public NormalizedShort4 randomNumbers;
+            public Color color_random;
 
             public const int SizeInBytes = 32;
 
@@ -108,7 +113,7 @@ namespace ORTS
             {
                 new VertexElement(0, 0, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 0),
                 new VertexElement(0, 16, VertexElementFormat.Short4, VertexElementMethod.Default, VertexElementUsage.Position, 1),
-                new VertexElement(0, 24, VertexElementFormat.NormalizedShort4, VertexElementMethod.Default, VertexElementUsage.Position, 2)
+                new VertexElement(0, 24, VertexElementFormat.Color, VertexElementMethod.Default, VertexElementUsage.Position, 2)
             };
         }
 
@@ -121,16 +126,16 @@ namespace ORTS
         public ParticleEmitterData EmitterData;
         int maxParticles;
 
-        private float particlesPerSecond = 0;
+        float particlesPerSecond;
         public float ParticlesPerSecond
         {
             set { particlesPerSecond = Math.Min(value, EmitterData.MaxParticlesPerSecond); }
             private get { return particlesPerSecond; }
         }
 
-        public Color ColorTint { get; set; }
+        public Color ParticleColor { get; set; }
 
-        float particlesToEmit = 0;
+        float particlesToEmit;
 
         Random rng = new Random();
         RenderProcess renderProcess;
@@ -140,7 +145,7 @@ namespace ORTS
         DynamicVertexBuffer vb;
         IndexBuffer ib;
 
-        public WorldPosition WorldPosition { get;  set; }
+        public WorldPosition WorldPosition { get; set; }
 
         int firstActiveParticle;
         int firstNewParticle;
@@ -152,7 +157,7 @@ namespace ORTS
 
         public ParticleEmitter(RenderProcess renderProcess, ParticleEmitterData data)
         {
-            ColorTint = Color.White;
+            ParticleColor = Color.White;
             EmitterData = data;
             this.renderProcess = renderProcess;
 
@@ -163,21 +168,21 @@ namespace ORTS
             InitIB(renderProcess.GraphicsDevice);
         }
 
-        private void InitVB(GraphicsDevice device)
+        void InitVB(GraphicsDevice device)
         {
             vb = new DynamicVertexBuffer(device, typeof(ParticleVertex), maxParticles * VERTICES_PER_PARTICLE, BufferUsage.WriteOnly);
             vertices = new ParticleVertex[maxParticles * VERTICES_PER_PARTICLE];
         }
 
-        private void InitIB(GraphicsDevice device)
+        void InitIB(GraphicsDevice device)
         {
-            int numIndices = maxParticles * INDICES_PER_PARTICLE;
+            var numIndices = maxParticles * INDICES_PER_PARTICLE;
             ib = new IndexBuffer(device, sizeof(ushort) * numIndices, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
-            ushort[] indices = new ushort[numIndices];
+            var indices = new ushort[numIndices];
 
-            ushort idx = 0;
+            var idx = 0;
 
-            for (int i = 0; i < numIndices; i += INDICES_PER_PARTICLE)
+            for (var i = 0; i < numIndices; i += INDICES_PER_PARTICLE)
             {
                 indices[i] = (ushort)idx;
                 indices[i + 1] = (ushort)(idx + 1);
@@ -192,14 +197,14 @@ namespace ORTS
             ib.SetData<ushort>(indices);
         }
 
-        private void RetireActiveParticles(float currentTime)
+        void RetireActiveParticles(float currentTime)
         {
-            float particleDuration = EmitterData.ParticleDuration;
+            var particleDuration = EmitterData.ParticleDuration;
 
             while (firstActiveParticle != firstNewParticle)
             {
-                int firstVertexOfParticle = firstActiveParticle * VERTICES_PER_PARTICLE;
-                float particleAge = currentTime - vertices[firstVertexOfParticle].position_time.W;
+                var firstVertexOfParticle = firstActiveParticle * VERTICES_PER_PARTICLE;
+                var particleAge = currentTime - vertices[firstVertexOfParticle].position_time.W;
 
                 if (particleAge < particleDuration)
                     break;
@@ -210,12 +215,12 @@ namespace ORTS
             }
         }
 
-        private void FreeRetiredParticles()
+        void FreeRetiredParticles()
         {
             while (firstRetiredParticle != firstActiveParticle)
             {
-                int firstVertexOfParticle = firstRetiredParticle * VERTICES_PER_PARTICLE;
-                int age = drawCounter - (int)vertices[firstVertexOfParticle].position_time.W;
+                var firstVertexOfParticle = firstRetiredParticle * VERTICES_PER_PARTICLE;
+                var age = drawCounter - (int)vertices[firstVertexOfParticle].position_time.W;
 
                 if (age < 2)
                     break;
@@ -224,16 +229,14 @@ namespace ORTS
             }
         }
 
-        private int GetNumParticlesAvailableForEmission()
+        int GetNumParticlesAvailableForEmission()
         {
-            int nextFree = (firstFreeParticle + 1) % maxParticles;
+            var nextFree = (firstFreeParticle + 1) % maxParticles;
 
             if (nextFree <= firstRetiredParticle)
                 return firstRetiredParticle - nextFree;
-            else
-            {
-                return (maxParticles - nextFree) + firstRetiredParticle;
-            }
+
+            return (maxParticles - nextFree) + firstRetiredParticle;
         }
 
         public void Update(double currentTime, ElapsedTime elapsedTime)
@@ -241,47 +244,46 @@ namespace ORTS
             RetireActiveParticles((float)currentTime);
             FreeRetiredParticles();
 
-            //Add a particle.
-            float timeLastFrame = (float)currentTime - elapsedTime.ClockSeconds;
-            float time = (float)currentTime;
+            var timeLastFrame = (float)currentTime - elapsedTime.ClockSeconds;
+            var time = (float)currentTime;
 
             particlesToEmit += (elapsedTime.ClockSeconds * ParticlesPerSecond);
 
-            int numParticlesAdded = 0;
+            var numParticlesAdded = 0;
 
-            int numToBeEmitted = (int)particlesToEmit;
-            int numCanBeEmitted = GetNumParticlesAvailableForEmission();
-            int numToEmit = Math.Min(numToBeEmitted, numCanBeEmitted);
-            
-            float intervalPerParticle = (time - timeParticlesLastEmitted) / numToEmit;
+            var numToBeEmitted = (int)particlesToEmit;
+            var numCanBeEmitted = GetNumParticlesAvailableForEmission();
+            var numToEmit = Math.Min(numToBeEmitted, numCanBeEmitted);
 
-            for(int i = 0; i < numToEmit; i++)
+            var intervalPerParticle = (time - timeParticlesLastEmitted) / numToEmit;
+
+            for (var i = 0; i < numToEmit; i++)
             {
-                int nextFreeParticle = (firstFreeParticle + 1) % maxParticles;
+                var nextFreeParticle = (firstFreeParticle + 1) % maxParticles;
 
-                int newParticleVertexIndex = nextFreeParticle * VERTICES_PER_PARTICLE;
+                var newParticleVertexIndex = nextFreeParticle * VERTICES_PER_PARTICLE;
 
-                Vector3 particleOffset = EmitterData.Offset;
-                Matrix rotation = WorldPosition.XNAMatrix;
+                var particleOffset = EmitterData.Offset;
+                var rotation = WorldPosition.XNAMatrix;
                 rotation.Translation = Vector3.Zero;
                 particleOffset = Vector3.Transform(particleOffset, Matrix.Invert(rotation));
 
-                Vector3 particlePosition = WorldPosition.Location + particleOffset;
+                var particlePosition = WorldPosition.Location + particleOffset;
 
-                float timeOfEmission = timeParticlesLastEmitted + (i * intervalPerParticle);
+                var timeOfEmission = timeParticlesLastEmitted + (i * intervalPerParticle);
 
-                Vector4 positionTime = new Vector4(WorldPosition.Location + particleOffset, timeOfEmission);
+                var positionTime = new Vector4(WorldPosition.Location + particleOffset, timeOfEmission);
                 positionTime.Z *= -1;
 
-                float randomTextureOffset = (float)rng.Next(16);
+                var randomTextureOffset = (float)rng.Next(16);
 
-                NormalizedShort4 randomNumbers = new NormalizedShort4((float)rng.NextDouble(), (float)rng.NextDouble(), (float)rng.NextDouble(), (float)rng.NextDouble());
+                var color_random = new Color(ParticleColor, (float)rng.NextDouble());
 
-                for (int j = 0; j < VERTICES_PER_PARTICLE; j++)
+                for (var j = 0; j < VERTICES_PER_PARTICLE; j++)
                 {
                     vertices[newParticleVertexIndex + j].position_time = positionTime;
                     vertices[newParticleVertexIndex + j].tileXY_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, randomTextureOffset);
-                    vertices[newParticleVertexIndex + j].randomNumbers = randomNumbers;
+                    vertices[newParticleVertexIndex + j].color_random = color_random;
                 }
 
                 firstFreeParticle = nextFreeParticle;
@@ -296,33 +298,21 @@ namespace ORTS
         }
 
 
-        private void AddNewParticlesToVertexBuffer()
+        void AddNewParticlesToVertexBuffer()
         {
-            int stride = ParticleVertex.SizeInBytes;
+            var stride = ParticleVertex.SizeInBytes;
 
             if (firstNewParticle < firstFreeParticle)
             {
-                int numParticlesToAdd = firstFreeParticle - firstNewParticle;
-
-                vb.SetData( firstNewParticle * stride * VERTICES_PER_PARTICLE,
-                            vertices,
-                            firstNewParticle * VERTICES_PER_PARTICLE,
-                            numParticlesToAdd * VERTICES_PER_PARTICLE,
-                            stride, SetDataOptions.NoOverwrite);
+                var numParticlesToAdd = firstFreeParticle - firstNewParticle;
+                vb.SetData(firstNewParticle * stride * VERTICES_PER_PARTICLE, vertices, firstNewParticle * VERTICES_PER_PARTICLE, numParticlesToAdd * VERTICES_PER_PARTICLE, stride, SetDataOptions.NoOverwrite);
             }
             else
             {
-                int numParticlesToAddAtEnd = maxParticles - firstNewParticle;
-                vb.SetData(firstNewParticle * stride * VERTICES_PER_PARTICLE,
-                            vertices,
-                            firstNewParticle * VERTICES_PER_PARTICLE,
-                            numParticlesToAddAtEnd * VERTICES_PER_PARTICLE,
-                            stride, SetDataOptions.NoOverwrite);
-
+                var numParticlesToAddAtEnd = maxParticles - firstNewParticle;
+                vb.SetData(firstNewParticle * stride * VERTICES_PER_PARTICLE, vertices, firstNewParticle * VERTICES_PER_PARTICLE, numParticlesToAddAtEnd * VERTICES_PER_PARTICLE, stride, SetDataOptions.NoOverwrite);
                 if (firstFreeParticle > 0)
-                {
                     vb.SetData(0, vertices, 0, firstFreeParticle * VERTICES_PER_PARTICLE, stride, SetDataOptions.NoOverwrite);
-                }
             }
 
             firstNewParticle = firstFreeParticle;
@@ -336,9 +326,7 @@ namespace ORTS
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             if (firstNewParticle != firstFreeParticle)
-            {
                 AddNewParticlesToVertexBuffer();
-            }
 
             if (HasParticlesToRender())
             {
@@ -348,38 +336,19 @@ namespace ORTS
 
                 if (firstActiveParticle < firstFreeParticle)
                 {
-                    int numParticles = firstFreeParticle - firstActiveParticle;
-                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 
-                                                         0,
-                                                         firstActiveParticle * VERTICES_PER_PARTICLE,
-                                                         numParticles * VERTICES_PER_PARTICLE,
-                                                         firstActiveParticle * INDICES_PER_PARTICLE,
-                                                         numParticles * PRIMITIVES_PER_PARTICLE);
+                    var numParticles = firstFreeParticle - firstActiveParticle;
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, firstActiveParticle * VERTICES_PER_PARTICLE, numParticles * VERTICES_PER_PARTICLE, firstActiveParticle * INDICES_PER_PARTICLE, numParticles * PRIMITIVES_PER_PARTICLE);
                 }
                 else
                 {
-                    int numParticlesAtEnd = maxParticles - firstActiveParticle;
-                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList,
-                                                         0,
-                                                         firstActiveParticle * VERTICES_PER_PARTICLE,
-                                                         numParticlesAtEnd * VERTICES_PER_PARTICLE,
-                                                         firstActiveParticle * INDICES_PER_PARTICLE,
-                                                         numParticlesAtEnd * PRIMITIVES_PER_PARTICLE);
-
+                    var numParticlesAtEnd = maxParticles - firstActiveParticle;
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, firstActiveParticle * VERTICES_PER_PARTICLE, numParticlesAtEnd * VERTICES_PER_PARTICLE, firstActiveParticle * INDICES_PER_PARTICLE, numParticlesAtEnd * PRIMITIVES_PER_PARTICLE);
                     if (firstFreeParticle > 0)
-                    {
-                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList,
-                                                             0,
-                                                             0,
-                                                             firstFreeParticle * VERTICES_PER_PARTICLE,
-                                                             0,
-                                                             firstFreeParticle * PRIMITIVES_PER_PARTICLE);
-                    }
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, firstFreeParticle * VERTICES_PER_PARTICLE, 0, firstFreeParticle * PRIMITIVES_PER_PARTICLE);
                 }
             }
 
             drawCounter++;
         }
     }
-
 }
