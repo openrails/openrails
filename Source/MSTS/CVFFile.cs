@@ -206,7 +206,7 @@ namespace MSTS
             catch(ArgumentException)
             {
                 stf.StepBackOneItem();
-                STFException.TraceWarning(stf, "Unknown ControlType " + stf.ReadString());
+                STFException.TraceInformation(stf, "Unknown ControlType " + stf.ReadString());
                 ControlType = CABViewControlTypes.NONE;
             }
             //stf.ReadItem(); // Skip repeated Class Type 

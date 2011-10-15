@@ -1370,6 +1370,11 @@ namespace MSTS
 
     public class STFException : Exception
     {
+        public static void TraceInformation(STFReader stf, string message)
+        {
+            Trace.TraceInformation("{2} in {0}:line {1}", stf.FileName, stf.LineNumber, message);
+        }
+
         public static void TraceWarning(STFReader stf, string message)
         {
             Trace.TraceWarning("{2} in {0}:line {1}", stf.FileName, stf.LineNumber, message);
