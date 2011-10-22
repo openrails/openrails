@@ -421,7 +421,7 @@ namespace ORTS
         /// </summary>
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            var blended = material.GetBlending(primitive);
+            var blended = material.GetBlending();
             // TODO: Alpha sorting code
             var sortingMaterial = blended ? DummyBlendedMaterial : material;
             //var sortingMaterial = material;

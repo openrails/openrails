@@ -295,8 +295,9 @@ namespace ORTS
 		public virtual void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
 		public virtual void ResetState(GraphicsDevice graphicsDevice) { }
 
-		public virtual bool GetBlending(RenderPrimitive renderPrimitive) { return false; }
-		public virtual Texture2D GetShadowTexture(RenderPrimitive renderPrimitive) { return null; }
+        public virtual bool GetBlending() { return false; }
+        public virtual Texture2D GetShadowTexture() { return null; }
+        public virtual TextureAddressMode GetShadowTextureAddressMode() { return TextureAddressMode.Wrap; }
 	}
 
 	public class EmptyMaterial : Material
@@ -328,7 +329,7 @@ namespace ORTS
         {
         }
 
-        public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
         {
             return true;
         }
@@ -401,7 +402,7 @@ namespace ORTS
 			SpriteBatch.End();//DepthBufferEnable will be restored to previous state
 		}
 
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
 		{
 			return true;
 		}
@@ -515,7 +516,6 @@ namespace ORTS
 			var shaders = Options & 0x000f;
 			var lighting = (Options & 0x00f0) >> 4;
 			var alphaTest = (Options & 0x0100) >> 8;
-			var textureAddressMode = (Options & 0x1800) >> 11;
 
 			switch (shaders)
 			{
@@ -591,25 +591,7 @@ namespace ORTS
 			}
 
 			// Texture addressing
-			switch (textureAddressMode)
-			{
-				case 0: // wrap
-					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-					break;
-				case 1: // mirror
-					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Mirror;
-					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Mirror;
-					break;
-				case 2: // clamp
-					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
-					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
-					break;
-				case 3: // border
-					graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Border;
-					graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Border;
-					break;
-			}
+            graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = GetShadowTextureAddressMode();
 
 			// Night texture toggle
 			if ((Options & 0x2000) >> 13 == 1)
@@ -676,7 +658,7 @@ namespace ORTS
 			rs.SourceBlend = Blend.One;
 		}
 
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
 		{
 			// Transparency test
 			int alphaTest = (Options & 0x0100) >> 8;
@@ -691,13 +673,29 @@ namespace ORTS
 			return false;
 		}
 
-		public override Texture2D GetShadowTexture(RenderPrimitive renderPrimitive)
+        public override Texture2D GetShadowTexture()
 		{
 			if (Materials.sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
 				return nightTexture;
 			
 			return Texture;
 		}
+
+        public override TextureAddressMode GetShadowTextureAddressMode()
+        {
+            var textureAddressMode = (Options & 0x1800) >> 11;
+            switch (textureAddressMode)
+            {
+                default:
+                    return TextureAddressMode.Wrap;
+                case 1:
+                    return TextureAddressMode.Mirror;
+                case 2:
+                    return TextureAddressMode.Clamp;
+                case 3:
+                    return TextureAddressMode.Border;
+            }
+        }
 	}
 
 	public class TerrainMaterial : Material
@@ -894,7 +892,7 @@ namespace ORTS
             rs.SourceBlend = Blend.One;
         }
 
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
 		{
 			return false;
 		}
@@ -1000,7 +998,7 @@ namespace ORTS
             rs.SourceBlend = Blend.One;
         }
 
-        public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
         {
             return true;
         }
@@ -1081,7 +1079,7 @@ namespace ORTS
 			rs.SourceBlend = Blend.One;
         }
 
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
 		{
 			return true;
 		}
@@ -1142,7 +1140,7 @@ namespace ORTS
 			rs.ReferenceAlpha = 0;
 		}
 
-		public override Texture2D GetShadowTexture(RenderPrimitive renderPrimitive)
+        public override Texture2D GetShadowTexture()
 		{
 			return TreeTexture;
 		}
@@ -1203,7 +1201,7 @@ namespace ORTS
 			rs.SourceBlend = Blend.One;
 		}
 
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
 		{
 			return true;
 		}
@@ -1326,7 +1324,7 @@ namespace ORTS
 			rs.SourceBlend = Blend.One;
 		}
 
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
 		{
 			return true;
 		}
@@ -1383,6 +1381,7 @@ namespace ORTS
 		{
 			var shader = Materials.ShadowMapShader;
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
+            var samplerState = graphicsDevice.SamplerStates[0];
 
             shader.SetData(ref XNAViewMatrix);
             shader.Begin();
@@ -1393,9 +1392,10 @@ namespace ORTS
 				foreach (var item in renderItems)
 				{
 					var wvp = item.XNAMatrix * viewproj;
-					shader.SetData(ref wvp, item.Material.GetShadowTexture(item.RenderPrimitive));
+                    shader.SetData(ref wvp, item.Material.GetShadowTexture());
 					shader.CommitChanges();
-					item.RenderPrimitive.Draw(graphicsDevice);
+                    samplerState.AddressU = samplerState.AddressV = item.Material.GetShadowTextureAddressMode();
+                    item.RenderPrimitive.Draw(graphicsDevice);
 				}
 				ShaderPasses.Current.End();
 			}
@@ -1509,7 +1509,7 @@ namespace ORTS
 			rs.SourceBlend = Blend.One;
 		}
 
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
 		{
 			return true;
 		}
@@ -1648,7 +1648,7 @@ namespace ORTS
 			SpriteBatch.End();//DepthBufferEnable will be restored to previous state
 		}
 
-		public override bool GetBlending(RenderPrimitive renderPrimitive)
+        public override bool GetBlending()
 		{
 			return true;
 		}
