@@ -24,14 +24,17 @@ namespace ORTS
 		EffectParameter World;
 		EffectParameter View;
 		EffectParameter WorldViewProjection;
-		public void SetMatrix(ref Matrix world, ref Matrix view, ref Matrix viewProj)
-		{
-			World.SetValue(world);
-			View.SetValue(view);
-			WorldViewProjection.SetValue(world * viewProj);
-		}
+        public void SetViewMatrix(ref Matrix view)
+        {
+            View.SetValue(view);
+        }
+        public void SetMatrix(ref Matrix world, ref Matrix viewProj)
+        {
+            World.SetValue(world);
+            WorldViewProjection.SetValue(world * viewProj);
+        }
 
-		EffectParameter[] LightViewProjectionShadowProjection;
+        EffectParameter[] LightViewProjectionShadowProjection;
 		EffectParameter[] ShadowMapTextures;
 		EffectParameter ShadowMapLimit;
 		public void SetShadowMap(Matrix[] lightViewProjectionShadowProjection, Texture2D[] shadowMapTextures, float[] limits)
