@@ -52,6 +52,9 @@ namespace ORTS
         public virtual bool IsAvailable { get { return true; } }
         public virtual bool IsUnderground { get { return false; } }
 
+        // We need to allow different cameras to have different near planes.
+        public virtual float NearPlane { get { return 1.0f; } }
+
         protected Camera(Viewer3D viewer)
         {
             Viewer = viewer;
@@ -122,8 +125,8 @@ namespace ORTS
             var aspectRatio = (float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
             var farPlaneDistance = SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
             var fovWidthRadians = MathHelper.ToRadians(Viewer.Settings.ViewingFOV);
-            xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.1f, Viewer.Settings.ViewingDistance);
-            XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 0.1f, farPlaneDistance);    // TODO remove? 
+            xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, Viewer.Settings.ViewingDistance);
+            XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, farPlaneDistance);    // TODO remove? 
             frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // Precompute the right edge of the view frustrum.
             frustumRightProjected.Z = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);
         }
@@ -554,7 +557,9 @@ namespace ORTS
     }
 
     public class BrakemanCamera : AttachedCamera
-    {        
+    {
+        public override float NearPlane { get { return 0.1f; } }
+
         public BrakemanCamera(Viewer3D viewer)
             : base(viewer, new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f), new CameraAngleClamper(-MathHelper.Pi / 2, MathHelper.Pi))
         {
@@ -849,6 +854,7 @@ namespace ORTS
     {
         public override Styles Style { get { return Styles.Passenger; } }
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
+        public override float NearPlane { get { return 0.1f; } }
 
         public PassengerCamera(Viewer3D viewer)
             : base(viewer, null, null)
