@@ -1240,6 +1240,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.AMMETER:
                 case CABViewControlTypes.LOAD_METER:
+                case CABViewControlTypes.TRACTION_BRAKING:
                     {
                         if (LocomotiveAxle != null)
                         {
