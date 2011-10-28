@@ -73,9 +73,9 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
 
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "engine(or_diesel(idleexhaust": IdleExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -117,10 +117,25 @@ namespace ORTS
         /// </summary>
         public override void InitializeFromCopy(MSTSWagon copy)
         {
-            // for example
-            //CabSoundFileName = locoCopy.CabSoundFileName;
-            //CVFFileName = locoCopy.CVFFileName;
+            MSTSDieselLocomotive locoCopy = (MSTSDieselLocomotive)copy;
+            IdleRPM = locoCopy.IdleRPM;
+            MaxRPM = locoCopy.MaxRPM;
+            MaxRPMChangeRate = locoCopy.MaxRPMChangeRate;
+            PercentChangePerSec = locoCopy.PercentChangePerSec;
+            IdleExhaust = locoCopy.IdleExhaust;
+            MaxExhaust = locoCopy.MaxExhaust;
+            ExhaustDynamics = locoCopy.ExhaustDynamics;
+            EngineRPMderivation = locoCopy.EngineRPMderivation;
+            EngineRPMold = locoCopy.EngineRPMold;
 
+            MaxDieselLevelL = locoCopy.MaxDieselLevelL;
+            DieselUsedPerHourAtMaxPowerL = locoCopy.DieselUsedPerHourAtMaxPowerL;
+            DieselUsedPerHourAtIdleL = locoCopy.DieselUsedPerHourAtIdleL;
+            DieselLevelL = locoCopy.DieselLevelL;
+            DieselFlowLps = 0.0f;
+
+            EngineRPM = locoCopy.EngineRPM;
+            ExhaustParticles = locoCopy.ExhaustParticles;
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
 
@@ -180,9 +195,13 @@ namespace ORTS
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive())
+            {
                 ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+            }
             else
+            {
                 ThrottleController.Update(elapsedClockSeconds);
+            }
 
 
             // TODO  this is a wild simplification for diesel electric

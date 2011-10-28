@@ -82,6 +82,14 @@ namespace ORTS
             // for example
             //CabSoundFileName = locoCopy.CabSoundFileName;
             //CVFFileName = locoCopy.CVFFileName;
+            MSTSElectricLocomotive locoCopy = (MSTSElectricLocomotive) copy;
+            PantographFirstUp = locoCopy.PantographFirstUp;
+            PantographSecondUp = locoCopy.PantographSecondUp;
+            PantographFirstDelay = locoCopy.PantographFirstDelay;
+            PantographSecondDelay = locoCopy.PantographSecondDelay;
+
+            VoltageFilter = locoCopy.VoltageFilter;
+            VoltageV = locoCopy.VoltageV;
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }

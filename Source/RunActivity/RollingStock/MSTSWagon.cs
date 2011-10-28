@@ -107,7 +107,7 @@ namespace ORTS
                     string token = stf.ReadItem();
                     Parse(stf.Tree.ToLower(), stf);
                 }
-            if (BrakeSystem == null)
+             if (BrakeSystem == null)
                     BrakeSystem = new AirSinglePipe(this);
         }
 
@@ -240,6 +240,13 @@ namespace ORTS
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
             Adhesion3 = copy.Adhesion3;
+            Curtius_KnifflerA = copy.Curtius_KnifflerA;
+            Curtius_KnifflerB = copy.Curtius_KnifflerB;
+            Curtius_KnifflerC = copy.Curtius_KnifflerC;
+            AdhesionK = copy.AdhesionK;
+            AxleInertiaKgm2 = copy.AxleInertiaKgm2;
+            SlipWarningTresholdPercent = copy.SlipWarningTresholdPercent;
+            UseAdvancedAdhesion = copy.UseAdvancedAdhesion;
             Lights = copy.Lights;
             foreach (ViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
