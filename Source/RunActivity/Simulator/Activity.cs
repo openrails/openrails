@@ -777,7 +777,7 @@ namespace ORTS {
                 }
             }
 
-            var trainFrontPosition = Simulator.PlayerLocomotive.Train.FrontTDBTraveller;
+            var trainFrontPosition = new TDBTraveller(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
             var distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z);
             if (distance == -1) {
                 trainFrontPosition.ReverseDirection();
