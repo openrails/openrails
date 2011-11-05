@@ -558,7 +558,7 @@ namespace ORTS
 
     public class BrakemanCamera : AttachedCamera
     {
-        public override float NearPlane { get { return 0.1f; } }
+        public override float NearPlane { get { return 0.25f; } }
 
         public BrakemanCamera(Viewer3D viewer)
             : base(viewer, new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f), new CameraAngleClamper(-MathHelper.Pi / 2, MathHelper.Pi))
