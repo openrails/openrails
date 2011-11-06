@@ -84,14 +84,14 @@ namespace ORTS
         EffectParameter viewerPos;
         public Vector3 ViewerPos { set { viewerPos.SetValue(value); } }
 
-        EffectParameter isNight_Tex;
-        public bool IsNight_Tex { set { isNight_Tex.SetValue(value); } }
+        EffectParameter imageTextureIsNight;
+        public bool ImageTextureIsNight { set { imageTextureIsNight.SetValue(value); } }
 
-        EffectParameter imageMap_Tex;
-        public Texture2D ImageMap_Tex { set { imageMap_Tex.SetValue(value); } }
+        EffectParameter imageTexture;
+        public Texture2D ImageTexture { set { imageTexture.SetValue(value); } }
 
-        EffectParameter normalMap_Tex;
-        public Texture2D NormalMap_Tex { set { normalMap_Tex.SetValue(value); } }
+        EffectParameter overlayTexture;
+        public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
 		public void Apply()
 		{
@@ -126,9 +126,9 @@ namespace ORTS
 
             overcast = Parameters["overcast"];
             viewerPos = Parameters["viewerPos"];
-            isNight_Tex = Parameters["isNight_Tex"];
-            imageMap_Tex = Parameters["imageMap_Tex"];
-            normalMap_Tex = Parameters["normalMap_Tex"];
+            imageTextureIsNight = Parameters["ImageTextureIsNight"];
+            imageTexture = Parameters["ImageTexture"];
+            overlayTexture = Parameters["OverlayTexture"];
         }
     }
 

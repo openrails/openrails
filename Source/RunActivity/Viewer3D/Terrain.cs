@@ -12,7 +12,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
@@ -243,10 +242,12 @@ namespace ORTS
             PatchZ = z;
             Tile = tile;
 
-            terrain_patchset_patch patch = Tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z);
-            terrain_shader terrain_shader = (terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader];
-            string terrtexName = terrain_shader.terrain_texslots[0].Filename;
-            PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, terrtexName));
+            var patch = Tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z);
+            var ts = ((terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader]).terrain_texslots;
+            if (ts.Length > 1)
+                PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
+            else
+                PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
 
             float cx = -1024 + (int)patch.CenterX;
             float cz = -1024 - (int)patch.CenterZ;

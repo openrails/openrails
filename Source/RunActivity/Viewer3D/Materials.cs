@@ -55,7 +55,7 @@ namespace ORTS
         {
             SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
             if (File.Exists(renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace"))
-                SceneryShader.NormalMap_Tex = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
+                SceneryShader.OverlayTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
             SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
             ParticleEmitterShader = new ParticleEmitterShader(renderProcess.GraphicsDevice, renderProcess.Content);
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
@@ -584,13 +584,13 @@ namespace ORTS
 			// Night texture toggle
             if (NightTexture != null && (Options & 0x2000) != 0 && Materials.sunDirection.Y < 0.0f)
 			{
-                shader.ImageMap_Tex = NightTexture;
-                shader.IsNight_Tex = true;
+                shader.ImageTexture = NightTexture;
+                shader.ImageTextureIsNight = true;
 			}
 			else
 			{
-                shader.ImageMap_Tex = Texture;
-                shader.IsNight_Tex = false;
+                shader.ImageTexture = Texture;
+                shader.ImageTextureIsNight = false;
 			}
 
             shader.Apply();
@@ -628,7 +628,7 @@ namespace ORTS
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
             var shader = Materials.SceneryShader;
-            shader.IsNight_Tex = false;
+            shader.ImageTextureIsNight = false;
             shader.LightingDiffuse = 1;
             shader.LightingSpecular = 0;
             shader.Apply();
@@ -688,13 +688,16 @@ namespace ORTS
 	public class TerrainMaterial : Material
     {
         readonly Texture2D PatchTexture;
+        readonly Texture2D PatchTextureOverlay;
         readonly RenderProcess RenderProcess;
 		IEnumerator<EffectPass> ShaderPasses;
 
         public TerrainMaterial(RenderProcess renderProcess, string terrainTexture)
 			: base(terrainTexture)
 		{
-            PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, terrainTexture);
+            var textures = terrainTexture.Split('\0');
+            PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, textures[0]);
+            PatchTextureOverlay = textures.Length > 1 ? SharedTextureManager.Get(renderProcess.GraphicsDevice, textures[1]) : null;
             RenderProcess = renderProcess;
         }
 
@@ -703,7 +706,8 @@ namespace ORTS
             var shader = Materials.SceneryShader;
             shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"].Passes.GetEnumerator();
-            shader.ImageMap_Tex = PatchTexture;
+            shader.ImageTexture = PatchTexture;
+            shader.OverlayTexture = PatchTextureOverlay;
 
             var samplerState = graphicsDevice.SamplerStates[0];
             samplerState.AddressU = TextureAddressMode.Wrap;
@@ -1087,7 +1091,7 @@ namespace ORTS
 			var shader = Materials.SceneryShader;
             shader.CurrentTechnique = shader.Techniques["Forest"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
-            shader.ImageMap_Tex = TreeTexture;
+            shader.ImageTexture = TreeTexture;
 
             var rs = graphicsDevice.RenderState;
 			rs.AlphaFunction = CompareFunction.GreaterEqual;
@@ -1263,7 +1267,7 @@ namespace ORTS
             var shader = Materials.SceneryShader;
             shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
-            shader.ImageMap_Tex = WaterTexture;
+            shader.ImageTexture = WaterTexture;
 
             var samplerState = graphicsDevice.SamplerStates[0];
             samplerState.AddressU = TextureAddressMode.Wrap;

@@ -393,7 +393,7 @@ namespace ORTS
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
 			SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["SignalLight"];
-			SceneryShader.ImageMap_Tex = Texture;
+			SceneryShader.ImageTexture = Texture;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
