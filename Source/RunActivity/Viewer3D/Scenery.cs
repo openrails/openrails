@@ -208,14 +208,14 @@ namespace ORTS
         /// Open the specified WFile and load all the scenery objects into the viewer.
         /// If the file doesn't exist, then return an empty WorldFile object.
         /// </summary>
-        public WorldFile( Viewer3D viewer, int tileX, int tileZ )
+        public WorldFile(Viewer3D viewer, int tileX, int tileZ)
         {
             TileX = tileX;
             TileZ = tileZ;
 
             // determine file path to the WFile at the specified tile coordinates
             string WFileName = WorldFileNameFromTileCoordinates(tileX, tileZ);
-            string WFilePath = viewer.Simulator.RoutePath + @"\WORLD\" + WFileName;
+            string WFilePath = viewer.Simulator.RoutePath + @"\World\" + WFileName;
 
             // if there isn't a file, then return with an empty WorldFile object
             if (!File.Exists(WFilePath))
@@ -230,17 +230,12 @@ namespace ORTS
                 if (worldObject.StaticDetailLevel > viewer.Settings.WorldObjectDensity)
                     continue;
 
-                // determine the full file path to the shape file for this scenery object 
-                string shapeFilePath;
-                if (worldObject.GetType() == typeof(MSTS.TrackObj))
-                    shapeFilePath = viewer.Simulator.BasePath + @"\global\shapes\" + worldObject.FileName;
-                // Skip dynamic track: no shape file
-                else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
-                    shapeFilePath = null;
-                else
-                    shapeFilePath = viewer.Simulator.RoutePath + @"\shapes\" + worldObject.FileName;
+                // Determine the file path to the shape file for this scenery object.
+                var shapeFilePath = String.IsNullOrEmpty(worldObject.FileName) ? null : File.Exists(viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName) ? viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName : File.Exists(viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName) ? viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName : null;
+                if (!String.IsNullOrEmpty(shapeFilePath))
+                    shapeFilePath = Path.GetFullPath(shapeFilePath);
 
-                // get the position of the scenery object into ORTS coordinate space
+                // Get the position of the scenery object into ORTS coordinate space.
                 WorldPosition worldMatrix;
 				if (worldObject.Matrix3x3 != null)
 					worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.Matrix3x3);

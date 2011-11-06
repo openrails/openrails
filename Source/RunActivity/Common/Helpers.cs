@@ -6,59 +6,97 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using MSTS;
 
 namespace ORTS
 {
-    static class Helpers
+    public static class Helpers
     {
-        public static string GetTextureFolder(Viewer3D viewer, int altTex)
+        [Flags]
+        public enum TextureFlags
         {
-            string textureFolder;
-            int season = (int)viewer.Simulator.Season;
-            int weather = (int)viewer.Simulator.Weather;
+            None = 0x0,
+            Snow = 0x1,
+            SnowTrack = 0x2,
+            Spring = 0x4,
+            Autumn = 0x8,
+            Winter = 0x10,
+            SpringSnow = 0x20,
+            AutumnSnow = 0x40,
+            WinterSnow = 0x80,
+            Night = 0x100,
+            // SPECIAL VALUE FOR OPEN RAILS!
+            TrainSet = 0x10000,
+        }
 
-            switch (altTex)
-            {
-                case 0:
-                default:
-                    textureFolder = viewer.Simulator.RoutePath + @"\textures";
-                    break;
-                case 1:
-                case 2: // Track
-                    if (season == (int)SeasonType.Winter || weather == (int)WeatherType.Snow)
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures\snow";
-                    else
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures";
-                    break;
-                case 252: // Vegetation
-                    if (season == (int)SeasonType.Spring && weather != (int)WeatherType.Snow)
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures\spring";
-                    else if (season == (int)SeasonType.Spring && weather == (int)WeatherType.Snow)
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures\springsnow";
-                    else if (season == (int)SeasonType.Autumn && weather != (int)WeatherType.Snow)
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures\autumn";
-                    else if (season == (int)SeasonType.Autumn && weather == (int)WeatherType.Snow)
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures\autumnsnow";
-                    else if (season == (int)SeasonType.Winter && weather != (int)WeatherType.Snow)
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures\winter";
-                    else if (season == (int)SeasonType.Winter && weather == (int)WeatherType.Snow)
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures\wintersnow";
-                    else
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures";
-                    break;
-                case 256: // Incorrect param in MSTS. In OR we default to 257.
-                case 257:
-                    if (season == (int)SeasonType.Winter || weather == (int)WeatherType.Snow)
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures\snow";
-                    else
-                        textureFolder = viewer.Simulator.RoutePath + @"\textures";
-                    break;
-            }
-            return textureFolder;
-        } // end GetTextureFolder
+        public static string GetForestTextureFile(Simulator simulator, string textureName)
+        {
+            return GetTextureFile(simulator, Helpers.TextureFlags.Spring | Helpers.TextureFlags.Autumn | Helpers.TextureFlags.Winter | Helpers.TextureFlags.SpringSnow | Helpers.TextureFlags.AutumnSnow | Helpers.TextureFlags.WinterSnow, simulator.RoutePath + @"\Textures", textureName);
+        }
+
+        public static string GetNightTextureFile(Simulator simulator, string textureFilePath)
+        {
+            var texturePath = Path.GetDirectoryName(textureFilePath);
+            var textureName = Path.GetFileName(textureFilePath);
+            if (File.Exists(texturePath + @"\Night\" + textureName)) return texturePath + @"\Night\" + textureName;
+            texturePath = Path.GetDirectoryName(texturePath);
+            if (File.Exists(texturePath + @"\Night\" + textureName)) return texturePath + @"\Night\" + textureName;
+            return null;
+        }
+
+        public static string GetRouteTextureFile(Simulator simulator, TextureFlags textureFlags, string textureName)
+        {
+            return GetTextureFile(simulator, textureFlags, simulator.RoutePath + @"\Textures", textureName);
+        }
+
+        public static string GetShapeTextureFile(Simulator simulator, TextureFlags textureFlags, string shapeFile, string textureName)
+        {
+            if ((textureFlags & TextureFlags.TrainSet) != 0)
+                return GetTextureFile(simulator, textureFlags, Path.GetDirectoryName(shapeFile), textureName);
+            return GetTextureFile(simulator, textureFlags, simulator.RoutePath + @"\Textures", textureName);
+        }
+
+        public static string GetTerrainTextureFile(Simulator simulator, string textureName)
+        {
+            return GetTextureFile(simulator, Helpers.TextureFlags.Snow, simulator.RoutePath + @"\TerrTex", textureName);
+        }
+
+        static string GetTextureFile(Simulator simulator, TextureFlags textureFlags, string texturePath, string textureName)
+        {
+            var alternativePath = "";
+            if ((textureFlags & TextureFlags.Snow) != 0 || (textureFlags & TextureFlags.SnowTrack) != 0)
+                if (IsSnow(simulator))
+                    alternativePath = @"\Snow\";
+                else
+                    alternativePath = "";
+            else if ((textureFlags & TextureFlags.Spring) != 0 && simulator.Season == SeasonType.Spring && simulator.Weather != WeatherType.Snow)
+                alternativePath = @"\Spring\";
+            else if ((textureFlags & TextureFlags.Autumn) != 0 && simulator.Season == SeasonType.Autumn && simulator.Weather != WeatherType.Snow)
+                alternativePath = @"\Autumn\";
+            else if ((textureFlags & TextureFlags.Winter) != 0 && simulator.Season == SeasonType.Winter && simulator.Weather != WeatherType.Snow)
+                alternativePath = @"\Winter\";
+            else if ((textureFlags & TextureFlags.SpringSnow) != 0 && simulator.Season == SeasonType.Spring && simulator.Weather == WeatherType.Snow)
+                alternativePath = @"\SpringSnow\";
+            else if ((textureFlags & TextureFlags.AutumnSnow) != 0 && simulator.Season == SeasonType.Autumn && simulator.Weather == WeatherType.Snow)
+                alternativePath = @"\AutumnSnow\";
+            else if ((textureFlags & TextureFlags.WinterSnow) != 0 && simulator.Season == SeasonType.Winter && simulator.Weather == WeatherType.Snow)
+                alternativePath = @"\WinterSnow\";
+
+            if (alternativePath.Length > 0 && File.Exists(texturePath + alternativePath + textureName)) return texturePath + alternativePath + textureName;
+            if (File.Exists(texturePath + @"\" + textureName)) return texturePath + @"\" + textureName;
+            return null;
+        }
+
+        static bool IsSnow(Simulator simulator)
+        {
+            // MSTS shows snow textures:
+            //   - In winter, no matter what the weather is.
+            //   - In spring and autumn, if the weather is snow.
+            return (simulator.Season == SeasonType.Winter) || ((simulator.Season != SeasonType.Summer) && (simulator.Weather == WeatherType.Snow));
+        }
 
         /// <summary>
         /// Encodes material options code from parameterized options.

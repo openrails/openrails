@@ -394,28 +394,31 @@ namespace ORTS
     /// <summary>
     /// Conserves memory by sharing the basic shape data with multiple instances in the scene.
     /// </summary>
-    public class SharedShapeManager 
+    public class SharedShapeManager
     {
+        static Dictionary<string, SharedShape> SharedShapes = new Dictionary<string, SharedShape>();
+        static SharedShape EmptyShape = null;
+
         public static SharedShape Get(Viewer3D viewer, string path)
         {
-            if (  !SharedShapes.ContainsKey(path))
+            path = path.ToLowerInvariant();
+            if (!SharedShapes.ContainsKey(path))
             {
-                // We haven't set up this shape yet, so go ahead and add it
-				try
-				{
-					SharedShape shape = new SharedShape(viewer, path);
-					SharedShapes.Add(path, shape);
-					return shape;
-				}
-				catch (Exception error)
-				{
-					Trace.TraceInformation(path);
-					Trace.WriteLine(error);
-					if (EmptyShape == null)
-						EmptyShape = new SharedShape(viewer);
-					SharedShapes.Add(path, EmptyShape);
-					return EmptyShape;
-				}
+                try
+                {
+                    SharedShape shape = new SharedShape(viewer, path);
+                    SharedShapes.Add(path, shape);
+                    return shape;
+                }
+                catch (Exception error)
+                {
+                    Trace.TraceInformation(path);
+                    Trace.WriteLine(error);
+                    if (EmptyShape == null)
+                        EmptyShape = new SharedShape(viewer);
+                    SharedShapes.Add(path, EmptyShape);
+                    return EmptyShape;
+                }
             }
             else
             {
@@ -423,9 +426,6 @@ namespace ORTS
                 return SharedShapes[path];
             }
         }
-        private static Dictionary<string, SharedShape> SharedShapes = new Dictionary<string, SharedShape>();
-
-        private static SharedShape EmptyShape = null;
     }
 
     public class ShapePrimitive : RenderPrimitive
@@ -433,7 +433,7 @@ namespace ORTS
         public Material Material;
 
         SharedShape.VertexBufferSet vertexBufferSet;
-		int vertexBufferSetStrideSize;
+        int vertexBufferSetStrideSize;
         public IndexBuffer IndexBuffer;
         public int IndexCount;          // the number of indexes in the index buffer for each primitive
         public int MinVertex = 0;           // the first vertex index used by this primitive
@@ -441,18 +441,18 @@ namespace ORTS
         public int iHierarchy;          // index into the hiearchy array which provides pose for this primitive
         public int[] Hierarchy;         // the hierarchy from the sub_object
 
-		public SharedShape.VertexBufferSet VertexBufferSet
-		{
-			get
-			{
-				return vertexBufferSet;
-			}
-			set
-			{
-				vertexBufferSet = value;
-				vertexBufferSetStrideSize = vertexBufferSet.Declaration.GetVertexStrideSize(0);
-			}
-		}
+        public SharedShape.VertexBufferSet VertexBufferSet
+        {
+            get
+            {
+                return vertexBufferSet;
+            }
+            set
+            {
+                vertexBufferSet = value;
+                vertexBufferSetStrideSize = vertexBufferSet.Declaration.GetVertexStrideSize(0);
+            }
+        }
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -464,7 +464,7 @@ namespace ORTS
             {
                 // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
                 graphicsDevice.VertexDeclaration = VertexBufferSet.Declaration;
-				graphicsDevice.Vertices[0].SetSource(VertexBufferSet.Buffer, 0, vertexBufferSetStrideSize);
+                graphicsDevice.Vertices[0].SetSource(VertexBufferSet.Buffer, 0, vertexBufferSetStrideSize);
                 graphicsDevice.Indices = IndexBuffer;
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertex, NumVertices, 0, IndexCount / 3);
             }
@@ -473,85 +473,54 @@ namespace ORTS
 
     public class SharedShape
     {
-        Viewer3D Viewer;
-        string FilePath;
-        private static int isNightEnabled = 0;
-        
-        public string textureFolder;  // Temporary
-
         // This data is common to all instances of the shape
         public List<string> MatrixNames = new List<string>();
         public Matrix[] Matrices = new Matrix[0];  // the original natural pose for this shape - shared by all instances
-        public animations Animations = null;
+        public animations Animations;
+        public LodControl[] LodControls = new LodControl[0];
 
-        public LodControl[] LodControls = null;
-        
+        readonly Viewer3D Viewer;
+
         /// <summary>
         /// Create an empty shape used as a sub when the shape won't load
         /// </summary>
-        /// <param name="viewer"></param>
         public SharedShape(Viewer3D viewer)
         {
             Viewer = viewer;
-            FilePath = "Empty";
-            Animations = null;
-            LodControls = new LodControl[0];
         }
 
         /// <summary>
         /// MSTS shape from shape file
         /// </summary>
         /// <param name="viewer"></param>
-        /// <param name="path">Path to shape's S file</param>
-        public SharedShape(Viewer3D viewer, string path)
+        /// <param name="filePath">Path to shape's S file</param>
+        public SharedShape(Viewer3D viewer, string filePath)
+            : this(viewer)
         {
-            Viewer = viewer;
-            FilePath = path;
-            LoadContent(path);
+            LoadContent(filePath);
         }
 
         /// <summary>
         /// Only one copy of the model is loaded regardless of how many copies are placed in the scene.
         /// </summary>
-        private void LoadContent( string FilePath)
+        void LoadContent(string filePath)
         {
-            // TODO a temp fix for trackobj's converted to static objects
-            if (!File.Exists(FilePath))
-            {
-                string globalPath = Viewer.Simulator.RoutePath + @"\GLOBAL\SHAPES\" + Path.GetFileName(FilePath);
-                if (!File.Exists(globalPath))
-                {
-                    globalPath = Viewer.Simulator.BasePath + @"\GLOBAL\SHAPES\" + Path.GetFileName(FilePath);
-                    if (!File.Exists(globalPath))
-                        throw new FileNotFoundException("Shape file '" + FilePath + "' does not exist.", FilePath);
-                }
-                FilePath = globalPath;
-            }
             Trace.Write("S");
-            SFile sFile = new SFile(FilePath);
+            var sFile = new SFile(filePath);
 
-            // Determine the correct texture folder. 
-            // Trainsets have their textures in the same folder as the shape, 
-            // route scenery has their textures in a separate textures folder
-            int season = (int)Viewer.Simulator.Season;
-            int weather = (int)Viewer.Simulator.Weather;
-            if (FilePath.ToUpper().Contains(@"\TRAINS\TRAINSET\"))   // TODO this is pretty crude
-                textureFolder = Path.GetDirectoryName(FilePath);
-            else
+            var textureFlags = Helpers.TextureFlags.None;
+            if (File.Exists(filePath + "d"))
             {
-                // Check the SD file for alternative texture specification
-                int altTex = 0; // Default
-                string SDfilePath = FilePath + "d";
-                SDFile SDFile = new SDFile(SDfilePath);
-                altTex = SDFile.shape.ESD_Alternative_Texture;
-				textureFolder = Helpers.GetTextureFolder(Viewer, altTex);
-                if (altTex == 257) isNightEnabled = 1;
+                var sdFile = new SDFile(filePath + "d");
+                textureFlags = (Helpers.TextureFlags)sdFile.shape.ESD_Alternative_Texture;
             }
+            if (filePath.ToUpperInvariant().Contains(@"\TRAINS\TRAINSET\"))
+                textureFlags |= Helpers.TextureFlags.TrainSet;
 
-            int matrixCount = sFile.shape.matrices.Count;
-			MatrixNames.Capacity = matrixCount;
+            var matrixCount = sFile.shape.matrices.Count;
+            MatrixNames.Capacity = matrixCount;
             Matrices = new Matrix[matrixCount];
-            for (int i = 0; i < matrixCount; ++i)
+            for (var i = 0; i < matrixCount; ++i)
             {
                 MatrixNames.Add(sFile.shape.matrices[i].Name.ToUpper());
                 Matrices[i] = XNAMatrixFromMSTS(sFile.shape.matrices[i]);
@@ -560,29 +529,26 @@ namespace ORTS
 
             LodControls = new LodControl[sFile.shape.lod_controls.Count];
 
-            for (int i = 0; i < sFile.shape.lod_controls.Count; ++ i )
-                LodControls[i] = new LodControl( sFile.shape.lod_controls[i], sFile , this );
+            for (var i = 0; i < sFile.shape.lod_controls.Count; ++i)
+                LodControls[i] = new LodControl(Viewer, filePath, textureFlags, sFile, sFile.shape.lod_controls[i]);
 
             if (LodControls.Length == 0)
-				throw new InvalidDataException("Shape file missing lod_control section");
-
-            textureFolder = null;  // release it
-
-        } // LoadContent
+                throw new InvalidDataException("Shape file missing lod_control section");
+        }
 
         public class LodControl
         {
             public DistanceLevel[] DistanceLevels;
 
-            public LodControl( lod_control MSTSlod_control, SFile sFile, SharedShape sharedShape )
+            public LodControl(Viewer3D viewer, string filePath, Helpers.TextureFlags textureFlags, SFile sFile, lod_control MSTSlod_control)
             {
-                DistanceLevels = new DistanceLevel[ MSTSlod_control.distance_levels.Count ];
+                DistanceLevels = new DistanceLevel[MSTSlod_control.distance_levels.Count];
 
-                for ( int i = 0; i < MSTSlod_control.distance_levels.Count; ++i )
-                    DistanceLevels[i] = new DistanceLevel( MSTSlod_control.distance_levels[i], sFile, sharedShape );
+                for (int i = 0; i < MSTSlod_control.distance_levels.Count; ++i)
+                    DistanceLevels[i] = new DistanceLevel(viewer, filePath, textureFlags, sFile, MSTSlod_control.distance_levels[i]);
 
                 if (DistanceLevels.Length == 0)
-					throw new InvalidDataException("Shape file missing distance_level");
+                    throw new InvalidDataException("Shape file missing distance_level");
             }
         }
 
@@ -591,11 +557,12 @@ namespace ORTS
             public float ViewingDistance;
             public float ViewSphereRadius;
             public SubObject[] SubObjects;
-            private int PrimCount = 0;  // used for auto ZBias
 
-            public DistanceLevel( distance_level MSTSdistance_level, SFile sFile, SharedShape sharedShape )
+            int PrimCount = 0;  // used for auto ZBias
+
+            public DistanceLevel(Viewer3D viewer, string filePath, Helpers.TextureFlags textureFlags, SFile sFile, distance_level MSTSdistance_level)
             {
-                SubObjects = new SubObject[ MSTSdistance_level.sub_objects.Count ];
+                SubObjects = new SubObject[MSTSdistance_level.sub_objects.Count];
                 ViewingDistance = MSTSdistance_level.distance_level_header.dlevel_selection;
                 // TODO, work out ViewShereRadius from all sub_object radius and centers.
                 if (sFile.shape.volumes.Count > 0)
@@ -603,11 +570,11 @@ namespace ORTS
                 else
                     ViewSphereRadius = 100;
                 int[] Hierarchy = MSTSdistance_level.distance_level_header.hierarchy;
-                for( int i = 0; i < MSTSdistance_level.sub_objects.Count; ++i )
-                    SubObjects[i] = new SubObject( ref PrimCount, MSTSdistance_level.sub_objects[i], Hierarchy, sFile , sharedShape);
+                for (int i = 0; i < MSTSdistance_level.sub_objects.Count; ++i)
+                    SubObjects[i] = new SubObject(viewer, filePath, textureFlags, sFile, MSTSdistance_level.sub_objects[i], Hierarchy, ref PrimCount);
 
                 if (SubObjects.Length == 0)
-					throw new InvalidDataException("Shape file missing sub_object");
+                    throw new InvalidDataException("Shape file missing sub_object");
             }
         }
 
@@ -615,8 +582,8 @@ namespace ORTS
         {
             public ShapePrimitive[] ShapePrimitives;
             public VertexBufferSet[] VertexBufferSets;
-            
-            public SubObject( ref int dLevelPrimCount, sub_object sub_object, int[] hierarchy, SFile sFile, SharedShape sharedShape )
+
+            public SubObject(Viewer3D viewer, string filePath, Helpers.TextureFlags textureFlags, SFile sFile, sub_object sub_object, int[] hierarchy, ref int dLevelPrimCount)
             {
                 // get a total count of drawing primitives
                 int primCount = sub_object.primitives.Count;
@@ -624,15 +591,15 @@ namespace ORTS
                 // set up the buffers to hold the drawing primtives
                 ShapePrimitives = new ShapePrimitive[primCount];
 
-                int iV =  sub_object.sub_object_header.VolIdx;
+                int iV = sub_object.sub_object_header.VolIdx;
 
                 /* TODO COMPLETE THIS
                 VertexBufferSets = new VertexBufferSet[ sub_object.vertex_sets.Count ];
                 for( int i = 0; i < sub_object.vertex_sets.Count; ++i )
                     VertexBufferSets[i] = new VertexBufferSet( sub_object.vertex_sets[i], sFile, sub_object, graphicsDevice );
-                 */ 
+                 */
                 VertexBufferSets = new VertexBufferSet[1];
-                VertexBufferSets[0] = new VertexBufferSet( sFile, sub_object, sharedShape.Viewer.GraphicsDevice );
+                VertexBufferSets[0] = new VertexBufferSet(sFile, sub_object, viewer.GraphicsDevice);
 
                 /////////////// MATERIAL OPTIONS //////////////////
                 //
@@ -744,29 +711,19 @@ namespace ORTS
                     options |= (13 + vtx_state.LightMatIdx) << 4;
 
                     // Night texture toggle
-                    if (isNightEnabled == 1) // ESD_Alternative_Texture = 257
-                        options |= (isNightEnabled) << 13;
+                    if ((textureFlags & Helpers.TextureFlags.Night) != 0)
+                        options |= 1 << 13;
 
                     if (prim_state.tex_idxs.Length == 0)
-                    {   // untextured objects get a blank texture
-                        shapePrimitive.Material = (SceneryMaterial)Materials.Load(sharedShape.Viewer.RenderProcess, "SceneryMaterial", null, options);
+                    {
+                        // untextured objects get a blank texture
+                        shapePrimitive.Material = (SceneryMaterial)Materials.Load(viewer.RenderProcess, "SceneryMaterial", null, options);
                     }
                     else
                     {
-                        texture texture = sFile.shape.textures[prim_state.tex_idxs[0]];
-                        string imageName = sFile.shape.images[texture.iImage];
-                        if (File.Exists(sharedShape.textureFolder + @"\" + imageName))
-                        {
-                            shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
-                                "SceneryMaterial", sharedShape.textureFolder + @"\" + imageName, options, texture.MipMapLODBias);
-                        }
-                        else 
-                        { // Use file in base texture folder
-                            int i = sharedShape.textureFolder.LastIndexOf(@"\");
-                            string str = sharedShape.textureFolder.Remove(i);
-                            shapePrimitive.Material = Materials.Load(sharedShape.Viewer.RenderProcess,
-                                "SceneryMaterial", str + @"\" + imageName, options, texture.MipMapLODBias);
-                        }
+                        var texture = sFile.shape.textures[prim_state.tex_idxs[0]];
+                        var imageName = sFile.shape.images[texture.iImage];
+                        shapePrimitive.Material = Materials.Load(viewer.RenderProcess, "SceneryMaterial", Helpers.GetShapeTextureFile(viewer.Simulator, textureFlags, filePath, imageName), options, texture.MipMapLODBias);
                     }
 
                     int iMatrix = vtx_state.imatrix;
@@ -786,7 +743,7 @@ namespace ORTS
 
                     shapePrimitive.IndexCount = indexCount;
 
-                    shapePrimitive.IndexBuffer = new IndexBuffer(sharedShape.Viewer.GraphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
+                    shapePrimitive.IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
                     shapePrimitive.IndexBuffer.SetData(indexData);
 
                     shapePrimitive.VertexBufferSet = vertexBufferSet;
@@ -805,7 +762,7 @@ namespace ORTS
                     // Note, we have a sample file Af2_4_25033-Lead.S where vertex_sets and vtx_states mismatch
                     if (!found)
                     {
-                        Trace.TraceWarning("Shape file missing vertex_set in {0}", sharedShape.FilePath);
+                        Trace.TraceWarning("Shape file missing vertex_set in {0}", filePath);
                         // so default to loading all vertices, instead of proper vertex_set
                         shapePrimitive.MinVertex = 0;
                         shapePrimitive.NumVertices = sub_object.vertices.Count;  // so we default to them all
@@ -825,18 +782,18 @@ namespace ORTS
             public int VertexCount;        // the number of vertices in the vertex buffer for each set
 
             // Constructor added for Dynatrack ...WaltN
-            public VertexBufferSet( VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice )
+            public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
             {
                 VertexCount = vertexData.Length;
                 Declaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                Buffer = new VertexBuffer(  graphicsDevice, 
+                Buffer = new VertexBuffer(graphicsDevice,
                                             VertexPositionNormalTexture.SizeInBytes * VertexCount,
                                             BufferUsage.WriteOnly);
                 Buffer.SetData(vertexData);
             }
 
 
-            public VertexBufferSet( vertex_set vertex_set, SFile sFile, sub_object sub_object, GraphicsDevice graphicsDevice )
+            public VertexBufferSet(vertex_set vertex_set, SFile sFile, sub_object sub_object, GraphicsDevice graphicsDevice)
             {
                 VertexCount = vertex_set.VtxCount;
                 VertexPositionNormalTexture[] vertexData = new VertexPositionNormalTexture[VertexCount];
@@ -852,7 +809,7 @@ namespace ORTS
             }
 
             // temporary version that creates one vertex buffer for entire subObject
-            public VertexBufferSet( SFile sFile, sub_object sub_object, GraphicsDevice graphicsDevice)
+            public VertexBufferSet(SFile sFile, sub_object sub_object, GraphicsDevice graphicsDevice)
             {
                 VertexCount = sub_object.vertices.Count;
                 VertexPositionNormalTexture[] vertexData = new VertexPositionNormalTexture[VertexCount];
@@ -883,7 +840,7 @@ namespace ORTS
                 return XNAVertex;
             }
 
-            private VertexPositionNormalTexture XNAVertexPositionNormalTextureFromMSTS(vertex MSTSvertex, shape MSTSshape)
+            VertexPositionNormalTexture XNAVertexPositionNormalTextureFromMSTS(vertex MSTSvertex, shape MSTSshape)
             {
                 MSTS.point MSTSPosition = MSTSshape.points[MSTSvertex.ipoint];
                 MSTS.vector MSTSNormal = MSTSshape.normals[MSTSvertex.inormal];
@@ -902,7 +859,7 @@ namespace ORTS
             }
         }
 
-        private Matrix XNAMatrixFromMSTS(MSTS.matrix MSTSMatrix)
+        Matrix XNAMatrixFromMSTS(MSTS.matrix MSTSMatrix)
         {
             Matrix XNAMatrix = Matrix.Identity;
 
@@ -925,7 +882,7 @@ namespace ORTS
         /// <summary>
         /// This is called by the individual instances of the shape when it should draw itself at the specified location
         /// </summary>
-		public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
         {
             PrepareFrame(frame, location, Matrices, flags);
         }
@@ -981,7 +938,7 @@ namespace ORTS
 
         public Matrix GetMatrixProduct(int iNode)
         {
-            int[] h= LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
+            int[] h = LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
             Matrix matrix = Matrix.Identity;
             while (iNode != -1)
             {
@@ -990,12 +947,12 @@ namespace ORTS
             }
             return matrix;
         }
+
         public int GetParentMatrix(int iNode)
         {
             return LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[iNode];
         }
-
-    }// class SharedShape
+    }
 
 	public class Siding
 	{

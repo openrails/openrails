@@ -876,10 +876,8 @@ namespace ORTS
 
         public void LoadMaterial(RenderProcess renderProcess, LODItem lod)
         {
-            string texturePath = Helpers.GetTextureFolder(renderProcess.Viewer, lod.ESD_Alternative_Texture);
-            string textureName = texturePath + @"\" + lod.TexName;
             int options = Helpers.EncodeMaterialOptions(lod); 
-            lod.LODMaterial = Materials.Load(renderProcess, "SceneryMaterial", textureName, options, lod.MipMapLevelOfDetailBias);
+            lod.LODMaterial = Materials.Load(renderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(renderProcess.Viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), options, lod.MipMapLevelOfDetailBias);
         }
 
         #endregion

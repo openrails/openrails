@@ -274,7 +274,7 @@ namespace ORTS
 				else
 				{
                     var mstsLightTexture = viewer.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
-					Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetTextureFolder(viewer, 0) + @"\" + mstsLightTexture.TextureFile);
+                    Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
 					Type = (SignalTypeDataType)mstsSignalType.FnType;
 					if (mstsSignalType.Lights != null)
 					{

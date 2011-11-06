@@ -253,6 +253,7 @@ namespace ORTS
             if (path == null)
                 return Materials.MissingTexture;
 
+            path = path.ToLowerInvariant();
             if (!SharedTextures.ContainsKey(path))
             {
                 try
@@ -413,8 +414,7 @@ namespace ORTS
 		readonly int Options = 0;
 		readonly float MipMapBias = 0;
 		readonly Texture2D Texture;
-		readonly Texture2D nightTexture = null;
-		bool isNightEnabled = false;
+		readonly Texture2D NightTexture;
 		readonly RenderProcess RenderProcess;
 		IEnumerator<EffectPass> ShaderPassesDarkShade;
 		IEnumerator<EffectPass> ShaderPassesFullBright;
@@ -429,22 +429,11 @@ namespace ORTS
             RenderProcess = renderProcess;
             Options = options;
             MipMapBias = mipMapBias;
-			// note: texturePath may be null if the object isn't textured, results in default 'blank texture' being loaded.
             Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
-            if (texturePath != null)
-            {
-                int idx = texturePath.LastIndexOf("textures");
-                if (idx > 0)
-                {
-                    string strTexname;
-                    string nightTexturePath = texturePath.Remove(idx + 9);
-                    idx = texturePath.LastIndexOf(@"\");
-                    strTexname = texturePath.Remove(0, idx);
-                    nightTexturePath += "night";
-                    nightTexturePath += strTexname;
-                    if (File.Exists(nightTexturePath))
-                        nightTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, nightTexturePath);
-                }
+            if (!String.IsNullOrEmpty(texturePath) && (Options & 0x2000) != 0) {
+                var nightTexturePath = Helpers.GetNightTextureFile(renderProcess.Viewer.Simulator, texturePath);
+                if (!String.IsNullOrEmpty(nightTexturePath))
+                    NightTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, nightTexturePath.ToLower());
             }
         }
 
@@ -593,12 +582,9 @@ namespace ORTS
             graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = GetShadowTextureAddressMode();
 
 			// Night texture toggle
-			if ((Options & 0x2000) >> 13 == 1)
-				isNightEnabled = true;
-
-			if (Materials.sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
+            if (NightTexture != null && (Options & 0x2000) != 0 && Materials.sunDirection.Y < 0.0f)
 			{
-                shader.ImageMap_Tex = nightTexture;
+                shader.ImageMap_Tex = NightTexture;
                 shader.IsNight_Tex = true;
 			}
 			else
@@ -676,8 +662,8 @@ namespace ORTS
 
         public override Texture2D GetShadowTexture()
 		{
-			if (Materials.sunDirection.Y < 0.0f && nightTexture != null && isNightEnabled) // Night
-				return nightTexture;
+            if (NightTexture != null && (Options & 0x2000) != 0 && Materials.sunDirection.Y < 0.0f)
+                return NightTexture;
 			
 			return Texture;
 		}

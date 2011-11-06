@@ -73,7 +73,6 @@ namespace ORTS
         // Overcast factor
         public float overcast;
         public float fogCoeff;
-        public int seasonType;
 
         // These arrays and vectors define the position of the sun and moon in the world
         Vector3[] solarPosArray = new Vector3[72];
@@ -96,7 +95,7 @@ namespace ORTS
             skyVectors = new SunMoonPos();
 
             // Set default values
-            seasonType = (int)Viewer.Simulator.Season;
+            var seasonType = (int)Viewer.Simulator.Season;
             date.ordinalDate = 82 + seasonType * 91;
             // TODO: Set the following three externally from ORTS route files (future)
             date.month = 1 + date.ordinalDate / 30;

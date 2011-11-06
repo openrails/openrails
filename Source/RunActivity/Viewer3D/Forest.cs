@@ -37,12 +37,7 @@ namespace ORTS
             Viewer = viewer;
             worldPosition = position;
 
-            // Check the SD file for alternative texture specification
-            int altTex = 252; // Trees and vegetation
-            string texturePath = Helpers.GetTextureFolder(Viewer, altTex);
-            texturePath += @"\";
-            texturePath += forest.TreeTexture;
-            forestMaterial = Materials.Load(Viewer.RenderProcess, "ForestMaterial", texturePath, 0, 0);
+            forestMaterial = Materials.Load(Viewer.RenderProcess, "ForestMaterial", Helpers.GetForestTextureFile(viewer.Simulator, forest.TreeTexture), 0, 0);
 
             // Instantiate classes
             forestMesh = new ForestMesh(Viewer.RenderProcess, Viewer.Tiles, this, forest);
