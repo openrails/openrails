@@ -152,6 +152,10 @@ namespace ORTS
             // elapsed real and clock time of 0.0s.
             if (LastTotalRealSeconds == -1)
                 LastTotalRealSeconds = TotalRealSeconds;
+            // We would like to avoid any large jumps in the simulation, so
+            // this is a 4FPS minimum, 250ms maximum update time.
+            else if (TotalRealSeconds - LastTotalRealSeconds > 0.25f)
+                LastTotalRealSeconds = TotalRealSeconds;
 
             Viewer.RealTime = TotalRealSeconds;
             var elapsedTime = new ElapsedTime(Viewer.Simulator.GetElapsedClockSeconds((float)(TotalRealSeconds - LastTotalRealSeconds)), (float)(TotalRealSeconds - LastTotalRealSeconds));
