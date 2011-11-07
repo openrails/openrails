@@ -401,6 +401,11 @@ namespace ORTS
 
         public static SharedShape Get(Viewer3D viewer, string path)
         {
+            if (EmptyShape == null)
+                EmptyShape = new SharedShape(viewer);
+            if (path == null)
+                return EmptyShape;
+
             path = path.ToLowerInvariant();
             if (!SharedShapes.ContainsKey(path))
             {
@@ -414,8 +419,6 @@ namespace ORTS
                 {
                     Trace.TraceInformation(path);
                     Trace.WriteLine(error);
-                    if (EmptyShape == null)
-                        EmptyShape = new SharedShape(viewer);
                     SharedShapes.Add(path, EmptyShape);
                     return EmptyShape;
                 }

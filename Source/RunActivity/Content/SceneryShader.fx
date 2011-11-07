@@ -409,7 +409,7 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + ImageTextureIsNight));
 	// Overlay image for terrain.
-	litColor.rgb -= tex2D(Overlay, In.TexCoords.xy * 32) - 0.5;
+	litColor.rgb -= tex2D(Overlay, In.TexCoords.xy * 32) / 2 - 0.25;
 	// Headlights effect use original Color.
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
