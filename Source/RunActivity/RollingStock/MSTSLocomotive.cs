@@ -104,6 +104,8 @@ namespace ORTS
         public float ContinuousForceTimeFactor = 1800;
         public float NumWheels = 4;
         public bool AntiSlip = false;
+        public float SanderSpeedEffectUpToMpS = 0.0f;
+        public float SanderSpeedOfMpS = 30.0f;
         public string EngineOperatingProcedures;
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
@@ -309,6 +311,8 @@ namespace ORTS
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero) }); break;
+                case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
+                case "engine(orts(sanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -335,6 +339,8 @@ namespace ORTS
             NumWheels = locoCopy.NumWheels;
             AntiSlip = locoCopy.AntiSlip;
             EffectData = locoCopy.EffectData;
+            SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
+            SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
 
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
@@ -531,8 +537,9 @@ namespace ORTS
                 if (f > 0)
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
             }
+            
             LimitMotiveForce(elapsedClockSeconds);
-
+            
             //Force to display
             FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
 
@@ -581,15 +588,23 @@ namespace ORTS
                     if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
                         max0 = .8f;
                     if (Program.Simulator.Weather == WeatherType.Rain)
-                        max0 = Adhesion1/Adhesion2;
+                        max0 = 0.6f;
                     else
-                        max0 = Adhesion1 / Adhesion2 * 0.7f;
+                        max0 = 0.4f;
                 }
                 else
                     max0 = 1.0f;
                 //add sander
-                if (Sander)
-                    max0 *= (currentSpeedMpS > 10.0f) ? (Adhesion3 * (1.5f - 0.05f * currentSpeedMpS)) : Adhesion3;
+                if (Math.Abs(SpeedMpS) < SanderSpeedOfMpS)
+                {
+                    if (SanderSpeedEffectUpToMpS > 0.0f)
+                    {
+                        if ((Sander) && (Math.Abs(SpeedMpS) < SanderSpeedEffectUpToMpS))
+                            max0 *= 2.0f - 1.0f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS);
+                    }
+                    else
+                        max0 *= 1.5f;
+                }
 
                 //Set adhesion coeff to the model
                     //Pure condition
@@ -597,8 +612,8 @@ namespace ORTS
                     //Filtered condition
                     //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0, elapsedClockSeconds);
                 //Filtered random condition
-                //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2*Program.Random.NextDouble()),elapsedClockSeconds);
-                LocomotiveAxle.AdhesionConditions = max0;
+                LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2*Program.Random.NextDouble()),elapsedClockSeconds);
+                //LocomotiveAxle.AdhesionConditions = max0;
                 //Set axle inertia (this should be placed within the ENG parser)
                 // but make sure the value is sufficietn
                 //if (MaxPowerW < 200000.0f)
@@ -1256,9 +1271,9 @@ namespace ORTS
                             if (DynamicBrakePercent > 0)
                             {
                                 if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * (float)cvc.MaxValue;
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)cvc.MaxValue;
+                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * (float)cvc.MaxValue;
                                 data = -Math.Abs(data);
                             }
                             break;
@@ -2361,7 +2376,7 @@ namespace ORTS
         {
             int minValuePos = 0;
             float data = _Locomotive.GetDataOf(_CabViewControl);
-            //Console.WriteLine("Raw data load meter {0}", data);
+            Console.WriteLine("Raw data load meter {0}", data);
             if (data >= 0)
             {
                 

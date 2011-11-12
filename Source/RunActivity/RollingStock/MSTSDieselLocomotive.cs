@@ -51,6 +51,8 @@ namespace ORTS
         float DieselUsedPerHourAtIdleL = 1.0f;
         float DieselLevelL = 5000.0f;
         float DieselFlowLps = 0.0f;
+        float DieselWeightKgpL = 0.8f; //per liter
+        float InitialMassKg = 100000.0f;
 
         public float EngineRPM = 0.0f;
         public float ExhaustParticles = 10.0f;
@@ -59,7 +61,7 @@ namespace ORTS
             : base(simulator, wagFile, previousCar)
         {
             PowerOn = true;
-
+            InitialMassKg = MassKG;
             if (AntiSlip)
                 UseAdvancedAdhesion = false;
             else
@@ -133,6 +135,7 @@ namespace ORTS
             DieselUsedPerHourAtIdleL = locoCopy.DieselUsedPerHourAtIdleL;
             DieselLevelL = locoCopy.DieselLevelL;
             DieselFlowLps = 0.0f;
+            InitialMassKg = MassKG;
 
             EngineRPM = locoCopy.EngineRPM;
             ExhaustParticles = locoCopy.ExhaustParticles;
@@ -243,6 +246,7 @@ namespace ORTS
                 DieselLevelL -= DieselFlowLps * elapsedClockSeconds;
                 if (DieselLevelL <= 0.0f)
                     PowerOn = false;
+                MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
 
 
@@ -333,7 +337,7 @@ namespace ORTS
 
             MotiveForceN = FilteredMotiveForceN;
 
-            LimitMotiveForce(elapsedClockSeconds);          
+            LimitMotiveForce(elapsedClockSeconds);
 
             // Refined Variable2 setting to graduate
             if (Variable2 != Variable1)
@@ -393,6 +397,68 @@ namespace ORTS
 
     } // class DieselLocomotive
 
+    public class DieselEngine
+    {
+        public float RPM = 0;
+        public float DieselEngineMaxRPM = 1000;
+        public float DieselEngineIdleRPM = 200;
+        public float DieselEngineMaxRPMChangeRateRPMps = 100.0f;
+        public float DieselEngineMaxRPMChangeRateRPMpss = 10.0f;
+
+        public float TemperatureC = 0;
+        public float OptTemperatureC = 90;
+        public float MaxTemperatureC = 120;
+        public float TempTimeConstant = 1;
+
+        public float PressurePSI = 0.0f;
+        public float MaxOilPressurePSI = 150.0f;
+        
+        public float MaxDieselLevelL = 1000;
+        public float DieselUsedPerHourAtMaxPower = 10;
+        public float DieselUsedPerHourAtIdle = 1;
+        public float DieselUsedInTransient = 1.5f;
+        public float vyhrevnostkWhpKg = 11.61f;
+        Interpolator DieselConsumption;
+
+        public float PowerW { get; set; }
+        public float MaxPowerW = 1000000;
+        public float DemPowerPer = 0;
+        //public float OutPowerW = 0;
+        public float CoolingPowerW { get; set; }
+
+        Integrator temperatureInt;
+        Integrator revolutionsInt;
+
+        public Color SmokeColor;
+        public float ExhaustParticles;
+
+        public DieselEngine()
+        {
+            temperatureInt = new Integrator();
+            DieselConsumption = new Interpolator(2);
+            DieselConsumption[DieselEngineIdleRPM] = DieselUsedPerHourAtIdle;
+            DieselConsumption[DieselEngineMaxRPM] = DieselUsedPerHourAtMaxPower;
+        }
+
+        public void Update(float elapsedClockSeconds)
+        {
+            if(TemperatureC > (MaxTemperatureC - 10))
+                CoolingPowerW = PowerW;
+            if(TemperatureC < (MaxTemperatureC - 20))
+                CoolingPowerW = 0;
+
+            TemperatureC = temperatureInt.Integrate(elapsedClockSeconds, (PowerW - CoolingPowerW) / TempTimeConstant);
+
+            
+
+            //SmokeColor = new Color(
+
+        }
+
+
+
+    }
+
 
     ///////////////////////////////////////////////////
     ///   3D VIEW
@@ -450,7 +516,7 @@ namespace ORTS
                     foreach (ParticleEmitterDrawer drawer in pair.Value)
                     {
                         drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
-                        drawer.SetEmissionColor(Color.Black);
+                        drawer.SetEmissionColor(Color.Gray);
                     }
                 }
             }

@@ -619,7 +619,8 @@ namespace MSTS
             {
                 if ((validUnits & UNITS.Compulsary) > 0)
                     STFException.TraceWarning(this, "Missing a suffix for data expecting " + validUnits.ToString() + " units");
-                return 1; // There is no suffix, it's all numeric
+                else
+                    return 1; // There is no suffix, it's all numeric
             }
             while ((i < constant.Length) && (constant[i] == ' ')) ++i; // skip the spaces
 
@@ -661,6 +662,7 @@ namespace MSTS
                     case "kph": return 0.27778;
                     case "kmh": return 0.27778;
                     case "km/h": return 0.27778;
+                    default: return 0.44704;
                 }
             if ((validUnits & UNITS.Mass) > 0)
                 switch (suffix)
