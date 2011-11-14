@@ -677,6 +677,10 @@ namespace ORTS
 					train.Cars.Add(car);
 					car.Train = train;
 					previousCar = car;
+                    if ((Activity != null) && (car.GetType() == typeof(MSTSDieselLocomotive)))
+                    {
+                        ((MSTSDieselLocomotive)car).DieselLevelL = ((MSTSDieselLocomotive)car).MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
+                    }
 				}
 				catch (Exception error)
 				{

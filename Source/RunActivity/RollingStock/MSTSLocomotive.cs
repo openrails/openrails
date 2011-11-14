@@ -2376,7 +2376,7 @@ namespace ORTS
         {
             int minValuePos = 0;
             float data = _Locomotive.GetDataOf(_CabViewControl);
-            Console.WriteLine("Raw data load meter {0}", data);
+            //Console.WriteLine("Raw data load meter {0}", data);
             if (data >= 0)
             {
                 

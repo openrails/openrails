@@ -46,10 +46,10 @@ namespace ORTS
         float EngineRPMderivation = 0.0f;
         float EngineRPMold = 0.0f;
 
-        float MaxDieselLevelL = 5000.0f;
+        public float MaxDieselLevelL = 5000.0f;
         float DieselUsedPerHourAtMaxPowerL = 1.0f;
         float DieselUsedPerHourAtIdleL = 1.0f;
-        float DieselLevelL = 5000.0f;
+        public float DieselLevelL = 5000.0f;
         float DieselFlowLps = 0.0f;
         float DieselWeightKgpL = 0.8f; //per liter
         float InitialMassKg = 100000.0f;
@@ -133,7 +133,10 @@ namespace ORTS
             MaxDieselLevelL = locoCopy.MaxDieselLevelL;
             DieselUsedPerHourAtMaxPowerL = locoCopy.DieselUsedPerHourAtMaxPowerL;
             DieselUsedPerHourAtIdleL = locoCopy.DieselUsedPerHourAtIdleL;
-            DieselLevelL = locoCopy.DieselLevelL;
+            if (this.CarID.StartsWith("0"))
+                DieselLevelL = locoCopy.DieselLevelL;
+            else
+                DieselLevelL = locoCopy.MaxDieselLevelL;
             DieselFlowLps = 0.0f;
             InitialMassKg = MassKG;
 
