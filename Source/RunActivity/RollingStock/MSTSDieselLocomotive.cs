@@ -370,6 +370,14 @@ namespace ORTS
                 EngineRPMderivation = (EngineRPM - EngineRPMold)/elapsedClockSeconds;
                 EngineRPMold = EngineRPM;
             }
+
+            if (MainResPressurePSI < CompressorRestartPressurePSI && !CompressorOn)
+                SignalEvent(EventID.CompressorOn);
+            else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
+                SignalEvent(EventID.CompressorOff);
+            if (CompressorOn)
+                MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+
             base.UpdateParent(elapsedClockSeconds);
         }
 
