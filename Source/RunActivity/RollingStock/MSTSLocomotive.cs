@@ -824,12 +824,14 @@ namespace ORTS
                     ThrottleController.StartIncrease();
                     ThrottleController.StopIncrease();
                 }
+                SignalEvent(EventID.Reverse);  // use for throttle fwd / rev
             }
 
             else if (!HasCombCtrl && HasStepCtrl)
             {
                 ThrottleController.StartIncrease();
                 ThrottleController.StopIncrease();
+                SignalEvent(EventID.Reverse);
             }
             else
                 ThrottleController.StartIncrease();
@@ -867,11 +869,13 @@ namespace ORTS
                     ThrottleController.StartDecrease();
                     ThrottleController.StopDecrease();
                 }
+                SignalEvent(EventID.Reverse);
             }
             else if (!HasCombCtrl && HasStepCtrl)
             {
                 ThrottleController.StartDecrease();
                 ThrottleController.StopDecrease();
+                SignalEvent(EventID.Reverse);
             }
             else
                 ThrottleController.StartDecrease();
@@ -1177,6 +1181,7 @@ namespace ORTS
                 if (eventID == EventID.AlerterSndOff) { AlerterSnd = false; break; }
                 if (eventID == EventID.BellOn) { Bell = true; break; }
                 if (eventID == EventID.BellOff) {  Bell = false; break; }
+                if (eventID == EventID.Reverse) {  break; }
                 if (eventID == EventID.HornOn) { Horn = true; break; }
                 if (eventID == EventID.HornOff) { Horn = false; break; }
                 if (eventID == EventID.SanderOn) { Sander = true; break; }
