@@ -56,6 +56,9 @@ namespace ORTS
 
         public float EngineRPM = 0.0f;
         public float ExhaustParticles = 10.0f;
+        public Color ExhaustColor = Color.Gray;
+        Color ExhaustSteadyColor = Color.Gray;
+        Color ExhaustTransientColor = Color.Black;
 
 		public MSTSDieselLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
             : base(simulator, wagFile, previousCar)
@@ -83,11 +86,11 @@ namespace ORTS
                 case "engine(or_diesel(idleexhaust": IdleExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(or_diesel(maxexhaust": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(or_diesel(exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-
+                case "engine(or_diesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;
+                case "engine(or_diesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;
                 case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
                 case "engine(dieselusedperhouratmaxpower": DieselUsedPerHourAtMaxPowerL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
                 case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
-
                 // for example
                 //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
@@ -142,6 +145,8 @@ namespace ORTS
 
             EngineRPM = locoCopy.EngineRPM;
             ExhaustParticles = locoCopy.ExhaustParticles;
+            ExhaustSteadyColor = locoCopy.ExhaustSteadyColor;
+            ExhaustTransientColor = locoCopy.ExhaustTransientColor;
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
 
@@ -219,10 +224,16 @@ namespace ORTS
                 ExhaustParticles = 5.0f;
 
             if (EngineRPMderivation > 0.0f)
+            {
                 ExhaustParticles *= ExhaustDynamics * MaxExhaust;
-            if (EngineRPMderivation < 0.0f)
-                ExhaustParticles = 3.0f;
-
+                ExhaustColor = ExhaustTransientColor;
+            }
+            else
+            {
+                ExhaustColor = ExhaustSteadyColor;
+                if (EngineRPMderivation < 0.0f)
+                    ExhaustParticles = 3.0f;
+            }
             if (PowerOn)
             {
                 if (TractiveForceCurves == null)
@@ -460,10 +471,6 @@ namespace ORTS
 
             TemperatureC = temperatureInt.Integrate(elapsedClockSeconds, (PowerW - CoolingPowerW) / TempTimeConstant);
 
-            
-
-            //SmokeColor = new Color(
-
         }
 
 
@@ -527,7 +534,7 @@ namespace ORTS
                     foreach (ParticleEmitterDrawer drawer in pair.Value)
                     {
                         drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
-                        drawer.SetEmissionColor(Color.Gray);
+                        drawer.SetEmissionColor(((MSTSDieselLocomotive)this.Car).ExhaustColor);
                     }
                 }
             }

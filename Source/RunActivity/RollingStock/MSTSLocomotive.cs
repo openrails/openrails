@@ -603,7 +603,8 @@ namespace ORTS
                             max0 *= 2.0f - 1.0f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS);
                     }
                     else
-                        max0 *= 1.5f;
+                        if(Sander)
+                            max0 *= 1.5f;
                 }
 
                 //Set adhesion coeff to the model
