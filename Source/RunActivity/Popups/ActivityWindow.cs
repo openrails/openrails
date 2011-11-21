@@ -114,7 +114,9 @@ namespace ORTS.Popups {
                             this.CloseLabel.Text = "Resume and close box";
                             this.StatusLabel.Text = "Status: Activity paused";
                             this.StatusLabel.Color = Color.LightSalmon;
-                            this.Visible = true;
+							Owner.Viewer.HelpWindow.ActivityUpdated = true;
+							this.Visible = true;
+
                         } else { 
                             // Cancel the event as pop-up not needed.
                             this.Activity.TriggeredEvent = null;

@@ -21,8 +21,12 @@ namespace ORTS.Popups
 	{
         const int TextHeight = 16;
 
+		public bool ActivityUpdated = false;
+
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
+
+		string statusText = "";
 
 		public HelpWindow(WindowManager owner)
 			: base(owner, 600, 450, "Help")
@@ -104,9 +108,8 @@ namespace ORTS.Popups
                         var line = cl.AddLayoutHorizontal(TextHeight);
                         line.Add(new Label(colWidth * 4, line.RemainingHeight, "Task"));
                         line.Add(new Label(colWidth * 9, line.RemainingHeight, "Car(s)"));
-                        line.Add(new Label(colWidth * 6, line.RemainingHeight, "Location"));
-                        // Status will be added once events are being processed.
-                        //line.Add(new Label(colWidth, line.RemainingHeight, "Status"));
+						line.Add(new Label(colWidth * 6, line.RemainingHeight, "Location"));
+						line.Add(new Label(colWidth * 6, line.RemainingHeight, "Status"));
                     }
                     cl.AddHorizontalSeparator();
                     var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
@@ -141,9 +144,11 @@ namespace ORTS.Popups
                                         line.Add(new Label(colWidth * 4, line.RemainingHeight, "Pick Up"));
                                         break;
                                 }
+								Activity act = Owner.Viewer.Simulator.ActivityRun;
                                 if (eventAction.WagonList != null) {
                                     var location = "";
                                     var locationShown = false;
+									var wagonIdx = 0;
                                     foreach (MSTS.WorkOrderWagon wagonItem in eventAction.WagonList.WorkOrderWagonList) {
                                         if (locationShown) {
                                             line = scrollbox.AddLayoutHorizontal(TextHeight);
@@ -199,11 +204,14 @@ namespace ORTS.Popups
                                             line.Add(new Label(colWidth * 6, line.RemainingHeight, location));
                                             locationShown = true;
                                         }
+										// Status column
+										if (@event.TimesTriggered == 1 &&wagonIdx == 0) line.Add(new Label(colWidth, line.RemainingHeight, "Done"));
+										else line.Add(new Label(colWidth, line.RemainingHeight, ""));
+										wagonIdx++;
 
-                                        // Status column
-                                        line.Add(new Label(colWidth, line.RemainingHeight, ""));
                                     }
                                 }
+
                                 separatorShown = true;
                             }
                         }
@@ -295,7 +303,14 @@ namespace ORTS.Popups
                     StoppedAt = GetStoppedAt(LastActivityTask);
                     Layout();
                 }
+
             }
+			if (this.ActivityUpdated == true) //true value is set in ActivityWindow.cs
+			{
+				this.ActivityUpdated = false;
+				Layout();
+			}
+			//UpdateActivityStatus();
         }
 
         bool GetStoppedAt(ActivityTask task)

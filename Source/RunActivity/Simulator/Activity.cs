@@ -35,6 +35,7 @@ namespace ORTS {
         public Boolean IsSuccessful;        // status of completed activity
         public Nullable<int> StartTimeS;    // Clock time in seconds when activity was launched.
         public EventWrapper TriggeredEvent; // Indicates the currently triggered event whose data the ActivityWindow will pop up to display.
+		public bool ActivityUpdated = false;
 
         private Activity(BinaryReader inf, Simulator simulator) {
             Simulator = simulator;
