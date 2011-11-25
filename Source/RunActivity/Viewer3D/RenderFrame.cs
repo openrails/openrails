@@ -557,7 +557,7 @@ namespace ORTS
                     graphicsDevice.ResolveBackBuffer(screenshot);
                     if (!Directory.Exists(RenderProcess.Viewer.Settings.ScreenshotPath))
                         Directory.CreateDirectory(RenderProcess.Viewer.Settings.ScreenshotPath);
-                    var fileName = Path.Combine(RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString("yyyy-mm-dd hh-mm-ss") + ".png");
+                    var fileName = Path.Combine(RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss") + ".png");
                     screenshot.Save(fileName, ImageFileFormat.Png);
                     RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Screenshot saved to '{0}'.", fileName), 10);
                 }
