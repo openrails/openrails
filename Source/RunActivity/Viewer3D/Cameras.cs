@@ -605,6 +605,7 @@ namespace ORTS
         public enum HeadDirection { Forward, Backward }
 
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
+        public override float NearPlane { get { return 0.25f; } }
 
         public HeadOutCamera(Viewer3D viewer, HeadDirection headDirection)
             : base(
