@@ -740,7 +740,7 @@ namespace ORTS
 
     public class TrackingCamera : AttachedCamera
     {
-        const float StartPositionDistance = 9;
+        const float StartPositionDistance = 20;
         const float StartPositionXRadians = 0.399f;
         const float StartPositionYRadians = 0.387f;
 

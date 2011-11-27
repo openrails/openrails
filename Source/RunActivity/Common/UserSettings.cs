@@ -95,7 +95,7 @@ namespace ORTS
             ShowErrorDialogs = true;
             SoundDetailLevel = 5;
             ViewingDistance = 2000;
-            ViewingFOV = 60;
+            ViewingFOV = 45; // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
             WindowSize = "1024x768";
             WorldObjectDensity = 10;
 
