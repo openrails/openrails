@@ -266,7 +266,9 @@ namespace ORTS.Popups
                 TableAddLabelValue(table, "Wheel slip", "{0:F0}% ({1:F0}%/s)", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS);
                 TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);
                 TableAddLabelValue(table, "Axle brake force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.BrakeForceN);
-                //TableAddLabelValue(table, "Axle friction force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DampingNs * mstsLocomotive.LocomotiveAxle.SlipDerivationMpSS);
+                if(mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.IsStepDividing)
+                    TableAddLabelValue(table, "Step dividing acitve", "({0:F0} steps/frame)", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS);
+                TableAddLabelValue(table, "Solver", "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
                 TableAddLabelValue(table, "Stability correction", "{0:F0}", mstsLocomotive.LocomotiveAxle.AdhesionK);
                 TableAddLabelValue(table, "Axle out force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.AxleForceN);
                 TableAddLine(table);

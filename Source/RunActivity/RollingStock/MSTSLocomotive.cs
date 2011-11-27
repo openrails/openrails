@@ -647,6 +647,8 @@ namespace ORTS
                     LocomotiveAxle.InertiaKgm2 = 32000.0f;
                 //Limit the inertia to 40000 kgm2
                 LocomotiveAxle.InertiaKgm2 = LocomotiveAxle.InertiaKgm2 > 40000.0f ? 40000.0f : LocomotiveAxle.InertiaKgm2;
+
+                LocomotiveAxle.AxleRevolutionsInt.MinStep = LocomotiveAxle.InertiaKgm2 / MaxPowerW / 5.0f;
                 
 
                 //Set axle model parameters
@@ -661,7 +663,7 @@ namespace ORTS
                 WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
                 WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
 
-                LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
+                 LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
             }
             else
             {

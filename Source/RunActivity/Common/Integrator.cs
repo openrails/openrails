@@ -77,6 +77,9 @@ namespace ORTS
         /// Minimal step of integration
         /// </summary>
         public float MinStep { set; get; }
+        public bool IsStepDividing { set; get; }
+        int numOfSubstepsPS = 1;
+        public int NumOfSubstepsPS { get { return numOfSubstepsPS; } }
 
         /// <summary>
         /// Max count of substeps when timespan dividing
@@ -129,7 +132,7 @@ namespace ORTS
             isLimited = false;
             initialCondition = initCondition;
             integralValue = initialCondition;
-            MaxSubsteps = 10;
+            MaxSubsteps = 50;
             for (int i = 0; i < 4; i++)
                 previousValues[i] = initCondition;
             oldTime = 0.0f;
@@ -153,6 +156,8 @@ namespace ORTS
             float end = timeSpan;
             int count = 0;
 
+            float k1, k2, k3, k4 = 0;
+
             //Skip when timeSpan is less then zero
             if (timeSpan <= 0.0f)
             {
@@ -165,6 +170,17 @@ namespace ORTS
                 if (count > MaxSubsteps)
                     count = MaxSubsteps;
                 timeSpan = timeSpan / count;
+                IsStepDividing = true;
+                numOfSubstepsPS = count;
+
+                if (numOfSubstepsPS > (MaxSubsteps / 2))
+                    Method = IntegratorMethods.EulerBackMod;
+                else
+                    Method = IntegratorMethods.RungeKutta4;
+            }
+            else
+            {
+                IsStepDividing = false;
             }
 
 
@@ -183,10 +199,18 @@ namespace ORTS
                         throw new NotImplementedException("Not implemented yet!");
                         break;
                     case IntegratorMethods.RungeKutta2:
-                        throw new NotImplementedException("Not implemented yet!");
+                        //throw new NotImplementedException("Not implemented yet!");
+                        k1 = integralValue + timeSpan / 2 * value;
+                        k2 = 2 * (k1 - integralValue) / timeSpan;
+                        integralValue += timeSpan * k2;
                         break;
                     case IntegratorMethods.RungeKutta4:
-                        throw new NotImplementedException("Not implemented yet!");
+                        //throw new NotImplementedException("Not implemented yet!");
+                        k1 = timeSpan * value;
+                        k2 = k1 + timeSpan / 2.0f * value;
+                        k3 = k1 + timeSpan / 2.0f * k2;
+                        k4 = timeSpan * k3;
+                        integralValue += (k1 + 2.0f * k2 + 2.0f * k3 + k4) / 6.0f;
                         break;
                     case IntegratorMethods.NewtonRhapson:
                         throw new NotImplementedException("Not implemented yet!");

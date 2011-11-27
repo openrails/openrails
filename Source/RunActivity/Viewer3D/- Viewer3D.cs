@@ -214,7 +214,6 @@ namespace ORTS {
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
             SetupBackgroundProcesses();
 
-
         }
 
         [ThreadName("Render")]
