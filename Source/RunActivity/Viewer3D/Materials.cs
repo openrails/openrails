@@ -448,7 +448,7 @@ namespace ORTS
             if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques["FullBright"].Passes.GetEnumerator();
             if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques["HalfBright"].Passes.GetEnumerator();
             if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
-            if (ShaderPassesVegetation == null) ShaderPassesVegetation = shader.Techniques["Vegetation"].Passes.GetEnumerator();
+            if (ShaderPassesVegetation == null) ShaderPassesVegetation = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "VegetationPS3" : "VegetationPS2"].Passes.GetEnumerator();
 
 			/////////////// MATERIAL OPTIONS //////////////////
 			//
@@ -530,8 +530,8 @@ namespace ORTS
 					break;
 				case 3: // Cruciform
 				case 4: // CruciformLong
-                    shader.CurrentTechnique = shader.Techniques["Vegetation"];
-					ShaderPasses = ShaderPassesVegetation;
+                    shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "VegetationPS3" : "VegetationPS2"];
+                    ShaderPasses = ShaderPassesVegetation;
 					break;
 				case 5: // OptFullBright
                     shader.CurrentTechnique = shader.Techniques["FullBright"];

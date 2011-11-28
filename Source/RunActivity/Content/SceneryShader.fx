@@ -373,7 +373,29 @@ float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	return float4(litColor, Color.a);
 }
 
-float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
+float4 PSVegetation(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
+{
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+	const float NightBrightness = 0.2;
+
+	float4 Color = tex2D(Image, In.TexCoords.xy);
+	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetVegetationAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, In) + ImageTextureIsNight));
+	// No specular effect for vegetation.
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
+	// Night-time darkens everything, except night-time textures.
+	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + ImageTextureIsNight));
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color, In);
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
+	return float4(litColor, Color.a);
+}
+
+float4 PSForest(in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
 	const float ShadowBrightness = 0.5;
@@ -514,14 +536,21 @@ technique ImagePS3 {
 technique Forest {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSForest();
-		PixelShader = compile ps_2_0 PSVegetation();
+		PixelShader = compile ps_2_0 PSForest();
 	}
 }
 
-technique Vegetation {
+technique VegetationPS3 {
+	pass Pass_0 {
+		VertexShader = compile vs_3_0 VSGeneral(true);
+		PixelShader = compile ps_3_0 PSVegetation(true);
+	}
+}
+
+technique VegetationPS2 {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSGeneral(false);
-		PixelShader = compile ps_2_0 PSVegetation();
+		PixelShader = compile ps_2_0 PSVegetation(false);
 	}
 }
 
