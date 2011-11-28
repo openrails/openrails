@@ -133,7 +133,10 @@ namespace ORTS
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
             LocomotiveAxle.DampingNs = MassKG / 1000.0f;
-            LocomotiveAxle.AdhesionK = 0.7f;
+            LocomotiveAxle.AdhesionK = AdhesionK;
+            LocomotiveAxle.CurtiusKnifflerA = Curtius_KnifflerA;
+            LocomotiveAxle.CurtiusKnifflerB = Curtius_KnifflerB;
+            LocomotiveAxle.CurtiusKnifflerC = Curtius_KnifflerC;
             LocomotiveAxle.StabilityCorrection = true;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
@@ -633,18 +636,25 @@ namespace ORTS
                 //}
 
                 //Compute axle inertia from parameters if possible
-                if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
+                if (AxleInertiaKgm2 > 10000.0f)
                 {
-                    float upperLimit = 2.0f * WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
-                    upperLimit = upperLimit < 100.0f ? 100.0f : upperLimit;
-
-                    float lowerLimit = WheelAxles.Count * (9000.0f * DriverWheelRadiusM - 1750.0f);
-                    lowerLimit = lowerLimit < 100.0f ? 100.0f : lowerLimit;
-
-                    LocomotiveAxle.InertiaKgm2 = (upperLimit - lowerLimit) / (5000000.0f) * MaxPowerW + lowerLimit;
+                    LocomotiveAxle.InertiaKgm2 = AxleInertiaKgm2;
                 }
                 else
-                    LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                {
+                    if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
+                    {
+                        float upperLimit = 2.0f * WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
+                        upperLimit = upperLimit < 100.0f ? 100.0f : upperLimit;
+
+                        float lowerLimit = WheelAxles.Count * (9000.0f * DriverWheelRadiusM - 1750.0f);
+                        lowerLimit = lowerLimit < 100.0f ? 100.0f : lowerLimit;
+
+                        LocomotiveAxle.InertiaKgm2 = (upperLimit - lowerLimit) / (5000000.0f) * MaxPowerW + lowerLimit;
+                    }
+                    else
+                        LocomotiveAxle.InertiaKgm2 = 32000.0f;
+                }
                 //Limit the inertia to 40000 kgm2
                 LocomotiveAxle.InertiaKgm2 = LocomotiveAxle.InertiaKgm2 > 40000.0f ? 40000.0f : LocomotiveAxle.InertiaKgm2;
 
@@ -667,40 +677,7 @@ namespace ORTS
             }
             else
             {
-                if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
-                {
-                    if (Train.SlipperySpotDistanceM < 0)
-                    {
-                        Train.SlipperySpotLengthM = 10 + 40 * (float)Program.Random.NextDouble();
-                        Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Program.Random.NextDouble();
-                    }
-                    if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
-                        max0 *= .8f;
-                    if (Program.Simulator.Weather == WeatherType.Rain)
-                        max0 *= .8f;
-                    else
-                        max0 *= .7f;
-                }
-                //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
-                max1 = (Sander ? 1.5f : 1.0f) * max0; //Increase adhesion when sander is on
-                WheelSlip = false;
-
-                if (MotiveForceN > max1)
-                {
-                    WheelSlip = true;
-                    if (AntiSlip)
-                        MotiveForceN = max1;
-                    else
-                        MotiveForceN = Adhesion1 * max0;        //Lowers the adhesion limit to 20% of its full
-                }
-                else if (MotiveForceN < -max1)
-                {
-                    WheelSlip = true;
-                    if (AntiSlip)
-                        MotiveForceN = -max1;
-                    else
-                        MotiveForceN = -Adhesion1 * max0;       //Lowers the adhesion limit to 20% of its full
-                }
+                LimitMotiveForce();
             }
         }
         public void LimitMotiveForce()

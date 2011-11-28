@@ -169,15 +169,15 @@ namespace ORTS
                     break;
                 case "wagon(or_adhesion(curtius_kniffler":   
                     stf.MustMatch("(");                      //e.g. Wagon ( OR_adhesion ( Curtius_Kniffler ( 7.5 44 0.161 0.7 ) ) )
-                    Curtius_KnifflerA = stf.ReadFloat(STFReader.UNITS.Any, null);   
-                    Curtius_KnifflerB = stf.ReadFloat(STFReader.UNITS.Any, null);
-                    Curtius_KnifflerC = stf.ReadFloat(STFReader.UNITS.Any, null);
-                    AdhesionK = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    Curtius_KnifflerA = stf.ReadFloat(STFReader.UNITS.Any, 7.5f);   if (Curtius_KnifflerA <= 0) Curtius_KnifflerA = 7.5f;
+                    Curtius_KnifflerB = stf.ReadFloat(STFReader.UNITS.Any, 44.0f);  if (Curtius_KnifflerB <= 0) Curtius_KnifflerB = 44.0f;
+                    Curtius_KnifflerC = stf.ReadFloat(STFReader.UNITS.Any, 0.161f); if (Curtius_KnifflerC <= 0) Curtius_KnifflerA = 0.161f;
+                    AdhesionK = stf.ReadFloat(STFReader.UNITS.Any, 0.7f);           if (AdhesionK <= 0) AdhesionK = 0.7f;
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(or_adhesion(slipwarningtreshold":
                     stf.MustMatch("(");
-                    SlipWarningTresholdPercent = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    SlipWarningTresholdPercent = stf.ReadFloat(STFReader.UNITS.Any, 70.0f); if (SlipWarningTresholdPercent <= 0) SlipWarningTresholdPercent = 70.0f ; 
                     stf.ReadFloat(STFReader.UNITS.Any, null);
                     stf.SkipRestOfBlock();
                     break;
