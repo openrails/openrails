@@ -43,7 +43,11 @@ namespace MSTS
 
     public class Tr_Worldfile : ArrayList
     {
-        static HashSet<TokenID> UnknownBlockIDs = new HashSet<TokenID>();
+        static HashSet<TokenID> UnknownBlockIDs = new HashSet<TokenID>()
+        {
+            TokenID.VDbIdCount,
+            TokenID.ViewDbSphere,
+        };
 
         public new WorldObject this[int i]
         {
