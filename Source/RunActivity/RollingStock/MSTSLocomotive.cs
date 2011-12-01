@@ -451,15 +451,15 @@ namespace ORTS
                 {
                     float maxForceN = MaxForceN * t;
                     float maxPowerW = MaxPowerW * t * t;
-                    if (maxForceN * currentSpeedMpS > maxPowerW)
-                        maxForceN = maxPowerW / currentSpeedMpS;
+                    if (maxForceN * WheelSpeedMpS > maxPowerW)
+                        maxForceN = maxPowerW / WheelSpeedMpS;
                     if (currentSpeedMpS > MaxSpeedMpS)
                         maxForceN = 0;
                     MotiveForceN = maxForceN;
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(t, currentSpeedMpS);
+                    MotiveForceN = TractiveForceCurves.Get(t, WheelSpeedMpS);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
@@ -1174,6 +1174,8 @@ namespace ORTS
                 if (eventID == EventID.CompressorOn) { CompressorOn = true; break; }
                 if (eventID == EventID.CompressorOff) { CompressorOn = false; break; }
 				if (eventID == EventID.LightSwitchToggle) { break; }
+                if (eventID == EventID.ResetWheelSlip) { LocomotiveAxle.Reset(SpeedMpS); ThrottleController.SetValue(0.0f); break; }
+                if (eventID == EventID.ToggleAdvancedAdhesion) { UseAdvancedAdhesion = !UseAdvancedAdhesion; break; }
 			} while (false);
 
             base.SignalEvent(eventID );
@@ -1753,6 +1755,11 @@ namespace ORTS
             // By GeorgeS
             if (UserInput.IsPressed(UserCommands.ControlLight)) { Locomotive.CabLightOn = !Locomotive.CabLightOn; Locomotive.SignalEvent(EventID.LightSwitchToggle); }
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
+
+            // By Matej Pacha
+            if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.SignalEvent(EventID.ResetWheelSlip); }
+            if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.SignalEvent(EventID.ToggleAdvancedAdhesion); }
+
 
             if (UserInput.RDState != null)
             {

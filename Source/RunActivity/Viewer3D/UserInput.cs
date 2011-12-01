@@ -124,6 +124,8 @@ namespace ORTS
             Commands[(int)UserCommands.DebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugDispatcherExtend] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
             Commands[(int)UserCommands.DebugDispatcherRelease] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift | KeyModifiers.Control);
+            Commands[(int)UserCommands.DebugResetWheelSlip] = new UserCommandKeyInput(0x2D, KeyModifiers.Control);
+            Commands[(int)UserCommands.DebugToggleAdvancedAdhesion] = new UserCommandKeyInput(0x2D, KeyModifiers.Control | KeyModifiers.Alt);
 
             Commands[(int)UserCommands.CameraCab] = new UserCommandKeyInput(0x02);
             Commands[(int)UserCommands.CameraOutsideFront] = new UserCommandKeyInput(0x03);
@@ -515,6 +517,8 @@ namespace ORTS
         DebugWeatherChange,
         DebugDispatcherExtend,
         DebugDispatcherRelease,
+        DebugResetWheelSlip,
+        DebugToggleAdvancedAdhesion,
 
         CameraCab,
         CameraOutsideFront,

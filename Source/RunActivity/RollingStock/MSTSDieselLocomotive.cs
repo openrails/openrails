@@ -240,15 +240,15 @@ namespace ORTS
                 {
                     float maxForceN = MaxForceN * t;
                     float maxPowerW = MaxPowerW * (EngineRPM - IdleRPM) / (MaxRPM - IdleRPM);
-                    if (maxForceN * currentSpeedMpS > maxPowerW)
-                        maxForceN = maxPowerW / currentSpeedMpS;
+                    if (maxForceN * WheelSpeedMpS > maxPowerW)
+                        maxForceN = maxPowerW / WheelSpeedMpS;
                     if (currentSpeedMpS > MaxSpeedMpS)
                         maxForceN = 0;
                     MotiveForceN = maxForceN;
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(t, currentSpeedMpS);
+                    MotiveForceN = TractiveForceCurves.Get(t, WheelSpeedMpS);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }

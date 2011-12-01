@@ -22,7 +22,8 @@ namespace ORTS
         Uncouple = 61, UncoupleB = 62, UncoupleC = 63,
             // why do these headlight values overlap brake sounds?
             //HeadlightOn = 12, HeadlightDim = 13, HeadlightOff = 14,
-        HeadlightOn = 112, HeadlightDim = 113, HeadlightOff = 114;
+        HeadlightOn = 112, HeadlightDim = 113, HeadlightOff = 114,
+        ResetWheelSlip = 127, ToggleAdvancedAdhesion = 128;
 
         public static bool IsMSTSBin = false;
         private static bool _isInitialized = false;
