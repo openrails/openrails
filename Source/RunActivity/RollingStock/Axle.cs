@@ -597,31 +597,47 @@ namespace ORTS
                     //Axle revolutions integration
                     if (TrainSpeedMpS > 0.0f)
                     {
-                        axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
-                                (
-                                    (
-                                    driveForceN * transmitionEfficiency
-                                    - brakeForceN
-                                    - slipDerivationMpSS * dampingNs
-                                    - AxleForceN
-                                    )
-                                / totalInertiaKgm2)
-                                );
-                    }
-                    else
-                    {
-                        if (TrainSpeedMpS < 0.0f)
+                        if (((brakeForceN) > (driveForceN)) && (AxleSpeedMpS < 0.1f))
+                        {
+                            axleSpeedMpS = 0.0f;
+                            axleForceN = - brakeForceN + driveForceN;
+                        }
+                        else
                         {
                             axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
                                     (
                                         (
                                         driveForceN * transmitionEfficiency
-                                        + brakeForceN
+                                        - brakeForceN
                                         - slipDerivationMpSS * dampingNs
                                         - AxleForceN
                                         )
                                     / totalInertiaKgm2)
                                     );
+                        }
+                    }
+                    else
+                    {
+                        if (TrainSpeedMpS < 0.0f)
+                        {
+                            if (((brakeForceN) > (Math.Abs(driveForceN))) && (AxleSpeedMpS > -0.1f))
+                            {
+                                axleSpeedMpS = 0.0f;
+                                axleForceN = brakeForceN - driveForceN;
+                            }
+                            else
+                            {
+                                axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
+                                        (
+                                            (
+                                            driveForceN * transmitionEfficiency
+                                            + brakeForceN
+                                            - slipDerivationMpSS * dampingNs
+                                            - AxleForceN
+                                            )
+                                        / totalInertiaKgm2)
+                                        );
+                            }
                         }
                         else
                         {

@@ -54,6 +54,7 @@ namespace ORTS
         public bool ShowErrorDialogs { get; set; }
 		public int SoundDetailLevel { get; set; }
 		public bool TrainLights { get; set; }
+        public bool UseAdvancedAdhesion { get; set; }
 		public bool VerticalSync { get; set; }
 		public int ViewingDistance { get; set; }
         public int ViewingFOV { get; set; }
@@ -94,6 +95,7 @@ namespace ORTS
             ShadowMapResolution = 1024;
             ShowErrorDialogs = true;
             SoundDetailLevel = 5;
+            UseAdvancedAdhesion = true;
             ViewingDistance = 2000;
             ViewingFOV = 45; // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
             WindowSize = "1024x768";

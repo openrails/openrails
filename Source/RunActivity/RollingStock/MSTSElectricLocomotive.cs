@@ -50,11 +50,6 @@ namespace ORTS
 			: base(simulator, wagFile, previousCar)
         {
             VoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
-
-            if (AntiSlip)
-                UseAdvancedAdhesion = false;
-            else
-                UseAdvancedAdhesion = true;
         }
 
         /// <summary>

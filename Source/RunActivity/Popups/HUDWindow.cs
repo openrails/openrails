@@ -263,7 +263,7 @@ namespace ORTS.Popups
             var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
             if (mstsLocomotive != null)
             {
-                if (mstsLocomotive.UseAdvancedAdhesion)
+                if ((mstsLocomotive.Simulator.UseAdvancedAdhesion)&&(!mstsLocomotive.AntiSlip))
                 {
                     TableAddLabelValue(table, "Wheel slip", "{0:F0}% ({1:F0}%/s)", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS);
                     TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);

@@ -65,10 +65,6 @@ namespace ORTS
         {
             PowerOn = true;
             InitialMassKg = MassKG;
-            if (AntiSlip)
-                UseAdvancedAdhesion = false;
-            else
-                UseAdvancedAdhesion = true;
         }
 
         /// <summary>

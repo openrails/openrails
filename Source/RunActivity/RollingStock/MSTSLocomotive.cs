@@ -140,11 +140,7 @@ namespace ORTS
             LocomotiveAxle.StabilityCorrection = true;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
-            if (AntiSlip)
-                UseAdvancedAdhesion = false;
-            else
-                UseAdvancedAdhesion = true;
-
+            
             //Console.WriteLine("loco {0} {1} {2}", MaxPowerW, MaxForceN, MaxSpeedMpS);
         }
 
@@ -578,7 +574,7 @@ namespace ORTS
             float max0 = 1.0f;  //Ahesion conditions [N]
             float max1 = MassKG * 9.81f * Adhesion2;
 
-            if ((UseAdvancedAdhesion)&&(!Simulator.Paused))
+            if ((Simulator.UseAdvancedAdhesion)&&(!Simulator.Paused)&&(!AntiSlip))
             {
                 //Set the weather coeff
                 if (Program.Simulator.Weather == WeatherType.Rain || Program.Simulator.Weather == WeatherType.Snow)
@@ -668,12 +664,12 @@ namespace ORTS
                 LocomotiveAxle.AxleWeightN = 9.81f * MassKG;        //will be computed each time considering the tilting
                 LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
-                                
+
+                LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
+                
                 MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
                 WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
                 WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
-
-                 LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
             }
             else
             {
@@ -1175,7 +1171,6 @@ namespace ORTS
                 if (eventID == EventID.CompressorOff) { CompressorOn = false; break; }
 				if (eventID == EventID.LightSwitchToggle) { break; }
                 if (eventID == EventID.ResetWheelSlip) { LocomotiveAxle.Reset(SpeedMpS); ThrottleController.SetValue(0.0f); break; }
-                if (eventID == EventID.ToggleAdvancedAdhesion) { UseAdvancedAdhesion = !UseAdvancedAdhesion; break; }
 			} while (false);
 
             base.SignalEvent(eventID );
@@ -1226,13 +1221,17 @@ namespace ORTS
         public virtual float GetDataOf(CabViewControl cvc)
         {
             CheckVigilance();
-            float data;
+            float data = 0;
             switch (cvc.ControlType)
             {
                 case CABViewControlTypes.SPEEDOMETER:
                     {
                         //data = SpeedMpS;
-                        data = WheelSpeedMpS;
+                        if (Simulator.UseAdvancedAdhesion && (!AntiSlip))
+                            data = WheelSpeedMpS;
+                        else
+                            data = SpeedMpS;
+
                         if (cvc.Units == CABViewControlUnits.KM_PER_HOUR)
                             data *= 3.6f;
                         else // MPH
@@ -1321,6 +1320,12 @@ namespace ORTS
                         {
                             data = 0;
                         }
+                        break;
+                    }
+                case CABViewControlTypes.RPM:
+                    {
+                        if (((MSTSDieselLocomotive)this).EngineRPM != null)
+                            data = ((MSTSDieselLocomotive)this).EngineRPM;
                         break;
                     }
                 case CABViewControlTypes.THROTTLE:
@@ -1757,8 +1762,8 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
 
             // By Matej Pacha
-            if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.SignalEvent(EventID.ResetWheelSlip); }
-            if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.SignalEvent(EventID.ToggleAdvancedAdhesion); }
+            if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(EventID.ResetWheelSlip); }
+            if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(EventID.ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
 
 
             if (UserInput.RDState != null)

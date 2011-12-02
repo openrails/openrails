@@ -81,6 +81,7 @@ namespace ORTS
 		public LevelCrossings LevelCrossings;
 		public RDBFile RDB;
 		public CarSpawnerFile CarSpawnerFile;
+        public bool UseAdvancedAdhesion;
 
 		/// <summary>
 		/// Reference to the InterlockingSystem object, responsible for
@@ -94,6 +95,7 @@ namespace ORTS
 		public Simulator(UserSettings settings, string activityPath)
 		{
 			Settings = settings;
+            UseAdvancedAdhesion = Settings.UseAdvancedAdhesion;
 			RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
 			RouteName = Path.GetFileName(RoutePath);
 			BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));

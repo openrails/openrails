@@ -150,7 +150,8 @@ namespace MSTS
         LITRES,
         GALLONS,
         INCHES_OF_MERCURY,
-        MILI_AMPS
+        MILI_AMPS,
+        RPM
     }
 
     public class CabViewControls : List<CabViewControl>

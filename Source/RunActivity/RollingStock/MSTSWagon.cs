@@ -72,7 +72,6 @@ namespace ORTS
         public float AxleInertiaKgm2 = 0;   //axle inertia
         public float WheelSpeedMpS = 0;
         public float SlipWarningTresholdPercent = 70;
-        public bool UseAdvancedAdhesion;
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
@@ -246,7 +245,6 @@ namespace ORTS
             AdhesionK = copy.AdhesionK;
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
             SlipWarningTresholdPercent = copy.SlipWarningTresholdPercent;
-            UseAdvancedAdhesion = copy.UseAdvancedAdhesion;
             Lights = copy.Lights;
             foreach (ViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
@@ -893,7 +891,7 @@ namespace ORTS
         private void UpdateAnimation( RenderFrame frame, ElapsedTime elapsedTime )
         {
             float distanceTravelledM = 0;
-            if ((MSTSWagon.IsDriveable)&&(MSTSWagon.UseAdvancedAdhesion))
+            if ((MSTSWagon.IsDriveable)&&(MSTSWagon.Simulator.UseAdvancedAdhesion))
             {
                 distanceTravelledM = MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
             }

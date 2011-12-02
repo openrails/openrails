@@ -244,10 +244,6 @@ namespace ORTS
             if (MaxFiringRateKGpS == 0)
                 MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
             //Trace.WriteLine(string.Format("burn rate 2 {0} {1} {2}", BurnRate[1] * (1 - .82f) / .35f / .82f, baseTempK, BurnRate[1]));
-            if (AntiSlip)
-                UseAdvancedAdhesion = false;
-            else
-                UseAdvancedAdhesion = true;
         }
         public bool ZeroError(float v, string name, string wagFile)
         {
