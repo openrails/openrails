@@ -258,8 +258,12 @@ namespace ORTS
                         SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
                     else
                         SceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
-                    if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
-                        Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
+					if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+					{
+						int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
+						//if cannot draw wire, try to see if it is converted. modified for DynaTrax
+						if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix);
+					}
                 }
                 else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
                 {

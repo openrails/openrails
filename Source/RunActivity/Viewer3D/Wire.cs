@@ -43,7 +43,7 @@ namespace ORTS
 		/// <param name="dTrackList">DynatrackDrawer list.</param>
 		/// <param name="dTrackObj">Dynamic track section to decompose.</param>
 		/// <param name="worldMatrixInput">Position matrix.</param>
-		public static void DecomposeStaticWire(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
+		public static int DecomposeStaticWire(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
 			WorldPosition worldMatrixInput)
 		{
 			// The following vectors represent local positioning relative to root of original (5-part) section:
@@ -61,11 +61,11 @@ namespace ORTS
 			worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
 			try
 			{
-				if (Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).RoadShape == true) return;
+				if (Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).RoadShape == true) return 1;
 			}
 			catch (Exception e)
 			{
-				return;
+				return 0;
 			}
 			SectionIdx[] SectionIdxs = Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).SectionIdxs;
 
@@ -126,8 +126,99 @@ namespace ORTS
 					localV = localProjectedV; // Next subsection
 				}
 			}
+			return 1;
 		} // end DecomposeStaticWire
 
+		/// <summary>
+		/// Decompose and add a wire on top of MSTS track section converted from dynamic tracks
+		/// </summary>
+		/// <param name="viewer">Viewer reference.</param>
+		/// <param name="dTrackList">DynatrackDrawer list.</param>
+		/// <param name="dTrackObj">Dynamic track section to decompose.</param>
+		/// <param name="worldMatrixInput">Position matrix.</param>
+		public static void DecomposeConvertedDynamicWire(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
+			WorldPosition worldMatrixInput)
+		{
+			// The following vectors represent local positioning relative to root of original (5-part) section:
+			Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
+			Vector3 localProjectedV; // Local next position (in x-z plane)
+			Vector3 displacement;  // Local displacement (from y=0 plane)
+			Vector3 heading = Vector3.Forward; // Local heading (unit vector)
+
+			WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Make a copy so it will not be messed
+
+			WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
+
+			WorldPosition wcopy = new WorldPosition(nextRoot);
+			Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
+			worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
+
+			TrackPath path;
+
+			try
+			{
+				path = Program.Simulator.TSectionDat.TSectionIdx.TrackPaths[dTrackObj.SectionIdx];
+			}
+			catch (Exception e)
+			{
+				return; //cannot find the path for the dynamic track
+			}
+
+			nextRoot = new WorldPosition(wcopy); // Will become initial root
+			sectionOrigin = nextRoot.XNAMatrix.Translation;
+
+			heading = Vector3.Forward; // Local heading (unit vector)
+			localV = Vector3.Zero; // Local position (in x-z plane)
+
+
+			Vector3 trackLoc = new Vector3(0, 0, 0);// +new Vector3(3, 0, 0);
+			Matrix trackRot = Matrix.CreateRotationY(0);
+
+			//heading = Vector3.Transform(heading, trackRot); // Heading change
+			nextRoot.XNAMatrix = trackRot * nextRoot.XNAMatrix;
+			uint[] sections = path.TrackSections;
+
+			for (int i = 0; i < sections.Length; i++)
+			{
+				float length, radius;
+				uint sid = path.TrackSections[i];
+				TrackSection section = Program.Simulator.TSectionDat.TrackSections[sid];
+				WorldPosition root = new WorldPosition(nextRoot);
+				nextRoot.XNAMatrix.Translation = Vector3.Zero;
+
+				if (section.SectionCurve == null)
+				{
+					length = section.SectionSize.Length;
+					radius = -1;
+					localProjectedV = localV + length * heading;
+					displacement = TDBTraveller.MSTSInterpolateAlongStraight(localV, heading, length,
+															worldMatrix.XNAMatrix, out localProjectedV);
+				}
+				else
+				{
+					length = section.SectionCurve.Angle * 3.14f / 180;
+					radius = section.SectionCurve.Radius; // meters
+
+					Vector3 left;
+					if (section.SectionCurve.Angle > 0) left = radius * Vector3.Cross(Vector3.Down, heading); // Vector from PC to O
+					else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
+					Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
+
+					Matrix rot2 = Matrix.CreateRotationY(-(90 - section.SectionCurve.Angle) * 3.14f / 180); // Heading change (rotation about O)
+					displacement = TDBTraveller.MSTSInterpolateAlongCurve(localV, left, rot,
+											worldMatrix.XNAMatrix, out localProjectedV);
+
+					heading = Vector3.Transform(heading, rot); // Heading change
+					nextRoot.XNAMatrix = trackRot * rot * nextRoot.XNAMatrix; // Store heading change
+
+				}
+				nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
+				root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
+				nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
+				dTrackList.Add(new WireDrawer(viewer, root, nextRoot, radius, length));
+				localV = localProjectedV; // Next subsection
+			}
+		} // end DecomposeStaticWire
 		/// <summary>
 		/// Decompose and add a wire on top of MSTS track section
 		/// </summary>

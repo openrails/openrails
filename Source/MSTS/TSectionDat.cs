@@ -265,6 +265,7 @@ namespace MSTS
                 }
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("tracksections", ()=>{ TrackSections.AddRouteTrackSections(stf); }),
+                    new STFReader.TokenProcessor("sectionidx", ()=>{ TSectionIdx = new TSectionIdx(stf); }),
                     // todo read in SectionIdx part of RouteTSectionDat
                 });
             }
@@ -284,7 +285,64 @@ namespace MSTS
         }
 		public TrackSections TrackSections;
 		public TrackShapes TrackShapes;
+		public TSectionIdx TSectionIdx; //route's tsection.dat
+
 	}
 
+	public class TSectionIdx //SectionIdx in the route's tsection.dat
+	{
 
+		public TSectionIdx(STFReader stf)
+		{
+			stf.MustMatch("(");
+			NoSections = stf.ReadUInt(STFReader.UNITS.None, null);
+			TrackPaths = new Dictionary<uint, TrackPath>((int)NoSections);
+			stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("trackpath", ()=>{ AddPath(stf, new TrackPath(stf)); }),
+            });
+			stf.SkipRestOfBlock();
+		}
+
+		private void AddPath(STFReader stf, TrackPath path)
+		{
+			try
+			{
+				TrackPaths.Add(path.DynamicSectionIndex, path);
+			}
+			catch (Exception e)
+			{
+				System.Console.WriteLine("Warning: in route tsection.dat " + e.Message);
+			}
+		}
+		public uint NoSections;
+		public Dictionary<uint, TrackPath> TrackPaths;
+	}
+
+	public class TrackPath //SectionIdx in the route's tsection.dat
+	{
+
+		public TrackPath(STFReader stf)
+		{
+			stf.MustMatch("(");
+			DynamicSectionIndex = stf.ReadUInt(STFReader.UNITS.None, null);
+			NoSections = stf.ReadUInt(STFReader.UNITS.None, null);
+			TrackSections = new uint[NoSections];
+			for (int i = 0; i < NoSections; ++i)
+			{
+				string token = stf.ReadString();
+				if (token == ")")
+				{
+					STFException.TraceWarning(stf, "Missing track section");
+					return;   // there are many TSECTION.DAT's with missing sections so we will accept this error
+				}
+				if (!uint.TryParse(token, out TrackSections[i]))
+					STFException.TraceWarning(stf, "Invalid Track Section " + token);
+			}
+			stf.SkipRestOfBlock();
+
+		}
+		public uint DynamicSectionIndex;
+		public uint NoSections;
+		public uint[] TrackSections;
+	}
 }
