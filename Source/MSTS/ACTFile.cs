@@ -913,8 +913,8 @@ namespace MSTS {
     public class Position {
         int TileX;
         int TileZ;
-        int X;
-        int Z;
+        float X;
+        float Z;
 
         public Position(int tileX, int tileZ, int x, int z) {
             TileX = tileX;
@@ -927,8 +927,8 @@ namespace MSTS {
             stf.MustMatch("(");
             TileX = stf.ReadInt(STFReader.UNITS.None, null);
             TileZ = stf.ReadInt(STFReader.UNITS.None, null);
-            X = stf.ReadInt(STFReader.UNITS.None, null);
-            Z = stf.ReadInt(STFReader.UNITS.None, null);
+            X = stf.ReadFloat(STFReader.UNITS.None, null);
+            Z = stf.ReadFloat(STFReader.UNITS.None, null);
             stf.MustMatch(")");
         }
     }
