@@ -386,7 +386,7 @@ namespace ORTS
 
 			lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
 			lodItem = new LODItemWire("Wire");
-			lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
+			lodItem.TexName = ".\\content\\overheadwire.ace";
 			lodItem.ShaderName = "TexDiff";
 			lodItem.LightModelName = "OptSpecular0";
 			lodItem.AlphaTestMode = 0;

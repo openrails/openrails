@@ -87,6 +87,7 @@ namespace ORTS
 
             if (alternativePath.Length > 0 && File.Exists(texturePath + alternativePath + textureName)) return texturePath + alternativePath + textureName;
             if (File.Exists(texturePath + @"\" + textureName)) return texturePath + @"\" + textureName;
+			if (File.Exists(textureName)) return textureName; //some may use \program\content\*.ace
             return null;
         }
 
