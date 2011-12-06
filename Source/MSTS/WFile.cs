@@ -492,7 +492,8 @@ namespace MSTS
 					switch (subBlock.ID)
 					{
 						case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-						case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock);
+                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                        case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock);
 							warningTime = levelCrParameters.crParameter1;
 							break;
 						case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;

@@ -249,8 +249,8 @@ namespace ORTS
 		private bool silent = false;
 		public SoundSource Sound;
 
-		public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, LevelCrossingObj trj, LevelCrossingObject[] levelObjects)
-			: base(viewer, path, position, ShapeFlags.AutoZBias)
+		public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position,ShapeFlags shapeFlags, LevelCrossingObj trj, LevelCrossingObject[] levelObjects)
+			: base(viewer, path, position, shapeFlags | ShapeFlags.AutoZBias)
 		{
 			animatedDir = 0;
 			crossingObjects = new List<LevelCrossingObject>(); //sister gropu of crossing if there are parallel lines

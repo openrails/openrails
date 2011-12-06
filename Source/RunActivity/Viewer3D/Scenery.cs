@@ -247,6 +247,7 @@ namespace ORTS
 					continue;
 				}
 
+                var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
 
                 if (worldObject.GetType() == typeof(MSTS.TrackObj))
                 {
@@ -280,12 +281,11 @@ namespace ORTS
                 }
 				else if (worldObject.GetType() == typeof(MSTS.SignalObj))
 				{
-					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
 					SceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
 				}
 				else if (worldObject.GetType() == typeof(MSTS.LevelCrossingObj))
 				{
-					SceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, (LevelCrossingObj) worldObject, viewer.Simulator.LevelCrossings.LevelCrossingObjects));
+                    SceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None,(LevelCrossingObj)worldObject, viewer.Simulator.LevelCrossings.LevelCrossingObjects));
 				}
 				else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
 				{
@@ -302,7 +302,6 @@ namespace ORTS
                 } 
                 else // It's some other type of object - not one of the above.
 				{
-					var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
 					SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
 				}
             }
