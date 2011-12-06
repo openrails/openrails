@@ -386,7 +386,7 @@ namespace ORTS
 
 			lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
 			lodItem = new LODItemWire("Wire");
-			lodItem.TexName = ".\\content\\overheadwire.ace";
+			lodItem.TexName = "overheadwire.ace";
 			lodItem.ShaderName = "TexDiff";
 			lodItem.LightModelName = "OptSpecular0";
 			lodItem.AlphaTestMode = 0;
@@ -401,11 +401,11 @@ namespace ORTS
 			pl = new Polyline(this, "TopWire", 5);
 			pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
 
-			pl.Vertices.Add(new Vertex(-0.02f, topHeight + 0.04f, 0.0f, -1f, 0f, 0f, u1, v1));
-			pl.Vertices.Add(new Vertex(0.02f, topHeight + 0.04f, 0.0f, 0f, 1f, 0f, u1, v1));
-			pl.Vertices.Add(new Vertex(0.02f, topHeight, 0.0f, 1f, 0f, 0f, u1, v1));
-			pl.Vertices.Add(new Vertex(-0.02f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
-			pl.Vertices.Add(new Vertex(-0.02f, topHeight + 0.04f, 0.0f, -1f, 0f, 0f, u1, v1));
+			pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -1f, 0f, 0f, u1, v1));
+			pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, 0f, 1f, 0f, u1, v1));
+			pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, 1f, 0f, 0f, u1, v1));
+			pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
+			pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -1f, 0f, 0f, u1, v1));
             lodItem.Polylines.Add(pl); //WHN changed lod to lodItem
             lodItem.Accum(pl.Vertices.Count); //WHN changed lod to lodItem
 
