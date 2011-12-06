@@ -386,7 +386,13 @@ namespace ORTS
 
 			lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
 			lodItem = new LODItemWire("Wire");
-			lodItem.TexName = "overheadwire.ace";
+			if (File.Exists(Program.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
+				lodItem.TexName = "overheadwire.ace";
+			else
+			{
+				Trace.TraceWarning("Missing overheardwire.ace in the route's texture folder, will use default black texture. You can copy the overheadwire.ace from OR\'s AddOns folder to "+Program.Simulator.RoutePath + "\\Textures folder.");
+				lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
+			}
 			lodItem.ShaderName = "TexDiff";
 			lodItem.LightModelName = "OptSpecular0";
 			lodItem.AlphaTestMode = 0;
