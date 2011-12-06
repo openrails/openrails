@@ -285,7 +285,7 @@ float3 _PS3GetShadowEffect(in VERTEX_OUTPUT In)
 //		}
 //	}
 //}
-float _PSGetShadowEffect(uniform bool ShaderModel3, in VERTEX_OUTPUT In)
+float _PSGetShadowEffect(uniform bool ShaderModel3, uniform bool NormalLighting, in VERTEX_OUTPUT In)
 {
 	float3 moments;
 	if (ShaderModel3)
@@ -299,7 +299,9 @@ float _PSGetShadowEffect(uniform bool ShaderModel3, in VERTEX_OUTPUT In)
 	float variance = clamp(E_x2 - Ex_2, 0.0002, 1.0);
 	float m_d = moments.x - moments.z;
 	float p = pow(variance / (variance + m_d * m_d), 20);
-	return saturate(not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
+	if (NormalLighting)
+		return saturate(not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
+	return saturate(not_shadowed + p);
 }
 
 // Gets the overcast effect.
@@ -358,9 +360,9 @@ float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, In) + ImageTextureIsNight));
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
 	// Specular effect next.
-	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, In);
+	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In);
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
 	// Night-time darkens everything, except night-time textures.
@@ -381,7 +383,7 @@ float4 PSVegetation(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetVegetationAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, In) + ImageTextureIsNight));
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetVegetationAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, false, In) + ImageTextureIsNight));
 	// No specular effect for vegetation.
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
@@ -424,7 +426,7 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, In) + ImageTextureIsNight));
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
 	// No specular effect for terrain.
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
@@ -540,17 +542,17 @@ technique Forest {
 	}
 }
 
-technique VegetationPS3 {
-	pass Pass_0 {
-		VertexShader = compile vs_3_0 VSGeneral(true);
-		PixelShader = compile ps_3_0 PSVegetation(true);
-	}
-}
-
 technique VegetationPS2 {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSVegetation(false);
+	}
+}
+
+technique VegetationPS3 {
+	pass Pass_0 {
+		VertexShader = compile vs_3_0 VSGeneral(true);
+		PixelShader = compile ps_3_0 PSVegetation(true);
 	}
 }
 
