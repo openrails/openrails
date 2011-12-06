@@ -335,8 +335,11 @@ namespace ORTS
             // Rotation
             if (UserInput.IsMouseRightButtonDown())
             {
-                rotationXRadians += speed * SpeedAdjustmentForRotation * UserInput.MouseMoveY();
-                rotationYRadians += speed * SpeedAdjustmentForRotation * UserInput.MouseMoveX();
+                // Mouse movement doesn't use 'var speed' because the MouseMove 
+                // parameters are already scaled down with increasing frame rates, 
+                // Mouse rotation speed is independant of shift key activation
+                rotationXRadians += 0.01F * UserInput.MouseMoveY();
+                rotationYRadians += 0.01F * UserInput.MouseMoveX();
             }
             if (UserInput.IsDown(UserCommands.CameraRotateUp))
                 rotationXRadians -= speed * SpeedAdjustmentForRotation;
