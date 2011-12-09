@@ -166,18 +166,18 @@ namespace ORTS
             base.SignalEvent(eventID);
         }
 
-        public void SetPantographFirst()
+        public void SetPantographFirst( bool up)
         {
-            if (!PantographFirstUp)
+            if (PantographFirstUp != up)
                 PantographFirstDelay += 3.0f;
-            PantographFirstUp = !PantographFirstUp;
+            PantographFirstUp = up;
         }
 
-        public void SetPantographSecond()
+        public void SetPantographSecond( bool up)
         {
-            if (!PantographSecondUp)
+            if (PantographSecondUp != up)
                 PantographSecondDelay += 3.0f;
-            PantographSecondUp = !PantographSecondUp;
+            PantographSecondUp = up;
         }
 
         public override float GetDataOf(CabViewControl cvc)
@@ -251,8 +251,26 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.ControlPantographFirst)) ElectricLocomotive.SetPantographFirst();
-            if (UserInput.IsPressed(UserCommands.ControlPantographSecond)) ElectricLocomotive.SetPantographSecond();
+            if (UserInput.IsPressed(UserCommands.ControlPantographFirst))
+            {
+                // Raise or lower the first pantograph on all locomotives in the train
+                bool newState = !ElectricLocomotive.PantographFirstUp;
+                foreach (TrainCar traincar in ElectricLocomotive.Train.Cars)
+                {
+                    if (traincar.GetType() == typeof(MSTSElectricLocomotive))
+                        ((MSTSElectricLocomotive)traincar).SetPantographFirst(newState);
+                }
+            }
+            if (UserInput.IsPressed(UserCommands.ControlPantographSecond))
+            {
+                // Raise or lower the second pantograph on all locomotives in the train
+                bool newState = !ElectricLocomotive.PantographSecondUp;
+                foreach (TrainCar traincar in ElectricLocomotive.Train.Cars)
+                {
+                    if (traincar.GetType() == typeof(MSTSElectricLocomotive))
+                        ((MSTSElectricLocomotive)traincar).SetPantographSecond(newState);
+                }
+            }
 
             base.HandleUserInput(elapsedTime);
         }
