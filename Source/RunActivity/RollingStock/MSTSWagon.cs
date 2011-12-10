@@ -751,8 +751,8 @@ namespace ORTS
 			if (car.NumPantograph > 0)
 			{				
 				// Initialize position based on pan setting ,ie if attaching to a car with the pan up.
-				PanAnimationKeyFront = car.FrontPanUp ? TrainCarShape.SharedShape.Animations[0].FrameCount : 0;
-				PanAnimationKeyAft = car.AftPanUp ? TrainCarShape.SharedShape.Animations[0].FrameCount : 0;
+				PanAnimationKeyFront = car.FrontPanUp ? TrainCarShape.SharedShape.Animations[0].FrameCount-1 : 0;
+				PanAnimationKeyAft = car.AftPanUp ? TrainCarShape.SharedShape.Animations[0].FrameCount-1 : 0;
 				foreach (int iMatrix in PantographPartIndexesFront)
 					TrainCarShape.AnimateMatrix(iMatrix, PanAnimationKeyFront);
 				foreach (int iMatrix in PantographPartIndexesAft)
@@ -823,10 +823,10 @@ namespace ORTS
 			{
 				if (condition)  // panto up/door open, etc.
 				{
-					if (key < TrainCarShape.SharedShape.Animations[0].FrameCount)
+					if (key < TrainCarShape.SharedShape.Animations[0].FrameCount-1)
 					{
 						key += 2f * elapsedTime.ClockSeconds;
-						if (key > TrainCarShape.SharedShape.Animations[0].FrameCount) key = TrainCarShape.SharedShape.Animations[0].FrameCount;
+						if (key > TrainCarShape.SharedShape.Animations[0].FrameCount-1) key = TrainCarShape.SharedShape.Animations[0].FrameCount-1;
 						foreach (int iMatrix in parts)
 							TrainCarShape.AnimateMatrix(iMatrix, key);
 					}
