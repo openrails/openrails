@@ -9,7 +9,6 @@
  *  LocomotiveViewer - provides basic animation for running gear, wipers, etc
  * 
  */
-//#define DEBUG_NEUTRAL
 /// COPYRIGHT 2009 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
