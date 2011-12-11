@@ -103,6 +103,7 @@ namespace ORTS {
         private PassengerCamera PassengerCamera; // Camera 5
         private BrakemanCamera BrakemanCamera; // Camera 6
         private List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
+        private int PlayerTrainLength = 0; // re-activate cameras when this changes
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
         private MouseState originalMouseState;      // Current mouse coordinates.
 
@@ -406,7 +407,7 @@ namespace ORTS {
                 Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
                 Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
                 PlayerLocomotiveViewer = TrainDrawer.GetViewer(Simulator.PlayerLocomotive);
-                ReactivateCamera();
+                PlayerTrainLength = 0;
             }
 
             if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.IsAvailable) CabCamera.Activate();
@@ -439,17 +440,19 @@ namespace ORTS {
                 isMouseShouldVisible = false;
             }
 
+            if (PlayerTrainLength != PlayerTrain.Cars.Count)
+            {
+                PlayerTrainLength = PlayerTrain.Cars.Count;
+                if (!Camera.IsAvailable)
+                    FrontCamera.Activate();
+                else
+                    Camera.Activate();
+            }
+
             RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
 
             if (UserInput.RDState != null)
                 UserInput.RDState.Handled();
-        }
-
-        void ReactivateCamera() {
-            if (!Camera.IsAvailable)
-                FrontCamera.Activate();
-            else
-                Camera.Activate();
         }
 
 
@@ -615,7 +618,6 @@ namespace ORTS {
 
                 if (null != pickRay.Intersects(boundingSphere)) {
                     Simulator.UncoupleBehind(car);
-                    ReactivateCamera();
                     break;
                 }
                 traveller.Move(d);

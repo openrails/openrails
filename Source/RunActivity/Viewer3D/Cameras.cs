@@ -561,6 +561,8 @@ namespace ORTS
 
     public class BrakemanCamera : AttachedCamera
     {
+        protected bool attachedToRear;
+
         public override float NearPlane { get { return 0.25f; } }
 
         public BrakemanCamera(Viewer3D viewer)
@@ -578,11 +580,12 @@ namespace ORTS
         {
             base.SetCameraCar(car);
             attachedLocation = new Vector3(1.8f, 2.0f, attachedCar.Length / 2 - 0.3f);
+            attachedToRear = car.Train.Cars[0] != car;
         }
 
         protected override bool IsCameraFlipped()
         {
-            return (attachedCar == attachedCar.Train.Cars.Last()) ^ attachedCar.Flipped;
+            return attachedToRear ^ attachedCar.Flipped;
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
