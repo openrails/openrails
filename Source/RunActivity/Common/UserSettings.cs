@@ -196,7 +196,7 @@ namespace ORTS
 
         public void Save(string name)
         {
-			RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey, true);
+			RegistryKey RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey);
             foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
             {
                 if ((name != null) && (property.Name != name))
