@@ -9,10 +9,12 @@ namespace ORArchitecture
     /// The base viewer can The base viewer class would have capability similar to a 
     /// real world train watcher.  It can move around and view the VirtualWorld, 
     /// but is assigned no control interfaces.  
+    /// A viewer must implement the iListener interface to enable it to recieve 
+    /// messages from the other components in the system
     /// </summary>
-    interface Viewer
+    interface Viewer: iListener
     {
-        Viewer(  );
+        Viewer( iVirtualWorld virtualWorld );
     }
 
 
@@ -23,7 +25,7 @@ namespace ORArchitecture
     /// </summary>
     interface TrainDriver : Viewer
     {
-        TrainDriver( iControlTrain trainController);
+        TrainDriver( iVirtualWorld virtualWorld, iControlTrain trainController);
     }
 
     /// <summary>
@@ -32,12 +34,12 @@ namespace ORArchitecture
     /// </summary>
     interface CraneDriver : Viewer
     {
-        CraneDriver(iControlCrane craneController);
+        CraneDriver( iVirtualWorld virtualWorld, iControlCrane craneController);
     }
 
     interface EditorView : Viewer
     {
-        EditorView(iControlTerrain terrainController, iControlScenery sceneryController);
+        EditorView( iVirtualWorld virtualWorld, iControlTerrain terrainController, iControlScenery sceneryController);
     }
 
 }
