@@ -39,6 +39,7 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="ContentData.cs" />
     <Compile Include="iControlSwitches.cs" />
     <Compile Include="iControlSignal.cs" />
     <Compile Include="iControlTrain.cs" />
