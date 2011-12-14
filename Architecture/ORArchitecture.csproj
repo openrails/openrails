@@ -44,6 +44,7 @@
     <Compile Include="iControlTrain.cs" />
     <Compile Include="Messaging.cs" />
     <Compile Include="iVirtualWorld.cs" />
+    <Compile Include="Viewers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
