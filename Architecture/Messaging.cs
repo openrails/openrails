@@ -8,12 +8,12 @@ namespace ORArchitecture
     /// <summary>
     /// A mechanism for communicaton among modules.
     /// </summary>
-    interface iListener
+    interface IListener
     {
         public void RecieveMessage( Messaging source, EventMessage message);
     }
 
-    interface iSender
+    interface ISender
     {
         public void SendMessage(Messaging source, Messaging destination, EventMessage message );
         // for example signal code might send a message to a train driver

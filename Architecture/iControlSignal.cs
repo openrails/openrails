@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ORArchitecture
 {
-    interface iControlSignal
+    interface IControlSignal
     {
     }
 }

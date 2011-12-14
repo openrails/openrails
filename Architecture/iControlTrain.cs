@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ORArchitecture
 {
-    interface iControlTrain
+    interface IControlTrain
     {
     }
 }

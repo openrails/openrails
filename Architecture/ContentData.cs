@@ -9,7 +9,7 @@ namespace ORArchitecture
     /// Represents OpenRail's entire file system.  Provides access to all data stored on 
     /// the users hard disk - ie shapes, images, activity files, world files etc
     /// </summary>
-    interface iContentData
+    interface IContentData
     {
         /// <summary>
         /// Retrieve the specified item.
@@ -44,7 +44,7 @@ namespace ORArchitecture
     /// </summary>
     private class UseCaseExamples
     {
-        iContentData Data;
+        IContentData Data;
 
         public void ListAllLocomotives()
         {

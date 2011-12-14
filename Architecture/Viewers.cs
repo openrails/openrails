@@ -12,7 +12,7 @@ namespace ORArchitecture
     /// A viewer must implement the iListener interface to enable it to recieve 
     /// messages from the other components in the system
     /// </summary>
-    interface Viewer: iListener
+    interface Viewer: IListener
     {
         Viewer( iVirtualWorld virtualWorld );
     }

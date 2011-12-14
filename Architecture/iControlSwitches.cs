@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ORArchitecture
 {
-    interface iControlSwitches
+    interface IControlSwitches
     {
     }
 }

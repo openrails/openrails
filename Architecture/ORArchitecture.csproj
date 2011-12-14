@@ -40,11 +40,11 @@
   -->
   <ItemGroup>
     <Compile Include="ContentData.cs" />
-    <Compile Include="iControlSwitches.cs" />
-    <Compile Include="iControlSignal.cs" />
-    <Compile Include="iControlTrain.cs" />
+    <Compile Include="IControlSwitches.cs" />
+    <Compile Include="IControlSignal.cs" />
+    <Compile Include="IControlTrain.cs" />
     <Compile Include="Messaging.cs" />
-    <Compile Include="iVirtualWorld.cs" />
+    <Compile Include="IVirtualWorld.cs" />
     <Compile Include="Viewers.cs" />
   </ItemGroup>
   <ItemGroup>
