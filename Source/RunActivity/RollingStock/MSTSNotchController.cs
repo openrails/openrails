@@ -103,6 +103,11 @@ namespace ORTS
             SetValue(CurrentValue);
         }
 
+        public int NotchCount()
+        {
+            return Notches.Count;
+        }
+
         private float GetNotchBoost()
         {            
             return 5;

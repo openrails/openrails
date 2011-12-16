@@ -1348,7 +1348,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
-                case CABViewControlTypes.CP_HANDLE:
+                //case CABViewControlTypes.CP_HANDLE:
                     {
                         data = DynamicBrakePercent;
                         break;
@@ -2752,10 +2752,19 @@ namespace ORTS
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     {
-                        indx = (int)data / 10;
-                        if (data == -1) { indx = 0; break; }
-                        if (data == 0) { indx = 1; break; }
-                        indx += 1;
+                        //indx = (int)data / 10;
+                        ////Console.WriteLine("data {0} indx {1}", data, indx);
+                        //if (data == -1) { indx = 0; break; }
+                        //if (data == 0) { indx = 1; break; }
+                        //indx += 1;
+
+                        float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
+                        int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
+                        int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
+                        if (dynBrakePercent == -1)
+                            break;
+                        else
+                            indx =  currentDynamicNotch;
                         break;
                     }
 
@@ -2763,31 +2772,35 @@ namespace ORTS
                 case CABViewControlTypes.CP_HANDLE:
                     {
                         int currentThrottleNotch = _Locomotive.ThrottleController.CurrentNotch;
+                        int throttleNotchCount = _Locomotive.ThrottleController.NotchCount();
+
                         int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
+                        int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
                         float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
 
                         if (dynBrakePercent == -1)
                         {
                             if (currentThrottleNotch == 0)
-                                indx = 8;
+                                indx = throttleNotchCount - 1;
                             else
-                                indx = 8 - currentThrottleNotch;
+                                indx = (throttleNotchCount - 1) - currentThrottleNotch;
                         }
-                        else
-                            indx = 9 + currentDynamicNotch;
+                        else // dynamic break enabled
+                            indx = (dynNotchCount - 1) + currentDynamicNotch;
+                        
  
                         if (UserInput.RDState != null)
                         {
                             if (UserInput.RDState.DynamicBrakePercent >= -100f)
                             {
                                 if (currentThrottleNotch == 0)
-                                    indx = 8;
+                                    indx = throttleNotchCount - 1;
                                 else
-                                    indx = 8 - currentThrottleNotch;
+                                    indx = (throttleNotchCount - 1) - currentThrottleNotch;
                             }
                             
                             if (UserInput.RDState.DynamicBrakePercent >= 0)
-                                indx = 9 + currentDynamicNotch;
+                                indx = (dynNotchCount - 1) + currentDynamicNotch;
                         }
 
                         break;
