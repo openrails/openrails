@@ -2764,19 +2764,23 @@ namespace ORTS
                         if (dynBrakePercent == -1)
                             break;
                         else
-                            indx =  currentDynamicNotch;
+                            indx = currentDynamicNotch;
                         break;
                     }
 
                 case CABViewControlTypes.CPH_DISPLAY:
                 case CABViewControlTypes.CP_HANDLE:
                     {
+                        if (!_Locomotive.HasStepCtrl) { break; } // break if not diesel loco
+
                         int currentThrottleNotch = _Locomotive.ThrottleController.CurrentNotch;
                         int throttleNotchCount = _Locomotive.ThrottleController.NotchCount();
 
                         int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
                         int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
                         float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
+
+                        if (!_Locomotive.HasStepCtrl) { break; }  // not a diesel loco
 
                         if (dynBrakePercent == -1)
                         {
