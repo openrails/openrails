@@ -455,7 +455,7 @@ namespace MSTS
 						case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
 						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
 						case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        case TokenID.SignalSubObj: SignalSubObj = subBlock.ReadUInt(); break;
+                        case TokenID.SignalSubObj: SignalSubObj = subBlock.ReadFlags(); break;
 						case TokenID.SignalUnits: SignalUnits = new SignalUnits(subBlock); break;
 						default: subBlock.Skip(); break;
 					}
