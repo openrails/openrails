@@ -218,14 +218,14 @@ namespace MSTS
 		public IDictionary<string, SignalDrawState> DrawStates;
 		public IList<SignalAspect> Aspects;
 		public uint NumClearAhead;
-		public float SemaphoreInfo;
+		public float SemaphoreInfo = -1; //[Rob Roeterdink] default -1 as 0 is active value
 
         public SignalType(STFReader stf)
         {
             stf.MustMatch("(");
             Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("signalfntype", ()=>{ ReadFnType(stf); }),
+                new STFReader.TokenProcessor("signalfntype", ()=>{ FnType = ReadFnType(stf); }),  //[Rob Roeterdink] value was not passed
                 new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock("").ToLowerInvariant(); }),
                 new STFReader.TokenProcessor("signallights", ()=>{ Lights = ReadLights(stf); }),
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
@@ -374,6 +374,33 @@ namespace MSTS
             }
             if (targetAspect == SignalHead.SIGASP.UNKNOWN) return SignalHead.SIGASP.STOP; else return targetAspect;
         }
+
+        /// <summary>
+		/// This method returns the least restrictive aspect for this signal type.
+		/// [Rob Roeterdink] added for basic signals without script
+        /// </summary>
+        public SignalHead.SIGASP GetLeastRestrictiveAspect()
+        {
+            SignalHead.SIGASP targetAspect = SignalHead.SIGASP.STOP;
+            for (int i = 0; i < Aspects.Count; i++)
+            {
+                if (Aspects[i].Aspect > targetAspect) targetAspect = Aspects[i].Aspect;
+            }
+            if (targetAspect > SignalHead.SIGASP.CLEAR_2) return SignalHead.SIGASP.CLEAR_2; else return targetAspect;
+        }
+
+        /// <summary>
+		/// This method returns the least speed limit linked to the aspect
+		/// [Rob Roeterdink] added for future speed limit processing
+        /// </summary>
+        public float GetSpeedLimitMpS(SignalHead.SIGASP aspect)
+        {
+            for (int i = 0; i < Aspects.Count; i++)
+                if (Aspects[i].Aspect == aspect)
+                    return Aspects[i].SpeedMpS;
+            return -1;
+        }
+
 	}
 
 	public class SignalLight
@@ -557,7 +584,8 @@ namespace MSTS
 
 		public class SignalSubObj
 		{
-			static IList<string> SignalSubTypes = new[] {"DECOR","SIGNAL_HEAD","NUMBER_PLATE","GRADIENT_PLATE","USER1","USER2","USER3","USER4"};
+			public static IList<string> SignalSubTypes = new[] {"DECOR","SIGNAL_HEAD","NUMBER_PLATE","GRADIENT_PLATE","USER1","USER2","USER3","USER4"};
+			// [Rob Roeterdink] made public for access from SIGSCR processing
 
 			public readonly int Index;
 			public readonly string MatrixName;        // Name of the group within the signal shape which defines this head
