@@ -206,8 +206,22 @@ namespace ORTS
                                 string [] fparts = fileName.Split('.');
                                 string [] fparts2= fparts[fparts.Length-2].Split('\\');
 
-                                if (string.Compare(fparts[fparts.Length-1], "w") == 0 &&
-                                    string.Compare(fparts2[fparts2.Length-1],"w+1000000+1000000") != 0)
+  // check if valid file
+
+				bool validFile = true;
+
+				try
+				{
+		    			int p = fileName.ToUpper().LastIndexOf("\\WORLD\\W");
+		    			int TileX = int.Parse(fileName.Substring(p + 8, 7));
+					int TileZ = int.Parse(fileName.Substring(p + 15, 7));
+				}
+				catch (Exception)
+				{
+					validFile = false;
+				}
+
+                                if (string.Compare(fparts[fparts.Length-1], "w") == 0 && validFile)
                                 {
 
   // read w-file, get SignalObjects only
