@@ -44,7 +44,7 @@ namespace ORTS
 		public TrainCar LastCar { get { return Cars[Cars.Count - 1]; } }
 		public TDBTraveller RearTDBTraveller;   // positioned at the back of the last car in the train
 		public TDBTraveller FrontTDBTraveller; // positioned at the front of the train by CalculatePositionOfCars
-        public float Length; // length of train from FrontTDBTraveller to RearTDBTraveller
+		public float Length; // length of train from FrontTDBTraveller to RearTDBTraveller
 		public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
 		public Train UncoupledFrom = null;  // train not to coupled back onto
 		public float TotalCouplerSlackM = 0;
@@ -56,8 +56,8 @@ namespace ORTS
 		public float SlipperySpotLengthM = 0;
 
 		// These signals pass through to all cars and locomotives on the train
-        public Direction MUDirection = Direction.N; //set by player locomotive to control MU'd locomotives
-        public float MUThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives
+		public Direction MUDirection = Direction.N; //set by player locomotive to control MU'd locomotives
+		public float MUThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives
 		public float MUReverserPercent = 100;  // steam engine direction/cutoff control for MU'd locomotives
 		public float MUDynamicBrakePercent = -1;  // dynamic brake control for MU'd locomotives, <0 for off
 		public float BrakeLine1PressurePSI = 90;     // set by player locomotive to control entire train brakes
@@ -67,12 +67,12 @@ namespace ORTS
 		public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
 		public int RetainerPercent = 100;
 
-		private Signal nextSignal = new Signal(null, null, -1);
+		public Signal nextSignal = new Signal(null, null, -1); // [Rob Roeterdink] made public for signalling processing
 		public float distanceToSignal = 0.1f;
 		public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
 		private bool spad = false;      // Signal Passed At Danger
 		public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
-        public TrackLayer EditTrain = null; //WaltN: Temporary facility for track-laying experiments
+		public TrackLayer EditTrain = null; //WaltN: Temporary facility for track-laying experiments
 
 		/// <summary>
 		/// Reference to the Simulator object.
@@ -323,13 +323,16 @@ namespace ORTS
 			float dist = nextSignal.DistanceToSignal(FrontTDBTraveller);
 			if (dist <= 0.0f)
 			{
-				if (nextSignal.GetAspect() == SignalHead.SIGASP.STOP && nextSignal.HasPermissionToProceed() == Signal.PERMISSION.DENIED)
-				{
-					spad = true;
-					//Stop();             // Signal Passed At Danger so Stop train!
-					return;
-				}
-				nextSignal.NextSignal();
+
+  // [Rob Roeterdink] SPAD processing disabled as signal may have changed to STOP as train passed
+  //
+  //				if (nextSignal.GetAspect() == SignalHead.SIGASP.STOP && nextSignal.HasPermissionToProceed() == Signal.PERMISSION.DENIED)
+  //				{
+  //					spad = true;
+  //					//Stop();             // Signal Passed At Danger so Stop train!
+  //					return;
+  //				}
+				nextSignal.SNextSignal();
 				dist = nextSignal.DistanceToSignal(FrontTDBTraveller);
 			}
 			nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
