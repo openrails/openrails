@@ -39,6 +39,25 @@ namespace MSTS
                 }
             }
         }
+
+ // [Rob Roeterdink] overload method added to allow selection of processed items
+
+        public WFile(string filename,List<TokenID> reqTokens)
+        {
+            // Parse the tile location out of the filename
+            int p = filename.ToUpper().LastIndexOf("\\WORLD\\W");
+            TileX = int.Parse(filename.Substring(p + 8, 7));
+            TileZ = int.Parse(filename.Substring(p + 15, 7));
+
+            using (SBR sbr = SBR.Open(filename))
+            {
+                using (SBR block = sbr.ReadSubBlock())
+                {
+                    Tr_Worldfile = new Tr_Worldfile( block, filename, reqTokens);
+                }
+            }
+        }
+
     }
 
     public class Tr_Worldfile : ArrayList
@@ -65,67 +84,10 @@ namespace MSTS
                 {
                     try
                     {
-                        switch (subBlock.ID)
-                        {
-                            //some of the TokenID for binary W file:  309-->TelePole, 361-->Siding
-                            case TokenID.CollideObject:
-                            case TokenID.Static:
-                                Add(new StaticObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.TrackObj:
-                                Add(new TrackObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.CarSpawner:
-                            case (TokenID)357:
-                                Add(new CarSpawnerObj(subBlock, currentWatermark)); //car spawner
-                                break; //car spawner. The tokenid number is wrong
-                            case TokenID.Siding:
-                            case (TokenID)361:
-                                Add(new SidingObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.Platform:
-                                Add(new PlatformObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.Forest:
-                                Add(new ForestObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.LevelCr:
-                                Add(new LevelCrossingObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.Dyntrack:
-                                Add(new DyntrackObj(subBlock, currentWatermark, true));
-                                break;
-                            case (TokenID)306:
-                                Add(new DyntrackObj(subBlock, currentWatermark, false));
-                                break;
-                            case TokenID.Gantry:
-                            case (TokenID)356:
-                                // TODO: Add real handling.
-                                Add(new StaticObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.Pickup:
-                                // TODO: Add real handling.
-                                Add(new StaticObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.Signal:
-                                Add(new SignalObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.Speedpost:
-                                // TODO: Add real handling.
-                                Add(new StaticObj(subBlock, currentWatermark));
-                                break;
-                            case TokenID.Tr_Watermark:
-                                currentWatermark = subBlock.ReadInt();
-                                break;
-                            default:
-                                if (!UnknownBlockIDs.Contains(subBlock.ID))
-                                {
-                                    UnknownBlockIDs.Add(subBlock.ID);
-                                    Trace.TraceInformation("Unknown world block {0} (0x{0:X}) first seen in {1}", subBlock.ID, filename);
-                                }
-                                subBlock.Skip();
-                                break;
-                        }
+
+  // [Rob Roeterdink] processing moved to subroutine to avoid duplication
+
+                        process_worldobject(subBlock, ref currentWatermark, filename);
                     }
                     catch (Exception error)
                     {
@@ -134,7 +96,109 @@ namespace MSTS
                 }
             }
         }
+
+ // Overload constructor method added by Rob Roeterdink
+ // Allows selection of type of items which are to be extracted, other types are ignored
+
+        public Tr_Worldfile(SBR block, string filename, List<TokenID> reqToken)
+        {
+            block.VerifyID(TokenID.Tr_Worldfile);
+
+            int currentWatermark = 0;
+
+            while (!block.EndOfBlock())
+            {
+                using (SBR subBlock = block.ReadSubBlock())
+                {
+
+                    try
+                    {
+                        if (reqToken.Contains(subBlock.ID))
+                        {
+                            process_worldobject(subBlock, ref currentWatermark, filename);
+                        }
+			else
+			{
+				subBlock.Skip();
+			}
+                    }
+                    catch (System.Exception error)
+                    {
+                       Trace.TraceWarning(error.Message);
+                    }
+                }
+            }
+        }
+
+  // [Rob Roeterdink] set actual processing in subroutine to avoid duplication
+
+	private void process_worldobject( SBR subBlock, ref int currentWatermark, string filename)
+	{
+            switch (subBlock.ID)
+            {
+                //some of the TokenID for binary W file:  309-->TelePole, 361-->Siding
+                case TokenID.CollideObject:
+                case TokenID.Static:
+                    Add(new StaticObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.TrackObj:
+                    Add(new TrackObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.CarSpawner:
+                case (TokenID)357:
+                    Add(new CarSpawnerObj(subBlock, currentWatermark)); //car spawner
+                    break; //car spawner. The tokenid number is wrong
+                case TokenID.Siding:
+                case (TokenID)361:
+                    Add(new SidingObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Platform:
+                    Add(new PlatformObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Forest:
+                    Add(new ForestObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.LevelCr:
+                    Add(new LevelCrossingObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Dyntrack:
+                    Add(new DyntrackObj(subBlock, currentWatermark, true));
+                    break;
+                case (TokenID)306:
+                    Add(new DyntrackObj(subBlock, currentWatermark, false));
+                    break;
+                case TokenID.Gantry:
+                case (TokenID)356:
+                    // TODO: Add real handling.
+                    Add(new StaticObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Pickup:
+                    // TODO: Add real handling.
+                    Add(new StaticObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Signal:
+                    Add(new SignalObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Speedpost:
+                    // TODO: Add real handling.
+                    Add(new StaticObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Tr_Watermark:
+                    currentWatermark = subBlock.ReadInt();
+                    break;
+                default:
+                    if (!UnknownBlockIDs.Contains(subBlock.ID))
+                    {
+                        UnknownBlockIDs.Add(subBlock.ID);
+                        Trace.TraceInformation("Unknown world block {0} (0x{0:X}) first seen in {1}", subBlock.ID, filename);
+                    }
+                    subBlock.Skip();
+                    break;
+	    }
+	}
+
     }
+
 
     public class StaticObj : WorldObject
     {
@@ -455,7 +519,7 @@ namespace MSTS
 						case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
 						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
 						case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        case TokenID.SignalSubObj: SignalSubObj = subBlock.ReadFlags(); break;
+						case TokenID.SignalSubObj: SignalSubObj = subBlock.ReadFlags(); break;
 						case TokenID.SignalUnits: SignalUnits = new SignalUnits(subBlock); break;
 						default: subBlock.Skip(); break;
 					}
