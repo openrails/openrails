@@ -172,7 +172,7 @@ namespace ORTS
 					using (StreamReader scrStream = new StreamReader(fullName, true))
 					{
 #if DEBUG_PRINT_IN
-						File.AppendAllText(@"C:\temp\sigscr.txt","Reading file : "+fullName+"\n\n");
+						File.AppendAllText(@"sigscr.txt","Reading file : "+fullName+"\n\n");
 #endif
 						sigscrRead(scrStream, SignalTypes);
 						scrStream.Close();
@@ -234,12 +234,12 @@ namespace ORTS
 					if (readLine.StartsWith("SCRIPT "))
 					{
 #if DEBUG_PRINT_IN
-						File.AppendAllText(@"C:\temp\sigscr.txt","\n===============================\n");
-						File.AppendAllText(@"C:\temp\sigscr.txt","\nNew Script : "+scriptname+"\n");
+						File.AppendAllText(@"sigscr.txt","\n===============================\n");
+						File.AppendAllText(@"sigscr.txt","\nNew Script : "+scriptname+"\n");
 #endif
 #if DEBUG_PRINT_OUT
-						File.AppendAllText(@"C:\temp\scriptproc.txt","\n===============================\n");
-						File.AppendAllText(@"C:\temp\scriptproc.txt","\nNew Script : "+scriptname+"\n");
+						File.AppendAllText(@"scriptproc.txt","\n===============================\n");
+						File.AppendAllText(@"scriptproc.txt","\nNew Script : "+scriptname+"\n");
 #endif
 						SCRScripts newScript = new SCRScripts(ScriptLines, scriptname);
 
@@ -252,7 +252,7 @@ namespace ORTS
 							else
 							{
 #if DEBUG_PRINT_IN
-								File.AppendAllText(@"C:\temp\sigscr.txt","Adding script : "+thisType.Name+"\n");
+								File.AppendAllText(@"sigscr.txt","Adding script : "+thisType.Name+"\n");
 #endif
 								Scripts.Add(thisType, newScript);
 							}
@@ -260,10 +260,10 @@ namespace ORTS
 						else
 						{
 #if DEBUG_PRINT_OUT
-							File.AppendAllText(@"C:\temp\scriptproc.txt","\nUnknown signal type : "+scriptname+"\n\n");
+							File.AppendAllText(@"scriptproc.txt","\nUnknown signal type : "+scriptname+"\n\n");
 #endif
 #if DEBUG_PRINT_IN
-							File.AppendAllText(@"C:\temp\sigscr.txt","\nUnknown signal type : "+scriptname+"\n\n");
+							File.AppendAllText(@"sigscr.txt","\nUnknown signal type : "+scriptname+"\n\n");
 #endif
 						}
 
@@ -313,8 +313,8 @@ namespace ORTS
 			if (ScriptLines.Count > 0)
 			{
 #if DEBUG_PRINT_IN
-				File.AppendAllText(@"C:\temp\sigscr.txt","\n===============================\n");
-				File.AppendAllText(@"C:\temp\sigscr.txt","\nNew Script : "+scriptname+"\n");
+				File.AppendAllText(@"sigscr.txt","\n===============================\n");
+				File.AppendAllText(@"sigscr.txt","\nNew Script : "+scriptname+"\n");
 #endif
 				SCRScripts newScript = new SCRScripts(ScriptLines, scriptname);
 				if (SignalTypes.TryGetValue(scriptname.ToLower().Trim(), out thisType))
@@ -343,9 +343,9 @@ namespace ORTS
 
 				SCRScripts thisscript = thispair.Value;
 
-				File.AppendAllText(@"C:\temp\scriptproc.txt","Script : "+thisscript.scriptname+"\n\n");
+				File.AppendAllText(@"scriptproc.txt","Script : "+thisscript.scriptname+"\n\n");
 				printscript(thisscript.Statements);
-				File.AppendAllText(@"C:\temp\scriptproc.txt","\n=====================\n");
+				File.AppendAllText(@"scriptproc.txt","\n=====================\n");
 			}
 #endif
 
@@ -371,20 +371,20 @@ namespace ORTS
 				if (scriptstat is SCRScripts.SCRStatement)
 				{
 					SCRScripts.SCRStatement ThisStat = (SCRScripts.SCRStatement) scriptstat;
-					File.AppendAllText(@"C:\temp\scriptproc.txt","Statement : \n");
-					File.AppendAllText(@"C:\temp\scriptproc.txt",
+					File.AppendAllText(@"scriptproc.txt","Statement : \n");
+					File.AppendAllText(@"scriptproc.txt",
 							ThisStat.AssignType.ToString()+"["+ThisStat.AssignParameter.ToString()+"] = ");
 
 					foreach (SCRScripts.SCRStatTerm ThisTerm in ThisStat.StatementTerms)
 					{
 						if (ThisTerm.issublevel > 0)
 						{
-							File.AppendAllText(@"C:\temp\scriptproc.txt"," <SUB"+ThisTerm.issublevel.ToString()+"> ");
+							File.AppendAllText(@"scriptproc.txt"," <SUB"+ThisTerm.issublevel.ToString()+"> ");
 						}
 						function = false;
 						if (ThisTerm.Function != SCRExternalFunctions.NONE)
 						{
-							File.AppendAllText(@"C:\temp\scriptproc.txt",
+							File.AppendAllText(@"scriptproc.txt",
 								ThisTerm.Function.ToString()+"(");
 							function = true;
 						}
@@ -393,24 +393,24 @@ namespace ORTS
 						{
 							foreach (SCRScripts.SCRParameterType ThisParam in ThisTerm.PartParameter)
 							{
-								File.AppendAllText(@"C:\temp\scriptproc.txt",
+								File.AppendAllText(@"scriptproc.txt",
 									ThisParam.PartType+"["+ThisParam.PartParameter+"] ,");
 							}
 						}
 
 						if (ThisTerm.sublevel != 0)
 						{
-							File.AppendAllText(@"C:\temp\scriptproc.txt"," SUBTERM_"+ThisTerm.sublevel.ToString());
+							File.AppendAllText(@"scriptproc.txt"," SUBTERM_"+ThisTerm.sublevel.ToString());
 						}
 
 						if (function)
 						{
-							File.AppendAllText(@"C:\temp\scriptproc.txt",")");
+							File.AppendAllText(@"scriptproc.txt",")");
 						}
-						File.AppendAllText(@"C:\temp\scriptproc.txt"," -"+ThisTerm.TermOperator.ToString()+"- \n");
+						File.AppendAllText(@"scriptproc.txt"," -"+ThisTerm.TermOperator.ToString()+"- \n");
 					}
 
-					File.AppendAllText(@"C:\temp\scriptproc.txt","\n\n");
+					File.AppendAllText(@"scriptproc.txt","\n\n");
 				}
 
   // process conditions line
@@ -418,31 +418,31 @@ namespace ORTS
 				if (scriptstat is SCRScripts.SCRConditionBlock)
 				{
 					SCRScripts.SCRConditionBlock CondBlock = (SCRScripts.SCRConditionBlock) scriptstat;
-					File.AppendAllText(@"C:\temp\scriptproc.txt","\nCondition : \n");
+					File.AppendAllText(@"scriptproc.txt","\nCondition : \n");
 
 					printConditionArray(CondBlock.Conditions);
 
-					File.AppendAllText(@"C:\temp\scriptproc.txt","\nIF Block : \n");
+					File.AppendAllText(@"scriptproc.txt","\nIF Block : \n");
 					printscript(CondBlock.IfBlock.Statements);
 
 					if (CondBlock.ElseIfBlock != null)
 					{
 						foreach ( SCRScripts.SCRBlock TempBlock in CondBlock.ElseIfBlock)
 						{
-							File.AppendAllText(@"C:\temp\scriptproc.txt","\nStatements in ELSEIF : "+
+							File.AppendAllText(@"scriptproc.txt","\nStatements in ELSEIF : "+
 								TempBlock.Statements.Count+"\n");
-							File.AppendAllText(@"C:\temp\scriptproc.txt","Elseif Block : \n");
+							File.AppendAllText(@"scriptproc.txt","Elseif Block : \n");
 							printscript(TempBlock.Statements);
 						}
 					}
 
 					if (CondBlock.ElseBlock != null)
 					{
-						File.AppendAllText(@"C:\temp\scriptproc.txt","\nElse Block : \n");
+						File.AppendAllText(@"scriptproc.txt","\nElse Block : \n");
 						printscript(CondBlock.ElseBlock.Statements);
 					}
 
-					File.AppendAllText(@"C:\temp\scriptproc.txt","\nEnd IF Block : \n");
+					File.AppendAllText(@"scriptproc.txt","\nEnd IF Block : \n");
 
 				}
 			}
@@ -465,7 +465,7 @@ namespace ORTS
 				else if (ThisCond is SCRAndOr)
 				{
 					SCRAndOr condstring = (SCRAndOr) ThisCond;
-					File.AppendAllText(@"C:\temp\scriptproc.txt",condstring.ToString()+"\n");
+					File.AppendAllText(@"scriptproc.txt",condstring.ToString()+"\n");
 				}
 				else
 				{
@@ -486,11 +486,11 @@ namespace ORTS
 			bool function = false;
 			if (ThisCond.negate1)
 			{
-				File.AppendAllText(@"C:\temp\scriptproc.txt","NOT : ");
+				File.AppendAllText(@"scriptproc.txt","NOT : ");
 			}
 			if (ThisCond.Term1.Function != SCRExternalFunctions.NONE)
 			{
-				File.AppendAllText(@"C:\temp\scriptproc.txt",ThisCond.Term1.Function.ToString()+"(");
+				File.AppendAllText(@"scriptproc.txt",ThisCond.Term1.Function.ToString()+"(");
 				function = true;
 			}
 
@@ -498,31 +498,31 @@ namespace ORTS
 			{
 				foreach (SCRScripts.SCRParameterType ThisParam in ThisCond.Term1.PartParameter)
 				{
-					File.AppendAllText(@"C:\temp\scriptproc.txt",ThisParam.PartType+"["+ThisParam.PartParameter+"] ,");
+					File.AppendAllText(@"scriptproc.txt",ThisParam.PartType+"["+ThisParam.PartParameter+"] ,");
 				}
 			}
 			else
 			{
- 				File.AppendAllText(@"C:\temp\scriptproc.txt"," 0 , ");
+ 				File.AppendAllText(@"scriptproc.txt"," 0 , ");
 			}
 
 			if (function)
 			{
-				File.AppendAllText(@"C:\temp\scriptproc.txt",")");
+				File.AppendAllText(@"scriptproc.txt",")");
 			}
 
-			File.AppendAllText(@"C:\temp\scriptproc.txt"," -- "+ThisCond.Condition.ToString()+" --\n");
+			File.AppendAllText(@"scriptproc.txt"," -- "+ThisCond.Condition.ToString()+" --\n");
 
 			if (ThisCond.Term2 != null)
 			{
 				function = false;
 				if (ThisCond.negate2)
 				{
-					File.AppendAllText(@"C:\temp\scriptproc.txt","NOT : ");
+					File.AppendAllText(@"scriptproc.txt","NOT : ");
 				}
 				if (ThisCond.Term2.Function != SCRExternalFunctions.NONE)
 				{
-					File.AppendAllText(@"C:\temp\scriptproc.txt",ThisCond.Term2.Function.ToString()+"(");
+					File.AppendAllText(@"scriptproc.txt",ThisCond.Term2.Function.ToString()+"(");
 					function = true;
 				}
 
@@ -530,19 +530,19 @@ namespace ORTS
 				{
 					foreach (SCRScripts.SCRParameterType ThisParam in ThisCond.Term2.PartParameter)
 					{
-						File.AppendAllText(@"C:\temp\scriptproc.txt",ThisParam.PartType+"["+ThisParam.PartParameter+"] ,");
+						File.AppendAllText(@"scriptproc.txt",ThisParam.PartType+"["+ThisParam.PartParameter+"] ,");
 					}
 				}
 				else
 				{
- 					File.AppendAllText(@"C:\temp\scriptproc.txt"," 0 , ");
+ 					File.AppendAllText(@"scriptproc.txt"," 0 , ");
 				}
 
 				if (function)
 				{
-					File.AppendAllText(@"C:\temp\scriptproc.txt",")");
+					File.AppendAllText(@"scriptproc.txt",")");
 				}
-				File.AppendAllText(@"C:\temp\scriptproc.txt","\n");
+				File.AppendAllText(@"scriptproc.txt","\n");
 			}
 		}// printcondition
 
@@ -565,7 +565,7 @@ namespace ORTS
 			{
 				readLine = scrStream.ReadLine();
 #if DEBUG_PRINT_IN
-				File.AppendAllText(@"C:\temp\sigfile.txt","From file : "+readLine+"\n");
+				File.AppendAllText(@"sigfile.txt","From file : "+readLine+"\n");
 #endif
 
 			}
@@ -574,7 +574,7 @@ namespace ORTS
 				readLine = String.Copy(keepLine);
 				keepLine = String.Empty;
 #if DEBUG_PRINT_IN
-				File.AppendAllText(@"C:\temp\sigfile.txt","From store : "+readLine+"\n");
+				File.AppendAllText(@"sigfile.txt","From store : "+readLine+"\n");
 #endif
 			}	
 
@@ -617,7 +617,7 @@ namespace ORTS
 			char [] sepCheck = ";{}".ToCharArray();
 			int seppos = procLine.IndexOfAny(sepCheck);
 #if DEBUG_PRINT_IN
-			File.AppendAllText(@"C:\temp\sigfile.txt","Extracted : "+procLine+"\n");
+			File.AppendAllText(@"sigfile.txt","Extracted : "+procLine+"\n");
 #endif
 			if (seppos >= 0)
 			{
@@ -637,7 +637,7 @@ namespace ORTS
 					procLine = procLine.Substring(0,seppos);
 				}
 #if DEBUG_PRINT_IN
-				File.AppendAllText(@"C:\temp\sigfile.txt","To store : "+keepLine+"\n");
+				File.AppendAllText(@"sigfile.txt","To store : "+keepLine+"\n");
 #endif
 			}
 
@@ -650,7 +650,7 @@ namespace ORTS
 			else
 			{
 #if DEBUG_PRINT_IN
-				File.AppendAllText(@"C:\temp\sigfile.txt","To process : "+procLine+"\n");
+				File.AppendAllText(@"sigfile.txt","To process : "+procLine+"\n");
 #endif
 				return procLine;
 			}
@@ -696,9 +696,9 @@ namespace ORTS
 
 				foreach(string Line in ScriptLines)
 				{
-					File.AppendAllText(@"C:\temp\sigscr.txt",Line+"\n");
+					File.AppendAllText(@"sigscr.txt",Line+"\n");
 				}
-				File.AppendAllText(@"C:\temp\sigscr.txt","\n+++++++++++++++++++++++++++++++++++\n\n");
+				File.AppendAllText(@"sigscr.txt","\n+++++++++++++++++++++++++++++++++++\n\n");
 
 #endif
 
@@ -734,15 +734,15 @@ namespace ORTS
 #if DEBUG_PRINT_OUT
   // print details of internal floats
 
-				File.AppendAllText(@"C:\temp\scriptproc.txt","\n\nFloats : \n");
+				File.AppendAllText(@"scriptproc.txt","\n\nFloats : \n");
 				foreach( KeyValuePair <string, uint> deffloat in LocalFloats)
 				{
 					string defstring = deffloat.Key;
 					uint defindex = deffloat.Value;
 
-					File.AppendAllText(@"C:\temp\scriptproc.txt","Float : "+defstring+" = "+defindex.ToString()+"\n");
+					File.AppendAllText(@"scriptproc.txt","Float : "+defstring+" = "+defindex.ToString()+"\n");
 				}
-				File.AppendAllText(@"C:\temp\scriptproc.txt","Total : "+totalLocalFloats.ToString()+"\n\n\n");
+				File.AppendAllText(@"scriptproc.txt","Total : "+totalLocalFloats.ToString()+"\n\n\n");
 #endif
 
   // Check rest of file - statements
@@ -869,7 +869,7 @@ namespace ORTS
 				{
 					Trace.TraceError("Missing ; in statement starting with {0}\n",presentstring);
 #if DEBUG_PRINT_IN
-					File.AppendAllText(@"C:\temp\sigscr.txt","Missing ; in statement starting with "+presentstring+"\n");
+					File.AppendAllText(@"sigscr.txt","Missing ; in statement starting with "+presentstring+"\n");
 #endif
 
 				}
@@ -1230,7 +1230,7 @@ namespace ORTS
 				{
 					Trace.TraceError("If statement without ( ; starting with {0}\n",presentstring);
 #if DEBUG_PRINT_IN
-					File.AppendAllText(@"C:\temp\sigscr.txt","If statement without ( ; starting with {0}"+presentstring+"\n");
+					File.AppendAllText(@"sigscr.txt","If statement without ( ; starting with {0}"+presentstring+"\n");
 #endif
 				}
 
@@ -1258,7 +1258,7 @@ namespace ORTS
 					Trace.TraceError("Missing ) in IF statement ; starting with {0} : {1} and {2}",presentstring,
 					totalopen.ToString(), totalclose.ToString());
 #if DEBUG_PRINT_IN
-					File.AppendAllText(@"C:\temp\sigscr.txt","If statement without ) ; starting with "+presentstring+
+					File.AppendAllText(@"sigscr.txt","If statement without ) ; starting with "+presentstring+
 						" : "+totalopen.ToString()+" and "+totalclose.ToString()+"\n");
 #endif
 				}
@@ -1331,7 +1331,7 @@ namespace ORTS
 					valid_func = false;
 					Trace.TraceWarning("Unexpected number of ( in function call : {0}",FunctionStatement);
 #if DEBUG_PRINT_IN
-					File.AppendAllText(@"C:\temp\sigscr.txt","Unexpected number of ( in function call : "+FunctionStatement+"\n");
+					File.AppendAllText(@"sigscr.txt","Unexpected number of ( in function call : "+FunctionStatement+"\n");
 #endif
 				}
 
@@ -1349,7 +1349,7 @@ namespace ORTS
 					valid_func = false;
 					Trace.TraceWarning("Unknown function call : {0} : {1}",FunctionStatement, ex.ToString());
 #if DEBUG_PRINT_IN
-					File.AppendAllText(@"C:\temp\sigscr.txt","Unknown function call : "+FunctionStatement+"\n");
+					File.AppendAllText(@"sigscr.txt","Unknown function call : "+FunctionStatement+"\n");
 #endif
 				}
 
@@ -1464,7 +1464,7 @@ namespace ORTS
 						{
 							Trace.TraceWarning("Unknown Blockstate : {0} : {1}", partString, Ex.ToString() );
 #if DEBUG_PRINT_IN
-							File.AppendAllText(@"C:\temp\sigscr.txt","Unknown Blockstate : "+partString+"\n");
+							File.AppendAllText(@"sigscr.txt","Unknown Blockstate : "+partString+"\n");
 #endif
 						}
 						termset = true;
@@ -1489,7 +1489,7 @@ namespace ORTS
 						{
 							Trace.TraceWarning("Unknown Aspect : {0} : {1}", partString, Ex.ToString() );
 #if DEBUG_PRINT_IN
-							File.AppendAllText(@"C:\temp\sigscr.txt","Unknown Aspect : "+partString+"\n");
+							File.AppendAllText(@"sigscr.txt","Unknown Aspect : "+partString+"\n");
 #endif
 						}
 						termset = true;
@@ -1513,7 +1513,7 @@ namespace ORTS
 						{
 							Trace.TraceWarning("Unknown Type : {0} : {1}", partString, Ex.ToString() );
 #if DEBUG_PRINT_IN
-							File.AppendAllText(@"C:\temp\sigscr.txt","Unknown Type : "+partString+"\n");
+							File.AppendAllText(@"sigscr.txt","Unknown Type : "+partString+"\n");
 #endif
 						}
 						termset = true;
@@ -1536,7 +1536,7 @@ namespace ORTS
 						{
 							Trace.TraceWarning("Unknown SubType : {0} : {1}", partString, Ex.ToString() );
 #if DEBUG_PRINT_IN
-							File.AppendAllText(@"C:\temp\sigscr.txt","Unknown SubType : "+partString+"\n");
+							File.AppendAllText(@"sigscr.txt","Unknown SubType : "+partString+"\n");
 #endif
 						}
 						termset = true;
@@ -1549,7 +1549,7 @@ namespace ORTS
 				{
 					Trace.TraceWarning("Unknown parameter in statement : {0}",TermString);
 #if DEBUG_PRINT_IN
-					File.AppendAllText(@"C:\temp\sigscr.txt","Unknown parameter : "+TermString+"\n");
+					File.AppendAllText(@"sigscr.txt","Unknown parameter : "+TermString+"\n");
 #endif
 				}
 
@@ -1803,7 +1803,7 @@ namespace ORTS
 					{
 						Trace.TraceWarning("Unexpected number of = in string : {0}", StatementLine);
 #if DEBUG_PRINT_IN
-						File.AppendAllText(@"C:\temp\sigscr.txt","Unexpected number of = in string "+StatementLine+"\n");
+						File.AppendAllText(@"sigscr.txt","Unexpected number of = in string "+StatementLine+"\n");
 #endif
 					}
 
@@ -1900,7 +1900,7 @@ namespace ORTS
 						Trace.TraceWarning("Unmatching brackets in : {0}", keepString);
 						keepString = String.Empty;
 #if DEBUG_PRINT_IN
-						File.AppendAllText(@"C:\temp\sigscr.txt","Unmatching brackets in : "+keepString+"\n");;
+						File.AppendAllText(@"sigscr.txt","Unmatching brackets in : "+keepString+"\n");;
 #endif
 					}
 
@@ -2378,7 +2378,7 @@ namespace ORTS
 						{
 							Trace.TraceWarning("Invalid condition operator in : {0}",TermString);
 #if DEBUG_PRINT_IN
-							File.AppendAllText(@"C:\temp\sigscr.txt","Invalid condition operator in : "+TermString+"\n");;
+							File.AppendAllText(@"sigscr.txt","Invalid condition operator in : "+TermString+"\n");;
 #endif
 						}
 					}
@@ -2466,8 +2466,8 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 			if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 			{
-				File.AppendAllText(@"C:\temp\printproc.txt","\n\nSIGNAL : "+thisHead.TDBIndex.ToString()+"\n");
-				File.AppendAllText(@"C:\temp\printproc.txt","type   : "+signalScript.scriptname+"\n");
+				File.AppendAllText(@"printproc.txt","\n\nSIGNAL : "+thisHead.TDBIndex.ToString()+"\n");
+				File.AppendAllText(@"printproc.txt","type   : "+signalScript.scriptname+"\n");
 			}
 #endif
 
@@ -2476,7 +2476,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 			if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 			{
-				File.AppendAllText(@"C:\temp\printproc.txt","\n ------- \n");
+				File.AppendAllText(@"printproc.txt","\n ------- \n");
 			}
 #endif
 
@@ -2509,14 +2509,14 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 					if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 					{
-						File.AppendAllText(@"C:\temp\printproc.txt","Statement : \n");
+						File.AppendAllText(@"printproc.txt","Statement : \n");
 						foreach (string statstring in ThisStat.StatementParts)
 						{
-							File.AppendAllText(@"C:\temp\printproc.txt","   "+statstring+"\n");
+							File.AppendAllText(@"printproc.txt","   "+statstring+"\n");
 						}
 						foreach (int lfloat in localFloats)
 						{
-							File.AppendAllText(@"C:\temp\printproc.txt"," local : "+lfloat.ToString()+"\n");
+							File.AppendAllText(@"printproc.txt"," local : "+lfloat.ToString()+"\n");
 						}
 					}
 #endif
@@ -2645,7 +2645,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 					if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 					{
-						File.AppendAllText(@"C:\temp\printproc.txt",
+						File.AppendAllText(@"printproc.txt",
 								"Termvalue sublevel "+sublevel.ToString()+
 								" : "+thisOperator.ToString()+termvalue.ToString()+"\n");
 					}
@@ -2875,7 +2875,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 			if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 			{
-				File.AppendAllText(@"C:\temp\printproc.txt","Function Result : "+thisFunction.ToString()+"="+return_value.ToString()+"\n");
+				File.AppendAllText(@"printproc.txt","Function Result : "+thisFunction.ToString()+"="+return_value.ToString()+"\n");
 			}
 #endif
 
@@ -3066,7 +3066,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 			if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 			{
-				File.AppendAllText(@"C:\temp\printproc.txt","IF Condition statement (1) : \n");
+				File.AppendAllText(@"printproc.txt","IF Condition statement (1) : \n");
 			}
 #endif
 
@@ -3081,7 +3081,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 				if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 				{
-					File.AppendAllText(@"C:\temp\printproc.txt","Parameter : "+thisParameter.PartType.ToString()+" : "+
+					File.AppendAllText(@"printproc.txt","Parameter : "+thisParameter.PartType.ToString()+" : "+
 							thisParameter.PartParameter.ToString()+"\n");
 				}
 #endif
@@ -3114,7 +3114,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 				if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 				{
-					File.AppendAllText(@"C:\temp\printproc.txt","Result of single condition : "+
+					File.AppendAllText(@"printproc.txt","Result of single condition : "+
 						" : "+condition.ToString()+"(NOT : "+thisCond.negate1.ToString()+")\n\n");
 				}
 #endif
@@ -3128,7 +3128,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 				if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 				{
-					File.AppendAllText(@"C:\temp\printproc.txt","IF Condition statement (2) : \n");
+					File.AppendAllText(@"printproc.txt","IF Condition statement (2) : \n");
 				}
 #endif
 
@@ -3143,7 +3143,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 					if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 					{
-						File.AppendAllText(@"C:\temp\printproc.txt","Parameter : "+thisParameter.PartType.ToString()+" : "+
+						File.AppendAllText(@"printproc.txt","Parameter : "+thisParameter.PartType.ToString()+" : "+
 							thisParameter.PartParameter.ToString()+"\n");
 					}
 #endif
@@ -3202,7 +3202,7 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
 				if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 				{
-					File.AppendAllText(@"C:\temp\printproc.txt","Result of operation : "+
+					File.AppendAllText(@"printproc.txt","Result of operation : "+
 						thisCond.Condition.ToString()+" : "+condition.ToString()+"\n\n");
 				}
 #endif
