@@ -162,25 +162,35 @@ namespace ORTS.Popups
                                         var wagonName = trainIndex.ToString() + " - " + wagonIndex.ToString();
                                         var wagonType = "";
                                         var wagonFound = false;
-                                        foreach (MSTS.ActivityObject activityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList) {
-                                            if (activityObject.ID == trainIndex) {
-                                                foreach (MSTS.Wagon trainWagon in activityObject.Train_Config.TrainCfg.WagonList) {
-                                                    if (trainWagon.UiD == wagonIndex) {
-                                                        wagonType = trainWagon.Name;
+                                        if (owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects != null)
+                                        {
+                                            foreach (MSTS.ActivityObject activityObject in owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList)
+                                            {
+                                                if (activityObject.ID == trainIndex)
+                                                {
+                                                    foreach (MSTS.Wagon trainWagon in activityObject.Train_Config.TrainCfg.WagonList)
+                                                    {
+                                                        if (trainWagon.UiD == wagonIndex)
+                                                        {
+                                                            wagonType = trainWagon.Name;
+                                                            wagonFound = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                if (wagonFound)
+                                                    break;
+                                            }
+                                            if (!wagonFound)
+                                            {
+                                                foreach (var car in owner.Viewer.PlayerTrain.Cars)
+                                                {
+                                                    if (car.UiD == wagonItem.UID)
+                                                    {
+                                                        wagonType = Path.GetFileNameWithoutExtension(car.WagFilePath);
                                                         wagonFound = true;
                                                         break;
                                                     }
-                                                }
-                                            }
-                                            if (wagonFound)
-                                                break;
-                                        }
-                                        if (!wagonFound) {
-                                            foreach (var car in owner.Viewer.PlayerTrain.Cars) {
-                                                if (car.UiD == wagonItem.UID) {
-                                                    wagonType = Path.GetFileNameWithoutExtension(car.WagFilePath);
-                                                    wagonFound = true;
-                                                    break;
                                                 }
                                             }
                                         }
