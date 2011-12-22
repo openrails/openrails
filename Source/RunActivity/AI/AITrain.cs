@@ -507,7 +507,7 @@ namespace ORTS
 					case SignalHead.SIGASP.STOP:
 						targetMpS *= .5f;
 						if (stopDistanceM > distanceToSignal - 1)
-							stopDistanceM = distanceToSignal - 1;
+							stopDistanceM = distanceToSignal - 5;
 						break;
 					case SignalHead.SIGASP.STOP_AND_PROCEED:
 						targetMpS *= .5f;
@@ -580,12 +580,12 @@ namespace ORTS
 				else
 				{
 					float ds = timeS * (targetMpSS - measMpSS);
-					SpeedMpS += ds;
+					SpeedMpS = Math.Max (SpeedMpS+ds, 0); // avoid negative speeds
 					foreach (TrainCar car in Cars)
 						if (car.Flipped)
-							car.SpeedMpS -= ds;
+							car.SpeedMpS = -SpeedMpS;
 						else
-							car.SpeedMpS += ds;
+							car.SpeedMpS = SpeedMpS;
 					//Console.WriteLine("extra {0} {1} {2}", SpeedMpS, targetMpSS, measMpSS);
 				}
 				//Console.WriteLine("down {0} {1}", AITrainThrottlePercent, AITrainBrakePercent);
