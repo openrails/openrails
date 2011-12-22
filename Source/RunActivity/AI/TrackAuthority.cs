@@ -126,11 +126,13 @@ namespace ORTS
                     tvnIndex = snode.NextSidingTVNIndex;
                     int sres= Program.Simulator.AI.Dispatcher.GetReservation(tvnIndex);
                     if (Train.FrontTDBTraveller.TrackNodeIndex == tvnIndex || Train.RearTDBTraveller.TrackNodeIndex == tvnIndex)
-                        s.Append("@");
-                    else if (sres >= 0 && sres < 9)
-                        s.Append((char)('0' + sres));
-                    else if (sres >= 10 && sres < 36)
-                        s.Append((char)('A' + sres - 10));
+                        s.Append("#");
+		    else if (sres >= 0)
+			s.Append("-"+sres.ToString());
+//                  else if (sres >= 0 && sres < 9)
+//                      s.Append((char)('0' + sres));
+//                  else if (sres >= 10 && sres < 36)
+//                      s.Append((char)('A' + sres - 10));
                     else if (tvnIndex >= 0)
                         s.Append("_");
 
@@ -141,10 +143,12 @@ namespace ORTS
                 int res = Program.Simulator.AI.Dispatcher.GetReservation(tvnIndex);
                 if (Train.FrontTDBTraveller.TrackNodeIndex == tvnIndex || Train.RearTDBTraveller.TrackNodeIndex == tvnIndex)
                     s.Append("@");
-                else if (res >= 0 && res < 9)
-                    s.Append((char)('0' + res));
-                else if (res >= 10 && res < 36)
-                    s.Append((char)('A' + res - 10));
+		else if (res >= 0)
+			s.Append("+"+res.ToString());
+//              else if (res >= 0 && res < 9)
+//                  s.Append((char)('0' + res));
+//              else if (res >= 10 && res < 36)
+//                  s.Append((char)('A' + res - 10));
                 else if (tvnIndex >= 0)
                     s.Append("=");
             }
