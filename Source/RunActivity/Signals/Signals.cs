@@ -95,52 +95,52 @@ namespace ORTS
   //                            SignalObject singleSignal = signalObjects[isignal];
   //                            if (singleSignal == null)
   //                            {
-  //                                    File.AppendAllText(@"C:\Temp\SignalObjects.txt","\nInvalid entry : "+isignal.ToString()+"\n");
+  //                                    File.AppendAllText(@"SignalObjects.txt","\nInvalid entry : "+isignal.ToString()+"\n");
   //                            }
   //                            else
   //                            {
-  //                                    File.AppendAllText(@"C:\Temp\SignalObjects.txt","\nSignal ref item     : "+singleSignal.thisRef.ToString()+"\n");
-  //                                    File.AppendAllText(@"C:\Temp\SignalObjects.txt","Track node + index  : "+singleSignal.trackNode.ToString()+" + "+
+  //                                    File.AppendAllText(@"SignalObjects.txt","\nSignal ref item     : "+singleSignal.thisRef.ToString()+"\n");
+  //                                    File.AppendAllText(@"SignalObjects.txt","Track node + index  : "+singleSignal.trackNode.ToString()+" + "+
   //                                                                                                    singleSignal.trRefIndex.ToString()+"\n");
 
   //                                    foreach (SignalHead thisHead in singleSignal.SignalHeads)
   //                                    {
-  //                                       File.AppendAllText(@"C:\Temp\SignalObjects.txt","Type name           : "+thisHead.signalType.Name.ToString()+"\n");
-  //                                       File.AppendAllText(@"C:\Temp\SignalObjects.txt","Type                : "+thisHead.signalType.FnType.ToString()+"\n");
-  //                                       File.AppendAllText(@"C:\Temp\SignalObjects.txt","item Index          : "+thisHead.trItemIndex.ToString()+"\n");
-  //                                       File.AppendAllText(@"C:\Temp\SignalObjects.txt","TDB  Index          : "+thisHead.TDBIndex.ToString()+"\n");
+  //                                       File.AppendAllText(@"SignalObjects.txt","Type name           : "+thisHead.signalType.Name.ToString()+"\n");
+  //                                       File.AppendAllText(@"SignalObjects.txt","Type                : "+thisHead.signalType.FnType.ToString()+"\n");
+  //                                       File.AppendAllText(@"SignalObjects.txt","item Index          : "+thisHead.trItemIndex.ToString()+"\n");
+  //                                       File.AppendAllText(@"SignalObjects.txt","TDB  Index          : "+thisHead.TDBIndex.ToString()+"\n");
   //                                    }
   //                            }
   //                    }
 
   //                    foreach (KeyValuePair <string, MSTS.SignalShape> sshape in sigcfg.SignalShapes)
   //                    {
-  //                            File.AppendAllText(@"C:\Temp\SignalShapes.txt","\n==========================================\n");
-  //                            File.AppendAllText(@"C:\Temp\SignalShapes.txt","Shape key   : "+sshape.Key.ToString()+"\n");
+  //                            File.AppendAllText(@"SignalShapes.txt","\n==========================================\n");
+  //                            File.AppendAllText(@"SignalShapes.txt","Shape key   : "+sshape.Key.ToString()+"\n");
   //                            MSTS.SignalShape thisshape = sshape.Value;
-  //                            File.AppendAllText(@"C:\Temp\SignalShapes.txt","Filename    : "+thisshape.ShapeFileName.ToString()+"\n");
-  //                            File.AppendAllText(@"C:\Temp\SignalShapes.txt","Description : "+thisshape.Description.ToString()+"\n");
+  //                            File.AppendAllText(@"SignalShapes.txt","Filename    : "+thisshape.ShapeFileName.ToString()+"\n");
+  //                            File.AppendAllText(@"SignalShapes.txt","Description : "+thisshape.Description.ToString()+"\n");
 
   //                            foreach (MSTS.SignalShape.SignalSubObj ssobj in thisshape.SignalSubObjs)
   //                            {
-  //                               File.AppendAllText(@"C:\Temp\SignalShapes.txt","\nSubobj Index : "+ssobj.Index.ToString()+"\n");
-  //                               File.AppendAllText(@"C:\Temp\SignalShapes.txt","Matrix       : "+ssobj.MatrixName.ToString()+"\n");
-  //                               File.AppendAllText(@"C:\Temp\SignalShapes.txt","Description  : "+ssobj.Description.ToString()+"\n");
-  //                               File.AppendAllText(@"C:\Temp\SignalShapes.txt","Sub Type (I) : "+ssobj.SignalSubType.ToString()+"\n");
+  //                               File.AppendAllText(@"SignalShapes.txt","\nSubobj Index : "+ssobj.Index.ToString()+"\n");
+  //                               File.AppendAllText(@"SignalShapes.txt","Matrix       : "+ssobj.MatrixName.ToString()+"\n");
+  //                               File.AppendAllText(@"SignalShapes.txt","Description  : "+ssobj.Description.ToString()+"\n");
+  //                               File.AppendAllText(@"SignalShapes.txt","Sub Type (I) : "+ssobj.SignalSubType.ToString()+"\n");
   //                               if (ssobj.SignalSubSignalType != null)
   //                               {
-  //                                  File.AppendAllText(@"C:\Temp\SignalShapes.txt","Sub Type (C) : "+ssobj.SignalSubSignalType.ToString()+"\n");
+  //                                  File.AppendAllText(@"SignalShapes.txt","Sub Type (C) : "+ssobj.SignalSubSignalType.ToString()+"\n");
   //                               }
   //                               else
   //                               {
-  //                                  File.AppendAllText(@"C:\Temp\SignalShapes.txt","Sub Type (C) : not set \n");
+  //                                  File.AppendAllText(@"SignalShapes.txt","Sub Type (C) : not set \n");
   //                               }
-  //                               File.AppendAllText(@"C:\Temp\SignalShapes.txt","Optional     : "+ssobj.Optional.ToString()+"\n");
-  //                               File.AppendAllText(@"C:\Temp\SignalShapes.txt","Default      : "+ssobj.Default.ToString()+"\n");
-  //                               File.AppendAllText(@"C:\Temp\SignalShapes.txt","BackFacing   : "+ssobj.BackFacing.ToString()+"\n");
-  //                               File.AppendAllText(@"C:\Temp\SignalShapes.txt","JunctionLink : "+ssobj.JunctionLink.ToString()+"\n");
+  //                               File.AppendAllText(@"SignalShapes.txt","Optional     : "+ssobj.Optional.ToString()+"\n");
+  //                               File.AppendAllText(@"SignalShapes.txt","Default      : "+ssobj.Default.ToString()+"\n");
+  //                               File.AppendAllText(@"SignalShapes.txt","BackFacing   : "+ssobj.BackFacing.ToString()+"\n");
+  //                               File.AppendAllText(@"SignalShapes.txt","JunctionLink : "+ssobj.JunctionLink.ToString()+"\n");
   //                            }
-  //                            File.AppendAllText(@"C:\Temp\SignalShapes.txt","\n==========================================\n");
+  //                            File.AppendAllText(@"SignalShapes.txt","\n==========================================\n");
   //                    }
 
   // Clear world lists to save memory
@@ -259,10 +259,10 @@ namespace ORTS
   //                            SignalWorldObject reffedObject = SignalWorldList[(int) signalRef.SignalWorldIndex];
   //                            if ( !reffedObject.HeadReference.TryGetValue(TBDRef, out headref))
   //                            {
-  //                                    File.AppendAllText(@"C:\temp\WorldSignalList.txt","Incorrect Ref : "+TBDRef.ToString()+"\n");
+  //                                    File.AppendAllText(@"WorldSignalList.txt","Incorrect Ref : "+TBDRef.ToString()+"\n");
   //                                    foreach ( KeyValuePair <uint, uint> headindex in reffedObject.HeadReference)
   //                                    {
-  //                                            File.AppendAllText(@"C:\temp\WorldSignalList.txt","TDB : "+headindex.Key.ToString()+
+  //                                            File.AppendAllText(@"WorldSignalList.txt","TDB : "+headindex.Key.ToString()+
   //                                                            " + "+headindex.Value.ToString()+"\n");
   //                                    }
   //                            }
@@ -739,25 +739,12 @@ namespace ORTS
                                                         }
                                                         SignalRefList.Remove(TDBRef);
                                                 }
-                                                        else
-                                                {
-                                                        File.AppendAllText(@"C:\temp\RefError.txt","Reference not found : "+head.TDBIndex.ToString()+"\n");
-                                                }
                                         }
                                 }
                         }
 
  // check if any signals have been missed
 
-                        if (SignalRefList.Count > 0)
-                        {
-                                File.AppendAllText(@"C:\temp\RefError.txt","References missed : "+SignalRefList.Count.ToString()+"\n");
-                                foreach ( KeyValuePair <uint, SignalRefObject> thisref in SignalRefList)
-                                {
-                                        uint missedTDB = thisref.Key;
-                                        File.AppendAllText(@"C:\temp\RefError.txt","TDB : "+missedTDB.ToString()+"\n");
-                                }
-                        }
                 }//AddWorldInfo
 
 
