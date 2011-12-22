@@ -9,9 +9,6 @@
 
 //#define DEBUG_SIGNAL_SHAPES
 
-// This is a temporary implementation of signal feathers for testing.
-//#define SIGNAL_SHAPES_FEATHERS
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,9 +25,7 @@ namespace ORTS
 		readonly uint UID;
 		readonly SignalObject SignalObject;
 		readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
-#if SIGNAL_SHAPES_FEATHERS
-		bool InfoHeadFound;
-#endif
+
 
 		public SignalShape(Viewer3D viewer, MSTS.SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
 			: base(viewer, path, position, flags)
@@ -104,9 +99,7 @@ namespace ORTS
 			var xnaTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
 			Matrix.Multiply(ref Location.XNAMatrix, ref xnaTileTranslation, out xnaTileTranslation);
 
-#if SIGNAL_SHAPES_FEATHERS
-			InfoHeadFound = false;
-#endif
+
 			foreach (var head in Heads)
 				head.PrepareFrame(frame, elapsedTime, xnaTileTranslation);
 
@@ -117,7 +110,7 @@ namespace ORTS
 		{
 			static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
 
-#if DEBUG_SIGNAL_SHAPES || SIGNAL_SHAPES_FEATHERS
+#if DEBUG_SIGNAL_SHAPES
 			readonly Viewer3D Viewer;
 #endif
 			readonly SignalShape SignalShape;
@@ -125,21 +118,21 @@ namespace ORTS
 			readonly SignalHead SignalHead;
 			readonly int MatrixIndex;
 			readonly SignalTypeData SignalTypeData;
-#if SIGNAL_SHAPES_FEATHERS
-			readonly uint JunctionTrackNode;
-			readonly uint JunctionLinkRoute;
-#endif
 			float CumulativeTime;
             float SemaphorePos;
             float SemaphoreTarget;
             float SemaphoreSpeed;
+			float SemaphoreInfo;
 
-			SignalHead.SIGASP LastState = SignalHead.SIGASP.UNKNOWN;
-			SignalHead.SIGASP DisplayState = SignalHead.SIGASP.UNKNOWN;
+  // LastState and DisplayState defined as int, not as SignalHead.SIGASP
 
-			public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead, MSTS.SignalItem mstsSignalItem, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
+			int LastState = -1;
+			int DisplayState = -1;
+
+			public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead,
+				       	MSTS.SignalItem mstsSignalItem, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
 			{
-#if DEBUG_SIGNAL_SHAPES || SIGNAL_SHAPES_FEATHERS
+#if DEBUG_SIGNAL_SHAPES
 				Viewer = viewer;
 #endif
 				SignalShape = signalShape;
@@ -151,8 +144,10 @@ namespace ORTS
 
                 if (!viewer.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
 					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid SigSubSType {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
-
                 var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
+		
+				SemaphoreInfo = mstsSignalType.SemaphoreInfo;
+
 				if (SignalTypes.ContainsKey(mstsSignalType.Name))
 					SignalTypeData = SignalTypes[mstsSignalType.Name];
 				else
@@ -162,55 +157,37 @@ namespace ORTS
 				Console.Write("  HEAD type={0,-8} lights={1,-2} aspects={2,-2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Aspects.Count);
 #endif
 
-				if (SignalTypeData.Type == SignalTypeDataType.Info)
-				{
-					if (mstsSignalItem.TrSignalDirs == null)
-                        throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has no TrSignalDirs.", signalShape.Location, signalShape.UID, index));
-                    if (mstsSignalItem.TrSignalDirs.Length != 1)
-                        throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has {3} TrSignalDirs; expected 1.", signalShape.Location, signalShape.UID, index, mstsSignalItem.TrSignalDirs.Length));
-#if DEBUG_SIGNAL_SHAPES
-					Console.Write("  LINK node={0,-5} sd1={2,-1} path={1,-1} sd3={3,-1}", mstsSignalItem.TrSignalDirs[0].TrackNode, mstsSignalItem.TrSignalDirs[0].linkLRPath, mstsSignalItem.TrSignalDirs[0].sd1, mstsSignalItem.TrSignalDirs[0].sd3);
-#endif
-#if SIGNAL_SHAPES_FEATHERS
-					JunctionTrackNode = mstsSignalItem.TrSignalDirs[0].TrackNode;
-					JunctionLinkRoute = mstsSignalItem.TrSignalDirs[0].linkLRPath;
-#endif
-				}
+
 			}
 
 			public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
 			{
-				if (LastState != SignalHead.state)
+
+  // Next lines : changed to process draw_state instead of state
+  // Use of DrawAspects instead of Aspects (see below for details)
+
+				if (LastState != SignalHead.draw_state)
 				{
 #if DEBUG_SIGNAL_SHAPES
-					Console.WriteLine(String.Format("{5} {0} signal {1} unit {2} state: {3} --> {4}", SignalShape.Location, SignalShape.UID, Index, LastState, SignalHead.state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
+					Console.WriteLine(String.Format("{5} {0} signal {1} unit {2} state: {3} --> {4}",
+							       	SignalShape.Location, SignalShape.UID, Index, LastState,
+							       	SignalHead.state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
 #endif
-					LastState = SignalHead.state;
+					LastState = SignalHead.draw_state;
 					DisplayState = LastState;
-                    if (SignalTypeData.Aspects.ContainsKey(DisplayState))
-                    {
-                        SemaphoreTarget = SignalTypeData.Aspects[DisplayState].SemaphorePos;
-                        SemaphoreSpeed = SemaphoreTarget > SemaphorePos ? +1 : -1;
-                    }
+                    			if (SignalTypeData.DrawAspects.ContainsKey(DisplayState))
+                    			{
+                        			SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
+                        			SemaphoreSpeed = SemaphoreTarget > SemaphorePos ? +1 : -1;
+                    			}
 				}
 				CumulativeTime += elapsedTime.ClockSeconds;
 				while (CumulativeTime > SignalTypeData.FlashTimeTotal)
 					CumulativeTime -= SignalTypeData.FlashTimeTotal;
 
-#if SIGNAL_SHAPES_FEATHERS
-				if (SignalTypeData.Type == SignalTypeDataType.Info)
-				{
-					if (JunctionTrackNode != 0)
-					{
-						// Use CLEAR_1 or STOP depending on selected route.
-						var selectedRoute = Viewer.Simulator.TDB.TrackDB.TrackNodes[JunctionTrackNode].TrJunctionNode.SelectedRoute;
-						DisplayState = !SignalShape.InfoHeadFound && selectedRoute == JunctionLinkRoute ? SignalHead.SIGASP.CLEAR_1 : SignalHead.SIGASP.STOP;
-						SignalShape.InfoHeadFound |= selectedRoute == JunctionLinkRoute;
-					}
-				}
-#endif
 
-				if ((DisplayState == SignalHead.SIGASP.UNKNOWN) || !SignalTypeData.Aspects.ContainsKey(DisplayState))
+				if (DisplayState < 0 || !SignalTypeData.DrawAspects.ContainsKey(DisplayState))
+
 					return;
 
                 if (SignalTypeData.Semaphore)
@@ -224,9 +201,9 @@ namespace ORTS
 				{
                     if (SemaphorePos != SemaphoreTarget && SignalTypeData.LightsSemaphoreChange[i])
                         continue;
-                    if (!SignalTypeData.Aspects[DisplayState].DrawLights[i])
+                    if (!SignalTypeData.DrawAspects[DisplayState].DrawLights[i])
                         continue;
-                    if (SignalTypeData.Aspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn))
+                    if (SignalTypeData.DrawAspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn))
 						continue;
 
 					var xnaMatrix = Matrix.Identity;
@@ -239,15 +216,25 @@ namespace ORTS
                 if (SignalTypeData.Semaphore)
                 {
                     // Now we update and re-animate the semaphore arm.
-                    SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
-                    if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
-                    {
-                        SemaphorePos = SemaphoreTarget;
-                        SemaphoreSpeed = 0;
-                    }
-                    SignalShape.AnimateMatrix(MatrixIndex, SemaphorePos);
-                }
-            }
+ 		    // Set arm to final position immediately if semaphoreinfo = 0
+
+					if (SemaphoreInfo == 0)
+					{
+						SemaphorePos = SemaphoreTarget;
+						SemaphoreSpeed = 0;
+					}
+					else
+					{
+						SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
+						if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
+						{
+							SemaphorePos = SemaphoreTarget;
+							SemaphoreSpeed = 0;
+						}
+					}
+					SignalShape.AnimateMatrix(MatrixIndex, SemaphorePos);
+				}
+			}
 		}
 
 		class SignalTypeData
@@ -255,8 +242,11 @@ namespace ORTS
 			public readonly Material Material;
 			public readonly SignalTypeDataType Type;
 			public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
-            public readonly List<bool> LightsSemaphoreChange = new List<bool>();
-			public readonly Dictionary<SignalHead.SIGASP, SignalAspectData> Aspects = new Dictionary<SignalHead.SIGASP, SignalAspectData>();
+		        public readonly List<bool> LightsSemaphoreChange = new List<bool>();
+
+  // DrawAspects replaces Aspects : dictionary of SignalAspectData with int as key instead of string
+			public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
+
 			public readonly float FlashTimeOn;
 			public readonly float FlashTimeTotal;
             public readonly bool Semaphore;
@@ -289,26 +279,12 @@ namespace ORTS
                             Lights.Add(new SignalLightMesh(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
                             LightsSemaphoreChange.Add(mstsSignalLight.SemaphoreChange);
                         }
-						// Only load aspects if we've got lights. Not much point otherwise.
-						if (mstsSignalType.Aspects != null)
-						{
-							foreach (var mstsSignalAspect in mstsSignalType.Aspects)
-								Aspects.Add(mstsSignalAspect.Aspect, new SignalAspectData(mstsSignalType, mstsSignalAspect.DrawStateName));
-						}
+  // Check on mstsSignalType.Aspects removed (process signals without aspects)
+
 					}
-#if SIGNAL_SHAPES_FEATHERS
-				// Info = feather/branch/etc. lights, linked to a junction.
-				if (Type == SignalTypeDataType.Info)
-				{
-					if (mstsSignalType.SignalDrawStates.Length != 2)
-					{
-						Trace.TraceWarning("Signal type {0} has {1} draw states; expected 2.", mstsSignalType.typeName, mstsSignalType.SignalDrawStates.Length);
-						return;
-					}
-					Aspects.Add(SignalHead.SIGASP.STOP, new SignalAspectData(mstsSignalType, 0));
-					Aspects.Add(SignalHead.SIGASP.CLEAR_1, new SignalAspectData(mstsSignalType, 1));
-				}
-#endif
+
+					foreach ( KeyValuePair <string, MSTS.SignalDrawState> sdrawstate in mstsSignalType.DrawStates)
+							DrawAspects.Add(sdrawstate.Value.Index, new SignalAspectData(mstsSignalType, sdrawstate.Value));
 					FlashTimeOn = mstsSignalType.FlashTimeOn;
 					FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
                     Semaphore = mstsSignalType.Semaphore;
@@ -331,21 +307,40 @@ namespace ORTS
 			public readonly bool[] FlashLights;
             public readonly float SemaphorePos;
 
-			public SignalAspectData(MSTS.SignalType mstsSignalType, string drawState)
+			public SignalAspectData(MSTS.SignalType mstsSignalType, MSTS.SignalDrawState drawStateData)
 			{
-				DrawLights = new bool[mstsSignalType.Lights.Count];
-				FlashLights = new bool[mstsSignalType.Lights.Count];
-				var drawStateData = mstsSignalType.DrawStates[drawState];
+  // Check on existence of lights included
+  // Also process signals if no lights defined (semaphore only)
+
+				if (mstsSignalType.Lights != null)
+				{
+					DrawLights = new bool[mstsSignalType.Lights.Count];
+					FlashLights = new bool[mstsSignalType.Lights.Count];
+				}
+				else
+				{
+					DrawLights = null;
+					FlashLights= null;
+				}
+
 				if (drawStateData.DrawLights != null)
 				{
 					foreach (var drawLight in drawStateData.DrawLights)
 					{
+						try
+						{
 						DrawLights[drawLight.LightIndex] = true;
 						FlashLights[drawLight.LightIndex] = drawLight.Flashing;
+						}
+						catch (Exception ex)
+						{
+							Trace.TraceWarning("Exception : {0} : {1}",ex.ToString(),mstsSignalType.Name);
+						}
 					}
 				}
-                SemaphorePos = mstsSignalType.DrawStates[drawState].SemaphorePos;
+                		SemaphorePos = drawStateData.SemaphorePos;
 			}
+
 		}
 	}
 
