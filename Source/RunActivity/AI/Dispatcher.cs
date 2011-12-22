@@ -34,7 +34,7 @@ namespace ORTS
     public class Dispatcher
     {
         public AI AI;
-        private int[] Reservations;
+        public static int[] Reservations;  //[Rob Roeterdink] made public for acces from signal processing
         public float[] TrackLength;
         private TimeTable TimeTable = null;
         public int PlayerPriority = 0;
