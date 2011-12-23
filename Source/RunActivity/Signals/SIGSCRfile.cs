@@ -558,6 +558,7 @@ namespace ORTS
 			string readLine;
 			string procLine = String.Empty;
 			bool validLine = false;
+			bool compart = false;
 
   // check if anything still in store
 
@@ -585,11 +586,19 @@ namespace ORTS
 
   // remove comment
 
-				procLine = readLine.ToUpper();
+				if (compart)
+				{
+					procLine= String.Concat(@"/*",readLine.ToUpper());  // force as comment
+				}
+				else
+				{
+					procLine = readLine.ToUpper();
+				}
+
 				int comsep = procLine.IndexOf(@"//");
 				int addsep = procLine.IndexOf(@"/*");
 
-				if (comsep == 0 || addsep == 0)
+				if (comsep == 0)
 				{
 					procLine = String.Empty;
 				}
@@ -597,6 +606,12 @@ namespace ORTS
 				{
 					procLine = procLine.Substring(1,comsep-1);
 				}
+				else if (addsep == 0)
+				{
+					compart = (procLine.IndexOf(@"*/") <= 0); // No end comment
+					procLine= String.Empty;
+				}
+
 				procLine = procLine.Trim();
 				procLine = procLine.Replace("\t"," ");
 
@@ -1796,6 +1811,8 @@ namespace ORTS
   //split on =, should be only 2 parts
 
 					StatementTerms = new List<SCRStatTerm>();
+					String TermPart;
+
 					StatementLine = StatementLine.Replace(";", String.Empty);
 
 					StatementParts = StatementLine.Split('=');
@@ -1837,12 +1854,22 @@ namespace ORTS
 								AssignParameter = (int)intFloat.Value;
 							}
 						}
-					}
 
   // Term part
   // get positions of allowed operators
 
-					string TermPart = StatementParts[1].Trim();
+						TermPart = StatementParts[1].Trim();
+
+					}
+					else
+					{
+
+
+  // Term part
+  // get positions of allowed operators
+
+						TermPart = StatementParts[0].Trim();
+					}
 
   // process term string
 
@@ -2615,7 +2642,7 @@ namespace ORTS
 			}
 			else if (thisTerm.sublevel > 0)
 			{
-				termvalue = SH_processSubTerm(thisHead, StatementTerms, sublevel, localFloats, sigscr);
+				termvalue = SH_processSubTerm(thisHead, StatementTerms, thisTerm.sublevel, localFloats, sigscr);
 			}
 
 			return termvalue;
