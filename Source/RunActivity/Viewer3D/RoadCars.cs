@@ -121,7 +121,7 @@ namespace ORTS
 					direction = 0;
 				}
 			}
-			catch (Exception e)
+			catch (Exception )
 			{
 				silent = true;
 				return;
@@ -149,7 +149,7 @@ namespace ORTS
 				{
 					if (temp.outOfRoad == false) listOfCar.Add(-temp.travelledDist, temp);//add to the list
 				}
-				catch (Exception e) { }
+				catch (Exception ) { }
 
 			}
 			
@@ -187,7 +187,7 @@ namespace ORTS
 					listOfCrossing.Add(dist, crossingObj);
 					crossingObj.carSpawner = this;
 				}
-				catch (Exception e) { }
+				catch (Exception ) { }
 			}
 
 			//the road has crossings, build the distance chart and crossings
@@ -279,7 +279,7 @@ namespace ORTS
 				trackRange[++i] = listOfTracks.ElementAt(k - 1).Key + 2;//road bed ends 2 meters on the right of the track
 				listOfCrossing.Add(key, crossingObj);
 			}
-			catch (Exception e) {
+			catch (Exception ) {
 			}
 
 			//rebuild the map of gates/dist chart
@@ -330,7 +330,7 @@ namespace ORTS
 								break;
 							}
 						}
-						catch (Exception e)
+						catch (Exception )
 						{
 						}
 					}
@@ -350,7 +350,7 @@ namespace ORTS
 								break;
 							}
 						}
-						catch (Exception e)
+						catch (Exception )
 						{
 						}
 					}
@@ -362,7 +362,7 @@ namespace ORTS
 				listOfTracks.Add(dist, height > 0 && height < 1 ? height : 0);//if track is too high, ignore as well
 
 			}
-			catch (Exception e)
+			catch (Exception )
 			{
 			}
 			return dist;

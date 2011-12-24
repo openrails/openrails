@@ -619,16 +619,9 @@ namespace ORTS
 			}
 		}
 
-		public float Length()
-		{
-			float sum = 0;
-			foreach (TrainCar car in Cars)
-				sum += car.Length;
-			return sum;
-		}
 		public float PassTime()
 		{
-			return Length() / MaxSpeedMpS;
+			return Length / MaxSpeedMpS;
 		}
 		public float StopStartTime()
 		{

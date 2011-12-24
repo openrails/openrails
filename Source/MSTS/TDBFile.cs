@@ -235,7 +235,7 @@ namespace MSTS
 						}
 					}
 				}
-				catch (Exception e) { } 
+				catch (Exception ) { } 
 			}
 			return angle;
 		}

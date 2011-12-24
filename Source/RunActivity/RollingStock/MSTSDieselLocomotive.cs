@@ -445,7 +445,6 @@ namespace ORTS
         public float CoolingPowerW { get; set; }
 
         Integrator temperatureInt;
-        Integrator revolutionsInt;
 
         public Color SmokeColor;
         public float ExhaustParticles;

@@ -556,7 +556,7 @@ namespace ORTS
             return result.ToString();
         }
 
-        public void StartReverseIncrease()
+        public new void StartReverseIncrease()
         {
             CutoffController.StartIncrease();
         }
@@ -566,12 +566,12 @@ namespace ORTS
             CutoffController.StopIncrease();
         }
 
-        public void StartReverseDecrease()
+        public new void StartReverseDecrease()
         {
             CutoffController.StartDecrease();
         }
 
-        public void StopReverseDecrease()
+        public  void StopReverseDecrease()
         {
             CutoffController.StopDecrease();
         }

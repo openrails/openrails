@@ -75,7 +75,6 @@ namespace ORTS
                 x.Add(0.0);
                 y.Add(0.0);
             }
-            n = 0;
 
             FilterType = FilterTypes.Bessel;
         }
@@ -99,7 +98,6 @@ namespace ORTS
                 x.Add(0.0);
                 y.Add(0.0);
             }
-            n = 0;
         }
 
         /// <summary>
@@ -139,11 +137,9 @@ namespace ORTS
                 x.Add(0.0);
                 y.Add(0.0);
             }
-            n = 0;
         }
 
         int NCoef;
-        int n;
         ArrayList ACoef;
         ArrayList BCoef;
 
@@ -163,7 +159,6 @@ namespace ORTS
                     x.Add(0.0);
                     y.Add(0.0);
                 }
-                n = 0;
                 if (ACoef == null)
                     ACoef = new ArrayList();
                 ACoef.Clear();
@@ -194,7 +189,6 @@ namespace ORTS
                     x.Add(0.0);
                     y.Add(0.0);
                 }
-                n = 0;
                 if (BCoef == null)
                     BCoef = new ArrayList();
                 BCoef.Clear();
@@ -426,7 +420,7 @@ namespace ORTS
                     break;
                 default:
                     throw new NotImplementedException("Filter order higher than 1 is not supported yet");
-                    break;
+                    
             }
         }
 

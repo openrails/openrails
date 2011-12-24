@@ -42,11 +42,6 @@ namespace ORTS
 		/// </summary>
 		private LevelCrossingObject[] levelCrossingObjects;
 		/// <summary>
-		/// UpdateCrossingState requires a copy of rearTDBTraveller if the train moves backward,
-		/// thus declare the variable here to have a bit cache friendness
-		/// </summary>
-		private TDBTraveller traveller;
-		/// <summary>
 		/// Gets an array of all the LevelCrossingObjects.
 		/// </summary>
 		internal LevelCrossingObject[] LevelCrossingObjects

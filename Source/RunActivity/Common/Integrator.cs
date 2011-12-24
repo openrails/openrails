@@ -197,7 +197,7 @@ namespace ORTS
                         break;
                     case IntegratorMethods.EulerForward:
                         throw new NotImplementedException("Not implemented yet!");
-                        break;
+                        
                     case IntegratorMethods.RungeKutta2:
                         //throw new NotImplementedException("Not implemented yet!");
                         k1 = integralValue + timeSpan / 2 * value;
@@ -214,7 +214,7 @@ namespace ORTS
                         break;
                     case IntegratorMethods.NewtonRhapson:
                         throw new NotImplementedException("Not implemented yet!");
-                        break;
+                        
                     case IntegratorMethods.AdamsMoulton:
                         //prediction
                         float predicted = integralValue + timeSpan / 24.0f * (55.0f * previousValues[0] - 59.0f * previousValues[1] + 37.0f * previousValues[2] - 9.0f * previousValues[3]);
@@ -230,7 +230,7 @@ namespace ORTS
                         break;
                     default:
                         throw new NotImplementedException("Not implemented yet!");
-                        break;
+                        
                 }
                 //To make sure the loop exits
                 //if (count-- < 0)

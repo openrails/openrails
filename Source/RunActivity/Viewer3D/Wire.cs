@@ -63,7 +63,7 @@ namespace ORTS
 			{
 				if (Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).RoadShape == true) return 1;
 			}
-			catch (Exception e)
+			catch (Exception )
 			{
 				return 0;
 			}
@@ -159,7 +159,7 @@ namespace ORTS
 			{
 				path = Program.Simulator.TSectionDat.TSectionIdx.TrackPaths[dTrackObj.SectionIdx];
 			}
-			catch (Exception e)
+			catch (Exception )
 			{
 				return; //cannot find the path for the dynamic track
 			}

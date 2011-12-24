@@ -26,8 +26,6 @@ namespace ORTS.Popups
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
 
-		string statusText = "";
-
 		public HelpWindow(WindowManager owner)
 			: base(owner, 600, 450, "Help")
 		{
