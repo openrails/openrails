@@ -101,12 +101,6 @@ namespace ORTS
 
             if (MaxDieselLevelL != DieselLevelL)
                 DieselLevelL = MaxDieselLevelL;
-
-
-
-
-            // Diesel locos have step controllers ; here to go around parse prblms
-            HasStepCtrl = true;
         }
 
 

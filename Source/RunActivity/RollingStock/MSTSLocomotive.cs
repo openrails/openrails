@@ -162,6 +162,9 @@ namespace ORTS
                 ThrottleController.StepSize = 0.1f;
             }
 
+            if (ThrottleController.NotchCount() > 0)
+                HasStepCtrl = true;
+
             // Is Altertor option checked in menu
             if (Program.Simulator.Settings.Alerter)
             {
@@ -283,7 +286,6 @@ namespace ORTS
                 case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(stf); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
                 case "engine(enginecontrollers(combined_control": HasCombCtrl = true; break;
-                case "engine(diesel": HasStepCtrl = true; break;
                 case "engine(vigilancemonitor": VigilanceMonitor = true; break;
                 
 
