@@ -923,17 +923,10 @@ namespace ORTS
         public override string GetTrainBrakeStatus()
         {            
             string s = TrainBrakeController.GetStatus();
-            if (BrakeSystem.GetType() == typeof(AirSinglePipe))
-                s += string.Format(" EQ {0:F0} psi", Train.BrakeLine1PressurePSI);
-            else
-                s += string.Format(" BP {0:F0} psi", Train.BrakeLine1PressurePSI);
-            s += " (cars: " + BrakeSystem.GetFullStatus();
             TrainCar lastCar = Train.Cars[Train.Cars.Count - 1];
             if (lastCar == this)
                 lastCar = Train.Cars[0];
-            if (lastCar != this)
-                s += " to " + lastCar.BrakeSystem.GetStatus();
-			s += ")";
+            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem);
             return s;
         }
 
@@ -1307,21 +1300,13 @@ namespace ORTS
                     }
                 case CABViewControlTypes.BRAKE_CYL:
                     {
-                        AirSinglePipe asp = BrakeSystem as AirSinglePipe;
-                        if (asp != null)
-                        {
-                            data = asp.CylPSIPressure;
-                            if (cvc.Units == CABViewControlUnits.BAR)
-                                data *= 68.948e-3f;
-                            else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
-                                data *= 6.89476f;
-                            else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
-                                data *= 70.307e-3f;
-                        }
-                        else
-                        {
-                            data = 0;
-                        }
+                        data = BrakeSystem.GetCylPressurePSI();
+                        if (cvc.Units == CABViewControlUnits.BAR)
+                            data *= 68.948e-3f;
+                        else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
+                            data *= 6.89476f;
+                        else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
+                            data *= 70.307e-3f;
                         break;
                     }
                 case CABViewControlTypes.RPM:
