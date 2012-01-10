@@ -476,9 +476,14 @@ namespace ORTS
         public float Volume
         {
             get { return volume / MSTSStream.Volume; }
-            set { volume = value * MSTSStream.Volume;  if (ALSoundSource != null) ALSoundSource.Volume = volume; }
+            set { volume = value * MSTSStream.Volume * tvolume; if (ALSoundSource != null) ALSoundSource.Volume = volume; }
         }
         private float volume = 1;
+        private float tvolume = 1;
+        public float TriggerVolume
+        {
+            set { tvolume = value; volume = value * MSTSStream.Volume * tvolume; if (ALSoundSource != null) ALSoundSource.Volume = volume; }
+        }
 
         public List<ORTSTrigger> Triggers = new List<ORTSTrigger>();
 
@@ -1319,7 +1324,7 @@ namespace ORTS
 
         public override void Run()
         {
-            ORTSStream.Volume = Volume;
+            ORTSStream.TriggerVolume = Volume;
         }
     }
 

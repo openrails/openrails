@@ -161,7 +161,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("frequencycurve", ()=>{ FrequencyCurve = new FrequencyCurve(stf); }),
                 new STFReader.TokenProcessor("volume", ()=>{ Volume = stf.ReadFloatBlock(STFReader.UNITS.None, Volume); }),
             });
-            if (Volume > 1)  Volume /= 100f;
+            //if (Volume > 1)  Volume /= 100f;
         }
     }
 
