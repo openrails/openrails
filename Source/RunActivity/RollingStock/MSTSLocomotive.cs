@@ -642,7 +642,7 @@ namespace ORTS
                 {
                     if (WheelAxles.Count > 0 && DriverWheelRadiusM > 0)
                     {
-                        float upperLimit = 2.0f * WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
+                    float upperLimit = 2.0f * WheelAxles.Count * (15000.0f * DriverWheelRadiusM - 2900.0f);
                         upperLimit = upperLimit < 100.0f ? 100.0f : upperLimit;
 
                         float lowerLimit = WheelAxles.Count * (9000.0f * DriverWheelRadiusM - 1750.0f);
@@ -1904,120 +1904,111 @@ namespace ORTS
                 LightTextures.Add(FileName, Materials.MissingTexture);
         }
 
-        /// <summary>
-        /// Disassembles a compund Texture into parts
-        /// </summary>
-        /// <param name="graphicsDevice">The GraphicsDevice</param>
-        /// <param name="tex">Texture to be disassembled</param>
-        /// <param name="width">Width of the Cab View Control</param>
-        /// <param name="height">Height of the Cab View Control</param>
-        /// <param name="FramesCount">Number of frames read from CVF</param>
-        /// <param name="FileName">Name of the control ACE file</param>
-        /// <returns>Array with Textures disassembled</returns>
-        private static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, int frameWidth, int frameHeight, int frameCount, string fileName)
+        static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, Point controlSize, int frameCount, Point frameGrid, string fileName)
         {
+            if (frameGrid.X < 1 || frameGrid.Y < 1 || frameCount < 1)
+            {
+                Trace.TraceWarning("Cab control has invalid frame data {1}*{2}={3} (no frames will be shown) for {0}", fileName, frameGrid.X, frameGrid.Y, frameCount);
+                return new Texture2D[0];
+            }
+
+            var frameSize = new Point(texture.Width / frameGrid.X, texture.Height / frameGrid.Y);
             var frames = new Texture2D[frameCount];
             var frameIndex = 0;
 
-            // Problem with texture sizes, could not disassemble
-            if (frameWidth == 0 || frameHeight == 0 || texture.Width / frameWidth == 0 || texture.Height / frameHeight == 0)
-            {
-                Trace.TraceWarning("Cab control texture {0} could not be disassembled. Texture size {1}x{2}; control size {3}x{4}.", fileName, texture.Width, texture.Height, frameWidth, frameHeight);
-            }
-            else if (texture.Format != SurfaceFormat.Color && texture.Format != SurfaceFormat.Dxt1)
+            if (controlSize.X < frameSize.X || controlSize.Y < frameSize.Y)
+                Trace.TraceWarning("Cab control size {1}x{2} is smaller than frame size {3}x{4} (frames may be cut-off) for {0}", fileName, controlSize.X, controlSize.Y, frameSize.X, frameSize.Y);
+
+            if (frameCount > frameGrid.X * frameGrid.Y)
+                Trace.TraceWarning("Cab control frame count {1} is larger than the number of frames {2}*{3}={4} (some frames will be blank) for {0}", fileName, frameCount, frameGrid.X, frameGrid.Y, frameGrid.X * frameGrid.Y);
+
+            if (texture.Format != SurfaceFormat.Color && texture.Format != SurfaceFormat.Dxt1)
             {
                 Trace.TraceWarning("Cab control texture {0} has unsupported format {1}; only Color and Dxt1 are supported.", fileName, texture.Format);
             }
             else
             {
-                var frameCountHorizontal = texture.Width / frameWidth;
-                var frameCountVertical = texture.Height / frameHeight;
-
-                // Problem with texture size, disassemble and later fill with missing the rest
-                if (frameCountVertical * frameCountHorizontal != frameCount)
+                var copySize = new Point(Math.Min(controlSize.X, frameSize.X), Math.Min(controlSize.Y, frameSize.Y));
+                if (texture.Format == SurfaceFormat.Color)
                 {
-                    var originalFrames = frameCount;
-                    if (frameCount < frameCountVertical * frameCountHorizontal)
-                        frameCount = frameCountVertical * frameCountHorizontal;
-
-                    Trace.TraceWarning("Cab control texture {0} has mismatched frame count. Expected {1}; got {2}; using {3}.", fileName, frameCountVertical * frameCountHorizontal, originalFrames, frameCount);
+                    var textureSize = new Point((int)Math.Ceiling((float)controlSize.X / 4) * 4, (int)Math.Ceiling((float)controlSize.Y / 4) * 4);
+                    var buffer = new byte[copySize.X * copySize.Y / 2];
+                    frameIndex = DisassembleFrames(graphicsDevice, texture, controlSize, frameCount, frameGrid, frames, frameSize, copySize, textureSize, buffer);
                 }
-
-                var frameTextureWidth = frameWidth;
-                var frameTextureHeight = frameHeight;
-                if (texture.Format == SurfaceFormat.Dxt1) frameTextureWidth = (int)Math.Ceiling((float)frameWidth / 4) * 4;
-                if (texture.Format == SurfaceFormat.Dxt1) frameTextureHeight = (int)Math.Ceiling((float)frameHeight / 4) * 4;
-
-                frames = new Texture2D[frameCount];
-                var buffer32 = new Color[frameTextureWidth * frameTextureHeight];
-                var bufferDXT1 = new byte[frameTextureWidth * frameTextureHeight / 2];
-
-                for (var y = 0; y < frameCountVertical; y++)
+                else
                 {
-                    for (var x = 0; x < frameCountHorizontal; x++)
-                    {
-                        var rect = new Rectangle(x * frameWidth, y * frameHeight, frameWidth, frameHeight);
-                        if (texture.Format == SurfaceFormat.Dxt1)
-                            texture.GetData(0, rect, bufferDXT1, 0, bufferDXT1.Length);
-                        else
-                            texture.GetData(0, rect, buffer32, 0, buffer32.Length);
+                    var buffer = new Color[copySize.X * copySize.Y];
+                    frameIndex = DisassembleFrames(graphicsDevice, texture, controlSize, frameCount, frameGrid, frames, frameSize, copySize, controlSize, buffer);
+                }
+            }
 
-                        var frame = frames[frameIndex++] = new Texture2D(graphicsDevice, frameTextureWidth, frameTextureHeight, 1, TextureUsage.None, texture.Format);
-                        if (texture.Format == SurfaceFormat.Dxt1)
-                            frame.SetData(bufferDXT1);
-                        else
-                            frame.SetData(buffer32);
+            while (frameIndex < frameCount)
+                frames[frameIndex++] = Materials.MissingTexture;
+
+            return frames;
+        }
+
+        static int DisassembleFrames<T>(GraphicsDevice graphicsDevice, Texture2D texture, Point controlSize, int frameCount, Point frameGrid, Texture2D[] frames, Point frameSize, Point copySize, Point textureSize, T[] buffer) where T : struct
+        {
+            //Trace.TraceInformation("Disassembling {0} {11} frames in {1}x{2}; control {3}x{4}, frame {5}x{6}, copy {7}x{8}, texture {9}x{10}. {12}", frameCount, frameGrid.X, frameGrid.Y, controlSize.X, controlSize.Y, frameSize.X, frameSize.Y, copySize.X, copySize.Y, textureSize.X, textureSize.Y, texture.Format, controlSize == frameSize && frameSize == copySize && copySize == textureSize ? "" : "VARIABLE");
+            var frameIndex = 0;
+            for (var y = 0; y < frameGrid.Y; y++)
+            {
+                for (var x = 0; x < frameGrid.X; x++)
+                {
+                    if (frameIndex < frameCount)
+                    {
+                        texture.GetData(0, new Rectangle(x * frameSize.X, y * frameSize.Y, copySize.X, copySize.Y), buffer, 0, buffer.Length);
+                        var frame = frames[frameIndex++] = new Texture2D(graphicsDevice, textureSize.X, textureSize.Y, 1, TextureUsage.None, texture.Format);
+                        frame.SetData(0, new Rectangle(0, 0, copySize.X, copySize.Y), buffer, 0, buffer.Length, SetDataOptions.None);
                     }
                 }
             }
-
-            // Fill missing the rest if has any
-            while (frameIndex < frameCount)
-            {
-                frames[frameIndex] = Materials.MissingTexture;
-                frameIndex++;
-            }
-
-            return frames;
+            return frameIndex;
         }
         
         /// <summary>
         /// Disassembles all compund textures into parts
         /// </summary>
         /// <param name="graphicsDevice">The GraphicsDevice</param>
-        /// <param name="FileName">Name of the Texture to be disassembled</param>
+        /// <param name="fileName">Name of the Texture to be disassembled</param>
         /// <param name="width">Width of the Cab View Control</param>
         /// <param name="height">Height of the Cab View Control</param>
-        /// <param name="FramesCount">Number of frames, read from CVF</param>
-        public static void DisassembleTexture(GraphicsDevice graphicsDevice, string FileName, int width, int height, int FramesCount)
+        /// <param name="frameCount">Number of frames</param>
+        /// <param name="framesX">Number of frames in the X dimension</param>
+        /// <param name="framesY">Number of frames in the Y direction</param>
+        public static void DisassembleTexture(GraphicsDevice graphicsDevice, string fileName, int width, int height, int frameCount, int framesX, int framesY)
         {
-            PDayTextures[FileName] = null;
-            if (DayTextures.ContainsKey(FileName))
+            var controlSize = new Point(width, height);
+            var frameGrid = new Point(framesX, framesY);
+
+            PDayTextures[fileName] = null;
+            if (DayTextures.ContainsKey(fileName))
             {
-                var tex = DayTextures[FileName];
-                if (tex != Materials.MissingTexture)
+                var texture = DayTextures[fileName];
+                if (texture != Materials.MissingTexture)
                 {
-                    PDayTextures[FileName] = Disassemble(graphicsDevice, tex, width, height, FramesCount, FileName + ":day");
+                    PDayTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":day");
                 }
             }
 
-            PNightTextures[FileName] = null;
-            if (NightTextures.ContainsKey(FileName))
+            PNightTextures[fileName] = null;
+            if (NightTextures.ContainsKey(fileName))
             {
-                var tex = NightTextures[FileName];
-                if (tex != Materials.MissingTexture)
+                var texture = NightTextures[fileName];
+                if (texture != Materials.MissingTexture)
                 {
-                    PNightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height, FramesCount, FileName + ":night");
+                    PNightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":night");
                 }
             }
 
-            PLightTextures[FileName] = null;
-            if (LightTextures.ContainsKey(FileName))
+            PLightTextures[fileName] = null;
+            if (LightTextures.ContainsKey(fileName))
             {
-                var tex = LightTextures[FileName];
-                if (tex != Materials.MissingTexture)
+                var texture = LightTextures[fileName];
+                if (texture != Materials.MissingTexture)
                 {
-                    PLightTextures[FileName] = Disassemble(graphicsDevice, tex, width, height, FramesCount, FileName + ":light");
+                    PLightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":light");
                 }
             }
         }
@@ -2660,9 +2651,7 @@ namespace ORTS
             : base(cvc, viewer, car, shader)
         {
             _CVCWithFrames = cvc;
-            CABTextureManager.DisassembleTexture(viewer.GraphicsDevice, _CabViewControl.ACEFile,
-                (int)_CabViewControl.Width, (int)_CabViewControl.Height, _CVCWithFrames.FramesCount);
-
+            CABTextureManager.DisassembleTexture(viewer.GraphicsDevice, _CabViewControl.ACEFile, (int)_CabViewControl.Width, (int)_CabViewControl.Height, _CVCWithFrames.FramesCount, _CVCWithFrames.FramesX, _CVCWithFrames.FramesY);
             _SourceRectangle = new Rectangle(0, 0, (int)_CVCWithFrames.Width, (int)_CVCWithFrames.Height);
         }
 
@@ -2765,35 +2754,35 @@ namespace ORTS
 
                         if (_Locomotive.DynamicBrakeController != null)
                         {
-                            int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
-                            int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
-                            float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
+                        int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
+                        int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
+                        float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
 
-                            if (dynBrakePercent == -1)
+                        if (dynBrakePercent == -1)
+                        {
+                            if (currentThrottleNotch == 0)
+                                indx = throttleNotchCount - 1;
+                            else
+                                indx = (throttleNotchCount - 1) - currentThrottleNotch;
+                        }
+                        else // dynamic break enabled
+                            indx = (dynNotchCount - 1) + currentDynamicNotch;
+                        
+ 
+
+                        if (UserInput.RDState != null)
+                        {
+                            if (UserInput.RDState.DynamicBrakePercent >= -100f)
                             {
                                 if (currentThrottleNotch == 0)
                                     indx = throttleNotchCount - 1;
                                 else
                                     indx = (throttleNotchCount - 1) - currentThrottleNotch;
                             }
-                            else // dynamic break enabled
+
+                            if (UserInput.RDState.DynamicBrakePercent >= 0)
                                 indx = (dynNotchCount - 1) + currentDynamicNotch;
-
-
-
-                            if (UserInput.RDState != null)
-                            {
-                                if (UserInput.RDState.DynamicBrakePercent >= -100f)
-                                {
-                                    if (currentThrottleNotch == 0)
-                                        indx = throttleNotchCount - 1;
-                                    else
-                                        indx = (throttleNotchCount - 1) - currentThrottleNotch;
-                                }
-
-                                if (UserInput.RDState.DynamicBrakePercent >= 0)
-                                    indx = (dynNotchCount - 1) + currentDynamicNotch;
-                            }
+                    }
                         }
 
                         if (_Locomotive.TrainBrakeController != null && _Locomotive.DynamicBrakeController == null)
