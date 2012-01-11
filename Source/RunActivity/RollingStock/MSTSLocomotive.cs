@@ -1929,7 +1929,7 @@ namespace ORTS
             else
             {
                 var copySize = new Point(Math.Min(controlSize.X, frameSize.X), Math.Min(controlSize.Y, frameSize.Y));
-                if (texture.Format == SurfaceFormat.Color)
+                if (texture.Format == SurfaceFormat.Dxt1)
                 {
                     var textureSize = new Point((int)Math.Ceiling((float)controlSize.X / 4) * 4, (int)Math.Ceiling((float)controlSize.Y / 4) * 4);
                     var buffer = new byte[copySize.X * copySize.Y / 2];
