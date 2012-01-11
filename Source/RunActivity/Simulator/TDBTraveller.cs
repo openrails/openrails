@@ -81,6 +81,17 @@ namespace ORTS
             }
         }
 
+        public float Roty
+        {
+            get
+            {
+                if (AY > Math.PI || AY < -Math.PI)
+                    MSTSMath.M.NormalizeRadians(ref AY);
+
+                return AY;
+            }
+        }
+
         public int TrackNodeIndex
         {
             get { return iTrackNode; }

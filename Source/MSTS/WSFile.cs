@@ -40,12 +40,14 @@ namespace ORTS
     public class TR_WorldSoundFile
     {
         public List<WorldSoundSource> SoundSources = new List<WorldSoundSource>();
+        public List<WorldSoundRegion> SoundRegions = new List<WorldSoundRegion>();
 
         public TR_WorldSoundFile(STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("soundsource", ()=>{ SoundSources.Add(new WorldSoundSource(stf)); }),
+                new STFReader.TokenProcessor("soundregion", ()=>{ SoundRegions.Add(new WorldSoundRegion(stf)); }),
             });
         }
     }
@@ -67,6 +69,31 @@ namespace ORTS
                     X = stf.ReadFloat(STFReader.UNITS.None, null);
                     Y = stf.ReadFloat(STFReader.UNITS.None, null);
                     Z = stf.ReadFloat(STFReader.UNITS.None, null);
+                    stf.SkipRestOfBlock();
+                }),
+            });
+        }
+    }
+
+    public class WorldSoundRegion
+    {
+        public int SoundRegionTrackType = -1;
+        public float ROTy;
+        public List<int> TrackNodes;
+
+        public WorldSoundRegion(STFReader stf)
+        {
+            TrackNodes = new List<int>();
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("soundregiontracktype", ()=>{ SoundRegionTrackType = stf.ReadIntBlock(STFReader.UNITS.None, -1); }),
+                new STFReader.TokenProcessor("soundregionroty", ()=>{ ROTy = stf.ReadFloatBlock(STFReader.UNITS.None, float.MaxValue); }),
+                new STFReader.TokenProcessor("tritemid", ()=>{
+                    stf.MustMatch("(");
+                    int dummy = stf.ReadInt(STFReader.UNITS.None, 0);
+                    dummy = stf.ReadInt(STFReader.UNITS.None, -1);
+                    if (dummy != -1)
+                        TrackNodes.Add(dummy);
                     stf.SkipRestOfBlock();
                 }),
             });

@@ -266,7 +266,7 @@ namespace ORTS
 				try
 				{
 					Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
-					List<SoundSource> ls = new List<SoundSource>();
+					List<SoundSourceBase> ls = new List<SoundSourceBase>();
 					ls.Add(Sound);
 					viewer.SoundProcess.AddSoundSource(this, ls);
 				}

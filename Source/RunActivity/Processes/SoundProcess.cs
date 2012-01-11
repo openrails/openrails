@@ -23,7 +23,7 @@ namespace ORTS
 		readonly Thread Thread;
 		readonly ProcessState State;
 
-        Dictionary<object, List<SoundSource>> _SoundSources;
+        Dictionary<object, List<SoundSourceBase>> _SoundSources;
 
         /// <summary>
         /// Constructs SoundProcess, creates the sound thread but not start. Must create after loading ingame sounds.
@@ -37,10 +37,10 @@ namespace ORTS
 				State = new ProcessState();
 				Thread = new Thread(SoundUpdateLoop);
 			}
-            _SoundSources = new Dictionary<object, List<SoundSource>>();
+            _SoundSources = new Dictionary<object, List<SoundSourceBase>>();
 			if (Viewer.IngameSounds != null)
             {
-				AddSoundSource(Viewer.Simulator.RoutePath + "\\Sound\\ingame.sms", new List<SoundSource>() { Viewer.IngameSounds });
+				AddSoundSource(Viewer.Simulator.RoutePath + "\\Sound\\ingame.sms", new List<SoundSourceBase>() { Viewer.IngameSounds });
             }
         }
 
@@ -65,7 +65,7 @@ namespace ORTS
         /// </summary>
         /// <param name="viewer">The viewer object, could be anything</param>
         /// <param name="sources">List of SoundSources to play</param>
-        public void AddSoundSource(object viewer, List<SoundSource> sources)
+        public void AddSoundSource(object viewer, List<SoundSourceBase> sources)
         {
             lock (_SoundSources)
             {
@@ -80,7 +80,7 @@ namespace ORTS
         /// <param name="viewer">The viewer object the sounds attached to</param>
         public void RemoveSoundSource(object viewer)
         {
-            List<SoundSource> ls = null;
+            List<SoundSourceBase> ls = null;
             // Try to remove the given SoundSource
             lock (_SoundSources)
             {
@@ -113,9 +113,9 @@ namespace ORTS
 
             lock (_SoundSources)
             {
-                foreach (List<SoundSource> src in _SoundSources.Values)
+                foreach (List<SoundSourceBase> src in _SoundSources.Values)
                 {
-                    foreach (SoundSource ss in src)
+                    foreach (SoundSourceBase ss in src)
                     {
                         ss.InitInitials();
                     }
@@ -146,9 +146,9 @@ namespace ORTS
                 // Update all sound in our list
                 lock (_SoundSources)
                 {
-                    foreach (List<SoundSource> src in _SoundSources.Values)
+                    foreach (List<SoundSourceBase> src in _SoundSources.Values)
                     {
-                        foreach (SoundSource ss in src)
+                        foreach (SoundSourceBase ss in src)
                         {
                             ss.Update();
                         }

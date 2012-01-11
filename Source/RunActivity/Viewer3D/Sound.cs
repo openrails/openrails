@@ -38,6 +38,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using MSTS;
 
 
 namespace ORTS
@@ -47,8 +48,123 @@ namespace ORTS
 /// SOUND SOURCE
 /////////////////////////////////////////////////////////
 
+    public abstract class SoundSourceBase
+    {
+        public abstract void InitInitials();
+        public abstract void Update();
+
+        public MSTSWagon Car = null;          // the sound may be from a train car
+        public Viewer3D Viewer;                 // the listener is connected to this viewer
+    }
+
+    public class TrackSoundSource : SoundSourceBase
+    {
+        private int _prevTType = -1;
+        private int _curTType = -1;
+        private SoundSource _activeInSource = null;
+        private SoundSource _activeOutSource = null;
+        private List<SoundSource> _inSources;
+        private List<SoundSource> _outSources;
+        private TDBObjects _tdbObjs = null;
+
+        public TrackSoundSource(MSTSWagon car, Viewer3D viewer)
+        {
+            Car = car;
+            Viewer = viewer;
+            _inSources = new List<SoundSource>();
+            _outSources = new List<SoundSource>();
+
+            _tdbObjs = new TDBObjects(Car);
+
+            foreach (MSTS.TTypeDatFile.TrackType ttdf in viewer.TTypeDatFile)
+            {
+                MSTSLocomotive loco = Car as MSTSLocomotive;
+
+                if (!string.IsNullOrEmpty(Car.InteriorSoundFileName) || (loco != null && !string.IsNullOrEmpty(loco.CabSoundFileName)) )
+                    LoadTrackSound(ttdf.InsideSound, true);
+
+                LoadTrackSound(ttdf.OutsideSound, false);
+            }
+        }
+
+        private void LoadTrackSound(string filename, bool isInside)
+        {
+            if (filename == null)
+                return;
+            string path = Viewer.Simulator.RoutePath + @"\SOUND\" + filename;
+            if (!File.Exists(path))
+                path = Viewer.Simulator.BasePath + @"\SOUND\" + filename;
+            if (!File.Exists(path))
+            {
+                Trace.TraceError("ttype.dat - can't find " + filename);
+                return;
+            }
+            if (isInside)
+                _inSources.Add(new SoundSource(Viewer, Car, path));
+            else
+                _outSources.Add(new SoundSource(Viewer, Car, path));
+        }
+
+        public override void InitInitials()
+        {
+            if (_inSources != null && _inSources.Count > 0)
+                _activeInSource = _inSources[0];
+
+            if (_outSources != null && _outSources.Count > 0)
+                _activeOutSource = _outSources[0];
+
+            _curTType = 0;
+            _prevTType = 0;
+        }
+
+        public void UpdateTType()
+        {
+            if (_prevTType == -1)
+                return;
+
+            if (Car != null && Car.Train != null)
+            {
+                //_curTType = Viewer.WorldSounds.GetTType(_tdbObjs);
+                _curTType = Viewer.WorldSounds.GetTType(Car.Train);
+                if (_curTType != _prevTType && _curTType != int.MaxValue)
+                {
+                    if (_activeInSource != null)
+                    {
+                        _activeInSource.Uninitialize();
+                        _activeInSource.Car = null;
+                        _activeInSource = _inSources[_curTType];
+                        _activeInSource.Car = Car;
+                    }
+
+                    if (_activeOutSource != null)
+                    {
+                        _activeOutSource.Uninitialize();
+                        _activeOutSource.Car = null;
+                        _activeOutSource = _outSources[_curTType];
+                        _activeOutSource.Car = Car;
+                    }
+#if DEBUGSCR
+                    Trace.WriteLine(string.Format("Sound region changed from {0} to {1}.", _prevTType, _curTType));
+#endif
+
+                    _prevTType = _curTType;
+                }
+            }
+        }
+
+        public override void Update()
+        {
+            UpdateTType();
+
+            if (_activeInSource != null)
+                _activeInSource.Update();
+
+            if (_activeOutSource != null)
+                _activeOutSource.Update();
+        }
+    }
     
-    public class SoundSource 
+    public class SoundSource : SoundSourceBase
     {
         private const int CUTOFFDISTANCE = 40000;
         /// <summary>
@@ -105,12 +221,14 @@ namespace ORTS
         public void Uninitialize()
         {
             foreach (SoundStream ss in SoundStreams)
+            {
                 ss.Stop();
+                ss.HardDeactivate();
+                _wasOutOfDistance = true;
+            }
         }
         
         public WorldLocation WorldLocation;   // current location for the sound source
-        public Viewer3D Viewer;                 // the listener is connected to this viewer
-        public MSTSWagon Car = null;          // the sound may be from a train car
 
         public string SMSFolder;              // the wave files will be relative to this folder
         public string SMSFileName;
@@ -196,7 +314,7 @@ namespace ORTS
             }
         }
 
-        public void InitInitials()
+        public override void InitInitials()
         {
             if (Car != null)
             {
@@ -230,7 +348,7 @@ namespace ORTS
                     trigger.Initialize();
         }
         
-        public void Update()
+        public override void Update()
         {
             if (Car != null)
             {
@@ -1473,7 +1591,8 @@ namespace ORTS
     public class WorldSounds
     {
         List<WSFile> Files = new List<WSFile>();
-        Dictionary<string, List<SoundSource>> Sounds = new Dictionary<string, List<SoundSource>>();
+        Dictionary<string, List<SoundSourceBase>> Sounds = new Dictionary<string, List<SoundSourceBase>>();
+        Dictionary<string, List<WorldSoundRegion>> SoundRegions = new Dictionary<string, List<WorldSoundRegion>>();
         private Viewer3D Viewer;
 
         public WorldSounds(Viewer3D viewer)
@@ -1486,6 +1605,168 @@ namespace ORTS
             return;
         }
 
+        public int GetTType(TDBObjects tdbObjs)
+        {
+            int retval = 0;
+            WorldSoundRegion prevItem = null;
+            WorldSoundRegion nextItem = null;
+            float prevDist;
+            float nextDist;
+
+            List<int> validitems = (from lwsr in SoundRegions.Values
+                                    from wsr in lwsr
+                                    from i in wsr.TrackNodes
+                                    select i).Distinct().ToList();
+
+            TrItem prev = tdbObjs.FindPrevItem<SoundRegionItem>(out prevDist, validitems);
+            TrItem next = tdbObjs.FindNextItem<SoundRegionItem>(out nextDist, validitems);
+
+            if (prev != null)
+            {
+                prevItem = (from lwsr in SoundRegions.Values
+                            from wsr in lwsr
+                            where wsr.TrackNodes.Contains((int)prev.TrItemId)
+                            select wsr).FirstOrDefault();
+            }
+
+            if (next != null)
+            {
+                nextItem = (from lwsr in SoundRegions.Values
+                            from wsr in lwsr
+                            where wsr.TrackNodes.Contains((int)next.TrItemId)
+                            select wsr).FirstOrDefault();
+            }
+
+            if (prevItem != null && nextItem != null)
+            {
+                if (prevItem.SoundRegionTrackType == nextItem.SoundRegionTrackType)
+                {
+                    retval = prevItem.SoundRegionTrackType;
+                }
+                else if (nextDist < 10)
+                {
+                    retval = int.MaxValue;
+                }
+            }
+
+            return retval;
+        }
+
+        public int GetTType(Train train)
+        {
+            int retval = 0;
+
+            TDBTraveller traveller = train.FrontTDBTraveller;
+
+            MSTS.TrackDB trackDB = Viewer.Simulator.TDB.TrackDB;
+            MSTS.TrItem[] trItems = trackDB.TrItemTable;
+
+            WorldSoundRegion prevItem = null;
+            WorldSoundRegion nextItem = null;
+            
+            TDBTraveller tmp;
+
+            float prevDist = float.MaxValue;
+            float nextDist = float.MaxValue;
+            float d;
+
+            lock (SoundRegions)
+            {
+                // Check every sound region's all track nodes
+                foreach (List<WorldSoundRegion> lwsr in SoundRegions.Values)
+                {
+                    foreach (WorldSoundRegion wsr in lwsr)
+                    {
+                        foreach (int trNode in wsr.TrackNodes)
+                        {
+                            if (trItems[trNode].ItemType == MSTS.TrItem.trItemType.trSOUNDREGION)
+                            {
+                                tmp = new TDBTraveller(traveller);
+
+                                // Try to find forward
+                                d = tmp.DistanceTo(trItems[trNode].TileX, trItems[trNode].TileZ, trItems[trNode].X, trItems[trNode].Y, trItems[trNode].Z, ref tmp, 8192);
+                                
+                                if (d != -1)
+                                {
+                                    // This is nearer than previous one
+                                    if (d < nextDist)
+                                    {
+                                        nextDist = d;
+                                        nextItem = wsr;
+                                    }
+                                    // Or at exactly the same distance
+                                    else if (d == nextDist)
+                                    {
+                                        if (traveller.Direction == tmp.Direction)
+                                            tmp.ReverseDirection();
+
+                                        // If faces toward us then it is applicable
+                                        if (Math.Abs(tmp.Roty - wsr.ROTy) < .35)
+                                        {
+                                            nextDist = d;
+                                            nextItem = wsr;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // Not found forward, check backward
+                                    tmp = new TDBTraveller(traveller);
+                                    tmp.ReverseDirection();
+
+                                    d = tmp.DistanceTo(trItems[trNode].TileX, trItems[trNode].TileZ, trItems[trNode].X, trItems[trNode].Y, trItems[trNode].Z, ref tmp, 8192);
+                                    if (d != -1)
+                                    {
+                                        // It is nearer than previous
+                                        if (d < prevDist)
+                                        {
+                                            prevDist = d;
+                                            prevItem = wsr;
+                                        }
+                                        else if (d == prevDist)
+                                        {
+                                            if (traveller.Direction != tmp.Direction)
+                                                tmp.ReverseDirection();
+
+                                            // Applicable if faces with us
+                                            if (Math.Abs(tmp.Roty - wsr.ROTy) < .35)
+                                            {
+                                                prevDist = d;
+                                                prevItem = wsr;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Have before and behind us
+            if (prevItem != null && nextItem != null)
+            {
+                // Between same type, means we are in a sound region
+                if (prevItem.SoundRegionTrackType == nextItem.SoundRegionTrackType)
+                {
+                    // return one of those, doesn't matter which.
+                    retval = prevItem.SoundRegionTrackType;
+                }
+                else if (nextDist < 10)
+                {
+                    // We are between different regions and the next is very near
+                    // This case we won't change to default, unnecessary to that short period of time
+                    // int.MaxValue means do not change the current region even if we left it
+                    retval = int.MaxValue;
+                }
+            }
+            // If none of the conditions above apply,
+            //  - Missing items before or behind us, 
+            //  - or they are different types and far from each other
+            //  So we are in a neutral zone, retval is 0, default track type
+            return retval;
+        }
+
         public void AddByTile(int TileX, int TileZ)
         {
             string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
@@ -1496,7 +1777,7 @@ namespace ORTS
                 if (!Sounds.ContainsKey(name))
                 {
                     WSFile wf = new WSFile(name);
-                    List<SoundSource> ls = new List<SoundSource>();
+                    List<SoundSourceBase> ls = new List<SoundSourceBase>();
                     if (wf.TR_WorldSoundFile != null)
                     {
                         foreach (WorldSoundSource fss in wf.TR_WorldSoundFile.SoundSources)
@@ -1507,6 +1788,14 @@ namespace ORTS
                                 ss = new SoundSource(Viewer, wl, soundfolder + fss.SoundSourceFileName, true);
                             if (ss != null)
                                 ls.Add(ss);
+                        }
+
+                        lock (SoundRegions)
+                        {
+                            if (!SoundRegions.ContainsKey(name))
+                            {
+                                SoundRegions.Add(name, wf.TR_WorldSoundFile.SoundRegions);
+                            }
                         }
                     }
                     Viewer.SoundProcess.AddSoundSource(name, ls);
@@ -1523,6 +1812,13 @@ namespace ORTS
                 if (Sounds.ContainsKey(name))
                 {
                     Viewer.SoundProcess.RemoveSoundSource(name);
+                    lock (SoundRegions)
+                    {
+                        if (SoundRegions.ContainsKey(name))
+                        {
+                            SoundRegions.Remove(name);
+                        }
+                    }
                 }
             }
         }
@@ -1555,5 +1851,175 @@ namespace ORTS
         }
     }
 
+    public class TDBObjects
+    {
+        private MSTSWagon _car;
+        private Dispatcher _dp = Program.Simulator.AI.Dispatcher;
+        TrackNode[] trackNodes = Program.Simulator.TDB.TrackDB.TrackNodes;
+        TrItem[] trItems = Program.Simulator.TDB.TrackDB.TrItemTable;
+        private AIPath _aiPath = null;
+        private TrackAuthority _ta;
+
+        public TDBObjects(MSTSWagon Car)
+        {
+            _car = Car;
+        }
+
+        private AIPathNode FindNode()
+        {
+            AIPathNode retval = null;
+
+            if (_aiPath == null)
+            {
+
+                _ta = _dp.TrackAuthorities.Where
+                    (t => t.Train == _car.Train).FirstOrDefault();
+
+                if (_ta != null)
+                {
+                    _aiPath = _ta.Path;
+                }
+            }
+
+            if (_aiPath != null)
+            {
+                retval = _aiPath.FindTrackNode(_ta.Path.FirstNode, _car.Train.FrontTDBTraveller.TrackNodeIndex);
+            }
+
+            return retval;
+        }
+
+		private AIPathNode GetNextNode(AIPathNode node)
+		{
+			if ((_ta != null && node == _ta.SidingNode) || node.NextMainNode == null)
+				return node.NextSidingNode;
+			else
+				return node.NextMainNode;
+		}
+
+        private AIPathNode GetPrevNode(AIPathNode node)
+        {
+            AIPathNode retval = null;
+            AIPathNode p = node;
+
+            if (_aiPath != null)
+            {
+                AIPathNode c = _aiPath.FirstNode;
+
+                while (c != p && c != null)
+                {
+                    retval = c;
+                    c = GetNextNode(c);
+                }
+
+                if (c == null)
+                    retval = null;
+            }
+
+            return retval;
+        }
+
+        private int GetTVNIndex(AIPathNode node)
+		{
+            if (node == null)
+                return -1;
+
+            if ((_ta != null && node == _ta.SidingNode) || node.NextMainNode == null)
+				return node.NextSidingTVNIndex;
+			else
+				return node.NextMainTVNIndex;
+		}
+
+        public TrItem FindNextItem<T>(out float distance)
+            where T : TrItem
+        {
+            TDBTraveller traveller = _car.Train.FrontTDBTraveller;
+            return FindItem<T>(traveller, GetNextNode, out distance, null);
+        }
+
+        public TrItem FindNextItem<T>(out float distance, List<int> validitems)
+            where T : TrItem
+        {
+            TDBTraveller traveller = _car.Train.FrontTDBTraveller;
+            return FindItem<T>(traveller, GetNextNode, out distance, validitems);
+        }
+
+        public TrItem FindPrevItem<T>(out float distance)
+            where T : TrItem
+        {
+            TDBTraveller traveller = new TDBTraveller(_car.Train.FrontTDBTraveller);
+            traveller.ReverseDirection();
+            return FindItem<T>(traveller, GetPrevNode, out distance, null);
+        }
+
+        public TrItem FindPrevItem<T>(out float distance, List<int> validitems)
+            where T : TrItem
+        {
+            TDBTraveller traveller = new TDBTraveller(_car.Train.FrontTDBTraveller);
+            traveller.ReverseDirection();
+            return FindItem<T>(traveller, GetPrevNode, out distance, validitems);
+        }
+
+        private TrItem FindItem<T>(TDBTraveller traveller, Func<AIPathNode, AIPathNode> move, out float distance, List<int> validitems)
+            where T : TrItem
+        {
+            T Item = null;
+            int currentNode;
+            AIPathNode aiNode = FindNode();
+            currentNode = GetTVNIndex(aiNode);
+            distance = float.MaxValue;
+
+            while (aiNode != null && currentNode != -1)
+            {
+                if (trackNodes[currentNode].TrVectorNode != null)
+                {
+                    if (trackNodes[currentNode].TrVectorNode.noItemRefs > 0)
+                    {
+                        for (int i = 0; i < trackNodes[currentNode].TrVectorNode.noItemRefs; i++)
+                        {
+                            //if (trItems[trackNodes[currenNode].TrVectorNode.TrItemRefs[i]].ItemType == TrItem.trItemType.trSIGNAL)
+                            //{
+                            T item = (trItems[trackNodes[currentNode].TrVectorNode.TrItemRefs[i]]) as T;
+                            if (item != null && validitems != null && validitems.Contains((int)item.TrItemId))
+                            {
+                                /*
+                                if (sigItem.revDir == currDir)
+                                {
+                                    int sigObj = sigItem.sigObj;
+                                    if (signalObjects[sigObj] != null) //WaltN: Fixes Sandpatch problem
+                                        if (signalObjects[sigObj].isSignalNormal())
+                                        {
+                                     */
+
+                                float dist = traveller.DistanceTo(item.TileX, item.TileZ, item.X, item.Y, item.Z);
+                                if (dist > 0)
+                                {
+                                    if (dist < distance)
+                                    {
+                                        distance = dist;
+                                        Item = item;
+                                    }
+                                }
+                            }
+                            /*
+                                }
+                                     
+                        }
+                             */
+                            //}
+                        }
+
+                        if (Item != null) return Item;
+                    }
+
+                }
+
+                aiNode = move(aiNode);
+                currentNode = GetTVNIndex(aiNode);
+            }
+
+            return null;
+        }
+    }
 }
 

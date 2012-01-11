@@ -681,7 +681,7 @@ namespace ORTS
         protected PoseableShape TrainCarShape = null;
         protected AnimatedShape FreightShape = null;
         protected AnimatedShape InteriorShape = null;
-        protected List<SoundSource> SoundSources = new List<SoundSource>();
+        protected List<SoundSourceBase> SoundSources = new List<SoundSourceBase>();
 
         List<int> WheelPartIndexes = new List<int>();   // these index into a matrix in the shape file
 		List<int> RunningGearPartIndexes = new List<int>();
@@ -938,20 +938,6 @@ namespace ORTS
         }
 
 
-        public void UpdateSound(ElapsedTime elapsedTime)
-        {
-			try
-			{
-				foreach (SoundSource soundSource in SoundSources)
-					soundSource.Update();
-			}
-			catch (Exception error)
-			{
-				Trace.WriteLine(error);
-			}
-        }
-
-
         private void UpdateAnimation( RenderFrame frame, ElapsedTime elapsedTime )
         {
             float distanceTravelledM = 0;
@@ -1093,6 +1079,13 @@ namespace ORTS
         /// </summary>
         private void LoadTrackSounds()
         {
+            if (MSTSWagon is MSTSLocomotive)
+            {
+                TrackSoundSource ts = new TrackSoundSource(MSTSWagon, Viewer);
+                SoundSources.Add(ts);
+                return;
+            }
+
             if (Viewer.TTypeDatFile.Count > 0)  // TODO, still have to figure out if this should be part of the car, or train, or track
             {
                 if (!string.IsNullOrEmpty(MSTSWagon.InteriorSoundFileName))
