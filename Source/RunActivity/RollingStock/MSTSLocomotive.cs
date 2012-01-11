@@ -2763,35 +2763,62 @@ namespace ORTS
                         int currentThrottleNotch = _Locomotive.ThrottleController.CurrentNotch;
                         int throttleNotchCount = _Locomotive.ThrottleController.NotchCount();
 
-                        int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
-                        int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
-                        float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
-
-                        if (!_Locomotive.HasStepCtrl) { break; }  // not a diesel loco
-
-                        if (dynBrakePercent == -1)
+                        if (_Locomotive.DynamicBrakeController != null)
                         {
-                            if (currentThrottleNotch == 0)
-                                indx = throttleNotchCount - 1;
-                            else
-                                indx = (throttleNotchCount - 1) - currentThrottleNotch;
-                        }
-                        else // dynamic break enabled
-                            indx = (dynNotchCount - 1) + currentDynamicNotch;
-                        
- 
-                        if (UserInput.RDState != null)
-                        {
-                            if (UserInput.RDState.DynamicBrakePercent >= -100f)
+                            int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
+                            int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
+                            float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
+
+                            if (dynBrakePercent == -1)
                             {
                                 if (currentThrottleNotch == 0)
                                     indx = throttleNotchCount - 1;
                                 else
                                     indx = (throttleNotchCount - 1) - currentThrottleNotch;
                             }
-                            
-                            if (UserInput.RDState.DynamicBrakePercent >= 0)
+                            else // dynamic break enabled
                                 indx = (dynNotchCount - 1) + currentDynamicNotch;
+
+
+
+                            if (UserInput.RDState != null)
+                            {
+                                if (UserInput.RDState.DynamicBrakePercent >= -100f)
+                                {
+                                    if (currentThrottleNotch == 0)
+                                        indx = throttleNotchCount - 1;
+                                    else
+                                        indx = (throttleNotchCount - 1) - currentThrottleNotch;
+                                }
+
+                                if (UserInput.RDState.DynamicBrakePercent >= 0)
+                                    indx = (dynNotchCount - 1) + currentDynamicNotch;
+                            }
+                        }
+
+                        if (_Locomotive.TrainBrakeController != null && _Locomotive.DynamicBrakeController == null)
+                        {
+                            int currentTrainBrakeNotch = _Locomotive.TrainBrakeController.CurrentNotch;
+                            int trainBrakeNotchCount = _Locomotive.TrainBrakeController.NotchCount();
+                            float trainBrakePercent = (float)_Locomotive.TrainBrakeController.CurrentValue * 100.0f;
+                            int bias = 5; // TODO hard coded value ; needs to picked off eng file (center point)
+
+
+
+                            if (trainBrakePercent <= 1)
+                            {
+
+                                if (currentThrottleNotch == 0)
+                                    indx = throttleNotchCount - 1;
+                                else
+                                    indx = (throttleNotchCount - 1) - currentThrottleNotch;
+                            }
+                            else
+                            {
+                                //Console.WriteLine("curNotch {0} NC {1} % {2}", currentTrainBrakeNotch,
+                                //trainBrakeNotchCount, trainBrakePercent);
+                                indx = bias + currentTrainBrakeNotch;
+                            }
                         }
 
                         break;
