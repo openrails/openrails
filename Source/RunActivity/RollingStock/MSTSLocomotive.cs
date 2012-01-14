@@ -98,8 +98,12 @@ namespace ORTS
         public float DynamicBrakeSpeed4 = 35;
         public float MaxDynamicBrakeForceN = 0;
         public bool DynamicBrakeAutoBailOff = false;
+
         public bool HasCombCtrl = false;
         public bool HasStepCtrl = false;
+        public bool HasCombThrottleTrainBreak = false;
+        public int  ComboCtrlCrossOver = 5;
+
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
         public float NumWheels = 4;
@@ -285,10 +289,11 @@ namespace ORTS
                 case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(stf); break;
                 case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(stf); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
-                case "engine(enginecontrollers(combined_control": HasCombCtrl = true; break;
+
+                //case "engine(enginecontrollers(combined_control": HasCombCtrl = true; break;
+                case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
                 case "engine(vigilancemonitor": VigilanceMonitor = true; break;
                 
-
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
@@ -394,6 +399,28 @@ namespace ORTS
             AdhesionFilter.Reset(0.5f);
             
             base.Restore(inf);
+        }
+
+        private void ParseCombData(string lowercasetoken, STFReader stf)
+        {
+            HasCombCtrl = true;
+            stf.MustMatch("(");
+            string comboBrakeType = "train";
+            string s;
+            int i = 0;
+            float value = 0.5f;
+
+            while ((s = stf.ReadItem()) != ")")
+            {
+                if (i == 1)
+                {
+                    value = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    ComboCtrlCrossOver = (int)(value * 10);
+                }
+                if (comboBrakeType == s)
+                    HasCombThrottleTrainBreak = true;
+                i++;
+            }
         }
 
         public bool IsLeadLocomotive()
@@ -790,7 +817,8 @@ namespace ORTS
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
-            if (HasCombCtrl && HasStepCtrl)
+
+            if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
@@ -804,6 +832,7 @@ namespace ORTS
                 }
                 SignalEvent(EventID.Reverse);  // use for throttle fwd / rev
             }
+
 
             else if (!HasCombCtrl && HasStepCtrl)
             {
@@ -835,7 +864,7 @@ namespace ORTS
                 // signal sound
                 return;
 
-            if (HasCombCtrl && HasStepCtrl)
+            if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
@@ -849,6 +878,8 @@ namespace ORTS
                 }
                 SignalEvent(EventID.Reverse);
             }
+
+
             else if (!HasCombCtrl && HasStepCtrl)
             {
                 ThrottleController.StartDecrease();
@@ -1408,7 +1439,6 @@ namespace ORTS
                         break;
                     }
 
-
                 case CABViewControlTypes.FRONT_HLIGHT:
                     {
                         data = Headlight;
@@ -1618,36 +1648,108 @@ namespace ORTS
             }
         }
 
+        bool SwapControl()
+        {
+            if (Locomotive.HasCombThrottleTrainBreak)
+                return true;
+            else
+                return false;
+        }
+
         void StartThrottleIncrease()
         {
-            if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-            { SoundBuzzer(); return; }
+            if (!SwapControl()) // tests for CombThrottleTrainBreak
+            {
+                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
+                { SoundBuzzer(); return; }
+                else
+                    Locomotive.StartThrottleIncrease();
+            }
             else
-                Locomotive.StartThrottleIncrease();
+            {
+                float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
+                float throttlePercent = Locomotive.ThrottlePercent;
+
+
+                //if (trainBreakPercent > 0)
+                if (throttlePercent == 0 && trainBreakPercent > 0)
+                {
+                    Locomotive.StartTrainBrakeDecrease();
+                    Locomotive.StopThrottleIncrease();
+                }
+
+            }
         }
 
         void StopThrottleIncrease()
         {
-            if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-            { SoundBuzzer(); return; }
+            if (!SwapControl()) // tests for CombThrottleTrainBreak
+            {
+                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
+                { SoundBuzzer(); return; }
+                else
+                    Locomotive.StopThrottleIncrease();
+            }
             else
-                Locomotive.StopThrottleIncrease();
+            {
+                float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
+                float throttlePercent = Locomotive.ThrottlePercent;
+
+                if (throttlePercent == 0 && trainBreakPercent > 0)
+                {
+                    Locomotive.StopTrainBrakeDecrease();
+                }
+                else
+                {
+                    Locomotive.StartThrottleIncrease();
+                    Locomotive.StopThrottleIncrease();
+                }
+            }
+
         }
 
         void StartThrottleDecrease()
         {
-            if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-            { SoundBuzzer(); return; }
+            if (!SwapControl())
+            {
+                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
+                    { SoundBuzzer(); return; }
+                else
+                    Locomotive.StartThrottleDecrease();
+            }
             else
-                Locomotive.StartThrottleDecrease();
+            {
+                float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
+                float throttlePercent = Locomotive.ThrottlePercent;
+
+                if (throttlePercent == 0 && trainBreakPercent >= 0)
+                {
+                    Locomotive.StartTrainBrakeIncrease();
+                    Locomotive.StopThrottleDecrease();
+                }
+                else
+                    Locomotive.StartThrottleDecrease();
+
+            }
         }
 
         void StopThrottleDecrease()
         {
-            if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-            { SoundBuzzer(); return; }
+            if (!SwapControl()) // tests for CombThrottleTrainBrea
+            {
+                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
+                { SoundBuzzer(); return; }
+                else
+                    Locomotive.StopThrottleDecrease();
+            }
             else
-                Locomotive.StopThrottleDecrease();
+            {
+                float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
+                float throttlePercent = Locomotive.ThrottlePercent;
+
+                if (throttlePercent == 0 && trainBreakPercent >= 0)
+                    Locomotive.StopTrainBrakeIncrease();
+            }
         }
 
         void ReverserControlForwards()
@@ -2754,45 +2856,43 @@ namespace ORTS
 
                         if (_Locomotive.DynamicBrakeController != null)
                         {
-                        int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
-                        int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
-                        float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
+                            int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
+                            int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
+                            float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
 
-                        if (dynBrakePercent == -1)
-                        {
-                            if (currentThrottleNotch == 0)
-                                indx = throttleNotchCount - 1;
-                            else
-                                indx = (throttleNotchCount - 1) - currentThrottleNotch;
-                        }
-                        else // dynamic break enabled
-                            indx = (dynNotchCount - 1) + currentDynamicNotch;
-                        
- 
-
-                        if (UserInput.RDState != null)
-                        {
-                            if (UserInput.RDState.DynamicBrakePercent >= -100f)
+                            if (dynBrakePercent == -1)
                             {
                                 if (currentThrottleNotch == 0)
                                     indx = throttleNotchCount - 1;
                                 else
                                     indx = (throttleNotchCount - 1) - currentThrottleNotch;
                             }
-
-                            if (UserInput.RDState.DynamicBrakePercent >= 0)
+                            else // dynamic break enabled
                                 indx = (dynNotchCount - 1) + currentDynamicNotch;
-                    }
-                        }
+
+
+
+                            if (UserInput.RDState != null)
+                            {
+                                if (UserInput.RDState.DynamicBrakePercent >= -100f)
+                                {
+                                    if (currentThrottleNotch == 0)
+                                        indx = throttleNotchCount - 1;
+                                    else
+                                        indx = (throttleNotchCount - 1) - currentThrottleNotch;
+                                }
+
+                                if (UserInput.RDState.DynamicBrakePercent >= 0)
+                                    indx = (dynNotchCount - 1) + currentDynamicNotch;
+                            }
+                        } // End Dynamic != null
 
                         if (_Locomotive.TrainBrakeController != null && _Locomotive.DynamicBrakeController == null)
                         {
                             int currentTrainBrakeNotch = _Locomotive.TrainBrakeController.CurrentNotch;
                             int trainBrakeNotchCount = _Locomotive.TrainBrakeController.NotchCount();
                             float trainBrakePercent = (float)_Locomotive.TrainBrakeController.CurrentValue * 100.0f;
-                            int bias = 5; // TODO hard coded value ; needs to picked off eng file (center point)
-
-
+                            int bias = _Locomotive.ComboCtrlCrossOver + 1;  //  needs to picked off eng file (center point)
 
                             if (trainBrakePercent <= 1)
                             {
@@ -2803,11 +2903,7 @@ namespace ORTS
                                     indx = (throttleNotchCount - 1) - currentThrottleNotch;
                             }
                             else
-                            {
-                                //Console.WriteLine("curNotch {0} NC {1} % {2}", currentTrainBrakeNotch,
-                                //trainBrakeNotchCount, trainBrakePercent);
                                 indx = bias + currentTrainBrakeNotch;
-                            }
                         }
 
                         break;
