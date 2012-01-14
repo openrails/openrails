@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ORArchitecture
 {
@@ -10,14 +8,18 @@ namespace ORArchitecture
     /// </summary>
     interface IListener
     {
-        public void RecieveMessage( Messaging source, EventMessage message);
+        void ReceiveMessage( Messaging source, EventMessage message);
     }
 
     interface ISender
     {
-        public void SendMessage(Messaging source, Messaging destination, EventMessage message );
+        void SendMessage(Messaging source, Messaging destination, EventMessage message );
         // for example signal code might send a message to a train driver
         //              SendMessage( this, Train4.Controller, EventMessage( "Hold at siding 7 for train 16" ) )
+    }
+
+    class Messaging {
+        // TO DEFINE
     }
 
     class EventMessage

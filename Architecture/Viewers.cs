@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace ORArchitecture
+﻿namespace ORArchitecture
 {
     /// <summary>
-    /// The base viewer can The base viewer class would have capability similar to a 
+    /// The base viewer class would have capability similar to a 
     /// real world train watcher.  It can move around and view the VirtualWorld, 
     /// but is assigned no control interfaces.  
-    /// A viewer must implement the iListener interface to enable it to recieve 
+    /// A viewer must implement the iListener interface to enable it to receive 
     /// messages from the other components in the system
     /// </summary>
     interface Viewer: IListener
     {
-        Viewer( iVirtualWorld virtualWorld );
+        void Viewer( IVirtualWorld virtualWorld );
     }
 
 
@@ -25,7 +20,7 @@ namespace ORArchitecture
     /// </summary>
     interface TrainDriver : Viewer
     {
-        TrainDriver( iVirtualWorld virtualWorld, iControlTrain trainController);
+        void TrainDriver( IVirtualWorld virtualWorld, IControlTrain trainController);
     }
 
     /// <summary>
@@ -34,12 +29,12 @@ namespace ORArchitecture
     /// </summary>
     interface CraneDriver : Viewer
     {
-        CraneDriver( iVirtualWorld virtualWorld, iControlCrane craneController);
+        void CraneDriver( IVirtualWorld virtualWorld, IControlCrane craneController);
     }
 
     interface EditorView : Viewer
     {
-        EditorView( iVirtualWorld virtualWorld, iControlTerrain terrainController, iControlScenery sceneryController);
+        void EditorView( IVirtualWorld virtualWorld, IControlTerrain terrainController, IControlScenery sceneryController);
     }
 
 }

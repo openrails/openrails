@@ -39,9 +39,15 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="CommandLog\ICommand.cs" />
+    <Compile Include="CommandLog\ICommandLog.cs" />
+    <Compile Include="CommandLog\IReceiver.cs" />
     <Compile Include="ContentData.cs" />
+    <Compile Include="IControlCrane.cs" />
+    <Compile Include="IControlScenery.cs" />
     <Compile Include="IControlSwitches.cs" />
     <Compile Include="IControlSignal.cs" />
+    <Compile Include="IControlTerrain.cs" />
     <Compile Include="IControlTrain.cs" />
     <Compile Include="Messaging.cs" />
     <Compile Include="IVirtualWorld.cs" />

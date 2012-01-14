@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace ORArchitecture
 {
     /// <summary>
     /// Represents OpenRail's entire file system.  Provides access to all data stored on 
-    /// the users hard disk - ie shapes, images, activity files, world files etc
+    /// the user's hard disk - ie shapes, images, activity files, world files etc
     /// </summary>
     interface IContentData
     {
@@ -21,7 +18,7 @@ namespace ORArchitecture
         /// </summary>
         /// <param name="type">Represents a class type that is stored in the database, ie Shape</param>
         /// <returns></returns>
-        List<ID> this[Type type] { get; } 
+        List<ContentID> this[Type type] { get; } 
     }
 
     /// <summary>
@@ -32,17 +29,17 @@ namespace ORArchitecture
     /// method is irrelevant to the users of the ContentDatabase since the users
     /// of the ContentDatabase will always be handed a link as an abstract ID.
     /// </summary>
-    abstract class ID
+    abstract class ContentID
     {
         //public string PackageName;
         //public string FileName;
     }
 
-        
+/*        
     /// <summary>
     /// USE CASE EXAMPLE
     /// </summary>
-    private class UseCaseExamples
+    public class UseCaseExamples
     {
         IContentData Data;
 
@@ -50,7 +47,7 @@ namespace ORArchitecture
         {
             foreach ( ID locoID in Data[typeof(Locomotive)] )
             {
-                var locomotive = (Locomotive)Data[ locoID])
+                var locomotive = (Locomotive)Data[locoID];
                 Console.WriteLine(locomotive.Name, locomotive.LengthM);
             }
         }
@@ -66,5 +63,5 @@ namespace ORArchitecture
             }
         }
     }// UseCaseExamples
-
+*/
 }
