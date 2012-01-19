@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -1046,6 +1047,7 @@ namespace ORTS
                         int currentTrackNode = trackNode;
                         int currentIndex = trRefIndex;
                         int currentDir = this.revDir;
+			SignalObject thisSignal;
 
   // Is the next signal within the current tracknode?
 
@@ -1082,11 +1084,17 @@ namespace ORTS
                                                         {
                                                                 SignalItem signalItem = (SignalItem)trItems[index];
                                                                 int sigIndex = signalItem.sigObj;
+
+								thisSignal = null;
+								if (sigIndex > 0 && sigIndex < signalObjects.Length)
+								{
+									thisSignal = signalObjects[sigIndex];
+								}
   // Not a signal head for this signal
-                                                                if ((signalObjects[sigIndex] != null) && (signalObjects[sigIndex].thisRef != thisRef))
+                                                                if ((thisSignal != null) && (thisSignal.thisRef != thisRef))
                                                                 {
-                                                                        if (signalObjects[sigIndex].isSignalType(fn_type) &&
-                                                                            signalObjects[sigIndex].revDir == currentDir)
+                                                                        if (thisSignal.isSignalType(fn_type) &&
+                                                                            thisSignal.revDir == currentDir)
                                                                             return sigIndex;
                                                                 }
                                                         }
@@ -1294,9 +1302,13 @@ namespace ORTS
 			{
 				return sigAsp;
 			}
-			else
+			else if (fn_type == SignalHead.SIGFN.NORMAL)
 			{
 				return SignalHead.SIGASP.CLEAR_2;
+			}
+			else
+			{
+				return SignalHead.SIGASP.STOP;
 			}
                 }//this_sig_lr
 
@@ -1521,12 +1533,9 @@ namespace ORTS
                                 case SignalHead.SIGASP.APPROACH_1:
                                 case SignalHead.SIGASP.APPROACH_2:
                                 case SignalHead.SIGASP.APPROACH_3:
-                                case SignalHead.SIGASP.APPROACH_4:
                                         return TrackMonitorSignalAspect.Warning;
                                 case SignalHead.SIGASP.CLEAR_1:
                                 case SignalHead.SIGASP.CLEAR_2:
-                                case SignalHead.SIGASP.CLEAR_3:
-                                case SignalHead.SIGASP.CLEAR_4:
                                         return TrackMonitorSignalAspect.Clear;
                                 default:
                                         return TrackMonitorSignalAspect.None;
@@ -1551,11 +1560,8 @@ namespace ORTS
                         APPROACH_1,
                         APPROACH_2,
                         APPROACH_3,
-                        APPROACH_4,
                         CLEAR_1,
                         CLEAR_2,
-                        CLEAR_3,
-                        CLEAR_4,
                         UNKNOWN
                 }
 

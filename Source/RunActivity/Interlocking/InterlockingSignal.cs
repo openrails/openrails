@@ -57,9 +57,7 @@ namespace ORTS.Interlocking
             foreach (var signalHead in SignalObject.SignalHeads)
             {
                if (signalHead.state == SignalHead.SIGASP.CLEAR_1 ||
-                   signalHead.state == SignalHead.SIGASP.CLEAR_2 ||
-                   signalHead.state == SignalHead.SIGASP.CLEAR_3 ||
-                   signalHead.state == SignalHead.SIGASP.CLEAR_4)
+                   signalHead.state == SignalHead.SIGASP.CLEAR_2 )
                {
                   returnValue = true;
 

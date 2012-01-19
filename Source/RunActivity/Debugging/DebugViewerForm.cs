@@ -718,9 +718,7 @@ namespace ORTS.Debugging
             foreach (var head in Signal.SignalHeads)
             {
                if (head.state == SignalHead.SIGASP.CLEAR_1 || 
-                   head.state == SignalHead.SIGASP.CLEAR_2 ||
-                   head.state == SignalHead.SIGASP.CLEAR_3 ||
-                   head.state == SignalHead.SIGASP.CLEAR_4)
+                   head.state == SignalHead.SIGASP.CLEAR_2 )
                {
                   returnValue = true;
                }

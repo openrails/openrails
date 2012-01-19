@@ -584,8 +584,11 @@ namespace MSTS
 
 		public class SignalSubObj
 		{
-			public static IList<string> SignalSubTypes = new[] {"DECOR","SIGNAL_HEAD","NUMBER_PLATE","GRADIENT_PLATE","USER1","USER2","USER3","USER4"};
-			// [Rob Roeterdink] made public for access from SIGSCR processing
+			public static IList<string> SignalSubTypes =
+			       	new[] {"DECOR","SIGNAL_HEAD","DUMMY1","DUMMY2",
+				"NUMBER_PLATE","GRADIENT_PLATE","USER1","USER2","USER3","USER4"};
+			// made public for access from SIGSCR processing
+			// Altered to match definition in MSTS
 
 			public readonly int Index;
 			public readonly string MatrixName;        // Name of the group within the signal shape which defines this head

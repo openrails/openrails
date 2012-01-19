@@ -1491,15 +1491,12 @@ namespace ORTS
                                     break;
                                 }
                             case SignalHead.SIGASP.APPROACH_3:
-                            case SignalHead.SIGASP.APPROACH_4:
                                 {
                                     data = 5;
                                     break;
                                 }
                             case SignalHead.SIGASP.CLEAR_1:
                             case SignalHead.SIGASP.CLEAR_2:
-                            case SignalHead.SIGASP.CLEAR_3:
-                            case SignalHead.SIGASP.CLEAR_4:
                                 {
                                     data = 6;
                                     break;
