@@ -615,6 +615,7 @@ namespace ORTS
 
 				int comsep = procLine.IndexOf(@"//");
 				int addsep = procLine.IndexOf(@"/*");
+				int endsep = procLine.IndexOf(@"*/");
 
 				if (comsep == 0)
 				{
@@ -627,7 +628,7 @@ namespace ORTS
 
 				if (addsep == 0)
 				{
-					compart = (procLine.IndexOf(@"*/") <= 0); // No end comment
+					compart = (endsep <= 0); // No end comment
 					procLine= String.Empty;
 				}
 					
@@ -640,6 +641,9 @@ namespace ORTS
 				else
 				{
 					readLine=scrStream.ReadLine();
+#if DEBUG_PRINT_IN
+					File.AppendAllText(din_fileLoc+@"sigfile.txt","Invalid line, next from file : "+readLine+"\n");
+#endif
 				}
 			}
 
@@ -670,6 +674,14 @@ namespace ORTS
 #if DEBUG_PRINT_IN
 				File.AppendAllText(din_fileLoc+@"sigfile.txt","To store : "+keepLine+"\n");
 #endif
+			}
+
+  // if "IF(" in string, replace with "IF ("
+
+			int ifbrack = procLine.IndexOf("IF(");
+			if (ifbrack >= 0)
+			{
+			    procLine=procLine.Substring(0,ifbrack)+"IF ("+procLine.Substring(ifbrack+3);
 			}
 
   // return line or null
@@ -1000,8 +1012,8 @@ namespace ORTS
 							if (nextline.StartsWith("IF "))
 							{
 								nextline = String.Concat("ELSEIF ",nextline.Substring(3).Trim());
-								FEIScriptLines.RemoveAt(endElsecount);
 								FEIScriptLines.RemoveAt(endElsecount+1);
+								FEIScriptLines.RemoveAt(endElsecount);
 								FEIScriptLines.Insert(endElsecount,nextline);
 								endElsecount = FindEndCondition(FEIScriptLines, endElsecount);
 								nextline     = FEIScriptLines[endElsecount];
@@ -1061,6 +1073,8 @@ namespace ORTS
 						nextline = nextline.Substring(5).Trim();
 						FEIScriptLines.RemoveAt(endElsecount);
 						FEIScriptLines.Insert(endElsecount,nextline);
+						nextline = "{";
+						FEIScriptLines.Insert(endElsecount,"{");
 						FEIScriptLines.Insert(endElsecount,"ELSE");
 					}
 
@@ -1823,6 +1837,25 @@ namespace ORTS
 
 				public SCRStatement(string StatementLine, IDictionary<string, uint> LocalFloats)
 				{
+
+  // check for improper use of =# or ==#
+
+					int eqindex = StatementLine.IndexOf("=");
+					if (String.Compare(StatementLine.Substring(eqindex+1,2),"=#") == 0)
+					{
+						StatementLine = String.Concat(StatementLine.Substring(0,eqindex+1),
+										StatementLine.Substring(eqindex+3));
+					}
+					else if (String.Compare(StatementLine.Substring(eqindex+1,1),"#") == 0)
+					{
+						StatementLine = String.Concat(StatementLine.Substring(0,eqindex+1),
+										StatementLine.Substring(eqindex+2));
+					}
+					else if (String.Compare(StatementLine.Substring(eqindex+1,1),"=") == 0)
+					{
+						StatementLine = String.Concat(StatementLine.Substring(0,eqindex+1),
+										StatementLine.Substring(eqindex+2));
+					}
 
   //split on =, should be only 2 parts
 
