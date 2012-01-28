@@ -205,18 +205,15 @@ namespace ORTS
                     var revision = "<unknown>";
                     var build = "<unknown>";
                     var versionOkay = false;
-                    try
-                    {
-                        revision = inf.ReadString().Replace("\0", "");
-                        build = inf.ReadString().Replace("\0", "");
+                    try {
+                        revision = inf.ReadString().Replace( "\0", "" );
+                        build = inf.ReadString().Replace( "\0", "" );
                         versionOkay = (revision == Version) && (build == Build);
-                    }
-                    catch { }
-                    if (!versionOkay)
-                    {
-                        if (revision.Length + build.Length > 0)
-                            throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build));
-                        throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build));
+                    } catch { }
+                    if( !versionOkay ) {
+                        if( revision.Length + build.Length > 0 )
+                            throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build ) );
+                        throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build ) );
                     }
 
                     // Read in the real data...

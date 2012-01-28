@@ -190,9 +190,8 @@ namespace ORTS
             LevelCrossings = new LevelCrossings(this);
             InterlockingSystem = new InterlockingSystem(this);
             AI = new AI(this, inf);
-
-            ActivityRun = ORTS.Activity.Restore(inf, this);
-		}
+            ActivityRun = ORTS.Activity.Restore( inf, this, ActivityRun );
+        }
 
 		public void Save(BinaryWriter outf)
 		{
