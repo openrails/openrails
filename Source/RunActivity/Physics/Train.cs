@@ -61,9 +61,9 @@ namespace ORTS
 		public float MUReverserPercent = 100;  // steam engine direction/cutoff control for MU'd locomotives
 		public float MUDynamicBrakePercent = -1;  // dynamic brake control for MU'd locomotives, <0 for off
 		public float BrakeLine1PressurePSI = 90;     // set by player locomotive to control entire train brakes
-		public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems
-		public float BrakeLine3PressurePSI = 0;     // extra line just in case
-		public float BrakeLine4PressurePSI = 0;     // extra line just in case
+		public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems, main reservoir
+		public float BrakeLine3PressurePSI = 0;     // extra line just in case, engine brake pressure
+		public float BrakeLine4PressurePSI = 0;     // extra line just in case, ep brake control line
 		public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
 		public int RetainerPercent = 100;
 
@@ -415,9 +415,6 @@ namespace ORTS
 			//Console.WriteLine("init {0} {1} {2}", BrakeLine1PressurePSI, BrakeLine2PressurePSI, BrakeLine3PressurePSI);
 			foreach (TrainCar car in Cars)
 			{
-				car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
-				car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
-				car.BrakeSystem.BrakeLine3PressurePSI = 0;
 				car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI);
 				if (LeadLocomotiveIndex < 0)
 					car.BrakeSystem.BrakeLine1PressurePSI = -1;
@@ -435,7 +432,7 @@ namespace ORTS
 			if (SpeedMpS < -.1 || SpeedMpS > .1)
 				return;
 			foreach (TrainCar car in Cars)
-				car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+				car.BrakeSystem.Connect();
 		}
 		public void DisconnectBrakes()
 		{
@@ -449,11 +446,7 @@ namespace ORTS
 				if (first <= i && i <= last)
 					continue;
 				TrainCar car = Cars[i];
-				car.BrakeSystem.BrakeLine1PressurePSI = 0;
-				car.BrakeSystem.BrakeLine2PressurePSI = 0;
-				car.BrakeSystem.BrakeLine3PressurePSI = 0;
-				car.BrakeSystem.Initialize(false, 0);
-				car.BrakeSystem.BrakeLine1PressurePSI = -1;
+                car.BrakeSystem.Disconnect();
 			}
 		}
 		public void SetRetainers(bool increase)
@@ -490,7 +483,7 @@ namespace ORTS
 				//Console.WriteLine("setretainer {0} {1}", j + 1, i % step);
 			}
 		}
-		private void FindLeadLocomotives(ref int first, ref int last)
+		public void FindLeadLocomotives(ref int first, ref int last)
 		{
 			first = last = -1;
 			if (LeadLocomotiveIndex >= 0)
@@ -511,129 +504,7 @@ namespace ORTS
 					lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds, ref BrakeLine4PressurePSI);
 				if (lead.EngineBrakeController != null)
 					lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
-				if (lead.BrakePipeChargingRatePSIpS < 1000)
-				{
-					float serviceTimeFactor = lead.BrakeServiceTimeFactorS;
-					if (lead.TrainBrakeController != null && lead.TrainBrakeController.GetIsEmergency())
-						serviceTimeFactor = lead.BrakeEmergencyTimeFactorS;
-					int nSteps = (int)(elapsedClockSeconds * 2 / lead.BrakePipeTimeFactorS + 1);
-					float dt = elapsedClockSeconds / nSteps;
-					for (int i = 0; i < nSteps; i++)
-					{
-						if (lead.BrakeSystem.BrakeLine1PressurePSI < BrakeLine1PressurePSI)
-						{
-							float dp = dt * lead.BrakePipeChargingRatePSIpS;
-							if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > BrakeLine1PressurePSI)
-								dp = BrakeLine1PressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
-							if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > lead.MainResPressurePSI)
-								dp = lead.MainResPressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
-							if (dp < 0)
-								dp = 0;
-							lead.BrakeSystem.BrakeLine1PressurePSI += dp;
-							lead.MainResPressurePSI -= dp * lead.BrakeSystem.BrakePipeVolumeFT3 / lead.MainResVolumeFT3;
-						}
-						else if (lead.BrakeSystem.BrakeLine1PressurePSI > BrakeLine1PressurePSI)
-							lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
-						TrainCar car0 = Cars[0];
-						float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
-						foreach (TrainCar car in Cars)
-						{
-							float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
-							if (p0 >= 0 && p1 >= 0)
-							{
-								float dp = dt * (p1 - p0) / lead.BrakePipeTimeFactorS;
-								car.BrakeSystem.BrakeLine1PressurePSI -= dp;
-								car0.BrakeSystem.BrakeLine1PressurePSI += dp;
-							}
-							p0 = p1;
-							car0 = car;
-						}
-					}
-				}
-				else
-				{
-					foreach (TrainCar car in Cars)
-						if (car.BrakeSystem.BrakeLine1PressurePSI >= 0)
-							car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
-				}
-				bool twoPipes = lead.BrakeSystem.GetType() == typeof(AirTwinPipe) || lead.BrakeSystem.GetType() == typeof(EPBrakeSystem);
-				int first = -1;
-				int last = -1;
-				FindLeadLocomotives(ref first, ref last);
-				float sumpv = 0;
-				float sumv = 0;
-				for (int i = 0; i < Cars.Count; i++)
-				{
-					BrakeSystem brakeSystem = Cars[i].BrakeSystem;
-					if (brakeSystem.BrakeLine1PressurePSI < 0)
-						continue;
-					if (i < first || i > last)
-					{
-						brakeSystem.BrakeLine3PressurePSI = 0;
-						if (twoPipes)
-						{
-							sumv += brakeSystem.BrakePipeVolumeFT3;
-							sumpv += brakeSystem.BrakePipeVolumeFT3 * brakeSystem.BrakeLine2PressurePSI;
-						}
-					}
-					else
-					{
-						float p = brakeSystem.BrakeLine3PressurePSI;
-						if (p > 1000)
-							p -= 1000;
-						AirSinglePipe.ValveState prevState = lead.EngineBrakeState;
-						if (p < BrakeLine3PressurePSI)
-						{
-							float dp = elapsedClockSeconds * lead.EngineBrakeApplyRatePSIpS / (last - first + 1);
-							if (p + dp > BrakeLine3PressurePSI)
-								dp = BrakeLine3PressurePSI - p;
-							p += dp;
-							lead.EngineBrakeState = AirSinglePipe.ValveState.Apply;
-						}
-						else if (p > BrakeLine3PressurePSI)
-						{
-							float dp = elapsedClockSeconds * lead.EngineBrakeReleaseRatePSIpS / (last - first + 1);
-							if (p - dp < BrakeLine3PressurePSI)
-								dp = p - BrakeLine3PressurePSI;
-							p -= dp;
-							lead.EngineBrakeState = AirSinglePipe.ValveState.Release;
-						}
-						else
-							lead.EngineBrakeState = AirSinglePipe.ValveState.Lap;
-						if (lead.EngineBrakeState != prevState)
-							switch (lead.EngineBrakeState)
-							{
-								case AirSinglePipe.ValveState.Release: lead.SignalEvent(EventID.EngineBrakeRelease); break;
-								case AirSinglePipe.ValveState.Apply: lead.SignalEvent(EventID.EngineBrakeApply); break;
-							}
-						if (lead.BailOff || (lead.DynamicBrakeAutoBailOff && MUDynamicBrakePercent > 0))
-							p += 1000;
-						brakeSystem.BrakeLine3PressurePSI = p;
-						sumv += brakeSystem.BrakePipeVolumeFT3;
-						sumpv += brakeSystem.BrakePipeVolumeFT3 * brakeSystem.BrakeLine2PressurePSI;
-						MSTSLocomotive eng = (MSTSLocomotive)Cars[i];
-						sumv += eng.MainResVolumeFT3;
-						sumpv += eng.MainResVolumeFT3 * eng.MainResPressurePSI;
-					}
-				}
-				if (sumv > 0)
-					sumpv /= sumv;
-				BrakeLine2PressurePSI = sumpv;
-				for (int i = 0; i < Cars.Count; i++)
-				{
-					if (Cars[i].BrakeSystem.BrakeLine1PressurePSI < 0)
-						continue;
-					if (i < first || i > last)
-					{
-						Cars[i].BrakeSystem.BrakeLine2PressurePSI = twoPipes ? sumpv : 0;
-					}
-					else
-					{
-						Cars[i].BrakeSystem.BrakeLine2PressurePSI = sumpv;
-						MSTSLocomotive eng = (MSTSLocomotive)Cars[i];
-						eng.MainResPressurePSI = sumpv;
-					}
-				}
+                lead.BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
 			}
 			else
 			{
