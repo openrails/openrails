@@ -1589,8 +1589,8 @@ namespace ORTS
 			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
 			Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
 			Texture.SetData(new[] { Color.White });
-			Font = renderProcess.Content.Load<SpriteFont>("ArialMedium");
-            LineSpacing = Font.LineSpacing * 3 / 4;
+			Font = renderProcess.Content.Load<SpriteFont>("Arial");
+            LineSpacing = Font.LineSpacing;
 			if (LineSpacing < 10) LineSpacing = 10; //if spacing between text lines is too small
 		}
 

@@ -201,7 +201,7 @@ namespace ORTS
                         foreach (PlatformLabel pd in w.platforms)
                         {
                             if (pd != null) frame.AddPrimitive(DrawInforMaterial,
-                                new ActivityInforPrimitive(DrawInforMaterial, pd, Color.CornflowerBlue),
+                                new ActivityInforPrimitive(DrawInforMaterial, pd, Color.Yellow),
                                 RenderPrimitiveGroup.World, ref Identity);
                         }
                     }
@@ -361,7 +361,7 @@ namespace ORTS
 
     }
 
-    //2D straight lines
+    //2D textures
     public class ActivityInforPrimitive : RenderPrimitive
     {
         public readonly ActivityInforMaterial Material;
@@ -369,8 +369,9 @@ namespace ORTS
         public Viewer3D Viewer;
         TrainCar TrainCar = null;
         TrItemLabel TrItemLabel = null;
-        Color LabelColor;
+        Color LabelColor = Color.Blue;
         float LineSpacing;
+		WindowTextFont TextFont;
 
         //constructor: create one that draw car numbers
         public ActivityInforPrimitive(ActivityInforMaterial material, TrainCar tcar)
@@ -380,6 +381,7 @@ namespace ORTS
             Viewer = material.RenderProcess.Viewer;
             TrainCar = tcar;
             LineSpacing = Material.LineSpacing;
+			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 14, System.Drawing.FontStyle.Bold, 1);
         }
 
         /// <summary>
@@ -393,6 +395,7 @@ namespace ORTS
             TrItemLabel = pd;
             LineSpacing = Material.LineSpacing;
             LabelColor = labelColor;
+			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 14, System.Drawing.FontStyle.Bold, 1);
         }
 
         /// <summary>
@@ -429,17 +432,8 @@ namespace ORTS
             //want to draw the train car name at cameraVector.Y, but need to check if it overlap other texts in Material.AlignedTextB
             //and determine the new location if conflict occurs
             TopY = AlignVertical(cameraVector.Y, X, X + Font.MeasureString(TrainCar.CarID).X, LineSpacing, Material.AlignedTextA);
+			TextFont.Draw(Material.SpriteBatch, new Point((int)X, (int)TopY), TrainCar.CarID, LabelColor, Color.White);
 
-            //draw the car number with blue and white color 
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X - 1, TopY - 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X + 0, TopY - 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X + 1, TopY - 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X - 1, TopY + 0), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X + 1, TopY + 0), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X - 1, TopY + 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X + 0, TopY + 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X + 1, TopY + 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrainCar.CarID, new Vector2(X, TopY), Color.Blue);
 
             //draw the vertical line with length Math.Abs(cameraVector.Y + LineSpacing - BottomY)
             //the term LineSpacing is used so that the text is above the line head
@@ -479,19 +473,7 @@ namespace ORTS
             //want to draw the text at cameraVector.Y, but need to check if it overlap other texts in Material.AlignedTextB
             //and determine the new location if conflict occurs
             TopY = AlignVertical(cameraVector.Y, X, X + Font.MeasureString(TrItemLabel.ItemName).X, LineSpacing, Material.AlignedTextB);
-
-            //outline the siding/platform name in white by pre-drawing all 8 points of compass
-            //Isn't this a clumsy way to do it?
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 0, TopY + 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 1, TopY + 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 1, TopY + 0), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 1, TopY - 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X + 0, TopY - 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X - 1, TopY - 1), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X - 1, TopY - 0), Color.White);
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X - 1, TopY + 1), Color.White);
-            //draw the siding/platform name in colour
-            Material.SpriteBatch.DrawString(Font, TrItemLabel.ItemName, new Vector2(X, TopY), LabelColor);
+			TextFont.Draw(Material.SpriteBatch, new Point((int)X, (int)TopY), TrItemLabel.ItemName, LabelColor);
 
             //draw a vertical line with length TopY + LineSpacing - BottomY
             //the term LineSpacing is used so that the text is above the line head
