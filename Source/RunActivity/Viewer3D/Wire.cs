@@ -121,7 +121,7 @@ namespace ORTS
 					}
 					nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
 					root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-					nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
+					//nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
 					dTrackList.Add(new WireDrawer(viewer, root, nextRoot, radius, length));
 					localV = localProjectedV; // Next subsection
 				}
