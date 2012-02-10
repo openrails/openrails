@@ -1864,10 +1864,11 @@ namespace ORTS
 
 					StatementLine = StatementLine.Replace(";", String.Empty);
 
-					StatementParts = StatementLine.Split('=');
+                    char[] splitChar = {'='};
+					StatementParts = StatementLine.Split(splitChar,StringSplitOptions.RemoveEmptyEntries);
 					if (StatementParts.Length > 2)
 					{
-						Trace.TraceWarning("Unexpected number of = in string : {0}", StatementLine);
+                        Trace.TraceWarning("Unexpected number of = in string : {0}", StatementLine);
 #if DEBUG_PRINT_IN
 						File.AppendAllText(din_fileLoc+@"sigscr.txt","Unexpected number of = in string "+StatementLine+"\n");
 #endif

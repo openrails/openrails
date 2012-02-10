@@ -208,6 +208,7 @@ namespace ORTS
             // TODO  this is a wild simplification for diesel electric
             float t = ThrottlePercent / 100f;
             float currentSpeedMpS = Math.Abs(SpeedMpS);
+            float currentWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
 
             ExhaustParticles = ((MaxExhaust - IdleExhaust) * t + IdleExhaust);
             if (ExhaustParticles < 5.0f)
@@ -229,16 +230,16 @@ namespace ORTS
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = MaxForceN * t;
-                    float maxPowerW = MaxPowerW * (EngineRPM - IdleRPM) / (MaxRPM - IdleRPM);
-                    if (maxForceN * WheelSpeedMpS > maxPowerW)
-                        maxForceN = maxPowerW / WheelSpeedMpS;
+                    float maxPowerW = MaxPowerW * t * t;
+                    if (maxForceN * currentWheelSpeedMpS > maxPowerW)
+                        maxForceN = maxPowerW / currentWheelSpeedMpS;
                     if (currentSpeedMpS > MaxSpeedMpS)
                         maxForceN = 0;
                     MotiveForceN = maxForceN;
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(t, WheelSpeedMpS);
+                    MotiveForceN = TractiveForceCurves.Get(t, currentWheelSpeedMpS);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
