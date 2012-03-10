@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -11,19 +11,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Xml; 
 using System.Xml.Schema;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 using MSTS;
 
 namespace ORTS
@@ -38,7 +30,7 @@ namespace ORTS
         /// <param name="dTrackList">DynatrackDrawer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrix">Position matrix.</param>
-        public static void Decompose(Viewer3D viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj, 
+        public static void Decompose(Viewer3D viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
             WorldPosition worldMatrix)
         {
             // DYNAMIC TRACK
@@ -154,36 +146,36 @@ namespace ORTS
         #endregion
 
         #region Constructor
-		/// <summary>
-		/// DynatrackDrawer constructor
-		/// </summary>
-		public DynatrackDrawer(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
-		{
-			Viewer = viewer;
-			worldPosition = position;
+        /// <summary>
+        /// DynatrackDrawer constructor
+        /// </summary>
+        public DynatrackDrawer(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
+        {
+            Viewer = viewer;
+            worldPosition = position;
 
-			if (viewer.Simulator.TRP == null)
-			{
-				// First to need a track profile creates it
-				Trace.Write(" TRP");
-				// Creates profile and loads materials into SceneryMaterials
-				TRPFile.CreateTrackProfile(viewer.RenderProcess, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
-			}
+            if (viewer.Simulator.TRP == null)
+            {
+                // First to need a track profile creates it
+                Trace.Write(" TRP");
+                // Creates profile and loads materials into SceneryMaterials
+                TRPFile.CreateTrackProfile(viewer.RenderProcess, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
+            }
 
-			// Instantiate classes
-			dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition, endPosition);
-		} // end DynatrackDrawer constructor
-		
-		/// <summary>
-		/// DynatrackDrawer default constructor, without DyntrackObj
-		/// </summary>
-		public DynatrackDrawer(Viewer3D viewer, WorldPosition position, WorldPosition endPosition)
-		{
-			Viewer = viewer;
-			worldPosition = position;
+            // Instantiate classes
+            dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition, endPosition);
+        } // end DynatrackDrawer constructor
 
-		} // end DynatrackDrawer constructor
-		#endregion
+        /// <summary>
+        /// DynatrackDrawer default constructor, without DyntrackObj
+        /// </summary>
+        public DynatrackDrawer(Viewer3D viewer, WorldPosition position, WorldPosition endPosition)
+        {
+            Viewer = viewer;
+            worldPosition = position;
+
+        } // end DynatrackDrawer constructor
+        #endregion
 
         /// <summary>
         /// PrepareFrame adds any object mesh in-FOV to the RenderItemCollection. 
@@ -400,7 +392,7 @@ namespace ORTS
             {
                 Console.WriteLine("XML VALIDATION ERROR:");
             }
-            Console.WriteLine("{0} (Line {1}, Position {2}):", 
+            Console.WriteLine("{0} (Line {1}, Position {2}):",
                 args.Exception.SourceUri, args.Exception.LineNumber, args.Exception.LinePosition);
             Console.WriteLine(args.Message);
             Console.WriteLine("----------");
@@ -481,7 +473,7 @@ namespace ORTS
         /// TrProfile constructor (default - builds from self-contained data)
         /// <param name="renderProcess">RenderProcess.</param>
         /// </summary>
-        public TrProfile(RenderProcess renderProcess) 
+        public TrProfile(RenderProcess renderProcess)
         {
             // Default TrProfile constructor
             RenderProcess = renderProcess;
@@ -542,7 +534,7 @@ namespace ORTS
 
             lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
             LODs.Add(lod); // Append this LOD to LODs array
-            
+
             // RAILTOPS
             lod = new LOD(1200.0f); // Create LOD for railtops with specified CutoffRadius
             // Single LODItem in this case
@@ -562,7 +554,7 @@ namespace ORTS
             pl.Vertices.Add(new Vertex(-.7175f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
-   
+
             pl = new Polyline(this, "left", 2);
             pl.DeltaTexCoord = new Vector2(.0744726f, 0f);
             pl.Vertices.Add(new Vertex(.7175f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f));
@@ -645,7 +637,7 @@ namespace ORTS
             Polyline pl = null;
             Vertex v;
             string[] s;
-            char[] sep = new char[] {' '};
+            char[] sep = new char[] { ' ' };
             while (reader.Read())
             {
                 if (reader.IsStartElement())
@@ -659,7 +651,7 @@ namespace ORTS
                         case "LODItem":
                             lodItem = new LODItem(reader.GetAttribute("Name"));
                             lodItem.TexName = reader.GetAttribute("TexName");
-                            
+
                             lodItem.ShaderName = reader.GetAttribute("ShaderName");
                             lodItem.LightModelName = reader.GetAttribute("LightModelName");
                             lodItem.AlphaTestMode = int.Parse(reader.GetAttribute("AlphaTestMode"));
@@ -803,7 +795,7 @@ namespace ORTS
     {
         #region Class Variables
         public ArrayList Polylines = new ArrayList();  // Array of arrays of vertices 
-        
+
         public string Name;                            // e.g., "Rail sides"
         public string ShaderName;
         public string LightModelName;
@@ -813,7 +805,7 @@ namespace ORTS
         public float MipMapLevelOfDetailBias;
 
         public string TexName; // Texture file name
-        
+
         public Material LODMaterial; // SceneryMaterial reference
 
         // NumVertices and NumSegments used for sizing vertex and index buffers
@@ -876,7 +868,7 @@ namespace ORTS
 
         public void LoadMaterial(RenderProcess renderProcess, LODItem lod)
         {
-            int options = Helpers.EncodeMaterialOptions(lod); 
+            int options = Helpers.EncodeMaterialOptions(lod);
             lod.LODMaterial = Materials.Load(renderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(renderProcess.Viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), options, lod.MipMapLevelOfDetailBias);
         }
 
@@ -891,14 +883,14 @@ namespace ORTS
     {
         #region Class Variables
         public ArrayList Vertices = new ArrayList();    // Array of vertices 
- 
+
         public string Name;                             // e.g., "1:1 embankment"
         public Vector2 DeltaTexCoord;                   // Incremental change in (u, v) from one cross section to the next
 
         #endregion
 
         #region Polyline Constructors
- 
+
         /// <summary>
         /// Polyline constructor (DAT)
         /// </summary>
@@ -1004,12 +996,12 @@ namespace ORTS
     {
         public ShapePrimitive[] ShapePrimitives; // Array of ShapePrimitives
 
-		public VertexPositionNormalTexture[] VertexList; // Array of vertices
-		public short[] TriangleListIndices;// Array of indices to vertices for triangles
+        public VertexPositionNormalTexture[] VertexList; // Array of vertices
+        public short[] TriangleListIndices;// Array of indices to vertices for triangles
         public uint VertexIndex = 0;       // Index of current position in VertexList
-		public uint IndexIndex = 0;        // Index of current position in TriangleListIndices
-        //Provided by ShapePrimitive: int NumVertices;            // Number of vertices in the track profile
-		public short NumIndices;           // Number of triangle indices
+        public uint IndexIndex = 0;        // Index of current position in TriangleListIndices
+        public int NumVertices;            // Number of vertices in the track profile
+        public short NumIndices;           // Number of triangle indices
 
         // LOD member variables:
         //public int FirstIndex;       // Marks first LOD that is in-range
@@ -1018,16 +1010,16 @@ namespace ORTS
         public Vector3 MSTSLODCenter; // Center of bounding sphere
 
         // Geometry member variables:
-		public int NumSections;            // Number of cross sections needed to make up a track section.
-		public float SegmentLength;        // meters if straight; radians if circular arc
-		public Vector3 DDY;                // Elevation (y) change from one cross section to next
-		public Vector3 OldV;               // Deviation from centerline for previous cross section
-		public Vector3 OldRadius;          // Radius vector to centerline for previous cross section
+        public int NumSections;            // Number of cross sections needed to make up a track section.
+        public float SegmentLength;        // meters if straight; radians if circular arc
+        public Vector3 DDY;                // Elevation (y) change from one cross section to next
+        public Vector3 OldV;               // Deviation from centerline for previous cross section
+        public Vector3 OldRadius;          // Radius vector to centerline for previous cross section
 
         //TODO: Candidates for re-packaging:
-		public Matrix sectionRotation;     // Rotates previous profile into next profile position on curve.
-		public Vector3 center;             // Center coordinates of curve radius
-		public Vector3 radius;             // Radius vector to cross section on curve centerline
+        public Matrix sectionRotation;     // Rotates previous profile into next profile position on curve.
+        public Vector3 center;             // Center coordinates of curve radius
+        public Vector3 radius;             // Radius vector to cross section on curve centerline
 
         // This structure holds the basic geometric parameters of a DT section.
         public struct DtrackData
@@ -1046,14 +1038,14 @@ namespace ORTS
         /// <summary>
         /// Default constructor
         /// </summary>
-		public DynatrackMesh()
-		{
-		}
+        public DynatrackMesh()
+        {
+        }
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public DynatrackMesh(RenderProcess renderProcess, DyntrackObj dtrack, WorldPosition worldPosition, 
+        public DynatrackMesh(RenderProcess renderProcess, DyntrackObj dtrack, WorldPosition worldPosition,
                                 WorldPosition endPosition)
         {
             // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
@@ -1188,19 +1180,9 @@ namespace ORTS
             } // end for i
 
             // Create and populate a new ShapePrimitive
-            ShapePrimitive shapePrimitive = new ShapePrimitive();
-            shapePrimitive.Material = lodItem.LODMaterial;
-            shapePrimitive.Hierarchy = new int[1];
-            shapePrimitive.Hierarchy[0] = -1;
-            shapePrimitive.iHierarchy = 0;
-            shapePrimitive.MinVertex = 0;
-            shapePrimitive.NumVertices = NumVertices;
-            shapePrimitive.IndexCount = NumIndices;
-            shapePrimitive.VertexBufferSet = new SharedShape.VertexBufferSet(VertexList, viewer.GraphicsDevice);
-            shapePrimitive.IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short), 
-                                                            NumIndices, BufferUsage.WriteOnly);
-            shapePrimitive.IndexBuffer.SetData(TriangleListIndices);
-            return shapePrimitive;
+            var indexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short), NumIndices, BufferUsage.WriteOnly);
+            indexBuffer.SetData(TriangleListIndices);
+            return new ShapePrimitive(lodItem.LODMaterial, new SharedShape.VertexBufferSet(VertexList, viewer.GraphicsDevice), indexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
         } // end BuildMesh
 
         /// <summary>
@@ -1276,7 +1258,7 @@ namespace ORTS
 
             Vector3 p = VertexList[VertexIndex - stride].Position + displacement;
             Vector3 n = VertexList[VertexIndex - stride].Normal;
-            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement; 
+            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
 
             VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
             VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
@@ -1300,7 +1282,7 @@ namespace ORTS
             // Rotate the point about local origin and reposition it (including elevation change)
             Vector3 p = DDY + center + radius + Vector3.Transform(OldV, sectionRotation);
             Vector3 n = VertexList[VertexIndex - stride].Normal;
-            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement; 
+            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
 
             VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
             VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);

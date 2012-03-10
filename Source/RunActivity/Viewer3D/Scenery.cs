@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -201,8 +201,8 @@ namespace ORTS
         public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
         public List<ForestDrawer> forestList = new List<ForestDrawer>();
 		public List<CarSpawner> carSpawners = new List<CarSpawner>();
-		public List<SidingLabel> sidings = new List<SidingLabel>();
-        public List<PlatformLabel> platforms = new List<PlatformLabel>();
+        public List<TrItemLabel> sidings = new List<TrItemLabel>();
+        public List<TrItemLabel> platforms = new List<TrItemLabel>();
 
         /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
@@ -295,10 +295,10 @@ namespace ORTS
 						Trace.TraceWarning("Car spawner {1} ignored because route has no RDB or carspawn.dat in {0}", WFileName, worldObject.UID);
 				}
 				else if (worldObject.GetType() == typeof(MSTS.SidingObj)) {
-					sidings.Add(new SidingLabel(viewer, worldMatrix, (SidingObj)worldObject));
+                    sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
 				} 
                 else if (worldObject.GetType() == typeof(MSTS.PlatformObj)) {
-                    platforms.Add(new PlatformLabel(viewer, worldMatrix, (PlatformObj)worldObject));
+                    platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
                 } 
                 else // It's some other type of object - not one of the above.
 				{
