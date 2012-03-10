@@ -189,7 +189,7 @@ namespace ORTS
                 {
                     if (DrawSiding == true && w != null && w.sidings != null)
                     {
-                        foreach (SidingLabel sd in w.sidings)
+                        foreach (var sd in w.sidings)
                         {
                             if (sd != null) frame.AddPrimitive(DrawInforMaterial,
                                 new ActivityInforPrimitive(DrawInforMaterial, sd, Color.Coral),
@@ -198,7 +198,7 @@ namespace ORTS
                     }
                     if (DrawPlatform == true && w != null && w.platforms != null)
                     {
-                        foreach (PlatformLabel pd in w.platforms)
+                        foreach (var pd in w.platforms)
                         {
                             if (pd != null) frame.AddPrimitive(DrawInforMaterial,
                                 new ActivityInforPrimitive(DrawInforMaterial, pd, Color.Yellow),
