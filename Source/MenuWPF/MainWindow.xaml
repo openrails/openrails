@@ -5,7 +5,7 @@
 	x:Class="MenuWPF.MainWindow"
 	x:Name="winMain"
 	Title="Open Rails"
-	Width="1024" Height="768" WindowStartupLocation="CenterScreen" Closing="winMain_Closing" Icon="/MenuWPF;component/openrails.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" KeyDown="winMain_KeyDown" MinWidth="1024" MinHeight="768" MaxWidth="1920" MaxHeight="1200">
+	Width="1024" Height="768" WindowStartupLocation="CenterScreen" Closing="winMain_Closing" Icon="ORTS.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" KeyDown="winMain_KeyDown" MinWidth="1024" MinHeight="768" MaxWidth="1920" MaxHeight="1200">
 	<Window.Background>
 		<ImageBrush ImageSource="background1.jpg"/>
 	</Window.Background>

@@ -12,7 +12,7 @@
     <XnaFrameworkVersion>v3.1</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
     <XnaCrossPlatformGroupID>eb141fe4-4e10-4725-a470-8c1fd1c119ca</XnaCrossPlatformGroupID>
-    <ApplicationIcon>..\openrails.ico</ApplicationIcon>
+    <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
     <Thumbnail>
     </Thumbnail>
     <PublishUrl>publish\</PublishUrl>
@@ -363,17 +363,6 @@
       <ProductName>Microsoft XNA Framework Redistributable 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\CODE.txt">
-      <Link>CODE.txt</Link>
-    </Content>
-    <Content Include="..\openrails.ico">
-      <Link>openrails.ico</Link>
-    </Content>
-    <Content Include="..\ORThumbnail.png">
-      <Link>ORThumbnail.png</Link>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Debugging\DebugViewerForm.resx">

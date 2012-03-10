@@ -4,7 +4,7 @@
 	x:Class="MenuWPF.EngineInfoWindow"
 	x:Name="Window"
 	Title="EngineInfoWindow"
-	Width="640" Height="480" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="openrails.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}">
+	Width="640" Height="480" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="ORTS.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}">
 	<Window.Background>
 		<ImageBrush ImageSource="background1.jpg"/>
 	</Window.Background>

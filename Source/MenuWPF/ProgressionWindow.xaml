@@ -5,7 +5,7 @@
 	x:Class="MenuWPF.ProgressionWindow"
 	x:Name="Window"
 	Title="Loading"
-	Width="800" Height="150" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="openrails.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Background="#00000000" WindowStyle="None" AllowsTransparency="True">
+	Width="800" Height="150" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="ORTS.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Background="#00000000" WindowStyle="None" AllowsTransparency="True">
 
 	<Border x:Name="brdMain" BorderBrush="Black" BorderThickness="1" Background="#7FFFFFFF" CornerRadius="20" Margin="0,0,20,20">
 		<Border.Effect>
