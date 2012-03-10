@@ -22,23 +22,23 @@ using MSTS;
 
 namespace ORTS
 {
-    [Flags]
-    public enum ShapeFlags
-    {
-        None = 0,
-        // Shape casts a shadow (scenery objects according to RE setting, and all train objects).
-        ShadowCaster = 1,
-        // Shape needs automatic z-bias to keep it out of trouble.
-        AutoZBias = 2,
-        // NOTE: Use powers of 2 for values!
-    }
+	[Flags]
+	public enum ShapeFlags
+	{
+		None = 0,
+		// Shape casts a shadow (scenery objects according to RE setting, and all train objects).
+		ShadowCaster = 1,
+		// Shape needs automatic z-bias to keep it out of trouble.
+		AutoZBias = 2,
+		// NOTE: Use powers of 2 for values!
+	}
 
     public class StaticShape
     {
-        public readonly Viewer3D Viewer;
+		public readonly Viewer3D Viewer;
         public readonly WorldPosition Location;
-        public readonly ShapeFlags Flags;
-        public readonly SharedShape SharedShape;
+		public readonly ShapeFlags Flags;
+		public readonly SharedShape SharedShape;
 
         /// <summary>
         /// Construct and initialize the class
@@ -48,25 +48,25 @@ namespace ORTS
         {
             Viewer = viewer;
             Location = position;
-            Flags = flags;
+			Flags = flags;
             SharedShape = SharedShapeManager.Get(Viewer, path);
         }
 
-        public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            SharedShape.PrepareFrame(frame, Location, Flags);
+			SharedShape.PrepareFrame(frame, Location, Flags);
         }
     }
 
-    public class StaticTrackShape : StaticShape
-    {
-        public StaticTrackShape(Viewer3D viewer, string path, WorldPosition position)
-            : base(viewer, path, position, ShapeFlags.AutoZBias)
-        {
-        }
-    }
+	public class StaticTrackShape : StaticShape
+	{
+		public StaticTrackShape(Viewer3D viewer, string path, WorldPosition position)
+			: base(viewer, path, position, ShapeFlags.AutoZBias)
+		{
+		}
+	}
 
-    /// <summary>
+	/// <summary>
     /// Has a heirarchy of objects that can be moved by adjusting the XNAMatrices
     /// at each node.
     /// </summary>
@@ -77,17 +77,17 @@ namespace ORTS
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
-            : base(viewer, path, initialPosition, flags)
+		public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+			: base(viewer, path, initialPosition, flags)
         {
-            XNAMatrices = new Matrix[SharedShape.Matrices.Length];
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+			XNAMatrices = new Matrix[SharedShape.Matrices.Length];
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
         }
 
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
         /// <summary>
@@ -177,17 +177,17 @@ namespace ORTS
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
-            : base(viewer, path, initialPosition, flags)
-        {
-        }
+		public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+			: base(viewer, path, initialPosition, flags)
+		{
+		}
 
-        public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition)
-            : this(viewer, path, initialPosition, ShapeFlags.None)
-        {
-        }
+		public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition)
+			: this(viewer, path, initialPosition, ShapeFlags.None)
+		{
+		}
 
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // if the shape has animations
             if (SharedShape.Animations != null && SharedShape.Animations[0].FrameCount > 1)
@@ -199,10 +199,10 @@ namespace ORTS
                 while (AnimationKey < -0.00001) AnimationKey += SharedShape.Animations[0].FrameCount;
 
                 // Update the pose for each matrix
-                for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+				for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                     AnimateMatrix(iMatrix, AnimationKey);
             }
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
@@ -213,38 +213,38 @@ namespace ORTS
         TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
         uint MainRoute;                  // 0 or 1 - which route is considered the main route
 
-        public SwitchTrackShape(Viewer3D viewer, string path, WorldPosition position, TrJunctionNode trj)
-            : base(viewer, path, position, ShapeFlags.AutoZBias)
-        {
-            TrJunctionNode = trj;
-            TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
-            MainRoute = TS.MainRoute;
-        }
+		public SwitchTrackShape(Viewer3D viewer, string path, WorldPosition position, TrJunctionNode trj)
+			: base(viewer, path, position, ShapeFlags.AutoZBias)
+		{
+			TrJunctionNode = trj;
+			TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
+			MainRoute = TS.MainRoute;
+		}
 
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // ie, with 2 frames of animation, the key will advance from 0 to 1
             if (TrJunctionNode.SelectedRoute == MainRoute)
             {
-                if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedTime.ClockSeconds * 1000.0f;
+				if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedTime.ClockSeconds * 1000.0f;
                 if (AnimationKey < 0.001) AnimationKey = 0;
             }
             else
             {
-                if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedTime.ClockSeconds * 1000.0f;
+				if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedTime.ClockSeconds * 1000.0f;
                 if (AnimationKey > 0.999) AnimationKey = 1.0f;
             }
 
             // Update the pose
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 AnimateMatrix(iMatrix, AnimationKey);
 
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
-    public class LevelCrossingShape : PoseableShape
-    {
+	public class LevelCrossingShape : PoseableShape
+	{
         public readonly LevelCrossingObj crossingObj;  // has data on current aligment for the switch
         public readonly SoundSource Sound;
 
@@ -257,19 +257,19 @@ namespace ORTS
 
         public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj trj, LevelCrossingObject[] levelObjects)
             : base(viewer, path, position, shapeFlags | ShapeFlags.AutoZBias)
-        {
-            animatedDir = 0;
-            crossingObjects = new List<LevelCrossingObject>(); //sister gropu of crossing if there are parallel lines
-            crossingObj = trj; // the LevelCrossingObj, which handles details of the crossing data
-            crossingObj.inrange = true;//in viewing range
-            int i, j, max, id, found;
-            max = levelObjects.GetLength(0); //how many crossings are in the route
-            found = 0; // trItem is found or not
-            visible = trj.visible;
-            silent = trj.silent;
-            if (!silent)
-            {
-                try
+		{
+			animatedDir = 0;
+			crossingObjects = new List<LevelCrossingObject>(); //sister gropu of crossing if there are parallel lines
+			crossingObj = trj; // the LevelCrossingObj, which handles details of the crossing data
+			crossingObj.inrange = true;//in viewing range
+			int i, j, max, id, found;
+			max = levelObjects.GetLength(0); //how many crossings are in the route
+			found = 0; // trItem is found or not
+			visible = trj.visible;
+			silent = trj.silent;
+			if (!silent)
+			{
+				try
                 {
                     Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
                     List<SoundSourceBase> ls = new List<SoundSourceBase>();
@@ -285,77 +285,77 @@ namespace ORTS
             }
             i = 0;
             while (true)
-            {
-                id = crossingObj.getTrItemID(i, 0);
-                if (id < 0) break;
-                found = 0;
-                //loop through all crossings, to see if they are related to this shape 
-                // maybe more than one, so they will form a sister group and know each other
-                for (j = 0; j < max; j++)
-                {
+			{
+				id = crossingObj.getTrItemID(i, 0);
+				if (id < 0) break;
+				found = 0;
+				//loop through all crossings, to see if they are related to this shape 
+				// maybe more than one, so they will form a sister group and know each other
+				for (j = 0; j < max; j++)
+				{
                     if (levelObjects[j] != null && id == levelObjects[j].trItem)
-                    {
-                        found++;
-                        levelObjects[j].levelCrossingObj = crossingObj;
-                        if (crossingObjects.Contains(levelObjects[j])) continue;
-                        crossingObjects.Add(levelObjects[j]);
-                        levelObjects[j].endDist = this.crossingObj.levelCrParameters.crParameter2;
-                        levelObjects[j].groups = crossingObjects;
-                        //notify the spawner who interacts with 
-                        if (levelObjects[j].carSpawner != null)
-                            levelObjects[j].carSpawner.CheckGatesAgain(levelObjects[j]);
-                    }
-                }
-                i++;
-            }
+					{
+						found++;
+						levelObjects[j].levelCrossingObj = crossingObj;
+						if (crossingObjects.Contains(levelObjects[j])) continue;
+						crossingObjects.Add(levelObjects[j]);
+						levelObjects[j].endDist = this.crossingObj.levelCrParameters.crParameter2;
+						levelObjects[j].groups = crossingObjects;
+						//notify the spawner who interacts with 
+						if (levelObjects[j].carSpawner != null)
+							levelObjects[j].carSpawner.CheckGatesAgain(levelObjects[j]);
+					}
+				}
+				i++;
+			}
+			
+		}
 
-        }
+		//do animation, the speed is constant no matter what the frame rate is
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		{
+			if (visible != true) return;
+			if (crossingObj.movingDirection == 0)
+			{
+				if (!silent && AnimationKey > 0.999) Sound.HandleEvent(4);
+				if (AnimationKey > 0.001) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
+				if (AnimationKey < 0.001) AnimationKey = 0;
+			}
+			else
+			{
 
-        //do animation, the speed is constant no matter what the frame rate is
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-            if (visible != true) return;
-            if (crossingObj.movingDirection == 0)
-            {
-                if (!silent && AnimationKey > 0.999) Sound.HandleEvent(4);
-                if (AnimationKey > 0.001) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
-                if (AnimationKey < 0.001) AnimationKey = 0;
-            }
-            else
-            {
-
-                if (!silent && AnimationKey < 0.001) Sound.HandleEvent(3);
-                //Sound.Update();
-                if (crossingObj.animSpeed < 0) //loop animation
-                {
-                    if (AnimationKey > 0.999f) animatedDir = 1;
-                    if (AnimationKey < 0.001f) animatedDir = 0;
-                    if (animatedDir == 0 && AnimationKey > 0.0f) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
-                    else if (animatedDir == 0 && AnimationKey > 0.999f)
-                    {
-                        animatedDir = 1;
-                        AnimationKey = 0.999f;
-                    }
-                    else if (animatedDir == 1 && AnimationKey < 1.0f)
-                    {
-                        AnimationKey += crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
-                    }
-                    else
-                    {
-                        animatedDir = 0;
-                        AnimationKey = 0.001f;
-                    }
-                }
-                else
-                {
-                    if (AnimationKey < 0.999) AnimationKey += crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f; //0.0005
-                    if (AnimationKey > 0.999) AnimationKey = 1.0f;
-                }
-            }
+				if (!silent && AnimationKey < 0.001) Sound.HandleEvent(3);
+				//Sound.Update();
+				if (crossingObj.animSpeed < 0) //loop animation
+				{
+					if (AnimationKey > 0.999f) animatedDir = 1;
+					if (AnimationKey < 0.001f) animatedDir = 0;
+					if (animatedDir == 0 && AnimationKey > 0.0f) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
+					else if (animatedDir == 0 && AnimationKey > 0.999f)
+					{
+						animatedDir = 1;
+						AnimationKey = 0.999f;
+					}
+					else if (animatedDir == 1 && AnimationKey < 1.0f)
+					{
+						AnimationKey += crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
+					}
+					else
+					{
+						animatedDir = 0;
+						AnimationKey = 0.001f;
+					}
+				}
+				else
+				{
+					if (AnimationKey < 0.999) AnimationKey += crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f; //0.0005
+					if (AnimationKey > 0.999) AnimationKey = 1.0f;
+				}
+			}
 
 
-            // Update the pose
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+			// Update the pose
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 AnimateMatrix(iMatrix, AnimationKey);
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
@@ -373,30 +373,30 @@ namespace ORTS
         public RoadCarShape(Viewer3D viewer, string path, WorldPosition position)
             : base(viewer, path, position, ShapeFlags.AutoZBias)
         {
-            movablePosition = new WorldPosition(position);
-        }
+			movablePosition = new WorldPosition(position);
+		}
 
-        //do animation, the speed is constant no matter what the frame rate is
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-            if (movingDirection == 0)
-            {
-                if (AnimationKey > 0.001) AnimationKey -= 0.02f * elapsedTime.ClockSeconds * 1000.0f;
-                if (AnimationKey < 0.001) AnimationKey = 0;
-            }
-            else
-            {
-                if (AnimationKey < 0.999) AnimationKey += 0.02f * elapsedTime.ClockSeconds * 1000.0f; //0.0005
-                if (AnimationKey > 0.999) AnimationKey = 1.0f;
-            }
+		//do animation, the speed is constant no matter what the frame rate is
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		{
+			if (movingDirection == 0)
+			{
+				if (AnimationKey > 0.001) AnimationKey -= 0.02f * elapsedTime.ClockSeconds * 1000.0f;
+				if (AnimationKey < 0.001) AnimationKey = 0;
+			}
+			else
+			{
+				if (AnimationKey < 0.999) AnimationKey += 0.02f * elapsedTime.ClockSeconds * 1000.0f; //0.0005
+				if (AnimationKey > 0.999) AnimationKey = 1.0f;
+			}
 
 
-            // Update the pose
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                AnimateMatrix(iMatrix, AnimationKey);
+			// Update the pose
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+				AnimateMatrix(iMatrix, AnimationKey);
 
-            SharedShape.PrepareFrame(frame, movablePosition, XNAMatrices, Flags);
-        }
+			SharedShape.PrepareFrame(frame, movablePosition, XNAMatrices, Flags);
+		}
     }
 
     /// <summary>
@@ -588,62 +588,39 @@ namespace ORTS
 
         public class SubObject
         {
+            static readonly SceneryMaterialOptions[] UVTextureAddressModeMap = new[] {
+                SceneryMaterialOptions.None,
+                SceneryMaterialOptions.TextureAddressModeMirror,
+                SceneryMaterialOptions.TextureAddressModeClamp,
+                SceneryMaterialOptions.TextureAddressModeBorder,
+            };
+            
+            static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
+                { "Tex", SceneryMaterialOptions.None },
+                { "TexDiff", SceneryMaterialOptions.Diffuse },
+                { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend },
+                { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
+                { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd },
+                { "AddATexDiff", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.Diffuse },
+            };
+
+            static readonly SceneryMaterialOptions[] VertexLightModeMap = new[] {
+                SceneryMaterialOptions.ShaderDarkShade,
+                SceneryMaterialOptions.ShaderHalfBright,
+                SceneryMaterialOptions.ShaderVegetation, // Not certain this is right.
+                SceneryMaterialOptions.ShaderVegetation,
+                SceneryMaterialOptions.ShaderFullBright,
+                SceneryMaterialOptions.None | SceneryMaterialOptions.Specular750,
+                SceneryMaterialOptions.None | SceneryMaterialOptions.Specular25,
+                SceneryMaterialOptions.None | SceneryMaterialOptions.None,
+            };
+
             public ShapePrimitive[] ShapePrimitives;
 
             public SubObject(sub_object sub_object, int[] hierarchy, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
             {
                 var vertexBufferSet = new VertexBufferSet(sub_object, sFile, sharedShape.Viewer.GraphicsDevice);
 
-                /////////////// MATERIAL OPTIONS //////////////////
-                //
-                // Material options are specified in a 32-bit int named "options"
-                // Following are the bit assignments:
-                // (name, dec value, hex, bits)
-                // 
-                // NAMED SHADERS  bits 0 through 3 (allow for future shaders)
-                // Diffuse            1     0x0001      0000 0000 0000 0001
-                // Tex                2     0x0002      0000 0000 0000 0010
-                // TexDiff            3     0x0003      0000 0000 0000 0011
-                // BlendATex          4     0x0004      0000 0000 0000 0100
-                // AddATex            5     0x0005      0000 0000 0000 0101
-                // BlendATexDiff      6     0x0006      0000 0000 0000 0110
-                // AddATexDiff        7     0x0007      0000 0000 0000 0111
-                // AND mask          15     0x000f      0000 0000 0000 1111
-                //
-                // LIGHTING  bits 4 through 7 ( << 4 )
-                // DarkShade         16     0x0010      0000 0000 0001 0000
-                // OptHalfBright     32     0x0020      0000 0000 0010 0000
-                // CruciformLong     48     0x0030      0000 0000 0011 0000
-                // Cruciform         64     0x0040      0000 0000 0100 0000
-                // OptFullBright     80     0x0050      0000 0000 0101 0000
-                // OptSpecular750    96     0x0060      0000 0000 0110 0000
-                // OptSpecular25    112     0x0070      0000 0000 0111 0000
-                // OptSpecular0     128     0x0080      0000 0000 1000 0000
-                // AND mask         240     0x00f0      0000 0000 1111 0000 
-                //
-                // ALPHA TEST bit 8 ( << 8 )
-                // None               0     0x0000      0000 0000 0000 0000
-                // Trans            256     0x0100      0000 0001 0000 0000
-                // AND mask         256     0x0100      0000 0001 0000 0000
-                //
-                // Z BUFFER bits 9 and 10 ( << 9 )
-                // None               0     0x0000      0000 0000 0000 0000
-                // Normal           512     0x0200      0000 0010 0000 0000
-                // Write Only      1024     0x0400      0000 0100 0000 0000
-                // Test Only       1536     0x0600      0000 0110 0000 0000
-                // AND mask        1536     0x0600      0000 0110 0000 0000
-                //
-                // TEXTURE ADDRESS MODE bits 11 and 12 ( << 11 )
-                // Wrap               0     0x0000      0000 0000 0000 0000 
-                // Mirror          2048     0x0800      0000 1000 0000 0000
-                // Clamp           4096     0x1000      0001 0000 0000 0000
-                // Border          6144     0x1800      0001 1000 0000 0000
-                // AND mask        6144     0x1800      0001 1000 0000 0000
-                //
-                // NIGHT TEXTURE bit 13 ( << 13 )
-                // Disabled           0     0x0000      0000 0000 0000 0000
-                // Enabled         8192     0x2000      0010 0000 0000 0000
-                //
 
 #if OPTIMIZE_SHAPES_ON_LOAD
                 var primitiveMaterials = sub_object.primitives.Cast<primitive>().Select((primitive) =>
@@ -656,61 +633,36 @@ namespace ORTS
                     var primitiveState = sFile.shape.prim_states[primitive.prim_state_idx];
                     var vertexState = sFile.shape.vtx_states[primitiveState.ivtx_state];
                     var lightModelConfiguration = sFile.shape.light_model_cfgs[vertexState.LightCfgIdx];
-                    var options = 0;
+                    var options = SceneryMaterialOptions.None;
 
-                    // Texture addressing
                     if (lightModelConfiguration.uv_ops.Count > 0)
-                    {
-                        var uv_op = lightModelConfiguration.uv_ops[0];
-                        options |= uv_op.TexAddrMode - 1 << 11; // Zero based
-                    }
+                        if (lightModelConfiguration.uv_ops[0].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[0].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
+                            options |= UVTextureAddressModeMap[lightModelConfiguration.uv_ops[0].TexAddrMode - 1];
+                        else
+                            Trace.TraceWarning("Invalid texture addressing mode {1} in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
 
-                    // Transparency test  
                     if (primitiveState.alphatestmode == 1)
-                        options |= 0x0100;
+                        options |= SceneryMaterialOptions.AlphaTest;
 
-                    // Named shaders
-                    var namedShader = 3; // Default is TexDiff
-                    switch (sFile.shape.shader_names[primitiveState.ishader])
-                    {
-                        case "Diffuse":
-                            namedShader = 1;
-                            break;
-                        case "Tex":
-                            namedShader = 2;
-                            break;
-                        case "TexDiff":
-                        default:
-                            namedShader = 3;
-                            break;
-                        case "BlendATex":
-                            namedShader = 4;
-                            break;
-                        case "AddATex":
-                            namedShader = 5;
-                            break;
-                        case "BlendATexDiff":
-                            namedShader = 6;
-                            break;
-                        case "AddATexDiff":
-                            namedShader = 7;
-                            break;
-                    }
-                    options |= namedShader;
+                    if (ShaderNames.ContainsKey(sFile.shape.shader_names[primitiveState.ishader]))
+                        options |= ShaderNames[sFile.shape.shader_names[primitiveState.ishader]];
+                    else
+                        Trace.TraceWarning("Invalid shader name {1} in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
 
-                    // Lighting model
-                    options |= (13 + vertexState.LightMatIdx) << 4;
+                    if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
+                        options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
+                    else
+                        Trace.TraceWarning("Invalid lighting model index {1} in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
 
-                    // Night texture toggle
                     if ((textureFlags & Helpers.TextureFlags.Night) != 0)
-                        options |= 1 << 13;
+                        options |= SceneryMaterialOptions.NightTexture;
 
-                    var material = Materials.Load(sharedShape.Viewer.RenderProcess, "SceneryMaterial", null, options);
+                    var material = Materials.Load(sharedShape.Viewer.RenderProcess, "SceneryMaterial", null, (int)options);
                     if (primitiveState.tex_idxs.Length != 0)
                     {
                         var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
-                        material = Materials.Load(sharedShape.Viewer.RenderProcess, "SceneryMaterial", Helpers.GetShapeTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.FilePath, imageName), options, texture.MipMapLODBias);
+                        material = Materials.Load(sharedShape.Viewer.RenderProcess, "SceneryMaterial", Helpers.GetShapeTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.FilePath, imageName), (int)options, texture.MipMapLODBias);
                     }
 
 #if OPTIMIZE_SHAPES_ON_LOAD
@@ -839,7 +791,7 @@ namespace ORTS
         /// <summary>
         /// This is called by the individual instances of the shape when it should draw itself at the specified location
         /// </summary>
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
+		public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
         {
             PrepareFrame(frame, location, Matrices, flags);
         }
@@ -910,7 +862,7 @@ namespace ORTS
         }
 
     }
-    
+
     public class TrItemLabel
     {
         public readonly WorldPosition Location;

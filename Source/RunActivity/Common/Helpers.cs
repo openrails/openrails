@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -87,7 +88,7 @@ namespace ORTS
 
             if (alternativePath.Length > 0 && File.Exists(texturePath + alternativePath + textureName)) return texturePath + alternativePath + textureName;
             if (File.Exists(texturePath + @"\" + textureName)) return texturePath + @"\" + textureName;
-			//if (File.Exists(textureName)) return textureName; //some may use \program\content\*.ace
+            //if (File.Exists(textureName)) return textureName; //some may use \program\content\*.ace
             return null;
         }
 
@@ -99,6 +100,32 @@ namespace ORTS
             return (simulator.Season == SeasonType.Winter) || ((simulator.Season != SeasonType.Summer) && (simulator.Weather == WeatherType.Snow));
         }
 
+        static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
+            { "Tex", SceneryMaterialOptions.None },
+            { "TexDiff", SceneryMaterialOptions.Diffuse },
+            { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend },
+            { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
+            { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd },
+            { "AddATexDiff", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.Diffuse },
+        };
+
+        static readonly Dictionary<string, SceneryMaterialOptions> LightingModelNames = new Dictionary<string, SceneryMaterialOptions> {
+            { "DarkShade", SceneryMaterialOptions.ShaderDarkShade },
+            { "OptHalfBright", SceneryMaterialOptions.ShaderHalfBright },
+            { "Cruciform", SceneryMaterialOptions.ShaderVegetation },
+            { "OptFullBright", SceneryMaterialOptions.ShaderFullBright },
+            { "OptSpecular750", SceneryMaterialOptions.None | SceneryMaterialOptions.Specular750 },
+            { "OptSpecular25", SceneryMaterialOptions.None | SceneryMaterialOptions.Specular25 },
+            { "OptSpecular0", SceneryMaterialOptions.None | SceneryMaterialOptions.None },
+        };
+
+        static readonly Dictionary<string, SceneryMaterialOptions> TextureAddressingModeNames = new Dictionary<string, SceneryMaterialOptions> {
+            { "Wrap", SceneryMaterialOptions.TextureAddressModeWrap },
+            { "Mirror", SceneryMaterialOptions.TextureAddressModeMirror },
+            { "Clamp", SceneryMaterialOptions.TextureAddressModeClamp },
+            { "Border", SceneryMaterialOptions.TextureAddressModeBorder },
+        };
+
         /// <summary>
         /// Encodes material options code from parameterized options.
         /// Material options encoding is documented in SharedShape.SubObject() (Shapes.cs)
@@ -106,98 +133,30 @@ namespace ORTS
         /// </summary>
         /// <param name="lod">LODItem instance.</param>
         /// <returns>Options code.</returns>
-        public static int EncodeMaterialOptions(LODItem lod)
+        public static SceneryMaterialOptions EncodeMaterialOptions(LODItem lod)
         {
-            int options = 0; // Material options code to be returned
+            SceneryMaterialOptions options = SceneryMaterialOptions.None;
 
-            // Named shaders
-            int namedShader;
-            switch (lod.ShaderName)
-            {
-                case "Diffuse":
-                    namedShader = 1;
-                    break;
-                case "Tex":
-                    namedShader = 2;
-                    break;
-                case "TexDiff":
-                    namedShader = 3;
-                    break;
-                case "BlendATex":
-                    namedShader = 4;
-                    break;
-                case "AddATex":
-                    namedShader = 5;
-                    break;
-                case "BlendATexDiff":
-                    namedShader = 6;
-                    break;
-                case "AddATexDiff":
-                    namedShader = 7;
-                    break;
-                default:
-                    namedShader = 3; // Default is TexDiff
-                    break;
-            }
-            options |= namedShader;
+            if (ShaderNames.ContainsKey(lod.ShaderName))
+                options |= ShaderNames[lod.ShaderName];
+            else
+                Trace.TraceWarning("Invalid shader name {1} in shape {0}", lod.Name, lod.ShaderName);
 
-            int namedLightingMode;
-            switch (lod.LightModelName)
-            {
-                case "DarkShade":
-                    namedLightingMode = 1;
-                    break;
-                case "OptHalfBright":
-                    namedLightingMode = 2;
-                    break;
-                case "CruciformLong":
-                    namedLightingMode = 3;
-                    break;
-                case "Cruciform":
-                    namedLightingMode = 4;
-                    break;
-                case "OptFullBright":
-                    namedLightingMode = 5;
-                    break;
-                case "OptSpecular750":
-                    namedLightingMode = 6;
-                    break;
-                case "OptSpecular25":
-                    namedLightingMode = 7;
-                    break;
-                case "OptSpecular0":
-                    namedLightingMode = 8;
-                    break;
-                default:
-                    namedLightingMode = 8; // Default is OptSpecular0
-                    break;
-            }
-            options |= namedLightingMode << 4;
+            if (LightingModelNames.ContainsKey(lod.LightModelName))
+                options |= LightingModelNames[lod.LightModelName];
+            else
+                Trace.TraceWarning("Invalid lighting model name {1} in shape {0}", lod.LightModelName, lod.ShaderName);
 
-            options |= lod.AlphaTestMode << 8;
+            if (lod.AlphaTestMode != 0)
+                options |= SceneryMaterialOptions.AlphaTest;
 
-            int namedTexAddrMode;
-            switch (lod.TexAddrModeName)
-            {
-                case "Wrap":
-                    namedTexAddrMode = 0;
-                    break;
-                case "Mirror":
-                    namedTexAddrMode = 1;
-                    break;
-                case "Clamp":
-                    namedTexAddrMode = 2;
-                    break;
-                case "Border":
-                    namedTexAddrMode = 3;
-                    break;
-                default:
-                    namedTexAddrMode = 0; // Default is Wrap
-                    break;
-            }
-            options |= namedTexAddrMode << 11;
+            if (TextureAddressingModeNames.ContainsKey(lod.TexAddrModeName))
+                options |= TextureAddressingModeNames[lod.TexAddrModeName];
+            else
+                Trace.TraceWarning("Invalid texture addressing mode {1} in shape {0}", lod.TexAddrModeName, lod.ShaderName);
 
-            options |= lod.ESD_Alternative_Texture << 13;
+            if ((lod.ESD_Alternative_Texture & 0x1) != 0)
+                options |= SceneryMaterialOptions.NightTexture;
 
             return options;
         } // end EncodeMaterialOptions

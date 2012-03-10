@@ -24,7 +24,7 @@ namespace ORTS
         public static PrecipShader PrecipShader = null;
         public static LightGlowShader LightGlowShader = null;
         public static LightConeShader LightConeShader = null;
-		public static SpriteBatchMaterial SpriteBatchMaterial = null;
+        public static SpriteBatchMaterial SpriteBatchMaterial = null;
 		public static SpriteBatchLineMaterial SpriteBatchLineMaterial = null;
 		public static ActivityInforMaterial DrawInforMaterial = null;
 		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
@@ -61,10 +61,10 @@ namespace ORTS
             PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightGlowShader = new LightGlowShader(renderProcess.GraphicsDevice, renderProcess.Content);
             LightConeShader = new LightConeShader(renderProcess.GraphicsDevice, renderProcess.Content);
-			SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
+            SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
 			SpriteBatchLineMaterial = new SpriteBatchLineMaterial(renderProcess);
 			DrawInforMaterial = new ActivityInforMaterial(renderProcess);
-			// WaterMaterial here.
+            // WaterMaterial here.
             SkyMaterial = new SkyMaterial(renderProcess);
             PrecipMaterial = new PrecipMaterial(renderProcess);
             LightGlowMaterial = new LightGlowMaterial(renderProcess);
@@ -106,13 +106,13 @@ namespace ORTS
 
             switch (materialName)
             {
-				case "SpriteBatch":
-					return SpriteBatchMaterial;
+                case "SpriteBatch":
+                    return SpriteBatchMaterial;
 				case "SpriteBatchLine":
 					return SpriteBatchLineMaterial;
 				case "DrawInforMaterial":
 					return DrawInforMaterial;
-				case "Terrain":
+                case "Terrain":
                     if (!TerrainMaterials.ContainsKey(textureName))
                     {
                         TerrainMaterial material = new TerrainMaterial(renderProcess, textureName);
@@ -131,7 +131,7 @@ namespace ORTS
                         key = options.ToString() + ":";
                     if (!SceneryMaterials.ContainsKey(key))
                     {
-                        SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName, options, mipMapBias);
+                        SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName, (SceneryMaterialOptions)options, mipMapBias);
                         SceneryMaterials.Add(key, sceneryMaterial);
                         return sceneryMaterial;
                     }
@@ -296,8 +296,8 @@ namespace ORTS
 		public virtual void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
 		public virtual void ResetState(GraphicsDevice graphicsDevice) { }
 
-        public virtual bool GetBlending() { return false; }
-        public virtual Texture2D GetShadowTexture() { return null; }
+		public virtual bool GetBlending() { return false; }
+		public virtual Texture2D GetShadowTexture() { return null; }
         public virtual TextureAddressMode GetShadowTextureAddressMode() { return TextureAddressMode.Wrap; }
 	}
 
@@ -310,7 +310,7 @@ namespace ORTS
 	}
 
     public class BasicMaterial : Material
-    {
+	{
         public BasicMaterial(string key)
             : base(key)
         {
@@ -338,11 +338,11 @@ namespace ORTS
 
     public class SpriteBatchMaterial : BasicBlendedMaterial
     {
-        public SpriteBatch SpriteBatch;
+		public SpriteBatch SpriteBatch;
 
-        public SpriteBatchMaterial(RenderProcess renderProcess)
-            : base(null)
-        {
+		public SpriteBatchMaterial(RenderProcess renderProcess)
+			: base(null)
+		{
             SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
         }
 
@@ -392,10 +392,10 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
-			foreach (var item in renderItems)
-			{
-				item.RenderPrimitive.Draw(graphicsDevice);
-			}
+            foreach (var item in renderItems)
+            {
+                item.RenderPrimitive.Draw(graphicsDevice);
+            }
 		}
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
@@ -404,14 +404,49 @@ namespace ORTS
 		}
 
         public override bool GetBlending()
-		{
-			return true;
-		}
+        {
+            return true;
+        }
 	}
+
+    [Flags]
+    public enum SceneryMaterialOptions
+    {
+        None = 0,
+        // Diffuse
+        Diffuse = 0x1,
+        // Alpha test
+        AlphaTest = 0x2,
+        // Blending
+        AlphaBlendingNone = 0x0,
+        AlphaBlendingBlend = 0x4,
+        AlphaBlendingAdd = 0x8,
+        AlphaBlendingMask = 0xC,
+        // Shader
+        ShaderImage = 0x00,
+        ShaderDarkShade = 0x10,
+        ShaderHalfBright = 0x20,
+        ShaderFullBright = 0x30,
+        ShaderVegetation = 0x40,
+        ShaderMask = 0x70,
+        // Lighting
+        Specular0 = 0x000,
+        Specular25 = 0x080,
+        Specular750 = 0x100,
+        SpecularMask = 0x180,
+        // Texture address mode
+        TextureAddressModeWrap = 0x000,
+        TextureAddressModeMirror = 0x200,
+        TextureAddressModeClamp = 0x400,
+        TextureAddressModeBorder = 0x600,
+        TextureAddressModeMask = 0x600,
+        // Night texture
+        NightTexture = 0x800,
+    }
 
 	public class SceneryMaterial : Material
     {
-		readonly int Options = 0;
+		readonly SceneryMaterialOptions Options = 0;
 		readonly float MipMapBias = 0;
 		readonly Texture2D Texture;
 		readonly Texture2D NightTexture;
@@ -423,14 +458,14 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPassesVegetation;
 		IEnumerator<EffectPass> ShaderPasses;
 
-		public SceneryMaterial(RenderProcess renderProcess, string texturePath, int options, float mipMapBias)
+        public SceneryMaterial(RenderProcess renderProcess, string texturePath, SceneryMaterialOptions options, float mipMapBias)
 			: base(String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
 		{
             RenderProcess = renderProcess;
             Options = options;
             MipMapBias = mipMapBias;
             Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
-            if (!String.IsNullOrEmpty(texturePath) && (Options & 0x2000) != 0) {
+            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0) {
                 var nightTexturePath = Helpers.GetNightTextureFile(renderProcess.Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                     NightTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, nightTexturePath.ToLower());
@@ -450,150 +485,76 @@ namespace ORTS
             if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
             if (ShaderPassesVegetation == null) ShaderPassesVegetation = shader.Techniques["Vegetation"].Passes.GetEnumerator();
 
-			/////////////// MATERIAL OPTIONS //////////////////
-			//
-			// Material options are specified in a 32-bit int named "options"
-			// Following are the bit assignments:
-			// (name, dec value, hex, bits)
-			// 
-			// SHADERS bits 0 through 3 (allow for future shaders)
-			// Diffuse            1     0x0001      0000 0000 0000 0001
-			// Tex                2     0x0002      0000 0000 0000 0010
-			// TexDiff            3     0x0003      0000 0000 0000 0011
-			// BlendATex          4     0x0004      0000 0000 0000 0100
-            // AddATex            5     0x0005      0000 0000 0000 0101
-			// BlendATexDiff      6     0x0006      0000 0000 0000 0110
-			// AddATexDiff        7     0x0007      0000 0000 0000 0111
-			// AND mask          15     0x000f      0000 0000 0000 1111
-			//
-			// LIGHTING  bits 4 through 7 ( >> 4 )
-			// DarkShade         16     0x0010      0000 0000 0001 0000
-			// OptHalfBright     32     0x0020      0000 0000 0010 0000
-			// CruciformLong     48     0x0030      0000 0000 0011 0000
-			// Cruciform         64     0x0040      0000 0000 0100 0000
-			// OptFullBright     80     0x0050      0000 0000 0101 0000
-			// OptSpecular750    96     0x0060      0000 0000 0110 0000
-			// OptSpecular25    112     0x0070      0000 0000 0111 0000
-			// OptSpecular0     128     0x0080      0000 0000 1000 0000
-			// AND mask         240     0x00f0      0000 0000 1111 0000 
-			//
-			// ALPHA TEST bit 8 ( >> 8 )
-			// None               0     0x0000      0000 0000 0000 0000
-			// Trans            256     0x0100      0000 0001 0000 0000
-			// AND mask         256     0x0100      0000 0001 0000 0000
-			//
-			// Z BUFFER bits 9 and 10 ( >> 9 )
-			// None               0     0x0000      0000 0000 0000 0000
-			// Normal           512     0x0200      0000 0010 0000 0000
-			// Write Only      1024     0x0400      0000 0100 0000 0000
-			// Test Only       1536     0x0600      0000 0110 0000 0000
-			// AND mask        1536     0x0600      0000 0110 0000 0000
-			//
-			// TEXTURE ADDRESS MODE bits 11 and 12 ( >> 11 )
-			// Wrap               0     0x0000      0000 0000 0000 0000             
-			// Mirror          2048     0x0800      0000 1000 0000 0000
-			// Clamp           4096     0x1000      0001 0000 0000 0000
-			// Border          6144     0x1800      0001 1000 0000 0000
-			// AND mask        6144     0x1800      0001 1000 0000 0000
-			//
-			// NIGHT TEXTURE bit 13 ( >> 13 )
-			// Disabled           0     0x0000      0000 0000 0000 0000
-			// Enabled         8192     0x2000      0010 0000 0000 0000
-			//
+			shader.LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
 
-			var shaders = Options & 0x000f;
-			var lighting = (Options & 0x00f0) >> 4;
-			var alphaTest = (Options & 0x0100) >> 8;
+            if ((Options & SceneryMaterialOptions.AlphaTest) != 0)
+            {
+                rs.AlphaTestEnable = true;
+                rs.AlphaFunction = CompareFunction.GreaterEqual;
+                rs.ReferenceAlpha = 200;
+            }
+            else if ((Options & SceneryMaterialOptions.AlphaBlendingMask) != 0)
+            {
+                rs.AlphaBlendEnable = true;
+                rs.DestinationBlend = (Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend ? Blend.InverseSourceAlpha : Blend.One;
+                rs.SourceBlend = Blend.SourceAlpha;
+            }
 
-			switch (shaders)
+			switch (Options & SceneryMaterialOptions.ShaderMask)
 			{
-				case 1: // Diffuse
-				case 3: // TexDiff
-				case 6: // BlendATexDiff
-				case 7: // AddATexDiff
-                    shader.LightingDiffuse = 1;
-					break;
-				default:
-                    shader.LightingDiffuse = 0;
-					break;
-			}
-
-			switch (lighting)
-			{
-				case 1: // DarkShade
-                    shader.CurrentTechnique = shader.Techniques["DarkShade"];
+                case SceneryMaterialOptions.ShaderImage:
+                    shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
+                    ShaderPasses = ShaderPassesImage;
+                    break;
+                case SceneryMaterialOptions.ShaderDarkShade:
+					shader.CurrentTechnique = shader.Techniques["DarkShade"];
 					ShaderPasses = ShaderPassesDarkShade;
 					break;
-				case 2: // OptHalfBright
-                    shader.CurrentTechnique = shader.Techniques["HalfBright"];
+                case SceneryMaterialOptions.ShaderHalfBright:
+					shader.CurrentTechnique = shader.Techniques["HalfBright"];
 					ShaderPasses = ShaderPassesHalfBright;
 					break;
-				case 3: // Cruciform
-				case 4: // CruciformLong
+                case SceneryMaterialOptions.ShaderFullBright:
+					shader.CurrentTechnique = shader.Techniques["FullBright"];
+					ShaderPasses = ShaderPassesFullBright;
+					break;
+                case SceneryMaterialOptions.ShaderVegetation:
                     shader.CurrentTechnique = shader.Techniques["Vegetation"];
                     ShaderPasses = ShaderPassesVegetation;
                     break;
-				case 5: // OptFullBright
-                    shader.CurrentTechnique = shader.Techniques["FullBright"];
-					ShaderPasses = ShaderPassesFullBright;
-					break;
-				default:
-                    shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
-					ShaderPasses = ShaderPassesImage;
-					break;
+                default:
+                    throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.ShaderMask value.");
 			}
 
-			switch (lighting)
+            switch (Options & SceneryMaterialOptions.SpecularMask)
 			{
-				case 6: // OptSpecular750
-                    shader.LightingSpecular = 750;
-					break;
-				case 7: // OptSpecular25
-                    shader.LightingSpecular = 25;
-					break;
-				case 8: // OptSpecular0
-				default:
+                case SceneryMaterialOptions.Specular0:
                     shader.LightingSpecular = 0;
+                    break;
+                case SceneryMaterialOptions.Specular25:
+                    shader.LightingSpecular = 25;
+                    break;
+                case SceneryMaterialOptions.Specular750:
+					shader.LightingSpecular = 750;
 					break;
-			}
+                default:
+                    throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.SpecularMask value.");
+            }
 
-			if (alphaTest != 0)
-			{
-				// Transparency test
-				rs.AlphaTestEnable = true;
-				rs.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
-				rs.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
-			}
-			else if (shaders >= 4)
-			{
-				// Translucency
-				rs.AlphaTestEnable = true;
-				rs.AlphaFunction = CompareFunction.GreaterEqual;
-				rs.ReferenceAlpha = 10;  // ie lightcode is 9 in full transparent areas
-				rs.AlphaBlendEnable = true;
-				rs.SourceBlend = Blend.SourceAlpha;
-				rs.DestinationBlend = Blend.InverseSourceAlpha;
-				rs.SeparateAlphaBlendEnabled = true;
-				rs.AlphaSourceBlend = Blend.Zero;
-				rs.AlphaDestinationBlend = Blend.One;
-			}
-
-			// Texture addressing
             graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = GetShadowTextureAddressMode();
 
-			// Night texture toggle
-            if (NightTexture != null && (Options & 0x2000) != 0 && Materials.sunDirection.Y < 0.0f)
+			if (NightTexture != null && Materials.sunDirection.Y < 0.0f)
 			{
-                shader.ImageTexture = NightTexture;
-                shader.ImageTextureIsNight = true;
+				shader.ImageTexture = NightTexture;
+				shader.ImageTextureIsNight = true;
 			}
 			else
 			{
-                shader.ImageTexture = Texture;
-                shader.ImageTextureIsNight = false;
+				shader.ImageTexture = Texture;
+				shader.ImageTextureIsNight = false;
 			}
 
-            shader.Apply();
+			shader.Apply();
 
 			if (MipMapBias < -1)
 				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
@@ -606,7 +567,6 @@ namespace ORTS
             var shader = Materials.SceneryShader;
             var viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
-            // With the GPU configured, now we can draw the primitive
             shader.SetViewMatrix(ref XNAViewMatrix);
             shader.Begin();
 			ShaderPasses.Reset();
@@ -636,51 +596,41 @@ namespace ORTS
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
 			rs.AlphaDestinationBlend = Blend.Zero;
-			rs.AlphaFunction = CompareFunction.Always;
+            rs.AlphaFunction = CompareFunction.Always;
 			rs.AlphaSourceBlend = Blend.One;
-			rs.AlphaTestEnable = false;
-			rs.DestinationBlend = Blend.Zero;
-			rs.ReferenceAlpha = 0;
-			rs.SeparateAlphaBlendEnabled = false;
-			rs.SourceBlend = Blend.One;
+            rs.AlphaTestEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.ReferenceAlpha = 0;
+            rs.SourceBlend = Blend.One;
 		}
 
-        public override bool GetBlending()
+		public override bool GetBlending()
 		{
-			// Transparency test
-			int alphaTest = (Options & 0x0100) >> 8;
-			if (alphaTest != 0)
-				return false;
-
-			// Translucency
-			int shaders = Options & 0x000f;
-			if (alphaTest == 0 && shaders >= 4)
-				return true;
-
-			return false;
+            return (Options & SceneryMaterialOptions.AlphaTest) == 0 && (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;
 		}
 
-        public override Texture2D GetShadowTexture()
+		public override Texture2D GetShadowTexture()
 		{
-            if (NightTexture != null && (Options & 0x2000) != 0 && Materials.sunDirection.Y < 0.0f)
-                return NightTexture;
+			if (NightTexture != null && Materials.sunDirection.Y < 0.0f)
+				return NightTexture;
 			
 			return Texture;
 		}
 
         public override TextureAddressMode GetShadowTextureAddressMode()
         {
-            var textureAddressMode = (Options & 0x1800) >> 11;
-            switch (textureAddressMode)
-            {
+            switch (Options & SceneryMaterialOptions.TextureAddressModeMask)
+			{
+				case SceneryMaterialOptions.TextureAddressModeWrap:
+					return TextureAddressMode.Wrap;
+				case SceneryMaterialOptions.TextureAddressModeMirror:
+					return TextureAddressMode.Mirror;
+				case SceneryMaterialOptions.TextureAddressModeClamp:
+					return TextureAddressMode.Clamp;
+				case SceneryMaterialOptions.TextureAddressModeBorder:
+					return TextureAddressMode.Border;
                 default:
-                    return TextureAddressMode.Wrap;
-                case 1:
-                    return TextureAddressMode.Mirror;
-                case 2:
-                    return TextureAddressMode.Clamp;
-                case 3:
-                    return TextureAddressMode.Border;
+                    throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.TextureAddressModeMask value.");
             }
         }
 	}
@@ -733,9 +683,9 @@ namespace ORTS
 				ShaderPasses.Current.Begin();
 				foreach (var item in renderItems)
 				{
-                    shader.SetMatrix(ref item.XNAMatrix, ref viewproj);
-                    shader.ZBias = item.RenderPrimitive.ZBias;
-                    shader.CommitChanges();
+					shader.SetMatrix(ref item.XNAMatrix, ref viewproj);
+					shader.ZBias = item.RenderPrimitive.ZBias;
+					shader.CommitChanges();
 					item.RenderPrimitive.Draw(graphicsDevice);
 				}
 				ShaderPasses.Current.End();
@@ -885,7 +835,7 @@ namespace ORTS
             rs.SourceBlend = Blend.One;
         }
 
-        public override bool GetBlending()
+		public override bool GetBlending()
 		{
 			return false;
 		}
@@ -1105,7 +1055,7 @@ namespace ORTS
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
-            shader.Begin();
+			shader.Begin();
 			ShaderPasses.Reset();
 			while (ShaderPasses.MoveNext())
             {
@@ -1130,7 +1080,7 @@ namespace ORTS
 			rs.ReferenceAlpha = 0;
 		}
 
-        public override Texture2D GetShadowTexture()
+		public override Texture2D GetShadowTexture()
 		{
 			return TreeTexture;
 		}
@@ -1156,7 +1106,7 @@ namespace ORTS
             rs.AlphaBlendEnable = true;
             rs.DepthBufferWriteEnable = false;
             rs.DestinationBlend = Blend.InverseSourceAlpha;
-			rs.SourceBlend = Blend.SourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1189,7 +1139,7 @@ namespace ORTS
 			rs.SourceBlend = Blend.One;
 		}
 
-        public override bool GetBlending()
+		public override bool GetBlending()
 		{
 			return true;
 		}
@@ -1276,8 +1226,8 @@ namespace ORTS
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
-			rs.DestinationBlend = Blend.InverseSourceAlpha;
-			rs.SourceBlend = Blend.SourceAlpha;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
 
 			graphicsDevice.VertexDeclaration = WaterTile.PatchVertexDeclaration;
 		}
@@ -1288,7 +1238,7 @@ namespace ORTS
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
-            shader.Begin();
+			shader.Begin();
 			ShaderPasses.Reset();
 			while (ShaderPasses.MoveNext())
             {
@@ -1313,7 +1263,7 @@ namespace ORTS
 			rs.SourceBlend = Blend.One;
 		}
 
-        public override bool GetBlending()
+		public override bool GetBlending()
 		{
 			return true;
 		}
@@ -1379,7 +1329,7 @@ namespace ORTS
 				foreach (var item in renderItems)
 				{
 					var wvp = item.XNAMatrix * viewproj;
-                    shader.SetData(ref wvp, item.Material.GetShadowTexture());
+					shader.SetData(ref wvp, item.Material.GetShadowTexture());
 					shader.CommitChanges();
                     var newSamplerState = item.Material.GetShadowTextureAddressMode();
                     if (lastSamplerState != newSamplerState)
@@ -1387,7 +1337,7 @@ namespace ORTS
                         samplerState.AddressU = samplerState.AddressV = newSamplerState;
                         lastSamplerState = newSamplerState;
                     }
-                    item.RenderPrimitive.Draw(graphicsDevice);
+					item.RenderPrimitive.Draw(graphicsDevice);
 				}
 				ShaderPasses.Current.End();
 			}
@@ -1501,7 +1451,7 @@ namespace ORTS
 			rs.SourceBlend = Blend.One;
 		}
 
-        public override bool GetBlending()
+		public override bool GetBlending()
 		{
 			return true;
 		}
@@ -1592,7 +1542,7 @@ namespace ORTS
 			Font = renderProcess.Content.Load<SpriteFont>("Arial");
             LineSpacing = Font.LineSpacing;
 			if (LineSpacing < 10) LineSpacing = 10; //if spacing between text lines is too small
-		}
+}
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
@@ -1640,7 +1590,7 @@ namespace ORTS
 			SpriteBatch.End();//DepthBufferEnable will be restored to previous state
 		}
 
-        public override bool GetBlending()
+		public override bool GetBlending()
 		{
 			return true;
 		}

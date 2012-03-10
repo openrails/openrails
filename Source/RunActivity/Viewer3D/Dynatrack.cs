@@ -868,8 +868,8 @@ namespace ORTS
 
         public void LoadMaterial(RenderProcess renderProcess, LODItem lod)
         {
-            int options = Helpers.EncodeMaterialOptions(lod);
-            lod.LODMaterial = Materials.Load(renderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(renderProcess.Viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), options, lod.MipMapLevelOfDetailBias);
+            var options = Helpers.EncodeMaterialOptions(lod);
+            lod.LODMaterial = Materials.Load(renderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(renderProcess.Viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), (int)options, lod.MipMapLevelOfDetailBias);
         }
 
         #endregion
