@@ -49,7 +49,7 @@ namespace ORTS
             StepSize = other.StepSize;
             CurrentNotch = other.CurrentNotch;
 
-            foreach (MSTSNotch notch in Notches)
+            foreach (MSTSNotch notch in other.Notches)
             {
                 Notches.Add(notch.Clone());
             }

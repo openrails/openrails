@@ -31,6 +31,12 @@ namespace ORTS
 		public MSTSBrakeController(MSTSBrakeController controller) :
             base(controller)  
         {
+            MaxPressurePSI = controller.MaxPressurePSI;
+            ReleaseRatePSIpS = controller.ReleaseRatePSIpS;
+            ApplyRatePSIpS = controller.ApplyRatePSIpS;
+            EmergencyRatePSIpS = controller.EmergencyRatePSIpS;
+            FullServReductionPSI = controller.FullServReductionPSI;
+            MinReductionPSI = controller.MinReductionPSI;
 			Simulator = controller.Simulator;
         }
 
