@@ -243,6 +243,136 @@ namespace ORTS
         }
     }
 
+	public class SpeedPostShape : PoseableShape
+	{
+		SpeedPostObj SpeedPostObj;  // has data on current aligment for the switch
+		VertexPositionNormalTexture[] VertexList;
+		int NumVertices;
+		int NumIndices;
+		public short[] TriangleListIndices;// Array of indices to vertices for triangles
+
+		Material Material;
+		protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
+		ShapePrimitive shapePrimitive;
+		public SpeedPostShape(Viewer3D viewer, string path, WorldPosition position, SpeedPostObj spo)
+			: base(viewer, path, position, ShapeFlags.AutoZBias)
+		{
+
+			SpeedPostObj = spo;
+			var maxVertex = 32;
+			Material = Materials.Load(viewer.RenderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), 256, 0);
+			// Create and populate a new ShapePrimitive
+
+
+			NumVertices = NumIndices = 0;
+			var i = 0; var id = -1; var size = SpeedPostObj.Text_Size.Size;
+			id = SpeedPostObj.getTrItemID(0);
+			SpeedPostItem item = (SpeedPostItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[id]);
+			string speed = "";
+			if (item != null) speed += item.SpeedInd;
+			VertexList = new VertexPositionNormalTexture[maxVertex];
+			TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
+
+			for (i = 0; i < SpeedPostObj.Sign_Shape.NumShapes; i++)
+			{
+
+				var start = new Vector3(SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 0], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 1], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 2]);
+				start += new Vector3(0 - size / 2, 0 - size / 2, 0);
+				var offset = new Vector3(0, 0, 0);
+				for (var j = 0; j < speed.Length; j++)
+				{
+					Vector3 left = start + offset;
+					var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+					Vertex v1 = new Vertex(left.X, left.Y, left.Z+0.05f, 0, 0, -1, tX, tY);
+					Vertex v2 = new Vertex(left.X + size, left.Y, left.Z+0.05f, 0, 0, -1, tX + 0.25f, tY);
+					Vertex v3 = new Vertex(left.X + size, left.Y + size, left.Z+0.05f, 0, 0, -1, tX + 0.25f, tY - 0.25f);
+					Vertex v4 = new Vertex(left.X, left.Y + size, left.Z+0.05f, 0, 0, -1, tX, tY - 0.25f);
+
+					TriangleListIndices[NumIndices++] = (short)NumVertices;
+					TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+					TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
+					// Second triangle:
+					TriangleListIndices[NumIndices++] = (short)NumVertices;
+					TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
+					TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+
+					VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
+					VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
+					VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
+					VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
+					NumVertices += 4;
+					offset.X += SpeedPostObj.Text_Size.DX; offset.Y += SpeedPostObj.Text_Size.DY; //move to next digit
+				}
+
+			}
+			
+			/*shapePrimitive.Material = Material;
+			int [] Hierarchy = new int[1];
+			Hierarchy[0] = -1;
+			shapePrimitive.iHierarchy = 0;
+			shapePrimitive.MinVertex = 0;
+			shapePrimitive.NumVertices = NumVertices;
+			shapePrimitive.IndexCount = NumIndices;
+			short[] newTList = new short[NumIndices];
+			for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+			VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
+			for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
+			shapePrimitive.VertexBufferSet = new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice);
+			shapePrimitive.IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
+															NumIndices, BufferUsage.WriteOnly);
+			shapePrimitive.IndexBuffer.SetData(newTList);*/
+
+			short[] newTList = new short[NumIndices];
+			for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+			VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
+			for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
+			IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
+															NumIndices, BufferUsage.WriteOnly);
+			IndexBuffer.SetData(newTList);
+			shapePrimitive = new ShapePrimitive(Material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+
+		}
+
+		float GetTextureCoordX(char c)
+		{
+			float y = (c-'0') % 4 * 0.25f;
+			if (c == '.') y = 1;
+			if (y < 0) y = 0;
+			if (y > 1) y = 1;
+			return y;
+		}
+
+		float GetTextureCoordY(char c)
+		{
+			if (c == '0' || c == '1' || c == '2' || c == '3') return 0.25f;
+			if (c == '4' || c == '5' || c == '6' || c == '7') return 0.5f;
+			if (c == '8' || c == '9') return 0.75f;
+			return 1.0f;
+		}
+
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		{
+			// Offset relative to the camera-tile origin
+			int dTileX = this.Location.TileX - Viewer.Camera.TileX;
+			int dTileZ = this.Location.TileZ - Viewer.Camera.TileZ;
+			Vector3 tileOffsetWrtCamera = new Vector3(dTileX * 2048, 0, -dTileZ * 2048);
+
+			// Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
+			Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
+			xnaXfmWrtCamTile = this.Location.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
+			// (Transformation is now with respect to camera-tile origin)
+
+			frame.AddPrimitive( this.shapePrimitive.Material, this.shapePrimitive,
+						RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
+
+			// Update the pose
+			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+				AnimateMatrix(iMatrix, AnimationKey);
+
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+		}
+	} // class SpeedPostShape
+
 	public class LevelCrossingShape : PoseableShape
 	{
         public readonly LevelCrossingObj crossingObj;  // has data on current aligment for the switch

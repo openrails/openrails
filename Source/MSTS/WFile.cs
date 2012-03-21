@@ -181,7 +181,7 @@ namespace MSTS
                     break;
                 case TokenID.Speedpost:
                     // TODO: Add real handling.
-                    Add(new StaticObj(subBlock, currentWatermark));
+                    Add(new SpeedPostObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Tr_Watermark:
                     currentWatermark = subBlock.ReadInt();
@@ -528,6 +528,128 @@ namespace MSTS
 		}
 	}
 
+	public class SpeedPostObj : WorldObject
+    {
+		public string Speed_Digit_Tex; //ace
+		public Speed_Text_Size Text_Size;// ( 0.08 0.06 0 )
+		public Speed_Sign_Shape Sign_Shape;
+		public List<TrItemId> trItemIDList;
+
+		public SpeedPostObj(SBR block, int detailLevel)
+        {
+            block.VerifyID(TokenID.Speedpost);
+
+			trItemIDList = new List<TrItemId>();
+            StaticDetailLevel = detailLevel;
+
+            while (!block.EndOfBlock())
+            {
+                using (SBR subBlock = block.ReadSubBlock())
+                {
+                    switch (subBlock.ID)
+                    {
+                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+						case TokenID.Speed_Digit_Tex: Speed_Digit_Tex = subBlock.ReadString(); break;
+                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
+                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+						case TokenID.Speed_Sign_Shape: Sign_Shape = new Speed_Sign_Shape(subBlock); break;
+						case TokenID.Speed_Text_Size: Text_Size = new Speed_Text_Size(subBlock); break;
+						case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+						case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+						default: subBlock.Skip(); break;
+                    }
+                }
+            }
+            // TODO verify that we got all needed parameters otherwise null pointer failures will occur
+            // TODO, do this for all objects that iterate using a while loop
+        }
+
+		public int getTrItemID(int current, int db)
+		{
+			int i = 0;
+			foreach (TrItemId tID in trItemIDList)
+			{
+				if (tID.db == db)
+				{
+					if (current == i) return tID.dbID;
+					i++;
+				}
+			}
+			return -1;
+		}
+
+		public class Speed_Sign_Shape
+		{
+			public int NumShapes;
+			public float[] ShapesInfo; // ( 2 -0.021 0.481 -0.083 0 0 0.475 0.083 3.14159 )
+
+			public Speed_Sign_Shape()
+			{
+			}
+
+			public Speed_Sign_Shape(SBR block)
+			{
+				block.VerifyID(TokenID.Speed_Sign_Shape);
+				NumShapes = block.ReadInt();
+				ShapesInfo = new float[NumShapes * 4];
+				for (var i = 0; i < NumShapes; i++)
+				{
+					ShapesInfo[i * 4] = block.ReadFloat();
+					ShapesInfo[i * 4 + 1] = block.ReadFloat();
+					ShapesInfo[i * 4 + 2] = block.ReadFloat();
+					ShapesInfo[i * 4 + 3] = block.ReadFloat();
+				}
+				block.VerifyEndOfBlock();
+			}
+		}
+		public class Speed_Text_Size
+		{
+			public float Size, DX, DY;
+
+			public Speed_Text_Size()
+			{
+			}
+
+			public Speed_Text_Size(SBR block)
+			{
+				block.VerifyID(TokenID.Speed_Text_Size);
+
+				Size = block.ReadFloat(); DX = block.ReadFloat(); DY = block.ReadFloat();
+
+				block.VerifyEndOfBlock();
+			}
+		}
+
+		public int getTrItemID(int current)
+		{
+			int i = 0;
+			foreach (TrItemId tID in trItemIDList)
+			{
+				if (tID.db == 0)
+				{
+					if (current == i) return tID.dbID;
+					i++;
+				}
+			}
+			return -1;
+		}
+
+		public class TrItemId
+		{
+			public int db, dbID;
+			public TrItemId(SBR block)
+			{
+				block.VerifyID(TokenID.TrItemId);
+				db = block.ReadInt();
+				dbID = block.ReadInt();
+				block.VerifyEndOfBlock();
+			}
+		}
+
+	}
+
 	//level crossing data
 	public class LevelCrossingObj : WorldObject
 	{
@@ -631,7 +753,6 @@ namespace MSTS
 				block.VerifyEndOfBlock();
 			}
 		}
-
 		public class TrItemId
 		{
 			public int db, dbID;
@@ -643,7 +764,9 @@ namespace MSTS
 				block.VerifyEndOfBlock();
 			}
 		}
+
 	}
+
 
 	//Car Spawner data
 	public class CarSpawnerObj : WorldObject

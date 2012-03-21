@@ -479,8 +479,8 @@ namespace MSTS
 
     public class SpeedPostItem : TrItem
     {
-        uint Flags;
-        float SpeedInd;      // Or distance if mile post.
+        public uint Flags;
+        public float SpeedInd;      // Or distance if mile post.
         public SpeedPostItem(STFReader stf, int idx)
         {
             ItemType = trItemType.trSPEEDPOST;

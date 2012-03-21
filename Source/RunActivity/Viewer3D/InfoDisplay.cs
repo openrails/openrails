@@ -381,7 +381,7 @@ namespace ORTS
             Viewer = material.RenderProcess.Viewer;
             TrainCar = tcar;
             LineSpacing = Material.LineSpacing;
-			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 14, System.Drawing.FontStyle.Bold, 1);
+			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1);
         }
 
         /// <summary>
@@ -395,7 +395,7 @@ namespace ORTS
             TrItemLabel = pd;
             LineSpacing = Material.LineSpacing;
             LabelColor = labelColor;
-			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 14, System.Drawing.FontStyle.Bold, 1);
+			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1);
         }
 
         /// <summary>

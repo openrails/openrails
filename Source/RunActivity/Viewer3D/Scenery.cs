@@ -201,6 +201,7 @@ namespace ORTS
         public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
         public List<ForestDrawer> forestList = new List<ForestDrawer>();
 		public List<CarSpawner> carSpawners = new List<CarSpawner>();
+		public List<SpeedPostShape> speedPostList = new List<SpeedPostShape>();
         public List<TrItemLabel> sidings = new List<TrItemLabel>();
         public List<TrItemLabel> platforms = new List<TrItemLabel>();
 
@@ -287,6 +288,10 @@ namespace ORTS
 				{
                     SceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None,(LevelCrossingObj)worldObject, viewer.Simulator.LevelCrossings.LevelCrossingObjects));
 				}
+				else if (worldObject.GetType() == typeof(MSTS.SpeedPostObj))
+				{
+					SceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
+				}
 				else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
 				{
 					if (viewer.Simulator.RDB != null && viewer.Simulator.CarSpawnerFile != null)
@@ -294,7 +299,8 @@ namespace ORTS
 					else
 						Trace.TraceWarning("Car spawner {1} ignored because route has no RDB or carspawn.dat in {0}", WFileName, worldObject.UID);
 				}
-				else if (worldObject.GetType() == typeof(MSTS.SidingObj)) {
+				else if (worldObject.GetType() == typeof(MSTS.SidingObj))
+				{
                     sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
 				} 
                 else if (worldObject.GetType() == typeof(MSTS.PlatformObj)) {
