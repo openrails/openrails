@@ -259,7 +259,7 @@ namespace ORTS
 		{
 
 			SpeedPostObj = spo;
-			var maxVertex = 32;
+			var maxVertex = SpeedPostObj.Sign_Shape.NumShapes * 30;// every face has max 5 digits, each has 2 triangles
 			Material = Materials.Load(viewer.RenderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), 256, 0);
 			// Create and populate a new ShapePrimitive
 
