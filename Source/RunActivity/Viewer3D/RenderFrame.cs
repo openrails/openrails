@@ -550,21 +550,41 @@ namespace ORTS
                 Console.WriteLine();
             }
 
-            if (UserInput.IsPressed(UserCommands.GameScreenshot))
-            {
-                using (var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color))
-                {
-                    graphicsDevice.ResolveBackBuffer(screenshot);
-                    if (!Directory.Exists(RenderProcess.Viewer.Settings.ScreenshotPath))
-                        Directory.CreateDirectory(RenderProcess.Viewer.Settings.ScreenshotPath);
-                    var fileName = Path.Combine(RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss") + ".png");
-                    screenshot.Save(fileName, ImageFileFormat.Png);
-                    RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Screenshot saved to '{0}'.", fileName), 10);
+            if( UserInput.IsPressed( UserCommands.GameScreenshot ) ) {
+                using( var screenshot = new ResolveTexture2D( graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color ) ) {
+                    graphicsDevice.ResolveBackBuffer( screenshot );
+                    if( !Directory.Exists( RenderProcess.Viewer.Settings.ScreenshotPath ) )
+                        Directory.CreateDirectory( RenderProcess.Viewer.Settings.ScreenshotPath );
+                    var fileName = Path.Combine( RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString( "yyyy-MM-dd hh-mm-ss" ) + ".png" );
+                    screenshot.Save( fileName, ImageFileFormat.Png );
+                    RenderProcess.Viewer.MessagesWindow.AddMessage( String.Format( "Screenshot saved to '{0}'.", fileName ), 10 );
                 }
+            }
+            // Boolean and FileStem set by Viewer3D
+            // <CJ comment> Intended to save a thumbnail-sized image but can't find a way to do this.
+            // Currently saving a full screen image and then showing it in Menu.exe at a thumbnail size.
+            // </CJ comment>
+            if (RenderProcess.Viewer.SaveActivityThumbnail) {
+                 RenderProcess.Viewer.SaveActivityThumbnail = false;    // cancel flag
+                 SaveScreenshot( graphicsDevice, RenderProcess.Viewer.SaveActivityFileStem );
+             }
+        }
+
+        /// <summary>
+        /// Executed in the RenderProcess thread 
+        /// </summary>
+        /// <param name="graphicsDevice"></param>
+        public void SaveScreenshot( GraphicsDevice graphicsDevice, string filestem ) {
+            using( var screenshot = new ResolveTexture2D( graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color ) ) {
+                graphicsDevice.ResolveBackBuffer( screenshot );
+                if( !Directory.Exists( RenderProcess.Viewer.Settings.ScreenshotPath ) )
+                    Directory.CreateDirectory( RenderProcess.Viewer.Settings.ScreenshotPath );
+                var fileName = Path.Combine( Program.UserDataFolder, filestem + ".png" );
+                screenshot.Save( fileName, ImageFileFormat.Png );
             }
         }
 
-        void DrawShadows(GraphicsDevice graphicsDevice, bool logging)
+        void DrawShadows( GraphicsDevice graphicsDevice, bool logging )
         {
             if (logging) Console.WriteLine("  DrawShadows {");
             for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)

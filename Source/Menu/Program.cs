@@ -38,22 +38,30 @@ namespace ORTS
 				while (true)
 				{
 					string parameter;
+                    
+                    MainForm.ResumeFromSavePressed = false;
+                    var result = MainForm.ShowDialog();
 
-					switch (MainForm.ShowDialog())
-					{
-						case DialogResult.OK:
-							var exploreActivity = MainForm.SelectedActivity as ExploreActivity;
-							if (exploreActivity != null)
-								parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather);
-							else
-								parameter = String.Format("\"{0}\"", MainForm.SelectedActivity.FileName);
-							break;
-						case DialogResult.Retry:
-							parameter = "-resume";
-							break;
-						default:
-							return;
-					}
+                    if( MainForm.ResumeFromSavePressed ) {
+                        parameter = "-resume" + String.Format( " \"{0}\"", Path.GetFileNameWithoutExtension(MainForm.ActivitySaveFilename ));
+                    } else {
+
+                        //switch( MainForm.ShowDialog() ) {
+                        switch( result ) {
+                            case DialogResult.OK:
+                                var exploreActivity = MainForm.SelectedActivity as ExploreActivity;
+                                if( exploreActivity != null )
+                                    parameter = String.Format( "\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather );
+                                else
+                                    parameter = String.Format( "\"{0}\"", MainForm.SelectedActivity.FileName );
+                                break;
+                            case DialogResult.Retry:
+                                parameter = "-resume";
+                                break;
+                            default:
+                                return;
+                        }
+                    }
 
 					// find the RunActivity program, normally in the startup path, 
 					//  but while debugging it will be in an adjacent directory

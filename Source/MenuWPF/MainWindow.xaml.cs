@@ -554,6 +554,7 @@ namespace MenuWPF
                 MessageBox.Show(error.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         #endregion
 
         #region Utilities

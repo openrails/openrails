@@ -82,6 +82,10 @@ namespace ORTS
 		public RDBFile RDB;
 		public CarSpawnerFile CarSpawnerFile;
         public bool UseAdvancedAdhesion;
+        // Used in save and restore form
+        public string PathDescription;
+        public float InitialTileX;
+        public float InitialTileZ;
 
 		/// <summary>
 		/// Reference to the InterlockingSystem object, responsible for
@@ -178,11 +182,14 @@ namespace ORTS
 				RailDriver.Shutdown();
 		}
 
-		public void Restore(BinaryReader inf)
+        public void Restore( BinaryReader inf, string simulatorPathDescription, float initialTileX, float initialTileZ )
 		{
             ClockTime = inf.ReadDouble();
             Season = (SeasonType)inf.ReadInt32();
             Weather = (WeatherType)inf.ReadInt32();
+            PathDescription = simulatorPathDescription; // Needed for Resume header data
+            InitialTileX = initialTileX;
+            InitialTileZ = initialTileZ;
 
             RestoreSwitchSettings(inf);
             Signals = new Signals(this, SIGCFG, inf);
@@ -655,6 +662,8 @@ namespace ORTS
 			if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
 				train.RearTDBTraveller.ReverseDirection();
 			PATFile patFile = new PATFile(patFileName);
+            PathDescription = patFile.Name;
+
 			AIPath aiPath = new AIPath(patFile, TDB, TSectionDat, patFileName);
 			aiPath.AlignAllSwitches();
 			CONFile conFile = new CONFile(conFileName);
@@ -698,7 +707,10 @@ namespace ORTS
 			Trains.Add(train);
 			train.AITrainBrakePercent = 100;
             train.InitializeSignals();
-		}
+            // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
+            InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);
+            InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
+        }
 
 
 		/// <summary>

@@ -11,12 +11,15 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using ORTS.Menu;
+using ORTS.Menu;    // needed for Activity
 
 namespace ORTS
 {
 	public partial class MainForm : Form
 	{
+        public bool ResumeFromSavePressed;
+        public string ActivitySaveFilename;
+
         bool Initialized;
 		List<Folder> Folders = new List<Folder>();
 		List<Route> Routes = new List<Route>();
@@ -66,6 +69,18 @@ namespace ORTS
 				RouteLoader.Cancel();
 			if (ActivityLoader != null)
 				ActivityLoader.Cancel();
+
+            // Empty the deleted_saves folder
+            string userDataFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData ), Application.ProductName );
+            string folderToDelete = userDataFolder + @"\deleted_saves";
+            if( Directory.Exists( folderToDelete ) ) {
+                Directory.Delete( folderToDelete, true );   // true removes all contents as well as folder
+            }
+            // Tidy up after versions which used SAVE.BIN
+            string file = userDataFolder + @"\SAVE.BIN";
+            if( File.Exists( file ) ) {
+                File.Delete( file );
+            }
 		}
 		#endregion
 
@@ -214,9 +229,6 @@ namespace ORTS
 					checkBoxWarnings.Checked = (int)RK.GetValue("Logging", 1) == 1 ? true : false;
 				}
 			}
-
-			var savedGameFile = Path.Combine(Program.UserDataFolder, "save.bin");
-			buttonResume.Enabled = File.Exists(savedGameFile);
 		}
 
 		void SaveOptions()
@@ -332,5 +344,11 @@ namespace ORTS
 				return false;
 			}
 		}
+
+        private void buttonResume_Click( object sender, EventArgs e ) {
+            using( ActivitySaveForm form = new ActivitySaveForm( this, SelectedRoute, SelectedActivity ) ) {
+                form.ShowDialog( this );
+            }
+        }
 	}
 }

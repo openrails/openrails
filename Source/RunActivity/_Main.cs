@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ORTS.Menu;
 
@@ -92,10 +93,10 @@ namespace ORTS
                     TestAll(data);
                     break;
                 default:
-                    Console.WriteLine("Missing activity file name");
-                    Console.WriteLine("   ie RunActivity \"c:\\program files\\microsoft games\\train simulator\\routes\\usa1\\activites\\xxx.act\"");
+                    Console.WriteLine("Supply missing activity file name");
+                    Console.WriteLine("   i.e.: RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA1\\ACTIVITIES\\xxx.act\"");
                     Console.WriteLine();
-                    Console.WriteLine("Or launch the OpenRails program and select from the menu.");
+                    Console.WriteLine("or launch the program OpenRails.exe and select from the menu.");
                     Console.ReadKey();
                     break;
             }
@@ -148,25 +149,69 @@ namespace ORTS
 
         /// <summary>
         /// Save the current game state for later resume.
-        /// Currently only supports one save, in a SAVE.BIN file in 
-        /// the users local program storage, 
-        /// ie.  "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS\\SAVE.BIN"
+        /// Save files are stored in the user's local program storage:
+        /// e.g. "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS\\<activity file name> <date_and_time>.save"
+        /// or
+        /// e.g. "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS\\<route folder name> <date_and_time>.save"
         /// </summary>
         public static void Save()
         {
             Action save = () =>
             {
-                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\SAVE.BIN", FileMode.Create, FileAccess.Write)))
+                // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
+                // that are likely to match the previously chosen route and activity.
+                // Append the current date and time, so that each file is unique.
+                // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
+                string prefix;
+                // If there is an activity:
+                if( Arguments.Length == 1 ) {
+                    // Extract the name of the activity file
+                    prefix = Path.GetFileNameWithoutExtension( Arguments[0] );
+                }else{
+                    // Extract the name of the route folder instead
+                    Regex r1 = new Regex( @"(\\ROUTES\\)(.+)(\\PATHS)" );
+                    Match match = r1.Match( Arguments[0] );   // e.g. "D:\MSTS\ROUTES\USA1\PATHS\local service (traffic).pat"
+                    prefix = 
+                        match.Success ?
+                        match.Groups[2].Value  // Extract 2nd group (1)(2)(3), e.g. "USA1"
+                        : "unknown route";
+                }
+                string fileStem = String.Format( "{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}",  prefix, System.DateTime.Now );
+
+                using( BinaryWriter outf = new BinaryWriter( new FileStream( UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write ) ) ) 
                 {
                     // Save some version identifiers so we can validate on load.
                     outf.Write(Version);
                     outf.Write(Build);
-                    // Now save the real data...
+
+                    // Save heading data used in Menu.exe
+                    outf.Write( Simulator.RouteName );
+                    outf.Write( Arguments.Length );
+                    if( Arguments.Length < 2 ){     // save Activity 
+                        outf.Write( Path.GetFileNameWithoutExtension( Arguments[0]) );   // Activity filename
+                    }else{                          // save Explore details
+                        outf.Write( Path.GetFileNameWithoutExtension( Arguments[0]) );  // Path filename
+                        outf.Write( Path.GetFileNameWithoutExtension( Arguments[1]) );  // Consist filename
+                    }
+
+                    if( Simulator.PathDescription == null ) { Simulator.PathDescription = "<unknown>"; }
+                    outf.Write( Simulator.PathDescription );
+                    outf.Write( (int)Simulator.GameTime );                              // Time elapsed in game (secs)
+                    outf.Write( System.DateTime.Now.ToString("ddd dd-MM-yy HH:mm") );   // Date and time in real world
+                    // Calculate position of player's train in fractions of a 2048 metre tile
+                    float currentTileX = Simulator.Trains[0].FrontTDBTraveller.TileX + (Simulator.Trains[0].FrontTDBTraveller.X / 2048);
+                    float currentTileZ = Simulator.Trains[0].FrontTDBTraveller.TileZ + (Simulator.Trains[0].FrontTDBTraveller.Z / 2048);
+                    outf.Write( currentTileX );  // Current location of player train
+                    outf.Write( currentTileZ );  // Current location of player train
+                    outf.Write( Simulator.InitialTileX );  // Initial location of player train
+                    outf.Write( Simulator.InitialTileZ );  // Initial location of player train
+
+                    // Now save the real data used by RunActivity.exe
                     outf.Write(Arguments.Length);
                     foreach (var argument in Arguments)
                         outf.Write(argument);
                     Simulator.Save(outf);
-                    Viewer.Save(outf);
+                    Viewer.Save(outf, fileStem);
                     Console.WriteLine();
                     Console.WriteLine("Saved");
                     Console.WriteLine();
@@ -196,10 +241,19 @@ namespace ORTS
         /// </summary>
         static void Resume(UserSettings settings, string[] args)
         {
-            Action resume = () =>
+            Action resume = ( ) =>
             {
-                var saveFile = args.Length == 0 ? UserDataFolder + "\\SAVE.BIN" : args[0];
-                using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
+                // If "-resume" also specifies a save file then use it else use most recently changed *.save E.g.:
+                // RunActivity.exe -resume "yard_two 2012-03-20 22.07.36"
+                string saveFile;
+                if( args.Length > 0 ) {
+                    saveFile = args[0];
+                    if( !saveFile.EndsWith( ".save" ) ) { saveFile += ".save"; }
+                    saveFile = Path.Combine(Program.UserDataFolder, saveFile );
+                } else {
+                    saveFile = GetMostRecentSave();
+                }
+                using( BinaryReader inf = new BinaryReader( new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) )
                 {
                     // Read in validation data.
                     var revision = "<unknown>";
@@ -216,13 +270,32 @@ namespace ORTS
                         throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build ) );
                     }
 
+                    // Skip the heading data used in Menu.exe
+                    string temp = inf.ReadString(); // Route name
+                    int argumentsCount = inf.ReadInt32();
+                    if( argumentsCount < 2 ) {
+                        temp = inf.ReadString();    // Activity filename
+                    } else {
+                        temp = inf.ReadString();    // Path filename
+                        temp = inf.ReadString();    // Consist filename
+                    }
+                    string simulatorPathDescription = inf.ReadString();
+                    int tempInt = inf.ReadInt32();          // Time elapsed in game (secs)
+                    temp = inf.ReadString();                // Date and time in real world
+                    float tempFloat = inf.ReadSingle();     // Current location of player train TileX
+                    tempFloat = inf.ReadSingle();           // Current location of player train TileZ
+
+                    // Read initial position and pass to Simulator so it can be written out if another save is made.
+                    float initialTileX = inf.ReadSingle();  // Initial location of player train TileX
+                    float initialTileZ = inf.ReadSingle();  // Initial location of player train TileZ
+
                     // Read in the real data...
                     var savedArgs = new string[inf.ReadInt32()];
                     for (var i = 0; i < savedArgs.Length; i++)
                         savedArgs[i] = inf.ReadString();
 
                     InitSimulator(settings, savedArgs, "Resume");
-                    Simulator.Restore(inf);
+                    Simulator.Restore( inf, simulatorPathDescription, initialTileX, initialTileZ );
                     Viewer = new Viewer3D(Simulator);
                     Viewer.Initialize();
                     Viewer.Restore(inf);
@@ -245,6 +318,18 @@ namespace ORTS
                     if (settings.ShowErrorDialogs)
                         MessageBox.Show(error.ToString(), Application.ProductName);
                 }
+            }
+        }
+
+        static string GetMostRecentSave() {
+            var directory = new DirectoryInfo( UserDataFolder );
+            var file = directory.GetFiles( "*.save" )
+             .OrderByDescending( f => f.LastWriteTime )
+             .First();
+            if( file == null ) {
+                return "resume not found";
+            } else {
+                return file.FullName;
             }
         }
 
@@ -343,7 +428,7 @@ namespace ORTS
                     if (revision != "000")
                         Version += "." + revision;
                     else
-                        Version = "";
+                        Version = ""; 
 
                     Build = Application.ProductVersion;  // from assembly
                     Build = Build + " " + f.ReadLine();  // date

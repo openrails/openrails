@@ -99,6 +99,12 @@
     <Compile Include="..\ORTS\Menu\Routes.cs">
       <Link>ORTS\Menu\Routes.cs</Link>
     </Compile>
+    <Compile Include="ActivitySaveForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ActivitySaveForm.Designer.cs">
+      <DependentUpon>ActivitySaveForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ExploreForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -125,6 +131,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="ActivitySaveForm.resx">
+      <DependentUpon>ActivitySaveForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ExploreForm.resx">
       <DependentUpon>ExploreForm.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -141,10 +150,19 @@
       <DependentUpon>Options.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="RouteDetails.resx">
       <DependentUpon>RouteDetails.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="RouteDetails.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -174,6 +192,11 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Properties\DataSources\ActivitySaveForm.ActivitySave.datasource" />
+    <None Include="Properties\DataSources\ActivitySaveForm.ActivitySave1.datasource" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

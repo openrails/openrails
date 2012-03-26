@@ -13,7 +13,7 @@ namespace ORTS.Menu
     public class Activity
     {
         public readonly string Name;
-        public readonly string FileName;
+        public readonly string FileName;    // includes full path specification
         public readonly ACTFile ACTFile;
 
         public Activity(string name, string fileName, ACTFile actFile)

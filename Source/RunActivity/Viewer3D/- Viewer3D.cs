@@ -116,6 +116,9 @@ namespace ORTS {
         private bool isMouseTimerVisible = false;
         private double MouseShownAtRealTime = 0;
 
+        public bool SaveActivityThumbnail;
+        public string SaveActivityFileStem;
+
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
@@ -158,7 +161,7 @@ namespace ORTS {
         /// <summary>
         /// Save game
         /// </summary>
-        public void Save(BinaryWriter outf) {
+        public void Save(BinaryWriter outf, string fileStem) {
             outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
             outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
 
@@ -168,6 +171,10 @@ namespace ORTS {
             foreach (var camera in WellKnownCameras)
                 camera.Save(outf);
             Camera.Save(outf);
+
+            // Set these so RenderFrame can use them when its thread gets control.
+            SaveActivityFileStem = fileStem;
+            SaveActivityThumbnail = true;
 
             MessagesWindow.AddMessage("Game saved.", 5);
         }
