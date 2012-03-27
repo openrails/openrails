@@ -419,6 +419,52 @@ namespace ORTS
             throw new InvalidDataException("The car is on a track section that could not be found in the TDB file.");
         }
 
+        public TDBTraveller(int TrackNode, int tileX, int tileZ, float wx, float wz, int direction, TDBFile tdb, TSectionDatFile tsectiondat)
+        // Initialize a traveller based on coordinates relative to the specified tile center, but based on known tracknode
+        // use the specified track database file
+        // initial direction 1 = forward;
+        {
+            TDB = tdb;
+            TSectionDat = tsectiondat;
+
+            TN = TDB.TrackDB.TrackNodes[TrackNode];
+
+            if (TN.TrVectorNode != null)
+            {
+                // TODO, we could do an additional cull here by calculating a bounding sphere for each node as they are being read.
+
+                for (iTrVectorSection = 0; iTrVectorSection < TN.TrVectorNode.TrVectorSections.Length; ++iTrVectorSection)
+                {
+                    TVS = TN.TrVectorNode.TrVectorSections[iTrVectorSection];
+
+                    // Note dynamic track will have  TVS.SectionIndex >= 40000 
+                    TS = TSectionDat.TrackSections.Get(TVS.SectionIndex);
+                    if (TS == null) continue;
+
+                    if (TS.SectionCurve != null)
+                    // Its a curve
+                    {
+                        if (CurvedSectionInit(tileX, tileZ, wx, wz))
+                        {
+                            Direction = direction;
+                            return;
+                        }
+                    }
+                    else
+                    // Its a straight
+                    {
+                        if (StraightSectionInit(tileX, tileZ, wx, wz))
+                        {
+                            Direction = direction;
+                            return;
+                        }
+                    }
+
+                }
+            }
+            throw new InvalidDataException("Requested position is not on indicated tracknode.");
+        }
+
 
        /// <summary>
        /// Creates a forward-travelling TDBTraveller.
@@ -551,7 +597,7 @@ namespace ORTS
             if (Math.Abs(lat) > 2.5) return false; // we are not along the track centerline
 
             // Ensure we are in the top right quadrant, otherwise our math goes wrong
-            if (wz < 0.02) return false;  // and we can't be 'behind' the start of the circle
+            if (wz < 0.01) return false;  // and we can't be 'behind' the start of the circle
             if (wx + 0.001 > TS.SectionCurve.Radius) return false;  // we can't be to the right of center, 90' is the limit
             if (wz + 0.001 > TS.SectionCurve.Radius) return false;  // and we can't be outside the circle
             float radiansAlongCurve = (float)Math.Asin(wz / TS.SectionCurve.Radius);

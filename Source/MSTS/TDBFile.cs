@@ -481,6 +481,8 @@ namespace MSTS
     {
         public uint Flags;
         public float SpeedInd;      // Or distance if mile post.
+	public int sigObj = -1;		// index to Signal Object Table
+
         public SpeedPostItem(STFReader stf, int idx)
         {
             ItemType = trItemType.trSPEEDPOST;
