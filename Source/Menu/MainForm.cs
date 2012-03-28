@@ -26,6 +26,11 @@ namespace ORTS
 		List<Activity> Activities = new List<Activity>();
 		Task<List<Route>> RouteLoader;
 		Task<List<Activity>> ActivityLoader;
+        
+        // To pre-load selection from previous choice
+        int listBoxFoldersSelectedIndex;
+        int listBoxRoutesSelectedIndex;
+        int listBoxActivitiesSelectedIndex;
 
 		public Folder SelectedFolder { get { return listBoxFolders.SelectedIndex < 0 ? null : Folders[listBoxFolders.SelectedIndex]; } }
 		public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
@@ -87,8 +92,8 @@ namespace ORTS
 		#region Folders
 		void listBoxFolder_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			LoadRoutes();
-		}
+            LoadRoutes();
+        }
 
 		void buttonFolderAdd_Click(object sender, EventArgs e)
 		{
@@ -131,7 +136,7 @@ namespace ORTS
 		#region Routes
 		void listBoxRoutes_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			LoadActivities();
+            LoadActivities();
 		}
 
 		void listBoxRoutes_DoubleClick(object sender, EventArgs e)
@@ -227,7 +232,10 @@ namespace ORTS
 				{
 					checkBoxWindowed.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? false : true;
 					checkBoxWarnings.Checked = (int)RK.GetValue("Logging", 1) == 1 ? true : false;
-				}
+                    listBoxFoldersSelectedIndex = (int)RK.GetValue( "Folders", -1 );
+                    listBoxRoutesSelectedIndex = (int)RK.GetValue( "Routes", -1 );
+                    listBoxActivitiesSelectedIndex = (int)RK.GetValue( "Activities", -1 );
+                }
 			}
 		}
 
@@ -240,7 +248,10 @@ namespace ORTS
 				{
 					RK.SetValue("Fullscreen", checkBoxWindowed.Checked ? 0 : 1);
                     RK.SetValue("Logging", checkBoxWarnings.Checked ? 1 : 0);
-				}
+                    RK.SetValue( "Folders", listBoxFolders.SelectedIndex );
+                    RK.SetValue( "Routes", listBoxRoutes.SelectedIndex );
+                    RK.SetValue( "Activities", listBoxActivities.SelectedIndex );
+                }
 			}
 		}
 
@@ -259,10 +270,11 @@ namespace ORTS
 			foreach (var folder in Folders)
 				listBoxFolders.Items.Add(folder.Name);
 
-			if (Folders.Count > 0)
-				listBoxFolders.SelectedIndex = 0;
-			else
-				listBoxFolders.ClearSelected();
+            if( Folders.Count > 0 ) {
+                listBoxFolders.SelectedIndex = Math.Min( listBoxFoldersSelectedIndex, listBoxFolders.Items.Count - 1 );
+            } else {
+                listBoxFolders.ClearSelected();
+            }
 		}
 
 		void SaveFolders()
@@ -283,10 +295,12 @@ namespace ORTS
 				labelRoutes.Visible = Routes.Count == 0;
 				foreach (var route in Routes)
 					listBoxRoutes.Items.Add(route.Name);
-				if (Routes.Count > 0)
-					listBoxRoutes.SelectedIndex = 0;
-				else
-					LoadActivities();
+                if( Routes.Count > 0 ) {
+                    listBoxRoutes.SelectedIndex = Math.Min( listBoxRoutesSelectedIndex, listBoxRoutes.Items.Count - 1 );
+                    listBoxRoutesSelectedIndex = 0; // Not needed after first use. Reset so any change in folder will select first route.
+                } else {
+                    listBoxRoutes.ClearSelected();
+                }
 			});
 		}
 
@@ -303,9 +317,13 @@ namespace ORTS
                 labelActivities.Visible = Activities.Count == 0;
                 foreach (var activity in Activities)
                     listBoxActivities.Items.Add(activity.Name);
-                if (Activities.Count > 0)
-                    listBoxActivities.SelectedIndex = 0;
-            });
+                if( Activities.Count > 0 ) {
+                    listBoxActivities.SelectedIndex = Math.Min( listBoxActivitiesSelectedIndex, listBoxActivities.Items.Count - 1 );
+                    listBoxActivitiesSelectedIndex = 0; // Not needed after first use. Reset so any change in route will select first activity.
+                } else {
+                    listBoxActivities.ClearSelected();
+                }
+            } );
 		}
 
 		void DisplayRouteDetails()
