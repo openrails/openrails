@@ -462,6 +462,55 @@ namespace ORTS
 
                 }
             }
+
+ /*
+  * try to force it onto first section using wider brackets, asuming it is at very start of first section
+  */
+
+            TVS = TN.TrVectorNode.TrVectorSections[0];
+            TS  = TSectionDat.TrackSections.Get(TVS.SectionIndex);
+
+            if (TS.SectionCurve != null)
+            {
+                    if (CurvedSectionForceInit(tileX, tileZ, wx, wz, true))
+                    {
+                            Direction = direction;
+                            return;
+                    }
+            }
+            else
+            {
+                    if (StraightSectionForceInit(tileX, tileZ, wx, wz, true))
+                    {
+                            Direction = direction;
+                            return;
+                    }
+            }
+
+ /*
+  * try to force it onto last section using wider brackets, asuming it is at very end of last section
+  */
+
+            TVS = TN.TrVectorNode.TrVectorSections[TN.TrVectorNode.TrVectorSections.Length-1];
+            TS  = TSectionDat.TrackSections.Get(TVS.SectionIndex);
+
+            if (TS.SectionCurve != null)
+            {
+                    if (CurvedSectionForceInit(tileX, tileZ, wx, wz, false))
+                    {
+                            Direction = direction;
+                            return;
+                    }
+            }
+            else
+            {
+                    if (StraightSectionForceInit(tileX, tileZ, wx, wz, false))
+                    {
+                            Direction = direction;
+                            return;
+                    }
+            }
+
             throw new InvalidDataException("Requested position is not on indicated tracknode.");
         }
 
@@ -622,6 +671,47 @@ namespace ORTS
             return true;
         }
 
+        // If wx,wz is near this curved section, force the init of the traveller to this location, either at start or end as indicated
+        // Initial direction is forward
+        // otherwise return false
+        bool CurvedSectionForceInit(int tileX, int tileZ, float wx, float wz, bool start)
+        {
+            // get wx and wz relative to the tile that the section starts on
+            wx += (tileX - TVS.TileX) * 2048;
+            wz += (tileZ - TVS.TileZ) * 2048;
+            float sx = TVS.X;  // sx and sz are relative to the track section's home tile
+            float sz = TVS.Z;
+
+            // do a preliminary cull based on a bounding square around the track section
+            // bounding square width is Radians of curvature * curve radius, but no more than 2 * the curve radius, plus a little
+            // the square is actually 2 x width wide
+            float boundingWidth = TS.SectionCurve.Radius * (float)Math.Min(Math.Abs(M.Radians(TS.SectionCurve.Angle)), 2f) + 1f;
+            float dx = Math.Abs(wx - sx);
+            float dz = Math.Abs(wz - sz);
+            if (dx > boundingWidth || dz > boundingWidth) return false;
+
+            // we are near the section, so force onto the section
+
+            Offset = 0;
+            TileX = TVS.TileX;
+            TileZ = TVS.TileZ;
+            X = TVS.X;
+            Y = TVS.Y;
+            Z = TVS.Z;
+            AX = TVS.AX;
+            AY = TVS.AY;
+            AZ = TVS.AZ;
+            pDirection = 1;
+
+            if (!start)
+            {
+               float trackSectionLength = MSTSMath.M.Radians(Math.Abs(TS.SectionCurve.Angle)) * TS.SectionCurve.Radius;
+               MoveInCurvedSegment(trackSectionLength, 1, TS);
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// If wx,wz is in this straight section, init the traveller to this location
         /// otherwise return false
@@ -652,7 +742,7 @@ namespace ORTS
             M.Survey(sx, sz, TVS.AY, wx, wz, out lon, out lat);
 
             if (Math.Abs(lat) > 1.5    // near the centerline - I've found areas where its off the centerline due to car overhang
-                || lon < -0.002			      // before the beginning of this track section
+                || lon < -0.002                              // before the beginning of this track section
                 || lon > TS.SectionSize.Length + 0.002)  // beyond the end of the track
                 return false;
 
@@ -669,6 +759,50 @@ namespace ORTS
             pDirection = 1; // forward
 
             MoveInStraightSegment(lon, 1, TS);
+
+            return true;
+        }
+
+        /// <summary>
+        /// If wx,wz is in near straight section, init the traveller to this location, at start or end of section as indicated
+        /// otherwise return false
+        /// </summary>
+        bool StraightSectionForceInit(int tileX, int tileZ, float wx, float wz, bool start)
+        {
+            // get wx and wz relative to the tile that the section starts on
+            wx += (tileX - TVS.TileX) * 2048;
+            wz += (tileZ - TVS.TileZ) * 2048;
+            float sx = TVS.X;  // sx and sz are relative to the track section's home tile
+            float sz = TVS.Z;
+
+            // Do a preliminary cull based on a bounding square around the track section
+            // bounding square width is equivalent to the track section length
+            // the square is actually 2 x width wide + a little
+            // If the point is far from this track section, return false
+            float boundingWidth = TS.SectionSize.Length + 2;
+            float dx = Math.Abs(wx - sx);
+            float dz = Math.Abs(wz - sz);
+            if (dx > boundingWidth || dz > boundingWidth) return false;
+
+            // The point wasn't culled, so it must be close to the track section 
+            // In this case, it is forced to the start or the end of the section as required
+
+            // The point is on this track so initialize the traveller on this section
+            Offset = 0;
+            TileX = TVS.TileX;
+            TileZ = TVS.TileZ;
+            X = TVS.X;
+            Y = TVS.Y;
+            Z = TVS.Z;
+            AX = TVS.AX;
+            AY = TVS.AY;
+            AZ = TVS.AZ;
+            pDirection = 1; // forward
+
+            if (!start)
+            {
+                MoveInStraightSegment(TS.SectionSize.Length, 1, TS);
+            }
 
             return true;
         }
@@ -1043,3 +1177,4 @@ namespace ORTS
     }
 
 }
+
