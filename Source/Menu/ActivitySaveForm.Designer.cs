@@ -317,8 +317,6 @@
         private System.Windows.Forms.Button bDeleteInvalidSaves;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TextBox tbActivity;
-        private System.Windows.Forms.DataGridViewTextBoxColumn tileXDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn tileZDataGridViewTextBoxColumn;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label lSaveTotals;
         private System.Windows.Forms.Button bClose;

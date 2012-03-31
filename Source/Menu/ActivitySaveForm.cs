@@ -36,10 +36,7 @@
 //2. In common with the older parts of the Menu program, the new form was populated using the Task class, which works in 
 //   the background to load the controls with data. It didn't work reliably and sometimes the list of ActivitySaves or 
 //   count of invalid saves remained empty. It has been temporarily replaced by foreground processing.
-//3. The Menu program also tries to check the program and build values and tags an ActivitySave as valid, but it can't be 
-//   rigorous as it doesn't have access to the program and build values of the RunActivity program. Instead, it checks the 
-//   ActivitySave against its own values and passes it if the timestamp is within 5 minutes.
-//4. The MenuWPF program has not been changed and the menu ORTS > Resume continues to resume from the most recent 
+//3. The MenuWPF program has not been changed and the menu ORTS > Resume continues to resume from the most recent 
 //   ActivitySave just as it did with SAVE.BIN
 
 using System.Diagnostics;
@@ -65,6 +62,7 @@ namespace ORTS {
         Route selectedRoute;
         Activity selectedActivity;
         Bitmap currentImage;    // Used by 2 events
+        string runActivityBuild;
 
         public struct SaveCounts {
             public int invalid;
@@ -83,7 +81,8 @@ namespace ORTS {
             // Vista and later should use 9pt "Segoe UI". We'll use the
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
-            LoadActivitySaves( selectedRoute, selectedActivity );
+            runActivityBuild = GetRunActivityBuild();
+            LoadActivitySaves( selectedRoute, selectedActivity, runActivityBuild );
             if( selectedActivity.FileName == null ) {
                 tbActivity.Text = String.Format("Explore route: {0}", selectedRoute.Name); 
             } else {
@@ -91,16 +90,25 @@ namespace ORTS {
             }
         }
 
-        bool IsSaveValid(string saveBuild) {
-            // Compare the build time in the Save from RunActivity.exe with the build time of Menu.exe
-            // They are likely to be within a minute of each other.
+        /// <summary>
+        /// Gets build date and time stored in Revision.txt once RunActivity.exe is built
+        /// </summary>
+        /// <returns></returns>
+        string GetRunActivityBuild() {
+            string build = "<unknown>";
+            try {
+                using( StreamReader f = new StreamReader( "Revision.txt" ) ) {
+                    var line = f.ReadLine();                    // Skip version, e.g. "$Revision: 966 $" 
+                    build = f.ReadLine() + " " + f.ReadLine();  // Date and time, e.g. "30/03/2012  19:14"
+                }
+            } catch { } // Ignore errors
+            return build;
+        }
 
-            // Extract the datetime from the Build string 
-            DateTime saveDate = Convert.ToDateTime( saveBuild.Substring( 15 ) );
-            DateTime programDate = Convert.ToDateTime( Program.Build.Substring( 15 ) );
-            TimeSpan dateDifference = saveDate - programDate;
-            double minutes = Math.Abs(dateDifference.TotalMinutes);
-            return minutes < 5 ? true : false;  // True if within 5 mins
+        bool IsSaveValid( string saveBuild ) {
+            // Compare the build in the Save from RunActivity.exe with the build of RunActivity.exe
+            saveBuild = saveBuild.Substring( saveBuild.Length - 17 );   // Extract last 17 chars  e.g. "30/03/2012  19:14"
+            return saveBuild == runActivityBuild;
         }
     
         public class ActivitySave {
@@ -123,18 +131,16 @@ namespace ORTS {
             float CurrentTileZ;
             float InitialTileX;
             float InitialTileZ;
-
+            
             public ActivitySave( ActivitySaveForm form, string filename ) {
+
                 SaveFileName = Path.GetFileName( filename );
                 using( BinaryReader inf = new BinaryReader( new FileStream( filename, FileMode.Open, FileAccess.Read ) ) ) {
-                    
                     // Read in validation data.
-                    Revision = "<unknown>";
-                    Build = "<unknown>";
-                    try {
-                        Revision = inf.ReadString().Replace( "\0", "" );
-                        Build = inf.ReadString().Replace( "\0", "" );
-                    } catch { }
+                    //Revision = "<unknown>";
+                    //Build = "<unknown>";
+                    Revision = inf.ReadString().Replace( "\0", "" );
+                    Build = inf.ReadString().Replace( "\0", "" );
                     Valid = form.IsSaveValid( Build );
 
                     string RouteName = inf.ReadString(); // Route name
@@ -256,7 +262,7 @@ namespace ORTS {
         /// <summary>
         /// Populates the list of ActivitySaves using a background task to keep user interface responsive.  
         /// </summary>
-        void LoadActivitySaves( Route selectedRoute, Activity selectedActivity ) {
+        void LoadActivitySaves( Route selectedRoute, Activity selectedActivity, string RunActivityBuild) {
 
             var saves = new List<ActivitySave>();
             string prefix;
@@ -272,12 +278,18 @@ namespace ORTS {
                 prefix = Path.GetFileNameWithoutExtension( selectedActivity.FileName );
             }
             var directory = Program.UserDataFolder;
+
             if( Directory.Exists( directory ) ) {
                 foreach( var saveFile in Directory.GetFiles( directory, prefix + "*.save" ) ) {
                     try {
                         saves.Add( new ActivitySave( this, saveFile ) );
-                    } catch { } // Ignore any errors
+                    } 
+                    catch( Exception error ) {
+                        MessageBox.Show( error.ToString(), "Error" );
+                    } 
                 }
+            } else {
+                MessageBox.Show( "Folder not found: " + directory );
             }
             // Sort by inverse date
             var savesSorted = saves.OrderBy( s => s.DateTimeSavedISO );
@@ -359,7 +371,7 @@ namespace ORTS {
                     catch { }
                 }
                 // Refresh the list of saves
-                LoadActivitySaves( selectedRoute, this.selectedActivity );
+                LoadActivitySaves( selectedRoute, selectedActivity, runActivityBuild );
             }
         }
 
@@ -373,7 +385,7 @@ namespace ORTS {
                     System.IO.File.Move( fromFolder + @"\" + filename, toFolder + @"\" + filename );
                 }
                 // Refresh the list of saves
-                LoadActivitySaves( selectedRoute, this.selectedActivity );
+                LoadActivitySaves( selectedRoute, selectedActivity, runActivityBuild );
             }
         }
 
@@ -428,7 +440,7 @@ namespace ORTS {
                 }
             }
             // Refresh the list of saves
-            LoadActivitySaves( selectedRoute, this.selectedActivity );
+            LoadActivitySaves( selectedRoute, selectedActivity, runActivityBuild );
         }
 
         private void bClose_Click( object sender, EventArgs e ) {
