@@ -408,6 +408,15 @@ namespace ORTS
             return result.ToString();
         }
 
+        /// <summary>
+        /// Catch the signal to start or stop the diesel
+        /// </summary>
+        public void StartStopDiesel()
+        {
+            if (!this.IsLeadLocomotive()&&(this.ThrottlePercent == 0))
+                PowerOn = !PowerOn;
+        }
+
     } // class DieselLocomotive
 
     public class DieselEngine
@@ -506,7 +515,18 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-
+            if (UserInput.IsPressed(UserCommands.ControlDieselPlayer) && (DieselLocomotive.ThrottlePercent == 0))
+            {
+                DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
+            }
+            if (UserInput.IsPressed(UserCommands.ControlDieselHelper))
+            {
+                foreach (TrainCar traincar in DieselLocomotive.Train.Cars)
+                {
+                    if (traincar.GetType() == typeof(MSTSDieselLocomotive))
+                        ((MSTSDieselLocomotive)traincar).StartStopDiesel();
+                }
+            }
             base.HandleUserInput(elapsedTime);
         }
 

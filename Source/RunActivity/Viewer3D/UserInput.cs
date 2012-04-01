@@ -188,6 +188,8 @@ namespace ORTS
             Commands[(int)UserCommands.ControlLight] = new UserCommandKeyInput(0x26);
 			Commands[(int)UserCommands.ControlPantographFirst] = new UserCommandKeyInput(0x19);
 			Commands[(int)UserCommands.ControlPantographSecond] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlDieselPlayer] = new UserCommandKeyInput(0x15);
+            Commands[(int)UserCommands.ControlDieselHelper] = new UserCommandKeyInput(0x15, KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlHeadlightIncrease] = new UserCommandKeyInput(0x23);
             Commands[(int)UserCommands.ControlHeadlightDecrease] = new UserCommandKeyInput(0x23, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlInjector1Increase] = new UserCommandKeyInput(0x25);
@@ -579,6 +581,8 @@ namespace ORTS
 		ControlLight,
 		ControlPantographFirst,
 		ControlPantographSecond,
+        ControlDieselPlayer,
+        ControlDieselHelper,
 		ControlHeadlightIncrease,
         ControlHeadlightDecrease,
         ControlInjector1Increase,
