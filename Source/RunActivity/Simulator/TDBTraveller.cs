@@ -646,7 +646,7 @@ namespace ORTS
             if (Math.Abs(lat) > 2.5) return false; // we are not along the track centerline
 
             // Ensure we are in the top right quadrant, otherwise our math goes wrong
-            if (wz < 0.01) return false;  // and we can't be 'behind' the start of the circle
+            if (wz < -0.01) return false;  // and we can't be 'behind' the start of the circle
             if (wx + 0.001 > TS.SectionCurve.Radius) return false;  // we can't be to the right of center, 90' is the limit
             if (wz + 0.001 > TS.SectionCurve.Radius) return false;  // and we can't be outside the circle
             float radiansAlongCurve = (float)Math.Asin(wz / TS.SectionCurve.Radius);
