@@ -33,6 +33,7 @@ namespace ORTS.Popups
 		Label StationNextDepartScheduled;
 
 		Label Message;
+        Color MessageColor;
 
 		public NextStationWindow(WindowManager owner)
 			: base(owner, 400, 135, "Next Station")
@@ -132,6 +133,7 @@ namespace ORTS.Popups
                         StationCurrentArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "";
                         StationCurrentArriveActual.Color = GetArrivalColor(at.SchArrive, at.ActArrive);
                         StationCurrentDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
+                        Message.Color = at.DisplayColor;
                         Message.Text = at.DisplayMessage;
                     }
                     else

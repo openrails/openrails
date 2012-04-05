@@ -108,7 +108,21 @@ namespace ORTS {
         public void Update() {
             // Update freight events
             // Set the clock first time through. Can't set in the Activity constructor as Simulator.ClockTime is still 0 then.
-            if( !StartTimeS.HasValue ) { StartTimeS = (int)Simulator.ClockTime; }
+            if( !StartTimeS.HasValue ) { 
+                StartTimeS = (int)Simulator.ClockTime;
+                // Initialise passenger actual arrival time
+                if( Current != null ) {
+                    if( Current is ActivityTaskPassengerStopAt ) {
+                        ActivityTaskPassengerStopAt task = Current as ActivityTaskPassengerStopAt;
+                        // If the simulation starts with a scheduled start in the past, assume the train arrived on time.
+                        if( task.SchArrive < new DateTime().Add( TimeSpan.FromSeconds( Program.Simulator.ClockTime ) ) ) {
+                            task.ActArrive = task.SchArrive;
+                        }
+                        // If the simulation starts with a scheduled start in the future and the player's train already
+                        // stationary in the platform, the events will fire leading to an ActArrive time = Game Start time.
+                    }
+                }
+            }
             if( this.IsComplete == false ) {
                 foreach( var i in EventList ) {
                     // Once an event has fired, we don't respond to any more events until that has been acknowledged.
@@ -145,7 +159,7 @@ namespace ORTS {
             if( Current.IsCompleted != null )    // Surely this doesn't test for: 
             //   Current.IsCompleted == false
             // More correct would be:
-            //   if (Current.IsCompleted.HasValue && Current.IsCompleted.Value)
+            //   if (Current.IsCompleted.HasValue && Current.IsCompleted == true)
             // (see http://stackoverflow.com/questions/56518/c-is-there-any-difference-between-bool-and-nullablebool)
             {
                 Current = Current.NextTask;
@@ -287,6 +301,7 @@ namespace ORTS {
         public ActivityTask NextTask { get; internal set; }
         public DateTime CompletedAt { get; internal set; }
         public string DisplayMessage { get; internal set; }
+        public Color DisplayColor { get; internal set; }
         public int SoundNotify = -1;
 
         public virtual void NotifyEvent( ActivityEventType EventType ) {
@@ -364,7 +379,8 @@ namespace ORTS {
         public PlatformItem PlatformEnd1;
         public PlatformItem PlatformEnd2;
 
-        double LoadUnload;
+        private double BoardingS;   // MSTS calls this the Load/Unload time. Cargo gets loaded, but passengers board the train.
+        private double BoardingEndS = 0; 
         int TimerChk = 0;
         bool arrived = false;
         bool maydepart = false;
@@ -458,33 +474,16 @@ namespace ORTS {
 
         public override void NotifyEvent( ActivityEventType EventType ) {
 
-            //// Pop-up ActivityWindow
-            //ORTS.Program.Viewer.ActivityWindow.Visible = true;
-            ////ORTS.Program.Viewer.ActivityWindow.EventMessageBox.Add(new ORTS.Popups.TextFlow(ORTS.Program.Viewer.ActivityWindow.EventMessageBox.RemainingWidth, "Arrived at station"));
-            //ORTS.Program.Viewer.ActivityWindow.Line.Add(new Label(ORTS.Program.Viewer.ActivityWindow.Line.RemainingWidth, ORTS.Program.Viewer.ActivityWindow.Line.RemainingHeight, " Message", LabelAlignment.Center));
-
-            //ORTS.Program.Viewer.ActivityWindow = new ActivityWindow(ORTS.Program.Viewer.WindowManager, "message");
-            //ORTS.Program.Viewer.ActivityWindow.Visible = true;
 
             // The train is stopped.
             if( EventType == ActivityEventType.TrainStop ) {
-                // Checking if the stopping is occuread at the scheduled platform.
-                /*
-                double dist1 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-                double dist2 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-                if ( (dist1 >= 0 && dist2 <= 0) || (dist1 <= 0 && dist2 >= 0))
-                */
                 if( IsAtStation() ) {
 
-                    //// Pop-up ActivityWindow
-                    //ORTS.Program.Viewer.ActivityWindow.Visible = true;
-                    //Debug.WriteLine("ORTS.Program.Viewer.ActivityWindow.Visible = true;");
-                    //ORTS.Program.Viewer.ActivityWindow.EventMessageBox.Add(new ORTS.Popups.TextFlow(ORTS.Program.Viewer.ActivityWindow.EventMessageBox.RemainingWidth, "Arrived at station"));
-
                     // If yes, we arrived
-                    ActArrive = new DateTime().Add( TimeSpan.FromSeconds( Program.Simulator.ClockTime ) );
+                    if( ActArrive == null ) {
+                        ActArrive = new DateTime().Add( TimeSpan.FromSeconds( Program.Simulator.ClockTime ) );
+                    }
+
                     arrived = true;
 
                     // Check if this is the last task in activity, then it is complete
@@ -493,13 +492,25 @@ namespace ORTS {
                         return;
                     }
 
-                    // Figure out the load/unload time
-                    if( SchDepart > ActArrive ) {
-                        // Depart as scheduled
-                        LoadUnload = (SchDepart - ActArrive).Value.TotalSeconds;
+                    // Figure out the boarding time
+                    double plannedBoardingS = (SchDepart - SchArrive).TotalSeconds;
+                    double punctualBoardingS = (SchDepart - ActArrive).Value.TotalSeconds;
+                    BoardingS = punctualBoardingS;                                     // default is leave on time
+                    if( punctualBoardingS < plannedBoardingS ) {                       // if arriving late
+                        if( plannedBoardingS < PlatformEnd1.PlatformMinWaitingTime ) { // and tight schedule
+                            BoardingS = plannedBoardingS;                              // leave late with no recovery of time
+                        } else {                                                       // generous schedule
+                            BoardingS = Math.Max(                                      
+                                punctualBoardingS,                                     // leave on time
+                                PlatformEnd1.PlatformMinWaitingTime);                  // leave late with some recovery
+                        }
                     }
-                    if( LoadUnload < PlatformEnd1.PlatformMinWaitingTime ) LoadUnload = PlatformEnd1.PlatformMinWaitingTime;
-                    LoadUnload += Program.Simulator.ClockTime;
+                    // ActArrive is usually same as ClockTime
+                    BoardingEndS = Program.Simulator.ClockTime + BoardingS;
+                    // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
+                    double sinceActArriveS = (new DateTime().Add( TimeSpan.FromSeconds( Program.Simulator.ClockTime ) ) 
+                                            - ActArrive).Value.TotalSeconds;
+                    BoardingEndS -= sinceActArriveS;
                 }
             } else if( EventType == ActivityEventType.TrainStart ) {
                 // Train has started, we have things to do if we arrived before
@@ -512,37 +523,27 @@ namespace ORTS {
             } else if( EventType == ActivityEventType.Timer ) {
                 // Waiting at a station
                 if( arrived ) {
-                    double remaining = LoadUnload - Program.Simulator.ClockTime;
+                    double remaining = BoardingEndS - Program.Simulator.ClockTime;
+                    if     ( remaining < 1 ) DisplayColor = Color.LightGreen;
+                    else if( remaining < 11 ) DisplayColor = new Color(255, 255, 128);
+                    else                     DisplayColor = Color.White;
+
                     // Still have to wait
                     if( remaining > 0 ) {
-                        DisplayMessage = string.Format( "Passenger load/unload completes in {0:D2}:{1:D2}",
+                        DisplayMessage = string.Format( "Passenger boarding completes in {0:D2}:{1:D2}",
                             (int)(remaining / 60), (int)(remaining % 60) );
                     }
                         // May depart
                     else if( !maydepart ) {
                         maydepart = true;
-                        DisplayMessage = "Passenger load/unload completed. You may depart now.";
+                        DisplayMessage = "Passenger boarding completed. You may depart now.";
                         SoundNotify = 60;
                     }
                 } else {
                     // Checking missed station
                     int tmp = (int)(Program.Simulator.ClockTime % 10);
                     if( tmp != TimerChk ) {
-                        /*
-                        double dist1 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd1.TileX,
-                            PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-                        double dist2 = Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.DistanceTo(PlatformEnd2.TileX,
-                            PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-                        // If both less than zero, station is missed
-                        if (dist1 < 0 && dist2 < 0)
-                        */
                         if( IsMissedStation() ) {
-
-                            //// Pop-up ActivityWindow
-                            //ORTS.Program.Viewer.ActivityWindow.Visible = true;
-                            //Debug.WriteLine("ORTS.Program.Viewer.ActivityWindow.Visible = true;"); 
-
                             IsCompleted = false;
                         }
                     }
@@ -562,7 +563,7 @@ namespace ORTS {
             if( ActDepart == null ) outf.Write( noval ); else outf.Write( (Int64)ActDepart.Value.Ticks );
             outf.Write( (Int32)PlatformEnd1.TrItemId );
             outf.Write( (Int32)PlatformEnd2.TrItemId );
-            outf.Write( (double)LoadUnload );
+            outf.Write( (double)BoardingS );
             outf.Write( (Int32)TimerChk );
             outf.Write( arrived );
             outf.Write( maydepart );
@@ -581,7 +582,7 @@ namespace ORTS {
             ActDepart = rdval == -1 ? (DateTime?)null : new DateTime( rdval );
             PlatformEnd1 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
             PlatformEnd2 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
-            LoadUnload = inf.ReadDouble();
+            BoardingS = inf.ReadDouble();
             TimerChk = inf.ReadInt32();
             arrived = inf.ReadBoolean();
             maydepart = inf.ReadBoolean();
