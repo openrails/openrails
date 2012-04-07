@@ -102,7 +102,7 @@ namespace ORTS {
                     build = f.ReadLine() + " " + f.ReadLine();  // Date and time, e.g. "30/03/2012  19:14"
                 }
             } catch { } // Ignore errors
-            return build;
+            return build.Substring( build.Length - 17 );   // Extract last 17 chars  e.g. "30/03/2012  19:14";
         }
 
         bool IsSaveValid( string saveBuild ) {
