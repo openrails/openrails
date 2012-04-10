@@ -259,7 +259,7 @@ namespace ORTS
 		{
 
 			SpeedPostObj = spo;
-			var maxVertex = SpeedPostObj.Sign_Shape.NumShapes * 30;// every face has max 5 digits, each has 2 triangles
+			var maxVertex =  SpeedPostObj.Sign_Shape.NumShapes * 48;// every face has max 7 digits, each has 2 triangles
 			Material = Materials.Load(viewer.RenderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), 256, 0);
 			// Create and populate a new ShapePrimitive
 
@@ -288,6 +288,16 @@ namespace ORTS
 					Vertex v3 = new Vertex(left.X + size, left.Y + size, left.Z+0.05f, 0, 0, -1, tX + 0.25f, tY - 0.25f);
 					Vertex v4 = new Vertex(left.X, left.Y + size, left.Z+0.05f, 0, 0, -1, tX, tY - 0.25f);
 
+					if (NumVertices > maxVertex - 4)
+					{
+						VertexPositionNormalTexture[] TempVertexList = new VertexPositionNormalTexture[maxVertex+128];
+						short[] TempTriangleListIndices = new short[(maxVertex+128) / 2 * 3]; // as is NumIndices
+						for (var k = 0; k < maxVertex; k++) TempVertexList[k] = VertexList[k];
+						for (var k = 0; k < maxVertex / 2 * 3; k++) TempTriangleListIndices[k] = TriangleListIndices[k];
+						TriangleListIndices = TempTriangleListIndices;
+						VertexList = TempVertexList;
+						maxVertex += 128;
+					}
 					TriangleListIndices[NumIndices++] = (short)NumVertices;
 					TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
 					TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);

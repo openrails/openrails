@@ -480,6 +480,11 @@ namespace MSTS
     public class SpeedPostItem : TrItem
     {
         public uint Flags;
+		public bool IsSpeedPost = true; //false to be milepost
+		public bool IsWarning = false; //speed warning
+		public bool IsLimit = false; //speed limit
+		public bool IsPassenger = false; //is passender speed limit
+		public bool IsFreight = false; //is freight speed limit
         public float SpeedInd;      // Or distance if mile post.
 	public int sigObj = -1;		// index to Signal Object Table
 
@@ -496,6 +501,13 @@ namespace MSTS
                 new STFReader.TokenProcessor("speedposttritemdata", ()=>{
                     stf.MustMatch("(");
                     Flags = stf.ReadUInt(STFReader.UNITS.None, null);
+					if ((Flags & 1) != 0) IsWarning = true;
+					if ((Flags & (1 << 1)) != 0) IsLimit = true;
+					if ((Flags & (1 << 2)) != 0) {IsWarning = IsLimit = true;}
+					if ((Flags & (1 << 5)) != 0) IsPassenger = true;
+					if ((Flags & (1 << 6)) != 0) IsFreight = true;
+					if ((Flags & (1 << 7)) != 0) IsSpeedPost = false;
+
                     //  The number of parameters depends on the flags seeting
                     //  To do: Check flags seetings and parse accordingly.
                     SpeedInd = stf.ReadFloat(STFReader.UNITS.Speed, null);
