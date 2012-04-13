@@ -480,11 +480,14 @@ namespace MSTS
     public class SpeedPostItem : TrItem
     {
         public uint Flags;
-		public bool IsSpeedPost = true; //false to be milepost
+		public bool IsMilePost = true; //false to be speed limit
 		public bool IsWarning = false; //speed warning
 		public bool IsLimit = false; //speed limit
 		public bool IsPassenger = false; //is passender speed limit
 		public bool IsFreight = false; //is freight speed limit
+		public bool IsMPH = false;//is the digit in MPH or KPH
+		public bool ShowNumber = true; //show numbers instead of KPH, like 5 means 50KMH
+		public bool ShowDot = false; //if ShowNumber is true and this is set, will show 1.5 as for 15KMH
         public float SpeedInd;      // Or distance if mile post.
 	public int sigObj = -1;		// index to Signal Object Table
 
@@ -503,10 +506,19 @@ namespace MSTS
                     Flags = stf.ReadUInt(STFReader.UNITS.None, null);
 					if ((Flags & 1) != 0) IsWarning = true;
 					if ((Flags & (1 << 1)) != 0) IsLimit = true;
-					if ((Flags & (1 << 2)) != 0) {IsWarning = IsLimit = true;}
-					if ((Flags & (1 << 5)) != 0) IsPassenger = true;
-					if ((Flags & (1 << 6)) != 0) IsFreight = true;
-					if ((Flags & (1 << 7)) != 0) IsSpeedPost = false;
+					if (!IsWarning && !IsLimit) {
+						IsMilePost = true;
+					}
+					else {
+						if ((Flags & (1 << 5)) != 0) IsPassenger = true;
+						if ((Flags & (1 << 6)) != 0) IsFreight = true;
+						if ((Flags & (1 << 6)) != 0) IsFreight = IsPassenger = true;
+						if ((Flags & (1 << 8)) != 0) IsMPH = true;
+						if ((Flags & (1 << 4)) != 0) {
+							ShowNumber = true;
+							if ((Flags & (1 << 9)) != 0) ShowDot = true;
+						}
+					}
 
                     //  The number of parameters depends on the flags seeting
                     //  To do: Check flags seetings and parse accordingly.
