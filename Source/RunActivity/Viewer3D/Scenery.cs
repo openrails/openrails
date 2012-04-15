@@ -236,7 +236,7 @@ namespace ORTS
                 }
                 else // It's some other type of object - not one of the above.
                 {
-                    sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                    sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                 }
             }
 
