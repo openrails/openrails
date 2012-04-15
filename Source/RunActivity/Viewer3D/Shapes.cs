@@ -383,7 +383,7 @@ namespace ORTS
 		}
 	} // class SpeedPostShape
 
-	public class LevelCrossingShape : PoseableShape
+	public class LevelCrossingShape : PoseableShape, IDisposable
 	{
         public readonly LevelCrossingObj crossingObj;  // has data on current aligment for the switch
         public readonly SoundSource Sound;
@@ -393,23 +393,23 @@ namespace ORTS
         List<LevelCrossingObject> crossingObjects; //all objects with the same shape
         int animatedDir; //if the animation speed is negative, use it to indicate where the gate should move
         bool visible = true;
-        bool silent = false;
+        readonly bool silent = false;
 
         public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj trj, LevelCrossingObject[] levelObjects)
             : base(viewer, path, position, shapeFlags | ShapeFlags.AutoZBias)
-		{
-			animatedDir = 0;
-			crossingObjects = new List<LevelCrossingObject>(); //sister gropu of crossing if there are parallel lines
-			crossingObj = trj; // the LevelCrossingObj, which handles details of the crossing data
-			crossingObj.inrange = true;//in viewing range
-			int i, j, max, id, found;
-			max = levelObjects.GetLength(0); //how many crossings are in the route
-			found = 0; // trItem is found or not
-			visible = trj.visible;
-			silent = trj.silent;
-			if (!silent)
-			{
-				try
+        {
+            animatedDir = 0;
+            crossingObjects = new List<LevelCrossingObject>(); //sister gropu of crossing if there are parallel lines
+            crossingObj = trj; // the LevelCrossingObj, which handles details of the crossing data
+            crossingObj.inrange = true;//in viewing range
+            int i, j, max, id, found;
+            max = levelObjects.GetLength(0); //how many crossings are in the route
+            found = 0; // trItem is found or not
+            visible = trj.visible;
+            silent = trj.silent;
+            if (!silent)
+            {
+                try
                 {
                     Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
                     List<SoundSourceBase> ls = new List<SoundSourceBase>();
@@ -425,31 +425,41 @@ namespace ORTS
             }
             i = 0;
             while (true)
-			{
-				id = crossingObj.getTrItemID(i, 0);
-				if (id < 0) break;
-				found = 0;
-				//loop through all crossings, to see if they are related to this shape 
-				// maybe more than one, so they will form a sister group and know each other
-				for (j = 0; j < max; j++)
-				{
+            {
+                id = crossingObj.getTrItemID(i, 0);
+                if (id < 0) break;
+                found = 0;
+                //loop through all crossings, to see if they are related to this shape 
+                // maybe more than one, so they will form a sister group and know each other
+                for (j = 0; j < max; j++)
+                {
                     if (levelObjects[j] != null && id == levelObjects[j].trItem)
-					{
-						found++;
-						levelObjects[j].levelCrossingObj = crossingObj;
-						if (crossingObjects.Contains(levelObjects[j])) continue;
-						crossingObjects.Add(levelObjects[j]);
-						levelObjects[j].endDist = this.crossingObj.levelCrParameters.crParameter2;
-						levelObjects[j].groups = crossingObjects;
-						//notify the spawner who interacts with 
-						if (levelObjects[j].carSpawner != null)
-							levelObjects[j].carSpawner.CheckGatesAgain(levelObjects[j]);
-					}
-				}
-				i++;
-			}
-			
-		}
+                    {
+                        found++;
+                        levelObjects[j].levelCrossingObj = crossingObj;
+                        if (crossingObjects.Contains(levelObjects[j])) continue;
+                        crossingObjects.Add(levelObjects[j]);
+                        levelObjects[j].endDist = this.crossingObj.levelCrParameters.crParameter2;
+                        levelObjects[j].groups = crossingObjects;
+                        //notify the spawner who interacts with 
+                        if (levelObjects[j].carSpawner != null)
+                            levelObjects[j].carSpawner.CheckGatesAgain(levelObjects[j]);
+                    }
+                }
+                i++;
+            }
+        }
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            crossingObj.inrange = false;//not in viewing range
+            if (!silent)
+                Viewer.SoundProcess.RemoveSoundSource(Sound);
+        }
+
+        #endregion
 
 		//do animation, the speed is constant no matter what the frame rate is
 		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)

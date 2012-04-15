@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -24,33 +24,27 @@ namespace ORTS
     /// </summary>
     public class ProcessState
     {
-        /// <summary>
-        /// Initializes a process state object to 
-        /// finished state.
-        /// </summary>
+        public bool Finished { get; private set; }
+        ManualResetEvent StartEvent = new ManualResetEvent(false);
+        ManualResetEvent FinishEvent = new ManualResetEvent(true);
+
         public ProcessState()
         {
-        }
-
-        public bool Finished { get { return finishedFlag; } }
-
-        public void SignalFinish()     // use OS thread signalling to eliminate spin waits
-        {
-            finishedFlag = true;
-            StartEvent.Reset();
-            FinishedEvent.Set();
+            Finished = true;
         }
 
         public void SignalStart()
         {
-            finishedFlag = false;
-            FinishedEvent.Reset();
+            Finished = false;
+            FinishEvent.Reset();
             StartEvent.Set();
         }
 
-        public void WaitTillFinished()
+        public void SignalFinish()
         {
-            FinishedEvent.WaitOne();
+            Finished = true;
+            StartEvent.Reset();
+            FinishEvent.Set();
         }
 
         public void WaitTillStarted()
@@ -58,9 +52,10 @@ namespace ORTS
             StartEvent.WaitOne();
         }
 
-        private bool finishedFlag = true;
-        ManualResetEvent StartEvent = new ManualResetEvent(false);
-        ManualResetEvent FinishedEvent = new ManualResetEvent(true);
+        public void WaitTillFinished()
+        {
+            FinishEvent.WaitOne();
+        }
 
         public static void SetThreadName(string name)
         {

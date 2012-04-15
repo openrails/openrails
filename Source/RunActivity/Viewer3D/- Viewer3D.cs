@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -41,14 +41,15 @@ using Microsoft.Xna.Framework.Input;
 using MSTS;
 using ORTS.Popups;
 
-namespace ORTS {
-    public class Viewer3D {
+namespace ORTS
+{
+    public class Viewer3D
+    {
         // User setups.
         public readonly UserSettings Settings;
-        public Vector2 WindowSize = new Vector2(1024, 768);
         // Multi-threaded processes
-        public UpdaterProcess UpdaterProcess;
         public LoaderProcess LoaderProcess;
+        public UpdaterProcess UpdaterProcess;
         public RenderProcess RenderProcess;
         public SoundProcess SoundProcess;
         // Access to the XNA Game class
@@ -56,7 +57,8 @@ namespace ORTS {
         public GraphicsDevice GraphicsDevice;
         public Point DisplaySize;
         // Components
-        public Simulator Simulator;
+        public readonly Simulator Simulator;
+        public World World;
         /// <summary>
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
@@ -75,16 +77,6 @@ namespace ORTS {
         public DriverAidWindow DriverAidWindow; // Alt-F11 window
         public CompassWindow CompassWindow; // 0 window
         public ActivityWindow ActivityWindow; // pop-up window
-        public SkyDrawer SkyDrawer;
-        public PrecipDrawer PrecipDrawer = null;
-        //public WireDrawer WireDrawer = null; //commented out as new implementation is in
-        public WeatherControl weatherControl;
-        TerrainDrawer TerrainDrawer;
-        public SceneryDrawer SceneryDrawer;
-        public TrainDrawer TrainDrawer;
-        public RoadCarHandler RoadCarHandler;
-        public SoundSource IngameSounds = null;  // By GeorgeS
-        public WorldSounds WorldSounds = null;   // By GeorgeS
         // Route Information
         public Tiles Tiles = null;
         public ENVFile ENVFile;
@@ -124,28 +116,11 @@ namespace ORTS {
         /// and the graphics device is not ready to accept content.
         /// </summary>
         /// <param name="simulator"></param>
-        public Viewer3D(Simulator simulator) {
+        [CallOnThread("Render")]
+        public Viewer3D(Simulator simulator)
+        {
             Simulator = simulator;
             Settings = simulator.Settings;
-
-            // Parse the screen dimensions.
-            var windowSizeParts = Settings.WindowSize.Split(new[] { 'x' }, 2);
-            WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
-            WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
-
-            WindowManager = new WindowManager(this);
-            SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
-            MessagesWindow = new MessagesWindow(WindowManager);
-            PauseWindow = new PauseWindow(WindowManager);
-            HelpWindow = new HelpWindow(WindowManager);
-            TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
-            HUDWindow = new HUDWindow(WindowManager);
-            SwitchWindow = new SwitchWindow(WindowManager);
-            TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
-            NextStationWindow = new NextStationWindow(WindowManager);
-            DriverAidWindow = new DriverAidWindow(WindowManager);
-            CompassWindow = new CompassWindow(WindowManager);
-            ActivityWindow = new ActivityWindow(WindowManager);
 
             WellKnownCameras = new List<Camera>();
             WellKnownCameras.Add(CabCamera = new CabCamera(this));
@@ -156,12 +131,24 @@ namespace ORTS {
             WellKnownCameras.Add(HeadOutForwardCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
             WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
             WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
+
+            Materials.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
+
+            Trace.Write(" ENV");
+            ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
+
+            Trace.Write(" SIGCFG");
+            SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat");
+
+            Trace.Write(" TTYPE");
+            TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
+
+            Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
+            MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
         }
 
-        /// <summary>
-        /// Save game
-        /// </summary>
-        public void Save(BinaryWriter outf, string fileStem) {
+        public void Save(BinaryWriter outf, string fileStem)
+        {
             outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
             outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
 
@@ -179,10 +166,8 @@ namespace ORTS {
             MessagesWindow.AddMessage("Game saved.", 5);
         }
 
-        /// <summary>
-        /// Restore after game resumes
-        /// </summary>
-        public void Restore(BinaryReader inf) {
+        public void Restore(BinaryReader inf)
+        {
             Train playerTrain = Simulator.Trains[inf.ReadInt32()];
             PlayerLocomotive = playerTrain.Cars[inf.ReadInt32()];
 
@@ -199,83 +184,12 @@ namespace ORTS {
         }
 
         [ThreadName("Render")]
-        public void Initialize() {
-            Materials.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
-            if (Settings.SoundDetailLevel > 0) {
-                ALSoundSource.MuteAll();  // while loading
-                // Swap out original file factory to support loops - by GeorgeS
-                // By GeorgeS
-                WorldSounds = new WorldSounds(this);
-                IngameSounds = new SoundSource(this, Simulator.RoutePath + "\\Sound\\ingame.sms");
-            }
-
-            Trace.Write(" ENV");
-            ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
-
-            Trace.Write(" SIGCFG");
-            SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat");
-
-            Trace.Write(" TTYPE");
-            TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
-
-            Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
-            MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
-            SetupBackgroundProcesses();
-
-        }
-
-        [ThreadName("Render")]
-        public void Run() {
-            RenderProcess.Run();
-        }
-
-        /// <summary>
-        /// Called once before the graphics device is started to configure the 
-        /// graphics card and XNA game engine.
-        /// Executes in the RenderProcess thread.
-        /// </summary>
-        public void Configure(RenderProcess renderProcess) {
-            RenderProcess = renderProcess;
-            renderProcess.Window.Title = "Open Rails";
-
-            GDM = renderProcess.GraphicsDeviceManager;
-
-            renderProcess.Content.RootDirectory = "Content";
-
-            // TODO, this may cause problems with video cards not set up to handle these settings
-            // do we need to check device capabilities first?
-            //
-            // No. XNA automatically checks capabilities. For example, if the user selects a screen
-            // resolution that is greater than what the hardware can support, XNA adjusts the
-            // resolution to the actual capability. "...the XNA framework automatically selects the 
-            // highest resolution supported by the output device." rvg
-            GDM.SynchronizeWithVerticalRetrace = Settings.VerticalSync;
-            renderProcess.IsFixedTimeStep = false; // you get smoother animation if we pace to video card retrace setting
-            renderProcess.TargetElapsedTime = TimeSpan.FromMilliseconds(1); // setting this a value near refresh rate, ie 16ms, causes hiccups ( beating against refresh rate )
-            GDM.PreferredBackBufferWidth = (int)WindowSize.X; // screen.Bounds.Width; // 1680;
-            GDM.PreferredBackBufferHeight = (int)WindowSize.Y; // screen.Bounds.Height; // 1050;
-            GDM.IsFullScreen = isFullScreen;
-            GDM.PreferMultiSampling = true;
-            GDM.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
-        }
-
-        void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
+        public void Run()
         {
-            // This enables NVIDIA PerfHud to be run on Open Rails.
-            foreach (var adapter in GraphicsAdapter.Adapters)
-            {
-                if (adapter.Description.Contains("PerfHUD"))
-                {
-                    e.GraphicsDeviceInformation.Adapter = adapter;
-                    e.GraphicsDeviceInformation.DeviceType = DeviceType.Reference;
-                    break;
-                }
-            }
-
-            // This stops ResolveBackBuffer() clearing the back buffer.
-            e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-            e.GraphicsDeviceInformation.PresentationParameters.AutoDepthStencilFormat = DepthFormat.Depth24Stencil8;
-            UpdateAdapterInformation(e.GraphicsDeviceInformation.Adapter);
+            LoaderProcess = new LoaderProcess(this);
+            UpdaterProcess = new UpdaterProcess(this);
+            RenderProcess = new RenderProcess(this);
+            RenderProcess.Run();
         }
 
         /// <summary>
@@ -284,8 +198,9 @@ namespace ORTS {
         /// processes haven't started yet.
         /// </summary>
         [CallOnThread("Render")]
-        public void Initialize(RenderProcess renderProcess) {
-            GraphicsDevice = renderProcess.GraphicsDevice;
+        internal void Initialize()
+        {
+            GraphicsDevice = RenderProcess.GraphicsDevice;
             DisplaySize.X = GraphicsDevice.Viewport.Width;
             DisplaySize.Y = GraphicsDevice.Viewport.Height;
             if (Settings.ShaderModel == 0)
@@ -299,59 +214,41 @@ namespace ORTS {
 
             PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
-            InfoDisplay = new InfoDisplay(this);
             UserInput.Initialize();
+            Materials.Initialize(RenderProcess);
+            InfoDisplay = new InfoDisplay(this);
 
+            WindowManager = new WindowManager(this);
+            SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
+            MessagesWindow = new MessagesWindow(WindowManager);
+            PauseWindow = new PauseWindow(WindowManager);
+            HelpWindow = new HelpWindow(WindowManager);
+            TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
+            HUDWindow = new HUDWindow(WindowManager);
+            SwitchWindow = new SwitchWindow(WindowManager);
+            TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
+            NextStationWindow = new NextStationWindow(WindowManager);
+            DriverAidWindow = new DriverAidWindow(WindowManager);
+            CompassWindow = new CompassWindow(WindowManager);
+            ActivityWindow = new ActivityWindow(WindowManager);
             WindowManager.Initialize();
 
-            SkyDrawer = new SkyDrawer(this);
-            TerrainDrawer = new TerrainDrawer(this);
-            SceneryDrawer = new SceneryDrawer(this);
-            if (Settings.Precipitation) PrecipDrawer = new PrecipDrawer(this);
-            //if (Settings.Wire) WireDrawer = new WireDrawer(this); //commented out as new implementation is in
-            TrainDrawer = new TrainDrawer(this);
-            weatherControl = new WeatherControl(this);
-            RoadCarHandler = new RoadCarHandler(this);
+            World = new World(this);
 
-            PlayerLocomotiveViewer = GetPlayerLocomotiveViewer();
+            SoundProcess = new SoundProcess(this);
+
+            PlayerLocomotiveViewer = World.Trains.GetViewer(PlayerLocomotive);
 
             if (Camera == null)
                 FrontCamera.Activate();
             else
                 Camera.Activate();
 
+            World.LoadPrep();
+            World.Load();
+
             if (Settings.FullScreen)
-                ToggleFullscreen();
-        }
-
-        /// <summary>
-        /// Called 10 times per second when its safe to read volatile data
-        /// from the simulator and viewer classes in preparation
-        /// for the Load call.  Copy data to local storage for use 
-        /// in the next load call.
-        /// </summary>
-        [CallOnThread("Updater")]
-        public void LoadPrep() {
-            TerrainDrawer.LoadPrep();
-            SceneryDrawer.LoadPrep();
-            TrainDrawer.LoadPrep();
-            //if (WireDrawer != null) WireDrawer.LoadPrep(); //commented out as new implementation is in
-        }
-
-        /// <summary>
-        /// Called 10 times a second to load graphics content
-        /// that comes and goes as the player and trains move.
-        /// Called from background LoaderProcess Thread
-        /// Do not access volatile data from the simulator 
-        /// and viewer classes during the Load call ( see
-        /// LoadPrep() )
-        /// </summary>
-        [CallOnThread("Loader")]
-        public void Load(RenderProcess renderProcess) {
-            TerrainDrawer.Load(renderProcess);
-            SceneryDrawer.Load(renderProcess);
-            TrainDrawer.Load(renderProcess);
-            //if (WireDrawer != null) WireDrawer.Load(renderProcess);//commented out as new implementation is in
+                RenderProcess.ToggleFullScreen();
         }
 
         string adapterDescription;
@@ -361,27 +258,109 @@ namespace ORTS {
         public uint AdapterMemory { get { return adapterMemory; } }
 
         [CallOnThread("Updater")]
-        public void UpdateAdapterInformation(GraphicsAdapter graphicsAdapter) {
+        internal void UpdateAdapterInformation(GraphicsAdapter graphicsAdapter)
+        {
             adapterDescription = graphicsAdapter.Description;
-            try {
+            try
+            {
                 // Note that we might find multiple adapters with the same
                 // description; however, the chance of such adapters not having
                 // the same amount of video memory is very slim.
                 foreach (ManagementObject videoController in new ManagementClass("Win32_VideoController").GetInstances())
                     if (((string)videoController["Description"] == adapterDescription) && (videoController["AdapterRAM"] != null))
                         adapterMemory = (uint)videoController["AdapterRAM"];
-            } catch (ManagementException error) {
+            }
+            catch (ManagementException error)
+            {
                 Trace.WriteLine(error);
             }
         }
 
-        /// <summary>
-        /// Called whenever a key or mouse buttin is pressed for handling user input
-        /// elapsedTime represents the the time since the last call to HandleUserInput
-        /// Examine the static class UserInput for mouse and keyboard status
-        /// </summary>
+        internal void ProcessReportError(Exception error)
+        {
+            // Log the error first in case we're burning.
+            Trace.WriteLine(error);
+            // Stop the world!
+            RenderProcess.Stop();
+            // Show the user that it's all gone horribly wrong.
+            if (Settings.ShowErrorDialogs)
+                System.Windows.Forms.MessageBox.Show(error.ToString());
+        }
+
+        [CallOnThread("Loader")]
+        public void Load()
+        {
+            World.Load();
+        }
+
         [CallOnThread("Updater")]
-        public void HandleUserInput(ElapsedTime elapsedTime) {
+        public void Update(float elapsedRealTime, RenderFrame frame)
+        {
+            RealTime += elapsedRealTime;
+            var elapsedTime = new ElapsedTime(Simulator.GetElapsedClockSeconds(elapsedRealTime), elapsedRealTime);
+
+            Simulator.Update(elapsedTime.ClockSeconds);
+            HandleUserInput(elapsedTime);
+            UserInput.Handled();
+
+            // Mute sound when paused
+            if (Simulator.Paused)
+                ALSoundSource.MuteAll();
+            else
+                ALSoundSource.UnMuteAll();
+
+            if (ScreenHasChanged())
+            {
+                Camera.ScreenChanged();
+                RenderProcess.InitializeShadowMapLocations(RenderProcess.Viewer);
+            }
+
+            // Update camera first...
+            Camera.Update(elapsedTime);
+
+            // No above camera means we're allowed to auto-switch to cab view.
+            if ((AboveGroundCamera == null) && Camera.IsUnderground)
+            {
+                AboveGroundCamera = Camera;
+                CabCamera.Activate();
+            }
+            else if (AboveGroundCamera != null)
+            {
+                // Make sure to keep the old camera updated...
+                AboveGroundCamera.Update(elapsedTime);
+                // ...so we can tell when to come back to it.
+                if (!AboveGroundCamera.IsUnderground)
+                {
+                    // But only if the user hasn't selected another camera!
+                    if (Camera == CabCamera)
+                        AboveGroundCamera.Activate();
+                    AboveGroundCamera = null;
+                }
+            }
+
+            World.Update(elapsedTime);
+
+            // Every 250ms, check for new things to load and kick off the loader.
+            if (LastLoadRealTime + 0.25 < RealTime)
+            {
+                LastLoadRealTime = RealTime;
+                World.LoadPrep();
+                LoaderProcess.StartLoad();
+            }
+
+            Camera.PrepareFrame(frame, elapsedTime);
+            frame.PrepareFrame(elapsedTime);
+            World.PrepareFrame(frame, elapsedTime);
+            InfoDisplay.PrepareFrame(frame, elapsedTime);
+            // TODO: This is not correct. The ActivityWindow's PrepareFrame is already called by the WindowManager!
+            if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
+            WindowManager.PrepareFrame(frame, elapsedTime);
+        }
+        double LastLoadRealTime = 0;
+
+        [CallOnThread("Updater")]
+        void HandleUserInput(ElapsedTime elapsedTime)
+        {
             Camera.HandleUserInput(elapsedTime);
 
             if (PlayerLocomotiveViewer != null)
@@ -392,7 +371,7 @@ namespace ORTS {
 
             // Check for game control keys
             if (UserInput.IsPressed(UserCommands.GameQuit)) { Stop(); return; }
-            if (UserInput.IsPressed(UserCommands.GameFullscreen)) { ToggleFullscreen(); }
+            if (UserInput.IsPressed(UserCommands.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
             if (UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
             if (UserInput.IsPressed(UserCommands.DebugSpeedUp)) Simulator.GameSpeed *= 1.5f;
             if (UserInput.IsPressed(UserCommands.DebugSpeedDown)) Simulator.GameSpeed /= 1.5f;
@@ -408,12 +387,13 @@ namespace ORTS {
             if (UserInput.IsPressed(UserCommands.DebugDriverAid)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) DriverAidWindow.TabAction(); else DriverAidWindow.Visible = !DriverAidWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
 
-            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwitch)) {
+            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwitch))
+            {
                 Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
                 Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
                 Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
                 Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
-                PlayerLocomotiveViewer = TrainDrawer.GetViewer(Simulator.PlayerLocomotive);
+                PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
                 PlayerTrainLength = 0;
             }
 
@@ -431,19 +411,26 @@ namespace ORTS {
             if (UserInput.IsPressed(UserCommands.GameSwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
             if (UserInput.IsPressed(UserCommands.DebugLocomotiveFlip)) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
             if (UserInput.IsPressed(UserCommands.DebugResetSignal)) PlayerTrain.ResetSignal(true);
-            if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse)) {
+            if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
+            {
                 isMouseShouldVisible = true;
-                if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed) {
+                if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
+                {
                     TryThrowSwitchAt();
                     UserInput.Handled();
                 }
-            } else if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameUncoupleWithMouse)) {
+            }
+            else if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameUncoupleWithMouse))
+            {
                 isMouseShouldVisible = true;
-                if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed) {
+                if (UserInput.MouseState.LeftButton == ButtonState.Pressed && UserInput.Changed)
+                {
                     TryUncoupleAt();
                     UserInput.Handled();
                 }
-            } else {
+            }
+            else
+            {
                 isMouseShouldVisible = false;
             }
 
@@ -460,24 +447,19 @@ namespace ORTS {
 
             if (UserInput.RDState != null)
                 UserInput.RDState.Handled();
-        }
 
-
-        //
-        //  This is to enable the user to move popup windows
-        //  Coded as a separate routine as HandleUserInput does not cater for mouse movemenmt.
-        //
-        [CallOnThread("Updater")]
-        public void HandleMouseMovement() {
             MouseState currentMouseState = Mouse.GetState();
 
             // Handling mouse movement and timing - GeorgeS
             if (currentMouseState.X != originalMouseState.X ||
-                currentMouseState.Y != originalMouseState.Y) {
+                currentMouseState.Y != originalMouseState.Y)
+            {
                 isMouseTimerVisible = true;
                 MouseShownAtRealTime = RealTime;
                 RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
-            } else if (isMouseTimerVisible && MouseShownAtRealTime + .5 < RealTime) {
+            }
+            else if (isMouseTimerVisible && MouseShownAtRealTime + .5 < RealTime)
+            {
                 isMouseTimerVisible = false;
                 RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
             }
@@ -485,128 +467,39 @@ namespace ORTS {
             originalMouseState = currentMouseState;
         }
 
-        /// <summary>
-        /// Called every frame to update animations and load the frame contents .
-        /// Note:  this doesn't actually draw on the screen surface, but 
-        /// instead prepares a list of drawing primitives that will be rendered
-        /// later in RenderFrame.Draw() by the RenderProcess thread.
-        /// elapsedTime represents the the time since the last call to PrepareFrame.
-        /// </summary>
-        [CallOnThread("Updater")]
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime) {
-            // Mute sound when paused
-            if (Simulator.Paused)
-                ALSoundSource.MuteAll();
-            else
-                ALSoundSource.UnMuteAll();
-
-            if (ScreenHasChanged()) {
-                Camera.ScreenChanged();
-                RenderProcess.InitializeShadowMapLocations(RenderProcess.Viewer);
-            }
-
-            // Update camera first...
-            Camera.Update(elapsedTime);
-            // No above camera means we're allowed to auto-switch to cab view.
-            if ((AboveGroundCamera == null) && Camera.IsUnderground) {
-                AboveGroundCamera = Camera;
-                CabCamera.Activate();
-            } else if (AboveGroundCamera != null) {
-                // Make sure to keep the old camera updated...
-                AboveGroundCamera.Update(elapsedTime);
-                // ...so we can tell when to come back to it.
-                if (!AboveGroundCamera.IsUnderground) {
-                    // But only if the user hasn't selected another camera!
-                    if (Camera == CabCamera)
-                        AboveGroundCamera.Activate();
-                    AboveGroundCamera = null;
-                }
-            }
-            // We're now ready to prepare frame for the camera.
-            Camera.PrepareFrame(frame, elapsedTime);
-
-            frame.PrepareFrame(elapsedTime);
-            SkyDrawer.PrepareFrame(frame, elapsedTime);
-            TerrainDrawer.PrepareFrame(frame, elapsedTime);
-            SceneryDrawer.PrepareFrame(frame, elapsedTime);
-            TrainDrawer.PrepareFrame(frame, elapsedTime);
-            RoadCarHandler.PrepareFrame(frame, elapsedTime);
-            if (PrecipDrawer != null) PrecipDrawer.PrepareFrame(frame, elapsedTime);
-            InfoDisplay.PrepareFrame(frame, elapsedTime);
-            
-            if (this.Simulator.ActivityRun != null) { ActivityWindow.PrepareFrame(elapsedTime, true); }
-            
-            WindowManager.PrepareFrame(frame, elapsedTime);
-        }
-
-
-        /// <summary>
-        /// Unload all graphical content and restore memory
-        /// </summary>
         [CallOnThread("Render")]
-        public void Unload(RenderProcess renderProcess) {
+        public void Unload(RenderProcess renderProcess)
+        {
             SoundProcess.RemoveAllSources();
         }
 
-        public void Stop() {
+        public void Stop()
+        {
             InfoDisplay.Stop();
             RenderProcess.Stop();
-        }
-
-        /// <summary>
-        /// Report an Exception from a background process (e.g. loader).
-        /// </summary>
-        /// <param name="error"></param>
-        public void ProcessReportError(Exception error) {
-            // Log the error first in case we're burning.
-            Trace.WriteLine(error);
-            // Stop the world!
-            Stop();
-            // Show the user that it's all gone horribly wrong.
-            if (Settings.ShowErrorDialogs)
-                System.Windows.Forms.MessageBox.Show(error.ToString());
-        }
-
-        /// <summary>
-        /// Adjust all projection matrixes and buffer sizes
-        /// </summary>
-        private void ToggleFullscreen() {
-            bool IsFullScreen = !GDM.IsFullScreen;
-            if (IsFullScreen) {
-                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.PrimaryScreen;
-                GDM.PreferredBackBufferWidth = screen.Bounds.Width;
-                GDM.PreferredBackBufferHeight = screen.Bounds.Height;
-                GDM.PreferredBackBufferFormat = SurfaceFormat.Color;
-                GDM.PreferredDepthStencilFormat = DepthFormat.Depth32;
-            } else {
-                GDM.PreferredBackBufferWidth = (int)WindowSize.X;
-                GDM.PreferredBackBufferHeight = (int)WindowSize.Y;
-            }
-            RenderProcess.ToggleFullScreen();
         }
 
         /// <summary>
         /// Return true if the screen has changed dimensions
         /// </summary>
         /// <returns></returns>
-        private bool ScreenHasChanged() {
-            if (RenderProcess.GraphicsDeviceManager.IsFullScreen != isFullScreen) {
+        bool ScreenHasChanged()
+        {
+            if (RenderProcess.GraphicsDeviceManager.IsFullScreen != isFullScreen)
+            {
                 isFullScreen = RenderProcess.GraphicsDeviceManager.IsFullScreen;
                 return true;
             }
             return false;
         }
-        private bool isFullScreen = false;
-
-        private TrainCarViewer GetPlayerLocomotiveViewer() {
-            return TrainDrawer.GetViewer(PlayerLocomotive);
-        }
+        bool isFullScreen = false;
 
         /// <summary>
         /// The user has left clicked with U pressed.   
         /// If the mouse was over a coupler, then uncouple the car.
         /// </summary>
-        private void TryUncoupleAt() {
+        void TryUncoupleAt()
+        {
             // Create a ray from the near clip plane to the far clip plane.
             Vector3 direction = UserInput.FarPoint - UserInput.NearPoint;
             direction.Normalize();
@@ -615,7 +508,8 @@ namespace ORTS {
             // check each car
             TDBTraveller traveller = new TDBTraveller(PlayerTrain.FrontTDBTraveller);
             traveller.ReverseDirection();
-            foreach (TrainCar car in PlayerTrain.Cars) {
+            foreach (TrainCar car in PlayerTrain.Cars)
+            {
                 float d = (car.CouplerSlackM + car.GetCouplerZeroLengthM()) / 2;
                 traveller.Move(car.Length + d);
 
@@ -623,28 +517,34 @@ namespace ORTS {
                 float radius = 2f;  // 2 meter click range
                 BoundingSphere boundingSphere = new BoundingSphere(xnaCenter, radius);
 
-                if (null != pickRay.Intersects(boundingSphere)) {
+                if (null != pickRay.Intersects(boundingSphere))
+                {
                     Simulator.UncoupleBehind(car);
                     break;
                 }
                 traveller.Move(d);
             }
         }
+
         /// <summary>
         /// The user has left clicked with U pressed.   
         /// If the mouse was over a coupler, then uncouple the car.
         /// </summary>
-        private void TryThrowSwitchAt() {
+        void TryThrowSwitchAt()
+        {
             TrJunctionNode bestNode = null;
             float bestD = 10;
             // check each switch
-            for (int j = 0; j < Simulator.TDB.TrackDB.TrackNodes.Count(); j++) {
+            for (int j = 0; j < Simulator.TDB.TrackDB.TrackNodes.Count(); j++)
+            {
                 TrackNode tn = Simulator.TDB.TrackDB.TrackNodes[j];
-                if (tn != null && tn.TrJunctionNode != null) {
+                if (tn != null && tn.TrJunctionNode != null)
+                {
 
                     Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z));
                     float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, UserInput.NearPoint, UserInput.FarPoint);
-                    if (bestD > d && !Simulator.SwitchIsOccupied(j)) {
+                    if (bestD > d && !Simulator.SwitchIsOccupied(j))
+                    {
                         bestNode = tn.TrJunctionNode;
                         bestD = d;
                     }
@@ -653,14 +553,5 @@ namespace ORTS {
             if (bestNode != null)
                 bestNode.SelectedRoute = 1 - bestNode.SelectedRoute;
         }
-
-        public void SetupBackgroundProcesses() {
-            RenderProcess = new RenderProcess(this);   // the order is important, since one process depends on the next
-            LoaderProcess = new LoaderProcess(this);
-            UpdaterProcess = new UpdaterProcess(this);
-            SoundProcess = new SoundProcess(this);
-        }
-
-
-    } // Viewer3D
-} // namespace ORTS
+    }
+}

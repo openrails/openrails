@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -15,139 +15,86 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
+using System.Linq;
 
-/// The Terrain consists of TerrainTiles 2km square each subdivided 16 x 16 into TerrainPatch's
-/// The TerrainTile class
+// The Terrain consists of TerrainTiles 2km square each subdivided 16 x 16 into TerrainPatch's
+// The TerrainTile class
 
 namespace ORTS
 {
-
     public class TerrainDrawer
     {
-        public TerrainTile[] TerrainTiles = new TerrainTile[9]; // surrounding tiles, not in any particular order
-        private int viewerTileX, viewerTileZ;  // the center of the currently loaded set of tiles
-        private int lastViewerTileX, lastViewerTileZ;  // have we moved since the last load call?
-        private Viewer3D Viewer;
+        readonly Viewer3D Viewer;
+
+        // THREAD SAFETY:
+        //   All accesses must be done in local variables. No modifications to the objects are allowed except by
+        //   assignment of a new instance (possibly cloned and then modified).
+        List<TerrainTile> Tiles = new List<TerrainTile>();
+        int TileX;
+        int TileZ;
+        int VisibleTileX;
+        int VisibleTileZ;
 
         public TerrainDrawer(Viewer3D viewer)
         {
             Viewer = viewer;
-            for (int i = 0; i < TerrainTiles.Length; ++i)
-                TerrainTiles[i] = null;
         }
 
-        /// <summary>
-        /// Called 10 times per second when its safe to read volatile data
-        /// from the simulator and viewer classes in preparation
-        /// for the Load call.  Copy data to local storage for use 
-        /// in the next load call.
-        /// Executes in the UpdaterProcess thread.
-        /// </summary>
-        public void LoadPrep()
+        [CallOnThread("Loader")]
+        public void Load()
         {
-            viewerTileX = Viewer.Camera.TileX;
-            viewerTileZ = Viewer.Camera.TileZ;
-        }
-
-        /// <summary>
-        /// Called 10 times a second to load graphics content
-        /// that comes and goes as the player and trains move.
-        /// Called from background LoaderProcess Thread
-        /// Do not access volatile data from the simulator 
-        /// and viewer classes during the Load call ( see
-        /// LoadPrep() )
-        /// Executes in the LoaderProcess thread.
-        /// </summary>
-        public void Load(RenderProcess renderProcess)
-        {
-            if (viewerTileX != lastViewerTileX || viewerTileZ != lastViewerTileZ)   // if the camera has moved into a new tile
+            if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
-                lastViewerTileX = viewerTileX;
-                lastViewerTileZ = viewerTileZ;
-
-                // remove any tiles out of range
-                // THREAD SAFETY WARNING - UpdateProcess could read this array at any time
-                for (int i = 0; i < TerrainTiles.Length; ++i)
+                TileX = VisibleTileX;
+                TileZ = VisibleTileZ;
+                var tiles = Tiles;
+                var newTiles = new List<TerrainTile>();
+                for (var x = -1; x <= 1; x++)
                 {
-                    TerrainTile tile = TerrainTiles[i];
-                    if (tile != null)
+                    for (var z = -1; z <= 1; z++)
                     {
-                        if (Math.Abs(tile.TileX - viewerTileX) > 1
-                          || Math.Abs(tile.TileZ - viewerTileZ) > 1)
-                        {
-                            Trace.Write("t");
-                            TerrainTiles[i] = null;  // make it invisible to UpdateProcess
-                        }
+                        var tile = tiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
+                        if (tile == null)
+                            tile = LoadTile(TileX + x, TileZ + z);
+                        newTiles.Add(tile);
                     }
                 }
-
-                // add in tiles in range 
-                // by starting in the se corner we eliminate seams 
-                // by ensuring the tiles to the right and below are 
-                // loaded.
-                LoadAt(viewerTileX + 1, viewerTileZ - 1);
-                LoadAt(viewerTileX, viewerTileZ + 1);
-                LoadAt(viewerTileX - 1, viewerTileZ - 1);
-                LoadAt(viewerTileX + 1, viewerTileZ);
-                LoadAt(viewerTileX, viewerTileZ);
-                LoadAt(viewerTileX - 1, viewerTileZ);
-                LoadAt(viewerTileX + 1, viewerTileZ + 1);
-                LoadAt(viewerTileX, viewerTileZ - 1);
-                LoadAt(viewerTileX - 1, viewerTileZ + 1);
+                Tiles = newTiles;
             }
         }
 
-        /// <summary>
-        /// If the specified tile isn't already loaded, then
-        /// load it into any available location in the 
-        /// TerrainTiles array.
-        /// </summary>
-        /// <param name="tileX"></param>
-        /// <param name="tileZ"></param>
-        private void LoadAt(int tileX, int tileZ)
+        [CallOnThread("Updater")]
+        public void LoadPrep()
         {
-            // return if this tile is already loaded
-            foreach (TerrainTile tile in TerrainTiles)   // check every tile
-                if (tile != null)
-                    if (tile.TileX == tileX && tile.TileZ == tileZ)  // return if its the one we want
-                        return;
-
-            // find an available spot in the TerrainTiles array
-            // THREAD SAFETY WARNING - UpdateProcess could read this array at any time
-            for (int i = 0; i < TerrainTiles.Length; ++i)
-                if (TerrainTiles[i] == null)  // we found one
-                {
-                    Trace.Write("T");
-                    TerrainTiles[i] = new TerrainTile(Viewer, tileX, tileZ);
-                    return;
-                }
-
-            // otherwise we didn't find an available spot - this shouldn't happen
-            System.Diagnostics.Debug.Assert(false, "Program Bug - didn't expect TerrainTiles array to be full.");
+            VisibleTileX = Viewer.Camera.TileX;
+            VisibleTileZ = Viewer.Camera.TileZ;
         }
 
+        [CallOnThread("Updater")]
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // THREAD SAFETY WARNING - LoaderProcess could write to this array at any time
-            // its OK to iterate through this array because LoaderProcess never changes the size
-            foreach (TerrainTile tile in TerrainTiles)
-                if (tile != null)
-                    if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
-                        tile.PrepareFrame(frame, elapsedTime);
+            var tiles = Tiles;
+            foreach (var tile in tiles)
+                if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
+                    tile.PrepareFrame(frame, elapsedTime);
         }
 
-    } // TerrainDrawer
+        TerrainTile LoadTile(int tileX, int tileZ)
+        {
+            Trace.Write("T");
+            return new TerrainTile(Viewer, tileX, tileZ);
+        }
+    }
 
-    public class TerrainTile : IDisposable
+    public class TerrainTile
     {
-        public int TileX, TileZ;
-        private TerrainPatch[,] TerrainPatches = new TerrainPatch[16, 16];
-        private Viewer3D Viewer;
-        private WaterTile WaterTile = null;
+        public readonly int TileX, TileZ;
+
+        TerrainPatch[,] TerrainPatches = new TerrainPatch[16, 16];
+        WaterTile WaterTile;
 
         public TerrainTile(Viewer3D viewer, int tileX, int tileZ)
         {
-            Viewer = viewer;
             TileX = tileX;
             TileZ = tileZ;
             Tile tile = viewer.Tiles.GetTile(tileX, tileZ);
@@ -156,20 +103,10 @@ namespace ORTS
                 if (tile.TFile.ContainsWater)
                     WaterTile = new WaterTile(viewer, TileX, TileZ);
 
-
                 for (int x = 0; x < 16; ++x)
                     for (int z = 0; z < 16; ++z)
-                    {
                         if (!tile.IsEmpty && tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
-                        {
-                            TerrainPatch patch = new TerrainPatch(viewer, tile, x, z, tileX, tileZ);
-                            TerrainPatches[x, z] = patch;
-                        }
-                        else
-                        {
-                            TerrainPatches[x, z] = null;
-                        }
-                    }
+                            TerrainPatches[x, z] = new TerrainPatch(viewer, tile, x, z, tileX, tileZ);
             }
         }
 
@@ -179,36 +116,10 @@ namespace ORTS
                 WaterTile.PrepareFrame(frame);
             for (int x = 0; x < 16; ++x)
                 for (int z = 0; z < 16; ++z)
-                {
-                    TerrainPatch patch = TerrainPatches[x, z];
-                    if (patch != null)
-                        patch.PrepareFrame(frame);
-                }
+                    if (TerrainPatches[x, z] != null)
+                        TerrainPatches[x, z].PrepareFrame(frame);
         }
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            // TODO finish water
-            //if (WaterTile != null)
-            //    WaterTile.Dispose();
-
-            for (int x = 0; x < 16; ++x)
-                for (int z = 0; z < 16; ++z)
-                {
-                    TerrainPatch patch = TerrainPatches[x, z];
-                    if (patch != null)
-                    {
-                        TerrainPatches[x, z] = null;
-                        // TODO handle unload patch.Dispose();
-                    }
-                }
-        }
-
-        #endregion
-    } // Terrain Tile
-
+    }
 
     public class TerrainPatch : RenderPrimitive
     {
@@ -507,5 +418,5 @@ namespace ORTS
             patchVertexBuffer.SetData(vertexData.ToArray());
             return patchVertexBuffer;
         }
-    } // Terrain Patch
-} // namespace
+    }
+}

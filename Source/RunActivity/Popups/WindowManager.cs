@@ -58,10 +58,7 @@ namespace ORTS.Popups
             TextManager = new WindowTextManager();
             TextFontDefault = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular);
             TextFontDefaultOutlined = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular, 1);
-        }
 
-        public void Initialize()
-        {
             SpriteBatch = new SpriteBatch(Viewer.GraphicsDevice);
 
             if (WhiteTexture == null)
@@ -111,7 +108,10 @@ namespace ORTS.Popups
                 PauseTexture = new Texture2D(Viewer.GraphicsDevice, size, size * 2, 1, TextureUsage.None, SurfaceFormat.Color);
                 PauseTexture.SetData(data);
             }
+        }
 
+        public void Initialize()
+        {
             ScreenChanged();
             UpdateTopMost();
 
@@ -176,7 +176,6 @@ namespace ORTS.Popups
             frame.AddPrimitive(WindowManagerMaterial, this, RenderPrimitiveGroup.Overlay, ref Identity);
         }
 
-        [CallOnThread("Render")]
 		public override void Draw(GraphicsDevice graphicsDevice)
 		{
 			// Nothing visible? Nothing more to do!

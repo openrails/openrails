@@ -312,6 +312,7 @@
     </Compile>
     <Compile Include="Viewer3D\Water.cs" />
     <Compile Include="Viewer3D\Weather.cs" />
+    <Compile Include="Viewer3D\World.cs" />
     <Compile Include="_Main.cs" />
     <Compile Include="Viewer3D\UserInput.cs" />
     <Compile Include="Viewer3D\Materials.cs" />

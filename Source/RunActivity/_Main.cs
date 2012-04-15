@@ -112,7 +112,6 @@ namespace ORTS
                 InitSimulator(settings, args);
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator);
-                Viewer.Initialize();
 
 #if DEBUG_VIEWER
 				// prepare to show debug output in a separate window
@@ -297,7 +296,6 @@ namespace ORTS
                     InitSimulator(settings, savedArgs, "Resume");
                     Simulator.Restore( inf, simulatorPathDescription, initialTileX, initialTileZ );
                     Viewer = new Viewer3D(Simulator);
-                    Viewer.Initialize();
                     Viewer.Restore(inf);
                 }
                 Viewer.Run();
@@ -354,7 +352,6 @@ namespace ORTS
                     InitSimulator(settings, new[] { activities[i].FileName }, "");
                     Simulator.Start();
                     Viewer = new Viewer3D(Simulator);
-                    Viewer.Initialize();
                     Viewer.Run();
                     results[i] = true;
                     Simulator.Stop();

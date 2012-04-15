@@ -140,8 +140,8 @@ namespace ORTS
                 if (moonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
                     moonPhase = 3; // Moon dog only occurs in winter
                 // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
-                overcast = Viewer.weatherControl.overcast;
-                fogCoeff = Viewer.weatherControl.fogCoeff;
+                overcast = Viewer.World.WeatherControl.overcast;
+                fogCoeff = Viewer.World.WeatherControl.fogCoeff;
             }
 
 ////////////////////// T E M P O R A R Y ///////////////////////////
@@ -157,12 +157,12 @@ namespace ORTS
 			if (UserInput.IsDown(UserCommands.DebugClockForwards))
 			{
 				Viewer.Simulator.ClockTime += 120; // Two-minute (120 second) increments
-				if (Viewer.PrecipDrawer != null) Viewer.PrecipDrawer.Reset();
+                if (Viewer.World.Precipitation != null) Viewer.World.Precipitation.Reset();
 			}
 			if (UserInput.IsDown(UserCommands.DebugClockBackwards))
 			{
 				Viewer.Simulator.ClockTime -= 120;
-				if (Viewer.PrecipDrawer != null) Viewer.PrecipDrawer.Reset();
+                if (Viewer.World.Precipitation != null) Viewer.World.Precipitation.Reset();
 			}
 
 ////////////////////////////////////////////////////////////////////

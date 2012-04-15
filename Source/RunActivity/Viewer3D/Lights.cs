@@ -387,7 +387,7 @@ namespace ORTS
             // Service
             var newCarInService = Car.Train != null;
             // Time
-            var newIsDay = Viewer.SkyDrawer.solarDirection.Y > 0;
+            var newIsDay = Viewer.World.Sky.solarDirection.Y > 0;
             // Weather
             var newWeather = Viewer.Simulator.Weather;
 

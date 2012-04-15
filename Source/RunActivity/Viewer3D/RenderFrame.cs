@@ -334,7 +334,7 @@ namespace ORTS
 
             if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && !LockShadows)
             {
-                var solarDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+                var solarDirection = RenderProcess.Viewer.World.Sky.solarDirection;
                 solarDirection.Normalize();
                 if (Vector3.Dot(SteppedSolarDirection, solarDirection) < 0.99999)
                     SteppedSolarDirection = solarDirection;

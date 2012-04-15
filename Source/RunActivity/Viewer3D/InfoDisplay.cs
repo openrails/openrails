@@ -174,18 +174,16 @@ namespace ORTS
             }
             if (DrawCarNumber == true)
             {
-                foreach (TrainCar tcar in Viewer.TrainDrawer.ViewableCars)
-                {
-                    frame.AddPrimitive(DrawInforMaterial,
-                        new ActivityInforPrimitive(DrawInforMaterial, tcar),
-                            RenderPrimitiveGroup.World, ref Identity);
-                }
+                var cars = Viewer.World.Trains.Cars;
+                foreach (var car in cars.Keys)
+                    frame.AddPrimitive(DrawInforMaterial, new ActivityInforPrimitive(DrawInforMaterial, car), RenderPrimitiveGroup.World, ref Identity);
 
                 //	UpdateCarNumberText(frame, elapsedTime);
             }
             if (DrawSiding == true || DrawPlatform == true)
             {
-                foreach (WorldFile w in Viewer.SceneryDrawer.WorldFiles)
+                var worldFiles = Viewer.World.Scenery.WorldFiles;
+                foreach (var w in worldFiles)
                 {
                     if (DrawSiding == true && w != null && w.sidings != null)
                     {

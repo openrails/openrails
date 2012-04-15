@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -8,13 +8,8 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 
 namespace ORTS
 {
@@ -33,14 +28,9 @@ namespace ORTS
             if (Threaded)
             {
                 State = new ProcessState();
-                Thread = new Thread(UpdateLoop);
-            }
-        }
-
-        public void Run()
-        {
-            if (Threaded)
+                Thread = new Thread(UpdaterThread);
                 Thread.Start();
+            }
         }
 
         public void Stop()
@@ -66,7 +56,7 @@ namespace ORTS
         }
 
         [ThreadName("Updater")]
-        void UpdateLoop()
+        void UpdaterThread()
         {
             ProcessState.SetThreadName("Updater Process");
 
@@ -76,27 +66,8 @@ namespace ORTS
                 State.WaitTillStarted();
                 try
                 {
-                    if (Debugger.IsAttached)
-                    {
-                        Update();
-                    }
-                    else
-                    {
-                        try
-                        {
-                            Update();
-                        }
-                        catch (Exception error)
-                        {
-                            if (!(error is ThreadAbortException))
-                            {
-                                // Unblock anyone waiting for us, report error and die.
-                                State.SignalFinish();
-                                Viewer.ProcessReportError(error);
-                                return;
-                            }
-                        }
-                    }
+                    if (!DoUpdate())
+                        return;
                 }
                 finally
                 {
@@ -111,37 +82,48 @@ namespace ORTS
         {
             if (!Finished)
                 throw new InvalidOperationException("Can't overlap updates.");
+
             CurrentFrame = frame;
             TotalRealSeconds = totalRealSeconds;
             if (Threaded)
-            {
                 State.SignalStart();
+            else
+                DoUpdate();
+        }
+
+        [ThreadName("Updater")]
+        bool DoUpdate()
+        {
+            if (Debugger.IsAttached)
+            {
+                Update();
             }
             else
             {
-                if (Debugger.IsAttached)
+                try
                 {
                     Update();
                 }
-                else
+                catch (Exception error)
                 {
-                    try
+                    if (!(error is ThreadAbortException))
                     {
-                        Update();
-                    }
-                    catch (Exception error)
-                    {
+                        // Unblock anyone waiting for us, report error and die.
+                        if (Threaded)
+                            State.SignalFinish();
                         Viewer.ProcessReportError(error);
+                        return false;
                     }
                 }
             }
+            return true;
         }
 
         RenderFrame CurrentFrame;
         double TotalRealSeconds;
         double LastTotalRealSeconds = -1;
 
-        [ThreadName("Updater")]
+        [CallOnThread("Updater")]
         public void Update()
         {
             Profiler.Start();
@@ -157,29 +139,20 @@ namespace ORTS
             else if (TotalRealSeconds - LastTotalRealSeconds > 0.25f)
                 LastTotalRealSeconds = TotalRealSeconds;
 
-            Viewer.RealTime = TotalRealSeconds;
-            var elapsedTime = new ElapsedTime(Viewer.Simulator.GetElapsedClockSeconds((float)(TotalRealSeconds - LastTotalRealSeconds)), (float)(TotalRealSeconds - LastTotalRealSeconds));
+            var elapsedRealTime = (float)(TotalRealSeconds - LastTotalRealSeconds);
             LastTotalRealSeconds = TotalRealSeconds;
 
             try
             {
-                Viewer.RenderProcess.ComputeFPS(elapsedTime.RealSeconds);
-                Viewer.Simulator.Update(elapsedTime.ClockSeconds);
-                Viewer.HandleUserInput(elapsedTime);
-                Viewer.HandleMouseMovement();
-                UserInput.Handled();
                 CurrentFrame.Clear();
-                Viewer.PrepareFrame(CurrentFrame, elapsedTime);
+                Viewer.RenderProcess.ComputeFPS(elapsedRealTime);
+                Viewer.Update(elapsedRealTime, CurrentFrame);
                 CurrentFrame.Sort();
             }
             finally
             {
                 Profiler.Stop();
-
-                // Update the loader - it should only copy volatile data and return.
-                if (Viewer.RealTime - Viewer.LoaderProcess.LastUpdateRealTime > LoaderProcess.UpdatePeriod)
-                    Viewer.LoaderProcess.StartUpdate();
             }
         }
-    } // Updater Process
+    }
 }

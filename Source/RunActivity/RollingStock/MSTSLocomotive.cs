@@ -1641,7 +1641,7 @@ namespace ORTS
         {
             if (Locomotive.HasStepCtrl)
             {
-                if (Viewer.IngameSounds != null) Viewer.IngameSounds.HandleEvent(10);
+                if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(10);
             }
         }
 
@@ -2384,7 +2384,7 @@ namespace ORTS
             if (_Location == 0 && _Shader != null)
             {
                 _Shader.SetData(Materials.sunDirection,
-                    _isNightTexture, _Locomotive.CabLightOn, _Viewer.SkyDrawer.overcast);
+                    _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.Sky.overcast);
 
                 _Shader.SetTexData(_CabRect.Left, _CabRect.Top, _CabRect.Width, _CabRect.Height);
                 _Shader.Begin();

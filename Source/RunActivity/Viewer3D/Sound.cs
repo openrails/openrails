@@ -125,7 +125,7 @@ namespace ORTS
             if (Car != null && Car.Train != null)
             {
                 //_curTType = Viewer.WorldSounds.GetTType(_tdbObjs);
-                _curTType = Viewer.WorldSounds.GetTType(Car.Train);
+                _curTType = Viewer.World.Sounds.GetTType(Car.Train);
                 if (_curTType != _prevTType && _curTType != int.MaxValue)
                 {
                     if (_activeInSource != null)

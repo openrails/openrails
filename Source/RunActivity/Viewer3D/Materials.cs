@@ -195,7 +195,7 @@ namespace ORTS
 		static float fadeDuration = -1;
 		internal static void UpdateShaders(RenderProcess renderProcess, GraphicsDevice graphicsDevice)
 		{
-			sunDirection = renderProcess.Viewer.SkyDrawer.solarDirection;
+            sunDirection = renderProcess.Viewer.World.Sky.solarDirection;
 			SceneryShader.LightVector = sunDirection;
 
 			// Headlight illumination
@@ -237,7 +237,7 @@ namespace ORTS
             }
 			// End headlight illumination
 
-			SceneryShader.Overcast = renderProcess.Viewer.SkyDrawer.overcast;
+            SceneryShader.Overcast = renderProcess.Viewer.World.Sky.overcast;
 			SceneryShader.ViewerPos = renderProcess.Viewer.Camera.XNALocation(renderProcess.Viewer.Camera.CameraWorldLocation);
 
 			SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref Materials.FogColor);
@@ -726,33 +726,33 @@ namespace ORTS
 
             // Adjust Fog color for day-night conditions and overcast
             FogDay2Night(
-                RenderProcess.Viewer.SkyDrawer.solarDirection.Y,
-                RenderProcess.Viewer.SkyDrawer.overcast);
-            Materials.FogCoeff = RenderProcess.Viewer.SkyDrawer.fogCoeff;
+                RenderProcess.Viewer.World.Sky.solarDirection.Y,
+                RenderProcess.Viewer.World.Sky.overcast);
+            Materials.FogCoeff = RenderProcess.Viewer.World.Sky.fogCoeff;
 
             SkyShader.SkyTexture = skyTexture;
             SkyShader.StarTexture = skyTexture;
-            SkyShader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
-            if (RenderProcess.Viewer.SkyDrawer.latitude > 0)
+            SkyShader.SunDirection = RenderProcess.Viewer.World.Sky.solarDirection;
+            if (RenderProcess.Viewer.World.Sky.latitude > 0)
                 SkyShader.StarTexture = starTextureN;
             else
                 SkyShader.StarTexture = starTextureS;
-            SkyShader.SunpeakColor = RenderProcess.Viewer.SkyDrawer.sunpeakColor;
-            SkyShader.SunriseColor = RenderProcess.Viewer.SkyDrawer.sunriseColor;
-            SkyShader.SunsetColor = RenderProcess.Viewer.SkyDrawer.sunsetColor;
+            SkyShader.SunpeakColor = RenderProcess.Viewer.World.Sky.sunpeakColor;
+            SkyShader.SunriseColor = RenderProcess.Viewer.World.Sky.sunriseColor;
+            SkyShader.SunsetColor = RenderProcess.Viewer.World.Sky.sunsetColor;
             SkyShader.Time = (float)RenderProcess.Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyConstants.skyRadius / 20;
             SkyShader.MoonTexture = moonTexture;
             SkyShader.MoonMaskTexture = moonMask;
-            SkyShader.Random = RenderProcess.Viewer.SkyDrawer.moonPhase;
+            SkyShader.Random = RenderProcess.Viewer.World.Sky.moonPhase;
             SkyShader.CloudTexture = cloudTexture;
-            SkyShader.Overcast = RenderProcess.Viewer.SkyDrawer.overcast;
-            SkyShader.WindSpeed = RenderProcess.Viewer.SkyDrawer.windSpeed;
-            SkyShader.WindDirection = RenderProcess.Viewer.SkyDrawer.windDirection;
+            SkyShader.Overcast = RenderProcess.Viewer.World.Sky.overcast;
+            SkyShader.WindSpeed = RenderProcess.Viewer.World.Sky.windSpeed;
+            SkyShader.WindDirection = RenderProcess.Viewer.World.Sky.windDirection;
 
             // Sky dome
             SkyShader.CurrentTechnique = SkyShader.Techniques["SkyTechnique"];
-            RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 1;
+            RenderProcess.Viewer.World.Sky.SkyMesh.drawIndex = 1;
 
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
 
@@ -774,7 +774,7 @@ namespace ORTS
 
             // Moon
             SkyShader.CurrentTechnique = SkyShader.Techniques["MoonTechnique"];
-            RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 2;
+            RenderProcess.Viewer.World.Sky.SkyMesh.drawIndex = 2;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
@@ -783,9 +783,9 @@ namespace ORTS
             rs.SourceBlend = Blend.SourceAlpha;
 
             // Send the transform matrices to the shader
-            int skyRadius = RenderProcess.Viewer.SkyDrawer.SkyMesh.skyRadius;
-            int cloudRadiusDiff = RenderProcess.Viewer.SkyDrawer.SkyMesh.cloudDomeRadiusDiff;
-            XNAMoonMatrix = Matrix.CreateTranslation(RenderProcess.Viewer.SkyDrawer.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
+            int skyRadius = RenderProcess.Viewer.World.Sky.SkyMesh.skyRadius;
+            int cloudRadiusDiff = RenderProcess.Viewer.World.Sky.SkyMesh.cloudDomeRadiusDiff;
+            XNAMoonMatrix = Matrix.CreateTranslation(RenderProcess.Viewer.World.Sky.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
             SkyShader.Begin();
@@ -806,7 +806,7 @@ namespace ORTS
 
             // Clouds
             SkyShader.CurrentTechnique = SkyShader.Techniques["CloudTechnique"];
-            RenderProcess.Viewer.SkyDrawer.SkyMesh.drawIndex = 3;
+            RenderProcess.Viewer.World.Sky.SkyMesh.drawIndex = 3;
 
             rs.CullMode = CullMode.CullCounterClockwiseFace;
 
@@ -964,7 +964,7 @@ namespace ORTS
             shader.CurrentTechnique = shader.Techniques["RainTechnique"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["RainTechnique"].Passes.GetEnumerator();
             shader.WeatherType = (int)RenderProcess.Viewer.Simulator.Weather;
-            shader.SunDirection = RenderProcess.Viewer.SkyDrawer.solarDirection;
+            shader.SunDirection = RenderProcess.Viewer.World.Sky.solarDirection;
             shader.ViewportHeight = RenderProcess.Viewer.DisplaySize.Y;
             shader.CurrentTime = (float)RenderProcess.Viewer.Simulator.ClockTime;
             switch (RenderProcess.Viewer.Simulator.Weather)

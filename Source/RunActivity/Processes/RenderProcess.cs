@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -8,21 +8,10 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
-
 
 namespace ORTS
 {
@@ -56,28 +45,24 @@ namespace ORTS
         }
     }
 
-
-    /// <summary>
-    /// This is the main type for your game
-    /// </summary>
     [CallOnThread("Render")]
     public class RenderProcess : Microsoft.Xna.Framework.Game
     {
         public const int ShadowMapCountMaximum = 4;
         public const int ShadowMapMipCount = 1;
 
-        System.Windows.Forms.Form Form;    // the 3D view is drawn on this form
-        public readonly Viewer3D Viewer;
         public readonly Profiler Profiler = new Profiler("Render");
+        public readonly Viewer3D Viewer;
+
+        public Vector2 WindowSize = new Vector2(1024, 768);
+
+        System.Windows.Forms.Form Form;    // the 3D view is drawn on this form
         public GraphicsDeviceManager GraphicsDeviceManager;
 
         RenderFrame CurrentFrame;   // a frame contains a list of primitives to draw at a specified time
         RenderFrame NextFrame;      // we prepare the next frame in the background while the current one is rendering,
 
         public bool Stopped = false;  // use for shutdown
-
-        public void ToggleFullScreen() { ToggleFullScreenRequested = true; } // Interprocess signalling.
-        private bool ToggleFullScreenRequested = false;
 
         public new bool IsMouseVisible = false;  // handles cross thread issues by signalling RenderProcess of a change
 
@@ -96,15 +81,47 @@ namespace ORTS
         public static int[] ShadowMapDiameter; // diameter of shadow map
         public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
 
-        public RenderProcess(Viewer3D viewer3D)
+        public RenderProcess(Viewer3D viewer)
         {
-            //Thread.CurrentThread.Priority = ThreadPriority.Highest;
+            Viewer = viewer;
 
-            System.Windows.Forms.Control control = System.Windows.Forms.Control.FromHandle(this.Window.Handle);
-            Form = control.FindForm();
-            Viewer = viewer3D;
-            GraphicsDeviceManager = new GraphicsDeviceManager(this);
-            Viewer.Configure(this);
+            Window.Title = "Open Rails";
+            Form = Control.FromHandle(this.Window.Handle).FindForm();
+            GraphicsDeviceManager = Viewer.GDM = new GraphicsDeviceManager(this);
+
+            Content.RootDirectory = "Content";
+
+            var windowSizeParts = Viewer.Settings.WindowSize.Split(new[] { 'x' }, 2);
+            WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
+            WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
+
+            IsFixedTimeStep = false;
+            TargetElapsedTime = TimeSpan.FromMilliseconds(1);
+            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Viewer.Settings.VerticalSync;
+            GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
+            GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;
+            GraphicsDeviceManager.IsFullScreen = false;
+            GraphicsDeviceManager.PreferMultiSampling = true;
+            GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
+        }
+
+        void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
+        {
+            // This enables NVIDIA PerfHud to be run on Open Rails.
+            foreach (var adapter in GraphicsAdapter.Adapters)
+            {
+                if (adapter.Description.Contains("PerfHUD"))
+                {
+                    e.GraphicsDeviceInformation.Adapter = adapter;
+                    e.GraphicsDeviceInformation.DeviceType = DeviceType.Reference;
+                    break;
+                }
+            }
+
+            // This stops ResolveBackBuffer() clearing the back buffer.
+            e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+            e.GraphicsDeviceInformation.PresentationParameters.AutoDepthStencilFormat = DepthFormat.Depth24Stencil8;
+            Viewer.UpdateAdapterInformation(e.GraphicsDeviceInformation.Adapter);
         }
 
         /// <summary>
@@ -115,8 +132,7 @@ namespace ORTS
         {
             ProcessState.SetThreadName("Render Process");
 
-            Materials.Initialize(this);
-            Viewer.Initialize(this);
+            Viewer.Initialize();
 
             ShadowMapCount = Viewer.Settings.ShadowMapCount;
             if (!Viewer.Settings.DynamicShadows)
@@ -138,18 +154,13 @@ namespace ORTS
 
             InitializeShadowMapLocations(Viewer);
 
-            Viewer.LoadPrep();  // Does initial load before 3D window is displayed
-            Viewer.Load(this);  // after this Load is done in a background thread.
-            Viewer.LoaderProcess.Run();
-            Viewer.SoundProcess.Run();
             CurrentFrame = new RenderFrame(this);
             NextFrame = new RenderFrame(this);
-            Viewer.UpdaterProcess.Run();
             base.Initialize();
             Viewer.Simulator.Paused = false;
         }
 
-        public static void InitializeShadowMapLocations(Viewer3D viewer)
+        internal static void InitializeShadowMapLocations(Viewer3D viewer)
         {
             var ratio = (float)viewer.DisplaySize.X / viewer.DisplaySize.Y;
             var fov = MathHelper.ToRadians(viewer.Settings.ViewingFOV);
@@ -211,10 +222,9 @@ namespace ORTS
             if (Stopped)
             {
                 Terminate();
-                this.Exit();
+                Exit();
             }
-
-            if (gameTime.TotalRealTime.TotalSeconds > 0.001)
+            else if (gameTime.TotalRealTime.TotalSeconds > 0.001)
             {
                 Viewer.UpdaterProcess.WaitTillFinished();
 
@@ -241,7 +251,8 @@ namespace ORTS
         protected override void Draw(GameTime gameTime)
         {
             if (Viewer.Settings.Profiling)
-                if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount) {
+                if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount)
+                {
                     Viewer.Stop();
                     Application.Exit();  // Added as system hangs otherwise when testing using /ProfilingFrameCount=0 and have to kill the process.
                 }
@@ -298,12 +309,34 @@ namespace ORTS
             }
         }
 
-        private void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)
+        void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)
         {
             RenderFrame temp = frame1;
             frame1 = frame2;
             frame2 = temp;
         }
+
+        bool ToggleFullScreenRequested = false;
+        [CallOnThread("Updater")]
+        public void ToggleFullScreen()
+        {
+            bool IsFullScreen = !GraphicsDeviceManager.IsFullScreen;
+            if (IsFullScreen)
+            {
+                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.PrimaryScreen;
+                GraphicsDeviceManager.PreferredBackBufferWidth = screen.Bounds.Width;
+                GraphicsDeviceManager.PreferredBackBufferHeight = screen.Bounds.Height;
+                GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
+                GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth32;
+            }
+            else
+            {
+                GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
+                GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;
+            }
+            ToggleFullScreenRequested = true;
+        }
+
 
         /// <summary>
         /// This signal is caught in the Update
@@ -316,7 +349,7 @@ namespace ORTS
         /// <summary>
         /// Shut down other processes and unload content
         /// </summary>
-        private void Terminate()
+        void Terminate()
         {
             if (Viewer.Settings.Profiling)
                 Viewer.Settings.ProfilingFrameCount = ProfileFrames;
@@ -351,5 +384,5 @@ namespace ORTS
                 FrameJitter.Update(elapsedRealTime, Math.Abs(lastElapsedTime - elapsedRealTime));
             lastElapsedTime = elapsedRealTime;
         }
-    }// RenderProcess
+    }
 }

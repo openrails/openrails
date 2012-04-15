@@ -479,7 +479,7 @@ namespace ORTS
 			spawner = r;
 			desiredSpeed = SpeedMpS = r.CarAvSpeed * (0.75f + (float) Program.Random.NextDouble() / 2);
 			travelledDist = 0.0f;
-			RoadCarHandler.Viewer.RoadCarHandler.AddCarShape(this); // add car shape
+			RoadCarHandler.Viewer.World.Cars.AddCarShape(this); // add car shape
 		}
 
 		//update the car, first speed, then move

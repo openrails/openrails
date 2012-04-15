@@ -65,7 +65,6 @@ namespace ORTS.Popups
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
                     Layout();
                 }
-                // FIXME
             }
         }
 	}
