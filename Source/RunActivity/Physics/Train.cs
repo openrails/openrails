@@ -230,19 +230,61 @@ namespace ORTS
                 }
             }
 
+            TrainCar prevLead = LeadLocomotive;
+
             // If found one after the current
             if (nextLead != -1)
                 LeadLocomotiveIndex = nextLead;
             // If not, and have more than one, set the first
             else if (coud > 1)
                 LeadLocomotiveIndex = firstLead;
+            Orient();
+            TrainCar newLead = LeadLocomotive;
+            if (prevLead != null && newLead != null && prevLead != newLead)
+                newLead.CopyControllerSettings(prevLead);
+            if (Program.Simulator.PlayerLocomotive.Train == this)
+            {
+                Program.Simulator.PlayerLocomotive = newLead;
+                Program.Simulator.AI.Dispatcher.ReversePlayerAuthorization();
+            }
         }
 
         /// <summary>
-		/// Someone is sending an event notification to all cars on this train.
-		/// ie doors open, pantograph up, lights on etc.
-		/// </summary>
-		public void SignalEvent(EventID eventID)
+        /// Flips the train if necessary so that the train orientation matches the lead locomotive cab direction
+        /// </summary>
+        public void Orient()
+        {
+            TrainCar lead = LeadLocomotive;
+            if (lead == null || !(lead.Flipped ^ lead.GetCabFlipped()))
+                return;
+            for (int i = Cars.Count - 1; i > 0; i--)
+                Cars[i].CopyCoupler(Cars[i - 1]);
+            for (int i = 0; i < Cars.Count / 2; i++)
+            {
+                int j = Cars.Count - i - 1;
+                TrainCar car = Cars[i];
+                Cars[i] = Cars[j];
+                Cars[j] = car;
+            }
+            if (LeadLocomotiveIndex >= 0)
+                LeadLocomotiveIndex = Cars.Count - LeadLocomotiveIndex - 1;
+            for (int i = 0; i < Cars.Count; i++)
+                Cars[i].Flipped = !Cars[i].Flipped;
+            TDBTraveller t = FrontTDBTraveller;
+            FrontTDBTraveller = RearTDBTraveller;
+            RearTDBTraveller = t;
+            FrontTDBTraveller.ReverseDirection();
+            RearTDBTraveller.ReverseDirection();
+            MUDirection = DirectionControl.Flip(MUDirection);
+            MUReverserPercent = -MUReverserPercent;
+            InitializeSignals();
+        }
+
+        /// <summary>
+        /// Someone is sending an event notification to all cars on this train.
+        /// ie doors open, pantograph up, lights on etc.
+        /// </summary>
+        public void SignalEvent(EventID eventID)
 		{
 			foreach (TrainCar car in Cars)
 				car.SignalEvent(eventID);

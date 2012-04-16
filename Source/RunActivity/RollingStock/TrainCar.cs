@@ -161,6 +161,19 @@ namespace ORTS
         {
             return 1e10f;
         }
+        public virtual void CopyCoupler(TrainCar other)
+        {
+            CouplerSlackM = other.CouplerSlackM;
+            CouplerSlack2M = other.CouplerSlack2M;
+        }
+        public virtual void CopyControllerSettings(TrainCar other)
+        {
+            Headlight = other.Headlight;
+        }
+        public virtual bool GetCabFlipped()
+        {
+            return false;
+        }
 
         public void AddWheelSet(float offset, int bogie, int parentMatrix)
         {

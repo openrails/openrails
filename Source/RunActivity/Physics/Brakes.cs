@@ -120,7 +120,7 @@ namespace ORTS
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += " EOT " + lastCarBrakeSystem.GetStatus();
             if (HandbrakePercent > 0)
-                s+= string.Format(" Handbrake {2:F0}%", HandbrakePercent);
+                s+= string.Format(" Handbrake {0:F0}%", HandbrakePercent);
             return s;
         }
 
@@ -602,7 +602,7 @@ namespace ORTS
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += " EOT " + lastCarBrakeSystem.GetStatus();
             if (HandbrakePercent > 0)
-                s += string.Format(" Handbrake {2:F0}%", HandbrakePercent);
+                s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
             return s;
         }
 
@@ -691,7 +691,7 @@ namespace ORTS
         {
             string s = string.Format(" BC {0:F0} psi", CylPressurePSI);
             if (HandbrakePercent > 0)
-                s += string.Format(" Handbrake {2:F0}%", HandbrakePercent);
+                s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
             return s;
         }
 
@@ -802,7 +802,7 @@ namespace ORTS
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += " EOT " + lastCarBrakeSystem.GetStatus();
             if (HandbrakePercent > 0)
-                s += string.Format(" Handbrake {2:F0}%", HandbrakePercent);
+                s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
             return s;
         }
 

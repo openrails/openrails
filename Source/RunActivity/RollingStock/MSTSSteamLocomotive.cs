@@ -36,7 +36,7 @@ namespace ORTS
     {
         //Configure a default cutoff controller
         //IF none is specified, this will be used, otherwise those values will be overwritten
-        MSTSNotchController CutoffController = new MSTSNotchController(-0.9f, 0.9f, 0.1f);
+        public MSTSNotchController CutoffController = new MSTSNotchController(-0.9f, 0.9f, 0.1f);
         MSTSNotchController Injector1Controller = new MSTSNotchController(0, 1, 0.1f);
         MSTSNotchController Injector2Controller = new MSTSNotchController(0, 1, 0.1f);
         MSTSNotchController BlowerController = new MSTSNotchController(0, 1, 0.1f);
@@ -396,6 +396,16 @@ namespace ORTS
         public override TrainCarViewer GetViewer(Viewer3D viewer)
         {
             return new MSTSSteamLocomotiveViewer( viewer, this );
+        }
+        /// <summary>
+        /// Sets controler settings from other engine for cab switch
+        /// </summary>
+        /// <param name="other"></param>
+        public override void CopyControllerSettings(TrainCar other)
+        {
+            base.CopyControllerSettings(other);
+            if (CutoffController != null)
+                CutoffController.SetValue(Train.MUReverserPercent / 100);
         }
 
         /// <summary>

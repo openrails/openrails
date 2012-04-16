@@ -477,6 +477,19 @@ namespace ORTS
                 return base.GetMaximumCouplerSlack2M();
             return Coupler.Rigid ? 0.0002f : base.GetMaximumCouplerSlack2M();
         }
+        public override void CopyCoupler(TrainCar other)
+        {
+            base.CopyCoupler(other);
+            MSTSCoupling coupler = new MSTSCoupling();
+            coupler.R0 = other.GetCouplerZeroLengthM();
+            coupler.R0Diff = other.GetMaximumCouplerSlack1M();
+            coupler.Rigid = coupler.R0Diff < .0002f;
+            coupler.Stiffness1NpM = other.GetCouplerStiffnessNpM() / 7;
+            coupler.Stiffness2NpM = 0;
+            Couplers[0]= coupler;
+            if (Couplers.Count > 1)
+                Couplers.RemoveAt(1);
+        }
     }
 
     public class MSTSCoupling

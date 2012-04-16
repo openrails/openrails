@@ -290,6 +290,17 @@ namespace ORTS
                 Unreserve(0);
             }
         }
+        public void ReversePlayerAuthorization()
+        {
+            if (TrackAuthorities.Count == 0)
+                return;
+            TrackAuthority auth = TrackAuthorities[0];
+            if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
+            {
+                auth.Train = AI.Simulator.PlayerLocomotive.Train;// this can change due to uncoupling
+                auth.NReverseNodes++;
+            }
+        }
 
         /// <summary>
         /// Requests movement authorization for the specified train.

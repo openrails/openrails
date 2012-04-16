@@ -98,6 +98,7 @@ namespace ORTS
         public float DynamicBrakeSpeed4 = 35;
         public float MaxDynamicBrakeForceN = 0;
         public bool DynamicBrakeAutoBailOff = false;
+        bool CabFlipped = false;
 
         public bool HasCombCtrl = false;
         public bool HasStepCtrl = false;
@@ -195,6 +196,8 @@ namespace ORTS
                     viewPoint.StartDirection = CVFFile.Directions[i];
                     viewPoint.RotationLimit = new Vector3( 0,0,0 );  // cab views have a fixed head position
                     FrontCabViewpoints.Add(viewPoint);
+                    if (i == 0 && (CVFFile.Directions[i].Y < -90 || CVFFile.Directions[i].Y > 90))
+                        CabFlipped = true;
                 }
 
                 string ExtendedCVF = CVFFilePath.Substring(0, CVFFilePath.LastIndexOf('.')) + ".xml";
@@ -334,6 +337,7 @@ namespace ORTS
             CabSoundFileName = locoCopy.CabSoundFileName;
             CVFFileName = locoCopy.CVFFileName;
             CVFFile = locoCopy.CVFFile;
+            CabFlipped = locoCopy.CabFlipped;
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
@@ -436,6 +440,22 @@ namespace ORTS
         public override TrainCarViewer GetViewer(Viewer3D viewer)
         {
             return new MSTSLocomotiveViewer(viewer, this);
+        }
+        /// <summary>
+        /// Sets controler settings from other engine for cab switch
+        /// </summary>
+        /// <param name="other"></param>
+        public override void CopyControllerSettings(TrainCar other)
+        {
+            base.CopyControllerSettings(other);
+            if (ThrottleController != null)
+                ThrottleController.SetValue(other.ThrottlePercent / 100);
+            if (DynamicBrakeController != null)
+                DynamicBrakeController.SetValue(other.DynamicBrakePercent / 100);
+            if (TrainBrakeController != null)
+                TrainBrakeController.SetValue(0);
+            if (EngineBrakeController != null)
+                EngineBrakeController.SetValue(0);
         }
 
         /// <summary>
@@ -1090,6 +1110,10 @@ namespace ORTS
             if (DynamicBrakePercent < 0)
                 return string.Empty;
             return string.Format("{0}", DynamicBrakeController.GetStatus());
+        }
+        public override bool GetCabFlipped()
+        {
+            return CabFlipped;
         }
 
         public class Alerter
