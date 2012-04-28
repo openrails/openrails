@@ -119,7 +119,7 @@ namespace ORTS
 				DebugViewer.Show();
 #endif
 
-                Viewer.Run();
+                Viewer.Run( null );
 
                 Simulator.Stop();
 
@@ -296,9 +296,8 @@ namespace ORTS
                     InitSimulator(settings, savedArgs, "Resume");
                     Simulator.Restore( inf, simulatorPathDescription, initialTileX, initialTileZ );
                     Viewer = new Viewer3D(Simulator);
-                    Viewer.Restore(inf);
+                    Viewer.Run( inf );
                 }
-                Viewer.Run();
             };
             if (Debugger.IsAttached)
             {
@@ -352,7 +351,8 @@ namespace ORTS
                     InitSimulator(settings, new[] { activities[i].FileName }, "");
                     Simulator.Start();
                     Viewer = new Viewer3D(Simulator);
-                    Viewer.Run();
+                    Viewer.Run( null );
+
                     results[i] = true;
                     Simulator.Stop();
                 };

@@ -69,6 +69,7 @@ namespace ORTS {
             public int total;
         }
         public SaveCounts savesFound;
+        private string fileFileError = "File Revision.txt error";
 
         public ActivitySaveForm( MainForm parentForm, Route selectedRoute, Activity selectedActivity ) {
             this.parentForm = parentForm;
@@ -95,19 +96,23 @@ namespace ORTS {
         /// </summary>
         /// <returns></returns>
         string GetRunActivityBuild() {
-            string build = "<unknown>";
+            string build = fileFileError;
             try {
                 using( StreamReader f = new StreamReader( "Revision.txt" ) ) {
                     var line = f.ReadLine();                    // Skip version, e.g. "$Revision: 966 $" 
                     build = f.ReadLine() + " " + f.ReadLine();  // Date and time, e.g. "30/03/2012  19:14"
                 }
-            } catch { } // Ignore errors
+            } catch { return build; } // Ignore errors
             return build.Substring( build.Length - 17 );   // Extract last 17 chars  e.g. "30/03/2012  19:14";
         }
 
         bool IsSaveValid( string saveBuild ) {
             // Compare the build in the Save from RunActivity.exe with the build of RunActivity.exe
-            saveBuild = saveBuild.Substring( saveBuild.Length - 17 );   // Extract last 17 chars  e.g. "30/03/2012  19:14"
+            if( runActivityBuild == fileFileError ) {
+                return true;    // If the Revision.txt file is missing, assume all saves are valid and 
+                                // leave it to RunActivity.exe to reject invalid saves.
+            }
+            saveBuild = saveBuild.Substring( Math.Max(0, saveBuild.Length - 17) );   // Extract last 17 chars  e.g. "30/03/2012  19:14"
             return saveBuild == runActivityBuild;
         }
     
@@ -137,8 +142,6 @@ namespace ORTS {
                 SaveFileName = Path.GetFileName( filename );
                 using( BinaryReader inf = new BinaryReader( new FileStream( filename, FileMode.Open, FileAccess.Read ) ) ) {
                     // Read in validation data.
-                    //Revision = "<unknown>";
-                    //Build = "<unknown>";
                     Revision = inf.ReadString().Replace( "\0", "" );
                     Build = inf.ReadString().Replace( "\0", "" );
                     Valid = form.IsSaveValid( Build );

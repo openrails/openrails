@@ -110,6 +110,8 @@ namespace ORTS
 
         public bool SaveActivityThumbnail;
         public string SaveActivityFileStem;
+        private BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
+
 
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
@@ -183,12 +185,13 @@ namespace ORTS
             Camera.Restore(inf);
         }
 
-        [ThreadName("Render")]
-        public void Run()
+        [ThreadName( "Render" )]
+        public void Run( BinaryReader inf )
         {
-            LoaderProcess = new LoaderProcess(this);
-            UpdaterProcess = new UpdaterProcess(this);
-            RenderProcess = new RenderProcess(this);
+            this.inf = inf;
+            LoaderProcess = new LoaderProcess( this );
+            UpdaterProcess = new UpdaterProcess( this );
+            RenderProcess = new RenderProcess( this );
             RenderProcess.Run();
         }
 
@@ -237,7 +240,10 @@ namespace ORTS
 
             SoundProcess = new SoundProcess(this);
 
-            PlayerLocomotiveViewer = World.Trains.GetViewer(PlayerLocomotive);
+            // Now everything is ready to use, changed to saved values if available. 
+            if( inf != null ) Restore( inf );
+
+            PlayerLocomotiveViewer = World.Trains.GetViewer( PlayerLocomotive );
 
             if (Camera == null)
                 FrontCamera.Activate();
