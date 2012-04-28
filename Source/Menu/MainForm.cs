@@ -368,5 +368,11 @@ namespace ORTS
                 form.ShowDialog( this );
             }
         }
+
+        private void bTesting_Click( object sender, EventArgs e ) {
+            using( TestingForm form = new TestingForm( this, SelectedRoute, SelectedActivity ) ) {
+                form.ShowDialog( this );
+            }
+        }
 	}
 }

@@ -9,7 +9,13 @@ using System.Windows.Forms;
 
 namespace ORTS
 {
-	public sealed class Task<T>
+	/// <summary>
+	/// Allows work to be done as a background task so that the form remains responsive (e.g. to a cancel or close button).
+    /// Note: The "work" part is done by the background thread and the "success" part is done by the form's thread, so
+    /// make sure the "success" part is short. 
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+    public sealed class Task<T>
 	{
 		readonly Control Control;
 		readonly Func<T> Work;
@@ -38,13 +44,15 @@ namespace ORTS
 		{
 			try
 			{
-				T result = Work();
+				// Get the new background thread to execute the "work" part.
+                T result = Work();
 				var cancelled = false;
 				lock (this)
 					cancelled = Cancelled;
 				if (!cancelled)
-					Control.Invoke(Success, result);
-			}
+                    // Get the form's thread to execute the "success" part.
+                    Control.Invoke( Success, result );
+            }
 			catch (Exception)
 			{
 			}

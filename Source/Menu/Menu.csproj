@@ -158,6 +158,9 @@
       <DependentUpon>RouteDetails.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="TestingForm.resx">
+      <DependentUpon>TestingForm.cs</DependentUpon>
+    </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -170,6 +173,12 @@
       <DependentUpon>RouteDetails.cs</DependentUpon>
     </Compile>
     <Compile Include="Task.cs" />
+    <Compile Include="TestingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TestingForm.Designer.cs">
+      <DependentUpon>TestingForm.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
@@ -192,6 +201,13 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Properties\DataSources\ActivitySaveForm.ActivitySave.datasource" />
+    <None Include="Properties\DataSources\ActivitySaveForm.ActivitySave1.datasource" />
+    <None Include="Properties\DataSources\TestLoadActivity.datasource" />
+    <None Include="Properties\DataSources\TestLoadActivity1.datasource" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -53,6 +53,7 @@
             this.groupBoxActivities = new System.Windows.Forms.GroupBox();
             this.labelActivities = new System.Windows.Forms.Label();
             this.buttonSwitchStyle = new System.Windows.Forms.Button();
+            this.bTesting = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
             this.groupBoxFolders.SuspendLayout();
             this.groupBoxRoutes.SuspendLayout();
@@ -334,11 +335,22 @@
             this.buttonSwitchStyle.Text = "Switch Menu Style";
             this.buttonSwitchStyle.Click += new System.EventHandler( this.buttonSwitchStyle_Click );
             // 
+            // bTesting
+            // 
+            this.bTesting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.bTesting.Location = new System.Drawing.Point( 496, 418 );
+            this.bTesting.Name = "bTesting";
+            this.bTesting.Size = new System.Drawing.Size( 75, 23 );
+            this.bTesting.TabIndex = 13;
+            this.bTesting.Text = "Testing";
+            this.bTesting.Click += new System.EventHandler( this.bTesting_Click );
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF( 96F, 96F );
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size( 936, 482 );
+            this.Controls.Add( this.bTesting );
             this.Controls.Add( this.groupBoxFolders );
             this.Controls.Add( this.groupBoxRoutes );
             this.Controls.Add( this.groupBoxActivities );
@@ -396,5 +408,6 @@
 		private System.Windows.Forms.Label labelRoutes;
 		private System.Windows.Forms.Label labelActivities;
 		private System.Windows.Forms.Button buttonSwitchStyle;
+        private System.Windows.Forms.Button bTesting;
     }
 }

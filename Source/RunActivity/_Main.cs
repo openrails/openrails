@@ -43,6 +43,7 @@ namespace ORTS
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator;
         private static Viewer3D Viewer;
+        public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
 #if DEBUG_VIEWER
 		private static DebugViewerForm DebugViewer;
 #endif
@@ -61,8 +62,8 @@ namespace ORTS
 
             // Look for an action to perform.
             var action = "";
-            var actions = new[] { "start", "resume", "testall" };
-            foreach (var possibleAction in actions)
+            var actions = new[] { "start", "resume", "test", "testall" };
+            foreach( var possibleAction in actions )
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction))
                     action = possibleAction;
 
@@ -77,20 +78,28 @@ namespace ORTS
                 action = "start";
 
             var settings = GetSettings(options);
-            InitLogging(settings);
 
             // Do the action specified or write out some help.
             switch (action)
             {
                 case "start":
                 case "start-profile":
-                    Start(settings, data);
+                    InitLogging( settings );
+                    Start( settings, data );
                     break;
                 case "resume":
-                    Resume(settings, data);
+                    InitLogging( settings );
+                    Resume( settings, data );
+                    break;
+                case "test":
+                    // Any log file is deleted by Menu.exe
+                    InitLogging( settings, false );
+                    // set Exit code to be returned to Menu.exe 
+                    System.Environment.ExitCode = Test( settings, data );
                     break;
                 case "testall":
-                    TestAll(data);
+                    InitLogging( settings );
+                    TestAll( data );
                     break;
                 default:
                     Console.WriteLine("Supply missing activity file name");
@@ -332,6 +341,11 @@ namespace ORTS
 
         /// <summary>
         /// Tests OR against every activity in every route in every folder.
+        /// <CJ comment>
+        /// From v974 (and probably much before) this method fails on the second activity, raising a fatal error InvalidOperationException in MSTSLocomotive.cs:DisassembleFrames()
+        /// (Tried on just the JAPAN2 activities and on just the USA2 activities.)
+        /// Superseded by the Test() method.
+        /// </CJ>
         /// </summary>
         static void TestAll(string[] args)
         {
@@ -409,6 +423,49 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Tests that RunActivity.exe can launch a specific activity or explore.
+        /// </summary>
+        public static int Test( UserSettings settings, string[] args ) {
+            int fatalErrors = 0;
+            try {
+                InitSimulator( settings, args );
+                Simulator.Start();
+                Viewer = new Viewer3D( Simulator );
+                Viewer.Run( null );
+                Simulator.Stop();
+            } catch( Exception error ) {
+                Trace.WriteLine( error );
+                if( settings.ShowErrorDialogs )
+                    MessageBox.Show( error.ToString(), Application.ProductName );
+                // Set a positive exit code so Menu.exe can pick it up.
+                fatalErrors++;
+            }
+            ExportTestSummary( fatalErrors, settings, args );
+            return fatalErrors;
+        }
+
+        static void ExportTestSummary( int fatalErrors, UserSettings settings, string[] args ) {
+            // Append to CSV file in format suitable for Excel
+            string summaryFileName = Path.Combine( Program.UserDataFolder, "TestSummary.csv" );
+            // Could fail if already opened by Excel
+            try {
+                using( StreamWriter sw = File.AppendText( summaryFileName ) ) {
+                    // Pass, Activity, Errors, Warnings, Infos, Folder, Route, Activity
+                    // Enclose strings in quotes in case they contain commas.
+                    sw.Write( (fatalErrors == 0) ? "yes" : "no" );
+                    sw.Write( String.Format( ", \"{0}\"", Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name ) );  // e.g. Auto Train with Set-Out
+                    sw.Write( String.Format( ", {0}", (ErrorCount[0] + ErrorCount[1]).ToString() ) );   // critical and error
+                    sw.Write( String.Format( ", {0}", ErrorCount[2].ToString() ) );              // warning
+                    sw.Write( String.Format( ", {0}", ErrorCount[3].ToString() ) );              // information
+                    sw.Write( String.Format( ", \"{0}\"", Simulator.RoutePath ) );               // e.g. D:\MSTS\ROUTES\USA2
+                    sw.Write( String.Format( ", \"{0}\"", Simulator.TRK.Tr_RouteFile.Name ) );   // e.g. "Marias Pass"
+                    sw.Write( String.Format( ", \"{0}\"", Path.GetFileName( args[0] ) ) );        // e.g. "autotrnsetout.act"
+                    sw.WriteLine( "" );
+                }
+            } catch { } // Ignore any errors
+        }
+
         static void InitBuildRevision()
         {
             try
@@ -444,7 +501,11 @@ namespace ORTS
             return new UserSettings(RegistryKey, options);
         }
 
-        static void InitLogging(UserSettings settings)
+        static void InitLogging( UserSettings settings ) {
+            InitLogging( settings, true );
+        }
+
+        static void InitLogging(UserSettings settings, bool newFile)
         {
             var logFileName = "";
             if (settings.Logging)
@@ -462,7 +523,7 @@ namespace ORTS
 
                     logFileName = Path.Combine(settings.LoggingPath, fileName);
                     // Ensure we start with an empty file.
-                    File.Delete(logFileName);
+                    if( newFile) File.Delete(logFileName);
                     // Make Console.Out go to the log file AND the output stream.
                     Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
                     // Make Console.Error go to the new Console.Out.

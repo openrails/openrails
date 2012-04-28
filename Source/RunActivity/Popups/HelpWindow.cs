@@ -29,7 +29,7 @@ namespace ORTS.Popups
 		public HelpWindow(WindowManager owner)
 			: base(owner, 600, 450, "Help")
 		{
-            Tabs.Add(new TabData(Tab.KeyboardShortcuts, "Key Commands", (cl) =>
+            Tabs.Add( new TabData( Tab.KeyboardShortcuts, "Key Commands", ( cl ) =>
             {
                 var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
                 var keyWidth = scrollbox.RemainingWidth / UserInput.KeyboardLayout[0].Length;

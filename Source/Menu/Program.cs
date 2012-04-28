@@ -12,7 +12,7 @@ namespace ORTS
 {
 	static class Program
 	{
-		const string RunActivityProgram = "runactivity.exe";
+        public const string RunActivityProgram = "runactivity.exe";
 
 		public static string Version;         // ie "0.6.1"
 		public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"

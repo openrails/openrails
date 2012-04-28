@@ -263,7 +263,7 @@ namespace ORTS {
         //}
 
         /// <summary>
-        /// Populates the list of ActivitySaves using a background task to keep user interface responsive.  
+        /// Populates the list of ActivitySaves.  
         /// </summary>
         void LoadActivitySaves( Route selectedRoute, Activity selectedActivity, string RunActivityBuild) {
 
