@@ -34,20 +34,21 @@
             this.lTestLoading = new System.Windows.Forms.Label();
             this.bViewSummary = new System.Windows.Forms.Button();
             this.dgvTestLoadActivities = new System.Windows.Forms.DataGridView();
+            this.bViewDetails = new System.Windows.Forms.Button();
+            this.bsTestLoadActivities = new System.Windows.Forms.BindingSource( this.components );
             this.Column1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Tested = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Passed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.activityDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.routePathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.activityFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.bsTestLoadActivities = new System.Windows.Forms.BindingSource( this.components );
-            this.bViewDetails = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTestLoadActivities)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bsTestLoadActivities)).BeginInit();
             this.SuspendLayout();
             // 
             // bClose
             // 
+            this.bClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.bClose.Location = new System.Drawing.Point( 642, 280 );
             this.bClose.Name = "bClose";
             this.bClose.Size = new System.Drawing.Size( 101, 25 );
@@ -58,6 +59,7 @@
             // 
             // bTestLoadingOfAllActivities
             // 
+            this.bTestLoadingOfAllActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.bTestLoadingOfAllActivities.Location = new System.Drawing.Point( 642, 39 );
             this.bTestLoadingOfAllActivities.Name = "bTestLoadingOfAllActivities";
             this.bTestLoadingOfAllActivities.Size = new System.Drawing.Size( 101, 25 );
@@ -68,6 +70,7 @@
             // 
             // bTestLoadingOfSelectedActivities
             // 
+            this.bTestLoadingOfSelectedActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.bTestLoadingOfSelectedActivities.Location = new System.Drawing.Point( 642, 70 );
             this.bTestLoadingOfSelectedActivities.Name = "bTestLoadingOfSelectedActivities";
             this.bTestLoadingOfSelectedActivities.Size = new System.Drawing.Size( 101, 25 );
@@ -78,6 +81,7 @@
             // 
             // bCancelTest
             // 
+            this.bCancelTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.bCancelTest.Location = new System.Drawing.Point( 642, 101 );
             this.bCancelTest.Name = "bCancelTest";
             this.bCancelTest.Size = new System.Drawing.Size( 101, 25 );
@@ -88,6 +92,7 @@
             // 
             // lTestLoading
             // 
+            this.lTestLoading.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lTestLoading.Location = new System.Drawing.Point( 639, 4 );
             this.lTestLoading.Name = "lTestLoading";
             this.lTestLoading.Size = new System.Drawing.Size( 104, 32 );
@@ -97,6 +102,7 @@
             // 
             // bViewSummary
             // 
+            this.bViewSummary.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.bViewSummary.Location = new System.Drawing.Point( 642, 132 );
             this.bViewSummary.Name = "bViewSummary";
             this.bViewSummary.Size = new System.Drawing.Size( 101, 25 );
@@ -107,6 +113,9 @@
             // 
             // dgvTestLoadActivities
             // 
+            this.dgvTestLoadActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvTestLoadActivities.AutoGenerateColumns = false;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
@@ -147,11 +156,28 @@
             this.dgvTestLoadActivities.Size = new System.Drawing.Size( 623, 293 );
             this.dgvTestLoadActivities.TabIndex = 14;
             // 
+            // bViewDetails
+            // 
+            this.bViewDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bViewDetails.Location = new System.Drawing.Point( 642, 163 );
+            this.bViewDetails.Name = "bViewDetails";
+            this.bViewDetails.Size = new System.Drawing.Size( 101, 25 );
+            this.bViewDetails.TabIndex = 15;
+            this.bViewDetails.Text = "View details";
+            this.bViewDetails.UseVisualStyleBackColor = true;
+            this.bViewDetails.Click += new System.EventHandler( this.bViewDetails_Click );
+            // 
+            // bsTestLoadActivities
+            // 
+            this.bsTestLoadActivities.DataSource = typeof( ORTS.TestLoadActivity );
+            this.bsTestLoadActivities.CurrentChanged += new System.EventHandler( this.bsTestLoadActivities_CurrentChanged );
+            // 
             // Column1
             // 
             this.Column1.DataPropertyName = "ToTest";
             this.Column1.HeaderText = "To Test";
             this.Column1.Name = "Column1";
+            this.Column1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             this.Column1.Visible = false;
             // 
             // Tested
@@ -159,6 +185,7 @@
             this.Tested.DataPropertyName = "Tested";
             this.Tested.HeaderText = "Tested";
             this.Tested.Name = "Tested";
+            this.Tested.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             this.Tested.Width = 50;
             // 
             // Passed
@@ -166,6 +193,7 @@
             this.Passed.DataPropertyName = "Passed";
             this.Passed.HeaderText = "Passed";
             this.Passed.Name = "Passed";
+            this.Passed.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             this.Passed.Width = 50;
             // 
             // activityDataGridViewTextBoxColumn
@@ -188,21 +216,6 @@
             this.activityFileNameDataGridViewTextBoxColumn.HeaderText = "ActivityFileName";
             this.activityFileNameDataGridViewTextBoxColumn.Name = "activityFileNameDataGridViewTextBoxColumn";
             this.activityFileNameDataGridViewTextBoxColumn.Width = 200;
-            // 
-            // bsTestLoadActivities
-            // 
-            this.bsTestLoadActivities.DataSource = typeof( ORTS.TestLoadActivity );
-            this.bsTestLoadActivities.CurrentChanged += new System.EventHandler( this.bsTestLoadActivities_CurrentChanged );
-            // 
-            // bViewDetails
-            // 
-            this.bViewDetails.Location = new System.Drawing.Point( 642, 163 );
-            this.bViewDetails.Name = "bViewDetails";
-            this.bViewDetails.Size = new System.Drawing.Size( 101, 25 );
-            this.bViewDetails.TabIndex = 15;
-            this.bViewDetails.Text = "View details";
-            this.bViewDetails.UseVisualStyleBackColor = true;
-            this.bViewDetails.Click += new System.EventHandler( this.bViewDetails_Click );
             // 
             // TestingForm
             // 

@@ -31,6 +31,13 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dGVActivitySave = new System.Windows.Forms.DataGridView();
+            this.SaveFileName = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.dateTimeSavedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.PathDescription = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.gameTimeElapsedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.MetresTravelled = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.TileXZ = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Valid = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.bSActivitySave = new System.Windows.Forms.BindingSource( this.components );
             this.bResume = new System.Windows.Forms.Button();
             this.bDeleteSave = new System.Windows.Forms.Button();
@@ -43,13 +50,6 @@
             this.tbActivity = new System.Windows.Forms.TextBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip( this.components );
             this.bClose = new System.Windows.Forms.Button();
-            this.SaveFileName = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.dateTimeSavedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.PathDescription = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.gameTimeElapsedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.MetresTravelled = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.TileXZ = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Valid = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dGVActivitySave)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bSActivitySave)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -60,6 +60,9 @@
             // 
             this.dGVActivitySave.AllowUserToAddRows = false;
             this.dGVActivitySave.AllowUserToOrderColumns = true;
+            this.dGVActivitySave.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.dGVActivitySave.AutoGenerateColumns = false;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
@@ -103,113 +106,6 @@
             this.dGVActivitySave.TabIndex = 0;
             this.dGVActivitySave.DoubleClick += new System.EventHandler( this.dGVActivitySave_DoubleClick );
             this.dGVActivitySave.SelectionChanged += new System.EventHandler( this.dGVActivitySave_SelectionChanged );
-            // 
-            // bSActivitySave
-            // 
-            this.bSActivitySave.DataSource = typeof( ORTS.ActivitySaveForm.ActivitySave );
-            // 
-            // bResume
-            // 
-            this.bResume.BackColor = System.Drawing.Color.FromArgb( ((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))) );
-            this.bResume.Location = new System.Drawing.Point( 535, 191 );
-            this.bResume.Name = "bResume";
-            this.bResume.Size = new System.Drawing.Size( 101, 52 );
-            this.bResume.TabIndex = 1;
-            this.bResume.Text = "Resume from save";
-            this.bResume.UseVisualStyleBackColor = false;
-            this.bResume.Click += new System.EventHandler( this.bResume_Click );
-            // 
-            // bDeleteSave
-            // 
-            this.bDeleteSave.Location = new System.Drawing.Point( 642, 191 );
-            this.bDeleteSave.Name = "bDeleteSave";
-            this.bDeleteSave.Size = new System.Drawing.Size( 100, 23 );
-            this.bDeleteSave.TabIndex = 2;
-            this.bDeleteSave.Text = "Delete save";
-            this.toolTip1.SetToolTip( this.bDeleteSave, "Deletes the currently selected save or saves." );
-            this.bDeleteSave.UseVisualStyleBackColor = true;
-            this.bDeleteSave.Click += new System.EventHandler( this.bDeleteSave_Click );
-            // 
-            // bUndeleteSave
-            // 
-            this.bUndeleteSave.Location = new System.Drawing.Point( 642, 220 );
-            this.bUndeleteSave.Name = "bUndeleteSave";
-            this.bUndeleteSave.Size = new System.Drawing.Size( 100, 23 );
-            this.bUndeleteSave.TabIndex = 3;
-            this.bUndeleteSave.Text = "Undelete saves";
-            this.toolTip1.SetToolTip( this.bUndeleteSave, "Restores all saves deleted in this session." );
-            this.bUndeleteSave.UseVisualStyleBackColor = true;
-            this.bUndeleteSave.Click += new System.EventHandler( this.bUndeleteSave_Click );
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add( this.lSaveTotals );
-            this.groupBox1.Controls.Add( this.label1 );
-            this.groupBox1.Controls.Add( this.bDeleteInvalidSaves );
-            this.groupBox1.Location = new System.Drawing.Point( 12, 249 );
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size( 507, 57 );
-            this.groupBox1.TabIndex = 4;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Invalid Saves";
-            // 
-            // lSaveTotals
-            // 
-            this.lSaveTotals.AutoSize = true;
-            this.lSaveTotals.Location = new System.Drawing.Point( 9, 31 );
-            this.lSaveTotals.Name = "lSaveTotals";
-            this.lSaveTotals.Size = new System.Drawing.Size( 30, 13 );
-            this.lSaveTotals.TabIndex = 7;
-            this.lSaveTotals.Text = "? / ?";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point( 6, 18 );
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size( 361, 26 );
-            this.label1.TabIndex = 0;
-            this.label1.Text = "To avoid crashes, new versions of Open Rails will invalidate existing saves.\r\n   " +
-                "           saves are no longer valid.";
-            // 
-            // bDeleteInvalidSaves
-            // 
-            this.bDeleteInvalidSaves.Location = new System.Drawing.Point( 386, 12 );
-            this.bDeleteInvalidSaves.Name = "bDeleteInvalidSaves";
-            this.bDeleteInvalidSaves.Size = new System.Drawing.Size( 105, 39 );
-            this.bDeleteInvalidSaves.TabIndex = 5;
-            this.bDeleteInvalidSaves.Text = "Delete invalid saves";
-            this.bDeleteInvalidSaves.UseVisualStyleBackColor = true;
-            this.bDeleteInvalidSaves.Click += new System.EventHandler( this.bDeleteInvalidSaves_Click );
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.Location = new System.Drawing.Point( 535, 9 );
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size( 206, 175 );
-            this.pictureBox1.TabIndex = 5;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler( this.pictureBox1_Click );
-            // 
-            // tbActivity
-            // 
-            this.tbActivity.Location = new System.Drawing.Point( 13, 9 );
-            this.tbActivity.Name = "tbActivity";
-            this.tbActivity.ReadOnly = true;
-            this.tbActivity.Size = new System.Drawing.Size( 506, 20 );
-            this.tbActivity.TabIndex = 6;
-            this.tbActivity.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // bClose
-            // 
-            this.bClose.Location = new System.Drawing.Point( 535, 250 );
-            this.bClose.Name = "bClose";
-            this.bClose.Size = new System.Drawing.Size( 101, 25 );
-            this.bClose.TabIndex = 7;
-            this.bClose.Text = "Close";
-            this.bClose.UseVisualStyleBackColor = true;
-            this.bClose.Click += new System.EventHandler( this.bClose_Click );
             // 
             // SaveFileName
             // 
@@ -278,6 +174,118 @@
             this.Valid.ReadOnly = true;
             this.Valid.ToolTipText = "Saves cease to be valid after upgrading to a new version";
             this.Valid.Width = 40;
+            // 
+            // bSActivitySave
+            // 
+            this.bSActivitySave.DataSource = typeof( ORTS.ActivitySaveForm.ActivitySave );
+            // 
+            // bResume
+            // 
+            this.bResume.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bResume.BackColor = System.Drawing.Color.FromArgb( ((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))) );
+            this.bResume.Location = new System.Drawing.Point( 535, 191 );
+            this.bResume.Name = "bResume";
+            this.bResume.Size = new System.Drawing.Size( 101, 52 );
+            this.bResume.TabIndex = 1;
+            this.bResume.Text = "Resume from save";
+            this.bResume.UseVisualStyleBackColor = false;
+            this.bResume.Click += new System.EventHandler( this.bResume_Click );
+            // 
+            // bDeleteSave
+            // 
+            this.bDeleteSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bDeleteSave.Location = new System.Drawing.Point( 642, 191 );
+            this.bDeleteSave.Name = "bDeleteSave";
+            this.bDeleteSave.Size = new System.Drawing.Size( 100, 23 );
+            this.bDeleteSave.TabIndex = 2;
+            this.bDeleteSave.Text = "Delete save";
+            this.toolTip1.SetToolTip( this.bDeleteSave, "Deletes the currently selected save or saves." );
+            this.bDeleteSave.UseVisualStyleBackColor = true;
+            this.bDeleteSave.Click += new System.EventHandler( this.bDeleteSave_Click );
+            // 
+            // bUndeleteSave
+            // 
+            this.bUndeleteSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bUndeleteSave.Location = new System.Drawing.Point( 642, 220 );
+            this.bUndeleteSave.Name = "bUndeleteSave";
+            this.bUndeleteSave.Size = new System.Drawing.Size( 100, 23 );
+            this.bUndeleteSave.TabIndex = 3;
+            this.bUndeleteSave.Text = "Undelete saves";
+            this.toolTip1.SetToolTip( this.bUndeleteSave, "Restores all saves deleted in this session." );
+            this.bUndeleteSave.UseVisualStyleBackColor = true;
+            this.bUndeleteSave.Click += new System.EventHandler( this.bUndeleteSave_Click );
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Controls.Add( this.lSaveTotals );
+            this.groupBox1.Controls.Add( this.label1 );
+            this.groupBox1.Controls.Add( this.bDeleteInvalidSaves );
+            this.groupBox1.Location = new System.Drawing.Point( 12, 249 );
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size( 507, 57 );
+            this.groupBox1.TabIndex = 4;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Invalid Saves";
+            // 
+            // lSaveTotals
+            // 
+            this.lSaveTotals.AutoSize = true;
+            this.lSaveTotals.Location = new System.Drawing.Point( 9, 31 );
+            this.lSaveTotals.Name = "lSaveTotals";
+            this.lSaveTotals.Size = new System.Drawing.Size( 30, 13 );
+            this.lSaveTotals.TabIndex = 7;
+            this.lSaveTotals.Text = "? / ?";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point( 6, 18 );
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size( 361, 26 );
+            this.label1.TabIndex = 0;
+            this.label1.Text = "To avoid crashes, new versions of Open Rails will invalidate existing saves.\r\n   " +
+                "           saves are no longer valid.";
+            // 
+            // bDeleteInvalidSaves
+            // 
+            this.bDeleteInvalidSaves.Location = new System.Drawing.Point( 386, 12 );
+            this.bDeleteInvalidSaves.Name = "bDeleteInvalidSaves";
+            this.bDeleteInvalidSaves.Size = new System.Drawing.Size( 105, 39 );
+            this.bDeleteInvalidSaves.TabIndex = 5;
+            this.bDeleteInvalidSaves.Text = "Delete invalid saves";
+            this.bDeleteInvalidSaves.UseVisualStyleBackColor = true;
+            this.bDeleteInvalidSaves.Click += new System.EventHandler( this.bDeleteInvalidSaves_Click );
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox1.Location = new System.Drawing.Point( 535, 9 );
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size( 206, 175 );
+            this.pictureBox1.TabIndex = 5;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler( this.pictureBox1_Click );
+            // 
+            // tbActivity
+            // 
+            this.tbActivity.Location = new System.Drawing.Point( 13, 9 );
+            this.tbActivity.Name = "tbActivity";
+            this.tbActivity.ReadOnly = true;
+            this.tbActivity.Size = new System.Drawing.Size( 506, 20 );
+            this.tbActivity.TabIndex = 6;
+            this.tbActivity.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // bClose
+            // 
+            this.bClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.bClose.Location = new System.Drawing.Point( 640, 275 );
+            this.bClose.Name = "bClose";
+            this.bClose.Size = new System.Drawing.Size( 101, 25 );
+            this.bClose.TabIndex = 7;
+            this.bClose.Text = "Close";
+            this.bClose.UseVisualStyleBackColor = true;
+            this.bClose.Click += new System.EventHandler( this.bClose_Click );
             // 
             // ActivitySaveForm
             // 

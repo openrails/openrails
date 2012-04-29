@@ -66,6 +66,10 @@ namespace ORTS {
             bCancelTest.Enabled = false;
             bViewSummary.Enabled = System.IO.File.Exists( summaryFileName );
             bViewDetails.Enabled = System.IO.File.Exists( logFileName );
+
+            //dgvTestLoadActivities.Columns[cActivityName].SortMode = DataGridViewColumnSortMode.Automatic;
+            //dgvTestLoadActivities.Columns[cRoutePath].SortMode = DataGridViewColumnSortMode.Automatic;
+            //dgvTestLoadActivities.Columns[cActivityFileName].SortMode = DataGridViewColumnSortMode.Automatic;
         }
 
         private void bClose_Click( object sender, EventArgs e ) {
@@ -124,6 +128,8 @@ namespace ORTS {
                     sw.Write( String.Format( ", Route Path" ) );    // e.g. D:\MSTS\ROUTES\USA2
                     sw.Write( String.Format( ", Route Name" ) );    // e.g. "Marias Pass"
                     sw.Write( String.Format( ", Activity File" ) ); // e.g. "autotrnsetout.act"
+                    sw.Write( String.Format( ", Loading Time (s)" ) );  // e.g. 45 secs
+                    sw.Write( String.Format( ", Rate (frames/s)" ) );   // e.g. 20 frames/sec
                     sw.WriteLine( "" );
                 }
             } catch { } // Ignore any errors

@@ -428,12 +428,16 @@ namespace ORTS
         /// </summary>
         public static int Test( UserSettings settings, string[] args ) {
             int fatalErrors = 0;
+            DateTime StartTime = DateTime.Now;
+            DateTime EndTime = DateTime.Now;
             try {
                 InitSimulator( settings, args );
+                StartTime = DateTime.Now;
                 Simulator.Start();
                 Viewer = new Viewer3D( Simulator );
                 Viewer.Run( null );
                 Simulator.Stop();
+                EndTime = DateTime.Now;
             } catch( Exception error ) {
                 Trace.WriteLine( error );
                 if( settings.ShowErrorDialogs )
@@ -441,26 +445,29 @@ namespace ORTS
                 // Set a positive exit code so Menu.exe can pick it up.
                 fatalErrors++;
             }
-            ExportTestSummary( fatalErrors, settings, args );
+            ExportTestSummary( fatalErrors, settings, args, EndTime - StartTime );
             return fatalErrors;
         }
 
-        static void ExportTestSummary( int fatalErrors, UserSettings settings, string[] args ) {
+        static void ExportTestSummary( int fatalErrors, UserSettings settings, string[] args, TimeSpan duration ) {
             // Append to CSV file in format suitable for Excel
             string summaryFileName = Path.Combine( Program.UserDataFolder, "TestSummary.csv" );
             // Could fail if already opened by Excel
             try {
                 using( StreamWriter sw = File.AppendText( summaryFileName ) ) {
                     // Pass, Activity, Errors, Warnings, Infos, Folder, Route, Activity
-                    // Enclose strings in quotes in case they contain commas.
+                    // Excel doesn't handle CSV with commas embedded in text (although Access does :{ )
+                    // Simplest solution is to change embedded "," to ";"
                     sw.Write( (fatalErrors == 0) ? "yes" : "no" );
-                    sw.Write( String.Format( ", \"{0}\"", Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name ) );  // e.g. Auto Train with Set-Out
+                    sw.Write( String.Format( ", {0}", Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.Replace(",", ";") ) );  // e.g. Auto Train with Set-Out
                     sw.Write( String.Format( ", {0}", (ErrorCount[0] + ErrorCount[1]).ToString() ) );   // critical and error
                     sw.Write( String.Format( ", {0}", ErrorCount[2].ToString() ) );              // warning
                     sw.Write( String.Format( ", {0}", ErrorCount[3].ToString() ) );              // information
-                    sw.Write( String.Format( ", \"{0}\"", Simulator.RoutePath ) );               // e.g. D:\MSTS\ROUTES\USA2
-                    sw.Write( String.Format( ", \"{0}\"", Simulator.TRK.Tr_RouteFile.Name ) );   // e.g. "Marias Pass"
-                    sw.Write( String.Format( ", \"{0}\"", Path.GetFileName( args[0] ) ) );        // e.g. "autotrnsetout.act"
+                    sw.Write( String.Format( ", {0}", Simulator.RoutePath.Replace( ",", ";" ) ) );               // e.g. D:\MSTS\ROUTES\USA2
+                    sw.Write( String.Format( ", {0}", Simulator.TRK.Tr_RouteFile.Name.Replace( ",", ";" ) ) );   // e.g. "Marias Pass"
+                    sw.Write( String.Format( ", {0}", Path.GetFileName( args[0] ).Replace( ",", ";" ) ) );        // e.g. "autotrnsetout.act"
+                    sw.Write( String.Format( ", {0}", duration.Seconds ) );
+                    sw.Write( String.Format( ", {0:0}", Viewer.RenderProcess.FrameRate.SmoothedValue ) );
                     sw.WriteLine( "" );
                 }
             } catch { } // Ignore any errors
