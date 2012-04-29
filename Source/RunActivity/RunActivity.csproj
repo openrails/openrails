@@ -245,6 +245,7 @@
     <Compile Include="Popups\MessagesWindow.cs" />
     <Compile Include="Popups\NextStationWindow.cs" />
     <Compile Include="Popups\SwitchWindow.cs" />
+    <Compile Include="Popups\TracksDebugWindow.cs" />
     <Compile Include="Popups\WindowControls.cs" />
     <Compile Include="Popups\WindowManager.cs" />
     <Compile Include="Popups\TrackMonitorWindow.cs" />

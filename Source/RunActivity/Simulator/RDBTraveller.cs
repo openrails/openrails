@@ -484,7 +484,32 @@ namespace ORTS
 			return distanceToGo;
 		}
 
-		// If wx,wz is in this curved section, init the traveller to this location
+        /// <summary>
+        /// Move the traveller along the track by the specified distance within the current track section only.
+        /// </summary>
+        /// <param name="distanceToGo">The distance to travel along the track section. Positive values travel in the direction of the traveller and negative values in the opposite direction.</param>
+        /// <returns>The remaining distance if the traveller reached the end of the track section.</returns>
+        public float MoveInSection(float distanceToGo)
+        {
+            bool negative = distanceToGo < 0;
+            if (negative)
+            {
+                ReverseDirection();
+                distanceToGo *= -1;
+            }
+
+            distanceToGo = MoveInSegment(distanceToGo);
+
+            if (negative)
+            {
+                ReverseDirection();
+                distanceToGo *= -1;
+            }
+
+            return distanceToGo;
+        }
+
+        // If wx,wz is in this curved section, init the traveller to this location
 		// Initial direction is forward
 		// otherwise return false
 		bool CurvedSectionInit(int tileX, int tileZ, float wx, float wz)
@@ -809,7 +834,7 @@ namespace ORTS
 		/// in the current direction of travel.
 		/// </summary>
 		/// <returns></returns>
-		bool NextTrVectorSection()
+		public bool NextTrVectorSection()
 		{
 			if (pDirection > 0)   // if we are moving forward
 			{

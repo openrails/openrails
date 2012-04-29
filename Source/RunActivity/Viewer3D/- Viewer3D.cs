@@ -65,7 +65,6 @@ namespace ORTS
         public double RealTime = 0;
         InfoDisplay InfoDisplay;
         public WindowManager WindowManager = null;
-        public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
         public MessagesWindow MessagesWindow; // Game message window (special, always visible)
         public PauseWindow PauseWindow; // Game paused window (special)
         public HelpWindow HelpWindow; // F1 window
@@ -74,9 +73,11 @@ namespace ORTS
         public SwitchWindow SwitchWindow; // F8 window
         public TrainOperationsWindow TrainOperationsWindow; // F9 window
         public NextStationWindow NextStationWindow; // F10 window
-        public DriverAidWindow DriverAidWindow; // Alt-F11 window
         public CompassWindow CompassWindow; // 0 window
         public ActivityWindow ActivityWindow; // pop-up window
+        public DriverAidWindow DriverAidWindow; // Alt-F11 window
+        public TracksDebugWindow TracksDebugWindow; // Control-Alt-F6
+        public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
         // Route Information
         public Tiles Tiles = null;
         public ENVFile ENVFile;
@@ -222,7 +223,6 @@ namespace ORTS
             InfoDisplay = new InfoDisplay(this);
 
             WindowManager = new WindowManager(this);
-            SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
             MessagesWindow = new MessagesWindow(WindowManager);
             PauseWindow = new PauseWindow(WindowManager);
             HelpWindow = new HelpWindow(WindowManager);
@@ -231,9 +231,11 @@ namespace ORTS
             SwitchWindow = new SwitchWindow(WindowManager);
             TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
             NextStationWindow = new NextStationWindow(WindowManager);
-            DriverAidWindow = new DriverAidWindow(WindowManager);
             CompassWindow = new CompassWindow(WindowManager);
             ActivityWindow = new ActivityWindow(WindowManager);
+            DriverAidWindow = new DriverAidWindow(WindowManager);
+            TracksDebugWindow = new TracksDebugWindow(WindowManager);
+            SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
             WindowManager.Initialize();
 
             World = new World(this);
@@ -391,6 +393,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayCompassWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugDriverAid)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) DriverAidWindow.TabAction(); else DriverAidWindow.Visible = !DriverAidWindow.Visible;
+            if (UserInput.IsPressed(UserCommands.DebugTracks)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
 
             if (UserInput.IsPressed(UserCommands.GameLocomotiveSwitch))

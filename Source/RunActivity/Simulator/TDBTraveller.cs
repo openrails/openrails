@@ -1010,7 +1010,7 @@ namespace ORTS
         /// in the current direction of travel.
         /// </summary>
         /// <returns></returns>
-        bool NextTrVectorSection()
+        public bool NextTrVectorSection()
         {
             if (pDirection > 0)   // if we are moving forward
             {

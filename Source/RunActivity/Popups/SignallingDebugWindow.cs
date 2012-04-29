@@ -57,10 +57,6 @@ namespace ORTS
             if (updateFull)
             {
                 var primitives = new List<DispatcherPrimitive>(Primitives.Count);
-                var camera = Owner.Viewer.Camera;
-                Func<WorldLocation, Vector3> Normalize = (location) => new Vector3(location.Location.X + (location.TileX - camera.TileX) * 2048, location.Location.Y, -location.Location.Z - (location.TileZ - camera.TileZ) * 2048);
-                Func<Vector3, Vector3> Project3D = (position) => Viewport.Project(position, camera.XNAProjection, camera.XNAView, Matrix.Identity);
-                Func<Vector3, Vector2> Flatten = (position) => new Vector2(position.X, position.Y);
 
                 foreach (var cache in Cache.Values)
                     cache.Age++;
