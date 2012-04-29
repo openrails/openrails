@@ -94,6 +94,8 @@ namespace ORTS
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
+            outf.Write(PantographFirstUp);
+            outf.Write(PowerOn);
             outf.Write(Pan);
             base.Save(outf);
         }
@@ -104,6 +106,8 @@ namespace ORTS
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
+            PantographFirstUp = inf.ReadBoolean();
+            PowerOn = inf.ReadBoolean();
             if (inf.ReadBoolean()) SignalEvent(EventID.PantographUp);
             base.Restore(inf);
         }
