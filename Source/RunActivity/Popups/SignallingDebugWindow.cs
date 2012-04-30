@@ -267,11 +267,14 @@ namespace ORTS
                 if (signal.GetAspect() == SignalHead.SIGASP.UNKNOWN)
                     break;
                 var signalDistance = signal.DistanceToSignal(trackNode);
-                distance += signalDistance;
-                trackNode.Move(signalDistance);
-                if (trackNode.TrackNodeIndex != nodeIndex)
-                    break;
-                rv.Objects.Add(new TrackSectionSignal() { Distance = distance, Signal = signal });
+                if (signalDistance > 0)
+                {
+                    distance += signalDistance;
+                    trackNode.Move(signalDistance);
+                    if (trackNode.TrackNodeIndex != nodeIndex)
+                        break;
+                    rv.Objects.Add(new TrackSectionSignal() { Distance = distance, Signal = signal });
+                }
                 // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
                 trackNode.Move(0.0001f);
             }
