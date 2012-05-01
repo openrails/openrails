@@ -6,6 +6,7 @@
 /// This module parses the sigcfg file and builds an object model based on signal details
 /// 
 /// Author: Laurie Heath
+/// Updates : Rob Roeterdink
 /// 
 
 using System;
@@ -207,6 +208,8 @@ namespace MSTS
 			Repeater,
 			Shunting,
 			Info,
+			Speed,
+			Alert,
 		}
 
 		public readonly string Name;
@@ -219,6 +222,20 @@ namespace MSTS
 		public IList<SignalAspect> Aspects;
 		public uint NumClearAhead;
 		public float SemaphoreInfo = -1; //[Rob Roeterdink] default -1 as 0 is active value
+
+	public SignalType(FnTypes reqType, ORTS.SignalHead.SIGASP reqAspect)
+	     /// <summary>
+	     /// constructor for dummy entries
+	     /// </summary>
+	{
+		FnType = reqType;
+		Name   = "UNDEFINED";
+		Semaphore = false;
+		DrawStates = new Dictionary<string, SignalDrawState> ();
+		DrawStates.Add("CLEAR",new SignalDrawState("CLEAR",1));
+		Aspects = new List <SignalAspect> ();
+		Aspects.Add(new SignalAspect(reqAspect, "CLEAR")); 
+	}
 
         public SignalType(STFReader stf)
         {
@@ -390,8 +407,7 @@ namespace MSTS
         }
 
         /// <summary>
-		/// This method returns the least speed limit linked to the aspect
-		/// [Rob Roeterdink] added for future speed limit processing
+		/// This method returns the lowest speed limit linked to the aspect
         /// </summary>
         public float GetSpeedLimitMpS(SignalHead.SIGASP aspect)
         {
@@ -449,6 +465,16 @@ namespace MSTS
 		public readonly string Name;
 		public IList<SignalDrawLight> DrawLights;
         public float SemaphorePos;
+
+	public SignalDrawState(string reqName, int reqIndex)
+	     /// <summary>
+	     /// constructor for dummy entries
+	     /// </summary>
+	{
+		Index = reqIndex;
+		Name  = String.Copy(reqName);
+		DrawLights = null;
+	}
 
         public SignalDrawState(STFReader stf)
         {
@@ -512,6 +538,17 @@ namespace MSTS
 		public readonly string DrawStateName;
 		public float SpeedMpS;  // Speed limit for this aspect. -1 if track speed is to be used
 		public bool Asap;  // Set to true if SignalFlags ASAP option specified
+
+	public SignalAspect(ORTS.SignalHead.SIGASP reqAspect, string reqName)
+	     /// <summary>
+	     /// constructor for dummy entries
+	     /// </summary>
+	{
+		Aspect = reqAspect;
+		DrawStateName = String.Copy(reqName);
+		SpeedMpS = -1;
+		Asap = false;
+	}
 
         public SignalAspect(STFReader stf)
         {

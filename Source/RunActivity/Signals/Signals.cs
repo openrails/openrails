@@ -1,4 +1,7 @@
-﻿
+﻿// Debug flags :
+// #define DEBUG_PRINT
+// prints details of the derived signal structure
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -77,64 +80,63 @@ namespace ORTS
   // Add World info
 
                                 AddWorldInfo();
-
-  // Build Signal Graph
-
                         }
 
 
-  //                    for (int isignal=0; isignal < signalObjects.Length-1; isignal++)
-  //                    {
-  //                            SignalObject singleSignal = signalObjects[isignal];
-  //                            if (singleSignal == null)
-  //                            {
-  //                                    File.AppendAllText(@"SignalObjects.txt","\nInvalid entry : "+isignal.ToString()+"\n");
-  //                            }
-  //                            else
-  //                            {
-  //                                    File.AppendAllText(@"SignalObjects.txt","\nSignal ref item     : "+singleSignal.thisRef.ToString()+"\n");
-  //                                    File.AppendAllText(@"SignalObjects.txt","Track node + index  : "+singleSignal.trackNode.ToString()+" + "+
-  //                                                                                                    singleSignal.trRefIndex.ToString()+"\n");
+#if DEBUG_PRINT
+                        for (int isignal=0; isignal < signalObjects.Length-1; isignal++)
+                        {
+                                SignalObject singleSignal = signalObjects[isignal];
+                                if (singleSignal == null)
+                                {
+                                        File.AppendAllText(@"SignalObjects.txt","\nInvalid entry : "+isignal.ToString()+"\n");
+                                }
+                                else
+                                {
+                                        File.AppendAllText(@"SignalObjects.txt","\nSignal ref item     : "+singleSignal.thisRef.ToString()+"\n");
+                                        File.AppendAllText(@"SignalObjects.txt","Track node + index  : "+singleSignal.trackNode.ToString()+" + "+
+                                                                                                        singleSignal.trRefIndex.ToString()+"\n");
 
-  //                                    foreach (SignalHead thisHead in singleSignal.SignalHeads)
-  //                                    {
-  //                                       File.AppendAllText(@"SignalObjects.txt","Type name           : "+thisHead.signalType.Name.ToString()+"\n");
-  //                                       File.AppendAllText(@"SignalObjects.txt","Type                : "+thisHead.signalType.FnType.ToString()+"\n");
-  //                                       File.AppendAllText(@"SignalObjects.txt","item Index          : "+thisHead.trItemIndex.ToString()+"\n");
-  //                                       File.AppendAllText(@"SignalObjects.txt","TDB  Index          : "+thisHead.TDBIndex.ToString()+"\n");
-  //                                    }
-  //                            }
-  //                    }
+                                        foreach (SignalHead thisHead in singleSignal.SignalHeads)
+                                        {
+                                           File.AppendAllText(@"SignalObjects.txt","Type name           : "+thisHead.signalType.Name.ToString()+"\n");
+                                           File.AppendAllText(@"SignalObjects.txt","Type                : "+thisHead.signalType.FnType.ToString()+"\n");
+                                           File.AppendAllText(@"SignalObjects.txt","item Index          : "+thisHead.trItemIndex.ToString()+"\n");
+                                           File.AppendAllText(@"SignalObjects.txt","TDB  Index          : "+thisHead.TDBIndex.ToString()+"\n");
+                                        }
+                                }
+                        }
 
-  //                    foreach (KeyValuePair <string, MSTS.SignalShape> sshape in sigcfg.SignalShapes)
-  //                    {
-  //                            File.AppendAllText(@"SignalShapes.txt","\n==========================================\n");
-  //                            File.AppendAllText(@"SignalShapes.txt","Shape key   : "+sshape.Key.ToString()+"\n");
-  //                            MSTS.SignalShape thisshape = sshape.Value;
-  //                            File.AppendAllText(@"SignalShapes.txt","Filename    : "+thisshape.ShapeFileName.ToString()+"\n");
-  //                            File.AppendAllText(@"SignalShapes.txt","Description : "+thisshape.Description.ToString()+"\n");
+                        foreach (KeyValuePair <string, MSTS.SignalShape> sshape in sigcfg.SignalShapes)
+                        {
+                                File.AppendAllText(@"SignalShapes.txt","\n==========================================\n");
+                                File.AppendAllText(@"SignalShapes.txt","Shape key   : "+sshape.Key.ToString()+"\n");
+                                MSTS.SignalShape thisshape = sshape.Value;
+                                File.AppendAllText(@"SignalShapes.txt","Filename    : "+thisshape.ShapeFileName.ToString()+"\n");
+                                File.AppendAllText(@"SignalShapes.txt","Description : "+thisshape.Description.ToString()+"\n");
 
-  //                            foreach (MSTS.SignalShape.SignalSubObj ssobj in thisshape.SignalSubObjs)
-  //                            {
-  //                               File.AppendAllText(@"SignalShapes.txt","\nSubobj Index : "+ssobj.Index.ToString()+"\n");
-  //                               File.AppendAllText(@"SignalShapes.txt","Matrix       : "+ssobj.MatrixName.ToString()+"\n");
-  //                               File.AppendAllText(@"SignalShapes.txt","Description  : "+ssobj.Description.ToString()+"\n");
-  //                               File.AppendAllText(@"SignalShapes.txt","Sub Type (I) : "+ssobj.SignalSubType.ToString()+"\n");
-  //                               if (ssobj.SignalSubSignalType != null)
-  //                               {
-  //                                  File.AppendAllText(@"SignalShapes.txt","Sub Type (C) : "+ssobj.SignalSubSignalType.ToString()+"\n");
-  //                               }
-  //                               else
-  //                               {
-  //                                  File.AppendAllText(@"SignalShapes.txt","Sub Type (C) : not set \n");
-  //                               }
-  //                               File.AppendAllText(@"SignalShapes.txt","Optional     : "+ssobj.Optional.ToString()+"\n");
-  //                               File.AppendAllText(@"SignalShapes.txt","Default      : "+ssobj.Default.ToString()+"\n");
-  //                               File.AppendAllText(@"SignalShapes.txt","BackFacing   : "+ssobj.BackFacing.ToString()+"\n");
-  //                               File.AppendAllText(@"SignalShapes.txt","JunctionLink : "+ssobj.JunctionLink.ToString()+"\n");
-  //                            }
-  //                            File.AppendAllText(@"SignalShapes.txt","\n==========================================\n");
-  //                    }
+                                foreach (MSTS.SignalShape.SignalSubObj ssobj in thisshape.SignalSubObjs)
+                                {
+                                   File.AppendAllText(@"SignalShapes.txt","\nSubobj Index : "+ssobj.Index.ToString()+"\n");
+                                   File.AppendAllText(@"SignalShapes.txt","Matrix       : "+ssobj.MatrixName.ToString()+"\n");
+                                   File.AppendAllText(@"SignalShapes.txt","Description  : "+ssobj.Description.ToString()+"\n");
+                                   File.AppendAllText(@"SignalShapes.txt","Sub Type (I) : "+ssobj.SignalSubType.ToString()+"\n");
+                                   if (ssobj.SignalSubSignalType != null)
+                                   {
+                                      File.AppendAllText(@"SignalShapes.txt","Sub Type (C) : "+ssobj.SignalSubSignalType.ToString()+"\n");
+                                   }
+                                   else
+                                   {
+                                      File.AppendAllText(@"SignalShapes.txt","Sub Type (C) : not set \n");
+                                   }
+                                   File.AppendAllText(@"SignalShapes.txt","Optional     : "+ssobj.Optional.ToString()+"\n");
+                                   File.AppendAllText(@"SignalShapes.txt","Default      : "+ssobj.Default.ToString()+"\n");
+                                   File.AppendAllText(@"SignalShapes.txt","BackFacing   : "+ssobj.BackFacing.ToString()+"\n");
+                                   File.AppendAllText(@"SignalShapes.txt","JunctionLink : "+ssobj.JunctionLink.ToString()+"\n");
+                                }
+                                File.AppendAllText(@"SignalShapes.txt","\n==========================================\n");
+                        }
+#endif
 
   // Clear world lists to save memory
 
@@ -188,7 +190,7 @@ namespace ORTS
                         Trace.Write("\n");
                         string WFilePath = simulator.RoutePath + @"\WORLD\";
                         string [] FileEntries = Directory.GetFiles(WFilePath);
-
+ 
                         List<TokenID> Tokens = new List<TokenID> ();
                         Tokens.Add(TokenID.Signal);
 
@@ -207,7 +209,7 @@ namespace ORTS
                                 {
                                             int p = fileName.ToUpper().LastIndexOf("\\WORLD\\W");
                                             int TileX = int.Parse(fileName.Substring(p + 8, 7));
-                                        int TileZ = int.Parse(fileName.Substring(p + 15, 7));
+                                            int TileZ = int.Parse(fileName.Substring(p + 15, 7));
                                 }
                                 catch (Exception)
                                 {
@@ -257,23 +259,25 @@ namespace ORTS
                         }
                         Trace.Write("\n");
 
-  //                    foreach ( KeyValuePair <uint, SignalRefObject> thisref in SignalRefList)
-  //                    {
-  //                        uint headref;
-  //                            uint TBDRef = thisref.Key;
-  //                            SignalRefObject signalRef = thisref.Value;
+#if DEBUG_PRINT
+                        foreach ( KeyValuePair <uint, SignalRefObject> thisref in SignalRefList)
+                        {
+                            uint headref;
+                                uint TBDRef = thisref.Key;
+                                SignalRefObject signalRef = thisref.Value;
 
-  //                            SignalWorldObject reffedObject = SignalWorldList[(int) signalRef.SignalWorldIndex];
-  //                            if ( !reffedObject.HeadReference.TryGetValue(TBDRef, out headref))
-  //                            {
-  //                                    File.AppendAllText(@"WorldSignalList.txt","Incorrect Ref : "+TBDRef.ToString()+"\n");
-  //                                    foreach ( KeyValuePair <uint, uint> headindex in reffedObject.HeadReference)
-  //                                    {
-  //                                            File.AppendAllText(@"WorldSignalList.txt","TDB : "+headindex.Key.ToString()+
-  //                                                            " + "+headindex.Value.ToString()+"\n");
-  //                                    }
-  //                            }
-  //                    }
+                                SignalWorldObject reffedObject = SignalWorldList[(int) signalRef.SignalWorldIndex];
+                                if ( !reffedObject.HeadReference.TryGetValue(TBDRef, out headref))
+                                {
+                                        File.AppendAllText(@"WorldSignalList.txt","Incorrect Ref : "+TBDRef.ToString()+"\n");
+                                        foreach ( KeyValuePair <uint, uint> headindex in reffedObject.HeadReference)
+                                        {
+                                                File.AppendAllText(@"WorldSignalList.txt","TDB : "+headindex.Key.ToString()+
+                                                                " + "+headindex.Value.ToString()+"\n");
+                                        }
+                                }
+                        }
+#endif
 
                 }  //BuildSignalWorld
 
@@ -333,6 +337,14 @@ namespace ORTS
                                         {
                                                 noSignals++;
                                         }
+                                        else if (trItem.ItemType == TrItem.trItemType.trSPEEDPOST)
+                                        {
+                                                SpeedPostItem Speedpost = (SpeedPostItem) trItem;
+                                                if (Speedpost.IsLimit)
+                                                {
+                                                        noSignals++;
+                                                }
+                                        }
                                 }
                         }
   //
@@ -347,14 +359,7 @@ namespace ORTS
 
                                 for (int i = 1; i < trackNodes.Length; i++)
                                 {
-  // Using the track end node as starting point to find signals.
-                                        if (trackNodes[i].TrEndNode)
-                                        {
-                                                int direction = trackNodes[i].TrPins[0].Direction;
-                                                int nextNode = trackNodes[i].TrPins[0].Link;
-                                                visited[i, direction] = 1;
-                                                ScanPath(nextNode, direction, TrItems, trackNodes, tsectiondat, tdbfile);
-                                        }
+                                        ScanSection(TrItems, trackNodes, i, tsectiondat, tdbfile);
                                 }
                         }
 
@@ -362,132 +367,57 @@ namespace ORTS
 
   //================================================================================================//
   //
-  //  ScanPath : This method follows the track path to find any signal objects along it.
+  //  ScanSection : This method checks a section in the TDB for signals or speedposts
   //
 
-                private void ScanPath(int startIndex, int startDir, TrItem[] TrItems, TrackNode[] trackNodes,
+                private void ScanSection(TrItem[] TrItems, TrackNode[] trackNodes, int index, 
                                        TSectionDatFile tsectiondat, TDBFile tdbfile)
                 {
-                        int index = startIndex;
-                        int direction = startDir;
                         int lastSignal = -1;                // Index to last signal found in path -1 if none
 
-                        do
-                        {
-  // Return if this track node has already been processed.
-                                if (index == 0) return;
-                                if (visited[index, direction] > 0) return;
-                                visited[index, direction] = 1;      //  Mark track node as processed
+                        if (trackNodes[index].TrEndNode) return;
 
-                                if (trackNodes[index].TrEndNode) return;
   //  Is it a vector node then it may contain objects.
-                                if (trackNodes[index].TrVectorNode != null)
-                                {
+                        if (trackNodes[index].TrVectorNode != null && trackNodes[index].TrVectorNode.noItemRefs > 0)
+                        {
   // Any obects ?
-                                        if (trackNodes[index].TrVectorNode.noItemRefs > 0)
+                                for (int i = 0; i < trackNodes[index].TrVectorNode.noItemRefs; i++)
+                                {
+                                        if (TrItems[trackNodes[index].TrVectorNode.TrItemRefs[i]] != null)
                                         {
-                                                if (direction == 1)
-                                                {
-                                                        for (int i = 0; i < trackNodes[index].TrVectorNode.noItemRefs; i++)
-                                                        {
-                                                                if (TrItems[trackNodes[index].TrVectorNode.TrItemRefs[i]] != null)
-                                                                {
 
   // Track Item is signal
-                                                                        int TDBRef = trackNodes[index].TrVectorNode.TrItemRefs[i];
-                                                                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
-                                                                        {
-                                                                                SignalItem sigItem = (SignalItem)TrItems[TDBRef];
-                                                                                if ((int)sigItem.revDir == direction)
-                                                                                {
-                                                                                        sigItem.sigObj = foundSignals;
-
-                                                                                        if (sigItem.noSigDirs > 0)
-                                                                                        {
-                                                                                        SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
-                                                                                        }
-
-                                                                                        lastSignal = AddSignal(index, i, sigItem, lastSignal,
-                                                                                                               TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
-                                                                                        sigItem.sigObj = lastSignal;
-                                                                                }
-                                                                        }
-                                                                }
-                                                        }
-                                                }
-                                                else
+                                                int TDBRef = trackNodes[index].TrVectorNode.TrItemRefs[i];
+                                                if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
                                                 {
-                                                        for (int i = trackNodes[index].TrVectorNode.noItemRefs - 1; i >= 0; i--)
+                                                        SignalItem sigItem = (SignalItem)TrItems[TDBRef];
+                                                        sigItem.sigObj = foundSignals;
+
+                                                        if (sigItem.noSigDirs > 0)
                                                         {
-                                                                if (TrItems[trackNodes[index].TrVectorNode.TrItemRefs[i]] != null)
-                                                                {
-  // Track Item is signal
-                                                                        int TDBRef = trackNodes[index].TrVectorNode.TrItemRefs[i];
-                                                                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
-                                                                        {
-                                                                                SignalItem sigItem = (SignalItem)TrItems[TDBRef];
-                                                                                if ((int)sigItem.revDir == direction)
-                                                                                {
-                                                                                        sigItem.sigObj = foundSignals;
+                                                                SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
+                                                        }
 
-                                                                                        if (sigItem.noSigDirs > 0)
-                                                                                        {
-                                                                                        SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
-                                                                                        }
-
-                                                                                        lastSignal = AddSignal(index, i, sigItem, lastSignal,
-                                                                                                               TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
-                                                                                        sigItem.sigObj = lastSignal;
-                                                                                }
-                                                                        }
-                                                                }
+                                                        lastSignal = AddSignal(index, i, sigItem, lastSignal,
+                                                                                TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
+                                                        sigItem.sigObj = lastSignal;
+                                                }
+                                                else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSPEEDPOST)
+                                                {
+                                                        SpeedPostItem speedItem = (SpeedPostItem) TrItems[TDBRef];
+                                                        if (speedItem.IsLimit)
+                                                        {
+                                                                speedItem.sigObj = foundSignals;
+  
+                                                                lastSignal = AddSpeed(index, i, speedItem, lastSignal,
+                                                                                 TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
+                                                                speedItem.sigObj = lastSignal;
                                                         }
                                                 }
                                         }
                                 }
-                                else if (trackNodes[index].TrJunctionNode != null)
-                                {
-                                        if (direction == 0)
-                                        {
-                                                if (trackNodes[index].Inpins > 1)
-                                                {
-                                                        for (int i = 0; i < trackNodes[index].Inpins; i++)
-                                                        {
-                                                                ScanPath(trackNodes[index].TrPins[i].Link, trackNodes[index].TrPins[i].Direction,
-                                                                                       TrItems, trackNodes, tsectiondat, tdbfile);
-                                                        }
-                                                        if (lastSignal >= 0) signalObjects[lastSignal].isJunction = true;
-                                                        return;
-                                                }
-                                        }
-                                        else
-                                        {
-                                                if (trackNodes[index].Outpins > 1)
-                                                {
-                                                        for (int i = 0; i < trackNodes[index].Outpins; i++)
-                                                        {
-                                                                ScanPath(trackNodes[index].TrPins[i + trackNodes[index].Inpins].Link,
-                                                                         trackNodes[index].TrPins[i + trackNodes[index].Inpins].Direction,
-                                                                         TrItems, trackNodes, tsectiondat, tdbfile);
-                                                        }
-                                                        if (lastSignal >= 0) signalObjects[lastSignal].isJunction = true;
-                                                        return;
-                                                }
-                                        }
-                                }
-  // Get the next node
-                                if (direction == 0)
-                                {
-                                        direction = trackNodes[index].TrPins[0].Direction;
-                                        index = trackNodes[index].TrPins[0].Link;
-                                }
-                                else
-                                {
-                                        direction = trackNodes[index].TrPins[trackNodes[index].Outpins].Direction;
-                                        index = trackNodes[index].TrPins[trackNodes[index].Outpins].Link;
-                                }
-                        } while (true);
-                }   //ScanPath 
+                        }
+                }   //ScanSection 
 
   //================================================================================================//
   ///
@@ -499,13 +429,17 @@ namespace ORTS
                 {
                         if (prevSignal >= 0)
                         {
-                                if (signalObjects[prevSignal].isSignalHead((SignalItem)TrItems[trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx]]))
+                                if (signalObjects[prevSignal].isSignal)
                                 {
-                                        signalObjects[prevSignal].AddHead(nodeIndx, TDBRef, sigItem);
-                                        return prevSignal;
+                                        if (signalObjects[prevSignal].isSignalHead((SignalItem)TrItems[trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx]]))
+                                        {
+                                                signalObjects[prevSignal].AddHead(nodeIndx, TDBRef, sigItem);
+                                                return prevSignal;
+                                        }
                                 }
                         }
                         signalObjects[foundSignals] = new SignalObject();
+                        signalObjects[foundSignals].isSignal  = true;
                         signalObjects[foundSignals].direction = (int) sigItem.Direction;
                         signalObjects[foundSignals].trackNode = trackNode;
                         signalObjects[foundSignals].trRefIndex = nodeIndx;
@@ -515,14 +449,68 @@ namespace ORTS
                         signalObjects[foundSignals].signalRef = this;
 
                         signalObjects[foundSignals].tdbtraveller = new TDBTraveller(trackNode, sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z,
-                        signalObjects[foundSignals].direction, tdbfile, tsectiondat);
+                                                         signalObjects[foundSignals].direction, tdbfile, tsectiondat);
                         signalObjects[foundSignals].tdbtraveller.Direction = sigItem.Direction==1 ? 0 : 1; // reverse TBD direction (next object is behind object) //
 
                         signalObjects[foundSignals].WorldObject = null;
-  //if (prevSignal >= 0) signalObjects[prevSignal].nextSignal = foundSignals;
                         foundSignals++;
                         return foundSignals - 1;
                 } // AddSignal
+
+                
+  //================================================================================================//
+  ///
+  /// This method adds a new Speedpost to the list
+  ///
+
+                private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int prevSignal, 
+                                TrItem[] TrItems, TrackNode[] trackNodes, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
+                {
+                        signalObjects[foundSignals] = new SignalObject();
+                        signalObjects[foundSignals].isSignal  = false;
+                        signalObjects[foundSignals].direction = 0;                  // preset - direction not yet known //
+                        signalObjects[foundSignals].trackNode = trackNode;
+                        signalObjects[foundSignals].trRefIndex = nodeIndx;
+                        signalObjects[foundSignals].prevSignal = prevSignal;
+                        signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
+                        signalObjects[foundSignals].thisRef = foundSignals;
+                        signalObjects[foundSignals].signalRef = this;
+                        signalObjects[foundSignals].angle = speedItem.Angle;
+
+                        signalObjects[foundSignals].tdbtraveller = new TDBTraveller(trackNode, speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z,
+                                                         signalObjects[foundSignals].direction, tdbfile, tsectiondat);
+
+                        double delta_angle = signalObjects[foundSignals].tdbtraveller.Roty - ((Math.PI/2) - speedItem.Angle);
+                            float delta_float = (float)delta_angle;
+                        MSTSMath.M.NormalizeRadians( ref delta_float);
+                        if (Math.Abs(delta_float) < (Math.PI/2))
+                        {
+                            signalObjects[foundSignals].direction = signalObjects[foundSignals].tdbtraveller.Direction == 0 ? 1 : 0;
+                        }
+                        else
+                        {
+                            signalObjects[foundSignals].direction = signalObjects[foundSignals].tdbtraveller.Direction;
+                        }
+
+#if DEBUG_PRINT
+                        string dumpstring = "\nPlaced : ";
+                        dumpstring = String.Concat(dumpstring," at : ");
+                        dumpstring = String.Concat(dumpstring,speedItem.TileX.ToString()," ");
+                        dumpstring = String.Concat(dumpstring,speedItem.TileZ.ToString(),":");
+                        dumpstring = String.Concat(dumpstring,speedItem.X.ToString()," ");
+                        dumpstring = String.Concat(dumpstring,speedItem.Z.ToString()," ");
+                        dumpstring = String.Concat(dumpstring,"; angle - track : ");
+                        dumpstring = String.Concat(dumpstring,speedItem.Angle.ToString(),":",
+                                        signalObjects[foundSignals].tdbtraveller.Roty.ToString());
+                        dumpstring = String.Concat(dumpstring,"; delta : ",delta_angle.ToString());
+                        dumpstring = String.Concat(dumpstring,"; dir : ",signalObjects[foundSignals].direction.ToString());
+                        Trace.Write(dumpstring);
+#endif
+
+                        signalObjects[foundSignals].WorldObject = null;
+                        foundSignals++;
+                        return foundSignals - 1;
+                } // AddSpeed
 
   //================================================================================================//
   /// 
@@ -616,7 +604,10 @@ namespace ORTS
                         {
                                 if (signal != null)
                                 {
-                                        signal.SetSignalType(sigCFG);
+                                        if (signal.isSignal)
+                                        {
+                                                signal.SetSignalType(sigCFG);
+                                        }
                                 }
                         }
                 }//AddCFG
@@ -1012,12 +1003,24 @@ namespace ORTS
   ///
   //  Find item from train
   ///
+  /// <summary>
+  /// GetNextObject : to get next object from forward or backward from train
+  /// Parameters :
+  /// TDBTraveller : tdbtraveller linked with train
+  /// ObjectItemInfo.ObjectItemType : required type of object
+  /// bool : forward indication (true = forward, false = backward)
+  /// float : required max. distance; set to -1 if no check required
+  /// ref ObjectItemInfo.ObjectItemFindState : returned state; > 0 : Object Reference; <= 0 : error or warning according to ObjectItemFindState
+  /// Returned parameter :
+  /// ObjectItemInfo : class holding required info on found object; only valid if returned state > 0
+  /// </summary>
 
                 public ObjectItemInfo getNextObject(TDBTraveller tdbtraveller, ObjectItemInfo.ObjectItemType req_type,
                                 bool forward, float maxdistance, ref ObjectItemInfo.ObjectItemFindState return_state)
                 {
                         int startNode = tdbtraveller.TrackNodeIndex;
                         int currDir = tdbtraveller.Direction;
+                        SignalObject last_object = null;
 
                         ObjectItemInfo return_item = null;
 
@@ -1036,8 +1039,7 @@ namespace ORTS
 
                         while (find_state == ObjectItemInfo.ObjectItemFindState.NONE_FOUND)
                         {
-
-                                int newindex = Find_Next_Object(null, startNode, currDir, forward, tdbtraveller, true, maxdistance,
+                                int newindex = Find_Next_Object(last_object, startNode, currDir, forward, tdbtraveller, true, maxdistance,
                                         trackDB.TrItemTable, trackDB.TrackNodes, fn_type_array);
 
                                 if (newindex == -1)
@@ -1055,9 +1057,10 @@ namespace ORTS
                                 else
                                 {
                                         SignalObject found_object = SignalObjects[newindex];
+                                        last_object = found_object;
                                         bool found_signal = found_object.isSignalType(fn_type_signal);
                                         bool found_speed  = found_object.isSignalType(fn_type_speed);
-                                        total_distance =+ found_object.DistanceTo(tdbtraveller);
+                                        total_distance = found_object.DistanceTo(tdbtraveller);
 
                                         if (found_signal)
                                         {
@@ -1092,11 +1095,23 @@ namespace ORTS
   ///
   //  Find item from object
   ///
+  /// <summary>
+  /// GetNextObject : to get next object forward from another object
+  /// Parameters :
+  /// SignalObject : object from which to search
+  /// ObjectItemInfo.ObjectItemType : required type of object
+  /// TDBTraveller : tdbtraveller of train linked with request; optional, but required if max. distance is set
+  /// float : required max. distance; set to -1 if no check required
+  /// ref ObjectItemInfo.ObjectItemFindState : returned state; > 0 : Object Reference; <= 0 : error or warning according to ObjectItemFindState
+  /// Returned parameter :
+  /// ObjectItemInfo : class holding required info on found object; only valid if returned state > 0
+  /// </summary>
 
                 public ObjectItemInfo getNextObject(SignalObject SignalObj, ObjectItemInfo.ObjectItemType req_type,
                                 TDBTraveller tdbtraveller, float maxdistance, ref ObjectItemInfo.ObjectItemFindState return_state)
                 {
                         ObjectItemInfo return_item = null;
+                        SignalObject last_object = SignalObj;
 
                         SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [2];
                         fn_type_array[0] = SignalHead.SIGFN.NORMAL;
@@ -1116,7 +1131,7 @@ namespace ORTS
                         while (find_state == ObjectItemInfo.ObjectItemFindState.NONE_FOUND)
                         {
 
-                                int newindex = Find_Next_Object(SignalObj, 0, 0, true, tdbtraveller, maxdist_req, maxdistance,
+                                int newindex = Find_Next_Object(last_object, 0, 0, true, tdbtraveller, maxdist_req, maxdistance,
                                         trackDB.TrItemTable, trackDB.TrackNodes, fn_type_array);
 
                                 if (newindex == -1)
@@ -1134,9 +1149,10 @@ namespace ORTS
                                 else
                                 {
                                         SignalObject found_object = SignalObjects[newindex];
+                                        last_object=found_object;
                                         bool found_signal = found_object.isSignalType(fn_type_signal);
                                         bool found_speed  = found_object.isSignalType(fn_type_speed);
-                                        total_distance =+ found_object.DistanceTo(tdbtraveller);
+                                        total_distance = found_object.DistanceTo(SignalObj.tdbtraveller);
 
                                         if (found_signal)
                                         {
@@ -1149,7 +1165,7 @@ namespace ORTS
                                                         req_type == ObjectItemInfo.ObjectItemType.SIGNAL)
                                                 {
                                                         find_state = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
-                                                        return_item = new ObjectItemInfo('T', 'S', found_object, total_distance);
+                                                        return_item = new ObjectItemInfo('O', 'S', found_object, total_distance);
                                                 }
                                         }
                                         else if (found_speed)
@@ -1158,7 +1174,7 @@ namespace ORTS
                                                 req_type == ObjectItemInfo.ObjectItemType.SPEEDLIMIT)
                                                 {
                                                         find_state = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
-                                                        return_item = new ObjectItemInfo('T', 'L', found_object, total_distance);
+                                                        return_item = new ObjectItemInfo('O', 'L', found_object, total_distance);
                                                 }
                                         }
                                 }
@@ -1198,11 +1214,13 @@ namespace ORTS
                 public int trRefIndex;                  // Index to TrItemRef within Track Node 
                 public int thisRef;                     // This signal's reference.
                 public int direction;                   // Direction facing on track
+                public double angle;                        // Speedpost Angle TESTTEST
                 public int draw_state;
                 public bool enabled = true;
                 public bool isJunction = false;         // Indicates whether the signal controls a junction.
                 public bool canUpdate = true;           // Signal can be updated automatically
                 public bool isAuto = true;
+                public bool isSignal = true;            // if signal, false if speedpost //
                 public bool useScript = false;
                 public BLOCKSTATE blockState = BLOCKSTATE.CLEAR;
                 public Signal.PERMISSION hasPermission = Signal.PERMISSION.DENIED;  // Permission to pass red signal
@@ -1695,7 +1713,20 @@ namespace ORTS
                         }
                         SignalHeads.Add(head);
 
-                }//AddHead
+                }//AddHead (signal)
+
+  //================================================================================================//
+  //
+  // AddHead : Adds a head to this signal (for speedpost).
+  //
+
+                public void AddHead(int trItem, int TDBRef, SpeedPostItem speedItem)
+                {
+  // create SignalHead
+                        SignalHead head = new SignalHead(this, trItem, TDBRef, speedItem);
+                        SignalHeads.Add(head);
+
+                }//AddHead (speedpost)
 
   //================================================================================================//
   //
@@ -1832,8 +1863,8 @@ namespace ORTS
                         REPEATER,
                         SHUNTING,
                         INFO,
-                        ALERT,
                         SPEED,
+                        ALERT,
                         UNKNOWN
                 }
 
@@ -1851,7 +1882,7 @@ namespace ORTS
 
   //================================================================================================//
   //
-  // Constructor
+  // Constructor for signals
   //
 
                 public SignalHead(SignalObject sigOoject, int trItem, int TDBRef, SignalItem sigItem)
@@ -1872,6 +1903,32 @@ namespace ORTS
 
                         Array sigasp_values = SIGASP.GetValues(typeof (SIGASP));
                         speed_info    = new ObjectSpeedInfo[sigasp_values.Length];
+                }
+
+  //================================================================================================//
+  //
+  // Constructor for speedposts
+  //
+
+                public SignalHead(SignalObject sigOoject, int trItem, int TDBRef, SpeedPostItem speedItem)
+                {
+                        mainSignal = sigOoject;
+                        trItemIndex = trItem;
+                        TDBIndex = TDBRef;
+                        draw_state = 1;
+                        state      = SIGASP.CLEAR_2;
+                        signalType = new SignalType(SignalType.FnTypes.Speed, SIGASP.CLEAR_2);
+
+                        TrackJunctionNode = 0;
+                        JunctionMainNode  = 0;
+
+                        Array sigasp_values = SIGASP.GetValues(typeof (SIGASP));
+                        speed_info    = new ObjectSpeedInfo[sigasp_values.Length];
+
+                        float passSpeed = speedItem.IsPassenger ? speedItem.SpeedInd : -1;
+                        float freightSpeed = speedItem.IsFreight ? speedItem.SpeedInd : -1;
+                        ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false);
+                        speed_info[Convert.ToInt32(state)] = speedinfo;
                 }
 
   //================================================================================================//
@@ -2440,7 +2497,7 @@ namespace ORTS
                 public SignalObject                 ObjectDetails;                  // actual object 
 
                 public float                        distance_to_train;
-                public float                        distance_to_next_object;
+                public float                        distance_to_object;
 
                 public SignalHead.SIGASP            signal_state;                   // UNKNOWN if type = speedlimit
                 public float                        speed_passenger;                // -1 if not set
@@ -2459,12 +2516,12 @@ namespace ORTS
                         if (reference == 'T')
                         {
                                 distance_to_train = distance;
-                                distance_to_next_object = -1;
+                                distance_to_object = -1;
                         }
                         else
                         {
                                 distance_to_train = -1;
-                                distance_to_next_object = distance;
+                                distance_to_object = distance;
                         }
 
                         ObjectDetails = thisObject;
@@ -2533,5 +2590,6 @@ namespace ORTS
   //================================================================================================//
 
 }
+
 
 

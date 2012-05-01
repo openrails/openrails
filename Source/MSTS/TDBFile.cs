@@ -480,16 +480,24 @@ namespace MSTS
     public class SpeedPostItem : TrItem
     {
         public uint Flags;
-		public bool IsMilePost = true; //false to be speed limit
+		public bool IsMilePost = false; //true to be milepost
 		public bool IsWarning = false; //speed warning
 		public bool IsLimit = false; //speed limit
 		public bool IsPassenger = false; //is passender speed limit
 		public bool IsFreight = false; //is freight speed limit
 		public bool IsMPH = false;//is the digit in MPH or KPH
-		public bool ShowNumber = true; //show numbers instead of KPH, like 5 means 50KMH
+		public bool ShowNumber = false; //show numbers instead of KPH, like 5 means 50KMH
 		public bool ShowDot = false; //if ShowNumber is true and this is set, will show 1.5 as for 15KMH
         public float SpeedInd;      // Or distance if mile post.
-	public int sigObj = -1;		// index to Signal Object Table
+	public int sigObj = -1;	    // index to Signal Object Table
+	public float Angle;         // speedpost (normalized) angle
+	public int Direction;       // derived direction relative to track
+	public int DisplayNumber;   // number to be displayed if ShowNumber is true
+
+        public int revDir
+        {
+            get {return Direction==0?1:0;}
+        }
 
         public SpeedPostItem(STFReader stf, int idx)
         {
@@ -512,7 +520,7 @@ namespace MSTS
 					else {
 						if ((Flags & (1 << 5)) != 0) IsPassenger = true;
 						if ((Flags & (1 << 6)) != 0) IsFreight = true;
-						if ((Flags & (1 << 6)) != 0) IsFreight = IsPassenger = true;
+						if ((Flags & (1 << 7)) != 0) IsFreight = IsPassenger = true;
 						if ((Flags & (1 << 8)) != 0) IsMPH = true;
 						if ((Flags & (1 << 4)) != 0) {
 							ShowNumber = true;
@@ -522,7 +530,14 @@ namespace MSTS
 
                     //  The number of parameters depends on the flags seeting
                     //  To do: Check flags seetings and parse accordingly.
-                    SpeedInd = stf.ReadFloat(STFReader.UNITS.Speed, null);
+                    SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
+    		    if (ShowNumber)
+		    {
+			    DisplayNumber = stf.ReadInt(STFReader.UNITS.None, null);
+		    }
+                    Angle = stf.ReadFloat(STFReader.UNITS.None, null);
+		    MSTSMath.M.NormalizeRadians(ref Angle);
+
                     stf.SkipRestOfBlock();
                 }),
             });

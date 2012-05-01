@@ -598,7 +598,7 @@ namespace MSTS
 				{
 					ShapesInfo[i * 4] = block.ReadFloat();
 					ShapesInfo[i * 4 + 1] = block.ReadFloat();
-					ShapesInfo[i * 4 + 2] = block.ReadFloat();
+					ShapesInfo[i * 4 + 2] = -block.ReadFloat();
 					ShapesInfo[i * 4 + 3] = block.ReadFloat();
 				}
 				block.VerifyEndOfBlock();
