@@ -101,7 +101,7 @@
             // buttonStart
             // 
             this.buttonStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonStart.BackColor = System.Drawing.Color.FromArgb( ((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))) );
+            this.buttonStart.BackColor = System.Drawing.Color.FromArgb( ((int)(((byte)(185)))), ((int)(((byte)(222)))), ((int)(((byte)(154)))) );
             this.buttonStart.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
             this.buttonStart.Location = new System.Drawing.Point( 820, 418 );
             this.buttonStart.Name = "buttonStart";

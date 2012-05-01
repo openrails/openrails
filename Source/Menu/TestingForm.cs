@@ -18,19 +18,25 @@ namespace ORTS {
         int cToTest = 0;
         int cTested = 1;
         int cPassed = 2;
-        int cActivityName = 3;
+        //int cActivityName = 3;  // unused. Commented out to avoid compile warning.
         int cRoutePath = 4;
         int cActivityFileName = 5; 
         
         MainForm parentForm;
         Route selectedRoute;
         Activity selectedActivity;
-        List<TestLoadActivity> tests = new List<TestLoadActivity>();
-        bool isLoopInterrupted;
+        // Use SortableSearchableList instead of List so we can sort each column of the DataGrid by clicking on the column header.
+        // For the path, it seems we need to click once for each "/" !
+        SortableSearchableList<TestLoadActivity> tests = new SortableSearchableList<TestLoadActivity>();
+
+        // We use a loader so the testing can take place in the background and the testing form, being in the foreground, can
+        // be moved, re-sized and the buttons (especially Cancel Tests) will work at once.
         Task<List<DataGridViewRow>> DataGridViewRowLoader;
         List<DataGridViewRow> dataGridViewRowList = new List<DataGridViewRow>();
+
         string summaryFileName = Path.Combine( Program.UserDataFolder, "TestSummary.csv" );
         string logFileName = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Desktop ), "OpenRailsLog.txt" );
+        bool isLoopInterrupted;
 
         public TestingForm(MainForm parentForm, Route selectedRoute, Activity selectedActivity ) {
             this.parentForm = parentForm;
@@ -66,10 +72,6 @@ namespace ORTS {
             bCancelTest.Enabled = false;
             bViewSummary.Enabled = System.IO.File.Exists( summaryFileName );
             bViewDetails.Enabled = System.IO.File.Exists( logFileName );
-
-            //dgvTestLoadActivities.Columns[cActivityName].SortMode = DataGridViewColumnSortMode.Automatic;
-            //dgvTestLoadActivities.Columns[cRoutePath].SortMode = DataGridViewColumnSortMode.Automatic;
-            //dgvTestLoadActivities.Columns[cActivityFileName].SortMode = DataGridViewColumnSortMode.Automatic;
         }
 
         private void bClose_Click( object sender, EventArgs e ) {
@@ -80,19 +82,19 @@ namespace ORTS {
 
         private void bTestLoadingOfAllActivities_Click( object sender, EventArgs e ) {
             foreach( DataGridViewRow rw in this.dgvTestLoadActivities.Rows ) {
-                rw.Cells[0].Value = true;
+                rw.Cells[cToTest].Value = true;
             }
             TestLoadingOfActivities();
         }
 
         private void bTestLoadingOfSelectedActivities_Click( object sender, EventArgs e ) {
             foreach( DataGridViewRow rw in this.dgvTestLoadActivities.Rows ) {
-                rw.Cells[0].Value = false;
+                rw.Cells[cToTest].Value = false;
             }
             // Use .SelectedCells not the simpler .SelectedRows so we can hide the row selector.
             foreach( DataGridViewCell cell in dgvTestLoadActivities.SelectedCells ) {
                 DataGridViewRow rw = cell.OwningRow;
-                rw.Cells[0].Value = true;
+                rw.Cells[cToTest].Value = true;
             }
             TestLoadingOfActivities();
         }
@@ -186,6 +188,10 @@ namespace ORTS {
 
         private void bsTestLoadActivities_CurrentChanged( object sender, EventArgs e ) {
 
+        }
+
+        private void bCancelSort_Click( object sender, EventArgs e ) {
+            tests.RemoveSort();
         }
     }
 

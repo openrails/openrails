@@ -24,9 +24,9 @@
         /// </summary>
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             this.bClose = new System.Windows.Forms.Button();
             this.bTestLoadingOfAllActivities = new System.Windows.Forms.Button();
             this.bTestLoadingOfSelectedActivities = new System.Windows.Forms.Button();
@@ -34,14 +34,16 @@
             this.lTestLoading = new System.Windows.Forms.Label();
             this.bViewSummary = new System.Windows.Forms.Button();
             this.dgvTestLoadActivities = new System.Windows.Forms.DataGridView();
-            this.bViewDetails = new System.Windows.Forms.Button();
-            this.bsTestLoadActivities = new System.Windows.Forms.BindingSource( this.components );
             this.Column1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Tested = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Passed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.bViewDetails = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip( this.components );
             this.activityDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.routePathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.activityFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.bsTestLoadActivities = new System.Windows.Forms.BindingSource( this.components );
+            this.bCancelSort = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTestLoadActivities)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bsTestLoadActivities)).BeginInit();
             this.SuspendLayout();
@@ -117,14 +119,14 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvTestLoadActivities.AutoGenerateColumns = false;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvTestLoadActivities.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvTestLoadActivities.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dgvTestLoadActivities.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvTestLoadActivities.Columns.AddRange( new System.Windows.Forms.DataGridViewColumn[] {
             this.Column1,
@@ -134,43 +136,27 @@
             this.routePathDataGridViewTextBoxColumn,
             this.activityFileNameDataGridViewTextBoxColumn} );
             this.dgvTestLoadActivities.DataSource = this.bsTestLoadActivities;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvTestLoadActivities.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvTestLoadActivities.DefaultCellStyle = dataGridViewCellStyle8;
             this.dgvTestLoadActivities.Location = new System.Drawing.Point( 13, 12 );
             this.dgvTestLoadActivities.Name = "dgvTestLoadActivities";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvTestLoadActivities.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvTestLoadActivities.RowHeadersDefaultCellStyle = dataGridViewCellStyle9;
             this.dgvTestLoadActivities.RowHeadersVisible = false;
             this.dgvTestLoadActivities.Size = new System.Drawing.Size( 623, 293 );
             this.dgvTestLoadActivities.TabIndex = 14;
-            // 
-            // bViewDetails
-            // 
-            this.bViewDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bViewDetails.Location = new System.Drawing.Point( 642, 163 );
-            this.bViewDetails.Name = "bViewDetails";
-            this.bViewDetails.Size = new System.Drawing.Size( 101, 25 );
-            this.bViewDetails.TabIndex = 15;
-            this.bViewDetails.Text = "View details";
-            this.bViewDetails.UseVisualStyleBackColor = true;
-            this.bViewDetails.Click += new System.EventHandler( this.bViewDetails_Click );
-            // 
-            // bsTestLoadActivities
-            // 
-            this.bsTestLoadActivities.DataSource = typeof( ORTS.TestLoadActivity );
-            this.bsTestLoadActivities.CurrentChanged += new System.EventHandler( this.bsTestLoadActivities_CurrentChanged );
             // 
             // Column1
             // 
@@ -196,6 +182,17 @@
             this.Passed.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             this.Passed.Width = 50;
             // 
+            // bViewDetails
+            // 
+            this.bViewDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bViewDetails.Location = new System.Drawing.Point( 642, 163 );
+            this.bViewDetails.Name = "bViewDetails";
+            this.bViewDetails.Size = new System.Drawing.Size( 101, 25 );
+            this.bViewDetails.TabIndex = 15;
+            this.bViewDetails.Text = "View details";
+            this.bViewDetails.UseVisualStyleBackColor = true;
+            this.bViewDetails.Click += new System.EventHandler( this.bViewDetails_Click );
+            // 
             // activityDataGridViewTextBoxColumn
             // 
             this.activityDataGridViewTextBoxColumn.DataPropertyName = "Activity";
@@ -217,11 +214,27 @@
             this.activityFileNameDataGridViewTextBoxColumn.Name = "activityFileNameDataGridViewTextBoxColumn";
             this.activityFileNameDataGridViewTextBoxColumn.Width = 200;
             // 
+            // bsTestLoadActivities
+            // 
+            this.bsTestLoadActivities.DataSource = typeof( ORTS.TestLoadActivity );
+            // 
+            // bCancelSort
+            // 
+            this.bCancelSort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bCancelSort.Location = new System.Drawing.Point( 642, 194 );
+            this.bCancelSort.Name = "bCancelSort";
+            this.bCancelSort.Size = new System.Drawing.Size( 101, 25 );
+            this.bCancelSort.TabIndex = 16;
+            this.bCancelSort.Text = "Cancel sort";
+            this.bCancelSort.UseVisualStyleBackColor = true;
+            this.bCancelSort.Click += new System.EventHandler( this.bCancelSort_Click );
+            // 
             // TestingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF( 6F, 13F );
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size( 755, 317 );
+            this.Controls.Add( this.bCancelSort );
             this.Controls.Add( this.bViewDetails );
             this.Controls.Add( this.dgvTestLoadActivities );
             this.Controls.Add( this.bViewSummary );
@@ -256,5 +269,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn activityDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn routePathDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn activityFileNameDataGridViewTextBoxColumn;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Button bCancelSort;
     }
 }
