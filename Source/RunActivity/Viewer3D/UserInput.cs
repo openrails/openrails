@@ -119,7 +119,6 @@ namespace ORTS
             Commands[(int)UserCommands.DebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugLockShadows] = new UserCommandKeyInput(0x1F, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugDumpKeymap] = new UserCommandKeyInput(0x3B, KeyModifiers.Alt);
-            Commands[(int)UserCommands.DebugDriverAid] = new UserCommandKeyInput(0x57, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugLogRenderFrame] = new UserCommandKeyInput(0x58, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugTracks] = new UserCommandKeyInput(0x40, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSignalling] = new UserCommandKeyInput(0x57, KeyModifiers.Control | KeyModifiers.Alt);
@@ -515,7 +514,6 @@ namespace ORTS
         DebugWeatherChange,
         DebugLockShadows,
         DebugDumpKeymap,
-        DebugDriverAid,
         DebugLogRenderFrame,
         DebugTracks,
         DebugSignalling,

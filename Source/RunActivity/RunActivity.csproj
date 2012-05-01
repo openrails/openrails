@@ -238,7 +238,6 @@
     <Compile Include="Popups\CompassWindow.cs" />
     <Compile Include="Popups\PauseWindow.cs" />
     <Compile Include="Popups\SignallingDebugWindow.cs" />
-    <Compile Include="Popups\DriverAidWindow.cs" />
     <Compile Include="Popups\HelpWindow.cs" />
     <Compile Include="Popups\HUDWindow.cs" />
     <Compile Include="Popups\LayeredWindow.cs" />

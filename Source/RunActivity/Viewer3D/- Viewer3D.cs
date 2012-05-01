@@ -75,7 +75,6 @@ namespace ORTS
         public NextStationWindow NextStationWindow; // F10 window
         public CompassWindow CompassWindow; // 0 window
         public ActivityWindow ActivityWindow; // pop-up window
-        public DriverAidWindow DriverAidWindow; // Alt-F11 window
         public TracksDebugWindow TracksDebugWindow; // Control-Alt-F6
         public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
         // Route Information
@@ -233,7 +232,6 @@ namespace ORTS
             NextStationWindow = new NextStationWindow(WindowManager);
             CompassWindow = new CompassWindow(WindowManager);
             ActivityWindow = new ActivityWindow(WindowManager);
-            DriverAidWindow = new DriverAidWindow(WindowManager);
             TracksDebugWindow = new TracksDebugWindow(WindowManager);
             SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
             WindowManager.Initialize();
@@ -392,7 +390,6 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayCompassWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DebugDriverAid)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) DriverAidWindow.TabAction(); else DriverAidWindow.Visible = !DriverAidWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugTracks)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
 
