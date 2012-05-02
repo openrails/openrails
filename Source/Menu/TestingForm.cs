@@ -15,12 +15,13 @@ namespace ORTS {
     public partial class TestingForm : Form {
 
         // Integers so we can reference cells in DataViewGrid by name instead of index.
+        // Would use enums but that's too cumbersome.
         int cToTest = 0;
-        int cTested = 1;
-        int cPassed = 2;
-        //int cActivityName = 3;  // unused. Commented out to avoid compile warning.
-        int cRoutePath = 4;
-        int cActivityFileName = 5; 
+        //int cActivityName = 1;  // unused. Commented out to avoid compile warning.
+        int cRoutePath = 2;
+        int cActivityFileName = 3;
+        int cTested = 4;
+        int cPassed = 5;
         
         MainForm parentForm;
         Route selectedRoute;
@@ -146,7 +147,8 @@ namespace ORTS {
                             rw.Selected = true;
                             string parameter = " -test " + "\"" + Path.Combine( rw.Cells[cRoutePath].Value.ToString() + @"\ACTIVITIES",
                                                 rw.Cells[cActivityFileName].Value.ToString() ) + "\"";
-                            objPSI.Arguments = parameter + " /Profiling /ProfilingFrameCount=10 /ShowErrorDialogs=False"; // 10 frames enough to show that the graphics is working
+                            // Tests show that frame rates rise initially and stabilise after about 50 frames.
+                            objPSI.Arguments = parameter + " /Profiling /ProfilingFrameCount=50 /ShowErrorDialogs=False"; // 10 frames enough to show that the graphics is working
 
                             // Start the test of the current activity, then wait for it to end
                             System.Diagnostics.Process objProcess = System.Diagnostics.Process.Start( objPSI );
