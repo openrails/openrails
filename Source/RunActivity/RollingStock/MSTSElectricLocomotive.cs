@@ -97,7 +97,12 @@ namespace ORTS
             outf.Write(PantographFirstUp);
             outf.Write(PantographSecondUp);
             outf.Write(PowerOn);
+
             outf.Write(Pan);
+            outf.Write(FrontPanUp);
+            outf.Write(AftPanUp);
+            outf.Write(NumPantograph);
+
             base.Save(outf);
         }
 
@@ -110,7 +115,13 @@ namespace ORTS
             PantographFirstUp = inf.ReadBoolean();
             PantographSecondUp = inf.ReadBoolean();
             PowerOn = inf.ReadBoolean();
-            if (inf.ReadBoolean()) SignalEvent(EventID.PantographUp);
+
+            Pan = inf.ReadBoolean();
+            FrontPanUp = inf.ReadBoolean();
+            AftPanUp = inf.ReadBoolean();
+            NumPantograph = (int)inf.ReadSingle();
+
+            //if (inf.ReadBoolean()) SignalEvent(EventID.PantographUp);
             base.Restore(inf);
         }
 

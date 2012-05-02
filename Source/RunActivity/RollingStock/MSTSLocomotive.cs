@@ -167,7 +167,8 @@ namespace ORTS
                 ThrottleController.StepSize = 0.1f;
             }
 
-            if (ThrottleController.NotchCount() > 0)
+            // Some engine files want continuous, but specify a notch
+            if (ThrottleController.NotchCount() > 1)
                 HasStepCtrl = true;
 
             // Is Altertor option checked in menu
@@ -2830,8 +2831,8 @@ namespace ORTS
             int indx = 0;
             switch (_CVCWithFrames.ControlType)
             {
-                case CABViewControlTypes.THROTTLE:
-                case CABViewControlTypes.THROTTLE_DISPLAY:
+                //case CABViewControlTypes.THROTTLE:
+                //case CABViewControlTypes.THROTTLE_DISPLAY:
                 //case CABViewControlTypes.CPH_DISPLAY:
                 case CABViewControlTypes.ENGINE_BRAKE:
                 case CABViewControlTypes.TRAIN_BRAKE:
@@ -2839,6 +2840,16 @@ namespace ORTS
                 //case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     {
                         indx = FromPercent(data);
+                        break;
+                    }
+
+                case CABViewControlTypes.THROTTLE:
+                case CABViewControlTypes.THROTTLE_DISPLAY:
+                    {
+                        if (_Locomotive.HasStepCtrl)
+                            indx = _Locomotive.ThrottleController.CurrentNotch;
+                        else
+                            indx = FromPercent(data);
                         break;
                     }
 
