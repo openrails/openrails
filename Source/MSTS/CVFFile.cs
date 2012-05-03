@@ -122,6 +122,7 @@ namespace MSTS
         SPRUNG,
         NOT_SPRUNG,
         WHILE_PRESSED,
+        PRESSED,
         ONOFF, 
         _24HOUR, 
         _12HOUR
