@@ -706,7 +706,8 @@ namespace ORTS
 
 			Trains.Add(train);
 			train.AITrainBrakePercent = 100;
-            train.InitializeSignals();
+			train.RouteMaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A;
+            train.InitializeSignals(false); // initialize without existing speed limits
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
             InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
@@ -781,7 +782,7 @@ namespace ORTS
 
 					train.CalculatePositionOfCars(0);
 					train.InitializeBrakes();
-                    train.InitializeSignals();
+                    train.InitializeSignals(false);  // initialize without existing speed limits
 
 					Trains.Add(train);
 
@@ -839,8 +840,9 @@ namespace ORTS
                     Trains.Add(new Train(this, inf)); // for release version, we'll try to press on anyway
 				}
 			}
-            foreach (var train in Trains)
-                train.InitializeSignals();
+ // REMOVED from this location to restore of Train itself [R.Roeterdink]
+ //           foreach (var train in Trains)
+ //               train.InitializeSignals();
         }
 
 		/// <summary>
@@ -911,7 +913,7 @@ namespace ORTS
 			train2.RearTDBTraveller = new TDBTraveller(train.RearTDBTraveller);
 			train2.CalculatePositionOfCars(0);  // fix the front traveller
 			train.RepositionRearTraveller();    // fix the rear traveller
-            train2.InitializeSignals();
+            train2.InitializeSignals(false);  // initialize signals without existing speed information
 
 			Trains.Add(train2);
 			train2.LeadLocomotive = lead;

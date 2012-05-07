@@ -240,9 +240,6 @@ namespace ORTS
                                                                 if (SignalRefList.ContainsKey(thisref.Key))
                                                                 {
                                                                         SignalRefObject DoubleObject = SignalRefList[thisref.Key];
-                                                                        Trace.TraceWarning("Double key : {0} for heads {1} and {2} in {3}-{4}",
-                                                                                        thisref.Key,thisRefObject.HeadIndex,DoubleObject.HeadIndex,
-                                                                                        WFile.TileX.ToString(),WFile.TileZ.ToString());
                                                                 }
                                                                 else
                                                                 {
@@ -475,13 +472,12 @@ namespace ORTS
                         signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
                         signalObjects[foundSignals].thisRef = foundSignals;
                         signalObjects[foundSignals].signalRef = this;
-                        signalObjects[foundSignals].angle = speedItem.Angle;
 
                         signalObjects[foundSignals].tdbtraveller = new TDBTraveller(trackNode, speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z,
                                                          signalObjects[foundSignals].direction, tdbfile, tsectiondat);
 
                         double delta_angle = signalObjects[foundSignals].tdbtraveller.Roty - ((Math.PI/2) - speedItem.Angle);
-                            float delta_float = (float)delta_angle;
+                        float delta_float = (float)delta_angle;
                         MSTSMath.M.NormalizeRadians( ref delta_float);
                         if (Math.Abs(delta_float) < (Math.PI/2))
                         {
@@ -490,6 +486,7 @@ namespace ORTS
                         else
                         {
                             signalObjects[foundSignals].direction = signalObjects[foundSignals].tdbtraveller.Direction;
+                            signalObjects[foundSignals].tdbtraveller.ReverseDirection();
                         }
 
 #if DEBUG_PRINT
@@ -700,6 +697,17 @@ namespace ORTS
                         int sigRef = FindNextSignal(tdbtraveller);
                         return new Signal(this, signalObjects, sigRef);
                 }//FindNearestSignal
+
+  //================================================================================================//
+  ///
+  // Initialize Signal object (for track occupancy)
+  ///
+  /// 
+                public Signal InitSignalItem(int sigRef)
+                {
+                        return new Signal(this, signalObjects, sigRef);
+                }//FindNearestSignal
+
 
   //================================================================================================//
   ///
@@ -933,7 +941,7 @@ namespace ORTS
                                         }
 
   // check if ahead of position
-        
+
                                         if (locstate > 0 && min_distance_check && tdbtraveller != null)
                                         {
                                                 float mindistance = 
@@ -1004,7 +1012,7 @@ namespace ORTS
   //  Find item from train
   ///
   /// <summary>
-  /// GetNextObject : to get next object from forward or backward from train
+  /// getNextObject : to get next object from forward or backward from train
   /// Parameters :
   /// TDBTraveller : tdbtraveller linked with train
   /// ObjectItemInfo.ObjectItemType : required type of object
@@ -1024,6 +1032,10 @@ namespace ORTS
 
                         ObjectItemInfo return_item = null;
 
+ //
+ // preset search info
+ //
+
                         SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [2];
                         fn_type_array[0] = SignalHead.SIGFN.NORMAL;
                         fn_type_array[1] = SignalHead.SIGFN.SPEED;
@@ -1036,6 +1048,9 @@ namespace ORTS
                         float total_distance = 0.00F;
 
                         ObjectItemInfo.ObjectItemFindState find_state = ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
+ //
+ // loop until item found or search ended
+ //
 
                         while (find_state == ObjectItemInfo.ObjectItemFindState.NONE_FOUND)
                         {
@@ -1056,6 +1071,12 @@ namespace ORTS
                                 }
                                 else
                                 {
+
+ //
+ // check on item found
+ // set info according to type
+ //
+
                                         SignalObject found_object = SignalObjects[newindex];
                                         last_object = found_object;
                                         bool found_signal = found_object.isSignalType(fn_type_signal);
@@ -1096,7 +1117,7 @@ namespace ORTS
   //  Find item from object
   ///
   /// <summary>
-  /// GetNextObject : to get next object forward from another object
+  /// getNextObject : to get next object forward from another object
   /// Parameters :
   /// SignalObject : object from which to search
   /// ObjectItemInfo.ObjectItemType : required type of object
@@ -1113,6 +1134,10 @@ namespace ORTS
                         ObjectItemInfo return_item = null;
                         SignalObject last_object = SignalObj;
 
+ //
+ // preset search info
+ //
+
                         SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [2];
                         fn_type_array[0] = SignalHead.SIGFN.NORMAL;
                         fn_type_array[1] = SignalHead.SIGFN.SPEED;
@@ -1125,8 +1150,23 @@ namespace ORTS
                         float total_distance = 0.00F;
 
                         ObjectItemInfo.ObjectItemFindState find_state = ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
-
                         bool maxdist_req = (tdbtraveller != null);
+
+ //
+ // if item to search from is signal and state is stop, abandone search
+ //
+
+                        if (last_object.isSignal)
+                        {
+                                SignalHead.SIGASP lastState = last_object.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                                if (lastState == SignalHead.SIGASP.STOP)
+                                {
+                                        find_state = ObjectItemInfo.ObjectItemFindState.PASSED_DANGER;
+                                }
+                        }
+ //
+ // loop until object found or search stopped
+ //
 
                         while (find_state == ObjectItemInfo.ObjectItemFindState.NONE_FOUND)
                         {
@@ -1148,11 +1188,20 @@ namespace ORTS
                                 }
                                 else
                                 {
+
+ //
+ // check on item found
+ //
+
                                         SignalObject found_object = SignalObjects[newindex];
                                         last_object=found_object;
                                         bool found_signal = found_object.isSignalType(fn_type_signal);
                                         bool found_speed  = found_object.isSignalType(fn_type_speed);
                                         total_distance = found_object.DistanceTo(SignalObj.tdbtraveller);
+
+ //
+ // if signal is found at danger while searching for speedlimit, set to invalid
+ //
 
                                         if (found_signal)
                                         {
@@ -1214,7 +1263,6 @@ namespace ORTS
                 public int trRefIndex;                  // Index to TrItemRef within Track Node 
                 public int thisRef;                     // This signal's reference.
                 public int direction;                   // Direction facing on track
-                public double angle;                        // Speedpost Angle TESTTEST
                 public int draw_state;
                 public bool enabled = true;
                 public bool isJunction = false;         // Indicates whether the signal controls a junction.
@@ -1544,16 +1592,19 @@ namespace ORTS
                                         sigAsp = sigHead.state;
                                         int AspIndex = Convert.ToInt32(sigAsp);
                                         ObjectSpeedInfo this_speed = sigHead.speed_info[AspIndex];
-                                        if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
+                                        if (this_speed != null)
                                         {
-                                                set_speed.speed_pass = this_speed.speed_pass;
-                                                set_speed.speed_flag = 0;
-                                        }
+                                                if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
+                                                {
+                                                        set_speed.speed_pass = this_speed.speed_pass;
+                                                        set_speed.speed_flag = 0;
+                                                }
 
-                                        if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
-                                        {
-                                                set_speed.speed_freight = this_speed.speed_freight;
-                                                set_speed.speed_flag = 0;
+                                                if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
+                                                {
+                                                        set_speed.speed_freight = this_speed.speed_freight;
+                                                        set_speed.speed_flag = 0;
+                                                }
                                         }
 
                                 }
@@ -1807,20 +1858,21 @@ namespace ORTS
 
   //================================================================================================//
   //
-  // TrackMonitorSignalAspect : Gets the display aspect for the track monitor.
+  // TranslateTMAspect : Gets the display aspect for the track monitor.
   //
 
-                public TrackMonitorSignalAspect GetMonitorAspect()
+                public TrackMonitorSignalAspect TranslateTMAspect(SignalHead.SIGASP SigState)
                 {
-                        switch (this_sig_lr(SignalHead.SIGFN.NORMAL))
+                        switch (SigState)
                         {
                                 case SignalHead.SIGASP.STOP:
-                                case SignalHead.SIGASP.STOP_AND_PROCEED:
                                         if (hasPermission == Signal.PERMISSION.GRANTED)
                                                 return TrackMonitorSignalAspect.Warning;
                                         else
                                                 return TrackMonitorSignalAspect.Stop;
+                                case SignalHead.SIGASP.STOP_AND_PROCEED:
                                 case SignalHead.SIGASP.RESTRICTING:
+                                                return TrackMonitorSignalAspect.Warning;
                                 case SignalHead.SIGASP.APPROACH_1:
                                 case SignalHead.SIGASP.APPROACH_2:
                                 case SignalHead.SIGASP.APPROACH_3:
@@ -1925,8 +1977,10 @@ namespace ORTS
                         Array sigasp_values = SIGASP.GetValues(typeof (SIGASP));
                         speed_info    = new ObjectSpeedInfo[sigasp_values.Length];
 
-                        float passSpeed = speedItem.IsPassenger ? speedItem.SpeedInd : -1;
-                        float freightSpeed = speedItem.IsFreight ? speedItem.SpeedInd : -1;
+                        float speedMpS = MpS.ToMpS(speedItem.SpeedInd, !speedItem.IsMPH);
+
+                        float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
+                        float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
                         ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false);
                         speed_info[Convert.ToInt32(state)] = speedinfo;
                 }
@@ -2310,15 +2364,6 @@ namespace ORTS
 
   //================================================================================================//
   //
-  //   GetMonitorAspect : Returns the signal aspect for the track monitor. Least restricting if Multiple head.
-  //
-                public TrackMonitorSignalAspect GetMonitorAspect()
-                {
-                        return nextSigRef >= 0 ? signalObjects[nextSigRef].GetMonitorAspect() : TrackMonitorSignalAspect.None;
-                }//GetMonitorAspect
-
-  //================================================================================================//
-  //
   //   SetSignalState : set state of signal
   //
 
@@ -2500,9 +2545,11 @@ namespace ORTS
                 public float                        distance_to_object;
 
                 public SignalHead.SIGASP            signal_state;                   // UNKNOWN if type = speedlimit
+                                                                                    // set active by TRAIN
                 public float                        speed_passenger;                // -1 if not set
                 public float                        speed_freight;                  // -1 if not set
                 public uint                         speed_flag;
+                public float                        actual_speed;                   // set active by TRAIN
 
   //================================================================================================//
   //
@@ -2529,32 +2576,20 @@ namespace ORTS
                         if (found_type == 'S')
                         {
                                 ObjectType = ObjectItemType.SIGNAL;
-                                signal_state = thisObject.this_sig_lr(SignalHead.SIGFN.NORMAL);
-                                speed_info = thisObject.this_sig_speed(SignalHead.SIGFN.NORMAL);
-
-                                ObjectSpeedInfo add_speed = thisObject.this_lim_speed(SignalHead.SIGFN.SPEED);
-                                if (add_speed.speed_pass != -1 && add_speed.speed_pass < speed_info.speed_pass)
-                                {
-                                        speed_info.speed_pass = add_speed.speed_pass;
-                                        speed_info.speed_flag = 0;
-                                }
-                                if (add_speed.speed_freight != -1 && add_speed.speed_freight < speed_info.speed_freight)
-                                {
-                                        speed_info.speed_freight = add_speed.speed_freight;
-                                        speed_info.speed_flag = 0;
-                                }
+                                signal_state = SignalHead.SIGASP.UNKNOWN;  // set active by TRAIN
+                                speed_passenger = -1;                      // set active by TRAIN
+                                speed_freight   = -1;                      // set active by TRAIN
+                                speed_flag      = 0;                       // set active by TRAIN
                         }
                         else
                         {
                                 ObjectType = ObjectItemType.SPEEDLIMIT;
                                 signal_state = SignalHead.SIGASP.UNKNOWN;
                                 speed_info = thisObject.this_lim_speed(SignalHead.SIGFN.SPEED);
+                                speed_passenger = speed_info.speed_pass;
+                                speed_freight   = speed_info.speed_freight;
+                                speed_flag      = speed_info.speed_flag;
                         }
-
-                        speed_passenger = speed_info.speed_pass;
-                        speed_freight   = speed_info.speed_freight;
-                        speed_flag      = speed_info.speed_flag;
-
                 }
         }
 
@@ -2590,6 +2625,7 @@ namespace ORTS
   //================================================================================================//
 
 }
+
 
 
 

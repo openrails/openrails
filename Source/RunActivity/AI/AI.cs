@@ -174,7 +174,8 @@ namespace ORTS
             AITrain train = new AITrain(Simulator, sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName), sd.Time);
 
             if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
-                train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
+                train.RouteMaxSpeedMpS = train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
+	    		// also set Route max speed for speedpost-processing in train.cs [R.Roeterdink]
 
             train.Path.AlignAllSwitches();
             // This is the position of the back end of the train in the database.
@@ -235,7 +236,7 @@ namespace ORTS
 
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
-            train.InitializeSignals();
+            train.InitializeSignals(false);  // Initialize Signals and Speedlimits without active speed information [R.Roeterdink]
 
             //AITrains.Add(train);
             Simulator.Trains.Add(train);
