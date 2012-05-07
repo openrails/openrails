@@ -234,9 +234,13 @@ namespace ORTS
                 {
                     platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
                 }
-                else // It's some other type of object - not one of the above.
+                else if (worldObject.GetType() == typeof(MSTS.AnimatedObj))
                 {
                     sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                }
+                else // It's some other type of object - not one of the above.
+                {
+                    sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                 }
             }
 

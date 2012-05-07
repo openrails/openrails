@@ -139,7 +139,7 @@ namespace MSTS
                 //some of the TokenID for binary W file:  309-->TelePole, 361-->Siding
                 case TokenID.CollideObject:
                 case TokenID.Static:
-                    Add(new StaticObj(subBlock, currentWatermark));
+                    Add(new AnimatedObj(subBlock, currentWatermark));
                     break;
                 case TokenID.TrackObj:
                     Add(new TrackObj(subBlock, currentWatermark));
@@ -169,11 +169,12 @@ namespace MSTS
                     break;
                 case TokenID.Gantry:
                 case (TokenID)356:
-                    // TODO: Add real handling.
+                    // TODO: Add real handling for gantry objects.
                     Add(new StaticObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Pickup:
-                    // TODO: Add real handling.
+                case (TokenID)359:
+                    // TODO: Add real handling for pickup objects.
                     Add(new StaticObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Signal:
@@ -202,7 +203,7 @@ namespace MSTS
 
     public class StaticObj : WorldObject
     {
-        public StaticObj(SBR block, int detailLevel )
+        public StaticObj(SBR block, int detailLevel)
         {
             //f.VerifyID(TokenID.Static); it could be CollideObject or Static object
 
@@ -227,6 +228,14 @@ namespace MSTS
             }
             // TODO verify that we got all needed parameters otherwise null pointer failures will occur
             // TODO, do this for all objects that iterate using a while loop
+        }
+    }
+
+    public class AnimatedObj : StaticObj
+    {
+        public AnimatedObj(SBR block, int detailLevel)
+            : base(block, detailLevel)
+        {
         }
     }
 
