@@ -260,7 +260,7 @@ namespace ORTS
 
 			SpeedPostObj = spo;
 			var maxVertex =  SpeedPostObj.Sign_Shape.NumShapes * 48;// every face has max 7 digits, each has 2 triangles
-			Material = Materials.Load(viewer.RenderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), 256, 0);
+            var material = Materials.Load(viewer.RenderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
 			// Create and populate a new ShapePrimitive
 
 
@@ -339,7 +339,7 @@ namespace ORTS
 			IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
 															NumIndices, BufferUsage.WriteOnly);
 			IndexBuffer.SetData(newTList);
-			shapePrimitive = new ShapePrimitive(Material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+			shapePrimitive = new ShapePrimitive(material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
 
 		}
 
