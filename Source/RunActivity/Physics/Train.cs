@@ -133,6 +133,7 @@ namespace ORTS
         public Train(Simulator simulator)
         {
             Simulator = simulator;
+            SignalObjectItems = new List<ObjectItemInfo>();
         }
 
         // restore game state
