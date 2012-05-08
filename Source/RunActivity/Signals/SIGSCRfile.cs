@@ -92,6 +92,11 @@ namespace ORTS
 			NONE,
 		}
 
+		public enum SCRNegate
+		{
+			NEGATE,
+		}
+
 		public enum SCRTermOperator
 		{
 			NONE,        // used for first term
@@ -118,15 +123,18 @@ namespace ORTS
 
 #if DEBUG_PRINT_IN
 		public static string din_fileLoc = String.Empty;    /* file path for debug files */
+ //		public static string din_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
 #if DEBUG_PRINT_OUT
 		public static string dout_fileLoc = String.Empty;   /* file path for debug files */
+ //		public static string dout_fileLoc = @"C:\temp\";    /* file path for debug files */
 #endif
 
 #if DEBUG_PRINT_PROCESS
 		public static int [] TDB_debug_ref;                 /* signal TDB idents         */
 		public static string dpr_fileLoc = String.Empty;    /* file path for debug files */
+ //		public static string dpr_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
 		public IDictionary <SignalType, SCRScripts> Scripts;
@@ -479,6 +487,10 @@ namespace ORTS
 				{
 					SCRAndOr condstring = (SCRAndOr) ThisCond;
 					File.AppendAllText(dout_fileLoc+@"scriptproc.txt",condstring.ToString()+"\n");
+				}
+				else if (ThisCond is SCRNegate)
+				{
+					File.AppendAllText(dout_fileLoc+@"scriptproc.txt","NEGATED : \n");
 				}
 				else
 				{
@@ -1619,7 +1631,7 @@ namespace ORTS
 
 				int startpos = GICString.IndexOf("(");
 				int endpos   = GICString.LastIndexOf(")");
-				string presentline = GICString.Substring(startpos+1, endpos-startpos-1);
+				string presentline = GICString.Substring(startpos+1, endpos-startpos-1).Trim();
 
   // search for substrings
   // search for matching brackets
@@ -1726,6 +1738,15 @@ namespace ORTS
 					condstring = reststring.Substring(seppos,2);
 					reststring = reststring.Substring(seppos+2).Trim();
 
+  // process separate !
+
+					if (procstring.Length > 0 && String.Compare(procstring.Substring(0,1),"!") == 0)
+					{
+						SCRNegate negated = SCRNegate.NEGATE;
+						SCRConditionList.Add(negated);
+						procstring = procstring.Substring(1).Trim();
+					}
+
   // previous separated substring - process as new full IF condition
 
 					if (procstring.StartsWith("["))
@@ -1769,6 +1790,15 @@ namespace ORTS
 
 				procstring = reststring;
 
+  // process separate !
+
+				if (procstring.Length > 0 && String.Compare(procstring.Substring(0,1),"!") == 0)
+				{
+					SCRNegate negated = SCRNegate.NEGATE;
+					SCRConditionList.Add(negated);
+					procstring = procstring.Substring(1).Trim();
+				}
+
   // previous separated substring - process as new full IF condition
 
 				if (procstring.StartsWith("["))
@@ -1788,7 +1818,7 @@ namespace ORTS
 
 					if (procstring.StartsWith("("))
 					{
-						procstring=procstring.Substring(1,procstring.Length-2);
+						procstring=procstring.Substring(1,procstring.Length-2).Trim();
 					}
 					ThisCondition = new SCRConditions(procstring, LocalFloats);
 					SCRConditionList.Add(ThisCondition);
@@ -2134,6 +2164,7 @@ namespace ORTS
 				public SCRExternalFunctions Function;
 				public SCRParameterType[] PartParameter;
 				public SCRTermOperator TermOperator;
+				public bool negate;
 				public int sublevel;
 				public int issublevel;
 
@@ -2145,6 +2176,18 @@ namespace ORTS
 				public SCRStatTerm(string StatementString, string StatementOperator, int sublevelIn, int issublevelIn,
 					       	IDictionary<string, uint> LocalFloats)
 				{
+
+  // check if statement starts with ! - if so , set negate
+
+					if (String.Compare(StatementString.Substring(0,1),"!") == 0)
+					{
+						negate = true;
+						StatementString = StatementString.Substring(1).Trim();
+					}
+					else
+					{
+						negate = false;
+					}
 
 					sublevel = 0;
 
@@ -2719,6 +2762,10 @@ namespace ORTS
 				{
 					termvalue =
 					       	SH_processAssignTerm(thisHead, StatementTerms, thisTerm, sublevel, localFloats, sigscr);
+					if (thisTerm.negate)
+					{
+						termvalue = termvalue == 0 ? 1 : 0;
+					}
 	
 					switch (thisOperator)
 					{
@@ -3054,6 +3101,7 @@ namespace ORTS
 
 			bool condition = true;
 			bool newcondition = true;
+			bool termnegate   = false;
 			SCRAndOr condstring = SCRAndOr.NONE;
 
 			foreach(object thisCond in thisCStatList)
@@ -3061,10 +3109,21 @@ namespace ORTS
 
   // single condition : process
 
-				if (thisCond is SCRScripts.SCRConditions)
+				if (thisCond is SCRNegate)
+				{
+					termnegate = true;
+				}
+
+				else if (thisCond is SCRScripts.SCRConditions)
 				{
 					SCRScripts.SCRConditions thisSingleCond = (SCRScripts.SCRConditions) thisCond;
 					newcondition = SH_processSingleCondition(thisHead, thisSingleCond, localFloats, sigscr);
+
+					if (termnegate)
+					{
+						termnegate = false;
+						newcondition = newcondition ? false : true;
+					}
 
 					switch (condstring)
 					{
@@ -3095,6 +3154,13 @@ namespace ORTS
 				{
 					ArrayList subCond = (ArrayList) thisCond;
 					newcondition = SH_processConditionStatement(thisHead, subCond, localFloats, sigscr);
+
+					if (termnegate)
+					{
+						termnegate = false;
+						newcondition = newcondition ? false : true;
+					}
+
 					switch (condstring)
 					{
 						case (SCRAndOr.AND) :
@@ -3287,4 +3353,5 @@ namespace ORTS
 
 	}
 }
+
 
