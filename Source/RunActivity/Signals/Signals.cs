@@ -981,22 +981,22 @@ namespace ORTS
                                 {
                                         NextNode(trackNodes, ref actindex, ref direction);
 
-                                        if (actindex == 0)
+                                        if (actindex == 0 || actindex > trackNodes.Length)
                                         {
                                                 locstate = -3;
                                         }
 
-                                        if (actindex == nodestartindex)
+					else if (actindex == nodestartindex)
                                         {
                                                 locstate = -4;
                                         }
 
-                                        if (trackNodes[actindex].TrEndNode)
+					else if (trackNodes[actindex].TrEndNode)
                                         {
                                                 locstate = -1;
                                         }
 
-                                        if (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
+					else if (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
                                         {
                                                 nextvalidnode = 1;
                                                 actrefindex   = -1;
