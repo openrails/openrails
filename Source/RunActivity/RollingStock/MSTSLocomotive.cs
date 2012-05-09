@@ -103,6 +103,8 @@ namespace ORTS
         public bool HasCombCtrl = false;
         public bool HasStepCtrl = false;
         public bool HasCombThrottleTrainBreak = false;
+        public bool HasDefectiveComboDynamicBreak = false;
+        private bool HasSmoothStruc = false;
         public int  ComboCtrlCrossOver = 5;
 
         public float MaxContinuousForceN;
@@ -235,6 +237,7 @@ namespace ORTS
                 TrainBrakeController = new MSTSBrakeController(Simulator); //create a blank one
             if (!EngineBrakeController.IsValid())
                 EngineBrakeController = null;
+
             if (!DynamicBrakeController.IsValid())
                 DynamicBrakeController = null;
             if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
@@ -425,6 +428,20 @@ namespace ORTS
                 if (comboBrakeType == s)
                     HasCombThrottleTrainBreak = true;
                 i++;
+            }
+
+            // need to test for Dynamic brake problem on 3DTS and SLI
+            if (DynamicBrakeController.IsValid())
+            {
+                if (DynamicBrakeController.NotchCount() <= 3)
+                {
+                    // cancel combination control, keyboard hud display only
+                    HasDefectiveComboDynamicBreak = true;
+                    HasSmoothStruc = true;
+                    //HasCombCtrl = false;
+                    Trace.TraceWarning("Smooth Dynamic Break not supported for Combination Throttle");
+                    Trace.TraceWarning("DYNAMIC BREAK DISABLED Combination display may be incorrect");
+                }
             }
         }
 
@@ -844,7 +861,8 @@ namespace ORTS
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
                     StartDynamicBrakeDecrease();
-                    StopDynamicBrakeDecrease();
+                    if (!HasSmoothStruc)
+                        StopDynamicBrakeDecrease();
                 }
                 if (DynamicBrakePercent == -1)
                 {
@@ -889,8 +907,14 @@ namespace ORTS
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
-                    StartDynamicBrakeIncrease();
-                    StopDynamicBrakeIncrease();
+                    if (!HasSmoothStruc)
+                    {
+                        StartDynamicBrakeIncrease();
+                        StopDynamicBrakeIncrease();
+                    }
+                    else
+                        StartDynamicBrakeIncrease();
+
                 }
                 if (DynamicBrakePercent == -1)
                 {
@@ -1039,7 +1063,8 @@ namespace ORTS
 
         private bool CanUseDynamicBrake()
         {
-            return (DynamicBrakeController != null && DynamicBrakeForceCurves != null && ThrottlePercent == 0);
+            return (DynamicBrakeController != null && DynamicBrakeForceCurves != null
+                && ThrottlePercent == 0 && !HasDefectiveComboDynamicBreak);
         }
 
         public void StartDynamicBrakeIncrease()
@@ -1058,7 +1083,8 @@ namespace ORTS
             else
             {
                 DynamicBrakeController.StartIncrease();
-                StopDynamicBrakeIncrease();
+                if (!HasSmoothStruc)
+                    StopDynamicBrakeIncrease();
             }
         }
 
@@ -1082,7 +1108,8 @@ namespace ORTS
             else
             {
                 DynamicBrakeController.StartDecrease();
-                StopDynamicBrakeDecrease();
+                if (!HasSmoothStruc)
+                    StopDynamicBrakeDecrease();
             }
         }
 
