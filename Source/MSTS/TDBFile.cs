@@ -483,6 +483,7 @@ namespace MSTS
 		public bool IsMilePost = false; //true to be milepost
 		public bool IsWarning = false; //speed warning
 		public bool IsLimit = false; //speed limit
+		public bool IsResume= false; // speed resume sign (has no speed defined!)
 		public bool IsPassenger = false; //is passender speed limit
 		public bool IsFreight = false; //is freight speed limit
 		public bool IsMPH = false;//is the digit in MPH or KPH
@@ -518,6 +519,12 @@ namespace MSTS
 						IsMilePost = true;
 					}
 					else {
+						if (IsWarning && IsLimit)
+						{
+							IsWarning = false;
+							IsResume = true;
+						}
+
 						if ((Flags & (1 << 5)) != 0) IsPassenger = true;
 						if ((Flags & (1 << 6)) != 0) IsFreight = true;
 						if ((Flags & (1 << 7)) != 0) IsFreight = IsPassenger = true;
@@ -530,7 +537,10 @@ namespace MSTS
 
                     //  The number of parameters depends on the flags seeting
                     //  To do: Check flags seetings and parse accordingly.
-                    SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
+		    if (!IsResume)
+		    {
+                    	SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
+		    }
     		    if (ShowNumber)
 		    {
 			    DisplayNumber = stf.ReadInt(STFReader.UNITS.None, null);

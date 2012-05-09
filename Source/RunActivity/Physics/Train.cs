@@ -307,6 +307,9 @@ namespace ORTS
                     {
                             NextSignalObject = firstSignalObject.ObjectDetails;
                             distanceToSignal = firstSignalObject.distance_to_train;
+                            Signals signals = NextSignalObject.signalRef;
+                            nextSignal = signals.InitSignalItem(NextSignalObject.thisRef);
+                            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
                     }
             }
 
@@ -809,7 +812,12 @@ namespace ORTS
                                 }
                         }
                         else
-                        {
+			{
+				if (actualSpeedMpS > 998f)
+				{
+					actualSpeedMpS = RouteMaxSpeedMpS;
+				}
+
                                 if (actualSpeedMpS > 0)
                                 {
                                         validSpeedMpS = actualSpeedMpS;

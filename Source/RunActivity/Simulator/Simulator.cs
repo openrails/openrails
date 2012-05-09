@@ -706,7 +706,7 @@ namespace ORTS
 
 			Trains.Add(train);
 			train.AITrainBrakePercent = 100;
-			train.RouteMaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A;
+			train.RouteMaxSpeedMpS = (float) TRK.Tr_RouteFile.SpeedLimit;
             train.InitializeSignals(false); // initialize without existing speed limits
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
             InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);

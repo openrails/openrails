@@ -1978,6 +1978,7 @@ namespace ORTS
                         speed_info    = new ObjectSpeedInfo[sigasp_values.Length];
 
                         float speedMpS = MpS.ToMpS(speedItem.SpeedInd, !speedItem.IsMPH);
+			if (speedItem.IsResume) speedMpS = 999f;
 
                         float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
                         float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
