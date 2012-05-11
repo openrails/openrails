@@ -38,7 +38,6 @@ namespace ORTS
 {
     public class Train
     {
-        // public static Signals Signals;
         public List<TrainCar> Cars = new List<TrainCar>();  // listed front to back
         public TrainCar FirstCar { get { return Cars[0]; } }
         public TrainCar LastCar { get { return Cars[Cars.Count - 1]; } }
@@ -52,6 +51,7 @@ namespace ORTS
         public int NPull = 0;
         public int NPush = 0;
         private int LeadLocomotiveIndex = -1;
+	public bool IsFreight = false;
         public float SlipperySpotDistanceM = 0; // distance to extra slippery part of track
         public float SlipperySpotLengthM = 0;
 
@@ -141,6 +141,7 @@ namespace ORTS
         {
             Simulator = simulator;
             RestoreCars(simulator, inf);
+	    CheckFreight();
             SpeedMpS = inf.ReadSingle();
             MUDirection = (Direction)inf.ReadInt32();
             MUThrottlePercent = inf.ReadSingle();
@@ -208,6 +209,9 @@ namespace ORTS
         public void InitializeSignals(bool existingSpeedLimits)
         {
             Debug.Assert(Simulator.Signals != null, "Cannot InitializeSignals() without Simulator.Signals.");
+
+	    IndexNextSignal = -1;
+	    IndexNextSpeedlimit = -1;
 
   //  set overall speed limits if these do not yet exist
 
@@ -778,8 +782,7 @@ namespace ORTS
  // select speed on type of train - not yet implemented as type is not yet available
  //
 
- //                     float actualSpeedMpS = train == freight ? thisObject.speed_freight : thisObject.speed_passenger;
-                        float actualSpeedMpS = thisObject.speed_passenger;
+                        float actualSpeedMpS = IsFreight ? thisObject.speed_freight : thisObject.speed_passenger;
 
                         if (thisObject.ObjectDetails.isSignal)
                         {
@@ -1082,6 +1085,18 @@ namespace ORTS
             Length = length;
         } // RepositionRearTraveller
 
+
+        /// <summary>
+        /// Check if train is passenger or freight train
+        /// </summary>
+        public void CheckFreight()
+        {
+            IsFreight = false;
+            foreach (var car in Cars)
+            {
+                    if (car.IsFreight) IsFreight = true;
+            }
+        } // CheckFreight
 
         /// <summary>
         /// Distance is the signed distance the cars are moving.

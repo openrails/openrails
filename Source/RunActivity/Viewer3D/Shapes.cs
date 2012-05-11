@@ -190,7 +190,7 @@ namespace ORTS
 		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // if the shape has animations
-            if (SharedShape.Animations != null && SharedShape.Animations[0].FrameCount > 1)
+            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].FrameCount > 1)
             {
                 // Compute the animation key based on framerate etc
                 // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.

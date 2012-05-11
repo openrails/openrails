@@ -18,15 +18,16 @@ namespace ORTS
 
     public class TrainCar
     {
-		public readonly Simulator Simulator;
-		public readonly string WagFilePath;
+        public readonly Simulator Simulator;
+        public readonly string WagFilePath;
 
         // some properties of this car
         public float Length = 40;       // derived classes must overwrite these defaults
-		public float Height = 4; //derived classes must overwrite these defaults
+        public float Height = 4;        // derived classes must overwrite these defaults
         public float MassKG = 10000;
         public bool IsDriveable = false;
         //public bool HasCabView = false;
+	public bool IsFreight = false;  // indication freigth wagon or passenger car
 
         // This is here so the viewer can see and exploit the car before this one for articulation.
         public readonly TrainCar PreviousCar;
@@ -37,8 +38,8 @@ namespace ORTS
         // instance variables set by train train physics when it creates the traincar
         public Train Train = null;  // the car is connected to this train
         public bool Flipped = false; // the car is reversed in the consist
-		public int UiD;
-		public string CarID = "AI"; //CarID = "0 - UID" if player train, "ActivityID - UID" if loose consist, "AI" if AI train
+        public int UiD;
+        public string CarID = "AI"; //CarID = "0 - UID" if player train, "ActivityID - UID" if loose consist, "AI" if AI train
 
         // status of the traincar - set by the train physics after it call calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car

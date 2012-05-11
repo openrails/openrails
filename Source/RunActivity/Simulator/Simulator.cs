@@ -346,9 +346,9 @@ namespace ORTS
 				drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
 				drivenTrain.LeadLocomotive = PlayerLocomotive;
 			}
+
+			drivenTrain.CheckFreight();  // check if train in new consist is freight or passenger
 		}
-
-
 
 		private void UpdateUncoupled(Train drivenTrain, Train train, float d1, float d2, bool rear)
 		{
@@ -702,6 +702,7 @@ namespace ORTS
 
 			if (train.Cars.Count == 0) return;
 
+			train.CheckFreight();
 			train.CalculatePositionOfCars(0);
 
 			Trains.Add(train);
@@ -928,6 +929,9 @@ namespace ORTS
 				train2.AITrainThrottlePercent = train.AITrainThrottlePercent;
 				train.AITrainThrottlePercent = 0;
 			}
+
+			train.CheckFreight();
+			train2.CheckFreight();
 
 			train.Update(0);   // stop the wheels from moving etc
 			train2.Update(0);  // stop the wheels from moving etc

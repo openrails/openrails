@@ -421,7 +421,13 @@ namespace ORTS
 				train2.CalculatePositionOfCars(0);  // fix the front traveller
 				RepositionRearTraveller();    // fix the rear traveller
 			}
-            train2.InitializeSignals(false);  // Initialize signals and speedposts without active speed information [R.Roeterdink]
+
+			// check if trains are freight or passenger - for both trains
+
+			CheckFreight();
+			train2.CheckFreight();
+
+			train2.InitializeSignals(false);  // Initialize signals and speedposts without active speed information [R.Roeterdink]
 			AI.Simulator.Trains.Add(train2);
 			if (nCars != 0)
 				Update(0);   // stop the wheels from moving etc
