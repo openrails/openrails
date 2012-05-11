@@ -104,7 +104,7 @@ namespace ORTS
         public bool HasStepCtrl = false;
         public bool HasCombThrottleTrainBreak = false;
         public bool HasDefectiveComboDynamicBreak = false;
-        private bool HasSmoothStruc = false;
+        public bool HasSmoothStruc = false;
         public int  ComboCtrlCrossOver = 5;
 
         public float MaxContinuousForceN;
@@ -238,6 +238,12 @@ namespace ORTS
             if (!EngineBrakeController.IsValid())
                 EngineBrakeController = null;
 
+            // need to test for Dynamic brake problem on 3DTS and SLI
+            if (DynamicBrakeController.IsValid())
+            {
+                if (DynamicBrakeController.NotchCount() <= 3)
+                    HasSmoothStruc = true;
+            }
             if (!DynamicBrakeController.IsValid())
                 DynamicBrakeController = null;
             if (DynamicBrakeForceCurves == null && MaxDynamicBrakeForceN > 0)
@@ -412,6 +418,7 @@ namespace ORTS
         private void ParseCombData(string lowercasetoken, STFReader stf)
         {
             HasCombCtrl = true;
+
             stf.MustMatch("(");
             string comboBrakeType = "train";
             string s;
@@ -435,12 +442,11 @@ namespace ORTS
             {
                 if (DynamicBrakeController.NotchCount() <= 3)
                 {
-                    // cancel combination control, keyboard hud display only
+                    // cancel smooth dynamic control, keyboard hud display only
                     HasDefectiveComboDynamicBreak = true;
                     HasSmoothStruc = true;
-                    //HasCombCtrl = false;
-                    Trace.TraceWarning("Smooth Dynamic Break not supported for Combination Throttle");
-                    Trace.TraceWarning("DYNAMIC BREAK DISABLED Combination display may be incorrect");
+                    Trace.TraceWarning("Smooth Dynamic Break not supported");
+                    Trace.TraceWarning("DYNAMIC BREAK DISABLED display may be incorrect");
                 }
             }
         }
@@ -2898,10 +2904,15 @@ namespace ORTS
                         float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
                         int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
                         int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
+
                         if (dynBrakePercent == -1)
                             break;
                         else
-                            indx = currentDynamicNotch;
+                            if (!_Locomotive.HasSmoothStruc)
+                                indx = currentDynamicNotch;
+                            else
+                                indx = FromPercent(dynBrakePercent);
+                            // Console.WriteLine("data {0} indx {1}", dynBrakePercent, indx);
                         break;
                     }
 
@@ -2927,7 +2938,10 @@ namespace ORTS
                                     indx = (throttleNotchCount - 1) - currentThrottleNotch;
                             }
                             else // dynamic break enabled
-                                indx = (dynNotchCount - 1) + currentDynamicNotch;
+                                // if (!_Locomotive.HasSmoothStruc)
+                                    indx = (dynNotchCount - 1) + currentDynamicNotch;
+                                //else
+                                //    indx = (FromPercent(dynBrakePercent) - 1) + currentDynamicNotch;
 
 
 
