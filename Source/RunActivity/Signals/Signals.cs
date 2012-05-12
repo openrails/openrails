@@ -85,7 +85,7 @@ namespace ORTS
   // check for any backfacing heads in signals
   // if found, split signal
 
-			SplitBackfacing(trackDB.TrItemTable, trackDB.TrackNodes);
+                        SplitBackfacing(trackDB.TrItemTable, trackDB.TrackNodes);
 
 #if DEBUG_PRINT
                         for (int isignal=0; isignal < signalObjects.Length-1; isignal++)
@@ -353,7 +353,7 @@ namespace ORTS
   //
                         if (noSignals > 0)
                         {
-				signalObjects = new SignalObject[noSignals];
+                                signalObjects = new SignalObject[noSignals];
                                 SignalObject.trackNodes = trackNodes;
                                 SignalObject.signalObjects = signalObjects;
                                 SignalObject.trItems = TrItems;
@@ -366,53 +366,54 @@ namespace ORTS
 
                 } //BuildSignalList
 
-		
+                
   //================================================================================================//
   ///
   /// Split backfacing signals
   ///
 
                 private void SplitBackfacing(TrItem[] TrItems, TrackNode[] TrackNodes)
-		{
-		
-			List <SignalObject> newSignals = new List<SignalObject> ();
-			int newindex = foundSignals+1;
+                {
+                
+                        List <SignalObject> newSignals = new List<SignalObject> ();
+                        int newindex = foundSignals+1;
 
   //
   // Loop through all signals to check on Backfacing heads
   //
 
-			for (int isignal=0; isignal < signalObjects.Length-1; isignal++)
-			{
-				SignalObject singleSignal = signalObjects[isignal];
-				if (singleSignal != null && singleSignal.isSignal && singleSignal.WorldObject.Backfacing.Count > 0)
-				{
+                        for (int isignal=0; isignal < signalObjects.Length-1; isignal++)
+                        {
+                                SignalObject singleSignal = signalObjects[isignal];
+                                if (singleSignal != null && singleSignal.isSignal && 
+                                                singleSignal.WorldObject != null && singleSignal.WorldObject.Backfacing.Count > 0)
+                                {
 
   //
   // create new signal - copy of existing signal
   // use Backfacing flags and reset head indication
   //
 
-					SignalObject newSignal = new SignalObject(singleSignal);
+                                        SignalObject newSignal = new SignalObject(singleSignal);
 
-					newSignal.thisRef = newindex;
-					newSignal.signalRef = this;
-					newSignal.trRefIndex = 0;
+                                        newSignal.thisRef = newindex;
+                                        newSignal.signalRef = this;
+                                        newSignal.trRefIndex = 0;
 
-					newSignal.WorldObject.FlagsSet = new bool [singleSignal.WorldObject.FlagsSetBackfacing.Length];
-					singleSignal.WorldObject.FlagsSetBackfacing.CopyTo (newSignal.WorldObject.FlagsSet, 0);
+                                        newSignal.WorldObject.FlagsSet = new bool [singleSignal.WorldObject.FlagsSetBackfacing.Length];
+                                        singleSignal.WorldObject.FlagsSetBackfacing.CopyTo (newSignal.WorldObject.FlagsSet, 0);
 
-					for (int iindex = 0; iindex < newSignal.WorldObject.HeadsSet.Length; iindex++)
-					{
-						newSignal.WorldObject.HeadsSet[iindex] = false;
-					}
+                                        for (int iindex = 0; iindex < newSignal.WorldObject.HeadsSet.Length; iindex++)
+                                        {
+                                                newSignal.WorldObject.HeadsSet[iindex] = false;
+                                        }
 
   //
   // Somehow, the original and not the new signal must be reversed
   //
 
-					singleSignal.direction = singleSignal.direction == 0 ? 1 : 0;           // reverse //
-                        		singleSignal.tdbtraveller.ReverseDirection();                           // reverse //
+                                        singleSignal.direction = singleSignal.direction == 0 ? 1 : 0;           // reverse //
+                                        singleSignal.tdbtraveller.ReverseDirection();                           // reverse //
 
 
   //
@@ -420,128 +421,128 @@ namespace ORTS
   // use the TDBreference to find the actual head
   //
 
-					List<int> removeHead = new List<int> ();  // list to keep trace of heads which are moved //
+                                        List<int> removeHead = new List<int> ();  // list to keep trace of heads which are moved //
 
-					foreach (KeyValuePair <uint, uint> thisHeadRef in singleSignal.WorldObject.HeadReference)
-					{
-                                        	for (int iindex = singleSignal.WorldObject.Backfacing.Count - 1; iindex >= 0; iindex --)
-						{
-							int ihead = singleSignal.WorldObject.Backfacing[iindex];
-							if (thisHeadRef.Value == ihead)
-							{
-								for (int ihIndex=0; ihIndex < singleSignal.SignalHeads.Count; ihIndex++)
-								{
-									SignalHead thisHead = singleSignal.SignalHeads[ihIndex];
+                                        foreach (KeyValuePair <uint, uint> thisHeadRef in singleSignal.WorldObject.HeadReference)
+                                        {
+                                                for (int iindex = singleSignal.WorldObject.Backfacing.Count - 1; iindex >= 0; iindex --)
+                                                {
+                                                        int ihead = singleSignal.WorldObject.Backfacing[iindex];
+                                                        if (thisHeadRef.Value == ihead)
+                                                        {
+                                                                for (int ihIndex=0; ihIndex < singleSignal.SignalHeads.Count; ihIndex++)
+                                                                {
+                                                                        SignalHead thisHead = singleSignal.SignalHeads[ihIndex];
 
   //
   // backfacing head found - add to new signal, set to remove from exising signal
   //
 
-									if (thisHead.TDBIndex == thisHeadRef.Key)
-									{
-										removeHead.Add(ihIndex);
+                                                                        if (thisHead.TDBIndex == thisHeadRef.Key)
+                                                                        {
+                                                                                removeHead.Add(ihIndex);
 
-										thisHead.mainSignal = newSignal;
-										newSignal.SignalHeads.Add(thisHead);
-									}
-								}
-							}
+                                                                                thisHead.mainSignal = newSignal;
+                                                                                newSignal.SignalHeads.Add(thisHead);
+                                                                        }
+                                                                }
+                                                        }
 
   //
   // update flags for available heads
   //
 
-							newSignal.WorldObject.HeadsSet[ihead] = true;
-							singleSignal.WorldObject.HeadsSet[ihead] = false;
-						}
-					}
+                                                        newSignal.WorldObject.HeadsSet[ihead] = true;
+                                                        singleSignal.WorldObject.HeadsSet[ihead] = false;
+                                                }
+                                        }
 
   //
   // remove moved heads from existing signal
   //
 
-					for (int ihead = singleSignal.SignalHeads.Count-1; ihead >= 0; ihead--)
-					{
-						if (removeHead.Contains(ihead))
-						{
-							singleSignal.SignalHeads.RemoveAt(ihead);
-						}
-					}
+                                        for (int ihead = singleSignal.SignalHeads.Count-1; ihead >= 0; ihead--)
+                                        {
+                                                if (removeHead.Contains(ihead))
+                                                {
+                                                        singleSignal.SignalHeads.RemoveAt(ihead);
+                                                }
+                                        }
 
 
   //
   // set correct trRefIndex for this signal, and set cross-reference for all backfacing trRef items
   //
 
-					for (int i = 0; i < TrackNodes[newSignal.trackNode].TrVectorNode.noItemRefs; i++)
-					{
-	                                        int TDBRef = TrackNodes[newSignal.trackNode].TrVectorNode.TrItemRefs[i];
-                                        	if (TrItems[TDBRef] != null)
-                                        	{
-                                                	if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
-                                                	{
-								foreach (SignalHead thisHead in newSignal.SignalHeads)
-								{
-									if (TDBRef == thisHead.TDBIndex)
-									{
-                                                        			SignalItem sigItem = (SignalItem) TrItems[TDBRef];
-                                                        			sigItem.sigObj = newSignal.thisRef;
-										newSignal.trRefIndex = i;
+                                        for (int i = 0; i < TrackNodes[newSignal.trackNode].TrVectorNode.noItemRefs; i++)
+                                        {
+                                                int TDBRef = TrackNodes[newSignal.trackNode].TrVectorNode.TrItemRefs[i];
+                                                if (TrItems[TDBRef] != null)
+                                                {
+                                                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
+                                                        {
+                                                                foreach (SignalHead thisHead in newSignal.SignalHeads)
+                                                                {
+                                                                        if (TDBRef == thisHead.TDBIndex)
+                                                                        {
+                                                                                SignalItem sigItem = (SignalItem) TrItems[TDBRef];
+                                                                                sigItem.sigObj = newSignal.thisRef;
+                                                                                newSignal.trRefIndex = i;
 
-										// remove this key from the original signal //
-										singleSignal.WorldObject.HeadReference.Remove((uint) TDBRef);
-									}
-								}
-							}
-						}
-					}
+                                                                                // remove this key from the original signal //
+                                                                                singleSignal.WorldObject.HeadReference.Remove((uint) TDBRef);
+                                                                        }
+                                                                }
+                                                        }
+                                                }
+                                        }
 
   //
   // reset cross-references for original signal (it may have been set for a backfacing head)
   //
 
-					for (int i = 0; i < TrackNodes[newSignal.trackNode].TrVectorNode.noItemRefs; i++)
-					{
-	                                        int TDBRef = TrackNodes[newSignal.trackNode].TrVectorNode.TrItemRefs[i];
-                                        	if (TrItems[TDBRef] != null)
-                                        	{
-                                                	if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
-                                                	{
-								foreach (SignalHead thisHead in singleSignal.SignalHeads)
-								{
-									if (TDBRef == thisHead.TDBIndex)
-									{
-                                                        			SignalItem sigItem = (SignalItem) TrItems[TDBRef];
-                                                        			sigItem.sigObj = singleSignal.thisRef;
-										singleSignal.trRefIndex = i;
+                                        for (int i = 0; i < TrackNodes[newSignal.trackNode].TrVectorNode.noItemRefs; i++)
+                                        {
+                                                int TDBRef = TrackNodes[newSignal.trackNode].TrVectorNode.TrItemRefs[i];
+                                                if (TrItems[TDBRef] != null)
+                                                {
+                                                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
+                                                        {
+                                                                foreach (SignalHead thisHead in singleSignal.SignalHeads)
+                                                                {
+                                                                        if (TDBRef == thisHead.TDBIndex)
+                                                                        {
+                                                                                SignalItem sigItem = (SignalItem) TrItems[TDBRef];
+                                                                                sigItem.sigObj = singleSignal.thisRef;
+                                                                                singleSignal.trRefIndex = i;
 
-										// remove this key from the new signal //
-										newSignal.WorldObject.HeadReference.Remove((uint) TDBRef);
-									}
-								}
-							}
-						}
-					}
+                                                                                // remove this key from the new signal //
+                                                                                newSignal.WorldObject.HeadReference.Remove((uint) TDBRef);
+                                                                        }
+                                                                }
+                                                        }
+                                                }
+                                        }
 
-					newindex++;
-					newSignals.Add(newSignal);
-				}
-			}
+                                        newindex++;
+                                        newSignals.Add(newSignal);
+                                }
+                        }
 
   //
   // add all new signals to the signalObject array
   // length of array was set to all possible signals, so there will be space to spare
   //
 
-			newindex = foundSignals+1;
-			foreach(SignalObject newSignal in newSignals)
-			{
-				signalObjects[newindex] = newSignal;
-				newindex++;
-			}
+                        newindex = foundSignals+1;
+                        foreach(SignalObject newSignal in newSignals)
+                        {
+                                signalObjects[newindex] = newSignal;
+                                newindex++;
+                        }
 
-			foundSignals = newindex;
-		}
+                        foundSignals = newindex;
+                }
 
   //================================================================================================//
   //
@@ -1165,17 +1166,17 @@ namespace ORTS
                                                 locstate = -3;
                                         }
 
-					else if (actindex == nodestartindex)
+                                        else if (actindex == nodestartindex)
                                         {
                                                 locstate = -4;
                                         }
 
-					else if (trackNodes[actindex].TrEndNode)
+                                        else if (trackNodes[actindex].TrEndNode)
                                         {
                                                 locstate = -1;
                                         }
 
-					else if (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
+                                        else if (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
                                         {
                                                 nextvalidnode = 1;
                                                 actrefindex   = -1;
@@ -1463,39 +1464,39 @@ namespace ORTS
   //  Constructor for empty item
   ///
   
-		public SignalObject()
-		{
-		}
+                public SignalObject()
+                {
+                }
 
   //================================================================================================//
   ///
   //  Constructor for Copy 
   ///
   
-		public SignalObject(SignalObject copy)
-		{
-  			signalRef            = copy.signalRef;
- 			trackNode            = copy.trackNode;
- 			nextNode             = copy.nextNode;
-			direction            = copy.direction;
- 			draw_state           = copy.draw_state;
- 			enabled              = copy.enabled;
- 			isJunction           = copy.isJunction;
- 			canUpdate            = copy.canUpdate;
- 			isAuto               = copy.isAuto;
- 			isSignal             = copy.isSignal;
- 			useScript            = copy.useScript;
- 			blockState           = copy.blockState;
- 			hasPermission        = copy.hasPermission;
- 			nextSignal           = copy.nextSignal;
- 			prevSignal           = copy.prevSignal;
- 			WorldObject          = new SignalWorldObject(copy.WorldObject);
-			tdbtraveller         = new TDBTraveller(copy.tdbtraveller);
- 			SignalNumClearAhead  = copy.SignalNumClearAhead;
+                public SignalObject(SignalObject copy)
+                {
+                          signalRef            = copy.signalRef;
+                         trackNode            = copy.trackNode;
+                         nextNode             = copy.nextNode;
+                        direction            = copy.direction;
+                         draw_state           = copy.draw_state;
+                         enabled              = copy.enabled;
+                         isJunction           = copy.isJunction;
+                         canUpdate            = copy.canUpdate;
+                         isAuto               = copy.isAuto;
+                         isSignal             = copy.isSignal;
+                         useScript            = copy.useScript;
+                         blockState           = copy.blockState;
+                         hasPermission        = copy.hasPermission;
+                         nextSignal           = copy.nextSignal;
+                         prevSignal           = copy.prevSignal;
+                         WorldObject          = new SignalWorldObject(copy.WorldObject);
+                        tdbtraveller         = new TDBTraveller(copy.tdbtraveller);
+                         SignalNumClearAhead  = copy.SignalNumClearAhead;
 
-			sigfound = new int [copy.sigfound.Length];
- 			copy.sigfound.CopyTo(sigfound, 0);
-		}
+                        sigfound = new int [copy.sigfound.Length];
+                         copy.sigfound.CopyTo(sigfound, 0);
+                }
 
   //================================================================================================//
   ///
@@ -2195,7 +2196,7 @@ namespace ORTS
                         speed_info    = new ObjectSpeedInfo[sigasp_values.Length];
 
                         float speedMpS = MpS.ToMpS(speedItem.SpeedInd, !speedItem.IsMPH);
-			if (speedItem.IsResume) speedMpS = 999f;
+                        if (speedItem.IsResume) speedMpS = 999f;
 
                         float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
                         float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
@@ -2647,8 +2648,8 @@ namespace ORTS
                 public bool [] HeadsSet;                          // Flags heads which are set
                 public bool [] FlagsSet;                          // Flags signal-flags which are set
                 public bool [] FlagsSetBackfacing;                // Flags signal-flags which are set
-	       							  //    for backfacing signal
-		public List<int> Backfacing = new List<int> ();   // Flags heads which are backfacing
+                                                                         //    for backfacing signal
+                public List<int> Backfacing = new List<int> ();   // Flags heads which are backfacing
 
   //================================================================================================//
   //
@@ -2709,15 +2710,15 @@ namespace ORTS
 
                                                 HeadsSet[iHead] = true;
                                                 
-						if (thisSubObjs.BackFacing)
-						{
-							Backfacing.Add(iHead);
-                                                	if (thisSubObjs.SignalSubType >= 1)
-                                                	{
-                                                         	FlagsSetBackfacing[thisSubObjs.SignalSubType] = true;
-                                                	}
-						}
-						else if (thisSubObjs.SignalSubType >= 1)
+                                                if (thisSubObjs.BackFacing)
+                                                {
+                                                        Backfacing.Add(iHead);
+                                                        if (thisSubObjs.SignalSubType >= 1)
+                                                        {
+                                                                 FlagsSetBackfacing[thisSubObjs.SignalSubType] = true;
+                                                        }
+                                                }
+                                                else if (thisSubObjs.SignalSubType >= 1)
                                                 {
                                                          FlagsSet[thisSubObjs.SignalSubType] = true;
                                                 }
@@ -2749,22 +2750,22 @@ namespace ORTS
 
                 public SignalWorldObject(SignalWorldObject copy)
                 {
-			SFileName  = String.Copy(copy.SFileName);
-			Backfacing = copy.Backfacing;
+                        SFileName  = String.Copy(copy.SFileName);
+                        Backfacing = copy.Backfacing;
 
                         HeadsSet = new bool [copy.HeadsSet.Length];
                         FlagsSet = new bool [copy.FlagsSet.Length];
                         FlagsSetBackfacing = new bool [copy.FlagsSet.Length];
-			copy.HeadsSet.CopyTo(HeadsSet, 0);
-			copy.FlagsSet.CopyTo(FlagsSet, 0);
-			copy.FlagsSetBackfacing.CopyTo(FlagsSet, 0);
+                        copy.HeadsSet.CopyTo(HeadsSet, 0);
+                        copy.FlagsSet.CopyTo(FlagsSet, 0);
+                        copy.FlagsSetBackfacing.CopyTo(FlagsSet, 0);
 
-			HeadReference = new Dictionary <uint, uint> ();
-			foreach ( KeyValuePair <uint, uint> thisRef in copy.HeadReference)
-			{
-				HeadReference.Add(thisRef.Key, thisRef.Value);
-			}
-		}
+                        HeadReference = new Dictionary <uint, uint> ();
+                        foreach ( KeyValuePair <uint, uint> thisRef in copy.HeadReference)
+                        {
+                                HeadReference.Add(thisRef.Key, thisRef.Value);
+                        }
+                }
 
         }
 
