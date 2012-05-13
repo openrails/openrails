@@ -441,7 +441,7 @@ namespace ORTS
                             break;
                     }
 
-                    TDBTraveller tdb = new TDBTraveller(Car.Train.FrontTDBTraveller);
+                    Traveller tdb = new Traveller(Car.Train.FrontTDBTraveller);
                     float speed = Car.SpeedMpS;
                     if (Car.Flipped)
                         speed *= -1;
@@ -489,7 +489,7 @@ namespace ORTS
                 return true;
             }
             
-            _distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
+            _distanceSquared = WorldLocation.GetDistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
 
             if (IsEnvSound)
                 return false;
@@ -789,7 +789,7 @@ namespace ORTS
             {
                 if (MSTSStream.VolumeCurve != null)
                 {
-                    float x = WorldLocation.DistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
+                    float x = WorldLocation.GetDistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
                     float y = Interpolate(x, MSTSStream.VolumeCurve);
                     Volume = y;
                 }
@@ -1153,7 +1153,7 @@ namespace ORTS
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    return WorldLocation.DistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
+                    return WorldLocation.GetDistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
                 default:
                     return 100000;
             }
@@ -1656,7 +1656,7 @@ namespace ORTS
         {
             int retval = 0;
 
-            TDBTraveller traveller = train.FrontTDBTraveller;
+            Traveller traveller = train.FrontTDBTraveller;
 
             MSTS.TrackDB trackDB = Viewer.Simulator.TDB.TrackDB;
             MSTS.TrItem[] trItems = trackDB.TrItemTable;
@@ -1664,7 +1664,7 @@ namespace ORTS
             WorldSoundRegion prevItem = null;
             WorldSoundRegion nextItem = null;
             
-            TDBTraveller tmp;
+            Traveller tmp;
 
             float prevDist = float.MaxValue;
             float nextDist = float.MaxValue;
@@ -1681,10 +1681,10 @@ namespace ORTS
                         {
                             if (trItems[trNode].ItemType == MSTS.TrItem.trItemType.trSOUNDREGION)
                             {
-                                tmp = new TDBTraveller(traveller);
+                                tmp = new Traveller(traveller);
 
                                 // Try to find forward
-                                d = tmp.DistanceTo(trItems[trNode].TileX, trItems[trNode].TileZ, trItems[trNode].X, trItems[trNode].Y, trItems[trNode].Z, ref tmp, 8192);
+                                d = tmp.DistanceTo(trItems[trNode].TileX, trItems[trNode].TileZ, trItems[trNode].X, trItems[trNode].Y, trItems[trNode].Z, 8192);
                                 
                                 if (d != -1)
                                 {
@@ -1701,7 +1701,7 @@ namespace ORTS
                                             tmp.ReverseDirection();
 
                                         // If faces toward us then it is applicable
-                                        if (Math.Abs(tmp.Roty - wsr.ROTy) < .35)
+                                        if (Math.Abs(tmp.RotY - wsr.ROTy) < .35)
                                         {
                                             nextDist = d;
                                             nextItem = wsr;
@@ -1711,10 +1711,9 @@ namespace ORTS
                                 else
                                 {
                                     // Not found forward, check backward
-                                    tmp = new TDBTraveller(traveller);
-                                    tmp.ReverseDirection();
+                                    tmp = new Traveller(traveller, Traveller.TravellerDirection.Backward);
 
-                                    d = tmp.DistanceTo(trItems[trNode].TileX, trItems[trNode].TileZ, trItems[trNode].X, trItems[trNode].Y, trItems[trNode].Z, ref tmp, 8192);
+                                    d = tmp.DistanceTo(trItems[trNode].TileX, trItems[trNode].TileZ, trItems[trNode].X, trItems[trNode].Y, trItems[trNode].Z, 8192);
                                     if (d != -1)
                                     {
                                         // It is nearer than previous
@@ -1729,7 +1728,7 @@ namespace ORTS
                                                 tmp.ReverseDirection();
 
                                             // Applicable if faces with us
-                                            if (Math.Abs(tmp.Roty - wsr.ROTy) < .35)
+                                            if (Math.Abs(tmp.RotY - wsr.ROTy) < .35)
                                             {
                                                 prevDist = d;
                                                 prevItem = wsr;
@@ -1933,34 +1932,32 @@ namespace ORTS
         public TrItem FindNextItem<T>(out float distance)
             where T : TrItem
         {
-            TDBTraveller traveller = _car.Train.FrontTDBTraveller;
+            Traveller traveller = _car.Train.FrontTDBTraveller;
             return FindItem<T>(traveller, GetNextNode, out distance, null);
         }
 
         public TrItem FindNextItem<T>(out float distance, List<int> validitems)
             where T : TrItem
         {
-            TDBTraveller traveller = _car.Train.FrontTDBTraveller;
+            Traveller traveller = _car.Train.FrontTDBTraveller;
             return FindItem<T>(traveller, GetNextNode, out distance, validitems);
         }
 
         public TrItem FindPrevItem<T>(out float distance)
             where T : TrItem
         {
-            TDBTraveller traveller = new TDBTraveller(_car.Train.FrontTDBTraveller);
-            traveller.ReverseDirection();
+            Traveller traveller = new Traveller(_car.Train.FrontTDBTraveller, Traveller.TravellerDirection.Backward);
             return FindItem<T>(traveller, GetPrevNode, out distance, null);
         }
 
         public TrItem FindPrevItem<T>(out float distance, List<int> validitems)
             where T : TrItem
         {
-            TDBTraveller traveller = new TDBTraveller(_car.Train.FrontTDBTraveller);
-            traveller.ReverseDirection();
+            Traveller traveller = new Traveller(_car.Train.FrontTDBTraveller, Traveller.TravellerDirection.Backward);
             return FindItem<T>(traveller, GetPrevNode, out distance, validitems);
         }
 
-        private TrItem FindItem<T>(TDBTraveller traveller, Func<AIPathNode, AIPathNode> move, out float distance, List<int> validitems)
+        private TrItem FindItem<T>(Traveller traveller, Func<AIPathNode, AIPathNode> move, out float distance, List<int> validitems)
             where T : TrItem
         {
             T Item = null;

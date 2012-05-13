@@ -177,12 +177,10 @@ namespace ORTS
 		{
 			CoupleOnNextStop = false;
 			WorldLocation wl = NextStopNode.Location;
-			TDBTraveller traveller = FrontTDBTraveller;
+			Traveller traveller = FrontTDBTraveller;
 			if (!AITrainDirectionForward)
-			{
-				traveller = new TDBTraveller(RearTDBTraveller);
-				traveller.ReverseDirection();
-			}
+				traveller = new Traveller(RearTDBTraveller, Traveller.TravellerDirection.Backward);
+
 			NextStopDistanceM = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
 			//Console.WriteLine("nextstopdist {0} {1} {2} {3}", NextStopDistanceM, FrontTDBTraveller.Direction, RearTDBTraveller.Direction,
 			//    Math.Sqrt(WorldLocation.DistanceSquared(wl,FrontTDBTraveller.WorldLocation)));
@@ -230,13 +228,11 @@ namespace ORTS
 					if (node != null && node.JunctionIndex >= 0)
 					{
 						wl = node.Location;
-						TDBTraveller rtraveller = RearTDBTraveller;
+						Traveller rtraveller = RearTDBTraveller;
 						if (!AITrainDirectionForward)
-						{
-							rtraveller = new TDBTraveller(FrontTDBTraveller);
-							rtraveller.ReverseDirection();
-						}
-						float d = rtraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
+							rtraveller = new Traveller(FrontTDBTraveller, Traveller.TravellerDirection.Backward);
+
+                        float d = rtraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
 						//Console.WriteLine("reverse distance {0} {1}", d, NextStopDistanceM);
 						if (d > 0 && d + 1 < NextStopDistanceM && d + 100 > NextStopDistanceM)
 							NextStopDistanceM = d + 1;
@@ -300,8 +296,8 @@ namespace ORTS
 				}
 				if (!Path.SwitchIsAligned(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode)))
 				{
-					TDBTraveller traveller = AITrainDirectionForward ? FrontTDBTraveller : RearTDBTraveller;
-					float d = WorldLocation.DistanceSquared(traveller.WorldLocation, node.Location);
+					Traveller traveller = AITrainDirectionForward ? FrontTDBTraveller : RearTDBTraveller;
+					float d = WorldLocation.GetDistanceSquared(traveller.WorldLocation, node.Location);
 					//Console.WriteLine("throw distance {0}", d);
 					if (d > throwDistance * throwDistance || AI.Simulator.SwitchIsOccupied(node.JunctionIndex))
 						return node;
@@ -411,13 +407,13 @@ namespace ORTS
 			// and fix up the travellers
 			if (nCars < 0)
 			{
-				train2.FrontTDBTraveller = new TDBTraveller(FrontTDBTraveller);
+				train2.FrontTDBTraveller = new Traveller(FrontTDBTraveller);
 				train2.RepositionRearTraveller();
 				CalculatePositionOfCars(0);
 			}
 			else
 			{
-				train2.RearTDBTraveller = new TDBTraveller(RearTDBTraveller);
+				train2.RearTDBTraveller = new Traveller(RearTDBTraveller);
 				train2.CalculatePositionOfCars(0);  // fix the front traveller
 				RepositionRearTraveller();    // fix the rear traveller
 			}
@@ -486,10 +482,10 @@ namespace ORTS
 			}
 			if (AI.Dispatcher.PlayerOverlaps(this, true))
 			{
-				TDBTraveller traveller = FrontTDBTraveller;
+				Traveller traveller = FrontTDBTraveller;
 				if (!AITrainDirectionForward)
 					traveller = RearTDBTraveller;
-				float d = (float)Math.Sqrt(WorldLocation.DistanceSquared(traveller.WorldLocation, AI.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.WorldLocation));
+				float d = (float)Math.Sqrt(WorldLocation.GetDistanceSquared(traveller.WorldLocation, AI.Simulator.PlayerLocomotive.Train.FrontTDBTraveller.WorldLocation));
 				d -= SpeedMpS == 0 ? 500 : 50;
 				if (d < 0)
 					d = 0;
@@ -498,8 +494,8 @@ namespace ORTS
 			}
 			if (AI.Dispatcher.PlayerOverlaps(this, false))
 			{
-				TDBTraveller traveller = AITrainDirectionForward ? FrontTDBTraveller : RearTDBTraveller;
-				float d = (float)Math.Sqrt(WorldLocation.DistanceSquared(traveller.WorldLocation, AI.Simulator.PlayerLocomotive.Train.RearTDBTraveller.WorldLocation));
+				Traveller traveller = AITrainDirectionForward ? FrontTDBTraveller : RearTDBTraveller;
+				float d = (float)Math.Sqrt(WorldLocation.GetDistanceSquared(traveller.WorldLocation, AI.Simulator.PlayerLocomotive.Train.RearTDBTraveller.WorldLocation));
 				d -= SpeedMpS == 0 ? 500 : 50;
 				if (d < 0)
 					d = 0;

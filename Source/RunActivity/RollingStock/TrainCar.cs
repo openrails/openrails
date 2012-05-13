@@ -269,7 +269,7 @@ namespace ORTS
             WheelAxlesLoaded = true;
         }
 
-        public void ComputePosition(TDBTraveller traveler, bool backToFront)
+        public void ComputePosition(Traveller traveler, bool backToFront)
         {
             for (int j = 0; j < Parts.Count; j++)
                 Parts[j].InitLineFit();

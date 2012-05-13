@@ -355,7 +355,8 @@ namespace ORTS
             {
                 try
                 {
-                    TDBTraveller traveller = new TDBTraveller(Location.TileX, Location.TileZ, Location.Location.X, Location.Location.Z, 0, TDB, tsectiondat);
+                    // TODO: Static method to look up track nodes?
+                    Traveller traveller = new Traveller(tsectiondat, TDB.TrackDB.TrackNodes, Location.TileX, Location.TileZ, Location.Location.X, Location.Location.Z);
                     return traveller.TrackNodeIndex;
                 }
                 catch
@@ -367,7 +368,8 @@ namespace ORTS
             {
                 try
                 {
-                    TDBTraveller traveller = new TDBTraveller(nextNode.Location.TileX, nextNode.Location.TileZ, nextNode.Location.Location.X, nextNode.Location.Location.Z, 0, TDB, tsectiondat);
+                    // TODO: Static method to look up track nodes?
+                    Traveller traveller = new Traveller(tsectiondat, TDB.TrackDB.TrackNodes, nextNode.Location.TileX, nextNode.Location.TileZ, nextNode.Location.Location.X, nextNode.Location.Location.Z);
                     return traveller.TrackNodeIndex;
                 }
                 catch

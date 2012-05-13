@@ -397,7 +397,7 @@ namespace ORTS.Interlocking
                 connections[i].TrJunctionNode == null)
             {
 
-               TDBTraveller tempTrav = new TDBTraveller(connections[i], connections[i].TrVectorNode.TrVectorSections[0], simulator.TDB, simulator.TSectionDat);
+                Traveller tempTrav = new Traveller(simulator.TSectionDat, simulator.TDB.TrackDB.TrackNodes, connections[i]);
 
 
                Vector3 initialLocation = new Vector3(/*tempTrav.TileX * 2048 +*/ tempTrav.X, 0, /*tempTrav.TileZ * 2048 +*/ tempTrav.Z);

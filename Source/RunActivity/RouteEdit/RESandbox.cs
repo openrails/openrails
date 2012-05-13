@@ -28,15 +28,6 @@ using MSTS;
 
 namespace ORTS
 {
-    public class RETraveler : TDBTraveller
-    {
-        public RETraveler(int tileX, int tileZ, float wx, float wz, int direction, TDBFile tdb, TSectionDatFile tsectiondat) : 
-                    base(tileX, tileZ, wx, wz, direction, tdb, tsectiondat)
-        {
-        } // end RETraveler constuctor
-        
-
-    } // end class RETraveler
     public class TrackLayer
     {
         TDBFile TDB; // Reference to Track Data Base
@@ -50,7 +41,7 @@ namespace ORTS
             //AnalyzeTDB();
         }
 
-        public void LaySection(TDBTraveller traveler)
+        public void LaySection(Traveller traveler)
         {
             
 

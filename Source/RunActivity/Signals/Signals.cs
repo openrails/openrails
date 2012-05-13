@@ -94,7 +94,7 @@ namespace ORTS
                                 if (singleSignal == null)
                                 {
                                         File.AppendAllText(@"SignalObjects.txt","\nInvalid entry : "+isignal.ToString()+"\n");
-                                }
+                        }
                                 else
                                 {
                                         File.AppendAllText(@"SignalObjects.txt","\nSignal ref item     : "+singleSignal.thisRef.ToString()+"\n");
@@ -194,7 +194,7 @@ namespace ORTS
                         Trace.Write("\n");
                         string WFilePath = simulator.RoutePath + @"\WORLD\";
                         string [] FileEntries = Directory.GetFiles(WFilePath);
- 
+
                         List<TokenID> Tokens = new List<TokenID> ();
                         Tokens.Add(TokenID.Signal);
 
@@ -213,7 +213,7 @@ namespace ORTS
                                 {
                                             int p = fileName.ToUpper().LastIndexOf("\\WORLD\\W");
                                             int TileX = int.Parse(fileName.Substring(p + 8, 7));
-                                            int TileZ = int.Parse(fileName.Substring(p + 15, 7));
+                                        int TileZ = int.Parse(fileName.Substring(p + 15, 7));
                                 }
                                 catch (Exception)
                                 {
@@ -344,8 +344,8 @@ namespace ORTS
                                                 if (Speedpost.IsLimit)
                                                 {
                                                         noSignals++;
-                                                }
-                                        }
+                                }
+                        }
                                 }
                         }
   //
@@ -361,8 +361,8 @@ namespace ORTS
                                 for (int i = 1; i < trackNodes.Length; i++)
                                 {
                                         ScanSection(TrItems, trackNodes, i, tsectiondat, tdbfile);
+                                        }
                                 }
-                        }
 
                 } //BuildSignalList
 
@@ -558,44 +558,44 @@ namespace ORTS
 
   //  Is it a vector node then it may contain objects.
                         if (trackNodes[index].TrVectorNode != null && trackNodes[index].TrVectorNode.noItemRefs > 0)
-                        {
-  // Any obects ?
-                                for (int i = 0; i < trackNodes[index].TrVectorNode.noItemRefs; i++)
                                 {
-                                        if (TrItems[trackNodes[index].TrVectorNode.TrItemRefs[i]] != null)
-                                        {
+  // Any obects ?
+                                                        for (int i = 0; i < trackNodes[index].TrVectorNode.noItemRefs; i++)
+                                                        {
+                                                                if (TrItems[trackNodes[index].TrVectorNode.TrItemRefs[i]] != null)
+                                                                {
 
   // Track Item is signal
-                                                int TDBRef = trackNodes[index].TrVectorNode.TrItemRefs[i];
-                                                if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
-                                                {
-                                                        SignalItem sigItem = (SignalItem)TrItems[TDBRef];
-                                                        sigItem.sigObj = foundSignals;
+                                                                        int TDBRef = trackNodes[index].TrVectorNode.TrItemRefs[i];
+                                                                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
+                                                                        {
+                                                                                SignalItem sigItem = (SignalItem)TrItems[TDBRef];
+                                                                                        sigItem.sigObj = foundSignals;
 
-                                                        if (sigItem.noSigDirs > 0)
-                                                        {
-                                                                SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
-                                                        }
+                                                                                        if (sigItem.noSigDirs > 0)
+                                                                                        {
+                                                                                        SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
+                                                                                        }
 
-                                                        lastSignal = AddSignal(index, i, sigItem, lastSignal,
-                                                                                TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
-                                                        sigItem.sigObj = lastSignal;
-                                                }
+                                                                                        lastSignal = AddSignal(index, i, sigItem, lastSignal,
+                                                                                                               TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
+                                                                                        sigItem.sigObj = lastSignal;
+                                                                                }
                                                 else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSPEEDPOST)
                                                 {
                                                         SpeedPostItem speedItem = (SpeedPostItem) TrItems[TDBRef];
                                                         if (speedItem.IsLimit)
                                                         {
                                                                 speedItem.sigObj = foundSignals;
-  
+
                                                                 lastSignal = AddSpeed(index, i, speedItem, lastSignal,
-                                                                                 TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
+                                                                                                               TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
                                                                 speedItem.sigObj = lastSignal;
+                                                                                }
+                                                                        }
+                                                                }
                                                         }
                                                 }
-                                        }
-                                }
-                        }
                 }   //ScanSection 
 
   //================================================================================================//
@@ -610,12 +610,12 @@ namespace ORTS
                         {
                                 if (signalObjects[prevSignal].isSignal)
                                 {
-                                        if (signalObjects[prevSignal].isSignalHead((SignalItem)TrItems[trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx]]))
-                                        {
-                                                signalObjects[prevSignal].AddHead(nodeIndx, TDBRef, sigItem);
-                                                return prevSignal;
-                                        }
+                                if (signalObjects[prevSignal].isSignalHead((SignalItem)TrItems[trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx]]))
+                                {
+                                        signalObjects[prevSignal].AddHead(nodeIndx, TDBRef, sigItem);
+                                        return prevSignal;
                                 }
+                        }
                         }
                         signalObjects[foundSignals] = new SignalObject();
                         signalObjects[foundSignals].isSignal  = true;
@@ -627,9 +627,8 @@ namespace ORTS
                         signalObjects[foundSignals].thisRef = foundSignals;
                         signalObjects[foundSignals].signalRef = this;
 
-                        signalObjects[foundSignals].tdbtraveller = new TDBTraveller(trackNode, sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z,
-                                                         signalObjects[foundSignals].direction, tdbfile, tsectiondat);
-                        signalObjects[foundSignals].tdbtraveller.Direction = sigItem.Direction==1 ? 0 : 1; // reverse TBD direction (next object is behind object) //
+                        signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
+                            sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z, (Traveller.TravellerDirection)(1 - sigItem.Direction));
 
                         signalObjects[foundSignals].WorldObject = null;
                         foundSignals++;
@@ -655,10 +654,10 @@ namespace ORTS
                         signalObjects[foundSignals].thisRef = foundSignals;
                         signalObjects[foundSignals].signalRef = this;
 
-                        signalObjects[foundSignals].tdbtraveller = new TDBTraveller(trackNode, speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z,
-                                                         signalObjects[foundSignals].direction, tdbfile, tsectiondat);
+                        signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
+                            speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z, (Traveller.TravellerDirection)signalObjects[foundSignals].direction);
 
-                        double delta_angle = signalObjects[foundSignals].tdbtraveller.Roty - ((Math.PI/2) - speedItem.Angle);
+                        double delta_angle = signalObjects[foundSignals].tdbtraveller.RotY - ((Math.PI/2) - speedItem.Angle);
                         float delta_float = (float)delta_angle;
                         MSTSMath.M.NormalizeRadians( ref delta_float);
                         if (Math.Abs(delta_float) < (Math.PI/2))
@@ -667,7 +666,7 @@ namespace ORTS
                         }
                         else
                         {
-                            signalObjects[foundSignals].direction = signalObjects[foundSignals].tdbtraveller.Direction;
+                            signalObjects[foundSignals].direction = (int)signalObjects[foundSignals].tdbtraveller.Direction;
                             signalObjects[foundSignals].tdbtraveller.ReverseDirection();
                         }
 
@@ -785,9 +784,9 @@ namespace ORTS
                                 {
                                         if (signal.isSignal)
                                         {
-                                                signal.SetSignalType(sigCFG);
-                                        }
+                                        signal.SetSignalType(sigCFG);
                                 }
+                        }
                         }
                 }//AddCFG
 
@@ -853,10 +852,10 @@ namespace ORTS
   ///
   //
 
-                public int FindNextSignal(TDBTraveller tdbtraveller)
+                public int FindNextSignal(Traveller tdbtraveller)
                 {
                         int startNode = tdbtraveller.TrackNodeIndex;
-                        int currDir = tdbtraveller.Direction;
+                        int currDir = (int)tdbtraveller.Direction;
 
                         SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
                         fn_type_array [0] = SignalHead.SIGFN.NORMAL;
@@ -872,7 +871,7 @@ namespace ORTS
   // Get signal object of nearest signal in direction of travel
   ///
   /// 
-                public Signal FindNearestSignal(TDBTraveller tdbtraveller)
+                public Signal FindNearestSignal(Traveller tdbtraveller)
                 {
                         int sigRef = FindNextSignal(tdbtraveller);
                         return new Signal(this, signalObjects, sigRef);
@@ -894,13 +893,12 @@ namespace ORTS
   //  Get index of previous signal in direction of travel
   ///
 
-                public int FindPrevSignal(TDBTraveller tdbtraveller)
+                public int FindPrevSignal(Traveller tdbtraveller)
                 {
-                        TDBTraveller revTDBtraveller = new TDBTraveller(tdbtraveller);
-                        revTDBtraveller.ReverseDirection();
+                        Traveller revTDBtraveller = new Traveller(tdbtraveller, Traveller.TravellerDirection.Backward);
 
                         int startNode = tdbtraveller.TrackNodeIndex;
-                        int currDir = tdbtraveller.Direction;
+                        int currDir = (int)tdbtraveller.Direction;
 
                         SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
                         fn_type_array [0] = SignalHead.SIGFN.NORMAL;
@@ -954,7 +952,7 @@ namespace ORTS
 
                 public int Find_Next_Object(SignalObject startObj, int nodestartindex,
                                 int startDirection, bool in_direction_of_travel,
-                                TDBTraveller tdbtraveller, bool min_distance_check, float maxdistance,
+                                Traveller tdbtraveller, bool min_distance_check, float maxdistance,
                                 TrItem[] Tritems, TrackNode[] trackNodes, 
                                        SignalHead.SIGFN[] fn_type)
                 {
@@ -1121,7 +1119,7 @@ namespace ORTS
                                         }
 
   // check if ahead of position
-
+        
                                         if (locstate > 0 && min_distance_check && tdbtraveller != null)
                                         {
                                                 float mindistance = 
@@ -1203,11 +1201,11 @@ namespace ORTS
   /// ObjectItemInfo : class holding required info on found object; only valid if returned state > 0
   /// </summary>
 
-                public ObjectItemInfo getNextObject(TDBTraveller tdbtraveller, ObjectItemInfo.ObjectItemType req_type,
+                public ObjectItemInfo getNextObject(Traveller tdbtraveller, ObjectItemInfo.ObjectItemType req_type,
                                 bool forward, float maxdistance, ref ObjectItemInfo.ObjectItemFindState return_state)
                 {
                         int startNode = tdbtraveller.TrackNodeIndex;
-                        int currDir = tdbtraveller.Direction;
+                        int currDir = (int)tdbtraveller.Direction;
                         SignalObject last_object = null;
 
                         ObjectItemInfo return_item = null;
@@ -1309,7 +1307,7 @@ namespace ORTS
   /// </summary>
 
                 public ObjectItemInfo getNextObject(SignalObject SignalObj, ObjectItemInfo.ObjectItemType req_type,
-                                TDBTraveller tdbtraveller, float maxdistance, ref ObjectItemInfo.ObjectItemFindState return_state)
+                                Traveller tdbtraveller, float maxdistance, ref ObjectItemInfo.ObjectItemFindState return_state)
                 {
                         ObjectItemInfo return_item = null;
                         SignalObject last_object = SignalObj;
@@ -1456,7 +1454,7 @@ namespace ORTS
                 public int prevSignal = -2;             // Index to previous signal -1 if none -2 indeterminate
                 public SignalWorldObject WorldObject;   // Signal World Object information
                 public int [] sigfound = new int [(int) SignalHead.SIGFN.UNKNOWN];
-                public TDBTraveller tdbtraveller;       // TDB traveller to determine distance between objects
+                public Traveller tdbtraveller;       // TDB traveller to determine distance between objects
                 public uint SignalNumClearAhead = 0;    // Overall maximum SignalNumClearAhead over all heads
 
   //================================================================================================//
@@ -1475,10 +1473,10 @@ namespace ORTS
   
                 public SignalObject(SignalObject copy)
                 {
-                          signalRef            = copy.signalRef;
+                         signalRef            = copy.signalRef;
                          trackNode            = copy.trackNode;
                          nextNode             = copy.nextNode;
-                        direction            = copy.direction;
+                         direction            = copy.direction;
                          draw_state           = copy.draw_state;
                          enabled              = copy.enabled;
                          isJunction           = copy.isJunction;
@@ -1491,10 +1489,10 @@ namespace ORTS
                          nextSignal           = copy.nextSignal;
                          prevSignal           = copy.prevSignal;
                          WorldObject          = new SignalWorldObject(copy.WorldObject);
-                        tdbtraveller         = new TDBTraveller(copy.tdbtraveller);
+                         tdbtraveller         = new Traveller(copy.tdbtraveller);
                          SignalNumClearAhead  = copy.SignalNumClearAhead;
 
-                        sigfound = new int [copy.sigfound.Length];
+                         sigfound = new int [copy.sigfound.Length];
                          copy.sigfound.CopyTo(sigfound, 0);
                 }
 
@@ -1519,14 +1517,14 @@ namespace ORTS
 
                     if (trainId >= 0)
                     {
-                        TDBTraveller traveller;
+                        Traveller traveller;
                         if (trainId == 0)
-                            traveller = new TDBTraveller(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+                            traveller = new Traveller(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
                         else
-                            traveller = new TDBTraveller(Program.Simulator.AI.AITrainDictionary[trainId].FrontTDBTraveller);
+                            traveller = new Traveller(Program.Simulator.AI.AITrainDictionary[trainId].FrontTDBTraveller);
 
                         while (traveller.TrackNodeIndex != trackNode && traveller.NextSection()) ;
-                        if (traveller.TrackNodeIndex != trackNode || this.revDir != traveller.Direction)
+                        if (traveller.TrackNodeIndex != trackNode || this.revDir != (int)traveller.Direction)
                             return BLOCKSTATE.OCCUPIED;
                     }   
                     return blockState;
@@ -1813,17 +1811,17 @@ namespace ORTS
                                         ObjectSpeedInfo this_speed = sigHead.speed_info[AspIndex];
                                         if (this_speed != null)
                                         {
-                                                if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
-                                                {
-                                                        set_speed.speed_pass = this_speed.speed_pass;
-                                                        set_speed.speed_flag = 0;
-                                                }
+                                        if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
+                                        {
+                                                set_speed.speed_pass = this_speed.speed_pass;
+                                                set_speed.speed_flag = 0;
+                                        }
 
-                                                if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
-                                                {
-                                                        set_speed.speed_freight = this_speed.speed_freight;
-                                                        set_speed.speed_flag = 0;
-                                                }
+                                        if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
+                                        {
+                                                set_speed.speed_freight = this_speed.speed_freight;
+                                                set_speed.speed_flag = 0;
+                                        }
                                         }
 
                                 }
@@ -1913,7 +1911,7 @@ namespace ORTS
   // DistanceTo : Returns the distance from the TDBtraveller to this signal. 
   //
 
-                public float DistanceTo(TDBTraveller tdbTraveller)
+                public float DistanceTo(Traveller tdbTraveller)
                 {
                         int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
                         return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z);
@@ -2458,7 +2456,7 @@ namespace ORTS
   //   Ensures that the train 'sees' the correct signal.
   //
 
-                public void Reset(TDBTraveller tdbTraveller, bool askPermission)
+                public void Reset(Traveller tdbTraveller, bool askPermission)
                 {
                         if (signals != null)
                         {
@@ -2487,7 +2485,7 @@ namespace ORTS
   // UpdateTrackOccupancy : update track state
   //
 
-                public void UpdateTrackOcupancy(TDBTraveller rearTDBTraveller)
+                public void UpdateTrackOcupancy(Traveller rearTDBTraveller)
                 {
                         if (rearSigRef < -1)
                         {
@@ -2566,7 +2564,7 @@ namespace ORTS
   //  DistanceToSignal: Returns Distance to next NORMAL signal from current TDBTraveller position.
   //
 
-                public float DistanceToSignal(TDBTraveller tdbTraverler)
+                public float DistanceToSignal(Traveller tdbTraverler)
                 {
                         return nextSigRef >= 0 ? signalObjects[nextSigRef].DistanceTo(tdbTraverler) : 0.01F;
                 }  // DistanceToSignal
@@ -2837,17 +2835,17 @@ namespace ORTS
                                 speed_passenger = -1;                      // set active by TRAIN
                                 speed_freight   = -1;                      // set active by TRAIN
                                 speed_flag      = 0;                       // set active by TRAIN
-                        }
+                                }
                         else
                         {
                                 ObjectType = ObjectItemType.SPEEDLIMIT;
                                 signal_state = SignalHead.SIGASP.UNKNOWN;
                                 speed_info = thisObject.this_lim_speed(SignalHead.SIGFN.SPEED);
-                                speed_passenger = speed_info.speed_pass;
-                                speed_freight   = speed_info.speed_freight;
-                                speed_flag      = speed_info.speed_flag;
-                        }
+                        speed_passenger = speed_info.speed_pass;
+                        speed_freight   = speed_info.speed_freight;
+                        speed_flag      = speed_info.speed_flag;
                 }
+        }
         }
 
   //================================================================================================//

@@ -1026,9 +1026,7 @@ namespace ORTS
             // Switch to new position.
             if (!trainClose || (TrackCameraLocation == null))
             {
-                var tdb = new TDBTraveller(trainForwards ? train.FrontTDBTraveller : train.RearTDBTraveller);
-                if (!trainForwards)
-                    tdb.ReverseDirection();
+                var tdb = trainForwards ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
                 tdb.Move(MaximumDistance * 0.75f);
                 var newLocation = tdb.WorldLocation;
                 TrackCameraLocation = new WorldLocation(newLocation);

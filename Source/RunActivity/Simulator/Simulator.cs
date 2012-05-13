@@ -354,7 +354,7 @@ namespace ORTS
 		{
 			if (train == drivenTrain.UncoupledFrom && d1 > .5 && d2 > .5)
 			{
-				TDBTraveller traveller = rear ? drivenTrain.RearTDBTraveller : drivenTrain.FrontTDBTraveller;
+				Traveller traveller = rear ? drivenTrain.RearTDBTraveller : drivenTrain.FrontTDBTraveller;
 				float d3 = traveller.OverlapDistanceM(train.FrontTDBTraveller, rear);
 				float d4 = traveller.OverlapDistanceM(train.RearTDBTraveller, rear);
 				if (d3 > .5 && d4 > .5)
@@ -492,16 +492,7 @@ namespace ORTS
 		public void AlignTrailingPointSwitches(Train train, bool forward)
 		{
 			// figure out which direction we are going
-			TDBTraveller traveller;
-			if (forward)
-			{
-				traveller = new TDBTraveller(train.FrontTDBTraveller);
-			}
-			else
-			{
-				traveller = new TDBTraveller(train.RearTDBTraveller);
-				traveller.ReverseDirection();
-			}
+            Traveller traveller = forward ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
 
 			// to save computing power, skip this if we haven't changed nodes or direction
 			if (traveller.TN == lastAlignedAtTrackNode && forward == lastAlignedMovingForward) return;
@@ -509,7 +500,7 @@ namespace ORTS
 			lastAlignedMovingForward = forward;
 
 			// find the next switch by scanning ahead for a TrJunctionNode
-			while (traveller.TN.TrJunctionNode == null)
+			while (!traveller.IsJunction)
 			{
 				if (!traveller.NextSection())
 					return;   // no more switches
@@ -519,11 +510,11 @@ namespace ORTS
 				return;
 
 			// if we are facing the points of the switch we don't do anything
-			if (traveller.iEntryPIN == 0) return;
+			if (traveller.JunctionEntryPinIndex == 0) return;
 
 			// otherwise we are coming in on the trailing side of the switch
 			// so line it up for the correct route
-			nextSwitchTrack.SelectedRoute = traveller.iEntryPIN - 1;
+			nextSwitchTrack.SelectedRoute = traveller.JunctionEntryPinIndex - 1;
 		}
 
 		TrackNode lastAlignedAtTrackNode = null;  // optimization skips trailing point
@@ -567,7 +558,7 @@ namespace ORTS
 		/// </summary>
 		public void SwitchTrackBehind(Train train)
 		{
-            TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.FrontTDBTraveller.TrJunctionNodeAhead() : train.RearTDBTraveller.TrJunctionNodeBehind();
+            TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.FrontTDBTraveller.JunctionNodeAhead() : train.RearTDBTraveller.JunctionNodeBehind();
 			if (SwitchIsOccupied(nextSwitchTrack))
 				return;
 
@@ -585,7 +576,7 @@ namespace ORTS
 		/// </summary>
 		public void SwitchTrackAhead(Train train)
 		{
-            TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.RearTDBTraveller.TrJunctionNodeBehind() : train.FrontTDBTraveller.TrJunctionNodeAhead();
+            TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.RearTDBTraveller.JunctionNodeBehind() : train.FrontTDBTraveller.JunctionNodeAhead();
             if (SwitchIsOccupied(nextSwitchTrack))
 				return;
 
@@ -612,7 +603,7 @@ namespace ORTS
 			{
 				if (train.FrontTDBTraveller.TrackNodeIndex == train.RearTDBTraveller.TrackNodeIndex)
 					continue;
-				TDBTraveller traveller = new TDBTraveller(train.RearTDBTraveller);
+				Traveller traveller = new Traveller(train.RearTDBTraveller);
 				while (traveller.NextSection())
 				{
 					if (traveller.TrackNodeIndex == train.FrontTDBTraveller.TrackNodeIndex)
@@ -655,7 +646,7 @@ namespace ORTS
 
 			// This is the position of the back end of the train in the database.
 			PATTraveller patTraveller = new PATTraveller(patFileName);
-			train.RearTDBTraveller = new TDBTraveller(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z, 0, TDB, TSectionDat);
+            train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
 
 			// figure out if the next waypoint is forward or back
 			patTraveller.NextWaypoint();
@@ -740,7 +731,8 @@ namespace ORTS
 						case 131: consistDirection = 1; break; // forward ( confirmed on L&PS route )
 						default: consistDirection = 1; break;  // forward ( confirmed on L&PS route )
 					}
-					train.RearTDBTraveller = new TDBTraveller(activityObject.TileX, activityObject.TileZ, activityObject.X, activityObject.Z, 1, TDB, TSectionDat);
+                    // FIXME: Where are TSectionDat and TDB from?
+                    train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, activityObject.TileX, activityObject.TileZ, activityObject.X, activityObject.Z);
 					if (consistDirection != 1)
 						train.RearTDBTraveller.ReverseDirection();
 					// add wagons in reverse order - ie first wagon is at back of train
@@ -911,7 +903,7 @@ namespace ORTS
 			train.LastCar.CouplerSlackM = 0;
 
 			// and fix up the travellers
-			train2.RearTDBTraveller = new TDBTraveller(train.RearTDBTraveller);
+			train2.RearTDBTraveller = new Traveller(train.RearTDBTraveller);
 			train2.CalculatePositionOfCars(0);  // fix the front traveller
 			train.RepositionRearTraveller();    // fix the rear traveller
             train2.InitializeSignals(false);  // initialize signals without existing speed information

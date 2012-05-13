@@ -60,13 +60,12 @@ namespace ORTS
                 var rdb = Owner.Viewer.Simulator.RDB;
                 foreach (var trackNode in tdb.TrackDB.TrackNodes.Where(tn => tn != null && tn.TrVectorNode != null && Math.Abs(tn.TrVectorNode.TrVectorSections[0].TileX - camera.TileX) <= 1 && Math.Abs(tn.TrVectorNode.TrVectorSections[0].TileZ - camera.TileZ) <= 1))
                 {
-                    var vs = trackNode.TrVectorNode.TrVectorSections[0];
-                    var currentPosition = new TDBTraveller(trackNode, vs, tdb, tSectionDat);
+                    var currentPosition = new Traveller(tSectionDat, tdb.TrackDB.TrackNodes, trackNode);
                     while (true)
                     {
                         var previousLocation = currentPosition.WorldLocation;
                         var remaining = currentPosition.MoveInSection(DisplaySegmentLength);
-                        if (remaining == DisplaySegmentLength && !currentPosition.NextTrVectorSection())
+                        if (remaining == DisplaySegmentLength && !currentPosition.NextVectorSection())
                             break;
                         primitives.Add(new DispatcherLineSegment(previousLocation, currentPosition.WorldLocation, Color.LightBlue, 2));
                     }
@@ -75,7 +74,7 @@ namespace ORTS
                         foreach (var trItemID in trackNode.TrVectorNode.TrItemRefs)
                         {
                             var trItem = tdb.TrackDB.TrItemTable[trItemID];
-                            currentPosition = new TDBTraveller(trackNode, vs, tdb, tSectionDat);
+                            currentPosition = new Traveller(tSectionDat, tdb.TrackDB.TrackNodes, trackNode);
                             currentPosition.Move(trItem.SData1);
                             primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, Color.LightBlue, String.Format("{0} {1} {2}", trItem.TrItemId, trItem.ItemType.ToString().Replace("tr", "").ToUpperInvariant(), trItem.ItemName), Owner.TextFontDefaultOutlined));
                         }
@@ -83,13 +82,12 @@ namespace ORTS
                 }
                 foreach (var trackNode in rdb.RoadTrackDB.TrackNodes.Where(tn => tn != null && tn.TrVectorNode != null && Math.Abs(tn.TrVectorNode.TrVectorSections[0].TileX - camera.TileX) <= 1 && Math.Abs(tn.TrVectorNode.TrVectorSections[0].TileZ - camera.TileZ) <= 1))
                 {
-                    var vs = trackNode.TrVectorNode.TrVectorSections[0];
-                    var currentPosition = new RDBTraveller(trackNode, vs, rdb, tSectionDat);
+                    var currentPosition = new Traveller(tSectionDat, rdb.RoadTrackDB.TrackNodes, trackNode);
                     while (true)
                     {
                         var previousLocation = currentPosition.WorldLocation;
                         var remaining = currentPosition.MoveInSection(DisplaySegmentLength);
-                        if (remaining == DisplaySegmentLength && !currentPosition.NextTrVectorSection())
+                        if (remaining == DisplaySegmentLength && !currentPosition.NextVectorSection())
                             break;
                         primitives.Add(new DispatcherLineSegment(previousLocation, currentPosition.WorldLocation, Color.LightSalmon, 2));
                     }
@@ -98,7 +96,7 @@ namespace ORTS
                         foreach (var trItemID in trackNode.TrVectorNode.TrItemRefs)
                         {
                             var trItem = rdb.RoadTrackDB.TrItemTable[trItemID];
-                            currentPosition = new RDBTraveller(trackNode, vs, rdb, tSectionDat);
+                            currentPosition = new Traveller(tSectionDat, rdb.RoadTrackDB.TrackNodes, trackNode);
                             currentPosition.Move(trItem.SData1);
                             primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, Color.LightSalmon, String.Format("{0} {1} {2}", trItem.TrItemId, trItem.ItemType.ToString().Replace("tr", "").ToUpperInvariant(), trItem.ItemName), Owner.TextFontDefaultOutlined));
                         }

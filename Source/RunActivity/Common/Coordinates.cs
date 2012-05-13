@@ -181,7 +181,7 @@ namespace ORTS
             }
         }
 
-        public static float DistanceSquared(WorldLocation location1, WorldLocation location2)
+        public static float GetDistanceSquared(WorldLocation location1, WorldLocation location2)
         {
             float dx = location1.Location.X - location2.Location.X;
             dx += 2048 * (location1.TileX - location2.TileX);

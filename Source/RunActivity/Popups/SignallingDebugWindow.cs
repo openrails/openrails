@@ -63,19 +63,16 @@ namespace ORTS
 
                 foreach (var train in Owner.Viewer.Simulator.Trains)
                 {
-                    var position = new TDBTraveller(train.MUDirection != Direction.Reverse ? train.FrontTDBTraveller : train.RearTDBTraveller);
-                    if (train.MUDirection == Direction.Reverse)
-                        position.ReverseDirection();
-
+                    var position = train.MUDirection != Direction.Reverse ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
                     var caches = new List<TrackSectionCacheEntry>();
                     // Work backwards until we end up on a different track section.
-                    var cacheNode = new TDBTraveller(position);
+                    var cacheNode = new Traveller(position);
                     cacheNode.ReverseDirection();
                     var initialNodeOffsetCount = 0;
                     while (cacheNode.TrackNodeIndex == position.TrackNodeIndex && cacheNode.NextSection())
                         initialNodeOffsetCount++;
                     // Now do it again, but don't go the last track section (because it is from a different track node).
-                    cacheNode = new TDBTraveller(position);
+                    cacheNode = new Traveller(position);
                     cacheNode.ReverseDirection();
                     for (var i = 1; i < initialNodeOffsetCount; i++)
                         cacheNode.NextSection();
@@ -86,9 +83,9 @@ namespace ORTS
                     var initialNodeOffset = cacheNode.DistanceTo(position.TileX, position.TileZ, position.X, position.Y, position.Z);
                     // Go and collect all the cache entries for the visible range of vector nodes (straights, curves).
                     var totalDistance = 0f;
-                    while (!cacheNode.TN.TrEndNode && totalDistance - initialNodeOffset < DisplayDistance)
+                    while (!cacheNode.IsEnd && totalDistance - initialNodeOffset < DisplayDistance)
                     {
-                        if (cacheNode.TN.TrVectorNode != null)
+                        if (cacheNode.IsTrack)
                         {
                             var cache = GetCacheEntry(cacheNode);
                             cache.Age = 0;
@@ -140,7 +137,7 @@ namespace ORTS
                         currentDistance += cache.Length;
                     }
 
-                    var currentPosition = new TDBTraveller(position);
+                    var currentPosition = new Traveller(position);
                     currentPosition.Move(-initialNodeOffset);
                     currentDistance = 0;
                     foreach (var cache in caches)
@@ -169,7 +166,7 @@ namespace ORTS
                             break;
                     }
 
-                    currentPosition = new TDBTraveller(position);
+                    currentPosition = new Traveller(position);
                     currentPosition.Move(-initialNodeOffset);
                     currentDistance = 0;
                     foreach (var cache in caches)
@@ -232,7 +229,7 @@ namespace ORTS
                 line.Draw(spriteBatch);
         }
 
-        TrackSectionCacheEntry GetCacheEntry(TDBTraveller position)
+        TrackSectionCacheEntry GetCacheEntry(Traveller position)
         {
             TrackSectionCacheEntry rv;
             if (Cache.TryGetValue(position.TrackNodeIndex, out rv) && (rv.Direction == position.Direction))
@@ -244,22 +241,22 @@ namespace ORTS
                 Objects = new List<TrackSectionObject>(),
             };
             var nodeIndex = position.TrackNodeIndex;
-            var trackNode = new TDBTraveller(position);
+            var trackNode = new Traveller(position);
             while (true)
             {
                 rv.Length += MaximumSectionDistance - trackNode.MoveInSection(MaximumSectionDistance);
                 if (!trackNode.NextSection())
                     break;
-                if (trackNode.TN.TrEndNode)
+                if (trackNode.IsEnd)
                     rv.Objects.Add(new TrackSectionEndOfLine() { Distance = rv.Length });
-                else if (trackNode.TN.TrJunctionNode != null)
+                else if (trackNode.IsJunction)
                     rv.Objects.Add(new TrackSectionSwitch() { Distance = rv.Length, TrackNode = trackNode.TN, NodeIndex = nodeIndex });
                 else
                     rv.Objects.Add(new TrackSectionObject() { Distance = rv.Length }); // Always have an object at the end.
                 if (trackNode.TrackNodeIndex != nodeIndex)
                     break;
             }
-            trackNode = new TDBTraveller(position);
+            trackNode = new Traveller(position);
             var distance = 0f;
             while (true)
             {
@@ -292,7 +289,7 @@ namespace ORTS
 
         class TrackSectionCacheEntry {
             public int Age;
-            public int Direction;
+            public Traveller.TravellerDirection Direction;
             public float Length;
             public List<TrackSectionObject> Objects;
         }

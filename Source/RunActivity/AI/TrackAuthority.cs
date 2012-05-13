@@ -161,12 +161,10 @@ namespace ORTS
         public void CalcStopDistance()
         {
             WorldLocation wl = StopNode.Location;
-            TDBTraveller traveller = Train.FrontTDBTraveller;
+            Traveller traveller = Train.FrontTDBTraveller;
             if (NReverseNodes%2 == 1)
-            {
-                traveller = new TDBTraveller(Train.RearTDBTraveller);
-                traveller.ReverseDirection();
-            }
+                traveller = new Traveller(Train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
+
             StopDistanceM = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
             StationStop = false;
             PathDistReverseAdjustmentM = 0;
@@ -203,12 +201,10 @@ namespace ORTS
                     if (!Path.SwitchIsAligned(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode)))
                     {
                         wl = node.Location;
-                        TDBTraveller rtraveller = Train.RearTDBTraveller;
+                        Traveller rtraveller = Train.RearTDBTraveller;
                         if (NReverseNodes % 2 == 1)
-                        {
-                            rtraveller = new TDBTraveller(Train.FrontTDBTraveller);
-                            rtraveller.ReverseDirection();
-                        }
+                            rtraveller = new Traveller(Train.FrontTDBTraveller, Traveller.TravellerDirection.Backward);
+
                         float d = rtraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
                         if (d > 0 && d + 1 < StopDistanceM)
                             PathDistReverseAdjustmentM = StopDistanceM - d - 1;

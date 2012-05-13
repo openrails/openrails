@@ -181,7 +181,7 @@ namespace ORTS
             // This is the position of the back end of the train in the database.
             //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
             WorldLocation wl = train.Path.FirstNode.Location;
-            train.RearTDBTraveller = new TDBTraveller(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Z, 0, Simulator.TDB, Simulator.TSectionDat);
+            train.RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Z);
             // figure out if the next waypoint is forward or back
             //patTraveller.NextWaypoint();
             wl = train.GetNextNode(train.Path.FirstNode).Location;
@@ -231,7 +231,7 @@ namespace ORTS
             train.CalculatePositionOfCars(0);
             for (int i = 0; i < train.Cars.Count; i++)
                 train.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
-            if (train.FrontTDBTraveller.TN.TrEndNode)
+            if (train.FrontTDBTraveller.IsEnd)
                 return null;
 
 	    train.CheckFreight(); // check if train is freight or passenger [R.Roeterdink]

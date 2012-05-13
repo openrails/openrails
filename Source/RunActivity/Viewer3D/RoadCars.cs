@@ -39,7 +39,7 @@ namespace ORTS
 	public class CarSpawner
 	{
 		bool silent = false;
-		public int direction;
+		public Traveller.TravellerDirection direction;
 		public float CarFrequency;
 		public float CarAvSpeed;
 		public WorldPosition position;
@@ -111,14 +111,14 @@ namespace ORTS
 			nextSpawnTime = CarFrequency * (0.75f + (float)Program.Random.NextDouble() / 2);
 
 			//test the road, 1. direction should be 1; 2. dist to the end
-			direction = 1;
-			RDBTraveller CarRDBTraveller;
+			direction = Traveller.TravellerDirection.Forward;
+			Traveller CarRDBTraveller;
 			try
 			{
-				CarRDBTraveller = new RDBTraveller(TileX, TileZ, X, Z, direction, Program.Simulator.RDB, Program.Simulator.TSectionDat);
-				if (CarRDBTraveller.MoveTo(TileX2, TileZ2, X2, Y2, Z2) != true) //cannot reach the end, so the direction is wrong
+				CarRDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, TileX, TileZ, X, Z, direction);
+				if (CarRDBTraveller.DistanceTo(TileX2, TileZ2, X2, Y2, Z2) < 0) //cannot reach the end, so the direction is wrong
 				{
-					direction = 0;
+					direction = Traveller.TravellerDirection.Backward;
 				}
 			}
 			catch (Exception )
@@ -128,8 +128,8 @@ namespace ORTS
 			}
 
 			//dist to the end, need to reset the RDB traveller
-			CarRDBTraveller = new RDBTraveller(TileX, TileZ, X, Z, direction, Program.Simulator.RDB, Program.Simulator.TSectionDat);
-			roadLength = CarRDBTraveller.DistanceTo(TileX2, TileZ2, X2, Y2, Z2) - 1.0f; //-1.0f to be a bit safe to incorrprate numerical error
+            CarRDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, TileX, TileZ, X, Z, direction);
+            roadLength = CarRDBTraveller.DistanceTo(TileX2, TileZ2, X2, Y2, Z2) - 1.0f; //-1.0f to be a bit safe to incorrprate numerical error
 
 			//shoot some cars to the road so that the road is populated first
 			RoadCar temp;
@@ -301,12 +301,10 @@ namespace ORTS
 			float height;
 			try//find the height difference of track and road
 			{
-				int Dir = 0;
-				if (direction == 0) Dir = 1;
 				//road height is determined by the car traveller on the road
-				RDBTraveller carTraveller = new RDBTraveller(trTable[RDBId].TileX, trTable[RDBId].TileZ, trTable[RDBId].X, trTable[RDBId].Z, Dir, Program.Simulator.RDB, Program.Simulator.TSectionDat);
+				Traveller carTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, trTable[RDBId].TileX, trTable[RDBId].TileZ, trTable[RDBId].X, trTable[RDBId].Z, direction);
 				//track height is determined by the train traveller on the track
-				TDBTraveller trainTraveller = new TDBTraveller(trTable2[RDBId2].TileX, trTable2[RDBId2].TileZ, trTable2[RDBId2].X, trTable2[RDBId2].Z, 1, Program.Simulator.TDB, Program.Simulator.TSectionDat);
+                Traveller trainTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, trTable2[RDBId2].TileX, trTable2[RDBId2].TileZ, trTable2[RDBId2].X, trTable2[RDBId2].Z);
 				height = trainTraveller.Y + 0.275f - carTraveller.Y;
 
 				carTraveller.Direction = 0; //reverse to go to the origin
@@ -314,7 +312,7 @@ namespace ORTS
 				//if the temp is -1, it means the item is not on the road, thus the data need to be curated.
 				if (temp == -1)
 				{
-					TDBTraveller copy = new TDBTraveller(trainTraveller);
+					Traveller copy = new Traveller(trainTraveller);
 					float tried = 0;
 					while (tried < 100)//move forward to test 100 times (50 meters)
 					{
@@ -322,7 +320,7 @@ namespace ORTS
 						tried += 0.5f;
 						try
 						{
-							carTraveller = new RDBTraveller(copy.TileX, copy.TileZ, copy.X, copy.Z, Dir, Program.Simulator.RDB, Program.Simulator.TSectionDat);
+							carTraveller = new Traveller(copy);
 							temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
 							if (temp > 0)
 							{
@@ -335,14 +333,14 @@ namespace ORTS
 						}
 					}
 					tried = 0;
-					copy = new TDBTraveller(trainTraveller);
+					copy = new Traveller(trainTraveller);
 					while (temp < 0 && tried < 100)//move backward to test 100 times (50 meters)
 					{
 						copy.Move(-0.5f);
 						tried += 0.5f;
 						try
 						{
-							carTraveller = new RDBTraveller(copy.TileX, copy.TileZ, copy.X, copy.Z, Dir, Program.Simulator.RDB, Program.Simulator.TSectionDat);
+							carTraveller = new Traveller(copy);
 							temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
 							if (temp > 0)
 							{
@@ -409,7 +407,7 @@ namespace ORTS
 	/// </summary>
 	public class RoadCar
 	{
-		public RDBTraveller CarRDBTraveller;   // position of the car
+		public Traveller CarRDBTraveller;   // position of the car
 		public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
 		public RoadCarShape carShape;
 		public CarSpawner spawner;
@@ -448,8 +446,8 @@ namespace ORTS
 			added2 = spawner.CheckTrack(travelledDist - carWheelPos);
 
 			//we need to compute the rotation matrix, so use the front and end of the car
-			RDBTraveller copy1 = new RDBTraveller(CarRDBTraveller);
-			RDBTraveller copy2 = new RDBTraveller(CarRDBTraveller);
+			Traveller copy1 = new Traveller(CarRDBTraveller);
+			Traveller copy2 = new Traveller(CarRDBTraveller);
 			copy1.Move(carWheelPos); //move front wheel to its position
 			copy2.Move(-carWheelPos); //move back wheel to its position
 
@@ -475,7 +473,7 @@ namespace ORTS
 			r.lastCar = this; //I am the last car now
 
 			//init location and speed
-			CarRDBTraveller = new RDBTraveller(r.TileX, r.TileZ, r.X, r.Z, r.direction, Program.Simulator.RDB, Program.Simulator.TSectionDat);
+			CarRDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, r.TileX, r.TileZ, r.X, r.Z, r.direction);
 			spawner = r;
 			desiredSpeed = SpeedMpS = r.CarAvSpeed * (0.75f + (float) Program.Random.NextDouble() / 2);
 			travelledDist = 0.0f;

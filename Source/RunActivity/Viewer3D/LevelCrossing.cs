@@ -324,7 +324,7 @@ namespace ORTS
                 var frontDist = LevelCrossingObjects[i].DistanceTo(train.FrontTDBTraveller, MaximumLevelCrossingActivationDistance);
                 if (frontDist < 0)
                 {
-                    frontDist = -LevelCrossingObjects[i].DistanceTo(TDBTraveller.Reversed(train.FrontTDBTraveller), MaximumLevelCrossingActivationDistance);
+                    frontDist = -LevelCrossingObjects[i].DistanceTo(new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward), MaximumLevelCrossingActivationDistance);
                     if (frontDist > 0)
                     {
                         // Train cannot find crossing.
@@ -465,27 +465,16 @@ namespace ORTS
 			else return false;
 		}//hasTrain
 
-        public float DistanceTo(TDBTraveller tdbTraveller)
+        public float DistanceTo(Traveller traveller)
         {
-            return DistanceTo(tdbTraveller, float.MaxValue);
+            return DistanceTo(traveller, float.MaxValue);
         }
 
-        public float DistanceTo(TDBTraveller tdbTraveller, float maxDistance)
+        public float DistanceTo(Traveller traveller, float maxDistance)
         {
             int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
-            return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z, maxDistance);
+            return traveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z, maxDistance);
         }
-
-        public float DistanceTo(RDBTraveller rdbTraveller)
-        {
-            return DistanceTo(rdbTraveller, float.MaxValue);
-        }
-
-        public float DistanceTo(RDBTraveller rdbTraveller, float maxDistance)
-		{
-			int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
-            return rdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z, maxDistance);
-		}
 
 		/// <summary>
 		/// Gets the correspnding TrItem from the TDB.

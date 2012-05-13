@@ -219,7 +219,7 @@ namespace ORTS
                 }
                 if (auth.StartNode.NextMainTVNIndex == auth.Train.RearTDBTraveller.TrackNodeIndex ||
                   auth.StartNode.NextSidingTVNIndex == auth.Train.RearTDBTraveller.TrackNodeIndex ||
-                  auth.Train.RearTDBTraveller.TN.TrVectorNode == null)
+                  !auth.Train.RearTDBTraveller.IsTrack)
                     continue;
                 if (auth.TrainID == 0 && Reservations[auth.Train.RearTDBTraveller.TrackNodeIndex] != auth.TrainID)
                     continue;
@@ -234,7 +234,7 @@ namespace ORTS
                         if (shape != null)
                             clearance = 1.5f * (float)shape.ClearanceDistance;
                     }
-                    float d = WorldLocation.DistanceSquared(nextNode.Location, auth.Train.RearTDBTraveller.WorldLocation);
+                    float d = WorldLocation.GetDistanceSquared(nextNode.Location, auth.Train.RearTDBTraveller.WorldLocation);
                     //Console.WriteLine("{0} {1}", d, clearance);
                     if (d < clearance * clearance)
                         continue;

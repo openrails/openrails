@@ -280,8 +280,7 @@
     <Compile Include="Signals\SIGSCRfile.cs" />
     <Compile Include="Simulator\Activity.cs" />
     <Compile Include="Simulator\RailDriverHandler.cs" />
-    <Compile Include="Simulator\RDBTraveller.cs" />
-    <Compile Include="Simulator\TDBTraveller.cs" />
+    <Compile Include="Simulator\Traveller.cs" />
     <Compile Include="Viewer3D\ALSoundHelper.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Common\DataLogger.cs" />

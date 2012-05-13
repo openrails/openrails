@@ -512,8 +512,7 @@ namespace ORTS
             Ray pickRay = new Ray(UserInput.NearPoint, direction);
 
             // check each car
-            TDBTraveller traveller = new TDBTraveller(PlayerTrain.FrontTDBTraveller);
-            traveller.ReverseDirection();
+            Traveller traveller = new Traveller(PlayerTrain.FrontTDBTraveller, Traveller.TravellerDirection.Backward);
             foreach (TrainCar car in PlayerTrain.Cars)
             {
                 float d = (car.CouplerSlackM + car.GetCouplerZeroLengthM()) / 2;

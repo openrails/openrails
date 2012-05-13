@@ -86,7 +86,7 @@ namespace ORTS
                 {   // Heading stays the same; translation changes in the direction oriented
                     // Rotate Vector3.Forward to orient the displacement vector
                     localProjectedV = localV + length * heading;
-                    displacement = TDBTraveller.MSTSInterpolateAlongStraight(localV, heading, length,
+                    displacement = Traveller.MSTSInterpolateAlongStraight(localV, heading, length,
                                                             worldMatrix.XNAMatrix, out localProjectedV);
                     realRun = length;
                 }
@@ -99,7 +99,7 @@ namespace ORTS
                     Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
                     // Shared method returns displacement from present world position and, by reference,
                     // local position in x-z plane of end of this section
-                    displacement = TDBTraveller.MSTSInterpolateAlongCurve(localV, left, rot,
+                    displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
                                             worldMatrix.XNAMatrix, out localProjectedV);
 
                     heading = Vector3.Transform(heading, rot); // Heading change

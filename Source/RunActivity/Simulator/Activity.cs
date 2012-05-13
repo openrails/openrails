@@ -337,29 +337,28 @@ namespace ORTS {
         }
 
         // We use this traveller as the basis of the calculations.
-        TDBTraveller refTraveller;
+        Traveller refTraveller;
         float Distance;
 
-        public TDBTravellerDistanceCalculatorHelper( TDBTraveller traveller ) {
+        public TDBTravellerDistanceCalculatorHelper( Traveller traveller ) {
             refTraveller = traveller;
         }
 
         public DistanceResult CalculateToPoint( int TileX, int TileZ, float X, float Y, float Z ) {
-            TDBTraveller poiTraveller;
-            poiTraveller = new TDBTraveller( refTraveller );
+            Traveller poiTraveller;
+            poiTraveller = new Traveller( refTraveller );
 
             // Find distance once
-            Distance = poiTraveller.DistanceTo( TileX, TileZ, X, Y, Z, ref poiTraveller );
+            Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
 
             // If valid
             if( Distance > 0 ) {
                 return DistanceResult.Valid;
             } else {
                 // Go to opposite direction
-                poiTraveller = new TDBTraveller( refTraveller );
-                poiTraveller.ReverseDirection();
+                poiTraveller = new Traveller( refTraveller, Traveller.TravellerDirection.Backward );
 
-                Distance = poiTraveller.DistanceTo( TileX, TileZ, X, Y, Z, ref poiTraveller );
+                Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
                 // If valid, it is behind us
                 if( Distance > 0 ) {
                     return DistanceResult.Behind;
@@ -789,7 +788,7 @@ namespace ORTS {
         /// <param name="sidingEnd1"></param>
         /// <param name="sidingEnd2"></param>
         /// <returns>true if both ends of train within siding</returns>
-        private Boolean atSiding( TDBTraveller frontPosition, TDBTraveller rearPosition, SidingItem sidingEnd1, SidingItem sidingEnd2 ) {
+        private Boolean atSiding( Traveller frontPosition, Traveller rearPosition, SidingItem sidingEnd1, SidingItem sidingEnd2 ) {
             if( sidingEnd1 == null || sidingEnd2 == null ) {
                 return true;
             }
@@ -849,7 +848,7 @@ namespace ORTS {
                 }
             }
 
-            var trainFrontPosition = new TDBTraveller( Simulator.PlayerLocomotive.Train.FrontTDBTraveller );
+            var trainFrontPosition = new Traveller( Simulator.PlayerLocomotive.Train.FrontTDBTraveller );
             var distance = trainFrontPosition.DistanceTo( e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z );
             if( distance == -1 ) {
                 trainFrontPosition.ReverseDirection();
