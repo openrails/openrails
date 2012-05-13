@@ -123,14 +123,14 @@ namespace ORTS
                                 if (switchErrorDistance < DisplayDistance)
                                     break;
                             }
- //                         else if (signalObj != null)
- //                         {
- //                             if (signalObj.Signal.GetMonitorAspect() == TrackMonitorSignalAspect.Stop)
- //                             {
- //                                 signalErrorDistance = objDistance;
- //                                 break;
- //                             }
- //                         }
+                            else if (signalObj != null)
+                            {
+                                if (GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Stop)
+                                {
+                                    signalErrorDistance = objDistance;
+                                    break;
+                                }
+                            }
                         }
                         if (switchErrorDistance < DisplayDistance || signalErrorDistance < DisplayDistance)
                             break;
@@ -195,10 +195,10 @@ namespace ORTS
                                 //primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format(angle == -1 ? "Switch ({0}-way, {1} set, angle unknown)" : "Switch ({0}-way, {1} set, angle {2:F1})", switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1, angle), Owner.TextFontDefaultOutlined));
 								primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
                             }
- //                         else if (signalObj != null)
- //                         {
- //                             primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, signalObj.Signal.GetMonitorAspect() == TrackMonitorSignalAspect.Stop ? Color.Red : signalObj.Signal.GetMonitorAspect() == TrackMonitorSignalAspect.Warning ? Color.Yellow : Color.White, String.Format("Signal ({0})", signalObj.Signal.GetAspect()), Owner.TextFontDefaultOutlined));
- //                         }
+                            else if (signalObj != null)
+                            {
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Stop ? Color.Red : GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Warning ? Color.Yellow : Color.White, String.Format("Signal ({0})", signalObj.Signal.GetAspect()), Owner.TextFontDefaultOutlined));
+                            }
 
                             if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
                                 break;
@@ -277,6 +277,16 @@ namespace ORTS
             }
             rv.Objects = rv.Objects.OrderBy(tso => tso.Distance).ToList();
             return rv;
+        }
+
+        TrackMonitorSignalAspect GetAspect(Signal signal)
+        {
+            var aspect = signal.GetAspect();
+            if (aspect >= SignalHead.SIGASP.CLEAR_1)
+                return TrackMonitorSignalAspect.Clear;
+            if (aspect >= SignalHead.SIGASP.STOP_AND_PROCEED)
+                return TrackMonitorSignalAspect.Warning;
+            return TrackMonitorSignalAspect.Stop;
         }
 
         enum DistanceToType
