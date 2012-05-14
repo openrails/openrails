@@ -80,12 +80,12 @@ namespace ORTS
   // Add World info
 
                                 AddWorldInfo();
-                        }
 
   // check for any backfacing heads in signals
   // if found, split signal
 
-                        SplitBackfacing(trackDB.TrItemTable, trackDB.TrackNodes);
+                                SplitBackfacing(trackDB.TrItemTable, trackDB.TrackNodes);
+                        }
 
 #if DEBUG_PRINT
                         for (int isignal=0; isignal < signalObjects.Length-1; isignal++)
