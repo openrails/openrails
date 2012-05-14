@@ -277,7 +277,7 @@ namespace ORTS
 			{
 
 				var start = new Vector3(SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 0], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 1], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 2]);
-				start += new Vector3(0 - size / 2, 0 - size / 2, 0);
+				start += new Vector3(0 - speed.Length * size / 2, 0 - size / 2, 0);
 				var offset = new Vector3(0, 0, 0);
 				for (var j = 0; j < speed.Length; j++)
 				{
