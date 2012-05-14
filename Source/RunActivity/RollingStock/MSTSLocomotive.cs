@@ -242,7 +242,10 @@ namespace ORTS
             if (DynamicBrakeController.IsValid())
             {
                 if (DynamicBrakeController.NotchCount() <= 3)
+                {
+                    Trace.TraceWarning("Smooth Dynamic Brake may have inaccurate display");
                     HasSmoothStruc = true;
+                }
             }
             if (!DynamicBrakeController.IsValid())
                 DynamicBrakeController = null;
@@ -443,10 +446,9 @@ namespace ORTS
                 if (DynamicBrakeController.NotchCount() <= 3)
                 {
                     // cancel smooth dynamic control, keyboard hud display only
-                    HasDefectiveComboDynamicBreak = true;
+                    //HasDefectiveComboDynamicBreak = true;
                     HasSmoothStruc = true;
-                    Trace.TraceWarning("Smooth Dynamic Break not supported");
-                    Trace.TraceWarning("DYNAMIC BREAK DISABLED display may be incorrect");
+                    Trace.TraceWarning("Smooth Dynamic Brake may have inaccurate display");
                 }
             }
         }
@@ -900,6 +902,15 @@ namespace ORTS
                 // signal sound
                 return;
             ThrottleController.StopIncrease();
+
+            if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
+            {
+                if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
+                {
+
+                    StopDynamicBrakeIncrease();
+                }
+            }
         }
 
         public void StartThrottleDecrease()
@@ -913,14 +924,10 @@ namespace ORTS
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
-                    if (!HasSmoothStruc)
-                    {
-                        StartDynamicBrakeIncrease();
-                        StopDynamicBrakeIncrease();
-                    }
-                    else
-                        StartDynamicBrakeIncrease();
 
+                        StartDynamicBrakeIncrease();
+                        if (!HasSmoothStruc)
+                            StopDynamicBrakeIncrease();
                 }
                 if (DynamicBrakePercent == -1)
                 {
@@ -948,10 +955,21 @@ namespace ORTS
         public void StopThrottleDecrease()
         {
             AlerterReset();
+
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return;
+
             ThrottleController.StopDecrease();
+
+            if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
+            {
+                if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
+                {
+
+                    StopDynamicBrakeIncrease();
+                }
+            }
         }
 
         public void SetThrottlePercent(float percent)
@@ -2938,10 +2956,20 @@ namespace ORTS
                                     indx = (throttleNotchCount - 1) - currentThrottleNotch;
                             }
                             else // dynamic break enabled
-                                // if (!_Locomotive.HasSmoothStruc)
+                                 if (!_Locomotive.HasSmoothStruc)
                                     indx = (dynNotchCount - 1) + currentDynamicNotch;
-                                //else
-                                //    indx = (FromPercent(dynBrakePercent) - 1) + currentDynamicNotch;
+
+                                     // This section for dispaly is based on 3DTS smooth controls
+                                     // The # of discreet positons for the display is based on how
+                                     // MSTS displayed them, so a dummy emulation is supplied here.
+                                else
+                                 {
+                                     
+                                    //indx = FromPercent(dynBrakePercent);
+                                     indx = IndxFromDummyDyn(dynBrakePercent);
+                                    //Console.WriteLine("Smooth % {0} indx {1}", dynBrakePercent, indx);
+                                    indx += 9;
+                                 }
 
 
 
@@ -3039,6 +3067,46 @@ namespace ORTS
 
             return indx;
         }
+
+        int IndxFromDummyDyn(float percent)
+        {
+            //Build a Constant Array
+            float[] indxByPercent = new float[]
+                { 0.0f,
+                   .1111f,
+                   .2222f,
+                   .3333f,
+                   .4444f,
+                   .5555f,
+                   .6666f,
+                   .7777f,
+                   .8888f,
+                   1.0f
+                };
+
+            float v = 0;
+            int indx = 0;
+
+            if (percent > 1)
+                percent /= 100f;
+
+            for (int i = 0; i < 10; i++)
+            {
+                v = indxByPercent[i];
+                if (percent >= v)
+                {
+                    indx = i;
+                    continue;
+                }
+                if (percent <= v)
+                {
+                    //indx = i;
+                    break;
+                }
+            }
+            return indx;
+        }
+
     }
 
     /// <summary>
