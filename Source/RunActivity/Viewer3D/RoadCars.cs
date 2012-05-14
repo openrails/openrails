@@ -301,15 +301,15 @@ namespace ORTS
 			float height;
 			try//find the height difference of track and road
 			{
-				//road height is determined by the car traveller on the road
-				Traveller carTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, trTable[RDBId].TileX, trTable[RDBId].TileZ, trTable[RDBId].X, trTable[RDBId].Z, direction);
+                var revDirection = direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward;
+                //road height is determined by the car traveller on the road
+                Traveller carTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, trTable[RDBId].TileX, trTable[RDBId].TileZ, trTable[RDBId].X, trTable[RDBId].Z, revDirection);
 				//track height is determined by the train traveller on the track
                 Traveller trainTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, trTable2[RDBId2].TileX, trTable2[RDBId2].TileZ, trTable2[RDBId2].X, trTable2[RDBId2].Z);
 				height = trainTraveller.Y + 0.275f - carTraveller.Y;
 
-				carTraveller.Direction = 0; //reverse to go to the origin
-				float temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
-				//if the temp is -1, it means the item is not on the road, thus the data need to be curated.
+                float temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
+                //if the temp is -1, it means the item is not on the road, thus the data need to be curated.
 				if (temp == -1)
 				{
 					Traveller copy = new Traveller(trainTraveller);
@@ -320,7 +320,7 @@ namespace ORTS
 						tried += 0.5f;
 						try
 						{
-							carTraveller = new Traveller(copy);
+                            carTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, copy.TileX, copy.TileZ, copy.X, copy.Z, revDirection);
 							temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
 							if (temp > 0)
 							{
@@ -340,8 +340,8 @@ namespace ORTS
 						tried += 0.5f;
 						try
 						{
-							carTraveller = new Traveller(copy);
-							temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
+                            carTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, copy.TileX, copy.TileZ, copy.X, copy.Z, revDirection);
+                            temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
 							if (temp > 0)
 							{
 								height = copy.Y + 0.275f - carTraveller.Y;
@@ -356,7 +356,7 @@ namespace ORTS
 					{
 						dist = temp; //if the data is curated with significant diff, use the new data
 					}
-				}
+                }
 				listOfTracks.Add(dist, height > 0 && height < 1 ? height : 0);//if track is too high, ignore as well
 
 			}

@@ -71,8 +71,8 @@ namespace ORTS
         }
         public float RotY { get { return directionVector.Y; } }
         public TrackNode TN { get { return trackNode; } }
-        public int TrackNodeIndex { get { return Array.IndexOf(TrackNodes, trackNode); } }
-        public int TrackVectorSectionIndex { get { return Array.IndexOf(trackNode.TrVectorNode.TrVectorSections, trackVectorSection); } }
+        public int TrackNodeIndex { get; private set; }
+        public int TrackVectorSectionIndex { get; private set; }
 
         /// <summary>
         /// Returns whether this traveller is currently on a (section of) track node (opposed to junction, end of line).
@@ -119,8 +119,8 @@ namespace ORTS
         public Traveller(TSectionDatFile tSectionDat, TrackNode[] trackNodes, int tileX, int tileZ, float x, float z)
             : this(tSectionDat, trackNodes)
         {
-            foreach (var tn in TrackNodes)
-                if (InitTrackNode(tn, tileX, tileZ, x, z))
+            for (var tni = 0; tni < TrackNodes.Length; tni++)
+                if (InitTrackNode(tni, tileX, tileZ, x, z))
                     return;
             throw new InvalidDataException(String.Format("{0} could not be found in the track database.", new WorldLocation(tileX, tileZ, x, 0, z)));
         }
@@ -151,12 +151,13 @@ namespace ORTS
             : this(tSectionDat, trackNodes)
         {
             if (startTrackNode == null) throw new ArgumentNullException("startTrackNode");
-            if (Array.IndexOf(trackNodes, startTrackNode) == -1) throw new ArgumentException("Track node is not in track nodes array.", "startTrackNode");
+            var startTrackNodeIndex = Array.IndexOf(trackNodes, startTrackNode);
+            if (startTrackNodeIndex == -1) throw new ArgumentException("Track node is not in track nodes array.", "startTrackNode");
             if (startTrackNode.TrVectorNode == null) throw new ArgumentException("Track node is not a vector node.", "startTrackNode");
             if (startTrackNode.TrVectorNode.TrVectorSections == null) throw new ArgumentException("Track node has no vector section data.", "startTrackNode");
             if (startTrackNode.TrVectorNode.TrVectorSections.Length == 0) throw new ArgumentException("Track node has no vector sections.", "startTrackNode");
             var tvs = startTrackNode.TrVectorNode.TrVectorSections[0];
-            if (InitTrackNode(startTrackNode, tvs.TileX, tvs.TileZ, tvs.X, tvs.Z))
+            if (InitTrackNode(startTrackNodeIndex, tvs.TileX, tvs.TileZ, tvs.X, tvs.Z))
                 return;
             throw new InvalidDataException(String.Format("Failed to initialize Traveller at track node {0}.", Array.IndexOf(trackNodes, trackNode)));
         }
@@ -175,8 +176,9 @@ namespace ORTS
             : this(tSectionDat, trackNodes)
         {
             if (startTrackNode == null) throw new ArgumentNullException("startTrackNode");
-            if (Array.IndexOf(trackNodes, startTrackNode) == -1) throw new ArgumentException("Track node is not in track nodes array.", "startTrackNode");
-            if (InitTrackNode(startTrackNode, tileX, tileZ, x, z))
+            var startTrackNodeIndex = Array.IndexOf(trackNodes, startTrackNode);
+            if (startTrackNodeIndex == -1) throw new ArgumentException("Track node is not in track nodes array.", "startTrackNode");
+            if (InitTrackNode(startTrackNodeIndex, tileX, tileZ, x, z))
                 return;
             // TODO: Probably should check that we're actually somewhere near one end or the other.
             throw new InvalidDataException(String.Format("{0} failed to initialize Traveller at track node {1}.", new WorldLocation(tileX, tileZ, x, 0, z), Array.IndexOf(trackNodes, startTrackNode)));
@@ -238,11 +240,13 @@ namespace ORTS
             directionVector.Y = inf.ReadSingle();
             directionVector.Z = inf.ReadSingle();
             trackOffset = inf.ReadSingle();
-            trackNode = TrackNodes[inf.ReadInt32()];
+            TrackNodeIndex = inf.ReadInt32();
+            trackNode = TrackNodes[TrackNodeIndex];
             if (IsTrack)
             {
-                trackVectorSection = trackNode.TrVectorNode.TrVectorSections[inf.ReadInt32()];
-                trackSection = TSectionDat.TrackSections[inf.ReadUInt32()];
+                TrackVectorSectionIndex = inf.ReadInt32();
+                trackVectorSection = trackNode.TrVectorNode.TrVectorSections[TrackVectorSectionIndex];
+                trackSection = TSectionDat.TrackSections[trackVectorSection.SectionIndex];
             }
         }
 
@@ -260,40 +264,39 @@ namespace ORTS
             outf.Write(trackOffset);
             outf.Write(TrackNodeIndex);
             if (IsTrack)
-            {
-                outf.Write(Array.IndexOf(trackNode.TrVectorNode.TrVectorSections, trackVectorSection));
-                outf.Write(trackSection.SectionIndex);
-            }
+                outf.Write(TrackVectorSectionIndex);
         }
 
-        bool InitTrackNode(TrackNode tn, int tileX, int tileZ, float wx, float wz)
+        bool InitTrackNode(int tni, int tileX, int tileZ, float wx, float wz)
         {
-            trackNode = tn;
-            if (tn == null || tn.TrVectorNode == null)
+            TrackNodeIndex = tni;
+            trackNode = TrackNodes[TrackNodeIndex];
+            if (trackNode == null || trackNode.TrVectorNode == null)
                 return false;
             // TODO, we could do an additional cull here by calculating a bounding sphere for each node as they are being read.
-            foreach (var tvs in tn.TrVectorNode.TrVectorSections)
-                if (InitTrackVectorSection(tvs, tileX, tileZ, wx, wz))
+            for (var tvsi = 0; tvsi < trackNode.TrVectorNode.TrVectorSections.Length; tvsi++)
+                if (InitTrackVectorSection(tvsi, tileX, tileZ, wx, wz))
                     return true;
             return false;
         }
 
-        bool InitTrackVectorSection(TrVectorSection tvs, int tileX, int tileZ, float x, float z)
+        bool InitTrackVectorSection(int tvsi, int tileX, int tileZ, float x, float z)
         {
-            trackVectorSection = tvs;
-            if (tvs == null)
+            TrackVectorSectionIndex = tvsi;
+            trackVectorSection = trackNode.TrVectorNode.TrVectorSections[TrackVectorSectionIndex];
+            if (trackVectorSection == null)
                 return false;
-            if (InitTrackSection(TSectionDat.TrackSections.Get(tvs.SectionIndex), tileX, tileZ, x, z))
+            if (InitTrackSection(trackVectorSection.SectionIndex, tileX, tileZ, x, z))
                 return true;
             return false;
         }
 
-        bool InitTrackSection(TrackSection ts, int tileX, int tileZ, float x, float z)
+        bool InitTrackSection(uint tsi, int tileX, int tileZ, float x, float z)
         {
-            trackSection = ts;
-            if (ts == null)
+            trackSection = TSectionDat.TrackSections.Get(tsi);
+            if (trackSection == null)
                 return false;
-            if ((ts.SectionCurve != null && InitTrackSectionCurved(tileX, tileZ, x, z)) || (ts.SectionCurve == null && InitTrackSectionStraight(tileX, tileZ, x, z)))
+            if ((trackSection.SectionCurve != null && InitTrackSectionCurved(tileX, tileZ, x, z)) || (trackSection.SectionCurve == null && InitTrackSectionStraight(tileX, tileZ, x, z)))
                 return true;
             return false;
         }
@@ -398,7 +401,9 @@ namespace ORTS
             direction = copy.direction;
             directionVector = copy.directionVector;
             trackOffset = copy.trackOffset;
+            TrackNodeIndex = copy.TrackNodeIndex;
             trackNode = copy.trackNode;
+            TrackVectorSectionIndex = copy.TrackVectorSectionIndex;
             trackVectorSection = copy.trackVectorSection;
             trackSection = copy.trackSection;
         }
@@ -517,7 +522,9 @@ namespace ORTS
 
             direction = trPin.Direction > 0 ? TravellerDirection.Forward : TravellerDirection.Backward;
             trackOffset = 0;
-            trackNode = TrackNodes[trPin.Link];
+            TrackNodeIndex = trPin.Link;
+            trackNode = TrackNodes[TrackNodeIndex];
+            TrackVectorSectionIndex = -1;
             trackVectorSection = null;
             trackSection = null;
             if (IsTrack)
@@ -537,14 +544,15 @@ namespace ORTS
         /// <returns><c>true</c> if the next section exists, <c>false</c> if it does not.</returns>
         public bool NextVectorSection()
         {
-            if ((direction == TravellerDirection.Forward && trackVectorSection == trackNode.TrVectorNode.TrVectorSections.Last()) || (direction == TravellerDirection.Backward && trackVectorSection == trackNode.TrVectorNode.TrVectorSections.First()))
+            if ((direction == TravellerDirection.Forward && trackVectorSection == trackNode.TrVectorNode.TrVectorSections[trackNode.TrVectorNode.TrVectorSections.Length - 1]) || (direction == TravellerDirection.Backward && trackVectorSection == trackNode.TrVectorNode.TrVectorSections[0]))
                 return false;
-            return NextTrackVectorSection(Array.IndexOf(trackNode.TrVectorNode.TrVectorSections, trackVectorSection) + (direction == TravellerDirection.Forward ? 1 : -1));
+            return NextTrackVectorSection(TrackVectorSectionIndex + (direction == TravellerDirection.Forward ? 1 : -1));
         }
 
         bool NextTrackVectorSection(int trackVectorSectionIndex)
         {
-            trackVectorSection = trackNode.TrVectorNode.TrVectorSections[trackVectorSectionIndex];
+            TrackVectorSectionIndex = trackVectorSectionIndex;
+            trackVectorSection = trackNode.TrVectorNode.TrVectorSections[TrackVectorSectionIndex];
             trackSection = TSectionDat.TrackSections.Get(trackVectorSection.SectionIndex);
             if (trackSection == null)
                 return false;
