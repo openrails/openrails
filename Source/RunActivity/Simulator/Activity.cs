@@ -184,7 +184,7 @@ namespace ORTS {
             }
         }
 
-        // <CJ comment> Use of static methods is clumsy.
+        // <CJ comment> Use of static methods is clumsy. </CJ comment>
         public static void Save( BinaryWriter outf, Activity act ) {
             Int32 noval = -1;
             if( act == null ) {
@@ -196,7 +196,7 @@ namespace ORTS {
             }
         }
 
-        // <CJ comment> Re-creating the activity object seems bizarre but not ready to re-write it yet.
+        // <CJ comment> Re-creating the activity object seems bizarre but not ready to re-write it yet. </CJ comment>
         public static Activity Restore( BinaryReader inf, Simulator simulator, Activity oldActivity ) {
             Int32 rdval;
             rdval = inf.ReadInt32();

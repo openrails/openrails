@@ -429,9 +429,7 @@ namespace ORTS
         /// </summary>
         public override void SignalEvent(EventID eventID)
         {
-			// Modified according to replacable IDs - by GeorgeS
-			//switch (eventID)
-			do
+            do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
 			{
 				if (eventID == EventID.PantographUp) { Pan = true; if (FrontPanUp == false && AftPanUp == false) AftPanUp = true; break; }  // pan up
 				if (eventID == EventID.PantographDown) { Pan = false; FrontPanUp = AftPanUp = false;  break; } // pan down
@@ -441,13 +439,13 @@ namespace ORTS
 					if (Pan == false) FrontPanUp = AftPanUp = false;
 					break; 
 				} // pan down
-			} while (false);
+            } while( false );  // Never repeats
 
             foreach (CarEventHandler eventHandler in EventHandlers)
                 eventHandler.HandleCarEvent(eventID);
         }
 
-        // sound sources or and viewers can register them selves to get direct notification of an event
+        // sound sources and viewers can register themselves to get direct notification of an event
         public List<CarEventHandler> EventHandlers = new List<CarEventHandler>();
 
         public MSTSCoupling Coupler
@@ -922,6 +920,7 @@ namespace ORTS
 				/*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
 				else Car.SignalEvent(EventID.DoorClose);*/
 				//comment out, but can be added back to animate sound
+                Viewer.Simulator.Confirmer.Confirm( CabControl.DoorsLeft, MSTSWagon.DoorLeftOpen ? CabSetting.On : CabSetting.Off );
 			}
 			if (UserInput.IsPressed(UserCommands.ControlDoorRight)) //control right door
 			{
@@ -932,11 +931,13 @@ namespace ORTS
 				/*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
 				else Car.SignalEvent(EventID.DoorClose);*/
 				//comment out, but can be added back to animate sound
-			}
-			if (UserInput.IsPressed(UserCommands.ControlMirror)) //control right door
+                Viewer.Simulator.Confirmer.Confirm( CabControl.DoorsRight, MSTSWagon.DoorRightOpen ? CabSetting.On : CabSetting.Off );
+            }
+			if (UserInput.IsPressed(UserCommands.ControlMirror))    // Are these the mirrors on trams which swing out at platforms?
 			{
 				MSTSWagon.MirrorOpen = !MSTSWagon.MirrorOpen;
-			}
+                Viewer.Simulator.Confirmer.Confirm( CabControl.Mirror, MSTSWagon.MirrorOpen ? CabSetting.On : CabSetting.Off );
+            }
 		}
 
 

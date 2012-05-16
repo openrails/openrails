@@ -24,6 +24,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MSTS;
+using System.Diagnostics; // needed for Debug
 
 namespace ORTS
 {
@@ -181,9 +182,23 @@ namespace ORTS
         {
             //base.Update(elapsedClockSeconds );
 
+            //<CJ Comment> Next 16 lines seems to be same as parent method </CJ Comment>
             TrainBrakeController.Update(elapsedClockSeconds);
-            if (EngineBrakeController != null)
+            if( TrainBrakeController.UpdateValue > 0.0 ) {
+                Simulator.Confirmer.Update( CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus() );
+            }
+            if( TrainBrakeController.UpdateValue < 0.0 ) {
+                Simulator.Confirmer.Update( CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus() );
+            }
+
+            if( EngineBrakeController != null )
                 EngineBrakeController.Update(elapsedClockSeconds);
+            if( EngineBrakeController.UpdateValue > 0.0 ) {
+                Simulator.Confirmer.Update( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
+            }
+            if( EngineBrakeController.UpdateValue < 0.0 ) {
+                Simulator.Confirmer.Update( CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus() );
+            }            
 
             if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
             {
@@ -193,6 +208,7 @@ namespace ORTS
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
 
+            
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive())
@@ -380,7 +396,7 @@ namespace ORTS
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
-            base.UpdateParent(elapsedClockSeconds);
+            base.UpdateGrandparent(elapsedClockSeconds);
         }
 
         /// <summary>
@@ -388,13 +404,13 @@ namespace ORTS
         /// </summary>
         public override void SignalEvent(EventID eventID)
         {
-            switch (eventID)
+            do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
             {
                 // for example
                 // case EventID.BellOn: Bell = true; break;
-                // case EveantID.BellOff: Bell = false; break;
-                default: break;
-            }
+                // case EventID.BellOff: Bell = false; break;
+  			} while (false);  // Never repeats
+
             base.SignalEvent(eventID);
         }
 
@@ -515,16 +531,30 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.ControlDieselPlayer) && (DieselLocomotive.ThrottlePercent == 0))
-            {
-                DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
+            if( UserInput.IsPressed( UserCommands.ControlDieselPlayer ) ) {
+                if( DieselLocomotive.ThrottlePercent < 1 ) {
+                    DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
+                    Viewer.Simulator.Confirmer.Confirm( CabControl.PlayerDiesel, DieselLocomotive.PowerOn ? CabSetting.On : CabSetting.Off );
+                } else {
+                    Viewer.Simulator.Confirmer.Warn( CabControl.PlayerDiesel, CabSetting.Warn );
+                }
             }
             if (UserInput.IsPressed(UserCommands.ControlDieselHelper))
             {
-                foreach (TrainCar traincar in DieselLocomotive.Train.Cars)
+                bool powerOn = false;
+                int helperLocos = 0;
+                foreach( TrainCar traincar in DieselLocomotive.Train.Cars )
                 {
-                    if (traincar.GetType() == typeof(MSTSDieselLocomotive))
+                    if( traincar.GetType() == typeof( MSTSDieselLocomotive ) ) {
                         ((MSTSDieselLocomotive)traincar).StartStopDiesel();
+                        powerOn = ((MSTSDieselLocomotive)traincar).PowerOn;
+                        helperLocos++;
+                    }
+                }
+                // One confirmation however many helper locomotives
+                // <CJ Comment> Couldn't make one confirmation per loco work correctly :-( </CJ Comment>
+                if( helperLocos > 0 ) {
+                    Viewer.Simulator.Confirmer.Confirm( CabControl.HelperDiesel, powerOn ? CabSetting.On : CabSetting.Off );
                 }
             }
             base.HandleUserInput(elapsedTime);

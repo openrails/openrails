@@ -7,14 +7,12 @@ namespace ORTS
     /**
      * This is the a Controller used to control brakes.
      * 
-     * This is mainly a Notch controller, but it allows continuos input and also 
-     * has specific methods update brake status.
+     * This is mainly a Notch controller, but it allows continuous input and also 
+     * has specific methods to update brake status.
      * 
      */ 
     public class MSTSBrakeController: MSTSNotchController, IBrakeController
     {
-		protected readonly Simulator Simulator;
-
         // brake controller values
         private float MaxPressurePSI = 90;
         private float ReleaseRatePSIpS = 5;

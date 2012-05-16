@@ -891,8 +891,12 @@ namespace ORTS
 
 		public void InitializeBrakes()
 		{
-			if (SpeedMpS != 0)
-				return;
+            if( SpeedMpS != 0 ) {
+                Simulator.Confirmer.Warn( CabControl.InitializeBrakes, CabSetting.Warn );
+                return;
+            }
+            if( Simulator.Confirmer != null ) Simulator.Confirmer.Confirm( CabControl.InitializeBrakes, CabSetting.Off );
+
 			float maxPressurePSI = 90;
 			if (LeadLocomotiveIndex >= 0)
 			{

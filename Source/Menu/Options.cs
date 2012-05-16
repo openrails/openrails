@@ -70,7 +70,8 @@ namespace ORTS
 				this.checkBoxShadows.Checked = (1 == (int)RK.GetValue("DynamicShadows", 0));
 				this.checkBoxWindowGlass.Checked = (1 == (int)RK.GetValue("WindowGlass", 0));
                 this.checkBoxBINSound.Checked = (1 == (int)RK.GetValue("MSTSBINSound", 0));
-			}
+                this.checkBoxSuppressConfirmations.Checked = (1 == (int)RK.GetValue("SuppressConfirmations", 0));
+            }
         }
 
         private void buttonOK_Click(object sender, EventArgs e)
@@ -91,6 +92,7 @@ namespace ORTS
                 RK.SetValue("DynamicShadows", this.checkBoxShadows.Checked ? 1 : 0);
                 RK.SetValue("WindowGlass", this.checkBoxWindowGlass.Checked ? 1 : 0);
                 RK.SetValue("MSTSBINSound", this.checkBoxBINSound.Checked ? 1 : 0);
+                RK.SetValue("SuppressConfirmations", this.checkBoxSuppressConfirmations.Checked ? 1 : 0 );
             }
 			Close();
         }

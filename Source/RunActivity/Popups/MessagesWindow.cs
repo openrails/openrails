@@ -10,8 +10,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Timers;    // needed by Confirmation
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Diagnostics;   // needed for Debug
 
 namespace ORTS.Popups
 {
@@ -94,11 +96,35 @@ namespace ORTS.Popups
 
             if (updateFull)
             {
-                if (Messages.Any(m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime + FadeTime))
-                {
-                    Messages = Messages.Where(m => Owner.Viewer.Simulator.ClockTime < m.ExpiryTime + FadeTime).ToList();
-                    Layout();
+                List<Confirmation> list = Owner.Viewer.Simulator.Confirmer.ConfirmationList;
+                for( var i = 1; i < list.Count; i++ ){  // Ignore the item at the head of the list as it was added last time round.
+                    Confirmation a = list[i];
+                    // Messages are added to the message list here and not directly by the Confirmer class to avoid one
+                    // thread calling another.
+                    AddMessage( a.Message, a.DurationS );
                 }
+                // Remove all but the most recent message (at the tail of the list)
+                var messageCount = list.Count;  // A value that won't change inside the loop
+                for( var i = 1; i < messageCount; i++ ) {
+                    list.RemoveAt( 0 );
+                }
+
+                // Re-display messages if most recent message (at the tail of the list) has been updated
+                bool layoutNeeded = false;
+                if( Messages.Count > 0 ) {
+                    if( Messages.Last().Text != list.Last().Message ) { // if changed
+                        Messages.Last().Text = list.Last().Message;
+                        Messages.Last().ExpiryTime = Owner.Viewer.Simulator.ClockTime;  // Reset the expiry time.
+                        layoutNeeded = true;
+                    }
+                }
+
+                // Re-display messages if any have faded
+                if( Messages.Any( m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime + FadeTime ) ) {
+                    Messages = Messages.Where(m => Owner.Viewer.Simulator.ClockTime < m.ExpiryTime + FadeTime).ToList();
+                    layoutNeeded = true;
+                }
+                if (layoutNeeded) Layout(); // Make the messages appear
             }
 
             foreach (var message in Messages.Where(m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime))
@@ -107,9 +133,9 @@ namespace ORTS.Popups
 
 		class Message
 		{
-			public readonly string Text;
-			public readonly double ClockTime;
-			public readonly double ExpiryTime;
+            public string Text;
+            public readonly double ClockTime;
+			public double ExpiryTime;
 			internal LabelShadow LabelShadow;
 			internal Label LabelTime;
 			internal Label LabelText;

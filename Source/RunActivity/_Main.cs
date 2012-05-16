@@ -457,7 +457,7 @@ namespace ORTS
                 using( StreamWriter sw = File.AppendText( summaryFileName ) ) {
                     // Pass, Activity, Errors, Warnings, Infos, Folder, Route, Activity
                     // Excel doesn't handle CSV with commas embedded in text (although Access does :{ )
-                    // Simplest solution is to change embedded "," to ";"
+                    // Simplest solution is to change embedded "," to ";" with .Replace()
                     sw.Write( (fatalErrors == 0) ? "yes" : "no" );
                     sw.Write( String.Format( ", {0}", Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.Replace(",", ";") ) );  // e.g. Auto Train with Set-Out
                     sw.Write( String.Format( ", {0}", (ErrorCount[0] + ErrorCount[1]).ToString() ) );   // critical and error
@@ -491,8 +491,8 @@ namespace ORTS
                     else
                         Version = ""; 
 
-                    Build = Application.ProductVersion;  // from assembly
-                    Build = Build + " " + f.ReadLine();  // date
+                    Build = Application.ProductVersion; // from assembly
+                    Build = Build + " " + f.ReadLine(); // date
                     Build = Build + " " + f.ReadLine(); // time
                 }
             }
@@ -512,7 +512,7 @@ namespace ORTS
             InitLogging( settings, true );
         }
 
-        static void InitLogging(UserSettings settings, bool newFile)
+        static void InitLogging(UserSettings settings, bool newFile )
         {
             var logFileName = "";
             if (settings.Logging)
@@ -522,7 +522,11 @@ namespace ORTS
                     var fileName = settings.LoggingFilename;
                     try
                     {
-                        fileName = String.Format(fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, DateTime.Now);
+                        if( newFile ) {
+                            fileName = String.Format( fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, DateTime.Now );
+                        } else {  // -test parameter appends all records to a single log file, so filename musn't change with time of day.
+                            fileName = String.Format( fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, "-test" );
+                        }
                     }
                     catch { }
                     foreach (var ch in Path.GetInvalidFileNameChars())

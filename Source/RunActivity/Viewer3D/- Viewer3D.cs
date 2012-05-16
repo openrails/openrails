@@ -239,6 +239,7 @@ namespace ORTS
             World = new World(this);
 
             SoundProcess = new SoundProcess(this);
+            Simulator.Confirmer = new Confirmer( Settings.SuppressConfirmations, World, 1.5 );
 
             // Now everything is ready to use, changed to saved values if available. 
             if( inf != null ) Restore( inf );
@@ -379,9 +380,18 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.GameQuit)) { Stop(); return; }
             if (UserInput.IsPressed(UserCommands.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
             if (UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
-            if (UserInput.IsPressed(UserCommands.DebugSpeedUp)) Simulator.GameSpeed *= 1.5f;
-            if (UserInput.IsPressed(UserCommands.DebugSpeedDown)) Simulator.GameSpeed /= 1.5f;
-            if (UserInput.IsPressed(UserCommands.DebugSpeedReset)) Simulator.GameSpeed = 1;
+            if( UserInput.IsPressed( UserCommands.DebugSpeedUp ) ) {
+                Simulator.GameSpeed *= 1.5f;
+                Simulator.Confirmer.ConfirmWithPerCent( CabControl.SimulationSpeed, CabSetting.Increase, Simulator.GameSpeed * 100 );
+            }
+            if( UserInput.IsPressed( UserCommands.DebugSpeedDown ) ) {
+                Simulator.GameSpeed /= 1.5f;
+                Simulator.Confirmer.ConfirmWithPerCent( CabControl.SimulationSpeed, CabSetting.Decrease, Simulator.GameSpeed * 100 );
+            }
+            if( UserInput.IsPressed( UserCommands.DebugSpeedReset ) ) {
+                Simulator.GameSpeed = 1;
+                Simulator.Confirmer.ConfirmWithPerCent( CabControl.SimulationSpeed, CabSetting.Off, Simulator.GameSpeed * 100 );
+            }
             if (UserInput.IsPressed(UserCommands.GameSave)) { Program.Save(); }
             if (UserInput.IsPressed(UserCommands.DisplayHelpWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
@@ -395,6 +405,7 @@ namespace ORTS
 
             if (UserInput.IsPressed(UserCommands.GameLocomotiveSwitch))
             {
+                Simulator.Confirmer.Confirm( CabControl.SwitchLocomotive, CabSetting.On );
                 Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
                 Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
                 Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller

@@ -33,7 +33,6 @@ using Microsoft.Xna.Framework;
 using MSTS;
 using ORTS.Interlocking;
 
-
 namespace ORTS
 {
 	public class Simulator
@@ -94,7 +93,8 @@ namespace ORTS
 		public InterlockingSystem InterlockingSystem;
 
 
-		public TrainCar PlayerLocomotive = null;  // Set by the Viewer - TODO there could be more than one player so eliminate this.
+		public TrainCar PlayerLocomotive = null;    // Set by the Viewer - TODO there could be more than one player so eliminate this.
+        public Confirmer Confirmer;                 // Set by the Viewer
 
 		public Simulator(UserSettings settings, string activityPath)
 		{
@@ -568,7 +568,8 @@ namespace ORTS
 					nextSwitchTrack.SelectedRoute = 1;
 				else
 					nextSwitchTrack.SelectedRoute = 0;
-			}
+                Confirmer.Confirm( CabControl.SwitchBehind, CabSetting.On );
+            }
 		}
 
 		/// <summary>
@@ -586,6 +587,7 @@ namespace ORTS
 					nextSwitchTrack.SelectedRoute = 1;
 				else
 					nextSwitchTrack.SelectedRoute = 0;
+                Confirmer.Confirm( CabControl.SwitchAhead, CabSetting.On );
 			}
 			train.ResetSignal(false);
 		}

@@ -279,6 +279,7 @@
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Signals\SIGSCRfile.cs" />
     <Compile Include="Simulator\Activity.cs" />
+    <Compile Include="Simulator\Confirmation.cs" />
     <Compile Include="Simulator\RailDriverHandler.cs" />
     <Compile Include="Simulator\Traveller.cs" />
     <Compile Include="Viewer3D\ALSoundHelper.cs" />

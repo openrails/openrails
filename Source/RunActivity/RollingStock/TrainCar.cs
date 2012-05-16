@@ -41,7 +41,7 @@ namespace ORTS
         public int UiD;
         public string CarID = "AI"; //CarID = "0 - UID" if player train, "ActivityID - UID" if loose consist, "AI" if AI train
 
-        // status of the traincar - set by the train physics after it call calls TrainCar.Update()
+        // status of the traincar - set by the train physics after it calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
         public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
         public float SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
@@ -88,7 +88,7 @@ namespace ORTS
         // Load 3D geometry into this 3D viewer and return it as a TrainCarViewer
         public virtual TrainCarViewer GetViewer(Viewer3D viewer) { return null; }
 
-        // called when its time to update the MotiveForce and FrictionForce
+        // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
         {
             // gravity force, M32 is up component of forward vector

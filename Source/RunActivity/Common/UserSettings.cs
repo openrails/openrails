@@ -53,7 +53,8 @@ namespace ORTS
 		public int ShadowMapResolution { get; set; }
         public bool ShowErrorDialogs { get; set; }
 		public int SoundDetailLevel { get; set; }
-		public bool TrainLights { get; set; }
+        public bool SuppressConfirmations { get; set; }
+        public bool TrainLights { get; set; }
         public bool UseAdvancedAdhesion { get; set; }
 		public bool VerticalSync { get; set; }
 		public int ViewingDistance { get; set; }

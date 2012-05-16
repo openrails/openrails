@@ -23,6 +23,7 @@ using MSTS;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 using System.IO;
+using ORTS.Popups;  // needed for Confirmation
 
 namespace ORTS
 {
@@ -179,7 +180,14 @@ namespace ORTS
         /// </summary>
         public override void SignalEvent( EventID eventID)
         {
-            base.SignalEvent(eventID);
+            do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
+            {
+                // for example
+                // case EventID.BellOn: Bell = true; break;
+                // case EventID.BellOff: Bell = false; break;
+            } while( false );  // Never repeats
+
+            base.SignalEvent( eventID );
         }
 
         public void SetPantographFirst( bool up)
@@ -267,25 +275,32 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
+            bool newState = false;
             if (UserInput.IsPressed(UserCommands.ControlPantographFirst))
             {
                 // Raise or lower the first pantograph on all locomotives in the train
-                bool newState = !ElectricLocomotive.PantographFirstUp;
-                foreach (TrainCar traincar in ElectricLocomotive.Train.Cars)
+                newState = !ElectricLocomotive.PantographFirstUp;
+                bool confirmAction = false;
+                foreach( TrainCar traincar in ElectricLocomotive.Train.Cars )
                 {
-                    if (traincar.GetType() == typeof(MSTSElectricLocomotive))
-                        ((MSTSElectricLocomotive)traincar).SetPantographFirst(newState);
+                    if( traincar.GetType() == typeof( MSTSElectricLocomotive ) ) {
+                        ((MSTSElectricLocomotive)traincar).SetPantographFirst( newState );
+                        confirmAction = true;
+                    }
                 }
+                if( confirmAction ) { this.Viewer.Simulator.Confirmer.Confirm( CabControl.Pantograph1, newState == true ? CabSetting.On : CabSetting.Off ); }
             }
             if (UserInput.IsPressed(UserCommands.ControlPantographSecond))
             {
                 // Raise or lower the second pantograph on all locomotives in the train
-                bool newState = !ElectricLocomotive.PantographSecondUp;
-                foreach (TrainCar traincar in ElectricLocomotive.Train.Cars)
+                newState = !ElectricLocomotive.PantographSecondUp;
+                bool confirmAction = false;
+                foreach( TrainCar traincar in ElectricLocomotive.Train.Cars )
                 {
                     if (traincar.GetType() == typeof(MSTSElectricLocomotive))
                         ((MSTSElectricLocomotive)traincar).SetPantographSecond(newState);
                 }
+                if( confirmAction ) { this.Viewer.Simulator.Confirmer.Confirm( CabControl.Pantograph2, newState == true ? CabSetting.On : CabSetting.Off ); }
             }
 
             base.HandleUserInput(elapsedTime);

@@ -3,11 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
+using ORTS.Popups;  // needed for Confirmations
+using System.Diagnostics;   // needed for Debug
 
 namespace ORTS
 {
     /**
-     * This is the most used contorller. The main use if for diesel locomotives Throttle control.
+     * This is the most used controller. The main use is for diesel locomotives' Throttle control.
      * 
      * It is used with single keypress, this means that when the user press a key, only the keydown event is handled.
      * The user need to press the key multiple times to update this controller.
@@ -22,6 +24,8 @@ namespace ORTS
         public float StepSize = 0;
         private List<MSTSNotch> Notches = new List<MSTSNotch>();
         public int CurrentNotch = 0;
+
+        protected Simulator Simulator;
 
         //Does not need to persist
         //this indicates if the controller is increasing or decreasing, 0 no changes
@@ -231,10 +235,10 @@ namespace ORTS
             IntermediateValue += StepSize * elapsedSeconds * GetNotchBoost() * direction;
             IntermediateValue = MathHelper.Clamp(IntermediateValue, MinimumValue, MaximumValue);
 
-            //Do we have nothces
+            //Do we have notches
             if (Notches.Count > 0)
             {
-                //Increasing, check if the notche has changed
+                //Increasing, check if the notch has changed
                 if ((direction > 0) && (CurrentNotch < Notches.Count - 1) && (IntermediateValue >= Notches[CurrentNotch + 1].Value))
                 {
                     //update notch
@@ -257,7 +261,6 @@ namespace ORTS
                 //if no notches, we just keep updating the current value directly
                 CurrentValue = IntermediateValue;
             }
-
             return CurrentValue;
         }
 

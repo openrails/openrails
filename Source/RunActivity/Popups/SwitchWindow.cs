@@ -58,7 +58,7 @@ namespace ORTS.Popups
 		void SwitchBackwards_Click(Control arg1, Point arg2)
 		{
 			Owner.Viewer.Simulator.SwitchTrackBehind(Owner.Viewer.PlayerTrain);
-		}
+        }
 
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
