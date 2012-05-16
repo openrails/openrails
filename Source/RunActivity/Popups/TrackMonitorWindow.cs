@@ -27,12 +27,12 @@ namespace ORTS.Popups
     {
         const int MAXLINES = 20;
         const int MAXDISTANCE = 5000;
+        const int TrackMonitorHeight = 260;
+        const int LabelsHeight = 117;
 
         Label SpeedCurrent;
         Label SpeedProjected;
         Label SpeedAllowed;
-        Label SignalDistance;
-        Image SignalAspect;
         Label POILabel;
         Label POIDistance;
         Label ListHead;
@@ -41,6 +41,7 @@ namespace ORTS.Popups
         Label [] SpeedList    = new Label[MAXLINES];
         Image [] SignalList   = new Image[MAXLINES];
         bool [] LineSet = new bool[MAXLINES];
+        TrackMonitor Monitor;
 
         float LastSpeedMpS;
         SmoothedData AccelerationMpSpS = new SmoothedData();
@@ -71,7 +72,7 @@ namespace ORTS.Popups
         }
 
         public TrackMonitorWindow(WindowManager owner)
-            : base(owner, 150, 124+40+MAXLINES*16, "Track Monitor")
+            : base(owner, 150, LabelsHeight + TrackMonitorHeight + 15, "Track Monitor")
         {
         }
 
@@ -97,45 +98,26 @@ namespace ORTS.Popups
             }
             {
                 var hbox = vbox.AddLayoutHorizontal(16);
-                hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Allowed:"));
+                hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Limit:"));
                 hbox.Add(SpeedAllowed = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
             }
             vbox.AddHorizontalSeparator();
-            {
-                var hbox = vbox.AddLayoutHorizontal(16);
-                hbox.Add(new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "Signal:"));
-                hbox.Add(SignalDistance = new Label(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", LabelAlignment.Right));
-                hbox.AddSpace(2, 0);
-                hbox.Add(SignalAspect = new Image(hbox.RemainingWidth, hbox.RemainingHeight));
-                SignalAspect.Texture = SignalAspects;
-            }
             {
                 var hbox = vbox.AddLayoutHorizontal(16);
                 hbox.Add(POILabel = new Label(hbox.RemainingWidth / 2, hbox.RemainingHeight, "POI:"));
                 hbox.Add(POIDistance = new Label(hbox.RemainingWidth - 18, hbox.RemainingHeight, "0m", LabelAlignment.Right));
             }
             vbox.AddHorizontalSeparator();
-            vbox.AddHorizontalSeparator();
             {
                 var hbox = vbox.AddLayoutHorizontal(16);
                 hbox.Add(new Label(hbox.RemainingWidth , hbox.RemainingHeight, "   Dist     Speed  Aspect"));
                 hbox.Add(ListHead = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
             }
-            vbox.AddHorizontalSeparator();
-            for (int iline=0; iline < MAXLINES; iline++)
-            {
-                var hbox = vbox.AddLayoutHorizontal(16);
-                hbox.Add(DistanceList[iline] = new Label(hbox.RemainingWidth - 100, hbox.RemainingHeight, "", LabelAlignment.Left));
-                hbox.AddSpace(2, 0);
-                hbox.Add(PathList[iline] = new Label(10, hbox.RemainingHeight, "", LabelAlignment.Left));
-                hbox.AddSpace(2, 0);
-                hbox.Add(SpeedList[iline] = new Label(hbox.RemainingWidth - 30, hbox.RemainingHeight, "", LabelAlignment.Left));
-                hbox.AddSpace(6, 0);
-                hbox.Add(SignalList[iline] = new Image(16, hbox.RemainingHeight));
-                SignalList[iline].Texture = SignalAspects;
-            }
 
             vbox.AddHorizontalSeparator();
+            vbox.Add(Monitor = new TrackMonitor(vbox.RemainingWidth, 50, MAXDISTANCE, TrackMonitorHeight, LabelsHeight, Owner.Viewer.MilepostUnitsMetric,
+                Owner.Viewer.RenderProcess.Content.Load<Texture2D>("Train_TM"), SignalAspects, Owner.Viewer.PlayerTrain.SignalObjectItems));
+
             return vbox;
         }
 
@@ -164,68 +146,12 @@ namespace ORTS.Popups
                 SpeedProjected.Text = FormatSpeed(speedProjectedMpS, milepostUnitsMetric);
                 SpeedAllowed.Text = FormatSpeed(allowedSpeedMpS, milepostUnitsMetric);
 
-                SignalDistance.Text = signalAspect == TrackMonitorSignalAspect.None ? "" : FormatDistance(signalDistance, milepostUnitsMetric);
-                SignalAspect.Source = SignalAspectSources[signalAspect];
-
                 POILabel.Text = DispatcherPOILabels[poiType];
                 POIDistance.Text = poiType == DispatcherPOIType.Unknown || poiType == DispatcherPOIType.OffPath ? "" : FormatDistance(poiDistance, milepostUnitsMetric);
-
-                for (int iline = 0; iline < MAXLINES; iline++)
-                {
-                        DistanceList[iline].Text = "";
-                        PathList[iline].Text = "|";
-                        SpeedList[iline].Text = "";
-                        SignalList[iline].Source = SignalAspectSources[TrackMonitorSignalAspect.None];
-                        LineSet[iline] = false;
-                }
-
-                DistanceList[MAXLINES-1].Text = FormatDistance( (float) MAXDISTANCE, milepostUnitsMetric);
-                LineSet[MAXLINES-1] = true;
-
-                for (int icount=0; icount < Owner.Viewer.PlayerTrain.SignalObjectItems.Count; icount++)
-                {
-                        ObjectItemInfo thisObject = Owner.Viewer.PlayerTrain.SignalObjectItems[icount];
-                        float objectDistance = thisObject.distance_to_train;
-                        int reqline = (int) Math.Floor((objectDistance / (float)MAXDISTANCE) * (float)MAXLINES);
-
-                        while (reqline < MAXLINES-1 && LineSet[reqline])
-                        {
-                                reqline++;
-                        }
-
-			bool displayReq = false;
-
-                        if (reqline < MAXLINES-1)
-                        {
-                                if (thisObject.ObjectDetails.isSignal)
-                                {
-					displayReq = true;
-                                        var thisAspect = thisObject.ObjectDetails.TranslateTMAspect(thisObject.signal_state);
-                                        SignalList[reqline].Source = SignalAspectSources[thisAspect];
-
-                                        float thisSpeed  = thisObject.actual_speed;
-                                        if (thisSpeed > 0)
-                                        {
-                                                SpeedList[reqline].Text = FormatSpeed(thisSpeed, milepostUnitsMetric);
-                                        }
-                                }
-                                else
-                                {
-                                        float thisSpeed  = thisObject.actual_speed;
-                                        if (thisSpeed > 0)
-                                        {
-                                                SpeedList[reqline].Text = FormatSpeed(thisSpeed, milepostUnitsMetric);
-						displayReq = true;
-                                        }
-                                }
-
-				if (displayReq)
-				{
-                                	DistanceList[reqline].Text = FormatDistance(objectDistance, milepostUnitsMetric);
-                                	LineSet[reqline] = true;
-				}
-                        }
-                }
+                Monitor.trackObjects = Owner.Viewer.PlayerTrain.SignalObjectItems;
+                Monitor.OverSpeed = (speedMpS > allowedSpeedMpS) ? true : false;
+                Monitor.OLSignalDistance = (signalAspect == TrackMonitorSignalAspect.None) ? 0f : signalDistance;
+                Monitor.OLSignalAspect = signalAspect;
             }
         }
 
@@ -238,6 +164,203 @@ namespace ORTS.Popups
         {
             if (metric)
             {
+                // <0.1 kilometers, show meters.
+                if (Math.Abs(distance) < 100)
+                    return String.Format("{0:N0}m", distance);
+                return String.Format("{0:F1}km", distance / 1000.000);
+            }
+            // <0.1 miles, show yards.
+            if (Math.Abs(distance) < 160.9344)
+                return String.Format("{0:N0}yd", distance * 1.093613298337708);
+            return String.Format("{0:F1}mi", distance / 1609.344);
+        }
+    }
+
+    public class TrackMonitor : Control
+    {
+        static Texture2D MonitorTexture;
+        WindowTextFont Font;
+
+        public float Heading;
+        
+        private int MAXDISTANCE;
+        private int TRACKMONITORHEIGHT;
+        private int LABELSHEIGHT;
+        private int fontOffset = 0;
+        private bool milepostUnitsMetric;
+        public bool OverSpeed = false;
+        private bool OLSignalShown = false;
+        public float OLSignalDistance = 0f;
+        private float lastObjectDistnace = 5000f;
+        public TrackMonitorSignalAspect OLSignalAspect; // Out of limit signal
+
+        private Texture2D trainIcon;
+        private Texture2D SignalAspects;
+
+        public List<ObjectItemInfo> trackObjects;
+
+        static readonly Dictionary<TrackMonitorSignalAspect, Rectangle> SignalAspectSources = InitSignalAspectSources();
+        static Dictionary<TrackMonitorSignalAspect, Rectangle> InitSignalAspectSources()
+        {
+            return new Dictionary<TrackMonitorSignalAspect, Rectangle> {
+                                { TrackMonitorSignalAspect.None, new Rectangle(0, 0, 16, 16) },
+                                { TrackMonitorSignalAspect.Clear, new Rectangle(16, 0, 16, 16) },
+                                { TrackMonitorSignalAspect.Warning, new Rectangle(0, 16, 16, 16) },
+                                { TrackMonitorSignalAspect.Stop, new Rectangle(16, 16, 16, 16) },
+                        };
+        }
+
+        public TrackMonitor(int width, int height, int maxDistance, int trackMonitorHeight, int labelsHeght, bool metricUnits, Texture2D train, Texture2D signalAspects,
+            List<ObjectItemInfo> listOfTrackObjects)
+            : base(0, 0, width, height)
+        {
+            MAXDISTANCE = maxDistance;
+            TRACKMONITORHEIGHT = trackMonitorHeight;
+            LABELSHEIGHT = labelsHeght;
+            milepostUnitsMetric = metricUnits;
+            trackObjects = listOfTrackObjects;
+            trainIcon = train;
+            SignalAspects = signalAspects;
+        }
+
+        public override void Initialize(WindowManager windowManager)
+        {
+            base.Initialize(windowManager);
+            Font = windowManager.TextManager.Get("Arial", 7, System.Drawing.FontStyle.Regular);
+        }
+
+        internal override void Draw(SpriteBatch spriteBatch, Point offset)
+        {
+            if (MonitorTexture == null)
+            {
+                MonitorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+                MonitorTexture.SetData(new[] { Color.White });
+            }
+
+            drawTrack(spriteBatch, offset, LABELSHEIGHT, TRACKMONITORHEIGHT, (OverSpeed) ? Color.Red : Color.Green);
+            spriteBatch.Draw(trainIcon, new Rectangle(offset.X + 41, offset.Y + LABELSHEIGHT + TRACKMONITORHEIGHT, trainIcon.Width, trainIcon.Height), Color.White);
+
+            if (!arrayContainsVisibleSignal())
+            {
+                if (OLSignalDistance > (float)MAXDISTANCE)
+                {
+                    spriteBatch.Draw(SignalAspects, new Rectangle(offset.X + 130, offset.Y + LABELSHEIGHT + 3, 16, 16), SignalAspectSources[OLSignalAspect], Color.White);
+                    spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + LABELSHEIGHT + 5 + 16), null, Color.White, 0, Vector2.Zero,
+                        new Vector2(142, 1), SpriteEffects.None, 0);
+                    Font.Draw(spriteBatch, new Point(offset.X + 4, offset.Y + LABELSHEIGHT + Font.Height - 4),
+                        FormatDistance(OLSignalDistance, milepostUnitsMetric), Color.White);
+
+                    OLSignalShown = true;
+                }
+            }
+
+            for (int icount = 0; icount < trackObjects.Count; icount++)
+            {
+                ObjectItemInfo thisObject = trackObjects[icount];
+                float objectDistance = thisObject.distance_to_train;
+
+                if ((offset.Y + LABELSHEIGHT + TRACKMONITORHEIGHT - Convert.ToInt32(objectDistance / (MAXDISTANCE / TRACKMONITORHEIGHT))) > offset.Y + LABELSHEIGHT + 16 + 3
+                    + ((OLSignalShown) ? Font.Height + 3 : 0))
+                {
+                    if (Math.Abs(lastObjectDistnace - objectDistance) < Font.Height + 10)
+                    {
+                        fontOffset = Font.Height + 5;
+                    }
+                    else
+                    {
+                        fontOffset = 0;
+                    }
+
+                    if (thisObject.ObjectDetails.isSignal)
+                    {
+                        var thisAspect = thisObject.ObjectDetails.TranslateTMAspect(thisObject.signal_state);
+                        float thisSpeed = thisObject.actual_speed;
+                        if (thisSpeed > 0)
+                        {
+                            drawSignal(spriteBatch, offset, Convert.ToInt32(objectDistance), SignalAspectSources[thisAspect], FormatSpeed(thisSpeed, milepostUnitsMetric), Color.White);
+                        }
+                        else
+                        {
+                            drawSignal(spriteBatch, offset, Convert.ToInt32(objectDistance), SignalAspectSources[thisAspect], "", Color.White);
+                        }
+
+                        drawDistance(spriteBatch, offset, Convert.ToInt32(objectDistance), FormatDistance(objectDistance, milepostUnitsMetric), Color.White);
+                    }
+                    else
+                    {
+                        float thisSpeed = thisObject.actual_speed;
+                        if (thisSpeed > 0)
+                        {
+                            drawSpeed(spriteBatch, offset, Convert.ToInt32(objectDistance), FormatSpeed(thisSpeed, milepostUnitsMetric), Color.White);
+                            drawDistance(spriteBatch, offset, Convert.ToInt32(objectDistance), FormatDistance(objectDistance, milepostUnitsMetric), Color.White);
+                        }
+                    }
+
+                    lastObjectDistnace = objectDistance;
+                }
+            }
+            lastObjectDistnace = 5000;
+        }
+
+        private void drawTrack(SpriteBatch spriteBatch, Point offset, float lineStart, float trackDistance, Color lineColor)
+        {
+            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 45, offset.Y + lineStart + 2), null, lineColor, 0, Vector2.Zero,
+                new Vector2(2, trackDistance), SpriteEffects.None, 0);
+            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 55, offset.Y + lineStart + 2), null, lineColor, 0, Vector2.Zero,
+                new Vector2(2, trackDistance), SpriteEffects.None, 0);
+        }
+
+        private void drawDistance(SpriteBatch spriteBatch, Point offset, float distance, string distanceFromTrain, Color textColor)
+        {
+            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + LABELSHEIGHT + TRACKMONITORHEIGHT - Convert.ToInt32(distance / (MAXDISTANCE / TRACKMONITORHEIGHT))),
+                null, Color.White, 0, Vector2.Zero, new Vector2(142, 1), SpriteEffects.None, 0);
+            Font.Draw(spriteBatch, new Point(offset.X + 4, offset.Y + LABELSHEIGHT + TRACKMONITORHEIGHT + fontOffset - Convert.ToInt32(distance / (MAXDISTANCE / TRACKMONITORHEIGHT))
+                - Font.Height), distanceFromTrain, textColor);
+        }
+
+        private void drawSpeed(SpriteBatch spriteBatch, Point offset, float speedDistance, string speedLimit, Color textColor)
+        {
+            Font.Draw(spriteBatch, new Point(offset.X + 60, offset.Y + LABELSHEIGHT + TRACKMONITORHEIGHT + fontOffset - Convert.ToInt32(speedDistance / (MAXDISTANCE / TRACKMONITORHEIGHT))
+                - Font.Height), speedLimit, textColor);
+        }
+
+        private void drawSignal(SpriteBatch spriteBatch, Point offset, float signalDistance, Rectangle signalAspect, string speedLimit, Color textColor)
+        {
+            spriteBatch.Draw(SignalAspects, new Rectangle(offset.X + 130, offset.Y + LABELSHEIGHT + TRACKMONITORHEIGHT + fontOffset
+                - Convert.ToInt32(signalDistance / (MAXDISTANCE / TRACKMONITORHEIGHT)) - 18, 16, 16), signalAspect, Color.White);
+
+            if (!string.IsNullOrEmpty(speedLimit))
+            {
+                Font.Draw(spriteBatch, new Point(offset.X + 60, offset.Y + LABELSHEIGHT + TRACKMONITORHEIGHT + fontOffset
+                    - Convert.ToInt32(signalDistance / (MAXDISTANCE / TRACKMONITORHEIGHT)) - Font.Height), speedLimit, textColor);
+            }
+        }
+
+        private bool arrayContainsVisibleSignal()
+        {
+            bool contains = false;
+
+            foreach (ObjectItemInfo o in trackObjects)
+            {
+                if (o.ObjectDetails.isSignal && o.distance_to_train < 5000f)
+                {
+                    contains = true;
+                    break;
+                }
+            }
+
+            return contains;
+        }
+
+        public static string FormatSpeed(float speed, bool metric)
+        {
+            return String.Format(metric ? "{0:F1}kph" : "{0:F1}mph", MpS.FromMpS(speed, metric));
+        }
+
+        public static string FormatDistance(float distance, bool metric)
+        {
+            if (metric)
+            {   
                 // <0.1 kilometers, show meters.
                 if (Math.Abs(distance) < 100)
                     return String.Format("{0:N0}m", distance);
