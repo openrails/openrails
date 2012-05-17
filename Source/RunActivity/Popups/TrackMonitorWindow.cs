@@ -256,25 +256,27 @@ namespace ORTS.Popups
 
             for (int icount = 0; icount < trackObjects.Count; icount++)
             {
-                ObjectItemInfo thisObject = trackObjects[icount];
-                float objectDistance = thisObject.distance_to_train;
+                ObjectItemInfo currentObject = trackObjects[icount];
+                ObjectItemInfo nextObject = (icount < trackObjects.Count - 2) ? trackObjects[icount + 1] : null;
+
+                float objectDistance = currentObject.distance_to_train;
 
                 if ((offset.Y + LABELSHEIGHT + TRACKMONITORHEIGHT - Convert.ToInt32(objectDistance / (MAXDISTANCE / TRACKMONITORHEIGHT))) > offset.Y + LABELSHEIGHT + 16 + 3
                     + ((OLSignalShown) ? Font.Height + 3 : 0))
                 {
-                    if (Math.Abs(lastObjectDistnace - objectDistance) < Font.Height + 10)
+                    if (nextObject != null && Math.Abs(nextObject.distance_to_train - objectDistance) < Font.Height + 10)
                     {
-                        fontOffset = Font.Height + 5;
+                        fontOffset = Font.Height;
                     }
                     else
                     {
                         fontOffset = 0;
                     }
 
-                    if (thisObject.ObjectDetails.isSignal)
+                    if (currentObject.ObjectDetails.isSignal)
                     {
-                        var thisAspect = thisObject.ObjectDetails.TranslateTMAspect(thisObject.signal_state);
-                        float thisSpeed = thisObject.actual_speed;
+                        var thisAspect = currentObject.ObjectDetails.TranslateTMAspect(currentObject.signal_state);
+                        float thisSpeed = currentObject.actual_speed;
                         if (thisSpeed > 0)
                         {
                             drawSignal(spriteBatch, offset, Convert.ToInt32(objectDistance), SignalAspectSources[thisAspect], FormatSpeed(thisSpeed, milepostUnitsMetric), Color.White);
@@ -288,7 +290,7 @@ namespace ORTS.Popups
                     }
                     else
                     {
-                        float thisSpeed = thisObject.actual_speed;
+                        float thisSpeed = currentObject.actual_speed;
                         if (thisSpeed > 0)
                         {
                             drawSpeed(spriteBatch, offset, Convert.ToInt32(objectDistance), FormatSpeed(thisSpeed, milepostUnitsMetric), Color.White);
