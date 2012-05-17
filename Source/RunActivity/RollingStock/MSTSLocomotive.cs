@@ -1332,13 +1332,13 @@ namespace ORTS
 
                 if (alarm1Fired)
                 {
-                    if( AlerterSnd == false ) {
+                    if( ! AlerterSnd ) {
                         SignalEvent( EventID.AlerterSndOn );
                     }
                 }
                 else
                 {
-                    if( AlerterSnd == true ) {
+                    if( AlerterSnd ) {
                         SignalEvent( EventID.AlerterSndOff );
                     }
                 }
@@ -1347,7 +1347,7 @@ namespace ORTS
 
         public virtual float GetDataOf(CabViewControl cvc)
         {
-            CheckVigilance();
+            if( Simulator.Settings.Alerter ) CheckVigilance();
             float data = 0;
             switch (cvc.ControlType)
             {
@@ -1498,34 +1498,40 @@ namespace ORTS
  
                 case CABViewControlTypes.ALERTER_DISPLAY:
                     {
-                        bool alarm1Fired = false;
-                        bool alarm2Fired = false;
+                        if( Simulator.Settings.Alerter ) {
+                            bool alarm1Fired = false;
+                            bool alarm2Fired = false;
 
-                        if (timerAlerter1.AlerterIsEnabled)
-                        {
-                            if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
-                                alarm1Fired = true;
-                        }
-
-                        if (timerAlerter2.AlerterIsEnabled)
-                        {
-                            if (timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
+                            if (timerAlerter1.AlerterIsEnabled)
                             {
-                                alarm2Fired = true;
+                                if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
+                                    alarm1Fired = true;
                             }
-                        }
 
-                        if (alarm1Fired)
-                        {
-                            data = 1;
-                            SignalEvent(EventID.AlerterSndOn);
-                        }
-                        else if (alarm2Fired)
-                            data = 2;
-                        else
-                        {
-                            data = 0;
-                            SignalEvent(EventID.AlerterSndOff);
+                            if (timerAlerter2.AlerterIsEnabled)
+                            {
+                                if (timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
+                                {
+                                    alarm2Fired = true;
+                                }
+                            }
+
+                            if (alarm1Fired)
+                            {
+                                data = 1;
+                                if( ! AlerterSnd ) {
+                                    SignalEvent( EventID.AlerterSndOn );
+                                }
+                            }
+                            else if (alarm2Fired)
+                                data = 2;
+                            else
+                            {
+                                data = 0;
+                                if( AlerterSnd ) {
+                                    SignalEvent( EventID.AlerterSndOff );
+                                }
+                            }
                         }
                         break;
                     }
