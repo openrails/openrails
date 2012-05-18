@@ -182,7 +182,7 @@ namespace ORTS
         {
             //base.Update(elapsedClockSeconds );
 
-            //<CJ Comment> Next 16 lines seems to be same as parent method </CJ Comment>
+            //<CJ Comment> Next 16 lines seems to be same as parent method before Confirmer.Update() added. </CJ Comment>
             TrainBrakeController.Update(elapsedClockSeconds);
             if( TrainBrakeController.UpdateValue > 0.0 ) {
                 Simulator.Confirmer.Update( CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus() );
@@ -191,14 +191,15 @@ namespace ORTS
                 Simulator.Confirmer.Update( CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus() );
             }
 
-            if( EngineBrakeController != null )
-                EngineBrakeController.Update(elapsedClockSeconds);
-            if( EngineBrakeController.UpdateValue > 0.0 ) {
-                Simulator.Confirmer.Update( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
+            if( EngineBrakeController != null ) {
+                EngineBrakeController.Update( elapsedClockSeconds );
+                if( EngineBrakeController.UpdateValue > 0.0 ) {
+                    Simulator.Confirmer.Update( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
+                }
+                if( EngineBrakeController.UpdateValue < 0.0 ) {
+                    Simulator.Confirmer.Update( CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus() );
+                }
             }
-            if( EngineBrakeController.UpdateValue < 0.0 ) {
-                Simulator.Confirmer.Update( CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus() );
-            }            
 
             if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
             {
