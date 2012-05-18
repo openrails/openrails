@@ -19,7 +19,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
-
+using MSTSMath;
 namespace ORTS
 {
 	[Flags]
@@ -251,7 +251,6 @@ namespace ORTS
 		int NumIndices;
 		public short[] TriangleListIndices;// Array of indices to vertices for triangles
 
-		Material Material;
 		protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
 		ShapePrimitive shapePrimitive;
 		public SpeedPostShape(Viewer3D viewer, string path, WorldPosition position, SpeedPostObj spo)
@@ -273,20 +272,36 @@ namespace ORTS
 			VertexList = new VertexPositionNormalTexture[maxVertex];
 			TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
 
+			if (SpeedPostObj.Sign_Shape.NumShapes>1)
+			{
+				int x = 0;
+				x++;
+			}
 			for (i = 0; i < SpeedPostObj.Sign_Shape.NumShapes; i++)
 			{
 
 				var start = new Vector3(SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 0], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 1], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 2]);
-				start += new Vector3(0 - speed.Length * size / 2, 0 - size / 2, 0);
-				var offset = new Vector3(0, 0, 0);
+				var rotation = SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 3];
+				var offset = new Vector3(0 - speed.Length * size / 2, 0 - size / 2, 0);
 				for (var j = 0; j < speed.Length; j++)
 				{
-					Vector3 left = start + offset;
 					var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
-					Vertex v1 = new Vertex(left.X, left.Y, left.Z+0.05f, 0, 0, -1, tX, tY);
-					Vertex v2 = new Vertex(left.X + size, left.Y, left.Z+0.05f, 0, 0, -1, tX + 0.25f, tY);
-					Vertex v3 = new Vertex(left.X + size, left.Y + size, left.Z+0.05f, 0, 0, -1, tX + 0.25f, tY - 0.25f);
-					Vertex v4 = new Vertex(left.X, left.Y + size, left.Z+0.05f, 0, 0, -1, tX, tY - 0.25f);
+
+					Vector3 v = new Vector3(offset.X, offset.Y, 0);
+					M.Rotate2D(rotation, ref v.X, ref v.Z);
+					v += start; Vertex v1 = new Vertex(v.X , v.Y, v.Z, 0, 0, -1, tX, tY);
+
+					v.X = offset.X + size; v.Y = offset.Y; v.Z = 0;
+					M.Rotate2D(rotation, ref v.X, ref v.Z);
+					v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY);
+
+					v.X = offset.X + size; v.Y = offset.Y + size; v.Z = 0;
+					M.Rotate2D(rotation, ref v.X, ref v.Z);
+					v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY - 0.25f);
+
+					v.X = offset.X; v.Y = offset.Y + size; v.Z = 0;
+					M.Rotate2D(rotation, ref v.X, ref v.Z);
+					v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY - 0.25f);
 
 					if (NumVertices > maxVertex - 4)
 					{
