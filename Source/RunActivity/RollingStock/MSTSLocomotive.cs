@@ -1232,7 +1232,7 @@ namespace ORTS
             int penaltyAlarm = startTime + 49;
             timerAlerter1.AlerterEnableSetup(startTime, alterterAlarm);
             timerAlerter2.AlerterEnableSetup(startTime, penaltyAlarm);
-            SignalEvent(EventID.AlerterSndOff);
+            //SignalEvent(EventID.AlerterSndOff);
         }
 
         public void AlerterReset()
