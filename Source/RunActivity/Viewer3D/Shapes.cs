@@ -260,49 +260,60 @@ namespace ORTS
 			SpeedPostObj = spo;
 			var maxVertex =  SpeedPostObj.Sign_Shape.NumShapes * 48;// every face has max 7 digits, each has 2 triangles
             var material = Materials.Load(viewer.RenderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+			
 			// Create and populate a new ShapePrimitive
-
-
 			NumVertices = NumIndices = 0;
 			var i = 0; var id = -1; var size = SpeedPostObj.Text_Size.Size;
 			id = SpeedPostObj.getTrItemID(0);
 			SpeedPostItem item = (SpeedPostItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[id]);
 			string speed = "";
+
+			//determine if the speed is for passenger or freight
+			if (item.IsLimit == true && item.IsFreight == true && item.IsPassenger == false) speed += "F";
+			else if (item.IsLimit == true && item.IsFreight == false && item.IsPassenger == true) speed += "P";
+	
 			if (item != null) speed += item.SpeedInd;
+
 			VertexList = new VertexPositionNormalTexture[maxVertex];
 			TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
-
-			if (SpeedPostObj.Sign_Shape.NumShapes>1)
-			{
-				int x = 0;
-				x++;
-			}
+				
 			for (i = 0; i < SpeedPostObj.Sign_Shape.NumShapes; i++)
 			{
-
+				//start position is the center of the text
 				var start = new Vector3(SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 0], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 1], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 2]);
 				var rotation = SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 3];
-				var offset = new Vector3(0 - speed.Length * size / 2, 0 - size / 2, 0);
+
+				//find the left-most of text
+				Vector3 offset = new Vector3(0, 0 - size, 0);
+				if (SpeedPostObj.Text_Size.DX > 0) offset.X -= speed.Length * SpeedPostObj.Text_Size.DX / 2;
+				
+				if (SpeedPostObj.Text_Size.DY > 0) offset.Y -= speed.Length * SpeedPostObj.Text_Size.DY / 2;
+
 				for (var j = 0; j < speed.Length; j++)
 				{
 					var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
 
+					//the left-bottom vertex
 					Vector3 v = new Vector3(offset.X, offset.Y, 0);
 					M.Rotate2D(rotation, ref v.X, ref v.Z);
 					v += start; Vertex v1 = new Vertex(v.X , v.Y, v.Z, 0, 0, -1, tX, tY);
 
+					//the right-bottom vertex
 					v.X = offset.X + size; v.Y = offset.Y; v.Z = 0;
 					M.Rotate2D(rotation, ref v.X, ref v.Z);
 					v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY);
 
+					//the right-top vertex
 					v.X = offset.X + size; v.Y = offset.Y + size; v.Z = 0;
 					M.Rotate2D(rotation, ref v.X, ref v.Z);
 					v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY - 0.25f);
 
+					//the left-top vertex
 					v.X = offset.X; v.Y = offset.Y + size; v.Z = 0;
 					M.Rotate2D(rotation, ref v.X, ref v.Z);
 					v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY - 0.25f);
 
+					//memory may not be enough
 					if (NumVertices > maxVertex - 4)
 					{
 						VertexPositionNormalTexture[] TempVertexList = new VertexPositionNormalTexture[maxVertex+128];
@@ -313,6 +324,8 @@ namespace ORTS
 						VertexList = TempVertexList;
 						maxVertex += 128;
 					}
+
+					//create first triangle
 					TriangleListIndices[NumIndices++] = (short)NumVertices;
 					TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
 					TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
@@ -321,6 +334,7 @@ namespace ORTS
 					TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
 					TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
 
+					//create vertex
 					VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
 					VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
 					VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
@@ -331,22 +345,7 @@ namespace ORTS
 
 			}
 			
-			/*shapePrimitive.Material = Material;
-			int [] Hierarchy = new int[1];
-			Hierarchy[0] = -1;
-			shapePrimitive.iHierarchy = 0;
-			shapePrimitive.MinVertex = 0;
-			shapePrimitive.NumVertices = NumVertices;
-			shapePrimitive.IndexCount = NumIndices;
-			short[] newTList = new short[NumIndices];
-			for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
-			VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-			for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-			shapePrimitive.VertexBufferSet = new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice);
-			shapePrimitive.IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
-															NumIndices, BufferUsage.WriteOnly);
-			shapePrimitive.IndexBuffer.SetData(newTList);*/
-
+			//create the shape primitive
 			short[] newTList = new short[NumIndices];
 			for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
 			VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
@@ -360,18 +359,20 @@ namespace ORTS
 
 		float GetTextureCoordX(char c)
 		{
-			float y = (c-'0') % 4 * 0.25f;
-			if (c == '.') y = 1;
-			if (y < 0) y = 0;
-			if (y > 1) y = 1;
-			return y;
+			float x = (c-'0') % 4 * 0.25f;
+			if (c == '.') x = 0;
+			else if (c == 'P') x = 0.5f;
+			else if (c == 'F') x = 0.75f;
+			if (x < 0) x = 0;
+			if (x > 1) x = 1;
+			return x;
 		}
 
 		float GetTextureCoordY(char c)
 		{
 			if (c == '0' || c == '1' || c == '2' || c == '3') return 0.25f;
 			if (c == '4' || c == '5' || c == '6' || c == '7') return 0.5f;
-			if (c == '8' || c == '9') return 0.75f;
+			if (c == '8' || c == '9' || c == 'P' || c == 'F') return 0.75f;
 			return 1.0f;
 		}
 
