@@ -195,6 +195,14 @@ namespace ORTS
 
         public void SetupWheels()
         {
+            // No axles but we have bogies.
+            if (WheelAxles.Count == 0 && Parts.Count > 1)
+            {
+                // Fake the axles by pretending each has 1 axle.
+                foreach (var part in Parts.Skip(1))
+                    WheelAxles.Add(new WheelAxle(part.OffsetM, part.iMatrix, 0));
+                Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, Parts.Count - 1);
+            }
             // Less that two axles is bad.
             if (WheelAxles.Count < 2)
                 return;
