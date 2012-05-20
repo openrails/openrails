@@ -263,88 +263,102 @@ namespace ORTS
 			
 			// Create and populate a new ShapePrimitive
 			NumVertices = NumIndices = 0;
-			var i = 0; var id = -1; var size = SpeedPostObj.Text_Size.Size;
-			id = SpeedPostObj.getTrItemID(0);
-			SpeedPostItem item = (SpeedPostItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[id]);
-			string speed = "";
-
-			//determine if the speed is for passenger or freight
-			if (item.IsLimit == true && item.IsFreight == true && item.IsPassenger == false) speed += "F";
-			else if (item.IsLimit == true && item.IsFreight == false && item.IsPassenger == true) speed += "P";
-	
-			if (item != null) speed += item.SpeedInd;
-
-			VertexList = new VertexPositionNormalTexture[maxVertex];
-			TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
-				
-			for (i = 0; i < SpeedPostObj.Sign_Shape.NumShapes; i++)
+			var i = 0; var id = -1; var size = SpeedPostObj.Text_Size.Size; var idlocation = 0;
+			id = SpeedPostObj.getTrItemID(idlocation);
+			while (id >= 0)
 			{
-				//start position is the center of the text
-				var start = new Vector3(SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 0], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 1], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 2]);
-				var rotation = SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 3];
+				SpeedPostItem item = (SpeedPostItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[id]);
+				string speed = "";
 
-				//find the left-most of text
-				Vector3 offset = new Vector3(0, 0 - size, 0);
-				if (SpeedPostObj.Text_Size.DX > 0) offset.X -= speed.Length * SpeedPostObj.Text_Size.DX / 2;
-				
-				if (SpeedPostObj.Text_Size.DY > 0) offset.Y -= speed.Length * SpeedPostObj.Text_Size.DY / 2;
-
-				for (var j = 0; j < speed.Length; j++)
+				//determine what to show: speed or number used in German routes
+				if (item.ShowNumber)
 				{
-					var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+					speed += item.DisplayNumber;
+					if (!item.ShowDot) speed.Replace(".", "");
+				}
+				else
+				{
+					//determine if the speed is for passenger or freight
+					if (item.IsFreight == true && item.IsPassenger == false) speed += "F";
+					else if (item.IsFreight == false && item.IsPassenger == true) speed += "P";
 
-					//the left-bottom vertex
-					Vector3 v = new Vector3(offset.X, offset.Y, 0);
-					M.Rotate2D(rotation, ref v.X, ref v.Z);
-					v += start; Vertex v1 = new Vertex(v.X , v.Y, v.Z, 0, 0, -1, tX, tY);
+					if (item != null) speed += item.SpeedInd;
+				}
+				VertexList = new VertexPositionNormalTexture[maxVertex];
+				TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
 
-					//the right-bottom vertex
-					v.X = offset.X + size; v.Y = offset.Y; v.Z = 0;
-					M.Rotate2D(rotation, ref v.X, ref v.Z);
-					v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY);
+				for (i = 0; i < SpeedPostObj.Sign_Shape.NumShapes; i++)
+				{
+					//start position is the center of the text
+					var start = new Vector3(SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 0], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 1], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 2]);
+					var rotation = SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 3];
 
-					//the right-top vertex
-					v.X = offset.X + size; v.Y = offset.Y + size; v.Z = 0;
-					M.Rotate2D(rotation, ref v.X, ref v.Z);
-					v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY - 0.25f);
+					//find the left-most of text
+					Vector3 offset;
+					if (Math.Abs(SpeedPostObj.Text_Size.DY) > 0.01) offset = new Vector3(0 - size / 2, 0, 0);
+					else offset = new Vector3(0, 0 - size / 2, 0);
+					offset.X -= speed.Length * SpeedPostObj.Text_Size.DX / 2;
 
-					//the left-top vertex
-					v.X = offset.X; v.Y = offset.Y + size; v.Z = 0;
-					M.Rotate2D(rotation, ref v.X, ref v.Z);
-					v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY - 0.25f);
+					offset.Y -= speed.Length * SpeedPostObj.Text_Size.DY / 2;
 
-					//memory may not be enough
-					if (NumVertices > maxVertex - 4)
+					for (var j = 0; j < speed.Length; j++)
 					{
-						VertexPositionNormalTexture[] TempVertexList = new VertexPositionNormalTexture[maxVertex+128];
-						short[] TempTriangleListIndices = new short[(maxVertex+128) / 2 * 3]; // as is NumIndices
-						for (var k = 0; k < maxVertex; k++) TempVertexList[k] = VertexList[k];
-						for (var k = 0; k < maxVertex / 2 * 3; k++) TempTriangleListIndices[k] = TriangleListIndices[k];
-						TriangleListIndices = TempTriangleListIndices;
-						VertexList = TempVertexList;
-						maxVertex += 128;
+						var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+
+						//the left-bottom vertex
+						Vector3 v = new Vector3(offset.X, offset.Y, 0);
+						M.Rotate2D(rotation, ref v.X, ref v.Z);
+						v += start; Vertex v1 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY);
+
+						//the right-bottom vertex
+						v.X = offset.X + size; v.Y = offset.Y; v.Z = 0;
+						M.Rotate2D(rotation, ref v.X, ref v.Z);
+						v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY);
+
+						//the right-top vertex
+						v.X = offset.X + size; v.Y = offset.Y + size; v.Z = 0;
+						M.Rotate2D(rotation, ref v.X, ref v.Z);
+						v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY - 0.25f);
+
+						//the left-top vertex
+						v.X = offset.X; v.Y = offset.Y + size; v.Z = 0;
+						M.Rotate2D(rotation, ref v.X, ref v.Z);
+						v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY - 0.25f);
+
+						//memory may not be enough
+						if (NumVertices > maxVertex - 4)
+						{
+							VertexPositionNormalTexture[] TempVertexList = new VertexPositionNormalTexture[maxVertex + 128];
+							short[] TempTriangleListIndices = new short[(maxVertex + 128) / 2 * 3]; // as is NumIndices
+							for (var k = 0; k < maxVertex; k++) TempVertexList[k] = VertexList[k];
+							for (var k = 0; k < maxVertex / 2 * 3; k++) TempTriangleListIndices[k] = TriangleListIndices[k];
+							TriangleListIndices = TempTriangleListIndices;
+							VertexList = TempVertexList;
+							maxVertex += 128;
+						}
+
+						//create first triangle
+						TriangleListIndices[NumIndices++] = (short)NumVertices;
+						TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+						TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
+						// Second triangle:
+						TriangleListIndices[NumIndices++] = (short)NumVertices;
+						TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
+						TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+
+						//create vertex
+						VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
+						VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
+						VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
+						VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
+						NumVertices += 4;
+						offset.X += SpeedPostObj.Text_Size.DX; offset.Y += SpeedPostObj.Text_Size.DY; //move to next digit
 					}
 
-					//create first triangle
-					TriangleListIndices[NumIndices++] = (short)NumVertices;
-					TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
-					TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
-					// Second triangle:
-					TriangleListIndices[NumIndices++] = (short)NumVertices;
-					TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
-					TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
-
-					//create vertex
-					VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
-					VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
-					VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
-					VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
-					NumVertices += 4;
-					offset.X += SpeedPostObj.Text_Size.DX; offset.Y += SpeedPostObj.Text_Size.DY; //move to next digit
 				}
-
+				idlocation++;
+				id = SpeedPostObj.getTrItemID(idlocation); 
 			}
-			
 			//create the shape primitive
 			short[] newTList = new short[NumIndices];
 			for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];

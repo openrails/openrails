@@ -504,7 +504,7 @@ namespace MSTS
         {
             ItemType = trItemType.trSPEEDPOST;
             stf.MustMatch("(");
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
+			stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("tritemid", ()=>{ TrItemID(stf, idx); }),
                 new STFReader.TokenProcessor("tritemrdata", ()=>{ TrItemRData(stf); }),
                 new STFReader.TokenProcessor("tritemsdata", ()=>{ TrItemSData(stf); }),
@@ -541,11 +541,12 @@ namespace MSTS
 		    {
                     	SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
 		    }
-    		    if (ShowNumber)
+    		if (ShowNumber)
 		    {
 			    DisplayNumber = stf.ReadInt(STFReader.UNITS.None, null);
 		    }
-                    Angle = stf.ReadFloat(STFReader.UNITS.None, null);
+                    
+			Angle = stf.ReadFloat(STFReader.UNITS.None, null);
 		    MSTSMath.M.NormalizeRadians(ref Angle);
 
                     stf.SkipRestOfBlock();
