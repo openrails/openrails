@@ -96,25 +96,25 @@ namespace ORTS.Popups
 
             if (updateFull)
             {
+                // Some abbreviations
                 List<Confirmation> list = Owner.Viewer.Simulator.Confirmer.ConfirmationList;
-                for( var i = 1; i < list.Count; i++ ){  // Ignore the item at the head of the list as it was added last time round.
-                    Confirmation a = list[i];
+                Confirmation latest = Owner.Viewer.Simulator.Confirmer.LatestConfirmation;
+                bool updated = Owner.Viewer.Simulator.Confirmer.Updated;
+
+                foreach( var i in list ) {
                     // Messages are added to the message list here and not directly by the Confirmer class to avoid one
                     // thread calling another.
-                    AddMessage( a.Message, a.DurationS );
+                    AddMessage( i.Message, i.DurationS );
                 }
-                // Remove all but the most recent message (at the tail of the list)
-                var messageCount = list.Count;  // A value that won't change inside the loop
-                for( var i = 1; i < messageCount; i++ ) {
-                    list.RemoveAt( 0 );
-                }
+                list.Clear();
 
-                // Re-display messages if most recent message (at the tail of the list) has been updated
                 bool layoutNeeded = false;
-                if( Messages.Count > 0 ) {
-                    if( Messages.Last().Text != list.Last().Message ) { // if changed
-                        Messages.Last().Text = list.Last().Message;
+                // Re-display messages if most recent message (at the tail of the list) has been updated
+                if( updated ) {
+                    if( latest.Message != null ) {
+                        Messages.Last().Text = latest.Message;
                         Messages.Last().ExpiryTime = Owner.Viewer.Simulator.ClockTime;  // Reset the expiry time.
+                        updated = false;
                         layoutNeeded = true;
                     }
                 }

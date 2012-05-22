@@ -135,15 +135,13 @@ namespace ORTS {
         bool suppressConfirmations;
         World world;
         public List<Confirmation> ConfirmationList = new List<Confirmation>();
+        public Confirmation LatestConfirmation;
+        public bool Updated;
 
         public Confirmer( bool suppressConfirmations, World world, double defaultDurationS ) {
             this.suppressConfirmations = suppressConfirmations;
             this.world = world;
             this.defaultDurationS = defaultDurationS;
-            Confirmation a;
-            a.Message = "<dummy>";
-            a.DurationS = defaultDurationS;
-            ConfirmationList.Add( a ); ;
         }
 
         public void Confirm( CabControl control, CabSetting setting ) {
@@ -188,6 +186,7 @@ namespace ORTS {
                 // Messages are added to the confirmation list and not directly to the Messages list to avoid one
                 // thread calling another.
                 ConfirmationList.Add( a );
+                Updated = false;
             }
         }
 
@@ -212,11 +211,9 @@ namespace ORTS {
         public void Update( CabControl control, string text ) {
             if( !suppressConfirmations ) {
                 var i = (int)control;
-                Confirmation a;
-                a.Message = String.Format( "{0}: {1}", ConfirmText[i][0], text );
-                a.DurationS = defaultDurationS;
-                var last = ConfirmationList.Count - 1;
-                ConfirmationList[last] = a;
+                LatestConfirmation.Message = String.Format( "{0}: {1}", ConfirmText[i][0], text );
+                LatestConfirmation.DurationS = defaultDurationS;
+                Updated = true;
             }
         }
 

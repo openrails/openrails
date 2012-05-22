@@ -1858,18 +1858,26 @@ namespace ORTS
 
         void ReverserControlForwards()
         {
-            if( Locomotive.Direction != Direction.Forward && Locomotive.ThrottlePercent < 1 )
+            if( Locomotive.Direction != Direction.Forward ) {
+                if( Locomotive.ThrottlePercent < 1 )
+                    Locomotive.StartReverseIncrease();
+                else
+                    Viewer.Simulator.Confirmer.Warn( CabControl.Reverser, CabSetting.Warn );
+            } else {
                 Locomotive.StartReverseIncrease();
-            else
-                Viewer.Simulator.Confirmer.Warn( CabControl.Reverser, CabSetting.Warn );
+            }
         }
 
         void ReverserControlBackwards()
         {
-            if (Locomotive.Direction != Direction.Reverse && Locomotive.ThrottlePercent < 1)
+            if( Locomotive.Direction != Direction.Reverse ) {
+                if( Locomotive.ThrottlePercent < 1 )
+                    Locomotive.StartReverseDecrease();
+                else
+                    Viewer.Simulator.Confirmer.Warn( CabControl.Reverser, CabSetting.Warn );
+            } else {
                 Locomotive.StartReverseDecrease();
-            else
-                Viewer.Simulator.Confirmer.Warn( CabControl.Reverser, CabSetting.Warn );
+            }
         }
 
         /// <summary>
