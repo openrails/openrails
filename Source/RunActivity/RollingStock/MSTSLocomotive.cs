@@ -633,10 +633,10 @@ namespace ORTS
         } // End Method Update
 
         /// <summary>
-        /// Calls the parent method to call the grandparent method
+        /// Calls the Update method in the parent class MSTSWagon.
         /// </summary>
         /// <param name="elapsedClockSeconds"></param>
-        protected void UpdateGrandparent(float elapsedClockSeconds)
+        protected void UpdateParent(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
         }
@@ -1856,7 +1856,7 @@ namespace ORTS
             }
         }
 
-        void ReverserControlForwards()
+        protected virtual void ReverserControlForwards()
         {
             if( Locomotive.Direction != Direction.Forward ) {
                 if( Locomotive.ThrottlePercent < 1 )
@@ -1868,7 +1868,7 @@ namespace ORTS
             }
         }
 
-        void ReverserControlBackwards()
+        protected virtual void ReverserControlBackwards()
         {
             if( Locomotive.Direction != Direction.Reverse ) {
                 if( Locomotive.ThrottlePercent < 1 )
@@ -2064,7 +2064,9 @@ namespace ORTS
                     // Wiper Animation
                     // Compute the animation key based on framerate etc
                     // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                    WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * elapsedClockSeconds;
+                    // <CJ Comment> Divisor set to 18f to match MSTS rate, but don't like magic numbers. Where does this one come from?
+                    // See also pantograph animation. </CJ Comment>
+                    WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 18f) * elapsedClockSeconds;
                     while (WiperAnimationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) WiperAnimationKey -= TrainCarShape.SharedShape.Animations[0].FrameCount;
                     while (WiperAnimationKey < -0.00001) WiperAnimationKey += TrainCarShape.SharedShape.Animations[0].FrameCount;
                     foreach (int iMatrix in WiperPartIndexes)
@@ -2074,7 +2076,9 @@ namespace ORTS
                 {
                     if (WiperAnimationKey > 0.001)  // park the blades
                     {
-                        WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 10f) * elapsedClockSeconds;
+                        // <CJ Comment> Divisor set to 18f to match MSTS rate, but don't like magic numbers. Where does this one come from?
+                        // See also pantograph animation. </CJ Comment>
+                        WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 18f) * elapsedClockSeconds;
                         if (WiperAnimationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) WiperAnimationKey = 0;
                         foreach (int iMatrix in WiperPartIndexes)
                             TrainCarShape.AnimateMatrix(iMatrix, WiperAnimationKey);

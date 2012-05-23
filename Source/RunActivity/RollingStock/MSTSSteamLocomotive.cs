@@ -823,6 +823,30 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Overrides the base method as steam locomotives have continuous reverser controls and so
+        /// lacks the throttle interlock and warning in other locomotives. 
+        /// </summary>
+        protected override void ReverserControlForwards() {
+            if( SteamLocomotive.Direction != Direction.Forward ) {
+                SteamLocomotive.StartReverseIncrease();
+            } else {
+                SteamLocomotive.StartReverseIncrease();
+            }
+        }
+
+        /// <summary>
+        /// Overrides the base method as steam locomotives have continuous reverser controls and so
+        /// lacks the throttle interlock and warning in other locomotives. 
+        /// </summary>
+        protected override void ReverserControlBackwards() {
+            if( SteamLocomotive.Direction != Direction.Reverse ) {
+                SteamLocomotive.StartReverseDecrease();
+            } else {
+                SteamLocomotive.StartReverseDecrease();
+            }
+        }
+
+        /// <summary>
         /// A keyboard or mouse click has occured. Read the UserInput
         /// structure to determine what was pressed.
         /// </summary>

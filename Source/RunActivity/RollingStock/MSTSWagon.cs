@@ -637,8 +637,9 @@ namespace ORTS
             {
                 if (AnimationKey < FrameCount)  // skip this if we are already up
                 {                               // otherwise transition up
-                    // Animation speed is hard coded at 2 frames per second
-                    AnimationKey += 2f * elapsedTime.ClockSeconds;
+                    // Animation speed is hard coded at 1 frame per second, to match the rate of MSTS.
+                    // <CJ Comment> Only tested pantographs because don't have the models for doors and mirrors. </CJ Comment>
+                    AnimationKey += 1f * elapsedTime.ClockSeconds;
                     if (AnimationKey > FrameCount) AnimationKey = FrameCount;
                     foreach (int iMatrix in MatrixIndexes)
                         PoseableShape.AnimateMatrix(iMatrix, AnimationKey);
@@ -648,7 +649,7 @@ namespace ORTS
             {
                 if (AnimationKey > 0)   // if we are already down, don't do anything
                 {                       // otherwise transition down
-                    AnimationKey -= 2f * elapsedTime.ClockSeconds;
+                    AnimationKey -= 1f * elapsedTime.ClockSeconds;
                     if (AnimationKey < 0) AnimationKey = 0;
                     foreach (int iMatrix in MatrixIndexes)
                         PoseableShape.AnimateMatrix(iMatrix, AnimationKey);
