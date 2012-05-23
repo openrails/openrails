@@ -2991,12 +2991,6 @@ namespace ORTS
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     {
-                        //indx = (int)data / 10;
-                        ////Console.WriteLine("data {0} indx {1}", data, indx);
-                        //if (data == -1) { indx = 0; break; }
-                        //if (data == 0) { indx = 1; break; }
-                        //indx += 1;
-
                         float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
                         int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
                         int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
@@ -3015,7 +3009,7 @@ namespace ORTS
                 case CABViewControlTypes.CPH_DISPLAY:
                 case CABViewControlTypes.CP_HANDLE:
                     {
-                        if (!_Locomotive.HasStepCtrl) { break; } // break if not diesel loco
+                        // if (!_Locomotive.HasStepCtrl) { break; } // break if not diesel loco
 
                         int currentThrottleNotch = _Locomotive.ThrottleController.CurrentNotch;
                         int throttleNotchCount = _Locomotive.ThrottleController.NotchCount();
