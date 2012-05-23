@@ -962,6 +962,7 @@ namespace ORTS
                         int actrefindex = -1;                                                            // first index to check       //
                         int lastrefindex = 0;                                                            // next index for loop        //
                         int direction = 0;                                                               // travel direction           //
+                        TrackNode thisTrackNode = null;
                         TrItem thisTrItem = null;
 
   // check if search from object or train
@@ -1018,6 +1019,7 @@ namespace ORTS
                                                         if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
                                                                         TrItem.trItemType.trSIGNAL)
                                                         {
+                                                                thisTrackNode = trackNodes[actindex];
                                                                 thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
                                                                 SignalItem sigitem = (SignalItem) thisTrItem;
                                                                 sigObjRef    = sigitem.sigObj;
@@ -1027,6 +1029,7 @@ namespace ORTS
                                                         else if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
                                                                         TrItem.trItemType.trSPEEDPOST)
                                                         {
+                                                                thisTrackNode = trackNodes[actindex];
                                                                 thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
                                                                 SpeedPostItem spditem = (SpeedPostItem) thisTrItem;
                                                                 sigObjRef    = spditem.sigObj;
@@ -1042,6 +1045,7 @@ namespace ORTS
                                                         if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
                                                                         TrItem.trItemType.trSIGNAL)
                                                         {
+                                                                thisTrackNode = trackNodes[actindex];
                                                                 thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
                                                                 SignalItem sigitem = (SignalItem) thisTrItem;
                                                                 sigObjRef    = sigitem.sigObj;
@@ -1051,6 +1055,7 @@ namespace ORTS
                                                         else if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
                                                                         TrItem.trItemType.trSPEEDPOST)
                                                         {
+                                                                thisTrackNode = trackNodes[actindex];
                                                                 thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
                                                                 SpeedPostItem spditem = (SpeedPostItem) thisTrItem;
                                                                 sigObjRef    = spditem.sigObj;
@@ -1123,7 +1128,7 @@ namespace ORTS
                                         if (locstate > 0 && min_distance_check && tdbtraveller != null)
                                         {
                                                 float mindistance = 
-                                                        tdbtraveller.DistanceTo(thisTrItem.TileX, thisTrItem.TileZ,
+                                                        tdbtraveller.DistanceTo(thisTrackNode, thisTrItem.TileX, thisTrItem.TileZ,
                                                                                 thisTrItem.X, thisTrItem.Y, thisTrItem.Z);
                                                 if (mindistance < 0)
                                                 {
@@ -1136,8 +1141,8 @@ namespace ORTS
 
                                         if (locstate > 0 && tdbtraveller != null && maxdistance > 0)
                                         {
-                                                float actdistance = 
-                                                        tdbtraveller.DistanceTo(thisTrItem.TileX, thisTrItem.TileZ,
+                                                float actdistance =
+                                                        tdbtraveller.DistanceTo(thisTrackNode, thisTrItem.TileX, thisTrItem.TileZ,
                                                                                 thisTrItem.X, thisTrItem.Y, thisTrItem.Z);
                                                 if (actdistance > maxdistance)
                                                 {
