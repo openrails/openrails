@@ -1951,15 +1951,15 @@ namespace ORTS
             }
 
             // <CJ Comment> Some inputs calls their method directly, other via a SignalEvent. 
-            // Probably because a signal can then be handled more than once, 
-            // e.g. by every locomotive on the train or every car in the consist.
+            //  Sound is handled in a seperate thread
             // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJ Comment>
 			if (UserInput.IsPressed(UserCommands.ControlSander)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn);
 			if (UserInput.IsPressed(UserCommands.ControlWiper)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
 			if (UserInput.IsPressed(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOn);
 			if (UserInput.IsReleased(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOff);
-			if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOn);
-			if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOff);
+			// if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOn);
+            if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(Locomotive.Bell ? EventID.BellOff : EventID.BellOn);
+			// if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOff);
 
             if (UserInput.IsPressed(UserCommands.ControlAlerter)) Locomotive.AlerterResetExternal();        // z
             //<CJ Comment> Why reset on both press and release? Disabled. </CJ Comment>
