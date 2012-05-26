@@ -99,7 +99,6 @@ namespace ORTS.Popups
                 // Some abbreviations
                 List<Confirmation> list = Owner.Viewer.Simulator.Confirmer.ConfirmationList;
                 Confirmation latest = Owner.Viewer.Simulator.Confirmer.LatestConfirmation;
-                bool updated = Owner.Viewer.Simulator.Confirmer.Updated;
 
                 foreach( var i in list ) {
                     // Messages are added to the message list here and not directly by the Confirmer class to avoid one
@@ -110,11 +109,11 @@ namespace ORTS.Popups
 
                 bool layoutNeeded = false;
                 // Re-display messages if most recent message (at the tail of the list) has been updated
-                if( updated ) {
+                if( Owner.Viewer.Simulator.Confirmer.Updated ) {
                     if( latest.Message != null ) {
                         Messages.Last().Text = latest.Message;
                         Messages.Last().ExpiryTime = Owner.Viewer.Simulator.ClockTime;  // Reset the expiry time.
-                        updated = false;
+                        Owner.Viewer.Simulator.Confirmer.Updated = false;
                         layoutNeeded = true;
                     }
                 }

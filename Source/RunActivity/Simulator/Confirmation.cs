@@ -131,17 +131,22 @@ namespace ORTS {
             , new string [] { "Simulation Speed", "reset", null, null, "decrease", "increase" } 
             };
 
+        public List<Confirmation> ConfirmationList { get; set; }
+        public Confirmation LatestConfirmation {
+            get { return latestConfirmation; }
+            set { latestConfirmation = value; }
+        } private Confirmation latestConfirmation;
+        public bool Updated { get; set; }
+
         double defaultDurationS;
         bool suppressConfirmations;
         World world;
-        public List<Confirmation> ConfirmationList = new List<Confirmation>();
-        public Confirmation LatestConfirmation;
-        public bool Updated;
 
         public Confirmer( bool suppressConfirmations, World world, double defaultDurationS ) {
             this.suppressConfirmations = suppressConfirmations;
             this.world = world;
             this.defaultDurationS = defaultDurationS;
+            ConfirmationList = new List<Confirmation>();
         }
 
         public void Confirm( CabControl control, CabSetting setting ) {
@@ -211,9 +216,9 @@ namespace ORTS {
         public void Update( CabControl control, string text ) {
             if( !suppressConfirmations ) {
                 var i = (int)control;
-                LatestConfirmation.Message = String.Format( "{0}: {1}", ConfirmText[i][0], text );
-                LatestConfirmation.DurationS = defaultDurationS;
-                Updated = true;
+                latestConfirmation.Message = String.Format( "{0}: {1}", ConfirmText[i][0], text );
+                latestConfirmation.DurationS = defaultDurationS;
+                Updated = true; // Set here and cancelled by MessageWindow.PrepareFrame()
             }
         }
 

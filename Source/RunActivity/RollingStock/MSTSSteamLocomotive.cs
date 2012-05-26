@@ -827,11 +827,7 @@ namespace ORTS
         /// lacks the throttle interlock and warning in other locomotives. 
         /// </summary>
         protected override void ReverserControlForwards() {
-            if( SteamLocomotive.Direction != Direction.Forward ) {
                 SteamLocomotive.StartReverseIncrease();
-            } else {
-                SteamLocomotive.StartReverseIncrease();
-            }
         }
 
         /// <summary>
@@ -839,11 +835,7 @@ namespace ORTS
         /// lacks the throttle interlock and warning in other locomotives. 
         /// </summary>
         protected override void ReverserControlBackwards() {
-            if( SteamLocomotive.Direction != Direction.Reverse ) {
                 SteamLocomotive.StartReverseDecrease();
-            } else {
-                SteamLocomotive.StartReverseDecrease();
-            }
         }
 
         /// <summary>
@@ -852,13 +844,11 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-			if (UserInput.IsPressed(UserCommands.ControlReverserForward))
-                SteamLocomotive.StartReverseIncrease();
-			else if (UserInput.IsReleased(UserCommands.ControlReverserForward))
+            // Note: UserInput.IsPressed( UserCommands.ControlReverserForward/Backwards ) are handled in base class MSTSLocomotive
+            // else there will be calls to StartReverseIncrease() here and also from MSTSLocomotive.
+            if( UserInput.IsReleased( UserCommands.ControlReverserForward ) )
                 SteamLocomotive.StopReverseIncrease();
-			else if (UserInput.IsPressed(UserCommands.ControlReverserBackwards))
-                SteamLocomotive.StartReverseDecrease();
-			else if (UserInput.IsReleased(UserCommands.ControlReverserBackwards))
+            else if( UserInput.IsReleased( UserCommands.ControlReverserBackwards ) )
                 SteamLocomotive.StopReverseDecrease();  
             if (UserInput.IsPressed(UserCommands.ControlInjector1Increase))
                 SteamLocomotive.StartInjector1Increase();

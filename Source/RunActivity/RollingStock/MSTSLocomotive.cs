@@ -1261,7 +1261,6 @@ namespace ORTS
                 if( eventID == EventID.AlerterSndOff ) { AlerterSnd = false; Simulator.Confirmer.Confirm( CabControl.Alerter, CabSetting.Off ); break; }
                 if( eventID == EventID.BellOn ) { Bell = true; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.On ); break; }
                 if( eventID == EventID.BellOff ) { Bell = false; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.Off ); break; }
-                if (eventID == EventID.Reverse) {  break; }
                 if( eventID == EventID.HornOn ) { 
                     Horn = true;
                     if( this is MSTSSteamLocomotive ) {
@@ -1282,8 +1281,8 @@ namespace ORTS
                 }
                 if( eventID == EventID.SanderOn ) { Sander = true; if (this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.On ); break; }
                 if( eventID == EventID.SanderOff ) { Sander = false; if( this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.Off ); break; }
-                if (eventID == EventID.WiperOn) { Wiper = true; break; }
-                if( eventID == EventID.WiperOff ) { Wiper = false; break; }
+                if( eventID == EventID.WiperOn ) { Wiper = true; Simulator.Confirmer.Confirm( CabControl.Wipers, CabSetting.On ); break; }
+                if( eventID == EventID.WiperOff ) { Wiper = false; Simulator.Confirmer.Confirm( CabControl.Wipers, CabSetting.Off ); break; }
                 
                 // <CJ Comment> The "H" key doesn't call these SignalEvents yet. </CJ Comment>
                 if( eventID == EventID.HeadlightOff ) { Headlight = 0; break; }
@@ -1951,15 +1950,14 @@ namespace ORTS
             }
 
             // <CJ Comment> Some inputs calls their method directly, other via a SignalEvent. 
-            //  Sound is handled in a seperate thread
+            // Probably because a signal can then be handled more than once, 
+            // e.g. by every locomotive on the train or every car in the consist.
             // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJ Comment>
 			if (UserInput.IsPressed(UserCommands.ControlSander)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn);
 			if (UserInput.IsPressed(UserCommands.ControlWiper)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
 			if (UserInput.IsPressed(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOn);
 			if (UserInput.IsReleased(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOff);
-			// if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOn);
-            if (UserInput.IsPressed(UserCommands.ControlBell)) Locomotive.SignalEvent(Locomotive.Bell ? EventID.BellOff : EventID.BellOn);
-			// if (UserInput.IsReleased(UserCommands.ControlBell)) Locomotive.SignalEvent(EventID.BellOff);
+            if( UserInput.IsPressed( UserCommands.ControlBell ) ) Locomotive.SignalEvent( Locomotive.Bell ? EventID.BellOff : EventID.BellOn );
 
             if (UserInput.IsPressed(UserCommands.ControlAlerter)) Locomotive.AlerterResetExternal();        // z
             //<CJ Comment> Why reset on both press and release? Disabled. </CJ Comment>
