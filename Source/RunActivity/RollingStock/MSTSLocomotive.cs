@@ -509,6 +509,14 @@ namespace ORTS
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
 
+            // For notched throttle controls (e.g. Dash 9 found on Marias Pass) UpdateValue is always 0.0
+            if( ThrottleController.UpdateValue != 0.0 ) {
+                Simulator.Confirmer.UpdateWithPerCent( 
+                    this is MSTSSteamLocomotive ? CabControl.Regulator : CabControl.Throttle,
+                    ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease, 
+                    ThrottleController.CurrentValue * 100 );
+            }
+
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive())
@@ -1743,14 +1751,6 @@ namespace ORTS
 
         }
 
-        public void SoundBuzzer()
-        {
-            if (Locomotive.HasStepCtrl)
-            {
-                if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(10);
-            }
-        }
-
         bool SwapControl()
         {
             if (Locomotive.HasCombThrottleTrainBreak)
@@ -1763,9 +1763,10 @@ namespace ORTS
         {
             if (!SwapControl()) // tests for CombThrottleTrainBreak
             {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-                { SoundBuzzer(); return; }
-                else
+                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
+                    Viewer.Simulator.Confirmer.Warn( CabControl.Throttle, CabSetting.Warn );
+                    return; 
+                } else
                     Locomotive.StartThrottleIncrease();
             }
             else
@@ -1773,14 +1774,12 @@ namespace ORTS
                 float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
                 float throttlePercent = Locomotive.ThrottlePercent;
 
-
                 //if (trainBreakPercent > 0)
                 if (throttlePercent == 0 && trainBreakPercent > 0)
                 {
                     Locomotive.StartTrainBrakeDecrease();
                     Locomotive.StopThrottleIncrease();
                 }
-
             }
         }
 
@@ -1788,9 +1787,10 @@ namespace ORTS
         {
             if (!SwapControl()) // tests for CombThrottleTrainBreak
             {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-                { SoundBuzzer(); return; }
-                else
+                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
+                    Viewer.Simulator.Confirmer.Warn( CabControl.Throttle, CabSetting.Warn );
+                    return;
+                } else
                     Locomotive.StopThrottleIncrease();
             }
             else
@@ -1808,16 +1808,16 @@ namespace ORTS
                     Locomotive.StopThrottleIncrease();
                 }
             }
-
         }
 
         void StartThrottleDecrease()
         {
             if (!SwapControl())
             {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-                    { SoundBuzzer(); return; }
-                else
+                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
+                    Viewer.Simulator.Confirmer.Warn( CabControl.Throttle, CabSetting.Warn );
+                    return;
+                } else
                     Locomotive.StartThrottleDecrease();
             }
             else
@@ -1832,7 +1832,6 @@ namespace ORTS
                 }
                 else
                     Locomotive.StartThrottleDecrease();
-
             }
         }
 
@@ -1840,9 +1839,10 @@ namespace ORTS
         {
             if (!SwapControl()) // tests for CombThrottleTrainBrea
             {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0)
-                { SoundBuzzer(); return; }
-                else
+                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
+                    Viewer.Simulator.Confirmer.Warn( CabControl.Throttle, CabSetting.Warn );
+                    return;
+                } else
                     Locomotive.StopThrottleDecrease();
             }
             else

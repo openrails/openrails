@@ -180,9 +180,6 @@ namespace ORTS
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
-            //base.Update(elapsedClockSeconds );
-
-            //<CJ Comment> Next 16 lines seems to be same as parent method before Confirmer.Update() added. </CJ Comment>
             TrainBrakeController.Update(elapsedClockSeconds);
             if( TrainBrakeController.UpdateValue > 0.0 ) {
                 Simulator.Confirmer.Update( CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus() );
@@ -209,7 +206,6 @@ namespace ORTS
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
 
-            
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if (this.IsLeadLocomotive())
@@ -220,7 +216,6 @@ namespace ORTS
             {
                 ThrottleController.Update(elapsedClockSeconds);
             }
-
 
             // TODO  this is a wild simplification for diesel electric
             float t = ThrottlePercent / 100f;

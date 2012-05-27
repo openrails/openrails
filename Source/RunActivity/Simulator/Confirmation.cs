@@ -89,7 +89,7 @@ namespace ORTS {
             , new string [] { "Player Diesel Power", "off", null, "on", null, null, "locked. Close throttle then re-try." }
             , new string [] { "Helper Diesel Power", "off", null, "on" }
             , new string [] { "Reverser",  "reverse", "neutral", "forward", null, null, "locked. Close throttle then re-try." } 
-            , new string [] { "Throttle", null, null, null, "close", "open" } 
+            , new string [] { "Throttle", null, null, null, "close", "open", "locked. Release dynamic brake then re-try." } 
             // Steam power
             , new string [] { "Regulator", null, null, null, "close", "open" }    // Throttle for steam locomotives
             , new string [] { "Injector 1", "off", null, "on", "close", "open" } 

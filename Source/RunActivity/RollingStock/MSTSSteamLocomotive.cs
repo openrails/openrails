@@ -421,12 +421,6 @@ namespace ORTS
                 // On a steam locomotive, the Reverser is the same as the Cut Off Control.
                 Simulator.Confirmer.Update( CabControl.Reverser, GetCutOffControllerStatus() );
             }
-            if( ThrottleController.UpdateValue > 0.0 ) {
-                Simulator.Confirmer.UpdateWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
-            }
-            if( ThrottleController.UpdateValue < 0.0 ) {
-                Simulator.Confirmer.UpdateWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
-            }
             if( BlowerController.UpdateValue > 0.0 ) {
                 Simulator.Confirmer.UpdateWithPerCent( CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100 );
             }
