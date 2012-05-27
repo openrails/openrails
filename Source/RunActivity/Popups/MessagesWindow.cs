@@ -44,8 +44,10 @@ namespace ORTS.Popups
         {
             base.Restore(inf);
             var count = inf.ReadInt32();
-            for (var i = 0; i < count; i++)
-                Messages.Add(new Message(inf));
+            for( var i = 0; i < count; i++ ) {
+                Messages.Add( new Message( inf ) );
+            }
+            Layout();  // else run-time error as LabelShadow/Time/Text = null
         }
 
         protected override void LocationChanged()
@@ -126,8 +128,9 @@ namespace ORTS.Popups
                 if (layoutNeeded) Layout(); // Make the messages appear
             }
 
-            foreach (var message in Messages.Where(m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime))
-                message.LabelShadow.Color.A = message.LabelTime.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp(255, 0, MathHelper.Clamp((float)((Owner.Viewer.Simulator.ClockTime - message.ExpiryTime) / FadeTime), 0, 1));
+            foreach( var message in Messages.Where( m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime ) ) {
+                message.LabelShadow.Color.A = message.LabelTime.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp( 255, 0, MathHelper.Clamp( (float)((Owner.Viewer.Simulator.ClockTime - message.ExpiryTime) / FadeTime), 0, 1 ) );
+            }
         }
 
 		class Message
@@ -164,7 +167,7 @@ namespace ORTS.Popups
 		public void AddMessage(string text, double duration)
 		{
 			Messages.Add(new Message(text, Owner.Viewer.Simulator.ClockTime, duration));
-			Layout();
+            Layout();
 		}
 	}
 }
