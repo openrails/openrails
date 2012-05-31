@@ -217,7 +217,11 @@ namespace ORTS
                 }
                 else if (worldObject.GetType() == typeof(MSTS.SpeedPostObj))
                 {
-                    sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
+                    try {
+                        sceneryObjects.Add( new SpeedPostShape( viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject ) );
+                    } catch {
+                        Trace.TraceWarning( "SpeedPostShape {1} ignored because beyond track item table in file {0}", WFileName, worldObject.UID );
+                    }
                 }
                 else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
                 {

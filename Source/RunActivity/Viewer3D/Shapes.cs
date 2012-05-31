@@ -267,8 +267,13 @@ namespace ORTS
 			id = SpeedPostObj.getTrItemID(idlocation);
 			while (id >= 0)
 			{
-				SpeedPostItem item = (SpeedPostItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[id]);
-				string speed = "";
+                SpeedPostItem item;
+                string speed = "";
+                try {
+                    item = (SpeedPostItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[id]);
+                } catch {
+                    throw;  // Error to be handled in Scenery.cs
+                }
 
 				//determine what to show: speed or number used in German routes
 				if (item.ShowNumber)
