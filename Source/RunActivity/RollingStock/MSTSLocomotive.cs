@@ -1463,13 +1463,13 @@ namespace ORTS
                     }
                 case CABViewControlTypes.ENGINE_BRAKE:
                     {
-                        data = EngineBrakeController.CurrentValue;
+                        data = (EngineBrakeController == null) ? 0.0f : EngineBrakeController.CurrentValue;
                         break;
                     }
                 case CABViewControlTypes.FRICTION_BRAKING:
                 case CABViewControlTypes.TRAIN_BRAKE:
                     {
-                        data = TrainBrakeController.CurrentValue;
+                        data = (TrainBrakeController == null) ? 0.0f : TrainBrakeController.CurrentValue;
                         break;
                     }
                 case CABViewControlTypes.DYNAMIC_BRAKE:
