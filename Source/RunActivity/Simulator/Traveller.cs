@@ -625,10 +625,7 @@ namespace ORTS
                 location.Location.X = trackVectorSection.X + displacement.X;
                 location.Location.Y = trackVectorSection.Y + displacement.Y;
                 location.Location.Z = trackVectorSection.Z - displacement.Z;
-                if (direction == TravellerDirection.Forward)
-                    directionVector.Y += trackOffset;
-                else
-                    directionVector.Y -= trackOffset;
+                directionVector.Y -= trackOffset * sign;
             }
             else if (IsTrackStraight)
             {
