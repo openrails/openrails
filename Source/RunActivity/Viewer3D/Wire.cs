@@ -380,7 +380,7 @@ namespace ORTS
                 lodItem.TexName = "overheadwire.ace";
             else
             {
-                Trace.TraceWarning("Missing overheardwire.ace in the route's texture folder, will use default black texture. You can copy the overheadwire.ace from OR\'s AddOns folder to " + Program.Simulator.RoutePath + "\\Textures folder.");
+                Trace.TraceWarning("Missing overheadwire.ace in the route's texture folder, will use default black texture. You can copy the overheadwire.ace from OR\'s AddOns folder to " + Program.Simulator.RoutePath + "\\Textures folder.");
                 lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
             }
             lodItem.ShaderName = "TexDiff";

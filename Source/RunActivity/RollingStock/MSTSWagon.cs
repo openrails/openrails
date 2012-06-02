@@ -120,11 +120,11 @@ namespace ORTS
             switch (lowercasetoken)
             {
                 case "wagon(wagonshape": MainShapeFileName = stf.ReadStringBlock(null); break;
-		case "wagon(type":
-		    stf.MustMatch("(");
-		    string typeString = stf.ReadString();
-		    IsFreight = String.Compare(typeString,"Freight") == 0 ? true : false;
-		    break;
+		        case "wagon(type":
+		            stf.MustMatch("(");
+		            string typeString = stf.ReadString();
+		            IsFreight = String.Compare(typeString,"Freight") == 0 ? true : false;
+		            break;
                 case "wagon(freightanim":
                     stf.MustMatch("(");
                     FreightShapeFileName = stf.ReadString();
@@ -163,6 +163,7 @@ namespace ORTS
                     Couplers[Couplers.Count - 1].SetR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(adhesion":  // Permits correct spelling
                 case "wagon(adheasion":
                     stf.MustMatch("(");
                     Adhesion1 = stf.ReadFloat(STFReader.UNITS.Any, null);

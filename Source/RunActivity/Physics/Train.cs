@@ -51,7 +51,7 @@ namespace ORTS
 		public int NPull = 0;
 		public int NPush = 0;
 		private int LeadLocomotiveIndex = -1;
-	public bool IsFreight = false;
+	    public bool IsFreight = false;
 		public float SlipperySpotDistanceM = 0; // distance to extra slippery part of track
 		public float SlipperySpotLengthM = 0;
 
@@ -141,7 +141,7 @@ namespace ORTS
 		{
             Simulator = simulator;
 			RestoreCars(simulator, inf);
-	    CheckFreight();
+	        CheckFreight();
 			SpeedMpS = inf.ReadSingle();
 			MUDirection = (Direction)inf.ReadInt32();
 			MUThrottlePercent = inf.ReadSingle();
@@ -210,8 +210,8 @@ namespace ORTS
         {
             Debug.Assert(Simulator.Signals != null, "Cannot InitializeSignals() without Simulator.Signals.");
 
-	    IndexNextSignal = -1;
-	    IndexNextSpeedlimit = -1;
+	        IndexNextSignal = -1;
+	        IndexNextSpeedlimit = -1;
 
   //  set overall speed limits if these do not yet exist
 
@@ -274,10 +274,10 @@ namespace ORTS
                     {
                         Signals signals = thisObject.ObjectDetails.signalRef;
                         nextSignal = signals.InitSignalItem(thisObject.ObjectDetails.thisRef);
-            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+                        nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
                         signalFound = true;
                         IndexNextSignal = isig;
-        }
+                    }
                 }
 
                 if (!speedlimFound)

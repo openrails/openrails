@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms; // Needed for MessageBox
 using Microsoft.Xna.Framework;
 using MSTS;
 using ORTS.Interlocking;
@@ -228,7 +229,7 @@ namespace ORTS
 		/// </summary>
 		public TrainCar InitialPlayerLocomotive()
 		{
-			Train playerTrain = Trains[0];    // we install the player train first
+            Train playerTrain = Trains[0];    // we install the player train first
 			TrainCar PlayerLocomotive = null;
 			foreach (TrainCar car in playerTrain.Cars)
 				if (car.IsDriveable)  // first loco is the one the player drives
@@ -689,11 +690,15 @@ namespace ORTS
 				{
 					Trace.TraceInformation(wagonFilePath);
 					Trace.WriteLine(error);
+                    if( wagon == conFile.Train.TrainCfg.WagonList[0] ) {
+                        // First wagon is the player's loco and required, so issue a fatal error message
+                        throw new InvalidDataException( "Error reading player's loco from file " + wagonFilePath );
+                    }
 				}
 
 			}// for each rail car
 
-			if (train.Cars.Count == 0) return;
+			if (train.Cars.Count == 0) return;  // Shouldn't we issue an error message if the player's train is empty?
 
 			train.CheckFreight();
 			train.CalculatePositionOfCars(0);
