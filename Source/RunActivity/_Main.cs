@@ -30,7 +30,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ORTS.Menu;
-
+using ORTS.Debugging;
+using ORTS.MultiPlayer;
 namespace ORTS
 {
     static class Program
@@ -42,10 +43,21 @@ namespace ORTS
         public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator;
+
+		//for Multiplayer
+		public static Server Server;
+		public static ClientComm Client;
+		public static MSGPlayer player;
+		public static string UserName;
+		public static string Code;
+		public static int NumOfTrains = 0;
+		public static bool Error = false;
+		public static string ErrorMsg = "";
+
         private static Viewer3D Viewer;
         public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
 #if DEBUG_VIEWER
-		private static DebugViewerForm DebugViewer;
+		private static Debugging.DebugViewerForm DebugViewer;
 #endif
 
         /// <summary>
@@ -121,6 +133,11 @@ namespace ORTS
                 InitSimulator(settings, args);
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator);
+				if (Client != null)
+				{
+					player = new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0);
+					Client.Send(player.ToString());
+				}
 
 #if DEBUG_VIEWER
 				// prepare to show debug output in a separate window
@@ -576,7 +593,15 @@ namespace ORTS
             {
                 Console.WriteLine("Activity   = {0}", args[0]);
             }
-            else
+			else if (args.Length == 3)
+			{
+				Console.WriteLine("Activity   = {0}", args[0]);
+			}
+			else if (args.Length == 4)
+			{
+				Console.WriteLine("Activity   = {0}", args[0]);
+			}
+			else
             {
                 Console.WriteLine("Path       = {0}", args[0]);
                 Console.WriteLine("Consist    = {0}", args[1]);
@@ -588,10 +613,37 @@ namespace ORTS
 
             Arguments = args;
             Simulator = new Simulator(settings, args[0]);
-            if (args.Length == 1)
+			if (args.Length == 1 || args.Length == 3 || args.Length == 4)
                 Simulator.SetActivity(args[0]);
-            else
+            else if (args.Length >= 5)
                 Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+
+			if (args.Length == 7 && args[5] == "1")
+			{
+				Server = new Server(args[6]);
+				UserName = Server.UserName;
+				Code = Server.Code;
+			}
+			if (args.Length == 3 && args[1] == "1")
+			{
+				Server = new Server(args[2]);
+				UserName = Server.UserName;
+				Code = Server.Code;
+			}
+			if (args.Length == 4 )
+			{
+				Client = new ClientComm(args[1], int.Parse(args[2]), args[3]);
+				UserName = Client.UserName;
+				Code = Client.Code;
+			}
+			if (args.Length == 8)
+			{
+				Client = new ClientComm(args[5], int.Parse(args[6]),args[7]);
+				UserName = Client.UserName;
+				Code = Client.Code;
+			}
+			if (LocalUser.IsMultiPlayer()) Simulator.OnlineTrains = new OnlineTrains();
+
         }
 
         static void LogSeparator()

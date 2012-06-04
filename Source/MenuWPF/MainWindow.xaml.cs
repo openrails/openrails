@@ -39,6 +39,16 @@ namespace MenuWPF
         private ProgressionWindow winProg;
         private ImageSource defaultImage;
         private bool closedSwitch = false;
+
+		//for multiplayers
+		string MPIP = "";
+		string MPPort = "";
+		bool MPHost = false;
+		string MPUserName = "";
+		string MPUserNameTmp = "";
+		string MPUserCode = "1234";
+
+
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
 
@@ -489,6 +499,34 @@ namespace MenuWPF
             MainStart(true);
         }
 
+		private void textBox3_TextChanged(object sender, TextChangedEventArgs e)
+		{
+
+			MPUserNameTmp = (sender as TextBox).Text;
+			MPUserNameTmp = MPUserNameTmp.Replace(" ", "");
+
+			(sender as TextBox).Text = MPUserNameTmp;
+			MPUserName = "\"" + MPUserNameTmp + ' ' + MPUserCode + "\"";
+		}
+
+		private void checkBox1_Checked(object sender, RoutedEventArgs e)
+		{
+			MPHost = true;
+		}
+
+		private void textBox2_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			MPIP = (sender as TextBox).Text;
+		}
+
+		private void textBox1_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			MPPort = (sender as TextBox).Text;
+		}
+
+        
+
+
         #endregion
 
         #region Methods
@@ -510,25 +548,45 @@ namespace MenuWPF
                 }
                 else
                 {
-                    if (SelectedActivity is ExploreActivity)
-                    {
-                        int hour = 10;
-                        int mins = 0;
-                        Regex reg = new Regex("^([0-1][0-9]|[2][0-3]):([0-5][0-9])$"); //Match a string format of HH:MM
-                        if (reg.IsMatch(cboStartingTime.Text))
-                        {
-                            int.TryParse(cboStartingTime.Text.Trim().Substring(0, cboStartingTime.Text.Trim().IndexOf(':')), out hour);
-                            int.TryParse(cboStartingTime.Text.Trim().Substring(cboStartingTime.Text.Trim().IndexOf(':') + 1), out mins);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                            return;
-                        }
-                        parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
-                    }
-                    else
-                        parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
+					if (SelectedActivity is ExploreActivity)
+					{
+						int hour = 10;
+						int mins = 0;
+						Regex reg = new Regex("^([0-1][0-9]|[2][0-3]):([0-5][0-9])$"); //Match a string format of HH:MM
+						if (reg.IsMatch(cboStartingTime.Text))
+						{
+							int.TryParse(cboStartingTime.Text.Trim().Substring(0, cboStartingTime.Text.Trim().IndexOf(':')), out hour);
+							int.TryParse(cboStartingTime.Text.Trim().Substring(cboStartingTime.Text.Trim().IndexOf(':') + 1), out mins);
+						}
+						else
+						{
+							MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+							return;
+						}
+						if (MPIP != "")
+						{
+							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7} {8}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, MPIP, MPPort, MPUserName);
+						}
+						else if (MPHost == true)
+						{
+							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, 1, MPUserName);
+						}
+						else
+							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
+					}
+					else
+					{
+						if (MPHost == true)
+						{
+							parameter = String.Format("\"{0}\"  {1} {2}", SelectedActivity.FileName, 1, MPUserName);
+						}
+						else if (MPIP != "")
+						{
+							parameter = String.Format("\"{0}\"  {1} {2} {3}", SelectedActivity.FileName, MPIP, MPPort, MPUserName);
+						}
+
+						else parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
+					}
                 }
 
                 // find the RunActivity program, normally in the startup path, 
@@ -1309,7 +1367,6 @@ namespace MenuWPF
 
         #endregion
 
-        
 
     }
 }

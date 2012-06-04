@@ -232,6 +232,15 @@
     <Compile Include="Interlocking\InterlockingTrack.cs" />
     <Compile Include="Interlocking\MovementAuthority\Route.cs" />
     <Compile Include="Interlocking\MovementAuthority\RouteCollection.cs" />
+    <Compile Include="MultiPlayer\ClientComm.cs" />
+    <Compile Include="MultiPlayer\Decoder.cs" />
+    <Compile Include="MultiPlayer\LocalUser.cs" />
+    <Compile Include="MultiPlayer\Message.cs" />
+    <Compile Include="MultiPlayer\OnlinePlayer.cs" />
+    <Compile Include="MultiPlayer\OnlineTrains.cs" />
+    <Compile Include="MultiPlayer\RemoteTrain.cs" />
+    <Compile Include="MultiPlayer\Server.cs" />
+    <Compile Include="MultiPlayer\ServerComm.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Events.cs" />
     <Compile Include="Popups\ActivityWindow.cs" />

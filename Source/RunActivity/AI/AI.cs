@@ -143,6 +143,7 @@ namespace ORTS
                 {
                     AITrains.Add(train);
                     Simulator.Trains.Add(train);
+					MultiPlayer.LocalUser.BroadCast((new MultiPlayer.MSGTrain(train, train.Number)).ToString());
                 }
             }
             bool remove = false;
@@ -264,6 +265,8 @@ namespace ORTS
                     foreach (TrainCar car in train.Cars)
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
             }
+			MultiPlayer.LocalUser.BroadCast((new MultiPlayer.MSGRemoveTrain(removeList).ToString()));
+
         }
 
         public string GetStatus()

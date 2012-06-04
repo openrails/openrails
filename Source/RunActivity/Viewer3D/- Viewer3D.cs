@@ -75,7 +75,7 @@ namespace ORTS
         public NextStationWindow NextStationWindow; // F10 window
         public CompassWindow CompassWindow; // 0 window
         public ActivityWindow ActivityWindow; // pop-up window
-        public TracksDebugWindow TracksDebugWindow; // Control-Alt-F6
+		public TracksDebugWindow TracksDebugWindow; // Control-Alt-F6
         public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
         // Route Information
         public Tiles Tiles = null;
@@ -361,6 +361,7 @@ namespace ORTS
             InfoDisplay.PrepareFrame(frame, elapsedTime);
             // TODO: This is not correct. The ActivityWindow's PrepareFrame is already called by the WindowManager!
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
+
             WindowManager.PrepareFrame(frame, elapsedTime);
         }
         double LastLoadRealTime = 0;
@@ -392,7 +393,7 @@ namespace ORTS
                 Simulator.GameSpeed = 1;
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.SimulationSpeed, CabSetting.Off, Simulator.GameSpeed * 100 );
             }
-            if (UserInput.IsPressed(UserCommands.GameSave)) { Program.Save(); }
+            if (UserInput.IsPressed(UserCommands.GameSave)) {if (MultiPlayer.LocalUser.GetUserName() == "") Program.Save(); }
             if (UserInput.IsPressed(UserCommands.DisplayHelpWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayHUD)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HUDWindow.TabAction(); else HUDWindow.Visible = !HUDWindow.Visible;
@@ -403,7 +404,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DebugTracks)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
 
-            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwitch))
+            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwap))
             {
                 Simulator.Confirmer.Confirm( CabControl.SwitchLocomotive, CabSetting.On );
                 Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
@@ -494,6 +495,8 @@ namespace ORTS
         {
             InfoDisplay.Stop();
             RenderProcess.Stop();
+			//shut down multiplayer
+			if (MultiPlayer.LocalUser.IsMultiPlayer()) MultiPlayer.LocalUser.Stop();
         }
 
         /// <summary>

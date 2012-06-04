@@ -5,7 +5,7 @@
 	x:Class="MenuWPF.MainWindow"
 	x:Name="winMain"
 	Title="Open Rails"
-	Width="1024" Height="768" WindowStartupLocation="CenterScreen" Closing="winMain_Closing" Icon="ORTS.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" KeyDown="winMain_KeyDown" MinWidth="1024" MinHeight="768" MaxWidth="1920" MaxHeight="1200">
+	Width="1024" Height="835" WindowStartupLocation="CenterScreen" Closing="winMain_Closing" Icon="ORTS.ico" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" KeyDown="winMain_KeyDown" MinWidth="1024" MinHeight="768" MaxWidth="1920" MaxHeight="1200">
 	<Window.Background>
 		<ImageBrush ImageSource="background1.jpg"/>
 	</Window.Background>
@@ -184,7 +184,7 @@
 				<Label x:Name="lblDuration" Content="Duration:" Margin="0,0,12,0" Grid.Row="7" Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667"/>
 				<Label x:Name="labelDuration" Content="" HorizontalAlignment="Left" Grid.Column="3" Margin="12,0,0,0" Grid.Row="7" Foreground="Black" VerticalAlignment="Bottom" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667" FontWeight="Bold"/>
 				<Label x:Name="lblDescription" Content="Description:" Margin="12,15,0,0" Grid.Row="8" VerticalAlignment="Top" HorizontalAlignment="Left" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="14.667"/>
-				<FlowDocumentScrollViewer x:Name="docActivityDescription" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,16" Grid.Row="8" d:LayoutOverrides="Height" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Foreground="Black" VerticalScrollBarVisibility="Auto" FontSize="14.667" FontWeight="Bold">
+				<FlowDocumentScrollViewer x:Name="docActivityDescription" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,0,124.95,87" Grid.Row="8" d:LayoutOverrides="Height" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Foreground="Black" VerticalScrollBarVisibility="Auto" FontSize="14.667" FontWeight="Bold">
 					<FlowDocument FontFamily="Microsoft Sans Serif">
 						<Paragraph><Run Text=""/></Paragraph>
 					</FlowDocument>
@@ -215,7 +215,14 @@
 
 					</ContentPresenter>
 				</Button>
-			</Grid>
+                <TextBox Grid.ColumnSpan="2" Grid.Row="8" Margin="22,0,94,18" Name="textBox2" Grid.Column="1" Height="27" VerticalAlignment="Bottom" TextChanged="textBox2_TextChanged" />
+                <TextBox Grid.ColumnSpan="2" Grid.Row="8" Margin="105,0,97,18" Name="textBox1" Grid.Column="2" Height="27" VerticalAlignment="Bottom" TextChanged="textBox1_TextChanged" />
+                <Label FontSize="14.667" Grid.Row="8" Margin="94,0,128,18" Name="label1" Grid.ColumnSpan="2" Height="27" VerticalAlignment="Bottom">Server IP</Label>
+                <Label FontSize="14.667" Grid.Row="8" Margin="68,0,39,18" Name="label2" Height="27" VerticalAlignment="Bottom" Grid.Column="2">Port</Label>
+                <Label FontSize="14.667" Margin="92,0,122,60" Name="label3" Grid.Row="8" Grid.ColumnSpan="2" Height="26.52" VerticalAlignment="Bottom">UserName</Label>
+                <TextBox Grid.Row="8" Margin="24,0,6,60" Name="textBox3" Grid.Column="1" Height="26.52" VerticalAlignment="Bottom" TextChanged="textBox3_TextChanged" />
+                <CheckBox Grid.Column="2" Grid.Row="8" Margin="25,0,9,51" Name="checkBox1" Checked="checkBox1_Checked" FontSize="14" Height="35.52" VerticalAlignment="Bottom">Act As Server?</CheckBox>
+            </Grid>
 		</Border>
 	</Grid>
 </Window>

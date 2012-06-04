@@ -39,6 +39,8 @@ namespace ORTS
 	public class Train
 	{
 		public List<TrainCar> Cars = new List<TrainCar>();  // listed front to back
+		public int Number;
+		public static int TotalNumber = 0;
 		public TrainCar FirstCar { get { return Cars[0]; } }
 		public TrainCar LastCar { get { return Cars[Cars.Count - 1]; } }
 		public Traveller RearTDBTraveller;   // positioned at the back of the last car in the train
@@ -51,7 +53,7 @@ namespace ORTS
 		public int NPull = 0;
 		public int NPush = 0;
 		private int LeadLocomotiveIndex = -1;
-	    public bool IsFreight = false;
+	public bool IsFreight = false;
 		public float SlipperySpotDistanceM = 0; // distance to extra slippery part of track
 		public float SlipperySpotLengthM = 0;
 
@@ -92,6 +94,7 @@ namespace ORTS
 		/// </summary>
 		protected Simulator Simulator;
 
+		public float travelled;//distance travelled, but not exavtly
 
 		// For AI control of the train
 		public float AITrainBrakePercent
@@ -133,6 +136,8 @@ namespace ORTS
         public Train(Simulator simulator)
         {
             Simulator = simulator;
+			Number = TotalNumber;
+			TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
         }
 
@@ -141,7 +146,7 @@ namespace ORTS
 		{
             Simulator = simulator;
 			RestoreCars(simulator, inf);
-	        CheckFreight();
+			CheckFreight();
 			SpeedMpS = inf.ReadSingle();
 			MUDirection = (Direction)inf.ReadInt32();
 			MUThrottlePercent = inf.ReadSingle();
@@ -429,7 +434,7 @@ namespace ORTS
 		}
 
 
-		public void Update(float elapsedClockSeconds)
+		public virtual void Update(float elapsedClockSeconds)
 		{
 			PropagateBrakePressure(elapsedClockSeconds);
 
@@ -1171,6 +1176,7 @@ namespace ORTS
 				AlignTrailingPointSwitch(FrontTDBTraveller.TN, traveller.TN);
 			FrontTDBTraveller = traveller;
             Length = length;
+			travelled += distance;
 		} // CalculatePositionOfCars
 
 		// aligns a trailing point switch that was just moved over to match the track the train is on

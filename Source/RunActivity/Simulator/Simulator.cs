@@ -33,6 +33,7 @@ using System.Windows.Forms; // Needed for MessageBox
 using Microsoft.Xna.Framework;
 using MSTS;
 using ORTS.Interlocking;
+using ORTS.MultiPlayer;
 
 namespace ORTS
 {
@@ -78,10 +79,13 @@ namespace ORTS
 		SIGCFGFile SIGCFG;
 		public string ExplorePathFile;
 		public string ExploreConFile;
+		public string patFileName;
+		public string conFileName;
 		public LevelCrossings LevelCrossings;
 		public RDBFile RDB;
 		public CarSpawnerFile CarSpawnerFile;
         public bool UseAdvancedAdhesion;
+		public MultiPlayer.OnlineTrains OnlineTrains;
         // Used in save and restore form
         public string PathDescription;
         public float InitialTileX;
@@ -229,7 +233,7 @@ namespace ORTS
 		/// </summary>
 		public TrainCar InitialPlayerLocomotive()
 		{
-            Train playerTrain = Trains[0];    // we install the player train first
+			Train playerTrain = Trains[0];    // we install the player train first
 			TrainCar PlayerLocomotive = null;
 			foreach (TrainCar car in playerTrain.Cars)
 				if (car.IsDriveable)  // first loco is the one the player drives
@@ -286,7 +290,11 @@ namespace ORTS
 			foreach (Train train in movingTrains)
 			{
 				train.Update(elapsedClockSeconds);
-				AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
+				if (LocalUser.IsMultiPlayer())
+				{
+					if (MultiPlayer.LocalUser.IsServer()) AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
+				}
+				else AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 			}
 
 			foreach (Train train in movingTrains)
@@ -569,6 +577,11 @@ namespace ORTS
 					nextSwitchTrack.SelectedRoute = 1;
 				else
 					nextSwitchTrack.SelectedRoute = 0;
+
+				//multiplayer mode will do some message
+				if (LocalUser.IsMultiPlayer()) 
+					LocalUser.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.LocalUser.GetUserName(),
+						nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
                 Confirmer.Confirm( CabControl.SwitchBehind, CabSetting.On );
             }
 		}
@@ -588,6 +601,11 @@ namespace ORTS
 					nextSwitchTrack.SelectedRoute = 1;
 				else
 					nextSwitchTrack.SelectedRoute = 0;
+
+				//if multiplayer mode, will do some messaging
+				if (LocalUser.IsMultiPlayer()) 
+					LocalUser.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.LocalUser.GetUserName(),
+						nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
                 Confirmer.Confirm( CabControl.SwitchAhead, CabSetting.On );
 			}
 			train.ResetSignal(false);
@@ -625,8 +643,6 @@ namespace ORTS
             // set up the player locomotive
 			// first extract the player service definition from the activity file
 			// this gives the consist and path
-			string patFileName;
-			string conFileName;
 			if (Activity == null)
 			{
 				patFileName = ExplorePathFile;
@@ -768,7 +784,6 @@ namespace ORTS
 							Trace.TraceInformation(wagonFilePath);
 							Trace.WriteLine(error);
 						}
-
 					}// for each rail car
 
 					if (train.Cars.Count == 0) return;
@@ -939,6 +954,8 @@ namespace ORTS
 			// TODO which event should we fire
 			//car.CreateEvent(62);  these are listed as alternate events
 			//car.CreateEvent(63);
+			if (LocalUser.IsMultiPlayer())
+				LocalUser.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.LocalUser.GetUserName(), car.UiD)).ToString());
 		}
 	} // Simulator
 }

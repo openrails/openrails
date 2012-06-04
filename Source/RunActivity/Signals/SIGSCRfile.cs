@@ -2543,6 +2543,7 @@ namespace ORTS
 		{
 
 			SCRScripts signalScript;
+			if (thisHead.signalType == null) return;
 			if (sigscr.Scripts.TryGetValue(thisHead.signalType, out signalScript))
 			{
 				sigscr.SH_process_script(thisHead, signalScript, sigscr);

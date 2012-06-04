@@ -568,6 +568,13 @@ namespace ORTS
                  RenderProcess.Viewer.SaveActivityThumbnail = false;    // cancel flag
                  SaveScreenshot( graphicsDevice, RenderProcess.Viewer.SaveActivityFileStem );
              }
+
+			if (Program.Error == true)
+			{
+				RenderProcess.Viewer.MessagesWindow.AddMessage(Program.ErrorMsg, 5);
+				Program.Error = false;
+
+			}
         }
 
         /// <summary>

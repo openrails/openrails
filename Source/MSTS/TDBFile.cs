@@ -110,7 +110,7 @@ namespace MSTS
             Debug.Assert(idx == index, "TrackNode Index Mismatch");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("uid", ()=>{ UiD = new UiD(stf); }),
-                new STFReader.TokenProcessor("trjunctionnode", ()=>{ TrJunctionNode = new TrJunctionNode(stf); }),
+                new STFReader.TokenProcessor("trjunctionnode", ()=>{ TrJunctionNode = new TrJunctionNode(stf); TrJunctionNode.TN = this;}),
                 new STFReader.TokenProcessor("trvectornode", ()=>{ TrVectorNode = new TrVectorNode(stf); }),
                 new STFReader.TokenProcessor("trendnode", ()=>{ TrEndNode = true; stf.SkipBlock(); }),
                 new STFReader.TokenProcessor("trpins", ()=>{
@@ -196,6 +196,7 @@ namespace MSTS
     public class TrJunctionNode
     {
         public int SelectedRoute = 0;
+		public TrackNode TN;
 
         public TrJunctionNode(STFReader stf)
         {
