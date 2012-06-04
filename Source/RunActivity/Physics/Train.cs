@@ -442,7 +442,6 @@ namespace ORTS
 			{
 				car.MotiveForceN = 0;
 				car.Update(elapsedClockSeconds);
-				//Console.WriteLine("update {0} {1} {2} {3} {4}", car.SpeedMpS, car.MotiveForceN, car.GravityForceN, car.FrictionForceN, car.BrakeSystem.GetStatus());
 				car.TotalForceN = car.MotiveForceN + car.GravityForceN;
 				if (car.Flipped)
 				{
@@ -922,7 +921,6 @@ namespace ORTS
 				BrakeLine1PressurePSI = BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
 			}
 			BrakeLine2PressurePSI = maxPressurePSI;
-			//Console.WriteLine("init {0} {1} {2}", BrakeLine1PressurePSI, BrakeLine2PressurePSI, BrakeLine3PressurePSI);
 			foreach (TrainCar car in Cars)
 			{
 				car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI);
@@ -990,7 +988,6 @@ namespace ORTS
 				if (j <= last)
 					break;
 				Cars[j].BrakeSystem.SetRetainer(i % step == 0 ? RetainerSetting : RetainerSetting.Exhaust);
-				//Console.WriteLine("setretainer {0} {1}", j + 1, i % step);
 			}
 		}
 		public void FindLeadLocomotives(ref int first, ref int last)
@@ -1297,7 +1294,6 @@ namespace ORTS
 			car.CouplerForceA = car.CouplerForceC = 0;
 			car.CouplerForceB = 1;
 			car.CouplerForceR = forceN;
-			//Console.WriteLine("setf {0} {1}", forceN, car.CouplerForceU);
 		}
 
 		// removes equations if forces don't match faces in contact
@@ -1391,7 +1387,6 @@ namespace ORTS
 			for (int i = 0; i < Cars.Count - 1; i++)
 			{
 				TrainCar car = Cars[i];
-				//Console.WriteLine("cforce {0} {1} {2}", i, car.CouplerForceU, car.SpeedMpS);
 				car.TotalForceN += car.CouplerForceU;
 				Cars[i + 1].TotalForceN -= car.CouplerForceU;
 				if (MaximumCouplerForceN < Math.Abs(car.CouplerForceU))
@@ -1415,7 +1410,6 @@ namespace ORTS
 					else
 						car.CouplerSlack2M = maxs;
 				}
-				//Console.WriteLine("{0} {1} {2}", car.CouplerSlackM, car.CouplerSlack2M, car.CouplerForceU);
 			}
 		}
 		void UpdateCarSpeeds(float elapsedTime)
@@ -1423,7 +1417,6 @@ namespace ORTS
 			int n = 0;
 			foreach (TrainCar car in Cars)
 			{
-				//Console.WriteLine("updatespeed {0} {1} {2} {3}", car.SpeedMpS, car.TotalForceN, car.MassKG, car.FrictionForceN);
 				if (car.SpeedMpS > 0)
 				{
 					car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
@@ -1518,7 +1511,6 @@ namespace ORTS
 					NPull++;
 				else if (car.CouplerSlackM <= -max)
 					NPush++;
-				//Console.WriteLine("slack {0} {1} {2}", i, car.CouplerSlackM, car.CouplerSlack2M);
 			}
 			foreach (TrainCar car in Cars)
 				car.DistanceM += Math.Abs(car.SpeedMpS * elapsedTime);

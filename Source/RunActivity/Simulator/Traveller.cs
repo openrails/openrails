@@ -840,7 +840,6 @@ namespace ORTS
             if (dx * dx + dz * dz > 1)
                 return 1;
             var dot = dx * (float)Math.Sin(directionVector.Y) + dz * (float)Math.Cos(directionVector.Y);
-            //Console.WriteLine("overlap {0} {1} {2} {3} {4} {5} {6}", dot, dx, dz, AY, flip, Math.Cos(AY), Math.Sin(AY));
             return rear ? dot : -dot;
         }
 

@@ -41,7 +41,6 @@ namespace ORTS
                         break;
                     }
                     train.StartTime += d;
-                    //Console.WriteLine("new starttime {0}", train.StartTime);
                 }
                 if (!ContainsKey(train.UiD))
                     Console.WriteLine("cannot add train {0} to timetable", train.UiD);
@@ -157,7 +156,6 @@ namespace ORTS
                 {
                     times.Add(prevIndex, atime, ltime);
                     times.Add(node.JunctionIndex, ltime - times.Train.PassTime(), ltime);
-                    //Console.WriteLine("train {0} has to wait {1} at {2}", times.Train.UiD, delay, node.JunctionIndex);
                     return 0;
                 }
             }
@@ -201,7 +199,6 @@ namespace ORTS
                 if (!tt.Overlap(new TimeTableTime(arrive, leave)))
                     continue;
                 int diff = tt.Leave - (int)arrive + 1;
-                //Console.WriteLine("cannot add {0} {1} {2} {3} {4} {5}", trackIndex, diff, tt.Arrive, tt.Leave, arrive, leave);
                 if (result < diff)
                     result = diff;
             }
@@ -255,7 +252,6 @@ namespace ORTS
             if (trackIndex < 0 || this.ContainsKey(trackIndex))
                 return;
             this[trackIndex] = new TimeTableTime(arrive, leave);
-            //Console.WriteLine("add {0} {1} {2} {3} {4}", Train.UiD, trackIndex, arrive, leave, leave - arrive);
         }
         /// <summary>
         /// Returns true if any of two trains's time intervals overlap.
@@ -268,7 +264,6 @@ namespace ORTS
                     continue;
                 if (kvp.Value.Overlap(other[kvp.Key]))
                 {
-                    //Console.WriteLine("overlap {0} {1} {2}", Train.UiD, other.Train.UiD, kvp.Key);
                     return true;
                 }
             }

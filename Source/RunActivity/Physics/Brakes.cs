@@ -204,7 +204,6 @@ namespace ORTS
                 AutoCylPressurePSI = MaxCylPressurePSI;
             TripleValveState = ValveState.Lap;
             HandbrakePercent = handbrakeOn ? 100 : 0;
-            //Console.WriteLine("initb {0} {1}", AuxResPressurePSI, AutoCylPressurePSI);
         }
         public override void Connect()
         {

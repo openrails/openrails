@@ -73,7 +73,7 @@ namespace ORTS.Interlocking.MovementAuthority
       }
 
       /// <summary>
-      /// Returns all routees starting with the given signal and ending with the given terminator.
+      /// Returns all routes starting with the given signal and ending with the given terminator.
       /// </summary>
       /// <param name="StartSignal"></param>
       /// <param name="Terminator"></param>

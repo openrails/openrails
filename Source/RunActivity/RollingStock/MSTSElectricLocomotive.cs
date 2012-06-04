@@ -308,7 +308,13 @@ namespace ORTS
                         confirmAction = true;
                     }
                 }
-                if( confirmAction ) { this.Viewer.Simulator.Confirmer.Confirm( CabControl.Pantograph1, newState == true ? CabSetting.On : CabSetting.Off ); }
+                if( confirmAction ) {
+                    if( ElectricLocomotive.NumPantograph > 0 ) {
+                        this.Viewer.Simulator.Confirmer.Confirm( CabControl.Pantograph1, newState == true ? CabSetting.On : CabSetting.Off );
+                    } else {
+                        this.Viewer.Simulator.Confirmer.Confirm( CabControl.Power, newState == true ? CabSetting.On : CabSetting.Off );
+                    }
+                }
             }
             if (UserInput.IsPressed(UserCommands.ControlPantographSecond))
             {

@@ -289,12 +289,19 @@ namespace ORTS
                         build = inf.ReadString().Replace( "\0", "" );
                         versionOkay = (revision == Version) && (build == Build);
                     } catch { }
-                    if( !versionOkay ) {
-                        if( revision.Length + build.Length > 0 )
-                            throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build ) );
-                        throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build ) );
-                    }
 
+                    if( !versionOkay ) {
+                        if( System.Diagnostics.Debugger.IsAttached ) {
+                            // Only if debugging, then allow user to continue.
+                            // Resuming from saved activities is useful in debugging.
+                            // (To resume from the latest save, set RunActivity > Properties > Debug > Command line arguments = "-resume")
+                            Trace.Assert( versionOkay, "Resuming: Activity Save older than version executing.\nContinue at your own risk !" );
+                        } else {
+                            if( revision.Length + build.Length > 0 )
+                                throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build ) );
+                            throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build ) );
+                        }
+                    }
                     // Skip the heading data used in Menu.exe
                     string temp = inf.ReadString(); // Route name
                     int argumentsCount = inf.ReadInt32();

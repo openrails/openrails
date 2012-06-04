@@ -71,17 +71,14 @@ namespace ORTS
                 if (node.NextMainNode != null && node.NextSidingNode != null)
                     node.Type = AIPathNodeType.SidingStart;
             }
-            //Console.WriteLine("path {0}", filename);
             Dictionary<int, AIPathNode> lastUse = new Dictionary<int, AIPathNode>();
             for (AIPathNode node1 = FirstNode; node1 != null; node1 = node1.NextMainNode)
             {
-                //Console.WriteLine("path {0} {1} {2} {3} {4}", node1.ID, node1.Type, node1.JunctionIndex, node1.NextMainTVNIndex, node1.NextSidingTVNIndex);
                 if (node1.JunctionIndex >= 0)
                     lastUse[node1.JunctionIndex] = node1;
                 AIPathNode node2 = node1.NextSidingNode;
                 while (node2 != null && node2.NextSidingNode != null)
                 {
-                    //Console.WriteLine("siding {0} {1} {2} {3} {4}", node2.ID, node2.Type, node2.JunctionIndex, node2.NextMainTVNIndex, node2.NextSidingTVNIndex);
                     if (node2.JunctionIndex >= 0)
                         lastUse[node2.JunctionIndex] = node2;
                     node2 = node2.NextSidingNode;
@@ -146,9 +143,7 @@ namespace ORTS
             TrackNode tn = TrackDB.TrackNodes[junctionIndex];
             if (tn.TrJunctionNode == null || tn.TrPins[0].Link == vectorIndex)
                 return;
-            //Console.WriteLine("alignsw {0} {1} {2} {3}", junctionIndex, vectorIndex, tn.TrJunctionNode.SelectedRoute, tn.TrPins[1].Link);
             tn.TrJunctionNode.SelectedRoute = tn.TrPins[1].Link == vectorIndex ? 0 : 1;
-            //Console.WriteLine("alignsw {0} {1} {2} {3}", junctionIndex, vectorIndex, tn.TrJunctionNode.SelectedRoute, tn.TrPins[2].Link);
             return;
         }
 

@@ -188,8 +188,6 @@ namespace ORTS
                     break;
                 }
             }
-            //Console.WriteLine("nextstopdist {0} {1} {2} {3}", StopDistanceM, FrontTDBTraveller.Direction, RearTDBTraveller.Direction,
-            //    Math.Sqrt(WorldLocation.DistanceSquared(wl,FrontTDBTraveller.WorldLocation)));
             if (StopNode.Type == AIPathNodeType.Reverse)
             {
                 for (AIPathNode node = StopNode; node != EndNode; )

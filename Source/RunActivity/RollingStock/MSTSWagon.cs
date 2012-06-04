@@ -343,8 +343,6 @@ namespace ORTS
                 if (e1 < 0)
                     Friction0N *= (float)Math.Pow(.0025 * .44704, e1);
             }
-            //Console.WriteLine("friction {0} {1} {2} {3} {4}", c1, e1, v2, c2, e2);
-            //Console.WriteLine("davis {0} {1} {2} {3}", Friction0N, DavisAN, DavisBNSpM, DavisCNSSpMM);
         }
         public float ParseFloat(string token)
         {   // is there a better way to ignore any suffix?
@@ -523,7 +521,6 @@ namespace ORTS
                 R0Diff = .001f;
             else if (R0Diff > .1)
                 R0Diff = .1f;
-            //Console.WriteLine("setR0 {0} {1} {2} {3} {4} {5}", a, b, R0, R0Diff, Stiffness1NpM, Stiffness2NpM);
         }
         public void SetStiffness(float a, float b)
         {

@@ -59,10 +59,8 @@ namespace ORTS
             try
             {
                 PIEDevice[] devices = PIEHidDotNet.PIEDevice.EnumeratePIE();
-                //Console.WriteLine("devices {0}", devices.Length);
                 for (int i = 0; i < devices.Length; i++)
                 {
-                    //Console.WriteLine("device {0} {1}", devices[i].HidUsagePage, devices[i].Pid);
                     if (devices[i].HidUsagePage == 0xc && devices[i].Pid == 210)
                     {
                         Device = devices[i];
@@ -145,7 +143,6 @@ namespace ORTS
                 }
             }
             State.Changed = true;
-            //Console.WriteLine(State.ToString());
         }
         
         /// <summary>

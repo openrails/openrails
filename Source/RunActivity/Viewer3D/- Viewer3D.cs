@@ -164,8 +164,6 @@ namespace ORTS
             // Set these so RenderFrame can use them when its thread gets control.
             SaveActivityFileStem = fileStem;
             SaveActivityThumbnail = true;
-
-            MessagesWindow.AddMessage("Game saved.", 5);
         }
 
         public void Restore(BinaryReader inf)

@@ -156,8 +156,6 @@ namespace ORTS
             LocomotiveAxle.StabilityCorrection = true;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
-            
-            //Console.WriteLine("loco {0} {1} {2}", MaxPowerW, MaxForceN, MaxSpeedMpS);
         }
 
         /// <summary>
@@ -2644,7 +2642,6 @@ namespace ORTS
         {
             int minValuePos = 0;
             float data = _Locomotive.GetDataOf(_CabViewControl);
-            //Console.WriteLine("Raw data load meter {0}", data);
             if (data >= 0)
             {
                 
@@ -3042,7 +3039,6 @@ namespace ORTS
                                 indx = currentDynamicNotch;
                             else
                                 indx = FromPercent(dynBrakePercent);
-                            // Console.WriteLine("data {0} indx {1}", dynBrakePercent, indx);
                         break;
                     }
 
@@ -3076,11 +3072,8 @@ namespace ORTS
                                      // MSTS displayed them, so a dummy emulation is supplied here.
                                 else
                                  {
-                                     
-                                    //indx = FromPercent(dynBrakePercent);
                                      indx = IndxFromDummyDyn(dynBrakePercent);
-                                    //Console.WriteLine("Smooth % {0} indx {1}", dynBrakePercent, indx);
-                                    indx += 9;
+                                     indx += 9;
                                  }
 
 

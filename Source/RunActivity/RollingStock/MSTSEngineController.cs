@@ -45,7 +45,6 @@ namespace ORTS
             MaximumValue = stf.ReadFloat(STFReader.UNITS.Any, null);
             StepSize = stf.ReadFloat(STFReader.UNITS.Any, null);
             CurrentValue = stf.ReadFloat(STFReader.UNITS.Any, null);
-            //Console.WriteLine("controller {0} {1} {2} {3}", MinimumValue, MaximumValue, StepSize, CurrentValue);
             stf.ReadItem(); // numnotches
             stf.MustMatch("(");
             int n = stf.ReadInt(STFReader.UNITS.None, null);
@@ -55,7 +54,6 @@ namespace ORTS
                     float value = stf.ReadFloat(STFReader.UNITS.Any, null);
                     int smooth = stf.ReadInt(STFReader.UNITS.Any, null);
                     string type = stf.ReadString();
-                    //Console.WriteLine("Notch {0} {1} {2}", value, smooth, type);
                     Notches.Add(new MSTSNotch(value, smooth, type, stf));
                     if (type != ")") stf.SkipRestOfBlock();
                 }),

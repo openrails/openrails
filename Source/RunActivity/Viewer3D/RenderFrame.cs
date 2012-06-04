@@ -567,7 +567,8 @@ namespace ORTS
             if (RenderProcess.Viewer.SaveActivityThumbnail) {
                  RenderProcess.Viewer.SaveActivityThumbnail = false;    // cancel flag
                  SaveScreenshot( graphicsDevice, RenderProcess.Viewer.SaveActivityFileStem );
-             }
+                 RenderProcess.Viewer.MessagesWindow.AddMessage( "Game saved", 5.0 );
+            }
 
 			if (Program.Error == true)
 			{

@@ -35,7 +35,6 @@ namespace ORTS
         public AI(Simulator simulator)
         {
             Simulator = simulator;
-            //Console.WriteLine("AI {0} {1} {2} {3}", ClockTime, st.Hour, st.Minute, st.Second);
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
                 foreach (var sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
                 {
@@ -43,7 +42,6 @@ namespace ORTS
                     if (train == null)
                         continue;
                     AITrainDictionary.Add(sd.UiD, train);
-                    //Console.WriteLine("AIQ {0} {1} {2} {3}", sd.Service, sd.Time, sd.UiD, Simulator.ClockTime);
                 }
             Dispatcher = new Dispatcher(this);
             foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
@@ -194,7 +192,6 @@ namespace ORTS
                 float dtS = (float)(Simulator.ClockTime - sd.Time);
                 if (train.RearTDBTraveller.Move(dtS * train.MaxSpeedMpS) > 0.01 || train.RearTDBTraveller.TN.TrEndNode)
                     return null;
-                //Console.WriteLine("initial move {0} {1}", dtS * train.MaxSpeedMpS, train.MaxSpeedMpS);
                 AIPathNode node = train.Path.FirstNode;
                 while (node != null && node.NextMainTVNIndex != train.RearTDBTraveller.TrackNodeIndex)
                     node = node.NextMainNode;

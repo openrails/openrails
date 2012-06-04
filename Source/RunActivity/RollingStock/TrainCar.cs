@@ -93,7 +93,6 @@ namespace ORTS
         {
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * 9.8f * WorldPosition.XNAMatrix.M32;
-            //Console.WriteLine("mf {0} {1} {2}", MotiveForceN, WorldPosition.XNAMatrix.Forward, WorldPosition.XNAMatrix.M32);
         }
 
         // Notifications from others of key outside events, ie coupling etc, pantograph up etc
@@ -289,7 +288,6 @@ namespace ORTS
                 for (int k = 0; k < WheelAxles.Count; k++)
                 {
                     float d = WheelAxles[k].OffsetM - o;
-                    //Console.WriteLine("{0} {1} {2}", d, Length, WheelSets[k].OffsetM);
                     o = WheelAxles[k].OffsetM;
                     traveler.Move(d);
                     float x = traveler.X + 2048 * (traveler.TileX - tileX);
@@ -299,7 +297,6 @@ namespace ORTS
                 }
                 o = Length / 2 - o;
                 traveler.Move(o);
-                //Console.WriteLine("{0} {1}", o, Length);
             }
             else
             {
@@ -307,7 +304,6 @@ namespace ORTS
                 for (int k = WheelAxles.Count - 1; k>=0 ; k--)
                 {
                     float d = o - WheelAxles[k].OffsetM;
-                    //Console.WriteLine("{0} {1} {2}", d, Length, WheelSets[k].OffsetM);
                     o = WheelAxles[k].OffsetM;
                     traveler.Move(d);
                     float x = traveler.X + 2048 * (traveler.TileX - tileX);
@@ -317,7 +313,6 @@ namespace ORTS
                 }
                 o = Length / 2 + o;
                 traveler.Move(o);
-                //Console.WriteLine("{0} {1}", o, Length);
             }
             TrainCarPart p0= Parts[0];
             for (int i=1; i<Parts.Count; i++)
@@ -337,9 +332,6 @@ namespace ORTS
             if (side.X != 0 && side.Y != 0 && side.Z != 0)
                 side.Normalize();
             Vector3 up = Vector3.Cross(fwd, side);
-            //Console.WriteLine("fwd {0}", fwd);
-            //Console.WriteLine("side {0}", side);
-            //Console.WriteLine("up {0}", up);
             Matrix m = Matrix.Identity;
             m.M11 = side.X;
             m.M12 = side.Y;
@@ -356,7 +348,6 @@ namespace ORTS
             WorldPosition.XNAMatrix = m;
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
-            //Console.WriteLine(" {0}", m.ToString());
             // calculate truck angles
             for (int i = 1; i < Parts.Count; i++)
             {
@@ -382,7 +373,6 @@ namespace ORTS
                     if (fwd.X * fwd1.Z < fwd.Z * fwd1.X)
                         p.Sin = -p.Sin;
                 }
-                //Console.WriteLine("cs {0} {1} {2}", i, p.Cos, p.Sin);
             }
         }
     }
@@ -478,9 +468,6 @@ namespace ORTS
                     B[i] = 0;
                 }
             }
-            //for (int j = 0; j < 4; j++)
-            //    Console.Write(" {0} {1}", A[j], B[j]);
-            //Console.WriteLine(" {0}", OffsetM);
         }
     }
 

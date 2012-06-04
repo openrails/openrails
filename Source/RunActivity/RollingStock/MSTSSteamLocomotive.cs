@@ -100,8 +100,6 @@ namespace ORTS
 		public MSTSSteamLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
             : base(simulator, wagFile, previousCar)
         {
-            //Console.WriteLine(" {0} {1} {2} {3}", NumCylinders, CylinderDiameterM, CylinderStrokeM, DriverWheelRadiusM);
-            //Console.WriteLine(" {0} {1} {2} {3} {4}", MaxBoilerPressurePSI,MaxBoilerOutputLBpH,ExhaustLimitLBpH,BasicSteamUsageLBpS,BoilerVolumeFT3);
             if (NumCylinders < 0 && ZeroError(NumCylinders, "NumCylinders", wagFile))
                 NumCylinders = 0;
             if (ZeroError(CylinderDiameterM, "CylinderDiammeter", wagFile))
@@ -134,7 +132,6 @@ namespace ORTS
             WaterFraction = .85f;
             BoilerMassLB= WaterFraction*BoilerVolumeFT3*WaterDensity[MaxBoilerPressurePSI] + (1-WaterFraction)*BoilerVolumeFT3*SteamDensity[MaxBoilerPressurePSI];
             BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensity[BoilerPressurePSI]*WaterHeat[BoilerPressurePSI] + (1-WaterFraction) * BoilerVolumeFT3 * SteamDensity[BoilerPressurePSI]*SteamHeat[BoilerPressurePSI];
-            //Console.WriteLine("initstate {0} {1}", BoilerMassLB, BoilerHeatBTU);
             // the next two tables are the average over a full wheel rotation calculated using numeric integration
             // they depend on valve geometry and main rod length etc
             if (ForceFactor1 == null)

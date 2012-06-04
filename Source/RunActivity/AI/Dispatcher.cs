@@ -202,7 +202,6 @@ namespace ORTS
                         {
                             auth.NReverseNodes--;
                             auth.StartNode = FindNextReverseNode(auth);
-                            //Console.WriteLine("new rev r {0}", train.RearNode.ID);
                         }
                         continue;
                     }
@@ -210,7 +209,6 @@ namespace ORTS
                     {
                         auth.NReverseNodes--;
                         auth.StartNode = FindNextReverseNode(auth);
-                        ///Console.WriteLine("new rev f {0}", train.RearNode.ID);
                         if (auth.NReverseNodes == 0)
                             Rereserve(auth);
                     }
@@ -235,26 +233,18 @@ namespace ORTS
                             clearance = 1.5f * (float)shape.ClearanceDistance;
                     }
                     float d = WorldLocation.GetDistanceSquared(nextNode.Location, auth.Train.RearTDBTraveller.WorldLocation);
-                    //Console.WriteLine("{0} {1}", d, clearance);
                     if (d < clearance * clearance)
                         continue;
                 }
                 int i = auth.StartNode.NextMainTVNIndex;
-                //Console.WriteLine("dispatcher update {0} {1} {2}", auth.TrainID, i, auth.Train.RearTDBTraveller.TrackNodeIndex);
                 if (i >= 0 && Reservations[i] == auth.TrainID)
                     Reservations[i] = -1;
                 else
                 {
                     i = auth.StartNode.NextSidingTVNIndex;
-                    //Console.WriteLine(" siding {0} {1}", i, train.UiD);
                     if (i >= 0 && Reservations[i] == auth.TrainID)
                         Reservations[i] = -1;
                 }
-                //int n = 0;
-                //for (int j = 0; j < Reservations.Length; j++)
-                //    if (Reservations[j] == auth.TrainID)
-                //        n++;
-                //Console.WriteLine(" nres {0}", n);
                 if (auth.StartNode.IsLastSwitchUse)
                     auth.Path.RestoreSwitch(auth.StartNode.JunctionIndex);
                 auth.StartNode = nextNode;
@@ -344,10 +334,8 @@ namespace ORTS
             int nRev = 0;
             if (!movingForward)
                 nRev++;
-            //Console.WriteLine("reqa {0} {1}", train.UiD, update);
             while (node != null)
             {
-                //Console.WriteLine(" node {0} {1}", node.ID, node.Type);
                 if (movingForward && node != auth.StartNode && node.Type == AIPathNodeType.SidingStart)
                     break;
                 if (movingForward && node.Type == AIPathNodeType.SidingEnd && node != auth.EndNode && Reservations[node.NextMainTVNIndex] != auth.TrainID)
@@ -356,7 +344,6 @@ namespace ORTS
                 {
                     movingForward = !movingForward;
                     nRev++;
-                    //Console.WriteLine("rev node {0}", node.ID);
                 }
                 if (node.NextMainNode != null && node != auth.SidingNode)
                 {
@@ -379,7 +366,6 @@ namespace ORTS
                 Reserve(auth.TrainID, tnList);
                 return SetAuthorization(auth, node, null, nRev);
             }
-            //Console.WriteLine("start siding {0}", node.ID);
             List<int> tnList1 = new List<int>();
             AIPathNode sidingNode = node;
             int nReverse = nRev;
@@ -398,7 +384,6 @@ namespace ORTS
                 movingForward = forward;
                 if (sidingFirst ? i == 1 : i == 0)
                 {
-                    //Console.WriteLine("try main {0}", node.ID);
                     if (ttTimes != null && !ttTimes.ContainsKey(sidingNode.NextMainTVNIndex))
                         continue;
                     for (node = sidingNode; !movingForward || node.Type != AIPathNodeType.SidingEnd; node = node.NextMainNode)
@@ -415,13 +400,11 @@ namespace ORTS
                         Unreserve(auth.TrainID);
                         Reserve(auth.TrainID, tnList);
                         Reserve(auth.TrainID, tnList1);
-                        //Console.WriteLine("got main {0}", node.ID);
                         return SetAuthorization(auth, node, null, nRev);
                     }
                 }
                 else
                 {
-                    //Console.WriteLine("try siding {0}", node.ID);
                     if (ttTimes != null && !ttTimes.ContainsKey(sidingNode.NextSidingTVNIndex))
                         continue;
                     tnList1.Clear();
@@ -439,7 +422,6 @@ namespace ORTS
                         Unreserve(auth.TrainID);
                         Reserve(auth.TrainID, tnList);
                         Reserve(auth.TrainID, tnList1);
-                        //Console.WriteLine("got siding {0} {1}", node.ID, sidingNode.ID);
                         return SetAuthorization(auth, node, sidingNode, nRev);
                     }
                 }
@@ -462,10 +444,6 @@ namespace ORTS
             for (int j = 0; j < Reservations.Length; j++)
                 if (Reservations[j] == auth.TrainID)
                     n++;
-            //Console.WriteLine("setauth {0} {1} {2} {3}", auth.TrainID, result, n, nRev);
-            //for (int j = 0; j < Reservations.Length; j++)
-            //    if (Reservations[j] == auth.TrainID)
-            //        Console.WriteLine(" res {0}", j);
             return result;
         }
 
@@ -482,8 +460,6 @@ namespace ORTS
         /// </summary>
         private bool CanReserve(int trainID, int priority, List<int> tnList)
         {
-            //foreach (int i in tnList)
-            //    Console.WriteLine("res {0} {1} {2}", i, Reservations[i], train.UiD);
             foreach (int i in tnList)
                 if (Reservations[i] >= 0 && Reservations[i] != trainID)
                     return false;
@@ -493,11 +469,9 @@ namespace ORTS
                 foreach (int j in tnList)
                     if (Reservations[j] != trainID && (j == playerTrain.FrontTDBTraveller.TrackNodeIndex || j == playerTrain.RearTDBTraveller.TrackNodeIndex))
                     {
-                        //Console.WriteLine("player on track {0} {1}", j, Reservations[j]);
                         return false;
                     }
             }
-            //Console.WriteLine("can reserve");
             return true;
         }
 
@@ -527,7 +501,6 @@ namespace ORTS
         {
             if (train.TrackAuthority == null)
                 return;
-            //Console.WriteLine("release ai {0}", train.UiD);
             SetAuthorization(train.TrackAuthority, null, null, 0);
             Unreserve(train.UiD);
             TrackAuthorities.Remove(train.TrackAuthority);
@@ -555,10 +528,6 @@ namespace ORTS
                 else
                     break;
             }
-            //Console.WriteLine("rereserve {0}", train.UiD);
-            //for (int j = 0; j < Reservations.Length; j++)
-            //    if (Reservations[j] == train.UiD)
-            //        Console.WriteLine(" res {0}", j);
         }
         AIPathNode FindNextReverseNode(TrackAuthority auth)
         {
@@ -611,7 +580,6 @@ namespace ORTS
                         else
                             f = 0x8;
                         flags[node.JunctionIndex] |= f;
-                        //Console.WriteLine("junction {0} {1} {2} {3}", train.UiD, node.JunctionIndex, f, node.Type);
                     }
                     prevIndex = node.NextMainTVNIndex;
                 }
@@ -626,10 +594,7 @@ namespace ORTS
                         int f = flags[node.JunctionIndex];
                         if ((f & 0x9) == 0x9 || (f & 0x6) == 0x6 || (f & 0xc) == 0xc)
                             node.Type = AIPathNodeType.SidingEnd;
-                        //Console.WriteLine("junction {0} {1} {2} {3}", train.UiD, node.JunctionIndex, f, node.Type);
                     }
-                    //if (node.Type == AIPathNodeType.SidingEnd)
-                    //    Console.WriteLine("meet point {0} {1} {2}", train.UiD, node.JunctionIndex, node.Type);
                 }
             }
         }
@@ -650,8 +615,6 @@ namespace ORTS
                 {
                     uint k = tn.TrVectorNode.TrVectorSections[j].SectionIndex;
                     TrackSection ts = AI.Simulator.TSectionDat.TrackSections.Get(k);
-                    //if (ts == null)
-                    //    Console.WriteLine("no tracksection {0} {1} {2}", i, j, k);
                     if (ts == null)
                         continue;
                     if (ts.SectionCurve == null)
@@ -664,7 +627,6 @@ namespace ORTS
                         TrackLength[i] += len;
                     }
                 }
-                //Console.WriteLine("TrackLength {0} {1}", i, TrackLength[i]);
             }
         }
 

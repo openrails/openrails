@@ -370,7 +370,6 @@ namespace ORTS
 				{
 					train.UncoupledFrom = null;
 					drivenTrain.UncoupledFrom = null;
-					//Console.WriteLine("release uncoupledfrom f {0} {1} {2} {3}",d1,d2,d3,d4);
 				}
 			}
 		}
@@ -390,7 +389,6 @@ namespace ORTS
 						{
 							if (train == drivenTrain.UncoupledFrom)
 							{
-								//Console.WriteLine("contact rf {0} {1} {2}", d1, drivenTrain.SpeedMpS, train.SpeedMpS);
 								if (drivenTrain.SpeedMpS < train.SpeedMpS)
 									drivenTrain.SetCoupleSpeed(train, 1);
 								drivenTrain.CalculatePositionOfCars(-d1);
@@ -404,7 +402,6 @@ namespace ORTS
 								car.Train = drivenTrain;
 							}
 							FinishRearCoupling(drivenTrain, train);
-							//Console.WriteLine("couple rf {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
 							return;
 						}
 						float d2 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, true);
@@ -412,7 +409,6 @@ namespace ORTS
 						{
 							if (train == drivenTrain.UncoupledFrom)
 							{
-								//Console.WriteLine("contact rr {0} {1} {2}", d2, drivenTrain.SpeedMpS, train.SpeedMpS);
 								if (drivenTrain.SpeedMpS < -train.SpeedMpS)
 									drivenTrain.SetCoupleSpeed(train, 11);
 								drivenTrain.CalculatePositionOfCars(-d2);
@@ -428,7 +424,6 @@ namespace ORTS
 								car.Flipped = !car.Flipped;
 							}
 							FinishRearCoupling(drivenTrain, train);
-							//Console.WriteLine("couple rr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
 							return;
 						}
 						UpdateUncoupled(drivenTrain, train, d1, d2, false);
@@ -444,7 +439,6 @@ namespace ORTS
 						{
 							if (train == drivenTrain.UncoupledFrom)
 							{
-								//Console.WriteLine("contact fr {0} {1} {2} {3}", d1, drivenTrain.SpeedMpS, train.SpeedMpS);
 								if (drivenTrain.SpeedMpS > train.SpeedMpS)
 									drivenTrain.SetCoupleSpeed(train, 1);
 								drivenTrain.CalculatePositionOfCars(d1);
@@ -460,7 +454,6 @@ namespace ORTS
 								car.Train = drivenTrain;
 							}
 							FinishFrontCoupling(drivenTrain, train, lead);
-							//Console.WriteLine("couple fr {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
 							return;
 						}
 						float d2 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, false);
@@ -468,7 +461,6 @@ namespace ORTS
 						{
 							if (train == drivenTrain.UncoupledFrom)
 							{
-								//Console.WriteLine("contact ff {0} {1} {2}", d2, drivenTrain.SpeedMpS, train.SpeedMpS);
 								if (drivenTrain.SpeedMpS > -train.SpeedMpS)
 									drivenTrain.SetCoupleSpeed(train, -1);
 								drivenTrain.CalculatePositionOfCars(d2);
@@ -485,8 +477,6 @@ namespace ORTS
 								car.Flipped = !car.Flipped;
 							}
 							FinishFrontCoupling(drivenTrain, train, lead);
-
-							//Console.WriteLine("couple ff {0} {1} {2}", elapsedClockSeconds, captureDistance, drivenTrain.SpeedMpS);
 							return;
 						}
 

@@ -14,7 +14,8 @@ namespace ORTS {
 
     public enum CabControl {
         // Power
-        Pantograph1
+        Power
+      , Pantograph1
       , Pantograph2
       , PlayerDiesel
       , HelperDiesel
@@ -84,7 +85,8 @@ namespace ORTS {
         //                      control, off/reset/initialize, neutral, on/apply/switch, decrease, increase, warn
         readonly string[][] ConfirmText = { 
             // Power
-              new string [] { "Pantograph 1", "lower", null, "raise" } 
+              new string [] { "Power", "off", null, "on" } 
+            , new string [] { "Pantograph 1", "lower", null, "raise" } 
             , new string [] { "Pantograph 2", "lower", null, "raise" }
             , new string [] { "Player Diesel Power", "off", null, "on", null, null, "locked. Close throttle then re-try." }
             , new string [] { "Helper Diesel Power", "off", null, "on" }
