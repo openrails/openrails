@@ -72,6 +72,7 @@ namespace ORTS
         public bool CompressorOn = false;
         public float AverageForceN = 0;
         public bool PowerOn = false;
+        public float PowerOnDelay = 0.0f;
         // by GeorgeS
         public bool CabLightOn = false;
         public bool ShowCab = true;
@@ -116,6 +117,11 @@ namespace ORTS
         public float SanderSpeedOfMpS = 30.0f;
         public string EngineOperatingProcedures;
 
+        public bool EmergencyCausesPowerDown = false;
+        public bool EmergencyCausesThrottleDown = false;
+        public bool EmergencyEngagesHorn = false;
+        public bool WheelslipCausesThrottleDown = false;
+
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
 
         public CVFFile CVFFile = null;
@@ -132,6 +138,8 @@ namespace ORTS
         public IIRFilter AdhesionFilter;
         
         public float FilteredMotiveForceN = 0.0f;
+
+        
 
         public MSTSLocomotive(Simulator simulator, string wagPath, TrainCar previousCar)
             : base(simulator, wagPath, previousCar)
@@ -336,6 +344,13 @@ namespace ORTS
                 case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero) }); break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
                 case "engine(orts(sanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(orts(powerondelay": PowerOnDelay = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(orts(emergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
+                case "engine(orts(emergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
+                case "engine(orts(emergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
+                case "engine(orts(wheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
+                    
+
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -365,6 +380,13 @@ namespace ORTS
             EffectData = locoCopy.EffectData;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
+            PowerOnDelay = locoCopy.PowerOnDelay;
+
+            EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
+            EmergencyCausesThrottleDown = locoCopy.EmergencyCausesThrottleDown;
+            EmergencyEngagesHorn = locoCopy.EmergencyEngagesHorn;
+
+            WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
@@ -636,6 +658,9 @@ namespace ORTS
                 SignalEvent(EventID.CompressorOff);
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+
+            if(WheelslipCausesThrottleDown && WheelSlip)
+                ThrottleController.SetValue(0.0f);
 
             base.Update(elapsedClockSeconds);
         } // End Method Update
@@ -1030,6 +1055,9 @@ namespace ORTS
         {
             if (TrainBrakeController.GetIsEmergency())
                 return;
+            if(EmergencyCausesThrottleDown) ThrottleController.SetValue(0.0f);
+            if (EmergencyCausesPowerDown) { SignalEvent(EventID.Pantograph1Down); SignalEvent(EventID.Pantograph2Down); }
+            if (EmergencyEngagesHorn) SignalEvent(EventID.HornOn);
             TrainBrakeController.SetEmergency();
             SignalEvent(EventID.TrainBrakeEmergency);
         }

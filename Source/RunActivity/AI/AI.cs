@@ -217,7 +217,7 @@ namespace ORTS
                     car.Flipped = wagon.Flip;
                     train.Cars.Add(car);
                     car.Train = train;
-                    car.SignalEvent(EventID.PantographUp);
+                    car.SignalEvent(EventID.Pantograph1Up);
                     previousCar = car;
                 }
                 catch (Exception error)

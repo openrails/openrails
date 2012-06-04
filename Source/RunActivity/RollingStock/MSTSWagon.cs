@@ -432,9 +432,9 @@ namespace ORTS
         {
             do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
 			{
-				if (eventID == EventID.PantographUp) { Pan = true; if (FrontPanUp == false && AftPanUp == false) AftPanUp = true; break; }  // pan up
-				if (eventID == EventID.PantographDown) { Pan = false; FrontPanUp = AftPanUp = false;  break; } // pan down
-				if (eventID == EventID.PantographToggle) {	
+				if (eventID == EventID.Pantograph1Up) { Pan = true; if (FrontPanUp == false && AftPanUp == false) AftPanUp = true; break; }  // pan up
+				if (eventID == EventID.Pantograph1Down) { Pan = false; FrontPanUp = AftPanUp = false;  break; } // pan down
+				if (eventID == EventID.Pantograph1Toggle) {	
 					Pan = !Pan;
 					if (Pan && FrontPanUp == false && AftPanUp == false) AftPanUp = true;
 					if (Pan == false) FrontPanUp = AftPanUp = false;
@@ -901,8 +901,8 @@ namespace ORTS
 				if (Viewer.Simulator.PlayerLocomotive == this.Car) //inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = MSTSWagon.FrontPanUp;
-				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.PantographUp);
-				else Car.SignalEvent(EventID.PantographDown);
+				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.Pantograph1Up);
+				else Car.SignalEvent(EventID.Pantograph1Down);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlPantographFirst))
 			{
@@ -910,8 +910,8 @@ namespace ORTS
 				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).AftPanUp = MSTSWagon.AftPanUp;
-				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.PantographUp);
-				else Car.SignalEvent(EventID.PantographDown);
+				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.Pantograph1Up);
+				else Car.SignalEvent(EventID.Pantograph1Down);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
 			{

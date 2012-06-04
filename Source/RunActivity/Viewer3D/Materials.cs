@@ -161,16 +161,16 @@ namespace ORTS
                 case "LightConeMaterial":
                     return LightConeMaterial;
                 case "ForestMaterial":
-                    if (!ForestMaterials.ContainsKey(textureName))
-                    {
-                        ForestMaterial material = new ForestMaterial(renderProcess, textureName);
-                        ForestMaterials.Add(textureName, material);
-                        return material;
-                    }
-                    else
-                    {
-                        return ForestMaterials[textureName];
-                    }
+                        if (!ForestMaterials.ContainsKey(textureName))
+                        {
+                            ForestMaterial material = new ForestMaterial(renderProcess, textureName);
+                            ForestMaterials.Add(textureName, material);
+                            return material;
+                        }
+                        else
+                        {
+                            return ForestMaterials[textureName];
+                        }
 				case "SignalLightMaterial":
 					if (!SignalLightMaterials.ContainsKey(textureName))
                     {

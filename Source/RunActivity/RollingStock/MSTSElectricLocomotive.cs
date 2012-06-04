@@ -42,6 +42,7 @@ namespace ORTS
         public bool PantographSecondUp = false;
         public float PantographFirstDelay = 0.0f;
         public float PantographSecondDelay = 0.0f;
+        
 
         public IIRFilter VoltageFilter;
         public float VoltageV = 0.0f;
@@ -62,6 +63,7 @@ namespace ORTS
                 // for example
                 //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
+                
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -82,6 +84,7 @@ namespace ORTS
             PantographSecondUp = locoCopy.PantographSecondUp;
             PantographFirstDelay = locoCopy.PantographFirstDelay;
             PantographSecondDelay = locoCopy.PantographSecondDelay;
+            
 
             VoltageFilter = locoCopy.VoltageFilter;
             VoltageV = locoCopy.VoltageV;
@@ -144,8 +147,13 @@ namespace ORTS
 
         public override void Update(float elapsedClockSeconds)
         {
+
             if (!(PantographFirstUp || PantographSecondUp))
+            {
                 PowerOn = false;
+                if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f) PantographFirstDelay = 0.0f;
+                if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f) PantographSecondDelay = 0.0f;
+            }
             else
             {
                 if (PantographFirstUp)
@@ -156,6 +164,8 @@ namespace ORTS
                         PantographFirstDelay = 0.0f;
                     }
                 }
+                else
+                    if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f) PantographFirstDelay = 0.0f;
 
                 if (PantographSecondUp)
                 {
@@ -165,7 +175,10 @@ namespace ORTS
                         PantographSecondDelay = 0.0f;
                     }
                 }
+                else
+                    if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f) PantographSecondDelay = 0.0f;
             }
+ 
             if (PowerOn)
                 VoltageV = VoltageFilter.Filter((float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage, elapsedClockSeconds);
             else
@@ -185,6 +198,10 @@ namespace ORTS
                 // for example
                 // case EventID.BellOn: Bell = true; break;
                 // case EventID.BellOff: Bell = false; break;
+                if (eventID == EventID.Pantograph1Down) { SetPantographFirst(false); break; }
+                if (eventID == EventID.Pantograph2Down) { SetPantographSecond(false); break; }
+                if (eventID == EventID.Pantograph1Up) { SetPantographFirst(true); break; }
+                if (eventID == EventID.Pantograph2Up) { SetPantographSecond(true); break; }
             } while( false );  // Never repeats
 
             base.SignalEvent( eventID );
@@ -193,14 +210,14 @@ namespace ORTS
         public void SetPantographFirst( bool up)
         {
             if (PantographFirstUp != up)
-                PantographFirstDelay += 3.0f;
+                PantographFirstDelay += PowerOnDelay;
             PantographFirstUp = up;
         }
 
         public void SetPantographSecond( bool up)
         {
             if (PantographSecondUp != up)
-                PantographSecondDelay += 3.0f;
+                PantographSecondDelay += PowerOnDelay;
             PantographSecondUp = up;
         }
 
@@ -243,7 +260,10 @@ namespace ORTS
         {
             var result = new StringBuilder();
             result.AppendFormat("Pantographs = {0}{1}\n", PantographFirstUp ? "1st up " : "", PantographSecondUp ? "2nd up " : "");
-            result.AppendFormat("Electric power = {0}", PowerOn ? "On" : "Off");
+            if ((PantographFirstDelay > 0.0f) || (PantographSecondDelay > 0.0f))
+                result.AppendFormat("Electric power = {0}", PowerOn ? "Switching in progress" : "Switching in progress");
+            else
+                result.AppendFormat("Electric power = {0}", PowerOn ? "On" : "Off");
             return result.ToString();
         }
 
