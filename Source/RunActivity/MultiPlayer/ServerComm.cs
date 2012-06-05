@@ -35,7 +35,7 @@ namespace ORTS.MultiPlayer
 		{
 			this.tcpListener.Start();
 
-			while (!LocalUser.Stopped)
+			while (true)
 			{
 				//blocks until a client has connected to the server
 				TcpClient client = this.tcpListener.AcceptTcpClient();

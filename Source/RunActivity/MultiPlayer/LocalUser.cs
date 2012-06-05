@@ -5,14 +5,27 @@ using System.Text;
 using ORTS;
 namespace ORTS.MultiPlayer
 {
+	//a singleton class handles communication, update and stop etc.
 	class LocalUser
 	{
-		static double lastMoveTime = 0.0f;
-		static double lastSwitchTime = 0.0f;
-		public static bool Stopped = false;
-		public static void Update(double newtime)
+		double lastMoveTime = 0.0f;
+		double lastSwitchTime = 0.0f;
+		private static LocalUser localUser = null;
+
+		private LocalUser()
 		{
-			if (Program.Server != null && newtime - lastMoveTime >= 1000f)
+		}
+		public static LocalUser Instance()
+		{
+			if (localUser == null) localUser = new LocalUser();
+			return localUser;
+		}
+
+		public void Update(double newtime)
+		{
+			handleUserInput();
+			//server update train location of all
+			if (Program.Server != null && newtime - lastMoveTime >= 1f)
 			{
 
 				Traveller t = Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller;
@@ -22,12 +35,14 @@ namespace ORTS.MultiPlayer
 				Program.Server.BroadCast(Program.Simulator.OnlineTrains.MoveTrains(move));
 				lastMoveTime = newtime;
 			}
-			if (Program.Server != null && newtime - lastSwitchTime >= 5000f)
+			//server updates switch
+			if (Program.Server != null && newtime - lastSwitchTime >= 5f)
 			{
 				lastSwitchTime = newtime;
 				MultiPlayer.LocalUser.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
 			}
-			if (Program.Client != null && Program.Server == null && newtime - lastMoveTime >= 1000f)
+			//client updates itself
+			if (Program.Client != null && Program.Server == null && newtime - lastMoveTime >= 1f)
 			{
 				Traveller t = Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller;
 				MultiPlayer.MSGMove move = new MultiPlayer.MSGMove();
@@ -91,6 +106,42 @@ namespace ORTS.MultiPlayer
 				if (Program.Server.ServerComm != null) Program.Server.Stop();
 			}
 			
+		}
+
+		//count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
+		int PantoSecondCount = 0;
+		int PantoFirstCount = 0;
+		int BellCount = 0;
+		int WiperCount = 0;
+		int HeadLightCount = 0;
+
+		public void handleUserInput()
+		{
+			TrainCar Locomotive = Program.Simulator.PlayerLocomotive;
+			if (UserInput.IsPressed(UserCommands.ControlHorn))	LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "HORN", EventID.HornOn)).ToString());
+
+			if (UserInput.IsReleased(UserCommands.ControlHorn)) LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "HORN", EventID.HornOff)).ToString());
+			
+			if (UserInput.IsPressed(UserCommands.ControlPantographSecond)) LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "PANTO2", (++PantoSecondCount)%2)).ToString());
+
+			if (UserInput.IsPressed(UserCommands.ControlPantographFirst)) LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "PANTO1", (++PantoFirstCount)%2)).ToString());
+
+			if (UserInput.IsPressed(UserCommands.ControlBell)) LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "BELL", (++BellCount)%2)).ToString());
+
+			if (UserInput.IsPressed(UserCommands.ControlWiper)) LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
+
+			if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
+			{
+				HeadLightCount++; if (HeadLightCount >= 3) HeadLightCount = 2;
+				LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
+			}
+
+			if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
+			{
+				HeadLightCount--; if (HeadLightCount < 0) HeadLightCount = 0;
+				LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
+			}
+
 		}
 
 	}

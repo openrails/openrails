@@ -236,15 +236,15 @@ namespace ORTS.MultiPlayer
 		{
 			Program.Simulator.OnlineTrains.AddPlayers(this, null);
 			//System.Console.WriteLine(this.ToString());
-			if (Program.Server != null)// && Program.Server.IsRemoteServer())
+			if (LocalUser.IsServer())// && Program.Server.IsRemoteServer())
 			{
 				MSGSwitchStatus msg2 = new MSGSwitchStatus();
 				LocalUser.BroadCast(msg2.ToString());
 
-				MSGPlayer host = new MSGPlayer(Program.Server.UserName, "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0],
+				MSGPlayer host = new MSGPlayer(LocalUser.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0],
 					Program.Simulator.Trains[0].Number);
 
-				Program.Server.BroadCast(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
+				LocalUser.BroadCast(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
 
 				foreach (Train t in Program.Simulator.Trains)
 				{
@@ -457,7 +457,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg() //only client will get message, thus will set states
 		{
-			if (Program.Server != null) return; //server will ignore it
+			if (LocalUser.IsServer() ) return; //server will ignore it
 
 			int i = 0;
 			foreach (System.Collections.Generic.KeyValuePair<long, TrJunctionNode> t in SwitchState)
@@ -553,7 +553,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg() //only client will get message, thus will set states
 		{
-			if (Program.Server != null) return; //server will ignore it
+			if (LocalUser.IsServer()) return; //server will ignore it
 			//System.Console.WriteLine(this.ToString());
 			// construct train data
 			foreach (Train t in Program.Simulator.Trains)
@@ -594,6 +594,7 @@ namespace ORTS.MultiPlayer
 			train.InitializeSignals(false);
 
 			train.Number = this.TrainNum;
+			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
 			Program.Simulator.Trains.Add(train);
 
 
@@ -631,10 +632,10 @@ namespace ORTS.MultiPlayer
 			}
 		}
 
-		public MSGRemoveTrain(List<AITrain> ts)
+		public MSGRemoveTrain(List<Train> ts)
 		{
 			trains = new List<int>();
-			foreach (AITrain t in ts)
+			foreach (Train t in ts)
 			{
 				trains.Add(t.Number);
 			}
@@ -779,7 +780,7 @@ namespace ORTS.MultiPlayer
 	{
 		public string user;
 		public string EventName;
-		public int EventID;
+		public int EventState;
 
 		public MSGEvent(string m)
 		{
@@ -787,20 +788,20 @@ namespace ORTS.MultiPlayer
 			if (tmp.Length != 3) throw new Exception("Parsing error " + m);
 			user = tmp[0].Trim();
 			EventName = tmp[1].Trim();
-			EventID = int.Parse(tmp[2]);
+			EventState = int.Parse(tmp[2]);
 		}
 
 		public MSGEvent(string m, string e, int ID)
 		{
 			user = m.Trim();
 			EventName = e;
-			EventID = ID;
+			EventState = ID;
 		}
 
 		public override string ToString()
 		{
 
-			string tmp = "EVENT " + user + " " + EventName + " " + EventID;
+			string tmp = "EVENT " + user + " " + EventName + " " + EventState;
 			return "" + tmp.Length + ": " + tmp;
 		}
 
@@ -808,34 +809,50 @@ namespace ORTS.MultiPlayer
 		{
 			if (user == LocalUser.GetUserName()) return; //avoid myself
 			Train t = Program.Simulator.OnlineTrains.findTrain(user);
+			if (t == null) return;
+
 			if (EventName == "HORN")
 			{
-				if (t != null) t.SignalEvent(EventID);
+				t.SignalEvent(EventState);
 				LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
 			}
-			else if (EventName == "PANTO")
+			else if (EventName == "PANTO2")
 			{
-				if (t != null)
-				{
-					MSTSWagon w = (MSTSWagon)t.Cars[0];
-					if (w == null) return;
+				MSTSWagon w = (MSTSWagon)t.Cars[0];
+				if (w == null) return;
 
-					if (EventID == 0)
-					{
-						w.FrontPanUp = !w.FrontPanUp;
-						foreach (TrainCar car in t.Cars)
-							if (car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = w.FrontPanUp;
-					}
-					if (EventID == 1)
-					{
-						w.AftPanUp = !w.AftPanUp;
-						foreach (TrainCar car in t.Cars)
-							if (car is MSTSWagon) ((MSTSWagon)car).AftPanUp = w.AftPanUp;
-					}
+				w.FrontPanUp = (EventState == 1 ? true : false);
 
-				}
+				foreach (TrainCar car in t.Cars)
+					if (car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = w.FrontPanUp;
 				LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
 			}
+			else if (EventName == "PANTO1")
+			{
+				MSTSWagon w = (MSTSWagon)t.Cars[0];
+				if (w == null) return;
+
+				w.AftPanUp = (EventState == 1 ? true : false);
+
+				foreach (TrainCar car in t.Cars)
+					if (car is MSTSWagon) ((MSTSWagon)car).AftPanUp = w.AftPanUp;
+				LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
+			}
+			else if (EventName == "BELL")
+			{
+				if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? EventID.BellOff : EventID.BellOn);
+			}
+			else if (EventName == "WIPER")
+			{
+				if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? EventID.WiperOff : EventID.WiperOn);
+			}
+			else if (EventName == "HEADLIGHT")
+			{
+				if (t.LeadLocomotive != null && EventState == 0) t.LeadLocomotive.SignalEvent(EventID.HeadlightOff);
+				if (t.LeadLocomotive != null && EventState == 1) t.LeadLocomotive.SignalEvent(EventID.HeadlightDim);
+				if (t.LeadLocomotive != null && EventState == 2) t.LeadLocomotive.SignalEvent(EventID.HeadlightOn);
+			}
+			else return;
 		}
 
 	}
@@ -866,17 +883,43 @@ namespace ORTS.MultiPlayer
 				Program.Error = true;
 				Program.Client.Stop();
 			}
-			if (Program.Server != null)
+			if (LocalUser.IsServer())
 			{
 				OnlinePlayer p = null;
 				foreach (OnlinePlayer p1 in Program.Server.Players)
 				{
 					if (p.Username == user) { p = p1; break; }
 				}
-				if (p != null) Program.Server.Players.Remove(p);
-				if (p.thread != null) p.thread.Abort();
+				if (p != null)
+				{
+					Program.Server.Players.Remove(p);
+					//server broadcast to others about removing this train
+
+					List<Train> removeList = new List<Train>();
+					removeList.Add(p.Train);
+
+					Program.Simulator.Trains.Remove(p.Train);
+					if (p.Train.Cars.Count > 0 && p.Train.Cars[0].Train == p.Train)
+						foreach (TrainCar car in p.Train.Cars)
+							car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+
+					if (p.thread != null) p.thread.Abort();
+				}
+				LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
 			}
-			LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
+			else //client will remove train
+			{
+				//find thr train from online player trains
+				Train t = Program.Simulator.OnlineTrains.findTrain(user);
+				if (t != null)
+				{
+					Program.Simulator.Trains.Remove(t);
+					if (t.Cars.Count > 0 && t.Cars[0].Train == t)
+						foreach (TrainCar car in t.Cars)
+							car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+
+				}
+			}
 		}
 
 	}
@@ -992,7 +1035,7 @@ namespace ORTS.MultiPlayer
 
 				train.Update(0);   // stop the wheels from moving etc
 				train2.Update(0);  // stop the wheels from moving etc
-				if (Program.Server != null)
+				if (LocalUser.IsServer())
 				{
 					this.newTrainNumber = train2.Number;//we got a new train number, will tell others.
 					LocalUser.BroadCast(this.ToString());//if server receives this, will tell others, including whoever sent the information

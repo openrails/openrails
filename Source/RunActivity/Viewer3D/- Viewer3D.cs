@@ -391,7 +391,7 @@ namespace ORTS
                 Simulator.GameSpeed = 1;
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.SimulationSpeed, CabSetting.Off, Simulator.GameSpeed * 100 );
             }
-            if (UserInput.IsPressed(UserCommands.GameSave)) {if (MultiPlayer.LocalUser.GetUserName() == "") Program.Save(); }
+            if (UserInput.IsPressed(UserCommands.GameSave)) { Program.Save(); }
             if (UserInput.IsPressed(UserCommands.DisplayHelpWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayHUD)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HUDWindow.TabAction(); else HUDWindow.Visible = !HUDWindow.Visible;
@@ -493,8 +493,6 @@ namespace ORTS
         {
             InfoDisplay.Stop();
             RenderProcess.Stop();
-			//shut down multiplayer
-			if (MultiPlayer.LocalUser.IsMultiPlayer()) MultiPlayer.LocalUser.Stop();
         }
 
         /// <summary>

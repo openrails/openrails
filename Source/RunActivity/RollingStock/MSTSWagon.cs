@@ -20,7 +20,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
 using MSTS;
-using ORTS.MultiPlayer;
+
 namespace ORTS
 {
 
@@ -898,7 +898,6 @@ namespace ORTS
 				if (Viewer.Simulator.PlayerLocomotive == this.Car) //inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = MSTSWagon.FrontPanUp;
-				if (LocalUser.IsMultiPlayer())LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "PANTO", 0)).ToString());//notify others in multiplayer
 				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.Pantograph1Up);
 				else Car.SignalEvent(EventID.Pantograph1Down);
 			}
@@ -908,7 +907,6 @@ namespace ORTS
 				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).AftPanUp = MSTSWagon.AftPanUp;
-				if (LocalUser.IsMultiPlayer()) LocalUser.Notify((new MSGEvent(LocalUser.GetUserName(), "PANTO", 1)).ToString());//notify others in multiplayer
 				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.Pantograph1Up);
 				else Car.SignalEvent(EventID.Pantograph1Down);
 			}

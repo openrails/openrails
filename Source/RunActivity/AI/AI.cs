@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using MSTS;
+using ORTS.MultiPlayer;
 
 namespace ORTS
 {
@@ -141,7 +142,8 @@ namespace ORTS
                 {
                     AITrains.Add(train);
                     Simulator.Trains.Add(train);
-					MultiPlayer.LocalUser.BroadCast((new MultiPlayer.MSGTrain(train, train.Number)).ToString());
+					//For Multiplayer: Server BroadCast to others of AITrains being added
+					if (LocalUser.IsMultiPlayer()) LocalUser.BroadCast((new MSGTrain(train, train.Number)).ToString());
                 }
             }
             bool remove = false;
@@ -249,7 +251,7 @@ namespace ORTS
         /// </summary>
         private void RemoveTrains()
         {
-            List<AITrain> removeList = new List<AITrain>();
+            List<Train> removeList = new List<Train>();
             foreach (AITrain train in AITrains)
                 if (train.NextStopNode == null || train.TrackAuthority.StartNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
                     removeList.Add(train);
@@ -262,7 +264,8 @@ namespace ORTS
                     foreach (TrainCar car in train.Cars)
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
             }
-			MultiPlayer.LocalUser.BroadCast((new MultiPlayer.MSGRemoveTrain(removeList).ToString()));
+			//server broadcast to others about removing this train
+			LocalUser.BroadCast((new MSGRemoveTrain(removeList).ToString()));
 
         }
 

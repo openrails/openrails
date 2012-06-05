@@ -185,6 +185,7 @@ namespace ORTS
 		{
 			if (RailDriver != null)
 				RailDriver.Shutdown();
+			if (MultiPlayer.LocalUser.IsMultiPlayer()) MultiPlayer.LocalUser.Stop();
 		}
 
         public void Restore( BinaryReader inf, string simulatorPathDescription, float initialTileX, float initialTileZ )
@@ -323,6 +324,9 @@ namespace ORTS
 			}
 
 			InterlockingSystem.Update(elapsedClockSeconds);
+
+			MultiPlayer.LocalUser.Instance().Update(GameTime);
+
 		}
 
 		private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead)

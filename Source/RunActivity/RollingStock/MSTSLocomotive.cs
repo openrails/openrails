@@ -1489,13 +1489,13 @@ namespace ORTS
                     }
                 case CABViewControlTypes.ENGINE_BRAKE:
                     {
-                        data = EngineBrakeController.CurrentValue;
+                        data = (EngineBrakeController == null) ? 0.0f : EngineBrakeController.CurrentValue;
                         break;
                     }
                 case CABViewControlTypes.FRICTION_BRAKING:
                 case CABViewControlTypes.TRAIN_BRAKE:
                     {
-                        data = TrainBrakeController.CurrentValue;
+                        data = (TrainBrakeController == null) ? 0.0f : TrainBrakeController.CurrentValue;
                         break;
                     }
                 case CABViewControlTypes.DYNAMIC_BRAKE:
@@ -1981,18 +1981,8 @@ namespace ORTS
             // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJ Comment>
 			if (UserInput.IsPressed(UserCommands.ControlSander)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn);
 			if (UserInput.IsPressed(UserCommands.ControlWiper)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
-			if (UserInput.IsPressed(UserCommands.ControlHorn))
-			{
-				Locomotive.SignalEvent(EventID.HornOn);
-				if (MultiPlayer.LocalUser.IsMultiPlayer()) //send signal to others if it is multiplayer
-					MultiPlayer.LocalUser.Notify((new MultiPlayer.MSGEvent(MultiPlayer.LocalUser.GetUserName(), "HORN", EventID.HornOn)).ToString());
-			}
-			if (UserInput.IsReleased(UserCommands.ControlHorn))
-			{
-				Locomotive.SignalEvent(EventID.HornOff);
-				if (MultiPlayer.LocalUser.IsMultiPlayer()) //send signal to others if it is multiplayer
-					MultiPlayer.LocalUser.Notify((new MultiPlayer.MSGEvent(MultiPlayer.LocalUser.GetUserName(), "HORN", EventID.HornOff)).ToString());
-			}
+			if (UserInput.IsPressed(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOn);
+			if (UserInput.IsReleased(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOff);
             if( UserInput.IsPressed( UserCommands.ControlBell ) ) Locomotive.SignalEvent( Locomotive.Bell ? EventID.BellOff : EventID.BellOn );
 
             if (UserInput.IsPressed(UserCommands.ControlAlerter)) Locomotive.AlerterResetExternal();        // z

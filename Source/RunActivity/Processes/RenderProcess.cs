@@ -203,15 +203,14 @@ namespace ORTS
             }
         }
 
-		/// <summary>
+        /// <summary>
         /// Called regularly.   Used to update the simulator class when
         /// the window is minimized.
         /// </summary>
         [ThreadName("Render")]
         protected override void Update(GameTime gameTime)
         {
-			MultiPlayer.LocalUser.Update(gameTime.TotalRealTime.TotalMilliseconds);
-			if (IsMouseVisible != base.IsMouseVisible)
+            if (IsMouseVisible != base.IsMouseVisible)
                 base.IsMouseVisible = IsMouseVisible;
 
             if (ToggleFullScreenRequested)

@@ -47,7 +47,7 @@ namespace ORTS.MultiPlayer
 			byte[] message = new byte[8192];
 			int bytesRead;
 
-			while (!LocalUser.Stopped)
+			while (true)
 			{
 				bytesRead = 0;
 				//System.Threading.Thread.Sleep(Program.Random.Next(50, 200));

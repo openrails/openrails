@@ -117,7 +117,7 @@ namespace ORTS.MultiPlayer
 			p.Username = player.user;
 			Players.Add(player.user, p);
 			Train train = new RemoteTrain(Program.Simulator);
-			if (Program.Server != null) //server needs to worry about correct train number
+			if (LocalUser.IsServer()) //server needs to worry about correct train number
 			{
 			}
 			else
@@ -144,7 +144,7 @@ namespace ORTS.MultiPlayer
 			}
 			catch (Exception e)
 			{
-				if (Program.Server != null)
+				if (LocalUser.IsServer())
 				{
 					LocalUser.BroadCast((new MSGMessage(player.user, "Error", "MultiPlayer Error："+e.Message)).ToString());
 				}
@@ -186,6 +186,8 @@ namespace ORTS.MultiPlayer
 			}// for each rail car
 
 			if (train.Cars.Count == 0) return;
+
+			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
 
 			//train.Number = player.num;
 			train.CalculatePositionOfCars(0);

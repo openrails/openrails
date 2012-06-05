@@ -181,6 +181,7 @@ namespace ORTS
         /// </summary>
         public static void Save()
         {
+			if (LocalUser.IsMultiPlayer()) return; //no save for multiplayer sessions yet
             Action save = () =>
             {
                 // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
