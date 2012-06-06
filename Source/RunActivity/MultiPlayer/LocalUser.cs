@@ -113,13 +113,13 @@ namespace ORTS.MultiPlayer
 
 		public string[] GetOnlineUsers(ref int count)
 		{
-			info[0] = Program.Simulator.OnlineTrains.Players.Count + " Other Players Online";
+			info[0] = "" + Program.Simulator.OnlineTrains.Players.Count + (Program.Simulator.OnlineTrains.Players.Count <= 1 ? " Other Player Online" : " Other Players Online");
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
 			var i = 1;
 			foreach (OnlinePlayer p in Program.Simulator.OnlineTrains.Players.Values)
 			{
 				var d = WorldLocation.GetDistanceSquared(p.Train.FirstCar.WorldPosition.WorldLocation, mine.WorldPosition.WorldLocation);
-				info[i++] = p.Username + " distance of " + d;
+				info[i++] = p.Username + ": distance " + (int)Math.Sqrt(d);
 				if (i >= maxLinesOfInfo) break;
 			}
 			count = i;
