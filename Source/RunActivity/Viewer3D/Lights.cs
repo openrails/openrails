@@ -373,6 +373,7 @@ namespace ORTS
         {
             // Headlight
             var newTrainHeadlight = Car.Train != null && Car.Train == Viewer.PlayerTrain ? Viewer.PlayerLocomotive.Headlight : 2;
+			if (Car.Train is RemoteTrain) newTrainHeadlight = Car.Train.Cars[0].Headlight;//for remote trains, should show the light accordingly, AI trains has lights always on
             // Unit
             var locoIsFlipped = Car.Train == Viewer.PlayerTrain && Viewer.PlayerLocomotive.Flipped;
             var newCarIsReversed = Car.Flipped ^ locoIsFlipped;

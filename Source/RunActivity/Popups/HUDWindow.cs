@@ -235,6 +235,16 @@ namespace ORTS.Popups
                 TableAddLine(table, "Wheel slip warning");
             if (Viewer.PlayerLocomotive.GetSanderOn())
                 TableAddLine(table, "Sander on");
+
+			if (MultiPlayer.LocalUser.IsMultiPlayer())
+			{
+				var count = 0;
+				TableAddLine(table, "MultiPlayer Status");
+				var text = MultiPlayer.LocalUser.Instance().GetOnlineUsers(ref count);
+				for (var i = 0; i < count; i++) TableAddLabelValue(table, "", "{0}", text[i]);
+
+
+			}
         }
 
         void TextPageBrakeInfo(TableData table)

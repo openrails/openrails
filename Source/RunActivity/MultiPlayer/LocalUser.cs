@@ -10,10 +10,13 @@ namespace ORTS.MultiPlayer
 	{
 		double lastMoveTime = 0.0f;
 		double lastSwitchTime = 0.0f;
+		string[] info;
+		int maxLinesOfInfo = 4;
 		private static LocalUser localUser = null;
 
 		private LocalUser()
 		{
+			info = new string[maxLinesOfInfo]; //maxLinesOfInfo lines of information
 		}
 		public static LocalUser Instance()
 		{
@@ -106,6 +109,21 @@ namespace ORTS.MultiPlayer
 				if (Program.Server.ServerComm != null) Program.Server.Stop();
 			}
 			
+		}
+
+		public string[] GetOnlineUsers(ref int count)
+		{
+			info[0] = Program.Simulator.OnlineTrains.Players.Count + " Other Players Online";
+			TrainCar mine = Program.Simulator.PlayerLocomotive;
+			var i = 1;
+			foreach (OnlinePlayer p in Program.Simulator.OnlineTrains.Players.Values)
+			{
+				var d = WorldLocation.GetDistanceSquared(p.Train.FirstCar.WorldPosition.WorldLocation, mine.WorldPosition.WorldLocation);
+				info[i++] = p.Username + " distance of " + d;
+				if (i >= maxLinesOfInfo) break;
+			}
+			count = i;
+			return info;
 		}
 
 		//count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
