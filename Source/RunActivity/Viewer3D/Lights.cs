@@ -264,6 +264,11 @@ namespace ORTS
 #if DEBUG_LIGHT_STATES
             Console.WriteLine();
 #endif
+			if (Car.Train is RemoteTrain)
+			{
+				int i = 0;
+				i++;
+			}
             UpdateActiveLightCone();
         }
 
@@ -373,10 +378,14 @@ namespace ORTS
         {
             // Headlight
             var newTrainHeadlight = Car.Train != null && Car.Train == Viewer.PlayerTrain ? Viewer.PlayerLocomotive.Headlight : 2;
-			if (Car.Train is RemoteTrain) newTrainHeadlight = Car.Train.Cars[0].Headlight;//for remote trains, should show the light accordingly, AI trains has lights always on
+			if (Car.Train is RemoteTrain)
+			{
+				newTrainHeadlight = Car.Train.Cars[0].Headlight;//for remote trains, should show the light accordingly, AI trains has lights always on
+			}
             // Unit
             var locoIsFlipped = Car.Train == Viewer.PlayerTrain && Viewer.PlayerLocomotive.Flipped;
-            var newCarIsReversed = Car.Flipped ^ locoIsFlipped;
+			if (Car.Train is RemoteTrain) locoIsFlipped = Car.Train.Cars[0].Flipped;//for remote trains
+			var newCarIsReversed = Car.Flipped ^ locoIsFlipped;
             var newCarIsFirst = Car.Train == null || (locoIsFlipped ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
             var newCarIsLast = Car.Train == null || (locoIsFlipped ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
             // Coupling
@@ -384,7 +393,8 @@ namespace ORTS
             var newCarCoupledRear = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);
             // Control
             var newCarIsPlayer = Car == Viewer.PlayerLocomotive;
-            // TODO: Check for relevant Penalty changes.
+			if (Car.Train is RemoteTrain) newCarIsPlayer = true;//for remote trains
+			// TODO: Check for relevant Penalty changes.
             // Service
             var newCarInService = Car.Train != null;
             // Time

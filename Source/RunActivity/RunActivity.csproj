@@ -234,7 +234,7 @@
     <Compile Include="Interlocking\MovementAuthority\RouteCollection.cs" />
     <Compile Include="MultiPlayer\ClientComm.cs" />
     <Compile Include="MultiPlayer\Decoder.cs" />
-    <Compile Include="MultiPlayer\LocalUser.cs" />
+    <Compile Include="MultiPlayer\MPManager.cs" />
     <Compile Include="MultiPlayer\Message.cs" />
     <Compile Include="MultiPlayer\OnlinePlayer.cs" />
     <Compile Include="MultiPlayer\OnlineTrains.cs" />

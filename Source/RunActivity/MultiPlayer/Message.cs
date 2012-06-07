@@ -89,7 +89,7 @@ namespace ORTS.MultiPlayer
 		{
 			foreach (MSGMoveItem m in items)
 			{
-				if (m.user == LocalUser.GetUserName()) continue; //about itself, ignore
+				if (m.user == MPManager.GetUserName()) continue; //about itself, ignore
 				if (m.user.Contains("AI"))
 				{
 					foreach (Train t in Program.Simulator.Trains)
@@ -236,21 +236,21 @@ namespace ORTS.MultiPlayer
 		{
 			Program.Simulator.OnlineTrains.AddPlayers(this, null);
 			//System.Console.WriteLine(this.ToString());
-			if (LocalUser.IsServer())// && Program.Server.IsRemoteServer())
+			if (MPManager.IsServer())// && Program.Server.IsRemoteServer())
 			{
 				MSGSwitchStatus msg2 = new MSGSwitchStatus();
-				LocalUser.BroadCast(msg2.ToString());
+				MPManager.BroadCast(msg2.ToString());
 
-				MSGPlayer host = new MSGPlayer(LocalUser.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0],
+				MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0],
 					Program.Simulator.Trains[0].Number);
 
-				LocalUser.BroadCast(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
+				MPManager.BroadCast(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
 
 				foreach (Train t in Program.Simulator.Trains)
 				{
 					if (t == Program.Simulator.Trains[0]) continue; //avoid broadcast player train
 					if (Program.Simulator.OnlineTrains.findTrain(t)) continue;
-					LocalUser.BroadCast((new MSGTrain(t, t.Number)).ToString());
+					MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 				}
 
 				//System.Console.WriteLine(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
@@ -264,97 +264,33 @@ namespace ORTS.MultiPlayer
 			}
 
 		}
-	}
 
-
-	public class MSGHorn : Message
-	{
-		public string user;
-		public int HornEventID;
-
-		public MSGHorn(string m)
+		public void HandleMsg(OnlinePlayer p)
 		{
-			string[] tmp = m.Split(' ');
-			if (tmp.Length != 2) throw new Exception("Parsing error " + m);
-			user = tmp[0].Trim();
-			HornEventID = int.Parse(tmp[1]);
-		}
+			if (!MPManager.IsServer()) return; //only intended for the server, when it gets the player message in OnlinePlayer Receive
 
-		public MSGHorn(string m, int ID)
-		{
-			user = m.Trim();
-			HornEventID = ID;
-		}
+			Program.Simulator.OnlineTrains.AddPlayers(this, p);
+			//System.Console.WriteLine(this.ToString());
+			MSGSwitchStatus msg2 = new MSGSwitchStatus();
+			MPManager.BroadCast(msg2.ToString());
 
-		public override string ToString()
-		{
+			MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0],
+				Program.Simulator.Trains[0].Number);
 
-			string tmp = "HORN " + user + " " + HornEventID;
-			return "" + tmp.Length + ": " + tmp;
-		}
+			MPManager.BroadCast(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
 
-		public override void HandleMsg()
-		{
-			if (user == LocalUser.GetUserName()) return; //avoid myself
-			Train t = Program.Simulator.OnlineTrains.findTrain(user);
-			if (t != null) t.SignalEvent(HornEventID);
-			LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
-		}
-
-	}
-
-	public class MSGPanto : Message
-	{
-		public string user;
-		public int side; //front = 1, aft = 0, first = 0, second = 1
-
-		public MSGPanto(string m)
-		{
-			string[] tmp = m.Split(' ');
-			if (tmp.Length != 2) throw new Exception("Parsing error " + m);
-			user = tmp[0].Trim();
-			side = int.Parse(tmp[1]);
-		}
-
-		public MSGPanto(string m, int ID)
-		{
-			user = m.Trim();
-			side = ID;
-		}
-
-		public override string ToString()
-		{
-
-			string tmp = "PANTO " + user + " " + side;
-			return "" + tmp.Length + ": " + tmp;
-		}
-
-		public override void HandleMsg()
-		{
-			if (user == LocalUser.GetUserName()) return; //avoid myself
-			Train t = Program.Simulator.OnlineTrains.findTrain(user);
-			if (t != null)
+			foreach (Train t in Program.Simulator.Trains)
 			{
-				MSTSWagon w = (MSTSWagon)t.Cars[0];
-				if (w == null) return;
-				if (side == 0)
-				{
-					w.FrontPanUp = !w.FrontPanUp;
-					foreach (TrainCar car in t.Cars)
-						if (car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = w.FrontPanUp;
-				}
-				if (side == 1)
-				{
-					w.AftPanUp = !w.AftPanUp;
-						foreach (TrainCar car in t.Cars)
-							if (car is MSTSWagon) ((MSTSWagon)car).AftPanUp = w.AftPanUp;
-				}
-
+				if (t == Program.Simulator.Trains[0]) continue; //avoid broadcast player train
+				if (Program.Simulator.OnlineTrains.findTrain(t)) continue;
+				MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 			}
-			LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
-		}
 
+			//System.Console.WriteLine(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
+
+		}
 	}
+
 
 	public class MSGSwitch : Message
 	{
@@ -392,10 +328,10 @@ namespace ORTS.MultiPlayer
 		{
 			//System.Console.WriteLine(this.ToString());
 
-			if (user == LocalUser.GetUserName()) return;//ignore myself
+			if (user == MPManager.GetUserName()) return;//ignore myself
 			TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
 			trj.SelectedRoute = Selection;
-			LocalUser.BroadCast(this.ToString()); //server will tell others
+			MPManager.BroadCast(this.ToString()); //server will tell others
 		}
 	}
 
@@ -457,7 +393,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg() //only client will get message, thus will set states
 		{
-			if (LocalUser.IsServer() ) return; //server will ignore it
+			if (MPManager.IsServer() ) return; //server will ignore it
 
 			int i = 0;
 			foreach (System.Collections.Generic.KeyValuePair<long, TrJunctionNode> t in SwitchState)
@@ -553,7 +489,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg() //only client will get message, thus will set states
 		{
-			if (LocalUser.IsServer()) return; //server will ignore it
+			if (MPManager.IsServer()) return; //server will ignore it
 			//System.Console.WriteLine(this.ToString());
 			// construct train data
 			foreach (Train t in Program.Simulator.Trains)
@@ -618,6 +554,7 @@ namespace ORTS.MultiPlayer
 		}
 	}
 
+	//remove AI trains
 	public class MSGRemoveTrain : Message
 	{
 		public List<int> trains;
@@ -762,10 +699,13 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
-			if (LocalUser.GetUserName() == user)
+			if (MPManager.GetUserName() == user)
 			{
-				Program.ErrorMsg = msgx + " will be in single mode";
-				Program.Error = true;
+				Program.Simulator.Confirmer.Message(level, msgx + " will be in single mode");
+				if (level == "Error" && Program.Client != null)//fatal error, will close the connection, and get into single mode
+				{
+					throw new MultiPlayerError();//this is a fatal error, thus the client will be stopped in ClientComm
+				}
 			}
 		}
 
@@ -807,14 +747,14 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
-			if (user == LocalUser.GetUserName()) return; //avoid myself
+			if (user == MPManager.GetUserName()) return; //avoid myself
 			Train t = Program.Simulator.OnlineTrains.findTrain(user);
 			if (t == null) return;
 
 			if (EventName == "HORN")
 			{
 				t.SignalEvent(EventState);
-				LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
+				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "PANTO2")
 			{
@@ -825,7 +765,7 @@ namespace ORTS.MultiPlayer
 
 				foreach (TrainCar car in t.Cars)
 					if (car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = w.FrontPanUp;
-				LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
+				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "PANTO1")
 			{
@@ -836,7 +776,7 @@ namespace ORTS.MultiPlayer
 
 				foreach (TrainCar car in t.Cars)
 					if (car is MSTSWagon) ((MSTSWagon)car).AftPanUp = w.AftPanUp;
-				LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
+				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "BELL")
 			{
@@ -875,24 +815,20 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
-			if (user == LocalUser.GetUserName()) return; //avoid myself
+			if (user == MPManager.GetUserName()) return; //avoid myself
 
-			if (Program.Client != null && user == "ServerHasToQuit")
+			if (Program.Client != null && user.Contains("ServerHasToQuit")) //the server quits, will send a message with ServerHasToQuit\tServerName
 			{
-				Program.ErrorMsg = "Server quits, will play as signle mode";
-				Program.Error = true;
-				Program.Client.Stop();
+				Program.Simulator.Confirmer.Message("Error", "Server quits, will play as single mode");
+				user = user.Replace("ServerHasToQuit\t", ""); //get the user name of server from the message
 			}
-			if (LocalUser.IsServer())
+			if (MPManager.IsServer())
 			{
-				OnlinePlayer p = null;
-				foreach (OnlinePlayer p1 in Program.Server.Players)
-				{
-					if (p.Username == user) { p = p1; break; }
-				}
+				OnlinePlayer p = Program.Simulator.OnlineTrains.Players[user];
 				if (p != null)
 				{
 					Program.Server.Players.Remove(p);
+					Program.Simulator.OnlineTrains.Players.Remove(user);
 					//server broadcast to others about removing this train
 
 					List<Train> removeList = new List<Train>();
@@ -901,23 +837,29 @@ namespace ORTS.MultiPlayer
 					Program.Simulator.Trains.Remove(p.Train);
 					if (p.Train.Cars.Count > 0 && p.Train.Cars[0].Train == p.Train)
 						foreach (TrainCar car in p.Train.Cars)
-							car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+							car.Train = null; 
 
 					if (p.thread != null) p.thread.Abort();
 				}
-				LocalUser.BroadCast(this.ToString()); //if the server, will broadcast
+				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else //client will remove train
 			{
-				//find thr train from online player trains
-				Train t = Program.Simulator.OnlineTrains.findTrain(user);
-				if (t != null)
+				OnlinePlayer p = Program.Simulator.OnlineTrains.Players[user];
+				if (p != null)
 				{
-					Program.Simulator.Trains.Remove(t);
-					if (t.Cars.Count > 0 && t.Cars[0].Train == t)
-						foreach (TrainCar car in t.Cars)
-							car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+					//find thr train from online player trains
+					Train t = p.Train;
+					if (t != null)
+					{
+						Program.Simulator.Trains.Remove(t);
+						if (t.Cars.Count > 0 && t.Cars[0].Train == t)
+							foreach (TrainCar car in t.Cars)
+								car.Train = null; 
 
+					}
+					Program.Simulator.OnlineTrains.Players.Remove(user);
+					throw new MultiPlayerError(); //fatal error, end communication by throwing this error 
 				}
 			}
 		}
@@ -957,13 +899,13 @@ namespace ORTS.MultiPlayer
 
 		public MSGUncouple(Train t, Train newT, string u, int UID)
 		{
-			carID = LocalUser.GetUserName()+ " " + UID;
+			carID = MPManager.GetUserName()+ " " + UID;
 			user = u;
 			TileX1 = t.RearTDBTraveller.TileX; TileZ1 = t.RearTDBTraveller.TileZ; X1 = t.RearTDBTraveller.X; Z1 = t.RearTDBTraveller.Z; Travelled1 = t.travelled; Speed1 = t.SpeedMpS;
 			TileX2 = newT.RearTDBTraveller.TileX; TileZ2 = newT.RearTDBTraveller.TileZ; X2 = newT.RearTDBTraveller.X; Z2 = newT.RearTDBTraveller.Z; Travelled2 = newT.travelled; Speed2 = newT.SpeedMpS;
 			newTrainNumber = 1000000 + Program.Random.Next(1000000);//temporary assign a train number 1000000-2000000, will change to the correct one after receiving response from the server
 			newTrainName = "UC" + newTrainNumber; newT.Number = newTrainNumber;
-			firstCarID = LocalUser.GetUserName()+ " " + newT.Cars[0].UiD;
+			firstCarID = MPManager.GetUserName()+ " " + newT.Cars[0].UiD;
 		}
 
 		public override string ToString()
@@ -975,7 +917,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
-			if (user == LocalUser.GetUserName()) //received from the server, but it is about mine action of uncouple
+			if (user == MPManager.GetUserName()) //received from the server, but it is about mine action of uncouple
 			{
 				foreach (Train t in Program.Simulator.Trains)
 				{
@@ -1035,10 +977,10 @@ namespace ORTS.MultiPlayer
 
 				train.Update(0);   // stop the wheels from moving etc
 				train2.Update(0);  // stop the wheels from moving etc
-				if (LocalUser.IsServer())
+				if (MPManager.IsServer())
 				{
 					this.newTrainNumber = train2.Number;//we got a new train number, will tell others.
-					LocalUser.BroadCast(this.ToString());//if server receives this, will tell others, including whoever sent the information
+					MPManager.BroadCast(this.ToString());//if server receives this, will tell others, including whoever sent the information
 				}
 				else
 				{

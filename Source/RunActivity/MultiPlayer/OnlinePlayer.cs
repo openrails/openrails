@@ -102,8 +102,9 @@ namespace ORTS.MultiPlayer
 
 							//System.Console.WriteLine(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
 						}
-						else*/ 
-						msg.HandleMsg();
+						else*/
+						if (msg is MSGPlayer) ((MSGPlayer)msg).HandleMsg(this);
+						else msg.HandleMsg();
 
 						info = decoder.GetMsg();
 					}
@@ -119,7 +120,7 @@ namespace ORTS.MultiPlayer
 			}
 
 			Client.Close();
-			Server.Players.Remove(this);
+			MPManager.RemovePlayer(this);
 			thread.Abort();
 		}
 

@@ -185,7 +185,7 @@ namespace ORTS
 		{
 			if (RailDriver != null)
 				RailDriver.Shutdown();
-			if (MultiPlayer.LocalUser.IsMultiPlayer()) MultiPlayer.LocalUser.Stop();
+			if (MultiPlayer.MPManager.IsMultiPlayer()) MultiPlayer.MPManager.Stop();
 		}
 
         public void Restore( BinaryReader inf, string simulatorPathDescription, float initialTileX, float initialTileZ )
@@ -291,9 +291,9 @@ namespace ORTS
 			foreach (Train train in movingTrains)
 			{
 				train.Update(elapsedClockSeconds);
-				if (LocalUser.IsMultiPlayer())
+				if (MPManager.IsMultiPlayer())
 				{
-					if (MultiPlayer.LocalUser.IsServer()) AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
+					if (MultiPlayer.MPManager.IsServer()) AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 				}
 				else AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 			}
@@ -325,7 +325,7 @@ namespace ORTS
 
 			InterlockingSystem.Update(elapsedClockSeconds);
 
-			MultiPlayer.LocalUser.Instance().Update(GameTime);
+			MultiPlayer.MPManager.Instance().Update(GameTime);
 
 		}
 
@@ -573,8 +573,8 @@ namespace ORTS
 					nextSwitchTrack.SelectedRoute = 0;
 
 				//multiplayer mode will do some message
-				if (LocalUser.IsMultiPlayer()) 
-					LocalUser.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.LocalUser.GetUserName(),
+				if (MPManager.IsMultiPlayer()) 
+					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
 						nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
                 Confirmer.Confirm( CabControl.SwitchBehind, CabSetting.On );
             }
@@ -597,8 +597,8 @@ namespace ORTS
 					nextSwitchTrack.SelectedRoute = 0;
 
 				//if multiplayer mode, will do some messaging
-				if (LocalUser.IsMultiPlayer()) 
-					LocalUser.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.LocalUser.GetUserName(),
+				if (MPManager.IsMultiPlayer()) 
+					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
 						nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
                 Confirmer.Confirm( CabControl.SwitchAhead, CabSetting.On );
 			}
@@ -948,8 +948,8 @@ namespace ORTS
 			// TODO which event should we fire
 			//car.CreateEvent(62);  these are listed as alternate events
 			//car.CreateEvent(63);
-			if (LocalUser.IsMultiPlayer())
-				LocalUser.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.LocalUser.GetUserName(), car.UiD)).ToString());
+			if (MPManager.IsMultiPlayer())
+				MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.UiD)).ToString());
 		}
 	} // Simulator
 }

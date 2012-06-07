@@ -111,13 +111,13 @@ namespace ORTS.MultiPlayer
 			if (p == null)
 			{
 				p = new OnlinePlayer(null, null);
-				p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
-				p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
 			}
+			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
+			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
 			p.Username = player.user;
 			Players.Add(player.user, p);
 			Train train = new RemoteTrain(Program.Simulator);
-			if (LocalUser.IsServer()) //server needs to worry about correct train number
+			if (MPManager.IsServer()) //server needs to worry about correct train number
 			{
 			}
 			else
@@ -144,9 +144,9 @@ namespace ORTS.MultiPlayer
 			}
 			catch (Exception e)
 			{
-				if (LocalUser.IsServer())
+				if (MPManager.IsServer())
 				{
-					LocalUser.BroadCast((new MSGMessage(player.user, "Error", "MultiPlayer Error："+e.Message)).ToString());
+					MPManager.BroadCast((new MSGMessage(player.user, "Error", "MultiPlayer Error："+e.Message)).ToString());
 				}
 				throw new MultiPlayerError();
 			}
@@ -193,7 +193,7 @@ namespace ORTS.MultiPlayer
 			train.CalculatePositionOfCars(0);
 			p.Train = train;
 			Program.Simulator.Trains.Add(train);
-			if (LocalUser.IsServer())
+			if (MPManager.IsServer())
 			{
 				train.InitializeSignals(false);
 			}

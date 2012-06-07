@@ -570,12 +570,6 @@ namespace ORTS
                  RenderProcess.Viewer.MessagesWindow.AddMessage( "Game saved", 5.0 );
             }
 
-			if (Program.Error == true)
-			{
-				RenderProcess.Viewer.MessagesWindow.AddMessage(Program.ErrorMsg, 5);
-				Program.Error = false;
-
-			}
         }
 
         /// <summary>

@@ -42,12 +42,12 @@ namespace MenuWPF
 
 		//for multiplayers
 		string MPIP = "";
-		string MPPort = "";
+		string MPPort = "30000";
 		bool MPHost = false;
 		string MPUserName = "";
 		string MPUserNameTmp = "";
 		string MPUserCode = "1234";
-
+		int MPUserNameLength = 0;
 
         #region ex-Program class
         const string RunActivityProgram = "runactivity.exe";
@@ -159,6 +159,7 @@ namespace MenuWPF
         public MainWindow()
 		{
 			this.InitializeComponent();
+			textBox1.Text = "30000";
             bgWork = new BackgroundWorker();
             bgWork.DoWork += new DoWorkEventHandler(bgWork_DoWork);
             bgWork.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgWork_RunWorkerCompleted);
@@ -245,11 +246,19 @@ namespace MenuWPF
             {
                 MessageBox.Show("Invalid heading direction!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
-            else
-            {
-                MainStart(false);
+			else if (MPUserNameLength < 4 || MPUserNameLength > 10)
+			{
+				MessageBox.Show("The length of User Name must be between 4 and 10 characters!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			}
+			else if (char.IsDigit(MPUserName[0]))
+			{
+				MessageBox.Show("User Name cannot start with digits!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			}
+			else
+			{
+				MainStart(false);
 
-            }
+			}
 		}
 
         private void btnDescription_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -504,7 +513,10 @@ namespace MenuWPF
 
 			MPUserNameTmp = (sender as TextBox).Text;
 			MPUserNameTmp = MPUserNameTmp.Replace(" ", "");
+			MPUserNameTmp = MPUserNameTmp.Replace("\"", "");
+			MPUserNameTmp = MPUserNameTmp.Replace("\'", "");
 
+			MPUserNameLength = MPUserNameTmp.Length;
 			(sender as TextBox).Text = MPUserNameTmp;
 			MPUserName = "\"" + MPUserNameTmp + ' ' + MPUserCode + "\"";
 		}
@@ -563,13 +575,13 @@ namespace MenuWPF
 							MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 							return;
 						}
-						if (MPIP != "")
-						{
-							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7} {8}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, MPIP, MPPort, MPUserName);
-						}
-						else if (MPHost == true)
+						if (MPHost == true)
 						{
 							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, 1, MPUserName);
+						}
+						else if (MPIP != "")
+						{
+							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7} {8}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, MPIP, MPPort, MPUserName);
 						}
 						else
 							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);

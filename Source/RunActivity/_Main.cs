@@ -51,8 +51,6 @@ namespace ORTS
 		public static string UserName;
 		public static string Code;
 		public static int NumOfTrains = 0;
-		public static bool Error = false;
-		public static string ErrorMsg = "";
 
         private static Viewer3D Viewer;
         public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
@@ -181,7 +179,7 @@ namespace ORTS
         /// </summary>
         public static void Save()
         {
-			if (LocalUser.IsMultiPlayer()) return; //no save for multiplayer sessions yet
+			if (MPManager.IsMultiPlayer()) return; //no save for multiplayer sessions yet
             Action save = () =>
             {
                 // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
@@ -630,27 +628,35 @@ namespace ORTS
 			{
 				Server = new Server(args[6]);
 				UserName = Server.UserName;
+				Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]), 
+					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
 				Code = Server.Code;
 			}
 			if (args.Length == 3 && args[1] == "1")
 			{
 				Server = new Server(args[2]);
 				UserName = Server.UserName;
+				Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
 				Code = Server.Code;
 			}
 			if (args.Length == 4 )
 			{
 				Client = new ClientComm(args[1], int.Parse(args[2]), args[3]);
 				UserName = Client.UserName;
+				Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
 				Code = Client.Code;
 			}
 			if (args.Length == 8)
 			{
 				Client = new ClientComm(args[5], int.Parse(args[6]),args[7]);
 				UserName = Client.UserName;
+				Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
 				Code = Client.Code;
 			}
-			if (LocalUser.IsMultiPlayer()) Simulator.OnlineTrains = new OnlineTrains();
+			if (MPManager.IsMultiPlayer()) Simulator.OnlineTrains = new OnlineTrains();
 
         }
 

@@ -234,5 +234,15 @@ namespace ORTS {
                 ConfirmationList.Add( a );
             }
         }
-    }
+
+		//a general messaging, level: Warning, Error, etc, msg: the message to display
+		public void Message(string level, string msg)
+		{
+			Confirmation a;
+			a.Message = String.Format("{0}:{1}", level, msg);
+			a.DurationS = defaultDurationS;
+			ConfirmationList.Add(a);
+		}
+
+	}
 }

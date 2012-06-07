@@ -143,7 +143,7 @@ namespace ORTS
                     AITrains.Add(train);
                     Simulator.Trains.Add(train);
 					//For Multiplayer: Server BroadCast to others of AITrains being added
-					if (LocalUser.IsMultiPlayer()) LocalUser.BroadCast((new MSGTrain(train, train.Number)).ToString());
+					if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGTrain(train, train.Number)).ToString());
                 }
             }
             bool remove = false;
@@ -265,7 +265,7 @@ namespace ORTS
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
             }
 			//server broadcast to others about removing this train
-			LocalUser.BroadCast((new MSGRemoveTrain(removeList).ToString()));
+			MPManager.BroadCast((new MSGRemoveTrain(removeList).ToString()));
 
         }
 

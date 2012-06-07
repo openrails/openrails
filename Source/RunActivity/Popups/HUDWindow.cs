@@ -236,12 +236,12 @@ namespace ORTS.Popups
             if (Viewer.PlayerLocomotive.GetSanderOn())
                 TableAddLine(table, "Sander on");
 
-			if (MultiPlayer.LocalUser.IsMultiPlayer())
+			if (MultiPlayer.MPManager.IsMultiPlayer())
 			{
-				var count = 0;
 				TableAddLine(table, "MultiPlayer Status");
-				var text = MultiPlayer.LocalUser.Instance().GetOnlineUsers(ref count);
-				for (var i = 0; i < count; i++) TableAddLabelValue(table, "", "{0}", text[i]);
+				var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
+				string[] temp = text.Split('\t');
+				foreach(string t in temp) TableAddLabelValue(table, "", "{0}", t);
 
 
 			}
