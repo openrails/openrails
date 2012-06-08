@@ -388,6 +388,12 @@ namespace ORTS
 				foreach (Train train in Trains)
 					if (train != drivenTrain)
 					{
+						//avoid coupling of player train with other players train
+						if (MPManager.IsMultiPlayer()) {
+							if ((train is RemoteTrain && drivenTrain == Program.Simulator.PlayerLocomotive.Train)
+								||drivenTrain is RemoteTrain && train == Program.Simulator.PlayerLocomotive.Train) continue;
+						}
+						
 						float d1 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, true);
 						if (d1 < 0)
 						{
@@ -438,6 +444,12 @@ namespace ORTS
 				foreach (Train train in Trains)
 					if (train != drivenTrain)
 					{
+						//avoid coupling of player train with other players train
+						if (MPManager.IsMultiPlayer()) {
+							if ((train is RemoteTrain && drivenTrain == Program.Simulator.PlayerLocomotive.Train)
+								||drivenTrain is RemoteTrain && train == Program.Simulator.PlayerLocomotive.Train) continue;
+						}
+
 						float d1 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, false);
 						if (d1 < 0)
 						{

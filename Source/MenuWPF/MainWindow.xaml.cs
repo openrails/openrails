@@ -226,6 +226,7 @@ namespace MenuWPF
 
         private void btnStart_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
+			MPHost = checkBox1.IsChecked.Value;
             if (SelectedFolder == null)
             {
                 MessageBox.Show("Please select a folder first!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
@@ -523,7 +524,7 @@ namespace MenuWPF
 
 		private void checkBox1_Checked(object sender, RoutedEventArgs e)
 		{
-			MPHost = true;
+			MPHost = (sender as CheckBox).IsChecked.Value;
 		}
 
 		private void textBox2_TextChanged(object sender, TextChangedEventArgs e)

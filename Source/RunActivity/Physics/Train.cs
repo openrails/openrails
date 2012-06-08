@@ -32,7 +32,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MSTS;
 using ORTS.Popups;
-
+using ORTS.MultiPlayer;
 
 namespace ORTS
 {
@@ -1179,6 +1179,7 @@ namespace ORTS
 		// aligns a trailing point switch that was just moved over to match the track the train is on
 		public void AlignTrailingPointSwitch(TrackNode from, TrackNode to)
 		{
+			if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) return; //in multiplayer, client will not worry about trailing points
 			if (from.TrJunctionNode != null)
 				return;
 			TrackNode sw = null;
