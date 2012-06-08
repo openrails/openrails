@@ -71,11 +71,6 @@ namespace ORTS.Debugging
       /// </summary>
       private readonly Simulator simulator;
 
-      /// <summary>
-      /// Reference to the Viewer3D object.
-      /// </summary>
-      private readonly Viewer3D viewer;
-
 
       private int IM_Width = 512;
       private int IM_Height = 512;
@@ -119,7 +114,7 @@ namespace ORTS.Debugging
       /// </summary>
       /// <param name="simulator"></param>
       /// /// <param name="viewer"></param>
-      public DebugViewerForm(Simulator simulator, Viewer3D viewer)
+      public DebugViewerForm(Simulator simulator)
       {
          InitializeComponent();
 
@@ -127,8 +122,6 @@ namespace ORTS.Debugging
          {
             throw new ArgumentNullException("simulator", "Simulator object cannot be null.");
          }
-
-         this.viewer = viewer;
 
          this.simulator = simulator;
 
@@ -190,7 +183,7 @@ namespace ORTS.Debugging
       /// <summary>
       /// Initialises the picturebox and the image it contains. 
       /// </summary>
-      private void InitImage()
+      public void InitImage()
       {
          pictureBox1.Width = IM_Width;
          pictureBox1.Height = IM_Height;
@@ -207,7 +200,7 @@ namespace ORTS.Debugging
       /// Regenerates the 2D view. At the moment, examines the track network
       /// each time the view is drawn. Later, the traversal and drawing can be separated.
       /// </summary>
-      private void GenerateView()
+      public void GenerateView()
       {
 
          float minX = float.MaxValue;

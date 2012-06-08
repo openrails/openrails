@@ -55,7 +55,7 @@ namespace ORTS
         private static Viewer3D Viewer;
         public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
 #if DEBUG_VIEWER
-		private static Debugging.DebugViewerForm DebugViewer;
+		public static Debugging.DebugViewerForm DebugViewer;
 #endif
 
         /// <summary>

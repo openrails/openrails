@@ -19,7 +19,12 @@ namespace ORTS.MultiPlayer
 
 		public void Stop()
 		{
-			listenThread.Abort();
+			try
+			{
+				client.Close();
+				listenThread.Abort();
+			}
+			catch (Exception) { }
 		}
 		public ClientComm(string serverIP, int serverPort, string s)
 		{
@@ -28,14 +33,14 @@ namespace ORTS.MultiPlayer
 			IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), serverPort);
 
 			client.Connect(serverEndPoint);
-
-			listenThread = new Thread(new ParameterizedThreadStart(this.Receive));
-			listenThread.Start(client);
-
 			string[] tmp = s.Split(' ');
 			UserName = tmp[0];
 			Code = tmp[1];
 			decoder = new Decoder();
+
+			listenThread = new Thread(new ParameterizedThreadStart(this.Receive));
+			listenThread.Start(client);
+
 		}
 
 		public void Receive(object client)
