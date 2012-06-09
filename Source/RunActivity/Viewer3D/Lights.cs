@@ -264,11 +264,6 @@ namespace ORTS
 #if DEBUG_LIGHT_STATES
             Console.WriteLine();
 #endif
-			if (Car.Train is RemoteTrain)
-			{
-				int i = 0;
-				i++;
-			}
             UpdateActiveLightCone();
         }
 
@@ -377,14 +372,10 @@ namespace ORTS
         bool UpdateState()
         {
             // Headlight
-            var newTrainHeadlight = Car.Train != null && Car.Train == Viewer.PlayerTrain ? Viewer.PlayerLocomotive.Headlight : 2;
-			if (Car.Train is RemoteTrain)
-			{
-				newTrainHeadlight = Car.Train.Cars[0].Headlight;//for remote trains, should show the light accordingly, AI trains has lights always on
-			}
+			var newTrainHeadlight = Car.Train != null && Car.Train == Viewer.PlayerTrain ? Viewer.PlayerLocomotive.Headlight : Car.Train.Cars[0].Headlight;
             // Unit
             var locoIsFlipped = Car.Train == Viewer.PlayerTrain && Viewer.PlayerLocomotive.Flipped;
-			if (Car.Train is RemoteTrain) locoIsFlipped = Car.Train.Cars[0].Flipped;//for remote trains
+			if (Car.Train != Viewer.PlayerTrain) locoIsFlipped = Car.Train.Cars[0].Flipped;
 			var newCarIsReversed = Car.Flipped ^ locoIsFlipped;
             var newCarIsFirst = Car.Train == null || (locoIsFlipped ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
             var newCarIsLast = Car.Train == null || (locoIsFlipped ? Car.Train.FirstCar : Car.Train.LastCar) == Car;

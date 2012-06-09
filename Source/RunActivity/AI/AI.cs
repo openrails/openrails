@@ -228,6 +228,7 @@ namespace ORTS
 
             }// for each rail car
 
+			train.Cars[0].Headlight = 2;//AI train always has light on
             train.CalculatePositionOfCars(0);
             for (int i = 0; i < train.Cars.Count; i++)
                 train.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
