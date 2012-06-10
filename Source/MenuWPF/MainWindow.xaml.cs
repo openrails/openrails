@@ -247,11 +247,11 @@ namespace MenuWPF
             {
                 MessageBox.Show("Invalid heading direction!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
-			else if (MPUserNameLength < 4 || MPUserNameLength > 10)
+			else if ((MPHost || MPIP != "") && (MPUserNameLength < 4 || MPUserNameLength > 10))
 			{
 				MessageBox.Show("The length of User Name must be between 4 and 10 characters!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			}
-			else if (char.IsDigit(MPUserName[0]))
+			else if ((MPHost || MPIP != "") && (MPUserName!="" &&char.IsDigit(MPUserName[0])))
 			{
 				MessageBox.Show("User Name cannot start with digits!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			}

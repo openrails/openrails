@@ -372,10 +372,11 @@ namespace ORTS
         bool UpdateState()
         {
             // Headlight
-			var newTrainHeadlight = Car.Train != null && Car.Train == Viewer.PlayerTrain ? Viewer.PlayerLocomotive.Headlight : Car.Train.Cars[0].Headlight;
+			var newTrainHeadlight = Car.Train != null && Car.Train == Viewer.PlayerTrain ? Viewer.PlayerLocomotive.Headlight : 2;
+			if (Car.Train != null && Car.Train.Cars[0] != null) newTrainHeadlight = Car.Train.Cars[0].Headlight;
             // Unit
             var locoIsFlipped = Car.Train == Viewer.PlayerTrain && Viewer.PlayerLocomotive.Flipped;
-			if (Car.Train != Viewer.PlayerTrain) locoIsFlipped = Car.Train.Cars[0].Flipped;
+			if (Car.Train != null && Car.Train.Cars[0] != null && Car.Train != Viewer.PlayerTrain) locoIsFlipped = Car.Train.Cars[0].Flipped;
 			var newCarIsReversed = Car.Flipped ^ locoIsFlipped;
             var newCarIsFirst = Car.Train == null || (locoIsFlipped ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
             var newCarIsLast = Car.Train == null || (locoIsFlipped ? Car.Train.FirstCar : Car.Train.LastCar) == Car;

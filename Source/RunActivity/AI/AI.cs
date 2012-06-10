@@ -235,7 +235,7 @@ namespace ORTS
             if (train.FrontTDBTraveller.IsEnd)
                 return null;
 
-	    train.CheckFreight(); // check if train is freight or passenger [R.Roeterdink]
+			train.CheckFreight(); // check if train is freight or passenger [R.Roeterdink]
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
             train.InitializeSignals(false);  // Initialize Signals and Speedlimits without active speed information [R.Roeterdink]
