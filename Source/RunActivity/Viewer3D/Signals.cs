@@ -20,27 +20,27 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS
 {
-	public class SignalShape : PoseableShape
-	{
-		readonly uint UID;
-		readonly SignalObject SignalObject;
-		readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
+    public class SignalShape : PoseableShape
+    {
+        readonly uint UID;
+        readonly SignalObject SignalObject;
+        readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
 
-		public SignalShape(Viewer3D viewer, MSTS.SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
-			: base(viewer, path, position, flags)
-		{
+        public SignalShape(Viewer3D viewer, MSTS.SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
+            : base(viewer, path, position, flags)
+        {
 #if DEBUG_SIGNAL_SHAPES
 			Console.WriteLine(String.Format("{0} signal {1}:", Location.ToString(), mstsSignal.UID));
 #endif
 
-			UID = mstsSignal.UID;
-			var signalShape = Path.GetFileName(path).ToUpper();
-			if (!viewer.SIGCFG.SignalShapes.ContainsKey(signalShape))
-			{
-				Trace.TraceWarning("{0} signal {1} has invalid shape {2}.", Location.ToString(), mstsSignal.UID, signalShape);
-				return;
-			}
+            UID = mstsSignal.UID;
+            var signalShape = Path.GetFileName(path).ToUpper();
+            if (!viewer.SIGCFG.SignalShapes.ContainsKey(signalShape))
+            {
+                Trace.TraceWarning("{0} signal {1} has invalid shape {2}.", Location.ToString(), mstsSignal.UID, signalShape);
+                return;
+            }
             var mstsSignalShape = viewer.SIGCFG.SignalShapes[signalShape];
 
             // Move all hidden signal sub objects way in to the sky.
@@ -54,141 +54,148 @@ namespace ORTS
                 return;
             }
 
-			for (var i = 0; i < mstsSignal.SignalUnits.Units.Length; i++)
-			{
+            for (var i = 0; i < mstsSignal.SignalUnits.Units.Length; i++)
+            {
 #if DEBUG_SIGNAL_SHAPES
 				Console.Write("  UNIT {0}: TrItem={1,-5} SubObj={2,-2}", i, mstsSignal.SignalUnits.Units[i].TrItem, mstsSignal.SignalUnits.Units[i].SubObj);
 #endif
-				// Find the simulation SignalObject for this shape.
-				var signalAndHead = viewer.Simulator.Signals.FindByTrItem(mstsSignal.SignalUnits.Units[i].TrItem);
-				if (!signalAndHead.HasValue)
-				{
-					Trace.TraceWarning("{0} signal {1} unit {2} has invalid TrItem {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].TrItem);
-					continue;
-				}
-				// Get the signal sub-object for this unit (head).
-				var mstsSignalSubObj = mstsSignalShape.SignalSubObjs[mstsSignal.SignalUnits.Units[i].SubObj];
-				if (mstsSignalSubObj.SignalSubType != 1) // SIGNAL_HEAD
-				{
-					Trace.TraceWarning("{0} signal {1} unit {2} has invalid SubObj {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].SubObj);
-					continue;
-				}
-				SignalObject = signalAndHead.Value.Key;
-				var mstsSignalItem = (MSTS.SignalItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[mstsSignal.SignalUnits.Units[i].TrItem]);
-				try
-				{
-					// Go create the shape head.
-					Heads.Add(new SignalShapeHead(viewer, this, i, signalAndHead.Value.Value, mstsSignalItem, mstsSignalSubObj));
-				}
-				catch (InvalidDataException error)
-				{
-					Trace.TraceWarning(error.Message);
-				}
+                // Find the simulation SignalObject for this shape.
+                var signalAndHead = viewer.Simulator.Signals.FindByTrItem(mstsSignal.SignalUnits.Units[i].TrItem);
+                if (!signalAndHead.HasValue)
+                {
+                    Trace.TraceWarning("{0} signal {1} unit {2} has invalid TrItem {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].TrItem);
+                    continue;
+                }
+                // Get the signal sub-object for this unit (head).
+                var mstsSignalSubObj = mstsSignalShape.SignalSubObjs[mstsSignal.SignalUnits.Units[i].SubObj];
+                if (mstsSignalSubObj.SignalSubType != 1) // SIGNAL_HEAD
+                {
+                    Trace.TraceWarning("{0} signal {1} unit {2} has invalid SubObj {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].SubObj);
+                    continue;
+                }
+                SignalObject = signalAndHead.Value.Key;
+                var mstsSignalItem = (MSTS.SignalItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[mstsSignal.SignalUnits.Units[i].TrItem]);
+                try
+                {
+                    // Go create the shape head.
+                    Heads.Add(new SignalShapeHead(viewer, this, i, signalAndHead.Value.Value, mstsSignalItem, mstsSignalSubObj));
+                }
+                catch (InvalidDataException error)
+                {
+                    Trace.TraceWarning(error.Message);
+                }
 #if DEBUG_SIGNAL_SHAPES
 				Console.WriteLine();
 #endif
-			}
-		}
+            }
+        }
 
-		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-		{
-			// Locate relative to the camera
-			var dTileX = Location.TileX - Viewer.Camera.TileX;
-			var dTileZ = Location.TileZ - Viewer.Camera.TileZ;
-			var mstsLocation = Location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
-			var xnaTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-			Matrix.Multiply(ref Location.XNAMatrix, ref xnaTileTranslation, out xnaTileTranslation);
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            // Locate relative to the camera
+            var dTileX = Location.TileX - Viewer.Camera.TileX;
+            var dTileZ = Location.TileZ - Viewer.Camera.TileZ;
+            var mstsLocation = Location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
+            var xnaTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
+            Matrix.Multiply(ref Location.XNAMatrix, ref xnaTileTranslation, out xnaTileTranslation);
 
 
-			foreach (var head in Heads)
-				head.PrepareFrame(frame, elapsedTime, xnaTileTranslation);
+            foreach (var head in Heads)
+                head.PrepareFrame(frame, elapsedTime, xnaTileTranslation);
 
-			base.PrepareFrame(frame, elapsedTime);
-		}
+            base.PrepareFrame(frame, elapsedTime);
+        }
 
-		class SignalShapeHead
-		{
-			static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
+        internal override void Mark()
+        {
+            foreach (var head in Heads)
+                head.Mark();
+            base.Mark();
+        }
+
+        class SignalShapeHead
+        {
+            static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
 
 #if DEBUG_SIGNAL_SHAPES
 			readonly Viewer3D Viewer;
 #endif
-			readonly SignalShape SignalShape;
-			readonly int Index;
-			readonly SignalHead SignalHead;
-			readonly int MatrixIndex;
-			readonly SignalTypeData SignalTypeData;
-			float CumulativeTime;
+            readonly SignalShape SignalShape;
+            readonly int Index;
+            readonly SignalHead SignalHead;
+            readonly int MatrixIndex;
+            readonly SignalTypeData SignalTypeData;
+            float CumulativeTime;
             float SemaphorePos;
             float SemaphoreTarget;
             float SemaphoreSpeed;
-			float SemaphoreInfo;
+            float SemaphoreInfo;
 
-  // LastState and DisplayState defined as int, not as SignalHead.SIGASP
+            // LastState and DisplayState defined as int, not as SignalHead.SIGASP
 
-			int LastState = -1;
-			int DisplayState = -1;
+            int LastState = -1;
+            int DisplayState = -1;
 
-			public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead,
-				       	MSTS.SignalItem mstsSignalItem, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
-			{
+            public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead,
+                        MSTS.SignalItem mstsSignalItem, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
+            {
 #if DEBUG_SIGNAL_SHAPES
 				Viewer = viewer;
 #endif
-				SignalShape = signalShape;
-				Index = index;
-				SignalHead = signalHead;
-				MatrixIndex = signalShape.SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName);
-				if (MatrixIndex == -1)
-					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName));
+                SignalShape = signalShape;
+                Index = index;
+                SignalHead = signalHead;
+                MatrixIndex = signalShape.SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName);
+                if (MatrixIndex == -1)
+                    throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName));
 
                 if (!viewer.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
-					throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid SigSubSType {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
+                    throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid SigSubSType {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
                 var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
-		
-				SemaphoreInfo = mstsSignalType.SemaphoreInfo;
 
-				if (SignalTypes.ContainsKey(mstsSignalType.Name))
-					SignalTypeData = SignalTypes[mstsSignalType.Name];
-				else
-					SignalTypeData = SignalTypes[mstsSignalType.Name] = new SignalTypeData(viewer, mstsSignalType);
+                SemaphoreInfo = mstsSignalType.SemaphoreInfo;
+
+                if (SignalTypes.ContainsKey(mstsSignalType.Name))
+                    SignalTypeData = SignalTypes[mstsSignalType.Name];
+                else
+                    SignalTypeData = SignalTypes[mstsSignalType.Name] = new SignalTypeData(viewer, mstsSignalType);
 
 #if DEBUG_SIGNAL_SHAPES
 				Console.Write("  HEAD type={0,-8} lights={1,-2} aspects={2,-2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Aspects.Count);
 #endif
 
 
-			}
+            }
 
-			public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
-			{
+            public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
+            {
 
-  // Next lines : changed to process draw_state instead of state
-  // Use of DrawAspects instead of Aspects (see below for details)
+                // Next lines : changed to process draw_state instead of state
+                // Use of DrawAspects instead of Aspects (see below for details)
 
-				if (LastState != SignalHead.draw_state)
-				{
+                if (LastState != SignalHead.draw_state)
+                {
 #if DEBUG_SIGNAL_SHAPES
 					Console.WriteLine(String.Format("{5} {0} signal {1} unit {2} state: {3} --> {4}",
 							       	SignalShape.Location, SignalShape.UID, Index, LastState,
 							       	SignalHead.state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
 #endif
-					LastState = SignalHead.draw_state;
-					DisplayState = LastState;
-                    			if (SignalTypeData.DrawAspects.ContainsKey(DisplayState))
-                    			{
-                        			SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
-                        			SemaphoreSpeed = SemaphoreTarget > SemaphorePos ? +1 : -1;
-                    			}
-				}
-				CumulativeTime += elapsedTime.ClockSeconds;
-				while (CumulativeTime > SignalTypeData.FlashTimeTotal)
-					CumulativeTime -= SignalTypeData.FlashTimeTotal;
+                    LastState = SignalHead.draw_state;
+                    DisplayState = LastState;
+                    if (SignalTypeData.DrawAspects.ContainsKey(DisplayState))
+                    {
+                        SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
+                        SemaphoreSpeed = SemaphoreTarget > SemaphorePos ? +1 : -1;
+                    }
+                }
+                CumulativeTime += elapsedTime.ClockSeconds;
+                while (CumulativeTime > SignalTypeData.FlashTimeTotal)
+                    CumulativeTime -= SignalTypeData.FlashTimeTotal;
 
 
-				if (DisplayState < 0 || !SignalTypeData.DrawAspects.ContainsKey(DisplayState))
+                if (DisplayState < 0 || !SignalTypeData.DrawAspects.ContainsKey(DisplayState))
 
-					return;
+                    return;
 
                 if (SignalTypeData.Semaphore)
                 {
@@ -197,77 +204,83 @@ namespace ORTS
                     SignalShape.AnimateMatrix(MatrixIndex, 0);
                 }
 
-				for (var i = 0; i < SignalTypeData.Lights.Count; i++)
-				{
+                for (var i = 0; i < SignalTypeData.Lights.Count; i++)
+                {
                     if (SemaphorePos != SemaphoreTarget && SignalTypeData.LightsSemaphoreChange[i])
                         continue;
                     if (!SignalTypeData.DrawAspects[DisplayState].DrawLights[i])
                         continue;
                     if (SignalTypeData.DrawAspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn))
-						continue;
+                        continue;
 
-					var xnaMatrix = Matrix.Identity;
-					Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
-					Matrix.Multiply(ref xnaMatrix, ref xnaTileTranslation, out xnaMatrix);
+                    var xnaMatrix = Matrix.Identity;
+                    Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
+                    Matrix.Multiply(ref xnaMatrix, ref xnaTileTranslation, out xnaMatrix);
 
-					frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
-				}
+                    frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
+                }
 
                 if (SignalTypeData.Semaphore)
                 {
                     // Now we update and re-animate the semaphore arm.
- 		    // Set arm to final position immediately if semaphoreinfo = 0
+                    // Set arm to final position immediately if semaphoreinfo = 0
 
-					if (SemaphoreInfo == 0)
-					{
-						SemaphorePos = SemaphoreTarget;
-						SemaphoreSpeed = 0;
-					}
-					else
-					{
-						SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
-						if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
-						{
-							SemaphorePos = SemaphoreTarget;
-							SemaphoreSpeed = 0;
-						}
-					}
-					SignalShape.AnimateMatrix(MatrixIndex, SemaphorePos);
-				}
-			}
-		}
+                    if (SemaphoreInfo == 0)
+                    {
+                        SemaphorePos = SemaphoreTarget;
+                        SemaphoreSpeed = 0;
+                    }
+                    else
+                    {
+                        SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
+                        if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
+                        {
+                            SemaphorePos = SemaphoreTarget;
+                            SemaphoreSpeed = 0;
+                        }
+                    }
+                    SignalShape.AnimateMatrix(MatrixIndex, SemaphorePos);
+                }
+            }
 
-		class SignalTypeData
-		{
-			public readonly Material Material;
-			public readonly SignalTypeDataType Type;
-			public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
-		        public readonly List<bool> LightsSemaphoreChange = new List<bool>();
+            [CallOnThread("Loader")]
+            internal void Mark()
+            {
+                SignalTypeData.Material.Mark();
+            }
+        }
 
-  // DrawAspects replaces Aspects : dictionary of SignalAspectData with int as key instead of string
-			public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
+        class SignalTypeData
+        {
+            public readonly Material Material;
+            public readonly SignalTypeDataType Type;
+            public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
+            public readonly List<bool> LightsSemaphoreChange = new List<bool>();
 
-			public readonly float FlashTimeOn;
-			public readonly float FlashTimeTotal;
+            // DrawAspects replaces Aspects : dictionary of SignalAspectData with int as key instead of string
+            public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
+
+            public readonly float FlashTimeOn;
+            public readonly float FlashTimeTotal;
             public readonly bool Semaphore;
 
-			public SignalTypeData(Viewer3D viewer, MSTS.SignalType mstsSignalType)
-			{
+            public SignalTypeData(Viewer3D viewer, MSTS.SignalType mstsSignalType)
+            {
                 if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
-				{
+                {
                     Trace.TraceWarning("Signal type {0} has invalid light texture {1}.", mstsSignalType.Name, mstsSignalType.LightTextureName);
-					Material = Materials.YellowMaterial;
-					Type = SignalTypeDataType.Normal;
-					FlashTimeOn = 1;
-					FlashTimeTotal = 2;
-				}
-				else
-				{
+                    Material = Materials.YellowMaterial;
+                    Type = SignalTypeDataType.Normal;
+                    FlashTimeOn = 1;
+                    FlashTimeTotal = 2;
+                }
+                else
+                {
                     var mstsLightTexture = viewer.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
                     Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
-					Type = (SignalTypeDataType)mstsSignalType.FnType;
-					if (mstsSignalType.Lights != null)
-					{
+                    Type = (SignalTypeDataType)mstsSignalType.FnType;
+                    if (mstsSignalType.Lights != null)
+                    {
                         foreach (var mstsSignalLight in mstsSignalType.Lights)
                         {
                             if (!viewer.SIGCFG.LightsTable.ContainsKey(mstsSignalLight.Name))
@@ -279,154 +292,160 @@ namespace ORTS
                             Lights.Add(new SignalLightMesh(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
                             LightsSemaphoreChange.Add(mstsSignalLight.SemaphoreChange);
                         }
-  // Check on mstsSignalType.Aspects removed (process signals without aspects)
+                        // Check on mstsSignalType.Aspects removed (process signals without aspects)
 
-					}
+                    }
 
-					foreach ( KeyValuePair <string, MSTS.SignalDrawState> sdrawstate in mstsSignalType.DrawStates)
-							DrawAspects.Add(sdrawstate.Value.Index, new SignalAspectData(mstsSignalType, sdrawstate.Value));
-					FlashTimeOn = mstsSignalType.FlashTimeOn;
-					FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
+                    foreach (KeyValuePair<string, MSTS.SignalDrawState> sdrawstate in mstsSignalType.DrawStates)
+                        DrawAspects.Add(sdrawstate.Value.Index, new SignalAspectData(mstsSignalType, sdrawstate.Value));
+                    FlashTimeOn = mstsSignalType.FlashTimeOn;
+                    FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
                     Semaphore = mstsSignalType.Semaphore;
-				}
-			}
-		}
+                }
+            }
+        }
 
-		enum SignalTypeDataType
-		{
-			Normal,
-			Distance,
-			Repeater,
-			Shunting,
-			Info,
-		}
+        enum SignalTypeDataType
+        {
+            Normal,
+            Distance,
+            Repeater,
+            Shunting,
+            Info,
+        }
 
-		class SignalAspectData
-		{
-			public readonly bool[] DrawLights;
-			public readonly bool[] FlashLights;
+        class SignalAspectData
+        {
+            public readonly bool[] DrawLights;
+            public readonly bool[] FlashLights;
             public readonly float SemaphorePos;
 
-			public SignalAspectData(MSTS.SignalType mstsSignalType, MSTS.SignalDrawState drawStateData)
-			{
-  // Check on existence of lights included
-  // Also process signals if no lights defined (semaphore only)
+            public SignalAspectData(MSTS.SignalType mstsSignalType, MSTS.SignalDrawState drawStateData)
+            {
+                // Check on existence of lights included
+                // Also process signals if no lights defined (semaphore only)
 
-				if (mstsSignalType.Lights != null)
-				{
-					DrawLights = new bool[mstsSignalType.Lights.Count];
-					FlashLights = new bool[mstsSignalType.Lights.Count];
-				}
-				else
-				{
-					DrawLights = null;
-					FlashLights= null;
-				}
+                if (mstsSignalType.Lights != null)
+                {
+                    DrawLights = new bool[mstsSignalType.Lights.Count];
+                    FlashLights = new bool[mstsSignalType.Lights.Count];
+                }
+                else
+                {
+                    DrawLights = null;
+                    FlashLights = null;
+                }
 
-				if (drawStateData.DrawLights != null)
-				{
-					foreach (var drawLight in drawStateData.DrawLights)
-					{
-						try
-						{
-						DrawLights[drawLight.LightIndex] = true;
-						FlashLights[drawLight.LightIndex] = drawLight.Flashing;
-						}
-						catch (Exception ex)
-						{
-							Trace.TraceWarning("Exception : {0} : {1}",ex.ToString(),mstsSignalType.Name);
-						}
-					}
-				}
-                		SemaphorePos = drawStateData.SemaphorePos;
-			}
+                if (drawStateData.DrawLights != null)
+                {
+                    foreach (var drawLight in drawStateData.DrawLights)
+                    {
+                        try
+                        {
+                            DrawLights[drawLight.LightIndex] = true;
+                            FlashLights[drawLight.LightIndex] = drawLight.Flashing;
+                        }
+                        catch (Exception ex)
+                        {
+                            Trace.TraceWarning("Exception : {0} : {1}", ex.ToString(), mstsSignalType.Name);
+                        }
+                    }
+                }
+                SemaphorePos = drawStateData.SemaphorePos;
+            }
 
-		}
-	}
+        }
+    }
 
-	public class SignalLightMesh : RenderPrimitive
-	{
-		readonly VertexDeclaration VertexDeclaration;
-		readonly VertexBuffer VertexBuffer;
+    public class SignalLightMesh : RenderPrimitive
+    {
+        readonly VertexDeclaration VertexDeclaration;
+        readonly VertexBuffer VertexBuffer;
 
-		public SignalLightMesh(Viewer3D viewer, Vector3 position, float radius, Color color, float u0, float v0, float u1, float v1)
-		{
-			var verticies = new[] {
+        public SignalLightMesh(Viewer3D viewer, Vector3 position, float radius, Color color, float u0, float v0, float u1, float v1)
+        {
+            var verticies = new[] {
 				new VertexPositionColorTexture(new Vector3(position.X - radius, position.Y + radius, position.Z), color, new Vector2(u0, v0)),
 				new VertexPositionColorTexture(new Vector3(position.X + radius, position.Y + radius, position.Z), color, new Vector2(u1, v0)),
 				new VertexPositionColorTexture(new Vector3(position.X + radius, position.Y - radius, position.Z), color, new Vector2(u1, v1)),
 				new VertexPositionColorTexture(new Vector3(position.X - radius, position.Y - radius, position.Z), color, new Vector2(u0, v1)),
 			};
 
-			VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColorTexture.VertexElements);
-			VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, VertexPositionColorTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
-			VertexBuffer.SetData(verticies);
-		}
+            VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColorTexture.VertexElements);
+            VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, VertexPositionColorTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
+            VertexBuffer.SetData(verticies);
+        }
 
-		public override void Draw(GraphicsDevice graphicsDevice)
-		{
-			graphicsDevice.VertexDeclaration = VertexDeclaration;
-			graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColorTexture.SizeInBytes);
-			graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, 2);
-		}
-	}
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            graphicsDevice.VertexDeclaration = VertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColorTexture.SizeInBytes);
+            graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, 2);
+        }
+    }
 
-	public class SignalLightMaterial : Material
-	{
-		readonly RenderProcess RenderProcess;
-		readonly SceneryShader SceneryShader;
-		readonly Texture2D Texture;
+    public class SignalLightMaterial : Material
+    {
+        readonly RenderProcess RenderProcess;
+        readonly SceneryShader SceneryShader;
+        readonly Texture2D Texture;
 
-		public SignalLightMaterial(RenderProcess renderProcess, string textureName)
-			: base(textureName)
-		{
-			RenderProcess = renderProcess;
-			SceneryShader = Materials.SceneryShader;
-			Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, textureName);
-		}
+        public SignalLightMaterial(RenderProcess renderProcess, string textureName)
+            : base(textureName)
+        {
+            RenderProcess = renderProcess;
+            SceneryShader = Materials.SceneryShader;
+            Texture = renderProcess.Viewer.TextureManager.Get(textureName);
+        }
 
-		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-		{
-			SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["SignalLight"];
-			SceneryShader.ImageTexture = Texture;
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["SignalLight"];
+            SceneryShader.ImageTexture = Texture;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
-			rs.DestinationBlend = Blend.InverseSourceAlpha;
-			rs.SeparateAlphaBlendEnabled = true;
-			rs.SourceBlend = Blend.SourceAlpha;
-		}
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SeparateAlphaBlendEnabled = true;
+            rs.SourceBlend = Blend.SourceAlpha;
+        }
 
-		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-		{
-			Matrix viewProj = XNAViewMatrix * XNAProjectionMatrix;
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            Matrix viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
-			// With the GPU configured, now we can draw the primitive
+            // With the GPU configured, now we can draw the primitive
             SceneryShader.SetViewMatrix(ref XNAViewMatrix);
             SceneryShader.Begin();
-			foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
-			{
-				pass.Begin();
+            foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
+            {
+                pass.Begin();
 
-				foreach (RenderItem item in renderItems)
-				{
-					SceneryShader.SetMatrix(ref item.XNAMatrix, ref viewProj);
-					SceneryShader.CommitChanges();
-					item.RenderPrimitive.Draw(graphicsDevice);
-				}
+                foreach (RenderItem item in renderItems)
+                {
+                    SceneryShader.SetMatrix(ref item.XNAMatrix, ref viewProj);
+                    SceneryShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
 
-				pass.End();
-			}
-			SceneryShader.End();
-		}
+                pass.End();
+            }
+            SceneryShader.End();
+        }
 
-		public override void ResetState(GraphicsDevice graphicsDevice)
-		{
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
-			rs.DestinationBlend = Blend.Zero;
-			rs.SeparateAlphaBlendEnabled = false;
-			rs.SourceBlend = Blend.One;
-		}
-	}
+            rs.DestinationBlend = Blend.Zero;
+            rs.SeparateAlphaBlendEnabled = false;
+            rs.SourceBlend = Blend.One;
+        }
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(Texture);
+            base.Mark();
+        }
+    }
 }

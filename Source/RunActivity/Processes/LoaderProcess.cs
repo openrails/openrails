@@ -48,6 +48,11 @@ namespace ORTS
             }
         }
 
+        public void WaitTillFinished()
+        {
+            State.WaitTillFinished();
+        }
+
         [ThreadName("Loader")]
         void LoaderThread()
         {
@@ -73,11 +78,7 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void StartLoad()
         {
-            // The loader will often fall behind, in that case let it finish
-            // before issueing a new command.
-            if (!Finished)
-                return;
-
+            Debug.Assert(Finished);
             if (Threaded)
                 State.SignalStart();
             else

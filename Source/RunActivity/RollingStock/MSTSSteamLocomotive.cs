@@ -806,7 +806,7 @@ namespace ORTS
                 {
                     foreach (ParticleEmitterDrawer drawer in pair.Value)
                     {
-                        drawer.SetTexture(SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, steamTexture));
+                        drawer.SetTexture(viewer.TextureManager.Get(steamTexture));
                         drawer.SetEmissionRate(20);
                     }
                 }

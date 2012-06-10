@@ -87,6 +87,14 @@ namespace ORTS
             }
         }
 
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            var worldFiles = WorldFiles;
+            foreach (var tile in worldFiles)
+                tile.Mark();
+        }
+
         [CallOnThread("Updater")]
         public void Update(ElapsedTime elapsedTime)
         {
@@ -283,6 +291,15 @@ namespace ORTS
         }
 
         #endregion
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            foreach (var shape in sceneryObjects)
+                shape.Mark();
+            foreach (var forest in forestList)
+                forest.Mark();
+        }
 
         [CallOnThread("Updater")]
         public void Update(ElapsedTime elapsedTime)

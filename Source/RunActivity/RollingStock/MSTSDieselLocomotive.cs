@@ -513,7 +513,7 @@ namespace ORTS
                 {
                     foreach (ParticleEmitterDrawer drawer in pair.Value)
                     {
-                        drawer.SetTexture(SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, dieselTexture));
+                        drawer.SetTexture(viewer.TextureManager.Get(dieselTexture));
                         drawer.SetEmissionRate(car.ExhaustParticles);
                     }
                 }

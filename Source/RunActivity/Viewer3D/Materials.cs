@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -11,12 +11,87 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS
 {
-	public class Materials
+    [CallOnThread("Loader")]
+    public class SharedTextureManager
+    {
+        readonly GraphicsDevice GraphicsDevice;
+        Dictionary<string, Texture2D> SharedTextures = new Dictionary<string, Texture2D>();
+        Dictionary<string, bool> SharedTexturesMarks;
+
+        [CallOnThread("Render")]
+        internal SharedTextureManager(GraphicsDevice graphicsDevice)
+        {
+            GraphicsDevice = graphicsDevice;
+        }
+
+        public Texture2D Get(string path)
+        {
+            if (Thread.CurrentThread.Name != "Loader Process")
+                Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+
+            if (path == null)
+                return Materials.MissingTexture;
+
+            path = path.ToLowerInvariant();
+            if (!SharedTextures.ContainsKey(path))
+            {
+                try
+                {
+                    Texture2D texture = MSTS.ACEFile.Texture2DFromFile(GraphicsDevice, path);
+                    SharedTextures.Add(path, texture);
+                    return texture;
+                }
+                catch (Exception error)
+                {
+                    Trace.TraceInformation(path);
+                    Trace.WriteLine(error);
+                    return Materials.MissingTexture;
+                }
+            }
+            else
+            {
+                return SharedTextures[path];
+            }
+        }
+
+        public void Mark()
+        {
+            SharedTexturesMarks = new Dictionary<string, bool>(SharedTextures.Count);
+            foreach (var path in SharedTextures.Keys)
+                SharedTexturesMarks.Add(path, false);
+        }
+
+        public void Mark(Texture2D texture)
+        {
+            if (SharedTextures.ContainsValue(texture))
+                SharedTexturesMarks[SharedTextures.First(kvp => kvp.Value == texture).Key] = true;
+        }
+
+        public void Sweep()
+        {
+            foreach (var path in SharedTexturesMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            {
+                //Trace.Write("[T]");
+                //Trace.WriteLine(path);
+                SharedTextures.Remove(path);
+            }
+        }
+
+        [CallOnThread("Updater")]
+        public string GetStatus()
+        {
+            return String.Format("{0:F0} textures", SharedTextures.Keys.Count);
+        }
+    }
+    
+    public class Materials
     {
         public static SceneryShader SceneryShader = null;
         public static SkyShader SkyShader = null;
@@ -244,38 +319,6 @@ namespace ORTS
 		}
     }
 
-    public class SharedTextureManager
-    {
-        private static Dictionary<string, Texture2D> SharedTextures = new Dictionary<string, Texture2D>();
-
-        public static Texture2D Get(GraphicsDevice device, string path)
-        {
-            if (path == null)
-                return Materials.MissingTexture;
-
-            path = path.ToLowerInvariant();
-            if (!SharedTextures.ContainsKey(path))
-            {
-                try
-                {
-                    Texture2D texture = MSTS.ACEFile.Texture2DFromFile(device, path);
-                    SharedTextures.Add(path, texture);
-                    return texture;
-                }
-                catch (Exception error)
-                {
-					Trace.TraceInformation(path);
-					Trace.WriteLine(error);
-					return Materials.MissingTexture;
-                }
-            }
-            else
-            {
-                return SharedTextures[path];
-            }
-        }
-    }
-
 	public abstract class Material
 	{
 		readonly string Key;
@@ -299,7 +342,10 @@ namespace ORTS
 		public virtual bool GetBlending() { return false; }
 		public virtual Texture2D GetShadowTexture() { return null; }
         public virtual TextureAddressMode GetShadowTextureAddressMode() { return TextureAddressMode.Wrap; }
-	}
+
+        [CallOnThread("Loader")]
+        public virtual void Mark() { }
+    }
 
 	public class EmptyMaterial : Material
 	{
@@ -407,6 +453,12 @@ namespace ORTS
         {
             return true;
         }
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(Texture);
+            base.Mark();
+        }
 	}
 
     [Flags]
@@ -464,11 +516,11 @@ namespace ORTS
             RenderProcess = renderProcess;
             Options = options;
             MipMapBias = mipMapBias;
-            Texture = SharedTextureManager.Get(renderProcess.GraphicsDevice, texturePath);
+            Texture = renderProcess.Viewer.TextureManager.Get(texturePath);
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0) {
                 var nightTexturePath = Helpers.GetNightTextureFile(renderProcess.Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
-                    NightTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, nightTexturePath.ToLower());
+                    NightTexture = renderProcess.Viewer.TextureManager.Get(nightTexturePath.ToLower());
             }
         }
 
@@ -633,7 +685,14 @@ namespace ORTS
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.TextureAddressModeMask value.");
             }
         }
-	}
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(Texture);
+            RenderProcess.Viewer.TextureManager.Mark(NightTexture);
+            base.Mark();
+        }
+    }
 
 	public class TerrainMaterial : Material
     {
@@ -646,8 +705,8 @@ namespace ORTS
 			: base(terrainTexture)
 		{
             var textures = terrainTexture.Split('\0');
-            PatchTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, textures[0]);
-            PatchTextureOverlay = textures.Length > 1 ? SharedTextureManager.Get(renderProcess.GraphicsDevice, textures[1]) : null;
+            PatchTexture = renderProcess.Viewer.TextureManager.Get(textures[0]);
+            PatchTextureOverlay = textures.Length > 1 ? renderProcess.Viewer.TextureManager.Get(textures[1]) : null;
             RenderProcess = renderProcess;
         }
 
@@ -692,7 +751,14 @@ namespace ORTS
 			}
             shader.End();
         }
-	}
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(PatchTexture);
+            RenderProcess.Viewer.TextureManager.Mark(PatchTextureOverlay);
+            base.Mark();
+        }
+    }
 
     public class SkyMaterial : Material
     {
@@ -879,6 +945,17 @@ namespace ORTS
             Materials.FogColor.G = (byte)(floatColor.Y * 255);
             Materials.FogColor.B = (byte)(floatColor.Z * 255);
         }
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(skyTexture);
+            RenderProcess.Viewer.TextureManager.Mark(starTextureN);
+            RenderProcess.Viewer.TextureManager.Mark(starTextureS);
+            RenderProcess.Viewer.TextureManager.Mark(moonTexture);
+            RenderProcess.Viewer.TextureManager.Mark(moonMask);
+            RenderProcess.Viewer.TextureManager.Mark(cloudTexture);
+            base.Mark();
+        }
     }
 
     public class ParticleEmitterMaterial : Material
@@ -940,6 +1017,12 @@ namespace ORTS
         public override bool GetBlending()
         {
             return true;
+        }
+
+        public override void Mark()
+        {
+            renderProcess.Viewer.TextureManager.Mark(texture);
+            base.Mark();
         }
     }
 
@@ -1023,17 +1106,26 @@ namespace ORTS
 		{
 			return true;
 		}
-	}
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(rainTexture);
+            RenderProcess.Viewer.TextureManager.Mark(snowTexture);
+            base.Mark();
+        }
+    }
 
 	public class ForestMaterial : Material
     {
         readonly Texture2D TreeTexture = null;
+        readonly RenderProcess RenderProcess;
 		IEnumerator<EffectPass> ShaderPasses;
 
 		public ForestMaterial(RenderProcess renderProcess, string treeTexture)
 			: base(treeTexture)
 		{
-            TreeTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, treeTexture);
+            TreeTexture = renderProcess.Viewer.TextureManager.Get(treeTexture);
+            RenderProcess = renderProcess;
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1084,16 +1176,24 @@ namespace ORTS
 		{
 			return TreeTexture;
 		}
-	}
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(TreeTexture);
+            base.Mark();
+        }
+    }
 
 	public class LightGlowMaterial : Material
     {
-        Texture2D lightGlowTexture;
+        readonly Texture2D lightGlowTexture;
+        readonly RenderProcess RenderProcess;
 
 		public LightGlowMaterial(RenderProcess renderProcess)
 			: base(null)
 		{
             lightGlowTexture = renderProcess.Content.Load<Texture2D>("Lightglow");
+            RenderProcess = renderProcess;
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1143,7 +1243,13 @@ namespace ORTS
 		{
 			return true;
 		}
-	}
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(lightGlowTexture);
+            base.Mark();
+        }
+    }
     
     public class LightConeMaterial : Material
     {
@@ -1209,7 +1315,7 @@ namespace ORTS
 			: base(waterTexturePath)
 		{
 			RenderProcess = renderProcess;
-			WaterTexture = SharedTextureManager.Get(renderProcess.GraphicsDevice, waterTexturePath);
+			WaterTexture = renderProcess.Viewer.TextureManager.Get(waterTexturePath);
 		}
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1267,7 +1373,13 @@ namespace ORTS
 		{
 			return true;
 		}
-	}
+
+        public override void Mark()
+        {
+            RenderProcess.Viewer.TextureManager.Mark(WaterTexture);
+            base.Mark();
+        }
+    }
 
 	public class ShadowMapMaterial : Material
     {

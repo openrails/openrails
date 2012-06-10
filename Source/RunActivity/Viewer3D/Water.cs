@@ -177,6 +177,13 @@ namespace ORTS
             TileVertexBuffer.SetData(vertexData);
         }
 
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            foreach (var material in WaterLayers.Select(kvp => kvp.Value))
+                material.Mark();
+        }
     } // class watertile
 
 

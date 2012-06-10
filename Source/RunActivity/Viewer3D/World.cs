@@ -12,6 +12,7 @@ namespace ORTS
 {
     public class World
     {
+        readonly Viewer3D Viewer;
         public readonly WeatherControl WeatherControl;
         public readonly SkyDrawer Sky;
         public readonly PrecipDrawer Precipitation;
@@ -22,9 +23,15 @@ namespace ORTS
         public readonly SoundSource GameSounds;
         public readonly WorldSounds Sounds;
 
+        int TileX;
+        int TileZ;
+        int VisibleTileX;
+        int VisibleTileZ;
+
         [CallOnThread("Render")]
         public World(Viewer3D viewer)
         {
+            Viewer = viewer;
             // Control stuff first.
             WeatherControl = new WeatherControl(viewer);
             // Then drawers.
@@ -52,6 +59,21 @@ namespace ORTS
             Scenery.Load();
             Trains.Load();
             RoadCars.Load();
+            if (TileX != VisibleTileX || TileZ != VisibleTileZ)
+            {
+                TileX = VisibleTileX;
+                TileZ = VisibleTileZ;
+                Viewer.ShapeManager.Mark();
+                Viewer.TextureManager.Mark();
+                Sky.Mark();
+                Precipitation.Mark();
+                Terrain.Mark();
+                Scenery.Mark();
+                Trains.Mark();
+                RoadCars.Mark();
+                Viewer.ShapeManager.Sweep();
+                Viewer.TextureManager.Sweep();
+            }
         }
 
         [CallOnThread("Updater")]
@@ -67,6 +89,8 @@ namespace ORTS
             Scenery.LoadPrep();
             Trains.LoadPrep();
             RoadCars.LoadPrep();
+            VisibleTileX = Viewer.Camera.TileX;
+            VisibleTileZ = Viewer.Camera.TileZ;
         }
 
         [CallOnThread("Updater")]

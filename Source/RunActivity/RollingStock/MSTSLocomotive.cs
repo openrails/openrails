@@ -2119,6 +2119,15 @@ namespace ORTS
             base.PrepareFrame( frame, elapsedTime );
         }
 
+        internal override void Mark()
+        {
+            foreach (var pdl in ParticleDrawers.Values)
+                foreach (var pd in pdl)
+                    pd.Mark();
+            if (_CabRenderer != null)
+                _CabRenderer.Mark();
+            base.Mark();
+        }
 
         /// <summary>
         /// This doesn't function yet.
@@ -2160,7 +2169,7 @@ namespace ORTS
 
             if (File.Exists(FileName))
             {
-                tex = SharedTextureManager.Get(viewer.GraphicsDevice, FileName);
+                tex = viewer.TextureManager.Get(FileName);
                 DayTextures.Add(FileName, tex);
             }
             else
@@ -2169,7 +2178,7 @@ namespace ORTS
             string nightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\night" + FileName.Substring(FileName.LastIndexOf('\\'));
             if (File.Exists(nightpath))
             {
-                tex = SharedTextureManager.Get(viewer.GraphicsDevice, nightpath);
+                tex = viewer.TextureManager.Get(nightpath);
                 NightTextures.Add(FileName, tex);
             }
             else
@@ -2178,7 +2187,7 @@ namespace ORTS
             string lightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\cablight" + FileName.Substring(FileName.LastIndexOf('\\'));
             if (File.Exists(lightpath))
             {
-                tex = SharedTextureManager.Get(viewer.GraphicsDevice, lightpath);
+                tex = viewer.TextureManager.Get(lightpath);
                 LightTextures.Add(FileName, tex);
             }
             else
@@ -2423,6 +2432,29 @@ namespace ORTS
 
             return retval;
         }
+
+        [CallOnThread("Loader")]
+        public static void Mark(Viewer3D viewer)
+        {
+            foreach (var texture in DayTextures.Values)
+                viewer.TextureManager.Mark(texture);
+            foreach (var texture in NightTextures.Values)
+                viewer.TextureManager.Mark(texture);
+            foreach (var texture in LightTextures.Values)
+                viewer.TextureManager.Mark(texture);
+            foreach (var textureList in PDayTextures.Values)
+                if (textureList != null)
+                    foreach (var texture in textureList)
+                        viewer.TextureManager.Mark(texture);
+            foreach (var textureList in PNightTextures.Values)
+                if (textureList != null)
+                    foreach (var texture in textureList)
+                        viewer.TextureManager.Mark(texture);
+            foreach (var textureList in PLightTextures.Values)
+                if (textureList != null)
+                    foreach (var texture in textureList)
+                        viewer.TextureManager.Mark(texture);
+        }
     }
 
     public class CabRenderer : RenderPrimitive
@@ -2581,6 +2613,13 @@ namespace ORTS
                 _Shader.End();
             }
         }
+
+        internal void Mark()
+        {
+            _Viewer.TextureManager.Mark(_CabTexture);
+            foreach (var cvcr in CabViewControlRenderers)
+                cvcr.Mark();
+        }
     }
 
     /// <summary>
@@ -2661,6 +2700,11 @@ namespace ORTS
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+        }
+
+        internal void Mark()
+        {
+            _Viewer.TextureManager.Mark(_Texture);
         }
     }
 

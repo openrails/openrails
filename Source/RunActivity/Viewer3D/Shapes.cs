@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
@@ -23,7 +24,78 @@ using MSTSMath;
 
 namespace ORTS
 {
-	[Flags]
+    [CallOnThread("Loader")]
+    public class SharedShapeManager
+    {
+        readonly Viewer3D Viewer;
+
+        Dictionary<string, SharedShape> SharedShapes = new Dictionary<string, SharedShape>();
+        Dictionary<string, bool> SharedShapesMarks;
+        SharedShape EmptyShape;
+
+        [CallOnThread("Render")]
+        internal SharedShapeManager(Viewer3D viewer)
+        {
+            Viewer = viewer;
+            EmptyShape = new SharedShape(Viewer);
+        }
+
+        public SharedShape Get(string path)
+        {
+            if (Thread.CurrentThread.Name != "Loader Process")
+                Trace.TraceError("SharedShapeManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+
+            if (path == null)
+                return EmptyShape;
+
+            path = path.ToLowerInvariant();
+            if (!SharedShapes.ContainsKey(path))
+            {
+                try
+                {
+                    SharedShapes.Add(path, new SharedShape(Viewer, path));
+                }
+                catch (Exception error)
+                {
+                    Trace.TraceInformation(path);
+                    Trace.WriteLine(error);
+                    SharedShapes.Add(path, EmptyShape);
+                }
+            }
+            return SharedShapes[path];
+        }
+
+        public void Mark()
+        {
+            SharedShapesMarks = new Dictionary<string, bool>(SharedShapes.Count);
+            foreach (var path in SharedShapes.Keys)
+                SharedShapesMarks.Add(path, false);
+        }
+
+        public void Mark(SharedShape shape)
+        {
+            if (SharedShapes.ContainsValue(shape))
+                SharedShapesMarks[SharedShapes.First(kvp => kvp.Value == shape).Key] = true;
+        }
+
+        public void Sweep()
+        {
+            foreach (var path in SharedShapesMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            {
+                //Trace.Write("[T]");
+                //Trace.WriteLine(path);
+                SharedShapes.Remove(path);
+            }
+        }
+
+        [CallOnThread("Updater")]
+        public string GetStatus()
+        {
+            return String.Format("{0:F0} shapes", SharedShapes.Keys.Count);
+        }
+    }
+
+    [Flags]
 	public enum ShapeFlags
 	{
 		None = 0,
@@ -50,12 +122,19 @@ namespace ORTS
             Viewer = viewer;
             Location = position;
 			Flags = flags;
-            SharedShape = SharedShapeManager.Get(Viewer, path);
+            SharedShape = Viewer.ShapeManager.Get(path);
         }
 
 		public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
 			SharedShape.PrepareFrame(frame, Location, Flags);
+        }
+
+        [CallOnThread("Loader")]
+        internal virtual void Mark()
+        {
+            Viewer.ShapeManager.Mark(SharedShape);
+            SharedShape.Mark();
         }
     }
 
@@ -417,6 +496,12 @@ namespace ORTS
 
 			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
 		}
+
+        internal override void Mark()
+        {
+            shapePrimitive.Material.Mark();
+            base.Mark();
+        }
 	} // class SpeedPostShape
 
     public class LevelCrossingShape : PoseableShape, IDisposable
@@ -504,46 +589,6 @@ namespace ORTS
 		}
     }
 
-    /// <summary>
-    /// Conserves memory by sharing the basic shape data with multiple instances in the scene.
-    /// </summary>
-    public class SharedShapeManager
-    {
-        static Dictionary<string, SharedShape> SharedShapes = new Dictionary<string, SharedShape>();
-        static SharedShape EmptyShape = null;
-
-        public static SharedShape Get(Viewer3D viewer, string path)
-        {
-            if (EmptyShape == null)
-                EmptyShape = new SharedShape(viewer);
-            if (path == null)
-                return EmptyShape;
-
-            path = path.ToLowerInvariant();
-            if (!SharedShapes.ContainsKey(path))
-            {
-                try
-                {
-                    SharedShape shape = new SharedShape(viewer, path);
-                    SharedShapes.Add(path, shape);
-                    return shape;
-                }
-                catch (Exception error)
-                {
-                    Trace.TraceInformation(path);
-                    Trace.WriteLine(error);
-                    SharedShapes.Add(path, EmptyShape);
-                    return EmptyShape;
-                }
-            }
-            else
-            {
-                // The shape is already set up
-                return SharedShapes[path];
-            }
-        }
-    }
-
     public class ShapePrimitive : RenderPrimitive
     {
         public Material Material { get; private set; }
@@ -620,24 +665,24 @@ namespace ORTS
         {
             Viewer = viewer;
             FilePath = filePath;
-            LoadContent(filePath);
+            LoadContent();
         }
 
         /// <summary>
         /// Only one copy of the model is loaded regardless of how many copies are placed in the scene.
         /// </summary>
-        void LoadContent(string filePath)
+        void LoadContent()
         {
             Trace.Write("S");
-            var sFile = new SFile(filePath);
+            var sFile = new SFile(FilePath);
 
             var textureFlags = Helpers.TextureFlags.None;
-            if (File.Exists(filePath + "d"))
+            if (File.Exists(FilePath + "d"))
             {
-                var sdFile = new SDFile(filePath + "d");
+                var sdFile = new SDFile(FilePath + "d");
                 textureFlags = (Helpers.TextureFlags)sdFile.shape.ESD_Alternative_Texture;
             }
-            if (filePath.ToUpperInvariant().Contains(@"\TRAINS\TRAINSET\"))
+            if (FilePath.ToUpperInvariant().Contains(@"\TRAINS\TRAINSET\"))
                 textureFlags |= Helpers.TextureFlags.TrainSet;
 
             var matrixCount = sFile.shape.matrices.Count;
@@ -667,6 +712,13 @@ namespace ORTS
                 if (DistanceLevels.Length == 0)
                     throw new InvalidDataException("Shape file missing distance_level");
             }
+
+            [CallOnThread("Loader")]
+            internal void Mark()
+            {
+                foreach (var dl in DistanceLevels)
+                    dl.Mark();
+            }
         }
 
         public class DistanceLevel
@@ -689,6 +741,13 @@ namespace ORTS
                 if (SubObjects.Length == 0)
                     throw new InvalidDataException("Shape file missing sub_object");
             }
+
+            [CallOnThread("Loader")]
+            internal void Mark()
+            {
+                foreach (var so in SubObjects)
+                    so.Mark();
+            }
         }
 
         public class SubObject
@@ -699,7 +758,7 @@ namespace ORTS
                 SceneryMaterialOptions.TextureAddressModeClamp,
                 SceneryMaterialOptions.TextureAddressModeBorder,
             };
-            
+
             static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
                 { "Tex", SceneryMaterialOptions.None },
                 { "TexDiff", SceneryMaterialOptions.Diffuse },
@@ -829,6 +888,13 @@ namespace ORTS
                     Trace.TraceInformation("{1} -> {2} primitives in {0}", sharedShape.FilePath, sub_object.primitives.Count, indexes.Count);
 #endif
             }
+
+            [CallOnThread("Loader")]
+            internal void Mark()
+            {
+                foreach (var prim in ShapePrimitives)
+                    prim.Material.Mark();
+            }
         }
 
         public class VertexBufferSet
@@ -896,7 +962,7 @@ namespace ORTS
         /// <summary>
         /// This is called by the individual instances of the shape when it should draw itself at the specified location
         /// </summary>
-		public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
         {
             PrepareFrame(frame, location, Matrices, flags);
         }
@@ -966,6 +1032,12 @@ namespace ORTS
             return LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[iNode];
         }
 
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            foreach (var lod in LodControls)
+                lod.Mark();
+        }
     }
 
     public class TrItemLabel

@@ -210,6 +210,12 @@ namespace ORTS
 
             frame.AddPrimitive(skyMaterial, SkyMesh, RenderPrimitiveGroup.World, ref XNASkyWorldLocation);
         }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            skyMaterial.Mark();
+        }
     }
     #endregion
 

@@ -56,6 +56,12 @@ namespace ORTS
 			frame.AddAutoPrimitive(mstsLocation, forestMesh.objectRadius, viewingDistance + forestMesh.objectRadius, forestMaterial, forestMesh, 
                 RenderPrimitiveGroup.World, ref xnaPatchMatrix, Viewer.Settings.ShadowAllShapes ? ShapeFlags.ShadowCaster : ShapeFlags.None);
         }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            forestMaterial.Mark();
+        }
     }
     #endregion
 

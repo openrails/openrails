@@ -55,6 +55,8 @@ namespace ORTS
         // Access to the XNA Game class
         public GraphicsDeviceManager GDM;
         public GraphicsDevice GraphicsDevice;
+        public SharedTextureManager TextureManager;
+        public SharedShapeManager ShapeManager;
         public Point DisplaySize;
         // Components
         public readonly Simulator Simulator;
@@ -215,6 +217,8 @@ namespace ORTS
 
             PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
+            TextureManager = new SharedTextureManager(GraphicsDevice);
+            ShapeManager = new SharedShapeManager(this);
             UserInput.Initialize();
             Materials.Initialize(RenderProcess);
             InfoDisplay = new InfoDisplay(this);
@@ -240,17 +244,23 @@ namespace ORTS
             Simulator.Confirmer = new Confirmer( Settings.SuppressConfirmations, World, 1.5 );
 
             // Now everything is ready to use, changed to saved values if available. 
-            if( inf != null ) Restore( inf );
-
-            PlayerLocomotiveViewer = World.Trains.GetViewer( PlayerLocomotive );
+            if (inf != null)
+                Restore(inf);
 
             if (Camera == null)
                 FrontCamera.Activate();
             else
                 Camera.Activate();
 
+            // Prepare the world to be loaded and then load it from the correct thread for debugging/tracing purposes.
+            // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that
+            // all loading is porformed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
-            World.Load();
+            LoaderProcess.StartLoad();
+            LoaderProcess.WaitTillFinished();
+
+            // MUST be after loading is done! (Or we try and load shapes on the main thread.)
+            PlayerLocomotiveViewer = World.Trains.GetViewer(PlayerLocomotive);
 
             if (Settings.FullScreen)
                 RenderProcess.ToggleFullScreen();
@@ -346,7 +356,7 @@ namespace ORTS
             World.Update(elapsedTime);
 
             // Every 250ms, check for new things to load and kick off the loader.
-            if (LastLoadRealTime + 0.25 < RealTime)
+            if (LastLoadRealTime + 0.25 < RealTime && LoaderProcess.Finished)
             {
                 LastLoadRealTime = RealTime;
                 World.LoadPrep();

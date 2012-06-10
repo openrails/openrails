@@ -109,6 +109,12 @@ namespace ORTS
         {
 			precipMesh.Initialize(Viewer.Simulator.ClockTime);
         }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            precipMaterial.Mark();
+        }
     }
     #endregion
 

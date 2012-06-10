@@ -495,6 +495,9 @@ namespace ORTS
         /// Executes in the UpdaterThread
         /// </summary>
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
+
+        [CallOnThread("Loader")]
+        internal abstract void Mark();
     }
 
 }

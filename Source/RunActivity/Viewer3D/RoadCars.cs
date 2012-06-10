@@ -322,6 +322,14 @@ namespace ORTS
         {
             return new RoadCarViewer(Viewer, car);
         }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            var cars = Cars;
+            foreach (var car in cars.Values)
+                car.Mark();
+        }
     }
 
     public class RoadCarViewer
@@ -345,6 +353,12 @@ namespace ORTS
             var rear = Car.RearLocation;
             CarShape.Location.XNAMatrix = Simulator.XNAMatrixFromMSTSCoordinates(front.X, front.Y, front.Z, rear.X, rear.Y, rear.Z);
             CarShape.PrepareFrame(frame, elapsedTime);
+        }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            CarShape.Mark();
         }
     }
 }

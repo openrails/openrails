@@ -97,6 +97,12 @@ namespace ORTS
         public void Reset()
         {
         }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            ParticleMaterial.Mark();
+        }
     }
 
     public class ParticleEmitter : RenderPrimitive

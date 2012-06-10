@@ -48,6 +48,15 @@ namespace ORTS
             }
         }
 
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            var cars = Cars;
+            foreach (var car in cars.Values)
+                car.Mark();
+            CABTextureManager.Mark(Viewer);
+        }
+
         [CallOnThread("Updater")]
         public TrainCarViewer GetViewer(TrainCar car)
         {
@@ -67,10 +76,10 @@ namespace ORTS
         {
             var visibleCars = new List<TrainCar>();
             var removeDistance = Viewer.Settings.ViewingDistance * 1.5f;
-            visibleCars.Add(Viewer.PlayerLocomotiveViewer.Car);
+            visibleCars.Add(Viewer.PlayerLocomotive);
             foreach (var train in Viewer.Simulator.Trains)
                 foreach (var car in train.Cars)
-                    if (ApproximateDistance(Viewer.Camera.CameraWorldLocation, car.WorldPosition.WorldLocation) < removeDistance && car != Viewer.PlayerLocomotiveViewer.Car)
+                    if (ApproximateDistance(Viewer.Camera.CameraWorldLocation, car.WorldPosition.WorldLocation) < removeDistance && car != Viewer.PlayerLocomotive)
                         visibleCars.Add(car);
             VisibleCars = visibleCars;
         }

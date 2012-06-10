@@ -1133,6 +1133,15 @@ namespace ORTS
             SoundSources.Add(new SoundSource(Viewer, MSTSWagon, path));
         }
 
+        internal override void Mark()
+        {
+            TrainCarShape.Mark();
+            if (FreightShape != null)
+                FreightShape.Mark();
+            if (InteriorShape != null)
+                InteriorShape.Mark();
+        }
+
     } // class carshape
 
 

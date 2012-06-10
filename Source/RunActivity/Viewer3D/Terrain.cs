@@ -84,6 +84,14 @@ namespace ORTS
             Trace.Write("T");
             return new TerrainTile(Viewer, tileX, tileZ);
         }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            var tiles = Tiles;
+            foreach (var tile in tiles)
+                tile.Mark();
+        }
     }
 
     public class TerrainTile
@@ -118,6 +126,17 @@ namespace ORTS
                 for (int z = 0; z < 16; ++z)
                     if (TerrainPatches[x, z] != null)
                         TerrainPatches[x, z].PrepareFrame(frame);
+        }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            if (WaterTile != null)
+                WaterTile.Mark();
+            for (int x = 0; x < 16; ++x)
+                for (int z = 0; z < 16; ++z)
+                    if (TerrainPatches[x, z] != null)
+                        TerrainPatches[x, z].Mark();
         }
     }
 
@@ -417,6 +436,12 @@ namespace ORTS
             var patchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Count, BufferUsage.WriteOnly);
             patchVertexBuffer.SetData(vertexData.ToArray());
             return patchVertexBuffer;
+        }
+
+        [CallOnThread("Loader")]
+        internal void Mark()
+        {
+            PatchMaterial.Mark();
         }
     }
 }
