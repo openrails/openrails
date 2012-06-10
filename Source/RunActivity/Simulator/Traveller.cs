@@ -51,6 +51,7 @@ namespace ORTS
         public WorldLocation WorldLocation { get { if (!locationSet) SetLocation(); return new WorldLocation(location); } }
         public int TileX { get { if (!locationSet) SetLocation(); return location.TileX; } }
         public int TileZ { get { if (!locationSet) SetLocation(); return location.TileZ; } }
+        public Vector3 Location { get { if (!locationSet) SetLocation(); return location.Location; } }
         public float X { get { if (!locationSet) SetLocation(); return location.Location.X; } }
         public float Y { get { if (!locationSet) SetLocation(); return location.Location.Y; } }
         public float Z { get { if (!locationSet) SetLocation(); return location.Location.Z; } }
@@ -657,12 +658,7 @@ namespace ORTS
             M.NormalizeRadians(ref directionVector.Y);
 
             if (trackVectorSection != null)
-            {
-                while (location.TileX > trackVectorSection.TileX) { location.Location.X += 2048; --location.TileX; }
-                while (location.TileX < trackVectorSection.TileX) { location.Location.X -= 2048; ++location.TileX; }
-                while (location.TileZ > trackVectorSection.TileZ) { location.Location.Z += 2048; --location.TileZ; }
-                while (location.TileZ < trackVectorSection.TileZ) { location.Location.Z -= 2048; ++location.TileZ; }
-            }
+                location.NormalizeTo(trackVectorSection.TileX, trackVectorSection.TileZ);
         }
 
         /// <summary>

@@ -7,10 +7,6 @@
 //
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ORTS
 {
@@ -22,20 +18,23 @@ namespace ORTS
         public readonly TerrainDrawer Terrain;
         public readonly SceneryDrawer Scenery;
         public readonly TrainDrawer Trains;
-        public readonly RoadCarHandler Cars;
+        public readonly RoadCarDrawer RoadCars;
         public readonly SoundSource GameSounds;
         public readonly WorldSounds Sounds;
 
         [CallOnThread("Render")]
         public World(Viewer3D viewer)
         {
+            // Control stuff first.
             WeatherControl = new WeatherControl(viewer);
+            // Then drawers.
             Sky = new SkyDrawer(viewer);
             Precipitation = new PrecipDrawer(viewer);
             Terrain = new TerrainDrawer(viewer);
             Scenery = new SceneryDrawer(viewer);
             Trains = new TrainDrawer(viewer);
-            Cars = new RoadCarHandler(viewer);
+            RoadCars = new RoadCarDrawer(viewer);
+            // Then sound.
             if (viewer.Settings.SoundDetailLevel > 0)
             {
                 // Keep it silent while loading.
@@ -52,11 +51,13 @@ namespace ORTS
             Terrain.Load();
             Scenery.Load();
             Trains.Load();
+            RoadCars.Load();
         }
 
         [CallOnThread("Updater")]
         public void Update(ElapsedTime elapsedTime)
         {
+            Scenery.Update(elapsedTime);
         }
 
         [CallOnThread("Updater")]
@@ -65,6 +66,7 @@ namespace ORTS
             Terrain.LoadPrep();
             Scenery.LoadPrep();
             Trains.LoadPrep();
+            RoadCars.LoadPrep();
         }
 
         [CallOnThread("Updater")]
@@ -75,7 +77,7 @@ namespace ORTS
             Terrain.PrepareFrame(frame, elapsedTime);
             Scenery.PrepareFrame(frame, elapsedTime);
             Trains.PrepareFrame(frame, elapsedTime);
-            Cars.PrepareFrame(frame, elapsedTime);
+            RoadCars.PrepareFrame(frame, elapsedTime);
         }
     }
 }

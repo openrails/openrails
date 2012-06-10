@@ -594,14 +594,7 @@ namespace MSTS
     }
 
     public class LevelCrItem : TrItem
-
     {
-		public uint Direction;                // 0 or 1 depending on which way signal is facing
-		public int revDir
-		{
-			get { return Direction == 0 ? 1 : 0; }
-		}
-
         public LevelCrItem(STFReader stf, int idx)
         {
             ItemType = trItemType.trXING;
@@ -611,7 +604,6 @@ namespace MSTS
                 new STFReader.TokenProcessor("tritemrdata", ()=>{ TrItemRData(stf); }),
                 new STFReader.TokenProcessor("tritemsdata", ()=>{ TrItemSData(stf); }),
                 new STFReader.TokenProcessor("tritempdata", ()=>{ TrItemPData(stf); }),
-
             });
         }
     }

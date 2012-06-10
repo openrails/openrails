@@ -67,22 +67,6 @@ namespace ORTS
 			}
 
 			lastSpeedMps = SpeedMpS;
-			UpdateCrossingState(); //update crossings in viewing range
-
 		} // end Update
-
-
-
-		//
-		//  the train moves, so all crossings should be updated. 
-		//  To save time, simulator.LevelCrossings.UpdateCrossings only updates crossings in
-		//  the viewing range, and only 1/20 of those were indeeded updated each frame
-		//
-		private void UpdateCrossingState()
-		{
-			Simulator.LevelCrossings.UpdateCrossings(this, SpeedMpS);
-			return;
-		}
-
 	}// class Train
 }

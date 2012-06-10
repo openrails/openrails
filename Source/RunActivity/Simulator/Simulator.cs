@@ -81,8 +81,8 @@ namespace ORTS
 		public string ExploreConFile;
 		public string patFileName;
 		public string conFileName;
-		public LevelCrossings LevelCrossings;
-		public RDBFile RDB;
+        public LevelCrossings LevelCrossings;
+        public RDBFile RDB;
 		public CarSpawnerFile CarSpawnerFile;
         public bool UseAdvancedAdhesion;
 		public MultiPlayer.OnlineTrains OnlineTrains;
@@ -264,7 +264,8 @@ namespace ORTS
 		/// elapsedClockSeconds represents the the time since the last call to Simulator.Update
 		/// Executes in the UpdaterProcess thread.
 		/// </summary>
-		public void Update(float elapsedClockSeconds)
+        [CallOnThread("Updater")]
+        public void Update(float elapsedClockSeconds)
 		{
 			// Advance the times.
 			GameTime += elapsedClockSeconds;
@@ -294,7 +295,7 @@ namespace ORTS
 				if (MPManager.IsMultiPlayer())
 				{
 					if (MultiPlayer.MPManager.IsServer()) AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
-				}
+			}
 				else AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 			}
 
@@ -313,7 +314,9 @@ namespace ORTS
 				AI.Update(elapsedClockSeconds);
 			}
 
-			if (ActivityRun != null)
+            LevelCrossings.Update(elapsedClockSeconds);
+           
+            if (ActivityRun != null)
 			{
 				ActivityRun.Update();
 			}
@@ -715,7 +718,7 @@ namespace ORTS
                     if( wagon == conFile.Train.TrainCfg.WagonList[0] ) {
                         // First wagon is the player's loco and required, so issue a fatal error message
                         throw new InvalidDataException( "Error reading player's loco from file " + wagonFilePath );
-                    }
+				}
 				}
 
 			}// for each rail car

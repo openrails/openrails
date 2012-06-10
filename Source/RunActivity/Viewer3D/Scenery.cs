@@ -88,6 +88,14 @@ namespace ORTS
         }
 
         [CallOnThread("Updater")]
+        public void Update(ElapsedTime elapsedTime)
+        {
+            var worldFiles = WorldFiles;
+            foreach (var worldFile in worldFiles)
+                worldFile.Update(elapsedTime);
+        }
+
+        [CallOnThread("Updater")]
         public void LoadPrep()
         {
             VisibleTileX = Viewer.Camera.TileX;
@@ -125,7 +133,7 @@ namespace ORTS
         public List<StaticShape> sceneryObjects = new List<StaticShape>();
         public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
         public List<ForestDrawer> forestList = new List<ForestDrawer>();
-        public List<CarSpawner> carSpawners = new List<CarSpawner>();
+        public List<RoadCarSpawner> carSpawners = new List<RoadCarSpawner>();
         public List<TrItemLabel> sidings = new List<TrItemLabel>();
         public List<TrItemLabel> platforms = new List<TrItemLabel>();
 
@@ -213,7 +221,7 @@ namespace ORTS
                 }
                 else if (worldObject.GetType() == typeof(MSTS.LevelCrossingObj))
                 {
-                    sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject, viewer.Simulator.LevelCrossings.LevelCrossingObjects));
+                    sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
                 }
                 else if (worldObject.GetType() == typeof(MSTS.SpeedPostObj))
                 {
@@ -226,7 +234,7 @@ namespace ORTS
                 else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
                 {
                     if (viewer.Simulator.RDB != null && viewer.Simulator.CarSpawnerFile != null)
-                        carSpawners.Add(new CarSpawner((CarSpawnerObj)worldObject, worldMatrix));
+                        carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     else
                         Trace.TraceWarning("Car spawner {1} ignored because route has no RDB or carspawn.dat in {0}", WFileName, worldObject.UID);
                 }
@@ -277,6 +285,13 @@ namespace ORTS
         #endregion
 
         [CallOnThread("Updater")]
+        public void Update(ElapsedTime elapsedTime)
+        {
+            foreach (var spawner in carSpawners)
+                spawner.Update(elapsedTime);
+        }
+
+        [CallOnThread("Updater")]
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             foreach (var shape in sceneryObjects)
@@ -285,8 +300,6 @@ namespace ORTS
                 dTrack.PrepareFrame(frame, elapsedTime);
             foreach (var forest in forestList)
                 forest.PrepareFrame(frame, elapsedTime);
-            foreach (var spawner in carSpawners)
-                spawner.SpawnCars(elapsedTime.ClockSeconds);
         }
 
         /// <summary>

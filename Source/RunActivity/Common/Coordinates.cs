@@ -44,17 +44,26 @@ namespace ORTS
     {
         public int TileX;
         public int TileZ;
-        public Matrix XNAMatrix = new Matrix();   // relative to center of tile
+        public Matrix XNAMatrix = Matrix.Identity;   // relative to center of tile
 
-        public WorldPosition() { }
-        
+        public WorldPosition()
+        {
+        }
+
         public WorldPosition(WorldPosition copy) // Copy constructor
         {
             TileX = copy.TileX;
             TileZ = copy.TileZ;
             XNAMatrix = copy.XNAMatrix;
         }
-        
+
+        public WorldPosition(WorldLocation copy)
+        {
+            TileX = copy.TileX;
+            TileZ = copy.TileZ;
+            Location = copy.Location;
+        }
+
         public WorldLocation WorldLocation   // provided in MSTS coordinates
         {
             get
@@ -88,37 +97,28 @@ namespace ORTS
         /// </summary>
         public void Normalize()
         {
-            Vector3 TileLocation = XNAMatrix.Translation;
-
-            while (TileLocation.X > 1024)
-            {
-                TileLocation.X -= 2048;
-                TileX++;
-            }
-            while (TileLocation.X < -1024)
-            {
-				TileLocation.X += 2048;
-                TileX--;
-            }
-            while (TileLocation.Z > 1024)
-            {
-				TileLocation.Z -= 2048;
-                TileZ++;
-            }
-            while (TileLocation.Z < -1024)
-            {
-				TileLocation.Z += 2048;
-                TileZ--;
-            }
-
+            var TileLocation = XNAMatrix.Translation;
+            while (TileLocation.X > 1024) { TileLocation.X -= 2048; TileX++; }
+            while (TileLocation.X < -1024) { TileLocation.X += 2048; TileX--; }
+            while (TileLocation.Z > 1024) { TileLocation.Z -= 2048; TileZ++; }
+            while (TileLocation.Z < -1024) { TileLocation.Z += 2048; TileZ--; }
             XNAMatrix.Translation = TileLocation;
-
         }
 
-		public override string ToString()
-		{
-			return WorldLocation.ToString();
-		}
+        public void NormalizeTo(int tileX, int tileZ)
+        {
+            Vector3 TileLocation = XNAMatrix.Translation;
+            while (TileX < tileX) { TileLocation.X -= 2048; TileX++; }
+            while (TileX > tileX) { TileLocation.X += 2048; TileX--; }
+            while (TileZ < tileZ) { TileLocation.Z -= 2048; TileZ++; }
+            while (TileZ > tileZ) { TileLocation.Z += 2048; TileZ--; }
+            XNAMatrix.Translation = TileLocation;
+        }
+
+        public override string ToString()
+        {
+            return WorldLocation.ToString();
+        }
     }
 
     public class WorldLocation
@@ -127,18 +127,18 @@ namespace ORTS
         public int TileZ;
         public Vector3 Location = new Vector3();  // relative to center of tile in MSTS coordinates
 
-		public WorldLocation()
-		{
-		}
+        public WorldLocation()
+        {
+        }
 
-		public WorldLocation(WorldLocation worldLocation)
-		{
-			TileX = worldLocation.TileX;
-			TileZ = worldLocation.TileZ;
-			Location = worldLocation.Location;
-		}
+        public WorldLocation(WorldLocation worldLocation)
+        {
+            TileX = worldLocation.TileX;
+            TileZ = worldLocation.TileZ;
+            Location = worldLocation.Location;
+        }
 
-		public WorldLocation(int tileX, int tileZ, float x, float y, float z)
+        public WorldLocation(int tileX, int tileZ, float x, float y, float z)
         {
             TileX = tileX;
             TileZ = tileZ;
@@ -147,7 +147,7 @@ namespace ORTS
             Location.Z = z;
         }
 
-        public WorldLocation(int tileX, int tileZ, Vector3 location )
+        public WorldLocation(int tileX, int tileZ, Vector3 location)
         {
             TileX = tileX;
             TileZ = tileZ;
@@ -159,53 +159,49 @@ namespace ORTS
         /// </summary>
         public void Normalize()
         {
-            while (Location.X > 1024)
-            {
-				Location.X -= 2048;
-                TileX++;
-            }
-            while (Location.X < -1024)
-            {
-				Location.X += 2048;
-                TileX--;
-            }
-            while (Location.Z > 1024)
-            {
-				Location.Z -= 2048;
-                TileZ++;
-            }
-            while (Location.Z < -1024)
-            {
-				Location.Z += 2048;
-                TileZ--;
-            }
+            while (Location.X > 1024) { Location.X -= 2048; TileX++; }
+            while (Location.X < -1024) { Location.X += 2048; TileX--; }
+            while (Location.Z > 1024) { Location.Z -= 2048; TileZ++; }
+            while (Location.Z < -1024) { Location.Z += 2048; TileZ--; }
+        }
+
+        public void NormalizeTo(int tileX, int tileZ)
+        {
+            while (TileX < tileX) { Location.X -= 2048; TileX++; }
+            while (TileX > tileX) { Location.X += 2048; TileX--; }
+            while (TileZ < tileZ) { Location.Z -= 2048; TileZ++; }
+            while (TileZ > tileZ) { Location.Z += 2048; TileZ--; }
+        }
+
+        public static bool Within(WorldLocation location1, WorldLocation location2, float distance)
+        {
+            return GetDistanceSquared(location1, location2) < distance * distance;
         }
 
         public static float GetDistanceSquared(WorldLocation location1, WorldLocation location2)
         {
-            float dx = location1.Location.X - location2.Location.X;
+            var dx = location1.Location.X - location2.Location.X;
+            var dy = location1.Location.Y - location2.Location.Y;
+            var dz = location1.Location.Z - location2.Location.Z;
             dx += 2048 * (location1.TileX - location2.TileX);
-            float dz = location1.Location.Z - location2.Location.Z;
             dz += 2048 * (location1.TileZ - location2.TileZ);
-            float dy = location1.Location.Y - location2.Location.Y;
-
             return dx * dx + dy * dy + dz * dz;
         }
 
-		public static Vector3 GetDistance(WorldLocation location1, WorldLocation location2)
-		{
-			return new Vector3(location2.Location.X - location1.Location.X + (location2.TileX - location1.TileX) * 2048, location2.Location.Y - location1.Location.Y, location2.Location.Z - location1.Location.Z + (location2.TileZ - location1.TileZ) * 2048);
-		}
+        public static Vector3 GetDistance(WorldLocation location1, WorldLocation location2)
+        {
+            return new Vector3(location2.Location.X - location1.Location.X + (location2.TileX - location1.TileX) * 2048, location2.Location.Y - location1.Location.Y, location2.Location.Z - location1.Location.Z + (location2.TileZ - location1.TileZ) * 2048);
+        }
 
-		public static Vector2 GetDistance2D(WorldLocation location1, WorldLocation location2)
-		{
-			return new Vector2(location2.Location.X - location1.Location.X + (location2.TileX - location1.TileX) * 2048, location2.Location.Z - location1.Location.Z + (location2.TileZ - location1.TileZ) * 2048);
-		}
+        public static Vector2 GetDistance2D(WorldLocation location1, WorldLocation location2)
+        {
+            return new Vector2(location2.Location.X - location1.Location.X + (location2.TileX - location1.TileX) * 2048, location2.Location.Z - location1.Location.Z + (location2.TileZ - location1.TileZ) * 2048);
+        }
 
-		public override string ToString()
-		{
-			return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4}}}", TileX, TileZ, Location.X, Location.Y, Location.Z);
-		}
+        public override string ToString()
+        {
+            return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4}}}", TileX, TileZ, Location.X, Location.Y, Location.Z);
+        }
 
         public void Save(BinaryWriter outf)
         {

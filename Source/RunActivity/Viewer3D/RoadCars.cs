@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -7,704 +7,344 @@
 //
 // This file is the responsibility of the 3D & Environment Team. 
 
-/* RoadCars
- * 
- * Contains code to represent a train as a list of RoadCarCars and to handle the physics of moving
- * the car through the RDB Database.
- * 
- * CarSpawner: loaded when the WFile is in, it will find the origin of the spawner, place several cars on the road,
- *             find crossings and tracks, and also train track may be higher than road track, it will try to compute that
- *             The spawner will be updated when a corresponding crossing is loaded by WFile
- * 
- * RoadCar: the car with a shape randomly picked, it will move along the road and slow down/stop is a gate is closed
- * 
- * RoadCarDrawer: holds the list of cars currently on the road and update them. This is necessary since a spawner may be
- *             unloaded but cars on the road may not
- */
-
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using MSTS;
-using ORTS.Popups;
-
 
 namespace ORTS
 {
+    public class RoadCarSpawner
+    {
+        public const float StopDistance = 10;
+        const float RampLength = 2;
+        const float TrackHalfWidth = 1;
+        const float TrackMergeDistance = 7; // Must be >= 2 * (RampLength + TrackHalfWidth).
+        const float TrackRailHeight = 0.275f;
+        const float TrainRailHeightMaximum = 1;
 
-	public class CarSpawner
-	{
-		bool silent = false;
-		public Traveller.TravellerDirection direction;
-		public float CarFrequency;
-		public float CarAvSpeed;
-		public WorldPosition position;
-		public float lastSpawnedTime;
-		public float nextSpawnTime; //time elapsed till next spawn
+        readonly Viewer3D Viewer;
+        readonly CarSpawnerObj CarSpawnerObj;
 
-		private float StartData1;//the first of SData of the start location
-		private float EndData1; //the first of SData of the end location
-		public float roadLength; // how far away between the start and end, use to reduce computing
+        // THREAD SAFETY:
+        //   All accesses must be done in local variables. No modifications to the objects are allowed except by
+        //   assignment of a new instance (possibly cloned and then modified).
+        public List<RoadCar> Cars = new List<RoadCar>();
+        // Level crossing which interact with this spawner. Distances are used for speed curves and the list must be sorted by distance from spawner.
+        public List<Crossing> Crossings = new List<Crossing>();
 
-		public float X, Y, Z; //start point information
-		public int TileX, TileZ;
-		
-		public int TileX2, TileZ2; //end point information
-		public float X2, Y2, Z2;
+        public readonly Traveller Traveller;
+        readonly float Length;
+        float LastSpawnedTime;
+        float NextSpawnTime;
 
-		public RoadCar lastCar; //last car spawned
+        public RoadCarSpawner(Viewer3D viewer, WorldPosition position, CarSpawnerObj carSpawnerObj)
+        {
+            Debug.Assert(TrackMergeDistance >= 2 * (RampLength + TrackHalfWidth), "TrackMergeDistance is less than 2 * (RampLength + TrackHalfWidth); vertical inconsistencies will occur at close, but not merged, tracks.");
+            Viewer = viewer;
+            CarSpawnerObj = carSpawnerObj;
 
-		//crossing interacted with this spawner
-		public int numCrossings;
-		public float[] crossingDistanceChart; //how far away crossings are from the start
-		public LevelCrossingObject[] crossingObjects; //the crossing objects
-		SortedList<float, float> listOfTracks;
-		float[] trackRange; //several track may be close, so they form a track range
-		float[] trackHeight; //tracks may be higher than road, this will store the difference
-		int trackNum;
+            var start = CarSpawnerObj.getTrItemID(0);
+            var end = CarSpawnerObj.getTrItemID(1);
+            var trItems = viewer.Simulator.RDB.RoadTrackDB.TrItemTable;
+            var startLocation = new WorldLocation(trItems[start].TileX, trItems[start].TileZ, trItems[start].X, trItems[start].Y, trItems[start].Z);
+            var endLocation = new WorldLocation(trItems[end].TileX, trItems[end].TileZ, trItems[end].X, trItems[end].Y, trItems[end].Z);
 
-		public float topY;
+            Traveller = new Traveller(viewer.Simulator.TSectionDat, viewer.Simulator.RDB.RoadTrackDB.TrackNodes, startLocation.TileX, startLocation.TileZ, startLocation.Location.X, startLocation.Location.Z);
+            Length = Traveller.DistanceTo(endLocation.TileX, endLocation.TileZ, endLocation.Location.X, endLocation.Location.Y, endLocation.Location.Z);
+            if (Length < 0)
+            {
+                Traveller.ReverseDirection();
+                Length = Traveller.DistanceTo(endLocation.TileX, endLocation.TileZ, endLocation.Location.X, endLocation.Location.Y, endLocation.Location.Z);
+                if (Length < 0)
+                    Trace.TraceWarning("{0} car spawner {1} doesn't have connected road route between {2} and {3}.", position, carSpawnerObj.UID, startLocation, endLocation);
+            }
 
-		public CarSpawner(CarSpawnerObj spawnerObj, WorldPosition wp)
-		{
+            var sortedLevelCrossings = new SortedList<float, LevelCrossingItem>();
+            for (var crossingTraveller = new Traveller(Traveller); crossingTraveller.NextSection(); )
+                if (crossingTraveller.IsTrack)
+                    foreach (var trItemRef in crossingTraveller.TN.TrVectorNode.TrItemRefs)
+                        if (Viewer.Simulator.LevelCrossings.RoadCrossingItems.ContainsKey(trItemRef))
+                            sortedLevelCrossings[Viewer.Simulator.LevelCrossings.RoadCrossingItems[trItemRef].DistanceTo(Traveller)] = Viewer.Simulator.LevelCrossings.RoadCrossingItems[trItemRef];
 
-			int start, end;
+            Crossings = sortedLevelCrossings.Select(slc => new Crossing(slc.Value, slc.Key, float.NaN)).ToList();
+        }
 
-			start = spawnerObj.getTrItemID(0);
-			end = spawnerObj.getTrItemID(1);
-			if (spawnerObj.CarFrequency < 0.1 || spawnerObj.CarAvSpeed < 0.1 || start < 0 || end < 0) // in case data is wrong
-			{
-				silent = true;
-				return;
-			}
+        [CallOnThread("Updater")]
+        public void Update(ElapsedTime elapsedTime)
+        {
+            var cars = Cars;
+            foreach (var car in cars)
+                car.Update(elapsedTime);
 
-			lastCar = null;
+            LastSpawnedTime += elapsedTime.ClockSeconds;
+            if (Length > 0 && LastSpawnedTime >= NextSpawnTime && (cars.Count == 0 || cars.Last().Travelled > cars.Last().Length))
+            {
+                var newCars = new List<RoadCar>(cars);
+                newCars.Add(new RoadCar(Viewer, this, CarSpawnerObj.CarAvSpeed));
+                Cars = cars = newCars;
 
-			CarFrequency = spawnerObj.CarFrequency; //average frequency
-			CarAvSpeed =  spawnerObj.CarAvSpeed; //the final speed will be on 3/4 - 1 1/4
+                LastSpawnedTime = 0;
+                NextSpawnTime = CarSpawnerObj.CarFrequency * (0.75f + (float)Program.Random.NextDouble() / 2);
+            }
 
+            if (cars.Any(car => car.Travelled > Length))
+                Cars = cars = cars.Where(car => car.Travelled <= Length).ToList();
 
-			//set start tile etc
-			TrItem[] trTable = Program.Simulator.RDB.RoadTrackDB.TrItemTable;
-			TileX = trTable[start].TileX;
-			TileZ = trTable[start].TileZ;
-			X = trTable[start].X;
+            var crossings = Crossings;
+            if (crossings.Any(c => float.IsNaN(c.TrackHeight)))
+            {
+                Crossings = crossings.Select(c =>
+                {
+                    if (!float.IsNaN(c.TrackHeight) || !Viewer.Simulator.LevelCrossings.RoadToTrackCrossingItems.ContainsKey(c.Item))
+                        return c;
+                    var height = Viewer.Simulator.LevelCrossings.RoadToTrackCrossingItems[c.Item].Location.Location.Y + TrackRailHeight - c.Item.Location.Location.Y;
+                    return new Crossing(c.Item, c.Distance, height <= TrainRailHeightMaximum ? height : 0);
+                }).ToList();
+            }
+        }
 
-			Y = trTable[start].Y;
-			Z = trTable[start].Z;
-
-			// set end tile etc
-			TileX2 = trTable[end].TileX;
-			TileZ2 = trTable[end].TileZ;
-			X2 = trTable[end].X;
-			Y2 = trTable[end].Y;
-			Z2 = trTable[end].Z;
-
-			StartData1 = trTable[start].SData1; //SData1 of the spawner
-			EndData1 = trTable[end].SData1;
-
-			lastSpawnedTime = 0;
-			nextSpawnTime = CarFrequency * (0.75f + (float)Program.Random.NextDouble() / 2);
-
-			//test the road, 1. direction should be 1; 2. dist to the end
-			direction = Traveller.TravellerDirection.Forward;
-			Traveller CarRDBTraveller;
-			try
-			{
-				CarRDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, TileX, TileZ, X, Z, direction);
-				if (CarRDBTraveller.DistanceTo(TileX2, TileZ2, X2, Y2, Z2) < 0) //cannot reach the end, so the direction is wrong
-				{
-					direction = Traveller.TravellerDirection.Backward;
-				}
-			}
-			catch (Exception )
-			{
-				silent = true;
-				return;
-			}
-
-			//dist to the end, need to reset the RDB traveller
-            CarRDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, TileX, TileZ, X, Z, direction);
-            roadLength = CarRDBTraveller.DistanceTo(TileX2, TileZ2, X2, Y2, Z2) - 1.0f; //-1.0f to be a bit safe to incorrprate numerical error
-
-			//shoot some cars to the road so that the road is populated first
-			RoadCar temp;
-			SortedList<float, RoadCar> listOfCar = new SortedList<float, RoadCar>();
-			float dist;
-			int i;
-
-			var initSeconds = 120; //populate the road with 120s of time, i.e., try to create 120/CarFrequency cars.
-
-			for (i = 0; i < initSeconds; i++)
-			{
-				temp = SpawnCars(1);
-				if (temp == null) continue;
-				dist = (initSeconds - i) * temp.SpeedMpS; // the car travelled this amount of dist
-				temp.Move(dist);
-				try
-				{
-					if (temp.outOfRoad == false) listOfCar.Add(-temp.travelledDist, temp);//add to the list
-				}
-				catch (Exception ) { }
-
-			}
-			
-			//take care of previous car of each car
-			if (listOfCar.Count > 0)
-			{
-				listOfCar.ElementAt(0).Value.previous = null;
-				for (i = 1; i < listOfCar.Count; i++)
-				{
-					listOfCar.ElementAt(i).Value.previous = listOfCar.ElementAt(i - 1).Value;
-				}
-				this.lastCar = listOfCar.Last().Value;
-			}
-			else lastCar = null;
-
-			//check for crossings it will interact
-			numCrossings = 0;
-			trackNum = 0; //number of tracks it will interact with
-
-			if (Program.Simulator.LevelCrossings == null) return; //no crossing, or crossing is not populated yet
-			LevelCrossingObject crossingObj;
-
-			int crSize = Program.Simulator.LevelCrossings.noCrossing;
-			SortedList<float, LevelCrossingObject> listOfCrossing = new SortedList<float, LevelCrossingObject>();
-			List<LevelCrossingObject> added = new List<LevelCrossingObject>(); //crossings being added, including sisters;
-			for (i = 0; i < crSize; i++) //check to find all crossings
-			{
-				crossingObj = Program.Simulator.LevelCrossings.LevelCrossingObjects[i];
-				if (crossingObj == null) continue;
-				if (added.Contains(crossingObj)) continue;
-				dist = crossingObj.DistanceTo(CarRDBTraveller);
-				if (dist < 0) continue;
-				try
-				{
-					listOfCrossing.Add(dist, crossingObj);
-					crossingObj.carSpawner = this;
-				}
-				catch (Exception ) { }
-			}
-
-			//the road has crossings, build the distance chart and crossings
-			if (listOfCrossing.Count > 0)
-			{
-				numCrossings = listOfCrossing.Count;
-				crossingDistanceChart = new float[numCrossings];
-				crossingObjects = new LevelCrossingObject[numCrossings];
-				for (i = 0; i < numCrossings; i++)
-				{
-					crossingDistanceChart[i] = listOfCrossing.ElementAt(i).Key;
-					crossingObjects[i] = listOfCrossing.ElementAt(i).Value;
-				}
-			}
-		}//constructor
-
-		public void CheckGatesAgain(LevelCrossingObject crossingObj) //needed since gate may be loaded later
-		{
-			if (numCrossings <= 0) return;
-
-			float key;
-			int loc;
-			for (loc = 0; loc < numCrossings; loc++)
-			{
-				if (crossingObjects[loc] == crossingObj) break;
-			}
-
-			if (loc >= numCrossings) return;// did not find the crossing
-
-			SortedList<float, LevelCrossingObject> listOfCrossing = new SortedList<float, LevelCrossingObject>();
-			listOfTracks = new SortedList<float, float>();
-
-			for (int i = 0; i < numCrossings; i++)
-			{
-				//only push those not affected in
-				if (crossingObjects[i] != crossingObj)
-					listOfCrossing.Add(crossingDistanceChart[i], crossingObjects[i]);
-			}
-
-			key = crossingDistanceChart[loc];
-
-			TrItem[] trTable = Program.Simulator.RDB.RoadTrackDB.TrItemTable;
-			TrItem[] trTable2 = Program.Simulator.TDB.TrackDB.TrItemTable;
-
-
-			float dist;
-			int RDBID2 = -1;
-			foreach (LevelCrossingObject sister in crossingObj.groups)
-			{
-				int current = 0;
-				int RDBId = sister.levelCrossingObj.getTrItemID(current, 1);
-				while (RDBId >= 0)
-				{
-					//find the dist, no need to compute, just poll
-					dist = Math.Abs(StartData1 - trTable[RDBId].SData1);
-					RDBID2 = sister.levelCrossingObj.getTrItemID(current, 0);
-
-					if (RDBID2 >= 0)
-					{
-						dist = CheckTrackHeight(trTable, RDBId, trTable2, RDBID2, dist);
-						if (dist < key) key = dist;
-					}
-					current++;
-					RDBId = sister.levelCrossingObj.getTrItemID(current, 1);
-				}
-
-			}
-			trackNum = 0;
-			try
-			{
-				//build the database for tracks and its height, if two tracks are close, they are considered as one unit
-				trackRange = new float[(listOfTracks.Count + 1) * 2]; 
-				trackHeight = new float[listOfTracks.Count + 1];
-				int i = 0, k = 0;
-				trackRange[i] = listOfTracks.First().Key - 2;//road bed starts 2 meters on the left of the track
-				trackHeight[i / 2] = listOfTracks.First().Value;
-				trackNum = 1;
-				for (k = 1; k < listOfTracks.Count; k++)
-				{
-					//if two tracks are close (< 7 meters), they are considered as one track
-					if (listOfTracks.ElementAt(k).Key - listOfTracks.ElementAt(k - 1).Key > 7) //two tracks are far away (>7 meters), thus may not consider continued road
-					{
-						trackRange[++i] = listOfTracks.ElementAt(k - 1).Key + 2; //road bed starts 2 meters on the left of the track
-						trackRange[++i] = listOfTracks.ElementAt(k).Key - 2; //road bed ends 2 meters on the right of the track
-						trackNum++;
-					}
-					trackHeight[i / 2] = listOfTracks.First().Value;
-				}
-				trackRange[++i] = listOfTracks.ElementAt(k - 1).Key + 2;//road bed ends 2 meters on the right of the track
-				listOfCrossing.Add(key, crossingObj);
-			}
-			catch (Exception ) {
-			}
-
-			//rebuild the map of gates/dist chart
-			if (listOfCrossing.Count > 0)
-			{
-				numCrossings = listOfCrossing.Count;
-				crossingDistanceChart = new float[numCrossings];
-				crossingObjects = new LevelCrossingObject[numCrossings];
-				for (int i = 0; i < numCrossings; i++)
-				{
-					crossingDistanceChart[i] = listOfCrossing.ElementAt(i).Key;
-					crossingObjects[i] = listOfCrossing.ElementAt(i).Value;
-				}
-			}
-		}
-
-		public float CheckTrackHeight(TrItem[] trTable, int RDBId, TrItem[] trTable2, int RDBId2, float dist)
-		{
-			float height;
-			try//find the height difference of track and road
-			{
-                var revDirection = direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward;
-                //road height is determined by the car traveller on the road
-                Traveller carTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, trTable[RDBId].TileX, trTable[RDBId].TileZ, trTable[RDBId].X, trTable[RDBId].Z, revDirection);
-				//track height is determined by the train traveller on the track
-                Traveller trainTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, trTable2[RDBId2].TileX, trTable2[RDBId2].TileZ, trTable2[RDBId2].X, trTable2[RDBId2].Z);
-				height = trainTraveller.Y + 0.275f - carTraveller.Y;
-
-                float temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
-                //if the temp is -1, it means the item is not on the road, thus the data need to be curated.
-				if (temp == -1)
-				{
-					Traveller copy = new Traveller(trainTraveller);
-					float tried = 0;
-					while (tried < 100)//move forward to test 100 times (50 meters)
-					{
-						copy.Move(0.5f);
-						tried += 0.5f;
-						try
-						{
-                            carTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, copy.TileX, copy.TileZ, copy.X, copy.Z, revDirection);
-							temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
-							if (temp > 0)
-							{
-								height = copy.Y + 0.275f - carTraveller.Y;
-								break;
-							}
-						}
-						catch (Exception )
-						{
-						}
-					}
-					tried = 0;
-					copy = new Traveller(trainTraveller);
-					while (temp < 0 && tried < 100)//move backward to test 100 times (50 meters)
-					{
-						copy.Move(-0.5f);
-						tried += 0.5f;
-						try
-						{
-                            carTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, copy.TileX, copy.TileZ, copy.X, copy.Z, revDirection);
-                            temp = carTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
-							if (temp > 0)
-							{
-								height = copy.Y + 0.275f - carTraveller.Y;
-								break;
-							}
-						}
-						catch (Exception )
-						{
-						}
-					}
-					if (temp >= 0 && Math.Abs(temp - dist) > 1)
-					{
-						dist = temp; //if the data is curated with significant diff, use the new data
-					}
+        internal float GetRoadHeightAdjust(float distance)
+        {
+            var crossings = Crossings;
+            for (var i = 0; i < crossings.Count; i++)
+            {
+                // Crossing is too far down the path, we can quit.
+                if (distance <= crossings[i].DistanceAdjust1)
+                    break;
+                if (!float.IsNaN(crossings[i].TrackHeight))
+                {
+                    // Location is approaching a track.
+                    if (crossings[i].DistanceAdjust1 <= distance && distance <= crossings[i].DistanceAdjust2)
+                        return MathHelper.Lerp(0, crossings[i].TrackHeight, (distance - crossings[i].DistanceAdjust1) / RampLength);
+                    // Location is crossing a track.
+                    if (crossings[i].DistanceAdjust2 <= distance && distance <= crossings[i].DistanceAdjust3)
+                        return crossings[i].TrackHeight;
+                    // Crossings are close enough to count as joined.
+                    if (i + 1 < crossings.Count && !float.IsNaN(crossings[i + 1].TrackHeight) && crossings[i + 1].Distance - crossings[i].Distance < TrackMergeDistance)
+                    {
+                        // Location is between two crossing tracks.
+                        if (crossings[i].DistanceAdjust3 <= distance && distance <= crossings[i + 1].DistanceAdjust2)
+                            return MathHelper.Lerp(crossings[i].TrackHeight, crossings[i + 1].TrackHeight, (distance - crossings[i].DistanceAdjust3) / (crossings[i + 1].DistanceAdjust2 - crossings[i].DistanceAdjust3));
+                    }
+                    else
+                    {
+                        // Location is passing a track.
+                        if (crossings[i].DistanceAdjust3 <= distance && distance <= crossings[i].DistanceAdjust4)
+                            return MathHelper.Lerp(crossings[i].TrackHeight, 0, (distance - crossings[i].DistanceAdjust3) / RampLength);
+                    }
                 }
-				listOfTracks.Add(dist, height > 0 && height < 1 ? height : 0);//if track is too high, ignore as well
+            }
+            return 0;
+        }
 
-			}
-			catch (Exception )
-			{
-			}
-			return dist;
-		}
+        public class Crossing
+        {
+            public readonly LevelCrossingItem Item;
+            public readonly float Distance;
+            public readonly float DistanceAdjust1;
+            public readonly float DistanceAdjust2;
+            public readonly float DistanceAdjust3;
+            public readonly float DistanceAdjust4;
+            public readonly float TrackHeight;
+            internal Crossing(LevelCrossingItem item, float distance, float trackHeight)
+            {
+                Item = item;
+                Distance = distance;
+                DistanceAdjust1 = distance - RoadCarSpawner.TrackHalfWidth - RoadCarSpawner.RampLength;
+                DistanceAdjust2 = distance - RoadCarSpawner.TrackHalfWidth;
+                DistanceAdjust3 = distance + RoadCarSpawner.TrackHalfWidth;
+                DistanceAdjust4 = distance + RoadCarSpawner.TrackHalfWidth + RoadCarSpawner.RampLength;
+                TrackHeight = trackHeight;
+            }
+        }
+    }
 
-		public float CheckTrack(float travelledDist)
-		{
-			float top = 0;
-			if (trackNum == 0) return top;
+    public class RoadCar
+    {
+        const float VisualHeightAdjustment = 0.1f;
+        const float AccelerationFactor = 5;
+        const float BrakingFactor = 5;
+        const float BrakingMinFactor = 1;
 
-			//most time will be either not reaching a track, or has left the tracks
-			if (travelledDist < trackRange[0] || travelledDist > trackRange[2 * trackNum - 1]) return top;
+        readonly RoadCarSpawner Spawner;
 
-			for (int i = 0; i < trackNum; i++)
-			{
-				if (trackRange[2 * i] <= travelledDist && travelledDist <= trackRange[2 * i + 1])
-				{
-					top = trackHeight[i];
-					break;
-				}
-			}
-			return top;
-		}
+        public readonly int Type;
+        public readonly float Length;
+        public float Travelled;
 
-		//add a car to the road if possible: 1) the previous car has moved out, 2) ready to spawn based on the frequency
-		public RoadCar SpawnCars(float clock)
-		{
-			//something wrong of the data 
-			if (silent == true) return null;
-			lastSpawnedTime += clock;
-			if (lastCar != null && lastCar.travelledDist < 20) return null; //traffic jam
-			if (lastSpawnedTime < nextSpawnTime) return null; // not yet to spawn a car
-			lastSpawnedTime = 0;
+        public int TileX { get { return FrontTraveller.TileX; } }
+        public int TileZ { get { return FrontTraveller.TileZ; } }
+        public Vector3 FrontLocation
+        {
+            get
+            {
+                var wl = FrontTraveller.WorldLocation;
+                wl.Location.Y += Spawner.GetRoadHeightAdjust(Travelled - Length * 0.25f) + VisualHeightAdjustment;
+                return wl.Location;
+            }
+        }
+        public Vector3 RearLocation
+        {
+            get
+            {
+                var wl = RearTraveller.WorldLocation;
+                wl.NormalizeTo(TileX, TileZ);
+                wl.Location.Y += Spawner.GetRoadHeightAdjust(Travelled + Length * 0.25f) + VisualHeightAdjustment;
+                return wl.Location;
+            }
+        }
 
-			RoadCar temp = new RoadCar(this);
-			nextSpawnTime = CarFrequency * (0.75f + (float)Program.Random.NextDouble() / 2); //between 3/4-1 1 1/4 of the set up
-			if (temp.outOfRoad == true) temp = null; //cannot add car shape (wrong with carspawn.dat), thus return nothing
-			return temp;
-		}
-	}
+        readonly Traveller FrontTraveller;
+        readonly Traveller RearTraveller;
+        float Speed;
+        float SpeedMax;
+        int NextCrossingIndex;
 
-	/// <summary>
-	/// Class to handle car movement and interaction with crossings
-	/// </summary>
-	public class RoadCar
-	{
-		public Traveller CarRDBTraveller;   // position of the car
-		public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
-		public RoadCarShape carShape;
-		public CarSpawner spawner;
-		public bool outOfRoad = false;
-		public RoadCar previous; //car in front of
-		public float travelledDist; //how far from the origin, no need to compute from DistanceTo, added every frame
-		private int crossingGate = 0;// which is the first crossing it will cross
-		public float safeDist; //keep safe distance from
-		private float desiredSpeed; //max and desired speed
-		public float carWheelPos;
+        public RoadCar(Viewer3D viewer, RoadCarSpawner spawner, float averageSpeed)
+        {
+            Spawner = spawner;
+            Type = Program.Random.Next() % viewer.Simulator.CarSpawnerFile.shapeNames.Length;
+            Length = viewer.Simulator.CarSpawnerFile.distanceFrom[Type];
+            // Front and rear travellers approximate wheel positions at 25% and 75% along vehicle.
+            FrontTraveller = new Traveller(spawner.Traveller);
+            FrontTraveller.Move(Length * 0.15f);
+            RearTraveller = new Traveller(spawner.Traveller);
+            RearTraveller.Move(Length * 0.85f);
+            // Travelled is the center of the vehicle.
+            Travelled = Length * 0.50f;
+            Speed = SpeedMax = averageSpeed * (0.75f + (float)Program.Random.NextDouble() / 2);
+        }
 
-		/// <summary>
-		/// Move the car along the road, rotate the car based on its front/end vector, and move the car higher if the rail
-		/// track is higher
-		/// </summary>
-		public void Move(float dist) //move along the road some distance
-		{
-			//add to the travelled dist
-			travelledDist += dist; //add to the travelled dist
+        [CallOnThread("Updater")]
+        public void Update(ElapsedTime elapsedTime)
+        {
+            var crossings = Spawner.Crossings;
 
-			if (travelledDist > spawner.roadLength)//check if out of road
-			{
-				outOfRoad = true;
-				return;
-			}
+            // We skip any crossing that we have passed (Travelled + Length / 2) or are too close to stop at (+ Speed * BrakingMinFactor).
+            // We skip any crossing that is part of the same group as the previous.
+            while (NextCrossingIndex < crossings.Count
+                && ((Travelled + Length / 2 + Speed * BrakingMinFactor > crossings[NextCrossingIndex].Distance)
+                || (NextCrossingIndex > 0 && crossings[NextCrossingIndex].Item.CrossingGroup != null && crossings[NextCrossingIndex].Item.CrossingGroup == crossings[NextCrossingIndex - 1].Item.CrossingGroup)))
+            {
+                NextCrossingIndex++;
+            }
 
-			//move the traveller
-			CarRDBTraveller.Move(dist);
-			carShape.movablePosition.TileX = CarRDBTraveller.TileX;
-			carShape.movablePosition.TileZ = CarRDBTraveller.TileZ;
+            // Calculate all the distances to items we need to stop at (level crossings, other cars).
+            var stopDistances = new List<float>();
+            for (var crossing = NextCrossingIndex; crossing < crossings.Count; crossing++)
+            {
+                if (crossings[crossing].Item.CrossingGroup.HasTrain)
+                {
+                    // TODO: Stopping distance for level crossings!
+                    stopDistances.Add(crossings[crossing].Distance - RoadCarSpawner.StopDistance);
+                    break;
+                }
+            }
+            // TODO: Maybe optimise this?
+            var cars = Spawner.Cars;
+            var spawnerIndex = cars.IndexOf(this);
+            if (spawnerIndex > 0)
+                stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length / 2);
 
-			float added1 = 0.0f; //track height added for front wheel
-			float added2 = 0.0f; //track height added for back wheel
+            // Calculate whether we're too close to the minimum stopping distance (and need to slow down) or going too slowly (and need to speed up).
+            var stopDistance = stopDistances.Count > 0 ? stopDistances.Min() - Travelled - Length / 2 : float.MaxValue;
+            var slowingDistance = BrakingFactor * Length;
+            if (stopDistance < slowingDistance)
+                Speed = SpeedMax * (float)Math.Sin((Math.PI / 2) * (stopDistance / slowingDistance));
+            else if (Speed < SpeedMax)
+                Speed = Math.Min(Speed + AccelerationFactor / Length * elapsedTime.ClockSeconds, SpeedMax);
 
-			added1 = spawner.CheckTrack(travelledDist + carWheelPos);
-			added2 = spawner.CheckTrack(travelledDist - carWheelPos);
+            var distance = elapsedTime.ClockSeconds * Speed;
+            Travelled += distance;
+            FrontTraveller.Move(distance);
+            RearTraveller.Move(distance);
+        }
+    }
 
-			//we need to compute the rotation matrix, so use the front and end of the car
-			Traveller copy1 = new Traveller(CarRDBTraveller);
-			Traveller copy2 = new Traveller(CarRDBTraveller);
-			copy1.Move(carWheelPos); //move front wheel to its position
-			copy2.Move(-carWheelPos); //move back wheel to its position
+    public class RoadCarDrawer
+    {
+        readonly Viewer3D Viewer;
 
-			//compute the rotation matrix from front and back wheel
-			carShape.movablePosition.XNAMatrix = Matrix.Identity;
-			carShape.movablePosition.XNAMatrix *= RotationMatrixFromMSTSCoordinates(
-				copy2.X, copy2.Y + 0.1f + added2, copy2.Z, copy1.X, copy1.Y + 0.1f + added1, copy1.Z,
-				copy2.TileX, copy2.TileZ, copy1.TileX, copy1.TileZ); 
-			//MSTS car looks be running a bit lower, thus +0.1 to bring the wheel above road
+        // THREAD SAFETY:
+        //   All accesses must be done in local variables. No modifications to the objects are allowed except by
+        //   assignment of a new instance (possibly cloned and then modified).
+        Dictionary<RoadCar, RoadCarViewer> Cars = new Dictionary<RoadCar, RoadCarViewer>();
+        List<RoadCar> VisibleCars = new List<RoadCar>();
 
-			carShape.movablePosition.XNAMatrix *= Matrix.CreateTranslation(CarRDBTraveller.X,
-				(copy2.Y + added2 + copy1.Y + added1) / 2 + 0.1f, -CarRDBTraveller.Z); //create the location
-			     // the y location is the half of the sum of end and front
-		}
+        public RoadCarDrawer(Viewer3D viewer)
+        {
+            Viewer = viewer;
+        }
 
-		/// <summary>
-		/// create a car and put it on the road
-		/// </summary>
-		public RoadCar(CarSpawner r)
-		{
-			//assign the previous car
-			previous = r.lastCar; //assign the last car spawned as my previous
-			r.lastCar = this; //I am the last car now
+        [CallOnThread("Loader")]
+        public void Load()
+        {
+            var visibleCars = VisibleCars;
+            var cars = Cars;
+            if (visibleCars.Any(c => !cars.ContainsKey(c)) || cars.Keys.Any(c => !visibleCars.Contains(c)))
+            {
+                var newCars = new Dictionary<RoadCar, RoadCarViewer>();
+                foreach (var car in visibleCars)
+                {
+                    if (cars.ContainsKey(car))
+                        newCars.Add(car, cars[car]);
+                    else
+                        newCars.Add(car, LoadCar(car));
+                }
+                Cars = newCars;
+            }
+        }
 
-			//init location and speed
-			CarRDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.RDB.RoadTrackDB.TrackNodes, r.TileX, r.TileZ, r.X, r.Z, r.direction);
-			spawner = r;
-			desiredSpeed = SpeedMpS = r.CarAvSpeed * (0.75f + (float) Program.Random.NextDouble() / 2);
-			travelledDist = 0.0f;
-			RoadCarHandler.Viewer.World.Cars.AddCarShape(this); // add car shape
-		}
+        [CallOnThread("Updater")]
+        public void LoadPrep()
+        {
+            // TODO: Maybe optimise this with some serial numbers?
+            var visibleCars = VisibleCars;
+            var newVisibleCars = new List<RoadCar>(visibleCars.Count);
+            foreach (var tile in Viewer.World.Scenery.WorldFiles)
+                foreach (var spawner in tile.carSpawners)
+                    newVisibleCars.AddRange(spawner.Cars);
+            VisibleCars = newVisibleCars;
+        }
 
-		//update the car, first speed, then move
-		public void Update(float elapsedClockSeconds)
-		{
-			if (outOfRoad == true) return; //out of road, do nothing
+        [CallOnThread("Updater")]
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            foreach (var car in Cars.Values)
+                car.PrepareFrame(frame, elapsedTime);
+        }
 
+        [CallOnThread("Loader")]
+        RoadCarViewer LoadCar(RoadCar car)
+        {
+            return new RoadCarViewer(Viewer, car);
+        }
+    }
 
-			float distToCar, distToGate=-1;
+    public class RoadCarViewer
+    {
+        readonly RoadCar Car;
+        readonly RoadCarShape CarShape;
 
-			//check which crossing should it interact with
-			if (crossingGate < spawner.numCrossings)
-			{
-				distToGate = spawner.crossingDistanceChart[crossingGate] - travelledDist;
-				while (distToGate < 0)
-				{
-					crossingGate++; //move to the next gate area
-					if (crossingGate >= spawner.numCrossings) break;
-					distToGate = spawner.crossingDistanceChart[crossingGate] - travelledDist;
-				}
-			}
+        public RoadCarViewer(Viewer3D viewer, RoadCar car)
+        {
+            Car = car;
+            CarShape = new RoadCarShape(viewer, viewer.Simulator.CarSpawnerFile.shapeNames[car.Type]);
+        }
 
-			//clean the assignment of previous car
-			if (previous != null && previous.outOfRoad == true) previous = null;
-			if (previous == null) //no car in front of me, I will travel as needed
-			{
-				if (SpeedMpS < desiredSpeed - 0.1) //I am slower than expect, will graduately accelarate to the speed
-				{
-					SpeedMpS += (desiredSpeed - SpeedMpS) * elapsedClockSeconds / 3.0f;
-				}
-				distToCar = spawner.roadLength;
-			}
-			else
-			{
-				distToCar = previous.travelledDist - travelledDist;
-			}
-
-			//we have gate, check with the next gate if any
-			if (crossingGate < spawner.numCrossings && spawner.crossingObjects[crossingGate].HasTrain())
-			{
-				distToGate = spawner.crossingDistanceChart[crossingGate] - travelledDist;
-				if (distToGate < 5) //may just rush
-				{
-					SpeedMpS += (desiredSpeed - SpeedMpS) / 2;
-				}
-				else if (distToGate < 10 + safeDist / 2)//stop immediately if I am close
-				{
-					SpeedMpS = 0;
-					return;
-				}
-				else if (distToGate < 29.9f && distToCar > 50) // slow down a bit
-				{
-					SpeedMpS = desiredSpeed * (0.8f - (20.0f - distToGate) / 20.0f);
-				}
-			}
-
-			//car in front of me too close
-			if (previous != null && distToCar < (previous.safeDist + safeDist) / 2.0f)
-			{
-				SpeedMpS = previous.SpeedMpS;
-			}
-			else //distance OK, need to see if need to slow down
-			{
-				if (distToCar < 20)
-				{
-					//front is faster, so will increase speed, otherwise, slow a bit
-					if (previous != null && SpeedMpS < previous.SpeedMpS) SpeedMpS -= (SpeedMpS - previous.SpeedMpS) * elapsedClockSeconds / 2.0f;
-					else SpeedMpS = desiredSpeed * (0.2f - 0.1f * (20.0f - distToCar) / 20.0f);
-				}
-				else if (distToCar < 40)
-				{
-					//front is faster, so will increase speed, otherwise, slow a bit
-					if (previous != null && SpeedMpS < previous.SpeedMpS) SpeedMpS -= (SpeedMpS - previous.SpeedMpS) * elapsedClockSeconds / 2.0f;
-					else SpeedMpS = desiredSpeed * (1.0f - (45.0f - distToCar) / 50.0f);
-				}
-				else
-				{
-					if (SpeedMpS < 2 && distToCar > 50)
-					{
-						SpeedMpS += 0.2f; // start slow
-					}
-					else SpeedMpS += (desiredSpeed - SpeedMpS) / 10.0f;
-				}
-
-			}
-
-			//sanity checks
-			if (SpeedMpS < 0.01)
-			{
-				SpeedMpS = 0.0f;
-				return;
-			}
-			if (SpeedMpS > desiredSpeed - 1) SpeedMpS = desiredSpeed;
-
-			//now move the car
-			Move(elapsedClockSeconds * SpeedMpS);//move a distance
-
-			//move out of road?
-			if (travelledDist > spawner.roadLength) // out of road
-			{
-				outOfRoad = true;
-			}
-		} // end Update
-
-		/// <summary>
-		/// The front end of a railcar is at MSTS world coordinates x1,y1,z1, TileX1, TileZ1
-		/// The other end is at x2,y2,z2, TileX2, TileZ2
-		/// Return a rotation (not translation) matrix for the center of the railcar.
-		/// </summary>
-		public static Matrix RotationMatrixFromMSTSCoordinates(float x1, float y1, float z1, float x2, float y2, float z2, int TileX1, int TileZ1, int TileX2, int TileZ2)
-		{
-			// translate 1st coordinate to be relative to 0,0,0
-			float dx = (float)((TileX1 - TileX2) * 2048 + x1 - x2);
-			float dy = (float)(y1 - y2);
-			float dz = (float)((TileZ1 - TileZ2) * 2048 + z1 - z2);
-
-			// compute the rotational matrix  
-			float length = (float)Math.Sqrt(dx * dx + dz * dz + dy * dy);
-			float run = (float)Math.Sqrt(dx * dx + dz * dz);
-			// normalize to coordinate to a length of one, ie dx is change in x for a run of 1
-			dx /= length;
-			dy /= length;   // ie if it is tilted back 5 degrees, this is sin 5 = 0.087
-			run /= length;  //                              and   this is cos 5 = 0.996
-			dz /= length;
-			// setup matrix values
-
-			Matrix xnaTilt = new Matrix(1, 0, 0, 0,
-									 0, run, dy, 0,
-									 0, -dy, run, 0,
-									 0, 0, 0, 1);
-
-			Matrix xnaRotation = new Matrix(dz, 0, dx, 0,
-											0, 1, 0, 0,
-											-dx, 0, dz, 0,
-											0, 0, 0, 1);
-
-			return xnaTilt * xnaRotation;
-		}
-	}// class RoadCar
-
-	/// <summary>
-	/// The class hold all cars and information of the viewer/simulator
-	/// </summary>
-	public class RoadCarHandler
-	{
-		private RoadCar[] cars;
-		private int capacity; //how many cars can hold
-		private int numCars; //how many cars now
-		public static Viewer3D Viewer;
-		/// <summary>
-		/// Cars will be loaded into this viewer.
-		/// </summary>
-		public RoadCarHandler(Viewer3D viewer)
-		{
-			Viewer = viewer;
-			capacity = 128;
-			numCars = 0;
-			cars = new RoadCar[capacity]; //initial to take 128 cars most, but will grow if needed
-		}
-
-		/// <summary>
-		/// add shape to a car, randomly pick a shape, and assign its location/rotation based on traveller
-		/// </summary>
-		public void AddCarShape(RoadCar r)
-		{
-			if (Program.Simulator.CarSpawnerFile.shapeNames.Length <= 0) //error in carspawn.dat
-			{
-				r.outOfRoad = true;
-				return;
-			}
-			//randomly pick a shape and its safe distance
-			int i = Program.Random.Next() % Program.Simulator.CarSpawnerFile.shapeNames.Length;
-			string shapeFilePath = Program.Simulator.CarSpawnerFile.shapeNames[i]; //shape directory has been added into the filename, so no need to worry
-			r.safeDist = Program.Simulator.CarSpawnerFile.distanceFrom[i];
-			r.carWheelPos = r.safeDist / 3; //wheels are safeDist/3 from the center
-
-			//find the location/rotation from the traveller
-			WorldLocation wl = new WorldLocation(r.CarRDBTraveller.WorldLocation);
-			wl.Location.Z *= -1;
-			WorldPosition w = new WorldPosition();
-			w.TileX = r.CarRDBTraveller.WorldLocation.TileX;
-			w.TileZ = r.CarRDBTraveller.WorldLocation.TileZ;
-			w.XNAMatrix = Matrix.CreateTranslation(wl.Location);
-			r.carShape = new RoadCarShape(Viewer, shapeFilePath, w);
-
-			r.Move(r.carWheelPos); //move the car forward so the shape rotation matrix can be corrected and back wheel will be on the road
-			if (r.outOfRoad == true) return; //check if out of road, just in case
-
-			//too many cars, grow the car array
-			if (numCars >= capacity - 1) //array too small, grow
-			{
-				capacity += 128; //grow by 128
-				RoadCar[] tmp = new RoadCar[capacity];
-				for (i = 0; i < numCars; i++)
-				{
-					tmp[i] = cars[i]; //copy from old to new
-				}
-				cars = tmp; //finished
-			}
-			//add the car into the car array
-			cars[numCars++] = r;
-			return;
-		}
-
-		/// <summary>
-		/// Loop through cars to update them and animate them
-		/// </summary>
-		public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-		{
-			RoadCar car;
-			//loop through all cars
-			for (int i = numCars - 1; i >= 0; i--)
-			{
-				car = cars[i];
-
-				car.Update(elapsedTime.ClockSeconds);
-				//if car is out, remove it (copy the last car to occupy its position in the car array
-				if (car.outOfRoad == true)
-				{
-					cars[i] = cars[numCars - 1]; //car is out, copy the last car to occupy the position
-					numCars--;
-					continue;
-				}
-				car.carShape.PrepareFrame(frame, elapsedTime);//animate it
-			}
-		}
-	} // RoadCarDrawer
-
-
+        [CallOnThread("Updater")]
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            CarShape.Location.TileX = Car.TileX;
+            CarShape.Location.TileZ = Car.TileZ;
+            // TODO: Add 0.1f to Y to put wheels above road. Matching MSTS?
+            var front = Car.FrontLocation;
+            var rear = Car.RearLocation;
+            CarShape.Location.XNAMatrix = Simulator.XNAMatrixFromMSTSCoordinates(front.X, front.Y, front.Z, rear.X, rear.Y, rear.Z);
+            CarShape.PrepareFrame(frame, elapsedTime);
+        }
+    }
 }

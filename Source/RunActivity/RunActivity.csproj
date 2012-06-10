@@ -294,7 +294,7 @@
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Common\DataLogger.cs" />
     <Compile Include="Viewer3D\OpenAL.cs" />
-    <Compile Include="Viewer3D\LevelCrossing.cs" />
+    <Compile Include="Simulator\LevelCrossing.cs" />
     <Compile Include="Viewer3D\ParticleEmitter.cs" />
     <Compile Include="Viewer3D\RoadCars.cs" />
     <Compile Include="Viewer3D\Signals.cs" />

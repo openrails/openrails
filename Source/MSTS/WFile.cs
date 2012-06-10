@@ -667,10 +667,6 @@ namespace MSTS
 		public LevelCrTiming levelCrTiming;
 		public List<TrItemId> trItemIDList;
 		int crashProbability;
-		public int movingDirection;
-		public bool inrange = false;
-		public float animSpeed = 0.005f; //compute the speed based on LevelCrTiming
-		public float warningTime;
 		public bool visible = true;
 		public bool silent = false;
 		public LevelCrossingObj(SBR block, int detailLevel)
@@ -678,7 +674,6 @@ namespace MSTS
 
 			StaticDetailLevel = detailLevel;
 			trItemIDList = new List<TrItemId>();
-			movingDirection = 0; //up by default;
 
 			while (!block.EndOfBlock())
 			{
@@ -688,17 +683,13 @@ namespace MSTS
 					{
 						case TokenID.UiD: UID = subBlock.ReadUInt(); break;
                         case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-                        case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock);
-							warningTime = levelCrParameters.crParameter1;
-							break;
+                        case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
 						case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
 						case TokenID.LevelCrData: levelCrData = new LevelCrData(subBlock);
                             visible = (levelCrData.crData1 & 0x1) == 0;
                             silent = !visible || (levelCrData.crData1 & 0x6) == 0x6;
 							break;
-						case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock);
-							animSpeed = 1.0f / (800.0f * levelCrTiming.animTiming);//hard code to make 4 seconds move realistic in 40 frame/second
-							break;
+                        case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock);break;
 						case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
 						case TokenID.FileName: FileName = subBlock.ReadString(); break;
 						case TokenID.Position: Position = new STFPositionItem(subBlock); break;
@@ -723,19 +714,18 @@ namespace MSTS
 			}
 			return -1;
 		}
+
 		public class LevelCrParameters
 		{
-			public float crParameter1, crParameter2; // not known the exact name yet
+			public float warningTime, minimumDistance;
 
 			public LevelCrParameters(SBR block)
 			{
 				block.VerifyID(TokenID.LevelCrParameters);
-				crParameter1 = block.ReadFloat();
-				crParameter2 = block.ReadFloat();
+				warningTime = block.ReadFloat();
+				minimumDistance = block.ReadFloat();
 				block.VerifyEndOfBlock();
-
 			}
-
 		}
 
 		public class LevelCrData

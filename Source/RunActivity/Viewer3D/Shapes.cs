@@ -20,6 +20,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using MSTSMath;
+
 namespace ORTS
 {
 	[Flags]
@@ -418,169 +419,88 @@ namespace ORTS
 		}
 	} // class SpeedPostShape
 
-	public class LevelCrossingShape : PoseableShape, IDisposable
-	{
-        public readonly LevelCrossingObj crossingObj;  // has data on current aligment for the switch
-        public readonly SoundSource Sound;
+    public class LevelCrossingShape : PoseableShape, IDisposable
+    {
+        readonly LevelCrossingObj CrossingObj;
+        readonly SoundSource Sound;
+        readonly LevelCrossing Crossing;
 
-        protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
+        bool Opening = true;
+        bool AnimationForward = true; // If the animation speed is negative, use it to indicate where the gate should move.
+        float AnimationKey = 0;
 
-        List<LevelCrossingObject> crossingObjects; //all objects with the same shape
-        int animatedDir; //if the animation speed is negative, use it to indicate where the gate should move
-        bool visible = true;
-        readonly bool silent = false;
-
-        public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj trj, LevelCrossingObject[] levelObjects)
+        public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
             : base(viewer, path, position, shapeFlags | ShapeFlags.AutoZBias)
         {
-            animatedDir = 0;
-            crossingObjects = new List<LevelCrossingObject>(); //sister gropu of crossing if there are parallel lines
-            crossingObj = trj; // the LevelCrossingObj, which handles details of the crossing data
-            crossingObj.inrange = true;//in viewing range
-            int i, j, max, id, found;
-            max = levelObjects.GetLength(0); //how many crossings are in the route
-            found = 0; // trItem is found or not
-            visible = trj.visible;
-            silent = trj.silent;
-            if (!silent)
+            CrossingObj = crossingObj;
+            if (!CrossingObj.silent)
             {
                 try
                 {
                     Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
-                    List<SoundSourceBase> ls = new List<SoundSourceBase>();
-                    ls.Add(Sound);
-                    viewer.SoundProcess.AddSoundSource(this, ls);
+                    viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch (Exception e) // if the sms is wrong
+                catch (Exception error)
                 {
-                    Trace.TraceWarning(e.Message + " Crossing gates will be silent.");
-                    Sound = null;
-                    silent = true;
+                    Trace.WriteLine(error);
                 }
             }
-            i = 0;
-            while (true)
-            {
-                id = crossingObj.getTrItemID(i, 0);
-                if (id < 0) break;
-                found = 0;
-                //loop through all crossings, to see if they are related to this shape 
-                // maybe more than one, so they will form a sister group and know each other
-                for (j = 0; j < max; j++)
-                {
-                    if (levelObjects[j] != null && id == levelObjects[j].trItem)
-                    {
-                        found++;
-                        levelObjects[j].levelCrossingObj = crossingObj;
-                        if (crossingObjects.Contains(levelObjects[j])) continue;
-                        crossingObjects.Add(levelObjects[j]);
-                        levelObjects[j].endDist = this.crossingObj.levelCrParameters.crParameter2;
-                        levelObjects[j].groups = crossingObjects;
-                        //notify the spawner who interacts with 
-                        if (levelObjects[j].carSpawner != null)
-                            levelObjects[j].carSpawner.CheckGatesAgain(levelObjects[j]);
-                    }
-                }
-                i++;
-            }
+            Crossing = viewer.Simulator.LevelCrossings.CreateLevelCrossing(
+                position,
+                from tid in CrossingObj.trItemIDList where tid.db == 0 select tid.dbID, 
+                from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID, 
+                CrossingObj.levelCrParameters.warningTime, 
+                CrossingObj.levelCrParameters.minimumDistance);
         }
 
         #region IDisposable Members
 
         public void Dispose()
         {
-            crossingObj.inrange = false;//not in viewing range
-            if (!silent)
+            if (!CrossingObj.silent)
                 Viewer.SoundProcess.RemoveSoundSource(Sound);
         }
 
         #endregion
 
-		//do animation, the speed is constant no matter what the frame rate is
-		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-		{
-			if (visible != true) return;
-			if (crossingObj.movingDirection == 0)
-			{
-				if (!silent && AnimationKey > 0.999) Sound.HandleEvent(4);
-				if (AnimationKey > 0.001) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
-				if (AnimationKey < 0.001) AnimationKey = 0;
-			}
-			else
-			{
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            if (CrossingObj.visible != true)
+                return;
 
-				if (!silent && AnimationKey < 0.001) Sound.HandleEvent(3);
-				//Sound.Update();
-				if (crossingObj.animSpeed < 0) //loop animation
-				{
-					if (AnimationKey > 0.999f) animatedDir = 1;
-					if (AnimationKey < 0.001f) animatedDir = 0;
-					if (animatedDir == 0 && AnimationKey > 0.0f) AnimationKey -= crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
-					else if (animatedDir == 0 && AnimationKey > 0.999f)
-					{
-						animatedDir = 1;
-						AnimationKey = 0.999f;
-					}
-					else if (animatedDir == 1 && AnimationKey < 1.0f)
-					{
-						AnimationKey += crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f;
-					}
-					else
-					{
-						animatedDir = 0;
-						AnimationKey = 0.001f;
-					}
-				}
-				else
-				{
-					if (AnimationKey < 0.999) AnimationKey += crossingObj.animSpeed * elapsedTime.ClockSeconds * 1000.0f; //0.0005
-					if (AnimationKey > 0.999) AnimationKey = 1.0f;
-				}
-			}
+            if (Opening == Crossing.HasTrain)
+                Opening = !Crossing.HasTrain;
 
+            // Looping when animTiming < 0 (forwards then backwards then forwards again).
+            var animationLoop = CrossingObj.levelCrTiming.animTiming < 0;
+            var animationSpeed = Math.Abs(CrossingObj.levelCrTiming.animTiming);
+            if (Opening)
+            {
+                if (!CrossingObj.silent && AnimationKey > 0.999 && Sound != null) Sound.HandleEvent(4);
+                AnimationKey -= elapsedTime.ClockSeconds / animationSpeed;
+            }
+            else
+            {
+                if (!CrossingObj.silent && AnimationKey < 0.001 && Sound != null) Sound.HandleEvent(3);
+                if (animationLoop && AnimationKey < 0.001) AnimationForward = true;
+                if (animationLoop && AnimationKey > 0.999) AnimationForward = false;
+                AnimationKey += elapsedTime.ClockSeconds / animationSpeed * (AnimationForward ? 1 : -1);
+            }
+            if (AnimationKey < 0.001) AnimationKey = 0;
+            if (AnimationKey > 0.999) AnimationKey = 1;
 
-			// Update the pose
-			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                AnimateMatrix(iMatrix, AnimationKey);
+            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
+                AnimateMatrix(i, AnimationKey);
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
-    public class RoadCarShape : PoseableShape
+    public class RoadCarShape : AnimatedShape
     {
-        public WorldPosition movablePosition;//move to new location needs this
-
-        protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
-
-        int movingDirection = 0;
-
-        public RoadCarShape(Viewer3D viewer, string path, WorldPosition position)
-            : base(viewer, path, position, ShapeFlags.AutoZBias)
+        public RoadCarShape(Viewer3D viewer, string path)
+            : base(viewer, path, new WorldPosition(), ShapeFlags.AutoZBias)
         {
-			movablePosition = new WorldPosition(position);
-		}
-
-		//do animation, the speed is constant no matter what the frame rate is
-		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-		{
-			if (movingDirection == 0)
-			{
-				if (AnimationKey > 0.001) AnimationKey -= 0.02f * elapsedTime.ClockSeconds * 1000.0f;
-				if (AnimationKey < 0.001) AnimationKey = 0;
-			}
-			else
-			{
-				if (AnimationKey < 0.999) AnimationKey += 0.02f * elapsedTime.ClockSeconds * 1000.0f; //0.0005
-				if (AnimationKey > 0.999) AnimationKey = 1.0f;
-			}
-
-
-			// Update the pose
-			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-				AnimateMatrix(iMatrix, AnimationKey);
-
-			SharedShape.PrepareFrame(frame, movablePosition, XNAMatrices, Flags);
 		}
     }
 
