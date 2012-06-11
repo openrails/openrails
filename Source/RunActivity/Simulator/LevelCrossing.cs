@@ -84,7 +84,7 @@ namespace ORTS
                 var minimumDist = crossing.CrossingGroup.MinimumDistance;
                 var totalDist = predictedDist + minimumDist + 1;
 
-                if (!WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) || !WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
+                if (!WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) && !WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
                     continue;
 
                 // Distances forward from the front and rearwards from the rear.
@@ -120,7 +120,6 @@ namespace ORTS
     public class LevelCrossingItem
     {
         readonly TrackNode TrackNode;
-        readonly TrItem TrItem;
 
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
@@ -134,7 +133,6 @@ namespace ORTS
         public LevelCrossingItem(TrackNode trackNode, TrItem trItem)
         {
             TrackNode = trackNode;
-            TrItem = trItem;
             Location = new WorldLocation(trItem.TileX, trItem.TileZ, trItem.X, trItem.Y, trItem.Z);
         }
 
@@ -147,7 +145,6 @@ namespace ORTS
                 var newTrains = new List<Train>(trains);
                 newTrains.Add(train);
                 Trains = newTrains;
-                Trace.TraceInformation("{0} level crossing {1} now has {2} trains active.", Location.ToString(), TrItem.TrItemId, newTrains.Count);
             }
         }
 
@@ -160,7 +157,6 @@ namespace ORTS
                 var newTrains = new List<Train>(trains);
                 newTrains.Remove(train);
                 Trains = newTrains;
-                Trace.TraceInformation("{0} level crossing {1} now has {2} trains active.", Location.ToString(), TrItem.TrItemId, newTrains.Count);
             }
         }
 
