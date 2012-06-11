@@ -236,7 +236,7 @@ namespace ORTS
             var stopDistances = new List<float>();
             for (var crossing = NextCrossingIndex; crossing < crossings.Count; crossing++)
             {
-                if (crossings[NextCrossingIndex].Item.CrossingGroup != null && crossings[crossing].Item.CrossingGroup.HasTrain)
+                if (crossings[crossing].Item.CrossingGroup != null && crossings[crossing].Item.CrossingGroup.HasTrain)
                 {
                     // TODO: Stopping distance for level crossings!
                     stopDistances.Add(crossings[crossing].Distance - RoadCarSpawner.StopDistance);
