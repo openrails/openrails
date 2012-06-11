@@ -27,8 +27,8 @@ namespace ORTS
         public LevelCrossings(Simulator simulator)
         {
             Simulator = simulator;
-            TrackCrossingItems = GetLevelCrossingsFromDB(simulator.TDB.TrackDB.TrackNodes, simulator.TDB.TrackDB.TrItemTable);
-            RoadCrossingItems = GetLevelCrossingsFromDB(simulator.RDB.RoadTrackDB.TrackNodes, simulator.RDB.RoadTrackDB.TrItemTable);
+            TrackCrossingItems = simulator.TDB != null && simulator.TDB.TrackDB != null ? GetLevelCrossingsFromDB(simulator.TDB.TrackDB.TrackNodes, simulator.TDB.TrackDB.TrItemTable) : new Dictionary<int, LevelCrossingItem>();
+            RoadCrossingItems = simulator.RDB != null && simulator.RDB.RoadTrackDB != null ? GetLevelCrossingsFromDB(simulator.RDB.RoadTrackDB.TrackNodes, simulator.RDB.RoadTrackDB.TrItemTable) : new Dictionary<int, LevelCrossingItem>();
         }
 
         static Dictionary<int, LevelCrossingItem> GetLevelCrossingsFromDB(TrackNode[] trackNodes, TrItem[] trItemTable)
