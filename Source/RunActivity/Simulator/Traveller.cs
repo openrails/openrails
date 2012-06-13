@@ -48,6 +48,11 @@ namespace ORTS
         WorldLocation location = new WorldLocation();
         Vector3 directionVector;
 
+        // Length and offset only valid if lengthSet = true.
+        bool lengthSet = false;
+        float trackNodeLength;
+        float trackNodeOffset;
+
         public WorldLocation WorldLocation { get { if (!locationSet) SetLocation(); return new WorldLocation(location); } }
         public int TileX { get { if (!locationSet) SetLocation(); return location.TileX; } }
         public int TileZ { get { if (!locationSet) SetLocation(); return location.TileZ; } }
@@ -65,20 +70,38 @@ namespace ORTS
             {
                 if (value != direction)
                 {
-                    if (!locationSet) SetLocation();
                     direction = value;
-                    directionVector.X *= -1;
-                    directionVector.Y += (float)Math.PI;
-                    M.NormalizeRadians(ref directionVector.X);
-                    M.NormalizeRadians(ref directionVector.Y);
+                    if (locationSet)
+                    {
+                        directionVector.X *= -1;
+                        directionVector.Y += MathHelper.Pi;
+                        M.NormalizeRadians(ref directionVector.X);
+                        M.NormalizeRadians(ref directionVector.Y);
+                    }
+                    if (lengthSet)
+                        trackNodeOffset = trackNodeLength - trackNodeOffset;
                 }
             }
         }
         public float RotY { get { if (!locationSet) SetLocation(); return directionVector.Y; } }
         public TrackNode TN { get { return trackNode; } }
-        public int TrackNodeIndex { get; private set; }
-        public int TrackVectorSectionIndex { get; private set; }
 
+        /// <summary>
+        /// Returns the index of the current track node in the database.
+        /// </summary>
+        public int TrackNodeIndex { get; private set; }
+        /// <summary>
+        /// Returns the index of the current track vector section (individual straight or curved section of track) in the current track node.
+        /// </summary>
+        public int TrackVectorSectionIndex { get; private set; }
+        /// <summary>
+        /// Returns the length of the current track node in meters.
+        /// </summary>
+        public float TrackNodeLength { get { if (!lengthSet) SetLength(); return trackNodeLength; } }
+        /// <summary>
+        /// Returns the distance down the current track node in meters, based on direction of travel.
+        /// </summary>
+        public float TrackNodeOffset { get { if (!lengthSet) SetLength(); return trackNodeOffset; } }
         /// <summary>
         /// Returns whether this traveller is currently on a (section of) track node (opposed to junction, end of line).
         /// </summary>
@@ -239,12 +262,8 @@ namespace ORTS
         public Traveller(TSectionDatFile tSectionDat, TrackNode[] trackNodes, BinaryReader inf)
             : this(tSectionDat, trackNodes)
         {
-            locationSet = inf.ReadBoolean();
-            location.Restore(inf);
+            locationSet = lengthSet = false;
             direction = (TravellerDirection)inf.ReadByte();
-            directionVector.X = inf.ReadSingle();
-            directionVector.Y = inf.ReadSingle();
-            directionVector.Z = inf.ReadSingle();
             trackOffset = inf.ReadSingle();
             TrackNodeIndex = inf.ReadInt32();
             trackNode = TrackNodes[TrackNodeIndex];
@@ -262,12 +281,7 @@ namespace ORTS
         /// <param name="outf">Writer to write persisted data to.</param>
         public void Save(BinaryWriter outf)
         {
-            outf.Write(locationSet);
-            location.Save(outf);
             outf.Write((byte)direction);
-            outf.Write(directionVector.X);
-            outf.Write(directionVector.Y);
-            outf.Write(directionVector.Z);
             outf.Write(trackOffset);
             outf.Write(TrackNodeIndex);
             if (IsTrack)
@@ -349,7 +363,7 @@ namespace ORTS
 
             direction = TravellerDirection.Forward;
             trackOffset = 0;
-            locationSet = false;
+            locationSet = lengthSet = false;
             MoveInTrackSectionCurved(lon);
             return true;
         }
@@ -379,7 +393,7 @@ namespace ORTS
 
             direction = TravellerDirection.Forward;
             trackOffset = 0;
-            locationSet = false;
+            locationSet = lengthSet = false;
             MoveInTrackSectionStraight(lon);
             return true;
         }
@@ -400,6 +414,9 @@ namespace ORTS
             TrackVectorSectionIndex = copy.TrackVectorSectionIndex;
             trackVectorSection = copy.trackVectorSection;
             trackSection = copy.trackSection;
+            lengthSet = copy.lengthSet;
+            trackNodeLength = copy.trackNodeLength;
+            trackNodeOffset = copy.trackNodeOffset;
         }
 
         /// <summary>
@@ -584,8 +601,8 @@ namespace ORTS
             trackSection = TSectionDat.TrackSections.Get(trackVectorSection.SectionIndex);
             if (trackSection == null)
                 return false;
-            locationSet = false;
-            trackOffset = direction == TravellerDirection.Forward ? 0 : IsTrackCurved ? Math.Abs(M.Radians(trackSection.SectionCurve.Angle)) : trackSection.SectionSize.Length;
+            locationSet = lengthSet = false;
+            trackOffset = direction == TravellerDirection.Forward ? 0 : IsTrackCurved ? Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)) : trackSection.SectionSize.Length;
             return true;
         }
 
@@ -652,13 +669,35 @@ namespace ORTS
             if (direction == TravellerDirection.Backward)
             {
                 directionVector.X *= -1;
-                directionVector.Y += (float)Math.PI;
+                directionVector.Y += MathHelper.Pi;
             }
             M.NormalizeRadians(ref directionVector.X);
             M.NormalizeRadians(ref directionVector.Y);
 
             if (trackVectorSection != null)
                 location.NormalizeTo(trackVectorSection.TileX, trackVectorSection.TileZ);
+        }
+
+        void SetLength()
+        {
+            if (lengthSet)
+                return;
+            lengthSet = true;
+            trackNodeLength = 0;
+            trackNodeOffset = 0;
+            var tvs = trackNode.TrVectorNode.TrVectorSections;
+            for (var i = 0; i < tvs.Length; i++)
+            {
+                var ts = TSectionDat.TrackSections.Get(tvs[i].SectionIndex);
+                var length = ts.SectionCurve != null ? ts.SectionCurve.Radius * Math.Abs(MathHelper.ToRadians(ts.SectionCurve.Angle)) : ts.SectionSize.Length;
+                trackNodeLength += length;
+                if (i < TrackVectorSectionIndex)
+                    trackNodeOffset += length;
+                if (i == TrackVectorSectionIndex)
+                    trackNodeOffset += trackOffset * (ts.SectionCurve != null ? ts.SectionCurve.Radius : 1);
+            }
+            if (Direction == TravellerDirection.Backward)
+                trackNodeOffset = trackNodeLength - trackNodeOffset;
         }
 
         /// <summary>
@@ -742,54 +781,53 @@ namespace ORTS
 
         float MoveInTrackSectionInfinite(float distanceToGo)
         {
+            var scale = Direction == TravellerDirection.Forward ? 1 : -1;
             var distance = distanceToGo;
             if (Direction == TravellerDirection.Backward && distance > trackOffset)
                 distance = trackOffset;
-
-            if (Direction == TravellerDirection.Forward)
-                trackOffset += distance;
-            else
-                trackOffset -= distance;
-
+            trackOffset += scale * distance;
+            trackNodeOffset += scale * distance;
             locationSet = false;
             return distanceToGo - distance;
         }
 
         float MoveInTrackSectionCurved(float distanceToGo)
         {
+            var scale = Direction == TravellerDirection.Forward ? 1 : -1;
             var desiredTurnRadians = distanceToGo / trackSection.SectionCurve.Radius;
-            var sectionTurnRadians = Math.Abs(trackSection.SectionCurve.Angle * (float)(Math.PI / 180.0));
+            var sectionTurnRadians = Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle));
             if (direction == TravellerDirection.Forward)
             {
                 if (desiredTurnRadians > sectionTurnRadians - trackOffset)
                     desiredTurnRadians = sectionTurnRadians - trackOffset;
-                trackOffset += desiredTurnRadians;
             }
             else
             {
                 if (desiredTurnRadians > trackOffset)
                     desiredTurnRadians = trackOffset;
-                trackOffset -= desiredTurnRadians;
             }
+            trackOffset += scale * desiredTurnRadians;
+            trackNodeOffset += scale * desiredTurnRadians * trackSection.SectionCurve.Radius;
             locationSet = false;
             return distanceToGo - desiredTurnRadians * trackSection.SectionCurve.Radius;
         }
 
         float MoveInTrackSectionStraight(float distanceToGo)
         {
+            var scale = Direction == TravellerDirection.Forward ? 1 : -1;
             var desiredDistance = distanceToGo;
             if (direction == TravellerDirection.Forward)
             {
                 if (desiredDistance > trackSection.SectionSize.Length - trackOffset)
                     desiredDistance = trackSection.SectionSize.Length - trackOffset;
-                trackOffset += desiredDistance;
             }
             else
             {
                 if (desiredDistance > trackOffset)
                     desiredDistance = trackOffset;
-                trackOffset -= desiredDistance;
             }
+            trackOffset += scale * desiredDistance;
+            trackNodeOffset += scale * desiredDistance;
             locationSet = false;
             return distanceToGo - desiredDistance;
         }
