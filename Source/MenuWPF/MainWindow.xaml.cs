@@ -1204,17 +1204,21 @@ namespace MenuWPF
                                 //Check if it contains a Cabview => player driveable engine
                                 if (engineContent.ToLower().Contains("cabview") && engineContent.ToLower().IndexOf("cabview") < engineContent.ToLower().IndexOf("description"))
                                 {
-                                    
-                                    if (EnginesWithConsists.ContainsKey(engKey))
+
+                                    try
                                     {
-                                        EnginesWithConsists[engKey].Add(new CONFile(file));
+                                        if (EnginesWithConsists.ContainsKey(engKey))
+                                        {
+                                            EnginesWithConsists[engKey].Add(new CONFile(file));
+                                        }
+                                        else
+                                        {
+                                            EnginesWithConsists.Add(engKey, new List<CONFile>());
+                                            EnginesWithConsists[engKey].Add(new CONFile(file));
+                                            //cboEngine.Items.Add(engKey.Name);
+                                        }
                                     }
-                                    else
-                                    {
-                                        EnginesWithConsists.Add(engKey, new List<CONFile>());
-                                        EnginesWithConsists[engKey].Add(new CONFile(file));
-                                        //cboEngine.Items.Add(engKey.Name);
-                                    }
+                                    catch { }
                                     
                                 }
                                 srEngine.Close();
