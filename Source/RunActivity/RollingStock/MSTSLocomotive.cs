@@ -55,7 +55,7 @@ namespace ORTS
     /// to the basic TrainCar.
     /// Use as a base for Electric, Diesel or Steam locomotives.
     /// </summary>
-    public class MSTSLocomotive: MSTSWagon
+    public partial class MSTSLocomotive: MSTSWagon
     {
         // simulation parameters
         public bool Horn = false;
@@ -210,32 +210,12 @@ namespace ORTS
                         CabFlipped = true;
                 }
 
-                string ExtendedCVF = CVFFilePath.Substring(0, CVFFilePath.LastIndexOf('.')) + ".xml";
                 ExCVF = null;
-
-                // Commented out until the IntermediateSerializer is changed to XmlReader
-                // By GeorgeS
-                /*
-                if (File.Exists(ExtendedCVF))
-                {
-                    try
-                    {
-                        using (XmlReader rd = XmlReader.Create(new FileStream(ExtendedCVF, FileMode.Open)))
-                        {
-                            ExCVF = IntermediateSerializer.Deserialize<ExtendedCVF>(rd, null);
-                        }
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(ExtendedCVF);
-                        Trace.WriteLine(error);
-                    }
-                }
-                */
 
                 if (ExCVF == null && !(this is MSTSSteamLocomotive))
                 {
                     ExCVF = new ExtendedCVF();
+                    InitializeFromORTSSpecific(CVFFilePath, ExCVF);
                 }
             }
 
@@ -1664,48 +1644,41 @@ namespace ORTS
     /// Extended CVF data, currently used for CAB light
     /// By GeorgeS
     /// </summary>
+    [ORTSPhysicsFile("lit", "ORTSExtendedCVF")]
     public class ExtendedCVF
     {
         /// <summary>
-        /// Represents a Light in the CAB.
+        /// Translate to current screen resolution
         /// </summary>
-        public class Light
+        /// <param name="displaySize">Current screen resolution</param>
+        /// <returns>Translated vectors</returns>
+        public Vector4 TranslatedPosition(Vector4 Position, Point displaySize)
         {
-            /// <summary>
-            /// X,Y : Position of the light, Z : Radius, W : Aspect ratio X:Y
-            /// </summary>
-            public Vector4 Position = new Vector4(0);
-            public Color Color = Color.Black;
-
-            /// <summary>
-            /// Translate to current screen resolution
-            /// </summary>
-            /// <param name="displaySize">Current screen resolution</param>
-            /// <returns>Translated vectors</returns>
-            public Vector4 TranslatedPosition(Point displaySize)
-            {
-                return new Vector4(Position.X / 640 * displaySize.X, 
-                    Position.Y / 480 * displaySize.Y, 
-                    Position.Z / 640 * displaySize.X,
-                    Position.W);
-            }
-
-            /// <summary>
-            /// Used by the shader
-            /// </summary>
-            public Vector3 TranslatedColor
-            {
-                get
-                {
-                    return new Vector3((float)Color.R / 255, (float)Color.G / 255, (float)Color.B / 255);
-                }
-            }
+            return new Vector4(Position.X / 640 * displaySize.X,
+                Position.Y / 480 * displaySize.Y,
+                Position.Z / 640 * displaySize.X,
+                Position.W);
         }
 
-        [ContentSerializer(Optional = true)]
-        public Light Light1 = new Light() { Color = new Color(0xFF, 0xD8, 0xB2, 0xFF), Position = new Vector4(320, 360, 155, 2) };
-        [ContentSerializer(Optional = true)]
-        public Light Light2 = new Light();
+        /// <summary>
+        /// Used by the shader
+        /// </summary>
+        public Vector3 TranslatedColor(Color Color)
+        {
+            return new Vector3((float)Color.R / 255, (float)Color.G / 255, (float)Color.B / 255);
+        }
+
+        [ORTSPhysics("First light Position", "Light1Position", "The position and aspect of the first cab light", "320 360 155 2")]
+        public Vector4 Light1Position;
+
+        [ORTSPhysics("First light ARGB", "Light1ColorARGB", "The color of the first cab light", "255 216 178 255")]
+        public Color Light1Color;
+
+        [ORTSPhysics("Second light Position", "Light2Position", "The position and aspect of the first cab light", "0 0 0 0")]
+        public Vector4 Light2Position;
+
+        [ORTSPhysics("Second light ARGB", "Light2ColorARGB", "The color of the second cab light", "0 0 0")]
+        public Color Light2Color;
 
     } // End Class ExtendedCVF
 
@@ -2459,6 +2432,7 @@ namespace ORTS
 
     public class CabRenderer : RenderPrimitive
     {
+        private SpriteBatchMaterial _Sprite2DCabView; 
         private Rectangle _CabRect = new Rectangle();
         private Matrix _Scale = Matrix.Identity;
         private Texture2D _CabTexture;
@@ -2477,15 +2451,17 @@ namespace ORTS
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
 			//Sequence = RenderPrimitiveSequence.CabView;
+            _Sprite2DCabView = new SpriteBatchMaterial(viewer.RenderProcess);
             _Viewer = viewer;
             _Locomotive = car;
 
             if (_Locomotive.ExCVF != null)
             {
                 _Shader = new CabShader(viewer.GraphicsDevice, viewer.RenderProcess.Content,
-                    _Locomotive.ExCVF.Light1.TranslatedPosition(_Viewer.DisplaySize),
-                    _Locomotive.ExCVF.Light2.TranslatedPosition(_Viewer.DisplaySize),
-                    _Locomotive.ExCVF.Light1.TranslatedColor, _Locomotive.ExCVF.Light2.TranslatedColor);
+                    _Locomotive.ExCVF.TranslatedPosition(_Locomotive.ExCVF.Light1Position, _Viewer.DisplaySize),
+                    _Locomotive.ExCVF.TranslatedPosition(_Locomotive.ExCVF.Light2Position, _Viewer.DisplaySize),
+                    _Locomotive.ExCVF.TranslatedColor(_Locomotive.ExCVF.Light1Color),
+                    _Locomotive.ExCVF.TranslatedColor(_Locomotive.ExCVF.Light2Color));
             }
             _PrevScreenSize = _Viewer.DisplaySize;
 
@@ -2578,11 +2554,12 @@ namespace ORTS
             {
                 _PrevScreenSize = _Viewer.DisplaySize;
                 _Shader.SetLightPositions(
-                    _Locomotive.ExCVF.Light1.TranslatedPosition(_Viewer.DisplaySize),
-                    _Locomotive.ExCVF.Light2.TranslatedPosition(_Viewer.DisplaySize));
+                    _Locomotive.ExCVF.TranslatedPosition(_Locomotive.ExCVF.Light1Position, _Viewer.DisplaySize),
+                    _Locomotive.ExCVF.TranslatedPosition(_Locomotive.ExCVF.Light2Position, _Viewer.DisplaySize));
             }
 
-            frame.AddPrimitive(Materials.SpriteBatchMaterial, this, RenderPrimitiveGroup.Cab, ref _Scale);
+            frame.AddPrimitive(_Sprite2DCabView, this, RenderPrimitiveGroup.Cab, ref _Scale);
+            //frame.AddPrimitive(Materials.SpriteBatchMaterial, this, RenderPrimitiveGroup.Cab, ref _Scale);
 
             if (_Location == 0)
             {
@@ -2605,7 +2582,8 @@ namespace ORTS
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
 
-            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
+            _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
+            //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
 
             if (_Location == 0 && _Shader != null)
             {
@@ -2628,6 +2606,7 @@ namespace ORTS
     public class CabViewControlRenderer : RenderPrimitive
     {
         protected CabViewControl _CabViewControl;
+        protected SpriteBatchMaterial _Sprite2DCtlView;
         protected Matrix _Matrix = Matrix.Identity;
         protected Texture2D _Texture;
         protected Viewer3D _Viewer;
@@ -2642,6 +2621,7 @@ namespace ORTS
         {
             _CabViewControl = cvc;
             _Shader = shader;
+            _Sprite2DCtlView = new SpriteBatchMaterial(viewer.RenderProcess);
 
             CABTextureManager.LoadTextures(viewer, _CabViewControl.ACEFile);
 
@@ -2695,7 +2675,8 @@ namespace ORTS
 
         public virtual void PrepareFrame(RenderFrame frame)
         {
-            frame.AddPrimitive(Materials.SpriteBatchMaterial, this, RenderPrimitiveGroup.Cab, ref _Matrix);
+            frame.AddPrimitive(_Sprite2DCtlView, this, RenderPrimitiveGroup.Cab, ref _Matrix);
+            //frame.AddPrimitive(Materials.SpriteBatchMaterial, this, RenderPrimitiveGroup.Cab, ref _Matrix);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -2778,7 +2759,8 @@ namespace ORTS
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
-            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _Position, null, Color.White, _Rotation, _Origin, _ScaleToScreen, SpriteEffects.None, 0);
+            _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _Position, null, Color.White, _Rotation, _Origin, _ScaleToScreen, SpriteEffects.None, 0);
+            //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _Position, null, Color.White, _Rotation, _Origin, _ScaleToScreen, SpriteEffects.None, 0);
             if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
@@ -2945,15 +2927,18 @@ namespace ORTS
             }
             if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
                 LoadMeterPositive)
-                    Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Green);
+                _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Green);
 
             else if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
                 !LoadMeterPositive)
-                Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Yellow);
+                //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Yellow);
+                _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Yellow);
             else if (_CabViewControl.ControlType == CABViewControlTypes.REVERSER_PLATE)
-                Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+                //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+                _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
             else
-                Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
+                //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
+                _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
             if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
@@ -3013,7 +2998,8 @@ namespace ORTS
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
-            Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+            //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+            _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
             if (_Shader != null)
             {
                 _Shader.CurrentTechnique.Passes[0].End();
@@ -3395,7 +3381,7 @@ namespace ORTS
                     textColor = Color.Yellow;
                 }
 
-                Materials.SpriteBatchMaterial.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(),
+                _Sprite2DCtlView.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(),
                     _ScaleToScreen, SpriteEffects.None, 0);
                 //((CVCDigital)_CabViewControl).OldValue = _Num;
                 // The line commente out above is a temporary fix for the flashing AMP on Dash 9

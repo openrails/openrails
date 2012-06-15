@@ -384,6 +384,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RollingStock\LocomotiveAttributes.cs" />
     <Compile Include="Signals\Signals.cs">
       <SubType>Code</SubType>
     </Compile>

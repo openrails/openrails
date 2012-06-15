@@ -963,6 +963,36 @@ namespace MSTS
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue;
         }
+        /// <summary>Read a Vector4 object in the STF format '( {X} {Y} {Z} {W} ... )'
+        /// </summary>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="defaultValue">The default vector if any of the values are not specified</param>
+        /// <returns>The STF block as a Vector4</returns>
+        public Vector4 ReadVector4Block(UNITS validUnits, Vector4 defaultValue)
+        {
+            if (Eof)
+            {
+                STFException.TraceWarning(this, "Unexpected end of file");
+                return defaultValue;
+            }
+            string s = ReadItem();
+            if (s == ")")
+            {
+                StepBackOneItem();
+                return defaultValue;
+            }
+            if (s == "(")
+            {
+                defaultValue.X = ReadFloat(validUnits, defaultValue.X);
+                defaultValue.Y = ReadFloat(validUnits, defaultValue.Y);
+                defaultValue.Z = ReadFloat(validUnits, defaultValue.Z);
+                defaultValue.W = ReadFloat(validUnits, defaultValue.W);
+                SkipRestOfBlock();
+                return defaultValue;
+            }
+            STFException.TraceWarning(this, "Block Not Found - instead found " + s);
+            return defaultValue;
+        }
 
         /// <summary>Parse an STF file until the EOF, using the array of lower case tokens, with a processor delegate/lambda
         /// </summary>
