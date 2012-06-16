@@ -10,7 +10,7 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
  */
-//#define DEBUG_VIEWER
+#define DEBUG_VIEWER
 
 using System;
 using System.Collections.Generic;
@@ -227,26 +227,6 @@ namespace ORTS.MultiPlayer
 				HeadLightCount--; if (HeadLightCount < 0) HeadLightCount = 0;
 				MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
 			}
-#if DEBUG_VIEWER
-			if (UserInput.IsPressed(UserCommands.ControlMultiPlayerDispatcher))
-			{
-				if (IsServer() && Program.DebugViewer == null)
-				{
-					// prepare to show debug output in a separate window
-					Program.DebugViewer = new DebugViewerForm(Program.Simulator);
-
-					
-
-				}
-				//Thread viewThread = new Thread(new ThreadStart(DebugViewerShow));
-				//viewThread.Start();
-
-				//if (Program.DebugViewer.Visible) Program.DebugViewer.Hide();
-				Program.DebugViewer.Show();
-			}
-#endif
-
-
 		}
 
 	}

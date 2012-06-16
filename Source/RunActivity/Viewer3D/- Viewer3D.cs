@@ -114,7 +114,7 @@ namespace ORTS
         public string SaveActivityFileStem;
         private BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
 
-
+		public bool DebugViewerEnabled = false;
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
@@ -437,6 +437,8 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.GameSwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
             if (UserInput.IsPressed(UserCommands.DebugLocomotiveFlip)) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
             if (UserInput.IsPressed(UserCommands.DebugResetSignal)) PlayerTrain.ResetSignal(true);
+			if (UserInput.IsPressed(UserCommands.ControlMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
+
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
             {
                 isMouseShouldVisible = true;

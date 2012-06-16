@@ -328,7 +328,7 @@ namespace ORTS
 
 			InterlockingSystem.Update(elapsedClockSeconds);
 
-			MultiPlayer.MPManager.Instance().Update(GameTime);
+			if (MultiPlayer.MPManager.IsMultiPlayer()) MultiPlayer.MPManager.Instance().Update(GameTime);
 
 		}
 

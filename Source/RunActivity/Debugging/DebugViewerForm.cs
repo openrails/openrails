@@ -20,6 +20,7 @@ using System.Text;
 using System.Windows.Forms;
 using MSTS;
 using ORTS.Interlocking;
+using Microsoft.Xna.Framework;
 
 namespace ORTS.Debugging
 {
@@ -75,6 +76,22 @@ namespace ORTS.Debugging
       private int IM_Width = 512;
       private int IM_Height = 512;
 
+	  private int X;
+	  private int Y; //X, Y of mouse
+	  /// <summary>
+	  /// True when the user is dragging the route view
+	  /// </summary>
+	  private bool Dragging = false;
+	  private WorldPosition worldPos;
+	  string name = "";
+
+
+	  /// <summary>
+	  /// contains the last position of the mouse
+	  /// </summary>
+	  private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
+
+
       /// <summary>
       /// True when the user has the "Move left" pressed.
       /// </summary>
@@ -108,13 +125,20 @@ namespace ORTS.Debugging
       private Timer UITimer;
 
       bool loaded = false;
+	  TrackNode[] nodes;
+	  float minX = float.MaxValue;
+	  float minY = float.MaxValue;
 
+	  float maxX = float.MinValue;
+	  float maxY = float.MinValue;
+
+	  Viewer3D Viewer;
       /// <summary>
       /// Creates a new DebugViewerForm.
       /// </summary>
       /// <param name="simulator"></param>
       /// /// <param name="viewer"></param>
-      public DebugViewerForm(Simulator simulator)
+      public DebugViewerForm(Simulator simulator, Viewer3D viewer)
       {
          InitializeComponent();
 
@@ -124,6 +148,15 @@ namespace ORTS.Debugging
          }
 
          this.simulator = simulator;
+		 this.Viewer = viewer;
+
+		 nodes = simulator.TDB.TrackDB.TrackNodes;
+
+		 trainFont = new Font("Arial", 12, FontStyle.Bold);
+		 sidingFont = new Font("Arial", 12, FontStyle.Bold);
+
+		 trainBrush = new SolidBrush(Color.Red);
+		 sidingBrush = new SolidBrush(Color.Blue);
 
 
          // initialise the timer used to handle user input
@@ -136,12 +169,18 @@ namespace ORTS.Debugging
          windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
 
       
-         InitImage();
+
+		  InitData();
+        InitImage();
 
       }
 
 
       public int RedrawCount = 0;
+	  private Font trainFont;
+	  private Font sidingFont;
+	  private SolidBrush trainBrush;
+	  private SolidBrush sidingBrush;
 
       /// <summary>
       /// When the user holds down the  "L", "R", "U", "D" buttons,
@@ -152,6 +191,8 @@ namespace ORTS.Debugging
       /// <param name="e"></param>
       void UITimer_Tick(object sender, EventArgs e)
       {
+		  if (Viewer.DebugViewerEnabled == false) { this.Visible = false; return; }
+		  else this.Visible = true;
          if (DownButtonDown)
          {
             ShiftViewDown();
@@ -180,7 +221,109 @@ namespace ORTS.Debugging
          }
       }
 
-      /// <summary>
+	  private void InitData()
+	  {
+		  if (!loaded)
+		  {
+			  // do this only once
+			  loaded = true;
+			  trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
+		  }
+
+
+		  for (int i = 0; i < nodes.Length; i++)
+		  {
+			  TrackNode currNode = nodes[i];
+
+			  if (currNode != null)
+			  {
+
+				  if (currNode.TrEndNode)
+				  {
+					  buffers.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
+				  }
+				  else if (currNode.TrVectorNode != null)
+				  {
+
+					  if (currNode.TrVectorNode.TrVectorSections.Length > 1)
+					  {
+						  AddSegments(segments, currNode, currNode.TrVectorNode.TrVectorSections, ref minX, ref minY, ref maxX, ref maxY, simulator);
+					  }
+					  else
+					  {
+
+						  foreach (TrPin pin in currNode.TrPins)
+						  {
+
+							  TrackNode connectedNode = nodes[pin.Link];
+
+
+							  //bool occupied = false;
+
+							  //if (simulator.InterlockingSystem.Tracks.ContainsKey(connectedNode))
+							  //{
+							  //occupied = connectedNode   
+							  //}
+
+							  if (currNode.UiD == null && currNode.TrVectorNode.TrVectorSections.Length == 1)
+							  {
+
+								  TrVectorSection s = currNode.TrVectorNode.TrVectorSections[0];
+
+								  PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
+								  PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
+
+								  segments.Add(new LineSegment(A, B, /*s.InterlockingTrack.IsOccupied*/ false, s));
+							  }
+						  }
+
+
+					  }
+				  }
+				  else if (currNode.TrJunctionNode != null)
+				  {
+					  switches.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
+				  }
+			  }
+		  }
+
+		  foreach (TrItem item in simulator.TDB.TrackDB.TrItemTable)
+		  {
+			  if (item.ItemType == TrItem.trItemType.trSIGNAL)
+			  {
+				  if (item is SignalItem)
+				  {
+
+					  SignalItem si = item as SignalItem;
+
+					  SignalObject s = simulator.Signals.SignalObjects[si.sigObj];
+
+
+					  signals.Add(new SignalWidget(item, s));
+				  }
+
+			  }
+			  if (item.ItemType == TrItem.trItemType.trSIDING)
+			  {
+				  SidingItem s = item as SidingItem;
+
+				  sidings.Add(new SidingWidget(item));
+
+			  }
+		  }
+
+		  Inited = true;
+	  }
+	  bool Inited = false;
+	  List<LineSegment> segments = new List<LineSegment>();
+	  List<PointF> switches = new List<PointF>();
+	  List<PointF> buffers = new List<PointF>();
+	  List<SignalWidget> signals = new List<SignalWidget>();
+	  List<SidingWidget> sidings = new List<SidingWidget>();
+
+	  PointF PlayerLocation = new PointF();
+
+	   /// <summary>
       /// Initialises the picturebox and the image it contains. 
       /// </summary>
       public void InitImage()
@@ -203,114 +346,12 @@ namespace ORTS.Debugging
       public void GenerateView()
       {
 
-         float minX = float.MaxValue;
-         float minY = float.MaxValue;
 
-         float maxX = float.MinValue;
-         float maxY = float.MinValue;
+		  if (!Inited) return;
 
-         List<LineSegment> segments = new List<LineSegment>();
-         List<PointF> switches = new List<PointF>();
-         List<PointF> buffers = new List<PointF>();
-         List<SignalWidget> signals = new List<SignalWidget>();
-
-         PointF PlayerLocation = new PointF();
-
-         TrackNode[] nodes = simulator.TDB.TrackDB.TrackNodes;
-
-         if (!loaded)
-         {
-            // do this only once
-            loaded = true;
-            trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
-         }
+		  if (pictureBox1.Image == null) InitImage();
 
 
-         for (int i = 0; i < nodes.Length; i++)
-         {
-            TrackNode currNode = nodes[i];
-
-            if (currNode != null)
-            {
-
-               if (currNode.TrEndNode)
-               {
-                  buffers.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
-               }
-               else if (currNode.TrVectorNode != null)
-               {
-
-                  if (currNode.TrVectorNode.TrVectorSections.Length > 1)
-                  {
-                     AddSegments(segments, currNode, currNode.TrVectorNode.TrVectorSections, ref minX, ref minY, ref maxX, ref maxY, simulator);
-                  }
-                  else
-                  {
-                 
-                     foreach(TrPin pin in currNode.TrPins)
-                     {
-
-                        TrackNode connectedNode = nodes[pin.Link];
-
-
-                        //bool occupied = false;
-
-                        //if (simulator.InterlockingSystem.Tracks.ContainsKey(connectedNode))
-                        //{
-                           //occupied = connectedNode   
-                        //}
-
-                        if (currNode.UiD == null && currNode.TrVectorNode.TrVectorSections.Length == 1)
-                        {
-
-                           TrVectorSection s = currNode.TrVectorNode.TrVectorSections[0];
-
-                           PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
-                           PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
-
-                           segments.Add(new LineSegment(A, B, /*s.InterlockingTrack.IsOccupied*/ false, s));
-                        }
-                     }
-
-
-                  }
-               }
-               else if (currNode.TrJunctionNode != null)
-               {
-                  switches.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
-               }
-            }
-         }
-
-         foreach (TrItem item in simulator.TDB.TrackDB.TrItemTable)
-         {
-            if (item.ItemType == TrItem.trItemType.trSIGNAL)
-            {
-               if (item is SignalItem)
-               {
-
-                  SignalItem si = item as SignalItem;
-
-                  SignalObject s = simulator.Signals.SignalObjects[si.sigObj];
-
-
-                  signals.Add(new SignalWidget(item, s));
-               }
-               
-            }
-         }
-
-
-         if (simulator.Trains.Count > 0 && simulator.Trains[0].LeadLocomotive != null)
-         {
-            var worldPos = simulator.Trains[0].LeadLocomotive.WorldPosition;
-
-            PlayerLocation = new PointF(
-               worldPos.TileX * 2048 + worldPos.Location.X,
-               worldPos.TileZ * 2048 + worldPos.Location.Z);
-               
-               
-         }
     
          using(Graphics g = Graphics.FromImage(pictureBox1.Image))
          using(Pen redPen = new Pen(Color.Red))
@@ -394,9 +435,45 @@ namespace ORTS.Debugging
 
             if (showPlayerTrain.Checked)
             {
-               PointF trainLocation = new PointF((PlayerLocation.X - minX - ViewWindow.X) * xScale, (PlayerLocation.Y - minY - ViewWindow.Y) * yScale);
+				foreach (Train t in simulator.Trains)
+				{
+					name = "";
+					if (t.LeadLocomotive != null)
+					{
+						worldPos = t.LeadLocomotive.WorldPosition;
+						name = t.LeadLocomotive.CarID;
+					}
+					else if (t.Cars != null)
+					{
+						worldPos = t.Cars[0].WorldPosition;
+						name = t.Cars[0].CarID;
 
-               g.FillRectangle(Brushes.DarkGreen, GetRect(trainLocation, 15f));
+					}
+					else continue;
+
+					PlayerLocation = new PointF(
+					   worldPos.TileX * 2048 + worldPos.Location.X,
+					   worldPos.TileZ * 2048 + worldPos.Location.Z);
+
+					PointF trainLocation = new PointF((PlayerLocation.X - minX - ViewWindow.X) * xScale, (PlayerLocation.Y - minY - ViewWindow.Y) * yScale);
+
+					g.FillRectangle(Brushes.DarkGreen, GetRect(trainLocation, 15f));
+					trainLocation.Y -= 25;
+					g.DrawString(GetTrainName(name), trainFont, trainBrush, trainLocation);
+					
+				}
+				CleanVerticalCells();//clean the drawing area for text of sidings
+				foreach (var s in sidings)
+				{
+					PointF scaledSiding = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, (s.Location.Y - minY - ViewWindow.Y) * yScale);
+					scaledSiding.Y = DetermineSidingLocation(scaledSiding.X, scaledSiding.Y, s.Name);
+					if (scaledSiding.Y >= 0f) //if we need to draw the siding names
+					{
+
+						g.DrawString(s.Name, sidingFont, sidingBrush, scaledSiding);
+					}
+				}
+
             }
 
          }
@@ -405,6 +482,76 @@ namespace ORTS.Debugging
          pictureBox1.Invalidate();
       }
 
+	  private Vector2[][] alignedTextY;
+	  private int[] alignedTextNum;
+	  private int spacing = 12;
+	  private void CleanVerticalCells()
+	  {
+		  if (alignedTextY == null || alignedTextY.Length != IM_Height / spacing) //first time to put text, or the text height has changed
+		  {
+			  alignedTextY = new Vector2[IM_Height/spacing][];
+			  alignedTextNum = new int[IM_Height/spacing];
+			  for (var i = 0; i < IM_Height / spacing; i++) alignedTextY[i] = new Vector2[4]; //each line has at most 4 sidings
+		  }
+		  for (var i = 0; i < IM_Height / spacing; i++) { alignedTextNum[i] = 0; }
+
+	  }
+	  private float DetermineSidingLocation(float startX, float wantY, string name)
+	  {
+		  //out of drawing area
+		  if (startX < -64 || startX > IM_Width || wantY < -spacing || wantY > IM_Height) return -1f;
+
+		  int position = (int)(wantY / spacing);//the cell of the text it wants in
+		  if (position > alignedTextY.Length) return wantY;//position is larger than the number of cells
+		  var endX = startX + name.Length*trainFont.Size;
+		  int desiredPosition = position;
+		  while (position < alignedTextY.Length && position >= 0)
+		  {
+			  //if the line contains no text yet, put it there
+			  if (alignedTextNum[position] == 0)
+			  {
+				  alignedTextY[position][alignedTextNum[position]].X = startX;
+				  alignedTextY[position][alignedTextNum[position]].Y = endX;//add info for the text (i.e. start and end location)
+				  alignedTextNum[position]++;
+				  return position * spacing;
+			  }
+
+			  bool conflict = false;
+			  //check if it is intersect any one in the cell
+			  foreach (Vector2 v in alignedTextY[position])
+			  {
+				  //check conflict with a text, v.x is the start of the text, v.y is the end of the text
+				  if ((startX > v.X && startX < v.Y) || (endX > v.X && endX < v.Y) || (v.X > startX && v.X < endX) || (v.Y > startX && v.Y < endX))
+				  {
+					  conflict = true;
+					  break;
+				  }
+			  }
+			  if (conflict == false) //no conflict
+			  {
+				  if (alignedTextNum[position] > alignedTextY[position].Length) return -1f;
+				  alignedTextY[position][alignedTextNum[position]].X = startX;
+				  alignedTextY[position][alignedTextNum[position]].Y = endX;//add info for the text (i.e. start and end location)
+				  alignedTextNum[position]++;
+				  return position * spacing;
+			  }
+			  position--;
+			  //cannot move up, then try to move it down
+			  if (position - desiredPosition < -1)
+			  {
+				  position = desiredPosition + 2;
+			  }
+			  //could not find any position up or down, just return negative
+			  if (position == desiredPosition) return -1f;
+		  }
+		  return position * spacing;
+	  }
+	  private string GetTrainName(string ID)
+	  {
+		  int location = ID.LastIndexOf('-');
+		  if (location < 0) return ID;
+		  return ID.Substring(0, location - 1);
+	  }
       /// <summary>
       /// Generates a rectangle representing a dot being drawn.
       /// </summary>
@@ -571,6 +718,79 @@ namespace ORTS.Debugging
       }
 
 
+	  protected override void OnMouseWheel(MouseEventArgs e)
+	  {
+		  decimal tempValue = windowSizeUpDown.Value;
+		  if (e.Delta < 0) tempValue /= 0.95m;
+		  else if (e.Delta > 0) tempValue *= 0.95m;
+		  else return;
+
+		  if (tempValue < windowSizeUpDown.Minimum) tempValue = windowSizeUpDown.Minimum;
+		  if (tempValue > windowSizeUpDown.Maximum) tempValue = windowSizeUpDown.Maximum;
+		  windowSizeUpDown.Value = tempValue;
+	  }
+
+	  private bool Zooming = false;
+	  private bool LeftClick = false;
+	  private bool RightClick = false;
+
+	  private void pictureBoxMouseDown(object sender, MouseEventArgs e)
+	  {
+		  if (e.Button == MouseButtons.Left) LeftClick = true;
+		  if (e.Button == MouseButtons.Right) RightClick = true;
+
+		  if (LeftClick == true && RightClick == false)
+		  {
+			  if (Dragging == false) Dragging = true;
+		  }
+		  else if (LeftClick == true && RightClick == true)
+		  {
+			  if (Zooming == false) Zooming = true;
+		  }
+		  LastCursorPosition.X = e.X;
+		  LastCursorPosition.Y = e.Y;
+
+	  }
+
+	  private void pictureBoxMouseUp(object sender, MouseEventArgs e)
+	  {
+		  if (e.Button == MouseButtons.Left) LeftClick = false;
+		  if (e.Button == MouseButtons.Right) RightClick = false;
+
+		  if (LeftClick == false)
+		  {
+			  Dragging = false;
+			  Zooming = false;
+		  }
+
+	  }
+
+	  private void pictureBoxMouseMove(object sender, MouseEventArgs e)
+	  {
+		  if (Dragging&&!Zooming)
+		  {
+			  int diffX = LastCursorPosition.X - e.X;
+			  int diffY = LastCursorPosition.Y - e.Y;
+
+			  ViewWindow.Offset(diffX * ScrollSpeedX/10, diffY * ScrollSpeedX/10);
+			  GenerateView();
+		  }
+		  else if (Zooming)
+		  {
+			  decimal tempValue = windowSizeUpDown.Value;
+			  if (LastCursorPosition.Y - e.Y < 0) tempValue /= 0.95m;
+			  else if (LastCursorPosition.Y - e.Y > 0) tempValue *= 0.95m;
+
+			  if (tempValue < windowSizeUpDown.Minimum) tempValue = windowSizeUpDown.Minimum;
+			  if (tempValue > windowSizeUpDown.Maximum) tempValue = windowSizeUpDown.Maximum;
+			  windowSizeUpDown.Value = tempValue;
+			  GenerateView();
+
+		  }
+		  LastCursorPosition.X = e.X;
+		  LastCursorPosition.Y = e.Y;
+	  }
+
       private void leftButton_MouseDown(object sender, MouseEventArgs e)
       {
          LeftButtonDown = true;
@@ -673,9 +893,17 @@ namespace ORTS.Debugging
          SwitchViewer.Show();
          SwitchViewer.BringToFront();
       }
-      
 
-
+	  private const int CP_NOCLOSE_BUTTON = 0x200;
+	  protected override CreateParams CreateParams
+	  {
+		  get
+		  {
+			  CreateParams myCp = base.CreateParams;
+			  myCp.ClassStyle = myCp.ClassStyle | CP_NOCLOSE_BUTTON;
+			  return myCp;
+		  }
+	  } 
 
    }
 
@@ -685,51 +913,80 @@ namespace ORTS.Debugging
    /// </summary>
    internal struct SignalWidget
    {
-      public PointF Location;
+	   public PointF Location;
 
-      /// <summary>
-      /// The underlying track item.
-      /// </summary>
-      private TrItem Item;
+	   /// <summary>
+	   /// The underlying track item.
+	   /// </summary>
+	   private TrItem Item;
 
-      /// <summary>
-      /// The underlying signal object as referenced by the TrItem.
-      /// </summary>
-      public SignalObject Signal;
+	   /// <summary>
+	   /// The underlying signal object as referenced by the TrItem.
+	   /// </summary>
+	   public SignalObject Signal;
 
 
-      /// <summary>
-      /// For now, returns true if any of the signal heads shows any "clear" aspect.
-      /// This obviously needs some refinement.
-      /// </summary>
-      public bool IsProceed
-      {
-         get
-         {
-            bool returnValue = false;
+	   /// <summary>
+	   /// For now, returns true if any of the signal heads shows any "clear" aspect.
+	   /// This obviously needs some refinement.
+	   /// </summary>
+	   public bool IsProceed
+	   {
+		   get
+		   {
+			   bool returnValue = false;
 
-            foreach (var head in Signal.SignalHeads)
-            {
-               if (head.state == SignalHead.SIGASP.CLEAR_1 || 
-                   head.state == SignalHead.SIGASP.CLEAR_2 )
-               {
-                  returnValue = true;
-               }
-            }
+			   foreach (var head in Signal.SignalHeads)
+			   {
+				   if (head.state == SignalHead.SIGASP.CLEAR_1 ||
+					   head.state == SignalHead.SIGASP.CLEAR_2)
+				   {
+					   returnValue = true;
+				   }
+			   }
 
-            return returnValue;
-         }
-      }
-
+			   return returnValue;
+		   }
+	   }
       /// <summary>
       /// 
       /// </summary>
       /// <param name="item"></param>
       /// <param name="signal"></param>
-      public SignalWidget(TrItem item, SignalObject signal)
+	   public SignalWidget(TrItem item, SignalObject signal)
+	   {
+		   Item = item;
+		   Signal = signal;
+
+		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+	   }   
+   }
+   /// <summary>
+   /// Defines a signal being drawn in a 2D view.
+   /// </summary>
+   internal struct SidingWidget
+   {
+      public PointF Location;
+	  public string Name;
+      /// <summary>
+      /// The underlying track item.
+      /// </summary>
+      private TrItem Item;
+
+
+	   static List<PointF> SidingLocs = new List<PointF>();
+
+
+	   /// <summary>
+      /// 
+      /// </summary>
+      /// <param name="item"></param>
+      /// <param name="signal"></param>
+      public SidingWidget(TrItem item)
       {
          Item = item;
-         Signal = signal;
+
+		 Name = item.ItemName;
 
          Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
       }

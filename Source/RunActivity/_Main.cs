@@ -19,7 +19,7 @@
 /// </summary>
 
 #if DEBUG
-//#define DEBUG_VIEWER
+#define DEBUG_VIEWER
 #endif
 
 using System;
@@ -56,6 +56,7 @@ namespace ORTS
         public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
 #if DEBUG_VIEWER
 		public static Debugging.DebugViewerForm DebugViewer;
+		public static bool DebugViewerEnabled = false;
 #endif
 
         /// <summary>
@@ -130,7 +131,9 @@ namespace ORTS
             {
                 InitSimulator(settings, args);
                 Simulator.Start();
+
                 Viewer = new Viewer3D(Simulator);
+
 				if (Client != null)
 				{
 					player = new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0);
@@ -138,17 +141,22 @@ namespace ORTS
 				}
 
 #if DEBUG_VIEWER
-				// prepare to show debug output in a separate window
-				DebugViewer = new DebugViewerForm(Simulator, Viewer);
-				DebugViewer.Show();
+				if (true /*MPManager.IsMultiPlayer()*/)
+				{
+					// prepare to show debug output in a separate window
+					DebugViewer = new DebugViewerForm(Simulator, Viewer);
+					DebugViewer.Show();
+					DebugViewer.Hide();
+					Viewer.DebugViewerEnabled = false;
+				}
 #endif
 
                 Viewer.Run( null );
 
-                Simulator.Stop();
+				Simulator.Stop();
 
 #if DEBUG_VIEWER
-				DebugViewer.Dispose();
+				if (true/*MPManager.IsMultiPlayer()*/) DebugViewer.Dispose();
 #endif
             };
             if (Debugger.IsAttached)
