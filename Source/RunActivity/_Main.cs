@@ -141,7 +141,7 @@ namespace ORTS
 				}
 
 #if DEBUG_VIEWER
-				if (true /*MPManager.IsMultiPlayer()*/)
+				if (MPManager.IsMultiPlayer())
 				{
 					// prepare to show debug output in a separate window
 					DebugViewer = new DebugViewerForm(Simulator, Viewer);
@@ -156,7 +156,7 @@ namespace ORTS
 				Simulator.Stop();
 
 #if DEBUG_VIEWER
-				if (true/*MPManager.IsMultiPlayer()*/) DebugViewer.Dispose();
+				if (MPManager.IsMultiPlayer()) DebugViewer.Dispose();
 #endif
             };
             if (Debugger.IsAttached)

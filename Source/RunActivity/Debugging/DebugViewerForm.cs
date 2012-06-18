@@ -296,10 +296,12 @@ namespace ORTS.Debugging
 
 					  SignalItem si = item as SignalItem;
 
-					  SignalObject s = simulator.Signals.SignalObjects[si.sigObj];
+					  if (si.sigObj >=0  && si.sigObj < simulator.Signals.SignalObjects.Length)
+					  {
+						  SignalObject s = simulator.Signals.SignalObjects[si.sigObj];
 
-
-					  signals.Add(new SignalWidget(item, s));
+						  signals.Add(new SignalWidget(item, s));
+					  }
 				  }
 
 			  }

@@ -124,23 +124,39 @@ namespace ORTS.MultiPlayer
 			{
 				train.Number = player.num;
 			}
-			CONFile conFile;
 			try
 			{
-				// This is the position of the back end of the train in the database.
-				PATTraveller patTraveller = new PATTraveller(p.path);
-				
-				//set a rearTDBTraveller, init direction as forward
-				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, player.dir == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+				int direction = player.dir;
 				train.travelled = player.Travelled;
-				// figure out if the next waypoint is forward or back
-				//patTraveller.NextWaypoint();
-				//if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
-				//	train.RearTDBTraveller.ReverseDirection();
-				PATFile patFile = new PATFile(p.path);
-				AIPath aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
-				//aiPath.AlignAllSwitches();//WARNING
-				conFile = new CONFile(p.con);
+				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+				TrainCar previousCar = null;
+				for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {
+				{
+					string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + player.cars[i];
+					try
+					{
+						TrainCar car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
+						bool flip = true;
+						if (player.flipped[i] == 0) flip = false;
+						car.Flipped = flip;
+						car.CarID = player.ids[i];
+						train.Cars.Add(car);
+						car.Train = train;
+						previousCar = car;
+						MSTSWagon w = (MSTSWagon)car;
+						if (w != null)
+						{
+							w.AftPanUp = player.pantofirst == 1 ? true : false;
+							w.FrontPanUp = player.pantosecond == 1 ? true : false;
+						}
+					}
+					catch (Exception error)
+					{
+						System.Console.WriteLine(wagonFilePath + " " + error);
+					}
+				}// for each rail car
+
+				if (train.Cars.Count == 0) return;
 			}
 			catch (Exception e)
 			{
@@ -151,46 +167,10 @@ namespace ORTS.MultiPlayer
 				throw new MultiPlayerError();
 			}
 
-			// add wagons
-			TrainCar previousCar = null;
-			foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
-			{
-
-				string wagonFolder = Program.Simulator.BasePath + @"\trains\trainset\" + wagon.Folder;
-				string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
-				if (wagon.IsEngine)
-					wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
-
-				try
-				{
-					TrainCar car = ORTS.RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
-					car.Flipped = wagon.Flip;
-					car.UiD = wagon.UiD;
-					car.CarID = player.user + " " + car.UiD; //player's train is always named train 0.
-					train.Cars.Add(car);
-					car.Train = train;
-					previousCar = car;
-					MSTSWagon w = (MSTSWagon)car;
-					if (w != null)
-					{
-						w.AftPanUp = player.pantofirst == 1 ? true : false;
-						w.FrontPanUp = player.pantosecond == 1 ? true : false;
-					}
-
-				}
-				catch (Exception)
-				{
-				}
-
-
-			}// for each rail car
-
-			if (train.Cars.Count == 0) return;
+			train.CalculatePositionOfCars(0);
+			train.InitializeBrakes();
 
 			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
-
-			//train.Number = player.num;
-			train.CalculatePositionOfCars(0);
 			p.Train = train;
 			Program.Simulator.Trains.Add(train);
 			if (MPManager.IsServer())

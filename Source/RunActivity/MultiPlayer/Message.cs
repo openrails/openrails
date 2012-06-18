@@ -150,12 +150,17 @@ namespace ORTS.MultiPlayer
 		public double seconds;
 		public int season, weather;
 		public int pantofirst, pantosecond;
+
+		public string[] cars;
+		public string[] ids;
+		public int[] flipped; //if a wagon is engine
+
 		public MSGPlayer(string m)
 		{
-			string[] areas = m.Split('\t');
-			if (areas.Length <= 4)
+			string[] areas = m.Split('\r');
+			if (areas.Length <= 5)
 			{
-				throw new Exception("Parsing error " + m);
+				throw new Exception("Parsing error in MSGPlayer" + m);
 			}
 			try
 			{
@@ -179,6 +184,7 @@ namespace ORTS.MultiPlayer
 				route = areas[2].Trim();
 				path = areas[3].Trim();
 				dir = int.Parse(areas[4].Trim());
+				ParseTrainCars(areas[5].Trim());
 				int index = path.LastIndexOf("\\PATHS\\", StringComparison.OrdinalIgnoreCase);
 				if (index > 0)
 				{
@@ -198,6 +204,28 @@ namespace ORTS.MultiPlayer
 		}
 
 
+		private void ParseTrainCars(string m)
+		{
+			string[] areas = m.Split('\t');
+			var numCars = areas.Length;
+			if (numCars <= 0) throw new MultiPlayerError();
+			cars = new string[numCars];//with an empty "" at end
+			ids = new string[numCars];
+			flipped = new int[numCars];
+			int index, last;
+			for (var i = 0; i < numCars; i++)
+			{
+				index = areas[i].IndexOf('\"');
+				last = areas[i].LastIndexOf('\"');
+				cars[i] = areas[i].Substring(index + 1, last - index - 1);
+				string tmp = areas[i].Remove(0, last + 1);
+				tmp = tmp.Trim();
+				string[] carinfo = tmp.Split('\n');
+				ids[i] = carinfo[0];
+				flipped[i] = int.Parse(carinfo[1]);
+			}
+
+		}
 		public MSGPlayer(string n, string cd, string c, string p, Train t, int tn)
 		{
 			route = Program.Simulator.RouteName;
@@ -225,10 +253,34 @@ namespace ORTS.MultiPlayer
 				pantofirst = w.AftPanUp == true ? 1 : 0;
 				pantosecond = w.FrontPanUp == true ? 1 : 0;
 			}
+
+			cars = new string[t.Cars.Count];
+			ids = new string[t.Cars.Count];
+			flipped = new int[t.Cars.Count];
+			for (var i = 0; i < t.Cars.Count; i++)
+			{
+				cars[i] = t.Cars[i].WagFilePath;
+				ids[i] = t.Cars[i].CarID;
+				if (t.Cars[i].Flipped == true) flipped[i] = 1;
+				else flipped[i] = 0;
+			}
+
 		}
 		public override string ToString()
 		{
-			string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + seconds + " " + season + " " + weather + " " + pantofirst + " " +pantosecond + " \t" + con + "\t" + route + "\t" + path + "\t" + dir;
+			string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + seconds + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " \r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r";
+			for (var i = 0; i < cars.Length; i++)
+			{
+				var c = cars[i];
+				var index = c.LastIndexOf("\\trains\\trainset\\", StringComparison.OrdinalIgnoreCase);
+				if (index > 0)
+				{
+					c = c.Remove(0, index + 17);
+				}//c: wagon path without folder name
+
+				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\t";
+			}
+
 			return "" + tmp.Length + ": " + tmp;
 		}
 
