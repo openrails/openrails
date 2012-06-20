@@ -55,7 +55,7 @@ namespace ORTS
         private static Viewer3D Viewer;
         public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
 #if DEBUG_VIEWER
-		public static Debugging.DebugViewerForm DebugViewer;
+		public static Debugging.DispatchViewer DebugViewer;
 		public static bool DebugViewerEnabled = false;
 #endif
 
@@ -144,7 +144,7 @@ namespace ORTS
 				if (MPManager.IsMultiPlayer())
 				{
 					// prepare to show debug output in a separate window
-					DebugViewer = new DebugViewerForm(Simulator, Viewer);
+					DebugViewer = new DispatchViewer(Simulator, Viewer);
 					DebugViewer.Show();
 					DebugViewer.Hide();
 					Viewer.DebugViewerEnabled = false;
@@ -664,8 +664,6 @@ namespace ORTS
 					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
 				Code = Client.Code;
 			}
-			if (MPManager.IsMultiPlayer()) Simulator.OnlineTrains = new OnlineTrains();
-
         }
 
         static void LogSeparator()

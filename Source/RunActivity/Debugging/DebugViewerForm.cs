@@ -30,7 +30,7 @@ namespace ORTS.Debugging
    /// Defines an external window for use as a debugging viewer 
    /// when using Open Rails 
    /// </summary>
-   public partial class DebugViewerForm : Form
+   public partial class DispatchViewer : Form
    {
 
 
@@ -138,7 +138,7 @@ namespace ORTS.Debugging
       /// </summary>
       /// <param name="simulator"></param>
       /// /// <param name="viewer"></param>
-      public DebugViewerForm(Simulator simulator, Viewer3D viewer)
+      public DispatchViewer(Simulator simulator, Viewer3D viewer)
       {
          InitializeComponent();
 

@@ -44,7 +44,7 @@ namespace ORTS.MultiPlayer
 			}
 			catch (Exception)
 			{
-				System.Console.WriteLine(msg);
+				//System.Console.WriteLine(msg);
 				//msg = ""; //clear the messages
 				return null;
 			}

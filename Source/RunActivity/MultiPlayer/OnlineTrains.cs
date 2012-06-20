@@ -44,7 +44,7 @@ namespace ORTS.MultiPlayer
 			{
 				if (p.Train != null && Math.Abs(p.Train.SpeedMpS) > 0.01)
 				{
-					move.AddNewItem(p.Username, p.Train.SpeedMpS, p.Train.travelled, p.Train.Number);
+					move.AddNewItem(p.Username, p.Train);
 				}
 			}
 			foreach (Train t in Program.Simulator.Trains)
@@ -53,7 +53,7 @@ namespace ORTS.MultiPlayer
 				if (findTrain(t)) continue;//is an online player controlled train
 				if (t != null && Math.Abs(t.SpeedMpS) > 0.01)
 				{
-					move.AddNewItem("AI"+t.Number, t.SpeedMpS, t.travelled, t.Number);
+					move.AddNewItem("AI"+t.Number, t);
 				}
 			}
 			tmp += move.ToString();
@@ -69,7 +69,7 @@ namespace ORTS.MultiPlayer
 			{
 				if (p.Train != null && Math.Abs(p.Train.SpeedMpS) > 0.01)
 				{
-					move.AddNewItem(p.Username, p.Train.SpeedMpS, p.Train.travelled, p.Train.Number);
+					move.AddNewItem(p.Username, p.Train);
 				}
 			}
 			tmp += move.ToString();
@@ -84,7 +84,7 @@ namespace ORTS.MultiPlayer
 			{
 				if (t != null && Math.Abs(t.SpeedMpS) > 0.01)
 				{
-					move.AddNewItem("AI"+t.Number, t.SpeedMpS, t.travelled, t.Number);
+					move.AddNewItem("AI"+t.Number, t);
 				}
 			}
 			tmp += move.ToString();

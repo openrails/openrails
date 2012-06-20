@@ -85,7 +85,6 @@ namespace ORTS
         public RDBFile RDB;
 		public CarSpawnerFile CarSpawnerFile;
         public bool UseAdvancedAdhesion;
-		public MultiPlayer.OnlineTrains OnlineTrains;
         // Used in save and restore form
         public string PathDescription;
         public float InitialTileX;
@@ -393,8 +392,7 @@ namespace ORTS
 					{
 						//avoid coupling of player train with other players train
 						if (MPManager.IsMultiPlayer()) {
-							if ((train is RemoteTrain && drivenTrain == Program.Simulator.PlayerLocomotive.Train)
-								||drivenTrain is RemoteTrain && train == Program.Simulator.PlayerLocomotive.Train) continue;
+							if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
 						}
 						
 						float d1 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, true);
@@ -448,11 +446,10 @@ namespace ORTS
 					if (train != drivenTrain)
 					{
 						//avoid coupling of player train with other players train
-						if (MPManager.IsMultiPlayer()) {
-							if ((train is RemoteTrain && drivenTrain == Program.Simulator.PlayerLocomotive.Train)
-								||drivenTrain is RemoteTrain && train == Program.Simulator.PlayerLocomotive.Train) continue;
+						if (MPManager.IsMultiPlayer())
+						{
+							if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
 						}
-
 						float d1 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, false);
 						if (d1 < 0)
 						{

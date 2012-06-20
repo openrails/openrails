@@ -29,7 +29,7 @@ namespace ORTS.MultiPlayer
 		double lastSwitchTime = 0.0f;
 		string metric = "";
 		double metricbase = 1.0f;
-
+		public static OnlineTrains OnlineTrains = new OnlineTrains();
 		private static MPManager localUser = null;
 
 		//handles singleton
@@ -60,14 +60,13 @@ namespace ORTS.MultiPlayer
 
 				Traveller t = Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller;
 				MultiPlayer.MSGMove move = new MultiPlayer.MSGMove();
-				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train.SpeedMpS,
-					Program.Simulator.PlayerLocomotive.Train.travelled, Program.Simulator.PlayerLocomotive.Train.Number);
-				Program.Server.BroadCast(Program.Simulator.OnlineTrains.MoveTrains(move));
+				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train);
+				Program.Server.BroadCast(OnlineTrains.MoveTrains(move));
 				lastMoveTime = newtime;
 			}
 			
 			//server updates switch
-			if (Program.Server != null && newtime - lastSwitchTime >= 5f)
+			if (Program.Server != null && newtime - lastSwitchTime >= 10f)
 			{
 				lastSwitchTime = newtime;
 				MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
@@ -78,8 +77,7 @@ namespace ORTS.MultiPlayer
 			{
 				Traveller t = Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller;
 				MultiPlayer.MSGMove move = new MultiPlayer.MSGMove();
-				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train.SpeedMpS,
-					Program.Simulator.PlayerLocomotive.Train.travelled, Program.Simulator.PlayerLocomotive.Train.Number);
+				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train);
 				Program.Client.Send(move.ToString());
 				lastMoveTime = newtime;
 			}
@@ -154,10 +152,10 @@ namespace ORTS.MultiPlayer
 		/// </summary>
 		public string GetOnlineUsersInfo()
 		{
-			string info = "" + Program.Simulator.OnlineTrains.Players.Count + (Program.Simulator.OnlineTrains.Players.Count <= 1 ? " Other Player Online" : " Other Players Online");
+			string info = "" + OnlineTrains.Players.Count + (OnlineTrains.Players.Count <= 1 ? " Other Player Online" : " Other Players Online");
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
 			SortedList<double, string> users = new SortedList<double,string>();
-			foreach (OnlinePlayer p in Program.Simulator.OnlineTrains.Players.Values)
+			foreach (OnlinePlayer p in OnlineTrains.Players.Values)
 			{
 				if (p.Train == null) continue;
 				var d = WorldLocation.GetDistanceSquared(p.Train.FirstCar.WorldPosition.WorldLocation, mine.WorldPosition.WorldLocation);
@@ -181,7 +179,7 @@ namespace ORTS.MultiPlayer
 			if (Program.Server == null) return; //client will do it by decoding message
 
 			string username = p.Username;
-			Program.Simulator.OnlineTrains.Players.Remove(p.Username);
+			OnlineTrains.Players.Remove(p.Username);
 			Program.Simulator.Trains.Remove(p.Train);
 			if (p.Train.Cars.Count > 0 && p.Train.Cars[0].Train == p.Train)
 				foreach (TrainCar car in p.Train.Cars)
@@ -191,8 +189,15 @@ namespace ORTS.MultiPlayer
 		}
 
 
+		public Train FindPlayerTrain(string user)
+		{
+			return OnlineTrains.findTrain(user);
+		}
 
-
+		public bool FindPlayerTrain(Train t)
+		{
+			return OnlineTrains.findTrain(t);
+		}
 
 		//count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
 		int PantoSecondCount = 0;

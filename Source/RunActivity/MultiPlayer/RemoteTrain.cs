@@ -41,14 +41,44 @@ namespace ORTS
 		public bool updateMSGReceived = false;
 		public float expectedTravelled;
 		public float lastSpeedMps = 0f;
+		int expectedTileX, expectedTileZ, expectedTracIndex;
+		float expectedX, expectedZ;
+
         public RemoteTrain(Simulator simulator):base(simulator)
         {
         }
 
+		public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed)
+		{
+			SpeedMpS = speed;
+			expectedTileX = tX;
+			expectedTileZ = tZ;
+			expectedX = x;
+			expectedZ = z;
+			expectedTravelled = eT;
+			expectedTracIndex = tni;
+			updateMSGReceived = true;
+		}
 		public override void Update(float elapsedClockSeconds)
 		{
 			if (updateMSGReceived)
 			{
+				float move = 0.0f;
+				try
+				{
+					Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
+
+					this.travelled = expectedTravelled;
+					this.RearTDBTraveller = t;
+				}
+				catch (Exception)
+				{
+					move = expectedTravelled - travelled;
+				}
+				CalculatePositionOfCars(move);
+				updateMSGReceived = false;
+
+#if false
 				var x = travelled + SpeedMpS * elapsedClockSeconds + (SpeedMpS-lastSpeedMps)/2*elapsedClockSeconds;
 				if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled)>2)
 				{
@@ -60,6 +90,19 @@ namespace ORTS
 					CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
 				}
 				updateMSGReceived = false;
+				if (this.RearTDBTraveller.TrackNodeIndex != expectedTracIndex)
+				{
+					try
+					{
+						Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
+						this.RearTDBTraveller = t;
+						CalculatePositionOfCars(0);
+					}
+					catch (Exception)
+					{
+					}
+				}
+#endif
 			}
 			else
 			{

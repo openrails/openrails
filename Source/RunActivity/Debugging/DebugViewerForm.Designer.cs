@@ -1,6 +1,6 @@
 ﻿namespace ORTS.Debugging
 {
-   partial class DebugViewerForm
+   partial class DispatchViewer
    {
       /// <summary>
       /// Required designer variable.
@@ -236,27 +236,27 @@
             this.viewSignalsToolStripMenuItem,
             this.viewSwitchesToolStripMenuItem});
 		  this.interlockingToolStripMenuItem.Name = "interlockingToolStripMenuItem";
-		  this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(82, 20);
+		  this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(75, 20);
 		  this.interlockingToolStripMenuItem.Text = "Interlocking";
 		  // 
 		  // viewTracksToolStripMenuItem
 		  // 
 		  this.viewTracksToolStripMenuItem.Name = "viewTracksToolStripMenuItem";
-		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
 		  this.viewTracksToolStripMenuItem.Text = "View Tracks";
 		  this.viewTracksToolStripMenuItem.Click += new System.EventHandler(this.viewTracksToolStripMenuItem_Click);
 		  // 
 		  // viewSignalsToolStripMenuItem
 		  // 
 		  this.viewSignalsToolStripMenuItem.Name = "viewSignalsToolStripMenuItem";
-		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
 		  this.viewSignalsToolStripMenuItem.Text = "View Signals";
 		  this.viewSignalsToolStripMenuItem.Click += new System.EventHandler(this.viewSignalsToolStripMenuItem_Click);
 		  // 
 		  // viewSwitchesToolStripMenuItem
 		  // 
 		  this.viewSwitchesToolStripMenuItem.Name = "viewSwitchesToolStripMenuItem";
-		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
 		  this.viewSwitchesToolStripMenuItem.Text = "View Switches";
 		  this.viewSwitchesToolStripMenuItem.Click += new System.EventHandler(this.viewSwitchesToolStripMenuItem_Click);
 		  // 
@@ -294,7 +294,7 @@
 		  this.trackSections.Visible = false;
 		  this.trackSections.SelectedIndexChanged += new System.EventHandler(this.trackShapes_SelectedIndexChanged);
 		  // 
-		  // DebugViewerForm
+		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -318,8 +318,9 @@
 		  this.Controls.Add(this.menuStrip);
 		  this.MainMenuStrip = this.menuStrip;
 		  this.MaximizeBox = false;
-		  this.Name = "DebugViewerForm";
-		  this.Text = "DebugViewerForm";
+		  this.Name = "DispatchViewer";
+		  this.Text = "DispatchViewer";
+		  this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).EndInit();
 		  this.menuStrip.ResumeLayout(false);
