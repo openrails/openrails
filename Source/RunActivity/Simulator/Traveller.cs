@@ -685,6 +685,8 @@ namespace ORTS
             lengthSet = true;
             trackNodeLength = 0;
             trackNodeOffset = 0;
+            if (trackNode == null || trackNode.TrVectorNode == null || trackNode.TrVectorNode.TrVectorSections == null)
+                return;
             var tvs = trackNode.TrVectorNode.TrVectorSections;
             for (var i = 0; i < tvs.Length; i++)
             {
@@ -786,7 +788,7 @@ namespace ORTS
             if (Direction == TravellerDirection.Backward && distance > trackOffset)
                 distance = trackOffset;
             trackOffset += scale * distance;
-            trackNodeOffset += scale * distance;
+            trackNodeOffset += distance;
             locationSet = false;
             return distanceToGo - distance;
         }
@@ -807,7 +809,7 @@ namespace ORTS
                     desiredTurnRadians = trackOffset;
             }
             trackOffset += scale * desiredTurnRadians;
-            trackNodeOffset += scale * desiredTurnRadians * trackSection.SectionCurve.Radius;
+            trackNodeOffset += desiredTurnRadians * trackSection.SectionCurve.Radius;
             locationSet = false;
             return distanceToGo - desiredTurnRadians * trackSection.SectionCurve.Radius;
         }
@@ -827,7 +829,7 @@ namespace ORTS
                     desiredDistance = trackOffset;
             }
             trackOffset += scale * desiredDistance;
-            trackNodeOffset += scale * desiredDistance;
+            trackNodeOffset += desiredDistance;
             locationSet = false;
             return distanceToGo - desiredDistance;
         }
