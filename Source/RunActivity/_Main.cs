@@ -29,8 +29,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using ORTS.Menu;
 using ORTS.Debugging;
+using ORTS.Menu;
 using ORTS.MultiPlayer;
 namespace ORTS
 {
@@ -44,19 +44,19 @@ namespace ORTS
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator;
 
-		//for Multiplayer
-		public static Server Server;
-		public static ClientComm Client;
-		public static MSGPlayer player;
-		public static string UserName;
-		public static string Code;
-		public static int NumOfTrains = 0;
+        //for Multiplayer
+        public static Server Server;
+        public static ClientComm Client;
+        public static MSGPlayer player;
+        public static string UserName;
+        public static string Code;
+        public static int NumOfTrains = 0;
 
         private static Viewer3D Viewer;
         public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
 #if DEBUG_VIEWER
-		public static Debugging.DispatchViewer DebugViewer;
-		public static bool DebugViewerEnabled = false;
+        public static Debugging.DispatchViewer DebugViewer;
+        public static bool DebugViewerEnabled = false;
 #endif
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace ORTS
             // Look for an action to perform.
             var action = "";
             var actions = new[] { "start", "resume", "test", "testall" };
-            foreach( var possibleAction in actions )
+            foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction))
                     action = possibleAction;
 
@@ -95,22 +95,22 @@ namespace ORTS
             {
                 case "start":
                 case "start-profile":
-                    InitLogging( settings );
-                    Start( settings, data );
+                    InitLogging(settings);
+                    Start(settings, data);
                     break;
                 case "resume":
-                    InitLogging( settings );
-                    Resume( settings, data );
+                    InitLogging(settings);
+                    Resume(settings, data);
                     break;
                 case "test":
                     // Any log file is deleted by Menu.exe
-                    InitLogging( settings, false );
+                    InitLogging(settings, false);
                     // set Exit code to be returned to Menu.exe 
-                    System.Environment.ExitCode = Test( settings, data );
+                    System.Environment.ExitCode = Test(settings, data);
                     break;
                 case "testall":
-                    InitLogging( settings );
-                    TestAll( data );
+                    InitLogging(settings);
+                    TestAll(data);
                     break;
                 default:
                     Console.WriteLine("Supply missing activity file name");
@@ -134,29 +134,29 @@ namespace ORTS
 
                 Viewer = new Viewer3D(Simulator);
 
-				if (Client != null)
-				{
-					player = new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0);
-					Client.Send(player.ToString());
-				}
+                if (Client != null)
+                {
+                    player = new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0);
+                    Client.Send(player.ToString());
+                }
 
 #if DEBUG_VIEWER
-				if (MPManager.IsMultiPlayer())
-				{
-					// prepare to show debug output in a separate window
-					DebugViewer = new DispatchViewer(Simulator, Viewer);
-					DebugViewer.Show();
-					DebugViewer.Hide();
-					Viewer.DebugViewerEnabled = false;
-				}
+                if (MPManager.IsMultiPlayer())
+                {
+                    // prepare to show debug output in a separate window
+                    DebugViewer = new DispatchViewer(Simulator, Viewer);
+                    DebugViewer.Show();
+                    DebugViewer.Hide();
+                    Viewer.DebugViewerEnabled = false;
+                }
 #endif
 
-                Viewer.Run( null );
+                Viewer.Run(null);
 
-				Simulator.Stop();
+                Simulator.Stop();
 
 #if DEBUG_VIEWER
-				if (MPManager.IsMultiPlayer()) DebugViewer.Dispose();
+                if (MPManager.IsMultiPlayer()) DebugViewer.Dispose();
 #endif
             };
             if (Debugger.IsAttached)
@@ -187,7 +187,7 @@ namespace ORTS
         /// </summary>
         public static void Save()
         {
-			if (MPManager.IsMultiPlayer()) return; //no save for multiplayer sessions yet
+            if (MPManager.IsMultiPlayer()) return; //no save for multiplayer sessions yet
             Action save = () =>
             {
                 // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
@@ -196,47 +196,53 @@ namespace ORTS
                 // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
                 string prefix;
                 // If there is an activity:
-                if( Arguments.Length == 1 ) {
+                if (Arguments.Length == 1)
+                {
                     // Extract the name of the activity file
-                    prefix = Path.GetFileNameWithoutExtension( Arguments[0] );
-                }else{
+                    prefix = Path.GetFileNameWithoutExtension(Arguments[0]);
+                }
+                else
+                {
                     // Extract the name of the route folder instead
-                    Regex r1 = new Regex( @"(\\ROUTES\\)(.+)(\\PATHS)" );
-                    Match match = r1.Match( Arguments[0] );   // e.g. "D:\MSTS\ROUTES\USA1\PATHS\local service (traffic).pat"
-                    prefix = 
+                    Regex r1 = new Regex(@"(\\ROUTES\\)(.+)(\\PATHS)");
+                    Match match = r1.Match(Arguments[0]);   // e.g. "D:\MSTS\ROUTES\USA1\PATHS\local service (traffic).pat"
+                    prefix =
                         match.Success ?
                         match.Groups[2].Value  // Extract 2nd group (1)(2)(3), e.g. "USA1"
                         : "unknown route";
                 }
-                string fileStem = String.Format( "{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}",  prefix, System.DateTime.Now );
+                string fileStem = String.Format("{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}", prefix, System.DateTime.Now);
 
-                using( BinaryWriter outf = new BinaryWriter( new FileStream( UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write ) ) ) 
+                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
                 {
                     // Save some version identifiers so we can validate on load.
                     outf.Write(Version);
                     outf.Write(Build);
 
                     // Save heading data used in Menu.exe
-                    outf.Write( Simulator.RouteName );
-                    outf.Write( Arguments.Length );
-                    if( Arguments.Length < 2 ){     // save Activity 
-                        outf.Write( Path.GetFileNameWithoutExtension( Arguments[0]) );   // Activity filename
-                    }else{                          // save Explore details
-                        outf.Write( Path.GetFileNameWithoutExtension( Arguments[0]) );  // Path filename
-                        outf.Write( Path.GetFileNameWithoutExtension( Arguments[1]) );  // Consist filename
+                    outf.Write(Simulator.RouteName);
+                    outf.Write(Arguments.Length);
+                    if (Arguments.Length < 2)
+                    {     // save Activity 
+                        outf.Write(Path.GetFileNameWithoutExtension(Arguments[0]));   // Activity filename
+                    }
+                    else
+                    {                          // save Explore details
+                        outf.Write(Path.GetFileNameWithoutExtension(Arguments[0]));  // Path filename
+                        outf.Write(Path.GetFileNameWithoutExtension(Arguments[1]));  // Consist filename
                     }
 
-                    if( Simulator.PathDescription == null ) { Simulator.PathDescription = "<unknown>"; }
-                    outf.Write( Simulator.PathDescription );
-                    outf.Write( (int)Simulator.GameTime );                              // Time elapsed in game (secs)
-                    outf.Write( System.DateTime.Now.ToString("ddd dd-MM-yy HH:mm") );   // Date and time in real world
+                    if (Simulator.PathDescription == null) { Simulator.PathDescription = "<unknown>"; }
+                    outf.Write(Simulator.PathDescription);
+                    outf.Write((int)Simulator.GameTime);                              // Time elapsed in game (secs)
+                    outf.Write(System.DateTime.Now.ToString("ddd dd-MM-yy HH:mm"));   // Date and time in real world
                     // Calculate position of player's train in fractions of a 2048 metre tile
                     float currentTileX = Simulator.Trains[0].FrontTDBTraveller.TileX + (Simulator.Trains[0].FrontTDBTraveller.X / 2048);
                     float currentTileZ = Simulator.Trains[0].FrontTDBTraveller.TileZ + (Simulator.Trains[0].FrontTDBTraveller.Z / 2048);
-                    outf.Write( currentTileX );  // Current location of player train
-                    outf.Write( currentTileZ );  // Current location of player train
-                    outf.Write( Simulator.InitialTileX );  // Initial location of player train
-                    outf.Write( Simulator.InitialTileZ );  // Initial location of player train
+                    outf.Write(currentTileX);  // Current location of player train
+                    outf.Write(currentTileZ);  // Current location of player train
+                    outf.Write(Simulator.InitialTileX);  // Initial location of player train
+                    outf.Write(Simulator.InitialTileZ);  // Initial location of player train
 
                     // Now save the real data used by RunActivity.exe
                     outf.Write(Arguments.Length);
@@ -273,60 +279,75 @@ namespace ORTS
         /// </summary>
         static void Resume(UserSettings settings, string[] args)
         {
-            Action resume = ( ) =>
+            Action resume = () =>
             {
                 // If "-resume" also specifies a save file then use it else use most recently changed *.save E.g.:
                 // RunActivity.exe -resume "yard_two 2012-03-20 22.07.36"
-                string saveFile;
-                if( args.Length > 0 ) {
+                var saveFile = "";
+                if (args.Length > 0)
+                {
                     saveFile = args[0];
-                    if( !saveFile.EndsWith( ".save" ) ) { saveFile += ".save"; }
-                    saveFile = Path.Combine(Program.UserDataFolder, saveFile );
-                } else {
+                    if (!saveFile.EndsWith(".save"))
+                        saveFile += ".save";
+                    if (!Path.IsPathRooted(saveFile))
+                        saveFile = Path.Combine(Program.UserDataFolder, saveFile);
+                }
+                else
+                {
                     saveFile = GetMostRecentSave();
                 }
-                using( BinaryReader inf = new BinaryReader( new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) )
+                Console.WriteLine("Save File  = {0}", saveFile);
+                using (var inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
                 {
                     // Read in validation data.
                     var revision = "<unknown>";
                     var build = "<unknown>";
                     var versionOkay = false;
-                    try {
-                        revision = inf.ReadString().Replace( "\0", "" );
-                        build = inf.ReadString().Replace( "\0", "" );
+                    try
+                    {
+                        revision = inf.ReadString().Replace("\0", "");
+                        build = inf.ReadString().Replace("\0", "");
                         versionOkay = (revision == Version) && (build == Build);
-                    } catch { }
+                    }
+                    catch { }
 
-                    if( !versionOkay ) {
-                        if( System.Diagnostics.Debugger.IsAttached ) {
+                    if (!versionOkay)
+                    {
+                        if (Debugger.IsAttached)
+                        {
                             // Only if debugging, then allow user to continue.
                             // Resuming from saved activities is useful in debugging.
                             // (To resume from the latest save, set RunActivity > Properties > Debug > Command line arguments = "-resume")
-                            Trace.Assert( versionOkay, "Resuming: Activity Save older than version executing.\nContinue at your own risk !" );
-                        } else {
-                            if( revision.Length + build.Length > 0 )
-                                throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build ) );
-                            throw new InvalidDataException( String.Format( "{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build ) );
+                            Trace.Assert(versionOkay, String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}. Continue at your own risk!", Application.ProductName, Version, Build));
+                        }
+                        else
+                        {
+                            if (revision.Length + build.Length > 0)
+                                throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build));
+                            throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build));
                         }
                     }
                     // Skip the heading data used in Menu.exe
-                    string temp = inf.ReadString(); // Route name
-                    int argumentsCount = inf.ReadInt32();
-                    if( argumentsCount < 2 ) {
+                    var temp = inf.ReadString();    // Route name
+                    var argumentsCount = inf.ReadInt32();
+                    if (argumentsCount < 2)
+                    {
                         temp = inf.ReadString();    // Activity filename
-                    } else {
+                    }
+                    else
+                    {
                         temp = inf.ReadString();    // Path filename
                         temp = inf.ReadString();    // Consist filename
                     }
-                    string simulatorPathDescription = inf.ReadString();
-                    int tempInt = inf.ReadInt32();          // Time elapsed in game (secs)
+                    var simulatorPathDescription = inf.ReadString();
+                    var tempInt = inf.ReadInt32();          // Time elapsed in game (secs)
                     temp = inf.ReadString();                // Date and time in real world
-                    float tempFloat = inf.ReadSingle();     // Current location of player train TileX
+                    var tempFloat = inf.ReadSingle();       // Current location of player train TileX
                     tempFloat = inf.ReadSingle();           // Current location of player train TileZ
 
                     // Read initial position and pass to Simulator so it can be written out if another save is made.
-                    float initialTileX = inf.ReadSingle();  // Initial location of player train TileX
-                    float initialTileZ = inf.ReadSingle();  // Initial location of player train TileZ
+                    var initialTileX = inf.ReadSingle();  // Initial location of player train TileX
+                    var initialTileZ = inf.ReadSingle();  // Initial location of player train TileZ
 
                     // Read in the real data...
                     var savedArgs = new string[inf.ReadInt32()];
@@ -334,9 +355,9 @@ namespace ORTS
                         savedArgs[i] = inf.ReadString();
 
                     InitSimulator(settings, savedArgs, "Resume");
-                    Simulator.Restore( inf, simulatorPathDescription, initialTileX, initialTileZ );
+                    Simulator.Restore(inf, simulatorPathDescription, initialTileX, initialTileZ);
                     Viewer = new Viewer3D(Simulator);
-                    Viewer.Run( inf );
+                    Viewer.Run(inf);
                 }
             };
             if (Debugger.IsAttached)
@@ -358,14 +379,18 @@ namespace ORTS
             }
         }
 
-        static string GetMostRecentSave() {
-            var directory = new DirectoryInfo( UserDataFolder );
-            var file = directory.GetFiles( "*.save" )
-             .OrderByDescending( f => f.LastWriteTime )
+        static string GetMostRecentSave()
+        {
+            var directory = new DirectoryInfo(UserDataFolder);
+            var file = directory.GetFiles("*.save")
+             .OrderByDescending(f => f.LastWriteTime)
              .First();
-            if( file == null ) {
+            if (file == null)
+            {
                 return "resume not found";
-            } else {
+            }
+            else
+            {
                 return file.FullName;
             }
         }
@@ -396,7 +421,7 @@ namespace ORTS
                     InitSimulator(settings, new[] { activities[i].FileName }, "");
                     Simulator.Start();
                     Viewer = new Viewer3D(Simulator);
-                    Viewer.Run( null );
+                    Viewer.Run(null);
 
                     results[i] = true;
                     Simulator.Stop();
@@ -457,51 +482,59 @@ namespace ORTS
         /// <summary>
         /// Tests that RunActivity.exe can launch a specific activity or explore.
         /// </summary>
-        public static int Test( UserSettings settings, string[] args ) {
+        public static int Test(UserSettings settings, string[] args)
+        {
             int fatalErrors = 0;
             DateTime StartTime = DateTime.Now;
             DateTime EndTime = DateTime.Now;
-            try {
-                InitSimulator( settings, args );
+            try
+            {
+                InitSimulator(settings, args);
                 StartTime = DateTime.Now;
                 Simulator.Start();
-                Viewer = new Viewer3D( Simulator );
-                Viewer.Run( null );
+                Viewer = new Viewer3D(Simulator);
+                Viewer.Run(null);
                 Simulator.Stop();
                 EndTime = DateTime.Now;
-            } catch( Exception error ) {
-                Trace.WriteLine( error );
-                if( settings.ShowErrorDialogs )
-                    MessageBox.Show( error.ToString(), Application.ProductName );
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+                if (settings.ShowErrorDialogs)
+                    MessageBox.Show(error.ToString(), Application.ProductName);
                 // Set a positive exit code so Menu.exe can pick it up.
                 fatalErrors++;
             }
-            ExportTestSummary( fatalErrors, settings, args, EndTime - StartTime );
+            ExportTestSummary(fatalErrors, settings, args, EndTime - StartTime);
             return fatalErrors;
         }
 
-        static void ExportTestSummary( int fatalErrors, UserSettings settings, string[] args, TimeSpan duration ) {
+        static void ExportTestSummary(int fatalErrors, UserSettings settings, string[] args, TimeSpan duration)
+        {
             // Append to CSV file in format suitable for Excel
-            string summaryFileName = Path.Combine( Program.UserDataFolder, "TestSummary.csv" );
+            string summaryFileName = Path.Combine(Program.UserDataFolder, "TestSummary.csv");
             // Could fail if already opened by Excel
-            try {
-                using( StreamWriter sw = File.AppendText( summaryFileName ) ) {
+            try
+            {
+                using (StreamWriter sw = File.AppendText(summaryFileName))
+                {
                     // Pass, Activity, Errors, Warnings, Infos, Folder, Route, Activity
                     // Excel doesn't handle CSV with commas embedded in text (although Access does :{ )
                     // Simplest solution is to change embedded "," to ";" with .Replace()
-                    sw.Write( (fatalErrors == 0) ? "yes" : "no" );
-                    sw.Write( String.Format( ", {0}", Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.Replace(",", ";") ) );  // e.g. Auto Train with Set-Out
-                    sw.Write( String.Format( ", {0}", (ErrorCount[0] + ErrorCount[1]).ToString() ) );   // critical and error
-                    sw.Write( String.Format( ", {0}", ErrorCount[2].ToString() ) );              // warning
-                    sw.Write( String.Format( ", {0}", ErrorCount[3].ToString() ) );              // information
-                    sw.Write( String.Format( ", {0}", Simulator.RoutePath.Replace( ",", ";" ) ) );               // e.g. D:\MSTS\ROUTES\USA2
-                    sw.Write( String.Format( ", {0}", Simulator.TRK.Tr_RouteFile.Name.Replace( ",", ";" ) ) );   // e.g. "Marias Pass"
-                    sw.Write( String.Format( ", {0}", Path.GetFileName( args[0] ).Replace( ",", ";" ) ) );        // e.g. "autotrnsetout.act"
-                    sw.Write( String.Format( ", {0}", duration.Seconds ) );
-                    sw.Write( String.Format( ", {0:0}", Viewer.RenderProcess.FrameRate.SmoothedValue ) );
-                    sw.WriteLine( "" );
+                    sw.Write((fatalErrors == 0) ? "yes" : "no");
+                    sw.Write(String.Format(", {0}", Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.Replace(",", ";")));  // e.g. Auto Train with Set-Out
+                    sw.Write(String.Format(", {0}", (ErrorCount[0] + ErrorCount[1]).ToString()));   // critical and error
+                    sw.Write(String.Format(", {0}", ErrorCount[2].ToString()));              // warning
+                    sw.Write(String.Format(", {0}", ErrorCount[3].ToString()));              // information
+                    sw.Write(String.Format(", {0}", Simulator.RoutePath.Replace(",", ";")));               // e.g. D:\MSTS\ROUTES\USA2
+                    sw.Write(String.Format(", {0}", Simulator.TRK.Tr_RouteFile.Name.Replace(",", ";")));   // e.g. "Marias Pass"
+                    sw.Write(String.Format(", {0}", Path.GetFileName(args[0]).Replace(",", ";")));        // e.g. "autotrnsetout.act"
+                    sw.Write(String.Format(", {0}", duration.Seconds));
+                    sw.Write(String.Format(", {0:0}", Viewer.RenderProcess.FrameRate.SmoothedValue));
+                    sw.WriteLine("");
                 }
-            } catch { } // Ignore any errors
+            }
+            catch { } // Ignore any errors
         }
 
         static void InitBuildRevision()
@@ -520,7 +553,7 @@ namespace ORTS
                     if (revision != "000")
                         Version += "." + revision;
                     else
-                        Version = ""; 
+                        Version = "";
 
                     Build = Application.ProductVersion; // from assembly
                     Build = Build + " " + f.ReadLine(); // date
@@ -539,11 +572,12 @@ namespace ORTS
             return new UserSettings(RegistryKey, options);
         }
 
-        static void InitLogging( UserSettings settings ) {
-            InitLogging( settings, true );
+        static void InitLogging(UserSettings settings)
+        {
+            InitLogging(settings, true);
         }
 
-        static void InitLogging(UserSettings settings, bool newFile )
+        static void InitLogging(UserSettings settings, bool newFile)
         {
             var logFileName = "";
             if (settings.Logging)
@@ -553,10 +587,13 @@ namespace ORTS
                     var fileName = settings.LoggingFilename;
                     try
                     {
-                        if( newFile ) {
-                            fileName = String.Format( fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, DateTime.Now );
-                        } else {  // -test parameter appends all records to a single log file, so filename musn't change with time of day.
-                            fileName = String.Format( fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, "-test" );
+                        if (newFile)
+                        {
+                            fileName = String.Format(fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, DateTime.Now);
+                        }
+                        else
+                        {  // -test parameter appends all records to a single log file, so filename musn't change with time of day.
+                            fileName = String.Format(fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, "-test");
                         }
                     }
                     catch { }
@@ -565,7 +602,7 @@ namespace ORTS
 
                     logFileName = Path.Combine(settings.LoggingPath, fileName);
                     // Ensure we start with an empty file.
-                    if( newFile) File.Delete(logFileName);
+                    if (newFile) File.Delete(logFileName);
                     // Make Console.Out go to the log file AND the output stream.
                     Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
                     // Make Console.Error go to the new Console.Out.
@@ -607,15 +644,15 @@ namespace ORTS
             {
                 Console.WriteLine("Activity   = {0}", args[0]);
             }
-			else if (args.Length == 3)
-			{
-				Console.WriteLine("Activity   = {0}", args[0]);
-			}
-			else if (args.Length == 4)
-			{
-				Console.WriteLine("Activity   = {0}", args[0]);
-			}
-			else
+            else if (args.Length == 3)
+            {
+                Console.WriteLine("Activity   = {0}", args[0]);
+            }
+            else if (args.Length == 4)
+            {
+                Console.WriteLine("Activity   = {0}", args[0]);
+            }
+            else
             {
                 Console.WriteLine("Path       = {0}", args[0]);
                 Console.WriteLine("Consist    = {0}", args[1]);
@@ -627,43 +664,43 @@ namespace ORTS
 
             Arguments = args;
             Simulator = new Simulator(settings, args[0]);
-			if (args.Length == 1 || args.Length == 3 || args.Length == 4)
+            if (args.Length == 1 || args.Length == 3 || args.Length == 4)
                 Simulator.SetActivity(args[0]);
             else if (args.Length >= 5)
                 Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
 
-			if (args.Length == 7 && args[5] == "1")
-			{
-				Server = new Server(args[6]);
-				UserName = Server.UserName;
-				Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]), 
-					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-				Code = Server.Code;
-			}
-			if (args.Length == 3 && args[1] == "1")
-			{
-				Server = new Server(args[2]);
-				UserName = Server.UserName;
-				Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-				Code = Server.Code;
-			}
-			if (args.Length == 4 )
-			{
-				Client = new ClientComm(args[1], int.Parse(args[2]), args[3]);
-				UserName = Client.UserName;
-				Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-				Code = Client.Code;
-			}
-			if (args.Length == 8)
-			{
-				Client = new ClientComm(args[5], int.Parse(args[6]),args[7]);
-				UserName = Client.UserName;
-				Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-					"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-				Code = Client.Code;
-			}
+            if (args.Length == 7 && args[5] == "1")
+            {
+                Server = new Server(args[6]);
+                UserName = Server.UserName;
+                Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+                    "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+                Code = Server.Code;
+            }
+            if (args.Length == 3 && args[1] == "1")
+            {
+                Server = new Server(args[2]);
+                UserName = Server.UserName;
+                Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+                    "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+                Code = Server.Code;
+            }
+            if (args.Length == 4)
+            {
+                Client = new ClientComm(args[1], int.Parse(args[2]), args[3]);
+                UserName = Client.UserName;
+                Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+                    "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+                Code = Client.Code;
+            }
+            if (args.Length == 8)
+            {
+                Client = new ClientComm(args[5], int.Parse(args[6]), args[7]);
+                UserName = Client.UserName;
+                Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+                    "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+                Code = Client.Code;
+            }
         }
 
         static void LogSeparator()

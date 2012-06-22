@@ -91,7 +91,7 @@ namespace ORTS
                 var frontDist = crossing.DistanceTo(train.FrontTDBTraveller, totalDist);
                 if (frontDist < 0)
                 {
-                    frontDist = -crossing.DistanceTo(new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward), totalDist);
+                    frontDist = -crossing.DistanceTo(new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward), totalDist + train.Length);
                     if (frontDist > 0)
                     {
                         // Train cannot find crossing.
