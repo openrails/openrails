@@ -91,8 +91,8 @@ namespace ORTS
         private CabCamera CabCamera; // Camera 1
         private HeadOutCamera HeadOutForwardCamera; // Camera 1+Up
         private HeadOutCamera HeadOutBackCamera; // Camera 2+Down
-        private TrackingCamera FrontCamera; // Camera 2
-        private TrackingCamera BackCamera; // Camera 3
+		private TrackingCamera FrontCamera; // Camera 2
+		private TrackingCamera BackCamera; // Camera 3
         private TracksideCamera TracksideCamera; // Camera 4
         private PassengerCamera PassengerCamera; // Camera 5
         private BrakemanCamera BrakemanCamera; // Camera 6
@@ -104,6 +104,11 @@ namespace ORTS
         // This is the train we are controlling
         public TrainCar PlayerLocomotive { get { return Simulator.PlayerLocomotive; } set { Simulator.PlayerLocomotive = value; } }
         public Train PlayerTrain { get { if (PlayerLocomotive == null) return null; else return PlayerLocomotive.Train; } }
+
+		private Train selectedTrain = null; // the train currently cameras focus on
+		public Train SelectedTrain { 
+			get { if (selectedTrain == null || selectedTrain.Cars == null || selectedTrain.Cars.Count == 0) { selectedTrain = PlayerTrain;} return selectedTrain;  } 
+			set { selectedTrain = value; } }
 
         // Mouse visibility by timer - GeorgeS
         private bool isMouseShouldVisible = false;
@@ -128,8 +133,8 @@ namespace ORTS
 
             WellKnownCameras = new List<Camera>();
             WellKnownCameras.Add(CabCamera = new CabCamera(this));
-            WellKnownCameras.Add(FrontCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Front));
-            WellKnownCameras.Add(BackCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Rear));
+			WellKnownCameras.Add(FrontCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Front));
+			WellKnownCameras.Add(BackCamera = new TrackingCamera(this, TrackingCamera.AttachedTo.Rear));
             WellKnownCameras.Add(PassengerCamera = new PassengerCamera(this));
             WellKnownCameras.Add(BrakemanCamera = new BrakemanCamera(this));
             WellKnownCameras.Add(HeadOutForwardCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
@@ -424,8 +429,10 @@ namespace ORTS
             }
 
             if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.IsAvailable) CabCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraOutsideFront)) FrontCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraOutsideRear)) BackCamera.Activate();
+			if (UserInput.IsPressed(UserCommands.CameraOutsideFront)) FrontCamera.Activate();
+			if (UserInput.IsPressed(UserCommands.CameraJumpingTrains)) RandomSelectTrain(); //hit 9 key, random selected train to have 2 and 3 camera attached to
+			if (UserInput.IsPressed(UserCommands.CameraJumpBackPlayer)) { SelectedTrain = PlayerTrain; Camera.Activate(); } //hit ctl-9 key, get back to player train
+			if (UserInput.IsPressed(UserCommands.CameraOutsideRear)) BackCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraTrackside)) TracksideCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraPassenger) && PassengerCamera.IsAvailable) PassengerCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraBrakeman)) BrakemanCamera.Activate();
@@ -520,6 +527,30 @@ namespace ORTS
             }
             return false;
         }
+
+		void RandomSelectTrain()
+		{
+			Train old = SelectedTrain;
+			try
+			{
+				var count = Simulator.Trains.Count;
+				SelectedTrain = Simulator.Trains[Program.Random.Next(count)];
+				if (SelectedTrain.Cars == null || SelectedTrain.Cars.Count == 0) SelectedTrain = PlayerTrain;
+				
+			}
+			catch (Exception)
+			{
+				SelectedTrain = PlayerTrain;
+			}
+			if (Camera is PassengerCamera) //passenger camera may jump to a train without passenger view
+			{
+				if (!Camera.IsAvailable)
+				{
+					SelectedTrain = old;
+				}
+			}
+			if (old != SelectedTrain) Camera.Activate();
+		}
         bool isFullScreen = false;
 
         /// <summary>

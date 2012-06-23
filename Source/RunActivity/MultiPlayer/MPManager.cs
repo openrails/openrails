@@ -32,6 +32,37 @@ namespace ORTS.MultiPlayer
 		public static OnlineTrains OnlineTrains = new OnlineTrains();
 		private static MPManager localUser = null;
 
+		private List<Train> uncoupledTrains;
+
+		public void AddUncoupledTrains(Train t)
+		{
+			if (uncoupledTrains == null) uncoupledTrains = new List<Train>();
+			uncoupledTrains.Add(t);
+		}
+
+		public void RemoveUncoupledTrains(Train t)
+		{
+			if (uncoupledTrains != null)
+			{
+				uncoupledTrains.Remove(t);
+				if (uncoupledTrains.Count == 0) uncoupledTrains = null;
+			}
+		}
+
+		public void MoveUncoupledTrains(MSGMove move)
+		{
+			if (uncoupledTrains != null && uncoupledTrains.Count > 0)
+			{
+				foreach (Train t in uncoupledTrains)
+				{
+					if (t != null)
+					{
+						if (Math.Abs(t.SpeedMpS) > 0.001) move.AddNewItem("0xUC" + t.Number, t);
+						else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem("0xUC" + t.Number, t);
+					}
+				}
+			}
+		}
 		//handles singleton
 		private MPManager()
 		{
@@ -57,8 +88,6 @@ namespace ORTS.MultiPlayer
 			//server update train location of all
 			if (Program.Server != null && newtime - lastMoveTime >= 1f)
 			{
-
-				Traveller t = Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller;
 				MultiPlayer.MSGMove move = new MultiPlayer.MSGMove();
 				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train);
 				Program.Server.BroadCast(OnlineTrains.MoveTrains(move));
@@ -75,9 +104,9 @@ namespace ORTS.MultiPlayer
 			//client updates itself
 			if (Program.Client != null && Program.Server == null && newtime - lastMoveTime >= 1f)
 			{
-				Traveller t = Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller;
 				MultiPlayer.MSGMove move = new MultiPlayer.MSGMove();
 				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train);
+				MoveUncoupledTrains(move); //if there are uncoupled trains
 				Program.Client.Send(move.ToString());
 				lastMoveTime = newtime;
 			}
@@ -158,6 +187,7 @@ namespace ORTS.MultiPlayer
 			foreach (OnlinePlayer p in OnlineTrains.Players.Values)
 			{
 				if (p.Train == null) continue;
+				if (p.Train.Cars.Count <= 0) continue;
 				var d = WorldLocation.GetDistanceSquared(p.Train.FirstCar.WorldPosition.WorldLocation, mine.WorldPosition.WorldLocation);
 				users.Add(Math.Sqrt(d), p.Username);
 			}

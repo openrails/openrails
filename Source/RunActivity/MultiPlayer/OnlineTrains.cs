@@ -49,11 +49,15 @@ namespace ORTS.MultiPlayer
 			}
 			foreach (Train t in Program.Simulator.Trains)
 			{
-				if (t == Program.Simulator.Trains[0]) continue;//player drived train
-				if (findTrain(t)) continue;//is an online player controlled train
-				if (t != null && Math.Abs(t.SpeedMpS) > 0.01)
+				if (t == Program.Simulator.PlayerLocomotive.Train) continue;//player drived train
+				if (t == null || findTrain(t)) continue;//is an online player controlled train
+				if (Math.Abs(t.SpeedMpS) > 0.001)
 				{
-					move.AddNewItem("AI"+t.Number, t);
+					move.AddNewItem("0xAI"+t.Number, t);
+				}
+				else 
+				{
+					if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem("0xAI" + t.Number, t);
 				}
 			}
 			tmp += move.ToString();

@@ -40,6 +40,7 @@ namespace ORTS
 	{
 		public List<TrainCar> Cars = new List<TrainCar>();  // listed front to back
 		public int Number;
+		public float LastReportedSpeed = 10.0f; //Multiplayer, used to check if the train has stopped, others should know that
 		public static int TotalNumber = 0;
 		public TrainCar FirstCar { get { return Cars[0]; } }
 		public TrainCar LastCar { get { return Cars[Cars.Count - 1]; } }

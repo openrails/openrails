@@ -44,13 +44,12 @@ namespace ORTS
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator;
 
-        //for Multiplayer
-        public static Server Server;
-        public static ClientComm Client;
-        public static MSGPlayer player;
-        public static string UserName;
-        public static string Code;
-        public static int NumOfTrains = 0;
+		//for Multiplayer
+		public static Server Server;
+		public static ClientComm Client;
+		public static string UserName;
+		public static string Code;
+		public static int NumOfTrains = 0;
 
         private static Viewer3D Viewer;
         public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
@@ -134,11 +133,10 @@ namespace ORTS
 
                 Viewer = new Viewer3D(Simulator);
 
-                if (Client != null)
-                {
-                    player = new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0);
-                    Client.Send(player.ToString());
-                }
+				if (Client != null)
+				{
+					Client.Send((new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0)).ToString());
+				}
 
 #if DEBUG_VIEWER
                 if (MPManager.IsMultiPlayer())

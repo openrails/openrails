@@ -582,7 +582,7 @@ namespace ORTS
 
                 // When not LeadLocomotive; check if lead is in Neutral
                 // if so this loco will have no motive force
-                var LeadLocomotive = Simulator.Trains[0];
+				var LeadLocomotive = Program.Simulator.PlayerLocomotive.Train;
 
                 foreach (TrainCar car in LeadLocomotive.Cars)
                 {

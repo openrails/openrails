@@ -203,6 +203,7 @@ namespace ORTS
 
             // add wagons
             TrainCar previousCar = null;
+			var id = 0;
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
 
@@ -215,6 +216,8 @@ namespace ORTS
                 {
                     TrainCar car = RollingStock.Load(Simulator, wagonFilePath, previousCar);
                     car.Flipped = wagon.Flip;
+					car.UiD = id++;
+					car.CarID = "AI" + train.UiD + " " + car.UiD;
                     train.Cars.Add(car);
                     car.Train = train;
                     car.SignalEvent(EventID.Pantograph1Up);

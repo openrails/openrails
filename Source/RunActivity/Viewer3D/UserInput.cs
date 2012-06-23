@@ -152,7 +152,9 @@ namespace ORTS
             Commands[(int)UserCommands.CameraCarNext] = new UserCommandKeyInput(0x49, KeyModifiers.Alt);
             Commands[(int)UserCommands.CameraCarPrevious] = new UserCommandKeyInput(0x51, KeyModifiers.Alt);
             Commands[(int)UserCommands.CameraCarFirst] = new UserCommandKeyInput(0x47, KeyModifiers.Alt);
-            Commands[(int)UserCommands.CameraCarLast] = new UserCommandKeyInput(0x4F, KeyModifiers.Alt);
+			Commands[(int)UserCommands.CameraCarLast] = new UserCommandKeyInput(0x4F, KeyModifiers.Alt);
+			Commands[(int)UserCommands.CameraJumpingTrains] = new UserCommandKeyInput(0x0A, KeyModifiers.Alt);
+			Commands[(int)UserCommands.CameraJumpBackPlayer] = new UserCommandKeyInput(0x0A);
 
             Commands[(int)UserCommands.ControlForwards] = new UserCommandKeyInput(0x11);
             Commands[(int)UserCommands.ControlBackwards] = new UserCommandKeyInput(0x1F);
@@ -207,7 +209,7 @@ namespace ORTS
             Commands[(int)UserCommands.ControlFireShovelFull] = new UserCommandKeyInput(0x13, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
 			Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput(0x21, KeyModifiers.Control);
-			Commands[(int)UserCommands.ControlMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Alt);
+			Commands[(int)UserCommands.ControlMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
 
 #if CHECK_KEYMAP_DUPLICATES
             var firstUserCommand = Enum.GetValues(typeof(UserCommands)).Cast<UserCommands>().Min();
@@ -548,7 +550,9 @@ namespace ORTS
         CameraCarNext,
         CameraCarPrevious,
         CameraCarFirst,
-        CameraCarLast,
+		CameraCarLast,
+		CameraJumpingTrains,
+		CameraJumpBackPlayer,
 
         ControlForwards,
         ControlBackwards,
