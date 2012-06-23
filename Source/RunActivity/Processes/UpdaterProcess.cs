@@ -58,6 +58,7 @@ namespace ORTS
         [ThreadName("Updater")]
         void UpdaterThread()
         {
+            Profiler.SetThread();
             ProcessState.SetThreadName("Updater Process");
 
             while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)

@@ -84,6 +84,7 @@ namespace ORTS
         public RenderProcess(Viewer3D viewer)
         {
             Viewer = viewer;
+            Profiler.SetThread();
 
             Window.Title = "Open Rails";
             Form = Control.FromHandle(this.Window.Handle).FindForm();

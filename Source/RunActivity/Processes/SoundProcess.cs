@@ -7,11 +7,11 @@
 //
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Diagnostics;
-using System;
 
 namespace ORTS
 {
@@ -89,7 +89,8 @@ namespace ORTS
 		[ThreadName("Sound")]
         void SoundThread()
         {
-			ProcessState.SetThreadName("Sound Process");
+            Profiler.SetThread();
+            ProcessState.SetThreadName("Sound Process");
 
             while (Viewer.RealTime == 0)
                 Thread.Sleep(100);

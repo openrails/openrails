@@ -56,6 +56,7 @@ namespace ORTS
         [ThreadName("Loader")]
         void LoaderThread()
         {
+            Profiler.SetThread();
             ProcessState.SetThreadName("Loader Process");
 
             while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
