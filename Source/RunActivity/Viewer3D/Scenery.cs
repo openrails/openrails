@@ -227,16 +227,23 @@ namespace ORTS
                 {
                     sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                 }
+                else if (worldObject.GetType() == typeof(MSTS.TransferObj))
+                {
+                    sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix));
+                }
                 else if (worldObject.GetType() == typeof(MSTS.LevelCrossingObj))
                 {
                     sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
                 }
                 else if (worldObject.GetType() == typeof(MSTS.SpeedPostObj))
                 {
-                    try {
-                        sceneryObjects.Add( new SpeedPostShape( viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject ) );
-                    } catch {
-                        Trace.TraceWarning( "SpeedPostShape {1} ignored because beyond track item table in file {0}", WFileName, worldObject.UID );
+                    try
+                    {
+                        sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
+                    }
+                    catch
+                    {
+                        Trace.TraceWarning("SpeedPostShape {1} ignored because beyond track item table in file {0}", WFileName, worldObject.UID);
                     }
                 }
                 else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))

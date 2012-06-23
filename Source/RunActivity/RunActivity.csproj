@@ -388,6 +388,7 @@
     <Compile Include="Signals\Signals.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Viewer3D\Transfers.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />

@@ -49,13 +49,12 @@ namespace ORTS
         public float GetElevation(int tileX, int tileZ, float x, float z)
         {
             // Start with the north west corner.
-            int ux = (int)Math.Floor(x);
-            int uz = (int)Math.Floor(z);
-            float nw = GetElevation(tileX, tileZ, ux, uz);
-            float ne = GetElevation(tileX, tileZ, ux + 1, uz);
-            float sw = GetElevation(tileX, tileZ, ux, uz + 1);
-            float se = GetElevation(tileX, tileZ, ux + 1, uz + 1);
-            float e;
+            var ux = (int)Math.Floor(x);
+            var uz = (int)Math.Floor(z);
+            var nw = GetElevation(tileX, tileZ, ux, uz);
+            var ne = GetElevation(tileX, tileZ, ux + 1, uz);
+            var sw = GetElevation(tileX, tileZ, ux, uz + 1);
+            var se = GetElevation(tileX, tileZ, ux + 1, uz + 1);
 
             // Condition must match TerrainPatch.SetupPatchIndexBuffer's condition.
             if (((ux & 1) == (uz & 1)))
@@ -63,23 +62,16 @@ namespace ORTS
                 // Split NW-SE
                 if ((x - ux) > (z - uz))
                     // NE side
-                    e = nw + (ne - nw) * (x - ux) + (se - ne) * (z - uz);
-                else
-                    // SW side
-                    e = nw + (se - sw) * (x - ux) + (sw - nw) * (z - uz);
+                    return nw + (ne - nw) * (x - ux) + (se - ne) * (z - uz);
+                // SW side
+                return nw + (se - sw) * (x - ux) + (sw - nw) * (z - uz);
             }
-            else
-            {
-                // Split NE-SW
-                if ((x - ux) + (z - uz) < 1)
-                    // NW side
-                    e = nw + (ne - nw) * (x - ux) + (sw - nw) * (z - uz);
-                else
-                    // SE side
-                    e = se + (sw - se) * (1 - x + ux) + (ne - se) * (1 - z + uz);
-            }
-
-            return e;
+            // Split NE-SW
+            if ((x - ux) + (z - uz) < 1)
+                // NW side
+                return nw + (ne - nw) * (x - ux) + (sw - nw) * (z - uz);
+            // SE side
+            return se + (sw - se) * (1 - x + ux) + (ne - se) * (1 - z + uz);
         }
 
         public bool IsVertexHidden(int tileX, int tileZ, int x, int z)

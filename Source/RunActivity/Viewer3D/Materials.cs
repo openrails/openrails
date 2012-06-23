@@ -111,6 +111,7 @@ namespace ORTS
         private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
         private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
 		private static Dictionary<string, SignalLightMaterial> SignalLightMaterials = new Dictionary<string, SignalLightMaterial>();
+        private static Dictionary<string, TransferMaterial> TransferMaterials = new Dictionary<string, TransferMaterial>();
         public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
 		public static Material YellowMaterial = null;   // for debug and experiments
         public static ShadowMapMaterial ShadowMapMaterial = null;
@@ -256,6 +257,17 @@ namespace ORTS
                     else
                     {
 						return SignalLightMaterials[textureName];
+                    }
+                case "TransferMaterial":
+                    if (!TransferMaterials.ContainsKey(textureName))
+                    {
+                        var material = new TransferMaterial(renderProcess, textureName);
+                        TransferMaterials.Add(textureName, material);
+                        return material;
+                    }
+                    else
+                    {
+                        return TransferMaterials[textureName];
                     }
                 default:
                     return Load(renderProcess, "SceneryMaterial");
