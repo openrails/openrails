@@ -930,8 +930,10 @@ namespace ORTS.MultiPlayer
 		public string user, newTrainName, carID, firstCarIDOld, firstCarIDNew;
 		public int TileX1, TileZ1;
 		public float X1, Z1, Travelled1, Speed1;
+		public int trainDirection;
 		public int TileX2, TileZ2;
 		public float X2, Z2, Travelled2, Speed2;
+		public int train2Direction;
 		public int newTrainNumber;
 		public int oldTrainNumber;
 		public int whichIsPlayer;
@@ -944,17 +946,17 @@ namespace ORTS.MultiPlayer
 				string[] tmp = areas[1].Split(' ');
 				user = tmp[0];
 				TileX1 = int.Parse(tmp[1]); TileZ1 = int.Parse(tmp[2]);
-				X1 = float.Parse(tmp[3]); Z1 = float.Parse(tmp[4]); Travelled1 = float.Parse(tmp[5]); Speed1 = float.Parse(tmp[6]);
+				X1 = float.Parse(tmp[3]); Z1 = float.Parse(tmp[4]); Travelled1 = float.Parse(tmp[5]); Speed1 = float.Parse(tmp[6]); trainDirection = int.Parse(tmp[7]);
+				oldTrainNumber = int.Parse(tmp[8]);
 				tmp = areas[2].Split(' ');
 				newTrainName = tmp[0]; 
 				TileX2 = int.Parse(tmp[1]); TileZ2 = int.Parse(tmp[2]);
-				X2 = float.Parse(tmp[3]); Z2 = float.Parse(tmp[4]); Travelled2 = float.Parse(tmp[5]); Speed2 = float.Parse(tmp[6]);
-				newTrainNumber = int.Parse(tmp[7]);
+				X2 = float.Parse(tmp[3]); Z2 = float.Parse(tmp[4]); Travelled2 = float.Parse(tmp[5]); Speed2 = float.Parse(tmp[6]); train2Direction = int.Parse(tmp[7]);
+				newTrainNumber = int.Parse(tmp[8]);
 				firstCarIDOld = areas[3];
 				firstCarIDNew = areas[4];
 
 				whichIsPlayer = int.Parse(areas[5]);
-				oldTrainNumber = int.Parse(areas[6]);
 			}
 			catch (Exception e)
 			{
@@ -967,7 +969,9 @@ namespace ORTS.MultiPlayer
 			carID = ID;
 			user = u;
 			TileX1 = t.RearTDBTraveller.TileX; TileZ1 = t.RearTDBTraveller.TileZ; X1 = t.RearTDBTraveller.X; Z1 = t.RearTDBTraveller.Z; Travelled1 = t.travelled; Speed1 = t.SpeedMpS;
+			trainDirection = t.RearTDBTraveller.Direction == Traveller.TravellerDirection.Forward ? 0 : 1;//0 forward, 1 backward
 			TileX2 = newT.RearTDBTraveller.TileX; TileZ2 = newT.RearTDBTraveller.TileZ; X2 = newT.RearTDBTraveller.X; Z2 = newT.RearTDBTraveller.Z; Travelled2 = newT.travelled; Speed2 = newT.SpeedMpS;
+			train2Direction = newT.RearTDBTraveller.Direction == Traveller.TravellerDirection.Forward ? 0 : 1;//0 forward, 1 backward
 			if (MPManager.IsServer()) newTrainNumber = newT.Number;//serer will use the correct number
 			else newTrainNumber = 1000000 + Program.Random.Next(1000000);//client: temporary assign a train number 1000000-2000000, will change to the correct one after receiving response from the server
 			
@@ -985,9 +989,11 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "UNCOUPLE " + carID + "\t" + user + " " + TileX1 + " " + TileZ1 + " " + X1 + " " + Z1 + " " + Travelled1 + " " + Speed1 + "\t" +
-				newTrainName + " " + TileX2 + " " + TileZ2 + " " + X2 + " " + Z2 + " " + Travelled2 + " " + Speed2 + " " + newTrainNumber + "\t" + firstCarIDOld + "\t" + firstCarIDNew + "\t" + whichIsPlayer + 
-				"\t" + oldTrainNumber;
+			string tmp = "UNCOUPLE " + carID + "\t" + user + " " +
+				TileX1 + " " + TileZ1 + " " + X1 + " " + Z1 + " " + Travelled1 + " " + Speed1 + " " + trainDirection + " " + oldTrainNumber + "\t" +
+				newTrainName + " " +
+				TileX2 + " " + TileZ2 + " " + X2 + " " + Z2 + " " + Travelled2 + " " + Speed2 + " " + train2Direction + " " + newTrainNumber + "\t" + 
+				firstCarIDOld + "\t" + firstCarIDNew + "\t" + whichIsPlayer;
 			return "" + tmp.Length + ": " + tmp;
 		}
 
@@ -1035,16 +1041,22 @@ namespace ORTS.MultiPlayer
 					train.Cars.RemoveAt(k);
 				}
 
+				Traveller.TravellerDirection d1 = Traveller.TravellerDirection.Forward;
+				if (trainDirection == 1) d1 = Traveller.TravellerDirection.Backward;
+
+				Traveller.TravellerDirection d2 = Traveller.TravellerDirection.Forward;
+				if (train2Direction == 1) d2 = Traveller.TravellerDirection.Backward;
+				
 				train.LastCar.CouplerSlackM = 0;
 
 				// and fix up the travellers
-				train2.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX2, TileZ2, X2, Z2, train.RearTDBTraveller.Direction);
+				train2.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX2, TileZ2, X2, Z2, d2);
 				train2.travelled = Travelled2;
 				train2.SpeedMpS = Speed2;
 
 				train2.CalculatePositionOfCars(0);  // fix the front traveller
 
-				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX1, TileZ1, X1, Z1, train.RearTDBTraveller.Direction);
+				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX1, TileZ1, X1, Z1, d1);
 				train.CalculatePositionOfCars(0);  // fix the front traveller
 				train.travelled = Travelled1;
 				train.SpeedMpS = Speed1;
