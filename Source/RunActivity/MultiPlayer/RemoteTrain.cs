@@ -66,10 +66,21 @@ namespace ORTS
 				float move = 0.0f;
 				try
 				{
-					Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
+					var x = travelled + SpeedMpS * elapsedClockSeconds + (SpeedMpS - lastSpeedMps) / 2 * elapsedClockSeconds;
 
-					this.travelled = expectedTravelled;
-					this.RearTDBTraveller = t;
+					if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 5)
+					{
+						Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
+
+						this.travelled = expectedTravelled;
+						this.RearTDBTraveller = t;
+					}
+					else
+					{
+						if (SpeedMpS > 0) SpeedMpS += (expectedTravelled - x) / 1;
+						else SpeedMpS -= (expectedTravelled - x) / 1;
+						CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+					}
 				}
 				catch (Exception)
 				{
@@ -109,6 +120,14 @@ namespace ORTS
 				CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
 			}
 
+			foreach (TrainCar car in Cars)
+			{
+				if (car != null)
+				{
+					if (car.IsDriveable && car is MSTSWagon) (car as MSTSWagon).WheelSpeedMpS = SpeedMpS; 
+					car.SpeedMpS = SpeedMpS;
+				}
+			}
 			lastSpeedMps = SpeedMpS;
 		} // end Update
 	}// class Train

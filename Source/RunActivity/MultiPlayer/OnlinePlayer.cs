@@ -120,7 +120,8 @@ namespace ORTS.MultiPlayer
 			}
 
 			Client.Close();
-			MPManager.RemovePlayer(this);
+			MPManager.Instance().AddRemovedPlayer(this);//add this player to be removed
+			MPManager.BroadCast((new MSGQuit(this.Username)).ToString());
 			thread.Abort();
 		}
 

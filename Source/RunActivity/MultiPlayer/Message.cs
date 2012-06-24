@@ -591,7 +591,7 @@ namespace ORTS.MultiPlayer
 
 			train.Number = this.TrainNum;
 			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
-			Program.Simulator.Trains.Add(train);
+			MPManager.Instance().AddAddedTrains(train); //the train to be added and treated later, to be thread safe
 
 
 		}
@@ -657,10 +657,7 @@ namespace ORTS.MultiPlayer
 				{
 					if (i == train.Number)
 					{
-						Program.Simulator.Trains.Remove(train);
-						if (train.Cars.Count > 0 && train.Cars[0].Train == train)
-							foreach (TrainCar car in train.Cars)
-								car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+						MPManager.Instance().AddRemovedTrains(train); //added to the removed list, treated later to be thread safe
 					}
 				}
 			}
@@ -683,6 +680,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
+			if (Program.Server != null) return; //already a server, not need to worry
 			Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
 			//System.Console.WriteLine(this.ToString());
 		}
@@ -890,14 +888,11 @@ namespace ORTS.MultiPlayer
 				OnlinePlayer p = MPManager.OnlineTrains.Players[user];
 				if (p != null)
 				{
-					Program.Server.Players.Remove(p);
-					MPManager.OnlineTrains.Players.Remove(user);
-
-					Program.Simulator.Trains.Remove(p.Train);
-					if (p.Train.Cars.Count > 0 && p.Train.Cars[0].Train == p.Train)
-						foreach (TrainCar car in p.Train.Cars)
-							car.Train = null; 
-
+					lock (Program.Server.Players)
+					{
+						Program.Server.Players.Remove(p);
+					}
+					MPManager.Instance().AddRemovedPlayer(p);
 					if (p.thread != null) p.thread.Abort();//end communication with this player
 				}
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
@@ -907,17 +902,7 @@ namespace ORTS.MultiPlayer
 				OnlinePlayer p = MPManager.OnlineTrains.Players[user];
 				if (p != null)
 				{
-					//find thr train from online player trains
-					Train t = p.Train;
-					if (t != null)
-					{
-						Program.Simulator.Trains.Remove(t);
-						if (t.Cars.Count > 0 && t.Cars[0].Train == t)
-							foreach (TrainCar car in t.Cars)
-								car.Train = null; 
-
-					}
-					MPManager.OnlineTrains.Players.Remove(user);
+					MPManager.Instance().AddRemovedPlayer(p);
 					if (ServerQuit) throw new MultiPlayerError(); //server quit, end communication by throwing this error 
 				}
 			}
@@ -1064,7 +1049,7 @@ namespace ORTS.MultiPlayer
 
 				train2.InitializeSignals(false);
 				train2.LeadLocomotive = lead;
-				Program.Simulator.Trains.Add(train2);
+				MPManager.Instance().AddAddedTrains(train2);
 				train.LeadLocomotive = lead;
 				train.UncoupledFrom = train2;
 				train2.UncoupledFrom = train;
@@ -1252,9 +1237,7 @@ namespace ORTS.MultiPlayer
 				train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 			}
 
-			Program.Simulator.Trains.Remove(train2);
-			//train2.Cars.Clear();
-
+			MPManager.Instance().AddRemovedTrains(train2);
 		}
 	}
 

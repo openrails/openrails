@@ -31,15 +31,18 @@ namespace ORTS.MultiPlayer
 			int index = msg.IndexOf(':');
 			if (index < 0)
 			{
-				//msg = ""; //no ':', clear the messages
+				msg = ""; //no ':', clear the messages, no way to recover anyway
 				throw new Exception("Parsing error, no : found");
 			}
 			try
 			{
-				string tmp = msg.Substring(0, index);
+				int last = index-1;
+				while (last >= 0 && char.IsDigit(msg[last--])) ; //shift back to get all digits
+				if (last < 0) last = 0;
+				string tmp = msg.Substring(last, index);
 				int len = int.Parse(tmp);
 				tmp = msg.Substring(index+2, len); //not taking ": "
-				msg = msg.Remove(0, index+2+len); //remove :
+				msg = msg.Remove(last, index+2+len); //remove :
 				return tmp;
 			}
 			catch (Exception)

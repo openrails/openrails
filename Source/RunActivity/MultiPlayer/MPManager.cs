@@ -31,20 +31,38 @@ namespace ORTS.MultiPlayer
 		public static OnlineTrains OnlineTrains = new OnlineTrains();
 		private static MPManager localUser = null;
 
+		private List<Train> removedTrains;
+		private List<Train> addedTrains;
+
+		public void AddRemovedTrains(Train t)
+		{
+			lock (removedTrains) //thread safe as listening threads may call this
+			{
+				if (!removedTrains.Contains(t)) removedTrains.Add(t);
+			}
+		}
+		public void AddAddedTrains(Train t)
+		{
+			lock (addedTrains) //thread safe as listening threads may call this
+			{
+				if (!addedTrains.Contains(t)) addedTrains.Add(t);
+			}
+		}
 		private List<Train> uncoupledTrains;
 
 		public void AddUncoupledTrains(Train t)
 		{
-			if (uncoupledTrains == null) uncoupledTrains = new List<Train>();
-			uncoupledTrains.Add(t);
+			lock (uncoupledTrains)
+			{
+				uncoupledTrains.Add(t);
+			}
 		}
 
 		public void RemoveUncoupledTrains(Train t)
 		{
-			if (uncoupledTrains != null)
+			lock (uncoupledTrains)
 			{
 				uncoupledTrains.Remove(t);
-				if (uncoupledTrains.Count == 0) uncoupledTrains = null;
 			}
 		}
 
@@ -65,6 +83,10 @@ namespace ORTS.MultiPlayer
 		//handles singleton
 		private MPManager()
 		{
+			removedTrains = new List<Train>();
+			playersRemoved = new List<OnlinePlayer>();
+			uncoupledTrains = new List<Train>();
+			addedTrains = new List<Train>();
 		}
 		public static MPManager Instance()
 		{
@@ -110,6 +132,28 @@ namespace ORTS.MultiPlayer
 				lastMoveTime = newtime;
 			}
 
+			lock (removedTrains) //work on all trains to be removed. This will called in the same thread as Update
+			{
+				foreach (Train train in removedTrains)
+				{
+					Program.Simulator.Trains.Remove(train);
+					if (train.Cars.Count > 0 && train.Cars[0].Train == train)
+						foreach (TrainCar car in train.Cars)
+							car.Train = null;
+				}
+				removedTrains.Clear();
+			}
+
+			lock (addedTrains) //work on all trains to be added. This will called in the same thread as Update
+			{
+				foreach (Train t in addedTrains)
+				{
+					Program.Simulator.Trains.Add(t);
+				}
+				addedTrains.Clear();
+			}
+			//some players are removed
+			RemovePlayer();
 		}
 
 		//check if it is in the server mode
@@ -180,15 +224,22 @@ namespace ORTS.MultiPlayer
 		/// </summary>
 		public string GetOnlineUsersInfo()
 		{
+
 			string info = "" + OnlineTrains.Players.Count + (OnlineTrains.Players.Count <= 1 ? " Other Player Online" : " Other Players Online");
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
 			SortedList<double, string> users = new SortedList<double,string>();
-			foreach (OnlinePlayer p in OnlineTrains.Players.Values)
+			try//the list of players may be changed during the following process
 			{
-				if (p.Train == null) continue;
-				if (p.Train.Cars.Count <= 0) continue;
-				var d = WorldLocation.GetDistanceSquared(p.Train.FirstCar.WorldPosition.WorldLocation, mine.WorldPosition.WorldLocation);
-				users.Add(Math.Sqrt(d), p.Username);
+				foreach (OnlinePlayer p in OnlineTrains.Players.Values)
+				{
+					if (p.Train == null) continue;
+					if (p.Train.Cars.Count <= 0) continue;
+					var d = WorldLocation.GetDistanceSquared(p.Train.FirstCar.WorldPosition.WorldLocation, mine.WorldPosition.WorldLocation);
+					users.Add(Math.Sqrt(d), p.Username);
+				}
+			}
+			catch (Exception)
+			{
 			}
 			if (metric == "")
 			{
@@ -203,18 +254,33 @@ namespace ORTS.MultiPlayer
 			return info;
 		}
 
-		public static void RemovePlayer(OnlinePlayer p)
+		private List<OnlinePlayer> playersRemoved;
+		public void AddRemovedPlayer(OnlinePlayer p)
+		{
+			MPManager.OnlineTrains.Players.Remove(p.Username);
+
+			lock (playersRemoved)
+			{
+				playersRemoved.Add(p);
+			}
+		}
+
+		//only can be called by Update
+		private void RemovePlayer()
 		{
 			if (Program.Server == null) return; //client will do it by decoding message
 
-			string username = p.Username;
-			OnlineTrains.Players.Remove(p.Username);
-			Program.Simulator.Trains.Remove(p.Train);
-			if (p.Train.Cars.Count > 0 && p.Train.Cars[0].Train == p.Train)
-				foreach (TrainCar car in p.Train.Cars)
-					car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
-
-			BroadCast((new MSGQuit(username)).ToString());
+			lock (playersRemoved)
+			{
+				foreach (OnlinePlayer p in playersRemoved)
+				{
+					string username = p.Username;
+					Program.Simulator.Trains.Remove(p.Train);
+					if (p.Train.Cars.Count > 0 && p.Train.Cars[0].Train == p.Train)
+						foreach (TrainCar car in p.Train.Cars)
+							car.Train = null;
+				}
+			}
 		}
 
 
