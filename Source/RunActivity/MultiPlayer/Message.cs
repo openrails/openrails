@@ -15,8 +15,9 @@ namespace ORTS.MultiPlayer
 			string key = m.Substring(0, index);
 			if (key == "MOVE") return new MSGMove(m.Substring(index + 1));
 			else if (key == "PLAYER") return new MSGPlayer(m.Substring(index + 1));
-			else if (key == "SWITCH") return new MSGSwitch(m.Substring(index + 1));
 			else if (key == "SWITCHSTATES") return new MSGSwitchStatus(m.Substring(index + 1));
+			else if (key == "SIGNALSTATES") return new MSGSignalStatus(m.Substring(index + 1));
+			else if (key == "SWITCH") return new MSGSwitch(m.Substring(index + 1));
 			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
 			else if (key == "REMOVETRAIN") return new MSGRemoveTrain(m.Substring(index + 1));
 			else if (key == "SERVER") return new MSGServer(m.Substring(index + 1));
@@ -74,6 +75,25 @@ namespace ORTS.MultiPlayer
 			}
 		}
 
+		static Dictionary<int, int> MissingTimes;
+
+		//a train is missing, but will wait for 10 messages then ask
+		static bool CheckMissingTimes(int TNumber)
+		{
+			if (MissingTimes == null) MissingTimes = new Dictionary<int, int>();
+			try
+			{
+				if (MissingTimes[TNumber] < 10) { MissingTimes[TNumber]++; return false; }
+				else { MissingTimes[TNumber] = 0; return true; }
+			}
+			catch (Exception)
+			{
+				MissingTimes.Add(TNumber, 1);
+				return false;
+			}
+
+		}
+
 		public MSGMove()
 		{
 		}
@@ -97,7 +117,18 @@ namespace ORTS.MultiPlayer
 			foreach (MSGMoveItem m in items)
 			{
 				bool found = false; //a train may not be in my sim
-				if (m.user == MPManager.GetUserName()) continue; //about itself, ignore
+				if (m.user == MPManager.GetUserName())//about itself, check if the number of car has changed, otherwise ignore
+				{
+					try
+					{
+						if (m.count != Program.Simulator.PlayerLocomotive.Train.Cars.Count)
+						{
+							if (!MPManager.IsServer() && CheckMissingTimes(Program.Simulator.PlayerLocomotive.Train.Number)) MPManager.SendToServer((new MSGGetTrain(MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train.Number)).ToString());
+						}
+					}
+					catch (Exception) { }
+					continue; 
+				}
 				if (m.user.Contains("0xAI") || m.user.Contains("0xUC"))
 				{
 					foreach (Train t in Program.Simulator.Trains)
@@ -109,8 +140,8 @@ namespace ORTS.MultiPlayer
 							{
 								if (!MPManager.IsServer())
 								{
-									//MPManager.SendToServer((new MSGGetTrain(MPManager.GetUserName(), t.Number)).ToString());
-									//continue;
+									if (CheckMissingTimes(t.Number)) MPManager.SendToServer((new MSGGetTrain(MPManager.GetUserName(), t.Number)).ToString());
+									continue;
 								}
 							}
 							if (t is RemoteTrain)
@@ -136,7 +167,7 @@ namespace ORTS.MultiPlayer
 				}
 				if (found == false) //I do not have the train, tell server to send it to me
 				{
-					//if (!MPManager.IsServer()) MPManager.SendToServer((new MSGGetTrain(MPManager.GetUserName(), m.num)).ToString());
+					if (!MPManager.IsServer() && CheckMissingTimes(m.num)) MPManager.SendToServer((new MSGGetTrain(MPManager.GetUserName(), m.num)).ToString());
 				}
 			}
 		}
@@ -319,7 +350,8 @@ namespace ORTS.MultiPlayer
 			{
 				if (MPManager.GetUserName() == this.user) //a reply from the server, update my train number
 				{
-					Program.Simulator.PlayerLocomotive.Train.Number = this.num;
+					if (Program.Simulator.PlayerLocomotive == null) Program.Simulator.Trains[0].Number = this.num;
+					else Program.Simulator.PlayerLocomotive.Train.Number = this.num;
 				}
 				Program.Simulator.Weather = (WeatherType)this.weather;
 				Program.Simulator.ClockTime = this.seconds;
@@ -633,6 +665,7 @@ namespace ORTS.MultiPlayer
 			int index = m.IndexOf(' '); int last = 0;
 			user = m.Substring(0, index + 1);
 			m = m.Remove(0, index + 1);
+			user = user.Trim();
 
 			index = m.IndexOf(' ');
 			TrainNum = int.Parse(m.Substring(0, index + 1));
@@ -1478,73 +1511,36 @@ namespace ORTS.MultiPlayer
 
 	public class MSGSignalStatus : Message
 	{
-		//static SortedList<long, SignalItem> SignalState;
-		//string msg = "";
 
-		//public MSGSignalStatus()
-		//{
-		//    if (SignalState == null)
-		//    {
-		//        SignalState = new SortedList<long, TrJunctionNode>();
-		//        int key = 0;
-		//        foreach (TrackNode t in Program.Simulator.TDB.TrackDB.TrackNodes)
-		//        {
-		//            if (t != null && t.TrJunctionNode != null)
-		//            {
-		//                key = t.UiD.WorldTileX * 100000000 + t.UiD.WorldTileZ * 10000 + t.UiD.WorldID;
-		//                SignalState.Add(key, t.TrJunctionNode);
-		//            }
-		//        }
-		//    }
-		//    msg = "";
-		//    foreach (System.Collections.Generic.KeyValuePair<long, TrJunctionNode> t in SignalState)
-		//    {
-		//        if (t.Value.SelectedRoute > 9 && t.Value.SelectedRoute < 0)
-		//        {
-		//            throw new Exception("Selected route is " + t.Value.SelectedRoute + ". Please inform OR for the problem");
-		//        }
-		//        msg += t.Value.SelectedRoute;
-		//    }
-		//}
+		//local data here
 
-		//public MSGSignalStatus(string m)
-		//{
-		//    if (SignalState == null)
-		//    {
-		//        int key = 0;
-		//        SignalState = new SortedList<long, TrJunctionNode>();
-		//        foreach (TrackNode t in Program.Simulator.TDB.TrackDB.TrackNodes)
-		//        {
-		//            if (t != null && t.TrJunctionNode != null)
-		//            {
-		//                key = t.UiD.WorldTileX * 100000000 + t.UiD.WorldTileZ * 10000 + t.UiD.WorldID;
-		//                SignalState.Add(key, t.TrJunctionNode);
-		//            }
-		//        }
 
-		//    }
-		//    msg = m;
-		//}
 
-		//public override void HandleMsg() //only client will get message, thus will set states
-		//{
-		//    if (Program.Server != null) return; //server will ignore it
+		//constructor to create a message from signal data
+		public MSGSignalStatus()
+		{
+			
+		}
 
-		//    int i = 0;
-		//    foreach (System.Collections.Generic.KeyValuePair<long, TrJunctionNode> t in SignalState)
-		//    {
-		//        t.Value.SelectedRoute = msg[i] - 48; //ASCII code 48 is 0
-		//        i++;
-		//    }
-		//    //System.Console.WriteLine(msg);
+		//constructor to decode the message "m"
+		public MSGSignalStatus(string m)
+		{
+		}
 
-		//}
+		//how to handle the message?
+		public override void HandleMsg() //only client will get message, thus will set states
+		{
+			if (Program.Server != null) return; //server will ignore it
 
-		//public override string ToString()
-		//{
-		//    string tmp = "SWITCHSTATES " + msg;
-		//    return "" + tmp.Length + ": " + tmp;
-		//}
+			
+
+		}
+
+		public override string ToString()
+		{
+			string tmp = "SWITCHSTATES " + ""; // fill in the message body here
+			return "" + tmp.Length + ": " + tmp;
+		}
 	}
 
 }
