@@ -48,6 +48,7 @@ namespace ORTS
 			NextStopNode = Path.FirstNode;
 			StartTime = start;
 			Priority = start % 10;
+			TrainType = TRAINTYPE.AI;
 		}
 
 		// restore game state
@@ -377,6 +378,7 @@ namespace ORTS
 				return;
 			// move rest of cars to the new train
 			Train train2 = new Train(Simulator);
+			train2.TrainType = Train.TRAINTYPE.AI;
 			for (int k = n1; k < n2; ++k)
 			{
 				TrainCar newcar = Cars[k];

@@ -670,6 +670,7 @@ namespace ORTS
 			}
 
 			Train train = new Train(this);
+			train.TrainType = Train.TRAINTYPE.PLAYER;
 
 //WaltN: Temporary facility for track-laying experiments
 #if RE_ENABLED
@@ -760,6 +761,7 @@ namespace ORTS
 				{
 					// construct train data
 					Train train = new Train(this);
+					train.TrainType = Train.TRAINTYPE.STATIC;
 					int consistDirection;
 					switch (activityObject.Direction)  // TODO, we don't really understand this
 					{
@@ -956,6 +958,12 @@ namespace ORTS
 			{
 				train2.AITrainThrottlePercent = train.AITrainThrottlePercent;
 				train.AITrainThrottlePercent = 0;
+				train2.TrainType = Train.TRAINTYPE.PLAYER;
+				train.TrainType = Train.TRAINTYPE.STATIC;
+			}
+			else
+			{
+				train2.TrainType = Train.TRAINTYPE.STATIC;
 			}
 
 			if (MPManager.IsMultiPlayer() && !MPManager.IsServer())

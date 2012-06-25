@@ -70,6 +70,15 @@ namespace ORTS
 		public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
 		public int RetainerPercent = 100;
 
+		public enum TRAINTYPE
+		{
+			PLAYER,
+			STATIC,
+			AI
+		}
+
+		public TRAINTYPE TrainType = TRAINTYPE.AI;
+
         public Signal nextSignal = new Signal(null, null, -1); // made public for signalling processing
 		public float distanceToSignal = 0.1f;
         public List<ObjectItemInfo> SignalObjectItems;
@@ -149,6 +158,7 @@ namespace ORTS
 			RestoreCars(simulator, inf);
 			CheckFreight();
 			SpeedMpS = inf.ReadSingle();
+			TrainType = (TRAINTYPE)inf.ReadInt32();
 			MUDirection = (Direction)inf.ReadInt32();
 			MUThrottlePercent = inf.ReadSingle();
 			MUDynamicBrakePercent = inf.ReadSingle();
@@ -178,6 +188,7 @@ namespace ORTS
 		{
 			SaveCars(outf);
 			outf.Write(SpeedMpS);
+			outf.Write((int)TrainType);
 			outf.Write((int)MUDirection);
 			outf.Write(MUThrottlePercent);
 			outf.Write(MUDynamicBrakePercent);
