@@ -234,7 +234,7 @@ namespace ORTS.MultiPlayer
 				{
 					if (p.Train == null) continue;
 					if (p.Train.Cars.Count <= 0) continue;
-					var d = WorldLocation.GetDistanceSquared(p.Train.FirstCar.WorldPosition.WorldLocation, mine.WorldPosition.WorldLocation);
+					var d = WorldLocation.GetDistanceSquared(p.Train.RearTDBTraveller.WorldLocation, mine.Train.RearTDBTraveller.WorldLocation);
 					users.Add(Math.Sqrt(d), p.Username);
 				}
 			}

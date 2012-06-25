@@ -40,7 +40,8 @@ namespace ORTS.MultiPlayer
 				while (last >= 0 && char.IsDigit(msg[last--])) ; //shift back to get all digits
 				if (last < 0) last = 0;
 				string tmp = msg.Substring(last, index);
-				int len = int.Parse(tmp);
+				int len;
+				if (!int.TryParse(tmp, out len)) len = 0;
 				tmp = msg.Substring(index+2, len); //not taking ": "
 				msg = msg.Remove(last, index+2+len); //remove :
 				return tmp;

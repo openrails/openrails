@@ -59,8 +59,11 @@ namespace ORTS
 			expectedTracIndex = tni;
 			updateMSGReceived = true;
 		}
+
+		//update train location
 		public override void Update(float elapsedClockSeconds)
 		{
+			//if a MSGMove is received
 			if (updateMSGReceived)
 			{
 				float move = 0.0f;
@@ -68,17 +71,16 @@ namespace ORTS
 				{
 					var x = travelled + SpeedMpS * elapsedClockSeconds + (SpeedMpS - lastSpeedMps) / 2 * elapsedClockSeconds;
 
-					if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 5)
+					if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 5) 
 					{
 						Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
 
 						this.travelled = expectedTravelled;
 						this.RearTDBTraveller = t;
 					}
-					else
+					else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
 					{
-						if (SpeedMpS > 0) SpeedMpS += (expectedTravelled - x) / 1;
-						else SpeedMpS -= (expectedTravelled - x) / 1;
+						SpeedMpS += (expectedTravelled - x) / 1;
 						CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
 					}
 				}
@@ -115,11 +117,12 @@ namespace ORTS
 				}
 #endif
 			}
-			else
+			else//no message received, will move at the previous speed
 			{
 				CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
 			}
 
+			//update speed for each car, so wheels will rotate
 			foreach (TrainCar car in Cars)
 			{
 				if (car != null)
