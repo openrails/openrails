@@ -23,6 +23,9 @@
 // prints processing details
 // set TBD_debug_ref to TDB index of required signals
 //
+// #define DEBUG_PRINT_ENABLED
+// prints processing details of all enabled signals
+//
 
 using System;
 using System.Collections;
@@ -103,6 +106,8 @@ namespace ORTS
 			MULTIPLY,
 			PLUS,
 			MINUS,
+			DIVIDE,
+			MODULO,
 		}
 
 		public enum SCRTermType
@@ -133,8 +138,12 @@ namespace ORTS
 
 #if DEBUG_PRINT_PROCESS
 		public static int [] TDB_debug_ref;                 /* signal TDB idents         */
-		public static string dpr_fileLoc = String.Empty;    /* file path for debug files */
- //		public static string dpr_fileLoc = @"C:\temp\";     /* file path for debug files */
+ //		public static string dpr_fileLoc = String.Empty;    /* file path for debug files */
+ 		public static string dpr_fileLoc = @"C:\temp\";     /* file path for debug files */
+#endif
+#if DEBUG_PRINT_ENABLED
+ //		public static string dpe_fileLoc = String.Empty;    /* file path for debug files */
+ 		public static string dpe_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
 		public IDictionary <SignalType, SCRScripts> Scripts;
@@ -174,10 +183,27 @@ namespace ORTS
 			TranslateOperator.Add("?",SCRTermOperator.NONE);
 			TranslateOperator.Add("*",SCRTermOperator.MULTIPLY);
 			TranslateOperator.Add("+",SCRTermOperator.PLUS);
-			TranslateOperator.Add("-",SCRTermOperator.MINUS);
+			TranslateOperator.Add("/",SCRTermOperator.DIVIDE);
+			TranslateOperator.Add("%",SCRTermOperator.MODULO);
+
 
 #if DEBUG_PRINT_PROCESS
-			TDB_debug_ref = new int[2] {1447,1448};   /* signal tdb ref.no selected for print-out */
+			TDB_debug_ref = new int[10] {344,7526,6799,6792,6791,6790,6795,7067,7523,6784};   /* signal tdb ref.no selected for print-out */
+#endif
+
+#if DEBUG_PRINT_IN
+            File.Delete(din_fileLoc+@"sigscr.txt");
+#endif
+
+#if DEBUG_PRINT_OUT
+            File.Delete(dout_fileLoc+@"scriptproc.txt");
+#endif
+
+#if DEBUG_PRINT_ENABLED
+            File.Delete(dpe_fileLoc+@"printproc.txt");
+#endif
+#if DEBUG_PRINT_PROCESS
+            File.Delete(dpr_fileLoc+@"printproc.txt");
 #endif
 
   // Process all files listed in SIGCFG
@@ -1457,6 +1483,13 @@ namespace ORTS
 				bool termset = false;
 				SCRParameterType TermParts = new SCRParameterType (SCRTermType.Constant, 0);
 
+  // check for use of #
+				if (String.Compare(TermString.Substring(0,1),"#") == 0)
+				{
+					TermString = TermString.Substring(1).Trim();
+				}
+
+
   // try constant
 
 				try
@@ -2585,16 +2618,31 @@ namespace ORTS
 
   // process script
 
+#if DEBUG_PRINT_ENABLED
+			if (thisHead.mainSignal.enabledTrain != null)
+			{
+				File.AppendAllText(dpe_fileLoc+@"printproc.txt","\n\nSIGNAL : "+thisHead.TDBIndex.ToString()+"\n");
+				File.AppendAllText(dpe_fileLoc+@"printproc.txt","OBJECT : "+thisHead.mainSignal.thisRef.ToString()+"\n");
+				File.AppendAllText(dpe_fileLoc+@"printproc.txt","type   : "+signalScript.scriptname+"\n");
+			}
+#endif
 #if DEBUG_PRINT_PROCESS
 			if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 			{
 				File.AppendAllText(dpr_fileLoc+@"printproc.txt","\n\nSIGNAL : "+thisHead.TDBIndex.ToString()+"\n");
+				File.AppendAllText(dpr_fileLoc+@"printproc.txt","OBJECT : "+thisHead.mainSignal.thisRef.ToString()+"\n");
 				File.AppendAllText(dpr_fileLoc+@"printproc.txt","type   : "+signalScript.scriptname+"\n");
 			}
 #endif
 
 			SH_process_StatementBlock(thisHead, signalScript.Statements, localFloats, sigscr);
 
+#if DEBUG_PRINT_ENABLED
+			if (thisHead.mainSignal.enabledTrain != null)
+			{
+				File.AppendAllText(dpe_fileLoc+@"printproc.txt","\n ------- \n");
+			}
+#endif
 #if DEBUG_PRINT_PROCESS
 			if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 			{
@@ -2628,6 +2676,27 @@ namespace ORTS
 					SCRScripts.SCRStatement ThisStat = (SCRScripts.SCRStatement) scriptstat;
 					SH_processAssignStatement(thisHead, ThisStat, localFloats, sigscr);
 
+#if DEBUG_PRINT_ENABLED
+					if (thisHead.mainSignal.enabledTrain != null)
+					{
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt","Statement : \n");
+						foreach (string statstring in ThisStat.StatementParts)
+						{
+							File.AppendAllText(dpe_fileLoc+@"printproc.txt","   "+statstring+"\n");
+						}
+						foreach (int lfloat in localFloats)
+						{
+							File.AppendAllText(dpe_fileLoc+@"printproc.txt"," local : "+lfloat.ToString()+"\n");
+						}
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt","Externals : \n");
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt"," state      : "+thisHead.state.ToString()+"\n");
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt"," draw_state : "+thisHead.draw_state.ToString()+"\n");
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt"," enabled    : "+thisHead.mainSignal.enabled.ToString()+"\n");
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt"," blockstate : "+thisHead.mainSignal.blockState.ToString()+"\n");
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt","\n");
+					}
+#endif
+
 #if DEBUG_PRINT_PROCESS
 					if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 					{
@@ -2640,6 +2709,12 @@ namespace ORTS
 						{
 							File.AppendAllText(dpr_fileLoc+@"printproc.txt"," local : "+lfloat.ToString()+"\n");
 						}
+						File.AppendAllText(dpr_fileLoc+@"printproc.txt","Externals : \n");
+						File.AppendAllText(dpr_fileLoc+@"printproc.txt"," state      : "+thisHead.state.ToString()+"\n");
+						File.AppendAllText(dpr_fileLoc+@"printproc.txt"," draw_state : "+thisHead.draw_state.ToString()+"\n");
+						File.AppendAllText(dpr_fileLoc+@"printproc.txt"," enabled    : "+thisHead.mainSignal.enabled.ToString()+"\n");
+						File.AppendAllText(dpr_fileLoc+@"printproc.txt"," blockstate : "+thisHead.mainSignal.blockState.ToString()+"\n");
+						File.AppendAllText(dpr_fileLoc+@"printproc.txt","\n");
 					}
 #endif
 
@@ -2780,6 +2855,21 @@ namespace ORTS
 
 						case (SCRTermOperator.MINUS) :
 							tempvalue -= termvalue;
+							break;
+
+						case (SCRTermOperator.DIVIDE) :
+							if (termvalue == 0)
+						{
+							tempvalue = 0;
+						}
+							else
+							{
+							tempvalue /= termvalue;
+							}
+							break;
+
+						case (SCRTermOperator.MODULO) :
+							tempvalue %= termvalue;
 							break;
 
 						default :
@@ -2929,6 +3019,23 @@ namespace ORTS
 
 				case(SCRExternalFunctions.NEXT_SIG_LR) :
 					return_value = (int) thisHead.next_sig_lr( (SignalHead.SIGFN) parameter1_value);
+#if DEBUG_PRINT_ENABLED
+					if (thisHead.mainSignal.enabledTrain != null)
+					{
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt",
+								" NEXT_SIG_LR : Located signal : "+
+							       	thisHead.mainSignal.sigfound[parameter1_value].ToString()+"\n");
+					}
+#endif
+#if DEBUG_PRINT_PROCESS
+					if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+					{
+						File.AppendAllText(dpr_fileLoc+@"printproc.txt",
+								" NEXT_SIG_LR : Located signal : "+
+							       	thisHead.mainSignal.sigfound[parameter1_value].ToString()+"\n");
+					}
+#endif
+
 					break;
 
   // next_sig_mr
@@ -2989,11 +3096,20 @@ namespace ORTS
 					break;
 			}
 
+#if DEBUG_PRINT_ENABLED
+			if (thisHead.mainSignal.enabledTrain != null)
+			{
+				File.AppendAllText(dpe_fileLoc+@"printproc.txt",
+						"Function Result : "+thisFunction.ToString()+"("+parameter1_value.ToString()+") = "+
+						return_value.ToString()+"\n");
+			}
+#endif
 #if DEBUG_PRINT_PROCESS
 			if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 			{
 				File.AppendAllText(dpr_fileLoc+@"printproc.txt",
-						"Function Result : "+thisFunction.ToString()+"="+return_value.ToString()+"\n");
+						"Function Result : "+thisFunction.ToString()+"("+parameter1_value.ToString()+") = "+
+						return_value.ToString()+"\n");
 			}
 #endif
 
@@ -3200,6 +3316,12 @@ namespace ORTS
   // get value of first term
 
 
+#if DEBUG_PRINT_ENABLED
+			if (thisHead.mainSignal.enabledTrain != null)
+			{
+				File.AppendAllText(dpe_fileLoc+@"printproc.txt","IF Condition statement (1) : \n");
+			}
+#endif
 #if DEBUG_PRINT_PROCESS
 			if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 			{
@@ -3215,6 +3337,13 @@ namespace ORTS
 			{
 		                SCRScripts.SCRParameterType thisParameter = thisCond.Term1.PartParameter[0];
 
+#if DEBUG_PRINT_ENABLED
+				if (thisHead.mainSignal.enabledTrain != null)
+				{
+					File.AppendAllText(dpe_fileLoc+@"printproc.txt","Parameter : "+thisParameter.PartType.ToString()+" : "+
+							thisParameter.PartParameter.ToString()+"\n");
+				}
+#endif
 #if DEBUG_PRINT_PROCESS
 				if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 				{
@@ -3248,11 +3377,18 @@ namespace ORTS
 					condition = Convert.ToBoolean(term1value);
 				}
 
+#if DEBUG_PRINT_ENABLED
+			if (thisHead.mainSignal.enabledTrain != null)
+				{
+					File.AppendAllText(dpe_fileLoc+@"printproc.txt","Result of single condition : "+
+						" : "+condition.ToString()+" (NOT : "+thisCond.negate1.ToString()+")\n\n");
+				}
+#endif
 #if DEBUG_PRINT_PROCESS
 				if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 				{
 					File.AppendAllText(dpr_fileLoc+@"printproc.txt","Result of single condition : "+
-						" : "+condition.ToString()+"(NOT : "+thisCond.negate1.ToString()+")\n\n");
+						" : "+condition.ToString()+" (NOT : "+thisCond.negate1.ToString()+")\n\n");
 				}
 #endif
 			}
@@ -3262,6 +3398,12 @@ namespace ORTS
 			else
 			{
 
+#if DEBUG_PRINT_ENABLED
+				if (thisHead.mainSignal.enabledTrain != null)
+				{
+					File.AppendAllText(dpe_fileLoc+@"printproc.txt","IF Condition statement (2) : \n");
+				}
+#endif
 #if DEBUG_PRINT_PROCESS
 				if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 				{
@@ -3277,6 +3419,14 @@ namespace ORTS
 				{
 		                	SCRScripts.SCRParameterType thisParameter = thisCond.Term2.PartParameter[0];
 
+#if DEBUG_PRINT_ENABLED
+					if (thisHead.mainSignal.enabledTrain != null)
+					{
+						File.AppendAllText(dpe_fileLoc+@"printproc.txt",
+							"Parameter : "+thisParameter.PartType.ToString()+" : "+
+							thisParameter.PartParameter.ToString()+"\n");
+					}
+#endif
 #if DEBUG_PRINT_PROCESS
 					if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 					{
@@ -3337,6 +3487,13 @@ namespace ORTS
 						break;
 				}
 
+#if DEBUG_PRINT_ENABLED
+				if (thisHead.mainSignal.enabledTrain != null)
+                {
+                    File.AppendAllText(dpe_fileLoc + @"printproc.txt", "Result of operation : " +
+                        thisCond.Condition.ToString() + " : " + condition.ToString() + "\n\n");
+                }
+#endif
 #if DEBUG_PRINT_PROCESS
 				if (TDB_debug_ref.Contains(thisHead.TDBIndex))
 				{
