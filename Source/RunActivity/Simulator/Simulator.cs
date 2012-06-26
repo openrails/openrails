@@ -291,11 +291,12 @@ namespace ORTS
 			foreach (Train train in movingTrains)
 			{
 				train.Update(elapsedClockSeconds);
-				if (MPManager.IsMultiPlayer())
+				/*if (MPManager.IsMultiPlayer())
 				{
 					if (MultiPlayer.MPManager.IsServer()) AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
-			}
-				else AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
+				}
+				else*/ 
+				AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 			}
 
 			foreach (Train train in movingTrains)

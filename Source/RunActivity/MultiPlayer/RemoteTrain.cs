@@ -75,6 +75,7 @@ namespace ORTS
 					{
 						Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
 
+						var y = this.travelled - expectedTravelled;
 						this.travelled = expectedTravelled;
 						this.RearTDBTraveller = t;
 					}

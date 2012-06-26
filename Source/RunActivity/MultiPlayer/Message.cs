@@ -34,6 +34,7 @@ namespace ORTS.MultiPlayer
 		public virtual void HandleMsg() { System.Console.WriteLine("test"); return; }
 	}
 
+	#region MSGMove
 	public class MSGMove : Message
 	{
 		class MSGMoveItem
@@ -172,7 +173,9 @@ namespace ORTS.MultiPlayer
 			}
 		}
 	}
+	#endregion MSGMove
 
+	#region MSGPlayer
 	public class MSGPlayer : Message
 	{
 		public string user = "";
@@ -386,6 +389,9 @@ namespace ORTS.MultiPlayer
 		}
 	}
 
+	#endregion MSGPlayer
+
+	#region MGSwitch
 
 	public class MSGSwitch : Message
 	{
@@ -430,12 +436,17 @@ namespace ORTS.MultiPlayer
 		}
 	}
 
+	#endregion MGSwitch
+
+	#region MSGSignal
 	public class MSGSignal : Message
 	{
 		public SignalObject signal;
 
 	}
+	#endregion MSGSignal
 
+	#region MSGSwitchStatus
 	public class MSGSwitchStatus : Message
 	{
 		static SortedList<long, TrJunctionNode> SwitchState;
@@ -506,7 +517,9 @@ namespace ORTS.MultiPlayer
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}
+	#endregion MSGSwitchStatus
 
+	#region MSGTrain
 	//message to add new train from either a string (received message), or a Train (building a message)
 	public class MSGTrain : Message
 	{
@@ -648,6 +661,10 @@ namespace ORTS.MultiPlayer
 		}
 	}
 
+	#endregion MSGTrain
+
+	#region MSGUpdateTrain
+
 	//message to add new train from either a string (received message), or a Train (building a message)
 	public class MSGUpdateTrain : Message
 	{
@@ -741,7 +758,6 @@ namespace ORTS.MultiPlayer
 		{
 			if (MPManager.IsServer()) return; //server will ignore it
 			if (user != MPManager.GetUserName()) return; //not the one requested GetTrain
-			System.Console.WriteLine("Get here 1");
 			// construct train data
 			foreach (Train train in Program.Simulator.Trains)
 			{
@@ -771,10 +787,8 @@ namespace ORTS.MultiPlayer
 							System.Console.WriteLine(wagonFilePath + " " + error);
 						}
 					}// for each rail car
-					System.Console.WriteLine("Get here 2");
 
 					if (tmpCars.Count == 0) return;
-					System.Console.WriteLine("Get here 3");
 
 					train.Cars = tmpCars;
 					train.RearTDBTraveller = traveller;
@@ -783,7 +797,6 @@ namespace ORTS.MultiPlayer
 					return;
 				}
 			}
-			System.Console.WriteLine("Get here 4");
 
 			//not found, create new train
 			Train train1 = new RemoteTrain(Program.Simulator);
@@ -810,10 +823,8 @@ namespace ORTS.MultiPlayer
 					System.Console.WriteLine(wagonFilePath + " " + error);
 				}
 			}// for each rail car
-			System.Console.WriteLine("Get here 5");
 
 			if (train1.Cars.Count == 0) return;
-			System.Console.WriteLine("Get here 6");
 
 			train1.CalculatePositionOfCars(0);
 			train1.InitializeBrakes();
@@ -844,6 +855,9 @@ namespace ORTS.MultiPlayer
 		}
 	}
 
+	#endregion MSGUpdateTrain
+
+	#region MSGRemoveTrain
 	//remove AI trains
 	public class MSGRemoveTrain : Message
 	{
@@ -895,6 +909,9 @@ namespace ORTS.MultiPlayer
 
 	}
 
+	#endregion MSGRemoveTrain
+
+	#region MSGServer
 	public class MSGServer : Message
 	{
 		public MSGServer(string m)
@@ -915,7 +932,9 @@ namespace ORTS.MultiPlayer
 			//System.Console.WriteLine(this.ToString());
 		}
 	}
+	#endregion MSGServer
 
+	#region MSGTrainMerge
 	//message to add new train from either a string (received message), or a Train (building a message)
 	public class MSGTrainMerge : Message
 	{
@@ -961,7 +980,9 @@ namespace ORTS.MultiPlayer
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}
+	#endregion MSGTrainMerge
 
+	#region MSGMessage
 	//message to add new train from either a string (received message), or a Train (building a message)
 	public class MSGMessage : Message
 	{
@@ -1005,6 +1026,9 @@ namespace ORTS.MultiPlayer
 		}
 	}
 
+	#endregion MSGMessage
+
+	#region MSGEvent
 	public class MSGEvent : Message
 	{
 		public string user;
@@ -1086,6 +1110,9 @@ namespace ORTS.MultiPlayer
 
 	}
 
+	#endregion MSGEvent
+
+	#region MSGQuit
 	public class MSGQuit : Message
 	{
 		public string user;
@@ -1140,6 +1167,9 @@ namespace ORTS.MultiPlayer
 
 	}
 
+	#endregion MSGQuit
+
+	#region MSGGetTrain
 	public class MSGGetTrain : Message
 	{
 		public int num;
@@ -1178,7 +1208,9 @@ namespace ORTS.MultiPlayer
 		}
 
 	}
+	#endregion MSGGetTrain
 
+	#region MSGUncouple
 
 	public class MSGUncouple : Message
 	{
@@ -1192,30 +1224,54 @@ namespace ORTS.MultiPlayer
 		public int newTrainNumber;
 		public int oldTrainNumber;
 		public int whichIsPlayer;
+		string[] ids1;
+		string[] ids2;
+		int[] flipped1;
+		int[] flipped2;
+
+		TrainCar FindCar(List<TrainCar> list, string id)
+		{
+			foreach (TrainCar car in list) if (car.CarID == id) return car;
+			return null;
+		}
 		public MSGUncouple(string m)
 		{
 			string[] areas = m.Split('\t');
-			try
-			{
-				carID = areas[0];
-				string[] tmp = areas[1].Split(' ');
-				user = tmp[0];
-				TileX1 = int.Parse(tmp[1]); TileZ1 = int.Parse(tmp[2]);
-				X1 = float.Parse(tmp[3]); Z1 = float.Parse(tmp[4]); Travelled1 = float.Parse(tmp[5]); Speed1 = float.Parse(tmp[6]); trainDirection = int.Parse(tmp[7]);
-				oldTrainNumber = int.Parse(tmp[8]);
-				tmp = areas[2].Split(' ');
-				newTrainName = tmp[0]; 
-				TileX2 = int.Parse(tmp[1]); TileZ2 = int.Parse(tmp[2]);
-				X2 = float.Parse(tmp[3]); Z2 = float.Parse(tmp[4]); Travelled2 = float.Parse(tmp[5]); Speed2 = float.Parse(tmp[6]); train2Direction = int.Parse(tmp[7]);
-				newTrainNumber = int.Parse(tmp[8]);
-				firstCarIDOld = areas[3];
-				firstCarIDNew = areas[4];
+			user = areas[0].Trim();
 
-				whichIsPlayer = int.Parse(areas[5]);
-			}
-			catch (Exception e)
+			whichIsPlayer = int.Parse(areas[1].Trim());
+
+			firstCarIDOld = areas[2].Trim();
+
+			firstCarIDNew = areas[3].Trim();
+
+			string[] tmp = areas[4].Split(' ');
+			TileX1 = int.Parse(tmp[0]); TileZ1 = int.Parse(tmp[1]);
+			X1 = float.Parse(tmp[2]); Z1 = float.Parse(tmp[3]); Travelled1 = float.Parse(tmp[4]); Speed1 = float.Parse(tmp[5]); trainDirection = int.Parse(tmp[6]);
+			oldTrainNumber = int.Parse(tmp[7]);
+			tmp = areas[5].Split('\n');
+			ids1 = new string[tmp.Length - 1];
+			flipped1 = new int[tmp.Length - 1];
+			for (var i = 0; i < ids1.Length; i++)
 			{
-				throw e;
+				string[] field = tmp[i].Split('\r');
+				ids1[i] = field[0].Trim();
+				flipped1[i] = int.Parse(field[1].Trim());
+			}
+
+			tmp = areas[6].Split(' ');
+			TileX2 = int.Parse(tmp[0]); TileZ2 = int.Parse(tmp[1]);
+			X2 = float.Parse(tmp[2]); Z2 = float.Parse(tmp[3]); Travelled2 = float.Parse(tmp[4]); Speed2 = float.Parse(tmp[5]); train2Direction = int.Parse(tmp[6]);
+			newTrainNumber = int.Parse(tmp[7]);
+
+			tmp = areas[7].Split('\n');
+			ids2 = new string[tmp.Length - 1];
+			flipped2 = new int[tmp.Length - 1];
+			for (var i = 0; i < ids2.Length; i++)
+			{
+				string[] field = tmp[i].Split('\r');
+				ids2[i] = field[0].Trim();
+				flipped2[i] = int.Parse(field[1].Trim());
 			}
 		}
 
@@ -1229,12 +1285,28 @@ namespace ORTS.MultiPlayer
 			train2Direction = newT.RearTDBTraveller.Direction == Traveller.TravellerDirection.Forward ? 0 : 1;//0 forward, 1 backward
 			if (MPManager.IsServer()) newTrainNumber = newT.Number;//serer will use the correct number
 			else newTrainNumber = 1000000 + Program.Random.Next(1000000);//client: temporary assign a train number 1000000-2000000, will change to the correct one after receiving response from the server
-			
+
 			oldTrainNumber = t.Number;
 			newTrainName = "UC" + newTrainNumber; newT.Number = newTrainNumber;
-			
+
 			firstCarIDNew = newT.Cars[0].CarID;
 			firstCarIDOld = t.Cars[0].CarID;
+
+			ids1 = new string[t.Cars.Count];
+			flipped1 = new int[t.Cars.Count];
+			for (var i = 0; i < ids1.Length; i++)
+			{
+				ids1[i] = t.Cars[i].CarID;
+				flipped1[i] = t.Cars[i].Flipped == true ? 1 : 0;
+			}
+
+			ids2 = new string[newT.Cars.Count];
+			flipped2 = new int[newT.Cars.Count];
+			for (var i = 0; i < ids2.Length; i++)
+			{
+				ids2[i] = newT.Cars[i].CarID;
+				flipped2[i] = newT.Cars[i].Flipped == true ? 1 : 0;
+			}
 
 			//to see which train contains the car (PlayerLocomotive)
 			if (t.Cars.Contains(car)) whichIsPlayer = 0;
@@ -1242,13 +1314,32 @@ namespace ORTS.MultiPlayer
 			else whichIsPlayer = 2;
 		}
 
+		string FillInString(int i)
+		{
+			string tmp = "";
+			if (i == 1)
+			{
+				for (var j = 0; j < ids1.Length; j++)
+				{
+					tmp += ids1[j] + "\r" + flipped1[j] + "\n";
+				}
+			}
+			else
+			{
+				for (var j = 0; j < ids2.Length; j++)
+				{
+					tmp += ids2[j] + "\r" + flipped2[j] + "\n";
+				}
+			}
+			return tmp;
+		}
 		public override string ToString()
 		{
-			string tmp = "UNCOUPLE " + carID + "\t" + user + " " +
-				TileX1 + " " + TileZ1 + " " + X1 + " " + Z1 + " " + Travelled1 + " " + Speed1 + " " + trainDirection + " " + oldTrainNumber + "\t" +
-				newTrainName + " " +
-				TileX2 + " " + TileZ2 + " " + X2 + " " + Z2 + " " + Travelled2 + " " + Speed2 + " " + train2Direction + " " + newTrainNumber + "\t" + 
-				firstCarIDOld + "\t" + firstCarIDNew + "\t" + whichIsPlayer;
+			string tmp = "UNCOUPLE " + user + "\t" + whichIsPlayer + "\t" + firstCarIDOld + "\t" + firstCarIDNew
+				+ "\t" + TileX1 + " " + TileZ1 + " " + X1 + " " + Z1 + " " + Travelled1 + " " + Speed1 + " " + trainDirection + " " + oldTrainNumber + "\t"
+				+ FillInString(1)
+				+ "\t" + TileX2 + " " + TileZ2 + " " + X2 + " " + Z2 + " " + Travelled2 + " " + Speed2 + " " + train2Direction + " " + newTrainNumber + "\t"
+				+ FillInString(2);
 			return "" + tmp.Length + ": " + tmp;
 		}
 
@@ -1274,35 +1365,63 @@ namespace ORTS.MultiPlayer
 			}
 			else
 			{
-				Train train = MPManager.OnlineTrains.findTrain(user);
-				if (train == null) return;
-				int i = 0;
-				while (i < train.Cars.Count && train.Cars[i].CarID != carID) ++i;  // it can't happen that car isn't in car.Train
-				if (i == train.Cars.Count - 1) return;  // can't uncouple behind last car
-				++i;
-				TrainCar lead = train.LeadLocomotive;
-				// move rest of cars to the new train
+				TrainCar lead = null;
+				Train train = null;
+				List<TrainCar> trainCars = null;
+				foreach (Train t in Program.Simulator.Trains)
+				{
+					var found = false;
+					foreach (TrainCar car in t.Cars)
+					{
+						if (car.CarID == firstCarIDOld)//got response about this train
+						{
+							found = true;
+							break;
+						}
+					}
+					if (found == true)
+					{
+						train = t;
+						lead = train.LeadLocomotive;
+						trainCars = t.Cars;
+						List<TrainCar> tmpcars = new List<TrainCar>();
+						for (var i = 0; i < ids1.Length; i++)
+						{
+							TrainCar car = FindCar(trainCars, ids1[i]);
+							if (car == null) continue;
+							car.Flipped = flipped1[i] == 0 ? false : true;
+							tmpcars.Add(car); 
+						}
+						if (tmpcars.Count == 0) return;
+						t.Cars = tmpcars;
+						Traveller.TravellerDirection d1 = Traveller.TravellerDirection.Forward;
+						if (trainDirection == 1) d1 = Traveller.TravellerDirection.Backward;
+						t.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX1, TileZ1, X1, Z1, d1);
+						t.CalculatePositionOfCars(0);  // fix the front traveller
+						t.travelled = Travelled1;
+						t.SpeedMpS = Speed1;
+						t.LeadLocomotive = lead;
+						break;
+					}
+				}
+
+				if (train == null || trainCars == null) return;
+
 				Train train2 = new RemoteTrain(Program.Simulator);
-				for (int k = i; k < train.Cars.Count; ++k)
+				List<TrainCar> tmpcars2 = new List<TrainCar>();
+				for (var i = 0; i < ids2.Length; i++)
 				{
-					TrainCar newcar = train.Cars[k];
-					train2.Cars.Add(newcar);
-					newcar.Train = train2;
+					TrainCar car = FindCar(trainCars, ids2[i]);
+					if (car == null) continue;
+					tmpcars2.Add(car);
+					car.Flipped = flipped2[i] == 0 ? false : true;
 				}
-
-				// and drop them from the old train
-				for (int k = train.Cars.Count - 1; k >= i; --k)
-				{
-					train.Cars.RemoveAt(k);
-				}
-
-				Traveller.TravellerDirection d1 = Traveller.TravellerDirection.Forward;
-				if (trainDirection == 1) d1 = Traveller.TravellerDirection.Backward;
+				if (tmpcars2.Count == 0) return;
+				train2.Cars = tmpcars2;
+				train2.LeadLocomotive = lead;
 
 				Traveller.TravellerDirection d2 = Traveller.TravellerDirection.Forward;
 				if (train2Direction == 1) d2 = Traveller.TravellerDirection.Backward;
-				
-				train.LastCar.CouplerSlackM = 0;
 
 				// and fix up the travellers
 				train2.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX2, TileZ2, X2, Z2, d2);
@@ -1311,22 +1430,10 @@ namespace ORTS.MultiPlayer
 
 				train2.CalculatePositionOfCars(0);  // fix the front traveller
 
-				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX1, TileZ1, X1, Z1, d1);
-				train.CalculatePositionOfCars(0);  // fix the front traveller
-				train.travelled = Travelled1;
-				train.SpeedMpS = Speed1;
-
-
 				train2.InitializeSignals(false);
-				train2.LeadLocomotive = lead;
 				MPManager.Instance().AddAddedTrains(train2);
-				train.LeadLocomotive = lead;
 				train.UncoupledFrom = train2;
 				train2.UncoupledFrom = train;
-				train2.SpeedMpS = train.SpeedMpS;
-
-				train.Update(0);   // stop the wheels from moving etc
-				train2.Update(0);  // stop the wheels from moving etc
 
 				if (whichIsPlayer == 0 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train;
 				else if (whichIsPlayer == 1 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train2; //the player may need to update the train it drives
@@ -1345,7 +1452,9 @@ namespace ORTS.MultiPlayer
 			}
 		}
 	}
-
+	#endregion MSGUncouple
+	
+	#region MSGCouple
 	public class MSGCouple : Message
 	{
 		string[] cars;
@@ -1417,7 +1526,7 @@ namespace ORTS.MultiPlayer
 			}
 			TrainNum = t.Number;
 			RemovedTrainNum = oldT.Number;
-			direction = t.RearTDBTraveller.Direction == Traveller.TravellerDirection.Forward ? 1 : 0;
+			direction = t.RearTDBTraveller.Direction == Traveller.TravellerDirection.Forward ? 0 : 1;
 			TileX = t.RearTDBTraveller.TileX;
 			TileZ = t.RearTDBTraveller.TileZ;
 			X = t.RearTDBTraveller.X;
@@ -1465,16 +1574,16 @@ namespace ORTS.MultiPlayer
 				if (t.Number == this.RemovedTrainNum) train2 = t;
 			}
 
+			TrainCar lead = train.LeadLocomotive;
+			if (lead == null) lead = train2.LeadLocomotive;
+
 			if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == train2)
 			{
-				Train tmp = train2; train2 = train;	train = tmp;
+				Train tmp = train2; train2 = train; train = tmp; Program.Simulator.PlayerLocomotive.Train = train;
 			}
 
 			if (train == null || train2 == null) return; //did not find the trains to op on
 
-			int consistDirection = direction;
-			train.travelled = Travelled;
-			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 			//if (consistDirection != 1)
 			//	train.RearTDBTraveller.ReverseDirection();
 			TrainCar previousCar = null;
@@ -1496,19 +1605,25 @@ namespace ORTS.MultiPlayer
 			if (tmpCars.Count == 0) return;
 			//List<TrainCar> oldList = train.Cars;
 			train.Cars = tmpCars;
-	
+			
+			train.travelled = Travelled;
+			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 0 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+			
 			train.CalculatePositionOfCars(0);
+			train.LeadLocomotive = null; train2.LeadLocomotive = null;
 			if (Program.Simulator.PlayerLocomotive != null && train.Cars.Contains(Program.Simulator.PlayerLocomotive))
 			{
 				train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 			}
-			else train.LeadLocomotive = train.Cars[0];
+			else train.LeadLocomotive = lead;
 			if (train.LeadLocomotive == null) train.LeadNextLocomotive();
 
 			MPManager.Instance().AddRemovedTrains(train2);
 		}
 	}
+	#endregion MSGCouple
 
+	#region MSGSignalStatus
 	public class MSGSignalStatus : Message
 	{
 
@@ -1542,5 +1657,6 @@ namespace ORTS.MultiPlayer
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}
+	#endregion MSGSignalStatus
 
 }

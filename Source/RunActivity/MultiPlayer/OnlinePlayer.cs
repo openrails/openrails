@@ -23,10 +23,9 @@ namespace ORTS.MultiPlayer
 		public Thread thread;
 		public void Send(string msg)
 		{
-			NetworkStream clientStream = Client.GetStream();
-
 			try
 			{
+				NetworkStream clientStream = Client.GetStream();
 				byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
 
 				clientStream.Write(buffer, 0, buffer.Length);
