@@ -385,7 +385,7 @@ namespace ORTS
             var newCarCoupledRear = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);
             // Control
             var newCarIsPlayer = Car == Viewer.PlayerLocomotive;
-			if (Car.Train is RemoteTrain) newCarIsPlayer = true;//for remote trains
+			if (Car.Train.TrainType == Train.TRAINTYPE.REMOTE) newCarIsPlayer = true;//for remote trains
 			// TODO: Check for relevant Penalty changes.
             // Service
             var newCarInService = Car.Train != null;

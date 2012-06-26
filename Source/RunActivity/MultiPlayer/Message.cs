@@ -145,14 +145,10 @@ namespace ORTS.MultiPlayer
 									continue;
 								}
 							}
-							if (t is RemoteTrain)
+							if (t.TrainType == Train.TRAINTYPE.REMOTE)
 							{
-								RemoteTrain t1 = (RemoteTrain)t;
-								if (t1 != null)
-								{
-									t1.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed);
-									break;
-								}
+								t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed);
+								break;
 							}
 						}
 					}
@@ -603,7 +599,8 @@ namespace ORTS.MultiPlayer
 			{
 				if (t.Number == this.TrainNum) return; //already add it
 			}
-			Train train = new RemoteTrain(Program.Simulator);
+			Train train = new Train(Program.Simulator);
+			train.TrainType = Train.TRAINTYPE.REMOTE;
 			int consistDirection = direction;
 			train.travelled = Travelled;
 			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
@@ -799,7 +796,8 @@ namespace ORTS.MultiPlayer
 			}
 
 			//not found, create new train
-			Train train1 = new RemoteTrain(Program.Simulator);
+			Train train1 = new Train(Program.Simulator);
+			train1.TrainType = Train.TRAINTYPE.REMOTE;
 			int consistDirection = direction;
 			train1.travelled = Travelled;
 			train1.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
@@ -1286,6 +1284,25 @@ namespace ORTS.MultiPlayer
 			if (MPManager.IsServer()) newTrainNumber = newT.Number;//serer will use the correct number
 			else newTrainNumber = 1000000 + Program.Random.Next(1000000);//client: temporary assign a train number 1000000-2000000, will change to the correct one after receiving response from the server
 
+			//housekeeping, one train may contain the player locomotive, thus it should be player controlled
+			if (newT.LeadLocomotive == null) newT.LeadNextLocomotive();
+
+			if (t.LeadLocomotive == Program.Simulator.PlayerLocomotive)
+			{
+				t.TrainType = Train.TRAINTYPE.PLAYER;
+			}
+			if (newT.LeadLocomotive == Program.Simulator.PlayerLocomotive)
+			{
+				newT.TrainType = Train.TRAINTYPE.PLAYER;
+			}
+
+			//if one of the train holds other player locomotives
+			foreach (var pair in MPManager.OnlineTrains.Players)
+			{
+				string check = pair.Key + " -";
+				foreach (var car1 in t.Cars) if (car1.CarID.StartsWith(check)) { t.TrainType = Train.TRAINTYPE.REMOTE; break; }
+				foreach (var car1 in newT.Cars) if (car1.CarID.StartsWith(check)) { newT.TrainType = Train.TRAINTYPE.REMOTE; break; }
+			}
 			oldTrainNumber = t.Number;
 			newTrainName = "UC" + newTrainNumber; newT.Number = newTrainNumber;
 
@@ -1401,13 +1418,15 @@ namespace ORTS.MultiPlayer
 						t.travelled = Travelled1;
 						t.SpeedMpS = Speed1;
 						t.LeadLocomotive = lead;
+						if (train.LeadLocomotive == Program.Simulator.PlayerLocomotive) train.TrainType = Train.TRAINTYPE.PLAYER;
 						break;
 					}
 				}
 
 				if (train == null || trainCars == null) return;
 
-				Train train2 = new RemoteTrain(Program.Simulator);
+				Train train2 = new Train(Program.Simulator);
+				train2.TrainType = Train.TRAINTYPE.REMOTE;
 				List<TrainCar> tmpcars2 = new List<TrainCar>();
 				for (var i = 0; i < ids2.Length; i++)
 				{
@@ -1418,7 +1437,9 @@ namespace ORTS.MultiPlayer
 				}
 				if (tmpcars2.Count == 0) return;
 				train2.Cars = tmpcars2;
-				train2.LeadLocomotive = lead;
+				train2.LeadLocomotive = null;
+				train2.LeadNextLocomotive();
+				if (train2.LeadLocomotive == Program.Simulator.PlayerLocomotive) train2.TrainType = Train.TRAINTYPE.PLAYER;
 
 				Traveller.TravellerDirection d2 = Traveller.TravellerDirection.Forward;
 				if (train2Direction == 1) d2 = Traveller.TravellerDirection.Backward;
@@ -1429,6 +1450,8 @@ namespace ORTS.MultiPlayer
 				train2.SpeedMpS = Speed2;
 
 				train2.CalculatePositionOfCars(0);  // fix the front traveller
+
+				foreach (TrainCar car in train2.Cars) car.Train = train2;
 
 				train2.InitializeSignals(false);
 				MPManager.Instance().AddAddedTrains(train2);
@@ -1637,8 +1660,11 @@ namespace ORTS.MultiPlayer
 			MPManager.Instance().AddRemovedTrains(train2);
 
 			//mine is not the leading locomotive, thus I give up the control
-			if (train.LeadLocomotive != Program.Simulator.PlayerLocomotive) Program.Simulator.InControl = false;
-			train.TrainType = Train.TRAINTYPE.REMOTE; //make the train remote controlled
+			if (train.LeadLocomotive != Program.Simulator.PlayerLocomotive)
+			{
+				Program.Simulator.InControl = false;
+				train.TrainType = Train.TRAINTYPE.REMOTE; //make the train remote controlled
+			}
 
 			//update the remote user's train
 			if (MPManager.OnlineTrains.findTrain(whoControls) != null) MPManager.OnlineTrains.Players[whoControls].Train = train;

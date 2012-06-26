@@ -137,9 +137,9 @@ namespace ORTS.MultiPlayer
 				foreach (Train train in removedTrains)
 				{
 					Program.Simulator.Trains.Remove(train);
-					if (train.Cars.Count > 0 && train.Cars[0].Train == train)
-						foreach (TrainCar car in train.Cars)
-							car.Train = null;
+//					if (train.Cars.Count > 0 && train.Cars[0].Train == train)
+//						foreach (TrainCar car in train.Cars)
+//							car.Train = null;
 				}
 				removedTrains.Clear();
 			}
@@ -268,17 +268,18 @@ namespace ORTS.MultiPlayer
 		//only can be called by Update
 		private void RemovePlayer()
 		{
-			if (Program.Server == null) return; //client will do it by decoding message
+			//if (Program.Server == null) return; //client will do it by decoding message
 
 			lock (playersRemoved)
 			{
 				foreach (OnlinePlayer p in playersRemoved)
 				{
-					string username = p.Username;
-					Program.Simulator.Trains.Remove(p.Train);
-					if (p.Train.Cars.Count > 0 && p.Train.Cars[0].Train == p.Train)
-						foreach (TrainCar car in p.Train.Cars)
-							car.Train = null;
+					MPManager.OnlineTrains.Players.Remove(p.Username);
+					//player is not in this train
+					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
+					{
+						Program.Simulator.Trains.Remove(p.Train);
+					}
 				}
 			}
 		}

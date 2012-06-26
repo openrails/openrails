@@ -469,7 +469,7 @@ namespace ORTS
                 isMouseShouldVisible = false;
             }
 
-            if (PlayerTrainLength != PlayerTrain.Cars.Count)
+            if (PlayerTrain != null && PlayerTrainLength != PlayerTrain.Cars.Count)
             {
                 PlayerTrainLength = PlayerTrain.Cars.Count;
                 if (!Camera.IsAvailable)

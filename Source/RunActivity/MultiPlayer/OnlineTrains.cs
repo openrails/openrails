@@ -120,7 +120,8 @@ namespace ORTS.MultiPlayer
 			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
 			p.Username = player.user;
 			Players.Add(player.user, p);
-			Train train = new RemoteTrain(Program.Simulator);
+			Train train = new Train(Program.Simulator);
+			train.TrainType = Train.TRAINTYPE.REMOTE;
 			if (MPManager.IsServer()) //server needs to worry about correct train number
 			{
 			}
