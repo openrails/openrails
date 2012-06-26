@@ -48,6 +48,7 @@ namespace ORTS
 		public Traveller FrontTDBTraveller; // positioned at the front of the train by CalculatePositionOfCars
 		public float Length; // length of train from FrontTDBTraveller to RearTDBTraveller
 		public float SpeedMpS = 0.0f;  // meters per second +ve forward, -ve when backing
+		public float lastSpeedMps = 0.0f;
 		public Train UncoupledFrom = null;  // train not to coupled back onto
 		public float TotalCouplerSlackM = 0;
 		public float MaximumCouplerForceN = 0;
@@ -74,7 +75,8 @@ namespace ORTS
 		{
 			PLAYER,
 			STATIC,
-			AI
+			AI,
+			REMOTE
 		}
 
 		public TRAINTYPE TrainType = TRAINTYPE.AI;
@@ -104,7 +106,8 @@ namespace ORTS
 		/// </summary>
 		protected Simulator Simulator;
 
-		public float travelled;//distance travelled, but not exavtly
+		public bool updateMSGReceived = false; //sometime the train is controled remotely, so need to know when to update location
+		public float travelled;//distance travelled, but not exactly
 
 		// For AI control of the train
 		public float AITrainBrakePercent
@@ -448,6 +451,54 @@ namespace ORTS
 
 		public virtual void Update(float elapsedClockSeconds)
 		{
+			if (TrainType == TRAINTYPE.REMOTE) {
+				//if a MSGMove is received
+				if (updateMSGReceived)
+				{
+					float move = 0.0f;
+					try
+					{
+						var x = travelled + SpeedMpS * elapsedClockSeconds + (SpeedMpS - lastSpeedMps) / 2 * elapsedClockSeconds;
+
+						if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 5)
+						{
+							Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
+
+							var y = this.travelled - expectedTravelled;
+							this.travelled = expectedTravelled;
+							this.RearTDBTraveller = t;
+						}
+						else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
+						{
+							SpeedMpS += (expectedTravelled - x) / 1;
+							CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+						}
+					}
+					catch (Exception)
+					{
+						move = expectedTravelled - travelled;
+					}
+					CalculatePositionOfCars(move);
+					updateMSGReceived = false;
+
+				}
+				else//no message received, will move at the previous speed
+				{
+					CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+				}
+
+				//update speed for each car, so wheels will rotate
+				foreach (TrainCar car in Cars)
+				{
+					if (car != null)
+					{
+						if (car.IsDriveable && car is MSTSWagon) (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
+						car.SpeedMpS = SpeedMpS;
+					}
+				}
+				lastSpeedMps = SpeedMpS;
+				return;
+			}
 			PropagateBrakePressure(elapsedClockSeconds);
 
 			foreach (TrainCar car in Cars)
@@ -1553,5 +1604,21 @@ namespace ORTS
 				traveller.Move(car.Length);
 			}
 		}
+
+		public int expectedTileX, expectedTileZ, expectedTracIndex;
+		public float expectedX, expectedZ, expectedTravelled;
+
+		public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed)
+		{
+			SpeedMpS = speed;
+			expectedTileX = tX;
+			expectedTileZ = tZ;
+			expectedX = x;
+			expectedZ = z;
+			expectedTravelled = eT;
+			expectedTracIndex = tni;
+			updateMSGReceived = true;
+		}
+
 	}// class Train
 }

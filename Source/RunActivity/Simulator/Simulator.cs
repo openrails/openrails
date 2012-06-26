@@ -90,6 +90,7 @@ namespace ORTS
         public float InitialTileX;
         public float InitialTileZ;
 
+		public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
 		/// <summary>
 		/// Reference to the InterlockingSystem object, responsible for
 		/// managing signalling and interlocking.
@@ -393,10 +394,10 @@ namespace ORTS
 					if (train != drivenTrain)
 					{
 						//avoid coupling of player train with other players train
-						if (MPManager.IsMultiPlayer()) {
-							if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
-							if ((MPManager.Instance().FindPlayerTrain(train) && MPManager.Instance().FindPlayerTrain(drivenTrain))) continue; //if both are player-controlled trains
-						}
+					//	if (MPManager.IsMultiPlayer()) {
+					//		if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
+					//		if ((MPManager.Instance().FindPlayerTrain(train) && MPManager.Instance().FindPlayerTrain(drivenTrain))) continue; //if both are player-controlled trains
+					//	}
 						
 						float d1 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, true);
 						if (d1 < 0)
@@ -451,11 +452,11 @@ namespace ORTS
 					if (train != drivenTrain)
 					{
 						//avoid coupling of player train with other players train
-						if (MPManager.IsMultiPlayer())
-						{
-							if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
-							if ((MPManager.Instance().FindPlayerTrain(train) && MPManager.Instance().FindPlayerTrain(drivenTrain))) continue; //if both are player-controlled trains
-						}
+					//	if (MPManager.IsMultiPlayer())
+					//	{
+					//		if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
+					//		if ((MPManager.Instance().FindPlayerTrain(train) && MPManager.Instance().FindPlayerTrain(drivenTrain))) continue; //if both are player-controlled trains
+					//	}
 						float d1 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.RearTDBTraveller, false);
 						if (d1 < 0)
 						{

@@ -38,27 +38,10 @@ namespace ORTS
 {
 	public class RemoteTrain :Train
 	{
-		public bool updateMSGReceived = false;
-		public float expectedTravelled;
-		public float lastSpeedMps = 0f;
-		int expectedTileX, expectedTileZ, expectedTracIndex;
-		float expectedX, expectedZ;
-
         public RemoteTrain(Simulator simulator):base(simulator)
         {
+			TrainType = TRAINTYPE.REMOTE;
         }
-
-		public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed)
-		{
-			SpeedMpS = speed;
-			expectedTileX = tX;
-			expectedTileZ = tZ;
-			expectedX = x;
-			expectedZ = z;
-			expectedTravelled = eT;
-			expectedTracIndex = tni;
-			updateMSGReceived = true;
-		}
 
 		//update train location
 		public override void Update(float elapsedClockSeconds)

@@ -159,11 +159,11 @@ namespace ORTS.MultiPlayer
 				}
 				else
 				{
-					RemoteTrain t = (RemoteTrain)MPManager.OnlineTrains.findTrain(m.user);
+					Train t = MPManager.OnlineTrains.findTrain(m.user);
 					if (t != null)
 					{
-						found = true;
-						t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed);
+							found = true;
+							t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed);
 					}
 				}
 				if (found == false) //I do not have the train, tell server to send it to me
@@ -449,26 +449,26 @@ namespace ORTS.MultiPlayer
 	#region MSGSwitchStatus
 	public class MSGSwitchStatus : Message
 	{
-		static SortedList<long, TrJunctionNode> SwitchState;
+		static SortedList<uint, TrJunctionNode> SwitchState;
 		string msgx = "";
 
 		public MSGSwitchStatus()
 		{
 			if (SwitchState == null)
 			{
-				SwitchState = new SortedList<long, TrJunctionNode>();
-				int key = 0;
+				SwitchState = new SortedList<uint, TrJunctionNode>();
+				uint key = 0;
 				foreach (TrackNode t in Program.Simulator.TDB.TrackDB.TrackNodes)
 				{
 					if (t != null && t.TrJunctionNode != null)
 					{
-						key = t.UiD.WorldTileX * 100000000 + t.UiD.WorldTileZ * 10000 + t.UiD.WorldID;
+						key = t.Index;
 						SwitchState.Add(key, t.TrJunctionNode);
 					}
 				}
 			}
 			msgx = "";
-			foreach(System.Collections.Generic.KeyValuePair<long, TrJunctionNode> t in SwitchState)
+			foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
 			{
 				if (t.Value.SelectedRoute > 9 && t.Value.SelectedRoute < 0)
 				{
@@ -482,13 +482,13 @@ namespace ORTS.MultiPlayer
 		{
 			if (SwitchState == null)
 			{
-				int key = 0;
-				SwitchState = new SortedList<long, TrJunctionNode>();
+				uint key = 0;
+				SwitchState = new SortedList<uint, TrJunctionNode>();
 				foreach (TrackNode t in Program.Simulator.TDB.TrackDB.TrackNodes)
 				{
 					if (t != null && t.TrJunctionNode != null)
 					{
-						key = t.UiD.WorldTileX * 100000000 + t.UiD.WorldTileZ * 10000 + t.UiD.WorldID;
+						key = t.Index;
 						SwitchState.Add(key, t.TrJunctionNode);
 					}
 				}
@@ -502,7 +502,7 @@ namespace ORTS.MultiPlayer
 			if (MPManager.IsServer() ) return; //server will ignore it
 
 			int i = 0;
-			foreach (System.Collections.Generic.KeyValuePair<long, TrJunctionNode> t in SwitchState)
+			foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
 			{
 				t.Value.SelectedRoute = msgx[i] - 48; //ASCII code 48 is 0
 				i++;
@@ -1463,8 +1463,10 @@ namespace ORTS.MultiPlayer
 		int TrainNum;
 		int RemovedTrainNum;
 		int direction;
-		int TileX, TileZ;
+		int TileX, TileZ, Lead;
 		float X, Z, Travelled;
+		string whoControls;
+
 		public MSGCouple(string m)
 		{
 			//System.Console.WriteLine(m);
@@ -1491,6 +1493,12 @@ namespace ORTS.MultiPlayer
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
 			Travelled = float.Parse(m.Substring(0, index + 1));
+			m = m.Remove(0, index + 1);
+			index = m.IndexOf(' ');
+			Lead = int.Parse(m.Substring(0, index + 1));
+			m = m.Remove(0, index + 1);
+			index = m.IndexOf(' ');
+			whoControls = m.Substring(0, index + 1).Trim();
 			m = m.Remove(0, index + 1);
 			string[] areas = m.Split('\t');
 			cars = new string[areas.Length - 1];//with an empty "" at end
@@ -1534,12 +1542,23 @@ namespace ORTS.MultiPlayer
 			Travelled = t.travelled;
 			MPManager.Instance().RemoveUncoupledTrains(t); //remove the trains from uncoupled train lists
 			MPManager.Instance().RemoveUncoupledTrains(oldT);
-
+			var j = 0;
+			Lead = -1;
+			foreach(TrainCar car in t.Cars) {
+				if (car == t.LeadLocomotive) {Lead = j; break;}
+				j++;
+			}
+			whoControls = "NA";
+			var index = t.LeadLocomotive.CarID.IndexOf(" - ");
+			if (index > 0)
+			{
+				whoControls = t.LeadLocomotive.CarID.Substring(0, index);
+			}
 		}
 
 		public override string ToString()
 		{
-			string tmp = "COUPLE " + TrainNum + " " + RemovedTrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " ";
+			string tmp = "COUPLE " + TrainNum + " " + RemovedTrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " +Lead + " " + whoControls + " ";
 			for (var i = 0; i < cars.Length; i++)
 			{
 				var c = cars[i];
@@ -1611,14 +1630,18 @@ namespace ORTS.MultiPlayer
 			
 			train.CalculatePositionOfCars(0);
 			train.LeadLocomotive = null; train2.LeadLocomotive = null;
-			if (Program.Simulator.PlayerLocomotive != null && train.Cars.Contains(Program.Simulator.PlayerLocomotive))
-			{
-				train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
-			}
-			else train.LeadLocomotive = lead;
+			if (Lead != -1 && Lead < train.Cars.Count ) train.LeadLocomotive = train.Cars[Lead];
+
 			if (train.LeadLocomotive == null) train.LeadNextLocomotive();
 
 			MPManager.Instance().AddRemovedTrains(train2);
+
+			//mine is not the leading locomotive, thus I give up the control
+			if (train.LeadLocomotive != Program.Simulator.PlayerLocomotive) Program.Simulator.InControl = false;
+			train.TrainType = Train.TRAINTYPE.REMOTE; //make the train remote controlled
+
+			//update the remote user's train
+			if (MPManager.OnlineTrains.findTrain(whoControls) != null) MPManager.OnlineTrains.Players[whoControls].Train = train;
 		}
 	}
 	#endregion MSGCouple

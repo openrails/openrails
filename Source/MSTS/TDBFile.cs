@@ -106,8 +106,8 @@ namespace MSTS
         public TrackNode(STFReader stf, int idx)
         {
             stf.MustMatch("(");
-            uint index = stf.ReadUInt(STFReader.UNITS.None, null);
-            Debug.Assert(idx == index, "TrackNode Index Mismatch");
+            Index = stf.ReadUInt(STFReader.UNITS.None, null);
+            Debug.Assert(idx == Index, "TrackNode Index Mismatch");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("uid", ()=>{ UiD = new UiD(stf); }),
                 new STFReader.TokenProcessor("trjunctionnode", ()=>{ TrJunctionNode = new TrJunctionNode(stf); TrJunctionNode.TN = this;}),
@@ -143,7 +143,7 @@ namespace MSTS
         public UiD UiD;  // only provided for TrJunctionNode and TrEndNode type of TrackNodes
         public uint Inpins;
         public uint Outpins;
-
+		public uint Index;
 
         public InterlockingTrack InterlockingTrack { get; set; }
     
