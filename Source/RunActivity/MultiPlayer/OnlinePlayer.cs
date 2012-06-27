@@ -13,7 +13,7 @@ namespace ORTS.MultiPlayer
 	public class OnlinePlayer
 	{
 		public Decoder decoder;
-		public OnlinePlayer(TcpClient t, Server s) { Client = t; Server = s; decoder = new Decoder(); }
+		public OnlinePlayer(TcpClient t, Server s) { Client = t; Server = s; decoder = new Decoder(); CreatedTime = Program.Simulator.GameTime; }
 		public TcpClient Client;
 		public Server Server;
 		public string Username = null;
@@ -21,6 +21,8 @@ namespace ORTS.MultiPlayer
 		public string con;
 		public string path; //pat and consist files
 		public Thread thread;
+		public double CreatedTime; 
+
 		public void Send(string msg)
 		{
 			try

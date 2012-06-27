@@ -456,8 +456,8 @@ namespace ORTS
 				foreach (Train train in Trains)
 					if (train != drivenTrain)
 					{
-						//avoid coupling of player train with other players train
-					//	if (MPManager.IsMultiPlayer())
+						//avoid coupling of player train with other players train if it is too short alived (e.g, when a train is just spawned, it may overlap with another train)
+						if (MPManager.IsMultiPlayer() && !MPManager.Instance().TrainOK2Couple(drivenTrain, train)) continue;
 					//	{
 					//		if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
 					//		if ((MPManager.Instance().FindPlayerTrain(train) && MPManager.Instance().FindPlayerTrain(drivenTrain))) continue; //if both are player-controlled trains

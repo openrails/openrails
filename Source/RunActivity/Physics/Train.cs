@@ -545,6 +545,7 @@ namespace ORTS
 					}
 				}
 				lastSpeedMps = SpeedMpS;
+				UpdateSignalState();
 				return;
 			}
 			PropagateBrakePressure(elapsedClockSeconds);

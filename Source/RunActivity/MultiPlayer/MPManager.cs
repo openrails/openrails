@@ -237,6 +237,26 @@ namespace ORTS.MultiPlayer
 			
 		}
 
+		//this will be used in the server, in Simulator.cs
+		public bool TrainOK2Couple(Train t1, Train t2)
+		{
+
+			if (t1.TrainType != Train.TRAINTYPE.REMOTE && t2.TrainType != Train.TRAINTYPE.REMOTE) return true;
+
+			bool result = true;
+			try
+			{
+				foreach (var p in OnlineTrains.Players)
+				{
+					if (p.Value.Train == t1 && p.Value.CreatedTime - Program.Simulator.GameTime < 120) { result = false; break; }
+					if (p.Value.Train == t2 && p.Value.CreatedTime - Program.Simulator.GameTime < 120) { result = false; break; }
+				}
+			}
+			catch (Exception)
+			{
+			}
+			return result;
+		}
 		/// <summary>
 		/// Return a string of information of how many players online and those users who are close
 		/// </summary>
