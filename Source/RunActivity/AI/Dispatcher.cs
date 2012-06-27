@@ -39,7 +39,7 @@ namespace ORTS
         private TimeTable TimeTable = null;
         public int PlayerPriority = 0;
         public List<TrackAuthority> TrackAuthorities = new List<TrackAuthority>();
-        private float UpdateTimerS = 60;
+        private float UpdateTimerS = 10;
 
         /// <summary>
         /// Initializes the dispatcher.
@@ -72,7 +72,8 @@ namespace ORTS
             AI.AITrainDictionary.Remove(0);
             TrackAuthority auth = new TrackAuthority(playerTrain, 0, PlayerPriority, playerPath);
             TrackAuthorities.Add(auth);
-            RequestAuth(auth, true, true);
+            // By GeorgeS
+            //RequestAuth(auth, true, true);
             Player_Service_Definition psd = AI.Simulator.Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition;
             auth.StationDistanceM = new List<float>();
             foreach (var i in psd.Player_Traffic_Definition.Player_Traffic_List) {
@@ -141,8 +142,17 @@ namespace ORTS
             UpdateTimerS -= elapsedClockSeconds;
             foreach (TrackAuthority auth in TrackAuthorities)
             {
-                if (auth.EndNode == null || auth.StartNode == null)
+                if (auth.EndNode == null || auth.StartNode == null || !Program.Simulator.Trains.Contains(auth.Train))
                     continue;
+
+            // By GeorgeS
+                if (UpdateTimerS <= 0)
+                {
+                    //RequestAuth(auth, true, auth.NReverseNodes % 2 == 0);
+                    ExtendAuthorization(auth, clockTime);
+                }
+
+
                 if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
                 {
                     auth.Train = AI.Simulator.PlayerLocomotive.Train;// this can change due to uncoupling
@@ -157,12 +167,13 @@ namespace ORTS
                     }
                     else if (auth.EndNode == auth.StopNode && UpdateTimerS < 0 && auth.StopDistanceM < 4*auth.Train.SpeedMpS*auth.Train.SpeedMpS + 500)
                     {
-                        RequestAuth(auth, true, auth.NReverseNodes % 2 == 0);
+                        //RequestAuth(auth, true, auth.NReverseNodes % 2 == 0);
+                        RequestAuth(auth, true, !auth.Train.Reverse);
                         if (auth.EndNode != auth.StopNode)
                             auth.AdvanceStopNode(true);
                         auth.CalcStopDistance();
                     }
-                    else if (auth.NReverseNodes % 2 == 1)
+                    else if (auth.Train.Reverse)
                     {
                         auth.StopDistanceM += elapsedClockSeconds * auth.Train.SpeedMpS;
                     }
@@ -176,12 +187,23 @@ namespace ORTS
                     }
                     else if (auth.StopNode.Type == AIPathNodeType.Reverse && auth.NReverseNodes>0 && (auth.StopDistanceM < 0 || (auth.Train.SpeedMpS==0 && auth.StopDistanceM-auth.PathDistReverseAdjustmentM<0)))
                     {
-                        auth.DistanceDownPathM += 2 * auth.PathDistReverseAdjustmentM;
-                        auth.StartNode = auth.StopNode;
-                        auth.NReverseNodes--;
-                        Rereserve(auth);
-                        auth.AdvanceStopNode(true);
-                        auth.CalcStopDistance();
+                        if (auth.StartNode != auth.StopNode)
+                        {
+                            auth.DistanceDownPathM += 2 * auth.PathDistReverseAdjustmentM;
+                            auth.NReverseNodes--;
+                        }
+
+                        auth.Path.SetVisitedNode(auth.StopNode, auth.Train.RearTDBTraveller.TrackNodeIndex);
+                        auth.StartNode = auth.Path.LastVisitedNode;
+                        //auth.StartNode = auth.StopNode;
+                        // By GeorgeS
+                        //Rereserve(auth);
+                        //if (RequestAuth(auth, true, auth.NReverseNodes % 2 == 0))
+                        if (RequestAuth(auth, true, !auth.Train.Reverse))
+                        {
+                            auth.AdvanceStopNode(true);
+                            auth.CalcStopDistance();
+                        }
                         if (auth.NReverseNodes == 0)
                             UpdateTimerS = 0;
                     }
@@ -190,7 +212,8 @@ namespace ORTS
                         auth.AdvanceStopNode(true);
                         auth.CalcStopDistance();
                     }
-                    if (auth.NReverseNodes % 2 == 1 && auth.StartNode.Type == AIPathNodeType.Reverse)
+                    if (auth.NReverseNodes % 2 == 1 && auth.StartNode != null && 
+                        auth.StartNode.Type == AIPathNodeType.Reverse)
                         continue;
                 }
                 else
@@ -212,16 +235,32 @@ namespace ORTS
                         if (auth.NReverseNodes == 0)
                             Rereserve(auth);
                     }
-                    if (auth.NReverseNodes > 0 && auth.StartNode.Type == AIPathNodeType.Reverse)
+                    if (auth.NReverseNodes > 0 && auth.StartNode != null && 
+                        auth.StartNode.Type == AIPathNodeType.Reverse)
                         continue;
                 }
-                if (auth.StartNode.NextMainTVNIndex == auth.Train.RearTDBTraveller.TrackNodeIndex ||
-                  auth.StartNode.NextSidingTVNIndex == auth.Train.RearTDBTraveller.TrackNodeIndex ||
-                  !auth.Train.RearTDBTraveller.IsTrack)
+                if (auth.StartNode == null)
                     continue;
-                if (auth.TrainID == 0 && Reservations[auth.Train.RearTDBTraveller.TrackNodeIndex] != auth.TrainID)
+
+                int jnidx = -1;
+                TrJunctionNode n = auth.Train.dRearTDBTraveller.JunctionNodeAhead();
+                if (n != null)
+                    jnidx = n.Idx;
+
+                if (auth.PrevJunctionIndex != jnidx)
+                {
+                    if (auth.PrevJunctionIndex != -1)
+                        Reservations[auth.PrevJunctionIndex] = -1;
+                    auth.PrevJunctionIndex = jnidx;
+                }
+
+                if (auth.StartNode.NextMainTVNIndex == auth.Train.dRearTDBTraveller.TrackNodeIndex ||
+                  auth.StartNode.NextSidingTVNIndex == auth.Train.dRearTDBTraveller.TrackNodeIndex ||
+                  !auth.Train.dRearTDBTraveller.IsTrack)
                     continue;
-                AIPathNode nextNode = auth.Path.FindTrackNode(auth.StartNode, auth.Train.RearTDBTraveller.TrackNodeIndex);
+                if (auth.TrainID == 0 && Reservations[auth.Train.dRearTDBTraveller.TrackNodeIndex] != auth.TrainID)
+                    continue;
+                AIPathNode nextNode = auth.Path.FindTrackNode(auth.StartNode, auth.Train.dRearTDBTraveller.TrackNodeIndex);
                 if (nextNode != null && nextNode.IsFacingPoint == true && nextNode.JunctionIndex >= 0)
                 {
                     float clearance = 40;
@@ -232,11 +271,15 @@ namespace ORTS
                         if (shape != null)
                             clearance = 1.5f * (float)shape.ClearanceDistance;
                     }
-                    float d = WorldLocation.GetDistanceSquared(nextNode.Location, auth.Train.RearTDBTraveller.WorldLocation);
+                    float d = WorldLocation.GetDistanceSquared(nextNode.Location, auth.Train.dRearTDBTraveller.WorldLocation);
+#if CLEARANCE
                     if (d < clearance * clearance)
                         continue;
+#endif
                 }
                 int i = auth.StartNode.NextMainTVNIndex;
+                // See bellow
+                /*
                 if (i >= 0 && Reservations[i] == auth.TrainID)
                     Reservations[i] = -1;
                 else
@@ -245,14 +288,103 @@ namespace ORTS
                     if (i >= 0 && Reservations[i] == auth.TrainID)
                         Reservations[i] = -1;
                 }
+                bool hasUnReserve = true;
+                */
+                // By GeorgeS
+                AIPathNode stepnode = auth.Path.FindTrackNode(auth.Path.FirstNode, auth.Train.dRearTDBTraveller.TrackNodeIndex);
+                bool hasUnReserve = false;
+                while (stepnode != null)
+                {
+                    stepnode = auth.Path.PrevNode(stepnode);
+                    if (stepnode != null)
+                    {
+                        i = stepnode.JunctionIndex;
+                        if (i >= 0)
+                        {
+                            if (Reservations[i] == auth.TrainID)
+                            {
+                                Reservations[i] = -1;
+                                hasUnReserve = true;
+                            }
+                        }
+                        
+                        i = stepnode.NextMainTVNIndex;
+                        if (i >= 0)
+                        {
+                            if (Reservations[i] == auth.TrainID)
+                            {
+                                Reservations[i] = -1;
+                                hasUnReserve = true;
+                            }
+                        }
+                        else
+                        {
+                            i = stepnode.NextSidingTVNIndex;
+                            if (i >= 0)
+                            {
+                                if (Reservations[i] == auth.TrainID)
+                                {
+                                    Reservations[i] = -1;
+                                    hasUnReserve = true;
+                                }
+                            }
+                            else
+                            {
+                                stepnode = null;
+                            }
+                        }
+                        // Must check and break this way, because must free first, and step back if it is not a reverse point
+                        if (stepnode.Type == AIPathNodeType.Reverse)
+                            break;
+                    }
+                }
+                //int n = 0;
+                //for (int j = 0; j < Reservations.Length; j++)
+                //    if (Reservations[j] == auth.TrainID)
+                //        n++;
+                //Console.WriteLine(" nres {0}", n);
                 if (auth.StartNode.IsLastSwitchUse)
                     auth.Path.RestoreSwitch(auth.StartNode.JunctionIndex);
-                auth.StartNode = nextNode;
+
+                auth.Path.SetVisitedNode(auth.StartNode, auth.Train.dRearTDBTraveller.TrackNodeIndex);
+                auth.StartNode = auth.Path.LastVisitedNode;
+                //auth.StartNode = nextNode;
+
+                if (hasUnReserve)
+                {
+                    ExtendPlayerAuthorization(false);
+                }
             }
+
+            foreach (TrackAuthority auth in TrackAuthorities)
+            {
+                if (Program.Simulator.Trains.Contains(auth.Train) && auth.Train.dFrontTDBTraveller != null &&
+                    Reservations[auth.Train.dFrontTDBTraveller.TrackNodeIndex] == -1)
+                {
+                    ExtendAuthorization(auth, clockTime);
+                }
+            }
+
             if (UpdateTimerS < 0)
                 UpdateTimerS = 10;
         }
-        public void ExtendPlayerAuthorization()
+
+        private void ExtendAuthorization(TrackAuthority auth, double clockTime)
+        {
+            bool success = RequestAuth(auth, true, !auth.Train.Reverse);
+            if (success)
+            {
+                auth.AdvanceStopNode(true);
+                auth.CalcStopDistance();
+                AITrain ait = auth.Train as AITrain;
+                if (ait != null)
+                {
+                    ait.TryAdvanceStopNode(clockTime);
+                }
+            }
+        }
+
+        public void ExtendPlayerAuthorization(bool force)
         {
             if (TrackAuthorities.Count == 0)
                 return;            
@@ -261,7 +393,11 @@ namespace ORTS
             if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
             {
                 auth.Train = AI.Simulator.PlayerLocomotive.Train;// this can change due to uncoupling
-                RequestAuth(auth, true, auth.NReverseNodes % 2 == 0);
+                //if (!RequestAuth(auth, true, auth.NReverseNodes % 2 == 0))
+                if (!RequestAuth(auth, true, !auth.Train.Reverse, force))
+                    return;
+                // By GeorgeS
+                //RequestAuth(auth, true, auth.NReverseNodes % 2 == 0)
                 if (auth.EndNode != auth.StopNode)
                     auth.AdvanceStopNode(true);
                 auth.CalcStopDistance();
@@ -292,6 +428,41 @@ namespace ORTS
             }
         }
 
+        private int CountSignals(int node, Traveller t)
+        {
+            TrackNode[] trackNodes = Program.Simulator.TDB.TrackDB.TrackNodes;
+            TrItem[] trItems = Program.Simulator.TDB.TrackDB.TrItemTable;
+            int cou = 0;
+            int dir = (int)t.Direction;
+
+            if (trackNodes[node].TrEndNode) return -1;  // End of track reached no signals found.
+            if (trackNodes[node].TrVectorNode != null)
+            {
+                if (trackNodes[node].TrVectorNode.noItemRefs > 0)
+                {
+                    for (int i = 0; i < trackNodes[node].TrVectorNode.noItemRefs; i++)
+                    {
+                        if (trItems[trackNodes[node].TrVectorNode.TrItemRefs[i]].ItemType == TrItem.trItemType.trSIGNAL)
+                        {
+                            SignalItem sigItem = (SignalItem)trItems[trackNodes[node].TrVectorNode.TrItemRefs[i]];
+                            //if ( sigItem.revDir == Direction)
+                            {
+                                int sigObj = sigItem.sigObj;
+                                if (Signal.signalObjects[sigObj] != null && Signal.signalObjects[sigObj].revDir == dir &&
+                                    Signal.signalObjects[sigObj].isSignalNormal())
+                                {
+                                    if (Signal.signalObjects[sigObj].DistanceTo(t) > 0)
+                                        cou++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return cou;
+        }
+
         /// <summary>
         /// Requests movement authorization for the specified train.
         /// Follows the train's path from the current rear node until the path ends
@@ -308,9 +479,20 @@ namespace ORTS
                 train.TrackAuthority = new TrackAuthority(train, train.UiD, train.Priority, train.Path);
                 TrackAuthorities.Add(train.TrackAuthority);
             }
-            return RequestAuth(train.TrackAuthority, update, train.AITrainDirectionForward);
+            bool success = RequestAuth(train.TrackAuthority, update, train.AITrainDirectionForward);
+
+            if (success)
+            {
+                train.TryAdvanceStopNode(Program.Simulator.ClockTime);
+            }
+
+            return success;
         }
         private bool RequestAuth(TrackAuthority auth, bool update, bool movingForward)
+        {
+            return RequestAuth(auth, update, movingForward, false);
+        }
+        private bool RequestAuth(TrackAuthority auth, bool update, bool movingForward, bool force)
         {
             TTTrainTimes ttTimes = null;
             if (TimeTable != null)
@@ -330,29 +512,126 @@ namespace ORTS
                 }
             }
             List<int> tnList = new List<int>();
-            AIPathNode node = auth.StartNode;
+            AIPathNode node = auth.Path.FindTrackNode(auth.StartNode, auth.Train.dFrontTDBTraveller.TrackNodeIndex);
+            if (node == null)
+            {
+                node = auth.Path.FindTrackNode(auth.LastValidNode, auth.Train.dFrontTDBTraveller.TrackNodeIndex);
+            }
+            else
+            {
+                auth.LastValidNode = node;
+            }
+            auth.StartNode = node;
+            //AIPathNode node = auth.StartNode;
+            bool fstNode = true;
             int nRev = 0;
             if (!movingForward)
                 nRev++;
+
+            Traveller traveller = auth.Train.FrontTDBTraveller;
+            if (!auth.Train.AITrainDirectionForward)
+            {
+                traveller = new Traveller(auth.Train.RearTDBTraveller);
+                traveller.ReverseDirection();
+            }
+
+            TrJunctionNode n = traveller.JunctionNodeAhead();
+            if (n != null)
+                tnList.Add(n.Idx);
+
+            int nodeidx = 0;
+            int sigcou = 0;
+
+            bool firstIsNeg = false;
             while (node != null)
             {
-                if (movingForward && node != auth.StartNode && node.Type == AIPathNodeType.SidingStart)
-                    break;
-                if (movingForward && node.Type == AIPathNodeType.SidingEnd && node != auth.EndNode && Reservations[node.NextMainTVNIndex] != auth.TrainID)
+                // By GeorgeS
+                //if (movingForward && node != auth.StartNode && node.Type == AIPathNodeType.SidingStart)
+                //    break;
+                if (movingForward && node.Type == AIPathNodeType.SidingEnd && node != auth.EndNode && 
+                    Reservations[node.NextMainTVNIndex] != -1 && Reservations[node.NextMainTVNIndex] != auth.TrainID)
                     break;
                 if (node != auth.StartNode && node.Type == AIPathNodeType.Reverse)
                 {
                     movingForward = !movingForward;
                     nRev++;
+                    break;
+                    //Console.WriteLine("rev node {0}", node.ID);
                 }
+
+                if (node.NextMainNode != null && node != auth.SidingNode)
+                {
+                    if (force)
+                        Reservations[node.NextMainTVNIndex] = -1;
+
+                    if (Reservations[node.NextMainTVNIndex] >= 0 && Reservations[node.NextMainTVNIndex] != auth.TrainID)
+                        break;
+                    nodeidx = node.NextMainTVNIndex;
+                }
+                else if (node.NextSidingNode != null)
+                {
+                    if (force)
+                        Reservations[node.NextSidingTVNIndex] = -1;
+
+                    if (Reservations[node.NextSidingTVNIndex] >= 0 && Reservations[node.NextSidingTVNIndex] != auth.TrainID)
+                        break;
+                    nodeidx = node.NextSidingTVNIndex;
+                }
+
+                auth.Path.AlignSwitchesTo(node);
+
+                float dist = traveller.DistanceTo(node.Location.TileX, node.Location.TileZ, node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z);
+                if (node.NextMainTVNIndex == traveller.TrackNodeIndex || node.NextSidingTVNIndex == traveller.TrackNodeIndex)
+                {
+                    firstIsNeg = dist == -1;
+                    dist = 0;
+                }
+
+                if (node != auth.StartNode)
+                    sigcou += CountSignals(nodeidx, traveller);
+
+                //if (dist > 4000 && !firstIsNeg)
+                //    break;
+
+                // By GeorgeS
+                // Wrong direction
+                if (fstNode && dist == -1)
+                    return false;
+
+                if (dist != 0)
+                {
+                    fstNode = false;
+                    firstIsNeg = false;
+                }
+
+                if (node.JunctionIndex != -1)
+                {
+                    TrackNode tn = Program.Simulator.TDB.TrackDB.TrackNodes[node.JunctionIndex];
+                    float dtj = traveller.DistanceTo(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z);
+                    if (dtj > 0 && dtj <= 3000 && ((dtj <= dist) || (dtj > dist && sigcou < 4)))
+                    {
+                        if (force && Reservations[node.JunctionIndex] != auth.TrainID)
+                            Reservations[node.JunctionIndex] = -1;
+                        tnList.Add(node.JunctionIndex);
+                    }
+                }
+
                 if (node.NextMainNode != null && node != auth.SidingNode)
                 {
                     tnList.Add(node.NextMainTVNIndex);
+
+                    if (sigcou >= 4 && dist > 3000)
+                        break;
+
                     node = node.NextMainNode;
                 }
                 else if (node.NextSidingNode != null)
                 {
                     tnList.Add(node.NextSidingTVNIndex);
+
+                    if (sigcou >= 4 && dist > 3000)
+                        break;
+
                     node = node.NextSidingNode;
                 }
                 else
@@ -362,7 +641,7 @@ namespace ORTS
                 return false;
             if (node.Type != AIPathNodeType.SidingStart)
             {
-                Unreserve(auth.TrainID);
+                //Unreserve(auth.TrainID);
                 Reserve(auth.TrainID, tnList);
                 return SetAuthorization(auth, node, null, nRev);
             }
@@ -374,7 +653,7 @@ namespace ORTS
             if (sidingFirst)
             {
                 WorldLocation wl = sidingNode.Location;
-                if (auth.Train.FrontTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z) < 10)
+                if (auth.Train.dFrontTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z) < 10)
                     sidingFirst = false;
             }
             for (int i = 0; i < 2; i++)
@@ -397,7 +676,7 @@ namespace ORTS
                     }
                     if (CanReserve(auth.TrainID, auth.Priority, tnList1))
                     {
-                        Unreserve(auth.TrainID);
+                        //Unreserve(auth.TrainID);
                         Reserve(auth.TrainID, tnList);
                         Reserve(auth.TrainID, tnList1);
                         return SetAuthorization(auth, node, null, nRev);
@@ -419,7 +698,7 @@ namespace ORTS
                     }
                     if (CanReserve(auth.TrainID, auth.Priority, tnList1))
                     {
-                        Unreserve(auth.TrainID);
+                        //Unreserve(auth.TrainID);
                         Reserve(auth.TrainID, tnList);
                         Reserve(auth.TrainID, tnList1);
                         return SetAuthorization(auth, node, sidingNode, nRev);
@@ -440,10 +719,45 @@ namespace ORTS
             auth.EndNode = end;
             auth.SidingNode = siding;
             auth.NReverseNodes = nRev % 2 == 1 ? nRev + 1 : nRev;
+
+            if (!(auth.Train is AITrain))
+            {
+                int res;
+                AIPathNode node;
+                for (node = end; node != null; )
+                {
+                    if (node.Type == AIPathNodeType.Reverse)
+                        break;
+
+                    if (node != auth.SidingNode && node.NextMainNode != null)
+                    {
+                        if (Reservations[node.NextMainTVNIndex] < 0)
+                            break;
+                        node = node.NextMainNode;
+                    }
+                    else if (node.NextSidingNode != null)
+                    {
+                        if (Reservations[node.NextSidingTVNIndex] < 0)
+                            break;
+                        node = node.NextSidingNode;
+                    }
+                    else
+                        break;
+                }
+
+                end = node;
+                auth.EndNode = node;
+            }
+
             int n = 0;
-            for (int j = 0; j < Reservations.Length; j++)
-                if (Reservations[j] == auth.TrainID)
-                    n++;
+            if (end != null)
+            {
+                auth.AdvanceStopNode(true);
+                auth.CalcStopDistance();
+            }
+            //for (int j = 0; j < Reservations.Length; j++)
+            //    if (Reservations[j] == auth.TrainID)
+            //        n++;
             return result;
         }
 
@@ -463,11 +777,13 @@ namespace ORTS
             foreach (int i in tnList)
                 if (Reservations[i] >= 0 && Reservations[i] != trainID)
                     return false;
+            // By GeorgeS - dont check occupied track because player trainis first always
+            return true;
             if (trainID != 0 && PlayerPriority <= priority && AI.Simulator.PlayerLocomotive != null)
             {
                 Train playerTrain = AI.Simulator.PlayerLocomotive.Train;
                 foreach (int j in tnList)
-                    if (Reservations[j] != trainID && (j == playerTrain.FrontTDBTraveller.TrackNodeIndex || j == playerTrain.RearTDBTraveller.TrackNodeIndex))
+                    if (Reservations[j] != trainID && (j == playerTrain.dFrontTDBTraveller.TrackNodeIndex || j == playerTrain.RearTDBTraveller.TrackNodeIndex))
                     {
                         return false;
                     }
@@ -512,7 +828,7 @@ namespace ORTS
         /// </summary>
         private void Rereserve(TrackAuthority auth)
         {
-            Unreserve(auth.TrainID);
+            //Unreserve(auth.TrainID);
             for (AIPathNode node = auth.StartNode; node != null && node != auth.EndNode; )
             {
                 if (node != auth.SidingNode && node.NextMainNode != null)
@@ -653,17 +969,18 @@ namespace ORTS
 				return DispatcherPOIType.Unknown;
 
 			TrackAuthority auth = TrackAuthorities[0];
-			if (auth.StopNode == null || ptrain.FrontTDBTraveller.TrackNodeIndex < 0 || Reservations[ptrain.FrontTDBTraveller.TrackNodeIndex] != 0 || ptrain.RearTDBTraveller.TrackNodeIndex < 0 || Reservations[ptrain.RearTDBTraveller.TrackNodeIndex] != 0)
+			//if (auth.StopNode == null || ptrain.FrontTDBTraveller.TrackNodeIndex < 0 || Reservations[ptrain.FrontTDBTraveller.TrackNodeIndex] != 0 || ptrain.RearTDBTraveller.TrackNodeIndex < 0 || Reservations[ptrain.RearTDBTraveller.TrackNodeIndex] != 0)
+            if (auth.Path.FindTrackNode(auth.StartNode, ptrain.dFrontTDBTraveller.TrackNodeIndex) == null)
 				return DispatcherPOIType.OffPath;
 
 			distance = auth.StopDistanceM;
 			backwards = auth.NReverseNodes % 2 == 1;
-			if (auth.StationStop)
+            if (auth.StopNode.Type == AIPathNodeType.Reverse)
+                return DispatcherPOIType.ReversePoint;
+            if (auth.StationStop)
 				return DispatcherPOIType.StationStop;
 			if (auth.EndNode == auth.StopNode)
 				return DispatcherPOIType.EndOfAuthorization;
-			if (auth.StopNode.Type == AIPathNodeType.Reverse)
-				return DispatcherPOIType.ReversePoint;
 			return DispatcherPOIType.Stop;
 		}
 

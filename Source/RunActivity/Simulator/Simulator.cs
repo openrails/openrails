@@ -81,6 +81,7 @@ namespace ORTS
 		public string ExploreConFile;
 		public string patFileName;
 		public string conFileName;
+        public AIPath PlayerPath;
         public LevelCrossings LevelCrossings;
         public RDBFile RDB;
 		public CarSpawnerFile CarSpawnerFile;
@@ -292,13 +293,17 @@ namespace ORTS
 			foreach (Train train in movingTrains)
 			{
 				train.Update(elapsedClockSeconds);
-				/*if (MPManager.IsMultiPlayer())
+                /*
+				if (MPManager.IsMultiPlayer())
 				{
-					if (MultiPlayer.MPManager.IsServer()) AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
+					if (MultiPlayer.MPManager.IsServer()) 
+                        AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
+			    }
+				else 
+                   AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 				}
-				else*/ 
-				AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
-			}
+                */
+            }
 
 			foreach (Train train in movingTrains)
 			{
@@ -679,19 +684,22 @@ namespace ORTS
             train.EditTrain = new TrackLayer(TDB, TSectionDat); // Creates a TrackLayer for the player train
 #endif
 
-			// This is the position of the back end of the train in the database.
+            PATFile patFile = new PATFile(patFileName);
+            PathDescription = patFile.Name;
+            // This is the position of the back end of the train in the database.
 			PATTraveller patTraveller = new PATTraveller(patFileName);
+            AIPath aiPath = new AIPath(patFile, TDB, TSectionDat, patFileName);
+            PlayerPath = aiPath;
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
+
+            aiPath.AlignInitSwitches(train.RearTDBTraveller, 500);
+            //aiPath.AlignAllSwitches();
 
 			// figure out if the next waypoint is forward or back
 			patTraveller.NextWaypoint();
 			if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
 				train.RearTDBTraveller.ReverseDirection();
-			PATFile patFile = new PATFile(patFileName);
-            PathDescription = patFile.Name;
 
-			AIPath aiPath = new AIPath(patFile, TDB, TSectionDat, patFileName);
-			aiPath.AlignAllSwitches();
 			CONFile conFile = new CONFile(conFileName);
 
 			// add wagons

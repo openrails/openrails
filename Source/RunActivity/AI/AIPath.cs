@@ -25,6 +25,7 @@ namespace ORTS
         public TrackDB TrackDB;
         public TSectionDatFile TSectionDat;
         public AIPathNode FirstNode;    // path starting node
+        public AIPathNode LastVisitedNode;
         List<AIPathNode> Nodes = new List<AIPathNode>();
 
         /// <summary>
@@ -88,6 +89,8 @@ namespace ORTS
             }
             foreach (KeyValuePair<int, AIPathNode> kvp in lastUse)
                 kvp.Value.IsLastSwitchUse = true;
+
+            LastVisitedNode = FirstNode;
         }
 
         // restore game state
@@ -143,6 +146,14 @@ namespace ORTS
             TrackNode tn = TrackDB.TrackNodes[junctionIndex];
             if (tn.TrJunctionNode == null || tn.TrPins[0].Link == vectorIndex)
                 return;
+
+            // By GeorgeS - XCheck for reservations
+            int link = tn.TrPins[1].Link == vectorIndex ? vectorIndex : tn.TrPins[2].Link;
+            //if (Dispatcher.Reservations != null && Dispatcher.Reservations[tn.TrPins[0].Link] != Dispatcher.Reservations[link])
+            if (Dispatcher.Reservations != null && Dispatcher.Reservations[junctionIndex] != Dispatcher.Reservations[link])
+                return;
+
+            //Console.WriteLine("alignsw {0} {1} {2} {3}", junctionIndex, vectorIndex, tn.TrJunctionNode.SelectedRoute, tn.TrPins[1].Link);
             tn.TrJunctionNode.SelectedRoute = tn.TrPins[1].Link == vectorIndex ? 0 : 1;
             return;
         }
@@ -151,6 +162,41 @@ namespace ORTS
         {
             AIPathNode prevNode = null;
             for (AIPathNode node = FirstNode; node != null; node = node.NextMainNode)
+            {
+                if (node.IsFacingPoint)
+                    AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
+                else if (prevNode != null)
+                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
+                prevNode = node;
+            }
+        }
+
+        public void AlignInitSwitches(Traveller rear, float distance)
+        {
+            AIPathNode prevNode = null;
+            
+            for (AIPathNode node = FirstNode; node != null; node = node.NextMainNode)
+            {
+                if (node.IsFacingPoint)
+                    AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
+                else if (prevNode != null)
+                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
+                prevNode = node;
+
+                if (rear.DistanceTo(node.Location.TileX, node.Location.TileZ,
+                    node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z) > distance)
+                    return;
+            }
+        }
+
+        /// <summary>
+        /// Aligns switches to the specified node
+        /// </summary>
+        /// <param name="tonode">Stop node</param>
+        public void AlignSwitchesTo(AIPathNode tonode)
+        {
+            AIPathNode prevNode = null;
+            for (AIPathNode node = FirstNode; node != null && node != tonode; node = node.NextMainNode)
             {
                 if (node.IsFacingPoint)
                     AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
@@ -185,7 +231,8 @@ namespace ORTS
             if (tn.TrJunctionNode == null)
                 return;
             TrackShape ts = TSectionDat.TrackShapes.Get(tn.TrJunctionNode.ShapeIndex);
-            tn.TrJunctionNode.SelectedRoute = (int)ts.MainRoute;
+            // By GeorgeS
+            //tn.TrJunctionNode.SelectedRoute = (int)ts.MainRoute;
         }
 
         /// <summary>
@@ -217,6 +264,40 @@ namespace ORTS
             }
             return null;
         }
+
+        public AIPathNode PrevNode(AIPathNode node)
+        {
+            AIPathNode prev = null;
+            AIPathNode cur = FirstNode;
+            while (cur != null && cur != node)
+            {
+                prev = cur;
+                cur = cur.NextSidingNode == null ? cur.NextMainNode : cur.NextSidingNode;
+            }
+            if (cur == node)
+                return prev;
+            else
+                return null;
+        }
+
+        public void SetVisitedNode(AIPathNode node, int curNodeIndex)
+        {
+            if (LastVisitedNode == node)
+                LastVisitedNode.IsVisited = true;
+
+            LastVisitedNode = FindTrackNode(LastVisitedNode, curNodeIndex);
+            
+            if (LastVisitedNode != null)
+            {
+                if (LastVisitedNode.NextMainNode != null &&
+                    LastVisitedNode.NextMainTVNIndex == LastVisitedNode.NextMainNode.NextMainTVNIndex)
+                    LastVisitedNode = LastVisitedNode.NextMainNode;
+                else if (LastVisitedNode.NextSidingNode != null &&
+                    LastVisitedNode.NextSidingTVNIndex == LastVisitedNode.NextSidingNode.NextSidingTVNIndex)
+                    LastVisitedNode = LastVisitedNode.NextSidingNode;
+            }
+            
+        }
     }
 
     public class AIPathNode
@@ -235,6 +316,7 @@ namespace ORTS
         public int JunctionIndex = -1;      // index of junction node, -1 if none
         public bool IsFacingPoint = false;// true if this node entered from the facing point end
         public bool IsLastSwitchUse = false;//true if this node is last to touch a switch
+        public bool IsVisited = false;     // true if the train has visited this node
 
         /// <summary>
         /// Creates a single AIPathNode and initializes everything that do not depend on other nodes.

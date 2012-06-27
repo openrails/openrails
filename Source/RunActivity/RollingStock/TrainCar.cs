@@ -44,10 +44,22 @@ namespace ORTS
         // status of the traincar - set by the train physics after it calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
         public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
-        public float SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
+        public float _SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
         public float CouplerSlackM = 0f;// extra distance between cars (calculated based on relative speeds)
         public float CouplerSlack2M = 0f;// slack calculated using draft gear force
         public bool WheelSlip = false;// true if locomotive wheels slipping
+
+        public float SpeedMpS
+        {
+            get
+            {
+                return _SpeedMpS;
+            }
+            set
+            {
+                _SpeedMpS = value;
+            }
+        }
 
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }

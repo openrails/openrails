@@ -294,9 +294,10 @@ namespace ORTS
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
 
                 //case "engine(enginecontrollers(combined_control": HasCombCtrl = true; break;
-                case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
+                //case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
                 case "engine(vigilancemonitor": VigilanceMonitor = true; break;
-                
+                case "engine(enginecontrollers(combined_control": HasCombCtrl = true; if (!DynamicBrakeController.IsValid()) DynamicBrakeController = new MSTSNotchController(0, 1, .05f); break;
+
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
@@ -843,6 +844,15 @@ namespace ORTS
                     Train.MUReverserPercent = -100;
                 }
             }
+
+            if (direction == Direction.N)
+            {
+                Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
+            }
+            else
+            {
+                Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(false);
+            }
         }
 
         public void StartReverseIncrease()
@@ -897,12 +907,11 @@ namespace ORTS
                     ThrottleController.StopIncrease();
                     Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
                 }
-                SignalEvent(EventID.Reverse);  // use for throttle fwd / rev
             } else if( !HasCombCtrl && HasStepCtrl ) {
                 ThrottleController.StartIncrease();
                 ThrottleController.StopIncrease();
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
-                SignalEvent( EventID.Reverse );
+                //SignalEvent( EventID.Reverse );
             } else {
                 ThrottleController.StartIncrease();
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
@@ -952,12 +961,11 @@ namespace ORTS
                     ThrottleController.StopDecrease();
                     Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
                 }
-                SignalEvent(EventID.Reverse);
             } else if( !HasCombCtrl && HasStepCtrl ) {
                 ThrottleController.StartDecrease();
                 ThrottleController.StopDecrease();
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
-                SignalEvent( EventID.Reverse );
+                //SignalEvent( EventID.Reverse );
             } else {
                 ThrottleController.StartDecrease();
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
@@ -1629,6 +1637,36 @@ namespace ORTS
                         }
                         break;
                     }
+                case CABViewControlTypes.SPEEDLIM_DISPLAY:
+                    {
+                        data = 0;
+                        bool metric = cvc.Units == CABViewControlUnits.KM_PER_HOUR;
+                        if (this.Train != null && this.Train.SignalObjectItems != null)
+                        foreach(ObjectItemInfo oi in this.Train.SignalObjectItems)
+                        {
+                            if (this.Train.CABAspect == SignalHead.SIGASP.STOP ||
+                                this.Train.CABAspect == SignalHead.SIGASP.STOP_AND_PROCEED)
+                            {
+                                data = 0;
+                                break;
+                            }
+                            if (oi.ObjectType == ObjectItemInfo.ObjectItemType.SPEEDLIMIT)
+                            {
+                                continue;
+                            }
+                            if (oi.speed_passenger == -1)
+                            {
+                                data = MpS.FromMpS(this.Train.RouteMaxSpeedMpS, metric);
+                                break;
+                            }
+                            else
+                            {
+                                data = MpS.FromMpS(oi.speed_passenger, metric);
+                                break;
+                            }
+                        }
+                        break;
+                    }
                 default:
                     {
                         data = 0;
@@ -1986,7 +2024,7 @@ namespace ORTS
                     Locomotive.SignalEvent(EventID.LightSwitchToggle);
             }
 			if (UserInput.IsPressed(UserCommands.DebugDispatcherExtend))
-                Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization();
+                Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(false);
 			if (UserInput.IsPressed(UserCommands.DebugDispatcherRelease))
                 Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
 
@@ -3070,11 +3108,9 @@ namespace ORTS
                         int currentThrottleNotch = _Locomotive.ThrottleController.CurrentNotch;
                         int throttleNotchCount = _Locomotive.ThrottleController.NotchCount();
 
-                        if (_Locomotive.DynamicBrakeController != null)
-                        {
-                            int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
-                            int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
-                            float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
+                        int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
+                        int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
+                        float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
 
                             if (dynBrakePercent == -1)
                             {
@@ -3084,6 +3120,7 @@ namespace ORTS
                                     indx = (throttleNotchCount - 1) - currentThrottleNotch;
                             }
                             else // dynamic break enabled
+                            {
                                  if (!_Locomotive.HasSmoothStruc)
                                     indx = (dynNotchCount - 1) + currentDynamicNotch;
 
@@ -3112,8 +3149,8 @@ namespace ORTS
                                     indx = (dynNotchCount - 1) + currentDynamicNotch;
                             }
                         } // End Dynamic != null
-
-                        if (_Locomotive.TrainBrakeController != null && _Locomotive.DynamicBrakeController == null)
+ 
+                        if (UserInput.RDState != null)
                         {
                             int currentTrainBrakeNotch = _Locomotive.TrainBrakeController.CurrentNotch;
                             int trainBrakeNotchCount = _Locomotive.TrainBrakeController.NotchCount();
@@ -3122,7 +3159,6 @@ namespace ORTS
 
                             if (trainBrakePercent <= 1)
                             {
-
                                 if (currentThrottleNotch == 0)
                                     indx = throttleNotchCount - 1;
                                 else
@@ -3264,10 +3300,10 @@ namespace ORTS
            
             float fontratio = (float)_CabViewControl.Height / 16;
             float fpos = 0.0f;
-            if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
-                fpos = ((float)_CabViewControl.Width) - 8 * _Digits * fontratio;
-            else
-                fpos = ((float)_CabViewControl.Width) - 6 * _Digits * fontratio;
+            //if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
+            //    fpos = ((float)_CabViewControl.Width) - 7 * _Digits;// * fontratio;
+            //else
+                fpos = ((float)_CabViewControl.Width) - 7 * _Digits;// * fontratio;
 
                 if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
                     _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
@@ -3370,15 +3406,14 @@ namespace ORTS
                     textColor = Color.White;
                 }
 
-                if (_CabViewControl.ControlType == CABViewControlTypes.SPEEDOMETER &&
-                    _Locomotive.GetDataOf(_CabViewControl) < 74.0f)
+                if (_CabViewControl.ControlType == CABViewControlTypes.SPEEDOMETER)
                 {
                     textColor = Color.White;
-                }
-                if (_CabViewControl.ControlType == CABViewControlTypes.SPEEDOMETER &&
-                    _Locomotive.GetDataOf(_CabViewControl) > 74.0f)               
-                {
-                    textColor = Color.Yellow;
+                    if (_Locomotive.Train != null && _Locomotive.GetDataOf(_CabViewControl) > 
+                        MpS.FromMpS(_Locomotive.Train.AllowedMaxSpeedMpS, _CabViewControl.Units == CABViewControlUnits.KM_PER_HOUR))
+                    {
+                        textColor = Color.Yellow;
+                    }
                 }
 
                 _Sprite2DCtlView.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(),

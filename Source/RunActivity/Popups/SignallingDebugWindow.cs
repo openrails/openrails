@@ -197,7 +197,7 @@ namespace ORTS
                             }
                             else if (signalObj != null)
                             {
-                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Stop ? Color.Red : GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Warning ? Color.Yellow : Color.White, String.Format("Signal ({0})", signalObj.Signal.GetAspect()), Owner.TextFontDefaultOutlined));
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Stop ? Color.Red : GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Warning ? Color.Yellow : Color.White, String.Format("Signal (ID: {1}, {0})", signalObj.Signal.GetAspect(), signalObj.Signal.nextSigRef), Owner.TextFontDefaultOutlined));
                             }
 
                             if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)

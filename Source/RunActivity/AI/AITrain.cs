@@ -100,12 +100,13 @@ namespace ORTS
 				return;
 			if ((SpeedMpS <= 0 && NextStopDistanceM < .3) || NextStopDistanceM < 0)
 			{
-				if (NextStopDistanceM < 0)
+                SpeedMpS = 0;
+                foreach (TrainCar tc in Cars) tc.SpeedMpS = 0;
+                if (NextStopDistanceM < 0)
 				{
 					CalculatePositionOfCars(NextStopDistanceM);
 					NextStopDistanceM = 0;
 				}
-				SpeedMpS = 0;
 				Update(0);   // stop the wheels from moving etc
 				AITrainThrottlePercent = 0;
 				AITrainBrakePercent = 100;
@@ -116,10 +117,12 @@ namespace ORTS
 					NextStopNode = null;
 					return;
 				}
-				if ((TrackAuthority == null || NextStopNode == TrackAuthority.EndNode) && !AI.Dispatcher.RequestAuth(this, false))
-				{
-					WaitUntil = clockTime + 10;
-					return;
+				//if ((TrackAuthority == null || NextStopNode == TrackAuthority.EndNode) && !AI.Dispatcher.RequestAuth(this, false))
+				if (TrackAuthority == null || NextStopNode == TrackAuthority.EndNode)
+                {
+                    AI.Dispatcher.RequestAuth(this, false);
+                    //WaitUntil = clockTime + 10;
+					//return;
 				}
 				if (NextStopNode.IsFacingPoint)
 					Path.AlignSwitch(NextStopNode.JunctionIndex, GetTVNIndex(NextStopNode));
@@ -134,7 +137,14 @@ namespace ORTS
 				if (!CalcNextStopDistance(clockTime))
 					return;
 			}
-			if (NextStopDistanceM < AuthUpdateDistanceM)
+            else if (SpeedMpS <= 0 && NextStopDistanceM <= 10 && NextStopNode.NextMainNode == null && NextStopNode.NextSidingNode == null)
+            {
+                NextStopNode = null;
+                return;
+            }
+            /*
+			if ( (NextStopDistanceM < AuthUpdateDistanceM || AuthUpdateDistanceM == -1) && 
+                (NextStopNode.NextMainNode != null || NextStopNode.NextSidingNode != null) )
 			{
 				AuthUpdateDistanceM = -1;
 				if (AI.Dispatcher.RequestAuth(this, true))
@@ -149,7 +159,19 @@ namespace ORTS
 						}
 					}
 				}
+                else
+                {
+                    AIPathNode node = FindStopNode(NextStopNode, 50);
+                    //Console.WriteLine("authupdate {0} {1} {2} {3}", NextStopNode.ID, node.ID, NextStopNode.Type, node.Type);
+                    if (node != null && NextStopNode != node)
+                    {
+                        NextStopNode = node;
+                    }
+                    CalcNextStopDistance(clockTime);
+                }
+				//Console.WriteLine("new next stop distance {0} {1} {2}", UiD, NextStopDistanceM, AuthUpdateDistanceM);
 			}
+            */
 			WaitUntil = 0;
 			float prevSpeedMpS = SpeedMpS;
 			base.Update(elapsedClockSeconds);
@@ -163,6 +185,21 @@ namespace ORTS
 				AdjustControls(targetMpSS, dir * (SpeedMpS - prevSpeedMpS) / elapsedClockSeconds, dir * elapsedClockSeconds);
 		}
 
+        public void TryAdvanceStopNode(double clockTime)
+        {
+            if (NextStopNode.Type == AIPathNodeType.Other || NextStopNode.Type == AIPathNodeType.SidingEnd ||
+                NextStopNode.Type == AIPathNodeType.SidingStart)
+            {
+                AIPathNode node = FindStopNode(NextStopNode, 50);
+                //Console.WriteLine("authupdate {0} {1} {2} {3}", NextStopNode.ID, node.ID, NextStopNode.Type, node.Type);
+                if (node != null && NextStopNode != node)
+                {
+                    NextStopNode = node;
+                }
+                CalcNextStopDistance(clockTime);
+            }
+        }
+
 		/// <summary>
 		/// Computes the NextStopDistanceM value, i.e. the distance from one end of the train to the NextStopNode.
 		/// Returns false and performs the NextStopNode action if its past the train end.
@@ -171,6 +208,13 @@ namespace ORTS
 		private bool CalcNextStopDistance(double clockTime)
 		{
 			CoupleOnNextStop = false;
+            // By GeorgeS
+            if (NextStopNode.Type == AIPathNodeType.Other && (NextStopNode.NextMainNode != null || NextStopNode.NextSidingNode != null))
+            {
+                NextStopDistanceM = 30000;
+                AuthUpdateDistanceM = 29000;
+                return false;
+            }
 			WorldLocation wl = NextStopNode.Location;
 			Traveller traveller = FrontTDBTraveller;
 			if (!AITrainDirectionForward)
@@ -253,9 +297,13 @@ namespace ORTS
 			AuthUpdateDistanceM = -1;
 			if (AITrainDirectionForward && (NextStopNode == TrackAuthority.EndNode || NextStopNode == TrackAuthority.SidingNode))
 			{
-				AuthUpdateDistanceM = .5f * MaxSpeedMpS * MaxSpeedMpS / MaxDecelMpSS;
-				if (AuthUpdateDistanceM > .5f * NextStopDistanceM)
-					AuthUpdateDistanceM = .5f * NextStopDistanceM;
+                //AuthUpdateDistanceM = .5f * MaxSpeedMpS * MaxSpeedMpS / MaxDecelMpSS;
+                //if (AuthUpdateDistanceM > .5f * NextStopDistanceM)
+                //    AuthUpdateDistanceM = .5f * NextStopDistanceM;
+                // By GeorgeS
+                AuthUpdateDistanceM = .5f * MaxSpeedMpS * MaxSpeedMpS / MaxDecelMpSS;
+				if (AuthUpdateDistanceM > NextStopDistanceM + 1500)
+					AuthUpdateDistanceM = NextStopDistanceM + 1500;
 			}
 			return true;
 		}
@@ -287,9 +335,12 @@ namespace ORTS
 				{
 					Traveller traveller = AITrainDirectionForward ? FrontTDBTraveller : RearTDBTraveller;
 					float d = WorldLocation.GetDistanceSquared(traveller.WorldLocation, node.Location);
-					if (d > throwDistance * throwDistance || AI.Simulator.SwitchIsOccupied(node.JunctionIndex))
+					//if (d > throwDistance * throwDistance || AI.Simulator.SwitchIsOccupied(node.JunctionIndex))
+                    // By GeorgeS
+                    if (AI.Simulator.SwitchIsOccupied(node.JunctionIndex))
 						return node;
-					Path.AlignSwitch(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode));
+                    if (node != TrackAuthority.EndNode || (node.NextMainNode == null && node.NextSidingNode == null))
+					    Path.AlignSwitch(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode));
 				}
 				if (node.JunctionIndex >= 0 && node != TrackAuthority.EndNode)
 					SwitchList.Add(new AISwitchInfo(Path, node));
@@ -440,7 +491,7 @@ namespace ORTS
 		/// </summary>
 		private float CalcAccelMpSS()
 		{
-			float targetMpS = MaxSpeedMpS;
+            float targetMpS = MaxSpeedMpS < base.AllowedMaxSpeedMpS ? MaxSpeedMpS : base.AllowedMaxSpeedMpS;
 			if (!AITrainDirectionForward || CoupleOnNextStop)
 				targetMpS *= .75f;
 			float stopDistanceM = NextStopDistanceM;
@@ -492,12 +543,18 @@ namespace ORTS
 				switch (GetNextSignalAspect())
 				{
 					case SignalHead.SIGASP.STOP:
-						targetMpS *= .5f;
+                        targetMpS = 30 > targetMpS ? targetMpS : 30;
+                        targetMpS = distanceToSignal < 1200 && 20 > targetMpS ? targetMpS : 20;
+                        targetMpS = distanceToSignal < 500 && 10 > targetMpS ? targetMpS : 10;
+						//targetMpS *= .5f;
 						if (stopDistanceM > distanceToSignal - 1)
 							stopDistanceM = distanceToSignal - 5;
 						break;
 					case SignalHead.SIGASP.STOP_AND_PROCEED:
-						targetMpS *= .5f;
+                        targetMpS = 30 > targetMpS ? targetMpS : 30;
+                        targetMpS = distanceToSignal < 1200 && 20 > targetMpS ? targetMpS : 20;
+                        targetMpS = distanceToSignal < 500 && 10 > targetMpS ? targetMpS : 10;
+                        //targetMpS *= .5f;
 						if (distanceToSignal > 3 && stopDistanceM > distanceToSignal - 1)
 							stopDistanceM = distanceToSignal - 1;
 						break;
@@ -565,6 +622,7 @@ namespace ORTS
 				}
 				else
 				{
+                   
 					float ds = timeS * (targetMpSS - measMpSS);
 					SpeedMpS = Math.Max (SpeedMpS+ds, 0); // avoid negative speeds
 					foreach (TrainCar car in Cars)
@@ -584,12 +642,34 @@ namespace ORTS
 				}
 				else if (AITrainThrottlePercent < 100)
 				{
-					AITrainThrottlePercent += 10;
-					if (AITrainThrottlePercent > 100)
-						AITrainThrottlePercent = 100;
+
+                    if (AITrainThrottlePercent == 25 && targetMpSS > measMpSS * 500)
+                    {
+                        float ds = timeS * (targetMpSS - measMpSS);
+                        SpeedMpS += ds;
+                        foreach (TrainCar car in Cars)
+                            if (car.Flipped)
+                                car.SpeedMpS -= ds;
+                            else
+                                car.SpeedMpS += ds;
+                    }
+                    else
+                    {
+                        AITrainThrottlePercent += 2;
+                        if (SpeedMpS > 0 && AITrainThrottlePercent > SpeedMpS * 10)
+                            AITrainThrottlePercent = SpeedMpS * 10;
+
+                        if (AITrainThrottlePercent < 25)
+                            AITrainThrottlePercent = 25;
+
+                        if (AITrainThrottlePercent > 100)
+                            AITrainThrottlePercent = 100;
+                    }
+
 				}
 				else
 				{
+                    
 					float ds = timeS * (targetMpSS - measMpSS);
 					SpeedMpS += ds;
 					foreach (TrainCar car in Cars)
@@ -599,7 +679,17 @@ namespace ORTS
 							car.SpeedMpS += ds;
 				}
 			}
+            if (FirstCar != null)
+            {
+                FirstCar.ThrottlePercent = AITrainThrottlePercent;
+                FirstCar.BrakeSystem.AISetPercent(AITrainBrakePercent);
+            }
 		}
+
+        public void Release()
+        {
+            nextSignal.Clear();
+        }
 
 		public float PassTime()
 		{

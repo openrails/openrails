@@ -36,6 +36,7 @@ namespace ORTS
         public AI(Simulator simulator)
         {
             Simulator = simulator;
+            Dispatcher = new Dispatcher(this);
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
                 foreach (var sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
                 {
@@ -44,9 +45,9 @@ namespace ORTS
                         continue;
                     AITrainDictionary.Add(sd.UiD, train);
                 }
-            Dispatcher = new Dispatcher(this);
             foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
                 StartQueue.Add(kvp.Value.StartTime, kvp.Value);
+            Simulator.PlayerPath.AlignInitSwitches(Simulator.Trains[0].RearTDBTraveller, 500);
         }
 
         // restore game state
@@ -136,14 +137,26 @@ namespace ORTS
             {
                 AITrain train = StartQueue.GetMinValue();
                 StartQueue.DeleteMin();
-                if (Dispatcher.RequestAuth(train,false) == false)
+                // Added By GeorgeS
+                if (Dispatcher.RequestAuth(train, false) == false)
+                {
                     StartQueue.Add(Simulator.ClockTime + 10, train);
+                }
                 else
                 {
+                    MSTSElectricLocomotive el = train.FirstCar as MSTSElectricLocomotive;
+                    if (el != null)
+                    {
+                        el.SetPantographFirst(true);
+                    }
                     AITrains.Add(train);
                     Simulator.Trains.Add(train);
 					//For Multiplayer: Server BroadCast to others of AITrains being added
 					if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGTrain(train, train.Number)).ToString());
+                    train.spad = true;
+                    train.Update(0);
+                    train.spad = false;
+                    //train.InitializeSignals(false);
                 }
             }
             bool remove = false;
@@ -178,21 +191,78 @@ namespace ORTS
                 train.RouteMaxSpeedMpS = train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
 	    		// also set Route max speed for speedpost-processing in train.cs [R.Roeterdink]
 
-            train.Path.AlignAllSwitches();
-            // This is the position of the back end of the train in the database.
-            //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
+            // By GeorgeS
+            float locoMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit * srvFile.Efficiency;
+            foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
+            {
+                string wagonFolder = Simulator.BasePath + @"\trains\trainset\" + wagon.Folder;
+                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
+                if (wagon.IsEngine)
+                {
+                    wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
+                    TrainCar car = RollingStock.Load(Simulator, wagonFilePath, null);
+                    MSTSLocomotive loco = car as MSTSLocomotive;
+                    locoMaxSpeedMpS = Math.Min(loco.MaxSpeedMpS * srvFile.Efficiency, locoMaxSpeedMpS);
+                }
+            }
+
+            if (locoMaxSpeedMpS < train.MaxSpeedMpS)
+                train.MaxSpeedMpS = locoMaxSpeedMpS;
+
             WorldLocation wl = train.Path.FirstNode.Location;
             train.RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Z);
+            //train.Path.AlignAllSwitches();
+            train.Path.AlignInitSwitches(train.RearTDBTraveller, 500);
+            // This is the position of the back end of the train in the database.
+            //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
             // figure out if the next waypoint is forward or back
             //patTraveller.NextWaypoint();
             wl = train.GetNextNode(train.Path.FirstNode).Location;
             if (train.RearTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z) < 0)
                 train.RearTDBTraveller.ReverseDirection();
+            float nodelen = train.RearTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
             //train.PATTraveller = patTraveller;
             if (sd.Time < Simulator.ClockTime)
             {
                 float dtS = (float)(Simulator.ClockTime - sd.Time);
-                if (train.RearTDBTraveller.Move(dtS * train.MaxSpeedMpS) > 0.01 || train.RearTDBTraveller.TN.TrEndNode)
+
+                AIPathNode tnode = train.Path.FirstNode;
+                float rdtS = dtS;
+                float disttotravel = 0;
+                while (tnode != null && tnode.NextMainTVNIndex != -1)
+                {
+                    if (tnode.Type == AIPathNodeType.Stop)
+                    {
+                        rdtS -= tnode.WaitTimeS;
+                        if (rdtS < 0)
+                        {
+                            tnode.WaitTimeS = -(int)rdtS;
+                            break;
+                        }
+                    }
+                    rdtS -= nodelen / train.MaxSpeedMpS;
+                    if (rdtS < 0)
+                        break;
+                    disttotravel += nodelen;
+                    tnode = tnode.NextMainNode;
+                    if (tnode != null && tnode.NextMainTVNIndex != -1)
+                        nodelen = Dispatcher.TrackLength[tnode.NextMainTVNIndex];
+                }
+
+                float sttime = train.MaxSpeedMpS / train.MaxAccelMpSS;
+
+                float dist = Math.Min(dtS, sttime) * train.MaxSpeedMpS / 2;
+                dist += Math.Max(dtS - sttime, 0) * train.MaxSpeedMpS;
+
+                dist = dist < disttotravel ? dist : disttotravel;
+
+                train.Path.AlignInitSwitches(train.RearTDBTraveller, dist);
+
+                // By GeorgeS
+                if (tnode == null || tnode.Type != AIPathNodeType.Stop)
+                    train.SpeedMpS = Math.Min(dtS, sttime) * train.MaxAccelMpSS;
+                
+                if (train.RearTDBTraveller.Move(dist) > 0.01 || train.RearTDBTraveller.TN.TrEndNode)
                     return null;
                 AIPathNode node = train.Path.FirstNode;
                 while (node != null && node.NextMainTVNIndex != train.RearTDBTraveller.TrackNodeIndex)
@@ -222,6 +292,7 @@ namespace ORTS
                     car.Train = train;
                     car.SignalEvent(EventID.Pantograph1Up);
                     previousCar = car;
+                    car.SpeedMpS = car.Flipped ? -train.SpeedMpS : train.SpeedMpS;
                 }
                 catch (Exception error)
                 {
@@ -242,6 +313,9 @@ namespace ORTS
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
             train.InitializeSignals(false);  // Initialize Signals and Speedlimits without active speed information [R.Roeterdink]
+
+            // By GeorgeS
+            //train.InitializeSignals();
 
             //AITrains.Add(train);
             Simulator.Trains.Add(train);
@@ -264,6 +338,7 @@ namespace ORTS
                 AITrains.Remove(train);
                 Simulator.Trains.Remove(train);
                 Dispatcher.Release(train);
+                train.Release();
                 if (train.Cars.Count > 0 && train.Cars[0].Train == train)
                     foreach (TrainCar car in train.Cars)
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;

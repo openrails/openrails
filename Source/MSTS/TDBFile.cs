@@ -110,7 +110,7 @@ namespace MSTS
             Debug.Assert(idx == Index, "TrackNode Index Mismatch");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("uid", ()=>{ UiD = new UiD(stf); }),
-                new STFReader.TokenProcessor("trjunctionnode", ()=>{ TrJunctionNode = new TrJunctionNode(stf); TrJunctionNode.TN = this;}),
+                new STFReader.TokenProcessor("trjunctionnode", ()=>{ TrJunctionNode = new TrJunctionNode(stf, idx); TrJunctionNode.TN = this; }),
                 new STFReader.TokenProcessor("trvectornode", ()=>{ TrVectorNode = new TrVectorNode(stf); }),
                 new STFReader.TokenProcessor("trendnode", ()=>{ TrEndNode = true; stf.SkipBlock(); }),
                 new STFReader.TokenProcessor("trpins", ()=>{
@@ -195,11 +195,25 @@ namespace MSTS
     [DebuggerDisplay("\\{MSTS.TrJunctionNode\\} SelectedRoute={SelectedRoute}, ShapeIndex={ShapeIndex}")]
     public class TrJunctionNode
     {
-        public int SelectedRoute = 0;
+        public int SelectedRoute
+        {
+            get
+            {
+                return _selectedRoute;
+            }
+            set
+            {
+                _selectedRoute = value;
+            }
+        }
 		public TrackNode TN;
 
-        public TrJunctionNode(STFReader stf)
+        private int _selectedRoute = 0;
+        public int Idx { get; private set; }
+
+        public TrJunctionNode(STFReader stf, int idx)
         {
+            Idx = idx;
             stf.MustMatch("(");
             stf.ReadString();
             ShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);

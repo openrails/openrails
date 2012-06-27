@@ -709,8 +709,14 @@ namespace ORTS
   // NextNode : find next junction node in path
   //
 
-                private void NextNode(TrackNode[] trackNodes, ref int node, ref int direction)
+                private void NextNode(TrackNode[] trackNodes, ref int node, ref int direction, ref int prevNode)
                 {
+                    
+                    SignalObject.NextNode(ref node, ref direction, ref prevNode);
+                    if (node == prevNode)
+                        node = 0;
+                    return;
+                    
                         if (trackNodes[node].TrJunctionNode != null)
                         {
                                 if (direction == 0)
@@ -769,6 +775,7 @@ namespace ORTS
                                         node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
                                 }
                         }
+                     
                 } //NextNode
 
   //================================================================================================//
@@ -851,7 +858,6 @@ namespace ORTS
   /// Returns -1 if one cannot be found.
   ///
   //
-
                 public int FindNextSignal(Traveller tdbtraveller)
                 {
                         int startNode = tdbtraveller.TrackNodeIndex;
@@ -892,7 +898,6 @@ namespace ORTS
   ///
   //  Get index of previous signal in direction of travel
   ///
-
                 public int FindPrevSignal(Traveller tdbtraveller)
                 {
                         Traveller revTDBtraveller = new Traveller(tdbtraveller, Traveller.TravellerDirection.Backward);
@@ -903,13 +908,12 @@ namespace ORTS
                         SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
                         fn_type_array [0] = SignalHead.SIGFN.NORMAL;
 
-                        int newindex = Find_Next_Object(null, startNode, currDir, true, revTDBtraveller, true, -1,
+                        int newindex = Find_Next_Object(null, startNode, currDir, false, revTDBtraveller, true, -1,
                                         trackDB.TrItemTable, trackDB.TrackNodes, fn_type_array);
 
                         return newindex<0 ? -1 : newindex;
 
                 }//FindPrevSignal
-
   //================================================================================================//
   ///
   //  FindByTrItem : find required signalObj + signalHead
@@ -953,241 +957,247 @@ namespace ORTS
                 public int Find_Next_Object(SignalObject startObj, int nodestartindex,
                                 int startDirection, bool in_direction_of_travel,
                                 Traveller tdbtraveller, bool min_distance_check, float maxdistance,
-                                TrItem[] Tritems, TrackNode[] trackNodes, 
+                                TrItem[] Tritems, TrackNode[] trackNodes,
                                        SignalHead.SIGFN[] fn_type)
                 {
 
-                        int locstate = 0;                                                                // local processing state     //
-                        int actindex = 0;                                                                // present node               //
-                        int actrefindex = -1;                                                            // first index to check       //
-                        int lastrefindex = 0;                                                            // next index for loop        //
-                        int direction = 0;                                                               // travel direction           //
-                        TrackNode thisTrackNode = null;
-                        TrItem thisTrItem = null;
+                    int locstate = 0;                                                                // local processing state     //
+                    int actindex = 0;                                                                // present node               //
+                    int actrefindex = -1;                                                            // first index to check       //
+                    int lastrefindex = 0;                                                            // next index for loop        //
+                    int direction = 0;                                                               // travel direction           //
+                    int prevnodeindex = -1;
+                    TrackNode thisTrackNode = null;
+                    TrItem thisTrItem = null;
 
-  // check if search from object or train
+                    // check if search from object or train
 
-                        if (startObj == null)
+                    if (startObj == null)
+                    {
+                        actindex = nodestartindex;
+                        direction = startDirection;
+                    }
+                    else
+                    {
+                        actindex = startObj.trackNode;
+                        actrefindex = startObj.trRefIndex;
+                        direction = startObj.revDir;
+                    }
+
+                    int sigObjRef = -99;                                                                 // ref to signalObject index //
+
+                    if (!in_direction_of_travel)
+                    {
+                        direction = direction == 0 ? 1 : 0;
+                    }
+
+                    //
+                    // loop through nodes until :
+                    //  - end of track is found
+                    //  - required item is found
+                    //  - max distance is covered
+                    //  - broken or looped tdb is found
+                    //
+
+                    while (locstate == 0)
+                    {
+                        if (trackNodes[actindex].TrEndNode)
                         {
-                                actindex = nodestartindex;
-                                direction= startDirection;
-                        }
-                        else
-                        {
-                                actindex    = startObj.trackNode;
-                                actrefindex = startObj.trRefIndex;
-                                direction   = startObj.revDir;
-                        }
-
-                        int sigObjRef= -99;                                                                 // ref to signalObject index //
-
-  //
-  // loop through nodes until :
-  //  - end of track is found
-  //  - required item is found
-  //  - max distance is covered
-  //  - broken or looped tdb is found
-  //
-
-                        while (locstate == 0)
-                        {
-                                if (trackNodes[actindex].TrEndNode)
-                                {
-                                        locstate = -2;
-                                }
-
-                                        if (trackNodes[actindex].TrVectorNode != null)
-                                        {
-                                        if (direction == 1)
-                                        {
-                                                lastrefindex = actrefindex == -1 ? 0 : ++actrefindex;
-                                        }
-                                        else
-                                        {
-                                                lastrefindex = actrefindex == -1 ? trackNodes[actindex].TrVectorNode.noItemRefs-1 : --actrefindex;
-                                        }
-                                }
-
-                                while (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
-                                {
-  // find next item within node
-
-                                        if (direction == 1)
-                                        {
-                                                for (int refindex=lastrefindex; refindex < trackNodes[actindex].TrVectorNode.noItemRefs && locstate == 0; refindex++)
-                                                {
-                                                        if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
-                                                                        TrItem.trItemType.trSIGNAL)
-                                                        {
-                                                                thisTrackNode = trackNodes[actindex];
-                                                                thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
-                                                                SignalItem sigitem = (SignalItem) thisTrItem;
-                                                                sigObjRef    = sigitem.sigObj;
-                                                                locstate     = 1;
-                                                                lastrefindex = ++refindex;
-                                                        }
-                                                        else if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
-                                                                        TrItem.trItemType.trSPEEDPOST)
-                                                        {
-                                                                thisTrackNode = trackNodes[actindex];
-                                                                thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
-                                                                SpeedPostItem spditem = (SpeedPostItem) thisTrItem;
-                                                                sigObjRef    = spditem.sigObj;
-                                                                locstate     = 1;
-                                                                lastrefindex = ++refindex;
-                                                        }
-                                                }
-                                        }
-                                        else
-                                        {
-                                                for (int refindex = lastrefindex; refindex >= 0 && locstate == 0; refindex--)
-                                                {
-                                                        if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
-                                                                        TrItem.trItemType.trSIGNAL)
-                                                        {
-                                                                thisTrackNode = trackNodes[actindex];
-                                                                thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
-                                                                SignalItem sigitem = (SignalItem) thisTrItem;
-                                                                sigObjRef    = sigitem.sigObj;
-                                                                locstate     = 1;
-                                                                lastrefindex = --refindex;
-                                                        }
-                                                        else if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
-                                                                        TrItem.trItemType.trSPEEDPOST)
-                                                        {
-                                                                thisTrackNode = trackNodes[actindex];
-                                                                thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
-                                                                SpeedPostItem spditem = (SpeedPostItem) thisTrItem;
-                                                                sigObjRef    = spditem.sigObj;
-                                                                locstate     = 1;
-                                                                lastrefindex = --refindex;
-                                                        }
-                                                }
-                                        }
-
-  // check if any item found
-
-                                        if (sigObjRef == -99)
-                                        {
-                                                locstate = -10;
-                                        }
-
-  // check if valid item
-
-                                        if (locstate > 0 && (sigObjRef < 0 || signalObjects[sigObjRef] == null))
-                                        {
-                                                locstate  = 0;
-                                                sigObjRef = -99;
-                                        }
-        
-  // check if not head of same signal
-
-                                        if (locstate > 0 && startObj != null)
-                                        {
-                                                if (sigObjRef == startObj.thisRef)
-                                                {
-                                                         locstate  = 0;
-                                                         sigObjRef = -99;
-                                                }
-                                        }
-
-  // check if item has correct direction
-
-                                        if (locstate > 0)
-                                        {
-                                                int sigdirection = signalObjects[sigObjRef].revDir;
-
-                                                if (in_direction_of_travel)
-                                                {
-                                                        if (sigdirection != direction)
-                                                        {
-                                                                 locstate  = 0;
-                                                                 sigObjRef = -99;
-                                                        }
-                                                }
-                                                else
-                                                {
-                                                        if (sigdirection == direction)
-                                                        {
-                                                                 locstate  = 0;
-                                                                 sigObjRef = -99;
-                                                        }
-                                                }
-                                        }
-
-  // check if item is of correct type
-
-                                        if (locstate > 0 && !signalObjects[sigObjRef].isSignalType(fn_type))
-                                        {
-                                                 locstate  = 0;
-                                                 sigObjRef = -99;
-                                        }
-
-  // check if ahead of position
-        
-                                        if (locstate > 0 && min_distance_check && tdbtraveller != null)
-                                        {
-                                                float mindistance = 
-                                                        tdbtraveller.DistanceTo(thisTrackNode, thisTrItem.TileX, thisTrItem.TileZ,
-                                                                                thisTrItem.X, thisTrItem.Y, thisTrItem.Z);
-                                                if (mindistance < 0)
-                                                {
-                                                        locstate = 0;
-                                                        sigObjRef= -99;
-                                                }
-                                        }
-
-  // check if not beyond maximum distance
-
-                                        if (locstate > 0 && tdbtraveller != null && maxdistance > 0)
-                                        {
-                                                float actdistance =
-                                                        tdbtraveller.DistanceTo(thisTrackNode, thisTrItem.TileX, thisTrItem.TileZ,
-                                                                                thisTrItem.X, thisTrItem.Y, thisTrItem.Z);
-                                                if (actdistance > maxdistance)
-                                                {
-                                                        locstate = -2;
-                                                        sigObjRef= -99;
-                                                }
-                                        }
-                                }
-
-  // no items in currect node - go to next node
-
-                                if (locstate == -10)
-                                {
-                                        locstate = 0;    // set to valid again for next node //
-                                }
-
-                                int nextvalidnode = 0;
-                                while (locstate == 0 && nextvalidnode == 0)
-                                {
-                                        NextNode(trackNodes, ref actindex, ref direction);
-
-                                        if (actindex == 0 || actindex > trackNodes.Length)
-                                        {
-                                                locstate = -3;
-                                        }
-
-                                        else if (actindex == nodestartindex)
-                                        {
-                                                locstate = -4;
-                                        }
-
-                                        else if (trackNodes[actindex].TrEndNode)
-                                        {
-                                                locstate = -1;
-                                        }
-
-                                        else if (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
-                                        {
-                                                nextvalidnode = 1;
-                                                actrefindex   = -1;
-                                        }
-                                }
+                            locstate = -2;
                         }
 
-                        return locstate == 1 ? sigObjRef : locstate;
+                        if (trackNodes[actindex].TrVectorNode != null)
+                        {
+                            if (direction == 1)
+                            {
+                                lastrefindex = actrefindex == -1 ? 0 : ++actrefindex;
+                            }
+                            else
+                            {
+                                lastrefindex = actrefindex == -1 ? trackNodes[actindex].TrVectorNode.noItemRefs - 1 : --actrefindex;
+                            }
+                        }
+
+                        while (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
+                        {
+                            // find next item within node
+
+                            if (direction == 1)
+                            {
+                                for (int refindex = lastrefindex; refindex < trackNodes[actindex].TrVectorNode.noItemRefs && locstate == 0; refindex++)
+                                {
+                                    if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
+                                                    TrItem.trItemType.trSIGNAL)
+                                    {
+                                        thisTrackNode = trackNodes[actindex];
+                                        thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
+                                        SignalItem sigitem = (SignalItem)thisTrItem;
+                                        sigObjRef = sigitem.sigObj;
+                                        locstate = 1;
+                                        lastrefindex = ++refindex;
+                                    }
+                                    else if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
+                                                    TrItem.trItemType.trSPEEDPOST)
+                                    {
+                                        thisTrackNode = trackNodes[actindex];
+                                        thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
+                                        SpeedPostItem spditem = (SpeedPostItem)thisTrItem;
+                                        sigObjRef = spditem.sigObj;
+                                        locstate = 1;
+                                        lastrefindex = ++refindex;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                for (int refindex = lastrefindex; refindex >= 0 && locstate == 0; refindex--)
+                                {
+                                    if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
+                                                    TrItem.trItemType.trSIGNAL)
+                                    {
+                                        thisTrackNode = trackNodes[actindex];
+                                        thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
+                                        SignalItem sigitem = (SignalItem)thisTrItem;
+                                        sigObjRef = sigitem.sigObj;
+                                        locstate = 1;
+                                        lastrefindex = --refindex;
+                                    }
+                                    else if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
+                                                    TrItem.trItemType.trSPEEDPOST)
+                                    {
+                                        thisTrackNode = trackNodes[actindex];
+                                        thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
+                                        SpeedPostItem spditem = (SpeedPostItem)thisTrItem;
+                                        sigObjRef = spditem.sigObj;
+                                        locstate = 1;
+                                        lastrefindex = --refindex;
+                                    }
+                                }
+                            }
+
+                            // check if any item found
+
+                            if (sigObjRef == -99)
+                            {
+                                locstate = -10;
+                            }
+
+                            // check if valid item
+
+                            if (locstate > 0 && (sigObjRef < 0 || signalObjects[sigObjRef] == null))
+                            {
+                                locstate = 0;
+                                sigObjRef = -99;
+                            }
+
+                            // check if not head of same signal
+
+                            if (locstate > 0 && startObj != null)
+                            {
+                                if (sigObjRef == startObj.thisRef)
+                                {
+                                    locstate = 0;
+                                    sigObjRef = -99;
+                                }
+                            }
+
+                            // check if item has correct direction
+
+                            if (locstate > 0)
+                            {
+                                int sigdirection = signalObjects[sigObjRef].revDir;
+
+                                if (in_direction_of_travel)
+                                {
+                                    if (sigdirection != direction)
+                                    {
+                                        locstate = 0;
+                                        sigObjRef = -99;
+                                    }
+                                }
+                                else
+                                {
+                                    if (sigdirection == direction)
+                                    {
+                                        locstate = 0;
+                                        sigObjRef = -99;
+                                    }
+                                }
+                            }
+
+                            // check if item is of correct type
+
+                            if (locstate > 0 && !signalObjects[sigObjRef].isSignalType(fn_type))
+                            {
+                                locstate = 0;
+                                sigObjRef = -99;
+                            }
+
+                            // check if ahead of position
+
+                            if (locstate > 0 && min_distance_check && tdbtraveller != null)
+                            {
+                                float mindistance =
+                                        tdbtraveller.DistanceTo(thisTrackNode, thisTrItem.TileX, thisTrItem.TileZ,
+                                                                thisTrItem.X, thisTrItem.Y, thisTrItem.Z);
+                                if (mindistance < 0)
+                                {
+                                    locstate = 0;
+                                    sigObjRef = -99;
+                                }
+                            }
+
+                            // check if not beyond maximum distance
+
+                            if (locstate > 0 && tdbtraveller != null && maxdistance > 0)
+                            {
+                                float actdistance =
+                                        tdbtraveller.DistanceTo(thisTrackNode, thisTrItem.TileX, thisTrItem.TileZ,
+                                                                thisTrItem.X, thisTrItem.Y, thisTrItem.Z);
+                                if (actdistance > maxdistance)
+                                {
+                                    locstate = -2;
+                                    sigObjRef = -99;
+                                }
+                            }
+                        }
+
+                        // no items in currect node - go to next node
+
+                        if (locstate == -10)
+                        {
+                            locstate = 0;    // set to valid again for next node //
+                        }
+
+                        int nextvalidnode = 0;
+                        while (locstate == 0 && nextvalidnode == 0)
+                        {
+                            NextNode(trackNodes, ref actindex, ref direction, ref prevnodeindex);
+
+                            if (actindex == 0 || actindex > trackNodes.Length || prevnodeindex == actindex)
+                            {
+                                locstate = -3;
+                            }
+
+                            else if (actindex == nodestartindex)
+                            {
+                                locstate = -4;
+                            }
+
+                            else if (trackNodes[actindex].TrEndNode)
+                            {
+                                locstate = -1;
+                            }
+
+                            else if (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
+                            {
+                                nextvalidnode = 1;
+                                actrefindex = -1;
+                            }
+                        }
+                    }
+
+                    return locstate == 1 ? sigObjRef : locstate;
                 }//Find_Next_Object
 
   //================================================================================================//
@@ -1522,17 +1532,56 @@ namespace ORTS
 
                     if (trainId >= 0)
                     {
+                        
                         Traveller traveller;
                         if (trainId == 0)
-                            traveller = new Traveller(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+                            traveller = new Traveller(Program.Simulator.PlayerLocomotive.Train.dFrontTDBTraveller);
                         else
-                            traveller = new Traveller(Program.Simulator.AI.AITrainDictionary[trainId].FrontTDBTraveller);
+                            traveller = new Traveller(Program.Simulator.AI.AITrainDictionary[trainId].dFrontTDBTraveller);
 
                         while (traveller.TrackNodeIndex != trackNode && traveller.NextSection()) ;
-                        if (traveller.TrackNodeIndex != trackNode || this.revDir != (int)traveller.Direction)
-                            return BLOCKSTATE.OCCUPIED;
+                        if (traveller.TrackNodeIndex != trackNode)
+                        {
+                            if (!Train.IsUnderObserving(thisRef))
+                                return BLOCKSTATE.OCCUPIED;
+                        }
+                        else
+                        {
+                            if (this.revDir != (int)traveller.Direction)
+                                return BLOCKSTATE.OCCUPIED;
+                        }
+
+                        // More logic to allow enter into straight area
+                        int nextreservid = -2;
+                        int nextSignal = GetNextSignal();
+                        int nextNode = -2;
+                        int nextnextNode = -2;
+                        int nextheads = 0;
+
+                        if (nextSignal > 0)
+                        {
+                            SignalObject nextSignalObject = signalObjects[nextSignal];
+                            nextheads = nextSignalObject.SignalHeads.Count;
+
+                            nextNode = nextSignalObject.trackNode;
+                            nextreservid = Dispatcher.Reservations[nextNode];
+
+                            nextSignal = nextSignalObject.GetNextSignal();
+                            if (nextSignal > 0)
+                            {
+                                nextSignalObject = signalObjects[nextSignal];
+                                nextnextNode = nextSignalObject.trackNode;
+                            }
+                        }
+                        
+                        if (trainId != nextreservid && nextreservid > -2)
+                        {
+                            if (nextNode != -2 && nextNode != nextnextNode)
+                                return BLOCKSTATE.OCCUPIED;
+                        }
                     }   
                     return blockState;
+                    //return BLOCKSTATE.OCCUPIED;
                 }//BLOCKSTATE
 
   //================================================================================================//
@@ -1637,17 +1686,19 @@ namespace ORTS
   // NextNode : Returns the next node and direction in the TDB
   //
 
-                private void NextNode(ref int node, ref int direction)
+                public static void NextNode(ref int node, ref int direction, ref int prevnode)
                 {
                         if (trackNodes[node].TrVectorNode != null)
                         {
                                 if (direction == 0)
                                 {
+                                        prevnode = node;
                                         direction = trackNodes[node].TrPins[0].Direction;
                                         node = trackNodes[node].TrPins[0].Link;
                                 }
                                 else
                                 {
+                                        prevnode = node;
                                         direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
                                         node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
                                 }
@@ -1660,19 +1711,33 @@ namespace ORTS
                                         {
                                                 if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
                                                 {
+                                                        prevnode = node;
                                                         direction = trackNodes[node].TrPins[0].Direction;
                                                         node = trackNodes[node].TrPins[0].Link;
                                                 }
                                                 else
                                                 {
+                                                        prevnode = node;
                                                         direction = trackNodes[node].TrPins[1].Direction;
                                                         node = trackNodes[node].TrPins[1].Link;
                                                 }
                                         }
                                         else
                                         {
+                                            if (prevnode == -1 ||
+                                                (trackNodes[node].TrJunctionNode.SelectedRoute == 0 &&
+                                                trackNodes[node].TrPins[trackNodes[node].Inpins].Link == prevnode) ||
+                                                (trackNodes[node].TrJunctionNode.SelectedRoute == 1 &&
+                                                trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link == prevnode))
+                                            {
+                                                prevnode = node;
                                                 direction = trackNodes[node].TrPins[0].Direction;
                                                 node = trackNodes[node].TrPins[0].Link;
+                                            }
+                                            else
+                                            {
+                                                prevnode = node;
+                                            }
                                         }
                                 }
                                 else
@@ -1681,19 +1746,33 @@ namespace ORTS
                                         {
                                                 if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
                                                 {
+                                                        prevnode = node;
                                                         direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
                                                         node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
                                                 }
                                                 else
                                                 {
+                                                        prevnode = node;
                                                         direction = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Direction;
                                                         node = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link;
                                                 }
                                         }
                                         else
                                         {
+                                            if (prevnode == -1 ||
+                                                (trackNodes[node].TrJunctionNode.SelectedRoute == 0 &&
+                                                trackNodes[node].TrPins[0].Link == prevnode) ||
+                                                (trackNodes[node].TrJunctionNode.SelectedRoute == 1 &&
+                                                trackNodes[node].TrPins[1].Link == prevnode))
+                                            {
+                                                prevnode = node;
                                                 direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
                                                 node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
+                                            }
+                                            else
+                                            {
+                                                prevnode = node;
+                                            }
                                         }
                                 }
                         }
@@ -1748,7 +1827,6 @@ namespace ORTS
   //
   // this_sig_lr : Returns the least restrictive state of this signal's heads of required type
   //
-
                 public SignalHead.SIGASP this_sig_lr(SignalHead.SIGFN fn_type)
                 {
                         SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
@@ -1844,10 +1922,23 @@ namespace ORTS
 
                 public bool route_set (int req_mainnode)
                 {
+                    bool rs;
                         int thisreservid = Dispatcher.Reservations[trackNode];
                         int nextreservid = Dispatcher.Reservations[req_mainnode];
 
-                        return (thisreservid >= 0 && thisreservid == nextreservid);
+                        rs = (thisreservid >= 0 && thisreservid == nextreservid);
+
+                        int ctn = this.trackNode;
+                        int ptn = -1;
+                        int dir = revDir;
+                        while (ctn != ptn && ctn != nextNode)
+                        {
+                            ptn = ctn;
+                            NextNode(ref ctn, ref dir, ref ptn);
+                        }
+                        rs |= (ctn == nextNode);
+
+                        return rs;
                 }
 
   //================================================================================================//
@@ -1871,13 +1962,14 @@ namespace ORTS
 
                                 int nextreservid = -2;
                                 int nextSignal = GetNextSignal();
+                                int nextNode = -2;
 
                                 if (nextSignal > 0)
                                 {
                                         SignalObject nextSignalObject = signalObjects[nextSignal];
                                         sigfound[(int) SignalHead.SIGFN.NORMAL]=nextSignal;
 
-                                        int nextNode   = nextSignalObject.trackNode;
+                                        nextNode   = nextSignalObject.trackNode;
                                         nextreservid = Dispatcher.Reservations[nextNode];
                                 }
 
@@ -1894,6 +1986,30 @@ namespace ORTS
                                         else
                                         {
                                                 enabled = (thisreservid == nextreservid || trackNode == signalObjects[nextSignal].trackNode);
+                                            
+                                                if (!enabled)
+                                                {
+                                                    int trainId = Dispatcher.Reservations[trackNode];
+
+                                                    if (trainId >= 0)
+                                                    {
+                                                        int ctn = this.trackNode;
+                                                        int ptn = -1;
+                                                        int dir = revDir;
+                                                        while (ctn != ptn && ctn != nextNode)
+                                                        {
+                                                            NextNode(ref ctn, ref dir, ref ptn);
+                                                        }
+                                                        enabled = ctn == nextNode;
+                                                        
+                                                        //if (!enabled)
+                                                        //{
+                                                        //    enabled = Train.IsUnderObserving(thisRef);
+                                                        //}
+                                                        
+                                                    }
+                                                }
+                                            
                                         }
                                 }
                                 else
@@ -2474,7 +2590,12 @@ namespace ORTS
                         }
                 }//Reset
 
-  //================================================================================================//
+                //================================================================================================//
+                //
+                //   Reset : This method is invoked if the train has been removed.
+                //   Ensures that occupancy is updated to disappear.
+                //
+                //================================================================================================//
   //
   //   Clear : This method is invoked if the train has been removed.
   //   Ensures that occupancy is updated to disappear.
@@ -2500,6 +2621,7 @@ namespace ORTS
                                         if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
                                         {
                                                 signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
+                                                signalObjects[rearSigRef].Update();
                                         }
                                 }
                         }
@@ -2508,7 +2630,11 @@ namespace ORTS
                                 if (signals != null)
                                 {
                                         prevSigRef = signals.FindPrevSignal(rearTDBTraveller);
-                                        if (prevSigRef >= 0) signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
+                                        if (prevSigRef >= 0)
+                                        {
+                                            signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
+                                            signalObjects[prevSigRef].Update();
+                                        }
                                 }
                         }
                     // By GeorgeS
@@ -2520,10 +2646,15 @@ namespace ORTS
                                         if (newprevSigRef != prevSigRef)
                                         {
                                                 if (prevSigRef > 0)
-                                                        signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.CLEAR;
+                                                {
+                                                    signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.CLEAR;
+                                                }
                                                 prevSigRef = newprevSigRef;
                                                 if (prevSigRef > 0)
-                                                        signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
+                                                {
+                                                    signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
+                                                    signalObjects[prevSigRef].Update();
+                                                }
                                         }
                                 }
                         }
@@ -2536,13 +2667,17 @@ namespace ORTS
                                         if (prevSigRef >= 0) signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.CLEAR;
                                         prevSigRef = rearSigRef;
                                     // By GeorgeS    
-                                        if (prevSigRef >= 0) signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
-                                        signalObjects[prevSigRef].Update();
+                                        if (prevSigRef >= 0)
+                                        {
+                                            signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
+                                            signalObjects[prevSigRef].Update();
+                                        }
 
                                         rearSigRef = signals.FindNextSignal(rearTDBTraveller);
                                         if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
                                         {
                                                 signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
+                                                signalObjects[rearSigRef].Update();
                                         }
                                 }
 

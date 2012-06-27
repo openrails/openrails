@@ -89,7 +89,7 @@ namespace ORTS
         public SignalObject NextSignalObject; // direct reference to next signal
 
 		public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
-		private bool spad = false;      // Signal Passed At Danger
+		public bool spad = false;      // Signal Passed At Danger
 		public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
 
         public float RouteMaxSpeedMpS = 0;    // Max speed as set by route (default value)
@@ -124,7 +124,7 @@ namespace ORTS
 		public bool AITrainDirectionForward
 		{
 			get { return MUDirection == Direction.Forward; }
-			set { MUDirection = value ? Direction.Forward : Direction.Reverse; MUReverserPercent = value ? 100 : -100; }
+            set { MUDirection = value ? Direction.Forward : Direction.Reverse; MUReverserPercent = value ? 100 : -100; }
 		}
 		public TrainCar LeadLocomotive
 		{
@@ -145,6 +145,48 @@ namespace ORTS
 						car.BrakeSystem.BrakeLine1PressurePSI = -1;
 			}
 		}
+
+        public bool Reverse
+        {
+            get
+            {
+                return MUDirection == Direction.Reverse;
+            }
+        }
+
+        public Traveller dFrontTDBTraveller
+        {
+            get
+            {
+                if (Reverse)
+                {
+                    Traveller tr = new Traveller(RearTDBTraveller);
+                    tr.ReverseDirection();
+                    return tr;
+                }
+                else
+                {
+                    return FrontTDBTraveller;
+                }
+            }
+        }
+
+        public Traveller dRearTDBTraveller
+        {
+            get
+            {
+                if (Reverse)
+                {
+                    Traveller tr = new Traveller(FrontTDBTraveller);
+                    tr.ReverseDirection();
+                    return tr;
+                }
+                else
+                {
+                    return RearTDBTraveller;
+                }
+            }
+        }
 
         public Train(Simulator simulator)
         {
@@ -247,7 +289,7 @@ namespace ORTS
             ObjectItemInfo.ObjectItemFindState returnState = 0;
             float distanceToLastObject = 9E29f;  // set to overlarge value
 
-            ObjectItemInfo firstObject = Simulator.Signals.getNextObject(FrontTDBTraveller, ObjectItemInfo.ObjectItemType.ANY,
+            ObjectItemInfo firstObject = Simulator.Signals.getNextObject(dFrontTDBTraveller, ObjectItemInfo.ObjectItemType.ANY,
                     true, -1, ref returnState);
 
             if (returnState > 0)
@@ -294,7 +336,7 @@ namespace ORTS
                     {
                         Signals signals = thisObject.ObjectDetails.signalRef;
                         nextSignal = signals.InitSignalItem(thisObject.ObjectDetails.thisRef);
-                        nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+                        //nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
                         signalFound = true;
                         IndexNextSignal = isig;
                     }
@@ -324,7 +366,7 @@ namespace ORTS
             else
             {
                     ObjectItemInfo firstSignalObject = 
-                            Simulator.Signals.getNextObject(FrontTDBTraveller, ObjectItemInfo.ObjectItemType.SIGNAL,
+                            Simulator.Signals.getNextObject(dFrontTDBTraveller, ObjectItemInfo.ObjectItemType.SIGNAL,
                             true, -1, ref returnState);
 
                     if (returnState > 0)
@@ -333,7 +375,7 @@ namespace ORTS
                             distanceToSignal = firstSignalObject.distance_to_train;
                             Signals signals = NextSignalObject.signalRef;
                             nextSignal = signals.InitSignalItem(NextSignalObject.thisRef);
-                            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+                            //nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
                     }
             }
 
@@ -349,8 +391,13 @@ namespace ORTS
         //
         public void ResetSignal(bool askPermisiion)
         {
-            nextSignal.Reset(FrontTDBTraveller, askPermisiion);
-            nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
+            ObjectItemInfo ob;
+            bool force = SignalObjectItems != null &&
+                (ob = (SignalObjectItems.Where(o => o.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL).FirstOrDefault())) != null &&
+                ob.ObjectDetails.hasPermission == Signal.PERMISSION.GRANTED;
+
+            nextSignal.Reset(dFrontTDBTraveller, askPermisiion);
+            nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
             spad = false;
 
         // Clear and recreate full signal list
@@ -359,6 +406,7 @@ namespace ORTS
             SignalObjectItems.RemoveRange(0,sigtotal);
 
             InitializeSignals(true);
+            Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(force);
         }
 
         // Sets the Lead locomotive to the next in the consist
@@ -564,7 +612,8 @@ namespace ORTS
 		//
 		//  Update the distance to and aspect of next signal
 		//
-		private void UpdateSignalState()
+        private Direction _prevDirection = Direction.N;
+        private void UpdateSignalState()
 		{
 
             ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
@@ -582,7 +631,7 @@ namespace ORTS
             if (SignalObjectItems.Count > 0)
 			{
                     firstObject = SignalObjectItems[0];
-                    firstObject.distance_to_train = firstObject.ObjectDetails.DistanceTo(FrontTDBTraveller);
+                    firstObject.distance_to_train = firstObject.ObjectDetails.DistanceTo(dFrontTDBTraveller);
 
   //
         // remember last signal index
@@ -591,8 +640,8 @@ namespace ORTS
                     if (NextSignalObject != null)
                     {
                             lastSignalObjectRef = NextSignalObject.thisRef;
-			}
-
+        			}
+		        	nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
         //
         // check if passed object - if so, remove object
         // if object is speed, set max allowed speed
@@ -618,7 +667,7 @@ namespace ORTS
                             if (SignalObjectItems.Count > 0)
                             {
                                     firstObject = SignalObjectItems[0];
-                                    firstObject.distance_to_train = firstObject.ObjectDetails.DistanceTo(FrontTDBTraveller);
+                                    firstObject.distance_to_train = firstObject.ObjectDetails.DistanceTo(dFrontTDBTraveller);
                             }
 
                             listChanged = true;
@@ -630,7 +679,7 @@ namespace ORTS
 
                     if (SignalObjectItems.Count <= 0)
                     {
-                         firstObject = Simulator.Signals.getNextObject(FrontTDBTraveller, ObjectItemInfo.ObjectItemType.ANY,
+                         firstObject = Simulator.Signals.getNextObject(dFrontTDBTraveller, ObjectItemInfo.ObjectItemType.ANY,
                                             true, -1, ref returnState);
                          if (returnState > 0)
                          {
@@ -770,7 +819,7 @@ namespace ORTS
                             if (IndexNextSignal < 0)
                             {
                                     ObjectItemInfo firstSignalObject = 
-                                              Simulator.Signals.getNextObject(FrontTDBTraveller, ObjectItemInfo.ObjectItemType.SIGNAL,
+                                              Simulator.Signals.getNextObject(dFrontTDBTraveller, ObjectItemInfo.ObjectItemType.SIGNAL,
                                             true, -1, ref returnState);
 
                                     if (returnState > 0)
@@ -798,7 +847,7 @@ namespace ORTS
                     }
                     else if (NextSignalObject != null)
                     {
-                            distanceToSignal = NextSignalObject.DistanceTo(FrontTDBTraveller);
+                            distanceToSignal = NextSignalObject.DistanceTo(dFrontTDBTraveller);
                             thisState = NextSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL);
                     }
 
@@ -818,8 +867,14 @@ namespace ORTS
                             nextSignal.prevSigRef = lastSignalObjectRef;
                     }
 
-			nextSignal.UpdateTrackOcupancy(RearTDBTraveller);
-		}
+			        nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
+		    }
+
+            else
+            {
+                NextSignalObject = null;
+                distanceToSignal = 50000;
+            }
 
  //
  // determine actual speed limits depending on overall speed and type of train
@@ -879,11 +934,11 @@ namespace ORTS
                                 }
                         }
                         else
-			{
-				if (actualSpeedMpS > 998f)
-				{
-					actualSpeedMpS = RouteMaxSpeedMpS;
-				}
+			            {
+				                if (actualSpeedMpS > 998f)
+				                {
+					                actualSpeedMpS = RouteMaxSpeedMpS;
+				                }
 
                                 if (actualSpeedMpS > 0)
                                 {
@@ -905,7 +960,7 @@ namespace ORTS
             if (NextSignalObject != null)
             {
                     thisAspect = NextSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL);
-		}
+		    }
 
             return thisAspect;
         }
@@ -1620,5 +1675,38 @@ namespace ORTS
 			updateMSGReceived = true;
 		}
 
+        public static bool IsUnderObserving(int sigref)
+        {
+            int refc = 0;
+            foreach (ObjectItemInfo oi in Program.Simulator.PlayerLocomotive.Train.SignalObjectItems)
+            {
+                if (oi.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+                {
+                    if (oi.ObjectDetails.thisRef == sigref)
+                        return true;
+                    refc++;
+                    if (refc == 4)
+                        break;
+                }
+            }
+
+            foreach (AITrain ai in Program.Simulator.AI.AITrainDictionary.Values)
+            {
+                refc = 0;
+                foreach (ObjectItemInfo oi in ai.SignalObjectItems)
+                {
+                    if (oi.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+                    {
+                        if (oi.ObjectDetails.thisRef == sigref)
+                            return true;
+                        refc++;
+                        if (refc == 4)
+                            break;
+                    }
+                }
+            }
+
+            return false;
+        }
 	}// class Train
 }

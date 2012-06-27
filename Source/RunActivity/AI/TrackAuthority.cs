@@ -25,6 +25,7 @@ namespace ORTS
         public AIPathNode EndNode;
         public AIPathNode SidingNode;
         public AIPathNode StopNode;
+        public AIPathNode LastValidNode;
         public int NReverseNodes;
         public int Priority;
         public float StopDistanceM;
@@ -32,6 +33,7 @@ namespace ORTS
         public float PathDistReverseAdjustmentM = 0;
         public bool StationStop = false;
         public List<float> StationDistanceM = null;
+        public int PrevJunctionIndex = -1;
 
         public TrackAuthority(Train train, int id, int priority, AIPath path)
         {
@@ -111,6 +113,9 @@ namespace ORTS
         {
             StringBuilder s = new StringBuilder();
             int tvnIndex = -1;
+            // By GeorgeS
+            if (Train.FrontTDBTraveller == null)
+                return new Status { TrainID = TrainID, Train = Train, Path = s.ToString() };
             for (AIPathNode node = Path.FirstNode; node != null; node = node.NextMainNode)
             {
                 switch (node.Type)
@@ -162,7 +167,7 @@ namespace ORTS
         {
             WorldLocation wl = StopNode.Location;
             Traveller traveller = Train.FrontTDBTraveller;
-            if (NReverseNodes%2 == 1)
+            if (Train.Reverse)
                 traveller = new Traveller(Train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
 
             StopDistanceM = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
@@ -188,6 +193,8 @@ namespace ORTS
                     break;
                 }
             }
+            // By GeorgeS
+            return;
             if (StopNode.Type == AIPathNodeType.Reverse)
             {
                 for (AIPathNode node = StopNode; node != EndNode; )
@@ -217,12 +224,32 @@ namespace ORTS
         /// </summary>
         public void AdvanceStopNode(bool throwSwitches)
         {
-            AIPathNode node = StopNode;
+            //AIPathNode node = StopNode;
+            if (StartNode == null)
+                return;
+            AIPathNode node = GetNextNode(StartNode);
             if (node.NextMainNode == null && node.NextSidingNode == null)
                 return;
-            while (node != EndNode)
+
+            AIPathNode prevNode = Path.FirstNode;
+            if (prevNode != StopNode)
+                while (GetNextNode(prevNode) != StopNode) prevNode = GetNextNode(prevNode);
+
+            while (true)
             {
-                AIPathNode prevNode = node;
+                // GeorgeS bugfix
+                // If endnode, it could throw a switch belonging to another reservation
+                if (throwSwitches && prevNode != null)
+                    Path.AlignSwitch(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode));
+
+                if (node == EndNode)
+                    break;
+
+                if (Train.dFrontTDBTraveller.DistanceTo(node.Location.TileX, node.Location.TileZ,
+                    node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z) == -1)
+                    return;
+
+                prevNode = node;
                 node = GetNextNode(node);
                 if (node == null)
                     return;
@@ -237,8 +264,10 @@ namespace ORTS
                         break;
 
                 }
-                if (throwSwitches)
-                    Path.AlignSwitch(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode));
+                // GeorgeS bugfix
+                // If endnode, it could throw a switch belonging to another reservation
+                //if (throwSwitches)
+                //    Path.AlignSwitch(node.JunctionIndex, node.IsFacingPoint ? GetTVNIndex(node) : GetTVNIndex(prevNode));
             }
             StopNode = node;
         }
