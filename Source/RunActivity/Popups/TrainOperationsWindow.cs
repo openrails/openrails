@@ -44,7 +44,7 @@ namespace ORTS.Popups
 			{
 				foreach (var car in PlayerTrain.Cars)
 				{
-					var carLabel = new Label(CarWidth, CarListHeight, "0-" + car.UiD, LabelAlignment.Center);
+					var carLabel = new Label(CarWidth, CarListHeight, car.CarID, LabelAlignment.Center);
 					scrollbox.Add(carLabel);
 					if (car != PlayerTrain.Cars.Last())
 						scrollbox.Add(new TrainOperationsCoupler(0, (CarListHeight - CouplerSize) / 2, Owner.Viewer.Simulator, car));

@@ -26,6 +26,7 @@ namespace ORTS.MultiPlayer
 	{
 		double lastMoveTime = 0.0f;
 		double lastSwitchTime = 0.0f;
+		double lastSendTime = 0.0f;
 		string metric = "";
 		double metricbase = 1.0f;
 		public static OnlineTrains OnlineTrains = new OnlineTrains();
@@ -109,27 +110,44 @@ namespace ORTS.MultiPlayer
 			//server update train location of all
 			if (Program.Server != null && newtime - lastMoveTime >= 1f)
 			{
-				MultiPlayer.MSGMove move = new MultiPlayer.MSGMove();
+				MSGMove move = new MSGMove();
 				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train);
 				Program.Server.BroadCast(OnlineTrains.MoveTrains(move));
-				lastMoveTime = newtime;
+				lastMoveTime = lastSendTime = newtime;
 			}
 			
 			//server updates switch
 			if (Program.Server != null && newtime - lastSwitchTime >= 10f)
 			{
-				lastSwitchTime = newtime;
+				lastSwitchTime = lastSendTime = newtime;
 				MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
 			}
 			
 			//client updates itself
 			if (Program.Client != null && Program.Server == null && newtime - lastMoveTime >= 1f)
 			{
-				MultiPlayer.MSGMove move = new MultiPlayer.MSGMove();
-				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train);
+				Train t = Program.Simulator.PlayerLocomotive.Train;
+				MSGMove move = new MSGMove();
+				//if I am still conrolling the train
+				if (t.TrainType != Train.TRAINTYPE.REMOTE)
+				{
+					if (Math.Abs(t.SpeedMpS) > 0.001) move.AddNewItem(MultiPlayer.MPManager.GetUserName(), t);
+					else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem(MultiPlayer.MPManager.GetUserName(), t);
+				}
 				MoveUncoupledTrains(move); //if there are uncoupled trains
-				Program.Client.Send(move.ToString());
-				lastMoveTime = newtime;
+				//if there are messages to send
+				if (move.OKtoSend())
+				{
+					Program.Client.Send(move.ToString());
+					lastMoveTime = lastSendTime = newtime;
+				}
+			}
+
+			//need to send a keep-alive message if have not sent one to the server for the last 30 seconds
+			if (Program.Client != null && Program.Server == null && newtime - lastSendTime >= 30f)
+			{
+				MPManager.Notify((new MSGAlive(GetUserName())).ToString());
+				lastSendTime = newtime;
 			}
 
 			lock (removedTrains) //work on all trains to be removed. This will called in the same thread as Update
@@ -225,7 +243,9 @@ namespace ORTS.MultiPlayer
 		public string GetOnlineUsersInfo()
 		{
 
-			string info = "" + OnlineTrains.Players.Count + (OnlineTrains.Players.Count <= 1 ? " Other Player Online" : " Other Players Online");
+			string info = "";
+			if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
+			info += ("" + OnlineTrains.Players.Count + (OnlineTrains.Players.Count <= 1 ? " Other Player Online" : " Other Players Online"));
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
 			SortedList<double, string> users = new SortedList<double,string>();
 			try//the list of players may be changed during the following process

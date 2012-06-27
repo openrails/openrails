@@ -17,6 +17,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "PLAYER") return new MSGPlayer(m.Substring(index + 1));
 			else if (key == "SWITCHSTATES") return new MSGSwitchStatus(m.Substring(index + 1));
 			else if (key == "SIGNALSTATES") return new MSGSignalStatus(m.Substring(index + 1));
+			else if (key == "ALIVE") return new MSGAlive(m.Substring(index + 1));
 			else if (key == "SWITCH") return new MSGSwitch(m.Substring(index + 1));
 			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
 			else if (key == "REMOVETRAIN") return new MSGRemoveTrain(m.Substring(index + 1));
@@ -106,6 +107,11 @@ namespace ORTS.MultiPlayer
 			t.LastReportedSpeed = t.SpeedMpS;
 		}
 
+		public bool OKtoSend()
+		{
+			if (items != null && items.Count > 0) return true;
+			return false;
+		}
 		public override string ToString()
 		{
 			string tmp = "MOVE ";
@@ -120,6 +126,7 @@ namespace ORTS.MultiPlayer
 				bool found = false; //a train may not be in my sim
 				if (m.user == MPManager.GetUserName())//about itself, check if the number of car has changed, otherwise ignore
 				{
+					found = true;
 					try
 					{
 						if (m.count != Program.Simulator.PlayerLocomotive.Train.Cars.Count)
@@ -932,6 +939,29 @@ namespace ORTS.MultiPlayer
 	}
 	#endregion MSGServer
 
+	#region MSGAlive
+	public class MSGAlive : Message
+	{
+		string user;
+		public MSGAlive(string m)
+		{
+			user = m;
+		}
+
+
+		public override string ToString()
+		{
+			string tmp = "ALIVE " + user;
+			return "" + tmp.Length + ": " + tmp;
+		}
+
+		public override void HandleMsg()
+		{
+			//nothing to worry at this stage
+			//System.Console.WriteLine(this.ToString());
+		}
+	}
+	#endregion MSGAlive
 	#region MSGTrainMerge
 	//message to add new train from either a string (received message), or a Train (building a message)
 	public class MSGTrainMerge : Message
@@ -1092,16 +1122,19 @@ namespace ORTS.MultiPlayer
 			else if (EventName == "BELL")
 			{
 				if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? EventID.BellOff : EventID.BellOn);
+				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "WIPER")
 			{
 				if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? EventID.WiperOff : EventID.WiperOn);
+				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "HEADLIGHT")
 			{
 				if (t.LeadLocomotive != null && EventState == 0) t.LeadLocomotive.SignalEvent(EventID.HeadlightOff);
 				if (t.LeadLocomotive != null && EventState == 1) t.LeadLocomotive.SignalEvent(EventID.HeadlightDim);
 				if (t.LeadLocomotive != null && EventState == 2) t.LeadLocomotive.SignalEvent(EventID.HeadlightOn);
+				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else return;
 		}

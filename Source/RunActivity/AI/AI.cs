@@ -287,7 +287,7 @@ namespace ORTS
                     TrainCar car = RollingStock.Load(Simulator, wagonFilePath, previousCar);
                     car.Flipped = wagon.Flip;
 					car.UiD = id++;
-					car.CarID = "AI" + train.UiD + " " + car.UiD;
+					car.CarID = "AI" + train.UiD + " - " + car.UiD;
                     train.Cars.Add(car);
                     car.Train = train;
                     car.SignalEvent(EventID.Pantograph1Up);
