@@ -190,7 +190,24 @@ namespace ORTS
                 ++CurrentNotch;
                 IntermediateValue = CurrentValue = Notches[CurrentNotch].Value;
             }
-        }
+			//the following are added to cope with the combined notch/smooth control like this:
+			//      EngineControllers (
+            //			Throttle ( 0 1 0.01 0 
+            //			NumNotches ( 5 Notch ( 0    0 Dummy ) Notch ( 0.1  0 Dummy ) Notch ( 0.1  1 Dummy ) Notch ( 0.2  0 Dummy )Notch ( 0.3  1 Dummy ))
+			//		)
+			else if ((Notches.Count > 0) && (CurrentNotch < Notches.Count - 1) && (Notches[CurrentNotch].Smooth))
+			{
+				IntermediateValue += StepSize;
+				if (IntermediateValue >= Notches[CurrentNotch + 1].Value) { ++CurrentNotch; IntermediateValue = CurrentValue = Notches[CurrentNotch].Value; }
+				else CurrentValue = IntermediateValue;
+			}
+			else if ((Notches.Count > 0) && (CurrentNotch == Notches.Count - 1) && (Notches[CurrentNotch].Smooth))
+			{
+				IntermediateValue += StepSize; 
+				if (IntermediateValue >= MaximumValue) IntermediateValue = MaximumValue;
+				CurrentValue = IntermediateValue;
+			}
+		}
 
         public void StopIncrease()
         {
