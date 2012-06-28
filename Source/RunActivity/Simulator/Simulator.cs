@@ -303,6 +303,7 @@ namespace ORTS
                    AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 				}
                 */
+				AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
             }
 
 			foreach (Train train in movingTrains)

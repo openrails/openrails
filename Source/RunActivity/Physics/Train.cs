@@ -514,9 +514,11 @@ namespace ORTS
 					try
 					{
 						var x = travelled + SpeedMpS * elapsedClockSeconds + (SpeedMpS - lastSpeedMps) / 2 * elapsedClockSeconds;
+						this.MUDirection = (Direction)expectedDIr;
 
 						if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 5)
 						{
+
 							Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
 
 							move = this.RearTDBTraveller.DistanceTo(Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], t.TileX, t.TileZ, t.X, t.Y, t.Z);
@@ -526,6 +528,7 @@ namespace ORTS
 							}
 							else
 							{
+								move = 0;
 								this.travelled = expectedTravelled;
 								this.RearTDBTraveller = t;
 								CalculatePositionOfCars(move);
@@ -1681,10 +1684,10 @@ namespace ORTS
 			}
 		}
 
-		public int expectedTileX, expectedTileZ, expectedTracIndex;
+		public int expectedTileX, expectedTileZ, expectedTracIndex, expectedDIr;
 		public float expectedX, expectedZ, expectedTravelled;
 
-		public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed)
+		public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir)
 		{
 			SpeedMpS = speed;
 			expectedTileX = tX;
@@ -1693,6 +1696,7 @@ namespace ORTS
 			expectedZ = z;
 			expectedTravelled = eT;
 			expectedTracIndex = tni;
+			expectedDIr = dir;
 			updateMSGReceived = true;
 		}
 

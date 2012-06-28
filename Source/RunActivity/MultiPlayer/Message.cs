@@ -44,15 +44,15 @@ namespace ORTS.MultiPlayer
 			public float speed;
 			public float travelled;
 			public int num, count;
-			public int TileX, TileZ, trackNodeIndex;
+			public int TileX, TileZ, trackNodeIndex, direction;
 			public float X, Z;
-			public MSGMoveItem(string u, float s, float t, int n, int tX, int tZ, float x, float z, int tni, int cnt)
+			public MSGMoveItem(string u, float s, float t, int n, int tX, int tZ, float x, float z, int tni, int cnt, int dir)
 			{
-				user = u; speed = s; travelled = t; num = n; TileX = tX; TileZ = tZ; X = x; Z = z; trackNodeIndex = tni; count = cnt;
+				user = u; speed = s; travelled = t; num = n; TileX = tX; TileZ = tZ; X = x; Z = z; trackNodeIndex = tni; count = cnt; direction = dir;
 			}
 			public override string ToString()
 			{
-				return user + " " + speed + " " + travelled + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + trackNodeIndex + " " + count;
+				return user + " " + speed + " " + travelled + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + trackNodeIndex + " " + count + " " + direction;
 			}
 		}
 		List<MSGMoveItem> items;
@@ -60,7 +60,7 @@ namespace ORTS.MultiPlayer
 		{
 			m = m.Trim();
 			string[] areas = m.Split(' ');
-			if (areas.Length%10  != 0) //user speed travelled
+			if (areas.Length%11  != 0) //user speed travelled
 			{
 				throw new Exception("Parsing error " + m);
 			}
@@ -68,8 +68,8 @@ namespace ORTS.MultiPlayer
 			{
 				int i = 0;
 				items = new List<MSGMoveItem>();
-				for (i = 0; i < areas.Length / 10; i++)
-					items.Add(new MSGMoveItem(areas[10 * i], float.Parse(areas[10 * i + 1]), float.Parse(areas[10 * i + 2]), int.Parse(areas[10 * i + 3]), int.Parse(areas[10 * i + 4]), int.Parse(areas[10 * i + 5]), float.Parse(areas[10 * i + 6]), float.Parse(areas[10 * i + 7]), int.Parse(areas[10 * i + 8]), int.Parse(areas[10 * i + 9])));
+				for (i = 0; i < areas.Length / 11; i++)
+					items.Add(new MSGMoveItem(areas[11 * i], float.Parse(areas[11 * i + 1]), float.Parse(areas[11 * i + 2]), int.Parse(areas[11 * i + 3]), int.Parse(areas[11 * i + 4]), int.Parse(areas[11 * i + 5]), float.Parse(areas[11 * i + 6]), float.Parse(areas[11 * i + 7]), int.Parse(areas[11 * i + 8]), int.Parse(areas[11 * i + 9]), int.Parse(areas[11 * i + 10])));
 			}
 			catch (Exception e)
 			{
@@ -103,7 +103,7 @@ namespace ORTS.MultiPlayer
 		public void AddNewItem(string u, Train t)
 		{
 			if (items == null) items = new List<MSGMoveItem>();
-			items.Add(new MSGMoveItem(u, t.SpeedMpS, t.travelled, t.Number, t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, t.RearTDBTraveller.Z, t.RearTDBTraveller.TrackNodeIndex, t.Cars.Count));
+			items.Add(new MSGMoveItem(u, t.SpeedMpS, t.travelled, t.Number, t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, t.RearTDBTraveller.Z, t.RearTDBTraveller.TrackNodeIndex, t.Cars.Count, (int)t.MUDirection));
 			t.LastReportedSpeed = t.SpeedMpS;
 		}
 
@@ -154,7 +154,7 @@ namespace ORTS.MultiPlayer
 							}
 							if (t.TrainType == Train.TRAINTYPE.REMOTE)
 							{
-								t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed);
+								t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction);
 								break;
 							}
 						}
@@ -166,7 +166,7 @@ namespace ORTS.MultiPlayer
 					if (t != null)
 					{
 							found = true;
-							t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed);
+							t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction);
 					}
 				}
 				if (found == false) //I do not have the train, tell server to send it to me
