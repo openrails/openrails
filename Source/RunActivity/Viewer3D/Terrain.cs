@@ -175,9 +175,9 @@ namespace ORTS
             var patch = Tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z);
             var ts = ((terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader]).terrain_texslots;
             if (ts.Length > 1)
-                PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
+                PatchMaterial = viewer.MaterialManager.Load("Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
             else
-                PatchMaterial = Materials.Load(viewer.RenderProcess, "Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
+                PatchMaterial = viewer.MaterialManager.Load("Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
 
             float cx = -1024 + (int)patch.CenterX;
             float cz = -1024 - (int)patch.CenterZ;

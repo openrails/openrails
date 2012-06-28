@@ -44,7 +44,7 @@ namespace ORTS
         public PrecipDrawer(Viewer3D viewer)
         {
             Viewer = viewer;
-            precipMaterial = Materials.Load(Viewer.RenderProcess, "PrecipMaterial");
+            precipMaterial = viewer.MaterialManager.Load("Precip");
             // Instantiate classes
             precipMesh = new PrecipMesh( Viewer.RenderProcess);
 

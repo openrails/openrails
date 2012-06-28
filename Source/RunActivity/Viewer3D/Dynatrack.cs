@@ -237,6 +237,13 @@ namespace ORTS
                 lodIndex++;
             }
         } // end PrepareFrame
+
+        [CallOnThread("Loader")]
+        public void Mark()
+        {
+            foreach (LOD lod in dtrackMesh.TrProfile.LODs)
+                lod.Mark();
+        }
     } // end DynatrackDrawer
     #endregion
 
@@ -785,6 +792,13 @@ namespace ORTS
             });
             if (CutoffRadius == 0) throw new Exception("missing CutoffRadius");
         }
+
+        [CallOnThread("Loader")]
+        public void Mark()
+        {
+            foreach (LODItem lodItem in LODItems)
+                lodItem.Mark();
+        }
     } // end class LOD
 
     #endregion
@@ -869,7 +883,13 @@ namespace ORTS
         public void LoadMaterial(RenderProcess renderProcess, LODItem lod)
         {
             var options = Helpers.EncodeMaterialOptions(lod);
-            lod.LODMaterial = Materials.Load(renderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(renderProcess.Viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), (int)options, lod.MipMapLevelOfDetailBias);
+            lod.LODMaterial = renderProcess.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(renderProcess.Viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), (int)options, lod.MipMapLevelOfDetailBias);
+        }
+
+        [CallOnThread("Loader")]
+        public void Mark()
+        {
+            LODMaterial.Mark();
         }
 
         #endregion
@@ -1103,6 +1123,13 @@ namespace ORTS
             else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
 
         } // end DynatrackMesh constructor
+
+        public override void Mark()
+        {
+            foreach (var prim in ShapePrimitives)
+                prim.Mark();
+            base.Mark();
+        }
 
         #region Vertex and triangle index generators
         /// <summary>

@@ -269,7 +269,7 @@ namespace ORTS
                 if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
                 {
                     Trace.TraceWarning("Signal type {0} has invalid light texture {1}.", mstsSignalType.Name, mstsSignalType.LightTextureName);
-                    Material = Materials.YellowMaterial;
+                    Material = viewer.MaterialManager.Load("missing-signal-light");
                     Type = SignalTypeDataType.Normal;
                     FlashTimeOn = 1;
                     FlashTimeTotal = 2;
@@ -277,7 +277,7 @@ namespace ORTS
                 else
                 {
                     var mstsLightTexture = viewer.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
-                    Material = Materials.Load(viewer.RenderProcess, "SignalLightMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
+                    Material = viewer.MaterialManager.Load("SignalLight", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
                     Type = (SignalTypeDataType)mstsSignalType.FnType;
                     if (mstsSignalType.Lights != null)
                     {
@@ -386,21 +386,19 @@ namespace ORTS
 
     public class SignalLightMaterial : Material
     {
-        readonly RenderProcess RenderProcess;
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
 
-        public SignalLightMaterial(RenderProcess renderProcess, string textureName)
-            : base(textureName)
+        public SignalLightMaterial(Viewer3D viewer, string textureName)
+            : base(viewer, textureName)
         {
-            RenderProcess = renderProcess;
-            SceneryShader = Materials.SceneryShader;
-            Texture = renderProcess.Viewer.TextureManager.Get(textureName);
+            SceneryShader = Viewer.MaterialManager.SceneryShader;
+            Texture = Viewer.TextureManager.Get(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SceneryShader.CurrentTechnique = Materials.SceneryShader.Techniques["SignalLight"];
+            SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLight"];
             SceneryShader.ImageTexture = Texture;
 
             var rs = graphicsDevice.RenderState;
@@ -444,7 +442,7 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(Texture);
+            Viewer.TextureManager.Mark(Texture);
             base.Mark();
         }
     }

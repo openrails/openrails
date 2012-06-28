@@ -56,6 +56,7 @@ namespace ORTS
         public GraphicsDeviceManager GDM;
         public GraphicsDevice GraphicsDevice;
         public SharedTextureManager TextureManager;
+        public SharedMaterialManager MaterialManager;
         public SharedShapeManager ShapeManager;
         public Point DisplaySize;
         // Components
@@ -141,7 +142,7 @@ namespace ORTS
             WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
             WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
 
-            Materials.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
+            SharedMaterialManager.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
 
             Trace.Write(" ENV");
             ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
@@ -223,9 +224,9 @@ namespace ORTS
             PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
             TextureManager = new SharedTextureManager(GraphicsDevice);
+            MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
             UserInput.Initialize();
-            Materials.Initialize(RenderProcess);
             InfoDisplay = new InfoDisplay(this);
 
             WindowManager = new WindowManager(this);
@@ -500,6 +501,13 @@ namespace ORTS
             }
 
             originalMouseState = currentMouseState;
+        }
+
+        [CallOnThread("Loader")]
+        public void Mark()
+        {
+            InfoDisplay.Mark();
+            WindowManager.Mark();
         }
 
         [CallOnThread("Render")]

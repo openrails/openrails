@@ -52,7 +52,7 @@ namespace ORTS
 
 		private void LoadWaterMaterial()
 		{
-            WaterLayers = Viewer.ENVFile.WaterLayers.Select(layer => new KeyValuePair<float, Material>(layer.Height, Materials.Load(Viewer.RenderProcess, "WaterMaterial", Viewer.Simulator.RoutePath + @"\envfiles\textures\" + layer.TextureName)));
+            WaterLayers = Viewer.ENVFile.WaterLayers.Select(layer => new KeyValuePair<float, Material>(layer.Height, Viewer.MaterialManager.Load("Water", Viewer.Simulator.RoutePath + @"\envfiles\textures\" + layer.TextureName)));
 		}
 
         private Matrix xnaMatrix = Matrix.Identity;

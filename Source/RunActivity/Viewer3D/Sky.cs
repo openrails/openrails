@@ -88,7 +88,7 @@ namespace ORTS
         public SkyDrawer(Viewer3D viewer)
         {
             Viewer = viewer;
-            skyMaterial = Materials.Load(Viewer.RenderProcess, "SkyMaterial");
+            skyMaterial = viewer.MaterialManager.Load("Sky");
 
             // Instantiate classes
             SkyMesh = new SkyMesh( Viewer.RenderProcess);

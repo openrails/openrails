@@ -53,7 +53,11 @@ namespace ORTS
         {
             var cars = Cars;
             foreach (var car in cars.Values)
+            {
                 car.Mark();
+                if (car.lightDrawer != null)
+                    car.lightDrawer.Mark();
+            }
             CABTextureManager.Mark(Viewer);
         }
 

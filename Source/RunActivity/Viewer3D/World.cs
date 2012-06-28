@@ -64,6 +64,7 @@ namespace ORTS
                 TileX = VisibleTileX;
                 TileZ = VisibleTileZ;
                 Viewer.ShapeManager.Mark();
+                Viewer.MaterialManager.Mark();
                 Viewer.TextureManager.Mark();
                 Sky.Mark();
                 Precipitation.Mark();
@@ -71,7 +72,9 @@ namespace ORTS
                 Scenery.Mark();
                 Trains.Mark();
                 RoadCars.Mark();
+                Viewer.Mark();
                 Viewer.ShapeManager.Sweep();
+                Viewer.MaterialManager.Sweep();
                 Viewer.TextureManager.Sweep();
             }
         }

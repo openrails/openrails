@@ -42,7 +42,8 @@ namespace ORTS.Popups
         public readonly WindowTextFont TextFontDefault;
         public readonly WindowTextFont TextFontDefaultOutlined;
 
-        readonly Material WindowManagerMaterial = new BasicBlendedMaterial("WindowManager");
+        readonly Material WindowManagerMaterial;
+        readonly PopupWindowMaterial PopupWindowMaterial;
         readonly List<Window> Windows = new List<Window>();
         Window[] WindowsZOrder = new Window[0];
         SpriteBatch SpriteBatch;
@@ -55,6 +56,8 @@ namespace ORTS.Popups
 		public WindowManager(Viewer3D viewer)
 		{
 			Viewer = viewer;
+            WindowManagerMaterial = new BasicBlendedMaterial(viewer, "WindowManager");
+            PopupWindowMaterial = (PopupWindowMaterial)Viewer.MaterialManager.Load("PopupWindow");
             TextManager = new WindowTextManager();
             TextFontDefault = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular);
             TextFontDefaultOutlined = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular, 1);
@@ -191,16 +194,15 @@ namespace ORTS.Popups
 			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
             var rs = graphicsDevice.RenderState;
-			var material = Materials.PopupWindowMaterial;
 			foreach (var window in VisibleWindows)
 			{
 				var xnaWorld = window.XNAWorld;
 
 				if (Screen != null)
 					graphicsDevice.ResolveBackBuffer(Screen);
-				material.SetState(graphicsDevice, Screen);
-				material.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
-				material.ResetState(graphicsDevice);
+                PopupWindowMaterial.SetState(graphicsDevice, Screen);
+                PopupWindowMaterial.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
+                PopupWindowMaterial.ResetState(graphicsDevice);
 
                 SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
 				window.Draw(SpriteBatch);
@@ -293,6 +295,13 @@ namespace ORTS.Popups
             Console.WriteLine("  Visible: {0}", String.Join(", ", VisibleWindows.Select(w => w.GetType().Name).ToArray()));
             Console.WriteLine("  All:     {0}", String.Join(", ", WindowsZOrder.Select(w => String.Format("{0}{1}{2}", w.GetType().Name, w.Interactive ? "" : "[NI]", w.Visible ? "[V]" : "")).ToArray()));
             Console.WriteLine();
+        }
+
+        [CallOnThread("Loader")]
+        public void Mark()
+        {
+            WindowManagerMaterial.Mark();
+            PopupWindowMaterial.Mark();
         }
     }
 }

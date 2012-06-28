@@ -61,7 +61,7 @@ namespace ORTS
         {
             Viewer = viewer;
             //string texturePath = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
-            ParticleMaterial = (ParticleEmitterMaterial)Materials.Load(Viewer.RenderProcess, "ParticleEmitterMaterial");
+            ParticleMaterial = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
             emitter = new ParticleEmitter(Viewer.RenderProcess, data);
         }
 
@@ -81,7 +81,7 @@ namespace ORTS
 
         public void SetTexture(Texture2D texture)
         {
-            ParticleMaterial.texture = texture;
+            ParticleMaterial.Texture = texture;
         }
 
         public void SetEmissionRate(float particlesPerSecond)

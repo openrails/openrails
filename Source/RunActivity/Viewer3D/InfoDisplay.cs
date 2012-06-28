@@ -69,8 +69,8 @@ namespace ORTS
         public InfoDisplay(Viewer3D viewer)
         {
             Viewer = viewer;
-            TextMaterial = (SpriteBatchMaterial)Materials.Load(Viewer.RenderProcess, "SpriteBatch");
-            DrawInforMaterial = (ActivityInforMaterial)Materials.Load(Viewer.RenderProcess, "DrawInforMaterial");
+            TextMaterial = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
+            DrawInforMaterial = (ActivityInforMaterial)viewer.MaterialManager.Load("DrawInfor");
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
@@ -205,6 +205,13 @@ namespace ORTS
                     }
                 }
             }
+        }
+
+        [CallOnThread("Loader")]
+        public void Mark()
+        {
+            TextMaterial.Mark();
+            DrawInforMaterial.Mark();
         }
 
         int GetWorkingSetSize()
@@ -376,7 +383,7 @@ namespace ORTS
         {
             Material = material;
             Font = material.Font;
-            Viewer = material.RenderProcess.Viewer;
+            Viewer = material.Viewer;
             TrainCar = tcar;
             LineSpacing = Material.LineSpacing;
 			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1);
@@ -389,7 +396,7 @@ namespace ORTS
         {
             Material = material;
             Font = material.Font;
-            Viewer = material.RenderProcess.Viewer;
+            Viewer = material.Viewer;
             TrItemLabel = pd;
             LineSpacing = Material.LineSpacing;
             LabelColor = labelColor;

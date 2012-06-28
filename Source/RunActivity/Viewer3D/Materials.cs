@@ -22,8 +22,8 @@ namespace ORTS
     public class SharedTextureManager
     {
         readonly GraphicsDevice GraphicsDevice;
-        Dictionary<string, Texture2D> SharedTextures = new Dictionary<string, Texture2D>();
-        Dictionary<string, bool> SharedTexturesMarks;
+        Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
+        Dictionary<string, bool> TextureMarks;
 
         [CallOnThread("Render")]
         internal SharedTextureManager(GraphicsDevice graphicsDevice)
@@ -37,268 +37,228 @@ namespace ORTS
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
             if (path == null)
-                return Materials.MissingTexture;
+                return SharedMaterialManager.MissingTexture;
 
             path = path.ToLowerInvariant();
-            if (!SharedTextures.ContainsKey(path))
+            if (!Textures.ContainsKey(path))
             {
                 try
                 {
                     Texture2D texture = MSTS.ACEFile.Texture2DFromFile(GraphicsDevice, path);
-                    SharedTextures.Add(path, texture);
+                    Textures.Add(path, texture);
                     return texture;
                 }
                 catch (Exception error)
                 {
                     Trace.TraceInformation(path);
                     Trace.WriteLine(error);
-                    return Materials.MissingTexture;
+                    return SharedMaterialManager.MissingTexture;
                 }
             }
             else
             {
-                return SharedTextures[path];
+                return Textures[path];
             }
         }
 
         public void Mark()
         {
-            SharedTexturesMarks = new Dictionary<string, bool>(SharedTextures.Count);
-            foreach (var path in SharedTextures.Keys)
-                SharedTexturesMarks.Add(path, false);
+            TextureMarks = new Dictionary<string, bool>(Textures.Count);
+            foreach (var path in Textures.Keys)
+                TextureMarks.Add(path, false);
         }
 
         public void Mark(Texture2D texture)
         {
-            if (SharedTextures.ContainsValue(texture))
-                SharedTexturesMarks[SharedTextures.First(kvp => kvp.Value == texture).Key] = true;
+            if (Textures.ContainsValue(texture))
+                TextureMarks[Textures.First(kvp => kvp.Value == texture).Key] = true;
         }
 
         public void Sweep()
         {
-            foreach (var path in SharedTexturesMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
-            {
-                //Trace.Write("[T]");
-                //Trace.WriteLine(path);
-                SharedTextures.Remove(path);
-            }
+            foreach (var path in TextureMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+                Textures.Remove(path);
         }
 
         [CallOnThread("Updater")]
         public string GetStatus()
         {
-            return String.Format("{0:F0} textures", SharedTextures.Keys.Count);
+            return String.Format("{0:F0} textures", Textures.Keys.Count);
         }
     }
     
-    public class Materials
+    [CallOnThread("Loader")]
+    public class SharedMaterialManager
     {
-        public static SceneryShader SceneryShader = null;
-        public static SkyShader SkyShader = null;
-        public static ParticleEmitterShader ParticleEmitterShader = null;
-        public static PrecipShader PrecipShader = null;
-        public static LightGlowShader LightGlowShader = null;
-        public static LightConeShader LightConeShader = null;
-        public static SpriteBatchMaterial SpriteBatchMaterial = null;
-		public static SpriteBatchLineMaterial SpriteBatchLineMaterial = null;
-		public static ActivityInforMaterial DrawInforMaterial = null;
-		private static Dictionary<string, WaterMaterial> WaterMaterials = new Dictionary<string, WaterMaterial>();
-        private static SkyMaterial SkyMaterial = null;
-        private static PrecipMaterial PrecipMaterial = null;
-        private static LightGlowMaterial LightGlowMaterial = null;
-        private static LightConeMaterial LightConeMaterial = null;
-        private static Dictionary<string, TerrainMaterial> TerrainMaterials = new Dictionary<string, TerrainMaterial>();
-        private static Dictionary<string, ForestMaterial> ForestMaterials = new Dictionary<string, ForestMaterial>();
-        private static Dictionary<string, SceneryMaterial> SceneryMaterials = new Dictionary<string, SceneryMaterial>();
-		private static Dictionary<string, SignalLightMaterial> SignalLightMaterials = new Dictionary<string, SignalLightMaterial>();
-        private static Dictionary<string, TransferMaterial> TransferMaterials = new Dictionary<string, TransferMaterial>();
-        public static Texture2D MissingTexture = null;  // sub this when we are missing the required texture
-		public static Material YellowMaterial = null;   // for debug and experiments
-        public static ShadowMapMaterial ShadowMapMaterial = null;
-        public static ShadowMapShader ShadowMapShader = null;
-        public static Color FogColor = new Color(110, 110, 110, 255);
-        public static float FogCoeff = 0.75f;
-		public static PopupWindowMaterial PopupWindowMaterial = null;
-		public static PopupWindowShader PopupWindowShader = null;
-		private static bool IsInitialized = false;
-        
-        /// <summary>
-        /// THREAD SAFETY:  XNA Content Manager is not thread safe and must only be called from the Game thread.
-        /// ( per Shawn Hargreaves )
-        /// </summary>
-        /// <param name="renderProcess"></param>
-		public static void Initialize(RenderProcess renderProcess)
+        readonly Viewer3D Viewer;
+        Dictionary<string, Material> Materials = new Dictionary<string, Material>();
+        Dictionary<string, bool> MaterialMarks = new Dictionary<string, bool>();
+
+        public readonly LightConeShader LightConeShader;
+        public readonly LightGlowShader LightGlowShader;
+        public readonly ParticleEmitterShader ParticleEmitterShader;
+        public readonly PopupWindowShader PopupWindowShader;
+        public readonly PrecipShader PrecipShader;
+        public readonly SceneryShader SceneryShader;
+        public readonly ShadowMapShader ShadowMapShader;
+        public readonly SkyShader SkyShader;
+
+        public static Texture2D MissingTexture;
+
+        [CallOnThread("Render")]
+		public SharedMaterialManager(Viewer3D viewer)
         {
-            SceneryShader = new SceneryShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            if (File.Exists(renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace"))
-                SceneryShader.OverlayTexture = MSTS.ACEFile.Texture2DFromFile(renderProcess.GraphicsDevice, renderProcess.Viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
-            SkyShader = new SkyShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            ParticleEmitterShader = new ParticleEmitterShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            PrecipShader = new PrecipShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            LightGlowShader = new LightGlowShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            LightConeShader = new LightConeShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            SpriteBatchMaterial = new SpriteBatchMaterial(renderProcess);
-			SpriteBatchLineMaterial = new SpriteBatchLineMaterial(renderProcess);
-			DrawInforMaterial = new ActivityInforMaterial(renderProcess);
-            // WaterMaterial here.
-            SkyMaterial = new SkyMaterial(renderProcess);
-            PrecipMaterial = new PrecipMaterial(renderProcess);
-            LightGlowMaterial = new LightGlowMaterial(renderProcess);
-            LightConeMaterial = new LightConeMaterial(renderProcess);
-            MissingTexture = renderProcess.Content.Load<Texture2D>("blank");
-            YellowMaterial = new YellowMaterial(renderProcess);
-            ShadowMapMaterial = new ShadowMapMaterial(renderProcess);
-            ShadowMapShader = new ShadowMapShader(renderProcess.GraphicsDevice, renderProcess.Content);
-			PopupWindowMaterial = new PopupWindowMaterial(renderProcess);
-			PopupWindowShader = new PopupWindowShader(renderProcess.GraphicsDevice, renderProcess.Content);
-            IsInitialized = true;
+            Viewer = viewer;
+            LightConeShader = new LightConeShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            LightGlowShader = new LightGlowShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            ParticleEmitterShader = new ParticleEmitterShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            PopupWindowShader = new PopupWindowShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            PrecipShader = new PrecipShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            if (File.Exists(viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace"))
+                SceneryShader.OverlayTexture = MSTS.ACEFile.Texture2DFromFile(viewer.RenderProcess.GraphicsDevice, viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
+            ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+
+            // MUST only call XNA Content from main (Render) thread!
+            MissingTexture = viewer.RenderProcess.Content.Load<Texture2D>("blank");
         }
 
-		public static Material Load(RenderProcess renderProcess, string materialName)
+        public Material Load(string materialName)
         {
-            return Load(renderProcess, materialName, null, 0, 0);
-        }
-		public static Material Load(RenderProcess renderProcess, string materialName, string textureName)
-        {
-            return Load(renderProcess, materialName, textureName, 0, 0);
+            return Load(materialName, null, 0, 0);
         }
 
-		public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options)
+        public Material Load(string materialName, string textureName)
         {
-            return Load(renderProcess, materialName, textureName, options, 0);
+            return Load(materialName, textureName, 0, 0);
         }
 
-        public static Material Load(RenderProcess renderProcess, string materialName, string textureName, int options, float mipMapBias)
+        public Material Load(string materialName, string textureName, int options)
         {
-            System.Diagnostics.Debug.Assert(IsInitialized, "Must initialize Materials before using.");
-            if (!IsInitialized)             // this shouldn't happen, but if it does
-            {
-                Trace.TraceWarning("Program Bug: Must initialize Materials before using.");
-                Initialize(renderProcess);  // warn, and do it now rather than fail
-            }
+            return Load(materialName, textureName, options, 0);
+        }
 
+        public Material Load(string materialName, string textureName, int options, float mipMapBias)
+        {
             if (textureName != null)
                 textureName = textureName.ToLower();
 
-            switch (materialName)
+            var materialKey = String.Format("{0}:{1}:{2}:{3}", materialName, textureName, options, mipMapBias);
+
+            if (!Materials.ContainsKey(materialKey))
             {
-                case "SpriteBatch":
-                    return SpriteBatchMaterial;
-				case "SpriteBatchLine":
-					return SpriteBatchLineMaterial;
-				case "DrawInforMaterial":
-					return DrawInforMaterial;
-                case "Terrain":
-                    if (!TerrainMaterials.ContainsKey(textureName))
-                    {
-                        TerrainMaterial material = new TerrainMaterial(renderProcess, textureName);
-                        TerrainMaterials.Add(textureName, material);
-                        return material;
-                    }
-                    else
-                    {
-                        return TerrainMaterials[textureName];
-                    }
-                case "SceneryMaterial":
-                    string key;
-                    if (textureName != null)
-                        key = options.ToString() + ":" + mipMapBias.ToString() + ":" + textureName;
-                    else
-                        key = options.ToString() + ":";
-                    if (!SceneryMaterials.ContainsKey(key))
-                    {
-                        SceneryMaterial sceneryMaterial = new SceneryMaterial(renderProcess, textureName, (SceneryMaterialOptions)options, mipMapBias);
-                        SceneryMaterials.Add(key, sceneryMaterial);
-                        return sceneryMaterial;
-                    }
-                    else
-                    {
-                        return SceneryMaterials[key];
-                    }
-                case "WaterMaterial":
-					if (!WaterMaterials.ContainsKey(textureName))
-					{
-						WaterMaterial material = new WaterMaterial(renderProcess, textureName);
-						WaterMaterials.Add(textureName, material);
-						return material;
-					}
-					else
-					{
-						return WaterMaterials[textureName];
-					}
-                case "SkyMaterial":
-                    return SkyMaterial;
-                case "ParticleEmitterMaterial":
-                        return new ParticleEmitterMaterial(renderProcess);
-                case "PrecipMaterial":
-                    return PrecipMaterial;
-                case "LightGlowMaterial":
-                    return LightGlowMaterial;
-                case "LightConeMaterial":
-                    return LightConeMaterial;
-                case "ForestMaterial":
-                        if (!ForestMaterials.ContainsKey(textureName))
-                        {
-                            ForestMaterial material = new ForestMaterial(renderProcess, textureName);
-                            ForestMaterials.Add(textureName, material);
-                            return material;
-                        }
-                        else
-                        {
-                            return ForestMaterials[textureName];
-                        }
-				case "SignalLightMaterial":
-					if (!SignalLightMaterials.ContainsKey(textureName))
-                    {
-						var material = new SignalLightMaterial(renderProcess, textureName);
-						SignalLightMaterials.Add(textureName, material);
-                        return material;
-                    }
-                    else
-                    {
-						return SignalLightMaterials[textureName];
-                    }
-                case "TransferMaterial":
-                    if (!TransferMaterials.ContainsKey(textureName))
-                    {
-                        var material = new TransferMaterial(renderProcess, textureName);
-                        TransferMaterials.Add(textureName, material);
-                        return material;
-                    }
-                    else
-                    {
-                        return TransferMaterials[textureName];
-                    }
-                default:
-                    return Load(renderProcess, "SceneryMaterial");
+                switch (materialName)
+                {
+                    case "DrawInfor":
+                        Materials[materialKey] = new ActivityInforMaterial(Viewer);
+                        break;
+                    case "Forest":
+                        Materials[materialKey] = new ForestMaterial(Viewer, textureName);
+                        break;
+                    case "LightCone":
+                        Materials[materialKey] = new LightConeMaterial(Viewer);
+                        break;
+                    case "LightGlow":
+                        Materials[materialKey] = new LightGlowMaterial(Viewer);
+                        break;
+                    case "PopupWindow":
+                        Materials[materialKey] = new PopupWindowMaterial(Viewer);
+                        break;
+                    case "ParticleEmitter":
+                        Materials[materialKey] = new ParticleEmitterMaterial(Viewer);
+                        break;
+                    case "Precip":
+                        Materials[materialKey] = new PrecipMaterial(Viewer);
+                        break;
+                    case "Scenery":
+                        Materials[materialKey] = new SceneryMaterial(Viewer, textureName, (SceneryMaterialOptions)options, mipMapBias);
+                        break;
+                    case "ShadowMap":
+                        Materials[materialKey] = new ShadowMapMaterial(Viewer);
+                        break;
+                    case "SignalLight":
+                        Materials[materialKey] = new SignalLightMaterial(Viewer, textureName);
+                        break;
+                    case "Sky":
+                        Materials[materialKey] = new SkyMaterial(Viewer);
+                        break;
+                    case "SpriteBatchLine":
+                        Materials[materialKey] = new SpriteBatchLineMaterial(Viewer);
+                        break;
+                    case "SpriteBatch":
+                        Materials[materialKey] = new SpriteBatchMaterial(Viewer);
+                        break;
+                    case "Terrain":
+                        Materials[materialKey] = new TerrainMaterial(Viewer, textureName);
+                        break;
+                    case "Transfer":
+                        Materials[materialKey] = new TransferMaterial(Viewer, textureName);
+                        break;
+                    case "Water":
+                        Materials[materialKey] = new WaterMaterial(Viewer, textureName);
+                        break;
+                    default:
+                        Trace.TraceError("Code requested an unknown material type of {0}", materialName);
+                        Materials[materialKey] = new YellowMaterial(Viewer);
+                        break;
+                }
             }
+            return Materials[materialKey];
         }
 
+        public void Mark()
+        {
+            MaterialMarks = new Dictionary<string, bool>(Materials.Count);
+            foreach (var path in Materials.Keys)
+                MaterialMarks.Add(path, false);
+        }
+
+        public void Mark(Material material)
+        {
+            if (Materials.ContainsValue(material))
+                MaterialMarks[Materials.First(kvp => kvp.Value == material).Key] = true;
+        }
+
+        public void Sweep()
+        {
+            foreach (var path in MaterialMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+                Materials.Remove(path);
+        }
+
+        [CallOnThread("Updater")]
+        public string GetStatus()
+        {
+            return String.Format("{0:F0} materials", Materials.Keys.Count);
+        }
+
+        public static Color FogColor = new Color(110, 110, 110, 255);
+        public static float FogCoeff = 0.75f;
         public static float ViewingDistance = 3000;  // TODO, this is awkward, viewer must set this to control fog
 
-        static internal Vector3 sunDirection;
-        static int lastLightState = 0;
-		static double fadeStartTimer = 0;
-		static float fadeDuration = -1;
-		internal static void UpdateShaders(RenderProcess renderProcess, GraphicsDevice graphicsDevice)
+        internal Vector3 sunDirection;
+        int lastLightState = 0;
+		double fadeStartTimer = 0;
+		float fadeDuration = -1;
+		internal void UpdateShaders()
 		{
-            sunDirection = renderProcess.Viewer.World.Sky.solarDirection;
+            sunDirection = Viewer.World.Sky.solarDirection;
 			SceneryShader.LightVector = sunDirection;
 
 			// Headlight illumination
-            if (renderProcess.Viewer.PlayerLocomotiveViewer != null
-                && renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer != null
-                && renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer.HasLightCone)
+            if (Viewer.PlayerLocomotiveViewer != null
+                && Viewer.PlayerLocomotiveViewer.lightDrawer != null
+                && Viewer.PlayerLocomotiveViewer.lightDrawer.HasLightCone)
             {
-                var lightDrawer = renderProcess.Viewer.PlayerLocomotiveViewer.lightDrawer;
-                var currentLightState = renderProcess.Viewer.PlayerLocomotive.Headlight;
+                var lightDrawer = Viewer.PlayerLocomotiveViewer.lightDrawer;
+                var currentLightState = Viewer.PlayerLocomotive.Headlight;
                 if (currentLightState != lastLightState)
                 {
                     if (currentLightState > lastLightState)
                     {
                         if (lightDrawer.LightConeFadeIn > 0)
                         {
-                            fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
+                            fadeStartTimer = Viewer.Simulator.ClockTime;
                             fadeDuration = lightDrawer.LightConeFadeIn;
                         }
                     }
@@ -306,7 +266,7 @@ namespace ORTS
                     {
                         if (lightDrawer.LightConeFadeOut > 0)
                         {
-                            fadeStartTimer = renderProcess.Viewer.Simulator.ClockTime;
+                            fadeStartTimer = Viewer.Simulator.ClockTime;
                             fadeDuration = -lightDrawer.LightConeFadeOut;
                         }
                     }
@@ -316,7 +276,7 @@ namespace ORTS
                     // This occurs when switching locos and needs to be handled or we get lingering light.
                     SceneryShader.SetHeadlightOff();
                 else
-                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(renderProcess.Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration, ref lightDrawer.LightConeColor);
+                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration, ref lightDrawer.LightConeColor);
             }
             else
             {
@@ -324,19 +284,21 @@ namespace ORTS
             }
 			// End headlight illumination
 
-            SceneryShader.Overcast = renderProcess.Viewer.World.Sky.overcast;
-			SceneryShader.ViewerPos = renderProcess.Viewer.Camera.XNALocation(renderProcess.Viewer.Camera.CameraWorldLocation);
+            SceneryShader.Overcast = Viewer.World.Sky.overcast;
+			SceneryShader.ViewerPos = Viewer.Camera.XNALocation(Viewer.Camera.CameraWorldLocation);
 
-			SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref Materials.FogColor);
+			SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
 		}
     }
 
 	public abstract class Material
 	{
+        public readonly Viewer3D Viewer;
 		readonly string Key;
 
-		protected Material(string key)
+		protected Material(Viewer3D viewer, string key)
 		{
+            Viewer = viewer;
 			Key = key;
 		}
 
@@ -356,21 +318,23 @@ namespace ORTS
         public virtual TextureAddressMode GetShadowTextureAddressMode() { return TextureAddressMode.Wrap; }
 
         [CallOnThread("Loader")]
-        public virtual void Mark() { }
+        public virtual void Mark() {
+            Viewer.MaterialManager.Mark(this);
+        }
     }
 
 	public class EmptyMaterial : Material
 	{
-		public EmptyMaterial()
-			: base(null)
+        public EmptyMaterial(Viewer3D viewer)
+			: base(viewer, null)
 		{
 		}
 	}
 
     public class BasicMaterial : Material
 	{
-        public BasicMaterial(string key)
-            : base(key)
+        public BasicMaterial(Viewer3D viewer, string key)
+            : base(viewer, key)
         {
         }
 
@@ -383,8 +347,8 @@ namespace ORTS
 
     public class BasicBlendedMaterial : BasicMaterial
     {
-        public BasicBlendedMaterial(string key)
-            : base(key)
+        public BasicBlendedMaterial(Viewer3D viewer, string key)
+            : base(viewer, key)
         {
         }
 
@@ -398,10 +362,10 @@ namespace ORTS
     {
 		public SpriteBatch SpriteBatch;
 
-		public SpriteBatchMaterial(RenderProcess renderProcess)
-			: base(null)
+        public SpriteBatchMaterial(Viewer3D viewer)
+			: base(viewer, null)
 		{
-            SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
+            SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -428,20 +392,18 @@ namespace ORTS
 	{
 		public readonly SpriteBatch SpriteBatch;
 		public readonly Texture2D Texture;
-		readonly RenderProcess RenderProcess;
 
-		public SpriteBatchLineMaterial(RenderProcess renderProcess)
-			: base(null)
+        public SpriteBatchLineMaterial(Viewer3D viewer)
+            : base(viewer, null)
 		{
-			RenderProcess = renderProcess;
-			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
+            SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
 			Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
 			Texture.SetData(new[] { Color.White });
 		}
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
+            float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / Viewer.RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
 			Vector3 screenScaling = new Vector3(scaling);
 			Matrix xForm = Matrix.CreateScale(screenScaling);
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
@@ -468,7 +430,7 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(Texture);
+            Viewer.TextureManager.Mark(Texture);
             base.Mark();
         }
 	}
@@ -514,7 +476,6 @@ namespace ORTS
 		readonly float MipMapBias = 0;
 		readonly Texture2D Texture;
 		readonly Texture2D NightTexture;
-		readonly RenderProcess RenderProcess;
 		IEnumerator<EffectPass> ShaderPassesDarkShade;
 		IEnumerator<EffectPass> ShaderPassesFullBright;
 		IEnumerator<EffectPass> ShaderPassesHalfBright;
@@ -522,17 +483,16 @@ namespace ORTS
 		IEnumerator<EffectPass> ShaderPassesVegetation;
 		IEnumerator<EffectPass> ShaderPasses;
 
-        public SceneryMaterial(RenderProcess renderProcess, string texturePath, SceneryMaterialOptions options, float mipMapBias)
-			: base(String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
+        public SceneryMaterial(Viewer3D viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
+            : base(viewer, String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
 		{
-            RenderProcess = renderProcess;
             Options = options;
             MipMapBias = mipMapBias;
-            Texture = renderProcess.Viewer.TextureManager.Get(texturePath);
+            Texture = Viewer.RenderProcess.Viewer.TextureManager.Get(texturePath);
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0) {
-                var nightTexturePath = Helpers.GetNightTextureFile(renderProcess.Viewer.Simulator, texturePath);
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.RenderProcess.Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
-                    NightTexture = renderProcess.Viewer.TextureManager.Get(nightTexturePath.ToLower());
+                    NightTexture = Viewer.RenderProcess.Viewer.TextureManager.Get(nightTexturePath.ToLower());
             }
         }
 
@@ -542,11 +502,11 @@ namespace ORTS
             rs.CullMode = CullMode.CullCounterClockwiseFace;
 			graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = 0;
 
-            var shader = Materials.SceneryShader;
+            var shader = Viewer.MaterialManager.SceneryShader;
             if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = shader.Techniques["DarkShade"].Passes.GetEnumerator();
             if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques["FullBright"].Passes.GetEnumerator();
             if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques["HalfBright"].Passes.GetEnumerator();
-            if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
+            if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
             if (ShaderPassesVegetation == null) ShaderPassesVegetation = shader.Techniques["Vegetation"].Passes.GetEnumerator();
 
 			shader.LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
@@ -567,7 +527,7 @@ namespace ORTS
 			switch (Options & SceneryMaterialOptions.ShaderMask)
 			{
                 case SceneryMaterialOptions.ShaderImage:
-                    shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
+                    shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
                     ShaderPasses = ShaderPassesImage;
                     break;
                 case SceneryMaterialOptions.ShaderDarkShade:
@@ -607,7 +567,7 @@ namespace ORTS
 
             graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = GetShadowTextureAddressMode();
 
-			if (NightTexture != null && Materials.sunDirection.Y < 0.0f)
+            if (NightTexture != null && Viewer.MaterialManager.sunDirection.Y < 0.0f)
 			{
 				shader.ImageTexture = NightTexture;
 				shader.ImageTextureIsNight = true;
@@ -628,7 +588,7 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var shader = Materials.SceneryShader;
+            var shader = Viewer.MaterialManager.SceneryShader;
             var viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
@@ -651,7 +611,7 @@ namespace ORTS
 
 		public override void ResetState(GraphicsDevice graphicsDevice)
 		{
-            var shader = Materials.SceneryShader;
+            var shader = Viewer.MaterialManager.SceneryShader;
             shader.ImageTextureIsNight = false;
             shader.LightingDiffuse = 1;
             shader.LightingSpecular = 0;
@@ -675,7 +635,7 @@ namespace ORTS
 
 		public override Texture2D GetShadowTexture()
 		{
-			if (NightTexture != null && Materials.sunDirection.Y < 0.0f)
+            if (NightTexture != null && Viewer.MaterialManager.sunDirection.Y < 0.0f)
 				return NightTexture;
 			
 			return Texture;
@@ -700,8 +660,8 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(Texture);
-            RenderProcess.Viewer.TextureManager.Mark(NightTexture);
+            Viewer.TextureManager.Mark(Texture);
+            Viewer.TextureManager.Mark(NightTexture);
             base.Mark();
         }
     }
@@ -710,23 +670,21 @@ namespace ORTS
     {
         readonly Texture2D PatchTexture;
         readonly Texture2D PatchTextureOverlay;
-        readonly RenderProcess RenderProcess;
 		IEnumerator<EffectPass> ShaderPasses;
 
-        public TerrainMaterial(RenderProcess renderProcess, string terrainTexture)
-			: base(terrainTexture)
+        public TerrainMaterial(Viewer3D viewer, string terrainTexture)
+            : base(viewer, terrainTexture)
 		{
             var textures = terrainTexture.Split('\0');
-            PatchTexture = renderProcess.Viewer.TextureManager.Get(textures[0]);
-            PatchTextureOverlay = textures.Length > 1 ? renderProcess.Viewer.TextureManager.Get(textures[1]) : null;
-            RenderProcess = renderProcess;
+            PatchTexture = Viewer.TextureManager.Get(textures[0]);
+            PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-            var shader = Materials.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"].Passes.GetEnumerator();
+            var shader = Viewer.MaterialManager.SceneryShader;
+            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"].Passes.GetEnumerator();
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
 
@@ -743,7 +701,7 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var shader = Materials.SceneryShader;
+            var shader = Viewer.MaterialManager.SceneryShader;
             var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
@@ -766,8 +724,8 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(PatchTexture);
-            RenderProcess.Viewer.TextureManager.Mark(PatchTextureOverlay);
+            Viewer.TextureManager.Mark(PatchTexture);
+            Viewer.TextureManager.Mark(PatchTextureOverlay);
             base.Mark();
         }
     }
@@ -775,27 +733,25 @@ namespace ORTS
     public class SkyMaterial : Material
     {
         SkyShader SkyShader;
-        Texture2D skyTexture;
-        Texture2D starTextureN;
-        Texture2D starTextureS;
-        Texture2D moonTexture;
-        Texture2D moonMask;
-        Texture2D cloudTexture;
+        Texture2D SkyTexture;
+        Texture2D StarTextureN;
+        Texture2D StarTextureS;
+        Texture2D MoonTexture;
+        Texture2D MoonMask;
+        Texture2D CloudTexture;
         private Matrix XNAMoonMatrix;
-        readonly RenderProcess RenderProcess;
 		IEnumerator<EffectPass> ShaderPasses;
 
-		public SkyMaterial(RenderProcess renderProcess)
-			: base(null)
+        public SkyMaterial(Viewer3D viewer)
+            : base(viewer, null)
 		{
-            RenderProcess = renderProcess;
-            SkyShader = Materials.SkyShader;
-            skyTexture = renderProcess.Content.Load<Texture2D>("SkyDome1");
-            starTextureN = renderProcess.Content.Load<Texture2D>("Starmap_N");
-            starTextureS = renderProcess.Content.Load<Texture2D>("Starmap_S");
-            moonTexture = renderProcess.Content.Load<Texture2D>("MoonMap");
-            moonMask = renderProcess.Content.Load<Texture2D>("MoonMask");
-            cloudTexture = renderProcess.Content.Load<Texture2D>("Clouds01");
+            SkyShader = Viewer.MaterialManager.SkyShader;
+            SkyTexture = Viewer.RenderProcess.Content.Load<Texture2D>("SkyDome1");
+            StarTextureN = Viewer.RenderProcess.Content.Load<Texture2D>("Starmap_N");
+            StarTextureS = Viewer.RenderProcess.Content.Load<Texture2D>("Starmap_S");
+            MoonTexture = Viewer.RenderProcess.Content.Load<Texture2D>("MoonMap");
+            MoonMask = Viewer.RenderProcess.Content.Load<Texture2D>("MoonMask");
+            CloudTexture = Viewer.RenderProcess.Content.Load<Texture2D>("Clouds01");
         }
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -804,33 +760,33 @@ namespace ORTS
 
             // Adjust Fog color for day-night conditions and overcast
             FogDay2Night(
-                RenderProcess.Viewer.World.Sky.solarDirection.Y,
-                RenderProcess.Viewer.World.Sky.overcast);
-            Materials.FogCoeff = RenderProcess.Viewer.World.Sky.fogCoeff;
+                Viewer.World.Sky.solarDirection.Y,
+                Viewer.World.Sky.overcast);
+            SharedMaterialManager.FogCoeff = Viewer.World.Sky.fogCoeff;
 
-            SkyShader.SkyTexture = skyTexture;
-            SkyShader.StarTexture = skyTexture;
-            SkyShader.SunDirection = RenderProcess.Viewer.World.Sky.solarDirection;
-            if (RenderProcess.Viewer.World.Sky.latitude > 0)
-                SkyShader.StarTexture = starTextureN;
+            SkyShader.SkyTexture = SkyTexture;
+            SkyShader.StarTexture = SkyTexture;
+            SkyShader.SunDirection = Viewer.World.Sky.solarDirection;
+            if (Viewer.World.Sky.latitude > 0)
+                SkyShader.StarTexture = StarTextureN;
             else
-                SkyShader.StarTexture = starTextureS;
-            SkyShader.SunpeakColor = RenderProcess.Viewer.World.Sky.sunpeakColor;
-            SkyShader.SunriseColor = RenderProcess.Viewer.World.Sky.sunriseColor;
-            SkyShader.SunsetColor = RenderProcess.Viewer.World.Sky.sunsetColor;
-            SkyShader.Time = (float)RenderProcess.Viewer.Simulator.ClockTime / 100000;
+                SkyShader.StarTexture = StarTextureS;
+            SkyShader.SunpeakColor = Viewer.World.Sky.sunpeakColor;
+            SkyShader.SunriseColor = Viewer.World.Sky.sunriseColor;
+            SkyShader.SunsetColor = Viewer.World.Sky.sunsetColor;
+            SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyConstants.skyRadius / 20;
-            SkyShader.MoonTexture = moonTexture;
-            SkyShader.MoonMaskTexture = moonMask;
-            SkyShader.Random = RenderProcess.Viewer.World.Sky.moonPhase;
-            SkyShader.CloudTexture = cloudTexture;
-            SkyShader.Overcast = RenderProcess.Viewer.World.Sky.overcast;
-            SkyShader.WindSpeed = RenderProcess.Viewer.World.Sky.windSpeed;
-            SkyShader.WindDirection = RenderProcess.Viewer.World.Sky.windDirection;
+            SkyShader.MoonTexture = MoonTexture;
+            SkyShader.MoonMaskTexture = MoonMask;
+            SkyShader.Random = Viewer.World.Sky.moonPhase;
+            SkyShader.CloudTexture = CloudTexture;
+            SkyShader.Overcast = Viewer.World.Sky.overcast;
+            SkyShader.WindSpeed = Viewer.World.Sky.windSpeed;
+            SkyShader.WindDirection = Viewer.World.Sky.windDirection;
 
             // Sky dome
             SkyShader.CurrentTechnique = SkyShader.Techniques["SkyTechnique"];
-            RenderProcess.Viewer.World.Sky.SkyMesh.drawIndex = 1;
+            Viewer.World.Sky.SkyMesh.drawIndex = 1;
 
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
 
@@ -852,7 +808,7 @@ namespace ORTS
 
             // Moon
             SkyShader.CurrentTechnique = SkyShader.Techniques["MoonTechnique"];
-            RenderProcess.Viewer.World.Sky.SkyMesh.drawIndex = 2;
+            Viewer.World.Sky.SkyMesh.drawIndex = 2;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
@@ -861,9 +817,9 @@ namespace ORTS
             rs.SourceBlend = Blend.SourceAlpha;
 
             // Send the transform matrices to the shader
-            int skyRadius = RenderProcess.Viewer.World.Sky.SkyMesh.skyRadius;
-            int cloudRadiusDiff = RenderProcess.Viewer.World.Sky.SkyMesh.cloudDomeRadiusDiff;
-            XNAMoonMatrix = Matrix.CreateTranslation(RenderProcess.Viewer.World.Sky.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
+            int skyRadius = Viewer.World.Sky.SkyMesh.skyRadius;
+            int cloudRadiusDiff = Viewer.World.Sky.SkyMesh.cloudDomeRadiusDiff;
+            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.Sky.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
             SkyShader.Begin();
@@ -884,7 +840,7 @@ namespace ORTS
 
             // Clouds
             SkyShader.CurrentTechnique = SkyShader.Techniques["CloudTechnique"];
-            RenderProcess.Viewer.World.Sky.SkyMesh.drawIndex = 3;
+            Viewer.World.Sky.SkyMesh.drawIndex = 3;
 
             rs.CullMode = CullMode.CullCounterClockwiseFace;
 
@@ -953,38 +909,36 @@ namespace ORTS
             floatColor *= (1 - 0.5f * overcast);
 
             // Convert color format
-            Materials.FogColor.R = (byte)(floatColor.X * 255);
-            Materials.FogColor.G = (byte)(floatColor.Y * 255);
-            Materials.FogColor.B = (byte)(floatColor.Z * 255);
+            SharedMaterialManager.FogColor.R = (byte)(floatColor.X * 255);
+            SharedMaterialManager.FogColor.G = (byte)(floatColor.Y * 255);
+            SharedMaterialManager.FogColor.B = (byte)(floatColor.Z * 255);
         }
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(skyTexture);
-            RenderProcess.Viewer.TextureManager.Mark(starTextureN);
-            RenderProcess.Viewer.TextureManager.Mark(starTextureS);
-            RenderProcess.Viewer.TextureManager.Mark(moonTexture);
-            RenderProcess.Viewer.TextureManager.Mark(moonMask);
-            RenderProcess.Viewer.TextureManager.Mark(cloudTexture);
+            Viewer.TextureManager.Mark(SkyTexture);
+            Viewer.TextureManager.Mark(StarTextureN);
+            Viewer.TextureManager.Mark(StarTextureS);
+            Viewer.TextureManager.Mark(MoonTexture);
+            Viewer.TextureManager.Mark(MoonMask);
+            Viewer.TextureManager.Mark(CloudTexture);
             base.Mark();
         }
     }
 
     public class ParticleEmitterMaterial : Material
     {
-        public Texture2D texture = null;
-        readonly RenderProcess renderProcess;
+        public Texture2D Texture;
 
-        public ParticleEmitterMaterial(RenderProcess renderProcess)
-            : base(null)
+        public ParticleEmitterMaterial(Viewer3D viewer)
+            : base(viewer, null)
         {
-            this.renderProcess = renderProcess;
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            var shader = Materials.ParticleEmitterShader;
-            shader.CurrentTime = (float)renderProcess.Viewer.Simulator.GameTime;
+            var shader = Viewer.MaterialManager.ParticleEmitterShader;
+            shader.CurrentTime = (float)Viewer.Simulator.GameTime;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
@@ -995,7 +949,7 @@ namespace ORTS
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var shader = Materials.ParticleEmitterShader;
+            var shader = Viewer.MaterialManager.ParticleEmitterShader;
 
             shader.Begin();
             foreach (var pass in shader.CurrentTechnique.Passes)
@@ -1007,7 +961,7 @@ namespace ORTS
                     shader.CameraTileXY = emitter.CameraTileXZ;
                     shader.EmitDirection = emitter.EmitterData.Direction;
                     shader.EmitSize = emitter.EmitterData.NozzleWidth;
-                    shader.Texture = texture;
+                    shader.Texture = Texture;
                     shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -1033,42 +987,40 @@ namespace ORTS
 
         public override void Mark()
         {
-            renderProcess.Viewer.TextureManager.Mark(texture);
+            Viewer.TextureManager.Mark(Texture);
             base.Mark();
         }
     }
 
 	public class PrecipMaterial : Material
     {
-        Texture2D rainTexture;
-        Texture2D snowTexture;
-        public RenderProcess RenderProcess;
+        Texture2D RainTexture;
+        Texture2D SnowTexture;
 		IEnumerator<EffectPass> ShaderPasses;
 
-		public PrecipMaterial(RenderProcess renderProcess)
-			: base(null)
+        public PrecipMaterial(Viewer3D viewer)
+            : base(viewer, null)
 		{
-			RenderProcess = renderProcess;
-            rainTexture = renderProcess.Content.Load<Texture2D>("Raindrop");
-            snowTexture = renderProcess.Content.Load<Texture2D>("Snowflake");
+            RainTexture = Viewer.RenderProcess.Content.Load<Texture2D>("Raindrop");
+            SnowTexture = Viewer.RenderProcess.Content.Load<Texture2D>("Snowflake");
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-            var shader = Materials.PrecipShader;
+            var shader = Viewer.MaterialManager.PrecipShader;
             shader.CurrentTechnique = shader.Techniques["RainTechnique"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["RainTechnique"].Passes.GetEnumerator();
-            shader.WeatherType = (int)RenderProcess.Viewer.Simulator.Weather;
-            shader.SunDirection = RenderProcess.Viewer.World.Sky.solarDirection;
-            shader.ViewportHeight = RenderProcess.Viewer.DisplaySize.Y;
-            shader.CurrentTime = (float)RenderProcess.Viewer.Simulator.ClockTime;
-            switch (RenderProcess.Viewer.Simulator.Weather)
+            shader.WeatherType = (int)Viewer.Simulator.Weather;
+            shader.SunDirection = Viewer.World.Sky.solarDirection;
+            shader.ViewportHeight = Viewer.DisplaySize.Y;
+            shader.CurrentTime = (float)Viewer.Simulator.ClockTime;
+            switch (Viewer.Simulator.Weather)
             {
                 case MSTS.WeatherType.Snow:
-                    shader.PrecipTexture = snowTexture;
+                    shader.PrecipTexture = SnowTexture;
                     break;
                 case MSTS.WeatherType.Rain:
-                    shader.PrecipTexture = rainTexture;
+                    shader.PrecipTexture = RainTexture;
                     break;
                 // Safe? or need a default here? If so, what?
             }
@@ -1083,10 +1035,10 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-			if (RenderProcess.Viewer.Simulator.Weather == MSTS.WeatherType.Clear)
+			if (Viewer.Simulator.Weather == MSTS.WeatherType.Clear)
 				return;
 
-            var shader = Materials.PrecipShader;
+            var shader = Viewer.MaterialManager.PrecipShader;
 
             shader.Begin();
 			ShaderPasses.Reset();
@@ -1121,28 +1073,26 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(rainTexture);
-            RenderProcess.Viewer.TextureManager.Mark(snowTexture);
+            Viewer.TextureManager.Mark(RainTexture);
+            Viewer.TextureManager.Mark(SnowTexture);
             base.Mark();
         }
     }
 
 	public class ForestMaterial : Material
     {
-        readonly Texture2D TreeTexture = null;
-        readonly RenderProcess RenderProcess;
+        readonly Texture2D TreeTexture;
 		IEnumerator<EffectPass> ShaderPasses;
 
-		public ForestMaterial(RenderProcess renderProcess, string treeTexture)
-			: base(treeTexture)
+        public ForestMaterial(Viewer3D viewer, string treeTexture)
+            : base(viewer, treeTexture)
 		{
-            TreeTexture = renderProcess.Viewer.TextureManager.Get(treeTexture);
-            RenderProcess = renderProcess;
+            TreeTexture = Viewer.TextureManager.Get(treeTexture);
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			var shader = Materials.SceneryShader;
+            var shader = Viewer.MaterialManager.SceneryShader;
             shader.CurrentTechnique = shader.Techniques["Forest"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
             shader.ImageTexture = TreeTexture;
@@ -1155,7 +1105,7 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-			var shader = Materials.SceneryShader;
+            var shader = Viewer.MaterialManager.SceneryShader;
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
@@ -1191,28 +1141,26 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(TreeTexture);
+            Viewer.TextureManager.Mark(TreeTexture);
             base.Mark();
         }
     }
 
 	public class LightGlowMaterial : Material
     {
-        readonly Texture2D lightGlowTexture;
-        readonly RenderProcess RenderProcess;
+        readonly Texture2D LightGlowTexture;
 
-		public LightGlowMaterial(RenderProcess renderProcess)
-			: base(null)
+        public LightGlowMaterial(Viewer3D viewer)
+            : base(viewer, null)
 		{
-            lightGlowTexture = renderProcess.Content.Load<Texture2D>("Lightglow");
-            RenderProcess = renderProcess;
+            LightGlowTexture = Viewer.RenderProcess.Content.Load<Texture2D>("Lightglow");
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-            var shader = Materials.LightGlowShader;
+            var shader = Viewer.MaterialManager.LightGlowShader;
             shader.CurrentTechnique = shader.Techniques["LightGlow"];
-            shader.LightGlowTexture = lightGlowTexture;
+            shader.LightGlowTexture = LightGlowTexture;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
@@ -1223,7 +1171,7 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var shader = Materials.LightGlowShader;
+            var shader = Viewer.MaterialManager.LightGlowShader;
 
             shader.Begin();
             foreach (var pass in shader.CurrentTechnique.Passes)
@@ -1258,21 +1206,21 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(lightGlowTexture);
+            Viewer.TextureManager.Mark(LightGlowTexture);
             base.Mark();
         }
     }
     
     public class LightConeMaterial : Material
     {
-        public LightConeMaterial(RenderProcess renderProcess)
-            : base(null)
+        public LightConeMaterial(Viewer3D viewer)
+            : base(viewer, null)
         {
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            var shader = Materials.LightConeShader;
+            var shader = Viewer.MaterialManager.LightConeShader;
             shader.CurrentTechnique = shader.Techniques["LightCone"];
 
             var rs = graphicsDevice.RenderState;
@@ -1283,7 +1231,7 @@ namespace ORTS
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var shader = Materials.LightConeShader;
+            var shader = Viewer.MaterialManager.LightConeShader;
 
             shader.Begin();
             foreach (var pass in shader.CurrentTechnique.Passes)
@@ -1319,22 +1267,20 @@ namespace ORTS
 
 	public class WaterMaterial : Material
     {
-        readonly RenderProcess RenderProcess;
         readonly Texture2D WaterTexture;
 		IEnumerator<EffectPass> ShaderPasses;
 
-		public WaterMaterial(RenderProcess renderProcess, string waterTexturePath)
-			: base(waterTexturePath)
+        public WaterMaterial(Viewer3D viewer, string waterTexturePath)
+            : base(viewer, waterTexturePath)
 		{
-			RenderProcess = renderProcess;
-			WaterTexture = renderProcess.Viewer.TextureManager.Get(waterTexturePath);
+			WaterTexture = Viewer.TextureManager.Get(waterTexturePath);
 		}
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-            var shader = Materials.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
+            var shader = Viewer.MaterialManager.SceneryShader;
+            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
             shader.ImageTexture = WaterTexture;
 
             var samplerState = graphicsDevice.SamplerStates[0];
@@ -1352,7 +1298,7 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-			var shader = Materials.SceneryShader;
+            var shader = Viewer.MaterialManager.SceneryShader;
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
@@ -1388,7 +1334,7 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(WaterTexture);
+            Viewer.TextureManager.Mark(WaterTexture);
             base.Mark();
         }
     }
@@ -1410,12 +1356,12 @@ namespace ORTS
 			Blocker,
 		}
 
-		public ShadowMapMaterial(RenderProcess renderProcess)
-			: base(null)
+        public ShadowMapMaterial(Viewer3D viewer)
+            : base(viewer, null)
 		{
-            var shadowMapResolution = renderProcess.Viewer.Settings.ShadowMapResolution;
-            BlurVertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
-            BlurVertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, typeof(VertexPositionNormalTexture), 4, BufferUsage.WriteOnly);
+            var shadowMapResolution = Viewer.Settings.ShadowMapResolution;
+            BlurVertexDeclaration = new VertexDeclaration(Viewer.RenderProcess.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
+            BlurVertexBuffer = new VertexBuffer(Viewer.RenderProcess.GraphicsDevice, typeof(VertexPositionNormalTexture), 4, BufferUsage.WriteOnly);
             BlurVertexBuffer.SetData(new[] {
 				new VertexPositionNormalTexture(new Vector3(-1, +1, 0), Vector3.Zero, new Vector2(0, 0)),
 				new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(shadowMapResolution, 0)),
@@ -1426,7 +1372,7 @@ namespace ORTS
 
 		public void SetState(GraphicsDevice graphicsDevice, Mode mode)
 		{
-			var shader = Materials.ShadowMapShader;
+            var shader = Viewer.MaterialManager.ShadowMapShader;
 			shader.CurrentTechnique = shader.Techniques[mode == Mode.Forest ? "ShadowMapForest" : mode == Mode.Blocker ? "ShadowMapBlocker" : "ShadowMap"];
 			if (ShaderPassesShadowMap == null) ShaderPassesShadowMap = shader.Techniques["ShadowMap"].Passes.GetEnumerator();
 			if (ShaderPassesShadowMapForest == null) ShaderPassesShadowMapForest = shader.Techniques["ShadowMapForest"].Passes.GetEnumerator();
@@ -1439,7 +1385,7 @@ namespace ORTS
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
 		{
-			var shader = Materials.ShadowMapShader;
+            var shader = Viewer.MaterialManager.ShadowMapShader;
 			var viewproj = XNAViewMatrix * XNAProjectionMatrix;
             var samplerState = graphicsDevice.SamplerStates[0];
             var lastSamplerState = samplerState.AddressU;
@@ -1472,7 +1418,7 @@ namespace ORTS
 		{
 			var wvp = Matrix.Identity;
 
-			var shader = Materials.ShadowMapShader;
+            var shader = Viewer.MaterialManager.ShadowMapShader;
 			shader.CurrentTechnique = shader.Techniques["ShadowMapBlur"];
             shader.SetBlurData(ref wvp, ref wvp);
             if (ShaderPassesBlur == null) ShaderPassesBlur = shader.CurrentTechnique.Passes.GetEnumerator();
@@ -1520,18 +1466,18 @@ namespace ORTS
 
 	public class PopupWindowMaterial : Material
 	{
-		IEnumerator<EffectPass> ShaderPassesPopupWindow;
+        IEnumerator<EffectPass> ShaderPassesPopupWindow;
 		IEnumerator<EffectPass> ShaderPassesPopupWindowGlass;
 		IEnumerator<EffectPass> ShaderPasses;
 
-		public PopupWindowMaterial(RenderProcess renderProcess)
-			: base(null)
+        public PopupWindowMaterial(Viewer3D viewer)
+            : base(viewer, null)
 		{
 		}
 
 		public void SetState(GraphicsDevice graphicsDevice, Texture2D screen)
 		{
-			var shader = Materials.PopupWindowShader;
+            var shader = Viewer.MaterialManager.PopupWindowShader;
 			shader.CurrentTechnique = screen == null ? shader.Techniques["PopupWindow"] : shader.Techniques["PopupWindowGlass"];
 			if (ShaderPassesPopupWindow == null) ShaderPassesPopupWindow = shader.Techniques["PopupWindow"].Passes.GetEnumerator();
 			if (ShaderPassesPopupWindowGlass == null) ShaderPassesPopupWindowGlass = shader.Techniques["PopupWindowGlass"].Passes.GetEnumerator();
@@ -1549,7 +1495,7 @@ namespace ORTS
 
         public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var shader = Materials.PopupWindowShader;
+            var shader = Viewer.MaterialManager.PopupWindowShader;
 
             Matrix wvp = XNAWorldMatrix * XNAViewMatrix * XNAProjectionMatrix;
             shader.SetMatrix(XNAWorldMatrix, ref wvp);
@@ -1586,13 +1532,12 @@ namespace ORTS
         static BasicEffect basicEffect = null;
         RenderProcess RenderProcess;
 
-		public YellowMaterial(RenderProcess renderProcess)
-			: base(null)
+        public YellowMaterial(Viewer3D viewer)
+            : base(viewer, null)
 		{
-            RenderProcess = renderProcess;
             if (basicEffect == null)
             {
-                basicEffect = new BasicEffect(renderProcess.GraphicsDevice, null);
+                basicEffect = new BasicEffect(Viewer.RenderProcess.GraphicsDevice, null);
                 basicEffect.Alpha = 1.0f;
                 basicEffect.DiffuseColor = new Vector3(197.0f / 255.0f, 203.0f / 255.0f, 37.0f / 255.0f);
                 basicEffect.SpecularColor = new Vector3(0.25f, 0.25f, 0.25f);
@@ -1647,30 +1592,26 @@ namespace ORTS
 		public SpriteBatch SpriteBatch;
 		public Texture2D Texture;
 		public SpriteFont Font;
-		public RenderProcess RenderProcess;  // for diagnostics only
-		Viewer3D Viewer;
 
 		//texts are aligned as table cells, but they can be either in table A or table B
 		public List<Vector2>[] AlignedTextA;
 		public List<Vector2>[] AlignedTextB;
 		public float LineSpacing;
 
-		public ActivityInforMaterial(RenderProcess renderProcess)
-			: base(null)
+        public ActivityInforMaterial(Viewer3D viewer)
+            : base(viewer, null)
 		{
-			RenderProcess = renderProcess;
-			Viewer = RenderProcess.Viewer;
-			SpriteBatch = new SpriteBatch(renderProcess.GraphicsDevice);
+            SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
 			Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
 			Texture.SetData(new[] { Color.White });
-			Font = renderProcess.Content.Load<SpriteFont>("Arial");
+            Font = Viewer.RenderProcess.Content.Load<SpriteFont>("Arial");
             LineSpacing = Font.LineSpacing;
 			if (LineSpacing < 10) LineSpacing = 10; //if spacing between text lines is too small
 }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
 		{
-			float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
+            float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / Viewer.RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
 			Vector3 screenScaling = new Vector3(scaling);
 			Matrix xForm = Matrix.CreateScale(screenScaling);
 			SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);

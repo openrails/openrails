@@ -37,7 +37,7 @@ namespace ORTS
             Viewer = viewer;
             worldPosition = position;
 
-            forestMaterial = Materials.Load(Viewer.RenderProcess, "ForestMaterial", Helpers.GetForestTextureFile(viewer.Simulator, forest.TreeTexture), 0, 0);
+            forestMaterial = viewer.MaterialManager.Load("Forest", Helpers.GetForestTextureFile(viewer.Simulator, forest.TreeTexture), 0, 0);
 
             // Instantiate classes
             forestMesh = new ForestMesh(Viewer.RenderProcess, Viewer.Tiles, this, forest);

@@ -29,8 +29,8 @@ namespace ORTS
     {
         readonly Viewer3D Viewer;
 
-        Dictionary<string, SharedShape> SharedShapes = new Dictionary<string, SharedShape>();
-        Dictionary<string, bool> SharedShapesMarks;
+        Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
+        Dictionary<string, bool> ShapeMarks;
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
@@ -49,49 +49,45 @@ namespace ORTS
                 return EmptyShape;
 
             path = path.ToLowerInvariant();
-            if (!SharedShapes.ContainsKey(path))
+            if (!Shapes.ContainsKey(path))
             {
                 try
                 {
-                    SharedShapes.Add(path, new SharedShape(Viewer, path));
+                    Shapes.Add(path, new SharedShape(Viewer, path));
                 }
                 catch (Exception error)
                 {
                     Trace.TraceInformation(path);
                     Trace.WriteLine(error);
-                    SharedShapes.Add(path, EmptyShape);
+                    Shapes.Add(path, EmptyShape);
                 }
             }
-            return SharedShapes[path];
+            return Shapes[path];
         }
 
         public void Mark()
         {
-            SharedShapesMarks = new Dictionary<string, bool>(SharedShapes.Count);
-            foreach (var path in SharedShapes.Keys)
-                SharedShapesMarks.Add(path, false);
+            ShapeMarks = new Dictionary<string, bool>(Shapes.Count);
+            foreach (var path in Shapes.Keys)
+                ShapeMarks.Add(path, false);
         }
 
         public void Mark(SharedShape shape)
         {
-            if (SharedShapes.ContainsValue(shape))
-                SharedShapesMarks[SharedShapes.First(kvp => kvp.Value == shape).Key] = true;
+            if (Shapes.ContainsValue(shape))
+                ShapeMarks[Shapes.First(kvp => kvp.Value == shape).Key] = true;
         }
 
         public void Sweep()
         {
-            foreach (var path in SharedShapesMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
-            {
-                //Trace.Write("[T]");
-                //Trace.WriteLine(path);
-                SharedShapes.Remove(path);
-            }
+            foreach (var path in ShapeMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+                Shapes.Remove(path);
         }
 
         [CallOnThread("Updater")]
         public string GetStatus()
         {
-            return String.Format("{0:F0} shapes", SharedShapes.Keys.Count);
+            return String.Format("{0:F0} shapes", Shapes.Keys.Count);
         }
     }
 
@@ -133,7 +129,6 @@ namespace ORTS
         [CallOnThread("Loader")]
         internal virtual void Mark()
         {
-            Viewer.ShapeManager.Mark(SharedShape);
             SharedShape.Mark();
         }
     }
@@ -339,7 +334,7 @@ namespace ORTS
 
 			SpeedPostObj = spo;
 			var maxVertex =  SpeedPostObj.Sign_Shape.NumShapes * 48;// every face has max 7 digits, each has 2 triangles
-            var material = Materials.Load(viewer.RenderProcess, "SceneryMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+            var material = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
 			
 			// Create and populate a new ShapePrimitive
 			NumVertices = NumIndices = 0;
@@ -499,7 +494,7 @@ namespace ORTS
 
         internal override void Mark()
         {
-            shapePrimitive.Material.Mark();
+            shapePrimitive.Mark();
             base.Mark();
         }
 	} // class SpeedPostShape
@@ -631,6 +626,12 @@ namespace ORTS
                 graphicsDevice.Indices = IndexBuffer;
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount);
             }
+        }
+
+        [CallOnThread("Loader")]
+        public virtual void Mark()
+        {
+            Material.Mark();
         }
     }
 
@@ -821,12 +822,16 @@ namespace ORTS
                     if ((textureFlags & Helpers.TextureFlags.Night) != 0)
                         options |= SceneryMaterialOptions.NightTexture;
 
-                    var material = Materials.Load(sharedShape.Viewer.RenderProcess, "SceneryMaterial", null, (int)options);
+                    Material material;
                     if (primitiveState.tex_idxs.Length != 0)
                     {
                         var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
-                        material = Materials.Load(sharedShape.Viewer.RenderProcess, "SceneryMaterial", Helpers.GetShapeTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.FilePath, imageName), (int)options, texture.MipMapLODBias);
+                        material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetShapeTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.FilePath, imageName), (int)options, texture.MipMapLODBias);
+                    }
+                    else
+                    {
+                        material = sharedShape.Viewer.MaterialManager.Load("Scenery", null, (int)options);
                     }
 
 #if OPTIMIZE_SHAPES_ON_LOAD
@@ -893,7 +898,7 @@ namespace ORTS
             internal void Mark()
             {
                 foreach (var prim in ShapePrimitives)
-                    prim.Material.Mark();
+                    prim.Mark();
             }
         }
 
@@ -1035,6 +1040,7 @@ namespace ORTS
         [CallOnThread("Loader")]
         internal void Mark()
         {
+            Viewer.ShapeManager.Mark(this);
             foreach (var lod in LodControls)
                 lod.Mark();
         }

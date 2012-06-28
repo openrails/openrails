@@ -269,9 +269,9 @@ namespace ORTS
         Vector3 ShadowMapY;
         Vector3[] ShadowMapCenter;
 
-        static readonly Material DummyBlendedMaterial = new EmptyMaterial();
-
         readonly RenderProcess RenderProcess;
+        readonly Material DummyBlendedMaterial;
+        readonly ShadowMapMaterial ShadowMapMaterial;
         readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
         readonly RenderItemCollection[] RenderShadowItems;
 
@@ -281,6 +281,8 @@ namespace ORTS
         public RenderFrame(RenderProcess owner)
         {
             RenderProcess = owner;
+            DummyBlendedMaterial = new EmptyMaterial(owner.Viewer);
+            ShadowMapMaterial = (ShadowMapMaterial)owner.Viewer.MaterialManager.Load("ShadowMap");
 
             for (int i = 0; i < RenderItems.Length; i++)
                 RenderItems[i] = new Dictionary<Material, RenderItemCollection>();
@@ -314,6 +316,8 @@ namespace ORTS
             for (int i = 0; i < RenderItems.Length; i++)
                 foreach (Material mat in RenderItems[i].Keys)
                     RenderItems[i][mat].Clear();
+            for (int i = 0; i < RenderItems.Length; i++)
+                RenderItems[i].Clear();
             if (RenderProcess.Viewer.Settings.DynamicShadows)
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                     RenderShadowItems[shadowMapIndex].Clear();
@@ -534,7 +538,7 @@ namespace ORTS
                 Console.WriteLine("Draw {");
             }
 
-            Materials.UpdateShaders(RenderProcess, graphicsDevice);
+            RenderProcess.Viewer.MaterialManager.UpdateShaders();
 
             if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
                 DrawShadows(graphicsDevice, logging);
@@ -606,35 +610,35 @@ namespace ORTS
             graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
 
             // Prepare for normal (non-blocking) rendering of scenery.
-            Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
+            ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
 
             // Render non-terrain, non-forest shadow items first.
             if (logging) Console.WriteLine("      {0,-5} * SceneryMaterial (normal)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is SceneryMaterial));
-            Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is SceneryMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is SceneryMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for normal (non-blocking) rendering of forests.
-            Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Forest);
+            ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Forest);
 
             // Render forest shadow items next.
             if (logging) Console.WriteLine("      {0,-5} * ForestMaterial (forest)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is ForestMaterial));
-            Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is ForestMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is ForestMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for normal (non-blocking) rendering of terrain.
-            Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
+            ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
 
             // Render terrain shadow items now, with their magic.
             if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is TerrainMaterial));
-            Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for blocking rendering of terrain.
-            Materials.ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Blocker);
+            ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Blocker);
 
             // Render terrain shadow items in blocking mode.
             if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (blocker)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is TerrainMaterial));
-            Materials.ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // All done.
-            Materials.ShadowMapMaterial.ResetState(graphicsDevice);
+            ShadowMapMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 			DebugRenderState(graphicsDevice.RenderState, Materials.ShadowMapMaterial.ToString());
 #endif
@@ -645,7 +649,7 @@ namespace ORTS
             // Blur the shadow map.
             if (RenderProcess.Viewer.Settings.ShadowMapBlur)
             {
-                ShadowMap[shadowMapIndex] = Materials.ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex], ShadowMapStencilBuffer, NormalStencilBuffer);
+                ShadowMap[shadowMapIndex] = ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex], ShadowMapStencilBuffer, NormalStencilBuffer);
 #if DEBUG_RENDER_STATE
 				DebugRenderState(graphicsDevice.RenderState, Materials.ShadowMapMaterial.ToString() + " ApplyBlur()");
 #endif
@@ -662,7 +666,7 @@ namespace ORTS
         void DrawSimple(GraphicsDevice graphicsDevice, bool logging)
         {
             if (logging) Console.WriteLine("  DrawSimple {");
-            graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Materials.FogColor, 1, 0);
+            graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
             DrawSequences(graphicsDevice, logging);
             if (logging) Console.WriteLine("  }");
         }
@@ -671,7 +675,7 @@ namespace ORTS
         {
             if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
             {
-                Materials.SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
+                RenderProcess.Viewer.MaterialManager.SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
             }
 
             var renderItems = new List<RenderItem>();

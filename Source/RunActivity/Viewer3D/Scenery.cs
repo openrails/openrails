@@ -304,6 +304,8 @@ namespace ORTS
         {
             foreach (var shape in sceneryObjects)
                 shape.Mark();
+            foreach (var dTrack in dTrackList)
+                dTrack.Mark();
             foreach (var forest in forestList)
                 forest.Mark();
         }

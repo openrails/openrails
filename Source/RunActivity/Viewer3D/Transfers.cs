@@ -22,7 +22,7 @@ namespace ORTS
         public TransferShape(Viewer3D viewer, MSTS.TransferObj transfer, WorldPosition position)
             : base(viewer, null, RemoveRotation(position), ShapeFlags.None)
         {
-            Material = Materials.Load(viewer.RenderProcess, "TransferMaterial", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, transfer.FileName));
+            Material = viewer.MaterialManager.Load("Transfer", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, transfer.FileName));
             Primitive = new TransferMesh(viewer, transfer.Width, transfer.Height, position);
         }
 
@@ -133,23 +133,21 @@ namespace ORTS
 
     public class TransferMaterial : Material
     {
-        readonly RenderProcess RenderProcess;
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public TransferMaterial(RenderProcess renderProcess, string textureName)
-            : base(textureName)
+        public TransferMaterial(Viewer3D viewer, string textureName)
+            : base(viewer, textureName)
         {
-            RenderProcess = renderProcess;
-            SceneryShader = Materials.SceneryShader;
-            Texture = renderProcess.Viewer.TextureManager.Get(textureName);
+            SceneryShader = Viewer.MaterialManager.SceneryShader;
+            Texture = Viewer.TextureManager.Get(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            var shader = Materials.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques[RenderProcess.Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
+            var shader = Viewer.MaterialManager.SceneryShader;
+            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
             if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
             shader.ImageTexture = Texture;
 
@@ -167,7 +165,7 @@ namespace ORTS
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            var shader = Materials.SceneryShader;
+            var shader = Viewer.MaterialManager.SceneryShader;
             var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
@@ -204,7 +202,7 @@ namespace ORTS
 
         public override void Mark()
         {
-            RenderProcess.Viewer.TextureManager.Mark(Texture);
+            Viewer.TextureManager.Mark(Texture);
             base.Mark();
         }
     }

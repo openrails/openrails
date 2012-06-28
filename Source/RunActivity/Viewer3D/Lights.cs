@@ -241,8 +241,8 @@ namespace ORTS
         {
             Viewer = viewer;
             Car = car;
-            LightGlowMaterial = Materials.Load(Viewer.RenderProcess, "LightGlowMaterial");
-            LightConeMaterial = Materials.Load(Viewer.RenderProcess, "LightConeMaterial");
+            LightGlowMaterial = viewer.MaterialManager.Load("LightGlow");
+            LightConeMaterial = viewer.MaterialManager.Load("LightCone");
 
             UpdateState();
             if (Car.Lights != null)
@@ -350,6 +350,13 @@ namespace ORTS
                 LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));
                 LightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
             }
+        }
+
+        [CallOnThread("Loader")]
+        public void Mark()
+        {
+            LightGlowMaterial.Mark();
+            LightConeMaterial.Mark();
         }
 
         public static void CalculateLightCone(LightState lightState, out Vector3 position, out Vector3 direction, out float angle, out float radius, out float distance, out Vector4 color)

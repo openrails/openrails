@@ -2184,7 +2184,7 @@ namespace ORTS
                 DayTextures.Add(FileName, tex);
             }
             else
-                DayTextures.Add(FileName, Materials.MissingTexture);
+                DayTextures.Add(FileName, SharedMaterialManager.MissingTexture);
 
             string nightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\night" + FileName.Substring(FileName.LastIndexOf('\\'));
             if (File.Exists(nightpath))
@@ -2193,7 +2193,7 @@ namespace ORTS
                 NightTextures.Add(FileName, tex);
             }
             else
-                NightTextures.Add(FileName, Materials.MissingTexture);
+                NightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
 
             string lightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\cablight" + FileName.Substring(FileName.LastIndexOf('\\'));
             if (File.Exists(lightpath))
@@ -2202,7 +2202,7 @@ namespace ORTS
                 LightTextures.Add(FileName, tex);
             }
             else
-                LightTextures.Add(FileName, Materials.MissingTexture);
+                LightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
         }
 
         static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, Point controlSize, int frameCount, Point frameGrid, string fileName)
@@ -2244,7 +2244,7 @@ namespace ORTS
             }
 
             while (frameIndex < frameCount)
-                frames[frameIndex++] = Materials.MissingTexture;
+                frames[frameIndex++] = SharedMaterialManager.MissingTexture;
 
             return frames;
         }
@@ -2287,7 +2287,7 @@ namespace ORTS
             if (DayTextures.ContainsKey(fileName))
             {
                 var texture = DayTextures[fileName];
-                if (texture != Materials.MissingTexture)
+                if (texture != SharedMaterialManager.MissingTexture)
                 {
                     PDayTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":day");
                 }
@@ -2297,7 +2297,7 @@ namespace ORTS
             if (NightTextures.ContainsKey(fileName))
             {
                 var texture = NightTextures[fileName];
-                if (texture != Materials.MissingTexture)
+                if (texture != SharedMaterialManager.MissingTexture)
                 {
                     PNightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":night");
                 }
@@ -2307,7 +2307,7 @@ namespace ORTS
             if (LightTextures.ContainsKey(fileName))
             {
                 var texture = LightTextures[fileName];
-                if (texture != Materials.MissingTexture)
+                if (texture != SharedMaterialManager.MissingTexture)
                 {
                     PLightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":light");
                 }
@@ -2326,13 +2326,13 @@ namespace ORTS
             if (arr == null)
             {
                 Trace.TraceWarning("Passed null Texture[] for accessing {0}", FileName);
-                return Materials.MissingTexture;
+                return SharedMaterialManager.MissingTexture;
             }
             
             if (arr.Length < 1)
             {
                 Trace.TraceWarning("Disassembled texture invalid for {0}", FileName);
-                return Materials.MissingTexture;
+                return SharedMaterialManager.MissingTexture;
             }
             
             indx = (int)MathHelper.Clamp(indx, 0, arr.Length - 1);
@@ -2344,7 +2344,7 @@ namespace ORTS
             catch (IndexOutOfRangeException)
             {
                 Trace.TraceWarning("Index {1} out of range for array length {2} while accessing texture for {0}", FileName, indx, arr.Length);
-                return Materials.MissingTexture;
+                return SharedMaterialManager.MissingTexture;
             }
         }
 
@@ -2359,13 +2359,13 @@ namespace ORTS
         /// <returns>The Texture represented by its index</returns>
         public static Texture2D GetTextureByIndexes(string FileName, int indx, bool isDark, bool isLight, out bool isNightTexture)
         {
-            Texture2D retval = Materials.MissingTexture;
+            Texture2D retval = SharedMaterialManager.MissingTexture;
             Texture2D[] tmp = null;
 
             isNightTexture = false;
 
             if (string.IsNullOrEmpty(FileName) || !PDayTextures.Keys.Contains(FileName))
-                return Materials.MissingTexture;
+                return SharedMaterialManager.MissingTexture;
 
             if (isDark)
             {
@@ -2380,7 +2380,7 @@ namespace ORTS
                     }
                 }
 
-                if (retval == Materials.MissingTexture)
+                if (retval == SharedMaterialManager.MissingTexture)
                 {
                     tmp = PNightTextures[FileName];
                     if (tmp != null)
@@ -2391,7 +2391,7 @@ namespace ORTS
                 }
             }
 
-            if (retval == Materials.MissingTexture)
+            if (retval == SharedMaterialManager.MissingTexture)
             {
                 tmp = PDayTextures[FileName];
                 if (tmp != null)
@@ -2413,7 +2413,7 @@ namespace ORTS
         /// <returns>The Texture</returns>
         public static Texture2D GetTexture(string FileName, bool isDark, bool isLight, out bool isNightTexture)
         {
-            Texture2D retval = Materials.MissingTexture;
+            Texture2D retval = SharedMaterialManager.MissingTexture;
             isNightTexture = false;
 
             if (string.IsNullOrEmpty(FileName) || !DayTextures.Keys.Contains(FileName))
@@ -2428,14 +2428,14 @@ namespace ORTS
                     isNightTexture = false;
                 }
 
-                if (retval == Materials.MissingTexture)
+                if (retval == SharedMaterialManager.MissingTexture)
                 {
                     retval = NightTextures[FileName];
                     isNightTexture = true;
                 }
             }
 
-            if (retval == Materials.MissingTexture)
+            if (retval == SharedMaterialManager.MissingTexture)
             {
                 retval = DayTextures[FileName];
                 isNightTexture = false;
@@ -2489,7 +2489,7 @@ namespace ORTS
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
 			//Sequence = RenderPrimitiveSequence.CabView;
-            _Sprite2DCabView = new SpriteBatchMaterial(viewer.RenderProcess);
+            _Sprite2DCabView = new SpriteBatchMaterial(viewer);
             _Viewer = viewer;
             _Locomotive = car;
 
@@ -2567,7 +2567,7 @@ namespace ORTS
             if (!_Locomotive.ShowCab)
                 return;
 
-            bool Dark = Materials.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool Dark = _Viewer.MaterialManager.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
             bool CabLight = _Locomotive.CabLightOn;
 
             CabCamera cbc = _Viewer.Camera as CabCamera;
@@ -2582,7 +2582,7 @@ namespace ORTS
 
             _CabTexture = CABTextureManager.GetTexture(_Locomotive.CVFFile.TwoDViews[_Location], Dark, CabLight, out _isNightTexture);
 
-            if (_CabTexture == Materials.MissingTexture)
+            if (_CabTexture == SharedMaterialManager.MissingTexture)
                 return;
 
             _CabRect.Width = _Viewer.DisplaySize.X;
@@ -2612,7 +2612,7 @@ namespace ORTS
         {
             if (_Location == 0 && _Shader != null)
             {
-                _Shader.SetData(Materials.sunDirection,
+                _Shader.SetData(_Viewer.MaterialManager.sunDirection,
                     _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.Sky.overcast);
 
                 _Shader.SetTexData(_CabRect.Left, _CabRect.Top, _CabRect.Width, _CabRect.Height);
@@ -2659,7 +2659,7 @@ namespace ORTS
         {
             _CabViewControl = cvc;
             _Shader = shader;
-            _Sprite2DCtlView = new SpriteBatchMaterial(viewer.RenderProcess);
+            _Sprite2DCtlView = new SpriteBatchMaterial(viewer);
 
             CABTextureManager.LoadTextures(viewer, _CabViewControl.ACEFile);
 
@@ -2751,12 +2751,12 @@ namespace ORTS
 
         public override void PrepareFrame(RenderFrame frame)
         {
-            bool Dark = Materials.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool Dark = _Viewer.MaterialManager.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
             bool CabLight = _Locomotive.CabLightOn;
 
             _Texture = CABTextureManager.GetTexture(_CabViewControl.ACEFile, Dark, CabLight, out _isNightTexture);
 
-            if (_Texture == Materials.MissingTexture)
+            if (_Texture == SharedMaterialManager.MissingTexture)
                 return;
 
             base.PrepareFrame(frame);
@@ -2829,12 +2829,12 @@ namespace ORTS
 
         public override void PrepareFrame(RenderFrame frame)
         {
-            bool Dark = Materials.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool Dark = _Viewer.MaterialManager.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
             bool CabLight = _Locomotive.CabLightOn;
 
             _Texture = CABTextureManager.GetTexture(_CabViewControl.ACEFile, Dark, CabLight, out _isNightTexture);
 
-            if (_Texture == Materials.MissingTexture)
+            if (_Texture == SharedMaterialManager.MissingTexture)
                 return;
 
             base.PrepareFrame(frame);
@@ -3004,7 +3004,7 @@ namespace ORTS
 
         public override void PrepareFrame(RenderFrame frame)
         {
-            bool Dark = Materials.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool Dark = _Viewer.MaterialManager.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
             bool CabLight = _Locomotive.CabLightOn;
 
             int indx = GetDrawIndex();
@@ -3013,7 +3013,7 @@ namespace ORTS
 
             _Texture = CABTextureManager.GetTextureByIndexes(_CabViewControl.ACEFile, indx, Dark, CabLight, out _isNightTexture);
 
-            if (_Texture == Materials.MissingTexture)
+            if (_Texture == SharedMaterialManager.MissingTexture)
                 return;
 
             base.PrepareFrame(frame);
