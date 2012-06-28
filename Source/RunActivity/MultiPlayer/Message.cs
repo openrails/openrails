@@ -330,6 +330,16 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
+			//check if other players with the same name is online
+			if (MPManager.IsServer())
+			{
+				//if someone with the same name is there, will throw a fatal error
+				if (MPManager.OnlineTrains.findTrain(user) != null || MPManager.GetUserName() == user)
+				{
+					MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
+					throw new MultiPlayerError();
+				}
+			}
 			MPManager.OnlineTrains.AddPlayers(this, null);
 			//System.Console.WriteLine(this.ToString());
 			if (MPManager.IsServer())// && Program.Server.IsRemoteServer())
@@ -339,16 +349,14 @@ namespace ORTS.MultiPlayer
 
 				MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
 					Program.Simulator.PlayerLocomotive.Train.Number);
-
 				MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
 
 				foreach (Train t in Program.Simulator.Trains)
 				{
-					if (t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
+					if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
 					if (MPManager.OnlineTrains.findTrain(t)) continue;
 					MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 				}
-
 				//System.Console.WriteLine(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
 
 			}
@@ -369,6 +377,13 @@ namespace ORTS.MultiPlayer
 		public void HandleMsg(OnlinePlayer p)
 		{
 			if (!MPManager.IsServer()) return; //only intended for the server, when it gets the player message in OnlinePlayer Receive
+			//check if other players with the same name is online
+				//if someone with the same name is there, will throw a fatal error
+			if (MPManager.OnlineTrains.findTrain(user) != null || MPManager.GetUserName() == user)
+			{
+				MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
+				throw new MultiPlayerError();
+			}
 
 			MPManager.OnlineTrains.AddPlayers(this, p);
 			//System.Console.WriteLine(this.ToString());
@@ -382,7 +397,7 @@ namespace ORTS.MultiPlayer
 
 			foreach (Train t in Program.Simulator.Trains)
 			{
-				if (t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
+				if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
 				if (MPManager.OnlineTrains.findTrain(t)) continue;
 				MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 			}
@@ -642,7 +657,7 @@ namespace ORTS.MultiPlayer
 
 			train.Number = this.TrainNum;
 			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
-			MPManager.Instance().AddAddedTrains(train); //the train to be added and treated later, to be thread safe
+			lock (Program.Simulator.Trains) { Program.Simulator.Trains.Add(train); }
 
 
 		}
@@ -837,9 +852,7 @@ namespace ORTS.MultiPlayer
 
 			train1.Number = this.TrainNum;
 			if (train1.Cars[0] is MSTSLocomotive) train1.LeadLocomotive = train1.Cars[0];
-			MPManager.Instance().AddAddedTrains(train1); //the train to be added and treated later, to be thread safe
-			System.Console.WriteLine("Get here 7");
-
+			lock (Program.Simulator.Trains) { Program.Simulator.Trains.Add(train1); }
 		}
 
 		public override string ToString()
@@ -1038,7 +1051,9 @@ namespace ORTS.MultiPlayer
 		{
 			if (MPManager.GetUserName() == user)
 			{
-				Program.Simulator.Confirmer.Message(level, msgx + " will be in single mode");
+				if (Program.Simulator.Confirmer != null)
+					Program.Simulator.Confirmer.Message(level, msgx + " will be in single mode");
+				else { System.Console.WriteLine(level + ": " + msgx + ", will be in single mode"); }
 				if (level == "Error" && !MPManager.IsServer())//if is a client, fatal error, will close the connection, and get into single mode
 				{
 					MPManager.Notify((new MSGQuit(MPManager.GetUserName())).ToString());//to be nice, still send a quit before close the connection
@@ -1171,27 +1186,41 @@ namespace ORTS.MultiPlayer
 				user = user.Replace("ServerHasToQuit\t", ""); //get the user name of server from the message
 				ServerQuit = true;
 			}
+			OnlinePlayer p = null;
+			if (MPManager.OnlineTrains.Players.ContainsKey(user))
+			{
+				p = MPManager.OnlineTrains.Players[user];
+			}
+			if (p != null && Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Info:", this.user + " quit.");
 			if (MPManager.IsServer())
 			{
-				OnlinePlayer p = MPManager.OnlineTrains.Players[user];
 				if (p != null)
 				{
 					lock (Program.Server.Players)
 					{
 						Program.Server.Players.Remove(p);
 					}
+					//if the one quit controls my train, I will gain back the control
+					if (p.Train == Program.Simulator.PlayerLocomotive.Train) 
+						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 					MPManager.Instance().AddRemovedPlayer(p);
-					if (p.thread != null) p.thread.Abort();//end communication with this player
 				}
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else //client will remove train
 			{
-				OnlinePlayer p = MPManager.OnlineTrains.Players[user];
 				if (p != null)
 				{
+					//if the one quit controls my train, I will gain back the control
+					if (p.Train == Program.Simulator.PlayerLocomotive.Train)
+						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 					MPManager.Instance().AddRemovedPlayer(p);
-					if (ServerQuit) throw new MultiPlayerError(); //server quit, end communication by throwing this error 
+					if (ServerQuit)
+					{
+						//no matter what, let player gain back the control of the player train
+						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+						throw new MultiPlayerError(); //server quit, end communication by throwing this error 
+					}
 				}
 			}
 		}
@@ -1487,7 +1516,7 @@ namespace ORTS.MultiPlayer
 				foreach (TrainCar car in train2.Cars) car.Train = train2;
 
 				train2.InitializeSignals(false);
-				MPManager.Instance().AddAddedTrains(train2);
+				lock (Program.Simulator.Trains) { Program.Simulator.Trains.Add(train2); }
 				train.UncoupledFrom = train2;
 				train2.UncoupledFrom = train;
 
@@ -1695,7 +1724,6 @@ namespace ORTS.MultiPlayer
 			//mine is not the leading locomotive, thus I give up the control
 			if (train.LeadLocomotive != Program.Simulator.PlayerLocomotive)
 			{
-				Program.Simulator.InControl = false;
 				train.TrainType = Train.TRAINTYPE.REMOTE; //make the train remote controlled
 			}
 

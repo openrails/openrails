@@ -44,7 +44,14 @@ namespace ORTS.MultiPlayer
 			{
 				if (p.Train != null && Math.Abs(p.Train.SpeedMpS) > 0.01)
 				{
-					move.AddNewItem(p.Username, p.Train);
+					if (Math.Abs(p.Train.SpeedMpS) > 0.001)
+					{
+						move.AddNewItem(p.Username, p.Train);
+					}
+					else
+					{
+						if (Math.Abs(p.Train.LastReportedSpeed) > 0) move.AddNewItem(p.Username, p.Train);
+					}
 				}
 			}
 			foreach (Train t in Program.Simulator.Trains)
@@ -118,8 +125,6 @@ namespace ORTS.MultiPlayer
 			}
 			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
 			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
-			p.Username = player.user;
-			Players.Add(player.user, p);
 			Train train = new Train(Program.Simulator);
 			train.TrainType = Train.TRAINTYPE.REMOTE;
 			if (MPManager.IsServer()) //server needs to worry about correct train number
@@ -129,59 +134,64 @@ namespace ORTS.MultiPlayer
 			{
 				train.Number = player.num;
 			}
+			int direction = player.dir;
+			train.travelled = player.Travelled;
 			try
 			{
-				int direction = player.dir;
-				train.travelled = player.Travelled;
 				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
-				TrainCar previousCar = null;
-				for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {
-				{
-					string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + player.cars[i];
-					try
-					{
-						TrainCar car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
-						bool flip = true;
-						if (player.flipped[i] == 0) flip = false;
-						car.Flipped = flip;
-						car.CarID = player.ids[i];
-						train.Cars.Add(car);
-						car.Train = train;
-						previousCar = car;
-						MSTSWagon w = (MSTSWagon)car;
-						if (w != null)
-						{
-							w.AftPanUp = player.pantofirst == 1 ? true : false;
-							w.FrontPanUp = player.pantosecond == 1 ? true : false;
-						}
-					}
-					catch (Exception error)
-					{
-						System.Console.WriteLine(wagonFilePath + " " + error);
-					}
-				}// for each rail car
-
-				if (train.Cars.Count == 0) return;
 			}
 			catch (Exception e)
 			{
 				if (MPManager.IsServer())
 				{
-					MPManager.BroadCast((new MSGMessage(player.user, "Error", "MultiPlayer Error："+e.Message)).ToString());
+					MPManager.BroadCast((new MSGMessage(player.user, "Error", "MultiPlayer Error：" + e.Message)).ToString());
 				}
 				throw new MultiPlayerError();
 			}
+			TrainCar previousCar = null;
+			for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {
+			{
+				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + player.cars[i];
+				try
+				{
+					TrainCar car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
+					bool flip = true;
+					if (player.flipped[i] == 0) flip = false;
+					car.Flipped = flip;
+					car.CarID = player.ids[i];
+					train.Cars.Add(car);
+					car.Train = train;
+					previousCar = car;
+					MSTSWagon w = (MSTSWagon)car;
+					if (w != null)
+					{
+						w.AftPanUp = player.pantofirst == 1 ? true : false;
+						w.FrontPanUp = player.pantosecond == 1 ? true : false;
+					}
+				}
+				catch (Exception error)
+				{
+					System.Console.WriteLine(error);
+				}
+			}// for each rail car
+
+			if (train.Cars.Count == 0)
+			{
+				throw (new Exception("The train of player " + player.user + " is empty from"));
+			}
+
+			p.Username = player.user;
+			Players.Add(player.user, p);
 
 			train.CalculatePositionOfCars(0);
 			train.InitializeBrakes();
 
-			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
+			train.LeadLocomotive = null;
+			train.LeadNextLocomotive();
 			p.Train = train;
+
 			Program.Simulator.Trains.Add(train);
-			if (MPManager.IsServer())
-			{
-				train.InitializeSignals(false);
-			}
+			train.InitializeSignals(false);
 
 		}
 	}

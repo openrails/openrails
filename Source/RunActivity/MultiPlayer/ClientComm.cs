@@ -93,7 +93,7 @@ namespace ORTS.MultiPlayer
 				}
 				catch (Exception e)
 				{
-					System.Console.WriteLine(e.Message + info);
+					//System.Console.WriteLine(e.Message + info);
 				}
 			}
 

@@ -450,7 +450,7 @@ namespace ORTS
             TrainCar newLead = LeadLocomotive;
             if (prevLead != null && newLead != null && prevLead != newLead)
                 newLead.CopyControllerSettings(prevLead);
-            if (Program.Simulator.PlayerLocomotive.Train == this)
+            if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == this)
             {
                 Program.Simulator.PlayerLocomotive = newLead;
                 Program.Simulator.AI.Dispatcher.ReversePlayerAuthorization();
@@ -512,9 +512,17 @@ namespace ORTS
 						{
 							Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
 
-							var y = this.travelled - expectedTravelled;
-							this.travelled = expectedTravelled;
-							this.RearTDBTraveller = t;
+							move = this.RearTDBTraveller.DistanceTo(Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], t.TileX, t.TileZ, t.X, t.Y, t.Z);
+							if (move > 0)
+							{
+								this.RearTDBTraveller.Move(move);
+							}
+							else
+							{
+								this.travelled = expectedTravelled;
+								this.RearTDBTraveller = t;
+								CalculatePositionOfCars(move);
+							}
 						}
 						else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
 						{
@@ -526,7 +534,6 @@ namespace ORTS
 					{
 						move = expectedTravelled - travelled;
 					}
-					CalculatePositionOfCars(move);
 					updateMSGReceived = false;
 
 				}

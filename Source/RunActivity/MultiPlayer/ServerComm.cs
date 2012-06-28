@@ -42,7 +42,7 @@ namespace ORTS.MultiPlayer
 
 				OnlinePlayer player = new OnlinePlayer(client, Server);
 				Server.Players.Add(player);
-				System.Console.WriteLine("Add Client");
+				System.Console.WriteLine("New Player Joined");
 				//create a thread to handle communication
 				//with connected client
 				Thread clientThread = new Thread(new ParameterizedThreadStart(player.Receive));

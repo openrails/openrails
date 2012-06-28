@@ -37,16 +37,9 @@ namespace ORTS.MultiPlayer
 
 		public void AddRemovedTrains(Train t)
 		{
-			lock (removedTrains) //thread safe as listening threads may call this
+			lock (Program.Simulator.Trains) //thread safe as listening threads may call this
 			{
-				if (!removedTrains.Contains(t)) removedTrains.Add(t);
-			}
-		}
-		public void AddAddedTrains(Train t)
-		{
-			lock (addedTrains) //thread safe as listening threads may call this
-			{
-				if (!addedTrains.Contains(t)) addedTrains.Add(t);
+				Program.Simulator.Trains.Remove(t);
 			}
 		}
 		private List<Train> uncoupledTrains;
@@ -84,10 +77,8 @@ namespace ORTS.MultiPlayer
 		//handles singleton
 		private MPManager()
 		{
-			removedTrains = new List<Train>();
 			playersRemoved = new List<OnlinePlayer>();
 			uncoupledTrains = new List<Train>();
-			addedTrains = new List<Train>();
 		}
 		public static MPManager Instance()
 		{
@@ -98,8 +89,9 @@ namespace ORTS.MultiPlayer
 		/// <summary>
 		/// Update. Determines what messages to send every some seconds
 		/// 1. every one second will send train location
-		/// 2. every five seconds will send switch status
-		/// 3. it will also capture key stroke of horn, panto, wiper, bell, headlight etc.
+		/// 2. every 10 seconds will send switch status
+		/// 3. housekeeping (remove/add trains, remove players)
+		/// 4. it will also capture key stroke of horn, panto, wiper, bell, headlight etc.
 		/// </summary>
 
 		public void Update(double newtime)
@@ -150,26 +142,6 @@ namespace ORTS.MultiPlayer
 				lastSendTime = newtime;
 			}
 
-			lock (removedTrains) //work on all trains to be removed. This will called in the same thread as Update
-			{
-				foreach (Train train in removedTrains)
-				{
-					Program.Simulator.Trains.Remove(train);
-//					if (train.Cars.Count > 0 && train.Cars[0].Train == train)
-//						foreach (TrainCar car in train.Cars)
-//							car.Train = null;
-				}
-				removedTrains.Clear();
-			}
-
-			lock (addedTrains) //work on all trains to be added. This will called in the same thread as Update
-			{
-				foreach (Train t in addedTrains)
-				{
-					Program.Simulator.Trains.Add(t);
-				}
-				addedTrains.Clear();
-			}
 			//some players are removed
 			RemovePlayer();
 		}
@@ -226,11 +198,13 @@ namespace ORTS.MultiPlayer
 			if (Program.Client != null && Program.Server == null)
 			{
 				Program.Client.Send((new MSGQuit(GetUserName())).ToString()); //client notify server
+				Thread.Sleep(1000);
 				Program.Client.Stop();
 			}
 			if (Program.Server != null)
 			{
 				Program.Server.BroadCast((new MSGQuit("ServerHasToQuit\t"+GetUserName())).ToString()); //server notify everybody else
+				Thread.Sleep(1000);
 				if (Program.Server.ServerComm != null) Program.Server.Stop();
 				if (Program.Client != null) Program.Client.Stop();
 			}
@@ -248,8 +222,8 @@ namespace ORTS.MultiPlayer
 			{
 				foreach (var p in OnlineTrains.Players)
 				{
-					if (p.Value.Train == t1 && p.Value.CreatedTime - Program.Simulator.GameTime < 120) { result = false; break; }
-					if (p.Value.Train == t2 && p.Value.CreatedTime - Program.Simulator.GameTime < 120) { result = false; break; }
+					if (p.Value.Train == t1 && Program.Simulator.GameTime  - p.Value.CreatedTime < 120) { result = false; break; }
+					if (p.Value.Train == t2 && Program.Simulator.GameTime - p.Value.CreatedTime < 120) { result = false; break; }
 				}
 			}
 			catch (Exception)
@@ -265,7 +239,10 @@ namespace ORTS.MultiPlayer
 
 			string info = "";
 			if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
-			info += ("" + OnlineTrains.Players.Count + (OnlineTrains.Players.Count <= 1 ? " Other Player Online" : " Other Players Online"));
+			info += ("" + OnlineTrains.Players.Count + (OnlineTrains.Players.Count <= 1 ? " player " : "  players "));
+			info += ("" + Program.Simulator.Trains.Count + (Program.Simulator.Trains.Count <= 1 ? " train" : "  trains"));
+			//info += "\t" + Program.Simulator.Trains.Count;
+			//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars[0].CarID;
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
 			SortedList<double, string> users = new SortedList<double,string>();
 			try//the list of players may be changed during the following process
@@ -310,6 +287,7 @@ namespace ORTS.MultiPlayer
 		{
 			//if (Program.Server == null) return; //client will do it by decoding message
 
+			if (playersRemoved.Count == 0) return;
 			lock (playersRemoved)
 			{
 				foreach (OnlinePlayer p in playersRemoved)
@@ -321,6 +299,7 @@ namespace ORTS.MultiPlayer
 						Program.Simulator.Trains.Remove(p.Train);
 					}
 				}
+				playersRemoved.Clear();
 			}
 		}
 
