@@ -381,6 +381,7 @@ namespace ORTS
                 {
                     ait.TryAdvanceStopNode(clockTime);
                 }
+                auth.Train.InitializeSignals(true);
             }
         }
 

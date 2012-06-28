@@ -274,6 +274,7 @@ namespace ORTS
 
 	        IndexNextSignal = -1;
 	        IndexNextSpeedlimit = -1;
+            List<int> tmp = new List<int>();
 
   //  set overall speed limits if these do not yet exist
 
@@ -294,7 +295,9 @@ namespace ORTS
 
             if (returnState > 0)
             {
-                SignalObjectItems.Add(firstObject);
+                if (!SignalObjectItems.Exists(oi => oi.ObjectDetails.thisRef == firstObject.ObjectDetails.thisRef))
+                    SignalObjectItems.Add(firstObject);
+                tmp.Add(firstObject.ObjectDetails.thisRef);
                 distanceToLastObject = firstObject.distance_to_train;
             }
 
@@ -314,10 +317,14 @@ namespace ORTS
                 {
                     nextObject.distance_to_train = prevObject.distance_to_train + nextObject.distance_to_object;
                     distanceToLastObject = nextObject.distance_to_train;
-                    SignalObjectItems.Add(nextObject);
+                    if (!SignalObjectItems.Exists(oi => oi.ObjectDetails.thisRef == nextObject.ObjectDetails.thisRef))
+                        SignalObjectItems.Add(nextObject);
+                    tmp.Add(nextObject.ObjectDetails.thisRef);
                     prevObject = nextObject;
                 }
             }
+
+            SignalObjectItems.RemoveAll(oi => !tmp.Contains(oi.ObjectDetails.thisRef));
 
  //
  // get first signal and first speedlimit
@@ -631,6 +638,12 @@ namespace ORTS
             bool speedlimFound = false;
 
             ObjectItemInfo firstObject = null;
+
+            if (this.MUDirection != _prevDirection)
+            {
+                _prevDirection = MUDirection;
+                ResetSignal(false);
+            }
 
         //
         // get distance to first object
