@@ -290,6 +290,7 @@ namespace ORTS
 
                 public void Update(float elapsedClockSeconds)
                 {
+					if (MultiPlayer.MPManager.IsMultiPlayer() && !MultiPlayer.MPManager.IsServer()) return;
                         if (foundSignals > 0)
                         {
 

@@ -975,6 +975,7 @@ namespace ORTS.MultiPlayer
 		}
 	}
 	#endregion MSGAlive
+
 	#region MSGTrainMerge
 	//message to add new train from either a string (received message), or a Train (building a message)
 	public class MSGTrainMerge : Message
@@ -1738,18 +1739,57 @@ namespace ORTS.MultiPlayer
 	{
 
 		//local data here
-
-
-
+		//signalObj.Signal.GetAspect(), signalObj.Signal.nextSigRef
+		//signalObjects[nextSigRef].SetSignalState(state)
+		string msgx = "";
+		static SortedList<int, SignalHead> signals;
 		//constructor to create a message from signal data
 		public MSGSignalStatus()
 		{
-			
+			if (signals == null)
+			{
+				signals = new SortedList<int, SignalHead>();
+				if (Program.Simulator.Signals.SignalObjects != null)
+				{
+					foreach (var s in Program.Simulator.Signals.SignalObjects)
+					{
+						if (s != null && s.SignalHeads != null)
+							foreach (var h in s.SignalHeads)
+							{
+								//System.Console.WriteLine(h.TDBIndex);
+								signals.Add(h.TDBIndex * 1000 + h.trItemIndex, h);
+							}
+					}
+				}
+			}
+
+			msgx = "";
+			foreach (var t in signals)
+			{
+				msgx += (int)t.Value.state;
+			}
 		}
 
 		//constructor to decode the message "m"
 		public MSGSignalStatus(string m)
 		{
+			if (signals == null)
+			{
+				signals = new SortedList<int, SignalHead>();
+				if (Program.Simulator.Signals.SignalObjects != null)
+				{
+					foreach (var s in Program.Simulator.Signals.SignalObjects)
+					{
+						if (s != null && s.SignalHeads != null)
+							foreach (var h in s.SignalHeads)
+							{
+								//System.Console.WriteLine(h.TDBIndex);
+								signals.Add(h.TDBIndex * 1000 + h.trItemIndex, h);
+							}
+					}
+				}
+			}
+			msgx = m;
 		}
 
 		//how to handle the message?
@@ -1757,13 +1797,21 @@ namespace ORTS.MultiPlayer
 		{
 			if (Program.Server != null) return; //server will ignore it
 
-			
+			int i = 0;
+			foreach (var t in signals)
+			{
+				t.Value.state =(SignalHead.SIGASP) (msgx[i] - 48); //ASCII code 48 is 0
+				
+				//System.Console.Write(msgx[i]-48);
+				i++;
+			}
+			//System.Console.Write("\n");
 
 		}
 
 		public override string ToString()
 		{
-			string tmp = "SWITCHSTATES " + ""; // fill in the message body here
+			string tmp = "SIGNALSTATES " + msgx; // fill in the message body here
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}

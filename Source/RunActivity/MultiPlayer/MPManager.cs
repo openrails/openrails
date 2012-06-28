@@ -113,6 +113,8 @@ namespace ORTS.MultiPlayer
 			{
 				lastSwitchTime = lastSendTime = newtime;
 				MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
+				MultiPlayer.MPManager.BroadCast((new MSGSignalStatus()).ToString());
+
 			}
 			
 			//client updates itself
