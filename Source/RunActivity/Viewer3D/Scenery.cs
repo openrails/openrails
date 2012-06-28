@@ -157,6 +157,8 @@ namespace ORTS
             TileX = tileX;
             TileZ = tileZ;
 
+            Viewer.Tiles.Load(tileX, tileZ);
+
             // determine file path to the WFile at the specified tile coordinates
             var WFileName = WorldFileNameFromTileCoordinates(tileX, tileZ);
             var WFilePath = viewer.Simulator.RoutePath + @"\World\" + WFileName;

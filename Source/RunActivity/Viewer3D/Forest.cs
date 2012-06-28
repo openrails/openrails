@@ -92,7 +92,7 @@ namespace ORTS
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ForestMesh(RenderProcess renderProcess, Tiles tiles, ForestDrawer drawer, ForestObj forest)
+        public ForestMesh(RenderProcess renderProcess, TileManager tiles, ForestDrawer drawer, ForestObj forest)
         {
             Drawer = drawer;
 
@@ -133,7 +133,7 @@ namespace ORTS
         /// <summary>
         /// Forest tree array intialization. 
         /// </summary>
-        private void InitForestVertices(Tiles tiles, VertexPositionNormalTexture[] trees)
+        private void InitForestVertices(TileManager tiles, VertexPositionNormalTexture[] trees)
         {
             // Create the tree position and size arrays.
             Vector3[] treePosition = new Vector3[population];

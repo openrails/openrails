@@ -81,7 +81,7 @@ namespace ORTS
 		public TracksDebugWindow TracksDebugWindow; // Control-Alt-F6
         public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
         // Route Information
-        public Tiles Tiles = null;
+        public TileManager Tiles;
         public ENVFile ENVFile;
         public SIGCFGFile SIGCFG;
         public TTypeDatFile TTypeDatFile;
@@ -153,7 +153,7 @@ namespace ORTS
             Trace.Write(" TTYPE");
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
 
-            Tiles = new Tiles(Simulator.RoutePath + @"\TILES\");
+            Tiles = new TileManager(Simulator.RoutePath + @"\TILES\");
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
         }
 

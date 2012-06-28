@@ -105,15 +105,19 @@ namespace ORTS
         {
             TileX = tileX;
             TileZ = tileZ;
-            Tile tile = viewer.Tiles.GetTile(tileX, tileZ);
-            if (!tile.IsEmpty)
+            // Terrain needs all surrounding tiles to correctly join up the meshes.
+            for (var x = -1; x <= 1; x++)
+                for (var z = -1; z <= 1; z++)
+                    viewer.Tiles.Load(tileX + x, tileZ + z);
+            var tile = viewer.Tiles.GetTile(tileX, tileZ);
+            if (tile != null && !tile.IsEmpty)
             {
                 if (tile.TFile.ContainsWater)
                     WaterTile = new WaterTile(viewer, TileX, TileZ);
 
-                for (int x = 0; x < 16; ++x)
-                    for (int z = 0; z < 16; ++z)
-                        if (!tile.IsEmpty && tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
+                for (var x = 0; x < 16; ++x)
+                    for (var z = 0; z < 16; ++z)
+                        if (tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
                             TerrainPatches[x, z] = new TerrainPatch(viewer, tile, x, z, tileX, tileZ);
             }
         }

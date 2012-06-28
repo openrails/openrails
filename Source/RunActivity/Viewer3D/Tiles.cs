@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -8,21 +8,54 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using MSTS;
 
 namespace ORTS
 {
-    /// <summary>
-    /// Encapsulates the Tiles folder
-    /// </summary>
-    public class Tiles
+    public class TileManager
     {
-        private TileBuffer TileBuffer;
+        const int MaximumCachedTiles = 8 * 8;
 
-        public Tiles(string folderNameSlash)
+        // THREAD SAFETY:
+        //   All accesses must be done in local variables. No modifications to the objects are allowed except by
+        //   assignment of a new instance (possibly cloned and then modified).
+        TileList Tiles = new TileList(new List<Tile>());
+
+        readonly string FilePath;
+
+        public TileManager(string filePath)
         {
-            TileBuffer = new TileBuffer(folderNameSlash);
+            FilePath = filePath;
+        }
+
+        [CallOnThread("Loader")]
+        public void Load(int tileX, int tileZ)
+        {
+            if (Thread.CurrentThread.Name != "Loader Process")
+                Trace.TraceError("Tiles.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+
+            var tiles = Tiles;
+            if (!tiles.ByXZ.ContainsKey(tileX + "," + tileZ))
+            {
+                var tileList = new List<Tile>(tiles.List);
+                while (tileList.Count >= MaximumCachedTiles)
+                    tileList.RemoveAt(0);
+                tileList.Add(new Tile(FilePath, tileX, tileZ));
+                Tiles = new TileList(tileList);
+            }
+        }
+
+        public Tile GetTile(int tileX, int tileZ)
+        {
+            var tiles = Tiles;
+            if (!tiles.ByXZ.ContainsKey(tileX + "," + tileZ))
+                return null;
+            return tiles.ByXZ[tileX + "," + tileZ];
         }
 
         public float GetElevation(WorldLocation location)
@@ -38,12 +71,10 @@ namespace ORTS
             while (z > 255) { z -= 256; --tileZ; }
             while (z < 0) { z += 256; ++tileZ; }
 
-            Tile tile = GetTile(tileX, tileZ);
-
+            var tile = GetTile(tileX, tileZ);
             if (tile != null)
                 return tile.GetElevation(x, z);
-            else
-                return 0;
+            return 0;
         }
 
         public float GetElevation(int tileX, int tileZ, float x, float z)
@@ -82,188 +113,59 @@ namespace ORTS
             while (z > 255) { z -= 256; --tileZ; }
             while (z < 0) { z += 256; ++tileZ; }
 
-            Tile tile = GetTile(tileX, tileZ);
-
+            var tile = GetTile(tileX, tileZ);
             if (tile != null)
                 return tile.IsVertexHidden(x, z);
             return false;
         }
 
-        public Tile GetTile(int tileX, int tileZ)
+        class TileList
         {
-            return TileBuffer.GetTile(tileX, tileZ);
-        }
-
-    } // class Tiles
-
-    /// <summary>
-    /// This class speeds up access to tiles by caching the ones in the vicinity of 
-    /// the most recently used tiles.
-    /// </summary>
-    public class TileBuffer
-    {
-        private int bufferTileX, bufferTileZ;  // coordinates of Tile[0,0]
-        private const int bufferSize = 8;
-        private Tile[,] tileBuffer = new Tile[bufferSize, bufferSize];  // null means we haven't read it yet
-        private System.Threading.Mutex Mutex = new System.Threading.Mutex(false);
-
-        string TileFolderNameSlash;
-
-        /// <summary>
-        /// Create the buffer
-        /// </summary>
-        /// <param name="tileFolderNameSlash"></param>
-        public TileBuffer(string tileFolderNameSlash)
-        {
-            TileFolderNameSlash = tileFolderNameSlash;
-
-            bufferTileX = 0;
-            bufferTileZ = 0;
-            for (int x = 0; x < bufferSize; ++x)
-                for (int z = 0; z < bufferSize; ++z)
-                    tileBuffer[x, z] = null;
-        }
-
-        /// <summary>
-        /// Get a tile from the buffer at X,Z
-        /// Returns null if their is not tile 
-        /// at the specified coordinates.
-        /// </summary>
-        /// <param name="tileX"></param>
-        /// <param name="tileZ"></param>
-        /// <returns></returns>
-        public Tile GetTile(int tileX, int tileZ)
-        {
-            Mutex.WaitOne();
-            // Reposition the buffer if necessary to include these coordinates
-            if (!Contains(tileX, tileZ))
-                Reposition(tileX, tileZ);
-
-            // If we haven't read the tile yet, then read it.
-            Tile tile = GetBuffer(tileX, tileZ);
-            Mutex.ReleaseMutex();
-            if (tile == null)
+            public readonly List<Tile> List;
+            public readonly Dictionary<string, Tile> ByXZ;
+            public TileList(IEnumerable<Tile> list)
             {
-                tile = new Tile(tileX, tileZ, TileFolderNameSlash);
-                Mutex.WaitOne();
-                if (!Contains(tileX, tileZ))
-                    Reposition(tileX, tileZ);
-                int x = tileX - bufferTileX;
-                int z = tileZ - bufferTileZ;
-                tileBuffer[x, z] = tile;
-                Mutex.ReleaseMutex();
+                List = list.ToList();
+                ByXZ = list.ToDictionary(t => t.TileX + "," + t.TileZ);
             }
-
-            return tile;
-        }
-
-        /// <summary>
-        /// Get the raw buffer contents at the specified coordinates
-        /// Returns null if the tile hasn't been read yet.
-        /// </summary>
-        /// <param name="tileX"></param>
-        /// <param name="tileZ"></param>
-        /// <returns></returns>
-        private Tile GetBuffer(int tileX, int tileZ)
-        {
-            int x = tileX - bufferTileX;
-            int z = tileZ - bufferTileZ;
-
-            return tileBuffer[x, z];
-        }
-
-        /// <summary>
-        /// Return true if the buffer encloses these coordinates.
-        /// </summary>
-        /// <param name="tileX"></param>
-        /// <param name="tileZ"></param>
-        /// <returns></returns>
-        private bool Contains(int tileX, int tileZ)
-        {
-            int x = tileX - bufferTileX;
-            int z = tileZ - bufferTileZ;
-
-            if (x < 0 || x >= bufferSize || z < 0 || z >= bufferSize)
-                return false;
-            else
-                return true;
-        }
-
-        /// <summary>
-        /// Shift the buffer to enclose the specified coordinates.
-        /// </summary>
-        /// <param name="tileX"></param>
-        /// <param name="tileZ"></param>
-        private void Reposition(int tileX, int tileZ)
-        {
-            // Determine the new corner coordinates
-            int newBufferTileX = bufferTileX;
-            int newBufferTileZ = bufferTileZ;
-
-            if (tileX < bufferTileX)
-                newBufferTileX = tileX;
-            else if (tileX >= bufferTileX + bufferSize)
-                newBufferTileX = tileX - bufferSize + 1;
-            if (tileZ < bufferTileZ)
-                newBufferTileZ = tileZ;
-            else if (tileZ >= bufferTileZ + bufferSize)
-                newBufferTileZ = tileZ - bufferSize + 1;
-
-            // Populate the new tile buffer with data from the old buffer
-            Tile[,] newTileBuffer = new Tile[bufferSize, bufferSize];
-            for (int newx = 0; newx < bufferSize; ++newx)
-                for (int newz = 0; newz < bufferSize; ++newz)
-                {
-                    tileX = newBufferTileX + newx;
-                    tileZ = newBufferTileZ + newz;
-                    if (Contains(tileX, tileZ))
-                        newTileBuffer[newx, newz] = GetBuffer(tileX, tileZ);
-                    else
-                        newTileBuffer[newx, newz] = null;  // indicates we haven't read it yet
-                }
-
-            // Copy the new buffer to the old buffer
-            bufferTileX = newBufferTileX;
-            bufferTileZ = newBufferTileZ;
-            for (int x = 0; x < bufferSize; ++x)
-                for (int z = 0; z < bufferSize; ++z)
-                    tileBuffer[x, z] = newTileBuffer[x, z];
         }
     }
 
     public class Tile
     {
-        public TFile TFile;
-        public YFile YFile;
-        public FFile FFile;
+        public readonly int TileX;
+        public readonly int TileZ;
+        public readonly TFile TFile;
+        public readonly YFile YFile;
+        public readonly FFile FFile;
 
-        public bool IsEmpty = true;
+        public bool IsEmpty { get { return TFile == null; } }
 
-        public Tile(int tileX, int tileZ, string TileFolderNameSlash)
+        public Tile(string filePath, int tileX, int tileZ)
         {
-            string tileName = TileNameConversion.GetTileNameFromTileXZ(tileX, tileZ);
-            string tileFilePath = TileFolderNameSlash + tileName;
-
-            if (File.Exists(tileFilePath + ".t"))
+            TileX = tileX;
+            TileZ = tileZ;
+            Trace.TraceInformation("Loading tile {0}, {1}", tileX, tileZ);
+            var fileName = filePath + TileNameConversion.GetTileNameFromTileXZ(tileX, tileZ);
+            if (File.Exists(fileName + ".t"))
             {
-                TFile = new TFile(tileFilePath + ".t");
-                YFile = new YFile(tileFilePath + "_y.raw");
-                FFile = new FFile(tileFilePath + "_f.raw");
-                IsEmpty = false;
+                TFile = new TFile(fileName + ".t");
+                YFile = new YFile(fileName + "_y.raw");
+                FFile = new FFile(fileName + "_f.raw");
             }
         }
 
         public float GetElevation(int x, int z)
         {
-            if (IsEmpty)
+            if (TFile == null)
                 return 0;
-            uint e = YFile.GetElevationIndex(x, z);
+            var e = YFile.GetElevationIndex(x, z);
             return (float)e * TFile.Resolution + TFile.Floor;
         }
 
         public bool IsVertexHidden(int x, int z)
         {
-            if (IsEmpty)
+            if (FFile == null)
                 return false;
             return FFile.IsVertexHidden(x, z);
         }
