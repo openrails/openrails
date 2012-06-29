@@ -158,11 +158,25 @@ namespace ORTS
                 // Update all sound in our list
                 lock (SoundSources)
                 {
+                    List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>> remove = null;
                     foreach (List<SoundSourceBase> src in SoundSources.Values)
                     {
                         foreach (SoundSourceBase ss in src)
                         {
-                            ss.Update();
+                            if (!ss.Update())
+                            {
+                                if (remove == null)
+                                    remove = new List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>>();
+                                remove.Add(new KeyValuePair<List<SoundSourceBase>, SoundSourceBase>(src, ss));
+                            }
+                        }
+                    }
+                    if (remove != null)
+                    {
+                        foreach (KeyValuePair<List<SoundSourceBase>, SoundSourceBase> ss in remove)
+                        {
+                            ss.Value.Dispose();
+                            ss.Key.Remove(ss.Value);
                         }
                     }
                 }

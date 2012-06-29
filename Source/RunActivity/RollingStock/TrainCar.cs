@@ -21,6 +21,9 @@ namespace ORTS
         public readonly Simulator Simulator;
         public readonly string WagFilePath;
 
+        // Some housekeeping
+        public bool IsPartOfActiveTrain = true;
+
         // some properties of this car
         public float Length = 40;       // derived classes must overwrite these defaults
         public float Height = 4;        // derived classes must overwrite these defaults

@@ -689,6 +689,8 @@ namespace ORTS
         public void Release()
         {
             nextSignal.Clear();
+            foreach (TrainCar car in Cars)
+                car.IsPartOfActiveTrain = false;
         }
 
 		public float PassTime()

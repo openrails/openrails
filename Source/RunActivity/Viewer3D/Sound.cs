@@ -48,13 +48,15 @@ namespace ORTS
 /// SOUND SOURCE
 /////////////////////////////////////////////////////////
 
-    public abstract class SoundSourceBase
+    public abstract class SoundSourceBase : IDisposable
     {
         public abstract void InitInitials();
-        public abstract void Update();
+        public abstract bool Update();
 
         public MSTSWagon Car = null;          // the sound may be from a train car
         public Viewer3D Viewer;                 // the listener is connected to this viewer
+
+        public abstract void Dispose();
     }
 
     public class TrackSoundSource : SoundSourceBase
@@ -152,15 +154,36 @@ namespace ORTS
             }
         }
 
-        public override void Update()
+        public override bool Update()
         {
             UpdateTType();
 
+            bool retval = true;
+
             if (_activeInSource != null)
-                _activeInSource.Update();
+                retval &= _activeInSource.Update();
 
             if (_activeOutSource != null)
-                _activeOutSource.Update();
+                retval &= _activeOutSource.Update();
+
+            return retval;
+        }
+
+        public override void Dispose()
+        {
+            if (_inSources != null)
+            {
+                foreach (SoundSource s in _inSources)
+                    s.Dispose();
+                _inSources.Clear();
+            }
+            if (_outSources != null)
+            {
+                foreach (SoundSource s in _outSources)
+                    s.Dispose();
+                _outSources.Clear();
+            }
+            Car = null;
         }
     }
     
@@ -348,10 +371,13 @@ namespace ORTS
                     trigger.Initialize();
         }
         
-        public override void Update()
+        public override bool Update()
         {
             if (Car != null)
             {
+                if (!Car.IsPartOfActiveTrain)
+                    return false;
+
                 WorldLocation = Car.WorldPosition.WorldLocation;
             }
 
@@ -365,7 +391,7 @@ namespace ORTS
                         stream.HardDeactivate();
                 }
 
-                return;
+                return true;
             }
             else
             {
@@ -471,6 +497,8 @@ namespace ORTS
                     stream.Update(0, 0, 0);
                 }
             }
+
+            return true;
         } // Update
 
         public bool isOutOfDistance()
@@ -581,13 +609,24 @@ namespace ORTS
 
             return false;
         }
+
+        public override void Dispose()
+        {
+            if (SoundStreams != null)
+            {
+                foreach (SoundStream s in SoundStreams)
+                    s.Dispose();
+                SoundStreams.Clear();
+            }
+            Car = null;
+        }
     }
 
 /////////////////////////////////////////////////////////
 /// SOUND STREAM
 /////////////////////////////////////////////////////////
         
-    public class SoundStream
+    public class SoundStream : IDisposable
     {
         public SoundSource SoundSource;
         public int Index = 0;
@@ -897,6 +936,16 @@ namespace ORTS
             if (ALSoundSource != null)
             {
                 ALSoundSource.HardActive = false;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (ALSoundSource != null)
+            {
+                ALSoundSource.HardActive = false;
+                ALSoundSource.Dispose();
+                ALSoundSource = null;
             }
         }
 
