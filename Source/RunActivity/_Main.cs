@@ -669,36 +669,65 @@ namespace ORTS
 
             if (args.Length == 7 && args[5] == "1")
             {
-                Server = new Server(args[6]);
-                UserName = Server.UserName;
-                Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-                    "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-                Code = Server.Code;
+				try
+				{
+					Server = new Server(args[6]);
+					UserName = Server.UserName;
+					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+					Code = Server.Code;
+				}
+				catch (Exception e)
+				{
+					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Server = null;
+				}
             }
             if (args.Length == 3 && args[1] == "1")
             {
-                Server = new Server(args[2]);
-                UserName = Server.UserName;
-                Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-                    "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-                Code = Server.Code;
+				try
+				{
+					Server = new Server(args[2]);
+					UserName = Server.UserName;
+					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+					Code = Server.Code;
+				}
+				catch (Exception e)
+				{
+					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Server = null;
+				}
             }
             if (args.Length == 4)
             {
-                Client = new ClientComm(args[1], int.Parse(args[2]), args[3]);
-                UserName = Client.UserName;
-                Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-                    "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-                Code = Client.Code;
+				try
+				{
+					Client = new ClientComm(args[1], int.Parse(args[2]), args[3]);
+					UserName = Client.UserName;
+					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+					Code = Client.Code;
+				}
+				catch (Exception e)
+				{
+					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Client = null;
+				}
+
             }
             if (args.Length == 8)
             {
-                Client = new ClientComm(args[5], int.Parse(args[6]), args[7]);
-                UserName = Client.UserName;
-                Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-                    "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-                Code = Client.Code;
-            }
+				try
+				{
+					Client = new ClientComm(args[5], int.Parse(args[6]), args[7]);
+					UserName = Client.UserName;
+					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+					Code = Client.Code;
+				}
+				catch (Exception e)
+				{
+					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Client = null;
+				}
+			}
         }
 
         static void LogSeparator()

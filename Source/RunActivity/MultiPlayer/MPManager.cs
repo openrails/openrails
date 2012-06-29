@@ -241,7 +241,7 @@ namespace ORTS.MultiPlayer
 
 			string info = "";
 			if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
-			info += ("" + OnlineTrains.Players.Count + (OnlineTrains.Players.Count <= 1 ? " player " : "  players "));
+			info += ("" + (OnlineTrains.Players.Count + 1)+ (OnlineTrains.Players.Count <= 0 ? " player " : "  players "));
 			info += ("" + Program.Simulator.Trains.Count + (Program.Simulator.Trains.Count <= 1 ? " train" : "  trains"));
 			//info += "\t" + Program.Simulator.Trains.Count;
 			//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars[0].CarID;
