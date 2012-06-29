@@ -1689,94 +1689,102 @@ namespace ORTS
 
                 public static void NextNode(ref int node, ref int direction, ref int prevnode)
                 {
+                    try
+                    {
                         if (trackNodes[node].TrVectorNode != null)
                         {
-                                if (direction == 0)
-                                {
-                                        prevnode = node;
-                                        direction = trackNodes[node].TrPins[0].Direction;
-                                        node = trackNodes[node].TrPins[0].Link;
-                                }
-                                else
-                                {
-                                        prevnode = node;
-                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                                }
+                            if (direction == 0)
+                            {
+                                prevnode = node;
+                                direction = trackNodes[node].TrPins[0].Direction;
+                                node = trackNodes[node].TrPins[0].Link;
+                            }
+                            else
+                            {
+                                prevnode = node;
+                                direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
+                                node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
+                            }
                         }
                         else if (trackNodes[node].TrJunctionNode != null)
                         {
-                                if (direction == 0)
+                            if (direction == 0)
+                            {
+                                if (trackNodes[node].Inpins > 1)
                                 {
-                                        if (trackNodes[node].Inpins > 1)
-                                        {
-                                                if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
-                                                {
-                                                        prevnode = node;
-                                                        direction = trackNodes[node].TrPins[0].Direction;
-                                                        node = trackNodes[node].TrPins[0].Link;
-                                                }
-                                                else
-                                                {
-                                                        prevnode = node;
-                                                        direction = trackNodes[node].TrPins[1].Direction;
-                                                        node = trackNodes[node].TrPins[1].Link;
-                                                }
-                                        }
-                                        else
-                                        {
-                                            if (prevnode == -1 ||
-                                                (trackNodes[node].TrJunctionNode.SelectedRoute == 0 &&
-                                                trackNodes[node].TrPins[trackNodes[node].Inpins].Link == prevnode) ||
-                                                (trackNodes[node].TrJunctionNode.SelectedRoute == 1 &&
-                                                trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link == prevnode))
-                                            {
-                                                prevnode = node;
-                                                direction = trackNodes[node].TrPins[0].Direction;
-                                                node = trackNodes[node].TrPins[0].Link;
-                                            }
-                                            else
-                                            {
-                                                prevnode = node;
-                                            }
-                                        }
+                                    if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
+                                    {
+                                        prevnode = node;
+                                        direction = trackNodes[node].TrPins[0].Direction;
+                                        node = trackNodes[node].TrPins[0].Link;
+                                    }
+                                    else
+                                    {
+                                        prevnode = node;
+                                        direction = trackNodes[node].TrPins[1].Direction;
+                                        node = trackNodes[node].TrPins[1].Link;
+                                    }
                                 }
                                 else
                                 {
-                                        if (trackNodes[node].Outpins > 1)
-                                        {
-                                                if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
-                                                {
-                                                        prevnode = node;
-                                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                                                }
-                                                else
-                                                {
-                                                        prevnode = node;
-                                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Direction;
-                                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link;
-                                                }
-                                        }
-                                        else
-                                        {
-                                            if (prevnode == -1 ||
-                                                (trackNodes[node].TrJunctionNode.SelectedRoute == 0 &&
-                                                trackNodes[node].TrPins[0].Link == prevnode) ||
-                                                (trackNodes[node].TrJunctionNode.SelectedRoute == 1 &&
-                                                trackNodes[node].TrPins[1].Link == prevnode))
-                                            {
-                                                prevnode = node;
-                                                direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                                node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                                            }
-                                            else
-                                            {
-                                                prevnode = node;
-                                            }
-                                        }
+                                    if (prevnode == -1 ||
+                                        (trackNodes[node].TrJunctionNode.SelectedRoute == 0 &&
+                                        trackNodes[node].TrPins[trackNodes[node].Inpins].Link == prevnode) ||
+                                        (trackNodes[node].TrJunctionNode.SelectedRoute == 1 &&
+                                        trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link == prevnode))
+                                    {
+                                        prevnode = node;
+                                        direction = trackNodes[node].TrPins[0].Direction;
+                                        node = trackNodes[node].TrPins[0].Link;
+                                    }
+                                    else
+                                    {
+                                        prevnode = node;
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                if (trackNodes[node].Outpins > 1)
+                                {
+                                    if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
+                                    {
+                                        prevnode = node;
+                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
+                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
+                                    }
+                                    else
+                                    {
+                                        prevnode = node;
+                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Direction;
+                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link;
+                                    }
+                                }
+                                else
+                                {
+                                    if (prevnode == -1 ||
+                                        (trackNodes[node].TrJunctionNode.SelectedRoute == 0 &&
+                                        trackNodes[node].TrPins[0].Link == prevnode) ||
+                                        (trackNodes[node].TrJunctionNode.SelectedRoute == 1 &&
+                                        trackNodes[node].TrPins[1].Link == prevnode))
+                                    {
+                                        prevnode = node;
+                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
+                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
+                                    }
+                                    else
+                                    {
+                                        prevnode = node;
+                                    }
+                                }
+                            }
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        Trace.Write(e);
+                        prevnode = node;
+                    }
                 }//NextNode
 
   //================================================================================================//
