@@ -185,13 +185,13 @@ namespace ORTS.MultiPlayer
 
 			train.CalculatePositionOfCars(0);
 			train.InitializeBrakes();
+			train.InitializeSignals(false);
 
 			train.LeadLocomotive = null;
 			train.LeadNextLocomotive();
 			p.Train = train;
 
 			Program.Simulator.Trains.Add(train);
-			train.InitializeSignals(false);
 
 		}
 	}

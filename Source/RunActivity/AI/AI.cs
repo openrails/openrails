@@ -344,7 +344,7 @@ namespace ORTS
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
             }
 			//server broadcast to others about removing this train
-			MPManager.BroadCast((new MSGRemoveTrain(removeList).ToString()));
+			if (MPManager.IsServer()) MPManager.BroadCast((new MSGRemoveTrain(removeList).ToString()));
 
         }
 

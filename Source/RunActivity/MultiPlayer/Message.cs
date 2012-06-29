@@ -1753,7 +1753,7 @@ namespace ORTS.MultiPlayer
 				{
 					foreach (var s in Program.Simulator.Signals.SignalObjects)
 					{
-						if (s != null && s.SignalHeads != null)
+						if (s != null && s.isSignal && s.SignalHeads != null)
 							foreach (var h in s.SignalHeads)
 							{
 								//System.Console.WriteLine(h.TDBIndex);
@@ -1766,7 +1766,7 @@ namespace ORTS.MultiPlayer
 			msgx = "";
 			foreach (var t in signals)
 			{
-				msgx += (int)t.Value.state;
+				msgx += "" + (int)t.Value.state + "" + t.Value.draw_state;
 			}
 		}
 
@@ -1780,7 +1780,7 @@ namespace ORTS.MultiPlayer
 				{
 					foreach (var s in Program.Simulator.Signals.SignalObjects)
 					{
-						if (s != null && s.SignalHeads != null)
+						if (s != null && s.isSignal && s.SignalHeads != null)
 							foreach (var h in s.SignalHeads)
 							{
 								//System.Console.WriteLine(h.TDBIndex);
@@ -1797,11 +1797,12 @@ namespace ORTS.MultiPlayer
 		{
 			if (Program.Server != null) return; //server will ignore it
 
+			if (signals.Count != msgx.Length / 2) { System.Console.WriteLine("Error in synchronizing signals"); return; }
 			int i = 0;
 			foreach (var t in signals)
 			{
-				t.Value.state =(SignalHead.SIGASP) (msgx[i] - 48); //ASCII code 48 is 0
-				
+				t.Value.state =(SignalHead.SIGASP) (msgx[2*i] - 48); //ASCII code 48 is 0
+				t.Value.draw_state = msgx[2 * i + 1] - 48;
 				//System.Console.Write(msgx[i]-48);
 				i++;
 			}

@@ -520,7 +520,7 @@ namespace ORTS
 						{
 
 							Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
-
+							/*
 							move = this.RearTDBTraveller.DistanceTo(Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], t.TileX, t.TileZ, t.X, t.Y, t.Z);
 							if (move > 0)
 							{
@@ -528,11 +528,11 @@ namespace ORTS
 							}
 							else
 							{
-								move = 0;
+								move = 0;*/
 								this.travelled = expectedTravelled;
 								this.RearTDBTraveller = t;
 								CalculatePositionOfCars(move);
-							}
+							//}
 						}
 						else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
 						{
