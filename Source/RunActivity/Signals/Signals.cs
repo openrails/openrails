@@ -1780,9 +1780,9 @@ namespace ORTS
                             }
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception error)
                     {
-                        Trace.Write(e);
+                        Trace.WriteLine(error);
                         prevnode = node;
                     }
                 }//NextNode
@@ -2359,8 +2359,7 @@ namespace ORTS
                         }
                         else
                         {
-                                Trace.TraceWarning("SignalObject trItem={0}, trackNode={1} has SignalHead with undefined SignalType {2}.",
-                                                  mainSignal.trItem, mainSignal.trackNode, sigItem.SignalType);
+                            Trace.TraceWarning("Signal {0} at track node {1} has head with invalid type {2}", mainSignal.trItem, mainSignal.trackNode, sigItem.SignalType);
                         }
 
 
@@ -2884,7 +2883,7 @@ namespace ORTS
                         }
                         else
                         {
-                                Trace.TraceWarning("Signal not found : {0} n", SFileName);
+                                Trace.TraceWarning("Signal {0} not found in SIGCFG.DAT", SFileName);
                         }
                                 
                 }

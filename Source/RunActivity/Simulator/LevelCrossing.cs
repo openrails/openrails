@@ -55,7 +55,7 @@ namespace ORTS
             var trackItems = trackIDs.Select(id => TrackCrossingItems[id]).ToArray();
             var roadItems = roadIDs.Select(id => RoadCrossingItems[id]).ToArray();
             if (trackItems.Length != roadItems.Length)
-                Trace.TraceWarning("{0} Level crossing contains {1} rail and {2} road items; expected them to match.", position, trackItems.Length, roadItems.Length);
+                Trace.TraceWarning("{0} level crossing contains {1} rail and {2} road items; expected them to match.", position, trackItems.Length, roadItems.Length);
             if (trackItems.Length >= roadItems.Length)
                 for (var i = 0; i < roadItems.Length; i++)
                     if (!RoadToTrackCrossingItems.ContainsKey(roadItems[i]))

@@ -168,7 +168,7 @@ namespace ORTS
 				}
 				catch (ArgumentException)
 				{
-					Trace.TraceWarning("Unable to load {0} value from type {1}.", property.Name, value.GetType().FullName);
+					Trace.TraceWarning("Unable to load {0} value from type {1}", property.Name, value.GetType().FullName);
 					value = defValue;
                     Sources.Add(property.Name, Source.Default);
                 }

@@ -189,87 +189,85 @@ namespace ORTS
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.QDirection);
                 else
                 {
-                    Trace.TraceWarning("Object {1} is missing Matrix3x3 and QDirection in {0}", WFileName, worldObject.UID);
+                    Trace.TraceWarning("{0} scenery object {1} is missing Matrix3x3 and QDirection", WFileName, worldObject.UID);
                     continue;
                 }
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
 
-                if (worldObject.GetType() == typeof(MSTS.TrackObj))
+                try
                 {
-                    var trackObj = (TrackObj)worldObject;
-                    // Switch tracks need a link to the simulator engine so they can animate the points.
-                    var trJunctionNode = trackObj.JNodePosn != null ? viewer.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, (int)trackObj.UID) : null;
-                    // We might not have found the junction node; if so, fall back to the static track shape.
-                    if (trJunctionNode != null)
-                        sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
-                    else
-                        sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
-                    if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                    if (worldObject.GetType() == typeof(MSTS.TrackObj))
                     {
-                        int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
-                        //if cannot draw wire, try to see if it is converted. modified for DynaTrax
-                        if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix);
+                        var trackObj = (TrackObj)worldObject;
+                        // Switch tracks need a link to the simulator engine so they can animate the points.
+                        var trJunctionNode = trackObj.JNodePosn != null ? viewer.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, (int)trackObj.UID) : null;
+                        // We might not have found the junction node; if so, fall back to the static track shape.
+                        if (trJunctionNode != null)
+                            sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
+                        else
+                            sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                        if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                        {
+                            int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
+                            //if cannot draw wire, try to see if it is converted. modified for DynaTrax
+                            if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix);
+                        }
                     }
-                }
-                else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
-                {
-                    if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
-                        Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
-                    // Add DyntrackDrawers for individual subsections
-                    Dynatrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                    else if (worldObject.GetType() == typeof(MSTS.DyntrackObj))
+                    {
+                        if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        // Add DyntrackDrawers for individual subsections
+                        Dynatrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
-                } // end else if DyntrackObj
-                else if (worldObject.GetType() == typeof(MSTS.ForestObj))
-                {
-                    ForestObj forestObj = (ForestObj)worldObject;
-                    forestList.Add(new ForestDrawer(viewer, forestObj, worldMatrix));
-                }
-                else if (worldObject.GetType() == typeof(MSTS.SignalObj))
-                {
-                    sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
-                }
-                else if (worldObject.GetType() == typeof(MSTS.TransferObj))
-                {
-                    sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix));
-                }
-                else if (worldObject.GetType() == typeof(MSTS.LevelCrossingObj))
-                {
-                    sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
-                }
-                else if (worldObject.GetType() == typeof(MSTS.SpeedPostObj))
-                {
-                    try
+                    } // end else if DyntrackObj
+                    else if (worldObject.GetType() == typeof(MSTS.ForestObj))
+                    {
+                        ForestObj forestObj = (ForestObj)worldObject;
+                        forestList.Add(new ForestDrawer(viewer, forestObj, worldMatrix));
+                    }
+                    else if (worldObject.GetType() == typeof(MSTS.SignalObj))
+                    {
+                        sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                    }
+                    else if (worldObject.GetType() == typeof(MSTS.TransferObj))
+                    {
+                        sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix));
+                    }
+                    else if (worldObject.GetType() == typeof(MSTS.LevelCrossingObj))
+                    {
+                        sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
+                    }
+                    else if (worldObject.GetType() == typeof(MSTS.SpeedPostObj))
                     {
                         sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
                     }
-                    catch
+                    else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
                     {
-                        Trace.TraceWarning("SpeedPostShape {1} ignored because beyond track item table in file {0}", WFileName, worldObject.UID);
+                        carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
+                    }
+                    else if (worldObject.GetType() == typeof(MSTS.SidingObj))
+                    {
+                        sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
+                    }
+                    else if (worldObject.GetType() == typeof(MSTS.PlatformObj))
+                    {
+                        platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
+                    }
+                    else if (worldObject.GetType() == typeof(MSTS.AnimatedObj))
+                    {
+                        sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                    }
+                    else // It's some other type of object - not one of the above.
+                    {
+                        sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                     }
                 }
-                else if (worldObject.GetType() == typeof(MSTS.CarSpawnerObj))
+                catch (Exception error)
                 {
-                    if (viewer.Simulator.RDB != null && viewer.Simulator.CarSpawnerFile != null)
-                        carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
-                    else
-                        Trace.TraceWarning("Car spawner {1} ignored because route has no RDB or carspawn.dat in {0}", WFileName, worldObject.UID);
-                }
-                else if (worldObject.GetType() == typeof(MSTS.SidingObj))
-                {
-                    sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
-                }
-                else if (worldObject.GetType() == typeof(MSTS.PlatformObj))
-                {
-                    platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
-                }
-                else if (worldObject.GetType() == typeof(MSTS.AnimatedObj))
-                {
-                    sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
-                }
-                else // It's some other type of object - not one of the above.
-                {
-                    sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                    Trace.TraceWarning("{0} scenery object {1} failed to load", worldMatrix, worldObject.UID);
+                    Trace.WriteLine(error);
                 }
             }
 

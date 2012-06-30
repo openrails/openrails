@@ -102,7 +102,7 @@ namespace ORTS
             scaleRange2 = forest.scaleRange.scaleRange2;
             if (scaleRange1 > scaleRange2)
             {
-                Trace.TraceWarning("Forest " + forest.TreeTexture + " in tile " + drawer.worldPosition.TileX + "," + drawer.worldPosition.TileZ + " has scale range with minimum greater than maximum");
+                Trace.TraceWarning("{0} forest {1} has scale range with minimum greater than maximum", drawer.worldPosition, forest.TreeTexture);
                 float scaleRangeSwap = scaleRange2;
                 scaleRange2 = scaleRange1;
                 scaleRange1 = scaleRangeSwap;

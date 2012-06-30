@@ -222,7 +222,7 @@ namespace ORTS
                     var innerCommandUniqueInputs = Commands[(int)innerCommand].UniqueInputs();
                     var sharedUniqueInputs = outerCommandUniqueInputs.Where(id => innerCommandUniqueInputs.Contains(id));
                     foreach (var uniqueInput in sharedUniqueInputs)
-                        Trace.TraceInformation("Commands {0} and {1} conflict on input {2}.", outerCommand, innerCommand, uniqueInput);
+                        Trace.TraceInformation("Commands {0} and {1} conflict on input {2}", outerCommand, innerCommand, uniqueInput);
                 }
             }
 #endif

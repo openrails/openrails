@@ -128,17 +128,17 @@ namespace MSTS
         public SMSStreams(STFReader stf, float VolumeOfScGroup)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            var count = stf.ReadInt(STFReader.UNITS.None, null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("stream", ()=>{ Add(new SMSStream(stf, VolumeOfScGroup)); }),
+                new STFReader.TokenProcessor("stream", ()=>{
+                    if (--count < 0)
+                        STFException.TraceWarning(stf, "Skipped extra Stream");
+                    else
+                        Add(new SMSStream(stf, VolumeOfScGroup));
+                }),
             });
-            if (count != this.Count)
-            {
-                STFException.TraceWarning(stf, "Stream count mismatch found :" + this.Count.ToString() + ", expected :" + count.ToString());
-                //Strings: All of the code below should be removed once I locate a bug in STF parsing
-                //foreach (var i in this)
-                //    Trace.WriteLine(String.Format("stream {0} {1} {2}->{3}", i.Priority, i.Volume, i.Triggers.Count, string.Join(",", i.Triggers.Select(t => t.GetType().Name).ToArray())));
-            }
+            if (count > 0)
+                STFException.TraceWarning(stf, count + " missing Stream(s)");
         }
     }
 
@@ -182,14 +182,15 @@ namespace MSTS
         public VolumeCurve(STFReader stf)
         {
             stf.MustMatch("(");
-            switch (stf.ReadString().ToLower())
+            var type = stf.ReadString();
+            switch (type.ToLower())
             {
                 case "distancecontrolled": Control = Controls.DistanceControlled; break;
                 case "speedcontrolled": Control = Controls.SpeedControlled; break;
                 case "variable1controlled": Control = Controls.Variable1Controlled; break;
                 case "variable2controlled": Control = Controls.Variable2Controlled; break;
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
-                default: STFException.TraceWarning(stf, "Unknown volume curve type"); stf.SkipRestOfBlock(); return;
+                default: STFException.TraceWarning(stf, "Skipped unknown VolumeCurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("granularity", ()=>{ Granularity = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
@@ -263,7 +264,7 @@ namespace MSTS
                 case "setstreamvolume":
                     ++playcommandcount;
                     if (playcommandcount > 1)
-                        STFException.TraceWarning( f, "Found multiple Play Commands");
+                        STFException.TraceWarning(f, "Replaced play command");
                     break;
                 default:
                     break;
@@ -472,7 +473,7 @@ namespace MSTS
                         }
                         else  // MSTS skips extra files
                         {
-                            STFException.TraceWarning(f, "File count mismatch");
+                            STFException.TraceWarning(f, "Skipped extra File");
                             f.SkipBlock();
                         }
                         break;
@@ -483,7 +484,7 @@ namespace MSTS
                         {
                             case "randomselection": SelectionMethod = SelectionMethods.RandomSelection; break;
                             case "sequentialselection": SelectionMethod = SelectionMethods.SequentialSelection; break;
-                            default: STFException.TraceWarning(f, "Unknown selection method " + s); break;
+                            default: STFException.TraceWarning(f, "Skipped unknown selection method " + s); break;
                         }
                         f.SkipRestOfBlock();
                         break;

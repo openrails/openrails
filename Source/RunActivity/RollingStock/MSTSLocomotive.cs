@@ -198,7 +198,7 @@ namespace ORTS
                 {
                     if (i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count)
                     {
-                        Trace.TraceWarning("Position or Direction missing in {0}", CVFFilePath);
+                        Trace.TraceWarning("Skipped cab view camera {1} missing Position and Direction in {0}", CVFFilePath, i);
                         break;
                     }
                     ViewPoint viewPoint = new ViewPoint();
@@ -230,7 +230,7 @@ namespace ORTS
             {
                 if (DynamicBrakeController.NotchCount() <= 3)
                 {
-                    Trace.TraceWarning("Smooth Dynamic Brake may have inaccurate display");
+                    Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
                     HasSmoothStruc = true;
                 }
             }
@@ -450,7 +450,7 @@ namespace ORTS
                     // cancel smooth dynamic control, keyboard hud display only
                     //HasDefectiveComboDynamicBreak = true;
                     HasSmoothStruc = true;
-                    Trace.TraceWarning("Smooth Dynamic Brake may have inaccurate display");
+                    Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
                 }
             }
         }
@@ -3422,9 +3422,9 @@ namespace ORTS
                 // The line commente out above is a temporary fix for the flashing AMP on Dash 9
                 // commit v837 for a web link describint the details
             }
-            catch (Exception ex)
+            catch (Exception error)
             {
-                Trace.WriteLine(ex);
+                Trace.WriteLine(error);
             }
             finally
             {

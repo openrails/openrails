@@ -67,8 +67,7 @@ namespace ORTS
                 BufferIDs[1] = 0;
                 BufferIDs[2] = 0;
                 _isValid = false;
-                StackTrace st = new StackTrace();
-                Trace.TraceWarning(string.Format("Could not open wave file: {0} at {1}", Name, st.ToString()));
+                Trace.TraceWarning("Skipped unopenable wave file {0}", Name);
             }
             else
             {
@@ -604,7 +603,7 @@ namespace ORTS
                     }
                     else if (_MustWarn)
                     {
-                        Trace.TraceWarning(string.Format("\r\nSound stream activation failed at number: {0}", _ActiveCount));
+                        Trace.TraceWarning("Sound stream activation failed at number {0}", _ActiveCount);
                         _MustWarn = false;
                     }
                 }

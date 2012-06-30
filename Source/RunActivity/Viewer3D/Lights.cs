@@ -170,17 +170,17 @@ namespace ORTS
                 new STFReader.TokenProcessor("fadeout", ()=>{ FadeOut = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("states", ()=>{
                     stf.MustMatch("(");
-                    var numStates = stf.ReadInt(STFReader.UNITS.None, null);
+                    var count = stf.ReadInt(STFReader.UNITS.None, null);
                     stf.ParseBlock(new[] {
                         new STFReader.TokenProcessor("state", ()=>{
-                            if (States.Count < numStates)
-                                States.Add(new LightState(stf));
+                            if (States.Count >= count)
+                                STFException.TraceWarning(stf, "Skipped extra State");
                             else
-                                STFException.TraceWarning(stf, "Additional State ignored");
+                                States.Add(new LightState(stf));
                         }),
                     });
-                    if (States.Count != numStates)
-                        STFException.TraceWarning(stf, "Missing State block");
+                    if (States.Count < count)
+                        STFException.TraceWarning(stf, (count - States.Count).ToString() + " missing State(s)");
                 }),
             });
         }

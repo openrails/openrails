@@ -24,20 +24,23 @@ namespace MSTS
 		public CarSpawnerFile(string filePath, string shapePath)
 		{
 			List<CarSpwanerItemData> spawnerDataItems = new List<CarSpwanerItemData>();
-			int realCount = 0;
 			using (STFReader stf = new STFReader(filePath, false))
 			{
-				int count = stf.ReadInt(STFReader.UNITS.None, null);
-				
+				var count = stf.ReadInt(STFReader.UNITS.None, null);
 				stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("carspawneritem", ()=>{ spawnerDataItems.Add(new CarSpwanerItemData(stf, shapePath)); realCount++;}),
+                    new STFReader.TokenProcessor("carspawneritem", ()=>{
+                        if (--count < 0)
+                            STFException.TraceWarning(stf, "Skipped extra CarSpanwerItem");
+                        else
+                            spawnerDataItems.Add(new CarSpwanerItemData(stf, shapePath));
+                    }),
                 });
-				if (count != realCount)
-					STFException.TraceWarning(stf, "Count mismatch.");
+				if (count > 0)
+                    STFException.TraceWarning(stf, count + " missing CarSpanwerItem(s)");
 			}
 
-			shapeNames = new string[realCount];
-			distanceFrom = new float[realCount];
+            shapeNames = new string[spawnerDataItems.Count];
+            distanceFrom = new float[spawnerDataItems.Count];
 			int i = 0;
 			foreach (CarSpwanerItemData data in spawnerDataItems) {
 				shapeNames[i] = data.name;

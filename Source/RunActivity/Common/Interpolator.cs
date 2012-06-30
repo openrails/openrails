@@ -60,7 +60,7 @@ namespace ORTS
                 X[i] = list[2*i];
                 Y[i] = list[2*i+1];
                 if (i > 0 && X[i - 1] >= X[i])
-                    STFException.TraceWarning(stf, " Interpolator x values must be increasing.");
+                    STFException.TraceWarning(stf, "Interpolator x values must be increasing.");
             }
         }
         public float this[float x]
@@ -264,7 +264,7 @@ namespace ORTS
                 X[i] = xlist[i];
                 Y[i] = ilist[i];
                 if (i > 0 && X[i - 1] >= X[i])
-                    STFException.TraceWarning(stf, " Interpolator x values must be increasing.");
+                    STFException.TraceWarning(stf, "Interpolator x values must be increasing.");
             }
         }
         public float Get(float x, float y)

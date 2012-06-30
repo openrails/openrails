@@ -98,7 +98,7 @@ namespace ORTS
                 path = Viewer.Simulator.BasePath + @"\SOUND\" + filename;
             if (!File.Exists(path))
             {
-                Trace.TraceError("ttype.dat - can't find " + filename);
+                Trace.TraceWarning("Skipped missing track sound {0}", filename);
                 return;
             }
             if (isInside)
@@ -146,7 +146,7 @@ namespace ORTS
                         _activeOutSource.Car = Car;
                     }
 #if DEBUGSCR
-                    Trace.WriteLine(string.Format("Sound region changed from {0} to {1}.", _prevTType, _curTType));
+                    Trace.TraceInformation("Sound region changed from {0} to {1}.", _prevTType, _curTType);
 #endif
 
                     _prevTType = _curTType;

@@ -24,12 +24,17 @@ namespace MSTS
 		{
             using (STFReader stf = new STFReader(filePath, false))
             {
-                int count = stf.ReadInt(STFReader.UNITS.None, null);
+                var count = stf.ReadInt(STFReader.UNITS.None, null);
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("tracktype", ()=>{ Add(new TrackType(stf)); }),
+                    new STFReader.TokenProcessor("tracktype", ()=>{
+                        if (--count < 0)
+                            STFException.TraceWarning(stf, "Skipped extra TrackType");
+                        else
+                            Add(new TrackType(stf));
+                    }),
                 });
-                if (count != Count)
-                    STFException.TraceWarning(stf, "Count mismatch.");
+                if (count > 0)
+                    STFException.TraceWarning(stf, count + " missing TrackType(s)");
             }
 		}
 

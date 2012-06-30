@@ -116,8 +116,8 @@ namespace MSTS
 		/// filePath includes full path and extension
 		/// </summary>
 		/// <param name="filePath"></param>
-		public PATFile( string filePath )
-		{
+        public PATFile(string filePath)
+        {
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("trackpdps", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -131,16 +131,21 @@ namespace MSTS
 						new STFReader.TokenProcessor("trpathend", ()=>{ End = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("trpathnodes", ()=>{
                             stf.MustMatch("(");
-                            int count = stf.ReadInt(STFReader.UNITS.None, null);
+                            var count = stf.ReadInt(STFReader.UNITS.None, null);
                             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                                new STFReader.TokenProcessor("trpathnode", ()=>{ --count; trPathNodes.Add(new TrPathNode(stf)); }),
+                                new STFReader.TokenProcessor("trpathnode", ()=>{
+                                    if (--count < 0)
+                                        STFException.TraceWarning(stf, "Skipped extra TrPathNodes");
+                                    else
+                                        trPathNodes.Add(new TrPathNode(stf));
+                                }),
                             });
-                            if (count != 0)
-                                STFException.TraceWarning(stf, "TrPathNodes count incorrect");
+                            if (count > 0)
+                                STFException.TraceWarning(stf, count + " missing TrPathNodes(s)");
                         }),
                     });}),
                 });
-          }
+        }
 
         public override string ToString()
         {

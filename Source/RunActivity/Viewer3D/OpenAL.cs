@@ -591,7 +591,7 @@ namespace ORTS
 
             if (wfi.ulDataSize == 0 || ((int)wfi.ulDataSize) == -1)
             {
-                Trace.TraceWarning("Wave file {0} has invalid length, could not read.", Name);
+                Trace.TraceWarning("Skipped wave file with invalid length {0}", Name);
                 return false;
             }
 
@@ -608,8 +608,7 @@ namespace ORTS
 
             if (buffer.Length != wfi.ulDataSize)
             {
-                Trace.TraceWarning("Wave file {0} has invalid length, File buffer length:{1}, File length from header:{2}; using buffer length for further operations.", 
-                    Name, buffer.Length, wfi.ulDataSize);
+                Trace.TraceWarning("Invalid wave file length in header; expected {1}, got {2} in {0}", Name, buffer.Length, wfi.ulDataSize);
                 wfi.ulDataSize = (uint)buffer.Length;
             }
 
@@ -620,8 +619,7 @@ namespace ORTS
 
                 if (adjPos1 > wfi.ulDataSize || adjPos2 > wfi.ulDataSize)
                 {
-                    Trace.TraceWarning("Wave file {0} has invalid CUE data, Length: {1}, CUE1: {2}, CUE2: {3}, BitsPerSample: {4}, Channels: {5}; falling back to single buffer.",
-                        Name, wfi.ulDataSize, adjPos1, adjPos2, wfi.nBitsPerSample, wfi.nChannels);
+                    Trace.TraceWarning("Invalid cue points in wave file; Length {1}, CUE1 {2}, CUE2 {3}, BitsPerSample {4}, Channels {5} in {0}", Name, wfi.ulDataSize, adjPos1, adjPos2, wfi.nBitsPerSample, wfi.nChannels);
                     wfi.ulFirstCue = 0xFFFFFFFF;
                     wfi.ulLastCue = 0xFFFFFFFF;
                 }

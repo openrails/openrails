@@ -91,7 +91,7 @@ namespace MSTS
                     }
                     catch (Exception error)
                     {
-                        Trace.TraceWarning(error.Message);
+                        Trace.WriteLine(error);
                     }
                 }
             }
@@ -124,7 +124,7 @@ namespace MSTS
                     }
                     catch (System.Exception error)
                     {
-                        Trace.TraceWarning(error.Message);
+                        Trace.WriteLine(error);
                     }
                 }
             }
@@ -195,7 +195,7 @@ namespace MSTS
                     if (!UnknownBlockIDs.Contains(subBlock.ID))
                     {
                         UnknownBlockIDs.Add(subBlock.ID);
-                        Trace.TraceInformation("Unknown world block {0} (0x{0:X}) first seen in {1}", subBlock.ID, filename);
+                        Trace.TraceWarning("Skipped unknown world block {0} (0x{0:X}) first seen in {1}", subBlock.ID, filename);
                     }
                     subBlock.Skip();
                     break;

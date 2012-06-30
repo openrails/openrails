@@ -82,7 +82,7 @@ namespace ORTS
                 }
                 catch (InvalidDataException error)
                 {
-                    Trace.TraceWarning(error.Message);
+                    Trace.WriteLine(error);
                 }
 #if DEBUG_SIGNAL_SHAPES
 				Console.WriteLine();
@@ -268,7 +268,7 @@ namespace ORTS
             {
                 if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
                 {
-                    Trace.TraceWarning("Signal type {0} has invalid light texture {1}.", mstsSignalType.Name, mstsSignalType.LightTextureName);
+                    Trace.TraceWarning("Skipped invalid light texture {1} for signal type {0}", mstsSignalType.Name, mstsSignalType.LightTextureName);
                     Material = viewer.MaterialManager.Load("missing-signal-light");
                     Type = SignalTypeDataType.Normal;
                     FlashTimeOn = 1;
@@ -285,15 +285,13 @@ namespace ORTS
                         {
                             if (!viewer.SIGCFG.LightsTable.ContainsKey(mstsSignalLight.Name))
                             {
-                                Trace.TraceWarning("Signal type {0} has invalid light {1}.", mstsSignalType.Name, mstsSignalLight.Name);
+                                Trace.TraceWarning("Skipped invalid light {1} for signal type {0}", mstsSignalType.Name, mstsSignalLight.Name);
                                 continue;
                             }
                             var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
                             Lights.Add(new SignalLightMesh(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
                             LightsSemaphoreChange.Add(mstsSignalLight.SemaphoreChange);
                         }
-                        // Check on mstsSignalType.Aspects removed (process signals without aspects)
-
                     }
 
                     foreach (KeyValuePair<string, MSTS.SignalDrawState> sdrawstate in mstsSignalType.DrawStates)
@@ -322,9 +320,6 @@ namespace ORTS
 
             public SignalAspectData(MSTS.SignalType mstsSignalType, MSTS.SignalDrawState drawStateData)
             {
-                // Check on existence of lights included
-                // Also process signals if no lights defined (semaphore only)
-
                 if (mstsSignalType.Lights != null)
                 {
                     DrawLights = new bool[mstsSignalType.Lights.Count];
@@ -340,20 +335,17 @@ namespace ORTS
                 {
                     foreach (var drawLight in drawStateData.DrawLights)
                     {
-                        try
+                        if (drawLight.LightIndex < 0 || drawLight.LightIndex >= DrawLights.Length)
+                            Trace.TraceWarning("Skipped extra draw light {0}", drawLight.LightIndex);
+                        else
                         {
                             DrawLights[drawLight.LightIndex] = true;
                             FlashLights[drawLight.LightIndex] = drawLight.Flashing;
-                        }
-                        catch (Exception ex)
-                        {
-                            Trace.TraceWarning("Exception : {0} : {1}", ex.ToString(), mstsSignalType.Name);
                         }
                     }
                 }
                 SemaphorePos = drawStateData.SemaphorePos;
             }
-
         }
     }
 

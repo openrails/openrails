@@ -222,9 +222,10 @@ namespace ORTS
 						scrStream.Close();
 					}
 				}
-				catch (Exception ex)
+				catch (Exception error)
 				{
-					Trace.TraceWarning("Cannot open file {0} : {1}", FileName.ToString(),ex.ToString());
+                    Trace.TraceInformation(FileName);
+                    Trace.WriteLine(error);
 				}
 			}
 		}// Constructor
@@ -948,7 +949,7 @@ namespace ORTS
 
 				if (endpos <= 0)
 				{
-					Trace.TraceError("Missing ; in statement starting with {0}\n",presentstring);
+                    Trace.TraceWarning("Missing ; in statement starting with {0}\n", presentstring);
 #if DEBUG_PRINT_IN
 					File.AppendAllText(din_fileLoc+@"sigscr.txt","Missing ; in statement starting with "+presentstring+"\n");
 #endif
@@ -1311,7 +1312,7 @@ namespace ORTS
 
 				if (totalopen <= 0)
 				{
-					Trace.TraceError("If statement without ( ; starting with {0}\n",presentstring);
+                    Trace.TraceWarning("If statement without ( ; starting with {0}\n", presentstring);
 #if DEBUG_PRINT_IN
 					File.AppendAllText(din_fileLoc+@"sigscr.txt","If statement without ( ; starting with {0}"+presentstring+"\n");
 #endif
@@ -1338,7 +1339,7 @@ namespace ORTS
 
 				if (totalclose < totalopen)
 				{
-					Trace.TraceError("Missing ) in IF statement ; starting with {0} : {1} and {2}",presentstring,
+                    Trace.TraceWarning("Missing ) in IF statement ; starting with {0} : {1} and {2}", presentstring,
 					totalopen.ToString(), totalclose.ToString());
 #if DEBUG_PRINT_IN
 					File.AppendAllText(din_fileLoc+@"sigscr.txt","If statement without ) ; starting with "+presentstring+

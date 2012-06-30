@@ -874,7 +874,7 @@ namespace ORTS
 					Trains.Add(new AITrain(this, inf));
 				else
 				{
-					Trace.TraceWarning("Don't know how to restore train type: " + trainType.ToString());
+					Trace.TraceWarning("Ignored unknown train type {0} during restore", trainType);
 					Debug.Fail("Don't know how to restore train type: " + trainType.ToString());  // in debug mode, halt on this error
                     Trains.Add(new Train(this, inf)); // for release version, we'll try to press on anyway
 				}

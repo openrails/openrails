@@ -43,7 +43,7 @@ namespace MSTS
                     if (tileX == tn.UiD.WorldTileX && tileZ == tn.UiD.WorldTileZ && UiD == tn.UiD.WorldID)
                         return tn.TrJunctionNode;
 
-            Trace.TraceWarning("Track node in tile {0},{1} with UiD {2} could not be found in TDB.", tileX, tileZ, UiD);
+            Trace.TraceWarning("{{TileX:{0} TileZ:{1}}} track node {2} could not be found in TDB", tileX, tileZ, UiD);
             return null;
         }
 
@@ -127,8 +127,13 @@ namespace MSTS
                 }),
             });
             // TODO We assume there is only 2 outputs to each junction
-            if (TrVectorNode != null && TrPins.Length != 2)
-                Trace.TraceWarning("TDB DEBUG TVN={0} has {1} pins.", UiD, TrPins.Length);
+            var expectedPins = TrJunctionNode != null ? new[] { 3, 1, 2 } : TrVectorNode != null ? new[] { 2, 1, 1 } : TrEndNode ? new[] { 1, 1, 0 } : new[] { 0, 0, 0 };
+            if (TrPins.Length != expectedPins[0])
+                Trace.TraceWarning("Track node {0} has unexpected number of pins; expected {1}, got {2}", Index, expectedPins[0], TrPins.Length);
+            if (Inpins != expectedPins[1])
+                Trace.TraceWarning("Track node {0} has unexpected number of input pins; expected {1}, got {2}", Index, expectedPins[1], TrPins.Length);
+            if (Outpins != expectedPins[2])
+                Trace.TraceWarning("Track node {0} has unexpected number of output pins; expected {1}, got {2}", Index, expectedPins[2], TrPins.Length);
         }
         public TrJunctionNode TrJunctionNode;
         public TrVectorNode TrVectorNode;
@@ -277,14 +282,14 @@ namespace MSTS
                     int refidx = 0;
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("tritemref", ()=>{
-                            if (refidx < noItemRefs)
-                                TrItemRefs[refidx++] = stf.ReadIntBlock(STFReader.UNITS.None, null);
+                            if (refidx >= noItemRefs)
+                                STFException.TraceWarning(stf, "Skipped extra TrItemRef");
                             else
-                                STFException.TraceWarning(stf, "TrItemRef Count Mismatch");
+                                TrItemRefs[refidx++] = stf.ReadIntBlock(STFReader.UNITS.None, null);
                         }),
                     });
-                    if(refidx != noItemRefs)
-                        STFException.TraceWarning(stf, "TrItemRef Count Mismatch");
+                    if (refidx < noItemRefs)
+                        STFException.TraceWarning(stf, (noItemRefs - refidx).ToString() + " missing TrItemRef(s)");
                 }),
             });
         }
@@ -473,7 +478,9 @@ namespace MSTS
                     int sigidx = 0;
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("trsignaldir", ()=>{
-                            if(sigidx<noSigDirs)
+                            if (sigidx >= noSigDirs)
+                                STFException.TraceWarning(stf, "Skipped extra TrSignalDirs");
+                            else
                             {
                                 TrSignalDirs[sigidx]=new strTrSignalDir();
                                 stf.MustMatch("(");
@@ -486,7 +493,8 @@ namespace MSTS
                             }
                         }),
                     });
-                    if(sigidx != noSigDirs)  STFException.TraceWarning(stf, "TrSignalDirs count mismatch");
+                    if (sigidx < noSigDirs)
+                        STFException.TraceWarning(stf, (noSigDirs - sigidx).ToString() + " missing TrSignalDirs(s)");
                 }),
             });
         }

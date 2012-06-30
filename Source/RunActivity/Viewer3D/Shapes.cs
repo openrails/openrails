@@ -807,7 +807,7 @@ namespace ORTS
                         if (lightModelConfiguration.uv_ops[0].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[0].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
                             options |= UVTextureAddressModeMap[lightModelConfiguration.uv_ops[0].TexAddrMode - 1];
                         else
-                            Trace.TraceWarning("Invalid texture addressing mode {1} in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
+                            Trace.TraceWarning("Skipped unknown texture addressing mode {1} in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
 
                     if (primitiveState.alphatestmode == 1)
                         options |= SceneryMaterialOptions.AlphaTest;
@@ -815,12 +815,12 @@ namespace ORTS
                     if (ShaderNames.ContainsKey(sFile.shape.shader_names[primitiveState.ishader]))
                         options |= ShaderNames[sFile.shape.shader_names[primitiveState.ishader]];
                     else
-                        Trace.TraceWarning("Invalid shader name {1} in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
+                        Trace.TraceWarning("Skipped unknown shader name {1} in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
 
                     if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
                     else
-                        Trace.TraceWarning("Invalid lighting model index {1} in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
+                        Trace.TraceWarning("Skipped unknown lighting model index {1} in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
 
                     if ((textureFlags & Helpers.TextureFlags.Night) != 0)
                         options |= SceneryMaterialOptions.NightTexture;

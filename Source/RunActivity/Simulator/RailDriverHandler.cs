@@ -75,10 +75,10 @@ namespace ORTS
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception error)
             {
                 Device = null;
-                Trace.TraceWarning(e.ToString());
+                Trace.WriteLine(error);
             }
         }
 
@@ -152,7 +152,7 @@ namespace ORTS
         /// <param name="sourceDevice"></param>
         public void HandlePIEHidError(Int32 error, PIEDevice sourceDevice)
         {
-            Trace.TraceWarning("RailDriver Error: " + error.ToString());
+            Trace.TraceWarning("RailDriver Error: {0}", error);
         }
 
         float Percentage(float x, float x0, float x100)
@@ -259,7 +259,7 @@ namespace ORTS
                 if (!File.Exists(file))
                 {
                     SetLEDs(0, 0, 0);
-                    Trace.TraceWarning("Cannot find RailDriver calibration file " + file);
+                    Trace.TraceWarning("Cannot find RailDriver calibration file {0}", file);
                     return;
                 }
             }
@@ -307,7 +307,7 @@ namespace ORTS
                             case "Rotary Switch 2-Position 1(OFF)": Rotary2Position1 = v; break;
                             case "Rotary Switch 2-Position 2(DIM)": Rotary2Position2 = v; break;
                             case "Rotary Switch 2-Position 3(FULL)": Rotary2Position3 = v; break;
-                            default: STFException.TraceWarning(reader, "unknown calibration value " + name); break;
+                            default: STFException.TraceWarning(reader, "Skipped unknown calibration value " + name); break;
                         }
                     }
                 }

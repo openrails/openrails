@@ -100,6 +100,13 @@ namespace ORTS
             return (simulator.Season == SeasonType.Winter) || ((simulator.Season != SeasonType.Summer) && (simulator.Weather == WeatherType.Snow));
         }
 
+        static readonly Dictionary<string, SceneryMaterialOptions> TextureAddressingModeNames = new Dictionary<string, SceneryMaterialOptions> {
+            { "Wrap", SceneryMaterialOptions.TextureAddressModeWrap },
+            { "Mirror", SceneryMaterialOptions.TextureAddressModeMirror },
+            { "Clamp", SceneryMaterialOptions.TextureAddressModeClamp },
+            { "Border", SceneryMaterialOptions.TextureAddressModeBorder },
+        };
+
         static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
             { "Tex", SceneryMaterialOptions.None },
             { "TexDiff", SceneryMaterialOptions.Diffuse },
@@ -119,13 +126,6 @@ namespace ORTS
             { "OptSpecular0", SceneryMaterialOptions.None | SceneryMaterialOptions.None },
         };
 
-        static readonly Dictionary<string, SceneryMaterialOptions> TextureAddressingModeNames = new Dictionary<string, SceneryMaterialOptions> {
-            { "Wrap", SceneryMaterialOptions.TextureAddressModeWrap },
-            { "Mirror", SceneryMaterialOptions.TextureAddressModeMirror },
-            { "Clamp", SceneryMaterialOptions.TextureAddressModeClamp },
-            { "Border", SceneryMaterialOptions.TextureAddressModeBorder },
-        };
-
         /// <summary>
         /// Encodes material options code from parameterized options.
         /// Material options encoding is documented in SharedShape.SubObject() (Shapes.cs)
@@ -135,25 +135,25 @@ namespace ORTS
         /// <returns>Options code.</returns>
         public static SceneryMaterialOptions EncodeMaterialOptions(LODItem lod)
         {
-            SceneryMaterialOptions options = SceneryMaterialOptions.None;
-
-            if (ShaderNames.ContainsKey(lod.ShaderName))
-                options |= ShaderNames[lod.ShaderName];
-            else
-                Trace.TraceWarning("Invalid shader name {1} in shape {0}", lod.Name, lod.ShaderName);
-
-            if (LightingModelNames.ContainsKey(lod.LightModelName))
-                options |= LightingModelNames[lod.LightModelName];
-            else
-                Trace.TraceWarning("Invalid lighting model name {1} in shape {0}", lod.LightModelName, lod.ShaderName);
-
-            if (lod.AlphaTestMode != 0)
-                options |= SceneryMaterialOptions.AlphaTest;
+            var options = SceneryMaterialOptions.None;
 
             if (TextureAddressingModeNames.ContainsKey(lod.TexAddrModeName))
                 options |= TextureAddressingModeNames[lod.TexAddrModeName];
             else
-                Trace.TraceWarning("Invalid texture addressing mode {1} in shape {0}", lod.TexAddrModeName, lod.ShaderName);
+                Trace.TraceWarning("Skipped unknown texture addressing mode {1} in shape {0}", lod.Name, lod.TexAddrModeName);
+
+            if (lod.AlphaTestMode == 1)
+                options |= SceneryMaterialOptions.AlphaTest;
+
+            if (ShaderNames.ContainsKey(lod.ShaderName))
+                options |= ShaderNames[lod.ShaderName];
+            else
+                Trace.TraceWarning("Skipped unknown shader name {1} in shape {0}", lod.Name, lod.ShaderName);
+
+            if (LightingModelNames.ContainsKey(lod.LightModelName))
+                options |= LightingModelNames[lod.LightModelName];
+            else
+                Trace.TraceWarning("Skipped unknown lighting model index {1} in shape {0}", lod.Name, lod.LightModelName);
 
             if ((lod.ESD_Alternative_Texture & 0x1) != 0)
                 options |= SceneryMaterialOptions.NightTexture;

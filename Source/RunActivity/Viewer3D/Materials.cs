@@ -199,7 +199,7 @@ namespace ORTS
                         Materials[materialKey] = new WaterMaterial(Viewer, textureName);
                         break;
                     default:
-                        Trace.TraceError("Code requested an unknown material type of {0}", materialName);
+                        Trace.TraceError("Skipped unknown material type {0}", materialName);
                         Materials[materialKey] = new YellowMaterial(Viewer);
                         break;
                 }

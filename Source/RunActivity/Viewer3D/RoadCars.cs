@@ -46,6 +46,9 @@ namespace ORTS
             Viewer = viewer;
             CarSpawnerObj = carSpawnerObj;
 
+            if (viewer.Simulator.RDB == null || viewer.Simulator.CarSpawnerFile == null)
+                throw new InvalidOperationException("RoadCarSpawner requires a RDB and CARSPAWN.DAT");
+
             var start = CarSpawnerObj.getTrItemID(0);
             var end = CarSpawnerObj.getTrItemID(1);
             var trItems = viewer.Simulator.RDB.RoadTrackDB.TrItemTable;
@@ -59,7 +62,7 @@ namespace ORTS
                 Traveller.ReverseDirection();
                 Length = Traveller.DistanceTo(endLocation.TileX, endLocation.TileZ, endLocation.Location.X, endLocation.Location.Y, endLocation.Location.Z);
                 if (Length < 0)
-                    Trace.TraceWarning("{0} car spawner {1} doesn't have connected road route between {2} and {3}.", position, carSpawnerObj.UID, startLocation, endLocation);
+                    Trace.TraceWarning("{0} car spawner {1} doesn't have connected road route between {2} and {3}", position, carSpawnerObj.UID, startLocation, endLocation);
             }
 
             var sortedLevelCrossings = new SortedList<float, LevelCrossingItem>();

@@ -123,9 +123,7 @@ namespace MSTS
         private void AddSection(STFReader stf, TrackSection section)
         {
             if (ContainsKey(section.SectionIndex))
-            {
-                STFException.TraceWarning(stf, "Duplicate SectionIndex of " + section.SectionIndex);
-            }
+                STFException.TraceWarning(stf, "Replaced SectionIndex " + section.SectionIndex);
             this[section.SectionIndex] = section;
         }
 
@@ -137,7 +135,7 @@ namespace MSTS
             if (TryGetValue(targetSectionIndex, out ts))
                 return ts;
 			if (MissingTrackSectionWarnings++ < 5)
-				Trace.TraceWarning("TDB references track section not listed in global or dynamic TSECTION.DAT: " + targetSectionIndex.ToString());
+				Trace.TraceWarning("Skipped track section {0} not in global or dynamic TSECTION.DAT", targetSectionIndex);
             return null;
 		}
 		public uint MaxSectionIndex;
@@ -162,7 +160,7 @@ namespace MSTS
                     return;   // there are many TSECTION.DAT's with missing sections so we will accept this error
                 }
                 if (!uint.TryParse(token, out TrackSections[i]))
-                    STFException.TraceWarning(stf, "Invalid Track Section " + token);
+                    STFException.TraceWarning(stf, "Invalid track section " + token);
 			}
 			stf.SkipRestOfBlock();
 		}
@@ -260,7 +258,7 @@ namespace MSTS
             {
                 if (stf.SimisSignature != "SIMISA@@@@@@@@@@JINX0T0t______")
                 {
-                    Trace.TraceWarning("Ignoring invalid TSECTION.DAT in route folder.");
+                    Trace.TraceWarning("Skipped invalid TSECTION.DAT in route folder");
                     return;
                 }
                 stf.ParseFile(new STFReader.TokenProcessor[] {
@@ -336,7 +334,7 @@ namespace MSTS
 					return;   // there are many TSECTION.DAT's with missing sections so we will accept this error
 				}
 				if (!uint.TryParse(token, out TrackSections[i]))
-					STFException.TraceWarning(stf, "Invalid Track Section " + token);
+					STFException.TraceWarning(stf, "Invalid track section " + token);
 			}
 			stf.SkipRestOfBlock();
 
