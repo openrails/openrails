@@ -27,7 +27,7 @@ namespace ORTS
             Viewer = viewer;
             if (Threaded)
             {
-                State = new ProcessState();
+                State = new ProcessState("Loader");
                 Thread = new Thread(LoaderThread);
                 Thread.Start();
             }
@@ -57,7 +57,6 @@ namespace ORTS
         void LoaderThread()
         {
             Profiler.SetThread();
-            ProcessState.SetThreadName("Loader Process");
 
             while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
             {

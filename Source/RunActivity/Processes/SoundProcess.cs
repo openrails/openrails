@@ -21,7 +21,6 @@ namespace ORTS
 		public readonly Profiler Profiler = new Profiler("Sound");
         readonly Viewer3D Viewer;
 		readonly Thread Thread;
-		readonly ProcessState State;
 
         public SoundProcess(Viewer3D viewer)
         {
@@ -31,7 +30,6 @@ namespace ORTS
             {
                 if (Threaded)
                 {
-                    State = new ProcessState();
                     Thread = new Thread(SoundThread);
                     Thread.Start();
                 }
@@ -90,7 +88,6 @@ namespace ORTS
         void SoundThread()
         {
             Profiler.SetThread();
-            ProcessState.SetThreadName("Sound Process");
 
             while (Viewer.RealTime == 0)
                 Thread.Sleep(100);

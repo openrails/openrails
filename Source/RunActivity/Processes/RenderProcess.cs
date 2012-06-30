@@ -131,8 +131,6 @@ namespace ORTS
         [ThreadName("Render")]
         protected override void Initialize()
         {
-            ProcessState.SetThreadName("Render Process");
-
             Viewer.Initialize();
 
             ShadowMapCount = Viewer.Settings.ShadowMapCount;

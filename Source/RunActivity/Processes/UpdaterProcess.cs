@@ -27,7 +27,7 @@ namespace ORTS
             Viewer = viewer;
             if (Threaded)
             {
-                State = new ProcessState();
+                State = new ProcessState("Updater");
                 Thread = new Thread(UpdaterThread);
                 Thread.Start();
             }
@@ -59,7 +59,6 @@ namespace ORTS
         void UpdaterThread()
         {
             Profiler.SetThread();
-            ProcessState.SetThreadName("Updater Process");
 
             while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
             {

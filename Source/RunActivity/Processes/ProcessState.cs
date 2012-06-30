@@ -8,33 +8,34 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace ORTS
 {
-    /// <summary>
-    /// Provides interprocess signalling.
-    /// Manages a process as finished, or started
-    /// with thread blocking calls to wait for the desired state
-    /// without spin poll wait loops
-    /// </summary>
     public class ProcessState
     {
         public bool Finished { get; private set; }
         ManualResetEvent StartEvent = new ManualResetEvent(false);
         ManualResetEvent FinishEvent = new ManualResetEvent(true);
+#if DEBUG_THREAD_PERFORMANCE
+        StreamWriter DebugFileStream;
+#endif
 
-        public ProcessState()
+        public ProcessState(string name)
         {
             Finished = true;
+#if DEBUG_THREAD_PERFORMANCE
+            DebugFileStream = new StreamWriter(File.OpenWrite("debug_thread_" + name.ToLowerInvariant() + "_state.csv"));
+            DebugFileStream.Write("Time,Event\n");
+#endif
         }
 
         public void SignalStart()
         {
+#if DEBUG_THREAD_PERFORMANCE
+            DebugFileStream.Write("{0},SS\n", DateTime.Now.Ticks);
+#endif
             Finished = false;
             FinishEvent.Reset();
             StartEvent.Set();
@@ -42,6 +43,9 @@ namespace ORTS
 
         public void SignalFinish()
         {
+#if DEBUG_THREAD_PERFORMANCE
+            DebugFileStream.Write("{0},SF\n", DateTime.Now.Ticks);
+#endif
             Finished = true;
             StartEvent.Reset();
             FinishEvent.Set();
@@ -49,30 +53,24 @@ namespace ORTS
 
         public void WaitTillStarted()
         {
+#if DEBUG_THREAD_PERFORMANCE
+            DebugFileStream.Write("{0},WTS+\n", DateTime.Now.Ticks);
+#endif
             StartEvent.WaitOne();
+#if DEBUG_THREAD_PERFORMANCE
+            DebugFileStream.Write("{0},WTS-\n", DateTime.Now.Ticks);
+#endif
         }
 
         public void WaitTillFinished()
         {
+#if DEBUG_THREAD_PERFORMANCE
+            DebugFileStream.Write("{0},WTF+\n", DateTime.Now.Ticks);
+#endif
             FinishEvent.WaitOne();
-        }
-
-        public static void SetThreadName(string name)
-        {
-            // This is so that you can identify threads from debuggers like Visual Studio.
-            try
-            {
-                Thread.CurrentThread.Name = name;
-            }
-            catch { }
-
-            // This is so that you can identify threads from programs like Process Monitor. The call
-            // should always fail but will appear in Process Monitor's log against the correct thread.
-            try
-            {
-                File.ReadAllBytes(@"DEBUG\THREAD\" + name);
-            }
-            catch { }
+#if DEBUG_THREAD_PERFORMANCE
+            DebugFileStream.Write("{0},WTF-\n", DateTime.Now.Ticks);
+#endif
         }
     }
 }
