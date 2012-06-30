@@ -173,6 +173,9 @@ namespace ORTS
             if (SharedShape.Animations == null)
                 return;  // animation is missing
 
+            if (iMatrix >= SharedShape.Animations[0].anim_nodes.Count)
+                return;  // mismatched matricies
+
             anim_node anim_node = SharedShape.Animations[0].anim_nodes[iMatrix];
             if (anim_node.controllers.Count == 0)
                 return;  // missing controllers
