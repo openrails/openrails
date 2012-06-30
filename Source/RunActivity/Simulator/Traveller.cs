@@ -357,7 +357,7 @@ namespace ORTS
                 return false;
             var radiansAlongCurve = (float)Math.Asin(z / trackSection.SectionCurve.Radius);
             var lon = radiansAlongCurve * trackSection.SectionCurve.Radius;
-            var trackSectionLength = M.Radians(Math.Abs(trackSection.SectionCurve.Angle)) * trackSection.SectionCurve.Radius;
+            var trackSectionLength = GetLength(trackSection);
             if (lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)
                 return false;
 
@@ -388,7 +388,8 @@ namespace ORTS
             // Calculate distance along and away from the track centerline.
             float lat, lon;
             M.Survey(sx, sz, trackVectorSection.AY, x, z, out lon, out lat);
-            if (Math.Abs(lat) > MaximumCenterlineOffset || lon < -InitErrorMargin || lon > trackSection.SectionSize.Length + InitErrorMargin)
+            var trackSectionLength = GetLength(trackSection);
+            if (Math.Abs(lat) > MaximumCenterlineOffset || lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)
                 return false;
 
             direction = TravellerDirection.Forward;
@@ -613,57 +614,52 @@ namespace ORTS
 
             locationSet = true;
 
-            if (trackVectorSection == null)
+            var tn = trackNode;
+            var tvs = trackVectorSection;
+            var ts = trackSection;
+            var to = trackOffset;
+            if (tvs == null)
             {
-                location = new WorldLocation();
-                directionVector = new Vector3();
-            }
-            else
-            {
-                location.TileX = trackVectorSection.TileX;
-                location.TileZ = trackVectorSection.TileZ;
-                location.Location.X = trackVectorSection.X;
-                location.Location.Y = trackVectorSection.Y;
-                location.Location.Z = trackVectorSection.Z;
-                directionVector.X = trackVectorSection.AX;
-                directionVector.Y = trackVectorSection.AY;
-                directionVector.Z = trackVectorSection.AZ;
+                // We're on a junction or end node. Use one of the links to get location and direction information.
+                var pin = trackNode.TrPins[0];
+                tn = TrackNodes[pin.Link];
+                tvs = tn.TrVectorNode.TrVectorSections[pin.Direction > 0 ? 0 : tn.TrVectorNode.TrVectorSections.Length - 1];
+                ts = TSectionDat.TrackSections.Get(tvs.SectionIndex);
+                to = pin.Direction > 0 ? -trackOffset : GetLength(ts) + trackOffset;
             }
 
-            if (IsTrackCurved)
+            location.TileX = tvs.TileX;
+            location.TileZ = tvs.TileZ;
+            location.Location.X = tvs.X;
+            location.Location.Y = tvs.Y;
+            location.Location.Z = tvs.Z;
+            directionVector.X = tvs.AX;
+            directionVector.Y = tvs.AY;
+            directionVector.Z = tvs.AZ;
+
+            if (ts.SectionCurve != null)
             {
                 // "Handedness" Convention: A right-hand curve (TS.SectionCurve.Angle > 0) curves 
                 // to the right when moving forward.
-                var sign = -Math.Sign(trackSection.SectionCurve.Angle);
-                var vectorCurveStartToCenter = Vector3.Left * trackSection.SectionCurve.Radius * sign;
-                var curveRotation = Matrix.CreateRotationY(trackOffset * sign);
-                var XNAMatrix = Matrix.CreateFromYawPitchRoll(-trackVectorSection.AY, -trackVectorSection.AX, trackVectorSection.AZ);
+                var sign = -Math.Sign(ts.SectionCurve.Angle);
+                var vectorCurveStartToCenter = Vector3.Left * ts.SectionCurve.Radius * sign;
+                var curveRotation = Matrix.CreateRotationY(to * sign);
+                var XNAMatrix = Matrix.CreateFromYawPitchRoll(-tvs.AY, -tvs.AX, tvs.AZ);
                 Vector3 dummy;
                 var displacement = MSTSInterpolateAlongCurve(Vector3.Zero, vectorCurveStartToCenter, curveRotation, XNAMatrix, out dummy);
-                location.Location.X = trackVectorSection.X + displacement.X;
-                location.Location.Y = trackVectorSection.Y + displacement.Y;
-                location.Location.Z = trackVectorSection.Z - displacement.Z;
-                directionVector.Y -= trackOffset * sign;
-            }
-            else if (IsTrackStraight)
-            {
-                var XNAMatrix = Matrix.CreateFromYawPitchRoll(trackVectorSection.AY, trackVectorSection.AX, trackVectorSection.AZ);
-                Vector3 dummy;
-                var displacement = MSTSInterpolateAlongStraight(Vector3.Zero, Vector3.UnitZ, trackOffset, XNAMatrix, out dummy);
-                location.Location.X = trackVectorSection.X + displacement.X;
-                location.Location.Y = trackVectorSection.Y + displacement.Y;
-                location.Location.Z = trackVectorSection.Z + displacement.Z;
+                location.Location.X += displacement.X;
+                location.Location.Y += displacement.Y;
+                location.Location.Z -= displacement.Z;
+                directionVector.Y -= to * sign;
             }
             else
             {
-                // TODO replace with matrix math
-                var P = new TWorldPosition(X, Y, Z);
-                var D = new TWorldDirection();
-                D.SetAngles(directionVector.Y, -directionVector.X);
-                P.Move(D, trackOffset);
-                location.Location.X = P.X;
-                location.Location.Y = P.Y;
-                location.Location.Z = P.Z;
+                var XNAMatrix = Matrix.CreateFromYawPitchRoll(tvs.AY, tvs.AX, tvs.AZ);
+                Vector3 dummy;
+                var displacement = MSTSInterpolateAlongStraight(Vector3.Zero, Vector3.UnitZ, to, XNAMatrix, out dummy);
+                location.Location.X += displacement.X;
+                location.Location.Y += displacement.Y;
+                location.Location.Z += displacement.Z;
             }
 
             if (direction == TravellerDirection.Backward)
@@ -691,7 +687,7 @@ namespace ORTS
             for (var i = 0; i < tvs.Length; i++)
             {
                 var ts = TSectionDat.TrackSections.Get(tvs[i].SectionIndex);
-                var length = ts.SectionCurve != null ? ts.SectionCurve.Radius * Math.Abs(MathHelper.ToRadians(ts.SectionCurve.Angle)) : ts.SectionSize.Length;
+                var length = GetLength(ts);
                 trackNodeLength += length;
                 if (i < TrackVectorSectionIndex)
                     trackNodeOffset += length;
@@ -700,6 +696,11 @@ namespace ORTS
             }
             if (Direction == TravellerDirection.Backward)
                 trackNodeOffset = trackNodeLength - trackNodeOffset;
+        }
+
+        static float GetLength(TrackSection trackSection)
+        {
+            return trackSection.SectionCurve != null ? trackSection.SectionCurve.Radius * Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)) : trackSection.SectionSize.Length;
         }
 
         /// <summary>

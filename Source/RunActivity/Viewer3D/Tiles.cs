@@ -145,7 +145,6 @@ namespace ORTS
         {
             TileX = tileX;
             TileZ = tileZ;
-            Trace.TraceInformation("Loading tile {0}, {1}", tileX, tileZ);
             var fileName = filePath + TileNameConversion.GetTileNameFromTileXZ(tileX, tileZ);
             if (File.Exists(fileName + ".t"))
             {
