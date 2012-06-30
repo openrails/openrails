@@ -190,14 +190,11 @@ namespace ORTS
                             }
                             else if (switchObj != null)
                             {
-								//disabled angle calculation
-                                //var angle = switchObj.TrackNode.TrJunctionNode.GetAngle(Owner.Viewer.Simulator.TSectionDat);
-                                //primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format(angle == -1 ? "Switch ({0}-way, {1} set, angle unknown)" : "Switch ({0}-way, {1} set, angle {2:F1})", switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1, angle), Owner.TextFontDefaultOutlined));
-								primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format("Switch ({0}-way, {1} set)", switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
+								primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, objDistance >= switchErrorDistance ? Color.Red : Color.White, String.Format("Switch ({0}, {1}-way, {2} set)", switchObj.TrackNode.Index, switchObj.TrackNode.Outpins, switchObj.TrackNode.TrJunctionNode.SelectedRoute + 1), Owner.TextFontDefaultOutlined));
                             }
                             else if (signalObj != null)
                             {
-                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Stop ? Color.Red : GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Warning ? Color.Yellow : Color.White, String.Format("Signal (ID: {1}, {0})", signalObj.Signal.GetAspect(), signalObj.Signal.nextSigRef), Owner.TextFontDefaultOutlined));
+                                primitives.Add(new DispatcherLabel(currentPosition.WorldLocation, GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Stop ? Color.Red : GetAspect(signalObj.Signal) == TrackMonitorSignalAspect.Warning ? Color.Yellow : Color.White, String.Format("Signal ({0}, {1})", signalObj.Signal.nextSigRef, signalObj.Signal.GetAspect()), Owner.TextFontDefaultOutlined));
                             }
 
                             if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
@@ -273,7 +270,7 @@ namespace ORTS
                     rv.Objects.Add(new TrackSectionSignal() { Distance = distance, Signal = signal });
                 }
                 // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
-                trackNode.Move(0.0001f);
+                trackNode.Move(0.001f);
             }
             rv.Objects = rv.Objects.OrderBy(tso => tso.Distance).ToList();
             return rv;
