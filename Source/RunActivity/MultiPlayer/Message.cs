@@ -21,6 +21,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "SWITCH") return new MSGSwitch(m.Substring(index + 1));
 			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
 			else if (key == "REMOVETRAIN") return new MSGRemoveTrain(m.Substring(index + 1));
+			else if (key == "SERVER") return new MSGServer(m.Substring(index + 1));
 			else if (key == "MESSAGE") return new MSGMessage(m.Substring(index + 1));
 			else if (key == "EVENT") return new MSGEvent(m.Substring(index + 1));
 			else if (key == "UNCOUPLE") return new MSGUncouple(m.Substring(index + 1));
@@ -634,17 +635,21 @@ namespace ORTS.MultiPlayer
 			if (MPManager.IsServer()) return; //server will ignore it
 			//System.Console.WriteLine(this.ToString());
 			// construct train data
-			Train train = null;
+			Train train = null; bool found = false;
 			lock (lockObj)
 			{
 				foreach (Train t in Program.Simulator.Trains)
 				{
-					if (t.Number == this.TrainNum) return; //already add it
+					if (t.Number == this.TrainNum) { found = true; break; } //already add it
 				}
-				train = new Train(Program.Simulator);
-				Program.Simulator.Trains.Add(train); //force to add it
-				train.Number = this.TrainNum;
+				if (!found)
+				{
+					train = new Train(Program.Simulator);
+					Program.Simulator.Trains.Add(train); //force to add it
+					train.Number = this.TrainNum;
+				}
 			}
+			if (found) return;
 			train.TrainType = Train.TRAINTYPE.REMOTE;
 			int consistDirection = direction;
 			train.travelled = Travelled;
@@ -968,6 +973,29 @@ namespace ORTS.MultiPlayer
 	}
 
 	#endregion MSGRemoveTrain
+
+	#region MSGServer
+	public class MSGServer : Message
+	{
+		public MSGServer(string m)
+		{
+		}
+
+
+		public override string ToString()
+		{
+			string tmp = "SERVER YOU";
+			return "" + tmp.Length + ": " + tmp;
+		}
+
+		public override void HandleMsg()
+		{
+			if (Program.Server != null) return; //already a server, not need to worry
+			Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
+			//System.Console.WriteLine(this.ToString());
+		}
+	}
+	#endregion MSGServer
 
 	#region MSGAlive
 	public class MSGAlive : Message
