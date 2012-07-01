@@ -195,6 +195,7 @@ namespace ORTS
             //			Throttle ( 0 1 0.01 0 
             //			NumNotches ( 5 Notch ( 0    0 Dummy ) Notch ( 0.1  0 Dummy ) Notch ( 0.1  1 Dummy ) Notch ( 0.2  0 Dummy )Notch ( 0.3  1 Dummy ))
 			//		)
+			/*
 			else if ((Notches.Count > 0) && (CurrentNotch < Notches.Count - 1) && (Notches[CurrentNotch].Smooth))
 			{
 				IntermediateValue += StepSize;
@@ -206,7 +207,7 @@ namespace ORTS
 				IntermediateValue += StepSize; 
 				if (IntermediateValue >= MaximumValue) IntermediateValue = MaximumValue;
 				CurrentValue = IntermediateValue;
-			}
+			}*/
 		}
 
         public void StopIncrease()

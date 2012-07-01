@@ -241,7 +241,11 @@ namespace ORTS {
 			Confirmation a;
 			a.Message = String.Format("{0}:{1}", level, msg);
 			a.DurationS = defaultDurationS;
-			ConfirmationList.Add(a);
+			//many threads in Multiplayer may want to confirm something
+			lock (ConfirmationList)
+			{
+				ConfirmationList.Add(a);
+			}
 		}
 
 	}

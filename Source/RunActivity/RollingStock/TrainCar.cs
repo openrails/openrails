@@ -33,7 +33,7 @@ namespace ORTS
 	public bool IsFreight = false;  // indication freigth wagon or passenger car
 
         // This is here so the viewer can see and exploit the car before this one for articulation.
-        public readonly TrainCar PreviousCar;
+        public TrainCar PreviousCar;
 
         public LightCollection Lights = null;
         public int Headlight = 0;

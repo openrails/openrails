@@ -30,8 +30,11 @@ namespace ORTS.MultiPlayer
 				NetworkStream clientStream = Client.GetStream();
 				byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
 
-				clientStream.Write(buffer, 0, buffer.Length);
-				clientStream.Flush();
+				lock (buffer)//lock the buffer in case two threads want to write at once
+				{
+					clientStream.Write(buffer, 0, buffer.Length);
+					clientStream.Flush();
+				}
 			}
 			catch
 			{
@@ -44,6 +47,9 @@ namespace ORTS.MultiPlayer
 
 			byte[] message = new byte[8192];
 			int bytesRead;
+			int errorCount = 0;
+			double firstErrorTick = 0;
+			double nowTicks = 0;
 
 			while (true)
 			{
@@ -90,7 +96,21 @@ namespace ORTS.MultiPlayer
 				}
 				catch (Exception e)
 				{
-					System.Console.WriteLine(e.Message+info);
+					nowTicks = Program.Simulator.GameTime;
+					if (firstErrorTick == 0)
+					{
+						firstErrorTick = nowTicks;
+						errorCount = 1;
+					}
+					if (errorCount >= 10 && nowTicks - firstErrorTick < 100000000) //10 errors last 10 seconds
+					{
+						MSGMessage emsg = new MSGMessage(this.Username, "Error", "Too many errors received from you in a short period of time.");
+						MPManager.BroadCast(emsg.ToString());
+						break;
+					}
+					else if (errorCount < 10) { errorCount++; }
+					else { firstErrorTick = nowTicks; errorCount = 0; }
+					//System.Console.WriteLine(e.Message + info);
 				}
 			}
 

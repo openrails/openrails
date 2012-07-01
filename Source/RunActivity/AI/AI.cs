@@ -128,8 +128,14 @@ namespace ORTS
         {
             if (FirstUpdate)
             {
-                foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
-                    Simulator.Trains.Remove(kvp.Value);
+				//lock it so Multiplayer threads will not access it
+				if (MPManager.IsMultiPlayer()) lock (Simulator.Trains)
+				{
+					foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
+						Simulator.Trains.Remove(kvp.Value);
+				}
+				else foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
+						Simulator.Trains.Remove(kvp.Value);
                 FirstUpdate = false;
             }
             Dispatcher.Update(Simulator.ClockTime, elapsedClockSeconds);
@@ -150,7 +156,11 @@ namespace ORTS
                         el.SetPantographFirst(true);
                     }
                     AITrains.Add(train);
-                    Simulator.Trains.Add(train);
+					if (MPManager.IsMultiPlayer()) lock (Simulator.Trains)
+					{
+						Simulator.Trains.Add(train);
+					}
+					else Simulator.Trains.Add(train);
 					//For Multiplayer: Server BroadCast to others of AITrains being added
 					if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGTrain(train, train.Number)).ToString());
                     train.spad = true;
@@ -318,8 +328,12 @@ namespace ORTS
             //train.InitializeSignals();
 
             //AITrains.Add(train);
-            Simulator.Trains.Add(train);
-            return train;
+			if (MPManager.IsMultiPlayer()) lock (Simulator.Trains)
+				{
+					Simulator.Trains.Add(train);
+				}
+			else Simulator.Trains.Add(train); 
+			return train;
         }
 
         /// <summary>
@@ -336,7 +350,11 @@ namespace ORTS
             foreach (AITrain train in removeList)
             {
                 AITrains.Remove(train);
-                Simulator.Trains.Remove(train);
+				if (MPManager.IsMultiPlayer()) lock (Simulator.Trains)
+					{
+						Simulator.Trains.Remove(train);
+					}
+				else Simulator.Trains.Remove(train);
                 Dispatcher.Release(train);
                 train.Release();
                 if (train.Cars.Count > 0 && train.Cars[0].Train == train)

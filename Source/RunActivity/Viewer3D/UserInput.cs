@@ -94,6 +94,7 @@ namespace ORTS
             Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
             Commands[(int)UserCommands.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
             Commands[(int)UserCommands.GameLocomotiveSwap] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
+			Commands[(int)UserCommands.GameRequestControl] = new UserCommandKeyInput(0x12, KeyModifiers.Shift);
 
             Commands[(int)UserCommands.DisplayNextWindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
             Commands[(int)UserCommands.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommands.DisplayNextWindowTab]);
@@ -492,6 +493,7 @@ namespace ORTS
         GameSwitchWithMouse,
         GameUncoupleWithMouse,
         GameLocomotiveSwap,
+		GameRequestControl,
 
         DisplayNextWindowTab,
         DisplayHelpWindow,

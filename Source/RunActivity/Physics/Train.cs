@@ -511,6 +511,7 @@ namespace ORTS
 				if (updateMSGReceived)
 				{
 					float move = 0.0f;
+					var requestedSpeed = SpeedMpS;
 					try
 					{
 						var x = travelled + SpeedMpS * elapsedClockSeconds + (SpeedMpS - lastSpeedMps) / 2 * elapsedClockSeconds;
@@ -544,7 +545,8 @@ namespace ORTS
 					{
 						move = expectedTravelled - travelled;
 					}
-					updateMSGReceived = false;
+					/*if (Math.Abs(requestedSpeed) < 0.00001 && Math.Abs(SpeedMpS) > 0.01) updateMSGReceived = true; //if requested is stop, but the current speed is still moving
+					else*/ updateMSGReceived = false;
 
 				}
 				else//no message received, will move at the previous speed
@@ -1684,6 +1686,7 @@ namespace ORTS
 			}
 		}
 
+		//used by remote train to update location based on message received
 		public int expectedTileX, expectedTileZ, expectedTracIndex, expectedDIr;
 		public float expectedX, expectedZ, expectedTravelled;
 

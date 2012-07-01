@@ -428,8 +428,8 @@ namespace ORTS
                 PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
                 PlayerTrainLength = 0;
             }
-
-            if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.IsAvailable) CabCamera.Activate();
+			
+			if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.IsAvailable) CabCamera.Activate();
 			if (UserInput.IsPressed(UserCommands.CameraOutsideFront)) FrontCamera.Activate();
 			if (UserInput.IsPressed(UserCommands.CameraJumpingTrains)) RandomSelectTrain(); //hit 9 key, random selected train to have 2 and 3 camera attached to
 			if (UserInput.IsPressed(UserCommands.CameraJumpBackPlayer)) { SelectedTrain = PlayerTrain; Camera.Activate(); } //hit ctl-9 key, get back to player train

@@ -94,6 +94,50 @@ namespace ORTS.MultiPlayer
 		/// 4. it will also capture key stroke of horn, panto, wiper, bell, headlight etc.
 		/// </summary>
 
+		public void RequestControl()
+		{
+			try
+			{
+				Train train = Program.Simulator.PlayerLocomotive.Train;
+				var gainControl = true;
+				foreach (var pair in MPManager.OnlineTrains.Players)
+				{
+					string check = pair.Key + " - 0";
+					foreach (var car1 in train.Cars) if (car1.CarID.StartsWith(check)) { gainControl = false; break; }
+				}
+				if (gainControl == true) { 
+					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
+					if (Program.Simulator.Confirmer != null)
+						Program.Simulator.Confirmer.Message("Info:", "You gained back the control of your train");
+					return; 
+				}
+				MSGControl msgctl;
+				//I am the server, I have control
+				if (IsServer())
+				{
+					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
+					if (Program.Simulator.Confirmer != null)
+						Program.Simulator.Confirmer.Message("Info:", "You gained back the control of your train");
+					msgctl = new MSGControl(GetUserName(), "Confirm", train);
+					BroadCast(msgctl.ToString());
+				}
+				else //client, send request
+				{
+					msgctl = new MSGControl(GetUserName(), "Request", train);
+					SendToServer(msgctl.ToString());
+				}
+			}
+			catch (Exception)
+			{ }
+		}
+		/// <summary>
+		/// Update. Determines what messages to send every some seconds
+		/// 1. every one second will send train location
+		/// 2. every 10 seconds will send switch status
+		/// 3. housekeeping (remove/add trains, remove players)
+		/// 4. it will also capture key stroke of horn, panto, wiper, bell, headlight etc.
+		/// </summary>
+
 		public void Update(double newtime)
 		{
 			//get key strokes and determine if some messages should be sent
@@ -243,8 +287,9 @@ namespace ORTS.MultiPlayer
 			if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
 			info += ("" + (OnlineTrains.Players.Count + 1)+ (OnlineTrains.Players.Count <= 0 ? " player " : "  players "));
 			info += ("" + Program.Simulator.Trains.Count + (Program.Simulator.Trains.Count <= 1 ? " train" : "  trains"));
-			//info += "\t" + Program.Simulator.Trains.Count;
-			//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars[0].CarID;
+			//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
+			//info += "\t" + MPManager.OnlineTrains.Players.Count;
+			//foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
 			SortedList<double, string> users = new SortedList<double,string>();
 			try//the list of players may be changed during the following process
@@ -276,8 +321,10 @@ namespace ORTS.MultiPlayer
 		private List<OnlinePlayer> playersRemoved;
 		public void AddRemovedPlayer(OnlinePlayer p)
 		{
-			MPManager.OnlineTrains.Players.Remove(p.Username);
-
+			lock (MPManager.OnlineTrains.Players)
+			{
+				MPManager.OnlineTrains.Players.Remove(p.Username);
+			}
 			lock (playersRemoved)
 			{
 				playersRemoved.Add(p);
@@ -294,12 +341,20 @@ namespace ORTS.MultiPlayer
 			{
 				foreach (OnlinePlayer p in playersRemoved)
 				{
-					MPManager.OnlineTrains.Players.Remove(p.Username);
+					lock (MPManager.OnlineTrains.Players)
+					{
+						MPManager.OnlineTrains.Players.Remove(p.Username);
+					}
 					//player is not in this train
 					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
 					{
-						Program.Simulator.Trains.Remove(p.Train);
+						lock (Program.Simulator.Trains)
+						{
+
+							Program.Simulator.Trains.Remove(p.Train);
+						}
 					}
+					
 				}
 				playersRemoved.Clear();
 			}
@@ -326,6 +381,12 @@ namespace ORTS.MultiPlayer
 		public void handleUserInput()
 		{
 			TrainCar Locomotive = Program.Simulator.PlayerLocomotive;
+			//In Multiplayer, I maybe the helper, but I can request to be the controller
+			if (UserInput.IsPressed(UserCommands.GameRequestControl))
+			{
+				RequestControl();
+			}
+
 			if (UserInput.IsPressed(UserCommands.ControlHorn))	MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", EventID.HornOn)).ToString());
 
 			if (UserInput.IsReleased(UserCommands.ControlHorn)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", EventID.HornOff)).ToString());

@@ -96,7 +96,23 @@ namespace ORTS.MultiPlayer
 					//System.Console.WriteLine(e.Message + info);
 				}
 			}
+			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Error", "Connection to the server is lost, will play as single mode");
+			try
+			{
+				foreach (var p in MPManager.OnlineTrains.Players)
+				{
+					MPManager.Instance().AddRemovedPlayer(p.Value);
+				}
+			}
+			catch (Exception) { }
+			
+			//no matter what, let player gain back the control of the player train
+			Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+			Program.Simulator.PlayerLocomotive.Train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 
+			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Info", "Shift-E then Ctlr-E to gain control of your train");
+
+			Program.Client = null;
 			tcpClient.Close();
 			listenThread.Abort();
 		}
@@ -108,8 +124,11 @@ namespace ORTS.MultiPlayer
 			try
 			{
 				NetworkStream clientStream = client.GetStream();
-				clientStream.Write(buffer, 0, buffer.Length);
-				clientStream.Flush();
+				lock (buffer)//in case two threads want to write at the same buffer
+				{
+					clientStream.Write(buffer, 0, buffer.Length);
+					clientStream.Flush();
+				}
 			}
 			catch
 			{

@@ -42,7 +42,7 @@ namespace ORTS.MultiPlayer
 			if (move == null) move = new MSGMove();
 			foreach (OnlinePlayer p in Players.Values)
 			{
-				if (p.Train != null && Math.Abs(p.Train.SpeedMpS) > 0.01)
+				if (p.Train != null && Program.Simulator.PlayerLocomotive != null && p.Train != Program.Simulator.PlayerLocomotive.Train && Math.Abs(p.Train.SpeedMpS) > 0.01)
 				{
 					if (Math.Abs(p.Train.SpeedMpS) > 0.001)
 					{
@@ -181,17 +181,22 @@ namespace ORTS.MultiPlayer
 			}
 
 			p.Username = player.user;
-			Players.Add(player.user, p);
-
+			lock (Players)
+			{
+				Players.Add(player.user, p);
+			}
 			train.CalculatePositionOfCars(0);
 			train.InitializeBrakes();
 			train.InitializeSignals(false);
-
+			train.CheckFreight();
 			train.LeadLocomotive = null;
 			train.LeadNextLocomotive();
 			p.Train = train;
 
-			Program.Simulator.Trains.Add(train);
+			lock (Program.Simulator.Trains)
+			{
+				Program.Simulator.Trains.Add(train);
+			}
 
 		}
 	}

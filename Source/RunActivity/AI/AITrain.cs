@@ -461,7 +461,12 @@ namespace ORTS
 			train2.CheckFreight();
 
 			train2.InitializeSignals(false);  // Initialize signals and speedposts without active speed information [R.Roeterdink]
-			AI.Simulator.Trains.Add(train2);
+			if (MultiPlayer.MPManager.IsMultiPlayer()) lock (Simulator.Trains)
+				{
+					AI.Simulator.Trains.Add(train2);
+				}
+			else AI.Simulator.Trains.Add(train2);
+			
 			if (nCars != 0)
 				Update(0);   // stop the wheels from moving etc
 			train2.Update(0);  // stop the wheels from moving etc

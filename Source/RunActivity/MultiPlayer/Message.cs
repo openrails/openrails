@@ -21,13 +21,13 @@ namespace ORTS.MultiPlayer
 			else if (key == "SWITCH") return new MSGSwitch(m.Substring(index + 1));
 			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
 			else if (key == "REMOVETRAIN") return new MSGRemoveTrain(m.Substring(index + 1));
-			else if (key == "SERVER") return new MSGServer(m.Substring(index + 1));
 			else if (key == "MESSAGE") return new MSGMessage(m.Substring(index + 1));
 			else if (key == "EVENT") return new MSGEvent(m.Substring(index + 1));
 			else if (key == "UNCOUPLE") return new MSGUncouple(m.Substring(index + 1));
 			else if (key == "COUPLE") return new MSGCouple(m.Substring(index + 1));
 			else if (key == "GETTRAIN") return new MSGGetTrain(m.Substring(index + 1));
 			else if (key == "UPDATETRAIN") return new MSGUpdateTrain(m.Substring(index + 1));
+			else if (key == "CONTROL") return new MSGControl(m.Substring(index + 1));
 			else if (key == "QUIT") return new MSGQuit(m.Substring(index + 1));
 			else throw new Exception("Unknown Keyword" + key);
 		}
@@ -126,7 +126,7 @@ namespace ORTS.MultiPlayer
 				bool found = false; //a train may not be in my sim
 				if (m.user == MPManager.GetUserName())//about itself, check if the number of car has changed, otherwise ignore
 				{
-					found = true;
+					found = true;/*
 					try
 					{
 						if (m.count != Program.Simulator.PlayerLocomotive.Train.Cars.Count)
@@ -134,7 +134,7 @@ namespace ORTS.MultiPlayer
 							if (!MPManager.IsServer() && CheckMissingTimes(Program.Simulator.PlayerLocomotive.Train.Number)) MPManager.SendToServer((new MSGGetTrain(MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train.Number)).ToString());
 						}
 					}
-					catch (Exception) { }
+					catch (Exception) { }*/
 					continue; 
 				}
 				if (m.user.Contains("0xAI") || m.user.Contains("0xUC"))
@@ -548,6 +548,8 @@ namespace ORTS.MultiPlayer
 		int direction;
 		int TileX, TileZ;
 		float X, Z, Travelled;
+		int mDirection;
+
 		public MSGTrain(string m)
 		{
 			//System.Console.WriteLine(m);
@@ -571,6 +573,9 @@ namespace ORTS.MultiPlayer
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
 			Travelled = float.Parse(m.Substring(0, index + 1));
+			m = m.Remove(0, index + 1);
+			index = m.IndexOf(' ');
+			mDirection = int.Parse(m.Substring(0, index + 1));
 			m = m.Remove(0, index + 1);
 			string[] areas = m.Split('\t');
 			cars = new string[areas.Length-1];//with an empty "" at end
@@ -610,6 +615,7 @@ namespace ORTS.MultiPlayer
 			X = t.RearTDBTraveller.X;
 			Z = t.RearTDBTraveller.Z;
 			Travelled = t.travelled;
+			mDirection = (int)t.MUDirection;
 		}
 
 		public override void HandleMsg() //only client will get message, thus will set states
@@ -625,6 +631,7 @@ namespace ORTS.MultiPlayer
 			train.TrainType = Train.TRAINTYPE.REMOTE;
 			int consistDirection = direction;
 			train.travelled = Travelled;
+			train.MUDirection = (Direction)this.mDirection;
 			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 			//if (consistDirection != 1)
 			//	train.RearTDBTraveller.ReverseDirection();
@@ -654,6 +661,7 @@ namespace ORTS.MultiPlayer
 			train.CalculatePositionOfCars(0);
 			train.InitializeBrakes();
 			train.InitializeSignals(false);
+			train.CheckFreight();
 
 			train.Number = this.TrainNum;
 			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
@@ -664,7 +672,7 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "TRAIN " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " ";
+			string tmp = "TRAIN " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + mDirection + " ";
 			for(var i = 0; i < cars.Length; i++) 
 			{
 				var c = cars[i];
@@ -694,6 +702,7 @@ namespace ORTS.MultiPlayer
 		int direction;
 		int TileX, TileZ;
 		float X, Z, Travelled;
+		int mDirection;
 		string user;
 		public MSGUpdateTrain(string m)
 		{
@@ -723,6 +732,9 @@ namespace ORTS.MultiPlayer
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
 			Travelled = float.Parse(m.Substring(0, index + 1));
+			m = m.Remove(0, index + 1);
+			index = m.IndexOf(' ');
+			mDirection = int.Parse(m.Substring(0, index + 1));
 			m = m.Remove(0, index + 1);
 			string[] areas = m.Split('\t');
 			cars = new string[areas.Length - 1];//with an empty "" at end
@@ -763,6 +775,7 @@ namespace ORTS.MultiPlayer
 			X = t.RearTDBTraveller.X;
 			Z = t.RearTDBTraveller.Z;
 			Travelled = t.travelled;
+			mDirection = (int) t.MUDirection;
 		}
 
 		TrainCar findCar(Train t, string name)
@@ -810,9 +823,11 @@ namespace ORTS.MultiPlayer
 					if (tmpCars.Count == 0) return;
 
 					train.Cars = tmpCars;
+					train.MUDirection = (Direction)mDirection;
 					train.RearTDBTraveller = traveller;
 					train.CalculatePositionOfCars(0);
 					train.travelled = Travelled;
+					train.CheckFreight();
 					return;
 				}
 			}
@@ -845,10 +860,11 @@ namespace ORTS.MultiPlayer
 			}// for each rail car
 
 			if (train1.Cars.Count == 0) return;
-
+			train1.MUDirection = (Direction)mDirection;
 			train1.CalculatePositionOfCars(0);
 			train1.InitializeBrakes();
 			train1.InitializeSignals(false);
+			train1.CheckFreight();
 
 			train1.Number = this.TrainNum;
 			if (train1.Cars[0] is MSTSLocomotive) train1.LeadLocomotive = train1.Cars[0];
@@ -857,7 +873,7 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "UPDATETRAIN " + user + " " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " ";
+			string tmp = "UPDATETRAIN " + user + " " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + mDirection + " ";
 			for (var i = 0; i < cars.Length; i++)
 			{
 				var c = cars[i];
@@ -928,29 +944,6 @@ namespace ORTS.MultiPlayer
 	}
 
 	#endregion MSGRemoveTrain
-
-	#region MSGServer
-	public class MSGServer : Message
-	{
-		public MSGServer(string m)
-		{
-		}
-
-
-		public override string ToString()
-		{
-			string tmp = "SERVER YOU";
-			return "" + tmp.Length + ": " + tmp;
-		}
-
-		public override void HandleMsg()
-		{
-			if (Program.Server != null) return; //already a server, not need to worry
-			Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
-			//System.Console.WriteLine(this.ToString());
-		}
-	}
-	#endregion MSGServer
 
 	#region MSGAlive
 	public class MSGAlive : Message
@@ -1072,6 +1065,71 @@ namespace ORTS.MultiPlayer
 
 	#endregion MSGMessage
 
+	#region MSGControl
+	//message to add new train from either a string (received message), or a Train (building a message)
+	public class MSGControl : Message
+	{
+		int num;
+		string level;
+		string user;
+		public MSGControl(string m)
+		{
+			m.Trim();
+			string[] t = m.Split('\t');
+			user = t[0];
+			level = t[1];
+			num = int.Parse(t[2]);
+		}
+
+		public MSGControl(string u, string l, Train t)
+		{
+			user = u;
+			level = l;
+			num = t.Number;
+		}
+
+		public override void HandleMsg()
+		{
+			if (MPManager.GetUserName() == user && level == "Confirm")
+			{
+				Train train = Program.Simulator.PlayerLocomotive.Train;
+				train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
+				if (Program.Simulator.Confirmer != null)
+					Program.Simulator.Confirmer.Message("Info:", "You gained back the control of your train");
+			}
+			else if (level == "Confirm") //server inform me that a train is now remote
+			{
+				foreach (var p in MPManager.OnlineTrains.Players)
+				{
+					if (p.Key == user) { 
+						p.Value.Train.TrainType = Train.TRAINTYPE.REMOTE;
+						break;
+					}
+				}
+			}
+			else if (MPManager.IsServer() && level == "Request")
+			{
+				foreach (var train in Program.Simulator.Trains)
+				{
+					if (train.Number == num)
+					{
+						train.TrainType = Train.TRAINTYPE.REMOTE;
+						MPManager.BroadCast((new MSGControl(user, "Confirm", train)).ToString());
+						break;
+					}
+				}
+			}
+		}
+
+		public override string ToString()
+		{
+			string tmp = "CONTROL " + user + "\t" + level + "\t" + num;
+			return "" + tmp.Length + ": " + tmp;
+		}
+	}
+
+	#endregion MSGControl
+
 	#region MSGEvent
 	public class MSGEvent : Message
 	{
@@ -1183,7 +1241,7 @@ namespace ORTS.MultiPlayer
 			bool ServerQuit = false;
 			if (Program.Client != null && user.Contains("ServerHasToQuit")) //the server quits, will send a message with ServerHasToQuit\tServerName
 			{
-				Program.Simulator.Confirmer.Message("Error", "Server quits, will play as single mode");
+				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Error", "Server quits, will play as single mode");
 				user = user.Replace("ServerHasToQuit\t", ""); //get the user name of server from the message
 				ServerQuit = true;
 			}
@@ -1216,7 +1274,7 @@ namespace ORTS.MultiPlayer
 					if (p.Train == Program.Simulator.PlayerLocomotive.Train)
 						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 					MPManager.Instance().AddRemovedPlayer(p);
-					if (ServerQuit)
+					if (ServerQuit)//warning, need to remove other player trains if there are not AI, in the future
 					{
 						//no matter what, let player gain back the control of the player train
 						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
@@ -1276,10 +1334,10 @@ namespace ORTS.MultiPlayer
 	public class MSGUncouple : Message
 	{
 		public string user, newTrainName, carID, firstCarIDOld, firstCarIDNew;
-		public int TileX1, TileZ1;
+		public int TileX1, TileZ1, mDirection1;
 		public float X1, Z1, Travelled1, Speed1;
 		public int trainDirection;
-		public int TileX2, TileZ2;
+		public int TileX2, TileZ2, mDirection2;
 		public float X2, Z2, Travelled2, Speed2;
 		public int train2Direction;
 		public int newTrainNumber;
@@ -1310,6 +1368,7 @@ namespace ORTS.MultiPlayer
 			TileX1 = int.Parse(tmp[0]); TileZ1 = int.Parse(tmp[1]);
 			X1 = float.Parse(tmp[2]); Z1 = float.Parse(tmp[3]); Travelled1 = float.Parse(tmp[4]); Speed1 = float.Parse(tmp[5]); trainDirection = int.Parse(tmp[6]);
 			oldTrainNumber = int.Parse(tmp[7]);
+			mDirection1 = int.Parse(tmp[8]);
 			tmp = areas[5].Split('\n');
 			ids1 = new string[tmp.Length - 1];
 			flipped1 = new int[tmp.Length - 1];
@@ -1324,6 +1383,7 @@ namespace ORTS.MultiPlayer
 			TileX2 = int.Parse(tmp[0]); TileZ2 = int.Parse(tmp[1]);
 			X2 = float.Parse(tmp[2]); Z2 = float.Parse(tmp[3]); Travelled2 = float.Parse(tmp[4]); Speed2 = float.Parse(tmp[5]); train2Direction = int.Parse(tmp[6]);
 			newTrainNumber = int.Parse(tmp[7]);
+			mDirection2 = int.Parse(tmp[8]);
 
 			tmp = areas[7].Split('\n');
 			ids2 = new string[tmp.Length - 1];
@@ -1338,34 +1398,60 @@ namespace ORTS.MultiPlayer
 
 		public MSGUncouple(Train t, Train newT, string u, string ID, TrainCar car)
 		{
+			TrainCar oldLead = t.LeadLocomotive;
 			carID = ID;
 			user = u;
 			TileX1 = t.RearTDBTraveller.TileX; TileZ1 = t.RearTDBTraveller.TileZ; X1 = t.RearTDBTraveller.X; Z1 = t.RearTDBTraveller.Z; Travelled1 = t.travelled; Speed1 = t.SpeedMpS;
 			trainDirection = t.RearTDBTraveller.Direction == Traveller.TravellerDirection.Forward ? 0 : 1;//0 forward, 1 backward
+			mDirection1 = (int)t.MUDirection;
 			TileX2 = newT.RearTDBTraveller.TileX; TileZ2 = newT.RearTDBTraveller.TileZ; X2 = newT.RearTDBTraveller.X; Z2 = newT.RearTDBTraveller.Z; Travelled2 = newT.travelled; Speed2 = newT.SpeedMpS;
 			train2Direction = newT.RearTDBTraveller.Direction == Traveller.TravellerDirection.Forward ? 0 : 1;//0 forward, 1 backward
+			mDirection2 = (int)newT.MUDirection;
+
 			if (MPManager.IsServer()) newTrainNumber = newT.Number;//serer will use the correct number
 			else newTrainNumber = 1000000 + Program.Random.Next(1000000);//client: temporary assign a train number 1000000-2000000, will change to the correct one after receiving response from the server
 
 			//housekeeping, one train may contain the player locomotive, thus it should be player controlled
 			if (newT.LeadLocomotive == null) newT.LeadNextLocomotive();
 
-			if (t.LeadLocomotive == Program.Simulator.PlayerLocomotive)
+			if (t.Cars.Contains(Program.Simulator.PlayerLocomotive))
 			{
-				t.TrainType = Train.TRAINTYPE.PLAYER;
+				t.TrainType = Train.TRAINTYPE.PLAYER; t.LeadLocomotive = null; t.LeadNextLocomotive();
 			}
-			if (newT.LeadLocomotive == Program.Simulator.PlayerLocomotive)
+			if (newT.Cars.Contains(Program.Simulator.PlayerLocomotive) && !newT.Cars.Contains(oldLead))
 			{
-				newT.TrainType = Train.TRAINTYPE.PLAYER;
+				newT.TrainType = Train.TRAINTYPE.PLAYER; newT.LeadLocomotive = null; newT.LeadNextLocomotive();
 			}
 
-			//if one of the train holds other player locomotives
+			foreach (TrainCar car1 in newT.Cars)
+			{
+				car1.Train = newT;
+				foreach (var p in MPManager.OnlineTrains.Players)
+				{
+					if (car1.CarID.StartsWith(p.Key + " - 0"))
+					{
+						p.Value.Train = car1.Train;
+						car1.Train.TrainType = Train.TRAINTYPE.REMOTE;
+						break;
+					}
+				}
+			}
+
+			if (t.Cars.Contains(Program.Simulator.PlayerLocomotive) || newT.Cars.Contains(Program.Simulator.PlayerLocomotive))
+			{
+				string info = "Trains uncoupled, gain back control by Shift-E";
+				if (Program.Simulator.Confirmer != null)
+					Program.Simulator.Confirmer.Message("Info", info);
+			}
+
+			/*
+			//if one of the train holds other player's lead locomotives
 			foreach (var pair in MPManager.OnlineTrains.Players)
 			{
-				string check = pair.Key + " -";
+				string check = pair.Key + " - 0";
 				foreach (var car1 in t.Cars) if (car1.CarID.StartsWith(check)) { t.TrainType = Train.TRAINTYPE.REMOTE; break; }
 				foreach (var car1 in newT.Cars) if (car1.CarID.StartsWith(check)) { newT.TrainType = Train.TRAINTYPE.REMOTE; break; }
-			}
+			}*/
 			oldTrainNumber = t.Number;
 			newTrainName = "UC" + newTrainNumber; newT.Number = newTrainNumber;
 
@@ -1416,9 +1502,9 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "UNCOUPLE " + user + "\t" + whichIsPlayer + "\t" + firstCarIDOld + "\t" + firstCarIDNew
-				+ "\t" + TileX1 + " " + TileZ1 + " " + X1 + " " + Z1 + " " + Travelled1 + " " + Speed1 + " " + trainDirection + " " + oldTrainNumber + "\t"
+				+ "\t" + TileX1 + " " + TileZ1 + " " + X1 + " " + Z1 + " " + Travelled1 + " " + Speed1 + " " + trainDirection + " " + oldTrainNumber + " " + mDirection1 + "\t"
 				+ FillInString(1)
-				+ "\t" + TileX2 + " " + TileZ2 + " " + X2 + " " + Z2 + " " + Travelled2 + " " + Speed2 + " " + train2Direction + " " + newTrainNumber + "\t"
+				+ "\t" + TileX2 + " " + TileZ2 + " " + X2 + " " + Z2 + " " + Travelled2 + " " + Speed2 + " " + train2Direction + " " + newTrainNumber + " " + mDirection2 + "\t"
 				+ FillInString(2);
 			return "" + tmp.Length + ": " + tmp;
 		}
@@ -1481,7 +1567,20 @@ namespace ORTS.MultiPlayer
 						t.travelled = Travelled1;
 						t.SpeedMpS = Speed1;
 						t.LeadLocomotive = lead;
-						if (train.LeadLocomotive == Program.Simulator.PlayerLocomotive) train.TrainType = Train.TRAINTYPE.PLAYER;
+						t.MUDirection = (Direction)mDirection1;
+						train.CheckFreight();
+						//train may contain myself, and no other players, thus will make myself controlling this train
+						if (train.Cars.Contains(Program.Simulator.PlayerLocomotive))
+						{
+							var gainControl = true;
+							foreach (var pair in MPManager.OnlineTrains.Players)
+							{
+								string check = pair.Key + " - 0";
+								foreach (var car1 in train.Cars) if (car1.CarID.StartsWith(check)) { gainControl = false; break; }
+							}
+							if (gainControl == true) { train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive; }
+						}
+
 						break;
 					}
 				}
@@ -1502,8 +1601,19 @@ namespace ORTS.MultiPlayer
 				train2.Cars = tmpcars2;
 				train2.LeadLocomotive = null;
 				train2.LeadNextLocomotive();
-				if (train2.LeadLocomotive == Program.Simulator.PlayerLocomotive) train2.TrainType = Train.TRAINTYPE.PLAYER;
+				train2.CheckFreight();
 
+				//train2 may contain myself, and no other players, thus will make myself controlling this train
+				/*if (train2.Cars.Contains(Program.Simulator.PlayerLocomotive))
+				{
+					var gainControl = true;
+					foreach (var pair in MPManager.OnlineTrains.Players)
+					{
+						string check = pair.Key + " - 0";
+						foreach (var car1 in train2.Cars) if (car1.CarID.StartsWith(check)) { gainControl = false; break; }
+					}
+					if (gainControl == true) { train2.TrainType = Train.TRAINTYPE.PLAYER; train2.LeadLocomotive = Program.Simulator.PlayerLocomotive; }
+				}*/
 				Traveller.TravellerDirection d2 = Traveller.TravellerDirection.Forward;
 				if (train2Direction == 1) d2 = Traveller.TravellerDirection.Backward;
 
@@ -1511,18 +1621,37 @@ namespace ORTS.MultiPlayer
 				train2.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX2, TileZ2, X2, Z2, d2);
 				train2.travelled = Travelled2;
 				train2.SpeedMpS = Speed2;
-
+				train2.MUDirection = (Direction)mDirection2;
 				train2.CalculatePositionOfCars(0);  // fix the front traveller
 
-				foreach (TrainCar car in train2.Cars) car.Train = train2;
+				foreach (TrainCar car in train2.Cars)
+				{
+					car.Train = train2;
+					foreach (var p in MPManager.OnlineTrains.Players)
+					{
+						if (car.CarID.StartsWith(p.Key + " - 0"))
+						{
+							p.Value.Train = car.Train;
+							car.Train.TrainType = Train.TRAINTYPE.REMOTE;
+							break;
+						}
+					}
+				}
 
 				train2.InitializeSignals(false);
 				lock (Program.Simulator.Trains) { Program.Simulator.Trains.Add(train2); }
 				train.UncoupledFrom = train2;
 				train2.UncoupledFrom = train;
 
-				if (whichIsPlayer == 0 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train;
-				else if (whichIsPlayer == 1 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train2; //the player may need to update the train it drives
+				if (train.Cars.Contains(Program.Simulator.PlayerLocomotive) || train2.Cars.Contains(Program.Simulator.PlayerLocomotive))
+				{
+					string info = "Trains uncoupled, gain back control by Shift-E";
+					if (Program.Simulator.Confirmer != null)
+						Program.Simulator.Confirmer.Message("Info", info);
+				}
+
+				//if (whichIsPlayer == 0 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train;
+				//else if (whichIsPlayer == 1 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train2; //the player may need to update the train it drives
 
 				if (MPManager.IsServer())
 				{
@@ -1549,7 +1678,7 @@ namespace ORTS.MultiPlayer
 		int TrainNum;
 		int RemovedTrainNum;
 		int direction;
-		int TileX, TileZ, Lead;
+		int TileX, TileZ, Lead, mDirection;
 		float X, Z, Travelled;
 		string whoControls;
 
@@ -1585,6 +1714,9 @@ namespace ORTS.MultiPlayer
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
 			whoControls = m.Substring(0, index + 1).Trim();
+			m = m.Remove(0, index + 1);
+			index = m.IndexOf(' ');
+			mDirection = int.Parse(m.Substring(0, index + 1));
 			m = m.Remove(0, index + 1);
 			string[] areas = m.Split('\t');
 			cars = new string[areas.Length - 1];//with an empty "" at end
@@ -1635,16 +1767,28 @@ namespace ORTS.MultiPlayer
 				j++;
 			}
 			whoControls = "NA";
-			var index = t.LeadLocomotive.CarID.IndexOf(" - ");
+			var index = t.LeadLocomotive.CarID.IndexOf(" - 0");
 			if (index > 0)
 			{
 				whoControls = t.LeadLocomotive.CarID.Substring(0, index);
 			}
+			foreach (var p in MPManager.OnlineTrains.Players)
+			{
+				if (p.Value.Train == oldT) { p.Value.Train = t; break; }
+			}
+			mDirection = (int)t.MUDirection;
+			if (t.Cars.Contains(Program.Simulator.PlayerLocomotive))
+			{
+				string info = "Trains coupled, hit \\ then Shift-? to release brakes";
+				if (Program.Simulator.Confirmer != null)
+					Program.Simulator.Confirmer.Message("Info", info);
+			}
+
 		}
 
 		public override string ToString()
 		{
-			string tmp = "COUPLE " + TrainNum + " " + RemovedTrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " +Lead + " " + whoControls + " ";
+			string tmp = "COUPLE " + TrainNum + " " + RemovedTrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " +Lead + " " + whoControls + " " + mDirection + " ";
 			for (var i = 0; i < cars.Length; i++)
 			{
 				var c = cars[i];
@@ -1682,10 +1826,10 @@ namespace ORTS.MultiPlayer
 			TrainCar lead = train.LeadLocomotive;
 			if (lead == null) lead = train2.LeadLocomotive;
 
-			if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == train2)
+			/*if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == train2)
 			{
 				Train tmp = train2; train2 = train; train = tmp; Program.Simulator.PlayerLocomotive.Train = train;
-			}
+			}*/
 
 			if (train == null || train2 == null) return; //did not find the trains to op on
 
@@ -1712,8 +1856,9 @@ namespace ORTS.MultiPlayer
 			train.Cars = tmpCars;
 			
 			train.travelled = Travelled;
+			train.MUDirection = (Direction)mDirection;
 			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 0 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
-			
+			train.CheckFreight();
 			train.CalculatePositionOfCars(0);
 			train.LeadLocomotive = null; train2.LeadLocomotive = null;
 			if (Lead != -1 && Lead < train.Cars.Count ) train.LeadLocomotive = train.Cars[Lead];
@@ -1728,8 +1873,33 @@ namespace ORTS.MultiPlayer
 				train.TrainType = Train.TRAINTYPE.REMOTE; //make the train remote controlled
 			}
 
+			if (MPManager.OnlineTrains.findTrain(train2))
+			{
+				int count = 0;
+				while (count < 3)
+				{
+					try
+					{
+						foreach (var p in MPManager.OnlineTrains.Players)
+						{
+							if (p.Value.Train == train2) p.Value.Train = train;
+						}
+						break;
+					}
+					catch (Exception) { count++; }
+				}
+			}
+
 			//update the remote user's train
 			if (MPManager.OnlineTrains.findTrain(whoControls) != null) MPManager.OnlineTrains.Players[whoControls].Train = train;
+			if (train.Cars.Contains(Program.Simulator.PlayerLocomotive)) Program.Simulator.PlayerLocomotive.Train = train;
+
+			if (train.Cars.Contains(Program.Simulator.PlayerLocomotive))
+			{
+				string info = "Trains coupled, hit \\ then Shift-? to release brakes";
+				if (Program.Simulator.Confirmer != null)
+					Program.Simulator.Confirmer.Message("Info", info);
+			}
 		}
 	}
 	#endregion MSGCouple
@@ -1738,9 +1908,6 @@ namespace ORTS.MultiPlayer
 	public class MSGSignalStatus : Message
 	{
 
-		//local data here
-		//signalObj.Signal.GetAspect(), signalObj.Signal.nextSigRef
-		//signalObjects[nextSigRef].SetSignalState(state)
 		string msgx = "";
 		static SortedList<int, SignalHead> signals;
 		//constructor to create a message from signal data
@@ -1766,8 +1933,9 @@ namespace ORTS.MultiPlayer
 			msgx = "";
 			foreach (var t in signals)
 			{
-				msgx += "" + (int)t.Value.state + "" + t.Value.draw_state;
+				msgx += "" + (char)(t.Value.state + 1) + "" + (char)(t.Value.draw_state + 1);//avoid \0
 			}
+			int i = 0;
 		}
 
 		//constructor to decode the message "m"
@@ -1797,12 +1965,12 @@ namespace ORTS.MultiPlayer
 		{
 			if (Program.Server != null) return; //server will ignore it
 
-			if (signals.Count != msgx.Length / 2) { System.Console.WriteLine("Error in synchronizing signals"); return; }
+			if (signals.Count != msgx.Length / 2) { System.Console.WriteLine("Error in synchronizing signals " + signals.Count + " " + msgx.Length/2); return; }
 			int i = 0;
 			foreach (var t in signals)
 			{
-				t.Value.state =(SignalHead.SIGASP) (msgx[2*i] - 48); //ASCII code 48 is 0
-				t.Value.draw_state = msgx[2 * i + 1] - 48;
+				t.Value.state = (SignalHead.SIGASP)(msgx[2 * i] - 1); //we added 1 when build the message, need to subtract it out
+				t.Value.draw_state = (int)(msgx[2 * i + 1] - 1);
 				//System.Console.Write(msgx[i]-48);
 				i++;
 			}
