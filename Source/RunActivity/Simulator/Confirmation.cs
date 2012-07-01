@@ -235,14 +235,16 @@ namespace ORTS {
             }
         }
 
+		private object lockobj = new object();
+
 		//a general messaging, level: Warning, Error, etc, msg: the message to display
 		public void Message(string level, string msg)
-		{
+		{ 
 			Confirmation a;
 			a.Message = String.Format("{0}:{1}", level, msg);
 			a.DurationS = defaultDurationS;
 			//many threads in Multiplayer may want to confirm something
-			lock (ConfirmationList)
+			lock (lockobj)
 			{
 				ConfirmationList.Add(a);
 			}

@@ -123,6 +123,7 @@ namespace ORTS.MultiPlayer
 			{
 				p = new OnlinePlayer(null, null);
 			}
+			Players.Add(player.user, p);
 			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
 			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
 			Train train = new Train(Program.Simulator);
@@ -181,10 +182,6 @@ namespace ORTS.MultiPlayer
 			}
 
 			p.Username = player.user;
-			lock (Players)
-			{
-				Players.Add(player.user, p);
-			}
 			train.CalculatePositionOfCars(0);
 			train.InitializeBrakes();
 			train.InitializeSignals(false);
@@ -193,10 +190,7 @@ namespace ORTS.MultiPlayer
 			train.LeadNextLocomotive();
 			p.Train = train;
 
-			lock (Program.Simulator.Trains)
-			{
-				Program.Simulator.Trains.Add(train);
-			}
+			MPManager.Instance().AddOrRemoveTrain(train, true); //add the train to be viewed
 
 		}
 	}

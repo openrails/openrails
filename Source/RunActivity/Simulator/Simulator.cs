@@ -954,12 +954,7 @@ namespace ORTS
 			train.RepositionRearTraveller();    // fix the rear traveller
             train2.InitializeSignals(false);  // initialize signals without existing speed information
 
-			//Multiplayer has code to loop trains, in other threads, thus lock it to be safe
-			if (MPManager.IsMultiPlayer()) lock (Trains)
-				{
-					Trains.Add(train2);
-				}
-			else Trains.Add(train2);
+			Trains.Add(train2);
 			train2.LeadLocomotive = lead;
 			train.LeadLocomotive = lead;
 			train.UncoupledFrom = train2;

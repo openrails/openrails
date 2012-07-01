@@ -117,6 +117,7 @@ namespace ORTS.MultiPlayer
 			listenThread.Abort();
 		}
 
+		private object lockObj = new object();
 		public void Send(string msg)
 		{
 			byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
@@ -124,7 +125,7 @@ namespace ORTS.MultiPlayer
 			try
 			{
 				NetworkStream clientStream = client.GetStream();
-				lock (buffer)//in case two threads want to write at the same buffer
+				lock (lockObj)//in case two threads want to write at the same buffer
 				{
 					clientStream.Write(buffer, 0, buffer.Length);
 					clientStream.Flush();

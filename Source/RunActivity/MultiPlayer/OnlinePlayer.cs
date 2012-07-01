@@ -21,8 +21,8 @@ namespace ORTS.MultiPlayer
 		public string con;
 		public string path; //pat and consist files
 		public Thread thread;
-		public double CreatedTime; 
-
+		public double CreatedTime;
+		private object lockObj = new object();
 		public void Send(string msg)
 		{
 			try
@@ -30,7 +30,7 @@ namespace ORTS.MultiPlayer
 				NetworkStream clientStream = Client.GetStream();
 				byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
 
-				lock (buffer)//lock the buffer in case two threads want to write at once
+				lock (lockObj)//lock the buffer in case two threads want to write at once
 				{
 					clientStream.Write(buffer, 0, buffer.Length);
 					clientStream.Flush();

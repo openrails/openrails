@@ -35,13 +35,6 @@ namespace ORTS.MultiPlayer
 		private List<Train> removedTrains;
 		private List<Train> addedTrains;
 
-		public void AddRemovedTrains(Train t)
-		{
-			lock (Program.Simulator.Trains) //thread safe as listening threads may call this
-			{
-				Program.Simulator.Trains.Remove(t);
-			}
-		}
 		private List<Train> uncoupledTrains;
 
 		public void AddUncoupledTrains(Train t)
@@ -79,6 +72,8 @@ namespace ORTS.MultiPlayer
 		{
 			playersRemoved = new List<OnlinePlayer>();
 			uncoupledTrains = new List<Train>();
+			addedTrains = new List<Train>();
+			removedTrains = new List<Train>();
 		}
 		public static MPManager Instance()
 		{
@@ -190,6 +185,9 @@ namespace ORTS.MultiPlayer
 
 			//some players are removed
 			RemovePlayer();
+
+			//some trains are added/removed
+			HandleTrainList();
 		}
 
 		//check if it is in the server mode
@@ -299,7 +297,7 @@ namespace ORTS.MultiPlayer
 					if (p.Train == null) continue;
 					if (p.Train.Cars.Count <= 0) continue;
 					var d = WorldLocation.GetDistanceSquared(p.Train.RearTDBTraveller.WorldLocation, mine.Train.RearTDBTraveller.WorldLocation);
-					users.Add(Math.Sqrt(d), p.Username);
+					users.Add(Math.Sqrt(d)+Program.Random.NextDouble(), p.Username);
 				}
 			}
 			catch (Exception)
@@ -321,10 +319,6 @@ namespace ORTS.MultiPlayer
 		private List<OnlinePlayer> playersRemoved;
 		public void AddRemovedPlayer(OnlinePlayer p)
 		{
-			lock (MPManager.OnlineTrains.Players)
-			{
-				MPManager.OnlineTrains.Players.Remove(p.Username);
-			}
 			lock (playersRemoved)
 			{
 				playersRemoved.Add(p);
@@ -335,31 +329,75 @@ namespace ORTS.MultiPlayer
 		private void RemovePlayer()
 		{
 			//if (Program.Server == null) return; //client will do it by decoding message
-
 			if (playersRemoved.Count == 0) return;
-			lock (playersRemoved)
+
+			try //do it without lock, so may have exception
 			{
 				foreach (OnlinePlayer p in playersRemoved)
 				{
-					lock (MPManager.OnlineTrains.Players)
-					{
-						MPManager.OnlineTrains.Players.Remove(p.Username);
-					}
+					Program.Server.Players.Remove(p);
+					MPManager.OnlineTrains.Players.Remove(p.Username);
 					//player is not in this train
 					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
 					{
-						lock (Program.Simulator.Trains)
-						{
-
-							Program.Simulator.Trains.Remove(p.Train);
-						}
+						Program.Simulator.Trains.Remove(p.Train);
 					}
-					
 				}
-				playersRemoved.Clear();
 			}
+			catch (Exception)
+			{
+				return;
+			}
+			playersRemoved.Clear();
 		}
 
+		public void AddOrRemoveTrain(Train t, bool add)
+		{
+			if (add)
+			{
+				lock (addedTrains)
+				{
+					addedTrains.Add(t); return;
+				}
+			}
+			else
+			{
+				lock (removedTrains)
+				{
+					removedTrains.Add(t); return;
+				}
+			}
+		}
+		//only can be called by Update
+		private void HandleTrainList()
+		{
+			if (addedTrains.Count != 0)
+			{
+
+				try //do it without lock, so may have exception
+				{
+					foreach (var t in addedTrains)
+					{
+						Program.Simulator.Trains.Add(t);
+					}
+					addedTrains.Clear();
+				}
+				catch (Exception) { }
+			}
+			if (removedTrains.Count != 0)
+			{
+
+				try //do it without lock, so may have exception
+				{
+					foreach (var t in removedTrains)
+					{
+						Program.Simulator.Trains.Remove(t);
+					}
+					removedTrains.Clear();
+				}
+				catch (Exception) { }
+			}
+		}
 
 		public Train FindPlayerTrain(string user)
 		{
