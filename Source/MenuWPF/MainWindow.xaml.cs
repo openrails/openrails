@@ -578,7 +578,7 @@ namespace MenuWPF
 						}
 						if (MPHost == true)
 						{
-							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, 1, MPUserName);
+							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, MPPort, MPUserName);
 						}
 						else if (MPIP != "")
 						{
@@ -591,7 +591,7 @@ namespace MenuWPF
 					{
 						if (MPHost == true)
 						{
-							parameter = String.Format("\"{0}\"  {1} {2}", SelectedActivity.FileName, 1, MPUserName);
+							parameter = String.Format("\"{0}\"  {1} {2}", SelectedActivity.FileName, MPPort, MPUserName);
 						}
 						else if (MPIP != "")
 						{

@@ -667,11 +667,11 @@ namespace ORTS
             else if (args.Length >= 5)
                 Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
 
-            if (args.Length == 7 && args[5] == "1")
+            if (args.Length == 7 && args[5] != "0")
             {
 				try
 				{
-					Server = new Server(args[6]);
+					Server = new Server(args[6], int.Parse(args[5]));
 					UserName = Server.UserName;
 					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
 						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
@@ -682,11 +682,11 @@ namespace ORTS
 					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Server = null;
 				}
             }
-            if (args.Length == 3 && args[1] == "1")
+            if (args.Length == 3 && args[1] != "0")
             {
 				try
 				{
-					Server = new Server(args[2]);
+					Server = new Server(args[2], int.Parse(args[1]));
 					UserName = Server.UserName;
 					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
 						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");

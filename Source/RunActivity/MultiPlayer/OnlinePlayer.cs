@@ -17,6 +17,7 @@ namespace ORTS.MultiPlayer
 		public TcpClient Client;
 		public Server Server;
 		public string Username = "";
+		public string LeadingLocomotiveID = "";
 		public Train Train;
 		public string con;
 		public string path; //pat and consist files
@@ -82,7 +83,7 @@ namespace ORTS.MultiPlayer
 					info = decoder.GetMsg();
 					while (info != null)
 					{
-						System.Console.WriteLine(info);
+						//System.Console.WriteLine(info);
 						Message msg = Message.Decode(info);
 						if (msg is MSGPlayer) ((MSGPlayer)msg).HandleMsg(this);
 						else msg.HandleMsg();
@@ -94,7 +95,7 @@ namespace ORTS.MultiPlayer
 				{
 					break;
 				}
-				catch (Exception e)
+				catch (Exception)
 				{
 					nowTicks = Program.Simulator.GameTime;
 					if (firstErrorTick == 0)

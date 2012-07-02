@@ -242,7 +242,7 @@ namespace ORTS {
 		{ 
 			Confirmation a;
 			a.Message = String.Format("{0}:{1}", level, msg);
-			a.DurationS = defaultDurationS;
+			a.DurationS = defaultDurationS*2; //double the duration time
 			//many threads in Multiplayer may want to confirm something
 			lock (lockobj)
 			{

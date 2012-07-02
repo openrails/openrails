@@ -42,29 +42,21 @@ namespace ORTS.MultiPlayer
 			if (move == null) move = new MSGMove();
 			foreach (OnlinePlayer p in Players.Values)
 			{
-				if (p.Train != null && Program.Simulator.PlayerLocomotive != null && p.Train != Program.Simulator.PlayerLocomotive.Train && Math.Abs(p.Train.SpeedMpS) > 0.01)
+				if (p.Train != null && Program.Simulator.PlayerLocomotive != null && p.Train != Program.Simulator.PlayerLocomotive.Train)
 				{
-					if (Math.Abs(p.Train.SpeedMpS) > 0.001)
+					if (Math.Abs(p.Train.SpeedMpS) > 0.001 || Math.Abs(p.Train.LastReportedSpeed) > 0)
 					{
 						move.AddNewItem(p.Username, p.Train);
-					}
-					else
-					{
-						if (Math.Abs(p.Train.LastReportedSpeed) > 0) move.AddNewItem(p.Username, p.Train);
 					}
 				}
 			}
 			foreach (Train t in Program.Simulator.Trains)
 			{
-				if (t == Program.Simulator.PlayerLocomotive.Train) continue;//player drived train
+				if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue;//player drived train
 				if (t == null || findTrain(t)) continue;//is an online player controlled train
-				if (Math.Abs(t.SpeedMpS) > 0.001)
+				if (Math.Abs(t.SpeedMpS) > 0.001 || Math.Abs(t.LastReportedSpeed) > 0)
 				{
 					move.AddNewItem("0xAI"+t.Number, t);
-				}
-				else 
-				{
-					if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem("0xAI" + t.Number, t);
 				}
 			}
 			tmp += move.ToString();
@@ -78,7 +70,8 @@ namespace ORTS.MultiPlayer
 			if (move == null) move = new MSGMove();
 			foreach (OnlinePlayer p in Players.Values)
 			{
-				if (p.Train != null && Math.Abs(p.Train.SpeedMpS) > 0.01)
+				if (p.Train == null) continue;
+				if (Math.Abs(p.Train.SpeedMpS) > 0.001 || Math.Abs(p.Train.LastReportedSpeed) > 0)
 				{
 					move.AddNewItem(p.Username, p.Train);
 				}
@@ -93,7 +86,7 @@ namespace ORTS.MultiPlayer
 			if (move == null) move = new MSGMove();
 			foreach (Train t in Program.Simulator.Trains)
 			{
-				if (t != null && Math.Abs(t.SpeedMpS) > 0.01)
+				if (t != null && (Math.Abs(t.SpeedMpS) > 0.001 || Math.Abs(t.LastReportedSpeed) > 0))
 				{
 					move.AddNewItem("AI"+t.Number, t);
 				}
@@ -123,6 +116,7 @@ namespace ORTS.MultiPlayer
 			{
 				p = new OnlinePlayer(null, null);
 			}
+			p.LeadingLocomotiveID = player.leadingID;
 			Players.Add(player.user, p);
 			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
 			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
@@ -188,6 +182,9 @@ namespace ORTS.MultiPlayer
 			train.CheckFreight();
 			train.LeadLocomotive = null;
 			train.LeadNextLocomotive();
+			foreach (var car in train.Cars) {
+				if (car.CarID == p.LeadingLocomotiveID) train.LeadLocomotive = car;
+			}
 			p.Train = train;
 			MPManager.Instance().AddOrRemoveTrain(train, true);
 

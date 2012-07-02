@@ -23,10 +23,10 @@ namespace ORTS.MultiPlayer
 				p.thread.Abort();
 			}
 		}
-		public ServerComm(Server s)
+		public ServerComm(Server s, int port)
 		{
 			Server = s;
-			this.tcpListener = new TcpListener(IPAddress.Any, 30000);
+			this.tcpListener = new TcpListener(IPAddress.Any, port);
 			this.listenThread = new Thread(new ThreadStart(ListenForClients));
 			this.listenThread.Start();
 		}

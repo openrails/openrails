@@ -35,14 +35,14 @@ namespace ORTS.MultiPlayer
 			if (ConnectionMode == 0) return true;
 			else return false;
 		}
-		public Server(string s)
+		public Server(string s, int port)
 		{
 			Players = new List<OnlinePlayer>();
 			string[] tmp = s.Split(' ');
 			UserName = tmp[0];
 			Code = tmp[1];
 
-			ServerComm = new ServerComm(this);
+			ServerComm = new ServerComm(this, port);
 			Connection = null;
 			ConnectionMode = 1;
 		}

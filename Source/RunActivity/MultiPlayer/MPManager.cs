@@ -94,18 +94,7 @@ namespace ORTS.MultiPlayer
 			try
 			{
 				Train train = Program.Simulator.PlayerLocomotive.Train;
-				var gainControl = true;
-				foreach (var pair in MPManager.OnlineTrains.Players)
-				{
-					string check = pair.Key + " - 0";
-					foreach (var car1 in train.Cars) if (car1.CarID.StartsWith(check)) { gainControl = false; break; }
-				}
-				if (gainControl == true) { 
-					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
-					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Message("Info:", "You gained back the control of your train");
-					return; 
-				}
+				
 				MSGControl msgctl;
 				//I am the server, I have control
 				if (IsServer())
@@ -371,25 +360,6 @@ namespace ORTS.MultiPlayer
 					removedTrains.Add(t); return true;
 				}
 			}
-		}
-
-		private object lockAdd = new object();
-		public Train AddTrainNow(Train t)
-		{
-			Train returned = null;
-			lock (lockAdd)
-			{
-				foreach (var train in Program.Simulator.Trains)
-				{
-					if (train.Number == t.Number) { returned = train; break; }
-				}
-				if (returned == null)
-				{
-					returned = t;
-					Program.Simulator.Trains.Add(t);
-				}
-			}
-			return returned;
 		}
 
 		//only can be called by Update
