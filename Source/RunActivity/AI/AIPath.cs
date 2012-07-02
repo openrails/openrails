@@ -150,7 +150,8 @@ namespace ORTS
             // By GeorgeS - XCheck for reservations
             int link = tn.TrPins[1].Link == vectorIndex ? vectorIndex : tn.TrPins[2].Link;
             //if (Dispatcher.Reservations != null && Dispatcher.Reservations[tn.TrPins[0].Link] != Dispatcher.Reservations[link])
-            if (Dispatcher.Reservations != null && Dispatcher.Reservations[junctionIndex] != Dispatcher.Reservations[link])
+            if (Dispatcher.Reservations != null && Dispatcher.Reservations[junctionIndex] != Dispatcher.Reservations[link] &&
+                Dispatcher.Reservations[link] != -1)
                 return;
 
             //Console.WriteLine("alignsw {0} {1} {2} {3}", junctionIndex, vectorIndex, tn.TrJunctionNode.SelectedRoute, tn.TrPins[1].Link);
@@ -171,21 +172,29 @@ namespace ORTS
             }
         }
 
-        public void AlignInitSwitches(Traveller rear, float distance)
+        public void AlignInitSwitches(Traveller rear, int id, float distance)
         {
             AIPathNode prevNode = null;
             
             for (AIPathNode node = FirstNode; node != null; node = node.NextMainNode)
             {
-                if (node.IsFacingPoint)
-                    AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
-                else if (prevNode != null)
-                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
-                prevNode = node;
-
                 if (rear.DistanceTo(node.Location.TileX, node.Location.TileZ,
                     node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z) > distance)
                     return;
+
+                if (node.IsFacingPoint)
+                {
+                    if (node.JunctionIndex != -1 && Dispatcher .Reservations != null)
+                        Dispatcher.Reservations[node.JunctionIndex] = id;
+                    AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
+                }
+                else if (prevNode != null)
+                {
+                    if (node.JunctionIndex != -1 && Dispatcher.Reservations != null)
+                        Dispatcher.Reservations[node.JunctionIndex] = id;
+                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
+                }
+                prevNode = node;
             }
         }
 

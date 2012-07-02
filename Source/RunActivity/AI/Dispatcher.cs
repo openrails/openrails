@@ -359,7 +359,7 @@ namespace ORTS
             foreach (TrackAuthority auth in TrackAuthorities)
             {
                 if (Program.Simulator.Trains.Contains(auth.Train) && auth.Train.dFrontTDBTraveller != null &&
-                    Reservations[auth.Train.dFrontTDBTraveller.TrackNodeIndex] == -1)
+                    Reservations[auth.Train.dFrontTDBTraveller.TrackNodeIndex] == -1 && auth.Train.MUDirection != Direction.N)
                 {
                     ExtendAuthorization(auth, clockTime);
                 }
@@ -539,6 +539,9 @@ namespace ORTS
             TrJunctionNode n = traveller.JunctionNodeAhead();
             if (n != null)
                 tnList.Add(n.Idx);
+
+            if (force)
+                Reservations[n.Idx] = -1;
 
             int nodeidx = 0;
             int sigcou = 0;

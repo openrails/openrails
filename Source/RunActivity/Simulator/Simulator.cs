@@ -690,7 +690,7 @@ namespace ORTS
             PlayerPath = aiPath;
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
 
-            aiPath.AlignInitSwitches(train.RearTDBTraveller, 500);
+            aiPath.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
             //aiPath.AlignAllSwitches();
 
 			// figure out if the next waypoint is forward or back
@@ -874,7 +874,7 @@ namespace ORTS
 					Trains.Add(new AITrain(this, inf));
 				else
 				{
-					Trace.TraceWarning("Ignored unknown train type {0} during restore", trainType);
+					Trace.TraceWarning("Don't know how to restore train type: " + trainType.ToString());
 					Debug.Fail("Don't know how to restore train type: " + trainType.ToString());  // in debug mode, halt on this error
                     Trains.Add(new Train(this, inf)); // for release version, we'll try to press on anyway
 				}

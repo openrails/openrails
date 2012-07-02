@@ -47,7 +47,7 @@ namespace ORTS
                 }
             foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
                 StartQueue.Add(kvp.Value.StartTime, kvp.Value);
-            Simulator.PlayerPath.AlignInitSwitches(Simulator.Trains[0].RearTDBTraveller, 500);
+            Simulator.PlayerPath.AlignInitSwitches(Simulator.Trains[0].dRearTDBTraveller, 0, Simulator.Trains[0].Length + 20);
         }
 
         // restore game state
@@ -128,8 +128,8 @@ namespace ORTS
         {
             if (FirstUpdate)
             {
-				foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
-						Simulator.Trains.Remove(kvp.Value);
+                foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
+                    Simulator.Trains.Remove(kvp.Value);
                 FirstUpdate = false;
             }
             Dispatcher.Update(Simulator.ClockTime, elapsedClockSeconds);
@@ -150,7 +150,7 @@ namespace ORTS
                         el.SetPantographFirst(true);
                     }
                     AITrains.Add(train);
-					Simulator.Trains.Add(train);
+                    Simulator.Trains.Add(train);
 					//For Multiplayer: Server BroadCast to others of AITrains being added
 					if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGTrain(train, train.Number)).ToString());
                     train.spad = true;
@@ -212,7 +212,7 @@ namespace ORTS
             WorldLocation wl = train.Path.FirstNode.Location;
             train.RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Z);
             //train.Path.AlignAllSwitches();
-            train.Path.AlignInitSwitches(train.RearTDBTraveller, 500);
+            train.Path.AlignInitSwitches(train.RearTDBTraveller, -1 , 500);
             // This is the position of the back end of the train in the database.
             //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
             // figure out if the next waypoint is forward or back
@@ -256,7 +256,7 @@ namespace ORTS
 
                 dist = dist < disttotravel ? dist : disttotravel;
 
-                train.Path.AlignInitSwitches(train.RearTDBTraveller, dist);
+                train.Path.AlignInitSwitches(train.RearTDBTraveller, -1 , dist);
 
                 // By GeorgeS
                 if (tnode == null || tnode.Type != AIPathNodeType.Stop)
@@ -318,8 +318,8 @@ namespace ORTS
             //train.InitializeSignals();
 
             //AITrains.Add(train);
-			Simulator.Trains.Add(train); 
-			return train;
+            Simulator.Trains.Add(train);
+            return train;
         }
 
         /// <summary>
@@ -336,7 +336,7 @@ namespace ORTS
             foreach (AITrain train in removeList)
             {
                 AITrains.Remove(train);
-				Simulator.Trains.Remove(train);
+                Simulator.Trains.Remove(train);
                 Dispatcher.Release(train);
                 train.Release();
                 if (train.Cars.Count > 0 && train.Cars[0].Train == train)
