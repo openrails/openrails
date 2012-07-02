@@ -285,13 +285,13 @@ namespace ORTS.MultiPlayer
 			if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
 			info += ("" + (OnlineTrains.Players.Count + 1)+ (OnlineTrains.Players.Count <= 0 ? " player " : "  players "));
 			info += ("" + Program.Simulator.Trains.Count + (Program.Simulator.Trains.Count <= 1 ? " train" : "  trains"));
-			//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
-			//info += "\t" + MPManager.OnlineTrains.Players.Count;
-			//foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
 			SortedList<double, string> users = new SortedList<double,string>();
 			try//the list of players may be changed during the following process
 			{
+				//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
+				//info += "\t" + MPManager.OnlineTrains.Players.Count;
+				//foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
 				foreach (OnlinePlayer p in OnlineTrains.Players.Values)
 				{
 					if (p.Train == null) continue;
@@ -335,7 +335,7 @@ namespace ORTS.MultiPlayer
 			{
 				foreach (OnlinePlayer p in playersRemoved)
 				{
-					Program.Server.Players.Remove(p);
+					if (Program.Server != null) Program.Server.Players.Remove(p);
 					MPManager.OnlineTrains.Players.Remove(p.Username);
 					//player is not in this train
 					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
@@ -344,30 +344,54 @@ namespace ORTS.MultiPlayer
 					}
 				}
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
 				return;
 			}
 			playersRemoved.Clear();
 		}
 
-		public void AddOrRemoveTrain(Train t, bool add)
+		public bool AddOrRemoveTrain(Train t, bool add)
 		{
 			if (add)
 			{
 				lock (addedTrains)
 				{
-					addedTrains.Add(t); return;
+					foreach (var t1 in addedTrains)
+					{
+						if (t1.Number == t.Number) return false;
+					}
+					addedTrains.Add(t); return true;
 				}
 			}
 			else
 			{
 				lock (removedTrains)
 				{
-					removedTrains.Add(t); return;
+					removedTrains.Add(t); return true;
 				}
 			}
 		}
+
+		private object lockAdd = new object();
+		public Train AddTrainNow(Train t)
+		{
+			Train returned = null;
+			lock (lockAdd)
+			{
+				foreach (var train in Program.Simulator.Trains)
+				{
+					if (train.Number == t.Number) { returned = train; break; }
+				}
+				if (returned == null)
+				{
+					returned = t;
+					Program.Simulator.Trains.Add(t);
+				}
+			}
+			return returned;
+		}
+
 		//only can be called by Update
 		private void HandleTrainList()
 		{
@@ -378,7 +402,12 @@ namespace ORTS.MultiPlayer
 				{
 					foreach (var t in addedTrains)
 					{
-						Program.Simulator.Trains.Add(t);
+						var hasIt = false;
+						foreach (var t1 in Program.Simulator.Trains)
+						{
+							if (t1.Number == t.Number) { hasIt = true; break; }
+						}
+						if (!hasIt) Program.Simulator.Trains.Add(t);
 					}
 					addedTrains.Clear();
 				}

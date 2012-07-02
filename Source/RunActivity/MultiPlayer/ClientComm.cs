@@ -16,6 +16,7 @@ namespace ORTS.MultiPlayer
 		public string UserName;
 		public string Code;
 		public Decoder decoder;
+		public bool Connected = false;
 
 		public void Stop()
 		{
@@ -81,9 +82,9 @@ namespace ORTS.MultiPlayer
 					info = decoder.GetMsg();
 					while (info != null)
 					{
-						//System.Console.WriteLine(info);
+						System.Console.WriteLine(info);
 						Message msg = Message.Decode(info);
-						msg.HandleMsg();
+						if (Connected || msg is MSGPlayer) msg.HandleMsg();
 						info = decoder.GetMsg();
 					}
 				}
@@ -93,7 +94,7 @@ namespace ORTS.MultiPlayer
 				}
 				catch (Exception e)
 				{
-					//System.Console.WriteLine(e.Message + info);
+					System.Console.WriteLine(e.Message + info);
 				}
 			}
 			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Error", "Connection to the server is lost, will play as single mode");

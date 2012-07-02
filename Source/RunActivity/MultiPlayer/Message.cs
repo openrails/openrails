@@ -374,6 +374,7 @@ namespace ORTS.MultiPlayer
 				{
 					if (MPManager.GetUserName() == this.user) //a reply from the server, update my train number
 					{
+						Program.Client.Connected = true;
 						if (Program.Simulator.PlayerLocomotive == null) Program.Simulator.Trains[0].Number = this.num;
 						else Program.Simulator.PlayerLocomotive.Train.Number = this.num;
 					}
@@ -635,21 +636,11 @@ namespace ORTS.MultiPlayer
 			if (MPManager.IsServer()) return; //server will ignore it
 			//System.Console.WriteLine(this.ToString());
 			// construct train data
-			Train train = null; bool found = false;
-			lock (lockObj)
-			{
-				foreach (Train t in Program.Simulator.Trains)
-				{
-					if (t.Number == this.TrainNum) { found = true; break; } //already add it
-				}
-				if (!found)
-				{
-					train = new Train(Program.Simulator);
-					Program.Simulator.Trains.Add(train); //force to add it
-					train.Number = this.TrainNum;
-				}
-			}
-			if (found) return;
+			Train train = null; 
+			train = new Train(Program.Simulator);
+			train.Number = this.TrainNum;
+			if (MPManager.Instance().AddOrRemoveTrain(train, true) == false) return; //add train, but failed
+
 			train.TrainType = Train.TRAINTYPE.REMOTE;
 			int consistDirection = direction;
 			train.travelled = Travelled;
@@ -825,7 +816,7 @@ namespace ORTS.MultiPlayer
 				if (!found)
 				{
 					//not found, create new train
-					train1 = new Train(Program.Simulator); train1.Number = this.TrainNum; Program.Simulator.Trains.Add(train1);
+					train1 = new Train(Program.Simulator); train1.Number = this.TrainNum; MPManager.Instance().AddOrRemoveTrain(train1, true);
 				}
 			}
 			if (found)

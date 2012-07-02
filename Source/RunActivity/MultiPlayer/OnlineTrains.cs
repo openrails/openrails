@@ -189,8 +189,7 @@ namespace ORTS.MultiPlayer
 			train.LeadLocomotive = null;
 			train.LeadNextLocomotive();
 			p.Train = train;
-
-			MPManager.Instance().AddOrRemoveTrain(train, true); //add the train to be viewed
+			MPManager.Instance().AddOrRemoveTrain(train, true);
 
 		}
 	}
