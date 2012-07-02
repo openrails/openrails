@@ -538,10 +538,11 @@ namespace ORTS
 
             TrJunctionNode n = traveller.JunctionNodeAhead();
             if (n != null)
+            {
                 tnList.Add(n.Idx);
-
-            if (force)
-                Reservations[n.Idx] = -1;
+                if (force)
+                    Reservations[n.Idx] = -1;
+            }
 
             int nodeidx = 0;
             int sigcou = 0;
