@@ -150,8 +150,7 @@ namespace ORTS
             // By GeorgeS - XCheck for reservations
             int link = tn.TrPins[1].Link == vectorIndex ? vectorIndex : tn.TrPins[2].Link;
             //if (Dispatcher.Reservations != null && Dispatcher.Reservations[tn.TrPins[0].Link] != Dispatcher.Reservations[link])
-            if (Dispatcher.Reservations != null && Dispatcher.Reservations[junctionIndex] != Dispatcher.Reservations[link] &&
-                Dispatcher.Reservations[link] != -1)
+            if (Dispatcher.Reservations != null && Dispatcher.Reservations[junctionIndex] != Dispatcher.Reservations[link])
                 return;
 
             //Console.WriteLine("alignsw {0} {1} {2} {3}", junctionIndex, vectorIndex, tn.TrJunctionNode.SelectedRoute, tn.TrPins[1].Link);
