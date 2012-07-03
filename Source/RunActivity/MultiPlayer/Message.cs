@@ -29,6 +29,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "GETTRAIN") return new MSGGetTrain(m.Substring(index + 1));
 			else if (key == "UPDATETRAIN") return new MSGUpdateTrain(m.Substring(index + 1));
 			else if (key == "CONTROL") return new MSGControl(m.Substring(index + 1));
+			else if (key == "LOCCHANGE") return new MSGLocoChange(m.Substring(index + 1));
 			else if (key == "QUIT") return new MSGQuit(m.Substring(index + 1));
 			else throw new Exception("Unknown Keyword" + key);
 		}
@@ -985,6 +986,7 @@ namespace ORTS.MultiPlayer
 		public override void HandleMsg()
 		{
 			if (Program.Server != null) return; //already a server, not need to worry
+			Program.Client.Connected = true;
 			Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
 			//System.Console.WriteLine(this.ToString());
 		}
@@ -1142,6 +1144,7 @@ namespace ORTS.MultiPlayer
 				train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 				if (Program.Simulator.Confirmer != null)
 					Program.Simulator.Confirmer.Message("Info:", "You gained back the control of your train");
+				MPManager.Instance().RemoveUncoupledTrains(train);
 			}
 			else if (level == "Confirm") //server inform me that a train is now remote
 			{
@@ -1152,6 +1155,7 @@ namespace ORTS.MultiPlayer
 						{
 							if (t.Number == this.num) p.Value.Train = t;
 						}
+						MPManager.Instance().RemoveUncoupledTrains(p.Value.Train);
 						p.Value.Train.TrainType = Train.TRAINTYPE.REMOTE;
 						break;
 					}
@@ -1168,6 +1172,7 @@ namespace ORTS.MultiPlayer
 							if (t.Number == this.num) p.Value.Train = t;
 						}
 						p.Value.Train.TrainType = Train.TRAINTYPE.REMOTE;
+						MPManager.Instance().RemoveUncoupledTrains(p.Value.Train);
 						MPManager.BroadCast((new MSGControl(user, "Confirm", p.Value.Train)).ToString());
 						break;
 					}
@@ -1178,6 +1183,54 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "CONTROL " + user + "\t" + level + "\t" + num;
+			return "" + tmp.Length + ": " + tmp;
+		}
+	}
+
+	#endregion MSGControl
+
+	#region MSGLocoChange
+	//message to add new train from either a string (received message), or a Train (building a message)
+	public class MSGLocoChange : Message
+	{
+		int num;
+		string engine;
+		string user;
+		public MSGLocoChange(string m)
+		{
+			m.Trim();
+			string[] t = m.Split('\t');
+			user = t[0];
+			engine = t[1];
+			num = int.Parse(t[2]);
+		}
+
+		public MSGLocoChange(string u, string l, Train t)
+		{
+			user = u;
+			engine = l;
+			num = t.Number;
+		}
+
+		public override void HandleMsg()
+		{
+			foreach (var t in Program.Simulator.Trains)
+			{
+				foreach (var car in t.Cars)
+				{
+					if (car.CarID == engine)
+					{
+						car.Train.LeadLocomotive = car;
+						if (MPManager.IsServer()) MPManager.BroadCast((new MSGLocoChange(user, engine, t)).ToString());
+						return;
+					}
+				}
+			}
+		}
+
+		public override string ToString()
+		{
+			string tmp = "LOCCHANGE " + user + "\t" + engine + "\t" + num;
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}

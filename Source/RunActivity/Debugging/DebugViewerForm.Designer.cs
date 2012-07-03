@@ -55,9 +55,10 @@
 		  // 
 		  // pictureBox1
 		  // 
-		  this.pictureBox1.Location = new System.Drawing.Point(12, 138);
+		  this.pictureBox1.Location = new System.Drawing.Point(16, 170);
+		  this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
 		  this.pictureBox1.Name = "pictureBox1";
-		  this.pictureBox1.Size = new System.Drawing.Size(512, 512);
+		  this.pictureBox1.Size = new System.Drawing.Size(683, 630);
 		  this.pictureBox1.TabIndex = 0;
 		  this.pictureBox1.TabStop = false;
 		  this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseMove);
@@ -67,20 +68,22 @@
 		  // refreshButton
 		  // 
 		  this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.refreshButton.Location = new System.Drawing.Point(12, 44);
+		  this.refreshButton.Location = new System.Drawing.Point(16, 54);
+		  this.refreshButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.refreshButton.Name = "refreshButton";
-		  this.refreshButton.Size = new System.Drawing.Size(75, 23);
+		  this.refreshButton.Size = new System.Drawing.Size(121, 28);
 		  this.refreshButton.TabIndex = 1;
-		  this.refreshButton.Text = "Refresh";
+		  this.refreshButton.Text = "View Player";
 		  this.refreshButton.UseVisualStyleBackColor = true;
 		  this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
 		  // 
 		  // leftButton
 		  // 
 		  this.leftButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.leftButton.Location = new System.Drawing.Point(109, 38);
+		  this.leftButton.Location = new System.Drawing.Point(145, 47);
+		  this.leftButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.leftButton.Name = "leftButton";
-		  this.leftButton.Size = new System.Drawing.Size(35, 35);
+		  this.leftButton.Size = new System.Drawing.Size(47, 43);
 		  this.leftButton.TabIndex = 2;
 		  this.leftButton.Text = "L";
 		  this.leftButton.UseVisualStyleBackColor = true;
@@ -92,9 +95,10 @@
 		  // rightButton
 		  // 
 		  this.rightButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.rightButton.Location = new System.Drawing.Point(191, 38);
+		  this.rightButton.Location = new System.Drawing.Point(255, 47);
+		  this.rightButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.rightButton.Name = "rightButton";
-		  this.rightButton.Size = new System.Drawing.Size(35, 35);
+		  this.rightButton.Size = new System.Drawing.Size(47, 43);
 		  this.rightButton.TabIndex = 3;
 		  this.rightButton.Text = "R";
 		  this.rightButton.UseVisualStyleBackColor = true;
@@ -106,9 +110,10 @@
 		  // upButton
 		  // 
 		  this.upButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.upButton.Location = new System.Drawing.Point(150, 38);
+		  this.upButton.Location = new System.Drawing.Point(200, 47);
+		  this.upButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.upButton.Name = "upButton";
-		  this.upButton.Size = new System.Drawing.Size(35, 35);
+		  this.upButton.Size = new System.Drawing.Size(47, 43);
 		  this.upButton.TabIndex = 4;
 		  this.upButton.Text = "U";
 		  this.upButton.UseVisualStyleBackColor = true;
@@ -120,9 +125,10 @@
 		  // downButton
 		  // 
 		  this.downButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.downButton.Location = new System.Drawing.Point(232, 38);
+		  this.downButton.Location = new System.Drawing.Point(309, 47);
+		  this.downButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.downButton.Name = "downButton";
-		  this.downButton.Size = new System.Drawing.Size(35, 35);
+		  this.downButton.Size = new System.Drawing.Size(47, 43);
 		  this.downButton.TabIndex = 5;
 		  this.downButton.Text = "D";
 		  this.downButton.UseVisualStyleBackColor = true;
@@ -139,7 +145,8 @@
             0,
             0,
             0});
-		  this.windowSizeUpDown.Location = new System.Drawing.Point(293, 50);
+		  this.windowSizeUpDown.Location = new System.Drawing.Point(391, 62);
+		  this.windowSizeUpDown.Margin = new System.Windows.Forms.Padding(4);
 		  this.windowSizeUpDown.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -151,7 +158,7 @@
             0,
             0});
 		  this.windowSizeUpDown.Name = "windowSizeUpDown";
-		  this.windowSizeUpDown.Size = new System.Drawing.Size(79, 23);
+		  this.windowSizeUpDown.Size = new System.Drawing.Size(105, 27);
 		  this.windowSizeUpDown.TabIndex = 6;
 		  this.windowSizeUpDown.Value = new decimal(new int[] {
             5000,
@@ -163,9 +170,10 @@
 		  // label1
 		  // 
 		  this.label1.AutoSize = true;
-		  this.label1.Location = new System.Drawing.Point(290, 34);
+		  this.label1.Location = new System.Drawing.Point(387, 42);
+		  this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 		  this.label1.Name = "label1";
-		  this.label1.Size = new System.Drawing.Size(57, 13);
+		  this.label1.Size = new System.Drawing.Size(75, 17);
 		  this.label1.TabIndex = 7;
 		  this.label1.Text = "Resolution";
 		  // 
@@ -173,9 +181,10 @@
 		  // 
 		  this.label2.AutoSize = true;
 		  this.label2.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.label2.Location = new System.Drawing.Point(378, 57);
+		  this.label2.Location = new System.Drawing.Point(504, 70);
+		  this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 		  this.label2.Name = "label2";
-		  this.label2.Size = new System.Drawing.Size(54, 16);
+		  this.label2.Size = new System.Drawing.Size(69, 21);
 		  this.label2.TabIndex = 8;
 		  this.label2.Text = "metres";
 		  // 
@@ -184,9 +193,10 @@
 		  this.showSwitches.AutoSize = true;
 		  this.showSwitches.Checked = true;
 		  this.showSwitches.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.showSwitches.Location = new System.Drawing.Point(200, 89);
+		  this.showSwitches.Location = new System.Drawing.Point(267, 110);
+		  this.showSwitches.Margin = new System.Windows.Forms.Padding(4);
 		  this.showSwitches.Name = "showSwitches";
-		  this.showSwitches.Size = new System.Drawing.Size(160, 17);
+		  this.showSwitches.Size = new System.Drawing.Size(204, 21);
 		  this.showSwitches.TabIndex = 9;
 		  this.showSwitches.Text = "Show Switches (Black Dots)";
 		  this.showSwitches.UseVisualStyleBackColor = true;
@@ -197,9 +207,10 @@
 		  this.showBuffers.AutoSize = true;
 		  this.showBuffers.Checked = true;
 		  this.showBuffers.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.showBuffers.Location = new System.Drawing.Point(200, 112);
+		  this.showBuffers.Location = new System.Drawing.Point(267, 138);
+		  this.showBuffers.Margin = new System.Windows.Forms.Padding(4);
 		  this.showBuffers.Name = "showBuffers";
-		  this.showBuffers.Size = new System.Drawing.Size(167, 17);
+		  this.showBuffers.Size = new System.Drawing.Size(218, 21);
 		  this.showBuffers.TabIndex = 10;
 		  this.showBuffers.Text = "Show Buffers (Black Squares)";
 		  this.showBuffers.UseVisualStyleBackColor = true;
@@ -210,9 +221,10 @@
 		  this.showSignals.AutoSize = true;
 		  this.showSignals.Checked = true;
 		  this.showSignals.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.showSignals.Location = new System.Drawing.Point(16, 89);
+		  this.showSignals.Location = new System.Drawing.Point(21, 110);
+		  this.showSignals.Margin = new System.Windows.Forms.Padding(4);
 		  this.showSignals.Name = "showSignals";
-		  this.showSignals.Size = new System.Drawing.Size(178, 17);
+		  this.showSignals.Size = new System.Drawing.Size(231, 21);
 		  this.showSignals.TabIndex = 11;
 		  this.showSignals.Text = "Show Signals (Red/Green Dots)";
 		  this.showSignals.UseVisualStyleBackColor = true;
@@ -224,8 +236,9 @@
             this.interlockingToolStripMenuItem});
 		  this.menuStrip.Location = new System.Drawing.Point(0, 0);
 		  this.menuStrip.Name = "menuStrip";
+		  this.menuStrip.Padding = new System.Windows.Forms.Padding(8, 2, 0, 2);
 		  this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-		  this.menuStrip.Size = new System.Drawing.Size(677, 24);
+		  this.menuStrip.Size = new System.Drawing.Size(903, 36);
 		  this.menuStrip.TabIndex = 12;
 		  this.menuStrip.Text = "menuStrip1";
 		  // 
@@ -236,27 +249,27 @@
             this.viewSignalsToolStripMenuItem,
             this.viewSwitchesToolStripMenuItem});
 		  this.interlockingToolStripMenuItem.Name = "interlockingToolStripMenuItem";
-		  this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(75, 20);
+		  this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(128, 32);
 		  this.interlockingToolStripMenuItem.Text = "Interlocking";
 		  // 
 		  // viewTracksToolStripMenuItem
 		  // 
 		  this.viewTracksToolStripMenuItem.Name = "viewTracksToolStripMenuItem";
-		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(205, 32);
 		  this.viewTracksToolStripMenuItem.Text = "View Tracks";
 		  this.viewTracksToolStripMenuItem.Click += new System.EventHandler(this.viewTracksToolStripMenuItem_Click);
 		  // 
 		  // viewSignalsToolStripMenuItem
 		  // 
 		  this.viewSignalsToolStripMenuItem.Name = "viewSignalsToolStripMenuItem";
-		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(205, 32);
 		  this.viewSignalsToolStripMenuItem.Text = "View Signals";
 		  this.viewSignalsToolStripMenuItem.Click += new System.EventHandler(this.viewSignalsToolStripMenuItem_Click);
 		  // 
 		  // viewSwitchesToolStripMenuItem
 		  // 
 		  this.viewSwitchesToolStripMenuItem.Name = "viewSwitchesToolStripMenuItem";
-		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(205, 32);
 		  this.viewSwitchesToolStripMenuItem.Text = "View Switches";
 		  this.viewSwitchesToolStripMenuItem.Click += new System.EventHandler(this.viewSwitchesToolStripMenuItem_Click);
 		  // 
@@ -265,9 +278,10 @@
 		  this.showPlayerTrain.AutoSize = true;
 		  this.showPlayerTrain.Checked = true;
 		  this.showPlayerTrain.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.showPlayerTrain.Location = new System.Drawing.Point(16, 112);
+		  this.showPlayerTrain.Location = new System.Drawing.Point(21, 138);
+		  this.showPlayerTrain.Margin = new System.Windows.Forms.Padding(4);
 		  this.showPlayerTrain.Name = "showPlayerTrain";
-		  this.showPlayerTrain.Size = new System.Drawing.Size(112, 17);
+		  this.showPlayerTrain.Size = new System.Drawing.Size(145, 21);
 		  this.showPlayerTrain.TabIndex = 13;
 		  this.showPlayerTrain.Text = "Show Player Train";
 		  this.showPlayerTrain.UseVisualStyleBackColor = true;
@@ -275,9 +289,10 @@
 		  // highlightTrackSections
 		  // 
 		  this.highlightTrackSections.AutoSize = true;
-		  this.highlightTrackSections.Location = new System.Drawing.Point(378, 89);
+		  this.highlightTrackSections.Location = new System.Drawing.Point(504, 110);
+		  this.highlightTrackSections.Margin = new System.Windows.Forms.Padding(4);
 		  this.highlightTrackSections.Name = "highlightTrackSections";
-		  this.highlightTrackSections.Size = new System.Drawing.Size(142, 17);
+		  this.highlightTrackSections.Size = new System.Drawing.Size(183, 21);
 		  this.highlightTrackSections.TabIndex = 14;
 		  this.highlightTrackSections.Text = "Highlight Track Sections";
 		  this.highlightTrackSections.UseVisualStyleBackColor = true;
@@ -287,19 +302,20 @@
 		  // trackSections
 		  // 
 		  this.trackSections.FormattingEnabled = true;
-		  this.trackSections.Location = new System.Drawing.Point(378, 111);
+		  this.trackSections.Location = new System.Drawing.Point(504, 137);
+		  this.trackSections.Margin = new System.Windows.Forms.Padding(4);
 		  this.trackSections.Name = "trackSections";
-		  this.trackSections.Size = new System.Drawing.Size(142, 21);
+		  this.trackSections.Size = new System.Drawing.Size(188, 24);
 		  this.trackSections.TabIndex = 15;
 		  this.trackSections.Visible = false;
 		  this.trackSections.SelectedIndexChanged += new System.EventHandler(this.trackShapes_SelectedIndexChanged);
 		  // 
 		  // DispatchViewer
 		  // 
-		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+		  this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
-		  this.ClientSize = new System.Drawing.Size(677, 663);
+		  this.ClientSize = new System.Drawing.Size(903, 816);
 		  this.Controls.Add(this.trackSections);
 		  this.Controls.Add(this.highlightTrackSections);
 		  this.Controls.Add(this.showPlayerTrain);
@@ -317,6 +333,7 @@
 		  this.Controls.Add(this.pictureBox1);
 		  this.Controls.Add(this.menuStrip);
 		  this.MainMenuStrip = this.menuStrip;
+		  this.Margin = new System.Windows.Forms.Padding(4);
 		  this.MaximizeBox = false;
 		  this.Name = "DispatchViewer";
 		  this.Text = "DispatchViewer";
@@ -351,6 +368,6 @@
       private System.Windows.Forms.CheckBox highlightTrackSections;
       private System.Windows.Forms.ComboBox trackSections;
       private System.Windows.Forms.ToolStripMenuItem viewSignalsToolStripMenuItem;
-      private System.Windows.Forms.ToolStripMenuItem viewSwitchesToolStripMenuItem;
+	  private System.Windows.Forms.ToolStripMenuItem viewSwitchesToolStripMenuItem;
    }
 }

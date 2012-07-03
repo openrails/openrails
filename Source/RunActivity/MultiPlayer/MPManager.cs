@@ -286,7 +286,7 @@ namespace ORTS.MultiPlayer
 					if (p.Train == null) continue;
 					if (p.Train.Cars.Count <= 0) continue;
 					var d = WorldLocation.GetDistanceSquared(p.Train.RearTDBTraveller.WorldLocation, mine.Train.RearTDBTraveller.WorldLocation);
-					users.Add(Math.Sqrt(d)+Program.Random.NextDouble(), p.Username);
+					users.Add(Math.Sqrt(d)+Program.Random.NextDouble(), p.Username + " " + p.Train.LeadLocomotive.CarID);
 				}
 			}
 			catch (Exception)
@@ -408,6 +408,10 @@ namespace ORTS.MultiPlayer
 			return OnlineTrains.findTrain(t);
 		}
 
+		public static void LocoChange(Train t, TrainCar lead)
+		{
+			MPManager.Notify((new MSGLocoChange(GetUserName(), lead.CarID, t)).ToString());
+		}
 		//count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
 		int PantoSecondCount = 0;
 		int PantoFirstCount = 0;

@@ -152,7 +152,7 @@ namespace ORTS.Debugging
 
 		 nodes = simulator.TDB.TrackDB.TrackNodes;
 
-		 trainFont = new Font("Arial", 12, FontStyle.Bold);
+		 trainFont = new Font("Arial", 14, FontStyle.Bold);
 		 sidingFont = new Font("Arial", 12, FontStyle.Bold);
 
 		 trainBrush = new SolidBrush(Color.Red);
@@ -191,7 +191,7 @@ namespace ORTS.Debugging
       /// <param name="e"></param>
       void UITimer_Tick(object sender, EventArgs e)
       {
-		  if (Viewer.DebugViewerEnabled == false) { this.Visible = false; return; }
+		  if (Viewer.DebugViewerEnabled == false) { this.Visible = false; firstShow = true; return; }
 		  else this.Visible = true;
          if (DownButtonDown)
          {
@@ -339,7 +339,10 @@ namespace ORTS.Debugging
          }
 
          pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+
       }
+
+	  public bool firstShow = true;
 
       /// <summary>
       /// Regenerates the 2D view. At the moment, examines the track network
@@ -353,8 +356,21 @@ namespace ORTS.Debugging
 
 		  if (pictureBox1.Image == null) InitImage();
 
-
-    
+		  if (firstShow)
+		  {
+			  WorldPosition pos;
+			  if (Program.Simulator.PlayerLocomotive != null)
+			  {
+				  pos = Program.Simulator.PlayerLocomotive.WorldPosition;
+			  }
+			  else
+			  {
+				  pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
+			  }
+			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
+			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
+			  firstShow = false;
+		  }
          using(Graphics g = Graphics.FromImage(pictureBox1.Image))
          using(Pen redPen = new Pen(Color.Red))
          using (Pen grayPen = new Pen(Color.Gray))
@@ -650,6 +666,7 @@ namespace ORTS.Debugging
 
       private void refreshButton_Click(object sender, EventArgs e)
       {
+		  firstShow = true;
          GenerateView();
       }
 
