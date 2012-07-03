@@ -45,9 +45,6 @@
 		  this.viewTracksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		  this.viewSignalsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		  this.viewSwitchesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-		  this.showPlayerTrain = new System.Windows.Forms.CheckBox();
-		  this.highlightTrackSections = new System.Windows.Forms.CheckBox();
-		  this.trackSections = new System.Windows.Forms.ComboBox();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.menuStrip.SuspendLayout();
@@ -55,10 +52,10 @@
 		  // 
 		  // pictureBox1
 		  // 
-		  this.pictureBox1.Location = new System.Drawing.Point(16, 170);
+		  this.pictureBox1.Location = new System.Drawing.Point(13, 122);
 		  this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
 		  this.pictureBox1.Name = "pictureBox1";
-		  this.pictureBox1.Size = new System.Drawing.Size(683, 630);
+		  this.pictureBox1.Size = new System.Drawing.Size(720, 720);
 		  this.pictureBox1.TabIndex = 0;
 		  this.pictureBox1.TabStop = false;
 		  this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseMove);
@@ -68,7 +65,7 @@
 		  // refreshButton
 		  // 
 		  this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.refreshButton.Location = new System.Drawing.Point(16, 54);
+		  this.refreshButton.Location = new System.Drawing.Point(6, 54);
 		  this.refreshButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.refreshButton.Name = "refreshButton";
 		  this.refreshButton.Size = new System.Drawing.Size(121, 28);
@@ -80,7 +77,7 @@
 		  // leftButton
 		  // 
 		  this.leftButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.leftButton.Location = new System.Drawing.Point(145, 47);
+		  this.leftButton.Location = new System.Drawing.Point(135, 47);
 		  this.leftButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.leftButton.Name = "leftButton";
 		  this.leftButton.Size = new System.Drawing.Size(47, 43);
@@ -95,7 +92,7 @@
 		  // rightButton
 		  // 
 		  this.rightButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.rightButton.Location = new System.Drawing.Point(255, 47);
+		  this.rightButton.Location = new System.Drawing.Point(245, 47);
 		  this.rightButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.rightButton.Name = "rightButton";
 		  this.rightButton.Size = new System.Drawing.Size(47, 43);
@@ -110,7 +107,7 @@
 		  // upButton
 		  // 
 		  this.upButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.upButton.Location = new System.Drawing.Point(200, 47);
+		  this.upButton.Location = new System.Drawing.Point(190, 47);
 		  this.upButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.upButton.Name = "upButton";
 		  this.upButton.Size = new System.Drawing.Size(47, 43);
@@ -125,7 +122,7 @@
 		  // downButton
 		  // 
 		  this.downButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.downButton.Location = new System.Drawing.Point(309, 47);
+		  this.downButton.Location = new System.Drawing.Point(299, 47);
 		  this.downButton.Margin = new System.Windows.Forms.Padding(4);
 		  this.downButton.Name = "downButton";
 		  this.downButton.Size = new System.Drawing.Size(47, 43);
@@ -145,7 +142,7 @@
             0,
             0,
             0});
-		  this.windowSizeUpDown.Location = new System.Drawing.Point(391, 62);
+		  this.windowSizeUpDown.Location = new System.Drawing.Point(357, 62);
 		  this.windowSizeUpDown.Margin = new System.Windows.Forms.Padding(4);
 		  this.windowSizeUpDown.Maximum = new decimal(new int[] {
             50000,
@@ -170,7 +167,7 @@
 		  // label1
 		  // 
 		  this.label1.AutoSize = true;
-		  this.label1.Location = new System.Drawing.Point(387, 42);
+		  this.label1.Location = new System.Drawing.Point(354, 42);
 		  this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 		  this.label1.Name = "label1";
 		  this.label1.Size = new System.Drawing.Size(75, 17);
@@ -181,7 +178,7 @@
 		  // 
 		  this.label2.AutoSize = true;
 		  this.label2.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.label2.Location = new System.Drawing.Point(504, 70);
+		  this.label2.Location = new System.Drawing.Point(470, 64);
 		  this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 		  this.label2.Name = "label2";
 		  this.label2.Size = new System.Drawing.Size(69, 21);
@@ -193,7 +190,7 @@
 		  this.showSwitches.AutoSize = true;
 		  this.showSwitches.Checked = true;
 		  this.showSwitches.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.showSwitches.Location = new System.Drawing.Point(267, 110);
+		  this.showSwitches.Location = new System.Drawing.Point(543, 69);
 		  this.showSwitches.Margin = new System.Windows.Forms.Padding(4);
 		  this.showSwitches.Name = "showSwitches";
 		  this.showSwitches.Size = new System.Drawing.Size(204, 21);
@@ -207,7 +204,7 @@
 		  this.showBuffers.AutoSize = true;
 		  this.showBuffers.Checked = true;
 		  this.showBuffers.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.showBuffers.Location = new System.Drawing.Point(267, 138);
+		  this.showBuffers.Location = new System.Drawing.Point(543, 93);
 		  this.showBuffers.Margin = new System.Windows.Forms.Padding(4);
 		  this.showBuffers.Name = "showBuffers";
 		  this.showBuffers.Size = new System.Drawing.Size(218, 21);
@@ -221,7 +218,7 @@
 		  this.showSignals.AutoSize = true;
 		  this.showSignals.Checked = true;
 		  this.showSignals.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.showSignals.Location = new System.Drawing.Point(21, 110);
+		  this.showSignals.Location = new System.Drawing.Point(543, 47);
 		  this.showSignals.Margin = new System.Windows.Forms.Padding(4);
 		  this.showSignals.Name = "showSignals";
 		  this.showSignals.Size = new System.Drawing.Size(231, 21);
@@ -238,7 +235,7 @@
 		  this.menuStrip.Name = "menuStrip";
 		  this.menuStrip.Padding = new System.Windows.Forms.Padding(8, 2, 0, 2);
 		  this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-		  this.menuStrip.Size = new System.Drawing.Size(903, 36);
+		  this.menuStrip.Size = new System.Drawing.Size(802, 36);
 		  this.menuStrip.TabIndex = 12;
 		  this.menuStrip.Text = "menuStrip1";
 		  // 
@@ -273,52 +270,12 @@
 		  this.viewSwitchesToolStripMenuItem.Text = "View Switches";
 		  this.viewSwitchesToolStripMenuItem.Click += new System.EventHandler(this.viewSwitchesToolStripMenuItem_Click);
 		  // 
-		  // showPlayerTrain
-		  // 
-		  this.showPlayerTrain.AutoSize = true;
-		  this.showPlayerTrain.Checked = true;
-		  this.showPlayerTrain.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.showPlayerTrain.Location = new System.Drawing.Point(21, 138);
-		  this.showPlayerTrain.Margin = new System.Windows.Forms.Padding(4);
-		  this.showPlayerTrain.Name = "showPlayerTrain";
-		  this.showPlayerTrain.Size = new System.Drawing.Size(145, 21);
-		  this.showPlayerTrain.TabIndex = 13;
-		  this.showPlayerTrain.Text = "Show Player Train";
-		  this.showPlayerTrain.UseVisualStyleBackColor = true;
-		  // 
-		  // highlightTrackSections
-		  // 
-		  this.highlightTrackSections.AutoSize = true;
-		  this.highlightTrackSections.Location = new System.Drawing.Point(504, 110);
-		  this.highlightTrackSections.Margin = new System.Windows.Forms.Padding(4);
-		  this.highlightTrackSections.Name = "highlightTrackSections";
-		  this.highlightTrackSections.Size = new System.Drawing.Size(183, 21);
-		  this.highlightTrackSections.TabIndex = 14;
-		  this.highlightTrackSections.Text = "Highlight Track Sections";
-		  this.highlightTrackSections.UseVisualStyleBackColor = true;
-		  this.highlightTrackSections.Visible = false;
-		  this.highlightTrackSections.CheckedChanged += new System.EventHandler(this.highlightTrackShapes_CheckedChanged);
-		  // 
-		  // trackSections
-		  // 
-		  this.trackSections.FormattingEnabled = true;
-		  this.trackSections.Location = new System.Drawing.Point(504, 137);
-		  this.trackSections.Margin = new System.Windows.Forms.Padding(4);
-		  this.trackSections.Name = "trackSections";
-		  this.trackSections.Size = new System.Drawing.Size(188, 24);
-		  this.trackSections.TabIndex = 15;
-		  this.trackSections.Visible = false;
-		  this.trackSections.SelectedIndexChanged += new System.EventHandler(this.trackShapes_SelectedIndexChanged);
-		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
-		  this.ClientSize = new System.Drawing.Size(903, 816);
-		  this.Controls.Add(this.trackSections);
-		  this.Controls.Add(this.highlightTrackSections);
-		  this.Controls.Add(this.showPlayerTrain);
+		  this.ClientSize = new System.Drawing.Size(802, 854);
 		  this.Controls.Add(this.showSignals);
 		  this.Controls.Add(this.showBuffers);
 		  this.Controls.Add(this.showSwitches);
@@ -363,10 +320,7 @@
       private System.Windows.Forms.CheckBox showSignals;
       private System.Windows.Forms.MenuStrip menuStrip;
       private System.Windows.Forms.ToolStripMenuItem interlockingToolStripMenuItem;
-      private System.Windows.Forms.ToolStripMenuItem viewTracksToolStripMenuItem;
-      private System.Windows.Forms.CheckBox showPlayerTrain;
-      private System.Windows.Forms.CheckBox highlightTrackSections;
-      private System.Windows.Forms.ComboBox trackSections;
+	  private System.Windows.Forms.ToolStripMenuItem viewTracksToolStripMenuItem;
       private System.Windows.Forms.ToolStripMenuItem viewSignalsToolStripMenuItem;
 	  private System.Windows.Forms.ToolStripMenuItem viewSwitchesToolStripMenuItem;
    }

@@ -286,7 +286,7 @@ namespace ORTS.MultiPlayer
 					if (p.Train == null) continue;
 					if (p.Train.Cars.Count <= 0) continue;
 					var d = WorldLocation.GetDistanceSquared(p.Train.RearTDBTraveller.WorldLocation, mine.Train.RearTDBTraveller.WorldLocation);
-					users.Add(Math.Sqrt(d)+Program.Random.NextDouble(), p.Username + " " + p.Train.LeadLocomotive.CarID);
+					users.Add(Math.Sqrt(d)+Program.Random.NextDouble(), p.Username);
 				}
 			}
 			catch (Exception)

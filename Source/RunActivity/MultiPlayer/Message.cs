@@ -1221,6 +1221,10 @@ namespace ORTS.MultiPlayer
 					if (car.CarID == engine)
 					{
 						car.Train.LeadLocomotive = car;
+						foreach (var p in MPManager.OnlineTrains.Players)
+						{
+							if (p.Value.Train == t) { p.Value.LeadingLocomotiveID = car.CarID; break; }
+						}
 						if (MPManager.IsServer()) MPManager.BroadCast((new MSGLocoChange(user, engine, t)).ToString());
 						return;
 					}
@@ -1235,7 +1239,7 @@ namespace ORTS.MultiPlayer
 		}
 	}
 
-	#endregion MSGControl
+	#endregion MSGLocoChange
 
 	#region MSGEvent
 	public class MSGEvent : Message

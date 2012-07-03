@@ -73,8 +73,8 @@ namespace ORTS.Debugging
       private readonly Simulator simulator;
 
 
-      private int IM_Width = 512;
-      private int IM_Height = 512;
+      private int IM_Width = 720;
+      private int IM_Height = 720;
 
 	  private int X;
 	  private int Y; //X, Y of mouse
@@ -227,7 +227,7 @@ namespace ORTS.Debugging
 		  {
 			  // do this only once
 			  loaded = true;
-			  trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
+			  //trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
 		  }
 
 
@@ -451,8 +451,20 @@ namespace ORTS.Debugging
                }
             }
 
-            if (showPlayerTrain.Checked)
+            if (true/*showPlayerTrain.Checked*/)
             {
+
+				CleanVerticalCells();//clean the drawing area for text of sidings
+				foreach (var s in sidings)
+				{
+					PointF scaledSiding = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, (s.Location.Y - minY - ViewWindow.Y) * yScale);
+					scaledSiding.Y = DetermineSidingLocation(scaledSiding.X, scaledSiding.Y, s.Name);
+					if (scaledSiding.Y >= 0f) //if we need to draw the siding names
+					{
+
+						g.DrawString(s.Name, sidingFont, sidingBrush, scaledSiding);
+					}
+				}
 				foreach (Train t in simulator.Trains)
 				{
 					name = "";
@@ -461,7 +473,7 @@ namespace ORTS.Debugging
 						worldPos = t.LeadLocomotive.WorldPosition;
 						name = t.LeadLocomotive.CarID;
 					}
-					else if (t.Cars != null)
+					else if (t.Cars != null && t.Cars.Count > 0)
 					{
 						worldPos = t.Cars[0].WorldPosition;
 						name = t.Cars[0].CarID;
@@ -478,20 +490,8 @@ namespace ORTS.Debugging
 					g.FillRectangle(Brushes.DarkGreen, GetRect(trainLocation, 15f));
 					trainLocation.Y -= 25;
 					g.DrawString(GetTrainName(name), trainFont, trainBrush, trainLocation);
-					
-				}
-				CleanVerticalCells();//clean the drawing area for text of sidings
-				foreach (var s in sidings)
-				{
-					PointF scaledSiding = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, (s.Location.Y - minY - ViewWindow.Y) * yScale);
-					scaledSiding.Y = DetermineSidingLocation(scaledSiding.X, scaledSiding.Y, s.Name);
-					if (scaledSiding.Y >= 0f) //if we need to draw the siding names
-					{
 
-						g.DrawString(s.Name, sidingFont, sidingBrush, scaledSiding);
-					}
 				}
-
             }
 
          }
