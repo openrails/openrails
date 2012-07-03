@@ -519,6 +519,11 @@ namespace ORTS
 
         public void Stop()
         {
+			//the dispatcher viewer in MP mode is on, close it first, then wait for the next ESC
+			if (MultiPlayer.MPManager.IsMultiPlayer())
+			{
+				if (DebugViewerEnabled == true) { DebugViewerEnabled = false; return; }
+			}
             InfoDisplay.Stop();
             RenderProcess.Stop();
         }
@@ -537,17 +542,30 @@ namespace ORTS
             return false;
         }
 
+		private int trainCount = 0;
 		void RandomSelectTrain()
 		{
 			Train old = SelectedTrain;
 			try
 			{
-				var count = Simulator.Trains.Count;
-				SelectedTrain = Simulator.Trains[Program.Random.Next(count)];
+				SortedList<double, Train> users = new SortedList<double, Train>();
+				foreach (var t in Simulator.Trains)
+				{
+					if (t == null || t.Cars == null || t.Cars.Count == 0) continue;
+					var d = WorldLocation.GetDistanceSquared(t.RearTDBTraveller.WorldLocation, PlayerTrain.RearTDBTraveller.WorldLocation);
+					users.Add(d + Program.Random.NextDouble(), t);
+				}
+				trainCount++;
+				if (trainCount >= users.Count) trainCount = 0;
+
+				SelectedTrain = users.ElementAt(trainCount).Value;
 				if (SelectedTrain.Cars == null || SelectedTrain.Cars.Count == 0) SelectedTrain = PlayerTrain;
+
+				//if (SelectedTrain.LeadLocomotive == null) SelectedTrain.LeadNextLocomotive();
+				//if (SelectedTrain.LeadLocomotive != null) { PlayerLocomotive = SelectedTrain.LeadLocomotive; PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive); }
 				
 			}
-			catch (Exception)
+			catch (Exception e) 
 			{
 				SelectedTrain = PlayerTrain;
 			}

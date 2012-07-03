@@ -37,9 +37,13 @@ namespace ORTS.MultiPlayer
 
 			while (true)
 			{
-				//blocks until a client has connected to the server
-				TcpClient client = this.tcpListener.AcceptTcpClient();
-
+				TcpClient client = null;
+				try
+				{
+					//blocks until a client has connected to the server
+					client = this.tcpListener.AcceptTcpClient();
+				}
+				catch (Exception) { break; }
 				OnlinePlayer player = new OnlinePlayer(client, Server);
 				Server.Players.Add(player);
 				System.Console.WriteLine("New Player Joined");
