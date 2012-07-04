@@ -47,6 +47,7 @@ namespace ORTS
         /// </summary>
         public Dispatcher(AI ai)
         {
+            File.Delete(".\\dispatcher.log");
             AI = ai;
             Reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
             for (int i = 0; i < Reservations.Length; i++)
@@ -96,6 +97,7 @@ namespace ORTS
         // restore game state
         public Dispatcher(AI ai, BinaryReader inf)
         {
+            File.Delete(".\\dispatcher.log");
             AI = ai;
             PlayerPriority = inf.ReadInt32();
             int n = inf.ReadInt32();
@@ -131,7 +133,21 @@ namespace ORTS
             outf.Write(TrackAuthorities.Count);
             for (int i = 0; i < TrackAuthorities.Count; i++)
                 TrackAuthorities[i].Save(outf);
-         }
+        }
+
+        public void Dump()
+        {
+            foreach (TrackAuthority ta in TrackAuthorities)
+            {
+                if (Program.Simulator.Trains.Contains(ta.Train))
+                {
+                    ta.Dump(sta =>
+                    {
+                        if (ta.Train != null) ta.Train.DumpSignals(sta);
+                    });
+                }
+            }
+        }
 
         /// <summary>
         /// Updates dispatcher information.
@@ -536,10 +552,12 @@ namespace ORTS
                 traveller.ReverseDirection();
             }
 
-            TrJunctionNode n = traveller.JunctionNodeAhead();
-            if (n != null)
+            int jctNodeToAdd = -1;
+            Traveller t = new Traveller(traveller);
+            if (t.IsJunction || (t.NextTrackNode() && t.IsJunction))
             {
-                tnList.Add(n.Idx);
+                TrJunctionNode n = t.TN.TrJunctionNode;
+                jctNodeToAdd = n.Idx;
                 if (force)
                     Reservations[n.Idx] = -1;
             }
@@ -583,6 +601,23 @@ namespace ORTS
                     nodeidx = node.NextSidingTVNIndex;
                 }
 
+                if (node.JunctionIndex != -1)
+                {
+                    TrackNode tn = Program.Simulator.TDB.TrackDB.TrackNodes[node.JunctionIndex];
+                    float dtj = traveller.DistanceTo(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z);
+                    if (dtj > 0)
+                    {
+                        if (force && Reservations[node.JunctionIndex] != auth.TrainID)
+                            Reservations[node.JunctionIndex] = -1;
+
+                        if (tnList.Contains(node.JunctionIndex))
+                            tnList.Remove(node.JunctionIndex);
+
+                        if (Reservations[node.JunctionIndex] == -1)
+                            tnList.Add(node.JunctionIndex);
+                    }
+                }
+
                 auth.Path.AlignSwitchesTo(node);
 
                 float dist = traveller.DistanceTo(node.Location.TileX, node.Location.TileZ, node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z);
@@ -609,21 +644,15 @@ namespace ORTS
                     firstIsNeg = false;
                 }
 
-                if (node.JunctionIndex != -1)
-                {
-                    TrackNode tn = Program.Simulator.TDB.TrackDB.TrackNodes[node.JunctionIndex];
-                    float dtj = traveller.DistanceTo(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z);
-                    if (dtj > 0 && dtj <= 3000 && ((dtj <= dist) || (dtj > dist && sigcou < 4)))
-                    {
-                        if (force && Reservations[node.JunctionIndex] != auth.TrainID)
-                            Reservations[node.JunctionIndex] = -1;
-                        tnList.Add(node.JunctionIndex);
-                    }
-                }
-
                 if (node.NextMainNode != null && node != auth.SidingNode)
                 {
                     tnList.Add(node.NextMainTVNIndex);
+
+                    if (jctNodeToAdd != -1)
+                    {
+                        tnList.Add(jctNodeToAdd);
+                        jctNodeToAdd = -1;
+                    }
 
                     if (sigcou >= 4 && dist > 3000)
                         break;
@@ -633,6 +662,12 @@ namespace ORTS
                 else if (node.NextSidingNode != null)
                 {
                     tnList.Add(node.NextSidingTVNIndex);
+
+                    if (jctNodeToAdd != -1)
+                    {
+                        tnList.Add(jctNodeToAdd);
+                        jctNodeToAdd = -1;
+                    }
 
                     if (sigcou >= 4 && dist > 3000)
                         break;

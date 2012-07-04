@@ -177,21 +177,22 @@ namespace ORTS
             
             for (AIPathNode node = FirstNode; node != null; node = node.NextMainNode)
             {
-                if (rear.DistanceTo(node.Location.TileX, node.Location.TileZ,
-                    node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z) > distance)
+                float dist = rear.DistanceTo(node.Location.TileX, node.Location.TileZ,
+                    node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z);
+                if (dist > distance || dist == -1)
                     return;
 
                 if (node.IsFacingPoint)
                 {
-                    if (node.JunctionIndex != -1 && Dispatcher .Reservations != null)
-                        Dispatcher.Reservations[node.JunctionIndex] = id;
                     AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
+                    if (node.JunctionIndex != -1 && Dispatcher.Reservations != null)
+                        Dispatcher.Reservations[node.JunctionIndex] = id;
                 }
                 else if (prevNode != null)
                 {
+                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
                     if (node.JunctionIndex != -1 && Dispatcher.Reservations != null)
                         Dispatcher.Reservations[node.JunctionIndex] = id;
-                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
                 }
                 prevNode = node;
             }

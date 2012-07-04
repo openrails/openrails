@@ -1482,6 +1482,16 @@ namespace ORTS
                 {
                 }
 
+                public void Dump(StringBuilder sta, Traveller t)
+                {
+                    sta.AppendFormat("trackNode|{0}\r\n", trackNode);
+                    if (t != null) sta.AppendFormat("DistanceTo|{0}\r\n", DistanceTo(t));
+                    sta.AppendFormat("enabled|{0}\r\n", enabled);
+                    sta.AppendFormat("block_state|{0}\r\n", blockState);
+                    sta.AppendFormat("block_state()|{0}\r\n", block_state());
+                    sta.AppendFormat("this_sig_lr()|{0}\r\n", this_sig_lr(SignalHead.SIGFN.NORMAL));
+                }
+
   //================================================================================================//
   ///
   //  Constructor for Copy 

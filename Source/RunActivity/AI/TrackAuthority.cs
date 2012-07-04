@@ -160,6 +160,141 @@ namespace ORTS
             return new Status { TrainID = TrainID, Train = Train, Path = s.ToString() };
         }
 
+        public void Dump(Action<StringBuilder> dmpaction)
+        {
+            StringBuilder reservations = new StringBuilder();
+            StringBuilder nodeids = new StringBuilder();
+            StringBuilder travellers = new StringBuilder();
+            int tvnIndex = -1;
+            int prevtvn = -1;
+
+            reservations.Append("Reservations||");
+            nodeids.Append("Node IDs||");
+            travellers.Append("Travellers, etc||");
+            if (Train.FrontTDBTraveller != null)
+            {
+                for (AIPathNode node = Path.FirstNode; node != null; node = node.NextMainNode)
+                {
+                    switch (node.Type)
+                    {
+                        case AIPathNodeType.Reverse: travellers.Append("?"); break;
+                        case AIPathNodeType.SidingStart: travellers.Append("\\"); break;
+                        case AIPathNodeType.SidingEnd: travellers.Append("/"); break;
+                    }
+                    for (AIPathNode snode = node.NextSidingNode; snode != null; snode = snode.NextSidingNode)
+                    {
+                        if (snode.NextSidingTVNIndex == tvnIndex)
+                            continue;
+
+                        prevtvn = tvnIndex;
+                        tvnIndex = snode.NextSidingTVNIndex;
+
+                        if (snode.JunctionIndex > 0)
+                        {
+                            //travellers.Append("-<");
+                            travellers.Append(GetJunction(snode.JunctionIndex, prevtvn, tvnIndex));
+                            nodeids.Append(snode.JunctionIndex);
+                            int jres = Program.Simulator.AI.Dispatcher.GetReservation(snode.JunctionIndex);
+                            if (jres > -1) reservations.Append(jres);
+                            reservations.Append("|");
+                            nodeids.Append("|");
+                            travellers.Append("|");
+                        }
+
+                        nodeids.Append(tvnIndex);
+                        int sres = Program.Simulator.AI.Dispatcher.GetReservation(tvnIndex);
+                        if (sres > -1) reservations.Append(sres);
+                        if (Train.FrontTDBTraveller.TrackNodeIndex == tvnIndex)
+                            travellers.Append("#");
+                        if (Train.RearTDBTraveller.TrackNodeIndex == tvnIndex)
+                            travellers.Append("#");
+                        if (tvnIndex >= 0)
+                            travellers.Append("_");
+
+                        reservations.Append("|");
+                        nodeids.Append("|");
+                        travellers.Append("|");
+
+                    }
+                    if (node.NextMainTVNIndex == tvnIndex)
+                        continue;
+                    prevtvn = tvnIndex;
+                    tvnIndex = node.NextMainTVNIndex;
+                    if (node.JunctionIndex > 0)
+                    {
+                        //travellers.Append("-<");
+                        travellers.Append(GetJunction(node.JunctionIndex, prevtvn, tvnIndex));
+                        nodeids.Append(node.JunctionIndex);
+                        int jres = Program.Simulator.AI.Dispatcher.GetReservation(node.JunctionIndex);
+                        if (jres > -1) reservations.Append(jres);
+                        reservations.Append("|");
+                        nodeids.Append("|");
+                        travellers.Append("|");
+                    }
+                    nodeids.Append(tvnIndex);
+                    int res = Program.Simulator.AI.Dispatcher.GetReservation(tvnIndex);
+                    if (res > -1) reservations.Append(res);
+                    if (Train.FrontTDBTraveller.TrackNodeIndex == tvnIndex)
+                        travellers.Append("@");
+                    if (Train.RearTDBTraveller.TrackNodeIndex == tvnIndex)
+                        travellers.Append("@");
+                    if (tvnIndex >= 0)
+                        travellers.Append("=");
+
+                    reservations.Append("|");
+                    nodeids.Append("|");
+                    travellers.Append("|");
+                }
+            }
+
+            StringBuilder result = new StringBuilder();
+            result.AppendFormat("TrainID|{0}\r\n", TrainID);
+            result.AppendFormat("Time|{0:00000}\r\n", Program.Simulator.ClockTime);
+            result.Append(reservations);
+            result.AppendLine();
+            result.Append(nodeids);
+            result.AppendLine();
+            result.Append(travellers);
+            result.AppendLine();
+
+            dmpaction(result);
+
+            using (FileStream fs = File.Open(".\\dispatcher.log", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                fs.Seek(0, SeekOrigin.End);
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    sw.Write(result);
+                    sw.Flush();
+                }
+            }
+        }
+
+        private string GetJunction(int junctionIndex, int link1, int link2)
+        {
+            string retval;
+            TrackNode tn = Program.Simulator.TDB.TrackDB.TrackNodes[junctionIndex];
+            if (tn.TrJunctionNode == null)
+                return "<>";
+
+            int selected = tn.TrPins[tn.TrJunctionNode.SelectedRoute + 1].Link;
+
+            if (tn.TrPins[0].Link == link1 && selected == link2)
+                retval = "'=_/¯";
+            else if (tn.TrPins[0].Link == link2 && selected == link1)
+                retval = "¯\\_=";
+            else if (selected == link2)
+                retval = "<X>";
+            else if (tn.TrPins[0].Link == link1)
+                retval = "'=X";
+            else if (tn.TrPins[0].Link == link2)
+                retval = "X=";
+            else
+                retval = "<???>";
+
+            return retval;
+        }
+
         /// <summary>
         /// Computes the StopDistanceM value, i.e. the distance from one end of the train to the StopNode.
         /// </summary>

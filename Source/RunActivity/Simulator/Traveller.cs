@@ -547,7 +547,7 @@ namespace ORTS
             return NextTrackNode();
         }
 
-        bool NextTrackNode()
+        public bool NextTrackNode()
         {
             if (IsJunction)
                 Debug.Assert(trackNode.Inpins == 1 && trackNode.Outpins > 1);

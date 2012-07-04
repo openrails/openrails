@@ -398,6 +398,10 @@ namespace ORTS
         //
         public void ResetSignal(bool askPermisiion)
         {
+            Simulator.AI.Dispatcher.Dump();
+
+            dumps.Add(Simulator.ClockTime + 3, Program.Simulator.AI.Dispatcher.Dump);
+            
             ObjectItemInfo ob;
             bool force = SignalObjectItems != null &&
                 (ob = (SignalObjectItems.Where(o => o.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL).FirstOrDefault())) != null &&
@@ -413,7 +417,63 @@ namespace ORTS
             SignalObjectItems.RemoveRange(0,sigtotal);
 
             InitializeSignals(true);
-            Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(force);
+            Simulator.AI.Dispatcher.ExtendPlayerAuthorization(force);
+        }
+
+        private Heap<Action> dumps = new Heap<Action>();
+        private void CheckDump()
+        {
+            if (dumps.GetSize() > 0)
+            {
+                if (dumps.GetMinKey() < Program.Simulator.ClockTime)
+                {
+                    Action a = dumps.DeleteMin();
+                    a();
+                }
+            }
+        }
+
+        public void DumpSignals(StringBuilder sta)
+        {
+            sta.AppendFormat("Speed|{0:000.0}\r\n", this.SpeedMpS);
+            sta.AppendLine("Signals");
+            if (nextSignal != null)
+            {
+                int sigid = nextSignal.nextSigRef;
+                sta.AppendFormat("NextSigRef|{0}\r\n", sigid);
+                if (sigid > -1)
+                {
+                    SignalObject s = Signal.signalObjects[sigid];
+                    s.Dump(sta, dFrontTDBTraveller);
+                    sigid = s.nextSignal;
+                    sta.AppendLine();
+                    sta.AppendFormat("Next-NextSigRef|{0}\r\n", sigid);
+                    if (sigid > -1)
+                    {
+                        s = Signal.signalObjects[sigid];
+                        s.Dump(sta, dFrontTDBTraveller);
+                    }
+                }
+                sta.AppendLine();
+
+                sigid = nextSignal.prevSigRef; 
+                sta.AppendFormat("PrevSigRef|{0}\r\n", sigid);
+                if (sigid > -1)
+                {
+                    SignalObject s = Signal.signalObjects[sigid];
+                    s.Dump(sta, null);
+                }
+                sta.AppendLine();
+
+                sigid = nextSignal.rearSigRef;
+                sta.AppendFormat("RearSigRef|{0}\r\n", sigid);
+                if (sigid > -1)
+                {
+                    SignalObject s = Signal.signalObjects[sigid];
+                    s.Dump(sta, null);
+                }
+                sta.AppendLine();
+            }
         }
 
         // Sets the Lead locomotive to the next in the consist
@@ -506,6 +566,8 @@ namespace ORTS
 
 		public virtual void Update(float elapsedClockSeconds)
 		{
+            CheckDump();
+
 			if (TrainType == TRAINTYPE.REMOTE) {
 				//if a MSGMove is received
 				if (updateMSGReceived)
