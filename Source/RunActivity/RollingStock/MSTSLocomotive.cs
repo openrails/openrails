@@ -495,11 +495,12 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             TrainBrakeController.Update(elapsedClockSeconds);
-            if( TrainBrakeController.UpdateValue != 0.0 ) {
-                Simulator.Confirmer.Update( CabControl.TrainBrake, GetTrainBrakeStatus() );
+            if (TrainBrakeController.UpdateValue != 0.0)
+            {
+                Simulator.Confirmer.Update(CabControl.TrainBrake, GetTrainBrakeStatus());
             }
 
-            if( EngineBrakeController != null )
+            if (EngineBrakeController != null)
                 EngineBrakeController.Update(elapsedClockSeconds);
 
             if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
@@ -508,14 +509,6 @@ namespace ORTS
                     DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
                 else
                     DynamicBrakeController.Update(elapsedClockSeconds);
-            }
-
-            // For notched throttle controls (e.g. Dash 9 found on Marias Pass) UpdateValue is always 0.0
-            if( ThrottleController.UpdateValue != 0.0 ) {
-                Simulator.Confirmer.UpdateWithPerCent( 
-                    this is MSTSSteamLocomotive ? CabControl.Regulator : CabControl.Throttle,
-                    ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease, 
-                    ThrottleController.CurrentValue * 100 );
             }
 
             //Currently the ThrottlePercent is global to the entire train
@@ -583,7 +576,7 @@ namespace ORTS
 
                 // When not LeadLocomotive; check if lead is in Neutral
                 // if so this loco will have no motive force
-				var LeadLocomotive = Program.Simulator.PlayerLocomotive.Train;
+                var LeadLocomotive = Program.Simulator.PlayerLocomotive.Train;
 
                 foreach (TrainCar car in LeadLocomotive.Cars)
                 {
@@ -621,15 +614,38 @@ namespace ORTS
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
-                float f= DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
                 if (f > 0)
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
             }
-            
-            LimitMotiveForce(elapsedClockSeconds);
-            
-            //Force to display
-            FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+
+
+            switch (this.Train.TrainType)
+            {
+                case Train.TRAINTYPE.AI:
+                case Train.TRAINTYPE.STATIC:
+                    break;
+                case Train.TRAINTYPE.PLAYER:
+                case Train.TRAINTYPE.REMOTE:
+                    // For notched throttle controls (e.g. Dash 9 found on Marias Pass) UpdateValue is always 0.0
+                    if (ThrottleController.UpdateValue != 0.0)
+                    {
+                        Simulator.Confirmer.UpdateWithPerCent(
+                            this is MSTSSteamLocomotive ? CabControl.Regulator : CabControl.Throttle,
+                            ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
+                            ThrottleController.CurrentValue * 100);
+                    }
+                    LimitMotiveForce(elapsedClockSeconds);
+
+                    if (WheelslipCausesThrottleDown && WheelSlip)
+                        ThrottleController.SetValue(0.0f);
+                    //Force to display
+                    FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+                    break;
+                default:
+                    break;
+                
+            }          
 
             if (MainResPressurePSI < CompressorRestartPressurePSI && !CompressorOn)
                 SignalEvent(EventID.CompressorOn);
@@ -637,9 +653,6 @@ namespace ORTS
                 SignalEvent(EventID.CompressorOff);
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
-
-            if(WheelslipCausesThrottleDown && WheelSlip)
-                ThrottleController.SetValue(0.0f);
 
             base.Update(elapsedClockSeconds);
         } // End Method Update

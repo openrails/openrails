@@ -349,12 +349,38 @@ namespace ORTS
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
             }
 
-            //Force is filtered due to inductance
-            FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+            switch (this.Train.TrainType)
+            {
+                case Train.TRAINTYPE.AI:
+                case Train.TRAINTYPE.STATIC:
+                    break;
+                case Train.TRAINTYPE.PLAYER:
+                case Train.TRAINTYPE.REMOTE:
+                    // For notched throttle controls (e.g. Dash 9 found on Marias Pass) UpdateValue is always 0.0
+                    if (ThrottleController.UpdateValue != 0.0)
+                    {
+                        Simulator.Confirmer.UpdateWithPerCent(
+                            CabControl.Throttle,
+                            ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
+                            ThrottleController.CurrentValue * 100);
+                    }
 
-            MotiveForceN = FilteredMotiveForceN;
+                    //Force is filtered due to inductance
+                    FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
 
-            LimitMotiveForce(elapsedClockSeconds);
+                    MotiveForceN = FilteredMotiveForceN;
+
+                    LimitMotiveForce(elapsedClockSeconds);
+
+                    if (WheelslipCausesThrottleDown && WheelSlip)
+                        ThrottleController.SetValue(0.0f);
+                    break;
+                default:
+                    break;
+
+            }
+
+            
 
             // Refined Variable2 setting to graduate
             if (Variable2 != Variable1)

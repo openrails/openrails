@@ -506,7 +506,20 @@ namespace ORTS
                 (backPressure * ForceFactor1[cutoff] + cylinderPressure * ForceFactor2[cutoff]);
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
-            LimitMotiveForce(elapsedClockSeconds);
+            switch (this.Train.TrainType)
+            {
+                case Train.TRAINTYPE.AI:
+                case Train.TRAINTYPE.STATIC:
+                    break;
+                case Train.TRAINTYPE.PLAYER:
+                case Train.TRAINTYPE.REMOTE:
+                    LimitMotiveForce(elapsedClockSeconds);
+                    break;
+                default:
+                    break;
+
+            }
+
             if (speed == 0 && cutoff < .5f)
                 MotiveForceN = 0;   // valves assumed to be closed
             // usage calculated as moving average to minimize chance of oscillation
