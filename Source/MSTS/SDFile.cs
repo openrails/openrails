@@ -44,6 +44,7 @@ namespace MSTS
                     new STFReader.TokenProcessor("esd_alternative_texture", ()=>{ ESD_Alternative_Texture = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                     new STFReader.TokenProcessor("esd_no_visual_obstruction", ()=>{ ESD_No_Visual_Obstruction = stf.ReadBoolBlock(true); }),
                     new STFReader.TokenProcessor("esd_snapable", ()=>{ ESD_Snapable = stf.ReadBoolBlock(true); }),
+                    new STFReader.TokenProcessor("esd_subobj", ()=>{ ESD_SubObj = true; stf.SkipBlock(); }),
                     new STFReader.TokenProcessor("esd_bounding_box", ()=>{
                         ESD_Bounding_Box = new ESD_Bounding_Box(stf);
                         if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
@@ -58,6 +59,7 @@ namespace MSTS
             public ESD_Bounding_Box ESD_Bounding_Box = null;
             public bool ESD_No_Visual_Obstruction = false;
             public bool ESD_Snapable = false;
+            public bool ESD_SubObj = false;
         }
 
         public class ESD_Bounding_Box

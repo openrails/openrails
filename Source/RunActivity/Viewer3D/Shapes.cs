@@ -651,6 +651,7 @@ namespace ORTS
         public Matrix[] Matrices = new Matrix[0];  // the original natural pose for this shape - shared by all instances
         public animations Animations;
         public LodControl[] LodControls;
+        public bool HasNightSubObj;
 
         readonly Viewer3D Viewer;
         readonly string FilePath;
@@ -691,6 +692,7 @@ namespace ORTS
             {
                 var sdFile = new SDFile(FilePath + "d");
                 textureFlags = (Helpers.TextureFlags)sdFile.shape.ESD_Alternative_Texture;
+                HasNightSubObj = sdFile.shape.ESD_SubObj;
             }
             if (FilePath.ToUpperInvariant().Contains(@"\TRAINS\TRAINSET\"))
                 textureFlags |= Helpers.TextureFlags.TrainSet;
@@ -1007,7 +1009,8 @@ namespace ORTS
                 while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
                     chosenDistanceLevelIndex--;
                 var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
-                foreach (var subObject in chosenDistanceLevel.SubObjects)
+                // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
+                foreach (var subObject in chosenDistanceLevel.SubObjects.Where((so, i) => i != 1 || !HasNightSubObj || Viewer.MaterialManager.sunDirection.Y < 0))
                 {
                     foreach (var shapePrimitive in subObject.ShapePrimitives)
                     {
