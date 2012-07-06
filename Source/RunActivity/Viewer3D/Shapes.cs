@@ -508,6 +508,7 @@ namespace ORTS
         readonly SoundSource Sound;
         readonly LevelCrossing Crossing;
 
+        readonly int AnimationFrames;
         bool Opening = true;
         bool AnimationForward = true; // If the animation speed is negative, use it to indicate where the gate should move.
         float AnimationKey = 0;
@@ -534,6 +535,7 @@ namespace ORTS
                 from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID, 
                 CrossingObj.levelCrParameters.warningTime, 
                 CrossingObj.levelCrParameters.minimumDistance);
+            AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : 1;
         }
 
         #region IDisposable Members
@@ -552,25 +554,29 @@ namespace ORTS
                 return;
 
             if (Opening == Crossing.HasTrain)
+            {
                 Opening = !Crossing.HasTrain;
+                if (!CrossingObj.silent) Sound.HandleEvent(Opening ? 4 : 3);
+            }
 
             // Looping when animTiming < 0 (forwards then backwards then forwards again).
-            var animationLoop = CrossingObj.levelCrTiming.animTiming < 0;
-            var animationSpeed = Math.Abs(CrossingObj.levelCrTiming.animTiming);
-            if (Opening)
+            if (CrossingObj.levelCrTiming.animTiming < 0)
             {
-                if (!CrossingObj.silent && AnimationKey > 0.999 && Sound != null) Sound.HandleEvent(4);
-                AnimationKey -= elapsedTime.ClockSeconds / animationSpeed;
+                if (Opening)
+                    AnimationKey = 0;
+                else
+                    AnimationKey -= elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
+                if (AnimationKey > AnimationFrames) AnimationKey -= AnimationFrames;
             }
             else
             {
-                if (!CrossingObj.silent && AnimationKey < 0.001 && Sound != null) Sound.HandleEvent(3);
-                if (animationLoop && AnimationKey < 0.001) AnimationForward = true;
-                if (animationLoop && AnimationKey > 0.999) AnimationForward = false;
-                AnimationKey += elapsedTime.ClockSeconds / animationSpeed * (AnimationForward ? 1 : -1);
+                if (Opening)
+                    AnimationKey -= elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
+                else
+                    AnimationKey += elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
             }
-            if (AnimationKey < 0.001) AnimationKey = 0;
-            if (AnimationKey > 0.999) AnimationKey = 1;
+            if (AnimationKey < 0) AnimationKey = 0;
+            if (AnimationKey > AnimationFrames) AnimationKey = 1;
 
             for (var i = 0; i < SharedShape.Matrices.Length; ++i)
                 AnimateMatrix(i, AnimationKey);
