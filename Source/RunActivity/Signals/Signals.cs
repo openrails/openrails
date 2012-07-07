@@ -1,7 +1,7 @@
 ﻿// Debug flags :
 // #define DEBUG_PRINT
 // prints details of the derived signal structure
-//#define CHECKED_ROUTE_SET
+#define CHECKED_ROUTE_SET
 // Checks route to next signal
 
 using System;
