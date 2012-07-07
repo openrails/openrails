@@ -224,8 +224,8 @@ namespace ORTS
                     } // end else if DyntrackObj
                     else if (worldObject.GetType() == typeof(MSTS.ForestObj))
                     {
-                        ForestObj forestObj = (ForestObj)worldObject;
-                        forestList.Add(new ForestDrawer(viewer, forestObj, worldMatrix));
+                        if (!(worldObject as MSTS.ForestObj).IsYard)
+                            forestList.Add(new ForestDrawer(viewer, (ForestObj)worldObject, worldMatrix));
                     }
                     else if (worldObject.GetType() == typeof(MSTS.SignalObj))
                     {

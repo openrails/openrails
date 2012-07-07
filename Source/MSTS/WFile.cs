@@ -451,21 +451,20 @@ namespace MSTS
 
     public class ForestObj : WorldObject
     {
-        // Variables for use by other classes
-        public string TreeTexture;
-        public int Population;
-        public ScaleRange scaleRange;
-        public ForestArea forestArea;
-        public TreeSize treeSize;
+        public readonly bool IsYard;
+        public readonly string TreeTexture;
+        public readonly int Population;
+        public readonly ScaleRange scaleRange;
+        public readonly ForestArea forestArea;
+        public readonly TreeSize treeSize;
 
         public ForestObj(SBR block, int detailLevel)
         {
-            SBR localBlock = block;
+            var localBlock = block;
             StaticDetailLevel = detailLevel;
-
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -477,68 +476,57 @@ namespace MSTS
                         case TokenID.TreeSize: treeSize = new TreeSize(subBlock); break;
                         case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
                         case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-                        case TokenID.QDirection:
-                            QDirection = new STFQDirectionItem(subBlock);
-                            // Set B to 0 (straight up) to avoid billboarding problems.
-                            //QDirection.B = 0;
-                            break;
+                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
                         case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
                         default: subBlock.Skip(); break;
                     }
                 }
             }
-            if (TreeTexture == null)
-            //Trace.TraceWarning("Forest {0} is missing a TreeTexture.", UID);
-            {
-                throw new System.Exception(block.ErrorMessage("Missing texture filename in forest region. UID=" + UID.ToString()));
-            }
+            IsYard = TreeTexture == null;
         }
 
         public class ScaleRange
         {
-            public float scaleRange1;
-            public float scaleRange2;
+            public readonly float scaleRange1;
+            public readonly float scaleRange2;
 
-            public ScaleRange(SBR block)
+            internal ScaleRange(SBR block)
             {
                 block.VerifyID(TokenID.ScaleRange);
                 scaleRange1 = block.ReadFloat();
                 scaleRange2 = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
-
-        }//ScaleRange
+        }
 
         public class ForestArea
         {
-            public float areaDim1;
-            public float areaDim2;
+            public readonly float areaDim1;
+            public readonly float areaDim2;
 
-            public ForestArea(SBR block)
+            internal ForestArea(SBR block)
             {
                 block.VerifyID(TokenID.Area);
                 areaDim1 = block.ReadFloat();
                 areaDim2 = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
-
-        }//ForestArea
+        }
 
         public class TreeSize
         {
-            public float treeSize1;
-            public float treeSize2;
+            public readonly float treeSize1;
+            public readonly float treeSize2;
 
-            public TreeSize(SBR block)
+            internal TreeSize(SBR block)
             {
                 block.VerifyID(TokenID.TreeSize);
                 treeSize1 = block.ReadFloat();
                 treeSize2 = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
-
-        }//TreeSize
-    }//ForestObj
+        }
+    }
 
     public class SignalObj : WorldObject
     {
