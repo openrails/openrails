@@ -11,6 +11,9 @@
 // WANRING: Slower and not guaranteed to work!
 //#define OPTIMIZE_SHAPES_ON_LOAD
 
+// Prints out lots of diagnostic information about the construction of shapes, with regards their sub-objects and hierarchies.
+//#define DEBUG_SHAPE_HIERARCHY
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -510,7 +513,6 @@ namespace ORTS
 
         readonly int AnimationFrames;
         bool Opening = true;
-        bool AnimationForward = true; // If the animation speed is negative, use it to indicate where the gate should move.
         float AnimationKey = 0;
 
         public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
@@ -707,6 +709,11 @@ namespace ORTS
             }
             Animations = sFile.shape.animations;
 
+#if DEBUG_SHAPE_HIERARCHY
+            Console.WriteLine("Shape {0}:", Path.GetFileNameWithoutExtension(FilePath).ToUpper());
+            for (var i = 0; i < MatrixNames.Count; ++i)
+                Console.WriteLine("  Matrix {0,-2} {1}", i, MatrixNames[i]);
+#endif
             LodControls = (from lod_control lod in sFile.shape.lod_controls
                            select new LodControl(lod, textureFlags, sFile, this)).ToArray();
             if (LodControls.Length == 0)
@@ -719,6 +726,9 @@ namespace ORTS
 
             public LodControl(lod_control MSTSlod_control, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
             {
+#if DEBUG_SHAPE_HIERARCHY
+                Console.WriteLine("  LOD control:");
+#endif
                 DistanceLevels = (from distance_level level in MSTSlod_control.distance_levels
                                   select new DistanceLevel(level, textureFlags, sFile, sharedShape)).ToArray();
                 if (DistanceLevels.Length == 0)
@@ -741,6 +751,9 @@ namespace ORTS
 
             public DistanceLevel(distance_level MSTSdistance_level, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
             {
+#if DEBUG_SHAPE_HIERARCHY
+                Console.WriteLine("    Distance level {0}: hierarchy={1}", MSTSdistance_level.distance_level_header.dlevel_selection, String.Join(" ", MSTSdistance_level.distance_level_header.hierarchy.Select(i => i.ToString()).ToArray()));
+#endif
                 ViewingDistance = MSTSdistance_level.distance_level_header.dlevel_selection;
                 // TODO, work out ViewShereRadius from all sub_object radius and centers.
                 if (sFile.shape.volumes.Count > 0)
@@ -748,8 +761,14 @@ namespace ORTS
                 else
                     ViewSphereRadius = 100;
 
+#if DEBUG_SHAPE_HIERARCHY
+                var index = 0;
+                SubObjects = (from sub_object obj in MSTSdistance_level.sub_objects
+                              select new SubObject(obj, MSTSdistance_level.distance_level_header.hierarchy, textureFlags, index++, sFile, sharedShape)).ToArray();
+#else
                 SubObjects = (from sub_object obj in MSTSdistance_level.sub_objects
                               select new SubObject(obj, MSTSdistance_level.distance_level_header.hierarchy, textureFlags, sFile, sharedShape)).ToArray();
+#endif
                 if (SubObjects.Length == 0)
                     throw new InvalidDataException("Shape file missing sub_object");
             }
@@ -793,8 +812,15 @@ namespace ORTS
 
             public ShapePrimitive[] ShapePrimitives;
 
+#if DEBUG_SHAPE_HIERARCHY
+            public SubObject(sub_object sub_object, int[] hierarchy, Helpers.TextureFlags textureFlags, int index, SFile sFile, SharedShape sharedShape)
+#else
             public SubObject(sub_object sub_object, int[] hierarchy, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
+#endif
             {
+#if DEBUG_SHAPE_HIERARCHY
+                Console.WriteLine("      Sub object {0}:", index);
+#endif
                 var vertexBufferSet = new VertexBufferSet(sub_object, sFile, sharedShape.Viewer.GraphicsDevice);
 
 
@@ -844,6 +870,17 @@ namespace ORTS
                     {
                         material = sharedShape.Viewer.MaterialManager.Load("Scenery", null, (int)options);
                     }
+
+#if DEBUG_SHAPE_HIERARCHY
+                    Console.Write("        Primitive {0}: prim_state_idx={1,-2} ivtx_state={2,-2} imatrix={3,-2}", primitiveIndex, primitive.prim_state_idx, primitiveState.ivtx_state, vertexState.imatrix);
+                    var debugMatrix = vertexState.imatrix;
+                    while (debugMatrix >= 0)
+                    {
+                        Console.Write(" {0}", sharedShape.MatrixNames[debugMatrix]);
+                        debugMatrix = hierarchy[debugMatrix];
+                    }
+                    Console.WriteLine();
+#endif
 
 #if OPTIMIZE_SHAPES_ON_LOAD
                     return new { Key = material.ToString() + "/" + vertexState.imatrix.ToString(), Primitive = primitive, Material = material, HierachyIndex = vertexState.imatrix };
@@ -975,19 +1012,17 @@ namespace ORTS
             return XNAMatrix;
         }
 
-        /// <summary>
-        /// This is called by the individual instances of the shape when it should draw itself at the specified location
-        /// </summary>
         public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
         {
-            PrepareFrame(frame, location, Matrices, flags);
+            PrepareFrame(frame, location, Matrices, null, flags);
         }
 
-        /// <summary>
-        /// This is called by the individual instances of the shape when it should draw itself at the specified location
-        /// with individual matrices animated as shown.
-        /// </summary>
         public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags)
+        {
+            PrepareFrame(frame, location, animatedXNAMatrices, null, flags);
+        }
+
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags)
         {
             // Locate relative to the camera
             var dTileX = location.TileX - Viewer.Camera.TileX;
@@ -1010,7 +1045,7 @@ namespace ORTS
                     chosenDistanceLevelIndex--;
                 var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
                 // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
-                foreach (var subObject in chosenDistanceLevel.SubObjects.Where((so, i) => i != 1 || !HasNightSubObj || Viewer.MaterialManager.sunDirection.Y < 0))
+                foreach (var subObject in chosenDistanceLevel.SubObjects.Where((so, i) => (subObjVisible == null || subObjVisible[i]) && (i != 1 || !HasNightSubObj || Viewer.MaterialManager.sunDirection.Y < 0)))
                 {
                     foreach (var shapePrimitive in subObject.ShapePrimitives)
                     {

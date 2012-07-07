@@ -7,6 +7,7 @@
 //
 // This file is the responsibility of the 3D & Environment Team. 
 
+// Prints out lots of diagnostic information about the construction of signals from shape data and their state changes.
 //#define DEBUG_SIGNAL_SHAPES
 
 using System;
@@ -24,13 +25,14 @@ namespace ORTS
     {
         readonly uint UID;
         readonly SignalObject SignalObject;
+        readonly bool[] SubObjVisible;
         readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
         public SignalShape(Viewer3D viewer, MSTS.SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
             : base(viewer, path, position, flags)
         {
 #if DEBUG_SIGNAL_SHAPES
-			Console.WriteLine(String.Format("{0} signal {1}:", Location.ToString(), mstsSignal.UID));
+			Console.WriteLine("{0} signal {1}:", Location.ToString(), mstsSignal.UID);
 #endif
             UID = mstsSignal.UID;
             var signalShape = Path.GetFileName(path).ToUpper();
@@ -40,11 +42,31 @@ namespace ORTS
                 return;
             }
             var mstsSignalShape = viewer.SIGCFG.SignalShapes[signalShape];
+#if DEBUG_SIGNAL_SHAPES
+            Console.WriteLine("  Shape={0} SubObjs={1,-2} {2}", Path.GetFileNameWithoutExtension(path).ToUpper(), mstsSignalShape.SignalSubObjs.Count, mstsSignalShape.Description);
+#endif
 
-            // Move all hidden signal sub objects way in to the sky.
+            // The matrix names are used as the sub-object names. The sub-object visibility comes from
+            // mstsSignal.SignalSubObj, which is mapped to names through mstsSignalShape.SignalSubObjs.
+            var visibleMatrixNames = new bool[SharedShape.MatrixNames.Count];
             for (var i = 0; i < mstsSignalShape.SignalSubObjs.Count; i++)
-                if ((((mstsSignal.SignalSubObj >> i) & 0x1) == 0) && SharedShape.MatrixNames.Contains(mstsSignalShape.SignalSubObjs[i].MatrixName))
-                    XNAMatrices[SharedShape.MatrixNames.IndexOf(mstsSignalShape.SignalSubObjs[i].MatrixName)].M42 += 10000;
+                if ((((mstsSignal.SignalSubObj >> i) & 0x1) == 1) && (SharedShape.MatrixNames.Contains(mstsSignalShape.SignalSubObjs[i].MatrixName)))
+                    visibleMatrixNames[SharedShape.MatrixNames.IndexOf(mstsSignalShape.SignalSubObjs[i].MatrixName)] = true;
+
+            // All sub-objects except the first are hidden by default. For each sub-object beyond the first, look up
+            // its name in the hierarchy and use the visibility of that matrix. Note: parent matricies in the
+            // hierarchy are not considered.
+            SubObjVisible = new bool[SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length];
+            SubObjVisible[0] = true;
+            for (var i = 1; i < SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length; i++)
+                SubObjVisible[i] = visibleMatrixNames[SharedShape.LodControls[0].DistanceLevels[0].SubObjects[i].ShapePrimitives[0].HierarchyIndex];
+
+#if DEBUG_SIGNAL_SHAPES
+            for (var i = 0; i < mstsSignalShape.SignalSubObjs.Count; i++)
+                Console.WriteLine("  SUBOBJ {1,-12} {0,-7} {2,3} {3,3} {4,2} {5,2} {6,-14} {8} ({7})", ((mstsSignal.SignalSubObj >> i) & 0x1) != 0 ? "VISIBLE" : "hidden", mstsSignalShape.SignalSubObjs[i].MatrixName, mstsSignalShape.SignalSubObjs[i].Optional ? "Opt" : "", mstsSignalShape.SignalSubObjs[i].Default ? "Def" : "", mstsSignalShape.SignalSubObjs[i].JunctionLink ? "JL" : "", mstsSignalShape.SignalSubObjs[i].BackFacing ? "BF" : "", mstsSignalShape.SignalSubObjs[i].SignalSubType == -1 ? "<none>" : MSTS.SignalShape.SignalSubObj.SignalSubTypes[mstsSignalShape.SignalSubObjs[i].SignalSubType], mstsSignalShape.SignalSubObjs[i].SignalSubSignalType, mstsSignalShape.SignalSubObjs[i].Description);
+            for (var i = 0; i < SubObjVisible.Length; i++)
+                Console.WriteLine("  SUBOBJ {0,-2} {1,-7}", i, SubObjVisible[i] ? "VISIBLE" : "hidden");
+#endif
 
             if (mstsSignal.SignalUnits == null)
             {
@@ -100,7 +122,7 @@ namespace ORTS
             foreach (var head in Heads)
                 head.PrepareFrame(frame, elapsedTime, xnaTileTranslation);
 
-            base.PrepareFrame(frame, elapsedTime);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, SubObjVisible, Flags);
         }
 
         internal override void Mark()
@@ -163,9 +185,9 @@ namespace ORTS
                 if (DisplayState != SignalHead.draw_state)
                 {
 #if DEBUG_SIGNAL_SHAPES
-					Console.WriteLine(String.Format("{5} {0} signal {1} unit {2} state: {3} --> {4}",
+					Console.WriteLine("{5} {0} signal {1} unit {2} state: {3} --> {4}",
                         SignalShape.Location, SignalShape.UID, Index, DisplayState,
-                        SignalHead.draw_state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
+                        SignalHead.draw_state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
 #endif
                     DisplayState = SignalHead.draw_state;
                     if (SignalTypeData.DrawAspects.ContainsKey(DisplayState))
