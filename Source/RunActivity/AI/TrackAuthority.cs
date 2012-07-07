@@ -165,12 +165,17 @@ namespace ORTS
             StringBuilder reservations = new StringBuilder();
             StringBuilder nodeids = new StringBuilder();
             StringBuilder travellers = new StringBuilder();
+            StringBuilder signals = new StringBuilder();
             int tvnIndex = -1;
             int prevtvn = -1;
 
-            reservations.Append("Reservations||");
-            nodeids.Append("Node IDs||");
-            travellers.Append("Travellers, etc||");
+            reservations.Append("|Reservations||");
+            nodeids.Append("|Node IDs||");
+            travellers.Append("|Travellers, etc||");
+            signals.Append("|Signals||");
+
+            List<SignalObject> ls = new List<SignalObject>();
+
             if (Train.FrontTDBTraveller != null)
             {
                 for (AIPathNode node = Path.FirstNode; node != null; node = node.NextMainNode)
@@ -196,9 +201,13 @@ namespace ORTS
                             nodeids.Append(snode.JunctionIndex);
                             int jres = Program.Simulator.AI.Dispatcher.GetReservation(snode.JunctionIndex);
                             if (jres > -1) reservations.Append(jres);
+                            ls.Clear();
+                            Program.Simulator.AI.Dispatcher.CountSignals(snode.JunctionIndex, s => { ls.Add(s); } );
+                            signals.Append(string.Join(":", ls.Select<SignalObject, string>(s => string.Format("{0}[{1}]", s.thisRef, s.revDir)).ToArray()));
                             reservations.Append("|");
                             nodeids.Append("|");
                             travellers.Append("|");
+                            signals.Append("|");
                         }
 
                         nodeids.Append(tvnIndex);
@@ -210,11 +219,14 @@ namespace ORTS
                             travellers.Append("#");
                         if (tvnIndex >= 0)
                             travellers.Append("_");
+                        ls.Clear();
+                        Program.Simulator.AI.Dispatcher.CountSignals(tvnIndex, s => { ls.Add(s); } );
+                        signals.Append(string.Join(":", ls.Select<SignalObject, string>(s => string.Format("{0}[{1}]", s.thisRef, s.revDir)).ToArray()));
 
                         reservations.Append("|");
                         nodeids.Append("|");
                         travellers.Append("|");
-
+                        signals.Append("|");
                     }
                     if (node.NextMainTVNIndex == tvnIndex)
                         continue;
@@ -227,9 +239,13 @@ namespace ORTS
                         nodeids.Append(node.JunctionIndex);
                         int jres = Program.Simulator.AI.Dispatcher.GetReservation(node.JunctionIndex);
                         if (jres > -1) reservations.Append(jres);
+                        ls.Clear();
+                        Program.Simulator.AI.Dispatcher.CountSignals(node.JunctionIndex, s => { ls.Add(s); } );
+                        signals.Append(string.Join(":", ls.Select<SignalObject, string>(s => string.Format("{0}[{1}]", s.thisRef, s.revDir)).ToArray()));
                         reservations.Append("|");
                         nodeids.Append("|");
                         travellers.Append("|");
+                        signals.Append("|");
                     }
                     nodeids.Append(tvnIndex);
                     int res = Program.Simulator.AI.Dispatcher.GetReservation(tvnIndex);
@@ -240,26 +256,31 @@ namespace ORTS
                         travellers.Append("@");
                     if (tvnIndex >= 0)
                         travellers.Append("=");
+                    ls.Clear();
+                    Program.Simulator.AI.Dispatcher.CountSignals(tvnIndex, s => { ls.Add(s); } );
+                    signals.Append(string.Join(":", ls.Select<SignalObject, string>(s => string.Format("{0}[{1}]", s.thisRef, s.revDir)).ToArray()));
 
                     reservations.Append("|");
                     nodeids.Append("|");
                     travellers.Append("|");
+                    signals.Append("|");
                 }
             }
 
             StringBuilder result = new StringBuilder();
-            result.AppendFormat("TrainID|{0}\r\n", TrainID);
-            result.AppendFormat("Time|{0:00000}\r\n", Program.Simulator.ClockTime);
+            result.AppendFormat("TrainID|{0}|Time|{1:00000}\r\n", TrainID, Program.Simulator.ClockTime);
             result.Append(reservations);
             result.AppendLine();
             result.Append(nodeids);
             result.AppendLine();
             result.Append(travellers);
             result.AppendLine();
+            result.Append(signals);
+            result.AppendLine();
 
             dmpaction(result);
 
-            using (FileStream fs = File.Open(".\\dispatcher.log", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (FileStream fs = File.Open(".\\dispatcher.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
                 fs.Seek(0, SeekOrigin.End);
                 using (StreamWriter sw = new StreamWriter(fs))

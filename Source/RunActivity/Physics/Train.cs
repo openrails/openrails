@@ -400,7 +400,11 @@ namespace ORTS
         {
             Simulator.AI.Dispatcher.Dump();
 
-            dumps.Add(Simulator.ClockTime + 3, Program.Simulator.AI.Dispatcher.Dump);
+            if (lastclocktime != Simulator.ClockTime)
+            {
+                dumps.Add(Simulator.ClockTime + 3, Program.Simulator.AI.Dispatcher.Dump);
+                lastclocktime = Simulator.ClockTime;
+            }
             
             ObjectItemInfo ob;
             bool force = SignalObjectItems != null &&
@@ -421,6 +425,7 @@ namespace ORTS
         }
 
         private Heap<Action> dumps = new Heap<Action>();
+        private double lastclocktime = -1;
         private void CheckDump()
         {
             if (dumps.GetSize() > 0)
@@ -435,19 +440,19 @@ namespace ORTS
 
         public void DumpSignals(StringBuilder sta)
         {
-            sta.AppendFormat("Speed|{0:000.0}\r\n", this.SpeedMpS);
-            sta.AppendLine("Signals");
+            sta.AppendFormat("|Speed|{0:000.0}\r\n\r\n", this.SpeedMpS);
+            sta.AppendLine("|Signals");
             if (nextSignal != null)
             {
                 int sigid = nextSignal.nextSigRef;
-                sta.AppendFormat("NextSigRef|{0}\r\n", sigid);
+                sta.AppendFormat("|NextSigRef|{0}\r\n", sigid);
                 if (sigid > -1)
                 {
                     SignalObject s = Signal.signalObjects[sigid];
                     s.Dump(sta, dFrontTDBTraveller);
                     sigid = s.nextSignal;
                     sta.AppendLine();
-                    sta.AppendFormat("Next-NextSigRef|{0}\r\n", sigid);
+                    sta.AppendFormat("|Next-NextSigRef|{0}\r\n", sigid);
                     if (sigid > -1)
                     {
                         s = Signal.signalObjects[sigid];
@@ -457,7 +462,7 @@ namespace ORTS
                 sta.AppendLine();
 
                 sigid = nextSignal.prevSigRef; 
-                sta.AppendFormat("PrevSigRef|{0}\r\n", sigid);
+                sta.AppendFormat("|PrevSigRef|{0}\r\n", sigid);
                 if (sigid > -1)
                 {
                     SignalObject s = Signal.signalObjects[sigid];
@@ -466,7 +471,7 @@ namespace ORTS
                 sta.AppendLine();
 
                 sigid = nextSignal.rearSigRef;
-                sta.AppendFormat("RearSigRef|{0}\r\n", sigid);
+                sta.AppendFormat("|RearSigRef|{0}\r\n", sigid);
                 if (sigid > -1)
                 {
                     SignalObject s = Signal.signalObjects[sigid];
@@ -958,7 +963,7 @@ namespace ORTS
 			        nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
 		    }
 
-            else
+            else if (this is AITrain)
             {
                 NextSignalObject = null;
                 distanceToSignal = 50000;

@@ -453,6 +453,22 @@ namespace ORTS
         /// <param name="x">Target coordinate.</param>
         /// <param name="y">Target coordinate.</param>
         /// <param name="z">Target coordinate.</param>
+        /// <param name="destination">Traveller at the destination</param>
+        /// <returns>If the target is found, the distance from the traveller's current location, along the track nodes, to the specified location. If the target is not found, <c>-1</c>.</returns>
+        public float DistanceTo(int tileX, int tileZ, float x, float y, float z, out Traveller destination)
+        {
+            destination = new Traveller(this);
+            return DistanceTo(destination, null, tileX, tileZ, x, y, z, float.MaxValue);
+        }
+
+        /// <summary>
+        /// Returns the distance from the traveller's current location, in its current direction, to the location specified.
+        /// </summary>
+        /// <param name="tileX">Target tile coordinate.</param>
+        /// <param name="tileZ">Target tile coordinate.</param>
+        /// <param name="x">Target coordinate.</param>
+        /// <param name="y">Target coordinate.</param>
+        /// <param name="z">Target coordinate.</param>
         /// <param name="maxDistance">MAximum distance to search for specified location.</param>
         /// <returns>If the target is found, the distance from the traveller's current location, along the track nodes, to the specified location. If the target is not found, <c>-1</c>.</returns>
         public float DistanceTo(int tileX, int tileZ, float x, float y, float z, float maxDistance)

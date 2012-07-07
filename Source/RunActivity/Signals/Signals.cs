@@ -1,6 +1,8 @@
 ﻿// Debug flags :
 // #define DEBUG_PRINT
 // prints details of the derived signal structure
+//#define CHECKED_ROUTE_SET
+// Checks route to next signal
 
 using System;
 using System.Collections.Generic;
@@ -1484,12 +1486,19 @@ namespace ORTS
 
                 public void Dump(StringBuilder sta, Traveller t)
                 {
-                    sta.AppendFormat("trackNode|{0}\r\n", trackNode);
-                    if (t != null) sta.AppendFormat("DistanceTo|{0}\r\n", DistanceTo(t));
-                    sta.AppendFormat("enabled|{0}\r\n", enabled);
-                    sta.AppendFormat("block_state|{0}\r\n", blockState);
-                    sta.AppendFormat("block_state()|{0}\r\n", block_state());
-                    sta.AppendFormat("this_sig_lr()|{0}\r\n", this_sig_lr(SignalHead.SIGFN.NORMAL));
+                    sta.AppendFormat("|trackNode|{0}\r\n", trackNode);
+                    if (t != null) sta.AppendFormat("|DistanceTo|{0}\r\n", DistanceTo(t));
+                    sta.AppendFormat("|enabled|{0}\r\n", enabled);
+                    if (WorldObject != null && WorldObject.FlagsSet != null)
+                        sta.AppendFormat("|sigfeat|{0}\r\n", string.Join(":", WorldObject.FlagsSet.Select<bool, string>(f => f.ToString()).ToArray()) );
+                    sta.AppendFormat("|block_state|{0}\r\n", blockState);
+                    sta.AppendFormat("|block_state()|{0}\r\n", block_state());
+                    sta.AppendFormat("|this_sig_lr()|{0}\r\n", this_sig_lr(SignalHead.SIGFN.NORMAL));
+
+                    foreach (SignalHead sh in SignalHeads)
+                    {
+                        sh.Dump(sta);
+                    }
                 }
 
   //================================================================================================//
@@ -1960,7 +1969,19 @@ namespace ORTS
                         return rs;
                 }
 
-  //================================================================================================//
+#if CHECKED_ROUTE_SET
+                //================================================================================================//
+  //
+  // route_set : check if required route is set
+  //
+
+                public bool route_set ()
+                {
+                    return nextSignal != -1;
+                }
+#endif
+
+                //================================================================================================//
   //
   // Update : Perform the update for each head on this signal.
   //
@@ -2058,6 +2079,17 @@ namespace ORTS
                 }//DistanceTo
 
   //================================================================================================//
+  //
+  // DistanceToRef : Returns the distance from the TDBtraveller to this signal and sets the Traveller at the signal. 
+  //
+
+                public float DistanceToRef(ref Traveller tdbTraveller)
+                {
+                        int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
+                        return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z, out tdbTraveller);
+                }//DistanceTo
+
+//================================================================================================//
   //
   // ObjectDistance : Returns the distance from this object to the next object
   //
@@ -2342,6 +2374,18 @@ namespace ORTS
                         speed_info[Convert.ToInt32(state)] = speedinfo;
                 }
 
+                public void Dump(StringBuilder sta)
+                {
+                    sta.AppendFormat("||SignalType.Name|{0}\r\n", signalType.Name);
+                    sta.AppendFormat("||SignalType.SigFn|{0}\r\n", signalType.FnType);
+                    sta.AppendFormat("||TrackJunctionNode|{0}\r\n", TrackJunctionNode);
+                    sta.AppendFormat("||JunctionMainNode|{0}\r\n", JunctionMainNode);
+                    sta.AppendFormat("||JunctionPath|{0}\r\n", JunctionPath);
+                    sta.AppendFormat("||route_set()|{0}\r\n", route_set());
+                    sta.AppendFormat("||state|{0}\r\n", this.state);
+                    sta.AppendLine();
+                }
+
   //================================================================================================//
   //
   // SetSignalType : This method sets the signal type object from the CIGCFG file
@@ -2515,9 +2559,14 @@ namespace ORTS
 
                         if (TrackJunctionNode > 0)
                         {
-                                juncfound = mainSignal.route_set(JunctionMainNode);
+                            juncfound = mainSignal.route_set(JunctionMainNode);
                         }
-
+#if CHECKED_ROUTE_SET
+                        else
+                        {
+                            juncfound = mainSignal.route_set();
+                        }
+#endif
                         if (juncfound)
                         {
                                 return 1;

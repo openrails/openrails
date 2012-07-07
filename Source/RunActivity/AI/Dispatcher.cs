@@ -47,7 +47,7 @@ namespace ORTS
         /// </summary>
         public Dispatcher(AI ai)
         {
-            File.Delete(".\\dispatcher.log");
+            File.Delete(".\\dispatcher.txt");
             AI = ai;
             Reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
             for (int i = 0; i < Reservations.Length; i++)
@@ -97,7 +97,7 @@ namespace ORTS
         // restore game state
         public Dispatcher(AI ai, BinaryReader inf)
         {
-            File.Delete(".\\dispatcher.log");
+            File.Delete(".\\dispatcher.txt");
             AI = ai;
             PlayerPriority = inf.ReadInt32();
             int n = inf.ReadInt32();
@@ -445,14 +445,16 @@ namespace ORTS
             }
         }
 
-        private int CountSignals(int node, Traveller t)
+        public void CountSignals(int node, Action<SignalObject> action)
         {
             TrackNode[] trackNodes = Program.Simulator.TDB.TrackDB.TrackNodes;
             TrItem[] trItems = Program.Simulator.TDB.TrackDB.TrItemTable;
-            int cou = 0;
-            int dir = (int)t.Direction;
+            List<int> siglist = new List<int>();
+            //int dir = (int)t.Direction;
 
-            if (trackNodes[node].TrEndNode) return -1;  // End of track reached no signals found.
+            if (node == -1) return;
+            if (Signal.signalObjects == null) return;
+            if (trackNodes[node].TrEndNode) return;  // End of track reached no signals found.
             if (trackNodes[node].TrVectorNode != null)
             {
                 if (trackNodes[node].TrVectorNode.noItemRefs > 0)
@@ -465,19 +467,17 @@ namespace ORTS
                             //if ( sigItem.revDir == Direction)
                             {
                                 int sigObj = sigItem.sigObj;
-                                if (Signal.signalObjects[sigObj] != null && Signal.signalObjects[sigObj].revDir == dir &&
-                                    Signal.signalObjects[sigObj].isSignalNormal())
+                                if (Signal.signalObjects[sigObj] != null && 
+                                    !siglist.Contains(Signal.signalObjects[sigObj].thisRef))
                                 {
-                                    if (Signal.signalObjects[sigObj].DistanceTo(t) > 0)
-                                        cou++;
+                                    siglist.Add(Signal.signalObjects[sigObj].thisRef);
+                                    action(Signal.signalObjects[sigObj]);
                                 }
                             }
                         }
                     }
                 }
             }
-
-            return cou;
         }
 
         /// <summary>
@@ -628,7 +628,18 @@ namespace ORTS
                 }
 
                 if (node != auth.StartNode)
-                    sigcou += CountSignals(nodeidx, traveller);
+                {
+                    //sigcou += CountSignals(nodeidx, traveller);
+
+                    CountSignals(nodeidx, s =>
+                    {
+                        Traveller tt = traveller;
+                        if (s.isSignalNormal() && s.DistanceToRef(ref tt) > 0 && s.revDir == (int)tt.Direction)
+                        {
+                            sigcou++;
+                        }
+                    });
+                }
 
                 //if (dist > 4000 && !firstIsNeg)
                 //    break;
