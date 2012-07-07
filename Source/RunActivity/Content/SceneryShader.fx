@@ -444,16 +444,16 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
 	const float HalfShadowBrightness = 0.75;
-	const float NightBrightness = 0.2;
+	const float HalfNightBrightness = 0.6;
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
 	// Fixed ambient and shadow effects at mid-dark level.
 	float3 litColor = Color.rgb * HalfShadowBrightness;
 	// No specular effect for half-bright.
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
-	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect() / 2);
 	// Night-time darkens everything, except night-time textures.
-	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + ImageTextureIsNight));
+	litColor *= lerp(HalfNightBrightness, FullBrightness, saturate(_PSGetNightEffect() + ImageTextureIsNight));
 	// Headlights effect use original Color.
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
@@ -463,17 +463,12 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 {
-	const float FullBrightness = 1.0;
-	const float NightBrightness = 0.2;
-
 	float4 Color = tex2D(Image, In.TexCoords.xy);
 	// Fixed ambient and shadow effects at brightest level.
 	float3 litColor = Color.rgb;
 	// No specular effect for full-bright.
-	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
-	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), _PSGetOvercastEffect());
-	// Night-time darkens everything, except night-time textures.
-	litColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + ImageTextureIsNight));
+	// No overcast effect for full-bright.
+	// No night-time effect for full-bright.
 	// Headlights effect use original Color.
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
