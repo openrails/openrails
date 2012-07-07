@@ -26,14 +26,12 @@ namespace ORTS
         readonly SignalObject SignalObject;
         readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
-
         public SignalShape(Viewer3D viewer, MSTS.SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
             : base(viewer, path, position, flags)
         {
 #if DEBUG_SIGNAL_SHAPES
 			Console.WriteLine(String.Format("{0} signal {1}:", Location.ToString(), mstsSignal.UID));
 #endif
-
             UID = mstsSignal.UID;
             var signalShape = Path.GetFileName(path).ToUpper();
             if (!viewer.SIGCFG.SignalShapes.ContainsKey(signalShape))
@@ -99,7 +97,6 @@ namespace ORTS
             var xnaTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
             Matrix.Multiply(ref Location.XNAMatrix, ref xnaTileTranslation, out xnaTileTranslation);
 
-
             foreach (var head in Heads)
                 head.PrepareFrame(frame, elapsedTime, xnaTileTranslation);
 
@@ -130,10 +127,6 @@ namespace ORTS
             float SemaphoreTarget;
             float SemaphoreSpeed;
             float SemaphoreInfo;
-
-            // LastState and DisplayState defined as int, not as SignalHead.SIGASP
-
-            int LastState = -1;
             int DisplayState = -1;
 
             public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead,
@@ -161,40 +154,32 @@ namespace ORTS
                     SignalTypeData = SignalTypes[mstsSignalType.Name] = new SignalTypeData(viewer, mstsSignalType);
 
 #if DEBUG_SIGNAL_SHAPES
-				Console.Write("  HEAD type={0,-8} lights={1,-2} aspects={2,-2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Aspects.Count);
+				Console.Write("  HEAD type={0,-8} lights={1,-2}", SignalTypeData.Type, SignalTypeData.Lights.Count);
 #endif
-
-
             }
 
             public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
             {
-
-                // Next lines : changed to process draw_state instead of state
-                // Use of DrawAspects instead of Aspects (see below for details)
-
-                if (LastState != SignalHead.draw_state)
+                if (DisplayState != SignalHead.draw_state)
                 {
 #if DEBUG_SIGNAL_SHAPES
 					Console.WriteLine(String.Format("{5} {0} signal {1} unit {2} state: {3} --> {4}",
-							       	SignalShape.Location, SignalShape.UID, Index, LastState,
-							       	SignalHead.state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
+                        SignalShape.Location, SignalShape.UID, Index, DisplayState,
+                        SignalHead.draw_state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime)));
 #endif
-                    LastState = SignalHead.draw_state;
-                    DisplayState = LastState;
+                    DisplayState = SignalHead.draw_state;
                     if (SignalTypeData.DrawAspects.ContainsKey(DisplayState))
                     {
                         SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
                         SemaphoreSpeed = SemaphoreTarget > SemaphorePos ? +1 : -1;
                     }
                 }
+
                 CumulativeTime += elapsedTime.ClockSeconds;
                 while (CumulativeTime > SignalTypeData.FlashTimeTotal)
                     CumulativeTime -= SignalTypeData.FlashTimeTotal;
 
-
                 if (DisplayState < 0 || !SignalTypeData.DrawAspects.ContainsKey(DisplayState))
-
                     return;
 
                 if (SignalTypeData.Semaphore)
@@ -256,10 +241,7 @@ namespace ORTS
             public readonly SignalTypeDataType Type;
             public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
             public readonly List<bool> LightsSemaphoreChange = new List<bool>();
-
-            // DrawAspects replaces Aspects : dictionary of SignalAspectData with int as key instead of string
             public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
-
             public readonly float FlashTimeOn;
             public readonly float FlashTimeTotal;
             public readonly bool Semaphore;
