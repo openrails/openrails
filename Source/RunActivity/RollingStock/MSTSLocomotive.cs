@@ -529,6 +529,8 @@ namespace ORTS
                 {
                     float maxForceN = MaxForceN * t;
                     float maxPowerW = MaxPowerW * t * t;
+                    if (!this.Simulator.UseAdvancedAdhesion)
+                        currentWheelSpeedMpS = currentSpeedMpS;
                     if (maxForceN * currentWheelSpeedMpS > maxPowerW)
                         maxForceN = maxPowerW / currentWheelSpeedMpS;
                     if (currentSpeedMpS > MaxSpeedMpS)
