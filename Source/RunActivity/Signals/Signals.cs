@@ -1494,6 +1494,7 @@ namespace ORTS
                     sta.AppendFormat("|block_state|{0}\r\n", blockState);
                     sta.AppendFormat("|block_state()|{0}\r\n", block_state());
                     sta.AppendFormat("|this_sig_lr()|{0}\r\n", this_sig_lr(SignalHead.SIGFN.NORMAL));
+                    sta.AppendFormat("|nextSignal|{0}\r\n", nextSignal);
 
                     foreach (SignalHead sh in SignalHeads)
                     {
@@ -1549,7 +1550,12 @@ namespace ORTS
                 public BLOCKSTATE block_state()
                 {
                     int trainId = Dispatcher.Reservations[trackNode];
-
+                    
+                    if (Program.Simulator.Activity == null && nextSignal == -1)
+                    {
+                        return BLOCKSTATE.JN_OBSTRUCTED;
+                    }
+                    
                     if (trainId >= 0)
                     {
                         
@@ -1573,23 +1579,23 @@ namespace ORTS
 
                         // More logic to allow enter into straight area
                         int nextreservid = -2;
-                        int nextSignal = GetNextSignal();
+                        int nextSig = nextSignal;
                         int nextNode = -2;
                         int nextnextNode = -2;
                         int nextheads = 0;
 
-                        if (nextSignal > 0)
+                        if (nextSig > 0)
                         {
-                            SignalObject nextSignalObject = signalObjects[nextSignal];
+                            SignalObject nextSignalObject = signalObjects[nextSig];
                             nextheads = nextSignalObject.SignalHeads.Count;
 
                             nextNode = nextSignalObject.trackNode;
                             nextreservid = Dispatcher.Reservations[nextNode];
 
-                            nextSignal = nextSignalObject.GetNextSignal();
-                            if (nextSignal > 0)
+                            nextSig = nextSignalObject.GetNextSignal();
+                            if (nextSig > 0)
                             {
-                                nextSignalObject = signalObjects[nextSignal];
+                                nextSignalObject = signalObjects[nextSig];
                                 nextnextNode = nextSignalObject.trackNode;
                             }
                         }
@@ -1798,6 +1804,10 @@ namespace ORTS
                                 }
                             }
                         }
+                        else
+                        {
+                            prevnode = node = 0;
+                        }
                     }
                     catch (Exception error)
                     {
@@ -1951,6 +1961,7 @@ namespace ORTS
                 public bool route_set (int req_mainnode)
                 {
                     bool rs;
+
                         int thisreservid = Dispatcher.Reservations[trackNode];
                         int nextreservid = Dispatcher.Reservations[req_mainnode];
 
@@ -1959,12 +1970,11 @@ namespace ORTS
                         int ctn = this.trackNode;
                         int ptn = -1;
                         int dir = revDir;
-                        while (ctn != ptn && ctn != nextNode)
+                        while (ctn != ptn && ctn != req_mainnode)
                         {
-                            ptn = ctn;
                             NextNode(ref ctn, ref dir, ref ptn);
                         }
-                        rs |= (ctn == nextNode);
+                        rs |= (ctn == req_mainnode);
 
                         return rs;
                 }
@@ -2002,7 +2012,7 @@ namespace ORTS
 
                                 int nextreservid = -2;
                                 int nextSignal = GetNextSignal();
-                                int nextNode = -2;
+                                nextNode = -2;
 
                                 if (nextSignal > 0)
                                 {
@@ -2015,48 +2025,54 @@ namespace ORTS
 
   // set enabled
 
-                                int thisreservid = Dispatcher.Reservations[trackNode];
-                                if (thisreservid >= 0)
+                                if (Program.Simulator.Activity == null)
                                 {
-                                        // By GeorgeS
-                                        if (nextreservid < -1)
-                                        {
-                                                enabled = true;
-                                        }
-                                        else
-                                        {
-                                                enabled = (thisreservid == nextreservid || trackNode == signalObjects[nextSignal].trackNode);
-                                            
-                                                if (!enabled)
-                                                {
-                                                    int trainId = Dispatcher.Reservations[trackNode];
-
-                                                    if (trainId >= 0)
-                                                    {
-                                                        int ctn = this.trackNode;
-                                                        int ptn = -1;
-                                                        int dir = revDir;
-                                                        while (ctn != ptn && ctn != nextNode)
-                                                        {
-                                                            NextNode(ref ctn, ref dir, ref ptn);
-                                                        }
-                                                        enabled = ctn == nextNode;
-                                                        
-                                                        //if (!enabled)
-                                                        //{
-                                                        //    enabled = Train.IsUnderObserving(thisRef);
-                                                        //}
-                                                        
-                                                    }
-                                                }
-                                            
-                                        }
+                                    enabled = true;
                                 }
                                 else
                                 {
-                                        enabled = false;
-                                }
+                                    int thisreservid = Dispatcher.Reservations[trackNode];
+                                    if (thisreservid >= 0)
+                                    {
+                                        // By GeorgeS
+                                        if (nextreservid < -1)
+                                        {
+                                            enabled = true;
+                                        }
+                                        else
+                                        {
+                                            enabled = (thisreservid == nextreservid || trackNode == signalObjects[nextSignal].trackNode);
 
+                                            if (!enabled)
+                                            {
+                                                int trainId = Dispatcher.Reservations[trackNode];
+
+                                                if (trainId >= 0)
+                                                {
+                                                    int ctn = this.trackNode;
+                                                    int ptn = -1;
+                                                    int dir = revDir;
+                                                    while (ctn != ptn && ctn != nextNode)
+                                                    {
+                                                        NextNode(ref ctn, ref dir, ref ptn);
+                                                    }
+                                                    enabled = ctn == nextNode;
+
+                                                    //if (!enabled)
+                                                    //{
+                                                    //    enabled = Train.IsUnderObserving(thisRef);
+                                                    //}
+
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        enabled = false;
+                                    }
+                                }
   // update all heads
 
                                 foreach (SignalHead sigHead in SignalHeads)
@@ -2382,6 +2398,7 @@ namespace ORTS
                     sta.AppendFormat("||JunctionMainNode|{0}\r\n", JunctionMainNode);
                     sta.AppendFormat("||JunctionPath|{0}\r\n", JunctionPath);
                     sta.AppendFormat("||route_set()|{0}\r\n", route_set());
+                    sta.AppendFormat("||next_sig_lr()|{0}\r\n", next_sig_lr(SIGFN.NORMAL));
                     sta.AppendFormat("||state|{0}\r\n", this.state);
                     sta.AppendLine();
                 }

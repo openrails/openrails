@@ -445,6 +445,7 @@ namespace ORTS
             if (nextSignal != null)
             {
                 int sigid = nextSignal.nextSigRef;
+                
                 sta.AppendFormat("|NextSigRef|{0}\r\n", sigid);
                 if (sigid > -1)
                 {
@@ -460,7 +461,7 @@ namespace ORTS
                     }
                 }
                 sta.AppendLine();
-
+                
                 sigid = nextSignal.prevSigRef; 
                 sta.AppendFormat("|PrevSigRef|{0}\r\n", sigid);
                 if (sigid > -1)

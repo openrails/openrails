@@ -47,7 +47,9 @@ namespace ORTS
                 }
             foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
                 StartQueue.Add(kvp.Value.StartTime, kvp.Value);
-            Simulator.PlayerPath.AlignInitSwitches(Simulator.Trains[0].dRearTDBTraveller, 0, Simulator.Trains[0].Length + 20);
+
+            float distance = simulator.Activity != null ? Simulator.Trains[0].Length + 20 : float.MaxValue;
+            Simulator.PlayerPath.AlignInitSwitches(Simulator.Trains[0].dRearTDBTraveller, 0, distance);
         }
 
         // restore game state

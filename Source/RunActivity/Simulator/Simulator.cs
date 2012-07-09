@@ -303,6 +303,10 @@ namespace ORTS
                    AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 				}
                 */
+                if (Program.Simulator.Activity == null)
+                {
+                    AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
+                }
             }
 
 			foreach (Train train in movingTrains)
