@@ -480,6 +480,31 @@ namespace ORTS
             
             base.Update(elapsedClockSeconds);
 
+#if INDIVIDUAL_CONTROL
+			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
+			if (MultiPlayer.MPManager.IsMultiPlayer() && this.Train.TrainType == Train.TRAINTYPE.REMOTE && this == Program.Simulator.PlayerLocomotive)
+			{
+				if (CutoffController.UpdateValue != 0.0 || BlowerController.UpdateValue != 0.0 || DamperController.UpdateValue != 0.0 || FiringRateController.UpdateValue != 0.0 || Injector1Controller.UpdateValue != 0.0 || Injector2Controller.UpdateValue != 0.0)
+				{
+					controlUpdated = true;
+				}
+				Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
+				if (Train.MUReverserPercent >= 0)
+					Train.MUDirection = Direction.Forward;
+				else
+					Train.MUDirection = Direction.Reverse;
+				return; //done, will go back and send the message to the remote train controller
+			}
+
+			if (MultiPlayer.MPManager.IsMultiPlayer() && this.notificationReceived == true)
+			{
+				Train.MUReverserPercent = CutoffController.CurrentValue * 100.0f;
+				if (Train.MUReverserPercent >= 0)
+					Train.MUDirection = Direction.Forward;
+				else
+					Train.MUDirection = Direction.Reverse;
+			}
+#endif 
             Variable1 = Math.Abs(SpeedMpS);   // Steam loco's seem to need this.
             Variable2 = 50;   // not sure what this ones for ie in an SMS file
 
@@ -779,6 +804,32 @@ namespace ORTS
             ManualFiring = !ManualFiring;
             Simulator.Confirmer.Confirm( CabControl.ManualFiring, ManualFiring ? CabSetting.On : CabSetting.Off );
         }
+
+		public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2)
+		{
+			CC = CutoffController.CurrentValue;
+			BC = BlowerController.CurrentValue;
+			DC = DamperController.CurrentValue;
+			FC = FiringRateController.CurrentValue;
+			I1 = Injector1Controller.CurrentValue;
+			I2 = Injector2Controller.CurrentValue;
+		}
+
+		public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2)
+		{
+			CutoffController.CurrentValue = CC;
+			CutoffController.UpdateValue = 0.0f;
+			BlowerController.CurrentValue = BC;
+			BlowerController.UpdateValue = 0.0f;
+			DamperController.CurrentValue = DC;
+			DamperController.UpdateValue = 0.0f;
+			FiringRateController.CurrentValue = FC;
+			FiringRateController.UpdateValue = 0.0f;
+			Injector1Controller.CurrentValue = I1;
+			Injector1Controller.UpdateValue = 0.0f;
+			Injector2Controller.CurrentValue = I2;
+			Injector2Controller.UpdateValue = 0.0f;
+		}
 
         /// <summary>
         /// Used when someone want to notify us of an event

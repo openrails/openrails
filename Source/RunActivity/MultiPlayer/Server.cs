@@ -52,10 +52,14 @@ namespace ORTS.MultiPlayer
 			if (ServerComm == null) Connection.Send(msg);
 			else
 			{
-				foreach (OnlinePlayer p in Players)
+				try
 				{
-					p.Send(msg);
+					foreach (OnlinePlayer p in Players)
+					{
+						p.Send(msg);
+					}
 				}
+				catch (Exception) { }
 			}
 		}
 	}

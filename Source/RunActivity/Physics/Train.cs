@@ -587,7 +587,7 @@ namespace ORTS
 						if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 5)
 						{
 
-							Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, this.RearTDBTraveller.Direction);
+							Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
 							/*
 							move = this.RearTDBTraveller.DistanceTo(Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], t.TileX, t.TileZ, t.X, t.Y, t.Z);
 							if (move > 0)
@@ -628,17 +628,39 @@ namespace ORTS
 					{
 						if (car.IsDriveable && car is MSTSWagon) (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
 						car.SpeedMpS = SpeedMpS;
+						if (car.Flipped) car.SpeedMpS = -car.SpeedMpS;
+#if INDIVIDUAL_CONTROL
+						if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
+						{
+							car.Update(elapsedClockSeconds);
+						}
+#endif
 					}
 				}
 				lastSpeedMps = SpeedMpS;
+				//Orient();
 				UpdateSignalState();
 				return;
 			}
+		
 			PropagateBrakePressure(elapsedClockSeconds);
 
 			foreach (TrainCar car in Cars)
 			{
 				car.MotiveForceN = 0;
+#if INDIVIDUAL_CONTROL
+				var canUpdate = true;
+				if (MPManager.IsMultiPlayer())
+				{
+					foreach (var p in MPManager.OnlineTrains.Players)
+					{
+						//if this car is a locomotive of another guy
+						if (car is MSTSLocomotive && car.CarID.StartsWith(p.Key)) canUpdate = false;
+					}
+				}
+				
+				if (canUpdate) 
+#endif
 				car.Update(elapsedClockSeconds);
 				car.TotalForceN = car.MotiveForceN + car.GravityForceN;
 				if (car.Flipped)
@@ -1094,7 +1116,7 @@ namespace ORTS
 
 		public void InitializeBrakes()
 		{
-            if( SpeedMpS != 0 ) {
+            if( Math.Abs(SpeedMpS) >= 0.01 ) {
                 if( Simulator.Confirmer != null ) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Warn( CabControl.InitializeBrakes, CabSetting.Warn );
                 return;
@@ -1754,10 +1776,10 @@ namespace ORTS
 		}
 
 		//used by remote train to update location based on message received
-		public int expectedTileX, expectedTileZ, expectedTracIndex, expectedDIr;
+		public int expectedTileX, expectedTileZ, expectedTracIndex, expectedDIr, expectedTDir;
 		public float expectedX, expectedZ, expectedTravelled;
 
-		public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir)
+		public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir, int tDir)
 		{
 			SpeedMpS = speed;
 			expectedTileX = tX;
@@ -1767,6 +1789,7 @@ namespace ORTS
 			expectedTravelled = eT;
 			expectedTracIndex = tni;
 			expectedDIr = dir;
+			expectedTDir = tDir;
 			updateMSGReceived = true;
 		}
 

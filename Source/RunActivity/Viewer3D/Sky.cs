@@ -154,12 +154,12 @@ namespace ORTS
 				overcast = MathHelper.Clamp(overcast + 0.005f, 0, 1);
 			if (UserInput.IsDown(UserCommands.DebugOvercastDecrease))
 				overcast = MathHelper.Clamp(overcast - 0.005f, 0, 1);
-			if (UserInput.IsDown(UserCommands.DebugClockForwards))
+			if (UserInput.IsDown(UserCommands.DebugClockForwards) && !MultiPlayer.MPManager.IsMultiPlayer()) //dosen't make sense in MP mode
 			{
 				Viewer.Simulator.ClockTime += 120; // Two-minute (120 second) increments
                 if (Viewer.World.Precipitation != null) Viewer.World.Precipitation.Reset();
 			}
-			if (UserInput.IsDown(UserCommands.DebugClockBackwards))
+			if (UserInput.IsDown(UserCommands.DebugClockBackwards) && !MultiPlayer.MPManager.IsMultiPlayer())
 			{
 				Viewer.Simulator.ClockTime -= 120;
                 if (Viewer.World.Precipitation != null) Viewer.World.Precipitation.Reset();

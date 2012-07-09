@@ -55,6 +55,7 @@ namespace ORTS.MultiPlayer
 
 		public void MoveUncoupledTrains(MSGMove move)
 		{
+			/*
 			if (uncoupledTrains != null && uncoupledTrains.Count > 0)
 			{
 				foreach (Train t in uncoupledTrains)
@@ -65,7 +66,7 @@ namespace ORTS.MultiPlayer
 						else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem("0xUC" + t.Number, t);
 					}
 				}
-			}
+			}*/
 		}
 		//handles singleton
 		private MPManager()
@@ -134,6 +135,13 @@ namespace ORTS.MultiPlayer
 				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train);
 				Program.Server.BroadCast(OnlineTrains.MoveTrains(move));
 				lastMoveTime = lastSendTime = newtime;
+
+#if INDIVIDUAL_CONTROL
+				if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
+				{
+					Program.Server.BroadCast((new MSGLocoInfo(Program.Simulator.PlayerLocomotive, GetUserName())).ToString());
+				}
+#endif
 			}
 			
 			//server updates switch
@@ -163,6 +171,13 @@ namespace ORTS.MultiPlayer
 					Program.Client.Send(move.ToString());
 					lastMoveTime = lastSendTime = newtime;
 				}
+#if INDIVIDUAL_CONTROL
+
+				if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
+				{
+					Program.Client.Send((new MSGLocoInfo(Program.Simulator.PlayerLocomotive, GetUserName())).ToString());
+				}
+#endif
 			}
 
 			//need to send a keep-alive message if have not sent one to the server for the last 30 seconds
@@ -177,6 +192,14 @@ namespace ORTS.MultiPlayer
 
 			//some trains are added/removed
 			HandleTrainList();
+
+			/* will have this in the future so that helpers can also control
+			//I am a helper, will see if I need to update throttle and dynamic brake
+			if (Program.Simulator.PlayerLocomotive.Train != null && Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) 
+			{
+
+			}
+			 * */
 		}
 
 		//check if it is in the server mode
@@ -255,8 +278,8 @@ namespace ORTS.MultiPlayer
 			{
 				foreach (var p in OnlineTrains.Players)
 				{
-					if (p.Value.Train == t1 && Program.Simulator.GameTime  - p.Value.CreatedTime < 120) { result = false; break; }
-					if (p.Value.Train == t2 && Program.Simulator.GameTime - p.Value.CreatedTime < 120) { result = false; break; }
+					if (p.Value.Train == t1 && Program.Simulator.GameTime  - p.Value.CreatedTime < 20) { result = false; break; }
+					if (p.Value.Train == t2 && Program.Simulator.GameTime - p.Value.CreatedTime < 20) { result = false; break; }
 				}
 			}
 			catch (Exception)
@@ -278,9 +301,9 @@ namespace ORTS.MultiPlayer
 			SortedList<double, string> users = new SortedList<double,string>();
 			try//the list of players may be changed during the following process
 			{
-				//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
-				//info += "\t" + MPManager.OnlineTrains.Players.Count;
-				//foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
+				foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
+				info += "\t" + MPManager.OnlineTrains.Players.Count;
+				foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
 				foreach (OnlinePlayer p in OnlineTrains.Players.Values)
 				{
 					if (p.Train == null) continue;

@@ -103,7 +103,7 @@ namespace ORTS.MultiPlayer
 						firstErrorTick = nowTicks;
 						errorCount = 1;
 					}
-					if (errorCount >= 10 && nowTicks - firstErrorTick < 100000000) //10 errors last 10 seconds
+					if (errorCount >= 10 && nowTicks - firstErrorTick < 10) //10 errors last 10 seconds
 					{
 						MSGMessage emsg = new MSGMessage(this.Username, "Error", "Too many errors received from you in a short period of time.");
 						MPManager.BroadCast(emsg.ToString());

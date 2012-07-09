@@ -172,7 +172,7 @@ namespace ORTS.MultiPlayer
 
 			if (train.Cars.Count == 0)
 			{
-				throw (new Exception("The train of player " + player.user + " is empty from"));
+				throw (new Exception("The train of player " + player.user + " is empty from "));
 			}
 
 			p.Username = player.user;

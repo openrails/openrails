@@ -485,16 +485,21 @@ namespace ORTS
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             var trainCars = GetCameraCars();
-            if (UserInput.IsPressed(UserCommands.CameraCarNext))
-                SetCameraCar(attachedCar == trainCars.First() ? attachedCar : trainCars[trainCars.IndexOf(attachedCar) - 1]);
-            else if (UserInput.IsPressed(UserCommands.CameraCarPrevious))
-                SetCameraCar(attachedCar == trainCars.Last() ? attachedCar : trainCars[trainCars.IndexOf(attachedCar) + 1]);
-            else if (UserInput.IsPressed(UserCommands.CameraCarFirst))
-                SetCameraCar(trainCars.First());
-            else if (UserInput.IsPressed(UserCommands.CameraCarLast))
-                SetCameraCar(trainCars.Last());
-            else
-                base.HandleUserInput(elapsedTime);
+			//with jump train now, it may be dangerous to move to the next train as it may just be uncoupled.
+			try
+			{
+				if (UserInput.IsPressed(UserCommands.CameraCarNext))
+					SetCameraCar(attachedCar == trainCars.First() ? attachedCar : trainCars[trainCars.IndexOf(attachedCar) - 1]);
+				else if (UserInput.IsPressed(UserCommands.CameraCarPrevious))
+					SetCameraCar(attachedCar == trainCars.Last() ? attachedCar : trainCars[trainCars.IndexOf(attachedCar) + 1]);
+				else if (UserInput.IsPressed(UserCommands.CameraCarFirst))
+					SetCameraCar(trainCars.First());
+				else if (UserInput.IsPressed(UserCommands.CameraCarLast))
+					SetCameraCar(trainCars.Last());
+				else
+					base.HandleUserInput(elapsedTime);
+			}
+			catch (Exception) { }
         }
         
         private void FixCameraLocation()
