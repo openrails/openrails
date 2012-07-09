@@ -837,6 +837,26 @@ namespace ORTS
                     var lightModelConfiguration = sFile.shape.light_model_cfgs[vertexState.LightCfgIdx];
                     var options = SceneryMaterialOptions.None;
 
+                    // Validate hierarchy position.
+                    var hierarchyIndex = vertexState.imatrix;
+                    while (hierarchyIndex != -1)
+                    {
+                        if (hierarchyIndex < 0 || hierarchyIndex >= hierarchy.Length)
+                        {
+                            var hierarchyList = new List<int>();
+                            hierarchyIndex = vertexState.imatrix;
+                            while (hierarchyIndex >= 0 && hierarchyIndex < hierarchy.Length)
+                            {
+                                hierarchyList.Add(hierarchyIndex);
+                                hierarchyIndex = hierarchy[hierarchyIndex];
+                            }
+                            hierarchyList.Add(hierarchyIndex);
+                            Trace.TraceWarning("Ignored invalid primitive hierarchy {1} in shape {0}", sharedShape.FilePath, String.Join(" ", hierarchyList.Select(hi => hi.ToString()).ToArray()));
+                            break;
+                        }
+                        hierarchyIndex = hierarchy[hierarchyIndex];
+                    }
+
                     if (lightModelConfiguration.uv_ops.Count > 0)
                         if (lightModelConfiguration.uv_ops[0].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[0].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
                             options |= UVTextureAddressModeMap[lightModelConfiguration.uv_ops[0].TexAddrMode - 1];
@@ -1051,7 +1071,7 @@ namespace ORTS
                     {
                         var xnaMatrix = Matrix.Identity;
                         var hi = shapePrimitive.HierarchyIndex;
-                        while (hi != -1 && shapePrimitive.Hierarchy[hi] != -1)
+                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length && shapePrimitive.Hierarchy[hi] != -1)
                         {
                             Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
                             hi = shapePrimitive.Hierarchy[hi];
