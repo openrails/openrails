@@ -303,7 +303,7 @@ namespace ORTS
                    AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 				}
                 */
-                if (Program.Simulator.Activity == null)
+				if (Program.Simulator.Activity == null || MultiPlayer.MPManager.IsMultiPlayer())
                 {
                     AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
                 }

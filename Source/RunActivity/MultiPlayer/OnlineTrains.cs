@@ -131,9 +131,24 @@ namespace ORTS.MultiPlayer
 			}
 			int direction = player.dir;
 			train.travelled = player.Travelled;
+
+			/*
+			PATFile patFile = new PATFile(p.path);
+			// This is the position of the back end of the train in the database.
+			PATTraveller patTraveller = new PATTraveller(p.path);
+			AIPath aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
+			*/
 			try
 			{
 				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
+				/*
+				aiPath.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
+				//aiPath.AlignAllSwitches();
+
+				// figure out if the next waypoint is forward or back
+				patTraveller.NextWaypoint();
+				if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
+					train.RearTDBTraveller.ReverseDirection();*/
 			}
 			catch (Exception e)
 			{
@@ -180,11 +195,10 @@ namespace ORTS.MultiPlayer
 			train.InitializeBrakes();
 			train.InitializeSignals(false);
 			train.CheckFreight();
-			train.LeadLocomotive = null;
-			train.LeadNextLocomotive();
 			foreach (var car in train.Cars) {
 				if (car.CarID == p.LeadingLocomotiveID) train.LeadLocomotive = car;
 			}
+			if (train.LeadLocomotive == null) train.LeadNextLocomotive();
 			p.Train = train;
 			MPManager.Instance().AddOrRemoveTrain(train, true);
 

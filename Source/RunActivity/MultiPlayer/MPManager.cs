@@ -55,7 +55,6 @@ namespace ORTS.MultiPlayer
 
 		public void MoveUncoupledTrains(MSGMove move)
 		{
-			/*
 			if (uncoupledTrains != null && uncoupledTrains.Count > 0)
 			{
 				foreach (Train t in uncoupledTrains)
@@ -66,7 +65,7 @@ namespace ORTS.MultiPlayer
 						else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem("0xUC" + t.Number, t);
 					}
 				}
-			}*/
+			}
 		}
 		//handles singleton
 		private MPManager()
@@ -164,7 +163,7 @@ namespace ORTS.MultiPlayer
 					if (Math.Abs(t.SpeedMpS) > 0.001) move.AddNewItem(MultiPlayer.MPManager.GetUserName(), t);
 					else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem(MultiPlayer.MPManager.GetUserName(), t);
 				}
-				MoveUncoupledTrains(move); //if there are uncoupled trains
+				//MoveUncoupledTrains(move); //if there are uncoupled trains
 				//if there are messages to send
 				if (move.OKtoSend())
 				{
@@ -278,8 +277,8 @@ namespace ORTS.MultiPlayer
 			{
 				foreach (var p in OnlineTrains.Players)
 				{
-					if (p.Value.Train == t1 && Program.Simulator.GameTime  - p.Value.CreatedTime < 20) { result = false; break; }
-					if (p.Value.Train == t2 && Program.Simulator.GameTime - p.Value.CreatedTime < 20) { result = false; break; }
+					if (p.Value.Train == t1 && Program.Simulator.GameTime  - p.Value.CreatedTime < 120) { result = false; break; }
+					if (p.Value.Train == t2 && Program.Simulator.GameTime - p.Value.CreatedTime < 120) { result = false; break; }
 				}
 			}
 			catch (Exception)
@@ -301,9 +300,9 @@ namespace ORTS.MultiPlayer
 			SortedList<double, string> users = new SortedList<double,string>();
 			try//the list of players may be changed during the following process
 			{
-				foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
-				info += "\t" + MPManager.OnlineTrains.Players.Count;
-				foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
+				//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
+				//info += "\t" + MPManager.OnlineTrains.Players.Count;
+				//foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
 				foreach (OnlinePlayer p in OnlineTrains.Players.Values)
 				{
 					if (p.Train == null) continue;

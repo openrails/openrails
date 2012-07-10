@@ -653,7 +653,6 @@ namespace ORTS.MultiPlayer
 			Train train = null; 
 			train = new Train(Program.Simulator);
 			train.Number = this.TrainNum;
-			if (MPManager.Instance().AddOrRemoveTrain(train, true) == false) return; //add train, but failed
 
 			train.TrainType = Train.TRAINTYPE.REMOTE;
 			int consistDirection = direction;
@@ -691,6 +690,7 @@ namespace ORTS.MultiPlayer
 			train.CheckFreight();
 
 			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
+			if (MPManager.Instance().AddOrRemoveTrain(train, true) == false) return; //add train, but failed
 		}
 
 		public override string ToString()
@@ -830,7 +830,7 @@ namespace ORTS.MultiPlayer
 				if (!found)
 				{
 					//not found, create new train
-					train1 = new Train(Program.Simulator); train1.Number = this.TrainNum; MPManager.Instance().AddOrRemoveTrain(train1, true);
+					train1 = new Train(Program.Simulator); train1.Number = this.TrainNum; 
 				}
 			}
 			if (found)
@@ -903,6 +903,7 @@ namespace ORTS.MultiPlayer
 			train1.CheckFreight();
 
 			if (train1.Cars[0] is MSTSLocomotive) train1.LeadLocomotive = train1.Cars[0];
+			MPManager.Instance().AddOrRemoveTrain(train1, true);
 		}
 
 		public override string ToString()
@@ -1799,7 +1800,6 @@ namespace ORTS.MultiPlayer
 				}
 
 				train2.InitializeSignals(false);
-				MPManager.Instance().AddOrRemoveTrain(train2, true);
 				train.UncoupledFrom = train2;
 				train2.UncoupledFrom = train;
 
@@ -1812,11 +1812,13 @@ namespace ORTS.MultiPlayer
 
 				//if (whichIsPlayer == 0 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train;
 				//else if (whichIsPlayer == 1 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train2; //the player may need to update the train it drives
+				MPManager.Instance().AddOrRemoveTrain(train2, true);
 
 				if (MPManager.IsServer())
 				{
 					this.newTrainNumber = train2.Number;//we got a new train number, will tell others.
 					this.oldTrainNumber = train.Number;
+					train2.LastReportedSpeed = 1;
 					MPManager.BroadCast(this.ToString());//if server receives this, will tell others, including whoever sent the information
 				}
 				else
