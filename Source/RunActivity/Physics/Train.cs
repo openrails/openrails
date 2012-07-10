@@ -496,6 +496,8 @@ namespace ORTS
             {
                 if (Cars[i].IsDriveable)
                 {
+					//in multiplayer, only wants to change locomotive starts with my name (i.e. original settings of my locomotives)
+					if (MPManager.IsMultiPlayer() && !Cars[i].CarID.StartsWith(MPManager.GetUserName() + " ")) continue;
                     // Count the driveables
                     coud++;
 
@@ -640,7 +642,7 @@ namespace ORTS
 				}
 				lastSpeedMps = SpeedMpS;
 				//Orient();
-				UpdateSignalState();
+				if (MPManager.IsServer()) UpdateSignalState();
 				return;
 			}
 		
@@ -1122,7 +1124,8 @@ namespace ORTS
                     Simulator.Confirmer.Warn( CabControl.InitializeBrakes, CabSetting.Warn );
                 return;
             }
-            if( Simulator.Confirmer != null ) // As Confirmer may not be created until after a restore.
+			if (Program.Simulator.PlayerLocomotive != null && this == Program.Simulator.PlayerLocomotive.Train)
+				if( Simulator.Confirmer != null ) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Confirm( CabControl.InitializeBrakes, CabSetting.Off );
 
 			float maxPressurePSI = 90;

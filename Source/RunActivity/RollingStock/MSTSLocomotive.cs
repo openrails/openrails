@@ -1323,7 +1323,8 @@ namespace ORTS
                 if( eventID == EventID.BellOff ) { Bell = false; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.Off ); break; }
                 if( eventID == EventID.HornOn ) { 
                     Horn = true;
-                    if( this is MSTSSteamLocomotive ) {
+					if (this != Program.Simulator.PlayerLocomotive) break;
+                    if( this is MSTSSteamLocomotive) {
                         Simulator.Confirmer.Confirm( CabControl.Whistle, CabSetting.On );
                     } else {
                         Simulator.Confirmer.Confirm( CabControl.Horn, CabSetting.On );
@@ -1332,6 +1333,7 @@ namespace ORTS
                 }
                 if( eventID == EventID.HornOff ) {
                     Horn = false;
+					if (this != Program.Simulator.PlayerLocomotive) break;
                     if( this is MSTSSteamLocomotive ) {
                         Simulator.Confirmer.Confirm( CabControl.Whistle, CabSetting.Off );
                     } else {
@@ -1341,8 +1343,8 @@ namespace ORTS
                 }
                 if( eventID == EventID.SanderOn ) { Sander = true; if (this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.On ); break; }
                 if( eventID == EventID.SanderOff ) { Sander = false; if( this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.Off ); break; }
-                if( eventID == EventID.WiperOn ) { Wiper = true; Simulator.Confirmer.Confirm( CabControl.Wipers, CabSetting.On ); break; }
-                if( eventID == EventID.WiperOff ) { Wiper = false; Simulator.Confirmer.Confirm( CabControl.Wipers, CabSetting.Off ); break; }
+				if (eventID == EventID.WiperOn) { Wiper = true; if (this == Program.Simulator.PlayerLocomotive) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
+				if (eventID == EventID.WiperOff) { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
                 
                 // <CJ Comment> The "H" key doesn't call these SignalEvents yet. </CJ Comment>
                 if( eventID == EventID.HeadlightOff ) { Headlight = 0; break; }

@@ -40,7 +40,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MSTS;
 using ORTS.Popups;
-
+using ORTS.MultiPlayer;
 namespace ORTS
 {
     public class Viewer3D
@@ -427,7 +427,7 @@ namespace ORTS
                 Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
                 PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
                 PlayerTrainLength = 0;
-				if (MultiPlayer.MPManager.IsMultiPlayer()) MultiPlayer.MPManager.LocoChange(Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive);
+				if (MPManager.IsMultiPlayer()) MPManager.LocoChange(Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive);
             }
 			
 			if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.IsAvailable) CabCamera.Activate();
@@ -445,7 +445,11 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.GameSwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);
             if (UserInput.IsPressed(UserCommands.GameSwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
             if (UserInput.IsPressed(UserCommands.DebugLocomotiveFlip)) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
-            if (UserInput.IsPressed(UserCommands.DebugResetSignal)) PlayerTrain.ResetSignal(true);
+			if (UserInput.IsPressed(UserCommands.DebugResetSignal))
+			{
+				if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) MPManager.Instance().RequestSignalReset();
+				else PlayerTrain.ResetSignal(true);
+			}
 			if (UserInput.IsPressed(UserCommands.ControlMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
 
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
@@ -520,7 +524,7 @@ namespace ORTS
         public void Stop()
         {
 			//the dispatcher viewer in MP mode is on, close it first, then wait for the next ESC
-			if (MultiPlayer.MPManager.IsMultiPlayer())
+			if (MPManager.IsMultiPlayer())
 			{
 				if (DebugViewerEnabled == true) { DebugViewerEnabled = false; return; }
 			}

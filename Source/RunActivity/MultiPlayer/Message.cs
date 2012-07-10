@@ -20,6 +20,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "LOCOINFO") return new MSGLocoInfo(m.Substring(index + 1));
 			else if (key == "ALIVE") return new MSGAlive(m.Substring(index + 1));
 			else if (key == "SWITCH") return new MSGSwitch(m.Substring(index + 1));
+			else if (key == "RESETSIGNAL") return new MSGResetSignal(m.Substring(index + 1));
 			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
 			else if (key == "REMOVETRAIN") return new MSGRemoveTrain(m.Substring(index + 1));
 			else if (key == "SERVER") return new MSGServer(m.Substring(index + 1));
@@ -476,13 +477,39 @@ namespace ORTS.MultiPlayer
 
 	#endregion MGSwitch
 
-	#region MSGSignal
-	public class MSGSignal : Message
+	#region MSGResetSignal
+	public class MSGResetSignal : Message
 	{
-		public SignalObject signal;
+		public string user;
+		public int TileX, TileZ, WorldID, Selection;
 
+		public MSGResetSignal(string m)
+		{
+			user = m.Trim();
+		}
+
+		public override string ToString()
+		{
+			string tmp = "RESETSIGNAL " + user;
+			//System.Console.WriteLine(tmp);
+			return "" + tmp.Length + ": " + tmp;
+		}
+
+		public override void HandleMsg()
+		{
+			if (MPManager.IsServer())
+			{
+				try
+				{
+					var t = MPManager.Instance().FindPlayerTrain(user);
+					if (t != null) t.ResetSignal(false);
+					MultiPlayer.MPManager.BroadCast((new MSGSignalStatus()).ToString());
+				}
+				catch (Exception) { }
+			}
+		}
 	}
-	#endregion MSGSignal
+	#endregion MSGResetSignal
 
 	#region MSGSwitchStatus
 	public class MSGSwitchStatus : Message

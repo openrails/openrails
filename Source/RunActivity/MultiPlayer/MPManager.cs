@@ -81,14 +81,6 @@ namespace ORTS.MultiPlayer
 			return localUser;
 		}
 
-		/// <summary>
-		/// Update. Determines what messages to send every some seconds
-		/// 1. every one second will send train location
-		/// 2. every 10 seconds will send switch status
-		/// 3. housekeeping (remove/add trains, remove players)
-		/// 4. it will also capture key stroke of horn, panto, wiper, bell, headlight etc.
-		/// </summary>
-
 		public void RequestControl()
 		{
 			try
@@ -114,6 +106,26 @@ namespace ORTS.MultiPlayer
 			catch (Exception)
 			{ }
 		}
+
+
+		public void RequestSignalReset()
+		{
+			try
+			{
+				if (IsServer())
+				{
+					return;
+				}
+				else //client, send request
+				{
+					MSGResetSignal msgctl = new MSGResetSignal(GetUserName());
+					SendToServer(msgctl.ToString());
+				}
+			}
+			catch (Exception)
+			{ }
+		}
+
 		/// <summary>
 		/// Update. Determines what messages to send every some seconds
 		/// 1. every one second will send train location
