@@ -3127,16 +3127,23 @@ namespace ORTS
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     {
                         float dynBrakePercent = (float)_Locomotive.Train.MUDynamicBrakePercent;
-                        int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
-                        int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
+                        if (_Locomotive.DynamicBrakeController != null)
+                        {
+                            int currentDynamicNotch = _Locomotive.DynamicBrakeController.CurrentNotch;
+                            int dynNotchCount = _Locomotive.DynamicBrakeController.NotchCount();
 
-                        if (dynBrakePercent == -1)
-                            break;
-                        else
-                            if (!_Locomotive.HasSmoothStruc)
-                                indx = currentDynamicNotch;
+                            if (dynBrakePercent == -1)
+                                break;
                             else
-                                indx = FromPercent(dynBrakePercent);
+                                if (!_Locomotive.HasSmoothStruc)
+                                    indx = currentDynamicNotch;
+                                else
+                                    indx = FromPercent(dynBrakePercent);
+                        }
+                        else
+                        {
+                            indx = FromPercent(dynBrakePercent);
+                        }
                         break;
                     }
 
