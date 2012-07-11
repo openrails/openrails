@@ -1559,12 +1559,20 @@ namespace ORTS
                     if (trainId >= 0)
                     {
                         
-                        Traveller traveller;
-                        if (trainId == 0)
-                            traveller = new Traveller(Program.Simulator.PlayerLocomotive.Train.dFrontTDBTraveller);
-                        else
+                        Traveller traveller=null;
+						if (trainId == 0)
+							traveller = new Traveller(Program.Simulator.PlayerLocomotive.Train.dFrontTDBTraveller);
+						else if (trainId > 100000)
+						{
+							foreach (var t in Program.Simulator.Trains)
+							{
+								if (t.Number == trainId - 100000) { traveller = new Traveller(t.dFrontTDBTraveller); break; }
+							}
+						}
+						else 
                             traveller = new Traveller(Program.Simulator.AI.AITrainDictionary[trainId].dFrontTDBTraveller);
 
+						if (traveller == null) return BLOCKSTATE.OCCUPIED;//hopefully this will not be the case
                         while (traveller.TrackNodeIndex != trackNode && traveller.NextSection()) ;
                         if (traveller.TrackNodeIndex != trackNode)
                         {

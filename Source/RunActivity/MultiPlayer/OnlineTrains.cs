@@ -199,9 +199,10 @@ namespace ORTS.MultiPlayer
 			{
 				if (train.Path != null)
 				{
-					train.TrackAuthority = new TrackAuthority(train, 0, 10, train.Path);
+					train.TrackAuthority = new TrackAuthority(train, train.Number + 100000, 10, train.Path);
 					Program.Simulator.AI.Dispatcher.TrackAuthorities.Add(train.TrackAuthority);
 					Program.Simulator.AI.Dispatcher.RequestAuth(train, true, 0);
+					train.Path.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
 				}
 				else train.TrackAuthority = null;
 			}

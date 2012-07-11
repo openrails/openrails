@@ -364,6 +364,14 @@ namespace ORTS.MultiPlayer
 					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
 					{
 						Program.Simulator.Trains.Remove(p.Train);
+						if (p.Train.TrackAuthority != null)
+						{
+							Program.Simulator.AI.Dispatcher.SetAuthorization(p.Train.TrackAuthority, null, null, 0);
+							Program.Simulator.AI.Dispatcher.Unreserve(p.Train.Number + 100000);
+							Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(p.Train.TrackAuthority);
+							p.Train.TrackAuthority = null;
+						}
+
 					}
 				}
 			}
@@ -425,6 +433,14 @@ namespace ORTS.MultiPlayer
 					foreach (var t in removedTrains)
 					{
 						Program.Simulator.Trains.Remove(t);
+						if (t.TrackAuthority != null)
+						{
+							Program.Simulator.AI.Dispatcher.SetAuthorization(t.TrackAuthority, null, null, 0);
+							Program.Simulator.AI.Dispatcher.Unreserve(t.Number + 100000);
+							Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(t.TrackAuthority);
+							t.TrackAuthority = null;
+						}
+
 					}
 					removedTrains.Clear();
 				}

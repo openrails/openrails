@@ -305,7 +305,7 @@ namespace ORTS.Debugging
 				  }
 
 			  }
-			  if (item.ItemType == TrItem.trItemType.trSIDING)
+			  if (item.ItemType == TrItem.trItemType.trSIDING || item.ItemType == TrItem.trItemType.trPLATFORM)
 			  {
 				  SidingItem s = item as SidingItem;
 
@@ -389,8 +389,8 @@ namespace ORTS.Debugging
             foreach (var line in segments)
             {
 
-               PointF scaledA = new PointF((line.A.X - minX - ViewWindow.X) * xScale, (line.A.Y - minY - ViewWindow.Y) * yScale);
-               PointF scaledB = new PointF((line.B.X - minX - ViewWindow.X) * xScale, (line.B.Y - minY - ViewWindow.Y) * yScale);
+				PointF scaledA = new PointF((line.A.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (line.A.Y - minY - ViewWindow.Y) * yScale);
+			   PointF scaledB = new PointF((line.B.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (line.B.Y - minY - ViewWindow.Y) * yScale);
 
 
                Pen p = grayPen;
@@ -418,7 +418,7 @@ namespace ORTS.Debugging
             {
                foreach (PointF sw in switches)
                {
-                  PointF scaledSw = new PointF((sw.X - minX - ViewWindow.X) * xScale, (sw.Y - minY - ViewWindow.Y) * yScale);
+				   PointF scaledSw = new PointF((sw.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (sw.Y - minY - ViewWindow.Y) * yScale);
 
                   g.FillEllipse(Brushes.Black, GetRect(scaledSw, 5f));
                }
@@ -428,7 +428,7 @@ namespace ORTS.Debugging
             {
                foreach (PointF b in buffers)
                {
-                  PointF scaledBuffer = new PointF((b.X - minX - ViewWindow.X) * xScale, (b.Y - minY - ViewWindow.Y) * yScale);
+				   PointF scaledBuffer = new PointF((b.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (b.Y - minY - ViewWindow.Y) * yScale);
 
                   g.FillRectangle(Brushes.Black, GetRect(scaledBuffer, 5f));
                }
@@ -438,7 +438,7 @@ namespace ORTS.Debugging
             {
                foreach (var s in signals)
                {
-                  PointF scaledSignal = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, (s.Location.Y - minY - ViewWindow.Y) * yScale);
+				   PointF scaledSignal = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale);
 
                   if (s.IsProceed)
                   {
@@ -457,7 +457,7 @@ namespace ORTS.Debugging
 				CleanVerticalCells();//clean the drawing area for text of sidings
 				foreach (var s in sidings)
 				{
-					PointF scaledSiding = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, (s.Location.Y - minY - ViewWindow.Y) * yScale);
+					PointF scaledSiding = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale);
 					scaledSiding.Y = DetermineSidingLocation(scaledSiding.X, scaledSiding.Y, s.Name);
 					if (scaledSiding.Y >= 0f) //if we need to draw the siding names
 					{
@@ -485,7 +485,7 @@ namespace ORTS.Debugging
 					   worldPos.TileX * 2048 + worldPos.Location.X,
 					   worldPos.TileZ * 2048 + worldPos.Location.Z);
 
-					PointF trainLocation = new PointF((PlayerLocation.X - minX - ViewWindow.X) * xScale, (PlayerLocation.Y - minY - ViewWindow.Y) * yScale);
+					PointF trainLocation = new PointF((PlayerLocation.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (PlayerLocation.Y - minY - ViewWindow.Y) * yScale);
 
 					g.FillRectangle(Brushes.DarkGreen, GetRect(trainLocation, 15f));
 					trainLocation.Y -= 25;
@@ -791,7 +791,7 @@ namespace ORTS.Debugging
 			  int diffX = LastCursorPosition.X - e.X;
 			  int diffY = LastCursorPosition.Y - e.Y;
 
-			  ViewWindow.Offset(diffX * ScrollSpeedX/10, diffY * ScrollSpeedX/10);
+			  ViewWindow.Offset(diffX * ScrollSpeedX/10, -diffY * ScrollSpeedX/10);
 			  GenerateView();
 		  }
 		  else if (Zooming)

@@ -867,7 +867,7 @@ namespace ORTS
         /// <summary>
         /// Clears any existing Reservations for the specified train.
         /// </summary>
-        private void Unreserve(int trainID)
+        public void Unreserve(int trainID)
         {
             for (int i = 0; i < Reservations.Length; i++)
                 if (Reservations[i] == trainID)
