@@ -71,6 +71,9 @@ namespace ORTS
 		public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
 		public int RetainerPercent = 100;
 
+		public AIPath Path = null;
+		public TrackAuthority TrackAuthority = null;  // track authority issued by Dispatcher
+
 		public enum TRAINTYPE
 		{
 			PLAYER,
@@ -642,7 +645,11 @@ namespace ORTS
 				}
 				lastSpeedMps = SpeedMpS;
 				//Orient();
-				if (MPManager.IsServer()) UpdateSignalState();
+				if (MPManager.IsServer())
+				{
+					Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);
+					UpdateSignalState();
+				}
 				return;
 			}
 		
@@ -727,7 +734,6 @@ namespace ORTS
         private Direction _prevDirection = Direction.N;
         private void UpdateSignalState()
 		{
-
             ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
             bool listChanged = false;
             int lastSignalObjectRef = -1;

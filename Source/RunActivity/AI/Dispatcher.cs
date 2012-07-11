@@ -505,6 +505,19 @@ namespace ORTS
 
             return success;
         }
+
+		public bool RequestAuth(Train train, bool update, int x)
+		{
+			if (train.TrackAuthority == null)
+			{
+				//train.TrackAuthority = new TrackAuthority(train, train.Number, 10, train.Path);
+				//TrackAuthorities.Add(train.TrackAuthority);
+				return false;
+			}
+			bool success = RequestAuth(train.TrackAuthority, update, train.AITrainDirectionForward);
+
+			return success;
+		}
         private bool RequestAuth(TrackAuthority auth, bool update, bool movingForward)
         {
             return RequestAuth(auth, update, movingForward, false);

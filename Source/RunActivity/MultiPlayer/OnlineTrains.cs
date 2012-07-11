@@ -132,23 +132,18 @@ namespace ORTS.MultiPlayer
 			int direction = player.dir;
 			train.travelled = player.Travelled;
 
-			/*
-			PATFile patFile = new PATFile(p.path);
-			// This is the position of the back end of the train in the database.
-			PATTraveller patTraveller = new PATTraveller(p.path);
-			AIPath aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
-			*/
+
+			try
+			{
+				PATFile patFile = new PATFile(p.path);
+				AIPath aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
+
+				train.Path = aiPath;
+			}
+			catch (Exception) { train.Path = null; MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
 			try
 			{
 				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
-				/*
-				aiPath.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
-				//aiPath.AlignAllSwitches();
-
-				// figure out if the next waypoint is forward or back
-				patTraveller.NextWaypoint();
-				if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
-					train.RearTDBTraveller.ReverseDirection();*/
 			}
 			catch (Exception e)
 			{
@@ -200,6 +195,16 @@ namespace ORTS.MultiPlayer
 			}
 			if (train.LeadLocomotive == null) train.LeadNextLocomotive();
 			p.Train = train;
+			if (MPManager.IsServer())
+			{
+				if (train.Path != null)
+				{
+					train.TrackAuthority = new TrackAuthority(train, 0, 10, train.Path);
+					Program.Simulator.AI.Dispatcher.TrackAuthorities.Add(train.TrackAuthority);
+					Program.Simulator.AI.Dispatcher.RequestAuth(train, true, 0);
+				}
+				else train.TrackAuthority = null;
+			}
 			MPManager.Instance().AddOrRemoveTrain(train, true);
 
 		}

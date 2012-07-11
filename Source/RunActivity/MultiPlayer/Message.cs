@@ -187,8 +187,15 @@ namespace ORTS.MultiPlayer
 	}
 	#endregion MSGMove
 
+	#region MSGRequired
+	public class MSGRequired : Message
+	{
+
+	}
+	#endregion
+
 	#region MSGPlayer
-	public class MSGPlayer : Message
+	public class MSGPlayer : MSGRequired
 	{
 		public string user = "";
 		public string code = "";
@@ -1008,7 +1015,7 @@ namespace ORTS.MultiPlayer
 	#endregion MSGRemoveTrain
 
 	#region MSGServer
-	public class MSGServer : MSGPlayer
+	public class MSGServer : MSGRequired
 	{
 		public MSGServer(string m)
 		{
@@ -1105,18 +1112,18 @@ namespace ORTS.MultiPlayer
 
 	#region MSGMessage
 	//message to add new train from either a string (received message), or a Train (building a message)
-	public class MSGMessage : Message
+	public class MSGMessage : MSGRequired
 	{
 		string msgx;
 		string level;
 		string user; 
 		public MSGMessage(string m)
 		{
-			m.Trim();
 			string[] t = m.Split('\t');
-			user = t[0];
-			level = t[1];
+			user = t[0].Trim();
+			level = t[1].Trim();
 			msgx = t[2];
+
 		}
 
 		public MSGMessage(string u, string l, string m)
@@ -1132,8 +1139,8 @@ namespace ORTS.MultiPlayer
 			if (MPManager.GetUserName() == user)
 			{
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Message(level, msgx + " will be in single mode");
-				else { System.Console.WriteLine(level + ": " + msgx + ", will be in single mode"); }
+					Program.Simulator.Confirmer.Message(level, msgx);
+				System.Console.WriteLine(level + ": " + msgx); 
 				if (level == "Error" && !MPManager.IsServer())//if is a client, fatal error, will close the connection, and get into single mode
 				{
 					MPManager.Notify((new MSGQuit(MPManager.GetUserName())).ToString());//to be nice, still send a quit before close the connection

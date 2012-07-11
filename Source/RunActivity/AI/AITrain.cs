@@ -23,7 +23,6 @@ namespace ORTS
 	public class AITrain : Train
 	{
 		public int UiD;
-		public AIPath Path = null;
 		public AIPathNode NextStopNode = null;  // next path node train should stop at
 		public float AuthUpdateDistanceM = 0;  // distance to next stop node to ask for longer authorization
 		public float NextStopDistanceM = 0;  // distance to next stop node
@@ -35,7 +34,6 @@ namespace ORTS
 		public double WaitUntil = 0;    // clock time to wait for before next update
 		public int StartTime;        // starting time, may be modified by dispatcher
 		public int Priority = 0;        // train priority, smaller value is higher priority
-		public TrackAuthority TrackAuthority = null;  // track authority issued by Dispatcher
 		public AI AI;
 		public List<AISwitchInfo> SwitchList = new List<AISwitchInfo>();
 

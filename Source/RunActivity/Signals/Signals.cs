@@ -2025,7 +2025,7 @@ namespace ORTS
 
   // set enabled
 
-                                if (Program.Simulator.Activity == null)
+                                if (Program.Simulator.Activity == null && !MultiPlayer.MPManager.IsServer())
                                 {
                                     enabled = true;
                                 }

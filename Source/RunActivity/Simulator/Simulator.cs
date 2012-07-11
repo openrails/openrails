@@ -180,6 +180,13 @@ namespace ORTS
             LevelCrossings = new LevelCrossings(this);
             InterlockingSystem = new InterlockingSystem(this);
             AI = new AI(this);
+			if (MPManager.IsServer() && Activity == null)
+			{
+				this.Trains[0].TrackAuthority = new TrackAuthority(this.Trains[0], 0, 10, this.Trains[0].Path);
+				AI.Dispatcher.TrackAuthorities.Add(this.Trains[0].TrackAuthority);
+				AI.Dispatcher.RequestAuth(this.Trains[0], true, 0);
+			}
+
 		}
 
 		public void Stop()
@@ -693,6 +700,8 @@ namespace ORTS
             PlayerPath = aiPath;
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
 
+			train.Path = aiPath;
+
             aiPath.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
             //aiPath.AlignAllSwitches();
 
@@ -752,6 +761,7 @@ namespace ORTS
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
             InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
+
         }
 
 
