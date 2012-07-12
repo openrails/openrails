@@ -427,7 +427,30 @@ namespace ORTS
             Simulator.AI.Dispatcher.ExtendPlayerAuthorization(force);
         }
 
-        private Heap<Action> dumps = new Heap<Action>();
+		//
+		//  This method is invoked whenever the train direction has changed or 'G' key pressed 
+		//
+		public void ResetSignal()
+		{
+			ObjectItemInfo ob;
+			bool force = SignalObjectItems != null &&
+				(ob = (SignalObjectItems.Where(o => o.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL).FirstOrDefault())) != null &&
+				ob.ObjectDetails.hasPermission == Signal.PERMISSION.GRANTED;
+
+			nextSignal.Reset(dFrontTDBTraveller, false);
+			nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
+			spad = false;
+
+			// Clear and recreate full signal list
+
+			int sigtotal = SignalObjectItems.Count;
+			SignalObjectItems.RemoveRange(0, sigtotal);
+
+			InitializeSignals(true);
+			Simulator.AI.Dispatcher.ExtendTrainAuthorization(this, force);
+		}
+		
+		private Heap<Action> dumps = new Heap<Action>();
         private double lastclocktime = -1;
         private void CheckDump()
         {

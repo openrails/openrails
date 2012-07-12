@@ -702,7 +702,7 @@ namespace ORTS
 
 			train.Path = aiPath;
 
-            aiPath.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
+			aiPath.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
             //aiPath.AlignAllSwitches();
 
 			// figure out if the next waypoint is forward or back

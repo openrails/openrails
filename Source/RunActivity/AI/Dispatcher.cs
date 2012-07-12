@@ -420,7 +420,23 @@ namespace ORTS
                 auth.CalcStopDistance();
             }
         }
-        public void ReleasePlayerAuthorization()
+
+		public void ExtendTrainAuthorization(Train t, bool force)
+		{
+			if (TrackAuthorities.Count == 0)
+				return;
+
+			TrackAuthority auth = null;
+			foreach(var a in TrackAuthorities) {
+				if (a.TrainID == t.Number + 100000) { auth = a; break; }
+			}
+			if (auth == null) return;
+			auth.Train = t;
+			if (!RequestAuth(auth, true, !auth.Train.Reverse, force))
+				return;
+		}
+		
+		public void ReleasePlayerAuthorization()
         {
             if (TrackAuthorities.Count == 0)
                 return;

@@ -413,6 +413,7 @@ namespace ORTS.MultiPlayer
 				MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
 				throw new MultiPlayerError();
 			}
+
 			MPManager.OnlineTrains.AddPlayers(this, p);
 			//System.Console.WriteLine(this.ToString());
 			MSGSwitchStatus msg2 = new MSGSwitchStatus();
@@ -509,7 +510,7 @@ namespace ORTS.MultiPlayer
 				try
 				{
 					var t = MPManager.Instance().FindPlayerTrain(user);
-					if (t != null) t.ResetSignal(false);
+					if (t != null) t.ResetSignal();
 					MultiPlayer.MPManager.BroadCast((new MSGSignalStatus()).ToString());
 				}
 				catch (Exception) { }
@@ -519,7 +520,7 @@ namespace ORTS.MultiPlayer
 	#endregion MSGResetSignal
 
 	#region MSGSwitchStatus
-	public class MSGSwitchStatus : Message
+	public class MSGSwitchStatus : MSGRequired
 	{
 		static SortedList<uint, TrJunctionNode> SwitchState;
 		string msgx = "";
@@ -577,13 +578,13 @@ namespace ORTS.MultiPlayer
 		{
 			if (MPManager.IsServer() ) return; //server will ignore it
 
+
 			int i = 0;
 			foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
 			{
 				t.Value.SelectedRoute = msgx[i] - 48; //ASCII code 48 is 0
 				i++;
 			}
-			//System.Console.WriteLine(msg);
 
 		}
 
