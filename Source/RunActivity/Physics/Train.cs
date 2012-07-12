@@ -446,7 +446,6 @@ namespace ORTS
 			int sigtotal = SignalObjectItems.Count;
 			SignalObjectItems.RemoveRange(0, sigtotal);
 
-			InitializeSignals(true);
 			Simulator.AI.Dispatcher.ExtendTrainAuthorization(this, force);
 		}
 		

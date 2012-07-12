@@ -431,9 +431,11 @@ namespace ORTS
 				if (a.TrainID == t.Number + 100000) { auth = a; break; }
 			}
 			if (auth == null) return;
+
 			auth.Train = t;
-			if (!RequestAuth(auth, true, !auth.Train.Reverse, force))
-				return;
+			RequestAuth(auth, true, !auth.Train.Reverse);
+			t.InitializeSignals(true);
+
 		}
 		
 		public void ReleasePlayerAuthorization()

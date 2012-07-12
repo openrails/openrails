@@ -547,7 +547,7 @@ namespace ORTS.Debugging
 			  }
 			  if (conflict == false) //no conflict
 			  {
-				  if (alignedTextNum[position] > alignedTextY[position].Length) return -1f;
+				  if (alignedTextNum[position] >= alignedTextY[position].Length) return -1f;
 				  alignedTextY[position][alignedTextNum[position]].X = startX;
 				  alignedTextY[position][alignedTextNum[position]].Y = endX;//add info for the text (i.e. start and end location)
 				  alignedTextNum[position]++;
