@@ -25,7 +25,7 @@ namespace ORTS.MultiPlayer
 	class MPManager
 	{
 		double lastMoveTime = 0.0f;
-		double lastSwitchTime = 0.0f;
+		public double lastSwitchTime = 0.0f;
 		double lastSendTime = 0.0f;
 		string metric = "";
 		double metricbase = 1.0f;
@@ -66,6 +66,14 @@ namespace ORTS.MultiPlayer
 					}
 				}
 			}
+		}
+
+		public string OriginalSwitchState = "";
+
+		public void RememberOriginalSwitchState()
+		{
+			MSGSwitchStatus msg = new MSGSwitchStatus();
+			OriginalSwitchState = msg.msgx;
 		}
 		//handles singleton
 		private MPManager()

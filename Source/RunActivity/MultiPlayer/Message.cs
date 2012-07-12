@@ -14,14 +14,15 @@ namespace ORTS.MultiPlayer
 			int index = m.IndexOf(' ');
 			string key = m.Substring(0, index);
 			if (key == "MOVE") return new MSGMove(m.Substring(index + 1));
-			else if (key == "PLAYER") return new MSGPlayer(m.Substring(index + 1));
 			else if (key == "SWITCHSTATES") return new MSGSwitchStatus(m.Substring(index + 1));
 			else if (key == "SIGNALSTATES") return new MSGSignalStatus(m.Substring(index + 1));
 			else if (key == "LOCOINFO") return new MSGLocoInfo(m.Substring(index + 1));
 			else if (key == "ALIVE") return new MSGAlive(m.Substring(index + 1));
+			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
+			else if (key == "PLAYER") return new MSGPlayer(m.Substring(index + 1));
+			else if (key == "ORGSWITCH") return new MSGOrgSwitch(m.Substring(index + 1));
 			else if (key == "SWITCH") return new MSGSwitch(m.Substring(index + 1));
 			else if (key == "RESETSIGNAL") return new MSGResetSignal(m.Substring(index + 1));
-			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
 			else if (key == "REMOVETRAIN") return new MSGRemoveTrain(m.Substring(index + 1));
 			else if (key == "SERVER") return new MSGServer(m.Substring(index + 1));
 			else if (key == "MESSAGE") return new MSGMessage(m.Substring(index + 1));
@@ -372,8 +373,8 @@ namespace ORTS.MultiPlayer
 				//System.Console.WriteLine(this.ToString());
 				if (MPManager.IsServer())// && Program.Server.IsRemoteServer())
 				{
-					MSGSwitchStatus msg2 = new MSGSwitchStatus();
-					MPManager.BroadCast(msg2.ToString());
+					MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
+					MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 
 					MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
 						Program.Simulator.PlayerLocomotive.Train.Number);
@@ -385,7 +386,6 @@ namespace ORTS.MultiPlayer
 						if (MPManager.Instance().FindPlayerTrain(t)) continue;
 						MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 					}
-					//System.Console.WriteLine(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
 
 				}
 				else //client needs to handle environment
@@ -416,8 +416,8 @@ namespace ORTS.MultiPlayer
 
 			MPManager.OnlineTrains.AddPlayers(this, p);
 			//System.Console.WriteLine(this.ToString());
-			MSGSwitchStatus msg2 = new MSGSwitchStatus();
-			MPManager.BroadCast(msg2.ToString());
+			MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
+			MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 
 			MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
 				Program.Simulator.PlayerLocomotive.Train.Number);
@@ -519,11 +519,67 @@ namespace ORTS.MultiPlayer
 	}
 	#endregion MSGResetSignal
 
+	#region MSGOrgSwitch
+	public class MSGOrgSwitch : MSGRequired
+	{
+		SortedList<uint, TrJunctionNode> SwitchState;
+		public string msgx = "";
+		string user = "";
+
+		public MSGOrgSwitch(string u, string m)
+		{
+			user = u; msgx = m;
+		}
+
+		public MSGOrgSwitch(string m)
+		{
+			string[] tmp = m.Split('\t');
+			user = tmp[0].Trim();
+			
+			msgx = tmp[1];
+		}
+
+		public override void HandleMsg() //only client will get message, thus will set states
+		{
+			if (MPManager.IsServer() || user != MPManager.GetUserName()) return; //server will ignore it
+			uint key = 0;
+			SwitchState = new SortedList<uint, TrJunctionNode>();
+			try
+			{
+				foreach (TrackNode t in Program.Simulator.TDB.TrackDB.TrackNodes)
+				{
+					if (t != null && t.TrJunctionNode != null)
+					{
+						key = t.Index;
+						SwitchState.Add(key, t.TrJunctionNode);
+					}
+				}
+			}
+			catch (Exception e) { SwitchState = null; throw e; } //if error, clean the list and wait for the next signal
+
+
+			int i = 0;
+			foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
+			{
+				t.Value.SelectedRoute = msgx[i] - 48; //ASCII code 48 is 0
+				i++;
+			}
+
+		}
+
+		public override string ToString()
+		{
+			string tmp = "ORGSWITCH " + user + "\t" + msgx;
+			return "" + tmp.Length + ": " + tmp;
+		}
+	}
+	#endregion MSGOrgSwitch
+
 	#region MSGSwitchStatus
-	public class MSGSwitchStatus : MSGRequired
+	public class MSGSwitchStatus : Message
 	{
 		static SortedList<uint, TrJunctionNode> SwitchState;
-		string msgx = "";
+		public string msgx = "";
 
 		public MSGSwitchStatus()
 		{
@@ -576,7 +632,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg() //only client will get message, thus will set states
 		{
-			if (MPManager.IsServer() ) return; //server will ignore it
+			if (MPManager.IsServer()) return; //server will ignore it
 
 
 			int i = 0;
@@ -595,7 +651,6 @@ namespace ORTS.MultiPlayer
 		}
 	}
 	#endregion MSGSwitchStatus
-
 	#region MSGTrain
 	//message to add new train from either a string (received message), or a Train (building a message)
 	public class MSGTrain : Message

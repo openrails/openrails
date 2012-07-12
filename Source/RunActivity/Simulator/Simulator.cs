@@ -180,11 +180,15 @@ namespace ORTS
             LevelCrossings = new LevelCrossings(this);
             InterlockingSystem = new InterlockingSystem(this);
             AI = new AI(this);
-			if (MPManager.IsServer() && Activity == null)
+			if (MPManager.IsServer())
 			{
-				this.Trains[0].TrackAuthority = new TrackAuthority(this.Trains[0], 0, 10, this.Trains[0].Path);
-				AI.Dispatcher.TrackAuthorities.Add(this.Trains[0].TrackAuthority);
-				AI.Dispatcher.RequestAuth(this.Trains[0], true, 0);
+				if (Activity == null)
+				{
+					this.Trains[0].TrackAuthority = new TrackAuthority(this.Trains[0], 0, 10, this.Trains[0].Path);
+					AI.Dispatcher.TrackAuthorities.Add(this.Trains[0].TrackAuthority);
+					AI.Dispatcher.RequestAuth(this.Trains[0], true, 0);
+				}
+				MPManager.Instance().RememberOriginalSwitchState();
 			}
 
 		}
