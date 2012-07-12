@@ -29,10 +29,10 @@ namespace ORTS.MultiPlayer
 			try
 			{
 				NetworkStream clientStream = Client.GetStream();
-				byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
 
 				lock (lockObj)//lock the buffer in case two threads want to write at once
 				{
+					byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
 					clientStream.Write(buffer, 0, buffer.Length);
 					clientStream.Flush();
 				}
@@ -103,19 +103,19 @@ namespace ORTS.MultiPlayer
 						firstErrorTick = nowTicks;
 						errorCount = 1;
 					}
-					if (errorCount >= 10 && nowTicks - firstErrorTick < 10) //10 errors last 10 seconds
+					if (errorCount >= 5 && nowTicks - firstErrorTick < 10) //5 errors last 10 seconds
 					{
 						MSGMessage emsg = new MSGMessage(this.Username, "Error", "Too many errors received from you in a short period of time.");
 						MPManager.BroadCast(emsg.ToString());
 						break;
 					}
-					else if (errorCount < 10) { errorCount++; }
+					else if (errorCount < 5) { errorCount++; }
 					else { firstErrorTick = nowTicks; errorCount = 0; }
 					//System.Console.WriteLine(e.Message + info);
 				}
 			}
 
-			System.Console.WriteLine(this.Username + "quit");
+			System.Console.WriteLine(this.Username + " quit");
 			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Info:", this.Username + " quit.");
 			Client.Close();
 			MPManager.Instance().AddRemovedPlayer(this);//add this player to be removed

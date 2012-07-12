@@ -110,7 +110,7 @@ namespace ORTS.Popups
             vbox.AddHorizontalSeparator();
             {
                 var hbox = vbox.AddLayoutHorizontal(16);
-                hbox.Add(new Label(hbox.RemainingWidth , hbox.RemainingHeight, " Dist    Speed Aspect"));
+                hbox.Add(new Label(hbox.RemainingWidth , hbox.RemainingHeight, " Dist      Speed   Aspect"));
                 hbox.Add(ListHead = new Label(hbox.RemainingWidth, hbox.RemainingHeight, "", LabelAlignment.Right));
             }
 

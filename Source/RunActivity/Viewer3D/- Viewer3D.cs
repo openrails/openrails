@@ -345,19 +345,19 @@ namespace ORTS
                 AboveGroundCamera = Camera;
                 CabCamera.Activate();
             }
-            else if (AboveGroundCamera != null)
-            {
-                // Make sure to keep the old camera updated...
-                AboveGroundCamera.Update(elapsedTime);
-                // ...so we can tell when to come back to it.
-                if (!AboveGroundCamera.IsUnderground)
-                {
-                    // But only if the user hasn't selected another camera!
-                    if (Camera == CabCamera)
-                        AboveGroundCamera.Activate();
-                    AboveGroundCamera = null;
-                }
-            }
+			else if (AboveGroundCamera != null && Camera.AttachedCar.Train == Simulator.PlayerLocomotive.Train)
+			{
+				// Make sure to keep the old camera updated...
+				AboveGroundCamera.Update(elapsedTime);
+				// ...so we can tell when to come back to it.
+				if (!AboveGroundCamera.IsUnderground)
+				{
+					// But only if the user hasn't selected another camera!
+					if (Camera == CabCamera)
+						AboveGroundCamera.Activate();
+					AboveGroundCamera = null;
+				}
+			}
 
             World.Update(elapsedTime);
 

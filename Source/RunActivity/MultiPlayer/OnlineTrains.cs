@@ -193,7 +193,12 @@ namespace ORTS.MultiPlayer
 			foreach (var car in train.Cars) {
 				if (car.CarID == p.LeadingLocomotiveID) train.LeadLocomotive = car;
 			}
-			if (train.LeadLocomotive == null) train.LeadNextLocomotive();
+			if (train.LeadLocomotive == null)
+			{
+				train.LeadNextLocomotive();
+				if (train.LeadLocomotive != null) p.LeadingLocomotiveID = train.LeadLocomotive.CarID;
+				else p.LeadingLocomotiveID = "NA";
+			}
 			p.Train = train;
 			if (MPManager.IsServer())
 			{

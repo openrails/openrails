@@ -39,10 +39,14 @@ namespace ORTS
                 var newCars = new Dictionary<TrainCar, TrainCarViewer>();
                 foreach (var car in visibleCars)
                 {
-                    if (cars.ContainsKey(car))
-                        newCars.Add(car, cars[car]);
-                    else
-                        newCars.Add(car, LoadCar(car));
+					try
+					{
+						if (cars.ContainsKey(car))
+							newCars.Add(car, cars[car]);
+						else
+							newCars.Add(car, LoadCar(car));
+					}
+					catch (Exception) { }
                 }
                 Cars = newCars;
             }

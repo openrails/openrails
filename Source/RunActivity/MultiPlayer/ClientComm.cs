@@ -123,13 +123,13 @@ namespace ORTS.MultiPlayer
 		private object lockObj = new object();
 		public void Send(string msg)
 		{
-			byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
 
 			try
 			{
 				NetworkStream clientStream = client.GetStream();
 				lock (lockObj)//in case two threads want to write at the same buffer
 				{
+					byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
 					clientStream.Write(buffer, 0, buffer.Length);
 					clientStream.Flush();
 				}
