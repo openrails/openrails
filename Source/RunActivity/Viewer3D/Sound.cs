@@ -1234,6 +1234,13 @@ namespace ORTS
         public override void  Initialize()
         {
  	        StartValue = 0;
+            if ((new Variable_Trigger.Events[] { Variable_Trigger.Events.Variable1_Dec_Past,
+                Variable_Trigger.Events.Variable1_Inc_Past, Variable_Trigger.Events.Variable2_Dec_Past, 
+                Variable_Trigger.Events.Variable2_Inc_Past, Variable_Trigger.Events.Variable3_Dec_Past,
+                Variable_Trigger.Events.Variable3_Inc_Past}).Contains(SMS.Event) && SMS.Threshold >= 1)
+            {
+                SMS.Threshold /= 100f;
+            }
             IsBellow = StartValue < SMS.Threshold;
         }
 

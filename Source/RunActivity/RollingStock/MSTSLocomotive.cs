@@ -636,6 +636,7 @@ namespace ORTS
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
             //Variable2 = Math.Abs(WheelSpeedMpS);
+            Variable3 = DynamicBrakePercent / 100f;
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
@@ -1530,7 +1531,7 @@ namespace ORTS
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                 //case CABViewControlTypes.CP_HANDLE:
                     {
-                        data = DynamicBrakePercent;
+                        data = DynamicBrakePercent / 100f;
                         break;
                     }
                 case CABViewControlTypes.WIPERS:
