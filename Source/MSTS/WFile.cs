@@ -139,7 +139,7 @@ namespace MSTS
                 //some of the TokenID for binary W file:  309-->TelePole, 361-->Siding
                 case TokenID.CollideObject:
                 case TokenID.Static:
-                    Add(new AnimatedObj(subBlock, currentWatermark));
+                    Add(new StaticObj(subBlock, currentWatermark));
                     break;
                 case TokenID.TrackObj:
                     Add(new TrackObj(subBlock, currentWatermark));
@@ -174,12 +174,12 @@ namespace MSTS
                 case TokenID.Gantry:
                 case (TokenID)356:
                     // TODO: Add real handling for gantry objects.
-                    Add(new StaticObj(subBlock, currentWatermark));
+                    Add(new BaseObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Pickup:
                 case (TokenID)359:
                     // TODO: Add real handling for pickup objects.
-                    Add(new StaticObj(subBlock, currentWatermark));
+                    Add(new BaseObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Signal:
                     Add(new SignalObj(subBlock, currentWatermark));
@@ -204,9 +204,9 @@ namespace MSTS
     }
 
 
-    public class StaticObj : WorldObject
+    public class BaseObj : WorldObject
     {
-        public StaticObj(SBR block, int detailLevel)
+        public BaseObj(SBR block, int detailLevel)
         {
             //f.VerifyID(TokenID.Static); it could be CollideObject or Static object
 
@@ -234,9 +234,9 @@ namespace MSTS
         }
     }
 
-    public class AnimatedObj : StaticObj
+    public class StaticObj : BaseObj
     {
-        public AnimatedObj(SBR block, int detailLevel)
+        public StaticObj(SBR block, int detailLevel)
             : base(block, detailLevel)
         {
         }

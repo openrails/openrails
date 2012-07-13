@@ -194,6 +194,7 @@ namespace ORTS
                 }
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
+                var animated = (worldObject.StaticFlags & (uint)StaticFlag.Animate) != 0;
 
                 try
                 {
@@ -255,9 +256,12 @@ namespace ORTS
                     {
                         platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.AnimatedObj))
+                    else if (worldObject.GetType() == typeof(MSTS.StaticObj))
                     {
-                        sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                        if (animated)
+                            sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                        else
+                            sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                     }
                     else // It's some other type of object - not one of the above.
                     {
