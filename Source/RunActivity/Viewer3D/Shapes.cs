@@ -275,7 +275,7 @@ namespace ORTS
             {
                 // Compute the animation key based on framerate etc
                 // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                AnimationKey += ((float)SharedShape.Animations[0].FrameRate / 10f) * elapsedTime.ClockSeconds;
+                AnimationKey += (float)SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
                 while (AnimationKey >= SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
                 while (AnimationKey < -0.00001) AnimationKey += SharedShape.Animations[0].FrameCount;
 
