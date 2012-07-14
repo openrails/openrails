@@ -20,6 +20,14 @@ namespace ORTS
         public bool ResumeFromSavePressed;
         public string ActivitySaveFilename;
 
+        public bool IsMultiPlayer { get; set; }
+        public string Username { get; set; }    // 4 to 10 characters. Spaces " ' not allowed nor an initial digit.
+        public string MPCode = "1234";
+        public string IP { get; set; }          // E.g. 127.0.0.1  
+        public int PortNo { get; set; }         // E.g. 30000  0-65535
+        public bool IsClient { get; set; }
+        public bool IsMainFormOpen = false;
+
         bool Initialized;
 		List<Folder> Folders = new List<Folder>();
 		List<Route> Routes = new List<Route>();
@@ -65,6 +73,7 @@ namespace ORTS
                 if (Folders.Count == 0)
                     MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", Application.ProductName);
             }
+            IsMainFormOpen = true;
         }
 
 		void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -230,11 +239,20 @@ namespace ORTS
 			{
 				if (RK != null)
 				{
-					checkBoxWindowed.Checked = (int)RK.GetValue("Fullscreen", 0) == 1 ? false : true;
-					checkBoxWarnings.Checked = (int)RK.GetValue("Logging", 1) == 1 ? true : false;
+					// Registry stores strings which can be cast into integers but not into booleans,
+                    // so we convert to an integer, which if == 1, return true.
+                    checkBoxWarnings.Checked = ((int)RK.GetValue( "Logging", 1 ) == 1) ? true : false;
+                    // true : false reversed as Windowed is opposite of Fullscreen
+                    checkBoxWindowed.Checked = ((int)RK.GetValue( "Fullscreen", 0 ) == 1) ? false : true;
                     listBoxFoldersSelectedIndex = (int)RK.GetValue( "Folders", -1 );
                     listBoxRoutesSelectedIndex = (int)RK.GetValue( "Routes", -1 );
                     listBoxActivitiesSelectedIndex = (int)RK.GetValue( "Activities", -1 );
+                    cbMultiPlayer.Checked = ((int)RK.GetValue( "MultiPlayer+IsMultiPlayer", 0 ) == 1) ? true : false;
+                    // Get settings for MultiPlayer form
+                    Username = (string)RK.GetValue( "MultiPlayer+Username", Environment.UserName );
+                    IP = (string)RK.GetValue( "MultiPlayer+IP", "127.0.0.1" );
+                    PortNo = (int)RK.GetValue( "MultiPlayer+PortNo", 30000 );
+                    IsClient = ((int)RK.GetValue( "MultiPlayer+IsClient", 0 ) == 1) ? true : false;
                 }
 			}
 		}
@@ -246,11 +264,18 @@ namespace ORTS
 			{
 				if (RK != null)
 				{
-					RK.SetValue("Fullscreen", checkBoxWindowed.Checked ? 0 : 1);
+                    // Registry will not accept booleans, so use integers instead.
                     RK.SetValue("Logging", checkBoxWarnings.Checked ? 1 : 0);
+                    // 1 : 0 reversed as Windowed is opposite of Fullscreen
+                    RK.SetValue( "Fullscreen", checkBoxWindowed.Checked ? 0 : 1 );
                     RK.SetValue( "Folders", listBoxFolders.SelectedIndex );
                     RK.SetValue( "Routes", listBoxRoutes.SelectedIndex );
                     RK.SetValue( "Activities", listBoxActivities.SelectedIndex );
+                    RK.SetValue( "MultiPlayer+IsMultiPlayer", IsMultiPlayer ? 1 : 0 );
+                    RK.SetValue( "MultiPlayer+Username", Username );
+                    RK.SetValue( "MultiPlayer+IP", IP );
+                    RK.SetValue( "MultiPlayer+PortNo", PortNo );
+                    RK.SetValue( "MultiPlayer+IsClient", IsClient ? 1 : 0 );
                 }
 			}
 		}
@@ -372,6 +397,19 @@ namespace ORTS
         private void bTesting_Click( object sender, EventArgs e ) {
             using( TestingForm form = new TestingForm( this, SelectedRoute, SelectedActivity ) ) {
                 form.ShowDialog( this );
+            }
+        }
+
+        private void cbMultiPlayer_CheckedChanged( object sender, EventArgs e ) {
+            if( cbMultiPlayer.CheckState == CheckState.Checked 
+            && IsMainFormOpen ) {   // If this checkbox is pre-set, then the event fires when MainForm is opened.
+                                    // Without this flag, the MultiPlayer form will be opened immediately. 
+                IsMultiPlayer = true; // So can be seen from Program.Main()
+                using( MultiPlayer form = new MultiPlayer( this ) ) {
+                    form.ShowDialog( this );
+                }
+            } else {
+                IsMultiPlayer = false;
             }
         }
 	}

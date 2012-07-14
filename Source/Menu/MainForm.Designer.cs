@@ -41,8 +41,7 @@
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.buttonFolderRemove = new System.Windows.Forms.Button();
             this.checkBoxWarnings = new System.Windows.Forms.CheckBox();
-            this.buttonJoin = new System.Windows.Forms.Button();
-            this.checkBoxHost = new System.Windows.Forms.CheckBox();
+            this.cbMultiPlayer = new System.Windows.Forms.CheckBox();
             this.buttonOptions = new System.Windows.Forms.Button();
             this.buttonRouteDetails = new System.Windows.Forms.Button();
             this.buttonActivityDetails = new System.Windows.Forms.Button();
@@ -91,9 +90,10 @@
             this.checkBoxWindowed.AutoSize = true;
             this.checkBoxWindowed.Checked = true;
             this.checkBoxWindowed.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxWindowed.Font = new System.Drawing.Font( "Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
             this.checkBoxWindowed.Location = new System.Drawing.Point( 739, 453 );
             this.checkBoxWindowed.Name = "checkBoxWindowed";
-            this.checkBoxWindowed.Size = new System.Drawing.Size( 77, 17 );
+            this.checkBoxWindowed.Size = new System.Drawing.Size( 83, 17 );
             this.checkBoxWindowed.TabIndex = 10;
             this.checkBoxWindowed.Text = "Windowed";
             this.checkBoxWindowed.UseVisualStyleBackColor = true;
@@ -188,39 +188,31 @@
             this.checkBoxWarnings.AutoSize = true;
             this.checkBoxWarnings.Checked = true;
             this.checkBoxWarnings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWarnings.Location = new System.Drawing.Point( 577, 453 );
+            this.checkBoxWarnings.Font = new System.Drawing.Font( "Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
+            this.checkBoxWarnings.Location = new System.Drawing.Point( 665, 453 );
             this.checkBoxWarnings.Name = "checkBoxWarnings";
-            this.checkBoxWarnings.Size = new System.Drawing.Size( 64, 17 );
+            this.checkBoxWarnings.Size = new System.Drawing.Size( 69, 17 );
             this.checkBoxWarnings.TabIndex = 4;
             this.checkBoxWarnings.Text = "Logging";
             this.checkBoxWarnings.UseVisualStyleBackColor = true;
             // 
-            // buttonJoin
+            // cbMultiPlayer
             // 
-            this.buttonJoin.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonJoin.Enabled = false;
-            this.buttonJoin.Location = new System.Drawing.Point( 658, 418 );
-            this.buttonJoin.Name = "buttonJoin";
-            this.buttonJoin.Size = new System.Drawing.Size( 75, 23 );
-            this.buttonJoin.TabIndex = 9;
-            this.buttonJoin.Text = "Join";
-            // 
-            // checkBoxHost
-            // 
-            this.checkBoxHost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.checkBoxHost.AutoSize = true;
-            this.checkBoxHost.Enabled = false;
-            this.checkBoxHost.Location = new System.Drawing.Point( 658, 453 );
-            this.checkBoxHost.Name = "checkBoxHost";
-            this.checkBoxHost.Size = new System.Drawing.Size( 62, 17 );
-            this.checkBoxHost.TabIndex = 11;
-            this.checkBoxHost.Text = "Hosting";
-            this.checkBoxHost.UseVisualStyleBackColor = true;
+            this.cbMultiPlayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cbMultiPlayer.AutoSize = true;
+            this.cbMultiPlayer.Font = new System.Drawing.Font( "Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
+            this.cbMultiPlayer.Location = new System.Drawing.Point( 578, 453 );
+            this.cbMultiPlayer.Name = "cbMultiPlayer";
+            this.cbMultiPlayer.Size = new System.Drawing.Size( 87, 17 );
+            this.cbMultiPlayer.TabIndex = 11;
+            this.cbMultiPlayer.Text = "Multi-Player";
+            this.cbMultiPlayer.UseVisualStyleBackColor = true;
+            this.cbMultiPlayer.CheckedChanged += new System.EventHandler( this.cbMultiPlayer_CheckedChanged );
             // 
             // buttonOptions
             // 
             this.buttonOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonOptions.Location = new System.Drawing.Point( 577, 418 );
+            this.buttonOptions.Location = new System.Drawing.Point( 659, 418 );
             this.buttonOptions.Name = "buttonOptions";
             this.buttonOptions.Size = new System.Drawing.Size( 75, 23 );
             this.buttonOptions.TabIndex = 8;
@@ -338,7 +330,7 @@
             // bTesting
             // 
             this.bTesting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.bTesting.Location = new System.Drawing.Point( 496, 418 );
+            this.bTesting.Location = new System.Drawing.Point( 578, 418 );
             this.bTesting.Name = "bTesting";
             this.bTesting.Size = new System.Drawing.Size( 75, 23 );
             this.bTesting.TabIndex = 13;
@@ -361,9 +353,8 @@
             this.Controls.Add( this.labelLogo1 );
             this.Controls.Add( this.labelLogo2 );
             this.Controls.Add( this.buttonOptions );
-            this.Controls.Add( this.buttonJoin );
             this.Controls.Add( this.checkBoxWindowed );
-            this.Controls.Add( this.checkBoxHost );
+            this.Controls.Add( this.cbMultiPlayer );
             this.Controls.Add( this.buttonResume );
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject( "$this.Icon" )));
@@ -396,8 +387,7 @@
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
 		private System.Windows.Forms.Button buttonFolderRemove;
         private System.Windows.Forms.CheckBox checkBoxWarnings;
-        private System.Windows.Forms.Button buttonJoin;
-        private System.Windows.Forms.CheckBox checkBoxHost;
+        private System.Windows.Forms.CheckBox cbMultiPlayer;
         private System.Windows.Forms.Button buttonOptions;
         private System.Windows.Forms.Button buttonRouteDetails;
         private System.Windows.Forms.Button buttonActivityDetails;

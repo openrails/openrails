@@ -660,6 +660,22 @@ namespace ORTS
             }
             LogSeparator();
 
+            // Multiplayer is (currently) detected from the number of arguments passed to RunActivity.exe
+            //
+            //No of Args   Activity  Explore
+            //Single-Player   1         5
+            //      Server    3         7
+            //      Client    4         8
+            //
+            //Single-Player arguments for an activity:
+            //- Activity
+            //
+            //Server arguments for an activity:
+            //- Activity | PortNo | Username+MPCode
+            //
+            //Client arguments for an activity:
+            //- Activity | IP | PortNo | Username+MPCode
+
             Arguments = args;
             Simulator = new Simulator(settings, args[0]);
             if (args.Length == 1 || args.Length == 3 || args.Length == 4)
