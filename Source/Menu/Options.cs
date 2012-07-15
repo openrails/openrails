@@ -52,33 +52,32 @@ namespace ORTS
             this.comboBoxWindowSize.Text = "1024x768";
             this.numericBrakePipeChargingRatePSIpS.Value = 21;
 
-            
-
             // Restore retained settings
-            RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-            if (RK != null)
+            using (var RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey))
             {
-                this.numericWorldObjectDensity.Value = (int)RK.GetValue("WorldObjectDensity", (int)numericWorldObjectDensity.Value);
-                this.numericSoundDetailLevel.Value = (int)RK.GetValue("SoundDetailLevel", (int)numericSoundDetailLevel.Value);
-                this.comboBoxWindowSize.Text = (string)RK.GetValue("WindowSize", (string)comboBoxWindowSize.Text);
-                this.checkBoxAlerter.Checked = (1 == (int)RK.GetValue("Alerter", 0));
-                this.checkBoxTrainLights.Checked = (1 == (int)RK.GetValue("TrainLights", 0));
-                this.checkBoxPrecipitation.Checked = (1 == (int)RK.GetValue("Precipitation", 0));
-                this.checkBoxWire.Checked = (1 == (int)RK.GetValue("Wire", 0));
-                this.numericBrakePipeChargingRatePSIpS.Value = (int)RK.GetValue("BrakePipeChargingRate", (int)numericBrakePipeChargingRatePSIpS.Value);
-                this.checkBoxGraduatedRelease.Checked = (1 == (int)RK.GetValue("GraduatedRelease", 0));
-				this.checkBoxShadows.Checked = (1 == (int)RK.GetValue("DynamicShadows", 0));
-				this.checkBoxWindowGlass.Checked = (1 == (int)RK.GetValue("WindowGlass", 0));
-                this.checkBoxBINSound.Checked = (1 == (int)RK.GetValue("MSTSBINSound", 0));
-                this.checkBoxSuppressConfirmations.Checked = (1 == (int)RK.GetValue("SuppressConfirmations", 0));
+                if (RK != null)
+                {
+                    this.numericWorldObjectDensity.Value = (int)RK.GetValue("WorldObjectDensity", (int)numericWorldObjectDensity.Value);
+                    this.numericSoundDetailLevel.Value = (int)RK.GetValue("SoundDetailLevel", (int)numericSoundDetailLevel.Value);
+                    this.comboBoxWindowSize.Text = (string)RK.GetValue("WindowSize", (string)comboBoxWindowSize.Text);
+                    this.checkBoxAlerter.Checked = (1 == (int)RK.GetValue("Alerter", 0));
+                    this.checkBoxTrainLights.Checked = (1 == (int)RK.GetValue("TrainLights", 0));
+                    this.checkBoxPrecipitation.Checked = (1 == (int)RK.GetValue("Precipitation", 0));
+                    this.checkBoxWire.Checked = (1 == (int)RK.GetValue("Wire", 0));
+                    this.numericBrakePipeChargingRatePSIpS.Value = (int)RK.GetValue("BrakePipeChargingRate", (int)numericBrakePipeChargingRatePSIpS.Value);
+                    this.checkBoxGraduatedRelease.Checked = (1 == (int)RK.GetValue("GraduatedRelease", 0));
+                    this.checkBoxShadows.Checked = (1 == (int)RK.GetValue("DynamicShadows", 0));
+                    this.checkBoxWindowGlass.Checked = (1 == (int)RK.GetValue("WindowGlass", 0));
+                    this.checkBoxBINSound.Checked = (1 == (int)RK.GetValue("MSTSBINSound", 0));
+                    this.checkBoxSuppressConfirmations.Checked = (1 == (int)RK.GetValue("SuppressConfirmations", 0));
+                }
             }
         }
 
-        private void buttonOK_Click(object sender, EventArgs e)
+        void buttonOK_Click(object sender, EventArgs e)
         {
             // Retain settings for convenience
-            RegistryKey RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey);
-            if (RK != null)
+            using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
             {
                 RK.SetValue("WorldObjectDensity", (int)this.numericWorldObjectDensity.Value);
                 RK.SetValue("SoundDetailLevel", (int)this.numericSoundDetailLevel.Value);
@@ -92,14 +91,8 @@ namespace ORTS
                 RK.SetValue("DynamicShadows", this.checkBoxShadows.Checked ? 1 : 0);
                 RK.SetValue("WindowGlass", this.checkBoxWindowGlass.Checked ? 1 : 0);
                 RK.SetValue("MSTSBINSound", this.checkBoxBINSound.Checked ? 1 : 0);
-                RK.SetValue("SuppressConfirmations", this.checkBoxSuppressConfirmations.Checked ? 1 : 0 );
+                RK.SetValue("SuppressConfirmations", this.checkBoxSuppressConfirmations.Checked ? 1 : 0);
             }
-			Close();
-        }
-
-        private void buttonCancel_Click(object sender, EventArgs e)
-        {
-            Close();
         }
     }
 }

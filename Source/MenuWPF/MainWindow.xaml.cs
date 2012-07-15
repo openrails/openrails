@@ -172,15 +172,25 @@ namespace MenuWPF
             //Content = String.Format(Revision == "000" ? "{0} BUILD {2}" : "{0} V{1}", AppDomain.CurrentDomain.FriendlyName, Revision, Build);
             defaultImage = ((ImageBrush)this.Background).ImageSource;
             bgImage = ((ImageBrush)this.Background).ImageSource;
-            RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey);
-            if (RK != null && RK.GetValue("BackgroundImage", "") != null)
+
+            // Restore retained settings
+            using (var RK = Registry.CurrentUser.OpenSubKey(RegistryKey))
             {
-                if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
+                if (RK != null)
                 {
-                    bgImage = new BitmapImage(new Uri(RK.GetValue("BackgroundImage", "").ToString(), UriKind.Absolute));
-                    ((ImageBrush)this.Background).ImageSource = bgImage;
+                    if (RK.GetValue("BackgroundImage", "") != null)
+                    {
+                        if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
+                        {
+                            bgImage = new BitmapImage(new Uri(RK.GetValue("BackgroundImage", "").ToString(), UriKind.Absolute));
+                            ((ImageBrush)this.Background).ImageSource = bgImage;
+                        }
+                    }
+                    // TODO: Can't load values because the code makes flow decisions based on presence/absence of values!
+                    //textBox3.Text = (string)RK.GetValue("Multiplayer_User", Environment.UserName);
+                    //textBox2.Text = (string)RK.GetValue("Multiplayer_Host", "127.0.0.1");
+                    //textBox1.Text = ((int)RK.GetValue("Multiplayer_Port", (int)30000)).ToString();
                 }
-                RK.Close();
             }
             
             FolderDataFile = UserDataFolder + @"\" + FolderDataFileName;
@@ -257,8 +267,19 @@ namespace MenuWPF
 			}
 			else
 			{
-				MainStart(false);
+                // Retain settings for convenience
+                using (var RK = Registry.CurrentUser.CreateSubKey(RegistryKey))
+                {
+                    RK.SetValue("Multiplayer_User", textBox3.Text);
+                    RK.SetValue("Multiplayer_Host", textBox2.Text);
+                    try
+                    {
+                        RK.SetValue("Multiplayer_Port", int.Parse(textBox1.Text));
+                    }
+                    catch { }
+                }
 
+                MainStart(false);
 			}
 		}
 
@@ -491,12 +512,10 @@ namespace MenuWPF
 
         private void btnMenuStyle_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            using (RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey, true))
+            using (var RK = Registry.CurrentUser.CreateSubKey(RegistryKey))
             {
                 if (RK != null)
-                {
                     RK.SetValue("LauncherMenu", 1);
-                }
             }
             Process.Start(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory), "Menu.exe"));
             closedSwitch = true;
@@ -553,72 +572,57 @@ namespace MenuWPF
         {
             try
             {
-                string parameter;
-
+                var parameters = new List<string>();
                 if (resume)
                 {
-                    parameter = "-resume";
+                    parameters.Add("-resume");
+                    // TODO: Resume specific saves.
+                    //parameters.Add("\"" + Path.GetFileNameWithoutExtension(MainForm.SelectedSaveFile) + "\"");
                 }
                 else
                 {
-					if (SelectedActivity is ExploreActivity)
-					{
-						int hour = 10;
-						int mins = 0;
-						Regex reg = new Regex("^([0-1][0-9]|[2][0-3]):([0-5][0-9])$"); //Match a string format of HH:MM
-						if (reg.IsMatch(cboStartingTime.Text))
-						{
-							int.TryParse(cboStartingTime.Text.Trim().Substring(0, cboStartingTime.Text.Trim().IndexOf(':')), out hour);
-							int.TryParse(cboStartingTime.Text.Trim().Substring(cboStartingTime.Text.Trim().IndexOf(':') + 1), out mins);
-						}
-						else
-						{
-							MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-							return;
-						}
-						if (MPHost == true)
-						{
-							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, MPPort, MPUserName);
-						}
-						else if (MPIP != "")
-						{
-							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5} {6} {7} {8}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex, MPIP, MPPort, MPUserName);
-						}
-						else
-							parameter = String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex);
-					}
-					else
-					{
-						if (MPHost == true)
-						{
-							parameter = String.Format("\"{0}\"  {1} {2}", SelectedActivity.FileName, MPPort, MPUserName);
-						}
-						else if (MPIP != "")
-						{
-							parameter = String.Format("\"{0}\"  {1} {2} {3}", SelectedActivity.FileName, MPIP, MPPort, MPUserName);
-						}
+                    if (MPHost)
+                        parameters.Add("-multiplayerserver");
+                    else if (MPIP != "")
+                        parameters.Add("-multiplayerclient");
+                    else
+                        parameters.Add("-start");
 
-						else parameter = String.Format("\"{0}\"", SelectedActivity.FileName);
-					}
+                    if (SelectedActivity is ExploreActivity)
+                    {
+                        var hour = 10;
+                        var mins = 0;
+                        var reg = new Regex("^([0-1][0-9]|[2][0-3]):([0-5][0-9])$"); //Match a string format of HH:MM
+                        if (reg.IsMatch(cboStartingTime.Text))
+                        {
+                            int.TryParse(cboStartingTime.Text.Trim().Substring(0, cboStartingTime.Text.Trim().IndexOf(':')), out hour);
+                            int.TryParse(cboStartingTime.Text.Trim().Substring(cboStartingTime.Text.Trim().IndexOf(':') + 1), out mins);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid starting time", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                            return;
+                        }
+                        parameters.Add(String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", GetPathFileName(cboPath.SelectedItem.ToString(), cboHeading.SelectedItem.ToString()), SelectedFolder.Path + @"\trains\consists\" + ((CONFile)cboConsist.SelectedItem).FileName + ".con", hour, mins, cboSeason.SelectedIndex, cboWeather.SelectedIndex));
+                    }
+                    else
+                    {
+                        parameters.Add(String.Format("\"{0}\"", SelectedActivity.FileName));
+                    }
                 }
 
-                // find the RunActivity program, normally in the startup path, 
-                //  but while debugging it will be in an adjacent directory
-                string RunActivityFolder = AppDomain.CurrentDomain.BaseDirectory.ToLower();
+                // Find the RunActivity program, normally in the startup path, 
+                // but while debugging it will be in an adjacent directory.
+                var programFolder = AppDomain.CurrentDomain.BaseDirectory.ToLower();
 
-                System.Diagnostics.ProcessStartInfo objPSI = new System.Diagnostics.ProcessStartInfo();
-                objPSI.FileName = System.IO.Path.Combine(RunActivityFolder, RunActivityProgram);
-                objPSI.Arguments = parameter;
-                objPSI.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal; // or Hidden, Maximized or Normal 
-                objPSI.WorkingDirectory = RunActivityFolder;
+                var processStartInfo = new System.Diagnostics.ProcessStartInfo();
+                processStartInfo.FileName = System.IO.Path.Combine(programFolder, RunActivityProgram);
+                processStartInfo.Arguments = String.Join(" ", parameters.ToArray());
+                processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
+                processStartInfo.WorkingDirectory = programFolder;
 
-                System.Diagnostics.Process objProcess = System.Diagnostics.Process.Start(objPSI);
-
-                while (objProcess.HasExited == false)
-                    System.Threading.Thread.Sleep(100);
-
-                int retVal = objProcess.ExitCode;
-                
+                var process = Process.Start(processStartInfo);
+                process.WaitForExit();
             }
             catch (Exception error)
             {
@@ -674,8 +678,11 @@ namespace MenuWPF
         void CleanupPre021()
         {
             // Handle cleanup from pre version 0021
-            if (null != Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
-                Registry.CurrentUser.DeleteSubKeyTree("SOFTWARE\\ORTS");
+            using (var RK = Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
+            {
+                if (RK != null)
+                    Registry.CurrentUser.DeleteSubKeyTree("SOFTWARE\\ORTS");
+            }
 
             if (!File.Exists(FolderDataFile))
             {
@@ -697,13 +704,20 @@ namespace MenuWPF
 
         private void CheckBGImageChanged()
         {
-            RegistryKey RK = Registry.CurrentUser.OpenSubKey(RegistryKey);
-            if (RK.GetValue("BackgroundImage", "") != null)
+            using (var RK = Registry.CurrentUser.OpenSubKey(RegistryKey))
             {
-                if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
+                if (RK !=null && RK.GetValue("BackgroundImage", "") != null)
                 {
-                    bgImage = new BitmapImage(new Uri(RK.GetValue("BackgroundImage", "").ToString(), UriKind.Absolute));
-                    ((ImageBrush)this.Background).ImageSource = bgImage;
+                    if (System.IO.File.Exists(RK.GetValue("BackgroundImage", "").ToString()))
+                    {
+                        bgImage = new BitmapImage(new Uri(RK.GetValue("BackgroundImage", "").ToString(), UriKind.Absolute));
+                        ((ImageBrush)this.Background).ImageSource = bgImage;
+                    }
+                    else
+                    {
+                        bgImage = defaultImage;
+                        ((ImageBrush)this.Background).ImageSource = defaultImage;
+                    }
                 }
                 else
                 {
@@ -711,12 +725,6 @@ namespace MenuWPF
                     ((ImageBrush)this.Background).ImageSource = defaultImage;
                 }
             }
-            else
-            {
-                bgImage = defaultImage;
-                ((ImageBrush)this.Background).ImageSource = defaultImage;
-            }
-            RK.Close();
         }
         #endregion
 

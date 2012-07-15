@@ -14,9 +14,13 @@ using Microsoft.Win32;
 
 namespace ORTS
 {
-	public class UserSettings
-	{
-		readonly string RegistryKey;
+    public class DoNotSaveAttribute : Attribute
+    {
+    }
+
+    public class UserSettings
+    {
+        readonly string RegistryKey;
         readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
 
         enum Source
@@ -26,44 +30,58 @@ namespace ORTS
             Registry,
         }
 
-		#region User Settings
+        #region User Settings
 
-		// Please put all user settings in here as auto-properties. Public properties
-		// of type 'string', 'int' and 'bool' are automatically loaded/saved.
+        // Please put all user settings in here as auto-properties. Public properties
+        // of type 'string', 'int' and 'bool' are automatically loaded/saved.
 
+        // General settings.
         public bool Alerter { get; set; }
-		public int BrakePipeChargingRate { get; set; }
-		public bool DataLogger { get; set; }
-		public bool DynamicShadows { get; set; }
-		public bool FullScreen { get; set; }
-		public bool GraduatedRelease { get; set; }
+        public int BrakePipeChargingRate { get; set; }
+        public bool DataLogger { get; set; }
+        public bool DynamicShadows { get; set; }
+        public bool FullScreen { get; set; }
+        public bool GraduatedRelease { get; set; }
         public bool Logging { get; set; }
         public string LoggingFilename { get; set; }
         public string LoggingPath { get; set; }
         public bool MSTSBINSound { get; set; }
-		public bool Precipitation { get; set; }
-		public bool Profiling { get; set; }
+        public bool Precipitation { get; set; }
+        public bool Profiling { get; set; }
         public int ProfilingFrameCount { get; set; }
         public string ScreenshotPath { get; set; }
         public int ShaderModel { get; set; }
-		public bool ShadowAllShapes { get; set; }
-		public bool ShadowMapBlur { get; set; }
-		public int ShadowMapCount { get; set; }
-		public int ShadowMapDistance { get; set; }
-		public int ShadowMapResolution { get; set; }
+        public bool ShadowAllShapes { get; set; }
+        public bool ShadowMapBlur { get; set; }
+        public int ShadowMapCount { get; set; }
+        public int ShadowMapDistance { get; set; }
+        public int ShadowMapResolution { get; set; }
         public bool ShowErrorDialogs { get; set; }
-		public int SoundDetailLevel { get; set; }
+        public int SoundDetailLevel { get; set; }
         public bool SuppressConfirmations { get; set; }
         public bool TrainLights { get; set; }
         public bool UseAdvancedAdhesion { get; set; }
-		public bool VerticalSync { get; set; }
-		public int ViewingDistance { get; set; }
+        public bool VerticalSync { get; set; }
+        public int ViewingDistance { get; set; }
         public int ViewingFOV { get; set; }
-		public bool WindowGlass { get; set; }
-		public string WindowSize { get; set; }
-		public bool Wire { get; set; }
-		public int WorldObjectDensity { get; set; }
+        public bool WindowGlass { get; set; }
+        public string WindowSize { get; set; }
+        public bool Wire { get; set; }
+        public int WorldObjectDensity { get; set; }
 
+        // These two are command-line only flags to start multiplayer modes.
+        [DoNotSave]
+        public bool MultiplayerClient { get; set; }
+        [DoNotSave]
+        public bool MultiplayerServer { get; set; }
+
+        // Multiplayer settings.
+        public bool Multiplayer { get; set; }
+        public string Multiplayer_User { get; set; }
+        public string Multiplayer_Host { get; set; }
+        public int Multiplayer_Port { get; set; }
+
+        // Window position settings.
         public int[] WindowPosition_Compass { get; set; }
         public int[] WindowPosition_DriverAid { get; set; }
         public int[] WindowPosition_Help { get; set; }
@@ -73,14 +91,14 @@ namespace ORTS
         public int[] WindowPosition_TrainOperations { get; set; }
         public int[] WindowPosition_Activity { get; set; }
 
-		#endregion
+        #endregion
 
-		public UserSettings(string registryKey, IEnumerable<string> options)
-		{
-			RegistryKey = registryKey;
-			InitUserSettings();
-			LoadUserSettings(options);
-		}
+        public UserSettings(string registryKey, IEnumerable<string> options)
+        {
+            RegistryKey = registryKey;
+            InitUserSettings();
+            LoadUserSettings(options);
+        }
 
         void InitUserSettings()
         {
@@ -102,6 +120,10 @@ namespace ORTS
             WindowSize = "1024x768";
             WorldObjectDensity = 10;
 
+            Multiplayer_User = Environment.UserName;
+            Multiplayer_Host = "127.0.0.1";
+            Multiplayer_Port = 30000;
+
             WindowPosition_Compass = new[] { 50, 0 };
             WindowPosition_DriverAid = new[] { 100, 100 };
             WindowPosition_Help = new[] { 50, 50 };
@@ -113,69 +135,69 @@ namespace ORTS
         }
 
         void LoadUserSettings(IEnumerable<string> options)
-		{
-			// This special command-line option prevents the registry values from being used.
-			var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
-			// Pull apart the command-line options so we can find them by setting name.
-			var optionsDictionary = new Dictionary<string, string>();
-			foreach (var option in options)
-			{
-				var k = option.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant();
-				var v = option.Contains('=') || option.Contains(':') ? option.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes";
-				optionsDictionary[k] = v;
-			}
+        {
+            // This special command-line option prevents the registry values from being used.
+            var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
+            // Pull apart the command-line options so we can find them by setting name.
+            var optionsDictionary = new Dictionary<string, string>();
+            foreach (var option in options)
+            {
+                var k = option.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant();
+                var v = option.Contains('=') || option.Contains(':') ? option.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes";
+                optionsDictionary[k] = v;
+            }
 
-			RegistryKey RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey);
-			foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
-			{
-				// Get the default value.
-				var defValue = property.GetValue(this, null);
-				// Read in the registry option, if it exists.
-				var regValue = allowRegistryValues && RK != null ? RK.GetValue(property.Name, null) : null;
-				// Read in the command-line option, if it exists.
-				var propertyNameLower = property.Name.ToLowerInvariant();
-				var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
+            using (var RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey))
+            {
+                foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
+                {
+                    // Get the default value.
+                    var defValue = property.GetValue(this, null);
+                    // Read in the registry option, if it exists.
+                    var regValue = allowRegistryValues && RK != null ? RK.GetValue(property.Name, null) : null;
+                    // Read in the command-line option, if it exists.
+                    var propertyNameLower = property.Name.ToLowerInvariant();
+                    var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
 
-				// Map registry option for boolean types so 1 is true; everything else is false.
-				if ((regValue != null) && (regValue is int) && (property.PropertyType == typeof(bool)))
-					regValue = (int)regValue == 1;
+                    // Map registry option for boolean types so 1 is true; everything else is false.
+                    if ((regValue != null) && (regValue is int) && (property.PropertyType == typeof(bool)))
+                        regValue = (int)regValue == 1;
 
-                // Map registry option for int[] types.
-                else if ((regValue != null) && (regValue is string) && (property.PropertyType == typeof(int[])))
-                    regValue = ((string)regValue).Split(',').Select(s => int.Parse(s)).ToArray();
+                    // Map registry option for int[] types.
+                    else if ((regValue != null) && (regValue is string) && (property.PropertyType == typeof(int[])))
+                        regValue = ((string)regValue).Split(',').Select(s => int.Parse(s)).ToArray();
 
-                // Parse command-line option for boolean types so true/yes/on/1 are all true; everything else is false.
-				if ((optValue != null) && (property.PropertyType == typeof(bool)))
-					optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
+                    // Parse command-line option for boolean types so true/yes/on/1 are all true; everything else is false.
+                    if ((optValue != null) && (property.PropertyType == typeof(bool)))
+                        optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
 
-                // Parse command-line option for int types.
-                else if ((optValue != null) && (property.PropertyType == typeof(int)))
-                    optValue = int.Parse((string)optValue);
+                    // Parse command-line option for int types.
+                    else if ((optValue != null) && (property.PropertyType == typeof(int)))
+                        optValue = int.Parse((string)optValue);
 
-                // Parse command-line option for int[] types.
-                else if ((optValue != null) && (property.PropertyType == typeof(int[])))
-                    optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
+                    // Parse command-line option for int[] types.
+                    else if ((optValue != null) && (property.PropertyType == typeof(int[])))
+                        optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
 
-                var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
-				try
-				{
-                    // int[] values must have the same number of items as default value.
-                    if ((property.PropertyType == typeof(int[])) && (value != null) && ((int[])value).Length != ((int[])defValue).Length)
-                        throw new ArgumentException();
+                    var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
+                    try
+                    {
+                        // int[] values must have the same number of items as default value.
+                        if ((property.PropertyType == typeof(int[])) && (value != null) && ((int[])value).Length != ((int[])defValue).Length)
+                            throw new ArgumentException();
 
-					property.SetValue(this, value, new object[0]);
-                    Sources.Add(property.Name, value.Equals(defValue) ? Source.Default : optValue != null ? Source.CommandLine : regValue != null ? Source.Registry : Source.Default);
-				}
-				catch (ArgumentException)
-				{
-					Trace.TraceWarning("Unable to load {0} value from type {1}", property.Name, value.GetType().FullName);
-					value = defValue;
-                    Sources.Add(property.Name, Source.Default);
+                        property.SetValue(this, value, new object[0]);
+                        Sources.Add(property.Name, value.Equals(defValue) ? Source.Default : optValue != null ? Source.CommandLine : regValue != null ? Source.Registry : Source.Default);
+                    }
+                    catch (ArgumentException)
+                    {
+                        Trace.TraceWarning("Unable to load {0} value from type {1}", property.Name, value.GetType().FullName);
+                        value = defValue;
+                        Sources.Add(property.Name, Source.Default);
+                    }
                 }
             }
-			if (RK != null)
-				RK.Close();
-		}
+        }
 
         public void Log()
         {
@@ -197,29 +219,34 @@ namespace ORTS
 
         public void Save(string name)
         {
-			RegistryKey RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey);
-            foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
+            using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
             {
-                if ((name != null) && (property.Name != name))
-                    continue;
+                foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
+                {
+                    if ((name != null) && (property.Name != name))
+                        continue;
 
-                var value = property.GetValue(this, null);
+                    if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length > 0)
+                        continue;
 
-                if (property.PropertyType == typeof(string))
-                {
-                    RK.SetValue(property.Name, value, RegistryValueKind.String);
-                }
-                else if (property.PropertyType == typeof(int))
-                {
-                    RK.SetValue(property.Name, value, RegistryValueKind.DWord);
-                }
-                else if (property.PropertyType == typeof(bool))
-                {
-                    RK.SetValue(property.Name, (bool)value ? 1 : 0, RegistryValueKind.DWord);
-                }
-                else if (property.PropertyType == typeof(int[]))
-                {
-                    RK.SetValue(property.Name, String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray()), RegistryValueKind.String);
+                    var value = property.GetValue(this, null);
+
+                    if (property.PropertyType == typeof(string))
+                    {
+                        RK.SetValue(property.Name, value, RegistryValueKind.String);
+                    }
+                    else if (property.PropertyType == typeof(int))
+                    {
+                        RK.SetValue(property.Name, value, RegistryValueKind.DWord);
+                    }
+                    else if (property.PropertyType == typeof(bool))
+                    {
+                        RK.SetValue(property.Name, (bool)value ? 1 : 0, RegistryValueKind.DWord);
+                    }
+                    else if (property.PropertyType == typeof(int[]))
+                    {
+                        RK.SetValue(property.Name, String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray()), RegistryValueKind.String);
+                    }
                 }
             }
         }

@@ -659,91 +659,61 @@ namespace ORTS
                 Console.WriteLine("Weather    = {0}", args[4]);
             }
             LogSeparator();
-
-            // Multiplayer is (currently) detected from the number of arguments passed to RunActivity.exe
-            //
-            //No of Args   Activity  Explore
-            //Single-Player   1         5
-            //      Server    3         7
-            //      Client    4         8
-            //
-            //Single-Player arguments for an activity:
-            //- Activity
-            //
-            //Server arguments for an activity:
-            //- Activity | PortNo | Username+MPCode
-            //
-            //Client arguments for an activity:
-            //- Activity | IP | PortNo | Username+MPCode
+            if (settings.MultiplayerServer || settings.MultiplayerClient)
+            {
+                if (settings.MultiplayerServer)
+                    Console.WriteLine("Multiplayer Server");
+                else
+                    Console.WriteLine("Multiplayer Client");
+                Console.WriteLine("User       = {0}", settings.Multiplayer_User);
+                if (settings.MultiplayerClient)
+                    Console.WriteLine("Host       = {0}", settings.Multiplayer_Host);
+                Console.WriteLine("Port       = {0}", settings.Multiplayer_Port);
+                LogSeparator();
+            }
 
             Arguments = args;
             Simulator = new Simulator(settings, args[0]);
-            if (args.Length == 1 || args.Length == 3 || args.Length == 4)
+            if (args.Length == 1)
                 Simulator.SetActivity(args[0]);
-            else if (args.Length >= 5)
+            else if (args.Length == 5)
                 Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
 
-            if (args.Length == 7 && args[5] != "0")
+            if (settings.MultiplayerServer)
             {
-				try
-				{
-					Server = new Server(args[6], int.Parse(args[5]));
-					UserName = Server.UserName;
-					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-					Code = Server.Code;
-				}
-				catch (Exception e)
-				{
-					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Server = null;
-				}
+                try
+                {
+                    Server = new Server(settings.Multiplayer_User + " 1234", settings.Multiplayer_Port);
+                    UserName = Server.UserName;
+                    Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+                        "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+                    Code = Server.Code;
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(error);
+                    Console.WriteLine("Connection error - will play in single mode.");
+                    Server = null;
+                }
             }
-            if (args.Length == 3 && args[1] != "0")
-            {
-				try
-				{
-					Server = new Server(args[2], int.Parse(args[1]));
-					UserName = Server.UserName;
-					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-					Code = Server.Code;
-				}
-				catch (Exception e)
-				{
-					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Server = null;
-				}
-            }
-            if (args.Length == 4)
-            {
-				try
-				{
-					Client = new ClientComm(args[1], int.Parse(args[2]), args[3]);
-					UserName = Client.UserName;
-					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-					Code = Client.Code;
-				}
-				catch (Exception e)
-				{
-					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Client = null;
-				}
 
-            }
-            if (args.Length == 8)
+            if (settings.MultiplayerClient)
             {
-				try
-				{
-					Client = new ClientComm(args[5], int.Parse(args[6]), args[7]);
-					UserName = Client.UserName;
-					Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
-						"Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
-					Code = Client.Code;
-				}
-				catch (Exception e)
-				{
-					System.Console.WriteLine("Connection Error: " + e.Message + ". Will play in single mode"); Client = null;
-				}
-			}
+                try
+                {
+                    Client = new ClientComm(settings.Multiplayer_Host, settings.Multiplayer_Port, settings.Multiplayer_User + " 1234");
+                    UserName = Client.UserName;
+                    Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
+                        "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
+                    Code = Client.Code;
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(error);
+                    Console.WriteLine("Connection error - will play in single mode.");
+                    Client = null;
+                }
+            }
         }
 
         static void LogSeparator()

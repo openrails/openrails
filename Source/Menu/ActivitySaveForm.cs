@@ -82,6 +82,7 @@ namespace ORTS {
             // Vista and later should use 9pt "Segoe UI". We'll use the
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
+
             runActivityBuild = GetRunActivityBuild();
             LoadActivitySaves( selectedRoute, selectedActivity, runActivityBuild );
             if( selectedActivity.FileName == null ) {
@@ -343,13 +344,13 @@ namespace ORTS {
             ResumeActivitySave();
         }
 
-        void ResumeActivitySave() {
+        void ResumeActivitySave()
+        {
             var save = bSActivitySave.Current as ActivitySave;
-            if( save.Valid ) {
-                parentForm.ActivitySaveFilename = save.SaveFileName;
-                parentForm.ResumeFromSavePressed = true;
-                this.Close();
-                parentForm.Close();
+            if (save.Valid)
+            {
+                parentForm.SelectedSaveFile = save.SaveFileName;
+                DialogResult = DialogResult.OK;
             }
         }
 

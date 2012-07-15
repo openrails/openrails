@@ -50,24 +50,26 @@ namespace MenuWPF
             this.foldersFile = foldersFile;
 
             // Restore retained settings
-            RegistryKey RK = Registry.CurrentUser.OpenSubKey(registryKey);
-            if (RK != null)
+            using (var RK = Registry.CurrentUser.OpenSubKey(registryKey))
             {
-                this.sliderWOD.Value = (int)RK.GetValue("WorldObjectDensity", (int)sliderWOD.Value);
-                this.sliderSound.Value = (int)RK.GetValue("SoundDetailLevel", (int)sliderSound.Value);
-                this.cboResolution.Text = (string)RK.GetValue("WindowSize", (string)cboResolution.Text);
-                this.chkAlerter.IsChecked = (1 == (int)RK.GetValue("Alerter", 0));
-                this.chkTrainLights.IsChecked = (1 == (int)RK.GetValue("TrainLights", 0));
-                this.chkPrecipitation.IsChecked = (1 == (int)RK.GetValue("Precipitation", 0));
-                this.chkOverheadWire.IsChecked = (1 == (int)RK.GetValue("Wire", 0));
-                this.txtBrakePipe.Text = RK.GetValue("BrakePipeChargingRate", txtBrakePipe.Text).ToString();
-                this.chkGraduated.IsChecked = (1 == (int)RK.GetValue("GraduatedRelease", 0));
-                this.chkDinamicShadows.IsChecked = (1 == (int)RK.GetValue("DynamicShadows", 0));
-                this.chkUseGlass.IsChecked = (1 == (int)RK.GetValue("WindowGlass", 0));
-                this.chkUseMSTSbin.IsChecked = (1 == (int)RK.GetValue("MSTSBINSound", 0));
-                this.chkFullScreen.IsChecked = (int)RK.GetValue("Fullscreen", 0) == 1 ? true : false;
-                this.chkWarningLog.IsChecked = (int)RK.GetValue("Logging", 1) == 1 ? true : false;
-                this.txtBgImage.Text = RK.GetValue("BackgroundImage", txtBgImage.Text).ToString();
+                if (RK != null)
+                {
+                    this.sliderWOD.Value = (int)RK.GetValue("WorldObjectDensity", (int)sliderWOD.Value);
+                    this.sliderSound.Value = (int)RK.GetValue("SoundDetailLevel", (int)sliderSound.Value);
+                    this.cboResolution.Text = (string)RK.GetValue("WindowSize", (string)cboResolution.Text);
+                    this.chkAlerter.IsChecked = (1 == (int)RK.GetValue("Alerter", 0));
+                    this.chkTrainLights.IsChecked = (1 == (int)RK.GetValue("TrainLights", 0));
+                    this.chkPrecipitation.IsChecked = (1 == (int)RK.GetValue("Precipitation", 0));
+                    this.chkOverheadWire.IsChecked = (1 == (int)RK.GetValue("Wire", 0));
+                    this.txtBrakePipe.Text = RK.GetValue("BrakePipeChargingRate", txtBrakePipe.Text).ToString();
+                    this.chkGraduated.IsChecked = (1 == (int)RK.GetValue("GraduatedRelease", 0));
+                    this.chkDinamicShadows.IsChecked = (1 == (int)RK.GetValue("DynamicShadows", 0));
+                    this.chkUseGlass.IsChecked = (1 == (int)RK.GetValue("WindowGlass", 0));
+                    this.chkUseMSTSbin.IsChecked = (1 == (int)RK.GetValue("MSTSBINSound", 0));
+                    this.chkFullScreen.IsChecked = (int)RK.GetValue("Fullscreen", 0) == 1 ? true : false;
+                    this.chkWarningLog.IsChecked = (int)RK.GetValue("Logging", 1) == 1 ? true : false;
+                    this.txtBgImage.Text = RK.GetValue("BackgroundImage", txtBgImage.Text).ToString();
+                }
             }
             if (System.IO.File.Exists(txtBgImage.Text))
             {
@@ -115,8 +117,7 @@ namespace MenuWPF
                 }
 
                 // Retain settings for convenience
-                RegistryKey RK = Registry.CurrentUser.CreateSubKey(regKey);
-                if (RK != null)
+                using (var RK = Registry.CurrentUser.CreateSubKey(regKey))
                 {
                     RK.SetValue("WorldObjectDensity", (int)this.sliderWOD.Value);
                     RK.SetValue("SoundDetailLevel", (int)this.sliderSound.Value);
