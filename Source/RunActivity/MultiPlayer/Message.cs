@@ -290,7 +290,7 @@ namespace ORTS.MultiPlayer
 		}
 		public MSGPlayer(string n, string cd, string c, string p, Train t, int tn)
 		{
-			route = Program.Simulator.RouteName;
+			route = Program.Simulator.RoutePathName;
 			int index = p.LastIndexOf("\\PATHS\\", StringComparison.OrdinalIgnoreCase);
 			if (index > 0)
 			{

@@ -99,11 +99,11 @@
     <Compile Include="..\ORTS\Menu\Routes.cs">
       <Link>ORTS\Menu\Routes.cs</Link>
     </Compile>
-    <Compile Include="ActivitySaveForm.cs">
+    <Compile Include="ResumeForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ActivitySaveForm.Designer.cs">
-      <DependentUpon>ActivitySaveForm.cs</DependentUpon>
+    <Compile Include="ResumeForm.Designer.cs">
+      <DependentUpon>ResumeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ExploreForm.cs">
       <SubType>Form</SubType>
@@ -137,8 +137,8 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="ActivitySaveForm.resx">
-      <DependentUpon>ActivitySaveForm.cs</DependentUpon>
+    <EmbeddedResource Include="ResumeForm.resx">
+      <DependentUpon>ResumeForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ExploreForm.resx">
       <DependentUpon>ExploreForm.cs</DependentUpon>
@@ -159,10 +159,6 @@
       <DependentUpon>Options.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="RouteDetails.resx">
       <DependentUpon>RouteDetails.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -170,11 +166,6 @@
     <EmbeddedResource Include="TestingForm.resx">
       <DependentUpon>TestingForm.cs</DependentUpon>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="RouteDetails.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -214,10 +205,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Properties\DataSources\ActivitySaveForm.ActivitySave.datasource" />
-    <None Include="Properties\DataSources\ActivitySaveForm.ActivitySave1.datasource" />
-    <None Include="Properties\DataSources\TestLoadActivity.datasource" />
-    <None Include="Properties\DataSources\TestLoadActivity1.datasource" />
+    <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

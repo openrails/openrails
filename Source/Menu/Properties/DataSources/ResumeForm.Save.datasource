@@ -5,6 +5,6 @@
     Renaming the file extension or editing the content of this file may   
     cause the file to be unrecognizable by the program.
 -->
-<GenericObjectDataSource DisplayName="TestLoadActivity" Version="1.0" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
-   <TypeInfo>ORTS.TestLoadActivity, Menu, Version=0.0.4487.28779, Culture=neutral, PublicKeyToken=null</TypeInfo>
+<GenericObjectDataSource DisplayName="ResumeForm+Save" Version="1.0" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+   <TypeInfo>ORTS.ResumeForm+Save, Menu, Version=0.0.4579.26510, Culture=neutral, PublicKeyToken=null</TypeInfo>
 </GenericObjectDataSource>

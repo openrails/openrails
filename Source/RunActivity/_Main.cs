@@ -192,24 +192,7 @@ namespace ORTS
                 // that are likely to match the previously chosen route and activity.
                 // Append the current date and time, so that each file is unique.
                 // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
-                string prefix;
-                // If there is an activity:
-                if (Arguments.Length == 1)
-                {
-                    // Extract the name of the activity file
-                    prefix = Path.GetFileNameWithoutExtension(Arguments[0]);
-                }
-                else
-                {
-                    // Extract the name of the route folder instead
-                    Regex r1 = new Regex(@"(\\ROUTES\\)(.+)(\\PATHS)");
-                    Match match = r1.Match(Arguments[0]);   // e.g. "D:\MSTS\ROUTES\USA1\PATHS\local service (traffic).pat"
-                    prefix =
-                        match.Success ?
-                        match.Groups[2].Value  // Extract 2nd group (1)(2)(3), e.g. "USA1"
-                        : "unknown route";
-                }
-                string fileStem = String.Format("{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}", prefix, System.DateTime.Now);
+                var fileStem = String.Format("{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName : Simulator.RoutePathName, DateTime.Now);
 
                 using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
                 {
@@ -219,30 +202,16 @@ namespace ORTS
 
                     // Save heading data used in Menu.exe
                     outf.Write(Simulator.RouteName);
-                    outf.Write(Arguments.Length);
-                    if (Arguments.Length < 2)
-                    {     // save Activity 
-                        outf.Write(Path.GetFileNameWithoutExtension(Arguments[0]));   // Activity filename
-                    }
-                    else
-                    {                          // save Explore details
-                        outf.Write(Path.GetFileNameWithoutExtension(Arguments[0]));  // Path filename
-                        outf.Write(Path.GetFileNameWithoutExtension(Arguments[1]));  // Consist filename
-                    }
+                    outf.Write(Simulator.PathName);
+                    outf.Write((int)Simulator.GameTime);
+                    outf.Write(DateTime.Now.ToBinary());
+                    // TODO: This needs to be the player's train and/or viewer's selected train.
+                    outf.Write(Simulator.Trains[0].FrontTDBTraveller.TileX + (Simulator.Trains[0].FrontTDBTraveller.X / 2048));
+                    outf.Write(Simulator.Trains[0].FrontTDBTraveller.TileZ + (Simulator.Trains[0].FrontTDBTraveller.Z / 2048));
+                    outf.Write(Simulator.InitialTileX);
+                    outf.Write(Simulator.InitialTileZ);
 
-                    if (Simulator.PathDescription == null) { Simulator.PathDescription = "<unknown>"; }
-                    outf.Write(Simulator.PathDescription);
-                    outf.Write((int)Simulator.GameTime);                              // Time elapsed in game (secs)
-                    outf.Write(System.DateTime.Now.ToString("ddd dd-MM-yy HH:mm"));   // Date and time in real world
-                    // Calculate position of player's train in fractions of a 2048 metre tile
-                    float currentTileX = Simulator.Trains[0].FrontTDBTraveller.TileX + (Simulator.Trains[0].FrontTDBTraveller.X / 2048);
-                    float currentTileZ = Simulator.Trains[0].FrontTDBTraveller.TileZ + (Simulator.Trains[0].FrontTDBTraveller.Z / 2048);
-                    outf.Write(currentTileX);  // Current location of player train
-                    outf.Write(currentTileZ);  // Current location of player train
-                    outf.Write(Simulator.InitialTileX);  // Initial location of player train
-                    outf.Write(Simulator.InitialTileZ);  // Initial location of player train
-
-                    // Now save the real data used by RunActivity.exe
+                    // Now save the data used by RunActivity.exe
                     outf.Write(Arguments.Length);
                     foreach (var argument in Arguments)
                         outf.Write(argument);
@@ -325,27 +294,16 @@ namespace ORTS
                             throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build));
                         }
                     }
-                    // Skip the heading data used in Menu.exe
-                    var temp = inf.ReadString();    // Route name
-                    var argumentsCount = inf.ReadInt32();
-                    if (argumentsCount < 2)
-                    {
-                        temp = inf.ReadString();    // Activity filename
-                    }
-                    else
-                    {
-                        temp = inf.ReadString();    // Path filename
-                        temp = inf.ReadString();    // Consist filename
-                    }
-                    var simulatorPathDescription = inf.ReadString();
-                    var tempInt = inf.ReadInt32();          // Time elapsed in game (secs)
-                    temp = inf.ReadString();                // Date and time in real world
-                    var tempFloat = inf.ReadSingle();       // Current location of player train TileX
-                    tempFloat = inf.ReadSingle();           // Current location of player train TileZ
 
-                    // Read initial position and pass to Simulator so it can be written out if another save is made.
-                    var initialTileX = inf.ReadSingle();  // Initial location of player train TileX
-                    var initialTileZ = inf.ReadSingle();  // Initial location of player train TileZ
+                    // Skip the heading data used in Menu.exe
+                    inf.ReadString(); // Route name
+                    var pathName = inf.ReadString(); // Path name
+                    inf.ReadInt32(); // Game time
+                    inf.ReadInt64(); // Real time
+                    inf.ReadSingle(); // Player TileX
+                    inf.ReadSingle(); // Player TileZ
+                    var initialTileX = inf.ReadSingle(); // Initial TileX
+                    var initialTileZ = inf.ReadSingle(); // Initial TileZ
 
                     // Read in the real data...
                     var savedArgs = new string[inf.ReadInt32()];
@@ -353,7 +311,7 @@ namespace ORTS
                         savedArgs[i] = inf.ReadString();
 
                     InitSimulator(settings, savedArgs, "Resume");
-                    Simulator.Restore(inf, simulatorPathDescription, initialTileX, initialTileZ);
+                    Simulator.Restore(inf, pathName, initialTileX, initialTileZ);
                     Viewer = new Viewer3D(Simulator);
                     Viewer.Run(inf);
                 }

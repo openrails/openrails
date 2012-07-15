@@ -63,7 +63,9 @@ namespace ORTS
 		// These items represent the current state of the simulator 
 		// In multiplayer games, these items must be kept in sync across all players
 		// These items are what are saved and loaded in a game save.
-		public string RouteName;    // ie LPS, USA1  represents the folder name
+		public string RoutePathName;    // ie LPS, USA1  represents the folder name
+        public string RouteName;
+        public string ActivityFileName;
 		public ACTFile Activity;
 		public Activity ActivityRun;
 		public TDBFile TDB;
@@ -87,7 +89,7 @@ namespace ORTS
 		public CarSpawnerFile CarSpawnerFile;
         public bool UseAdvancedAdhesion;
         // Used in save and restore form
-        public string PathDescription;
+        public string PathName = "<unknown>";
         public float InitialTileX;
         public float InitialTileZ;
 
@@ -107,13 +109,14 @@ namespace ORTS
 			Settings = settings;
             UseAdvancedAdhesion = Settings.UseAdvancedAdhesion;
 			RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
-			RouteName = Path.GetFileName(RoutePath);
+			RoutePathName = Path.GetFileName(RoutePath);
 			BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
 
 			Trace.Write("Loading ");
 
 			Trace.Write(" TRK");
 			TRK = new TRKFile(MSTSPath.GetTRKFileName(RoutePath));
+            RouteName = TRK.Tr_RouteFile.Name;
 
 			Trace.Write(" TDB");
 			TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
@@ -150,7 +153,8 @@ namespace ORTS
 		}
 		public void SetActivity(string activityPath)
 		{
-			Activity = new ACTFile(activityPath);
+            ActivityFileName = Path.GetFileNameWithoutExtension(activityPath);
+            Activity = new ACTFile(activityPath);
 			ActivityRun = new Activity(Activity, this);
             if (ActivityRun.Current == null && ActivityRun.EventList.Count == 0)
                 ActivityRun = null;
@@ -205,7 +209,7 @@ namespace ORTS
             ClockTime = inf.ReadDouble();
             Season = (SeasonType)inf.ReadInt32();
             Weather = (WeatherType)inf.ReadInt32();
-            PathDescription = simulatorPathDescription; // Needed for Resume header data
+            PathName = simulatorPathDescription; // Needed for Resume header data
             InitialTileX = initialTileX;
             InitialTileZ = initialTileZ;
 
@@ -697,7 +701,7 @@ namespace ORTS
 #endif
 
             PATFile patFile = new PATFile(patFileName);
-            PathDescription = patFile.Name;
+            PathName = patFile.Name;
             // This is the position of the back end of the train in the database.
 			PATTraveller patTraveller = new PATTraveller(patFileName);
             AIPath aiPath = new AIPath(patFile, TDB, TSectionDat, patFileName);

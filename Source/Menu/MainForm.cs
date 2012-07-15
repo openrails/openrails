@@ -198,10 +198,13 @@ namespace ORTS
 
         void buttonResume_Click(object sender, EventArgs e)
         {
-            using (var form = new ActivitySaveForm(this, SelectedRoute, SelectedActivity))
+            using (var form = new ResumeForm(SelectedRoute, SelectedActivity))
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
+                {
+                    SelectedSaveFile = form.SelectedSaveFile;
                     DialogResult = DialogResult.Retry;
+                }
             }
         }
 
