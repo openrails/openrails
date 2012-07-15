@@ -621,8 +621,16 @@ namespace MenuWPF
                 processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
                 processStartInfo.WorkingDirectory = programFolder;
 
-                var process = Process.Start(processStartInfo);
-                process.WaitForExit();
+                try
+                {
+                    Hide();
+                    var process = Process.Start(processStartInfo);
+                    process.WaitForExit();
+                }
+                finally
+                {
+                    Show();
+                }
             }
             catch (Exception error)
             {
