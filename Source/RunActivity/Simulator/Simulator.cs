@@ -243,6 +243,7 @@ namespace ORTS
             Trains = new List<Train>();
             InitializePlayerTrain();
             InitializeStaticConsists();
+			InitialPlayerLocomotive();
         }
 
         /// <summary>

@@ -90,8 +90,8 @@ namespace ORTS
             Commands[(int)UserCommands.GameScreenshot] = new UserCommandKeyInput(Keys.PrintScreen);
             Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
             Commands[(int)UserCommands.GameSwitchAhead] = new UserCommandKeyInput(0x22);
-            Commands[(int)UserCommands.GameSwitchBehind] = new UserCommandKeyInput(0x22, KeyModifiers.Shift);
-            Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameSwitchBehind] = new UserCommandKeyInput(0x22, KeyModifiers.Shift);
+			Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
             Commands[(int)UserCommands.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
             Commands[(int)UserCommands.GameLocomotiveSwap] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
 			Commands[(int)UserCommands.GameRequestControl] = new UserCommandKeyInput(0x12, KeyModifiers.Shift);
@@ -489,8 +489,8 @@ namespace ORTS
         GameScreenshot,
         GameFullscreen,
         GameSwitchAhead,
-        GameSwitchBehind,
-        GameSwitchWithMouse,
+		GameSwitchBehind,
+		GameSwitchWithMouse,
         GameUncoupleWithMouse,
         GameLocomotiveSwap,
 		GameRequestControl,

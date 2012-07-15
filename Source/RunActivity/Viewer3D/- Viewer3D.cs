@@ -221,7 +221,7 @@ namespace ORTS
             if (Settings.ShadowMapDistance == 0)
                 Settings.ShadowMapDistance = Settings.ViewingDistance / 2;
 
-            PlayerLocomotive = Simulator.InitialPlayerLocomotive();
+            if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
 
             TextureManager = new SharedTextureManager(GraphicsDevice);
             MaterialManager = new SharedMaterialManager(this);
@@ -524,7 +524,7 @@ namespace ORTS
         public void Stop()
         {
 			//the dispatcher viewer in MP mode is on, close it first, then wait for the next ESC
-			if (MPManager.IsMultiPlayer())
+			if (MPManager.IsMultiPlayer() || Settings.ViewDispatcher)
 			{
 				if (DebugViewerEnabled == true) { DebugViewerEnabled = false; return; }
 			}

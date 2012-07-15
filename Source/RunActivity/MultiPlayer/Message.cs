@@ -2190,7 +2190,6 @@ namespace ORTS.MultiPlayer
 			{
 				msgx += "" + (char)(t.Value.state + 1) + "" + (char)(t.Value.draw_state + 1);//avoid \0
 			}
-			int i = 0;
 		}
 
 		//constructor to decode the message "m"

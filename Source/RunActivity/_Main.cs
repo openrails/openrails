@@ -139,7 +139,7 @@ namespace ORTS
 				}
 
 #if DEBUG_VIEWER
-                if (MPManager.IsMultiPlayer())
+                if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
                 {
                     // prepare to show debug output in a separate window
                     DebugViewer = new DispatchViewer(Simulator, Viewer);

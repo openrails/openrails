@@ -18,6 +18,7 @@ using System.Text;
 using ORTS;
 using ORTS.Debugging;
 using System.Threading;
+using MSTS;
 
 namespace ORTS.MultiPlayer
 {
@@ -151,7 +152,7 @@ namespace ORTS.MultiPlayer
 			if (Program.Server != null && newtime - lastMoveTime >= 1f)
 			{
 				MSGMove move = new MSGMove();
-				move.AddNewItem(MultiPlayer.MPManager.GetUserName(), Program.Simulator.PlayerLocomotive.Train);
+				move.AddNewItem(GetUserName(), Program.Simulator.PlayerLocomotive.Train);
 				Program.Server.BroadCast(OnlineTrains.MoveTrains(move));
 				lastMoveTime = lastSendTime = newtime;
 
@@ -167,8 +168,8 @@ namespace ORTS.MultiPlayer
 			if (Program.Server != null && newtime - lastSwitchTime >= 10f)
 			{
 				lastSwitchTime = lastSendTime = newtime;
-				MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
-				MultiPlayer.MPManager.BroadCast((new MSGSignalStatus()).ToString());
+				BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
+				BroadCast((new MSGSignalStatus()).ToString());
 
 			}
 			
@@ -180,8 +181,8 @@ namespace ORTS.MultiPlayer
 				//if I am still conrolling the train
 				if (t.TrainType != Train.TRAINTYPE.REMOTE)
 				{
-					if (Math.Abs(t.SpeedMpS) > 0.001) move.AddNewItem(MultiPlayer.MPManager.GetUserName(), t);
-					else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem(MultiPlayer.MPManager.GetUserName(), t);
+					if (Math.Abs(t.SpeedMpS) > 0.001) move.AddNewItem(GetUserName(), t);
+					else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem(GetUserName(), t);
 				}
 				//MoveUncoupledTrains(move); //if there are uncoupled trains
 				//if there are messages to send
@@ -202,7 +203,7 @@ namespace ORTS.MultiPlayer
 			//need to send a keep-alive message if have not sent one to the server for the last 30 seconds
 			if (Program.Client != null && Program.Server == null && newtime - lastSendTime >= 30f)
 			{
-				MPManager.Notify((new MSGAlive(GetUserName())).ToString());
+				Notify((new MSGAlive(GetUserName())).ToString());
 				lastSendTime = newtime;
 			}
 
@@ -367,7 +368,7 @@ namespace ORTS.MultiPlayer
 				foreach (OnlinePlayer p in playersRemoved)
 				{
 					if (Program.Server != null) Program.Server.Players.Remove(p);
-					MPManager.OnlineTrains.Players.Remove(p.Username);
+					OnlineTrains.Players.Remove(p.Username);
 					//player is not in this train
 					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
 					{
@@ -468,7 +469,7 @@ namespace ORTS.MultiPlayer
 
 		public static void LocoChange(Train t, TrainCar lead)
 		{
-			MPManager.Notify((new MSGLocoChange(GetUserName(), lead.CarID, t)).ToString());
+			Notify((new MSGLocoChange(GetUserName(), lead.CarID, t)).ToString());
 		}
 		//count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
 		int PantoSecondCount = 0;
@@ -486,30 +487,51 @@ namespace ORTS.MultiPlayer
 				RequestControl();
 			}
 
-			if (UserInput.IsPressed(UserCommands.ControlHorn))	MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", EventID.HornOn)).ToString());
+			if (UserInput.IsPressed(UserCommands.ControlHorn))	Notify((new MSGEvent(GetUserName(), "HORN", EventID.HornOn)).ToString());
 
-			if (UserInput.IsReleased(UserCommands.ControlHorn)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", EventID.HornOff)).ToString());
+			if (UserInput.IsReleased(UserCommands.ControlHorn)) Notify((new MSGEvent(GetUserName(), "HORN", EventID.HornOff)).ToString());
 			
-			if (UserInput.IsPressed(UserCommands.ControlPantographSecond)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO2", (++PantoSecondCount)%2)).ToString());
+			if (UserInput.IsPressed(UserCommands.ControlPantographSecond)) Notify((new MSGEvent(GetUserName(), "PANTO2", (++PantoSecondCount)%2)).ToString());
 
-			if (UserInput.IsPressed(UserCommands.ControlPantographFirst)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO1", (++PantoFirstCount)%2)).ToString());
+			if (UserInput.IsPressed(UserCommands.ControlPantographFirst)) Notify((new MSGEvent(GetUserName(), "PANTO1", (++PantoFirstCount)%2)).ToString());
 
-			if (UserInput.IsPressed(UserCommands.ControlBell)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", (++BellCount)%2)).ToString());
+			if (UserInput.IsPressed(UserCommands.ControlBell)) Notify((new MSGEvent(GetUserName(), "BELL", (++BellCount)%2)).ToString());
 
-			if (UserInput.IsPressed(UserCommands.ControlWiper)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
+			if (UserInput.IsPressed(UserCommands.ControlWiper)) Notify((new MSGEvent(GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
 
 			if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
 			{
 				HeadLightCount++; if (HeadLightCount >= 3) HeadLightCount = 2;
-				MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
+				Notify((new MSGEvent(GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
 			}
 
 			if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
 			{
 				HeadLightCount--; if (HeadLightCount < 0) HeadLightCount = 0;
-				MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
+				Notify((new MSGEvent(GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
 			}
-		}
 
+#if false
+			if (UserInput.IsPressed(UserCommands.GameSwitchPicked) && IsServer())
+			{
+				if (Program.DebugViewer.Enabled && Program.DebugViewer.pickedItem != null )
+				{
+
+					TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+					if (nextSwitchTrack != null && !Program.Simulator.SwitchIsOccupied(nextSwitchTrack))
+					{
+						if (nextSwitchTrack.SelectedRoute == 0)
+							nextSwitchTrack.SelectedRoute = 1;
+						else
+							nextSwitchTrack.SelectedRoute = 0;
+						BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
+
+					}
+				}
+				Program.DebugViewer.pickedItemHandled = true;
+			}
+#endif
+
+		}
 	}
 }

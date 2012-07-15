@@ -233,27 +233,27 @@
             this.viewSignalsToolStripMenuItem,
             this.viewSwitchesToolStripMenuItem});
 		  this.interlockingToolStripMenuItem.Name = "interlockingToolStripMenuItem";
-		  this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(75, 20);
+		  this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(82, 20);
 		  this.interlockingToolStripMenuItem.Text = "Interlocking";
 		  // 
 		  // viewTracksToolStripMenuItem
 		  // 
 		  this.viewTracksToolStripMenuItem.Name = "viewTracksToolStripMenuItem";
-		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 		  this.viewTracksToolStripMenuItem.Text = "View Tracks";
 		  this.viewTracksToolStripMenuItem.Click += new System.EventHandler(this.viewTracksToolStripMenuItem_Click);
 		  // 
 		  // viewSignalsToolStripMenuItem
 		  // 
 		  this.viewSignalsToolStripMenuItem.Name = "viewSignalsToolStripMenuItem";
-		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 		  this.viewSignalsToolStripMenuItem.Text = "View Signals";
 		  this.viewSignalsToolStripMenuItem.Click += new System.EventHandler(this.viewSignalsToolStripMenuItem_Click);
 		  // 
 		  // viewSwitchesToolStripMenuItem
 		  // 
 		  this.viewSwitchesToolStripMenuItem.Name = "viewSwitchesToolStripMenuItem";
-		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 		  this.viewSwitchesToolStripMenuItem.Text = "View Switches";
 		  this.viewSwitchesToolStripMenuItem.Click += new System.EventHandler(this.viewSwitchesToolStripMenuItem_Click);
 		  // 
@@ -276,6 +276,13 @@
 		  this.Controls.Add(this.refreshButton);
 		  this.Controls.Add(this.pictureBox1);
 		  this.Controls.Add(this.menuStrip);
+		  pictureBox1.ContextMenu = new System.Windows.Forms.ContextMenu();
+		  System.Windows.Forms.MenuItem item1 = new System.Windows.Forms.MenuItem("Main route");
+		  System.Windows.Forms.MenuItem item2 = new System.Windows.Forms.MenuItem("Side route");
+		  pictureBox1.ContextMenu.MenuItems.Add(item1);
+		  pictureBox1.ContextMenu.MenuItems.Add(item2);
+		  item1.Click += new System.EventHandler(switchMainClick);
+		  item2.Click += new System.EventHandler(switchSideClick);
 		  this.MainMenuStrip = this.menuStrip;
 		  this.MaximizeBox = false;
 		  this.Name = "DispatchViewer";

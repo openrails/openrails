@@ -70,6 +70,7 @@ namespace ORTS
                     this.checkBoxWindowGlass.Checked = (1 == (int)RK.GetValue("WindowGlass", 0));
                     this.checkBoxBINSound.Checked = (1 == (int)RK.GetValue("MSTSBINSound", 0));
                     this.checkBoxSuppressConfirmations.Checked = (1 == (int)RK.GetValue("SuppressConfirmations", 0));
+					this.checkDispatcher.Checked = (1 == (int)RK.GetValue("ViewDispatcher", 0));
                 }
             }
         }
@@ -89,9 +90,11 @@ namespace ORTS
                 RK.SetValue("BrakePipeChargingRate", (int)this.numericBrakePipeChargingRatePSIpS.Value);
                 RK.SetValue("GraduatedRelease", this.checkBoxGraduatedRelease.Checked ? 1 : 0);
                 RK.SetValue("DynamicShadows", this.checkBoxShadows.Checked ? 1 : 0);
-                RK.SetValue("WindowGlass", this.checkBoxWindowGlass.Checked ? 1 : 0);
-                RK.SetValue("MSTSBINSound", this.checkBoxBINSound.Checked ? 1 : 0);
+				RK.SetValue("WindowGlass", this.checkBoxWindowGlass.Checked ? 1 : 0);
+				RK.SetValue("MSTSBINSound", this.checkBoxBINSound.Checked ? 1 : 0);
                 RK.SetValue("SuppressConfirmations", this.checkBoxSuppressConfirmations.Checked ? 1 : 0);
+				RK.SetValue("ViewDispatcher", this.checkDispatcher.Checked ? 1 : 0);
+
             }
         }
     }

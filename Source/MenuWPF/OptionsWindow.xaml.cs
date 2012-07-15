@@ -69,7 +69,9 @@ namespace MenuWPF
                     this.chkFullScreen.IsChecked = (int)RK.GetValue("Fullscreen", 0) == 1 ? true : false;
                     this.chkWarningLog.IsChecked = (int)RK.GetValue("Logging", 1) == 1 ? true : false;
                     this.txtBgImage.Text = RK.GetValue("BackgroundImage", txtBgImage.Text).ToString();
-                }
+					this.chkDispatcher.IsChecked = (1 == (int)RK.GetValue("ViewDispatcher", 0));
+				}
+
             }
             if (System.IO.File.Exists(txtBgImage.Text))
             {
@@ -134,6 +136,8 @@ namespace MenuWPF
                     RK.SetValue("Fullscreen", this.chkFullScreen.IsChecked.Value ? 1 : 0);
                     RK.SetValue("Logging", this.chkWarningLog.IsChecked.Value ? 1 : 0);
                     RK.SetValue("BackgroundImage", this.txtBgImage.Text);
+					RK.SetValue("ViewDispatcher", this.chkDispatcher.IsChecked.Value ? 1 : 0);
+
                 }
                 SaveFolders();
                 Close();
@@ -293,5 +297,6 @@ namespace MenuWPF
         
 
         #endregion
+
     }
 }

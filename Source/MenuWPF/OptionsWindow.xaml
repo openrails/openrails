@@ -240,7 +240,18 @@
 								</CheckBox.RenderTransform>
 							</CheckBox>
 							<Label x:Name="lblWDOValue" Content="0" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Center" Grid.Column="2" Margin="16,0,0,0" FontSize="18.667" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
-						</Grid>
+                            <CheckBox HorizontalAlignment="Left" Margin="16,13,0,4" Name="chkDispatcher" RenderTransformOrigin="0.5,0.5" Width="17" Grid.Column="1" Grid.Row="11">
+                                <CheckBox.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="2" ScaleY="2" />
+                                        <SkewTransform />
+                                        <RotateTransform />
+                                        <TranslateTransform />
+                                    </TransformGroup>
+                                </CheckBox.RenderTransform>
+                            </CheckBox>
+                            <Label FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="0,2,0,5" Name="label1" Grid.Row="11">Turn On Dispatcher Viewer Window</Label>
+                        </Grid>
 					</Border>
 				</Grid>
 			</TabItem>

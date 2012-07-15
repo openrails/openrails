@@ -68,6 +68,7 @@ namespace ORTS
         public string WindowSize { get; set; }
         public bool Wire { get; set; }
         public int WorldObjectDensity { get; set; }
+		public bool ViewDispatcher { get; set; }
 
         // These two are command-line only flags to start multiplayer modes.
         [DoNotSave]

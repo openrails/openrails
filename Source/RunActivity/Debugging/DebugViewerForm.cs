@@ -84,8 +84,11 @@ namespace ORTS.Debugging
 	  private bool Dragging = false;
 	  private WorldPosition worldPos;
 	  string name = "";
-
-
+	  List<SwitchWidget> itemsDrawn;
+	  public SwitchWidget pickedItem = null;
+	  bool pickedItemChanged = false;
+	  PointF pickedLocation = new PointF();
+	  public bool pickedItemHandled = false;
 	  /// <summary>
 	  /// contains the last position of the mouse
 	  /// </summary>
@@ -230,7 +233,8 @@ namespace ORTS.Debugging
 			  //trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
 		  }
 
-
+		  itemsDrawn = new List<SwitchWidget>();
+		  switches = new List<SwitchWidget>();
 		  for (int i = 0; i < nodes.Length; i++)
 		  {
 			  TrackNode currNode = nodes[i];
@@ -282,7 +286,7 @@ namespace ORTS.Debugging
 				  }
 				  else if (currNode.TrJunctionNode != null)
 				  {
-					  switches.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
+					  switches.Add(new SwitchWidget(currNode));
 				  }
 			  }
 		  }
@@ -318,7 +322,7 @@ namespace ORTS.Debugging
 	  }
 	  bool Inited = false;
 	  List<LineSegment> segments = new List<LineSegment>();
-	  List<PointF> switches = new List<PointF>();
+	  List<SwitchWidget> switches;
 	  List<PointF> buffers = new List<PointF>();
 	  List<SignalWidget> signals = new List<SignalWidget>();
 	  List<SidingWidget> sidings = new List<SidingWidget>();
@@ -393,6 +397,8 @@ namespace ORTS.Debugging
 			   PointF scaledB = new PointF((line.B.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (line.B.Y - minY - ViewWindow.Y) * yScale);
 
 
+				if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > IM_Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0)) continue;
+
                Pen p = grayPen;
 
                if (line.Occupied)
@@ -414,21 +420,36 @@ namespace ORTS.Debugging
                g.DrawLine(p, scaledA, scaledB);
             }
 
+			itemsDrawn.Clear();
+			 float x, y;
             if (showSwitches.Checked)
             {
-               foreach (PointF sw in switches)
-               {
-				   PointF scaledSw = new PointF((sw.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (sw.Y - minY - ViewWindow.Y) * yScale);
 
-                  g.FillEllipse(Brushes.Black, GetRect(scaledSw, 5f));
-               }
-            }
+				for (var i = 0; i < switches.Count; i++)
+				{
+					SwitchWidget sw = switches[i];
+
+					x = (sw.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (sw.Location.Y - minY - ViewWindow.Y) * yScale;
+
+					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+
+					PointF scaledSw = new PointF(x, y);
+
+
+					g.FillEllipse(Brushes.Black, GetRect(scaledSw, 5f));
+					sw.Location2D.X = scaledSw.X; sw.Location2D.Y = scaledSw.Y;
+					itemsDrawn.Add(sw);
+				}
+			}
 
             if (showBuffers.Checked)
             {
                foreach (PointF b in buffers)
                {
-				   PointF scaledBuffer = new PointF((b.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (b.Y - minY - ViewWindow.Y) * yScale);
+				   x = (b.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (b.Y - minY - ViewWindow.Y) * yScale;
+				   if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+
+				   PointF scaledBuffer = new PointF(x, y);
 
                   g.FillRectangle(Brushes.Black, GetRect(scaledBuffer, 5f));
                }
@@ -438,7 +459,9 @@ namespace ORTS.Debugging
             {
                foreach (var s in signals)
                {
-				   PointF scaledSignal = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale);
+				    x = (s.Location.X - minX - ViewWindow.X) * xScale; y =pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale;
+					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+					PointF scaledSignal = new PointF(x, y);
 
                   if (s.IsProceed)
                   {
@@ -485,14 +508,31 @@ namespace ORTS.Debugging
 					   worldPos.TileX * 2048 + worldPos.Location.X,
 					   worldPos.TileZ * 2048 + worldPos.Location.Z);
 
-					PointF trainLocation = new PointF((PlayerLocation.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (PlayerLocation.Y - minY - ViewWindow.Y) * yScale);
+					x = (PlayerLocation.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (PlayerLocation.Y - minY - ViewWindow.Y) * yScale;
+					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+
+					PointF trainLocation = new PointF(x, y);
 
 					g.FillRectangle(Brushes.DarkGreen, GetRect(trainLocation, 15f));
 					trainLocation.Y -= 25;
 					g.DrawString(GetTrainName(name), trainFont, trainBrush, trainLocation);
-
 				}
-            }
+				if (pickedItemHandled) pickedItem = null;
+
+#if false
+				if (MultiPlayer.MPManager.IsMultiPlayer() && pickedItem != null && pickedItemChanged == true && !pickedItemHandled)
+				{
+					pickedLocation.X = pickedItem.Location2D.X + 152; pickedLocation.Y = pickedItem.Location2D.Y;
+					g.FillRectangle(Brushes.LightGray, GetRect(pickedLocation, 300f, 64f));
+					pickedLocation.X -= 152; pickedLocation.Y -= 2;
+					var node = pickedItem.Item.TrJunctionNode;
+					if (node.SelectedRoute == 0) g.DrawString("Current: Main Route", trainFont, trainBrush, pickedLocation);
+					else g.DrawString("Current: Side Route", trainFont, trainBrush, pickedLocation);
+					pickedLocation.Y -= 24;
+					g.DrawString("Ctrl-G to Throw the Switch", trainFont, trainBrush, pickedLocation);
+				}
+#endif
+			}
 
          }
 
@@ -581,7 +621,18 @@ namespace ORTS.Debugging
          return new RectangleF(p.X - size / 2f, p.Y - size / 2f, size, size);
       }
 
-      /// <summary>
+	  /// <summary>
+	  /// Generates a rectangle representing a rectangle being drawn.
+	  /// </summary>
+	  /// <param name="p">Center point of the rec, in pixels.</param>
+	  /// <param name="sizeX">Size of the rec's X, in pixels</param>
+	  /// <param name="sizeY">Size of the rec's Y, in pixels</param>
+	  /// <returns></returns>
+	  private RectangleF GetRect(PointF p, float sizeX, float sizeY)
+	  {
+		  return new RectangleF(p.X - sizeX / 2f, p.Y - sizeY / 2f, sizeX, sizeY);
+	  }
+	  /// <summary>
       /// Generates line segments from an array of TrVectorSection. Also computes 
       /// the bounds of the entire route being drawn.
       /// </summary>
@@ -774,7 +825,7 @@ namespace ORTS.Debugging
 	  private void pictureBoxMouseUp(object sender, MouseEventArgs e)
 	  {
 		  if (e.Button == MouseButtons.Left) LeftClick = false;
-		  if (e.Button == MouseButtons.Right) RightClick = false;
+		  if (e.Button == MouseButtons.Right) RightClick = false; 
 
 		  if (LeftClick == false)
 		  {
@@ -782,6 +833,70 @@ namespace ORTS.Debugging
 			  Zooming = false;
 		  }
 
+		  if (LeftClick == false)
+		  {
+			  if (LastCursorPosition.X == e.X && LastCursorPosition.Y == e.Y)
+			  {
+				  var temp = findItemFromMouse(e.X, e.Y, 5);
+				  if (temp != null)
+				  {
+					  pickedItem = temp; //read by MPManager
+					  pictureBox1.ContextMenu.Show(pictureBox1, e.Location);
+					  pictureBox1.ContextMenu.MenuItems[0].Checked = pictureBox1.ContextMenu.MenuItems[1].Checked = false;
+					  if (pickedItem.Item.TrJunctionNode != null)
+					  {
+						  if (pickedItem.Item.TrJunctionNode.SelectedRoute == 0) pictureBox1.ContextMenu.MenuItems[0].Checked = true;
+						  else pictureBox1.ContextMenu.MenuItems[1].Checked = true;
+					  }
+				  }
+			  }
+
+		  }
+
+	  }
+	  void switchMainClick(object sender, EventArgs e)
+	  {
+		  if (pickedItem!=null&&pickedItem.Item.TrJunctionNode != null)
+		  {
+			  TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+			  if (nextSwitchTrack != null && !Program.Simulator.SwitchIsOccupied(nextSwitchTrack))
+			  {
+				  if (nextSwitchTrack.SelectedRoute == 0)
+					  nextSwitchTrack.SelectedRoute = 1;
+				  else
+					  nextSwitchTrack.SelectedRoute = 0;
+			  }
+		  }
+
+	  }
+
+	   	  void switchSideClick(object sender, EventArgs e)
+	  {
+		  if (pickedItem!=null&&pickedItem.Item.TrJunctionNode != null)
+		  {
+			  TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+			  if (nextSwitchTrack != null && !Program.Simulator.SwitchIsOccupied(nextSwitchTrack))
+			  {
+				  if (nextSwitchTrack.SelectedRoute == 0)
+					  nextSwitchTrack.SelectedRoute = 1;
+				  else
+					  nextSwitchTrack.SelectedRoute = 0;
+			  }
+		  }
+
+	  }
+
+	  private SwitchWidget findItemFromMouse(int x, int y, int range)
+	  {
+		  foreach (var item in itemsDrawn)
+		  {
+			  //if out of range, continue
+			  if (item.Location2D.X < x - range || item.Location2D.X > x + range
+				  || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
+
+			  return item;
+		  }
+		  return null;
 	  }
 
 	  private void pictureBoxMouseMove(object sender, MouseEventArgs e)
@@ -922,23 +1037,16 @@ namespace ORTS.Debugging
 			  myCp.ClassStyle = myCp.ClassStyle | CP_NOCLOSE_BUTTON;
 			  return myCp;
 		  }
-	  } 
+	  }
 
    }
-
 
    /// <summary>
    /// Defines a signal being drawn in a 2D view.
    /// </summary>
-   internal struct SignalWidget
+   public class SignalWidget : ItemWidget
    {
-	   public PointF Location;
-
-	   /// <summary>
-	   /// The underlying track item.
-	   /// </summary>
-	   private TrItem Item;
-
+	   public TrItem Item;
 	   /// <summary>
 	   /// The underlying signal object as referenced by the TrItem.
 	   /// </summary>
@@ -967,70 +1075,125 @@ namespace ORTS.Debugging
 			   return returnValue;
 		   }
 	   }
-      /// <summary>
-      /// 
-      /// </summary>
-      /// <param name="item"></param>
-      /// <param name="signal"></param>
+
+	   /// <summary>
+	   /// 
+	   /// </summary>
+	   /// <param name="item"></param>
+	   /// <param name="signal"></param>
 	   public SignalWidget(TrItem item, SignalObject signal)
 	   {
 		   Item = item;
 		   Signal = signal;
 
 		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-	   }   
+		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+	   }
    }
+
    /// <summary>
    /// Defines a signal being drawn in a 2D view.
    /// </summary>
-   internal struct SidingWidget
+   public class SwitchWidget : ItemWidget
    {
-      public PointF Location;
-	  public string Name;
-      /// <summary>
-      /// The underlying track item.
-      /// </summary>
-      private TrItem Item;
-
-
-	   static List<PointF> SidingLocs = new List<PointF>();
-
+	   public TrackNode Item;
 
 	   /// <summary>
-      /// 
-      /// </summary>
-      /// <param name="item"></param>
-      /// <param name="signal"></param>
-      public SidingWidget(TrItem item)
-      {
-         Item = item;
+	   /// 
+	   /// </summary>
+	   /// <param name="item"></param>
+	   /// <param name="signal"></param>
+	   public SwitchWidget(TrackNode item)
+	   {
+		   Item = item;
 
-		 Name = item.ItemName;
+		   Location = new PointF(Item.UiD.TileX * 2048 + Item.UiD.X, Item.UiD.TileZ * 2048 + Item.UiD.Z);
+		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+	   }
+   }
 
-         Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-      }
+   public class BufferWidget : ItemWidget
+   {
+	   public TrackNode Item;
+
+	   /// <summary>
+	   /// 
+	   /// </summary>
+	   /// <param name="item"></param>
+	   /// <param name="signal"></param>
+	   public BufferWidget(TrackNode item)
+	   {
+		   Item = item;
+
+		   Location = new PointF(Item.UiD.TileX * 2048 + Item.UiD.X, Item.UiD.TileZ * 2048 + Item.UiD.Z);
+		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+	   }
+   }
+
+   public class ItemWidget
+   {
+	   public PointF Location;
+	   public PointF Location2D;
+
+	   /// <summary>
+	   /// 
+	   /// </summary>
+	   /// <param name="item"></param>
+	   public ItemWidget()
+	   {
+
+		   Location = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+	   }
+
    }
 
    /// <summary>
    /// Defines a geometric line segment.
    /// </summary>
-   internal struct LineSegment
+   public struct LineSegment
    {
-      public PointF A;
-      public PointF B;
+	   public PointF A;
+	   public PointF B;
 
-      public bool Occupied;
-      public TrVectorSection Section;
+	   public bool Occupied;
+	   public TrVectorSection Section;
 
-      public LineSegment(PointF A, PointF B, bool Occupied, TrVectorSection Section)
-      {
-         this.A = A;
-         this.B = B;
+	   public LineSegment(PointF A, PointF B, bool Occupied, TrVectorSection Section)
+	   {
+		   this.A = A;
+		   this.B = B;
 
-         this.Occupied = Occupied;
+		   this.Occupied = Occupied;
 
-         this.Section = Section;
-      }
+		   this.Section = Section;
+	   }
    }
 
+   /// <summary>
+   /// Defines a siding name being drawn in a 2D view.
+   /// </summary>
+   public struct SidingWidget
+   {
+	   public PointF Location;
+	   public string Name;
+	   /// <summary>
+	   /// The underlying track item.
+	   /// </summary>
+	   private TrItem Item;
+
+	   /// <summary>
+	   /// 
+	   /// </summary>
+	   /// <param name="item"></param>
+	   /// <param name="signal"></param>
+	   public SidingWidget(TrItem item)
+	   {
+		   Item = item;
+
+		   Name = item.ItemName;
+
+		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+	   }
+   }
 }
