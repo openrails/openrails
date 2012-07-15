@@ -1530,7 +1530,6 @@ namespace ORTS
 	public class YellowMaterial : Material
     {
         static BasicEffect basicEffect = null;
-        RenderProcess RenderProcess;
 
         public YellowMaterial(Viewer3D viewer)
             : base(viewer, null)

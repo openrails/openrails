@@ -176,11 +176,6 @@ namespace ORTS
                 if (worldObject.StaticDetailLevel > viewer.Settings.WorldObjectDensity)
                     continue;
 
-                // Determine the file path to the shape file for this scenery object.
-                var shapeFilePath = String.IsNullOrEmpty(worldObject.FileName) ? null : File.Exists(viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName) ? viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName : File.Exists(viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName) ? viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName : null;
-                if (!String.IsNullOrEmpty(shapeFilePath))
-                    shapeFilePath = Path.GetFullPath(shapeFilePath);
-
                 // Get the position of the scenery object into ORTS coordinate space.
                 WorldPosition worldMatrix;
                 if (worldObject.Matrix3x3 != null)
@@ -195,6 +190,14 @@ namespace ORTS
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
                 var animated = (worldObject.StaticFlags & (uint)StaticFlag.Animate) != 0;
+                var globalShape = worldObject is TrackObj;
+
+                // Determine the file path to the shape file for this scenery object.
+                var shapeFilePath = globalShape ? viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName : viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName;
+                if (!File.Exists(shapeFilePath))
+                    shapeFilePath = null;
+                if (!String.IsNullOrEmpty(shapeFilePath))
+                    shapeFilePath = Path.GetFullPath(shapeFilePath);
 
                 try
                 {

@@ -33,7 +33,6 @@ namespace ORTS.Popups
 		Label StationNextDepartScheduled;
 
 		Label Message;
-        Color MessageColor;
 
 		public NextStationWindow(WindowManager owner)
 			: base(owner, 400, 135, "Next Station")

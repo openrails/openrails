@@ -569,7 +569,7 @@ namespace ORTS
 				//if (SelectedTrain.LeadLocomotive != null) { PlayerLocomotive = SelectedTrain.LeadLocomotive; PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive); }
 				
 			}
-			catch (Exception e) 
+			catch 
 			{
 				SelectedTrain = PlayerTrain;
 			}
