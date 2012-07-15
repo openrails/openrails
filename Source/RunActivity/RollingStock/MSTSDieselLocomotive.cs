@@ -374,6 +374,9 @@ namespace ORTS
             switch (this.Train.TrainType)
             {
                 case Train.TRAINTYPE.AI:
+                    if (!PowerOn)
+                        PowerOn = true;
+                    break;
                 case Train.TRAINTYPE.STATIC:
                     break;
                 case Train.TRAINTYPE.PLAYER:
