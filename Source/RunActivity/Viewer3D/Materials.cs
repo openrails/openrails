@@ -771,9 +771,6 @@ namespace ORTS
                 SkyShader.StarTexture = StarTextureN;
             else
                 SkyShader.StarTexture = StarTextureS;
-            SkyShader.SunpeakColor = Viewer.World.Sky.sunpeakColor;
-            SkyShader.SunriseColor = Viewer.World.Sky.sunriseColor;
-            SkyShader.SunsetColor = Viewer.World.Sky.sunsetColor;
             SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyConstants.skyRadius / 20;
             SkyShader.MoonTexture = MoonTexture;

@@ -13,9 +13,6 @@ float4x4 mView;
 float3 LightVector;                             // Direction vector to sun
 float time;										// Used for moving textures across the sky
 int random;										// Causes mapping to one of the moon phases
-float4 sunpeakColor;
-float4 sunriseColor;
-float4 sunsetColor;
 float overcast;
 float windSpeed;
 float windDirection;
@@ -224,23 +221,6 @@ PS_OUT PSsky( PS_IN In )
     {
 		skyColor.r += 0.001/angle/(0.8*abs(LightVector.y-0.1));
 		skyColor.g += 0.05*skyColor.r;
-	}
-    
-    // Sun
-	if (angle < 0.02)
-	{
-		skyColor = sunpeakColor;
-        // Transition to orange at low angles
-        if (LightVector.x < 0)
-        {
-			// Sunset
-			skyColor = lerp(sunsetColor, skyColor, clamp(pow(adjustLight,10), 0, 1));
-		}
-		else
-		{
-			// Sunrise
-			skyColor = lerp(sunriseColor, skyColor, clamp(pow(adjustLight,10), 0, 1));
-		}
 	}
 	
     // Keep alpha opague

@@ -47,9 +47,6 @@ namespace ORTS
         // Longitude of current route in radians. -pi = west of prime, 0 = prime, pi = east of prime.
         public double latitude, longitude;
         // Date of activity
-        public Vector4 sunpeakColor;
-        public Vector4 sunriseColor;
-        public Vector4 sunsetColor;
         public struct Date
         {
             // Day, month, year. Format: DD MM YYYY, no leading zeros. 
@@ -101,9 +98,6 @@ namespace ORTS
             date.month = 1 + date.ordinalDate / 30;
             date.day = 21;
             date.year = 2010;
-            sunpeakColor = new Vector4(1.0f, 1.0f, 0.95f, 1.0f);
-            sunriseColor = new Vector4(0.93f, 0.89f, 0.75f, 1.0f);
-            sunsetColor = new Vector4(0.87f, 0.28f, 0.10f, 1.0f);
             // Default wind speed and direction
             windSpeed = 5.0f; // m/s (approx 11 mph)
             windDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)

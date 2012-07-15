@@ -224,21 +224,6 @@ namespace ORTS
             set { cloudMap_Tex.SetValue(value); }
         }
 
-        public Vector4 SunpeakColor
-        {
-            set { sunpeakColor.SetValue(value); }
-        }
-
-        public Vector4 SunriseColor
-        {
-            set { sunriseColor.SetValue(value); }
-        }
-
-        public Vector4 SunsetColor
-        {
-            set { sunsetColor.SetValue(value); }
-        }
-
         public float Time
         {
             set { time.SetValue(value); }
