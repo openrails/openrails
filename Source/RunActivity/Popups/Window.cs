@@ -73,7 +73,10 @@ namespace ORTS.Popups
 
         protected virtual void VisibilityChanged()
 		{
-            Owner.WriteWindowZOrder();
+            if (Visible)
+                Owner.BringWindowToTop(this);
+            else
+                Owner.WriteWindowZOrder();
             if (Visible && (WindowLayout != null))
                 PrepareFrame(ElapsedTime.Zero, true);
         }

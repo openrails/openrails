@@ -83,14 +83,15 @@ namespace ORTS
         public int Multiplayer_Port { get; set; }
 
         // Window position settings.
+        public int[] WindowPosition_Activity { get; set; }
         public int[] WindowPosition_Compass { get; set; }
         public int[] WindowPosition_DriverAid { get; set; }
         public int[] WindowPosition_Help { get; set; }
         public int[] WindowPosition_NextStation { get; set; }
+        public int[] WindowPosition_Quit { get; set; }
         public int[] WindowPosition_Switch { get; set; }
         public int[] WindowPosition_TrackMonitor { get; set; }
         public int[] WindowPosition_TrainOperations { get; set; }
-        public int[] WindowPosition_Activity { get; set; }
 
         #endregion
 
@@ -125,14 +126,15 @@ namespace ORTS
             Multiplayer_Host = "127.0.0.1";
             Multiplayer_Port = 30000;
 
+            WindowPosition_Activity = new[] { 50, 50 };
             WindowPosition_Compass = new[] { 50, 0 };
             WindowPosition_DriverAid = new[] { 100, 100 };
             WindowPosition_Help = new[] { 50, 50 };
             WindowPosition_NextStation = new[] { 0, 100 };
+            WindowPosition_Quit = new[] { 50, 50 };
             WindowPosition_Switch = new[] { 0, 50 };
             WindowPosition_TrackMonitor = new[] { 100, 0 };
             WindowPosition_TrainOperations = new[] { 50, 50 };
-            WindowPosition_Activity = new[] { 50, 50 };
         }
 
         void LoadUserSettings(IEnumerable<string> options)

@@ -226,6 +226,9 @@ namespace ORTS.Popups {
     }
 
     public abstract class ControlLayout : Control {
+        public const int SeparatorSize = 5;
+        public const int SeparatorPadding = 2;
+
         protected readonly List<Control> controls = new List<Control>();
         public IEnumerable<Control> Controls { get { return controls; } }
 
@@ -274,11 +277,11 @@ namespace ORTS.Popups {
         }
 
         public void AddHorizontalSeparator() {
-            Add(new Separator(RemainingWidth, 5, 2));
+            Add(new Separator(RemainingWidth, SeparatorSize, SeparatorPadding));
         }
 
         public void AddVerticalSeparator() {
-            Add(new Separator(5, RemainingHeight, 2));
+            Add(new Separator(SeparatorSize, RemainingHeight, SeparatorPadding));
         }
 
         public ControlLayoutOffset AddLayoutOffset(int left, int top, int right, int bottom) {

@@ -68,6 +68,7 @@ namespace ORTS
         public double RealTime = 0;
         InfoDisplay InfoDisplay;
         public WindowManager WindowManager = null;
+        public QuitWindow QuitWindow; // Escape window
         public MessagesWindow MessagesWindow; // Game message window (special, always visible)
         public PauseWindow PauseWindow; // Game paused window (special)
         public HelpWindow HelpWindow; // F1 window
@@ -230,6 +231,7 @@ namespace ORTS
             InfoDisplay = new InfoDisplay(this);
 
             WindowManager = new WindowManager(this);
+            QuitWindow = new QuitWindow(WindowManager);
             MessagesWindow = new MessagesWindow(WindowManager);
             PauseWindow = new PauseWindow(WindowManager);
             HelpWindow = new HelpWindow(WindowManager);
@@ -392,7 +394,7 @@ namespace ORTS
             WindowManager.HandleUserInput(elapsedTime);
 
             // Check for game control keys
-            if (UserInput.IsPressed(UserCommands.GameQuit)) { Stop(); return; }
+            if (UserInput.IsPressed(UserCommands.GameQuit)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
             if (UserInput.IsPressed(UserCommands.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
             if (UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
             if( UserInput.IsPressed( UserCommands.DebugSpeedUp ) ) {

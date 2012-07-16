@@ -252,11 +252,7 @@ namespace ORTS.Popups
 				mouseDownPosition = new Point(UserInput.MouseState.X, UserInput.MouseState.Y);
                 mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
                 if ((mouseActiveWindow != null) && (mouseActiveWindow != WindowsZOrder.Last()))
-				{
-                    WindowsZOrder = WindowsZOrder.Where(w => w != mouseActiveWindow).Concat(new[] { mouseActiveWindow }).ToArray();
-                    UpdateTopMost();
-                    WriteWindowZOrder();
-				}
+                    BringWindowToTop(mouseActiveWindow);
 			}
 
 			if (mouseActiveWindow != null)
@@ -279,6 +275,13 @@ namespace ORTS.Popups
 					mouseActiveWindow = null;
 			}
 		}
+
+        public void BringWindowToTop(Window mouseActiveWindow)
+        {
+            WindowsZOrder = WindowsZOrder.Where(w => w != mouseActiveWindow).Concat(new[] { mouseActiveWindow }).ToArray();
+            UpdateTopMost();
+            WriteWindowZOrder();
+        }
 
         void UpdateTopMost()
         {
