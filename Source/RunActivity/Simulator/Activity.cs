@@ -522,15 +522,15 @@ namespace ORTS {
             } else if( EventType == ActivityEventType.Timer ) {
                 // Waiting at a station
                 if( arrived ) {
-                    double remaining = BoardingEndS - Program.Simulator.ClockTime;
-                    if     ( remaining < 1 ) DisplayColor = Color.LightGreen;
-                    else if( remaining < 11 ) DisplayColor = new Color(255, 255, 128);
-                    else                     DisplayColor = Color.White;
+                    var remaining = (int)Math.Ceiling(BoardingEndS - Program.Simulator.ClockTime);
+                    if (remaining < 1) DisplayColor = Color.LightGreen;
+                    else if (remaining < 11) DisplayColor = new Color(255, 255, 128);
+                    else DisplayColor = Color.White;
 
                     // Still have to wait
                     if( remaining > 0 ) {
-                        DisplayMessage = string.Format( "Passenger boarding completes in {0:D2}:{1:D2}",
-                            (int)(remaining / 60), (int)(remaining % 60) );
+                        DisplayMessage = string.Format("Passenger boarding completes in {0:D2}:{1:D2}",
+                            remaining / 60, remaining % 60);
                     }
                         // May depart
                     else if( !maydepart ) {
