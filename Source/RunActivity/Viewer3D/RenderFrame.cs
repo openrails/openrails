@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -520,11 +521,7 @@ namespace ORTS
             return RenderPrimitive.SequenceForOpaque[(int)group];
         }
 
-        /// <summary>
-        /// Draw 
-        /// Executed in the RenderProcess thread 
-        /// </summary>
-        /// <param name="graphicsDevice"></param>
+        [CallOnThread("Render")]
         public void Draw(GraphicsDevice graphicsDevice)
         {
 #if DEBUG_RENDER_STATE
@@ -554,40 +551,40 @@ namespace ORTS
                 Console.WriteLine();
             }
 
-            if( UserInput.IsPressed( UserCommands.GameScreenshot ) ) {
-                using( var screenshot = new ResolveTexture2D( graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color ) ) {
-                    graphicsDevice.ResolveBackBuffer( screenshot );
-                    if( !Directory.Exists( RenderProcess.Viewer.Settings.ScreenshotPath ) )
-                        Directory.CreateDirectory( RenderProcess.Viewer.Settings.ScreenshotPath );
-                    var fileName = Path.Combine( RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString( "yyyy-MM-dd hh-mm-ss" ) + ".png" );
-                    screenshot.Save( fileName, ImageFileFormat.Png );
-                    RenderProcess.Viewer.MessagesWindow.AddMessage( String.Format( "Screenshot saved to '{0}'.", fileName ), 10 );
-                }
+            if (UserInput.IsPressed(UserCommands.GameScreenshot))
+            {
+                if (!Directory.Exists(RenderProcess.Viewer.Settings.ScreenshotPath))
+                    Directory.CreateDirectory(RenderProcess.Viewer.Settings.ScreenshotPath);
+                var fileName = Path.Combine(RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss")) + ".png";
+                SaveScreenshot(graphicsDevice, fileName);
+                RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
             }
             // Boolean and FileStem set by Viewer3D
             // <CJ comment> Intended to save a thumbnail-sized image but can't find a way to do this.
             // Currently saving a full screen image and then showing it in Menu.exe at a thumbnail size.
             // </CJ comment>
-            if (RenderProcess.Viewer.SaveActivityThumbnail) {
-                 RenderProcess.Viewer.SaveActivityThumbnail = false;    // cancel flag
-                 SaveScreenshot( graphicsDevice, RenderProcess.Viewer.SaveActivityFileStem );
-                 RenderProcess.Viewer.MessagesWindow.AddMessage( "Game saved", 5.0 );
+            if (RenderProcess.Viewer.SaveActivityThumbnail)
+            {
+                RenderProcess.Viewer.SaveActivityThumbnail = false;
+                SaveScreenshot(graphicsDevice, Path.Combine(Program.UserDataFolder, RenderProcess.Viewer.SaveActivityFileStem + ".png"));
+                RenderProcess.Viewer.MessagesWindow.AddMessage("Game saved", 5);
             }
-
         }
 
-        /// <summary>
-        /// Executed in the RenderProcess thread 
-        /// </summary>
-        /// <param name="graphicsDevice"></param>
-        public void SaveScreenshot( GraphicsDevice graphicsDevice, string filestem ) {
-            using( var screenshot = new ResolveTexture2D( graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color ) ) {
-                graphicsDevice.ResolveBackBuffer( screenshot );
-                if( !Directory.Exists( RenderProcess.Viewer.Settings.ScreenshotPath ) )
-                    Directory.CreateDirectory( RenderProcess.Viewer.Settings.ScreenshotPath );
-                var fileName = Path.Combine( Program.UserDataFolder, filestem + ".png" );
-                screenshot.Save( fileName, ImageFileFormat.Png );
-            }
+        [CallOnThread("Render")]
+        public void SaveScreenshot(GraphicsDevice graphicsDevice, string fileName)
+        {
+            var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color);
+            graphicsDevice.ResolveBackBuffer(screenshot);
+            new Thread(() =>
+            {
+                try
+                {
+                    screenshot.Save(fileName, ImageFileFormat.Png);
+                    screenshot.Dispose();
+                }
+                catch { }
+            }).Start();
         }
 
         void DrawShadows( GraphicsDevice graphicsDevice, bool logging )
