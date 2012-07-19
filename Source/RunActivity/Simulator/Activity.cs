@@ -445,7 +445,7 @@ namespace ORTS {
         public bool IsMissedStation() {
             // Calc all distances
             TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller );
+                new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.dFrontTDBTraveller );
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
 
@@ -455,7 +455,7 @@ namespace ORTS {
                     PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z );
 
             helper =
-                new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller );
+                new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.dRearTDBTraveller );
 
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
@@ -468,7 +468,8 @@ namespace ORTS {
             return (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
                 distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
                 distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind);
+                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                Program.Simulator.PlayerLocomotive.Direction != Direction.N);
         }
 
         public override void NotifyEvent( ActivityEventType EventType ) {

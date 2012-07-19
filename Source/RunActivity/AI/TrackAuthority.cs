@@ -26,6 +26,7 @@ namespace ORTS
         public AIPathNode SidingNode;
         public AIPathNode StopNode;
         public AIPathNode LastValidNode;
+        public AIPathNode InBetweenStartNode;
         public int NReverseNodes;
         public int Priority;
         public float StopDistanceM;
@@ -34,6 +35,7 @@ namespace ORTS
         public bool StationStop = false;
         public List<float> StationDistanceM = null;
         public int PrevJunctionIndex = -1;
+        private float prevTrainLength = -1;
 
         public TrackAuthority(Train train, int id, int priority, AIPath path)
         {
@@ -43,6 +45,7 @@ namespace ORTS
             StartNode = path.FirstNode;
             StopNode = path.FirstNode;
             Priority = priority;
+            InBetweenStartNode = StartNode;
         }
 
         // restore game state
@@ -67,6 +70,7 @@ namespace ORTS
                 Path = new AIPath(inf);
                 Path.TrackDB = Program.Simulator.TDB.TrackDB;
                 Path.TSectionDat = Program.Simulator.TSectionDat;
+                Train = Program.Simulator.Trains[0];
             }
             else
             {
@@ -79,6 +83,8 @@ namespace ORTS
             EndNode = Path.ReadNode(inf);
             SidingNode = Path.ReadNode(inf);
             StopNode = Path.ReadNode(inf);
+            LastValidNode = Path.ReadNode(inf);
+            InBetweenStartNode = Path.ReadNode(inf);
         }
 
         // save game state
@@ -100,6 +106,8 @@ namespace ORTS
             Path.WriteNode(outf,EndNode);
             Path.WriteNode(outf,SidingNode);
             Path.WriteNode(outf, StopNode);
+            Path.WriteNode(outf, LastValidNode);
+            Path.WriteNode(outf, InBetweenStartNode);
          }
 
         public struct Status
@@ -316,6 +324,21 @@ namespace ORTS
             return retval;
         }
 
+        public void UpdateTrainLength()
+        {
+            float newLen = Train.Length;
+            if (prevTrainLength == -1)
+            {
+                prevTrainLength = newLen;
+            }
+            else if (prevTrainLength != newLen)
+            {
+                DistanceDownPathM += prevTrainLength;
+                prevTrainLength = newLen;
+                DistanceDownPathM -= prevTrainLength;
+            }
+        }
+
         /// <summary>
         /// Computes the StopDistanceM value, i.e. the distance from one end of the train to the StopNode.
         /// </summary>
@@ -328,7 +351,7 @@ namespace ORTS
 
             StopDistanceM = traveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
             StationStop = false;
-            PathDistReverseAdjustmentM = 0;
+            //PathDistReverseAdjustmentM = 0;
             float len = 0;
             foreach (TrainCar car in Train.Cars)
                 len+= car.Length;

@@ -105,6 +105,7 @@ namespace ORTS
                 Nodes[i].NextSidingNode = ReadNode(inf);
             }
             FirstNode = Nodes[0];
+            LastVisitedNode = ReadNode(inf);
         }
         public AIPathNode ReadNode(BinaryReader inf)
         {
@@ -126,6 +127,7 @@ namespace ORTS
                 WriteNode(outf, Nodes[i].NextMainNode);
                 WriteNode(outf, Nodes[i].NextSidingNode);
             }
+            WriteNode(outf, LastVisitedNode);
         }
         public void WriteNode(BinaryWriter outf, AIPathNode node)
         {
@@ -205,7 +207,7 @@ namespace ORTS
         public void AlignSwitchesTo(AIPathNode tonode)
         {
             AIPathNode prevNode = null;
-            for (AIPathNode node = FirstNode; node != null && node != tonode; node = node.NextMainNode)
+            for (AIPathNode node = LastVisitedNode; node != null && node != tonode; node = node.NextMainNode)
             {
                 if (node.IsFacingPoint)
                     AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);

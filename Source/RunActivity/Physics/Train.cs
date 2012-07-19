@@ -424,7 +424,8 @@ namespace ORTS
             SignalObjectItems.RemoveRange(0,sigtotal);
 
             InitializeSignals(true);
-            Simulator.AI.Dispatcher.ExtendPlayerAuthorization(force);
+            if (force)
+                Simulator.AI.Dispatcher.ExtendPlayerAuthorization(force);
         }
 
 		//

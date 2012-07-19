@@ -168,14 +168,36 @@ namespace ORTS
                     ExtendAuthorization(auth, clockTime);
                 }
 
+                // Train length is for couple / uncouple
+                auth.UpdateTrainLength();
+
+                auth.Train.TrackAuthority = auth;
 
                 if (auth.TrainID == 0 && AI.Simulator.PlayerLocomotive != null)
                 {
                     auth.Train = AI.Simulator.PlayerLocomotive.Train;// this can change due to uncoupling
-                    if (auth.NReverseNodes % 2 == 0)
-                        auth.DistanceDownPathM += elapsedClockSeconds * auth.Train.SpeedMpS;
+                    float distMoved = 0;
+                    if (auth.Train.Reverse)
+                        distMoved -= elapsedClockSeconds * auth.Train.SpeedMpS;
                     else
-                        auth.DistanceDownPathM -= elapsedClockSeconds * auth.Train.SpeedMpS;
+                        distMoved += elapsedClockSeconds * auth.Train.SpeedMpS;
+
+                    if (auth.StopNode.Type != AIPathNodeType.Reverse || auth.StopDistanceM > 0)
+                    {
+                        auth.DistanceDownPathM += distMoved;
+                        if (auth.PathDistReverseAdjustmentM != 0)
+                        {
+                            auth.DistanceDownPathM -= auth.PathDistReverseAdjustmentM;
+                            auth.PathDistReverseAdjustmentM = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (auth.PathDistReverseAdjustmentM == 0)
+                            auth.PathDistReverseAdjustmentM -= auth.Train.Length;
+                        auth.PathDistReverseAdjustmentM += distMoved;
+                    }
+
                     if (auth.StopNode == auth.StartNode)
                     {
                         auth.AdvanceStopNode(true);
@@ -205,12 +227,13 @@ namespace ORTS
                     {
                         if (auth.StartNode != auth.StopNode)
                         {
-                            auth.DistanceDownPathM += 2 * auth.PathDistReverseAdjustmentM;
+                            //auth.DistanceDownPathM += 2 * auth.PathDistReverseAdjustmentM;
                             auth.NReverseNodes--;
                         }
 
                         auth.Path.SetVisitedNode(auth.StopNode, auth.Train.RearTDBTraveller.TrackNodeIndex);
                         auth.StartNode = auth.Path.LastVisitedNode;
+                        auth.InBetweenStartNode = auth.StartNode;
                         //auth.StartNode = auth.StopNode;
                         // By GeorgeS
                         //Rereserve(auth);
@@ -307,7 +330,7 @@ namespace ORTS
                 bool hasUnReserve = true;
                 */
                 // By GeorgeS
-                AIPathNode stepnode = auth.Path.FindTrackNode(auth.Path.FirstNode, auth.Train.dRearTDBTraveller.TrackNodeIndex);
+                AIPathNode stepnode = auth.Path.FindTrackNode(auth.InBetweenStartNode, auth.Train.dRearTDBTraveller.TrackNodeIndex);
                 bool hasUnReserve = false;
                 while (stepnode != null)
                 {
@@ -719,7 +742,7 @@ namespace ORTS
                 else
                     break;
             }
-            if (node == null || !CanReserve(auth.TrainID, auth.Priority, tnList))
+            if (node == null || tnList.Count == 0 || !CanReserve(auth.TrainID, auth.Priority, tnList))
                 return false;
             if (node.Type != AIPathNodeType.SidingStart)
             {
@@ -1057,10 +1080,10 @@ namespace ORTS
 
 			distance = auth.StopDistanceM;
 			backwards = auth.NReverseNodes % 2 == 1;
+            if (auth.StationStop)
+                return DispatcherPOIType.StationStop;
             if (auth.StopNode.Type == AIPathNodeType.Reverse)
                 return DispatcherPOIType.ReversePoint;
-            if (auth.StationStop)
-				return DispatcherPOIType.StationStop;
 			if (auth.EndNode == auth.StopNode)
 				return DispatcherPOIType.EndOfAuthorization;
 			return DispatcherPOIType.Stop;
