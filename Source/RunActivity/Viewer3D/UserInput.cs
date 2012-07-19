@@ -84,9 +84,9 @@ namespace ORTS
 
         public static void Initialize()
         {
-            Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(0x01);
-            Commands[(int)UserCommands.GameForceQuit] = new UserCommandKeyInput(0x3E, KeyModifiers.Alt);
+            Commands[(int)UserCommands.GamePauseMenu] = new UserCommandKeyInput(0x01);
             Commands[(int)UserCommands.GameSave] = new UserCommandKeyInput(0x3C);
+            Commands[(int)UserCommands.GameQuit] = new UserCommandKeyInput(0x3E, KeyModifiers.Alt);
             Commands[(int)UserCommands.GamePause] = new UserCommandKeyInput(Keys.Pause);
             Commands[(int)UserCommands.GameScreenshot] = new UserCommandKeyInput(Keys.PrintScreen);
             Commands[(int)UserCommands.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
@@ -484,9 +484,9 @@ namespace ORTS
 
     public enum UserCommands
     {
-        GameQuit,
-        GameForceQuit,
+        GamePauseMenu,
         GameSave,
+        GameQuit,
         GamePause,
         GameScreenshot,
         GameFullscreen,

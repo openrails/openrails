@@ -347,7 +347,7 @@ namespace ORTS
             PreviousButtonData = new byte[6];
             Commands = new RailDriverUserCommand[Enum.GetNames(typeof(UserCommands)).Length];
             // top row of blue buttons left to right
-            Commands[(int)UserCommands.GameQuit] = new RailDriverUserCommand(0, 0x01);
+            Commands[(int)UserCommands.GamePauseMenu] = new RailDriverUserCommand(0, 0x01);
             Commands[(int)UserCommands.GameSave] = new RailDriverUserCommand(0, 0x02);
             //Commands[(int)UserCommands. F3] = new RailDriverUserCommand(0, 0x04);
             Commands[(int)UserCommands.DisplayTrackMonitorWindow] = new RailDriverUserCommand(0, 0x08);

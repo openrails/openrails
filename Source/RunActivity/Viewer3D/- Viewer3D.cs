@@ -394,7 +394,7 @@ namespace ORTS
             WindowManager.HandleUserInput(elapsedTime);
 
             // Check for game control keys
-            if (UserInput.IsPressed(UserCommands.GameQuit)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
+            if (UserInput.IsPressed(UserCommands.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
             if (UserInput.IsPressed(UserCommands.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
             if (UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
             if( UserInput.IsPressed( UserCommands.DebugSpeedUp ) ) {
