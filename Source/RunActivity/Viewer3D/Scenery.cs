@@ -190,14 +190,22 @@ namespace ORTS
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
                 var animated = (worldObject.StaticFlags & (uint)StaticFlag.Animate) != 0;
-                var globalShape = worldObject is TrackObj;
+                var global = (worldObject is TrackObj) || (worldObject.StaticFlags & (uint)StaticFlag.Global) != 0;
 
-                // Determine the file path to the shape file for this scenery object.
-                var shapeFilePath = globalShape ? viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName : viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName;
-                if (!File.Exists(shapeFilePath))
-                    shapeFilePath = null;
-                if (!String.IsNullOrEmpty(shapeFilePath))
+                // TransferObj have a FileName but it is not a shape, so we need to avoid sanity-checking it as if it was.
+                var fileNameIsNotShape = (worldObject is TransferObj);
+
+                // Determine the file path to the shape file for this scenery object and check it exists as expected.
+                var shapeFilePath = fileNameIsNotShape || String.IsNullOrEmpty(worldObject.FileName) ? null : global ? viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName : viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName;
+                if (shapeFilePath != null)
+                {
                     shapeFilePath = Path.GetFullPath(shapeFilePath);
+                    if (!File.Exists(shapeFilePath))
+                    {
+                        Trace.TraceWarning("{0} scenery object {1} with StaticFlags {3:X8} references non-existant {2}", WFileName, worldObject.UID, shapeFilePath, worldObject.StaticFlags);
+                        shapeFilePath = null;
+                    }
+                }
 
                 try
                 {

@@ -938,7 +938,8 @@ namespace MSTS
         DynamicShadow = 0x00010000,
         AnyShadow = 0x0001E000,
         Terrain = 0x00040000,
-        Animate = 0x00080000
+        Animate = 0x00080000,
+        Global = 0x00200000,
     }
 
     public abstract class WorldObject
