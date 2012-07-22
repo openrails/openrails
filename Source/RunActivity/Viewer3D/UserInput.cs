@@ -110,6 +110,7 @@ namespace ORTS
 
             Commands[(int)UserCommands.DebugLocomotiveFlip] = new UserCommandKeyInput(0x21, KeyModifiers.Shift | KeyModifiers.Control);
             Commands[(int)UserCommands.DebugResetSignal] = new UserCommandKeyInput(0x0F);
+            Commands[(int)UserCommands.DebugForcePlayerAuthorization] = new UserCommandKeyInput(0x0F, KeyModifiers.Control);
             Commands[(int)UserCommands.DebugSpeedUp] = new UserCommandKeyInput(0x49, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSpeedDown] = new UserCommandKeyInput(0x51, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSpeedReset] = new UserCommandKeyInput(0x47, KeyModifiers.Control | KeyModifiers.Alt);
@@ -124,8 +125,6 @@ namespace ORTS
             Commands[(int)UserCommands.DebugLogRenderFrame] = new UserCommandKeyInput(0x58, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugTracks] = new UserCommandKeyInput(0x40, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSignalling] = new UserCommandKeyInput(0x57, KeyModifiers.Control | KeyModifiers.Alt);
-            Commands[(int)UserCommands.DebugDispatcherExtend] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
-            Commands[(int)UserCommands.DebugDispatcherRelease] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift | KeyModifiers.Control);
             Commands[(int)UserCommands.DebugResetWheelSlip] = new UserCommandKeyInput(0x2D, KeyModifiers.Control);
             Commands[(int)UserCommands.DebugToggleAdvancedAdhesion] = new UserCommandKeyInput(0x2D, KeyModifiers.Control | KeyModifiers.Alt);
 
@@ -510,6 +509,7 @@ namespace ORTS
 
         DebugLocomotiveFlip,
         DebugResetSignal,
+        DebugForcePlayerAuthorization,
         DebugSpeedUp,
         DebugSpeedDown,
         DebugSpeedReset,
@@ -524,8 +524,6 @@ namespace ORTS
         DebugLogRenderFrame,
         DebugTracks,
         DebugSignalling,
-        DebugDispatcherExtend,
-        DebugDispatcherRelease,
         DebugResetWheelSlip,
         DebugToggleAdvancedAdhesion,
 

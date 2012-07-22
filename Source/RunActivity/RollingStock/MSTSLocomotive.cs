@@ -2071,10 +2071,8 @@ namespace ORTS
                 if (EventID.IsMSTSBin)
                     Locomotive.SignalEvent(EventID.LightSwitchToggle);
             }
-			if (UserInput.IsPressed(UserCommands.DebugDispatcherExtend))
-                Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(false);
-			if (UserInput.IsPressed(UserCommands.DebugDispatcherRelease))
-                Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
+            if (UserInput.IsPressed(UserCommands.DebugForcePlayerAuthorization))
+                Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(true);
 
             // By GeorgeS
             if (UserInput.IsPressed(UserCommands.ControlLight)) { Locomotive.CabLightOn = !Locomotive.CabLightOn; Locomotive.SignalEvent(EventID.LightSwitchToggle); }

@@ -409,11 +409,6 @@ namespace ORTS
                 lastclocktime = Simulator.ClockTime;
             }
             
-            ObjectItemInfo ob;
-            bool force = SignalObjectItems != null &&
-                (ob = (SignalObjectItems.Where(o => o.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL).FirstOrDefault())) != null &&
-                ob.ObjectDetails.hasPermission == Signal.PERMISSION.GRANTED;
-
             nextSignal.Reset(dFrontTDBTraveller, askPermisiion);
             nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
             spad = false;
@@ -423,9 +418,7 @@ namespace ORTS
             int sigtotal = SignalObjectItems.Count;
             SignalObjectItems.RemoveRange(0,sigtotal);
 
-            InitializeSignals(true);
-            if (force)
-                Simulator.AI.Dispatcher.ExtendPlayerAuthorization(force);
+            InitializeSignals(true);                
         }
 
 		//
