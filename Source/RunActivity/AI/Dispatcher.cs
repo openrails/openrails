@@ -47,7 +47,9 @@ namespace ORTS
         /// </summary>
         public Dispatcher(AI ai)
         {
+#if DUMP_DISPATCHER
             File.Delete(".\\dispatcher.txt");
+#endif
             AI = ai;
             Reservations = new int[ai.Simulator.TDB.TrackDB.TrackNodes.Length];
             for (int i = 0; i < Reservations.Length; i++)
@@ -97,7 +99,9 @@ namespace ORTS
         // restore game state
         public Dispatcher(AI ai, BinaryReader inf)
         {
+#if DUMP_DISPATCHER
             File.Delete(".\\dispatcher.txt");
+#endif
             AI = ai;
             PlayerPriority = inf.ReadInt32();
             int n = inf.ReadInt32();
@@ -135,6 +139,7 @@ namespace ORTS
                 TrackAuthorities[i].Save(outf);
         }
 
+#if DUMP_DISPATCHER
         public void Dump()
         {
             foreach (TrackAuthority ta in TrackAuthorities)
@@ -148,6 +153,7 @@ namespace ORTS
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Updates dispatcher information.

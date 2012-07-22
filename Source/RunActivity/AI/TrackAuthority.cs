@@ -168,6 +168,7 @@ namespace ORTS
             return new Status { TrainID = TrainID, Train = Train, Path = s.ToString() };
         }
 
+#if DUMP_DISPATCHER
         public void Dump(Action<StringBuilder> dmpaction)
         {
             StringBuilder reservations = new StringBuilder();
@@ -298,6 +299,7 @@ namespace ORTS
                 }
             }
         }
+#endif
 
         private string GetJunction(int junctionIndex, int link1, int link2)
         {

@@ -401,6 +401,7 @@ namespace ORTS
         //
         public void ResetSignal(bool askPermisiion)
         {
+#if DUMP_DISPATCHER
             Simulator.AI.Dispatcher.Dump();
 
             if (lastclocktime != Simulator.ClockTime)
@@ -408,7 +409,7 @@ namespace ORTS
                 dumps.Add(Simulator.ClockTime + 3, Program.Simulator.AI.Dispatcher.Dump);
                 lastclocktime = Simulator.ClockTime;
             }
-            
+#endif
             nextSignal.Reset(dFrontTDBTraveller, askPermisiion);
             nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
             spad = false;
@@ -443,7 +444,8 @@ namespace ORTS
 			Simulator.AI.Dispatcher.ExtendTrainAuthorization(this, force);
 		}
 		
-		private Heap<Action> dumps = new Heap<Action>();
+#if DUMP_DISPATCHER
+        private Heap<Action> dumps = new Heap<Action>();
         private double lastclocktime = -1;
         private void CheckDump()
         {
@@ -500,6 +502,7 @@ namespace ORTS
                 sta.AppendLine();
             }
         }
+#endif
 
         // Sets the Lead locomotive to the next in the consist
         public void LeadNextLocomotive()
@@ -593,8 +596,9 @@ namespace ORTS
 
 		public virtual void Update(float elapsedClockSeconds)
 		{
+#if DUMP_DISPATCHER
             CheckDump();
-
+#endif
 			if (TrainType == TRAINTYPE.REMOTE) {
 				//if a MSGMove is received
 				if (updateMSGReceived)

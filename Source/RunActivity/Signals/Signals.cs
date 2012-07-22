@@ -1484,6 +1484,7 @@ namespace ORTS
                 {
                 }
 
+#if DUMP_DISPATCHER
                 public void Dump(StringBuilder sta, Traveller t)
                 {
                     sta.AppendFormat("|trackNode|{0}\r\n", trackNode);
@@ -1501,7 +1502,7 @@ namespace ORTS
                         sh.Dump(sta);
                     }
                 }
-
+#endif
   //================================================================================================//
   ///
   //  Constructor for Copy 
@@ -2398,6 +2399,7 @@ namespace ORTS
                         speed_info[Convert.ToInt32(state)] = speedinfo;
                 }
 
+#if DUMP_DISPATCHER
                 public void Dump(StringBuilder sta)
                 {
                     sta.AppendFormat("||SignalType.Name|{0}\r\n", signalType.Name);
@@ -2410,7 +2412,7 @@ namespace ORTS
                     sta.AppendFormat("||state|{0}\r\n", this.state);
                     sta.AppendLine();
                 }
-
+#endif
   //================================================================================================//
   //
   // SetSignalType : This method sets the signal type object from the CIGCFG file
