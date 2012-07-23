@@ -123,9 +123,9 @@ namespace ORTS
         {
             public readonly List<Tile> List;
             public readonly Dictionary<string, Tile> ByXZ;
-            public TileList(IEnumerable<Tile> list)
+            public TileList(List<Tile> list)
             {
-                List = list.ToList();
+                List = list;
                 ByXZ = list.ToDictionary(t => t.TileX + "," + t.TileZ);
             }
         }
