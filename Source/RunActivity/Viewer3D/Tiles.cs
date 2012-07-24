@@ -42,6 +42,8 @@ namespace ORTS
             var tiles = Tiles;
             if (!tiles.ByXZ.ContainsKey(tileX + "," + tileZ))
             {
+                // Take the current list of tiles, evict any necessary so the new tile fits, load and add the new
+                // tile to the list, and store it all atomically in Tiles.
                 var tileList = new List<Tile>(tiles.List);
                 while (tileList.Count >= MaximumCachedTiles)
                     tileList.RemoveAt(0);
@@ -121,7 +123,13 @@ namespace ORTS
 
         class TileList
         {
+            /// <summary>
+            /// Stores tiles in load order, so eviction is predictable and reasonable.
+            /// </summary>
             public readonly List<Tile> List;
+            /// <summary>
+            /// Stores tiles by their TileX, TileZ location, so lookup is fast.
+            /// </summary>
             public readonly Dictionary<string, Tile> ByXZ;
             public TileList(List<Tile> list)
             {
