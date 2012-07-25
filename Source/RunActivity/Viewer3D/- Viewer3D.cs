@@ -454,6 +454,25 @@ namespace ORTS
 			}
 			if (UserInput.IsPressed(UserCommands.ControlMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
 
+			if (UserInput.IsPressed(UserCommands.GameSwitchPicked))
+			{
+				if (Program.DebugViewer.Enabled && Program.DebugViewer.pickedItem != null)
+				{
+
+					TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+					if (nextSwitchTrack != null && !Program.Simulator.SwitchIsOccupied(nextSwitchTrack))
+					{
+						if (nextSwitchTrack.SelectedRoute == 0)
+							nextSwitchTrack.SelectedRoute = 1;
+						else
+							nextSwitchTrack.SelectedRoute = 0;
+						if (MPManager.IsMultiPlayer() && MPManager.IsServer()) MPManager.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
+
+					}
+				}
+				Program.DebugViewer.pickedItemHandled = true;
+			}
+
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
             {
                 isMouseShouldVisible = true;

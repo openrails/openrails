@@ -69,6 +69,7 @@ namespace ORTS
         public bool Wire { get; set; }
         public int WorldObjectDensity { get; set; }
 		public bool ViewDispatcher { get; set; }
+		public int MPUpdateInterval { get; set; }
 
         // These two are command-line only flags to start multiplayer modes.
         [DoNotSave]
@@ -125,6 +126,7 @@ namespace ORTS
             Multiplayer_User = Environment.UserName;
             Multiplayer_Host = "127.0.0.1";
             Multiplayer_Port = 30000;
+			MPUpdateInterval = 10;
 
             WindowPosition_Activity = new[] { 50, 50 };
             WindowPosition_Compass = new[] { 50, 0 };

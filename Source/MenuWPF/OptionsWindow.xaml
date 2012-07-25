@@ -251,6 +251,9 @@
                                 </CheckBox.RenderTransform>
                             </CheckBox>
                             <Label FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="0,2,0,5" Name="label1" Grid.Row="11">Turn On Dispatcher Viewer Window</Label>
+                            <Label FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="18,0,236,7" Name="label2" Grid.Row="12" Grid.ColumnSpan="2">MultiPlayer: Update Signal Every</Label>
+                            <TextBox FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" HorizontalContentAlignment="Right" Margin="10,4,0,7" MaxLines="1" Name="textMPUpdate" TextWrapping="Wrap" Grid.Column="1" Grid.Row="12" HorizontalAlignment="Left" Width="27">10</TextBox>
+                            <Label FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="48,4,0,3" Name="label3" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Grid.Row="12" Width="213.85">Seconds</Label>
                         </Grid>
 					</Border>
 				</Grid>
@@ -398,8 +401,8 @@
 						</Grid>
 					</Border>
 				</Grid>
-			</TabItem>			
-		</TabControl>
+			</TabItem>
+        </TabControl>
 		<Button x:Name="buttonOK" Content="Save" Grid.Column="1" Margin="0,0,16,0" Grid.Row="2" HorizontalContentAlignment="Center" Style="{DynamicResource StandardButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="24" FontWeight="Bold" Foreground="Black" Click="buttonOK_Click" Cursor="Hand" HorizontalAlignment="Right" ToolTip="Save options" VerticalAlignment="Center" Width="80" Height="40" Background="#7FFFFFFF" />
 		<Button x:Name="buttonCancel" Content="Cancel" Grid.Column="2" Margin="0" Grid.Row="2" Style="{DynamicResource StandardButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="buttonCancel_Click" Cursor="Hand" Width="86" ToolTip="Reject changes" Background="#7FFFFFFF" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40"/>
 		<Button x:Name="btnPrevious" Content="&lt;Back" Margin="36,0,295,0" Grid.Row="2" Style="{DynamicResource StandardButton}" FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" FontSize="21.333" FontWeight="Bold" Foreground="Black" Click="btnPrevious_Click" Cursor="Hand" HorizontalAlignment="Left" Width="90" Grid.ColumnSpan="2" ToolTip="Previous tab" Background="#7FFFFFFF" VerticalAlignment="Center" Height="40"/>

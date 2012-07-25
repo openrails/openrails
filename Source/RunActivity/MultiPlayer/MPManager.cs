@@ -38,6 +38,8 @@ namespace ORTS.MultiPlayer
 
 		private List<Train> uncoupledTrains;
 
+		public int MPUpdateInterval = 10;
+
 		public void AddUncoupledTrains(Train t)
 		{
 			lock (uncoupledTrains)
@@ -138,7 +140,7 @@ namespace ORTS.MultiPlayer
 		/// <summary>
 		/// Update. Determines what messages to send every some seconds
 		/// 1. every one second will send train location
-		/// 2. every 10 seconds will send switch status
+		/// 2. by defaulr, every 10 seconds will send switch/signal status, this can be changed by in the menu of setting MPUpdateInterval
 		/// 3. housekeeping (remove/add trains, remove players)
 		/// 4. it will also capture key stroke of horn, panto, wiper, bell, headlight etc.
 		/// </summary>
@@ -165,7 +167,7 @@ namespace ORTS.MultiPlayer
 			}
 			
 			//server updates switch
-			if (Program.Server != null && newtime - lastSwitchTime >= 10f)
+			if (Program.Server != null && newtime - lastSwitchTime >= MPUpdateInterval)
 			{
 				lastSwitchTime = lastSendTime = newtime;
 				BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
@@ -510,27 +512,6 @@ namespace ORTS.MultiPlayer
 				HeadLightCount--; if (HeadLightCount < 0) HeadLightCount = 0;
 				Notify((new MSGEvent(GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
 			}
-
-#if false
-			if (UserInput.IsPressed(UserCommands.GameSwitchPicked) && IsServer())
-			{
-				if (Program.DebugViewer.Enabled && Program.DebugViewer.pickedItem != null )
-				{
-
-					TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
-					if (nextSwitchTrack != null && !Program.Simulator.SwitchIsOccupied(nextSwitchTrack))
-					{
-						if (nextSwitchTrack.SelectedRoute == 0)
-							nextSwitchTrack.SelectedRoute = 1;
-						else
-							nextSwitchTrack.SelectedRoute = 0;
-						BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
-
-					}
-				}
-				Program.DebugViewer.pickedItemHandled = true;
-			}
-#endif
 
 		}
 	}

@@ -82,7 +82,7 @@ namespace ORTS.MultiPlayer
 					info = decoder.GetMsg();
 					while (info != null)
 					{
-						//System.Console.WriteLine(info);
+						System.Console.WriteLine(info);
 						Message msg = Message.Decode(info);
 						if (Connected || msg is MSGRequired) msg.HandleMsg();
 						info = decoder.GetMsg();

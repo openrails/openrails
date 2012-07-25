@@ -276,6 +276,7 @@
 		  this.Controls.Add(this.refreshButton);
 		  this.Controls.Add(this.pictureBox1);
 		  this.Controls.Add(this.menuStrip);
+#if false
 		  pictureBox1.ContextMenu = new System.Windows.Forms.ContextMenu();
 		  System.Windows.Forms.MenuItem item1 = new System.Windows.Forms.MenuItem("Main route");
 		  System.Windows.Forms.MenuItem item2 = new System.Windows.Forms.MenuItem("Side route");
@@ -283,6 +284,7 @@
 		  pictureBox1.ContextMenu.MenuItems.Add(item2);
 		  item1.Click += new System.EventHandler(switchMainClick);
 		  item2.Click += new System.EventHandler(switchSideClick);
+#endif
 		  this.MainMenuStrip = this.menuStrip;
 		  this.MaximizeBox = false;
 		  this.Name = "DispatchViewer";

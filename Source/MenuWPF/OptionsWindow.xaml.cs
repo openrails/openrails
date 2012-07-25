@@ -70,6 +70,8 @@ namespace MenuWPF
                     this.chkWarningLog.IsChecked = (int)RK.GetValue("Logging", 1) == 1 ? true : false;
                     this.txtBgImage.Text = RK.GetValue("BackgroundImage", txtBgImage.Text).ToString();
 					this.chkDispatcher.IsChecked = (1 == (int)RK.GetValue("ViewDispatcher", 0));
+					this.textMPUpdate.Text = RK.GetValue("MPUpdateInterval", textMPUpdate.Text).ToString();
+
 				}
 
             }
@@ -118,6 +120,15 @@ namespace MenuWPF
                     return;
                 }
 
+				//Check the values for the MP Update Frequency
+				result = -1;
+				int.TryParse(textMPUpdate.Text, out result);
+				if (result < 0)
+				{
+					MessageBox.Show("The Multiplayer Update Interval should be numbers in seconds.", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+					return;
+				}
+
                 // Retain settings for convenience
                 using (var RK = Registry.CurrentUser.CreateSubKey(regKey))
                 {
@@ -137,6 +148,7 @@ namespace MenuWPF
                     RK.SetValue("Logging", this.chkWarningLog.IsChecked.Value ? 1 : 0);
                     RK.SetValue("BackgroundImage", this.txtBgImage.Text);
 					RK.SetValue("ViewDispatcher", this.chkDispatcher.IsChecked.Value ? 1 : 0);
+					RK.SetValue("MPUpdateInterval", (int)double.Parse(textMPUpdate.Text));
 
                 }
                 SaveFolders();

@@ -519,8 +519,7 @@ namespace ORTS.Debugging
 				}
 				if (pickedItemHandled) pickedItem = null;
 
-#if false
-				if (MultiPlayer.MPManager.IsMultiPlayer() && pickedItem != null && pickedItemChanged == true && !pickedItemHandled)
+				if (pickedItem != null && pickedItemChanged == true && !pickedItemHandled)
 				{
 					pickedLocation.X = pickedItem.Location2D.X + 152; pickedLocation.Y = pickedItem.Location2D.Y;
 					g.FillRectangle(Brushes.LightGray, GetRect(pickedLocation, 300f, 64f));
@@ -529,9 +528,8 @@ namespace ORTS.Debugging
 					if (node.SelectedRoute == 0) g.DrawString("Current: Main Route", trainFont, trainBrush, pickedLocation);
 					else g.DrawString("Current: Side Route", trainFont, trainBrush, pickedLocation);
 					pickedLocation.Y -= 24;
-					g.DrawString("Ctrl-G to Throw the Switch", trainFont, trainBrush, pickedLocation);
+					g.DrawString("Alt-G to Throw the Switch", trainFont, trainBrush, pickedLocation);
 				}
-#endif
 			}
 
          }
@@ -841,6 +839,7 @@ namespace ORTS.Debugging
 				  if (temp != null)
 				  {
 					  pickedItem = temp; //read by MPManager
+#if false
 					  pictureBox1.ContextMenu.Show(pictureBox1, e.Location);
 					  pictureBox1.ContextMenu.MenuItems[0].Checked = pictureBox1.ContextMenu.MenuItems[1].Checked = false;
 					  if (pickedItem.Item.TrJunctionNode != null)
@@ -848,6 +847,7 @@ namespace ORTS.Debugging
 						  if (pickedItem.Item.TrJunctionNode.SelectedRoute == 0) pictureBox1.ContextMenu.MenuItems[0].Checked = true;
 						  else pictureBox1.ContextMenu.MenuItems[1].Checked = true;
 					  }
+#endif
 				  }
 			  }
 
@@ -894,6 +894,7 @@ namespace ORTS.Debugging
 			  if (item.Location2D.X < x - range || item.Location2D.X > x + range
 				  || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
 
+			  if (item != pickedItem) { pickedItemChanged = true; pickedItemHandled = false; }
 			  return item;
 		  }
 		  return null;

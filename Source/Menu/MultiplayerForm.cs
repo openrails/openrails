@@ -32,6 +32,7 @@ namespace ORTS
                     this.textBoxUser.Text = (string)RK.GetValue("Multiplayer_User", textBoxUser.Text);
                     this.textBoxHost.Text = (string)RK.GetValue("Multiplayer_Host", textBoxHost.Text);
                     this.numericPort.Value = (int)RK.GetValue("Multiplayer_Port", (int)numericPort.Value);
+					this.textMPUpdate.Text = RK.GetValue("MPUpdateInterval", textMPUpdate.Text).ToString();
                 }
             }
         }
@@ -97,6 +98,8 @@ namespace ORTS
                 RK.SetValue("Multiplayer_User", textBoxUser.Text);
                 RK.SetValue("Multiplayer_Host", textBoxHost.Text);
                 RK.SetValue("Multiplayer_Port", (int)numericPort.Value);
+				RK.SetValue("MPUpdateInterval", (int)double.Parse(textMPUpdate.Text));
+
             }
         }
     }
