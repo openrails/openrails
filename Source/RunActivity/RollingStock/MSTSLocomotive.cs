@@ -1803,8 +1803,8 @@ namespace ORTS
                 }                
             }
 
-            if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
-                _CabRenderer = new CabRenderer(viewer, Locomotive);
+            //if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
+            //    _CabRenderer = new CabRenderer(viewer, Locomotive);
 
             // Find the animated parts
             if (TrainCarShape.SharedShape.Animations != null)
@@ -2169,10 +2169,15 @@ namespace ORTS
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
-                Viewer.Camera.Style == Camera.Styles.Cab &&
-                _CabRenderer != null)
-                _CabRenderer.PrepareFrame(frame);
-            
+                Viewer.Camera.Style == Camera.Styles.Cab)
+            {
+                if (_CabRenderer == null && Locomotive.CVFFile != null && Locomotive.CVFFile.TwoDViews.Count > 0)
+                    _CabRenderer = new CabRenderer(Viewer, Locomotive);
+
+                if (_CabRenderer != null)
+                    _CabRenderer.PrepareFrame(frame);
+            }
+
             base.PrepareFrame( frame, elapsedTime );
         }
 
