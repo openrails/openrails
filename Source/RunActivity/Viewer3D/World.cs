@@ -78,6 +78,7 @@ namespace ORTS
                 Viewer.MaterialManager.Sweep();
                 Viewer.TextureManager.Sweep();
             }
+            Trains.CheckPlayerCAB();
         }
 
         [CallOnThread("Updater")]

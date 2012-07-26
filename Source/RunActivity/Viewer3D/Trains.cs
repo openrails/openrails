@@ -65,6 +65,24 @@ namespace ORTS
             CABTextureManager.Mark(Viewer);
         }
 
+        [CallOnThread("Loader")]
+        internal void CheckPlayerCAB()
+        {
+            TrainCar loc = Program.Simulator.PlayerLocomotive;
+            if (loc == null)
+                return;
+
+            if (!Cars.ContainsKey(loc))
+                return;
+
+            MSTSLocomotiveViewer locvw = Cars[loc] as MSTSLocomotiveViewer;
+
+            if (locvw == null)
+                return;
+
+            locvw.LoadCAB();
+        }
+
         [CallOnThread("Updater")]
         public TrainCarViewer GetViewer(TrainCar car)
         {

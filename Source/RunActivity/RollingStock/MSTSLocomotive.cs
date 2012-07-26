@@ -1786,6 +1786,7 @@ namespace ORTS
 
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
+        private bool _hasCabRenderer = false;
         private CabRenderer _CabRenderer = null;
 
         public MSTSLocomotiveViewer(Viewer3D viewer, MSTSLocomotive car)
@@ -2171,8 +2172,6 @@ namespace ORTS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
                 Viewer.Camera.Style == Camera.Styles.Cab)
             {
-                if (_CabRenderer == null && Locomotive.CVFFile != null && Locomotive.CVFFile.TwoDViews.Count > 0)
-                    _CabRenderer = new CabRenderer(Viewer, Locomotive);
 
                 if (_CabRenderer != null)
                     _CabRenderer.PrepareFrame(frame);
@@ -2189,6 +2188,17 @@ namespace ORTS
             if (_CabRenderer != null)
                 _CabRenderer.Mark();
             base.Mark();
+        }
+
+        [CallOnThread("Loader")]
+        internal void LoadCAB()
+        {
+            if (!_hasCabRenderer)
+            {
+                _hasCabRenderer = true;
+                if (Locomotive.CVFFile != null && Locomotive.CVFFile.TwoDViews.Count > 0)
+                    _CabRenderer = new CabRenderer(Viewer, Locomotive);
+            }
         }
 
         /// <summary>
