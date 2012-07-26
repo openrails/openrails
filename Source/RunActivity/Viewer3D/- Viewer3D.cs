@@ -314,6 +314,7 @@ namespace ORTS
         public void Load()
         {
             World.Load();
+            WindowManager.Load();
         }
 
         [CallOnThread("Updater")]

@@ -25,6 +25,9 @@ namespace ORTS.Popups
 {
     public sealed class WindowTextManager
     {
+        // THREAD SAFETY:
+        //   All accesses must be done in local variables. No modifications to the objects are allowed except by
+        //   assignment of a new instance (possibly cloned and then modified).
         Dictionary<string, WindowTextFont> Fonts = new Dictionary<string, WindowTextFont>();
 
         /// <summary>
@@ -59,14 +62,23 @@ namespace ORTS.Popups
         /// size and style with the given outline size.</returns>
         public WindowTextFont Get(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
         {
+            var fonts = Fonts;
             var key = String.Format("{0}:{1:F}:{2}:{3}", fontFamily, sizeInPt, style, outlineSize);
-            lock (Fonts)
+            if (!fonts.ContainsKey(key))
             {
-                WindowTextFont font;
-                if (Fonts.TryGetValue(key, out font))
-                    return font;
-                return Fonts[key] = font = new WindowTextFont(fontFamily, sizeInPt, style, outlineSize);
+                fonts = new Dictionary<string, WindowTextFont>(fonts);
+                fonts.Add(key, new WindowTextFont(fontFamily, sizeInPt, style, outlineSize));
+                Fonts = fonts;
             }
+            return fonts[key];
+        }
+
+        [CallOnThread("Loader")]
+        public void Load(GraphicsDevice graphicsDevice)
+        {
+            var fonts = Fonts;
+            foreach (var font in fonts.Values)
+                font.Load(graphicsDevice);
         }
     }
 
@@ -75,6 +87,10 @@ namespace ORTS.Popups
         readonly Font Font;
         readonly int FontHeight;
         readonly int OutlineSize;
+
+        // THREAD SAFETY:
+        //   All accesses must be done in local variables. No modifications to the objects are allowed except by
+        //   assignment of a new instance (possibly cloned and then modified).
         CharacterGroup Characters;
 
         internal WindowTextFont(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
@@ -106,17 +122,18 @@ namespace ORTS.Popups
         public int MeasureString(string text)
         {
             EnsureCharacterData(text);
+            var characters = Characters;
 
             var chIndexes = new int[text.Length];
             for (var i = 0; i < text.Length; i++)
-                chIndexes[i] = Characters.IndexOfCharacter(text[i]);
+                chIndexes[i] = characters.IndexOfCharacter(text[i]);
 
             var x = 0f;
             for (var i = 0; i < text.Length; i++)
             {
-                x += Characters.AbcWidths[chIndexes[i]].X;
-                x += Characters.AbcWidths[chIndexes[i]].Y;
-                x += Characters.AbcWidths[chIndexes[i]].Z;
+                x += characters.AbcWidths[chIndexes[i]].X;
+                x += characters.AbcWidths[chIndexes[i]].Y;
+                x += characters.AbcWidths[chIndexes[i]].Z;
                 if (text[i] == '\n')
                     x = 0;
             }
@@ -154,19 +171,20 @@ namespace ORTS.Popups
         void Draw(SpriteBatch spriteBatch, Point position, int width, string text, LabelAlignment align, Color color, Color outline)
         {
             EnsureCharacterData(text);
+            var characters = Characters;
 
             var chIndexes = new int[text.Length];
             for (var i = 0; i < text.Length; i++)
-                chIndexes[i] = Characters.IndexOfCharacter(text[i]);
+                chIndexes[i] = characters.IndexOfCharacter(text[i]);
 
             var current = Vector2.Zero;
             if (align != LabelAlignment.Left)
             {
                 for (var i = 0; i < text.Length; i++)
                 {
-                    current.X += Characters.AbcWidths[chIndexes[i]].X;
-                    current.X += Characters.AbcWidths[chIndexes[i]].Y;
-                    current.X += Characters.AbcWidths[chIndexes[i]].Z;
+                    current.X += characters.AbcWidths[chIndexes[i]].X;
+                    current.X += characters.AbcWidths[chIndexes[i]].Y;
+                    current.X += characters.AbcWidths[chIndexes[i]].Z;
                 }
                 if (align == LabelAlignment.Center)
                     current.X = (int)((width - current.X) / 2);
@@ -178,20 +196,23 @@ namespace ORTS.Popups
             current.Y += position.Y - OutlineSize;
 
             var start = current;
-            var texture = Characters.GetTexture(spriteBatch.GraphicsDevice);
+            var texture = characters.Texture;
+            if (texture == null)
+                return;
+
             if (OutlineSize > 0)
             {
-                var outlineOffset = Characters.BoxesMaxBottom;
+                var outlineOffset = characters.BoxesMaxBottom;
                 current = start;
                 for (var i = 0; i < text.Length; i++)
                 {
-                    var box = Characters.Boxes[chIndexes[i]];
+                    var box = characters.Boxes[chIndexes[i]];
                     box.Y += outlineOffset;
                     if (text[i] > ' ')
                         spriteBatch.Draw(texture, current, box, outline, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
-                    current.X += Characters.AbcWidths[chIndexes[i]].X;
-                    current.X += Characters.AbcWidths[chIndexes[i]].Y;
-                    current.X += Characters.AbcWidths[chIndexes[i]].Z;
+                    current.X += characters.AbcWidths[chIndexes[i]].X;
+                    current.X += characters.AbcWidths[chIndexes[i]].Y;
+                    current.X += characters.AbcWidths[chIndexes[i]].Z;
                     if (text[i] == '\n')
                     {
                         current.X = start.X;
@@ -203,10 +224,10 @@ namespace ORTS.Popups
             for (var i = 0; i < text.Length; i++)
             {
                 if (text[i] > ' ')
-                    spriteBatch.Draw(texture, current, Characters.Boxes[chIndexes[i]], color, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
-                current.X += Characters.AbcWidths[chIndexes[i]].X;
-                current.X += Characters.AbcWidths[chIndexes[i]].Y;
-                current.X += Characters.AbcWidths[chIndexes[i]].Z;
+                    spriteBatch.Draw(texture, current, characters.Boxes[chIndexes[i]], color, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                current.X += characters.AbcWidths[chIndexes[i]].X;
+                current.X += characters.AbcWidths[chIndexes[i]].Y;
+                current.X += characters.AbcWidths[chIndexes[i]].Z;
                 if (text[i] == '\n')
                 {
                     current.X = start.X;
@@ -287,23 +308,21 @@ namespace ORTS.Popups
         }
 #endif
 
+        [CallOnThread("Loader")]
+        public void Load(GraphicsDevice graphicsDevice)
+        {
+            Characters.Load(graphicsDevice);
+        }
+
         void EnsureCharacterData(string text)
         {
+            var characters = Characters;
+
             foreach (var ch in text)
             {
-                if (!Characters.ContainsCharacter(ch))
+                if (!characters.ContainsCharacter(ch))
                 {
-                    lock (this)
-                    {
-                        foreach (var ch2 in text)
-                        {
-                            if (!Characters.ContainsCharacter(ch2))
-                            {
-                                Characters = new CharacterGroup(text.ToCharArray(), Characters);
-                                break;
-                            }
-                        }
-                    }
+                    Characters = new CharacterGroup(text.ToCharArray(), characters);
                     break;
                 }
             }
@@ -340,6 +359,7 @@ namespace ORTS.Popups
             public readonly int BoxesMaxRight;
             public readonly int BoxesMaxBottom;
             public readonly Vector3[] AbcWidths;
+            public Texture2D Texture { get; private set; }
 
             public CharacterGroup(Font font, int outlineSize)
             {
@@ -447,70 +467,61 @@ namespace ORTS.Popups
                 return buffer;
             }
 
-            Texture2D Texture;
-            public Texture2D GetTexture(GraphicsDevice graphicsDevice)
+            [CallOnThread("Loader")]
+            public void Load(GraphicsDevice graphicsDevice)
             {
-                var texture = Texture;
-                if (texture != null)
-                    return texture;
+                if (Texture != null || Characters.Length == 0)
+                    return;
 
-                lock (this)
+                var rectangle = new System.Drawing.Rectangle(0, 0, BoxesMaxRight, BoxesMaxBottom);
+                var buffer = GetBitmapData(rectangle);
+
+                for (var y = 0; y < rectangle.Height; y++)
                 {
-                    texture = Texture;
-                    if (texture != null)
-                        return texture;
-
-                    var rectangle = new System.Drawing.Rectangle(0, 0, BoxesMaxRight, BoxesMaxBottom);
-                    var buffer = GetBitmapData(rectangle);
-
-                    for (var y = 0; y < rectangle.Height; y++)
+                    for (var x = 0; x < rectangle.Width; x++)
                     {
-                        for (var x = 0; x < rectangle.Width; x++)
-                        {
-                            var offset = y * rectangle.Width * 4 + x * 4;
-                            // alpha = (red + green + blue) / 3.
-                            buffer[offset + 3] = (byte)((buffer[offset + 0] + buffer[offset + 1] + buffer[offset + 2]) / 3);
-                            // red|green|blue = Color.White;
-                            buffer[offset + 2] = 255;
-                            buffer[offset + 1] = 255;
-                            buffer[offset + 0] = 255;
-                        }
+                        var offset = y * rectangle.Width * 4 + x * 4;
+                        // alpha = (red + green + blue) / 3.
+                        buffer[offset + 3] = (byte)((buffer[offset + 0] + buffer[offset + 1] + buffer[offset + 2]) / 3);
+                        // red|green|blue = Color.White;
+                        buffer[offset + 2] = 255;
+                        buffer[offset + 1] = 255;
+                        buffer[offset + 0] = 255;
                     }
+                }
 
-                    if (OutlineSize > 0)
+                if (OutlineSize > 0)
+                {
+                    var outlineBuffer = new byte[buffer.Length];
+                    Array.Copy(buffer, outlineBuffer, buffer.Length);
+                    for (var offsetX = -OutlineSize; offsetX <= OutlineSize; offsetX++)
                     {
-                        var outlineBuffer = new byte[buffer.Length];
-                        Array.Copy(buffer, outlineBuffer, buffer.Length);
-                        for (var offsetX = -OutlineSize; offsetX <= OutlineSize; offsetX++)
+                        for (var offsetY = -OutlineSize; offsetY <= OutlineSize; offsetY++)
                         {
-                            for (var offsetY = -OutlineSize; offsetY <= OutlineSize; offsetY++)
+                            if (Math.Sqrt(offsetX * offsetX + offsetY * offsetY) <= OutlineSize)
                             {
-                                if (Math.Sqrt(offsetX * offsetX + offsetY * offsetY) <= OutlineSize)
+                                for (var x = OutlineSize; x < rectangle.Width - OutlineSize; x++)
                                 {
-                                    for (var x = OutlineSize; x < rectangle.Width - OutlineSize; x++)
+                                    for (var y = OutlineSize; y < rectangle.Height - OutlineSize; y++)
                                     {
-                                        for (var y = OutlineSize; y < rectangle.Height - OutlineSize; y++)
-                                        {
-                                            var offset = y * rectangle.Width * 4 + x * 4;
-                                            var outlineOffset = offset + offsetY * rectangle.Width * 4 + offsetX * 4;
-                                            outlineBuffer[outlineOffset + 3] = (byte)Math.Min(255, outlineBuffer[outlineOffset + 3] + buffer[offset + 3]);
-                                        }
+                                        var offset = y * rectangle.Width * 4 + x * 4;
+                                        var outlineOffset = offset + offsetY * rectangle.Width * 4 + offsetX * 4;
+                                        outlineBuffer[outlineOffset + 3] = (byte)Math.Min(255, outlineBuffer[outlineOffset + 3] + buffer[offset + 3]);
                                     }
                                 }
                             }
                         }
-                        var combinedBuffer = new byte[buffer.Length * 2];
-                        Array.Copy(buffer, 0, combinedBuffer, 0, buffer.Length);
-                        Array.Copy(outlineBuffer, 0, combinedBuffer, buffer.Length, buffer.Length);
-                        buffer = combinedBuffer;
-                        rectangle.Height *= 2;
                     }
-
-                    texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
-                    texture.SetData(buffer);
-                    Texture = texture;
+                    var combinedBuffer = new byte[buffer.Length * 2];
+                    Array.Copy(buffer, 0, combinedBuffer, 0, buffer.Length);
+                    Array.Copy(outlineBuffer, 0, combinedBuffer, buffer.Length, buffer.Length);
+                    buffer = combinedBuffer;
+                    rectangle.Height *= 2;
                 }
-                return texture;
+
+                var texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
+                texture.SetData(buffer);
+                Texture = texture;
             }
         }
     }

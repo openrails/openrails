@@ -306,5 +306,11 @@ namespace ORTS.Popups
             WindowManagerMaterial.Mark();
             PopupWindowMaterial.Mark();
         }
+
+        [CallOnThread("Loader")]
+        public void Load()
+        {
+            TextManager.Load(Viewer.GraphicsDevice);
+        }
     }
 }
