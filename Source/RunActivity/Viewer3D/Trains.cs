@@ -23,6 +23,7 @@ namespace ORTS
         //   assignment of a new instance (possibly cloned and then modified).
         public Dictionary<TrainCar, TrainCarViewer> Cars = new Dictionary<TrainCar, TrainCarViewer>();
         public List<TrainCar> VisibleCars = new List<TrainCar>();
+        TrainCar PlayerCar;
 
         public TrainDrawer(Viewer3D viewer)
         {
@@ -50,6 +51,10 @@ namespace ORTS
                 }
                 Cars = newCars;
             }
+
+            // Ensure the player locomotive has a cab view loaded and anything else they need.
+            if (PlayerCar != null && cars.ContainsKey(PlayerCar))
+                cars[PlayerCar].LoadForPlayer();
         }
 
         [CallOnThread("Loader")]
@@ -63,24 +68,6 @@ namespace ORTS
                     car.lightDrawer.Mark();
             }
             CABTextureManager.Mark(Viewer);
-        }
-
-        [CallOnThread("Loader")]
-        internal void CheckPlayerCAB()
-        {
-            TrainCar loc = Program.Simulator.PlayerLocomotive;
-            if (loc == null)
-                return;
-
-            if (!Cars.ContainsKey(loc))
-                return;
-
-            MSTSLocomotiveViewer locvw = Cars[loc] as MSTSLocomotiveViewer;
-
-            if (locvw == null)
-                return;
-
-            locvw.LoadCAB();
         }
 
         [CallOnThread("Updater")]
@@ -108,6 +95,7 @@ namespace ORTS
                     if (ApproximateDistance(Viewer.Camera.CameraWorldLocation, car.WorldPosition.WorldLocation) < removeDistance && car != Viewer.PlayerLocomotive)
                         visibleCars.Add(car);
             VisibleCars = visibleCars;
+            PlayerCar = Viewer.Simulator.PlayerLocomotive;
         }
 
         [CallOnThread("Updater")]

@@ -2180,6 +2180,16 @@ namespace ORTS
             base.PrepareFrame( frame, elapsedTime );
         }
 
+        internal override void LoadForPlayer()
+        {
+            if (!_hasCabRenderer)
+            {
+                _hasCabRenderer = true;
+                if (Locomotive.CVFFile != null && Locomotive.CVFFile.TwoDViews.Count > 0)
+                    _CabRenderer = new CabRenderer(Viewer, Locomotive);
+            }
+        }
+
         internal override void Mark()
         {
             foreach (var pdl in ParticleDrawers.Values)
@@ -2188,17 +2198,6 @@ namespace ORTS
             if (_CabRenderer != null)
                 _CabRenderer.Mark();
             base.Mark();
-        }
-
-        [CallOnThread("Loader")]
-        internal void LoadCAB()
-        {
-            if (!_hasCabRenderer)
-            {
-                _hasCabRenderer = true;
-                if (Locomotive.CVFFile != null && Locomotive.CVFFile.TwoDViews.Count > 0)
-                    _CabRenderer = new CabRenderer(Viewer, Locomotive);
-            }
         }
 
         /// <summary>

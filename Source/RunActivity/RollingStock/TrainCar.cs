@@ -512,6 +512,9 @@ namespace ORTS
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
 
         [CallOnThread("Loader")]
+        internal virtual void LoadForPlayer() { }
+
+        [CallOnThread("Loader")]
         internal abstract void Mark();
     }
 
