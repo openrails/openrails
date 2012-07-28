@@ -2,6 +2,27 @@
 // This code is provided to enable you to contribute improvements to the open rails program.  
 // Use of the code for any other purpose or distribution of the code to anyone else
 // is prohibited without specific written permission from admin@openrails.org.
+//  
+// USERSETTINGS
+// 
+// Provides a common storage mechanism for program configuration settings.
+// 
+// Settings are defined as public properties in the UserSettings class, ie 
+//      public bool Alerter { get; set; }
+//      public int BrakePipeChargingRate { get; set; }
+//      etc   ( enclosed in #region 'User Settings' )
+// When the class is constructed, each of these has a 
+// default value set in InitUserSettings.
+// LoadUserSettings uses source code reflection to scan the list
+// of defined properties, checking for overrides
+// first in the registry, then on the command line.
+// The property is updated and Sources records why.
+//
+// All command line options start with - or /
+//     other parameters are considered data.
+// Command line overrides look like this eg
+//      -FullScreen=true  -WindowPosition_Activity=5,5
+
 
 using System;
 using System.Collections.Generic;
@@ -22,13 +43,15 @@ namespace ORTS
     {
         readonly string RegistryKey;
         readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
+                // used in Log() to output the source of the user setting per the following enum.
 
-        enum Source
+        public enum Source
         {
             Default,
             CommandLine,
             Registry,
         }
+
 
         #region User Settings
 
@@ -137,30 +160,35 @@ namespace ORTS
             WindowPosition_Switch = new[] { 0, 50 };
             WindowPosition_TrackMonitor = new[] { 100, 0 };
             WindowPosition_TrainOperations = new[] { 50, 50 };
+
         }
 
-        void LoadUserSettings(IEnumerable<string> options)
-        {
+        void LoadUserSettings(IEnumerable<string> options)      // options enumerates a list of option strings
+        {                                                       // ie { "-FullScreen=true", "-WindowPosition_Activity=5,5" }
+
             // This special command-line option prevents the registry values from being used.
             var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
-            // Pull apart the command-line options so we can find them by setting name.
+            
             var optionsDictionary = new Dictionary<string, string>();
             foreach (var option in options)
             {
+                // Pull apart the command-line options so we can find them by setting name.
                 var k = option.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant();
                 var v = option.Contains('=') || option.Contains(':') ? option.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes";
                 optionsDictionary[k] = v;
             }
+            // optionsDictionary contains eg { "fullscreen":"true",  "WindowPosition_Activity":"5,5" {
 
             using (var RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey))
             {
+                // for each property in the UserSettings class ( ie BrakePipeChargingRate, Logging etc )
                 foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
                 {
                     // Get the default value.
                     var defValue = property.GetValue(this, null);
                     // Read in the registry option, if it exists.
                     var regValue = allowRegistryValues && RK != null ? RK.GetValue(property.Name, null) : null;
-                    // Read in the command-line option, if it exists.
+                    // Read in the command-line option, if it exists into optValue.
                     var propertyNameLower = property.Name.ToLowerInvariant();
                     var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
 
@@ -184,6 +212,12 @@ namespace ORTS
                     else if ((optValue != null) && (property.PropertyType == typeof(int[])))
                         optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
 
+                    // at this point:
+                    //      optValue is a bool,int,or int[] representing the command line override 
+                    //                    or null if no command line override
+                    //      regValue is a bool,int,or int[] representing the registry entry or null
+                    //                    or null if no registry override
+                    
                     var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
                     try
                     {
@@ -217,11 +251,24 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Save UserSettings to the registry
+        /// except those decorated with 'DoNoSaveAttribute'.
+        /// </summary>
         public void Save()
         {
             Save(null);
         }
 
+        /// <summary>
+        /// Save UserSettings to the registry
+        /// except those decorated with 'DoNoSaveAttribute'.
+        /// Save the specified setting, or all if null specified.
+        /// </summary>
+        /// <remarks>
+        /// Used, eg, by Popups.Window to save their location.
+        /// </remarks>
+        /// <param name="name"></param>
         public void Save(string name)
         {
             using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))

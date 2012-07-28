@@ -54,6 +54,9 @@ namespace ORTS
 
             // Set title to show revision or build info.
             Text = String.Format(Program.Version.Length > 0 ? "{0} {1}" : "{0} BUILD {2}", Application.ProductName, Program.Version, Program.Build);
+#if DEBUG
+            Text = Text + "   --- DEBUG BUILD ---";
+#endif
 
             CleanupPre021();
         }

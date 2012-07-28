@@ -32,25 +32,25 @@ namespace ORTS.Popups
             Tabs.Add( new TabData( Tab.KeyboardShortcuts, "Key Commands", ( cl ) =>
             {
                 var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
-                var keyWidth = scrollbox.RemainingWidth / UserInput.KeyboardLayout[0].Length;
+                var keyWidth = scrollbox.RemainingWidth / InputSettings.KeyboardLayout[0].Length;
                 var keyHeight = 3 * keyWidth;
-                UserInput.DrawKeyboardMap((rowBox) =>
+                InputSettings.DrawKeyboardMap((rowBox) =>
                 {
                 }, (keyBox, keyScanCode, keyName) =>
                 {
-                    var color = UserInput.GetScanCodeColor(keyScanCode);
+                    var color = InputSettings.GetScanCodeColor(keyScanCode);
                     if (color == Color.TransparentBlack)
                         color = Color.Black;
 
-                    UserInput.Scale(ref keyBox, keyWidth, keyHeight);
+                    InputSettings.Scale(ref keyBox, keyWidth, keyHeight);
                     scrollbox.Add(new Key(keyBox.Left - scrollbox.CurrentLeft, keyBox.Top - scrollbox.CurrentTop, keyBox.Width - 1, keyBox.Height - 1, keyName, color));
                 });
                 foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
                 {
                     var line = scrollbox.AddLayoutHorizontal(TextHeight);
                     var width = line.RemainingWidth / 2;
-                    line.Add(new Label(width, line.RemainingHeight, UserInput.FormatCommandName(command)));
-                    line.Add(new Label(width, line.RemainingHeight, UserInput.Commands[(int)command].ToString()));
+                    line.Add(new Label(width, line.RemainingHeight, InputSettings.FormatCommandName(command)));
+                    line.Add(new Label(width, line.RemainingHeight, InputSettings.Commands[(int)command].ToString()));
                 }
             }));
             if (owner.Viewer.Simulator.Activity != null)

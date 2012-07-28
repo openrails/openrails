@@ -54,7 +54,7 @@ namespace ORTS
 		// while Simulator.Update() is running, objects are adjusted to this target time 
 		// after Simulator.Update() is complete, the simulator state matches this time
 
-		public readonly UserSettings Settings;
+		public readonly UserSettings Settings;  // deprecated here, use Program.Settings,   TODO remove
 
 		public string BasePath;     // ie c:\program files\microsoft games\train simulator
 		public string RoutePath;    // ie c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's

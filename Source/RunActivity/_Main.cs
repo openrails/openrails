@@ -43,6 +43,7 @@ namespace ORTS
         public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator;
+        public static UserSettings Settings;
 
 		//for Multiplayer
 		public static Server Server;
@@ -87,28 +88,29 @@ namespace ORTS
             if ((action.Length == 0) && (data.Length > 0))
                 action = "start";
 
-            var settings = GetSettings(options);
+            Settings = GetSettings(options);
+            InputSettings.Initialize(options);
 
             // Do the action specified or write out some help.
             switch (action)
             {
                 case "start":
                 case "start-profile":
-                    InitLogging(settings);
-                    Start(settings, data);
+                    InitLogging(Settings);
+                    Start(Settings, data);
                     break;
                 case "resume":
-                    InitLogging(settings);
-                    Resume(settings, data);
+                    InitLogging(Settings);
+                    Resume(Settings, data);
                     break;
                 case "test":
                     // Any log file is deleted by Menu.exe
-                    InitLogging(settings, false);
+                    InitLogging(Settings, false);
                     // set Exit code to be returned to Menu.exe 
-                    System.Environment.ExitCode = Test(settings, data);
+                    System.Environment.ExitCode = Test(Settings, data);
                     break;
                 case "testall":
-                    InitLogging(settings);
+                    InitLogging(Settings);
                     TestAll(data);
                     break;
                 default:

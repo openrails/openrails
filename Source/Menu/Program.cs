@@ -34,8 +34,12 @@ namespace ORTS
 
 			RegistryKey = @"SOFTWARE\OpenRails\ORTS";
 
+            string s = Enum.GetName(typeof(Microsoft.Xna.Framework.Input.Keys), Microsoft.Xna.Framework.Input.Keys.A);
+
+
 			try
 			{
+
                 using (var MainForm = new MainForm())
                 {
                     while (true)

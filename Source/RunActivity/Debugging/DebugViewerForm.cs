@@ -854,6 +854,7 @@ namespace ORTS.Debugging
 		  }
 
 	  }
+#if DEBUG
 	  void switchMainClick(object sender, EventArgs e)
 	  {
 		  if (pickedItem!=null&&pickedItem.Item.TrJunctionNode != null)
@@ -885,6 +886,7 @@ namespace ORTS.Debugging
 		  }
 
 	  }
+#endif
 
 	  private SwitchWidget findItemFromMouse(int x, int y, int range)
 	  {

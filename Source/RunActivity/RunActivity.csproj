@@ -379,6 +379,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\InputSettings.cs" />
     <Compile Include="Popups\QuitWindow.cs" />
     <Compile Include="RollingStock\LocomotiveAttributes.cs" />
     <Compile Include="Signals\Signals.cs">

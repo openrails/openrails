@@ -227,7 +227,6 @@ namespace ORTS
             TextureManager = new SharedTextureManager(GraphicsDevice);
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
-            UserInput.Initialize();
             InfoDisplay = new InfoDisplay(this);
 
             WindowManager = new WindowManager(this);
@@ -453,10 +452,11 @@ namespace ORTS
 				if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) MPManager.Instance().RequestSignalReset();
 				else PlayerTrain.ResetSignal(true);
 			}
-			if (UserInput.IsPressed(UserCommands.ControlMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
+			if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
 
 			if (UserInput.IsPressed(UserCommands.GameSwitchPicked))
 			{
+#if ( DEBUG )
 				if (Program.DebugViewer.Enabled && Program.DebugViewer.pickedItem != null)
 				{
 
@@ -472,7 +472,8 @@ namespace ORTS
 					}
 				}
 				Program.DebugViewer.pickedItemHandled = true;
-			}
+#endif
+            }
 
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
             {
