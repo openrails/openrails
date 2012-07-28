@@ -152,15 +152,17 @@ namespace ORTS
     {
         public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
 
-        /// <summary>
-        /// Construct and initialize the class
-        /// </summary>
 		public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
 			: base(viewer, path, initialPosition, flags)
         {
 			XNAMatrices = new Matrix[SharedShape.Matrices.Length];
 			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
+        }
+
+        public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition)
+            : this(viewer, path, initialPosition, ShapeFlags.None)
+        {
         }
 
 		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -335,7 +337,7 @@ namespace ORTS
 		protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
 		ShapePrimitive shapePrimitive;
 		public SpeedPostShape(Viewer3D viewer, string path, WorldPosition position, SpeedPostObj spo)
-			: base(viewer, path, position, ShapeFlags.AutoZBias)
+			: base(viewer, path, position)
 		{
 
 			SpeedPostObj = spo;
@@ -516,7 +518,7 @@ namespace ORTS
         float AnimationKey = 0;
 
         public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
-            : base(viewer, path, position, shapeFlags | ShapeFlags.AutoZBias)
+            : base(viewer, path, position, shapeFlags)
         {
             CrossingObj = crossingObj;
             if (!CrossingObj.silent)
@@ -590,7 +592,7 @@ namespace ORTS
     public class RoadCarShape : AnimatedShape
     {
         public RoadCarShape(Viewer3D viewer, string path)
-            : base(viewer, path, new WorldPosition(), ShapeFlags.AutoZBias)
+            : base(viewer, path, new WorldPosition())
         {
 		}
     }

@@ -162,7 +162,7 @@ VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 	_VSLightsAndShadows(ShaderModel3, In, Out);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x * (1 - dot(In.Position.xyz, In.Normal.xyz))) / 1000;
+	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
 
 	return Out;
 }

@@ -48,9 +48,10 @@ namespace ORTS
 		}
 
 		EffectParameter zbias_lighting;
-		public float ZBias { get; set; }
-		public float LightingDiffuse { get; set; }
-		public float LightingSpecular { get; set; }
+        Vector3 zbias_lightingVector;
+        public float ZBias { get { return zbias_lightingVector.X; } set { zbias_lightingVector.X = value; zbias_lighting.SetValue(zbias_lightingVector); } }
+        public float LightingDiffuse { get { return zbias_lightingVector.Y; } set { zbias_lightingVector.Y = value; zbias_lighting.SetValue(zbias_lightingVector); } }
+        public float LightingSpecular { get { return zbias_lightingVector.Z; } set { zbias_lightingVector.Z = value; zbias_lighting.SetValue(zbias_lightingVector); } }
 
 		EffectParameter Fog;
 		public void SetFog(float depth, ref Color color)
@@ -92,11 +93,6 @@ namespace ORTS
 
         EffectParameter overlayTexture;
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
-
-		public void Apply()
-		{
-			zbias_lighting.SetValue(new Vector3(ZBias, LightingDiffuse, LightingSpecular));
-		}
 
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))

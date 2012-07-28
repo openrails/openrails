@@ -578,8 +578,6 @@ namespace ORTS
 				shader.ImageTextureIsNight = false;
 			}
 
-			shader.Apply();
-
 			if (MipMapBias < -1)
 				graphicsDevice.SamplerStates[0].MipMapLevelOfDetailBias = -1;   // clamp to -1 max
 			else
@@ -615,7 +613,6 @@ namespace ORTS
             shader.ImageTextureIsNight = false;
             shader.LightingDiffuse = 1;
             shader.LightingSpecular = 0;
-            shader.Apply();
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
