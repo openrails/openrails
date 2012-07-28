@@ -81,10 +81,10 @@ namespace ORTS
                     verticies[i].Position.Y = viewer.Tiles.GetElevation(position.TileX, position.TileZ, 128 + x + minX, 128 - z - minZ) - center.Y;
                     verticies[i].Position.Z = -(z + minZ) * 8 + center.Z;
 
-                    var tc = new Vector3(verticies[i].Position.X / width, 0, verticies[i].Position.Z / height);
+                    var tc = new Vector3(verticies[i].Position.X, 0, verticies[i].Position.Z);
                     tc = Vector3.Transform(tc, xnaRotation);
-                    verticies[i].TextureCoordinate.X = tc.X + 0.5f;
-                    verticies[i].TextureCoordinate.Y = tc.Z + 0.5f;
+                    verticies[i].TextureCoordinate.X = tc.X / width + 0.5f;
+                    verticies[i].TextureCoordinate.Y = tc.Z / height + 0.5f;
                 }
             }
 
