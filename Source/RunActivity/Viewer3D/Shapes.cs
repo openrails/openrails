@@ -525,7 +525,7 @@ namespace ORTS
             {
                 try
                 {
-                    Sound = new SoundSource(viewer, position.WorldLocation, Program.Simulator.RoutePath + @"\\sound\\crossing.sms");
+                    Sound = new SoundSource(viewer, position.WorldLocation, viewer.Simulator.RoutePath + @"\\sound\\crossing.sms");
                     viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch (Exception error)

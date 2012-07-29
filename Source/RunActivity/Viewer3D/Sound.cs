@@ -76,7 +76,7 @@ namespace ORTS
             _inSources = new List<SoundSource>();
             _outSources = new List<SoundSource>();
 
-            _tdbObjs = new TDBObjects(Car);
+            _tdbObjs = new TDBObjects(Car, Viewer);
 
             foreach (MSTS.TTypeDatFile.TrackType ttdf in viewer.TTypeDatFile)
             {
@@ -1825,7 +1825,7 @@ namespace ORTS
         public void AddByTile(int TileX, int TileZ)
         {
             string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
-            string soundfolder = Program.Simulator.RoutePath + "\\sound\\";
+            string soundfolder = Viewer.Simulator.RoutePath + "\\sound\\";
 #if PLAYENVSOUNDS
             lock (Sounds)
             {
@@ -1909,15 +1909,18 @@ namespace ORTS
     public class TDBObjects
     {
         private MSTSWagon _car;
-        private Dispatcher _dp = Program.Simulator.AI.Dispatcher;
-        TrackNode[] trackNodes = Program.Simulator.TDB.TrackDB.TrackNodes;
-        TrItem[] trItems = Program.Simulator.TDB.TrackDB.TrItemTable;
+        private Dispatcher _dp;
+        TrackNode[] trackNodes;
+        TrItem[] trItems;
         private AIPath _aiPath = null;
         private TrackAuthority _ta;
 
-        public TDBObjects(MSTSWagon Car)
+        public TDBObjects(MSTSWagon Car, Viewer3D Viewer)
         {
             _car = Car;
+            _dp = Viewer.Simulator.AI.Dispatcher;
+            trackNodes = Viewer.Simulator.TDB.TrackDB.TrackNodes;
+            trItems = Viewer.Simulator.TDB.TrackDB.TrItemTable;
         }
 
         private AIPathNode FindNode()

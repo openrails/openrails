@@ -54,7 +54,7 @@ namespace ORTS
 		// while Simulator.Update() is running, objects are adjusted to this target time 
 		// after Simulator.Update() is complete, the simulator state matches this time
 
-		public readonly UserSettings Settings;  // deprecated here, use Program.Settings,   TODO remove
+		public readonly UserSettings Settings;
 
 		public string BasePath;     // ie c:\program files\microsoft games\train simulator
 		public string RoutePath;    // ie c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's
@@ -319,7 +319,7 @@ namespace ORTS
                    AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
 				}
                 */
-				if (Program.Simulator.Activity == null || MultiPlayer.MPManager.IsMultiPlayer())
+				if (Activity == null || MultiPlayer.MPManager.IsMultiPlayer())
                 {
                     AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
                 }
@@ -1015,7 +1015,7 @@ namespace ORTS
 			//car.CreateEvent(62);  these are listed as alternate events
 			//car.CreateEvent(63);
 			if (MPManager.IsMultiPlayer())
-				MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, Program.Simulator.PlayerLocomotive)).ToString());
+				MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
 		}
 	} // Simulator
 }

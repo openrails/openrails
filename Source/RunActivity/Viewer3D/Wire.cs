@@ -51,13 +51,13 @@ namespace ORTS
             worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
             try
             {
-                if (Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).RoadShape == true) return 1;
+                if (viewer.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).RoadShape == true) return 1;
             }
             catch (Exception)
             {
                 return 0;
             }
-            SectionIdx[] SectionIdxs = Program.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).SectionIdxs;
+            SectionIdx[] SectionIdxs = viewer.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).SectionIdxs;
 
             foreach (SectionIdx id in SectionIdxs)
             {
@@ -79,7 +79,7 @@ namespace ORTS
                 {
                     float length, radius;
                     uint sid = id.TrackSections[i];
-                    TrackSection section = Program.Simulator.TSectionDat.TrackSections[sid];
+                    TrackSection section = viewer.Simulator.TSectionDat.TrackSections[sid];
                     WorldPosition root = new WorldPosition(nextRoot);
                     nextRoot.XNAMatrix.Translation = Vector3.Zero;
 
@@ -147,7 +147,7 @@ namespace ORTS
 
             try
             {
-                path = Program.Simulator.TSectionDat.TSectionIdx.TrackPaths[dTrackObj.SectionIdx];
+                path = viewer.Simulator.TSectionDat.TSectionIdx.TrackPaths[dTrackObj.SectionIdx];
             }
             catch (Exception)
             {
@@ -172,7 +172,7 @@ namespace ORTS
             {
                 float length, radius;
                 uint sid = path.TrackSections[i];
-                TrackSection section = Program.Simulator.TSectionDat.TrackSections[sid];
+                TrackSection section = viewer.Simulator.TSectionDat.TrackSections[sid];
                 WorldPosition root = new WorldPosition(nextRoot);
                 nextRoot.XNAMatrix.Translation = Vector3.Zero;
 
@@ -376,11 +376,11 @@ namespace ORTS
 
             lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
             lodItem = new LODItemWire("Wire");
-            if (File.Exists(Program.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
+            if (File.Exists(RenderProcess.Viewer.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
                 lodItem.TexName = "overheadwire.ace";
             else
             {
-                Trace.TraceInformation("Ignored missing overheadwire.ace, using default. You can copy the overheadwire.ace from OR\'s AddOns folder to {0}\\Textures", Program.Simulator.RoutePath);
+                Trace.TraceInformation("Ignored missing overheadwire.ace, using default. You can copy the overheadwire.ace from OR\'s AddOns folder to {0}\\Textures", RenderProcess.Viewer.Simulator.RoutePath);
                 lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
             }
             lodItem.ShaderName = "TexDiff";
@@ -391,7 +391,7 @@ namespace ORTS
             lodItem.MipMapLevelOfDetailBias = 0;
             lodItem.LoadMaterial(RenderProcess, lodItem);
 
-            float topHeight = (float)Program.Simulator.TRK.Tr_RouteFile.OverheadWireHeight;
+            float topHeight = (float)RenderProcess.Viewer.Simulator.TRK.Tr_RouteFile.OverheadWireHeight;
 
             float u1 = 0.25f, v1 = 0.25f;
             pl = new Polyline(this, "TopWire", 5);

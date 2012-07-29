@@ -461,7 +461,7 @@ namespace ORTS
 				{
 
 					TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
-					if (nextSwitchTrack != null && !Program.Simulator.SwitchIsOccupied(nextSwitchTrack))
+					if (nextSwitchTrack != null && !Simulator.SwitchIsOccupied(nextSwitchTrack))
 					{
 						if (nextSwitchTrack.SelectedRoute == 0)
 							nextSwitchTrack.SelectedRoute = 1;

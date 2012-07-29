@@ -319,7 +319,7 @@ namespace ORTS.Popups
             TableSetCells(table, 0, "Train", "Speed", "Signal aspect", "", "Distance", "Path");
             TableAddLine(table);
 
-            foreach (TrackAuthority auth in Program.Simulator.AI.Dispatcher.TrackAuthorities)
+            foreach (var auth in Viewer.Simulator.AI.Dispatcher.TrackAuthorities)
             {
                 var status = auth.GetStatus();
                 TableSetCells(table, 0, status.TrainID.ToString(), TrackMonitorWindow.FormatSpeed(status.Train.SpeedMpS, Viewer.MilepostUnitsMetric), status.Train.GetNextSignalAspect().ToString(), "", TrackMonitorWindow.FormatDistance(status.Train.distanceToSignal, Viewer.MilepostUnitsMetric), status.Path);
