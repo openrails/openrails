@@ -35,7 +35,7 @@ namespace ORTS
 #endif
 
             InputSettings.SetDefaults();
-            for (int i = 0; i < Enum.GetNames(typeof(UserCommands)).Length; ++i)
+            for (var i = 0; i < Enum.GetNames(typeof(UserCommands)).Length; ++i)
                 DefaultCommands[i] = InputSettings.Commands[i];
             InputSettings.SetDefaults();
             try
@@ -43,15 +43,15 @@ namespace ORTS
                 InputSettings.LoadUserSettings(new string[0]);
                 PopulateKeyAssignmentForm();
             }
-            catch( System.Exception error)
+            catch (Exception error)
             {
-                MessageBox.Show(error.Message + "while parsing key assignments from registry.  Reset to defaults.", "ERROR");
+                MessageBox.Show(error.Message + " while parsing key assignments from registry. Reset to defaults.", Application.ProductName);
             }
 
-			// Windows 2000 and XP should use 8.25pt Tahoma, while Windows
-			// Vista and later should use 9pt "Segoe UI". We'll use the
-			// Message Box font to allow for user-customizations, though.
-			Font = SystemFonts.MessageBoxFont;
+            // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
+            // Vista and later should use 9pt "Segoe UI". We'll use the
+            // Message Box font to allow for user-customizations, though.
+            Font = SystemFonts.MessageBoxFont;
 
             string[] strContents = 
             {
@@ -96,14 +96,14 @@ namespace ORTS
                     this.checkBoxWindowGlass.Checked = (1 == (int)RK.GetValue("WindowGlass", 0));
                     this.checkBoxBINSound.Checked = (1 == (int)RK.GetValue("MSTSBINSound", 0));
                     this.checkBoxSuppressConfirmations.Checked = (1 == (int)RK.GetValue("SuppressConfirmations", 0));
-					this.checkDispatcher.Checked = (1 == (int)RK.GetValue("ViewDispatcher", 0));
+                    this.checkDispatcher.Checked = (1 == (int)RK.GetValue("ViewDispatcher", 0));
                 }
             }
         }
 
-        string ParseCategoryFrom( string name)
+        string ParseCategoryFrom(string name)
         {
-            int len = name.IndexOf(' ');
+            var len = name.IndexOf(' ');
             if (len == -1)
                 return "";
             else
@@ -113,7 +113,7 @@ namespace ORTS
 
         string ParseDescriptorFrom(string name)
         {
-            int len = name.IndexOf(' ');
+            var len = name.IndexOf(' ');
             if (len == -1)
                 return name;
             else
@@ -124,43 +124,40 @@ namespace ORTS
         {
             // TODO read from registry
 
-            this.panelKeys.Controls.Clear();
-            this.panelKeys.Controls.Clear();
+            panelKeys.Controls.Clear();
+            panelKeys.Controls.Clear();
 
-            int i = 0;
-            string lastCategory = "";
+            var i = 0;
+            var lastCategory = "";
             foreach (UserCommands eCommand in Enum.GetValues(typeof(UserCommands)))
             {
-                string name = InputSettings.FormatCommandName(eCommand);
-                string category = ParseCategoryFrom(name);
-                string descriptor = ParseDescriptorFrom(name);
+                var name = InputSettings.FormatCommandName(eCommand);
+                var category = ParseCategoryFrom(name);
+                var descriptor = ParseDescriptorFrom(name);
 
 #if (!DEBUG )
                 if ( category.ToUpper() == "DEBUG" )
                     continue;
 #endif
-                KeyPressControl keyPressControl;
-                System.Windows.Forms.Label label;
-
-                keyPressControl = new ORTS.KeyPressControl();
-                label = new System.Windows.Forms.Label();
-                this.panelKeys.Controls.Add(keyPressControl);
-                this.panelKeys.Controls.Add(label);
+                var keyPressControl = new KeyPressControl();
+                var label = new Label();
+                panelKeys.Controls.Add(keyPressControl);
+                panelKeys.Controls.Add(label);
 
                 if (category != lastCategory)
                 {
                     // 
                     // category label
                     // 
-                    System.Windows.Forms.Label catlabel = new System.Windows.Forms.Label();
-                    this.panelKeys.Controls.Add(catlabel);
-                    catlabel.Location = new System.Drawing.Point(32, 11 + i * 22);
+                    var catlabel = new Label();
+                    panelKeys.Controls.Add(catlabel);
+                    catlabel.Location = new Point(32, 11 + i * 22);
                     catlabel.Name = "Label";
-                    catlabel.Size = new System.Drawing.Size(180, 17);
+                    catlabel.Size = new Size(180, 17);
                     catlabel.TabIndex = 0;
                     catlabel.Text = category;
-                    catlabel.TextAlign = System.Drawing.ContentAlignment.TopLeft;
-                    catlabel.Font = new Font( catlabel.Font, FontStyle.Bold );
+                    catlabel.TextAlign = ContentAlignment.TopLeft;
+                    catlabel.Font = new Font(catlabel.Font, FontStyle.Bold);
                     lastCategory = category;
                     ++i;
                 }
@@ -168,22 +165,22 @@ namespace ORTS
                 // 
                 // label
                 // 
-                label.Location = new System.Drawing.Point(12, 11 + i * 22);
+                label.Location = new Point(12, 11 + i * 22);
                 label.Name = "Label";
-                label.Size = new System.Drawing.Size(180, 17);
+                label.Size = new Size(180, 17);
                 label.TabIndex = 0;
                 label.Text = descriptor;
-                label.TextAlign = System.Drawing.ContentAlignment.TopRight;
+                label.TextAlign = ContentAlignment.TopRight;
                 // 
                 // keyPressControl
                 // 
-                keyPressControl.Location = new System.Drawing.Point(200, 8 + i * 22);
+                keyPressControl.Location = new Point(200, 8 + i * 22);
                 keyPressControl.Name = "KeyPressControl";
-                keyPressControl.Size = new System.Drawing.Size(200, 20);
+                keyPressControl.Size = new Size(200, 20);
                 keyPressControl.TabIndex = 1;
                 keyPressControl.ReadOnly = true;
-                keyPressControl.InitFrom( eCommand, DefaultCommands[(int)eCommand] );
-                this.toolTip1.SetToolTip(keyPressControl, "Click here to change this key.");
+                keyPressControl.InitFrom(eCommand, DefaultCommands[(int)eCommand]);
+                toolTip1.SetToolTip(keyPressControl, "Click here to change this key.");
 
                 ++i;
             }
@@ -196,14 +193,14 @@ namespace ORTS
         // If the modifier key conflicts with the assigned keys, proceed anyway, it will be caught by InputSettings.CheckForErrors()
         void FixModifiableKey(UserCommands eCommand, UserCommands[] eModifiers)
         {
-            UserCommandModifiableKeyInput command = (UserCommandModifiableKeyInput) InputSettings.Commands[(int)eCommand];
+            var command = (UserCommandModifiableKeyInput)InputSettings.Commands[(int)eCommand];
             command.IgnoreControl = false;
             command.IgnoreAlt = false;
             command.IgnoreShift = false;
 
             foreach (UserCommands eModifier in eModifiers)
             {
-                UserCommandModifierInput modifier = (UserCommandModifierInput)InputSettings.Commands[(int)eModifier];
+                var modifier = (UserCommandModifierInput)InputSettings.Commands[(int)eModifier];
                 if (modifier.Control) command.IgnoreControl = true;
                 if (modifier.Alt) command.IgnoreAlt = true;
                 if (modifier.Shift) command.IgnoreShift = true;
@@ -227,7 +224,7 @@ namespace ORTS
 
         }
 
-        private bool MatchesDefaults( UserCommands eCommand )
+        bool MatchesDefaults(UserCommands eCommand)
         {
             int scan1, scan2;
             XNA.Keys vkey1, vkey2;
@@ -238,8 +235,8 @@ namespace ORTS
             bool ialt1, ialt2;
             bool ishift1, ishift2;
 
-            UserCommandInput currentKeyCombo = InputSettings.Commands[(int)eCommand];
-            UserCommandInput defaultKeyCombo = DefaultCommands[(int)eCommand];
+            var currentKeyCombo = InputSettings.Commands[(int)eCommand];
+            var defaultKeyCombo = DefaultCommands[(int)eCommand];
             defaultKeyCombo.ToValue(out scan1, out vkey1, out ctrl1, out alt1, out shift1, out ictrl1, out ialt1, out ishift1);
             currentKeyCombo.ToValue(out scan2, out vkey2, out ctrl2, out alt2, out shift2, out ictrl2, out ialt2, out ishift2);
 
@@ -249,26 +246,30 @@ namespace ORTS
 
         void WriteInputSettingsToRegistry()
         {
-            if (this.SetAllDefaults)
+            // When we see this condition, do a general cleanup.
+            if (SetAllDefaults)
             {
-                // When we see this condition, do a general cleanup.
-                Registry.CurrentUser.DeleteSubKeyTree( InputSettings.RegistryKey );
+                try
+                {
+                    Registry.CurrentUser.DeleteSubKeyTree(InputSettings.RegistryKey);
+                }
+                catch (ArgumentException) { }
             }
 
             using (var RK = Registry.CurrentUser.CreateSubKey(InputSettings.RegistryKey))
-            {                
+            {
                 // for every user command
-                foreach (var eCommand in Enum.GetValues(typeof(UserCommands)))
+                foreach (UserCommands eCommand in Enum.GetValues(typeof(UserCommands)))
                 {
-                    UserCommandInput keyCombo = InputSettings.Commands[(int)eCommand];
+                    var keyCombo = InputSettings.Commands[(int)eCommand];
 
-                    if (MatchesDefaults((UserCommands)eCommand))
+                    if (MatchesDefaults(eCommand))
                     {
                         RK.DeleteValue(eCommand.ToString(), false);
                     }
                     else
                     {
-                        string setting = keyCombo.ToRegString();
+                        var setting = keyCombo.ToRegString();
                         RK.SetValue(eCommand.ToString(), setting);
                     }
                 }
@@ -278,16 +279,11 @@ namespace ORTS
 
         void buttonOK_Click(object sender, EventArgs e)
         {
-
             FixModifiableKeys();
 
-            string result = InputSettings.CheckForErrors( false);
-
-            if (result != "")
-            {
-                if( DialogResult.Cancel == MessageBox.Show( result, "Warning", MessageBoxButtons.OKCancel ))
-                    return;
-            }
+            var result = InputSettings.CheckForErrors(false);
+            if (result != "" && DialogResult.Yes != MessageBox.Show(result + "\nContinue with conflicting key assignments?", Application.ProductName, MessageBoxButtons.YesNo))
+                return;
 
             WriteInputSettingsToRegistry();
 
@@ -304,19 +300,18 @@ namespace ORTS
                 RK.SetValue("BrakePipeChargingRate", (int)this.numericBrakePipeChargingRatePSIpS.Value);
                 RK.SetValue("GraduatedRelease", this.checkBoxGraduatedRelease.Checked ? 1 : 0);
                 RK.SetValue("DynamicShadows", this.checkBoxShadows.Checked ? 1 : 0);
-				RK.SetValue("WindowGlass", this.checkBoxWindowGlass.Checked ? 1 : 0);
-				RK.SetValue("MSTSBINSound", this.checkBoxBINSound.Checked ? 1 : 0);
+                RK.SetValue("WindowGlass", this.checkBoxWindowGlass.Checked ? 1 : 0);
+                RK.SetValue("MSTSBINSound", this.checkBoxBINSound.Checked ? 1 : 0);
                 RK.SetValue("SuppressConfirmations", this.checkBoxSuppressConfirmations.Checked ? 1 : 0);
-				RK.SetValue("ViewDispatcher", this.checkDispatcher.Checked ? 1 : 0);
-
+                RK.SetValue("ViewDispatcher", this.checkDispatcher.Checked ? 1 : 0);
             }
 
             DialogResult = DialogResult.OK;
         }
 
-        private void buttonDefaultKeys_Click(object sender, EventArgs e)
+        void buttonDefaultKeys_Click(object sender, EventArgs e)
         {
-            if (DialogResult.OK == MessageBox.Show("You will loose all custom key assignments that you have made.", "Warning", MessageBoxButtons.OKCancel))
+            if (DialogResult.Yes == MessageBox.Show("Remove all custom key assignments?", Application.ProductName, MessageBoxButtons.YesNo))
             {
                 InputSettings.SetDefaults();
                 PopulateKeyAssignmentForm();
@@ -324,39 +319,31 @@ namespace ORTS
             }
         }
 
-        private void buttonExport_Click(object sender, EventArgs e)
+        void buttonExport_Click(object sender, EventArgs e)
         {
-            string OutputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            var OutputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
-            InputSettings.DumpToText( OutputPath + @"\Keyboard.txt");
+            InputSettings.DumpToText(OutputPath + @"\Keyboard.txt");
             //InputSettings.DumpToGraphic( OutputPath + @"\Keyboard.png");
-            MessageBox.Show("Placed Keyboard.txt on your desktop");    
+            MessageBox.Show("Placed Keyboard.txt on your desktop", Application.ProductName);
         }
 
-        private void buttonCheckKeys_Click(object sender, EventArgs e)
+        void buttonCheckKeys_Click(object sender, EventArgs e)
         {
-            string errors = InputSettings.CheckForErrors( false);
-
+            var errors = InputSettings.CheckForErrors(false);
             if (errors != "")
-                MessageBox.Show(errors, "Error");
+                MessageBox.Show(errors, Application.ProductName);
             else
-                MessageBox.Show("No errors found.", "Result");
+                MessageBox.Show("No errors found.", Application.ProductName);
         }
 
-        private void buttonCancel_Click(object sender, EventArgs e)
+        void buttonDebug_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void buttonDebug_Click(object sender, EventArgs e)
-        {
-            string errors = InputSettings.CheckForErrors(true);
-
+            var errors = InputSettings.CheckForErrors(true);
             if (errors != "")
-                MessageBox.Show(errors, "Error");
+                MessageBox.Show(errors, Application.ProductName);
             else
-                MessageBox.Show("No errors found.", "Result");
+                MessageBox.Show("No errors found.", Application.ProductName);
         }
-
     }
 }

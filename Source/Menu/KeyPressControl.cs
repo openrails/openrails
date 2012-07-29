@@ -73,7 +73,7 @@ namespace ORTS
         private void RefreshColor()
         {
             if (MatchesDefaults() )
-                BackColor = Parent.BackColor;
+                BackColor = SystemColors.Window;
             else
                 BackColor = EditKey.EditColor;
         }
