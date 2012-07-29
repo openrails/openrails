@@ -258,7 +258,7 @@ namespace ORTS
                     {
                         if (lightDrawer.LightConeFadeIn > 0)
                         {
-                            fadeStartTimer = Viewer.Simulator.ClockTime;
+                            fadeStartTimer = Viewer.Simulator.GameTime;
                             fadeDuration = lightDrawer.LightConeFadeIn;
                         }
                     }
@@ -266,7 +266,7 @@ namespace ORTS
                     {
                         if (lightDrawer.LightConeFadeOut > 0)
                         {
-                            fadeStartTimer = Viewer.Simulator.ClockTime;
+                            fadeStartTimer = Viewer.Simulator.GameTime;
                             fadeDuration = -lightDrawer.LightConeFadeOut;
                         }
                     }
@@ -276,7 +276,7 @@ namespace ORTS
                     // This occurs when switching locos and needs to be handled or we get lingering light.
                     SceneryShader.SetHeadlightOff();
                 else
-                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.ClockTime - fadeStartTimer), fadeDuration, ref lightDrawer.LightConeColor);
+                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, lightDrawer.LightConeDistance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, ref lightDrawer.LightConeColor);
             }
             else
             {
@@ -1007,7 +1007,7 @@ namespace ORTS
             shader.WeatherType = (int)Viewer.Simulator.Weather;
             shader.SunDirection = Viewer.World.Sky.solarDirection;
             shader.ViewportHeight = Viewer.DisplaySize.Y;
-            shader.CurrentTime = (float)Viewer.Simulator.ClockTime;
+            shader.CurrentTime = (float)Viewer.Simulator.GameTime;
             switch (Viewer.Simulator.Weather)
             {
                 case MSTS.WeatherType.Snow:

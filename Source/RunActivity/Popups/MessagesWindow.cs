@@ -114,22 +114,24 @@ namespace ORTS.Popups
                 if( Owner.Viewer.Simulator.Confirmer.Updated ) {
                     if( latest.Message != null ) {
                         Messages.Last().Text = latest.Message;
-                        Messages.Last().ExpiryTime = Owner.Viewer.Simulator.ClockTime;  // Reset the expiry time.
+                        Messages.Last().ExpiryTime = Owner.Viewer.Simulator.GameTime;  // Reset the expiry time.
                         Owner.Viewer.Simulator.Confirmer.Updated = false;
                         layoutNeeded = true;
                     }
                 }
 
                 // Re-display messages if any have faded
-                if( Messages.Any( m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime + FadeTime ) ) {
-                    Messages = Messages.Where(m => Owner.Viewer.Simulator.ClockTime < m.ExpiryTime + FadeTime).ToList();
+                if (Messages.Any(m => Owner.Viewer.Simulator.GameTime >= m.ExpiryTime + FadeTime))
+                {
+                    Messages = Messages.Where(m => Owner.Viewer.Simulator.GameTime < m.ExpiryTime + FadeTime).ToList();
                     layoutNeeded = true;
                 }
                 if (layoutNeeded) Layout(); // Make the messages appear
             }
 
-            foreach( var message in Messages.Where( m => Owner.Viewer.Simulator.ClockTime >= m.ExpiryTime ) ) {
-                message.LabelShadow.Color.A = message.LabelTime.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp( 255, 0, MathHelper.Clamp( (float)((Owner.Viewer.Simulator.ClockTime - message.ExpiryTime) / FadeTime), 0, 1 ) );
+            foreach (var message in Messages.Where(m => Owner.Viewer.Simulator.GameTime >= m.ExpiryTime))
+            {
+                message.LabelShadow.Color.A = message.LabelTime.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp(255, 0, MathHelper.Clamp((float)((Owner.Viewer.Simulator.GameTime - message.ExpiryTime) / FadeTime), 0, 1));
             }
         }
 
@@ -166,7 +168,7 @@ namespace ORTS.Popups
 
 		public void AddMessage(string text, double duration)
 		{
-			Messages.Add(new Message(text, Owner.Viewer.Simulator.ClockTime, duration));
+            Messages.Add(new Message(text, Owner.Viewer.Simulator.GameTime, duration));
             Layout();
 		}
 	}
