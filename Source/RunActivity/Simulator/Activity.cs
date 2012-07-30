@@ -497,7 +497,7 @@ namespace ORTS {
                     double punctualBoardingS = (SchDepart - ActArrive).Value.TotalSeconds;
                     BoardingS = punctualBoardingS;                                     // default is leave on time
                     if( punctualBoardingS < plannedBoardingS ) {                       // if arriving late
-                        if( plannedBoardingS < PlatformEnd1.PlatformMinWaitingTime ) { // and tight schedule
+                        if( plannedBoardingS > 0 && plannedBoardingS < PlatformEnd1.PlatformMinWaitingTime ) { // and tight schedule
                             BoardingS = plannedBoardingS;                              // leave late with no recovery of time
                         } else {                                                       // generous schedule
                             BoardingS = Math.Max(                                      
@@ -563,7 +563,7 @@ namespace ORTS {
             if( ActDepart == null ) outf.Write( noval ); else outf.Write( (Int64)ActDepart.Value.Ticks );
             outf.Write( (Int32)PlatformEnd1.TrItemId );
             outf.Write( (Int32)PlatformEnd2.TrItemId );
-            outf.Write( (double)BoardingS );
+            outf.Write( (double)BoardingEndS );
             outf.Write( (Int32)TimerChk );
             outf.Write( arrived );
             outf.Write( maydepart );
@@ -582,7 +582,7 @@ namespace ORTS {
             ActDepart = rdval == -1 ? (DateTime?)null : new DateTime( rdval );
             PlatformEnd1 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
             PlatformEnd2 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
-            BoardingS = inf.ReadDouble();
+            BoardingEndS = inf.ReadDouble();
             TimerChk = inf.ReadInt32();
             arrived = inf.ReadBoolean();
             maydepart = inf.ReadBoolean();

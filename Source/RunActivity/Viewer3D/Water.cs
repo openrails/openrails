@@ -86,7 +86,7 @@ namespace ORTS
         void LoadGeometry(GraphicsDevice graphicsDevice)
         {
             var tFile = Viewer.Tiles.GetTile(TileX, TileZ).TFile;
-            var waterLevels = new ORTSMath.Matrix2x2(tFile.WaterSW, tFile.WaterSE, tFile.WaterNW, tFile.WaterNE);
+            var waterLevels = new ORTSMath.Matrix2x2(tFile.WaterNW, tFile.WaterNE, tFile.WaterSW, tFile.WaterSE);
 
             var indexData = new List<short>(16 * 16 * 2 * 3);
             for (var z = 0; z < 16; ++z)
