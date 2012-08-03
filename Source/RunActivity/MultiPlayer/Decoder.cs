@@ -42,6 +42,7 @@ namespace ORTS.MultiPlayer
 				string tmp = msg.Substring(last, index);
 				int len;
 				if (!int.TryParse(tmp, out len)) len = 0;
+				if (index + 2 + len >= msg.Length) return null;//not enough characters
 				tmp = msg.Substring(index+2, len); //not taking ": "
 				msg = msg.Remove(last, index+2+len); //remove :
 				return tmp;
