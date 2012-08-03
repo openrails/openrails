@@ -623,9 +623,10 @@ namespace ORTS
 							else
 							{
 								move = 0;*/
-								this.travelled = expectedTravelled;
-								this.RearTDBTraveller = t;
-								CalculatePositionOfCars(move);
+							//move = SpeedMpS > 0 ? 0.001f : -0.001f;
+							this.travelled = expectedTravelled;
+							this.RearTDBTraveller = t;
+							CalculatePositionOfCars(move);
 							//}
 						}
 						else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second

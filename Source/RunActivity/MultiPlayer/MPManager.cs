@@ -137,6 +137,8 @@ namespace ORTS.MultiPlayer
 			{ }
 		}
 
+		double previousSpeed = 0;
+		double begineZeroTime = 0;
 		/// <summary>
 		/// Update. Determines what messages to send every some seconds
 		/// 1. every one second will send train location
@@ -150,6 +152,7 @@ namespace ORTS.MultiPlayer
 			//get key strokes and determine if some messages should be sent
 			handleUserInput();
 
+			if (begineZeroTime == 0) begineZeroTime = newtime - 10;
 			//server update train location of all
 			if (Program.Server != null && newtime - lastMoveTime >= 1f)
 			{
@@ -183,8 +186,16 @@ namespace ORTS.MultiPlayer
 				//if I am still conrolling the train
 				if (t.TrainType != Train.TRAINTYPE.REMOTE)
 				{
-					if (Math.Abs(t.SpeedMpS) > 0.001) move.AddNewItem(GetUserName(), t);
+					if (Math.Abs(t.SpeedMpS) > 0.001 || newtime - begineZeroTime < 5f) move.AddNewItem(GetUserName(), t);
 					else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem(GetUserName(), t);
+					else
+					{
+						if (Math.Abs(previousSpeed) > 0.001)
+						{
+							begineZeroTime = newtime;
+						}
+					}
+
 				}
 				//MoveUncoupledTrains(move); //if there are uncoupled trains
 				//if there are messages to send
@@ -193,6 +204,8 @@ namespace ORTS.MultiPlayer
 					Program.Client.Send(move.ToString());
 					lastMoveTime = lastSendTime = newtime;
 				}
+				previousSpeed = t.SpeedMpS;
+
 #if INDIVIDUAL_CONTROL
 
 				if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
@@ -201,6 +214,7 @@ namespace ORTS.MultiPlayer
 				}
 #endif
 			}
+
 
 			//need to send a keep-alive message if have not sent one to the server for the last 30 seconds
 			if (Program.Client != null && Program.Server == null && newtime - lastSendTime >= 30f)
