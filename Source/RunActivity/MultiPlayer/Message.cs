@@ -635,13 +635,35 @@ namespace ORTS.MultiPlayer
 			if (MPManager.IsServer()) return; //server will ignore it
 
 
-			int i = 0;
+			int i = 0, state = 0;
 			foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
 			{
-				t.Value.SelectedRoute = msgx[i] - 48; //ASCII code 48 is 0
+				state = msgx[i] - 48;
+				if (t.Value.SelectedRoute != state)
+				{
+					if (!SwitchOccupiedByPlayerTrain(t.Value)) t.Value.SelectedRoute = state; //ASCII code 48 is 0
+				}
 				i++;
 			}
 
+		}
+
+		private bool SwitchOccupiedByPlayerTrain(TrJunctionNode junctionNode)
+		{
+			if (Program.Simulator.PlayerLocomotive == null) return false;
+			Train train = Program.Simulator.PlayerLocomotive.Train;
+			if (train == null) return false;
+			if (train.FrontTDBTraveller.TrackNodeIndex == train.RearTDBTraveller.TrackNodeIndex)
+				return false;
+			Traveller traveller = new Traveller(train.RearTDBTraveller);
+			while (traveller.NextSection())
+			{
+				if (traveller.TrackNodeIndex == train.FrontTDBTraveller.TrackNodeIndex)
+					break;
+				if (traveller.TN.TrJunctionNode == junctionNode)
+					return true;
+			}
+			return false;
 		}
 
 		public override string ToString()

@@ -612,21 +612,18 @@ namespace ORTS
 
 						if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 5)
 						{
+							CalculatePositionOfCars(expectedTravelled - travelled);
+							//if something wrong with the switch
+							if (this.RearTDBTraveller.TrackNodeIndex != expectedTracIndex)
+							{
+								Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
+								
+								//move = SpeedMpS > 0 ? 0.001f : -0.001f;
+								this.travelled = expectedTravelled;
+								this.RearTDBTraveller = t;
+								CalculatePositionOfCars(0);
 
-							Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
-							/*
-							move = this.RearTDBTraveller.DistanceTo(Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], t.TileX, t.TileZ, t.X, t.Y, t.Z);
-							if (move > 0)
-							{
-								this.RearTDBTraveller.Move(move);
 							}
-							else
-							{
-								move = 0;*/
-							//move = SpeedMpS > 0 ? 0.001f : -0.001f;
-							this.travelled = expectedTravelled;
-							this.RearTDBTraveller = t;
-							CalculatePositionOfCars(move);
 							//}
 						}
 						else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
@@ -1364,7 +1361,7 @@ namespace ORTS
             var tn = RearTDBTraveller.TN;
 			RearTDBTraveller.Move(distance);
 			if (distance < 0 && tn != RearTDBTraveller.TN)
-				AlignTrailingPointSwitch(tn, RearTDBTraveller.TN);
+				AlignTrailingPointSwitch(tn, RearTDBTraveller.TN, this);
 
 			var traveller = new Traveller(RearTDBTraveller);
 			// The traveller location represents the back of the train.
@@ -1422,14 +1419,14 @@ namespace ORTS
             }
 
 			if (distance > 0 && traveller.TN != FrontTDBTraveller.TN)
-				AlignTrailingPointSwitch(FrontTDBTraveller.TN, traveller.TN);
+				AlignTrailingPointSwitch(FrontTDBTraveller.TN, traveller.TN, this);
 			FrontTDBTraveller = traveller;
             Length = length;
 			travelled += distance;
 		} // CalculatePositionOfCars
 
 		// aligns a trailing point switch that was just moved over to match the track the train is on
-		public void AlignTrailingPointSwitch(TrackNode from, TrackNode to)
+		public void AlignTrailingPointSwitch(TrackNode from, TrackNode to, Train train)
 		{
 			if (from.TrJunctionNode != null)
 				return;
@@ -1459,6 +1456,14 @@ namespace ORTS
 				if (to == Program.Simulator.TDB.TrackDB.TrackNodes[sw.TrPins[i + sw.Inpins].Link])
 				{
 					sw.TrJunctionNode.SelectedRoute = i;
+					//multiplayer mode will do some message to the server
+					if (Simulator.PlayerLocomotive != null && train == Simulator.PlayerLocomotive.Train 
+						&& MPManager.IsMultiPlayer() && !MPManager.IsServer())
+					{
+						MPManager.Notify((new MSGSwitch(MPManager.GetUserName(),
+							sw.TrJunctionNode.TN.UiD.TileX, sw.TrJunctionNode.TN.UiD.TileZ, sw.TrJunctionNode.TN.UiD.WorldID, sw.TrJunctionNode.SelectedRoute)).ToString());
+						//MPManager.Instance().ignoreSwitchStart = Simulator.GameTime;
+					}
 					return;
 				}
 			}

@@ -156,7 +156,12 @@ namespace ORTS
                 return;
 
             //Console.WriteLine("alignsw {0} {1} {2} {3}", junctionIndex, vectorIndex, tn.TrJunctionNode.SelectedRoute, tn.TrPins[1].Link);
-            tn.TrJunctionNode.SelectedRoute = tn.TrPins[1].Link == vectorIndex ? 0 : 1;
+			if (MultiPlayer.MPManager.IsServer()) //multiplayer, check if trains are on the switch
+			{
+				if (Program.Simulator.SwitchIsOccupied(tn.TrJunctionNode)) return;
+			}
+			else 
+				tn.TrJunctionNode.SelectedRoute = tn.TrPins[1].Link == vectorIndex ? 0 : 1;
             return;
         }
 
