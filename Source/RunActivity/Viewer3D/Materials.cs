@@ -616,9 +616,7 @@ namespace ORTS
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
-			rs.AlphaDestinationBlend = Blend.Zero;
             rs.AlphaFunction = CompareFunction.Always;
-			rs.AlphaSourceBlend = Blend.One;
             rs.AlphaTestEnable = false;
             rs.DestinationBlend = Blend.Zero;
             rs.ReferenceAlpha = 0;
@@ -688,12 +686,6 @@ namespace ORTS
             var samplerState = graphicsDevice.SamplerStates[0];
             samplerState.AddressU = TextureAddressMode.Wrap;
 			samplerState.AddressV = TextureAddressMode.Wrap;
-			samplerState.MipMapLevelOfDetailBias = 0;
-
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-			rs.AlphaTestEnable = false;
-			rs.CullMode = CullMode.CullCounterClockwiseFace;
 		}
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1248,14 +1240,8 @@ namespace ORTS
         {
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
-            rs.CullMode = CullMode.CullCounterClockwiseFace;
-            rs.DestinationBlend = Blend.Zero;
-            rs.DepthBufferFunction = CompareFunction.LessEqual;
             rs.DepthBufferWriteEnable = true;
-            rs.SourceBlend = Blend.One;
             rs.StencilEnable = false;
-            rs.StencilFunction = CompareFunction.Always;
-            rs.StencilPass = StencilOperation.Keep;
         }
     }
 

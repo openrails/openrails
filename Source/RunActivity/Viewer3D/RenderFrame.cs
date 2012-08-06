@@ -580,6 +580,15 @@ namespace ORTS
             {
                 try
                 {
+                    // Unfortunately, the back buffer includes an alpha channel. Although saving this might seem okay,
+                    // it actually ruins the picture - nothing in the back buffer is seen on-screen according to its
+                    // alpha, it's only used for blending (if at all). We'll remove the alpha here.
+                    var data = new uint[screenshot.Width * screenshot.Height];
+                    screenshot.GetData(data);
+                    for (var i = 0; i < data.Length; i++)
+                        data[i] |= 0xFF000000;
+                    screenshot.SetData(data);
+                    // Now save the modified image.
                     screenshot.Save(fileName, ImageFileFormat.Png);
                     screenshot.Dispose();
                 }
@@ -637,7 +646,7 @@ namespace ORTS
             // All done.
             ShadowMapMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
-			DebugRenderState(graphicsDevice.RenderState, Materials.ShadowMapMaterial.ToString());
+            DebugRenderState(graphicsDevice.RenderState, ShadowMapMaterial.ToString());
 #endif
             graphicsDevice.DepthStencilBuffer = NormalStencilBuffer;
             graphicsDevice.SetRenderTarget(0, null);
@@ -648,7 +657,7 @@ namespace ORTS
             {
                 ShadowMap[shadowMapIndex] = ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex], ShadowMapStencilBuffer, NormalStencilBuffer);
 #if DEBUG_RENDER_STATE
-				DebugRenderState(graphicsDevice.RenderState, Materials.ShadowMapMaterial.ToString() + " ApplyBlur()");
+                DebugRenderState(graphicsDevice.RenderState, ShadowMapMaterial.ToString() + " ApplyBlur()");
 #endif
             }
 

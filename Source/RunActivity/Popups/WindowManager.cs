@@ -208,6 +208,8 @@ namespace ORTS.Popups
 				window.Draw(SpriteBatch);
 				SpriteBatch.End();
 			}
+            // For performance, we call SpriteBatch.Begin() with SaveStateMode.None above, but we now need to restore
+            // the state ourselves.
             rs.AlphaBlendEnable = false;
             rs.AlphaFunction = CompareFunction.Always;
             rs.AlphaTestEnable = false;

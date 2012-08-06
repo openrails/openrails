@@ -159,7 +159,6 @@ namespace ORTS
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
             rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SeparateAlphaBlendEnabled = true;
             rs.SourceBlend = Blend.SourceAlpha;
         }
 
@@ -191,7 +190,6 @@ namespace ORTS
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
             rs.DestinationBlend = Blend.Zero;
-            rs.SeparateAlphaBlendEnabled = false;
             rs.SourceBlend = Blend.One;
         }
 
