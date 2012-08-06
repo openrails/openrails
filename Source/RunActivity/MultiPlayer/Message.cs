@@ -447,6 +447,7 @@ namespace ORTS.MultiPlayer
 
 		public MSGSwitch(string m)
 		{
+
 			string[] tmp = m.Split(' ');
 			if (tmp.Length != 5) throw new Exception("Parsing error " + m);
 			user = tmp[0];
@@ -468,18 +469,33 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "SWITCH " + user + " " + TileX + " " + TileZ + " " + WorldID + " " + Selection;
-			//System.Console.WriteLine(tmp);
 			return "" + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
 		{
 			//System.Console.WriteLine(this.ToString());
-
-			if (user == MPManager.GetUserName()) return;//ignore myself
-			TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
-			trj.SelectedRoute = Selection;
-			MPManager.BroadCast(this.ToString()); //server will tell others
+			if (MPManager.IsServer()) //server got this message from Client
+			{
+				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
+				if (Program.Simulator.SwitchIsOccupied(trj))
+				{
+					MPManager.BroadCast((new MSGMessage(user, "Warning:", "Train on the switch, cannot throw")).ToString());
+					return;
+				}
+				trj.SelectedRoute = Selection;
+				MPManager.BroadCast(this.ToString()); //server will tell others
+			}
+			else
+			{
+				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
+				trj.SelectedRoute = Selection;
+				if (user == MPManager.GetUserName())//got the message with my name, will confirm with the player
+				{
+					Program.Simulator.Confirmer.Message("      ", "Switched, current route is " + (Selection == 0? "main":"side") + " route");
+					return;
+				}
+			}
 		}
 	}
 

@@ -610,16 +610,31 @@ namespace ORTS
 
 			if (nextSwitchTrack != null)
 			{
-				if (nextSwitchTrack.SelectedRoute == 0)
-					nextSwitchTrack.SelectedRoute = 1;
-				else
-					nextSwitchTrack.SelectedRoute = 0;
+				if (!MPManager.IsMultiPlayer()||MPManager.IsServer()) //single mode, or server
+				{
+					if (nextSwitchTrack.SelectedRoute == 0)
+						nextSwitchTrack.SelectedRoute = 1;
+					else
+						nextSwitchTrack.SelectedRoute = 0;
 
-				//multiplayer mode will do some message
-				if (MPManager.IsMultiPlayer()) 
+					//multiplayer mode will do some message
+					if (MPManager.IsMultiPlayer())
+						MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
+					Confirmer.Confirm(CabControl.SwitchBehind, CabSetting.On);
+
+				}
+				else
+				{
+					var Selected = 0;
+					if (nextSwitchTrack.SelectedRoute == 0)
+						Selected = 1;
+
+					//notify the server
 					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-						nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
-                Confirmer.Confirm( CabControl.SwitchBehind, CabSetting.On );
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected)).ToString());
+					Confirmer.Message("Info:", "Switching Request Sent to the Server");
+				}
             }
 		}
 
@@ -634,18 +649,33 @@ namespace ORTS
 
 			if (nextSwitchTrack != null)
 			{
-				if (nextSwitchTrack.SelectedRoute == 0)
-					nextSwitchTrack.SelectedRoute = 1;
-				else
-					nextSwitchTrack.SelectedRoute = 0;
+				if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) //single mode, or server
+				{
+					if (nextSwitchTrack.SelectedRoute == 0)
+						nextSwitchTrack.SelectedRoute = 1;
+					else
+						nextSwitchTrack.SelectedRoute = 0;
 
-				//if multiplayer mode, will do some messaging
-				if (MPManager.IsMultiPlayer()) 
+					//multiplayer mode will do some message
+					if (MPManager.IsMultiPlayer())
+						MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
+					train.ResetSignal(false);
+					Confirmer.Confirm(CabControl.SwitchAhead, CabSetting.On);
+
+				}
+				else
+				{
+					var Selected = 0;
+					if (nextSwitchTrack.SelectedRoute == 0)
+						Selected = 1;
+
+					//notify the server
 					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-						nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
-                Confirmer.Confirm( CabControl.SwitchAhead, CabSetting.On );
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected)).ToString());
+					Confirmer.Message("Info:", "Switching Request Sent to the Server");
+				}
 			}
-			train.ResetSignal(false);
 		}
 
 		public bool SwitchIsOccupied(int junctionIndex)

@@ -10,6 +10,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System;
 using System.Timers;    // needed by Confirmation
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -102,11 +103,16 @@ namespace ORTS.Popups
                 List<Confirmation> list = Owner.Viewer.Simulator.Confirmer.ConfirmationList;
                 Confirmation latest = Owner.Viewer.Simulator.Confirmer.LatestConfirmation;
 
-                foreach( var i in list ) {
-                    // Messages are added to the message list here and not directly by the Confirmer class to avoid one
-                    // thread calling another.
-                    AddMessage( i.Message, i.DurationS );
-                }
+				try
+				{
+					foreach (var i in list)
+					{
+						// Messages are added to the message list here and not directly by the Confirmer class to avoid one
+						// thread calling another.
+						AddMessage(i.Message, i.DurationS);
+					}
+				}
+				catch (Exception) { return; }
                 list.Clear();
 
                 bool layoutNeeded = false;
