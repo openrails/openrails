@@ -89,6 +89,7 @@ namespace ORTS.Debugging
 	  bool pickedItemChanged = false;
 	  PointF pickedLocation = new PointF();
 	  public bool pickedItemHandled = false;
+	  public double pickedTime = 0.0f;
 	  /// <summary>
 	  /// contains the last position of the mouse
 	  /// </summary>
@@ -389,7 +390,7 @@ namespace ORTS.Debugging
             float xScale = pictureBox1.Width / ViewWindow.Width;
             float yScale = pictureBox1.Height/ ViewWindow.Height;
 
-            
+			PointF[] points = new PointF[3];
             foreach (var line in segments)
             {
 
@@ -401,11 +402,6 @@ namespace ORTS.Debugging
 
                Pen p = grayPen;
 
-               if (line.Occupied)
-               {
-                  p = redPen;
-               }
-
                //p.Width = 1f;
 
                //if (highlightTrackSections.Checked)
@@ -415,9 +411,15 @@ namespace ORTS.Debugging
                //      p.Width = 5f;
                //   }
                //}
-               
 
-               g.DrawLine(p, scaledA, scaledB);
+			   /*if (line.curve != null)
+			   {
+				   			   
+				   PointF scaledC = new PointF((line.C.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (line.C.Y - minY - ViewWindow.Y) * yScale);
+				   points[0] = scaledA; points[1] = scaledB; points[2] = scaledC;
+				   g.DrawCurve(p, points);
+			   }
+               else*/ g.DrawLine(p, scaledA, scaledB);
             }
 
 			itemsDrawn.Clear();
@@ -519,7 +521,7 @@ namespace ORTS.Debugging
 				}
 				if (pickedItemHandled) pickedItem = null;
 
-				if (pickedItem != null && pickedItemChanged == true && !pickedItemHandled)
+				if (pickedItem != null && pickedItemChanged == true && !pickedItemHandled && simulator.GameTime-pickedTime<10)
 				{
 					pickedLocation.X = pickedItem.Location2D.X + 152; pickedLocation.Y = pickedItem.Location2D.Y;
 					g.FillRectangle(Brushes.LightGray, GetRect(pickedLocation, 300f, 64f));
@@ -527,8 +529,11 @@ namespace ORTS.Debugging
 					var node = pickedItem.Item.TrJunctionNode;
 					if (node.SelectedRoute == 0) g.DrawString("Current: Main Route", trainFont, trainBrush, pickedLocation);
 					else g.DrawString("Current: Side Route", trainFont, trainBrush, pickedLocation);
-					pickedLocation.Y -= 24;
-					g.DrawString("Alt-G to Throw the Switch", trainFont, trainBrush, pickedLocation);
+					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
+					{
+						pickedLocation.Y -= 24;
+						g.DrawString("Alt-G to Throw the Switch", trainFont, trainBrush, pickedLocation);
+					}
 				}
 			}
 
@@ -647,14 +652,14 @@ namespace ORTS.Debugging
          bool occupied = false;
 
 
-         if (simulator.InterlockingSystem.Tracks.ContainsKey(node))
-         {
-            occupied = node.InterlockingTrack.IsOccupied;
-         }
+         //if (simulator.InterlockingSystem.Tracks.ContainsKey(node))
+         //{
+         //   occupied = node.InterlockingTrack.IsOccupied;
+         //}
 
          for (int i = 0; i < items.Length - 1; i++)
          {
-            PointF A = new PointF(items[i].TileX * 2048 + items[i].X, items[i].TileZ * 2048 + items[i].Z);
+			 PointF A = new PointF(items[i].TileX * 2048 + items[i].X, items[i].TileZ * 2048 + items[i].Z);
             PointF B = new PointF(items[i + 1].TileX * 2048 + items[i + 1].X, items[i + 1].TileZ * 2048 + items[i+1].Z);
 
             CalcBounds(ref maxX, A.X, true);
@@ -896,7 +901,7 @@ namespace ORTS.Debugging
 			  if (item.Location2D.X < x - range || item.Location2D.X > x + range
 				  || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
 
-			  if (item != pickedItem) { pickedItemChanged = true; pickedItemHandled = false; }
+			  if (item != pickedItem) { pickedItemChanged = true; pickedItemHandled = false; pickedTime = simulator.GameTime; }
 			  return item;
 		  }
 		  return null;
@@ -1154,12 +1159,15 @@ namespace ORTS.Debugging
    /// <summary>
    /// Defines a geometric line segment.
    /// </summary>
-   public struct LineSegment
+   public class LineSegment
    {
 	   public PointF A;
 	   public PointF B;
+	   //public PointF C;
+	   //public float radius = 0.0f;
+	   //public bool isCurved = false;
 
-	   public bool Occupied;
+	   //public SectionCurve curve = null;
 	   public TrVectorSection Section;
 
 	   public LineSegment(PointF A, PointF B, bool Occupied, TrVectorSection Section)
@@ -1167,9 +1175,28 @@ namespace ORTS.Debugging
 		   this.A = A;
 		   this.B = B;
 
-		   this.Occupied = Occupied;
-
+		   
 		   this.Section = Section;
+
+		   /*
+		   uint k = Section.SectionIndex;
+		   TrackSection ts = Program.Simulator.TSectionDat.TrackSections.Get(k);
+		   if (ts != null)
+		   {
+			   if (ts.SectionCurve != null)
+			   {
+				   curve = ts.SectionCurve;
+				   Vector3 v = new Vector3(B.X - A.X, B.Y - A.Y, 0);
+				   Vector3 v2 = Vector3.Cross(Vector3.Up, v); v2.Normalize();
+				   if (ts.SectionCurve.Angle > 0)
+				   {
+					   v = Vector3.Multiply(v2, (float)(ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 180)))) + v;
+				   }
+				   else v = Vector3.Multiply(v2, (float)(-ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 180)))) + v;
+				   C = new PointF(v.X, v.Y);
+			   }
+		   }*/
+
 	   }
    }
 

@@ -26,7 +26,10 @@ namespace ORTS.Popups
         {
             Label buttonQuit, buttonSave, buttonContinue;
             var vbox = base.Layout(layout).AddLayoutVertical();
-            var heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 3;
+            var heightForLabels = 10;
+			if (!MultiPlayer.MPManager.IsMultiPlayer())
+				heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 3;
+			else heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 2;
             var spacing = (heightForLabels - Owner.TextFontDefault.Height) / 2;
             vbox.AddSpace(0, spacing);
             vbox.Add(buttonQuit = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, String.Format("Quit {1} ({0})", InputSettings.Commands[(int)UserCommands.GameQuit], Application.ProductName), LabelAlignment.Center));
