@@ -79,7 +79,8 @@ namespace ORTS
                 DataLoggerStart();
         }
 
-        public void Stop()
+        [ThreadName("Render")]
+        internal void Terminate()
         {
             if (Viewer.Settings.DataLogger)
                 DataLoggerStop();

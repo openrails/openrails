@@ -220,7 +220,6 @@ namespace ORTS
 
             if (Stopped)
             {
-                Terminate();
                 Exit();
             }
             else if (gameTime.TotalRealTime.TotalSeconds > 0.001)
@@ -251,10 +250,7 @@ namespace ORTS
         {
             if (Viewer.Settings.Profiling)
                 if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount)
-                {
-                    Viewer.Stop();
-                    Application.Exit();  // Added as system hangs otherwise when testing using /ProfilingFrameCount=0 and have to kill the process.
-                }
+                    Exit();
 
             Profiler.Start();
 
@@ -336,26 +332,26 @@ namespace ORTS
             ToggleFullScreenRequested = true;
         }
 
-
         /// <summary>
-        /// This signal is caught in the Update
+        /// Internal method - do not call! Use Viewer3D.Stop() instead.
         /// </summary>
-        public void Stop()
+        internal void Stop()
         {
+            // Do not put shutdown code in here! Use RenderProcess.Terminate() instead.
+            Trace.TraceInformation("RenderProcess.Stop()");
             Stopped = true;
         }
 
-        /// <summary>
-        /// Shut down other processes and unload content
-        /// </summary>
+        [ThreadName("Render")]
         void Terminate()
         {
+            Trace.TraceInformation("RenderProcess.Terminate()");
             if (Viewer.Settings.Profiling)
                 Viewer.Settings.ProfilingFrameCount = ProfileFrames;
             Viewer.UpdaterProcess.Stop();
             Viewer.LoaderProcess.Stop();
             Viewer.SoundProcess.Stop();
-            Viewer.Unload(this);
+            Viewer.Terminate();
         }
 
         /// <summary>
@@ -364,6 +360,7 @@ namespace ORTS
         [ThreadName("Render")]
         protected override void OnExiting(object sender, EventArgs args)
         {
+            Trace.TraceInformation("RenderProcess.OnExiting()");
             Terminate();
             base.OnExiting(sender, args);
         }

@@ -303,7 +303,7 @@ namespace ORTS
             // Log the error first in case we're burning.
             Trace.WriteLine(error);
             // Stop the world!
-            RenderProcess.Stop();
+            RenderProcess.Exit();
             // Show the user that it's all gone horribly wrong.
             if (Settings.ShowErrorDialogs)
                 System.Windows.Forms.MessageBox.Show(error.ToString());
@@ -538,21 +538,27 @@ namespace ORTS
             WindowManager.Mark();
         }
 
-        [CallOnThread("Render")]
-        public void Unload(RenderProcess renderProcess)
-        {
-            SoundProcess.RemoveAllSources();
-        }
-
+        /// <summary>
+        /// Call this method to request a normal shutdown of the game.
+        /// </summary>
         public void Stop()
         {
-			//the dispatcher viewer in MP mode is on, close it first, then wait for the next ESC
+            // Do not put shutdown code in here! Use Viewer3D.Terminate() instead.
+            Trace.TraceInformation("Viewer3D.Stop()");
+            RenderProcess.Stop();
+        }
+
+        [CallOnThread("Render")]
+        internal void Terminate()
+        {
+            Trace.TraceInformation("Viewer3D.Terminate()");
+            //the dispatcher viewer in MP mode is on, close it first, then wait for the next ESC
 			if (MPManager.IsMultiPlayer() || Settings.ViewDispatcher)
 			{
 				if (DebugViewerEnabled == true) { DebugViewerEnabled = false; return; }
 			}
-            InfoDisplay.Stop();
-            RenderProcess.Stop();
+            InfoDisplay.Terminate();
+            SoundProcess.RemoveAllSources();
         }
 
         /// <summary>
