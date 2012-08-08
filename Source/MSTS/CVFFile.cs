@@ -24,21 +24,22 @@ namespace MSTS
         public List<string> LightViews = new List<string>();    // Light CAB Views - by GeorgeS
         public CabViewControls CabViewControls = null;     // Controls in CAB - by GeorgeS
 
-        public CVFFile(string filePath)
+        public CVFFile(string filePath, string basePath)
 		{
-            string basepath = filePath.Substring(0, filePath.LastIndexOf('\\') + 1);
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("tr_cabviewfile", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("position", ()=>{ Locations.Add(stf.ReadVector3Block(STFReader.UNITS.None, new Vector3())); }),
                         new STFReader.TokenProcessor("direction", ()=>{ Directions.Add(stf.ReadVector3Block(STFReader.UNITS.None, new Vector3())); }),
                         new STFReader.TokenProcessor("cabviewfile", ()=>{
-                            string filename = stf.ReadStringBlock(null);
-                            TwoDViews.Add(basepath + filename);
-                            NightViews.Add(basepath + Path.GetDirectoryName(filename) + "night\\" + Path.GetFileName(filename));
-                            LightViews.Add(basepath + Path.GetDirectoryName(filename) + "cablight\\" + Path.GetFileName(filename));
+                            var fileName = stf.ReadStringBlock(null);
+                            var path = Path.Combine(basePath, Path.GetDirectoryName(fileName));
+                            var name = Path.GetFileName(fileName);
+                            TwoDViews.Add(Path.Combine(path, name));
+                            NightViews.Add(Path.Combine(path, Path.Combine("NIGHT", name)));
+                            LightViews.Add(Path.Combine(path, Path.Combine("CABLIGHT", name)));
                         }),
-                        new STFReader.TokenProcessor("cabviewcontrols", ()=>{ CabViewControls = new CabViewControls(stf, basepath); }),
+                        new STFReader.TokenProcessor("cabviewcontrols", ()=>{ CabViewControls = new CabViewControls(stf, basePath); }),
                     });}),
                 });
 		}
@@ -238,7 +239,7 @@ namespace MSTS
         }
         protected void ParseGraphic(STFReader stf, string basepath)
         {
-            ACEFile = basepath + stf.ReadStringBlock(null);
+            ACEFile = Path.Combine(basepath, stf.ReadStringBlock(null));
         }
         protected void ParseStyle(STFReader stf)
         {

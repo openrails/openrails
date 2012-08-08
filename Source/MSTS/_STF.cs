@@ -1263,6 +1263,7 @@ namespace MSTS
                     {
                         c = ReadChar();
                         if (c == 'n') itemBuilder.Append('\n');
+                        if (c == 't') itemBuilder.Append('\t');
                         else itemBuilder.Append((char)c);  // ie \, " etc
                     }
                     else if (c != '"')
@@ -1298,14 +1299,25 @@ namespace MSTS
             #region Build Normal Items - whitespace delimitered
             else if (c != -1)
             {
+                itemBuilder.Append((char)c);
                 for (; ; )
                 {
-                    itemBuilder.Append((char)c);
                     c = PeekChar();
                     if ((c == '(') || (c == ')')) break;
                     c = ReadChar();
                     if (IsEof(c)) break;
                     if (IsWhiteSpace(c)) break;
+                    if (c == '\\') // escape sequence
+                    {
+                        c = ReadChar();
+                        if (c == 'n') itemBuilder.Append('\n');
+                        if (c == 't') itemBuilder.Append('\t');
+                        else itemBuilder.Append((char)c);  // ie \, " etc
+                    }
+                    else
+                    {
+                        itemBuilder.Append((char)c);
+                    }
                 }
             }
             #endregion
