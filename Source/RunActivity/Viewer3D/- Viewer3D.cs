@@ -544,14 +544,12 @@ namespace ORTS
         public void Stop()
         {
             // Do not put shutdown code in here! Use Viewer3D.Terminate() instead.
-            Trace.TraceInformation("Viewer3D.Stop()");
             RenderProcess.Stop();
         }
 
         [CallOnThread("Render")]
         internal void Terminate()
         {
-            Trace.TraceInformation("Viewer3D.Terminate()");
             //the dispatcher viewer in MP mode is on, close it first, then wait for the next ESC
 			if (MPManager.IsMultiPlayer() || Settings.ViewDispatcher)
 			{

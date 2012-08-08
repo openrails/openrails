@@ -338,14 +338,12 @@ namespace ORTS
         internal void Stop()
         {
             // Do not put shutdown code in here! Use RenderProcess.Terminate() instead.
-            Trace.TraceInformation("RenderProcess.Stop()");
             Stopped = true;
         }
 
         [ThreadName("Render")]
         void Terminate()
         {
-            Trace.TraceInformation("RenderProcess.Terminate()");
             if (Viewer.Settings.Profiling)
                 Viewer.Settings.ProfilingFrameCount = ProfileFrames;
             Viewer.UpdaterProcess.Stop();
@@ -360,7 +358,6 @@ namespace ORTS
         [ThreadName("Render")]
         protected override void OnExiting(object sender, EventArgs args)
         {
-            Trace.TraceInformation("RenderProcess.OnExiting()");
             Terminate();
             base.OnExiting(sender, args);
         }
