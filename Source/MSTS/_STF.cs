@@ -1263,7 +1263,7 @@ namespace MSTS
                     {
                         c = ReadChar();
                         if (c == 'n') itemBuilder.Append('\n');
-                        if (c == 't') itemBuilder.Append('\t');
+                        else if (c == 't') itemBuilder.Append('\t');
                         else itemBuilder.Append((char)c);  // ie \, " etc
                     }
                     else if (c != '"')
@@ -1311,7 +1311,7 @@ namespace MSTS
                     {
                         c = ReadChar();
                         if (c == 'n') itemBuilder.Append('\n');
-                        if (c == 't') itemBuilder.Append('\t');
+                        else if (c == 't') itemBuilder.Append('\t');
                         else itemBuilder.Append((char)c);  // ie \, " etc
                     }
                     else
