@@ -2079,7 +2079,8 @@ namespace ORTS
                                     }
                                     else
                                     {
-                                        enabled = false;
+										if (MultiPlayer.MPManager.IsMultiPlayer()) enabled = true;
+										else enabled = false;
                                     }
                                 }
   // update all heads

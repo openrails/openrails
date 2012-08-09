@@ -550,11 +550,6 @@ namespace ORTS
         [CallOnThread("Render")]
         internal void Terminate()
         {
-            //the dispatcher viewer in MP mode is on, close it first, then wait for the next ESC
-			if (MPManager.IsMultiPlayer() || Settings.ViewDispatcher)
-			{
-				if (DebugViewerEnabled == true) { DebugViewerEnabled = false; return; }
-			}
             InfoDisplay.Terminate();
             SoundProcess.RemoveAllSources();
         }

@@ -67,8 +67,12 @@ namespace ORTS.Popups
             if (updateFull)
             {
                 var train = Owner.Viewer.PlayerTrain;
-                UpdateSwitch(SwitchForwards, train, true);
-                UpdateSwitch(SwitchBackwards, train, false);
+				try
+				{
+					UpdateSwitch(SwitchForwards, train, true);
+					UpdateSwitch(SwitchBackwards, train, false);
+				}
+				catch (Exception) { }
             }
         }
 
