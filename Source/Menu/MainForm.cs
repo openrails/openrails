@@ -11,7 +11,8 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using ORTS.Menu;    // needed for Activity
+using ORTS.Menu;
+using Path = System.IO.Path;
 
 namespace ORTS
 {
@@ -228,11 +229,11 @@ namespace ORTS
             if (checkBoxMultiplayer.Checked && !GetMultiplayerInfo())
                 return;
 
-            if (SelectedActivity != null && SelectedActivity.FileName != null)
+            if (SelectedActivity != null && SelectedActivity.FilePath != null)
             {
                 DialogResult = DialogResult.OK;
             }
-            else if (SelectedActivity != null && SelectedActivity.FileName == null)
+            else if (SelectedActivity != null && SelectedActivity.FilePath == null)
             {
                 if (GetExploreInfo())
                     DialogResult = DialogResult.OK;
@@ -316,7 +317,7 @@ namespace ORTS
 
             listBoxFolders.Items.Clear();
             foreach (var folder in Folders)
-                listBoxFolders.Items.Add(folder.Name);
+                listBoxFolders.Items.Add(folder);
 
             if (Folders.Count > 0)
                 listBoxFolders.SelectedIndex = Math.Min(listBoxFoldersSelectedIndex, listBoxFolders.Items.Count - 1);
@@ -336,12 +337,12 @@ namespace ORTS
 
             listBoxRoutes.Items.Clear();
             var selectedFolder = SelectedFolder;
-            RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.Name).ToList(), (routes) =>
+            RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
             {
                 Routes = routes;
                 labelRoutes.Visible = Routes.Count == 0;
                 foreach (var route in Routes)
-                    listBoxRoutes.Items.Add(route.Name);
+                    listBoxRoutes.Items.Add(route);
                 if (Routes.Count > 0)
                 {
                     listBoxRoutes.SelectedIndex = Math.Min(listBoxRoutesSelectedIndex, listBoxRoutes.Items.Count - 1);
@@ -361,12 +362,12 @@ namespace ORTS
 
             listBoxActivities.Items.Clear();
             var selectedRoute = SelectedRoute;
-            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedRoute).OrderBy(a => a.Name).ToList(), (activities) =>
+            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
             {
                 Activities = activities;
                 labelActivities.Visible = Activities.Count == 0;
                 foreach (var activity in Activities)
-                    listBoxActivities.Items.Add(activity.Name);
+                    listBoxActivities.Items.Add(activity);
                 if (Activities.Count > 0)
                 {
                     listBoxActivities.SelectedIndex = Math.Min(listBoxActivitiesSelectedIndex, listBoxActivities.Items.Count - 1);

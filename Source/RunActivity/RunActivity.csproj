@@ -207,7 +207,6 @@
     <Compile Include="Common\SteamTable.cs" />
     <Compile Include="Common\SunMoonPos.cs" />
     <Compile Include="Common\TextHelper.cs" />
-    <Compile Include="Common\UserSettings.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
     <Compile Include="Debugging\DebugViewerForm.cs">
       <SubType>Form</SubType>
@@ -379,7 +378,18 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\InputSettings.cs" />
+    <Compile Include="..\ORTS\InputSettings.cs">
+      <Link>ORTS\InputSettings.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\Menu\Consists.cs">
+      <Link>ORTS\Menu\Consists.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\Menu\Paths.cs">
+      <Link>ORTS\Menu\Paths.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\UserSettings.cs">
+      <Link>ORTS\UserSettings.cs</Link>
+    </Compile>
     <Compile Include="Popups\QuitWindow.cs" />
     <Compile Include="RollingStock\LocomotiveAttributes.cs" />
     <Compile Include="Signals\Signals.cs">

@@ -30,8 +30,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ORTS.Debugging;
-using ORTS.Menu;
 using ORTS.MultiPlayer;
+
 namespace ORTS
 {
     static class Program
@@ -366,16 +366,16 @@ namespace ORTS
             InitLogging(settings);
             Action testAll = () =>
             {
-                var activities = (args.Length == 0 ? Folder.GetFolders() : args.Select(a => new Folder(Path.GetFileName(a), a)))
-                    .SelectMany(f => Route.GetRoutes(f))
+                var activities = (args.Length == 0 ? ORTS.Menu.Folder.GetFolders() : args.Select(a => new ORTS.Menu.Folder(Path.GetFileName(a), a)))
+                    .SelectMany(f => ORTS.Menu.Route.GetRoutes(f))
                     .SelectMany(r => ORTS.Menu.Activity.GetActivities(r))
-                    .Where(a => !(a is ExploreActivity))
-                    .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
+                    .Where(a => !(a is ORTS.Menu.ExploreActivity))
+                    .OrderBy(a => a.FilePath, StringComparer.OrdinalIgnoreCase)
                     .ToList();
                 var results = new bool[activities.Count];
                 Action<int> run = (i) =>
                 {
-                    InitSimulator(settings, new[] { activities[i].FileName }, "");
+                    InitSimulator(settings, new[] { activities[i].FilePath}, "");
                     Simulator.Start();
                     Viewer = new Viewer3D(Simulator);
                     Viewer.Run(null);
@@ -412,7 +412,7 @@ namespace ORTS
                 Console.WriteLine();
                 for (var i = 0; i < activities.Count; i++)
                 {
-                    Console.WriteLine("{0,-4}  {1}", results[i] ? "PASS" : "fail", activities[i].FileName);
+                    Console.WriteLine("{0,-4}  {1}", results[i] ? "PASS" : "fail", activities[i].FilePath);
                 }
                 Console.WriteLine();
                 Console.WriteLine("Tested {0} activities; {1} passed, {2} failed.", results.Length, results.Count(r => r), results.Count(r => !r));

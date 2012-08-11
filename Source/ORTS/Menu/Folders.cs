@@ -1,4 +1,4 @@
-// COPYRIGHT 2011 by the Open Rails project.
+// COPYRIGHT 2011, 2012 by the Open Rails project.
 // This code is provided to enable you to contribute improvements to the open rails program.  
 // Use of the code for any other purpose or distribution of the code to anyone else
 // is prohibited without specific written permission from admin@openrails.org.
@@ -18,6 +18,11 @@ namespace ORTS.Menu
         {
             Name = name;
             Path = path;
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
 
         public static string FolderDataFile
@@ -60,7 +65,7 @@ namespace ORTS.Menu
 
         public static void SetFolders(List<Folder> folders)
         {
-            using (BinaryWriter outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
+            using (var outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
             {
                 outf.Write(folders.Count);
                 foreach (var folder in folders)

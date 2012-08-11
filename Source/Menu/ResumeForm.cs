@@ -52,6 +52,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ORTS.Menu;
+using Path = System.IO.Path;
 
 namespace ORTS
 {
@@ -132,10 +133,10 @@ namespace ORTS
             Activity = activity;
             Build = GetBuild();
             DeletedSavesPath = Path.Combine(Program.UserDataFolder, "deleted_saves");
-            Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FileName != null ? activity.Name : "Explore Route");
+            Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name : "Explore Route");
 
             gridSaves_SelectionChanged(null, null);
-            pathNameDataGridViewTextBoxColumn.Visible = activity.FileName == null;
+            pathNameDataGridViewTextBoxColumn.Visible = activity.FilePath == null;
             LoadSaves();
         }
 
@@ -170,7 +171,7 @@ namespace ORTS
             {
                 var saves = new List<Save>();
                 var directory = Program.UserDataFolder;
-                var prefix = Activity.FileName == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FileName);
+                var prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
                 if (Directory.Exists(directory))
                 {
                     foreach (var saveFile in Directory.GetFiles(directory, prefix + "*.save"))

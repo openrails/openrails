@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows.Forms;
 using MSTS;
 using ORTS.Menu;
+using Path = ORTS.Menu.Path;
 
 namespace ORTS
 {
@@ -19,48 +20,10 @@ namespace ORTS
 		readonly Route Route;
 		readonly ExploreActivity ExploreActivity;
 
-		List<Path> Paths = new List<Path>();
+        List<Path> Paths = new List<Path>();
 		List<Consist> Consists = new List<Consist>();
-		Task<List<Path>> PathLoader;
+        Task<List<Path>> PathLoader;
 		Task<List<Consist>> ConsistLoader;
-
-		public class Path
-		{
-			public readonly string FileName;
-			public readonly string Name;
-			public readonly string Start;
-			public readonly string End;
-
-			public Path(string fileName, string name, string start, string end)
-			{
-				FileName = fileName;
-				Name = name;
-				Start = start;
-				End = end;
-			}
-
-			public override string ToString()
-			{
-				return Start + " - " + End;
-			}
-		}
-
-		public class Consist
-		{
-			public readonly string FileName;
-			public readonly string Name;
-
-			public Consist(string fileName, string name)
-			{
-				FileName = fileName;
-				Name = name;
-			}
-
-			public override string ToString()
-			{
-				return Name;
-			}
-		}
 
 		public ExploreForm(Folder folder, Route route, ExploreActivity exploreActivity)
 		{
@@ -89,7 +52,7 @@ namespace ORTS
 		{
 			get
 			{
-				return new ExploreActivity(listPaths.SelectedIndex >= 0 ? Paths[listPaths.SelectedIndex].FileName : "", listConsists.SelectedIndex >= 0 ? Consists[listConsists.SelectedIndex].FileName : "", listSeason.SelectedIndex, listWeather.SelectedIndex, (int)numericHour.Value, (int)numericMinute.Value);
+                return new ExploreActivity(listPaths.SelectedIndex >= 0 ? Paths[listPaths.SelectedIndex] : null, listConsists.SelectedIndex >= 0 ? Consists[listConsists.SelectedIndex] : null, listSeason.SelectedIndex, listWeather.SelectedIndex, (int)numericHour.Value, (int)numericMinute.Value);
 			}
 		}
 
@@ -101,30 +64,12 @@ namespace ORTS
 			listPaths.Items.Clear();
 			var route = Route;
 			var exploreActivity = ExploreActivity;
-			PathLoader = new Task<List<Path>>(this, () =>
-			{
-				var paths = new List<Path>();
-				var directory = System.IO.Path.Combine(route.Path, "PATHS");
-				if (Directory.Exists(directory))
-				{
-					foreach (var pathFile in Directory.GetFiles(directory, "*.pat"))
-					{
-						try
-						{
-							var patFile = new PATFile(pathFile);
-							if (patFile.IsPlayerPath)
-								paths.Add(new Path(pathFile, patFile.Name, patFile.Start, patFile.End));
-						}
-						catch { }
-					}
-				}
-				return paths.OrderBy(p => p.ToString()).ToList();
-			}, (paths) =>
+            PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(route).OrderBy(p => p.ToString()).ToList(), (paths) =>
 			{
 				Paths = paths;
 				foreach (var path in Paths)
-					listPaths.Items.Add(path.ToString());
-				var index = Paths.FindIndex(p => p.FileName == exploreActivity.Path);
+					listPaths.Items.Add(path);
+				var index = Paths.FindIndex(p => p.FilePath == exploreActivity.Path.FilePath);
 				if (index >= 0)
 					listPaths.SelectedIndex = index;
 				else if (Paths.Count > 0)
@@ -140,30 +85,12 @@ namespace ORTS
 			listConsists.Items.Clear();
 			var folder = Folder;
 			var exploreActivity = ExploreActivity;
-			ConsistLoader = new Task<List<Consist>>(this, () =>
-			{
-				var consists = new List<Consist>();
-				var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
-				if (Directory.Exists(directory))
-				{
-					foreach (var consistFile in Directory.GetFiles(directory, "*.con"))
-					{
-						try
-						{
-							var conFile = new CONFile(consistFile);
-							if (conFile.Train.TrainCfg.Name != "Loose consist.")
-								consists.Add(new Consist(consistFile, conFile.Train.TrainCfg.Name));
-						}
-						catch { }
-					}
-				}
-				return consists.OrderBy(p => p.ToString()).ToList();
-			}, (consists) =>
+			ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(folder).OrderBy(c => c.ToString()).ToList(), (consists) =>
 			{
 				Consists = consists;
 				foreach (var consist in Consists)
 					listConsists.Items.Add(consist.ToString());
-				var index = Consists.FindIndex(c => c.FileName == exploreActivity.Consist);
+				var index = Consists.FindIndex(c => c.FilePath == exploreActivity.Consist.FilePath);
 				if (index >= 0)
 					listConsists.SelectedIndex = index;
 				else if (Consists.Count > 0)

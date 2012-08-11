@@ -7,9 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Windows.Forms;
-using ORTS.Menu;
 
 namespace ORTS
 {
@@ -33,9 +31,6 @@ namespace ORTS
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
 
 			RegistryKey = @"SOFTWARE\OpenRails\ORTS";
-
-            string s = Enum.GetName(typeof(Microsoft.Xna.Framework.Input.Keys), Microsoft.Xna.Framework.Input.Keys.A);
-
 
 			try
 			{
@@ -64,11 +59,11 @@ namespace ORTS
                                         parameters.Add("-start");
                                         break;
                                 }
-                                var exploreActivity = MainForm.SelectedActivity as ExploreActivity;
+                                var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
                                 if (exploreActivity == null)
-                                    parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FileName));
+                                    parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FilePath));
                                 else
-                                    parameters.Add(String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather));
+                                    parameters.Add(String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path.FilePath, exploreActivity.Consist.FilePath, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather));
                                 break;
                             case DialogResult.Retry:
                                 parameters.Add("-resume");

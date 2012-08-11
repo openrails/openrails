@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using ORTS.Menu;    // needed for Activity
+using Path = System.IO.Path;
 
 namespace ORTS {
 
@@ -55,18 +56,18 @@ namespace ORTS {
                 .SelectMany( f => Route.GetRoutes( f ) )
                 .SelectMany( r => ORTS.Menu.Activity.GetActivities( r ) )
                 .Where( a => !(a is ExploreActivity) )
-                .OrderBy( a => a.FileName, StringComparer.OrdinalIgnoreCase )
+                .OrderBy( a => a.FilePath, StringComparer.OrdinalIgnoreCase )
                 .ToList();
 
             string activityName = selectedActivity.Name;
             string routePath = "routePath";
             string routeName = "routeName";
-            string activityFileName = selectedActivity.FileName;
+            string activityFileName = selectedActivity.FilePath;
             for( var i = 0; i < activities.Count; i++ ) {
                 activityName = activities[i].ACTFile.Tr_Activity.Tr_Activity_Header.Name;
-                routePath = Path.GetDirectoryName( activities[i].FileName );
+                routePath = Path.GetDirectoryName( activities[i].FilePath );
                 routePath = routePath.Substring( 0, routePath.Length - @"\ACTIVITIES".Length ); 
-                activityFileName = Path.GetFileName( activities[i].FileName );
+                activityFileName = Path.GetFileName( activities[i].FilePath );
                 tests.Add( new TestLoadActivity( activityName, routePath, routeName, activityFileName ) );
             }
             bsTestLoadActivities.DataSource = tests;

@@ -110,20 +110,26 @@
     <Compile Include="..\MSTS\_STF.cs">
       <Link>MSTS\_STF.cs</Link>
     </Compile>
+    <Compile Include="..\ORTS\InputSettings.cs">
+      <Link>ORTS\InputSettings.cs</Link>
+    </Compile>
     <Compile Include="..\ORTS\Menu\Activities.cs">
       <Link>ORTS\Menu\Activities.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\Menu\Consists.cs">
+      <Link>ORTS\Menu\Consists.cs</Link>
     </Compile>
     <Compile Include="..\ORTS\Menu\Folders.cs">
       <Link>ORTS\Menu\Folders.cs</Link>
     </Compile>
+    <Compile Include="..\ORTS\Menu\Paths.cs">
+      <Link>ORTS\Menu\Paths.cs</Link>
+    </Compile>
     <Compile Include="..\ORTS\Menu\Routes.cs">
       <Link>ORTS\Menu\Routes.cs</Link>
     </Compile>
-    <Compile Include="..\RunActivity\Common\InputSettings.cs">
-      <Link>RunActivity\InputSettings.cs</Link>
-    </Compile>
-    <Compile Include="..\RunActivity\Common\UserSettings.cs">
-      <Link>RunActivity\UserSettings.cs</Link>
+    <Compile Include="..\ORTS\UserSettings.cs">
+      <Link>ORTS\UserSettings.cs</Link>
     </Compile>
     <Compile Include="EditKey.cs">
       <SubType>Form</SubType>
@@ -260,9 +266,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ORTS.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
