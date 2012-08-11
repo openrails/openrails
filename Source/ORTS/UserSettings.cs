@@ -1,28 +1,7 @@
-﻿// COPYRIGHT 2010 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to enable you to contribute improvements to the open rails program.  
 // Use of the code for any other purpose or distribution of the code to anyone else
 // is prohibited without specific written permission from admin@openrails.org.
-//  
-// USERSETTINGS
-// 
-// Provides a common storage mechanism for program configuration settings.
-// 
-// Settings are defined as public properties in the UserSettings class, ie 
-//      public bool Alerter { get; set; }
-//      public int BrakePipeChargingRate { get; set; }
-//      etc   ( enclosed in #region 'User Settings' )
-// When the class is constructed, each of these has a 
-// default value set in InitUserSettings.
-// LoadUserSettings uses source code reflection to scan the list
-// of defined properties, checking for overrides
-// first in the registry, then on the command line.
-// The property is updated and Sources records why.
-//
-// All command line options start with - or /
-//     other parameters are considered data.
-// Command line overrides look like this eg
-//      -FullScreen=true  -WindowPosition_Activity=5,5
-
 
 using System;
 using System.Collections.Generic;
@@ -48,11 +27,19 @@ namespace ORTS
     {
     }
 
+    /// <summary>
+    /// Loads, stores and saves user configuration settings.
+    /// </summary>
+    /// <remarks>
+    /// <para>Every public, instance property on this class is considered a setting which can be loaded and saved. They can
+    /// be of types <c>string</c>, <c>int</c>, <c>bool</c>, <c>string[]</c> or <c>int[]</c>.</para>
+    /// <para>Settings are saved into the registry, under a key provided to <c>UserSettings.UserSettings</c>.</para>
+    /// <para>Command-line overriding of options is possible using the formats "-name=value" and "/name:value".</para>
+    /// </remarks>
     public class UserSettings
     {
         readonly string RegistryKey;
         readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
-        // used in Log() to output the source of the user setting per the following enum.
 
         public enum Source
         {
@@ -61,11 +48,10 @@ namespace ORTS
             Registry,
         }
 
-
         #region User Settings
 
         // Please put all user settings in here as auto-properties. Public properties
-        // of type 'string', 'int' and 'bool' are automatically loaded/saved.
+        // of type 'string', 'int', 'bool', 'string[]' and 'int[]' are automatically loaded/saved.
 
         // General settings.
         [Default(false)]
@@ -178,6 +164,11 @@ namespace ORTS
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of <c>UserSettings</c> with a given <paramref name="registryKey"/> and list of <paramref name="options"/> overrides.
+        /// </summary>
+        /// <param name="registryKey">Registry key under <c>HKEY_CURRENT_USER</c> to load and save the settings.</param>
+        /// <param name="options">List of all the setting overrides from the command-line.</param>
         public UserSettings(string registryKey, IEnumerable<string> options)
         {
             RegistryKey = registryKey;
@@ -192,25 +183,27 @@ namespace ORTS
             Multiplayer_User = Environment.UserName;
         }
 
-        void LoadUserSettings(IEnumerable<string> options)      // options enumerates a list of option strings
-        {                                                       // ie { "-FullScreen=true", "-WindowPosition_Activity=5,5" }
-
+        /// <summary>
+        /// Merges the settings from the defaults, the saved values, and the <paramref name="options"/> passed in.
+        /// </summary>
+        /// <param name="options">A list of options to override the default and saved values, specified in "name=value" or "name:value" format.</param>
+        void LoadUserSettings(IEnumerable<string> options)
+        {
             // This special command-line option prevents the registry values from being used.
             var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
 
+            // Pull apart the command-line options so we can find them by setting name.
             var optionsDictionary = new Dictionary<string, string>();
             foreach (var option in options)
             {
-                // Pull apart the command-line options so we can find them by setting name.
                 var k = option.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant();
                 var v = option.Contains('=') || option.Contains(':') ? option.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes";
                 optionsDictionary[k] = v;
             }
-            // optionsDictionary contains eg { "fullscreen":"true",  "WindowPosition_Activity":"5,5" {
 
-            using (var RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey))
+            using (var RK = Registry.CurrentUser.OpenSubKey(RegistryKey))
             {
-                // for each property in the UserSettings class ( ie BrakePipeChargingRate, Logging etc )
+                // All public instance properties are settings. Go through them all.
                 foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
                 {
                     // Get the default value.
@@ -248,12 +241,8 @@ namespace ORTS
                     else if ((optValue != null) && (property.PropertyType == typeof(int[])))
                         optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
 
-                    // at this point:
-                    //      optValue is a string, int, bool, string[], int[] representing the command line override 
-                    //                    or null if no command line override
-                    //      regValue is a string, int, bool, string[], int[] representing the registry entry or null
-                    //                    or null if no registry override
-
+                    // We now have defValue, regValue, optValue containing the default, persisted and override values
+                    // for the setting. regValue and optValue are null if they are not found/specified.
                     var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
                     try
                     {
@@ -274,6 +263,9 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Writes out all settings, their current value, and where it was loaded from to the console.
+        /// </summary>
         public void Log()
         {
             foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
@@ -290,8 +282,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Save UserSettings to the registry
-        /// except those decorated with 'DoNoSaveAttribute'.
+        /// Saves all peristent settings.
         /// </summary>
         public void Save()
         {
@@ -299,17 +290,15 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Save UserSettings to the registry
-        /// except those decorated with 'DoNoSaveAttribute'.
-        /// Save the specified setting, or all if null specified.
+        /// Saves only a single persistent setting.
         /// </summary>
         /// <remarks>
         /// Used, eg, by Popups.Window to save their location.
         /// </remarks>
-        /// <param name="name"></param>
+        /// <param name="name">Name of the setting to save.</param>
         public void Save(string name)
         {
-            using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
+            using (var RK = Registry.CurrentUser.CreateSubKey(RegistryKey))
             {
                 var values = RK.GetValueNames();
                 foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
