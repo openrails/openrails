@@ -10,7 +10,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Microsoft.Win32;
 using ORTS.Menu;
 using Path = System.IO.Path;
 
@@ -26,16 +25,12 @@ namespace ORTS
         }
 
         bool Initialized;
+        UserSettings Settings;
         List<Folder> Folders = new List<Folder>();
         List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
-
-        // To pre-load selection from previous choice
-        int listBoxFoldersSelectedIndex;
-        int listBoxRoutesSelectedIndex;
-        int listBoxActivitiesSelectedIndex;
 
         public Folder SelectedFolder { get { return listBoxFolders.SelectedIndex < 0 ? null : Folders[listBoxFolders.SelectedIndex]; } }
         public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
@@ -64,6 +59,9 @@ namespace ORTS
 
         void MainForm_Shown(object sender, EventArgs e)
         {
+            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
+            Settings = new UserSettings(Program.RegistryKey, options);
+
             LoadOptions();
 
             if (!Initialized)
@@ -175,7 +173,7 @@ namespace ORTS
         #region Misc. buttons and options
         void buttonSwitchStyle_Click(object sender, EventArgs e)
         {
-            using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
+            using (var RK = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
             {
                 if (RK != null)
                     RK.SetValue("LauncherMenu", 2);
@@ -194,7 +192,7 @@ namespace ORTS
 
         void buttonOptions_Click(object sender, EventArgs e)
         {
-            using (var form = new OptionsForm())
+            using (var form = new OptionsForm(Settings))
             {
                 form.ShowDialog(this);
             }
@@ -244,10 +242,10 @@ namespace ORTS
         void CleanupPre021()
         {
             // Handle cleanup from pre version 0021
-            using (var RK = Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
+            using (var RK = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
             {
                 if (RK != null)
-                    Registry.CurrentUser.DeleteSubKeyTree("SOFTWARE\\ORTS");
+                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree("SOFTWARE\\ORTS");
             }
 
             if (!File.Exists(Folder.FolderDataFile))
@@ -270,38 +268,22 @@ namespace ORTS
 
         void LoadOptions()
         {
-            // Restore retained settings
-            using (var RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey))
-            {
-                if (RK != null)
-                {
-                    // Registry stores strings which can be cast into integers but not into booleans,
-                    // so we convert to an integer, which if == 1, return true.
-                    checkBoxWarnings.Checked = ((int)RK.GetValue("Logging", 1) == 1) ? true : false;
-                    // true : false reversed as Windowed is opposite of Fullscreen
-                    checkBoxWindowed.Checked = ((int)RK.GetValue("Fullscreen", 0) == 1) ? false : true;
-                    listBoxFoldersSelectedIndex = (int)RK.GetValue("Folders", -1);
-                    listBoxRoutesSelectedIndex = (int)RK.GetValue("Routes", -1);
-                    listBoxActivitiesSelectedIndex = (int)RK.GetValue("Activities", -1);
-                    checkBoxMultiplayer.Checked = ((int)RK.GetValue("Multiplayer", 0) == 1) ? true : false;
-                }
-            }
+            checkBoxWarnings.Checked = Settings.Logging;
+            checkBoxWindowed.Checked = !Settings.FullScreen;
+            checkBoxMultiplayer.Checked = Settings.Multiplayer;
         }
 
         void SaveOptions()
         {
-            // Retain settings for convenience
-            using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
-            {
-                // Registry will not accept booleans, so use integers instead.
-                RK.SetValue("Logging", checkBoxWarnings.Checked ? 1 : 0);
-                // 1 : 0 reversed as Windowed is opposite of Fullscreen
-                RK.SetValue("Fullscreen", checkBoxWindowed.Checked ? 0 : 1);
-                RK.SetValue("Folders", listBoxFolders.SelectedIndex);
-                RK.SetValue("Routes", listBoxRoutes.SelectedIndex);
-                RK.SetValue("Activities", listBoxActivities.SelectedIndex);
-                RK.SetValue("Multiplayer", checkBoxMultiplayer.Checked ? 1 : 0);
-            }
+            Settings.Logging = checkBoxWarnings.Checked;
+            Settings.FullScreen = !checkBoxWindowed.Checked;
+            Settings.Multiplayer = checkBoxMultiplayer.Checked;
+            Settings.Menu_Selection = new[] {
+                listBoxFolders.SelectedItem != null ? (listBoxFolders.SelectedItem as Folder).Path : "",
+                listBoxRoutes.SelectedItem != null ? (listBoxRoutes.SelectedItem as Route).Path : "",
+                listBoxActivities.SelectedItem != null ? (listBoxActivities.SelectedItem as Activity).FilePath : "",
+            };
+            Settings.Save();
         }
 
         void LoadFolders()
@@ -314,13 +296,14 @@ namespace ORTS
             {
                 MessageBox.Show(error.ToString());
             }
-
             listBoxFolders.Items.Clear();
             foreach (var folder in Folders)
                 listBoxFolders.Items.Add(folder);
-
-            if (Folders.Count > 0)
-                listBoxFolders.SelectedIndex = Math.Min(listBoxFoldersSelectedIndex, listBoxFolders.Items.Count - 1);
+            var selectionIndex = Settings.Menu_Selection.Length > 0 ? Folders.FindIndex(f => f.Path == Settings.Menu_Selection[0]) : -1;
+            if (selectionIndex >= 0)
+                listBoxFolders.SelectedIndex = selectionIndex;
+            else if (Folders.Count > 0)
+                listBoxFolders.SelectedIndex = 0;
             else
                 listBoxFolders.ClearSelected();
         }
@@ -343,15 +326,13 @@ namespace ORTS
                 labelRoutes.Visible = Routes.Count == 0;
                 foreach (var route in Routes)
                     listBoxRoutes.Items.Add(route);
-                if (Routes.Count > 0)
-                {
-                    listBoxRoutes.SelectedIndex = Math.Min(listBoxRoutesSelectedIndex, listBoxRoutes.Items.Count - 1);
-                    listBoxRoutesSelectedIndex = 0; // Not needed after first use. Reset so any change in folder will select first route.
-                }
+                var selectionIndex = Settings.Menu_Selection.Length > 1 ? routes.FindIndex(f => f.Path == Settings.Menu_Selection[1]) : -1;
+                if (selectionIndex >= 0)
+                    listBoxRoutes.SelectedIndex = selectionIndex;
+                else if (routes.Count > 0)
+                    listBoxRoutes.SelectedIndex = 0;
                 else
-                {
                     listBoxRoutes.ClearSelected();
-                }
             });
         }
 
@@ -368,15 +349,13 @@ namespace ORTS
                 labelActivities.Visible = Activities.Count == 0;
                 foreach (var activity in Activities)
                     listBoxActivities.Items.Add(activity);
-                if (Activities.Count > 0)
-                {
-                    listBoxActivities.SelectedIndex = Math.Min(listBoxActivitiesSelectedIndex, listBoxActivities.Items.Count - 1);
-                    listBoxActivitiesSelectedIndex = 0; // Not needed after first use. Reset so any change in route will select first activity.
-                }
+                var selectionIndex = Settings.Menu_Selection.Length > 2 ? activities.FindIndex(f => f.FilePath == Settings.Menu_Selection[2]) : -1;
+                if (selectionIndex >= 0)
+                    listBoxActivities.SelectedIndex = selectionIndex;
+                else if (activities.Count > 0)
+                    listBoxActivities.SelectedIndex = 0;
                 else
-                {
                     listBoxActivities.ClearSelected();
-                }
             });
         }
 

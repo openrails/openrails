@@ -35,6 +35,15 @@ using Microsoft.Win32;
 
 namespace ORTS
 {
+    public class DefaultAttribute : Attribute
+    {
+        public readonly object Value;
+        public DefaultAttribute(object value)
+        {
+            Value = value;
+        }
+    }
+
     public class DoNotSaveAttribute : Attribute
     {
     }
@@ -43,7 +52,7 @@ namespace ORTS
     {
         readonly string RegistryKey;
         readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
-                // used in Log() to output the source of the user setting per the following enum.
+        // used in Log() to output the source of the user setting per the following enum.
 
         public enum Source
         {
@@ -59,40 +68,75 @@ namespace ORTS
         // of type 'string', 'int' and 'bool' are automatically loaded/saved.
 
         // General settings.
+        [Default(false)]
         public bool Alerter { get; set; }
+        [Default(21)]
         public int BrakePipeChargingRate { get; set; }
+        [Default(false)]
         public bool DataLogger { get; set; }
+        [Default(false)]
         public bool DynamicShadows { get; set; }
+        [Default(false)]
         public bool FullScreen { get; set; }
+        [Default(false)]
         public bool GraduatedRelease { get; set; }
+        [Default(true)]
         public bool Logging { get; set; }
+        [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
+        [Default("")]
         public string LoggingPath { get; set; }
+        [Default(false)]
         public bool MSTSBINSound { get; set; }
+        [Default(false)]
         public bool Precipitation { get; set; }
+        [Default(false)]
         public bool Profiling { get; set; }
+        [Default(1000)]
         public int ProfilingFrameCount { get; set; }
+        [Default("")]
         public string ScreenshotPath { get; set; }
+        [Default(0)]
         public int ShaderModel { get; set; }
+        [Default(false)]
         public bool ShadowAllShapes { get; set; }
+        [Default(true)]
         public bool ShadowMapBlur { get; set; }
+        [Default(4)]
         public int ShadowMapCount { get; set; }
+        [Default(0)]
         public int ShadowMapDistance { get; set; }
+        [Default(1024)]
         public int ShadowMapResolution { get; set; }
+        [Default(true)]
         public bool ShowErrorDialogs { get; set; }
+        [Default(5)]
         public int SoundDetailLevel { get; set; }
+        [Default(false)]
         public bool SuppressConfirmations { get; set; }
+        [Default(false)]
         public bool TrainLights { get; set; }
+        [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }
+        [Default(false)]
         public bool VerticalSync { get; set; }
+        [Default(2000)]
         public int ViewingDistance { get; set; }
+        [Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
         public int ViewingFOV { get; set; }
+        [Default(false)]
         public bool WindowGlass { get; set; }
+        [Default("1024x768")]
         public string WindowSize { get; set; }
+        [Default(false)]
         public bool Wire { get; set; }
+        [Default(10)]
         public int WorldObjectDensity { get; set; }
-		public bool ViewDispatcher { get; set; }
-		public int MPUpdateInterval { get; set; }
+        [Default(false)]
+        public bool ViewDispatcher { get; set; }
+
+        [Default(new string[0])]
+        public string[] Menu_Selection { get; set; }
 
         // These two are command-line only flags to start multiplayer modes.
         [DoNotSave]
@@ -101,20 +145,35 @@ namespace ORTS
         public bool MultiplayerServer { get; set; }
 
         // Multiplayer settings.
+        [Default(false)]
         public bool Multiplayer { get; set; }
+        [Default("")]
         public string Multiplayer_User { get; set; }
+        [Default("127.0.0.1")]
         public string Multiplayer_Host { get; set; }
+        [Default(30000)]
         public int Multiplayer_Port { get; set; }
+        [Default(10)]
+        public int Multiplayer_UpdateInterval { get; set; }
 
         // Window position settings.
+        [Default(new[] { 50, 50 })]
         public int[] WindowPosition_Activity { get; set; }
+        [Default(new[] { 50, 0 })]
         public int[] WindowPosition_Compass { get; set; }
+        [Default(new[] { 100, 100 })]
         public int[] WindowPosition_DriverAid { get; set; }
+        [Default(new[] { 50, 50 })]
         public int[] WindowPosition_Help { get; set; }
+        [Default(new[] { 0, 100 })]
         public int[] WindowPosition_NextStation { get; set; }
+        [Default(new[] { 50, 50 })]
         public int[] WindowPosition_Quit { get; set; }
+        [Default(new[] { 0, 50 })]
         public int[] WindowPosition_Switch { get; set; }
+        [Default(new[] { 100, 0 })]
         public int[] WindowPosition_TrackMonitor { get; set; }
+        [Default(new[] { 50, 50 })]
         public int[] WindowPosition_TrainOperations { get; set; }
 
         #endregion
@@ -128,39 +187,9 @@ namespace ORTS
 
         void InitUserSettings()
         {
-            // Initialize defaults for all user settings here.
-            BrakePipeChargingRate = 21;
-            Logging = true;
             LoggingPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            LoggingFilename = "OpenRailsLog.txt";
-            ProfilingFrameCount = 1000;
             ScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
-            ShadowMapBlur = true;
-            ShadowMapCount = 4;
-            ShadowMapResolution = 1024;
-            ShowErrorDialogs = true;
-            SoundDetailLevel = 5;
-            UseAdvancedAdhesion = true;
-            ViewingDistance = 2000;
-            ViewingFOV = 45; // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
-            WindowSize = "1024x768";
-            WorldObjectDensity = 10;
-
             Multiplayer_User = Environment.UserName;
-            Multiplayer_Host = "127.0.0.1";
-            Multiplayer_Port = 30000;
-			MPUpdateInterval = 10;
-
-            WindowPosition_Activity = new[] { 50, 50 };
-            WindowPosition_Compass = new[] { 50, 0 };
-            WindowPosition_DriverAid = new[] { 100, 100 };
-            WindowPosition_Help = new[] { 50, 50 };
-            WindowPosition_NextStation = new[] { 0, 100 };
-            WindowPosition_Quit = new[] { 50, 50 };
-            WindowPosition_Switch = new[] { 0, 50 };
-            WindowPosition_TrackMonitor = new[] { 100, 0 };
-            WindowPosition_TrainOperations = new[] { 50, 50 };
-
         }
 
         void LoadUserSettings(IEnumerable<string> options)      // options enumerates a list of option strings
@@ -168,7 +197,7 @@ namespace ORTS
 
             // This special command-line option prevents the registry values from being used.
             var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
-            
+
             var optionsDictionary = new Dictionary<string, string>();
             foreach (var option in options)
             {
@@ -186,6 +215,9 @@ namespace ORTS
                 {
                     // Get the default value.
                     var defValue = property.GetValue(this, null);
+                    var defValueAttribute = property.GetCustomAttributes(typeof(DefaultAttribute), false);
+                    if (defValueAttribute.Length > 0)
+                        defValue = (defValueAttribute[0] as DefaultAttribute).Value;
                     // Read in the registry option, if it exists.
                     var regValue = allowRegistryValues && RK != null ? RK.GetValue(property.Name, null) : null;
                     // Read in the command-line option, if it exists into optValue.
@@ -208,16 +240,20 @@ namespace ORTS
                     else if ((optValue != null) && (property.PropertyType == typeof(int)))
                         optValue = int.Parse((string)optValue);
 
+                    // Parse command-line option for string[] types.
+                    else if ((optValue != null) && (property.PropertyType == typeof(string[])))
+                        optValue = ((string)optValue).Split(',').Select(s => s.Trim()).ToArray();
+
                     // Parse command-line option for int[] types.
                     else if ((optValue != null) && (property.PropertyType == typeof(int[])))
                         optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
 
                     // at this point:
-                    //      optValue is a bool,int,or int[] representing the command line override 
+                    //      optValue is a string, int, bool, string[], int[] representing the command line override 
                     //                    or null if no command line override
-                    //      regValue is a bool,int,or int[] representing the registry entry or null
+                    //      regValue is a string, int, bool, string[], int[] representing the registry entry or null
                     //                    or null if no registry override
-                    
+
                     var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
                     try
                     {
@@ -244,9 +280,11 @@ namespace ORTS
             {
                 var value = property.GetValue(this, null);
                 var source = Sources[property.Name];
-                if (property.PropertyType == typeof(int[]))
+                if (property.PropertyType == typeof(string[]))
+                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((string[])value).Select(v => v.ToString()).ToArray()), source == Source.CommandLine ? "(command-line)" : source == Source.Registry ? "(registry)" : "");
+                else if (property.PropertyType == typeof(int[]))
                     Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source == Source.CommandLine ? "(command-line)" : source == Source.Registry ? "(registry)" : "");
-                else
+                else 
                     Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source == Source.CommandLine ? "(command-line)" : source == Source.Registry ? "(registry)" : "");
             }
         }
@@ -273,6 +311,7 @@ namespace ORTS
         {
             using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
             {
+                var values = RK.GetValueNames();
                 foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
                 {
                     if ((name != null) && (property.Name != name))
@@ -281,9 +320,21 @@ namespace ORTS
                     if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length > 0)
                         continue;
 
+                    object defValue = null;
+                    var defValueAttribute = property.GetCustomAttributes(typeof(DefaultAttribute), false);
+                    if (defValueAttribute.Length > 0)
+                        defValue = (defValueAttribute[0] as DefaultAttribute).Value;
+
                     var value = property.GetValue(this, null);
 
-                    if (property.PropertyType == typeof(string))
+                    if (defValue.Equals(value)
+                        || (property.PropertyType == typeof(string[]) && String.Join(",", (string[])defValue) == String.Join(",", (string[])value))
+                        || (property.PropertyType == typeof(int[]) && String.Join(",", ((int[])defValue).Select(v => v.ToString()).ToArray()) == String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray())))
+                    {
+                        if (values.Contains(property.Name))
+                            RK.DeleteValue(property.Name);
+                    }
+                    else if (property.PropertyType == typeof(string))
                     {
                         RK.SetValue(property.Name, value, RegistryValueKind.String);
                     }
@@ -294,6 +345,10 @@ namespace ORTS
                     else if (property.PropertyType == typeof(bool))
                     {
                         RK.SetValue(property.Name, (bool)value ? 1 : 0, RegistryValueKind.DWord);
+                    }
+                    else if (property.PropertyType == typeof(string[]))
+                    {
+                        RK.SetValue(property.Name, (string[])value, RegistryValueKind.MultiString);
                     }
                     else if (property.PropertyType == typeof(int[]))
                     {

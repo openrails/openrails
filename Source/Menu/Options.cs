@@ -16,19 +16,21 @@ using System.Threading;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using Microsoft.Win32;
 using XNA = Microsoft.Xna.Framework.Input;
 
 namespace ORTS
 {
     public partial class OptionsForm : Form
     {
-        public UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
-        public bool SetAllDefaults = false;
+        readonly UserSettings Settings;
+        UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
+        bool SetAllDefaults = false;
 
-        public OptionsForm()
+        public OptionsForm(UserSettings settings)
         {
             InitializeComponent();
+
+            Settings = settings;
 
 #if !DEBUG
             buttonDebug.Visible = false;
@@ -72,33 +74,26 @@ namespace ORTS
                 "1920x1200"
             };
 
-            this.numericWorldObjectDensity.Value = 10;
-            this.numericSoundDetailLevel.Value = 5;
-            this.comboBoxWindowSize.Items.AddRange(strContents);
-            this.comboBoxWindowSize.Text = "1024x768";
-            this.numericBrakePipeChargingRatePSIpS.Value = 21;
+            numericWorldObjectDensity.Value = 10;
+            numericSoundDetailLevel.Value = 5;
+            comboBoxWindowSize.Items.AddRange(strContents);
+            comboBoxWindowSize.Text = "1024x768";
+            numericBrakePipeChargingRatePSIpS.Value = 21;
 
-            // Restore retained settings
-            using (var RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey))
-            {
-                if (RK != null)
-                {
-                    this.numericWorldObjectDensity.Value = (int)RK.GetValue("WorldObjectDensity", (int)numericWorldObjectDensity.Value);
-                    this.numericSoundDetailLevel.Value = (int)RK.GetValue("SoundDetailLevel", (int)numericSoundDetailLevel.Value);
-                    this.comboBoxWindowSize.Text = (string)RK.GetValue("WindowSize", (string)comboBoxWindowSize.Text);
-                    this.checkBoxAlerter.Checked = (1 == (int)RK.GetValue("Alerter", 0));
-                    this.checkBoxTrainLights.Checked = (1 == (int)RK.GetValue("TrainLights", 0));
-                    this.checkBoxPrecipitation.Checked = (1 == (int)RK.GetValue("Precipitation", 0));
-                    this.checkBoxWire.Checked = (1 == (int)RK.GetValue("Wire", 0));
-                    this.numericBrakePipeChargingRatePSIpS.Value = (int)RK.GetValue("BrakePipeChargingRate", (int)numericBrakePipeChargingRatePSIpS.Value);
-                    this.checkBoxGraduatedRelease.Checked = (1 == (int)RK.GetValue("GraduatedRelease", 0));
-                    this.checkBoxShadows.Checked = (1 == (int)RK.GetValue("DynamicShadows", 0));
-                    this.checkBoxWindowGlass.Checked = (1 == (int)RK.GetValue("WindowGlass", 0));
-                    this.checkBoxBINSound.Checked = (1 == (int)RK.GetValue("MSTSBINSound", 0));
-                    this.checkBoxSuppressConfirmations.Checked = (1 == (int)RK.GetValue("SuppressConfirmations", 0));
-                    this.checkDispatcher.Checked = (1 == (int)RK.GetValue("ViewDispatcher", 0));
-                }
-            }
+            numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
+            numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
+            comboBoxWindowSize.Text = Settings.WindowSize;
+            checkBoxAlerter.Checked = Settings.Alerter;
+            checkBoxTrainLights.Checked = Settings.TrainLights;
+            checkBoxPrecipitation.Checked = Settings.Precipitation;
+            checkBoxWire.Checked = Settings.Wire;
+            numericBrakePipeChargingRatePSIpS.Value = Settings.BrakePipeChargingRate;
+            checkBoxGraduatedRelease.Checked = Settings.GraduatedRelease;
+            checkBoxShadows.Checked = Settings.DynamicShadows;
+            checkBoxWindowGlass.Checked = Settings.WindowGlass;
+            checkBoxBINSound.Checked = Settings.MSTSBINSound;
+            checkBoxSuppressConfirmations.Checked = Settings.SuppressConfirmations;
+            checkDispatcher.Checked = Settings.ViewDispatcher;
         }
 
         string ParseCategoryFrom(string name)
@@ -251,12 +246,12 @@ namespace ORTS
             {
                 try
                 {
-                    Registry.CurrentUser.DeleteSubKeyTree(InputSettings.RegistryKey);
+                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(InputSettings.RegistryKey);
                 }
                 catch (ArgumentException) { }
             }
 
-            using (var RK = Registry.CurrentUser.CreateSubKey(InputSettings.RegistryKey))
+            using (var RK = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(InputSettings.RegistryKey))
             {
                 // for every user command
                 foreach (UserCommands eCommand in Enum.GetValues(typeof(UserCommands)))
@@ -287,24 +282,21 @@ namespace ORTS
 
             WriteInputSettingsToRegistry();
 
-            // Retain settings for convenience
-            using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
-            {
-                RK.SetValue("WorldObjectDensity", (int)this.numericWorldObjectDensity.Value);
-                RK.SetValue("SoundDetailLevel", (int)this.numericSoundDetailLevel.Value);
-                RK.SetValue("WindowSize", (string)this.comboBoxWindowSize.Text);
-                RK.SetValue("Alerter", this.checkBoxAlerter.Checked ? 1 : 0);
-                RK.SetValue("TrainLights", this.checkBoxTrainLights.Checked ? 1 : 0);
-                RK.SetValue("Precipitation", this.checkBoxPrecipitation.Checked ? 1 : 0);
-                RK.SetValue("Wire", this.checkBoxWire.Checked ? 1 : 0);
-                RK.SetValue("BrakePipeChargingRate", (int)this.numericBrakePipeChargingRatePSIpS.Value);
-                RK.SetValue("GraduatedRelease", this.checkBoxGraduatedRelease.Checked ? 1 : 0);
-                RK.SetValue("DynamicShadows", this.checkBoxShadows.Checked ? 1 : 0);
-                RK.SetValue("WindowGlass", this.checkBoxWindowGlass.Checked ? 1 : 0);
-                RK.SetValue("MSTSBINSound", this.checkBoxBINSound.Checked ? 1 : 0);
-                RK.SetValue("SuppressConfirmations", this.checkBoxSuppressConfirmations.Checked ? 1 : 0);
-                RK.SetValue("ViewDispatcher", this.checkDispatcher.Checked ? 1 : 0);
-            }
+            Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
+            Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
+            Settings.WindowSize = comboBoxWindowSize.Text;
+            Settings.Alerter = checkBoxAlerter.Checked;
+            Settings.TrainLights = checkBoxTrainLights.Checked;
+            Settings.Precipitation = checkBoxPrecipitation.Checked;
+            Settings.Wire = checkBoxWire.Checked;
+            Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRatePSIpS.Value;
+            Settings.GraduatedRelease = checkBoxGraduatedRelease.Checked;
+            Settings.DynamicShadows = checkBoxShadows.Checked;
+            Settings.WindowGlass = checkBoxWindowGlass.Checked;
+            Settings.MSTSBINSound = checkBoxBINSound.Checked;
+            Settings.SuppressConfirmations = checkBoxSuppressConfirmations.Checked;
+            Settings.ViewDispatcher = checkDispatcher.Checked;
+            Settings.Save();
 
             DialogResult = DialogResult.OK;
         }

@@ -647,7 +647,7 @@ namespace ORTS
                     Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
                         "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
                     Code = Server.Code;
-					MPManager.Instance().MPUpdateInterval = settings.MPUpdateInterval;
+                    MPManager.Instance().MPUpdateInterval = settings.Multiplayer_UpdateInterval;
                 }
                 catch (Exception error)
                 {
@@ -666,7 +666,7 @@ namespace ORTS
                     Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
                         "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
                     Code = Client.Code;
-					MPManager.Instance().MPUpdateInterval = settings.MPUpdateInterval;
+                    MPManager.Instance().MPUpdateInterval = settings.Multiplayer_UpdateInterval;
 				}
                 catch (Exception error)
                 {
