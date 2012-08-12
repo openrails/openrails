@@ -132,13 +132,30 @@ namespace ORTS
 
             // Log exception details if it is an exception.
             if (eventCache.LogicalOperationStack.Contains(LogicalOperationWriteException))
-                output.AppendLine((args[0] as Exception).ToString());
+            {
+                // Attempt to clean up the stacks; the problem is that the exception stack only goes as far back as the call made inside the try block. We also have access to the
+                // full stack to this trace call, which goes via the catch block at the same level as the try block. We'd prefer to have the whole stack, so we need to find the
+                // join and stitch the stacks together.
+                var error = args[0] as Exception;
+                var errorStack = new StackTrace(args[0] as Exception);
+                var errorStackLast = errorStack.GetFrame(errorStack.FrameCount - 1);
+                var catchStack = new StackTrace();
+                var catchStackIndex = 0;
+                while (catchStackIndex < catchStack.FrameCount && catchStack.GetFrame(catchStackIndex).GetMethod().Name != errorStackLast.GetMethod().Name)
+                    catchStackIndex++;
+                catchStack = new StackTrace(catchStackIndex < catchStack.FrameCount ? catchStackIndex + 1 : 0, true);
+
+                output.AppendLine(error.ToString());
+                output.AppendLine(catchStack.ToString());
+            }
             else
+            {
                 output.AppendLine();
 
-            // Only log a stack trace for critical and error levels.
-            if ((eventType < TraceEventType.Warning) && (TraceOutputOptions & TraceOptions.Callstack) != 0)
-                output.AppendLine(new StackTrace(true).ToString());
+                // Only log a stack trace for critical and error levels.
+                if ((eventType < TraceEventType.Warning) && (TraceOutputOptions & TraceOptions.Callstack) != 0)
+                    output.AppendLine(new StackTrace(true).ToString());
+            }
 
             output.AppendLine();
             Writer.Write(output);
