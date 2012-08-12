@@ -474,9 +474,9 @@ namespace ORTS
                 using (var writer = File.AppendText(summaryFileName))
                 {
                     // Route, Activity, Passed, Errors, Warnings, Infos, Load Time, Frame Rate
-                    writer.WriteLine("\"{0}\",\"{1}\",{2},{3},{4},{5},{6:F1},{7:F1}",
-                        Simulator != null && Simulator.TRK != null && Simulator.TRK.Tr_RouteFile != null ? Simulator.TRK.Tr_RouteFile.Name : "",
-                        Simulator != null && Simulator.Activity != null && Simulator.Activity.Tr_Activity != null && Simulator.Activity.Tr_Activity.Tr_Activity_Header != null ? Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name : "",
+                    writer.WriteLine("{0},{1},{2},{3},{4},{5},{6:F1},{7:F1}",
+                        Simulator != null && Simulator.TRK != null && Simulator.TRK.Tr_RouteFile != null ? Simulator.TRK.Tr_RouteFile.Name.Replace(",", ";") : "",
+                        Simulator != null && Simulator.Activity != null && Simulator.Activity.Tr_Activity != null && Simulator.Activity.Tr_Activity.Tr_Activity_Header != null ? Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.Replace(",", ";") : "",
                         passed ? "Yes" : "No",
                         ORTraceListener != null ? ORTraceListener.Counts[0] + ORTraceListener.Counts[1] : 0,
                         ORTraceListener != null ? ORTraceListener.Counts[2] : 0,

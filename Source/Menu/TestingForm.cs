@@ -191,12 +191,10 @@ namespace ORTS
                         string line = "";
                         while (!reader.EndOfStream)
                             line = reader.ReadLine();
-                        var route = line.Substring(1, line.IndexOf('"', 1) - 1);
-                        var activity = line.Substring(4 + route.Length, line.IndexOf('"', 4 + route.Length) - 4 - route.Length);
-                        var csv = line.Substring(6 + route.Length + activity.Length).Split(',');
-                        item.Activity.Errors = String.Format("{0}/{1}/{2}", int.Parse(csv[1]), int.Parse(csv[2]), int.Parse(csv[3]));
-                        item.Activity.Load = String.Format("{0,6:F1}s", float.Parse(csv[4]));
-                        item.Activity.FPS = String.Format("{0,6:F1}", float.Parse(csv[5]));
+                        var csv = line.Split(',');
+                        item.Activity.Errors = String.Format("{0}/{1}/{2}", int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]));
+                        item.Activity.Load = String.Format("{0,6:F1}s", float.Parse(csv[6]));
+                        item.Activity.FPS = String.Format("{0,6:F1}", float.Parse(csv[7]));
                     }
                     if (runner.Cancelled)
                         break;
