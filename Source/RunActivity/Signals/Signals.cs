@@ -193,7 +193,7 @@ namespace ORTS
 
   // get all filesnames in World directory
 
-                        Trace.Write("\n");
+                        Trace.WriteLine("");
                         string WFilePath = simulator.RoutePath + @"\WORLD\";
                         string [] FileEntries = Directory.GetFiles(WFilePath);
 
@@ -260,7 +260,7 @@ namespace ORTS
                                         WFile=null;
                                 }
                         }
-                        Trace.Write("\n");
+                        Trace.WriteLine("");
 
 #if DEBUG_PRINT
                         foreach ( KeyValuePair <uint, SignalRefObject> thisref in SignalRefList)
