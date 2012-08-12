@@ -222,7 +222,7 @@
     <Compile Include="RouteDetails.designer.cs">
       <DependentUpon>RouteDetails.cs</DependentUpon>
     </Compile>
-    <Compile Include="SortableSearchableList.cs" />
+    <Compile Include="SortableBindingList.cs" />
     <Compile Include="Task.cs" />
     <Compile Include="TestingForm.cs">
       <SubType>Form</SubType>

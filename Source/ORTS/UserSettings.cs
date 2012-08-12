@@ -78,8 +78,10 @@ namespace ORTS
         public bool Precipitation { get; set; }
         [Default(false)]
         public bool Profiling { get; set; }
-        [Default(1000)]
+        [Default(0)]
         public int ProfilingFrameCount { get; set; }
+        [Default(0)]
+        public int ProfilingTime { get; set; }
         [Default("")]
         public string ScreenshotPath { get; set; }
         [Default(0)]

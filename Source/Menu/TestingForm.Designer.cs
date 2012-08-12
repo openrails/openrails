@@ -27,170 +27,192 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            this.bClose = new System.Windows.Forms.Button();
-            this.bTestLoadingOfAllActivities = new System.Windows.Forms.Button();
-            this.bTestLoadingOfSelectedActivities = new System.Windows.Forms.Button();
-            this.bCancelTest = new System.Windows.Forms.Button();
-            this.lTestLoading = new System.Windows.Forms.Label();
-            this.bViewSummary = new System.Windows.Forms.Button();
-            this.dgvTestLoadActivities = new System.Windows.Forms.DataGridView();
-            this.bsTestLoadActivities = new System.Windows.Forms.BindingSource( this.components );
-            this.bViewDetails = new System.Windows.Forms.Button();
-            this.toolTip1 = new System.Windows.Forms.ToolTip( this.components );
-            this.bCancelSort = new System.Windows.Forms.Button();
-            this.Column1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestingForm));
+            this.buttonTestAll = new System.Windows.Forms.Button();
+            this.buttonTest = new System.Windows.Forms.Button();
+            this.buttonCancel = new System.Windows.Forms.Button();
+            this.buttonSummary = new System.Windows.Forms.Button();
+            this.gridTestActivities = new System.Windows.Forms.DataGridView();
+            this.testBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.buttonDetails = new System.Windows.Forms.Button();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxOverride = new System.Windows.Forms.CheckBox();
+            this.buttonNoSort = new System.Windows.Forms.Button();
+            this.toTestDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.activityFilePathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.defaultSortDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.routeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.activityDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.routePathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.activityFileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Tested = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.Passed = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvTestLoadActivities)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bsTestLoadActivities)).BeginInit();
+            this.testedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.passedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.errorsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.loadDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fpsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.blankDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)(this.gridTestActivities)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.testBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
-            // bClose
+            // buttonTestAll
             // 
-            this.bClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bClose.Location = new System.Drawing.Point( 642, 280 );
-            this.bClose.Name = "bClose";
-            this.bClose.Size = new System.Drawing.Size( 101, 25 );
-            this.bClose.TabIndex = 8;
-            this.bClose.Text = "Close";
-            this.bClose.UseVisualStyleBackColor = true;
-            this.bClose.Click += new System.EventHandler( this.bClose_Click );
+            this.buttonTestAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonTestAll.Location = new System.Drawing.Point(12, 397);
+            this.buttonTestAll.Name = "buttonTestAll";
+            this.buttonTestAll.Size = new System.Drawing.Size(75, 23);
+            this.buttonTestAll.TabIndex = 1;
+            this.buttonTestAll.Text = "Test all";
+            this.buttonTestAll.UseVisualStyleBackColor = true;
+            this.buttonTestAll.Click += new System.EventHandler(this.buttonTestAll_Click);
             // 
-            // bTestLoadingOfAllActivities
+            // buttonTest
             // 
-            this.bTestLoadingOfAllActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bTestLoadingOfAllActivities.Location = new System.Drawing.Point( 642, 39 );
-            this.bTestLoadingOfAllActivities.Name = "bTestLoadingOfAllActivities";
-            this.bTestLoadingOfAllActivities.Size = new System.Drawing.Size( 101, 25 );
-            this.bTestLoadingOfAllActivities.TabIndex = 9;
-            this.bTestLoadingOfAllActivities.Text = "All activities";
-            this.bTestLoadingOfAllActivities.UseVisualStyleBackColor = true;
-            this.bTestLoadingOfAllActivities.Click += new System.EventHandler( this.bTestLoadingOfAllActivities_Click );
+            this.buttonTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonTest.Location = new System.Drawing.Point(93, 397);
+            this.buttonTest.Name = "buttonTest";
+            this.buttonTest.Size = new System.Drawing.Size(75, 23);
+            this.buttonTest.TabIndex = 2;
+            this.buttonTest.Text = "Test";
+            this.buttonTest.UseVisualStyleBackColor = true;
+            this.buttonTest.Click += new System.EventHandler(this.buttonTest_Click);
             // 
-            // bTestLoadingOfSelectedActivities
+            // buttonCancel
             // 
-            this.bTestLoadingOfSelectedActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bTestLoadingOfSelectedActivities.Location = new System.Drawing.Point( 642, 70 );
-            this.bTestLoadingOfSelectedActivities.Name = "bTestLoadingOfSelectedActivities";
-            this.bTestLoadingOfSelectedActivities.Size = new System.Drawing.Size( 101, 25 );
-            this.bTestLoadingOfSelectedActivities.TabIndex = 10;
-            this.bTestLoadingOfSelectedActivities.Text = "Selected activities";
-            this.bTestLoadingOfSelectedActivities.UseVisualStyleBackColor = true;
-            this.bTestLoadingOfSelectedActivities.Click += new System.EventHandler( this.bTestLoadingOfSelectedActivities_Click );
+            this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonCancel.Location = new System.Drawing.Point(174, 397);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(75, 23);
+            this.buttonCancel.TabIndex = 3;
+            this.buttonCancel.Text = "Cancel";
+            this.buttonCancel.UseVisualStyleBackColor = true;
+            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
-            // bCancelTest
+            // buttonSummary
             // 
-            this.bCancelTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bCancelTest.Location = new System.Drawing.Point( 642, 101 );
-            this.bCancelTest.Name = "bCancelTest";
-            this.bCancelTest.Size = new System.Drawing.Size( 101, 25 );
-            this.bCancelTest.TabIndex = 11;
-            this.bCancelTest.Text = "Cancel test";
-            this.bCancelTest.UseVisualStyleBackColor = true;
-            this.bCancelTest.Click += new System.EventHandler( this.bCancelTest_Click );
+            this.buttonSummary.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSummary.Location = new System.Drawing.Point(706, 397);
+            this.buttonSummary.Name = "buttonSummary";
+            this.buttonSummary.Size = new System.Drawing.Size(75, 23);
+            this.buttonSummary.TabIndex = 6;
+            this.buttonSummary.Text = "Summary";
+            this.buttonSummary.UseVisualStyleBackColor = true;
+            this.buttonSummary.Click += new System.EventHandler(this.buttonSummary_Click);
             // 
-            // lTestLoading
+            // gridTestActivities
             // 
-            this.lTestLoading.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lTestLoading.Location = new System.Drawing.Point( 639, 4 );
-            this.lTestLoading.Name = "lTestLoading";
-            this.lTestLoading.Size = new System.Drawing.Size( 104, 32 );
-            this.lTestLoading.TabIndex = 12;
-            this.lTestLoading.Text = "Test loading of activities";
-            this.lTestLoading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // bViewSummary
-            // 
-            this.bViewSummary.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bViewSummary.Location = new System.Drawing.Point( 642, 132 );
-            this.bViewSummary.Name = "bViewSummary";
-            this.bViewSummary.Size = new System.Drawing.Size( 101, 25 );
-            this.bViewSummary.TabIndex = 13;
-            this.bViewSummary.Text = "View summary";
-            this.bViewSummary.UseVisualStyleBackColor = true;
-            this.bViewSummary.Click += new System.EventHandler( this.bViewSummary_Click );
-            // 
-            // dgvTestLoadActivities
-            // 
-            this.dgvTestLoadActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.gridTestActivities.AllowUserToAddRows = false;
+            this.gridTestActivities.AllowUserToDeleteRows = false;
+            this.gridTestActivities.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgvTestLoadActivities.AutoGenerateColumns = false;
+            this.gridTestActivities.AutoGenerateColumns = false;
+            this.gridTestActivities.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
+            this.gridTestActivities.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.gridTestActivities.BackgroundColor = System.Drawing.SystemColors.Window;
+            this.gridTestActivities.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
+            this.gridTestActivities.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvTestLoadActivities.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvTestLoadActivities.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvTestLoadActivities.Columns.AddRange( new System.Windows.Forms.DataGridViewColumn[] {
-            this.Column1,
+            this.gridTestActivities.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            this.gridTestActivities.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.gridTestActivities.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.toTestDataGridViewCheckBoxColumn,
+            this.activityFilePathDataGridViewTextBoxColumn,
+            this.defaultSortDataGridViewTextBoxColumn,
+            this.routeDataGridViewTextBoxColumn,
             this.activityDataGridViewTextBoxColumn,
-            this.routePathDataGridViewTextBoxColumn,
-            this.activityFileNameDataGridViewTextBoxColumn,
-            this.Tested,
-            this.Passed} );
-            this.dgvTestLoadActivities.DataSource = this.bsTestLoadActivities;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvTestLoadActivities.DefaultCellStyle = dataGridViewCellStyle2;
-            this.dgvTestLoadActivities.Location = new System.Drawing.Point( 13, 12 );
-            this.dgvTestLoadActivities.Name = "dgvTestLoadActivities";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font( "Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)) );
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvTestLoadActivities.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
-            this.dgvTestLoadActivities.RowHeadersVisible = false;
-            this.dgvTestLoadActivities.Size = new System.Drawing.Size( 623, 293 );
-            this.dgvTestLoadActivities.TabIndex = 14;
+            this.testedDataGridViewCheckBoxColumn,
+            this.passedDataGridViewCheckBoxColumn,
+            this.errorsDataGridViewTextBoxColumn,
+            this.loadDataGridViewTextBoxColumn,
+            this.fpsDataGridViewTextBoxColumn,
+            this.blankDataGridViewTextBoxColumn});
+            this.gridTestActivities.DataSource = this.testBindingSource;
+            this.gridTestActivities.Location = new System.Drawing.Point(12, 12);
+            this.gridTestActivities.Name = "gridTestActivities";
+            this.gridTestActivities.ReadOnly = true;
+            this.gridTestActivities.RowHeadersVisible = false;
+            this.gridTestActivities.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.gridTestActivities.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gridTestActivities.Size = new System.Drawing.Size(850, 379);
+            this.gridTestActivities.TabIndex = 0;
             // 
-            // bsTestLoadActivities
+            // testBindingSource
             // 
-            this.bsTestLoadActivities.DataSource = typeof( ORTS.TestLoadActivity );
+            this.testBindingSource.DataSource = typeof(ORTS.TestingForm.TestActivity);
             // 
-            // bViewDetails
+            // buttonDetails
             // 
-            this.bViewDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bViewDetails.Location = new System.Drawing.Point( 642, 163 );
-            this.bViewDetails.Name = "bViewDetails";
-            this.bViewDetails.Size = new System.Drawing.Size( 101, 25 );
-            this.bViewDetails.TabIndex = 15;
-            this.bViewDetails.Text = "View details";
-            this.bViewDetails.UseVisualStyleBackColor = true;
-            this.bViewDetails.Click += new System.EventHandler( this.bViewDetails_Click );
+            this.buttonDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDetails.Location = new System.Drawing.Point(787, 397);
+            this.buttonDetails.Name = "buttonDetails";
+            this.buttonDetails.Size = new System.Drawing.Size(75, 23);
+            this.buttonDetails.TabIndex = 7;
+            this.buttonDetails.Text = "Details";
+            this.buttonDetails.UseVisualStyleBackColor = true;
+            this.buttonDetails.Click += new System.EventHandler(this.buttonDetails_Click);
             // 
-            // bCancelSort
+            // checkBoxOverride
             // 
-            this.bCancelSort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bCancelSort.Location = new System.Drawing.Point( 642, 194 );
-            this.bCancelSort.Name = "bCancelSort";
-            this.bCancelSort.Size = new System.Drawing.Size( 101, 25 );
-            this.bCancelSort.TabIndex = 16;
-            this.bCancelSort.Text = "Cancel sort";
-            this.bCancelSort.UseVisualStyleBackColor = true;
-            this.bCancelSort.Click += new System.EventHandler( this.bCancelSort_Click );
+            this.checkBoxOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkBoxOverride.Location = new System.Drawing.Point(255, 397);
+            this.checkBoxOverride.Name = "checkBoxOverride";
+            this.checkBoxOverride.Size = new System.Drawing.Size(364, 23);
+            this.checkBoxOverride.TabIndex = 4;
+            this.checkBoxOverride.Text = "Override user settings when running tests";
+            this.checkBoxOverride.UseVisualStyleBackColor = true;
             // 
-            // Column1
+            // buttonNoSort
             // 
-            this.Column1.DataPropertyName = "ToTest";
-            this.Column1.HeaderText = "To Test";
-            this.Column1.Name = "Column1";
-            this.Column1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.Column1.Visible = false;
+            this.buttonNoSort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonNoSort.Location = new System.Drawing.Point(625, 397);
+            this.buttonNoSort.Name = "buttonNoSort";
+            this.buttonNoSort.Size = new System.Drawing.Size(75, 23);
+            this.buttonNoSort.TabIndex = 5;
+            this.buttonNoSort.Text = "Clear sort";
+            this.buttonNoSort.UseVisualStyleBackColor = true;
+            this.buttonNoSort.Click += new System.EventHandler(this.buttonNoSort_Click);
+            // 
+            // toTestDataGridViewCheckBoxColumn
+            // 
+            this.toTestDataGridViewCheckBoxColumn.DataPropertyName = "ToTest";
+            this.toTestDataGridViewCheckBoxColumn.HeaderText = "ToTest";
+            this.toTestDataGridViewCheckBoxColumn.Name = "toTestDataGridViewCheckBoxColumn";
+            this.toTestDataGridViewCheckBoxColumn.ReadOnly = true;
+            this.toTestDataGridViewCheckBoxColumn.Visible = false;
+            this.toTestDataGridViewCheckBoxColumn.Width = 47;
+            // 
+            // activityFilePathDataGridViewTextBoxColumn
+            // 
+            this.activityFilePathDataGridViewTextBoxColumn.DataPropertyName = "ActivityFilePath";
+            this.activityFilePathDataGridViewTextBoxColumn.HeaderText = "ActivityFilePath";
+            this.activityFilePathDataGridViewTextBoxColumn.Name = "activityFilePathDataGridViewTextBoxColumn";
+            this.activityFilePathDataGridViewTextBoxColumn.ReadOnly = true;
+            this.activityFilePathDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.activityFilePathDataGridViewTextBoxColumn.Visible = false;
+            this.activityFilePathDataGridViewTextBoxColumn.Width = 85;
+            // 
+            // defaultSortDataGridViewTextBoxColumn
+            // 
+            this.defaultSortDataGridViewTextBoxColumn.DataPropertyName = "DefaultSort";
+            this.defaultSortDataGridViewTextBoxColumn.HeaderText = "DefaultSort";
+            this.defaultSortDataGridViewTextBoxColumn.Name = "defaultSortDataGridViewTextBoxColumn";
+            this.defaultSortDataGridViewTextBoxColumn.ReadOnly = true;
+            this.defaultSortDataGridViewTextBoxColumn.Visible = false;
+            this.defaultSortDataGridViewTextBoxColumn.Width = 85;
+            // 
+            // routeDataGridViewTextBoxColumn
+            // 
+            this.routeDataGridViewTextBoxColumn.DataPropertyName = "Route";
+            this.routeDataGridViewTextBoxColumn.HeaderText = "Route";
+            this.routeDataGridViewTextBoxColumn.Name = "routeDataGridViewTextBoxColumn";
+            this.routeDataGridViewTextBoxColumn.ReadOnly = true;
+            this.routeDataGridViewTextBoxColumn.Width = 61;
             // 
             // activityDataGridViewTextBoxColumn
             // 
@@ -198,83 +220,109 @@
             this.activityDataGridViewTextBoxColumn.HeaderText = "Activity";
             this.activityDataGridViewTextBoxColumn.Name = "activityDataGridViewTextBoxColumn";
             this.activityDataGridViewTextBoxColumn.ReadOnly = true;
-            this.activityDataGridViewTextBoxColumn.Width = 200;
+            this.activityDataGridViewTextBoxColumn.Width = 66;
             // 
-            // routePathDataGridViewTextBoxColumn
+            // testedDataGridViewCheckBoxColumn
             // 
-            this.routePathDataGridViewTextBoxColumn.DataPropertyName = "RoutePath";
-            this.routePathDataGridViewTextBoxColumn.HeaderText = "RoutePath";
-            this.routePathDataGridViewTextBoxColumn.Name = "routePathDataGridViewTextBoxColumn";
-            this.routePathDataGridViewTextBoxColumn.ReadOnly = true;
-            this.routePathDataGridViewTextBoxColumn.Width = 200;
+            this.testedDataGridViewCheckBoxColumn.DataPropertyName = "Tested";
+            this.testedDataGridViewCheckBoxColumn.HeaderText = "Tested";
+            this.testedDataGridViewCheckBoxColumn.Name = "testedDataGridViewCheckBoxColumn";
+            this.testedDataGridViewCheckBoxColumn.ReadOnly = true;
+            this.testedDataGridViewCheckBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.testedDataGridViewCheckBoxColumn.Width = 65;
             // 
-            // activityFileNameDataGridViewTextBoxColumn
+            // passedDataGridViewCheckBoxColumn
             // 
-            this.activityFileNameDataGridViewTextBoxColumn.DataPropertyName = "ActivityFileName";
-            this.activityFileNameDataGridViewTextBoxColumn.HeaderText = "ActivityFileName";
-            this.activityFileNameDataGridViewTextBoxColumn.Name = "activityFileNameDataGridViewTextBoxColumn";
-            this.activityFileNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.activityFileNameDataGridViewTextBoxColumn.Width = 200;
+            this.passedDataGridViewCheckBoxColumn.DataPropertyName = "Passed";
+            this.passedDataGridViewCheckBoxColumn.HeaderText = "Passed";
+            this.passedDataGridViewCheckBoxColumn.Name = "passedDataGridViewCheckBoxColumn";
+            this.passedDataGridViewCheckBoxColumn.ReadOnly = true;
+            this.passedDataGridViewCheckBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.passedDataGridViewCheckBoxColumn.Width = 67;
             // 
-            // Tested
+            // errorsDataGridViewTextBoxColumn
             // 
-            this.Tested.DataPropertyName = "Tested";
-            this.Tested.HeaderText = "Tested";
-            this.Tested.Name = "Tested";
-            this.Tested.ReadOnly = true;
-            this.Tested.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.Tested.Width = 50;
+            this.errorsDataGridViewTextBoxColumn.DataPropertyName = "Errors";
+            this.errorsDataGridViewTextBoxColumn.HeaderText = "Errors";
+            this.errorsDataGridViewTextBoxColumn.Name = "errorsDataGridViewTextBoxColumn";
+            this.errorsDataGridViewTextBoxColumn.ReadOnly = true;
+            this.errorsDataGridViewTextBoxColumn.Width = 59;
             // 
-            // Passed
+            // loadDataGridViewTextBoxColumn
             // 
-            this.Passed.DataPropertyName = "Passed";
-            this.Passed.HeaderText = "Passed";
-            this.Passed.Name = "Passed";
-            this.Passed.ReadOnly = true;
-            this.Passed.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.Passed.Width = 50;
+            this.loadDataGridViewTextBoxColumn.DataPropertyName = "Load";
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.loadDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
+            this.loadDataGridViewTextBoxColumn.HeaderText = "Load";
+            this.loadDataGridViewTextBoxColumn.Name = "loadDataGridViewTextBoxColumn";
+            this.loadDataGridViewTextBoxColumn.ReadOnly = true;
+            this.loadDataGridViewTextBoxColumn.Width = 56;
+            // 
+            // fpsDataGridViewTextBoxColumn
+            // 
+            this.fpsDataGridViewTextBoxColumn.DataPropertyName = "FPS";
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.fpsDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle3;
+            this.fpsDataGridViewTextBoxColumn.HeaderText = "FPS";
+            this.fpsDataGridViewTextBoxColumn.Name = "fpsDataGridViewTextBoxColumn";
+            this.fpsDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fpsDataGridViewTextBoxColumn.Width = 52;
+            // 
+            // blankDataGridViewTextBoxColumn
+            // 
+            this.blankDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.blankDataGridViewTextBoxColumn.HeaderText = "";
+            this.blankDataGridViewTextBoxColumn.Name = "blankDataGridViewTextBoxColumn";
+            this.blankDataGridViewTextBoxColumn.ReadOnly = true;
+            this.blankDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // TestingForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF( 6F, 13F );
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size( 755, 317 );
-            this.Controls.Add( this.bCancelSort );
-            this.Controls.Add( this.bViewDetails );
-            this.Controls.Add( this.dgvTestLoadActivities );
-            this.Controls.Add( this.bViewSummary );
-            this.Controls.Add( this.lTestLoading );
-            this.Controls.Add( this.bCancelTest );
-            this.Controls.Add( this.bTestLoadingOfSelectedActivities );
-            this.Controls.Add( this.bTestLoadingOfAllActivities );
-            this.Controls.Add( this.bClose );
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(874, 432);
+            this.Controls.Add(this.buttonNoSort);
+            this.Controls.Add(this.buttonDetails);
+            this.Controls.Add(this.buttonSummary);
+            this.Controls.Add(this.checkBoxOverride);
+            this.Controls.Add(this.gridTestActivities);
+            this.Controls.Add(this.buttonCancel);
+            this.Controls.Add(this.buttonTest);
+            this.Controls.Add(this.buttonTestAll);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimizeBox = false;
             this.Name = "TestingForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "TestingForm";
-            ((System.ComponentModel.ISupportInitialize)(this.dgvTestLoadActivities)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bsTestLoadActivities)).EndInit();
-            this.ResumeLayout( false );
+            this.Text = "Testing";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TestingForm_FormClosing);
+            ((System.ComponentModel.ISupportInitialize)(this.gridTestActivities)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.testBindingSource)).EndInit();
+            this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button bClose;
-        private System.Windows.Forms.Button bTestLoadingOfAllActivities;
-        private System.Windows.Forms.Button bTestLoadingOfSelectedActivities;
-        private System.Windows.Forms.Button bCancelTest;
-        private System.Windows.Forms.Label lTestLoading;
-        private System.Windows.Forms.Button bViewSummary;
-        private System.Windows.Forms.DataGridView dgvTestLoadActivities;
-        private System.Windows.Forms.BindingSource bsTestLoadActivities;
-        private System.Windows.Forms.Button bViewDetails;
-        private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.Button bCancelSort;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn Column1;
+        private System.Windows.Forms.Button buttonTestAll;
+        private System.Windows.Forms.Button buttonTest;
+        private System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.Button buttonSummary;
+        private System.Windows.Forms.DataGridView gridTestActivities;
+        private System.Windows.Forms.BindingSource testBindingSource;
+        private System.Windows.Forms.Button buttonDetails;
+        private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.CheckBox checkBoxOverride;
+        private System.Windows.Forms.Button buttonNoSort;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn toTestDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn activityFilePathDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn defaultSortDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn routeDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn activityDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn routePathDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn activityFileNameDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn Tested;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn Passed;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn testedDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn passedDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn errorsDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn loadDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn fpsDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn blankDataGridViewTextBoxColumn;
     }
 }

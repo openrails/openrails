@@ -74,6 +74,7 @@ namespace ORTS
     {
         public readonly TextWriter Writer;
         public readonly bool OnlyErrors;
+        public readonly int[] Counts = new int[5];
         bool LastWrittenFormatted = false;
 
         public ORTraceListener(TextWriter writer)
@@ -108,14 +109,9 @@ namespace ORTS
         void TraceEventInternal(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, object[] args)
         {
             // Convert eventType (an enum) back to an index so we can count the different types of error separately.
-            // Bit clumsy. Perhaps a dictionary would be neater.
-            int typeIndex;
-            int typeEnum = 1;   // Value for first eventType
-            for( typeIndex = 0; typeIndex < Enum.GetNames( typeof( TraceEventType ) ).Length; typeIndex++ ) {
-                if( typeEnum == (int)eventType ) break;
-                typeEnum *= 2;  // Get value of next eventType
-            }
-            Program.ErrorCount[typeIndex]++;
+            var errorLevel = (int)Math.Round(Math.Log((int)eventType) / Math.Log(2));
+            if (errorLevel < Counts.Length)
+                Counts[errorLevel]++;
             
             // Event is less important than error (and critical) and we're logging only errors... bail.
             if (eventType > TraceEventType.Error && OnlyErrors)

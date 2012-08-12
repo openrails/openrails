@@ -51,8 +51,8 @@ namespace ORTS
 		public static string Code;
 		public static int NumOfTrains = 0;
 
-        private static Viewer3D Viewer;
-        public static int[] ErrorCount = new int[Enum.GetNames(typeof(TraceEventType)).Length];
+        static Viewer3D Viewer;
+        static ORTraceListener ORTraceListener;
 #if DEBUG_VIEWER
         public static Debugging.DispatchViewer DebugViewer;
         public static bool DebugViewerEnabled = false;
@@ -74,7 +74,7 @@ namespace ORTS
             var action = "";
             var actions = new[] { "start", "resume", "test", "testall" };
             foreach (var possibleAction in actions)
-                if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction))
+                if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
                     action = possibleAction;
 
             // Collect all non-action options.
@@ -104,9 +104,9 @@ namespace ORTS
                     break;
                 case "test":
                     // Any log file is deleted by Menu.exe
-                    InitLogging(settings, false);
+                    InitLogging(settings, true);
                     // set Exit code to be returned to Menu.exe 
-                    System.Environment.ExitCode = Test(settings, data);
+                    Environment.ExitCode = Test(settings, data);
                     break;
                 case "testall":
                     InitLogging(settings);
@@ -441,54 +441,48 @@ namespace ORTS
         /// </summary>
         public static int Test(UserSettings settings, string[] args)
         {
-            int fatalErrors = 0;
-            DateTime StartTime = DateTime.Now;
-            DateTime EndTime = DateTime.Now;
+            var passed = false;
+            var startTime = DateTime.Now;
+            var loadTime = 0d;
             try
             {
-                InitSimulator(settings, args);
-                StartTime = DateTime.Now;
+                InitSimulator(settings, args, "Test");
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator);
                 Viewer.Run(null);
                 Simulator.Stop();
-                EndTime = DateTime.Now;
+                loadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
+                passed = true;
             }
             catch (Exception error)
             {
                 Trace.WriteLine(error);
                 if (settings.ShowErrorDialogs)
                     MessageBox.Show(error.ToString(), Application.ProductName);
-                // Set a positive exit code so Menu.exe can pick it up.
-                fatalErrors++;
             }
-            ExportTestSummary(fatalErrors, settings, args, EndTime - StartTime);
-            return fatalErrors;
+            ExportTestSummary(settings, args, passed, loadTime);
+            return passed ? 0 : 1;
         }
 
-        static void ExportTestSummary(int fatalErrors, UserSettings settings, string[] args, TimeSpan duration)
+        static void ExportTestSummary(UserSettings settings, string[] args, bool passed, double loadTime)
         {
             // Append to CSV file in format suitable for Excel
-            string summaryFileName = Path.Combine(Program.UserDataFolder, "TestSummary.csv");
+            var summaryFileName = Path.Combine(Program.UserDataFolder, "TestingSummary.csv");
             // Could fail if already opened by Excel
             try
             {
-                using (StreamWriter sw = File.AppendText(summaryFileName))
+                using (var writer = File.AppendText(summaryFileName))
                 {
-                    // Pass, Activity, Errors, Warnings, Infos, Folder, Route, Activity
-                    // Excel doesn't handle CSV with commas embedded in text (although Access does :{ )
-                    // Simplest solution is to change embedded "," to ";" with .Replace()
-                    sw.Write((fatalErrors == 0) ? "yes" : "no");
-                    sw.Write(String.Format(", {0}", Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.Replace(",", ";")));  // e.g. Auto Train with Set-Out
-                    sw.Write(String.Format(", {0}", (ErrorCount[0] + ErrorCount[1]).ToString()));   // critical and error
-                    sw.Write(String.Format(", {0}", ErrorCount[2].ToString()));              // warning
-                    sw.Write(String.Format(", {0}", ErrorCount[3].ToString()));              // information
-                    sw.Write(String.Format(", {0}", Simulator.RoutePath.Replace(",", ";")));               // e.g. D:\MSTS\ROUTES\USA2
-                    sw.Write(String.Format(", {0}", Simulator.TRK.Tr_RouteFile.Name.Replace(",", ";")));   // e.g. "Marias Pass"
-                    sw.Write(String.Format(", {0}", Path.GetFileName(args[0]).Replace(",", ";")));        // e.g. "autotrnsetout.act"
-                    sw.Write(String.Format(", {0}", duration.Seconds));
-                    sw.Write(String.Format(", {0:0}", Viewer.RenderProcess.FrameRate.SmoothedValue));
-                    sw.WriteLine("");
+                    // Route, Activity, Passed, Errors, Warnings, Infos, Load Time, Frame Rate
+                    writer.WriteLine("\"{0}\",\"{1}\",{2},{3},{4},{5},{6:F1},{7:F1}",
+                        Simulator != null && Simulator.TRK != null && Simulator.TRK.Tr_RouteFile != null ? Simulator.TRK.Tr_RouteFile.Name : "",
+                        Simulator != null && Simulator.Activity != null && Simulator.Activity.Tr_Activity != null && Simulator.Activity.Tr_Activity.Tr_Activity_Header != null ? Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name : "",
+                        passed ? "Yes" : "No",
+                        ORTraceListener != null ? ORTraceListener.Counts[0] + ORTraceListener.Counts[1] : 0,
+                        ORTraceListener != null ? ORTraceListener.Counts[2] : 0,
+                        ORTraceListener != null ? ORTraceListener.Counts[3] : 0,
+                        loadTime,
+                        Viewer != null && Viewer.RenderProcess != null ? Viewer.RenderProcess.FrameRate.SmoothedValue : 0);
                 }
             }
             catch { } // Ignore any errors
@@ -531,10 +525,10 @@ namespace ORTS
 
         static void InitLogging(UserSettings settings)
         {
-            InitLogging(settings, true);
+            InitLogging(settings, false);
         }
 
-        static void InitLogging(UserSettings settings, bool newFile)
+        static void InitLogging(UserSettings settings, bool appendLog)
         {
             var logFileName = "";
             if (settings.Logging)
@@ -544,14 +538,7 @@ namespace ORTS
                     var fileName = settings.LoggingFilename;
                     try
                     {
-                        if (newFile)
-                        {
                             fileName = String.Format(fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, DateTime.Now);
-                        }
-                        else
-                        {  // -test parameter appends all records to a single log file, so filename musn't change with time of day.
-                            fileName = String.Format(fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, "-test");
-                        }
                     }
                     catch { }
                     foreach (var ch in Path.GetInvalidFileNameChars())
@@ -559,7 +546,8 @@ namespace ORTS
 
                     logFileName = Path.Combine(settings.LoggingPath, fileName);
                     // Ensure we start with an empty file.
-                    if (newFile) File.Delete(logFileName);
+                    if (!appendLog)
+                        File.Delete(logFileName);
                     // Make Console.Out go to the log file AND the output stream.
                     Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
                     // Make Console.Error go to the new Console.Out.
@@ -568,10 +556,10 @@ namespace ORTS
             }
 
             // Captures Trace.Trace* calls and others and formats.
-            var traceListener = new ORTraceListener(Console.Out, !settings.Logging);
-            traceListener.TraceOutputOptions = TraceOptions.Callstack;
+            ORTraceListener = new ORTraceListener(Console.Out, !settings.Logging);
+            ORTraceListener.TraceOutputOptions = TraceOptions.Callstack;
             // Trace.Listeners and Debug.Listeners are the same list.
-            Trace.Listeners.Add(traceListener);
+            Trace.Listeners.Add(ORTraceListener);
 
             Console.WriteLine("{0} is starting...", Application.ProductName);
             Console.WriteLine();

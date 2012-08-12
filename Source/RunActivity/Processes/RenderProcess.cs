@@ -249,7 +249,7 @@ namespace ORTS
         protected override void Draw(GameTime gameTime)
         {
             if (Viewer.Settings.Profiling)
-                if (++ProfileFrames > Viewer.Settings.ProfilingFrameCount)
+                if ((Viewer.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Viewer.Settings.ProfilingFrameCount) || (Viewer.Settings.ProfilingTime > 0 && Viewer.RealTime >= Viewer.Settings.ProfilingTime))
                     Exit();
 
             Profiler.Start();

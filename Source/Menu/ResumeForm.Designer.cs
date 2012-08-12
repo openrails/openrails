@@ -56,7 +56,6 @@
             // 
             this.gridSaves.AllowUserToAddRows = false;
             this.gridSaves.AllowUserToDeleteRows = false;
-            this.gridSaves.AllowUserToOrderColumns = true;
             this.gridSaves.AutoGenerateColumns = false;
             this.gridSaves.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.gridSaves.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;

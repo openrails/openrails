@@ -71,15 +71,11 @@ namespace ORTS
                                 break;
                         }
 
-                        // Find the RunActivity program, normally in the startup path, 
-                        // but while debugging it will be in an adjacent directory.
-                        var programFolder = Application.StartupPath.ToLower();
-
                         var processStartInfo = new System.Diagnostics.ProcessStartInfo();
-                        processStartInfo.FileName = Path.Combine(programFolder, RunActivityProgram);
+                        processStartInfo.FileName = Path.Combine(Application.StartupPath, RunActivityProgram);
                         processStartInfo.Arguments = String.Join(" ", parameters.ToArray());
                         processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
-                        processStartInfo.WorkingDirectory = programFolder;
+                        processStartInfo.WorkingDirectory = Application.StartupPath;
 
                         var process = Process.Start(processStartInfo);
                         process.WaitForExit();

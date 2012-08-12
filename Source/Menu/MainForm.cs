@@ -184,7 +184,7 @@ namespace ORTS
 
         void buttonTesting_Click(object sender, EventArgs e)
         {
-            using (var form = new TestingForm(this, SelectedRoute, SelectedActivity))
+            using (var form = new TestingForm())
             {
                 form.ShowDialog(this);
             }

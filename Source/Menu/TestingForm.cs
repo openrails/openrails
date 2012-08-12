@@ -1,4 +1,9 @@
-﻿using System;
+﻿// COPYRIGHT 2012 by the Open Rails project.
+// This code is provided to enable you to contribute improvements to the open rails program.  
+// Use of the code for any other purpose or distribution of the code to anyone else
+// is prohibited without specific written permission from admin@openrails.org.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,43 +13,46 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using ORTS.Menu;    // needed for Activity
+using ORTS.Menu;
 using Path = System.IO.Path;
 
-namespace ORTS {
+namespace ORTS
+{
+    public partial class TestingForm : Form
+    {
+        public class TestActivity
+        {
+            public string DefaultSort { get; set; }
+            public string Route { get; set; }
+            public string Activity { get; set; }
+            public string ActivityFilePath { get; set; }
+            public bool ToTest { get; set; }
+            public bool Tested { get; set; }
+            public bool Passed { get; set; }
+            public string Errors { get; set; }
+            public string Load { get; set; }
+            public string FPS { get; set; }
 
-    public partial class TestingForm : Form {
+            public TestActivity(Folder folder, Route route, Activity activity)
+            {
+                DefaultSort = folder.Name + "/" + route.Name + "/" + activity.Name;
+                Route = route.Name;
+                Activity = activity.Name;
+                ActivityFilePath = activity.FilePath;
+            }
+        }
 
-        // Integers so we can reference cells in DataViewGrid by name instead of index.
-        // Would use enums but that's too cumbersome.
-        int cToTest = 0;
-        //int cActivityName = 1;  // unused. Commented out to avoid compile warning.
-        int cRoutePath = 2;
-        int cActivityFileName = 3;
-        int cTested = 4;
-        int cPassed = 5;
-        
-        MainForm parentForm;
-        Route selectedRoute;
-        Activity selectedActivity;
-        // Use SortableSearchableList instead of List so we can sort each column of the DataGrid by clicking on the column header.
-        // For the path, it seems we need to click once for each "/" !
-        SortableSearchableList<TestLoadActivity> tests = new SortableSearchableList<TestLoadActivity>();
+        SortableBindingList<TestActivity> TestActivities = new SortableBindingList<TestActivity>();
+        Task<SortableBindingList<TestActivity>> TestActivityLoader;
 
-        // We use a loader so the testing can take place in the background and the testing form, being in the foreground, can
-        // be moved, re-sized and the buttons (especially Cancel Tests) will work at once.
-        Task<List<DataGridViewRow>> DataGridViewRowLoader;
-        List<DataGridViewRow> dataGridViewRowList = new List<DataGridViewRow>();
+        Task<int> TestActivitiesRunner;
+        bool ClearedLogs;
 
-        string summaryFileName = Path.Combine( Program.UserDataFolder, "TestSummary.csv" );
-        string logFileName = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Desktop ), "OpenRailsLog.txt" );
-        bool isLoopInterrupted;
+        readonly string SummaryFilePath = Path.Combine(Program.UserDataFolder, "TestingSummary.csv");
+        readonly string LogFilePath = Path.Combine(Program.UserDataFolder, "TestingLog.txt");
 
-        public TestingForm(MainForm parentForm, Route selectedRoute, Activity selectedActivity ) {
-            this.parentForm = parentForm;
-            this.selectedRoute = selectedRoute;
-            this.selectedActivity = selectedActivity;
-
+        public TestingForm()
+        {
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
@@ -52,167 +60,166 @@ namespace ORTS {
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
 
-            var activities = (Folder.GetFolders())
-                .SelectMany( f => Route.GetRoutes( f ) )
-                .SelectMany( r => ORTS.Menu.Activity.GetActivities( r ) )
-                .Where( a => !(a is ExploreActivity) )
-                .OrderBy( a => a.FilePath, StringComparer.OrdinalIgnoreCase )
-                .ToList();
+            UpdateButtons();
 
-            string activityName = selectedActivity.Name;
-            string routePath = "routePath";
-            string routeName = "routeName";
-            string activityFileName = selectedActivity.FilePath;
-            for( var i = 0; i < activities.Count; i++ ) {
-                activityName = activities[i].ACTFile.Tr_Activity.Tr_Activity_Header.Name;
-                routePath = Path.GetDirectoryName( activities[i].FilePath );
-                routePath = routePath.Substring( 0, routePath.Length - @"\ACTIVITIES".Length ); 
-                activityFileName = Path.GetFileName( activities[i].FilePath );
-                tests.Add( new TestLoadActivity( activityName, routePath, routeName, activityFileName ) );
-            }
-            bsTestLoadActivities.DataSource = tests;
-            bCancelTest.Enabled = false;
-            bViewSummary.Enabled = System.IO.File.Exists( summaryFileName );
-            bViewDetails.Enabled = System.IO.File.Exists( logFileName );
+            LoadActivities();
         }
 
-        private void bClose_Click( object sender, EventArgs e ) {
-            this.Close();
-            if( DataGridViewRowLoader != null )
-                DataGridViewRowLoader.Cancel();
+        void TestingForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (TestActivityLoader != null)
+                TestActivityLoader.Cancel();
+            if (TestActivitiesRunner != null)
+                TestActivitiesRunner.Cancel();
         }
 
-        private void bTestLoadingOfAllActivities_Click( object sender, EventArgs e ) {
-            foreach( DataGridViewRow rw in this.dgvTestLoadActivities.Rows ) {
-                rw.Cells[cToTest].Value = true;
-            }
-            TestLoadingOfActivities();
+        void UpdateButtons()
+        {
+            buttonTestAll.Enabled = TestActivitiesRunner == null && gridTestActivities.RowCount > 0;
+            buttonTest.Enabled = TestActivitiesRunner == null && gridTestActivities.SelectedRows.Count > 0;
+            buttonCancel.Enabled = TestActivitiesRunner != null && !TestActivitiesRunner.Cancelled;
+            buttonSummary.Enabled = TestActivitiesRunner == null && File.Exists(SummaryFilePath);
+            buttonDetails.Enabled = TestActivitiesRunner == null && File.Exists(LogFilePath);
         }
 
-        private void bTestLoadingOfSelectedActivities_Click( object sender, EventArgs e ) {
-            foreach( DataGridViewRow rw in this.dgvTestLoadActivities.Rows ) {
-                rw.Cells[cToTest].Value = false;
-            }
-            // Use .SelectedCells not the simpler .SelectedRows so we can hide the row selector.
-            foreach( DataGridViewCell cell in dgvTestLoadActivities.SelectedCells ) {
-                DataGridViewRow rw = cell.OwningRow;
-                rw.Cells[cToTest].Value = true;
-            }
-            TestLoadingOfActivities();
+        void LoadActivities()
+        {
+            if (TestActivityLoader != null)
+                TestActivityLoader.Cancel();
+
+            TestActivityLoader = new Task<SortableBindingList<TestActivity>>(this, () =>
+            {
+                return new SortableBindingList<TestActivity>((from f in Folder.GetFolders()
+                                                              from r in Route.GetRoutes(f)
+                                                              from a in Activity.GetActivities(r)
+                                                              where !(a is ORTS.Menu.ExploreActivity)
+                                                              orderby a.Name
+                                                              select new TestActivity(f, r, a)).ToList());
+            }, (testActivities) =>
+            {
+                testBindingSource.DataSource = testActivities;
+                testBindingSource.Sort = "DefaultSort";
+                UpdateButtons();
+            });
         }
-        
-        private void TestLoadingOfActivities() {
-            bCancelTest.Enabled = true;
-            bViewSummary.Enabled = false;
-            bViewDetails.Enabled = false;
-            // find the RunActivity program in the same folder as Menu.exe
-            string RunActivityFolder = Application.StartupPath;
 
-            System.Diagnostics.ProcessStartInfo objPSI = new System.Diagnostics.ProcessStartInfo();
-            objPSI.FileName = RunActivityFolder + @"\" + Program.RunActivityProgram;
-            objPSI.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal; // or Hidden, Maximized or Normal 
-            objPSI.WorkingDirectory = RunActivityFolder;
+        void buttonTestAll_Click(object sender, EventArgs e)
+        {
+            TestMarkedActivities(from DataGridViewRow r in gridTestActivities.Rows
+                                 select r);
+        }
 
-            // Delete any existing OpenRailsLog.txt file
-            string logFileName = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Desktop )
-                                            , "OpenRailsLog.txt" );
-            File.Delete( logFileName );
+        void buttonTest_Click(object sender, EventArgs e)
+        {
+            TestMarkedActivities(from DataGridViewRow r in gridTestActivities.Rows
+                                 where r.Selected
+                                 select r);
+        }
 
-            // Recreate any existing CSV file
-            try {   // Could fail if already opened by Excel, so ignore errors
-                string summaryFileName = Path.Combine( Program.UserDataFolder, "TestSummary.csv" );
-                using( StreamWriter sw = File.CreateText( summaryFileName ) ) {
-                    // Pass, Activity Name, Errors, Warnings, Infos, Folder, Route, Activity Filename
-                    // Enclose strings in quotes in case they contain commas.
-                    sw.Write( "Pass Test" );
-                    sw.Write( String.Format( ", Activity" ) );      // e.g. Auto Train with Set-Out
-                    sw.Write( String.Format( ", Errors" ) );        // critical and error
-                    sw.Write( String.Format( ", Warnings" ) );      // warning
-                    sw.Write( String.Format( ", Info Msgs" ) );     // information
-                    sw.Write( String.Format( ", Route Path" ) );    // e.g. D:\MSTS\ROUTES\USA2
-                    sw.Write( String.Format( ", Route Name" ) );    // e.g. "Marias Pass"
-                    sw.Write( String.Format( ", Activity File" ) ); // e.g. "autotrnsetout.act"
-                    sw.Write( String.Format( ", Loading Time (s)" ) );  // e.g. 45 secs
-                    sw.Write( String.Format( ", Rate (frames/s)" ) );   // e.g. 20 frames/sec
-                    sw.WriteLine( "" );
+        void buttonCancel_Click(object sender, EventArgs e)
+        {
+            TestActivitiesRunner.Cancel();
+            UpdateButtons();
+        }
+
+        void buttonNoSort_Click(object sender, EventArgs e)
+        {
+            gridTestActivities.Sort(defaultSortDataGridViewTextBoxColumn, ListSortDirection.Ascending);
+        }
+
+        void buttonSummary_Click(object sender, EventArgs e)
+        {
+            Process.Start(SummaryFilePath);
+        }
+
+        void buttonDetails_Click(object sender, EventArgs e)
+        {
+            Process.Start(LogFilePath);
+        }
+
+        void TestMarkedActivities(IEnumerable<DataGridViewRow> rows)
+        {
+            if (TestActivitiesRunner != null)
+                TestActivitiesRunner.Cancel();
+
+            // Force the enumeration to be evaluated so that when we run the code in the background it doesn't matter if the grid changes.
+            var items = from r in rows
+                        select new { Index = r.Index, Activity = (TestActivity)r.DataBoundItem };
+            var overrideSettings = checkBoxOverride.Checked;
+
+            Task<int> runner = null;
+            runner = TestActivitiesRunner = new Task<int>(this, () =>
+            {
+                var parameters = String.Join(" ", new[] {
+                    "/Test",
+                    "/Logging",
+                    "/LoggingFilename=\"" + Path.GetFileName(LogFilePath) + "\"",
+                    "/LoggingPath=\"" + Path.GetDirectoryName(LogFilePath) + "\"",
+                    "/Profiling",
+                    "/ProfilingTime=10",
+                    "/ShowErrorDialogs=False",
+                });
+                if (overrideSettings)
+                    parameters += " /Skip-User-Settings";
+
+                var processStartInfo = new ProcessStartInfo();
+                processStartInfo.FileName = Path.Combine(Application.StartupPath, Program.RunActivityProgram);
+                processStartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                processStartInfo.WorkingDirectory = Application.StartupPath;
+
+                if (!ClearedLogs)
+                {
+                    using (var writer = File.CreateText(SummaryFilePath))
+                        writer.WriteLine("Route,Activity,Passed,Errors,Warnings,Infos,Loading,FPS");
+                    using (var writer = File.CreateText(LogFilePath))
+                        writer.Flush();
+                    ClearedLogs = true;
                 }
-            } catch { } // Ignore any errors
 
-            if( DataGridViewRowLoader != null )
-                DataGridViewRowLoader.Cancel();
-            DataGridViewRowLoader = new Task<List<DataGridViewRow>>( this,
-                () => {
-                    foreach( DataGridViewRow rw in this.dgvTestLoadActivities.Rows ) {
-                        if( (bool)rw.Cells[cToTest].Value ) {
-                            // <CJ comment> Would like to scroll to row rw but can't make that work </CJ comment>
-                            rw.Selected = true;
-                            string parameter = " -test " + "\"" + Path.Combine( rw.Cells[cRoutePath].Value.ToString() + @"\ACTIVITIES",
-                                                rw.Cells[cActivityFileName].Value.ToString() ) + "\"";
-                            // Tests show that frame rates rise initially and stabilise after about 50 frames.
-                            objPSI.Arguments = parameter + " /Profiling /ProfilingFrameCount=50 /ShowErrorDialogs=False"; // 10 frames enough to show that the graphics is working
+                foreach (var item in items)
+                {
+                    processStartInfo.Arguments = String.Format("{0} \"{1}\"", parameters, item.Activity.ActivityFilePath);
+                    var process = Process.Start(processStartInfo);
+                    process.WaitForExit();
 
-                            // Start the test of the current activity, then wait for it to end
-                            System.Diagnostics.Process objProcess = System.Diagnostics.Process.Start( objPSI );
-                            while( objProcess.HasExited == false ) {
-                                System.Threading.Thread.Sleep( 100 );
-                            }
-
-                            rw.Cells[cTested].Value = true;
-                            rw.Cells[cPassed].Value = (objProcess.ExitCode == 0);
-                            rw.Selected = false;
-                        }
-                        if( isLoopInterrupted ) break;
+                    item.Activity.Tested = true;
+                    item.Activity.Passed = process.ExitCode == 0;
+                    using (var reader = File.OpenText(SummaryFilePath))
+                    {
+                        if (reader.BaseStream.Length > 256)
+                            reader.BaseStream.Seek(-256, SeekOrigin.End);
+                        string line = "";
+                        while (!reader.EndOfStream)
+                            line = reader.ReadLine();
+                        var route = line.Substring(1, line.IndexOf('"', 1) - 1);
+                        var activity = line.Substring(4 + route.Length, line.IndexOf('"', 4 + route.Length) - 4 - route.Length);
+                        var csv = line.Substring(6 + route.Length + activity.Length).Split(',');
+                        item.Activity.Errors = String.Format("{0}/{1}/{2}", int.Parse(csv[1]), int.Parse(csv[2]), int.Parse(csv[3]));
+                        item.Activity.Load = String.Format("{0,6:F1}s", float.Parse(csv[4]));
+                        item.Activity.FPS = String.Format("{0,6:F1}", float.Parse(csv[5]));
                     }
-                    return new List<DataGridViewRow>(); // an empty list just to provide a parameter of the expected type.
-                },
-                ( rows ) => { // a dummy parameter
-                        bCancelTest.Enabled = false;
-                        bViewSummary.Enabled = System.IO.File.Exists( summaryFileName );
-                        bViewDetails.Enabled = System.IO.File.Exists( logFileName );
+                    if (runner.Cancelled)
+                        break;
+
+                    Invoke((Action)(() => ShowGridRow(gridTestActivities, item.Index)));
                 }
-                );        
+                return 0;
+            }, () =>
+            {
+                TestActivitiesRunner = null;
+                UpdateButtons();
+            });
+            UpdateButtons();
         }
 
-        private void bCancelTest_Click( object sender, EventArgs e ) {
-            isLoopInterrupted = true;
-        }
-
-        private void bViewSummary_Click( object sender, EventArgs e ) {
-            // Not opening Excel directly as that requires a reference and a user may not have Excel installed.
-            //ApplicationClass excelApp = new ApplicationClass();
-            //excelApp.Workbooks.Open( summaryFileName, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing );
-            //excelApp.Visible = true;
-            System.Diagnostics.Process.Start( summaryFileName );
-        }
-
-        private void bViewDetails_Click( object sender, EventArgs e ) {
-             System.Diagnostics.Process.Start( logFileName );
-        }
-
-        private void bsTestLoadActivities_CurrentChanged( object sender, EventArgs e ) {
-
-        }
-
-        private void bCancelSort_Click( object sender, EventArgs e ) {
-            tests.RemoveSort();
-        }
-    }
-
-    public class TestLoadActivity {
-
-        public bool ToTest { get; set; }
-        public bool Tested { get; set; }
-        public bool Passed { get; set; }
-        public string Activity { get; set; }
-        public string RoutePath { get; set; }
-        public string RouteName { get; set; }
-        public string ActivityFileName { get; set; }
-
-        public TestLoadActivity( string activity, string routePath, string routeName, string activityFileName ) {
-            Activity = activity;
-            RoutePath = routePath;
-            RouteName = routeName;
-            ActivityFileName = activityFileName;
+        void ShowGridRow(DataGridView grid, int rowIndex)
+        {
+            var displayedRowCount = grid.DisplayedRowCount(false);
+            if (grid.FirstDisplayedScrollingRowIndex > rowIndex)
+                grid.FirstDisplayedScrollingRowIndex = rowIndex;
+            else if (grid.FirstDisplayedScrollingRowIndex < rowIndex - displayedRowCount + 1)
+                grid.FirstDisplayedScrollingRowIndex = rowIndex - displayedRowCount + 1;
+            grid.InvalidateRow(rowIndex);
         }
     }
 }
