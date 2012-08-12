@@ -95,22 +95,22 @@ namespace ORTS
     }
 
     [Flags]
-	public enum ShapeFlags
-	{
-		None = 0,
-		// Shape casts a shadow (scenery objects according to RE setting, and all train objects).
-		ShadowCaster = 1,
-		// Shape needs automatic z-bias to keep it out of trouble.
-		AutoZBias = 2,
-		// NOTE: Use powers of 2 for values!
-	}
+    public enum ShapeFlags
+    {
+        None = 0,
+        // Shape casts a shadow (scenery objects according to RE setting, and all train objects).
+        ShadowCaster = 1,
+        // Shape needs automatic z-bias to keep it out of trouble.
+        AutoZBias = 2,
+        // NOTE: Use powers of 2 for values!
+    }
 
     public class StaticShape
     {
-		public readonly Viewer3D Viewer;
+        public readonly Viewer3D Viewer;
         public readonly WorldPosition Location;
-		public readonly ShapeFlags Flags;
-		public readonly SharedShape SharedShape;
+        public readonly ShapeFlags Flags;
+        public readonly SharedShape SharedShape;
 
         /// <summary>
         /// Construct and initialize the class
@@ -120,13 +120,13 @@ namespace ORTS
         {
             Viewer = viewer;
             Location = position;
-			Flags = flags;
+            Flags = flags;
             SharedShape = Viewer.ShapeManager.Get(path);
         }
 
-		public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-			SharedShape.PrepareFrame(frame, Location, Flags);
+            SharedShape.PrepareFrame(frame, Location, Flags);
         }
 
         [CallOnThread("Loader")]
@@ -136,15 +136,15 @@ namespace ORTS
         }
     }
 
-	public class StaticTrackShape : StaticShape
-	{
-		public StaticTrackShape(Viewer3D viewer, string path, WorldPosition position)
-			: base(viewer, path, position, ShapeFlags.AutoZBias)
-		{
-		}
-	}
+    public class StaticTrackShape : StaticShape
+    {
+        public StaticTrackShape(Viewer3D viewer, string path, WorldPosition position)
+            : base(viewer, path, position, ShapeFlags.AutoZBias)
+        {
+        }
+    }
 
-	/// <summary>
+    /// <summary>
     /// Has a heirarchy of objects that can be moved by adjusting the XNAMatrices
     /// at each node.
     /// </summary>
@@ -152,11 +152,11 @@ namespace ORTS
     {
         public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
 
-		public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
-			: base(viewer, path, initialPosition, flags)
+        public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+            : base(viewer, path, initialPosition, flags)
         {
-			XNAMatrices = new Matrix[SharedShape.Matrices.Length];
-			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+            XNAMatrices = new Matrix[SharedShape.Matrices.Length];
+            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
         }
 
@@ -165,9 +165,9 @@ namespace ORTS
         {
         }
 
-		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
         /// <summary>
@@ -260,17 +260,17 @@ namespace ORTS
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-		public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
-			: base(viewer, path, initialPosition, flags)
-		{
-		}
+        public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+            : base(viewer, path, initialPosition, flags)
+        {
+        }
 
-		public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition)
-			: this(viewer, path, initialPosition, ShapeFlags.None)
-		{
-		}
+        public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition)
+            : this(viewer, path, initialPosition, ShapeFlags.None)
+        {
+        }
 
-		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // if the shape has animations
             if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].FrameCount > 1)
@@ -282,10 +282,10 @@ namespace ORTS
                 while (AnimationKey < -0.00001) AnimationKey += SharedShape.Animations[0].FrameCount;
 
                 // Update the pose for each matrix
-				for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+                for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                     AnimateMatrix(iMatrix, AnimationKey);
             }
-			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
@@ -296,216 +296,219 @@ namespace ORTS
         TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
         uint MainRoute;                  // 0 or 1 - which route is considered the main route
 
-		public SwitchTrackShape(Viewer3D viewer, string path, WorldPosition position, TrJunctionNode trj)
-			: base(viewer, path, position, ShapeFlags.AutoZBias)
-		{
-			TrJunctionNode = trj;
-			TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
-			MainRoute = TS.MainRoute;
-		}
+        public SwitchTrackShape(Viewer3D viewer, string path, WorldPosition position, TrJunctionNode trj)
+            : base(viewer, path, position, ShapeFlags.AutoZBias)
+        {
+            TrJunctionNode = trj;
+            TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
+            MainRoute = TS.MainRoute;
+        }
 
-		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // ie, with 2 frames of animation, the key will advance from 0 to 1
             if (TrJunctionNode.SelectedRoute == MainRoute)
             {
-				if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedTime.ClockSeconds * 1000.0f;
+                if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedTime.ClockSeconds * 1000.0f;
                 if (AnimationKey < 0.001) AnimationKey = 0;
             }
             else
             {
-				if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedTime.ClockSeconds * 1000.0f;
+                if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedTime.ClockSeconds * 1000.0f;
                 if (AnimationKey > 0.999) AnimationKey = 1.0f;
             }
 
             // Update the pose
-			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 AnimateMatrix(iMatrix, AnimationKey);
 
-			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
-	public class SpeedPostShape : PoseableShape
-	{
-		SpeedPostObj SpeedPostObj;  // has data on current aligment for the switch
-		VertexPositionNormalTexture[] VertexList;
-		int NumVertices;
-		int NumIndices;
-		public short[] TriangleListIndices;// Array of indices to vertices for triangles
+    public class SpeedPostShape : PoseableShape
+    {
+        SpeedPostObj SpeedPostObj;  // has data on current aligment for the switch
+        VertexPositionNormalTexture[] VertexList;
+        int NumVertices;
+        int NumIndices;
+        public short[] TriangleListIndices;// Array of indices to vertices for triangles
 
-		protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
-		ShapePrimitive shapePrimitive;
-		public SpeedPostShape(Viewer3D viewer, string path, WorldPosition position, SpeedPostObj spo)
-			: base(viewer, path, position)
-		{
+        protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
+        ShapePrimitive shapePrimitive;
+        public SpeedPostShape(Viewer3D viewer, string path, WorldPosition position, SpeedPostObj spo)
+            : base(viewer, path, position)
+        {
 
-			SpeedPostObj = spo;
-			var maxVertex =  SpeedPostObj.Sign_Shape.NumShapes * 48;// every face has max 7 digits, each has 2 triangles
+            SpeedPostObj = spo;
+            var maxVertex = SpeedPostObj.Sign_Shape.NumShapes * 48;// every face has max 7 digits, each has 2 triangles
             var material = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, SpeedPostObj.Speed_Digit_Tex), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
-			
-			// Create and populate a new ShapePrimitive
-			NumVertices = NumIndices = 0;
-			var i = 0; var id = -1; var size = SpeedPostObj.Text_Size.Size; var idlocation = 0;
-			id = SpeedPostObj.getTrItemID(idlocation);
-			while (id >= 0)
-			{
+
+            // Create and populate a new ShapePrimitive
+            NumVertices = NumIndices = 0;
+            var i = 0; var id = -1; var size = SpeedPostObj.Text_Size.Size; var idlocation = 0;
+            id = SpeedPostObj.getTrItemID(idlocation);
+            while (id >= 0)
+            {
                 SpeedPostItem item;
                 string speed = "";
-                try {
+                try
+                {
                     item = (SpeedPostItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[id]);
-                } catch {
+                }
+                catch
+                {
                     throw;  // Error to be handled in Scenery.cs
                 }
 
-				//determine what to show: speed or number used in German routes
-				if (item.ShowNumber)
-				{
-					speed += item.DisplayNumber;
-					if (!item.ShowDot) speed.Replace(".", "");
-				}
-				else
-				{
-					//determine if the speed is for passenger or freight
-					if (item.IsFreight == true && item.IsPassenger == false) speed += "F";
-					else if (item.IsFreight == false && item.IsPassenger == true) speed += "P";
+                //determine what to show: speed or number used in German routes
+                if (item.ShowNumber)
+                {
+                    speed += item.DisplayNumber;
+                    if (!item.ShowDot) speed.Replace(".", "");
+                }
+                else
+                {
+                    //determine if the speed is for passenger or freight
+                    if (item.IsFreight == true && item.IsPassenger == false) speed += "F";
+                    else if (item.IsFreight == false && item.IsPassenger == true) speed += "P";
 
-					if (item != null) speed += item.SpeedInd;
-				}
-				VertexList = new VertexPositionNormalTexture[maxVertex];
-				TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
+                    if (item != null) speed += item.SpeedInd;
+                }
+                VertexList = new VertexPositionNormalTexture[maxVertex];
+                TriangleListIndices = new short[maxVertex / 2 * 3]; // as is NumIndices
 
-				for (i = 0; i < SpeedPostObj.Sign_Shape.NumShapes; i++)
-				{
-					//start position is the center of the text
-					var start = new Vector3(SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 0], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 1], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 2]);
-					var rotation = SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 3];
+                for (i = 0; i < SpeedPostObj.Sign_Shape.NumShapes; i++)
+                {
+                    //start position is the center of the text
+                    var start = new Vector3(SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 0], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 1], SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 2]);
+                    var rotation = SpeedPostObj.Sign_Shape.ShapesInfo[4 * i + 3];
 
-					//find the left-most of text
-					Vector3 offset;
-					if (Math.Abs(SpeedPostObj.Text_Size.DY) > 0.01) offset = new Vector3(0 - size / 2, 0, 0);
-					else offset = new Vector3(0, 0 - size / 2, 0);
-					offset.X -= speed.Length * SpeedPostObj.Text_Size.DX / 2;
+                    //find the left-most of text
+                    Vector3 offset;
+                    if (Math.Abs(SpeedPostObj.Text_Size.DY) > 0.01) offset = new Vector3(0 - size / 2, 0, 0);
+                    else offset = new Vector3(0, 0 - size / 2, 0);
+                    offset.X -= speed.Length * SpeedPostObj.Text_Size.DX / 2;
 
-					offset.Y -= speed.Length * SpeedPostObj.Text_Size.DY / 2;
+                    offset.Y -= speed.Length * SpeedPostObj.Text_Size.DY / 2;
 
-					for (var j = 0; j < speed.Length; j++)
-					{
-						var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+                    for (var j = 0; j < speed.Length; j++)
+                    {
+                        var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
 
-						//the left-bottom vertex
-						Vector3 v = new Vector3(offset.X, offset.Y, 0);
-						M.Rotate2D(rotation, ref v.X, ref v.Z);
-						v += start; Vertex v1 = new Vertex(v.X, v.Y, v.Z + 0.01f, 0, 0, -1, tX, tY);
+                        //the left-bottom vertex
+                        Vector3 v = new Vector3(offset.X, offset.Y, 0);
+                        M.Rotate2D(rotation, ref v.X, ref v.Z);
+                        v += start; Vertex v1 = new Vertex(v.X, v.Y, v.Z + 0.01f, 0, 0, -1, tX, tY);
 
-						//the right-bottom vertex
-						v.X = offset.X + size; v.Y = offset.Y; v.Z = 0;
-						M.Rotate2D(rotation, ref v.X, ref v.Z);
-						v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z + 0.01f, 0, 0, -1, tX + 0.25f, tY);
+                        //the right-bottom vertex
+                        v.X = offset.X + size; v.Y = offset.Y; v.Z = 0;
+                        M.Rotate2D(rotation, ref v.X, ref v.Z);
+                        v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z + 0.01f, 0, 0, -1, tX + 0.25f, tY);
 
-						//the right-top vertex
-						v.X = offset.X + size; v.Y = offset.Y + size; v.Z = 0;
-						M.Rotate2D(rotation, ref v.X, ref v.Z);
-						v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z + 0.01f, 0, 0, -1, tX + 0.25f, tY - 0.25f);
+                        //the right-top vertex
+                        v.X = offset.X + size; v.Y = offset.Y + size; v.Z = 0;
+                        M.Rotate2D(rotation, ref v.X, ref v.Z);
+                        v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z + 0.01f, 0, 0, -1, tX + 0.25f, tY - 0.25f);
 
-						//the left-top vertex
-						v.X = offset.X; v.Y = offset.Y + size; v.Z = 0;
-						M.Rotate2D(rotation, ref v.X, ref v.Z);
-						v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z + 0.01f, 0, 0, -1, tX, tY - 0.25f);
+                        //the left-top vertex
+                        v.X = offset.X; v.Y = offset.Y + size; v.Z = 0;
+                        M.Rotate2D(rotation, ref v.X, ref v.Z);
+                        v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z + 0.01f, 0, 0, -1, tX, tY - 0.25f);
 
-						//memory may not be enough
-						if (NumVertices > maxVertex - 4)
-						{
-							VertexPositionNormalTexture[] TempVertexList = new VertexPositionNormalTexture[maxVertex + 128];
-							short[] TempTriangleListIndices = new short[(maxVertex + 128) / 2 * 3]; // as is NumIndices
-							for (var k = 0; k < maxVertex; k++) TempVertexList[k] = VertexList[k];
-							for (var k = 0; k < maxVertex / 2 * 3; k++) TempTriangleListIndices[k] = TriangleListIndices[k];
-							TriangleListIndices = TempTriangleListIndices;
-							VertexList = TempVertexList;
-							maxVertex += 128;
-						}
+                        //memory may not be enough
+                        if (NumVertices > maxVertex - 4)
+                        {
+                            VertexPositionNormalTexture[] TempVertexList = new VertexPositionNormalTexture[maxVertex + 128];
+                            short[] TempTriangleListIndices = new short[(maxVertex + 128) / 2 * 3]; // as is NumIndices
+                            for (var k = 0; k < maxVertex; k++) TempVertexList[k] = VertexList[k];
+                            for (var k = 0; k < maxVertex / 2 * 3; k++) TempTriangleListIndices[k] = TriangleListIndices[k];
+                            TriangleListIndices = TempTriangleListIndices;
+                            VertexList = TempVertexList;
+                            maxVertex += 128;
+                        }
 
-						//create first triangle
-						TriangleListIndices[NumIndices++] = (short)NumVertices;
-						TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
-						TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
-						// Second triangle:
-						TriangleListIndices[NumIndices++] = (short)NumVertices;
-						TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
-						TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+                        //create first triangle
+                        TriangleListIndices[NumIndices++] = (short)NumVertices;
+                        TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
+                        TriangleListIndices[NumIndices++] = (short)(NumVertices + 1);
+                        // Second triangle:
+                        TriangleListIndices[NumIndices++] = (short)NumVertices;
+                        TriangleListIndices[NumIndices++] = (short)(NumVertices + 3);
+                        TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
 
-						//create vertex
-						VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
-						VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
-						VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
-						VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
-						NumVertices += 4;
-						offset.X += SpeedPostObj.Text_Size.DX; offset.Y += SpeedPostObj.Text_Size.DY; //move to next digit
-					}
+                        //create vertex
+                        VertexList[NumVertices].Position = v1.Position; VertexList[NumVertices].Normal = v1.Normal; VertexList[NumVertices].TextureCoordinate = v1.TexCoord;
+                        VertexList[NumVertices + 1].Position = v2.Position; VertexList[NumVertices + 1].Normal = v2.Normal; VertexList[NumVertices + 1].TextureCoordinate = v2.TexCoord;
+                        VertexList[NumVertices + 2].Position = v3.Position; VertexList[NumVertices + 2].Normal = v3.Normal; VertexList[NumVertices + 2].TextureCoordinate = v3.TexCoord;
+                        VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
+                        NumVertices += 4;
+                        offset.X += SpeedPostObj.Text_Size.DX; offset.Y += SpeedPostObj.Text_Size.DY; //move to next digit
+                    }
 
-				}
-				idlocation++;
-				id = SpeedPostObj.getTrItemID(idlocation); 
-			}
-			//create the shape primitive
-			short[] newTList = new short[NumIndices];
-			for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
-			VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-			for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-			IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
-															NumIndices, BufferUsage.WriteOnly);
-			IndexBuffer.SetData(newTList);
-			shapePrimitive = new ShapePrimitive(material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+                }
+                idlocation++;
+                id = SpeedPostObj.getTrItemID(idlocation);
+            }
+            //create the shape primitive
+            short[] newTList = new short[NumIndices];
+            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+            VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
+            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
+            IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
+                                                            NumIndices, BufferUsage.WriteOnly);
+            IndexBuffer.SetData(newTList);
+            shapePrimitive = new ShapePrimitive(material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
 
-		}
+        }
 
-		float GetTextureCoordX(char c)
-		{
-			float x = (c-'0') % 4 * 0.25f;
-			if (c == '.') x = 0;
-			else if (c == 'P') x = 0.5f;
-			else if (c == 'F') x = 0.75f;
-			if (x < 0) x = 0;
-			if (x > 1) x = 1;
-			return x;
-		}
+        float GetTextureCoordX(char c)
+        {
+            float x = (c - '0') % 4 * 0.25f;
+            if (c == '.') x = 0;
+            else if (c == 'P') x = 0.5f;
+            else if (c == 'F') x = 0.75f;
+            if (x < 0) x = 0;
+            if (x > 1) x = 1;
+            return x;
+        }
 
-		float GetTextureCoordY(char c)
-		{
-			if (c == '0' || c == '1' || c == '2' || c == '3') return 0.25f;
-			if (c == '4' || c == '5' || c == '6' || c == '7') return 0.5f;
-			if (c == '8' || c == '9' || c == 'P' || c == 'F') return 0.75f;
-			return 1.0f;
-		}
+        float GetTextureCoordY(char c)
+        {
+            if (c == '0' || c == '1' || c == '2' || c == '3') return 0.25f;
+            if (c == '4' || c == '5' || c == '6' || c == '7') return 0.5f;
+            if (c == '8' || c == '9' || c == 'P' || c == 'F') return 0.75f;
+            return 1.0f;
+        }
 
-		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-		{
-			// Offset relative to the camera-tile origin
-			int dTileX = this.Location.TileX - Viewer.Camera.TileX;
-			int dTileZ = this.Location.TileZ - Viewer.Camera.TileZ;
-			Vector3 tileOffsetWrtCamera = new Vector3(dTileX * 2048, 0, -dTileZ * 2048);
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            // Offset relative to the camera-tile origin
+            int dTileX = this.Location.TileX - Viewer.Camera.TileX;
+            int dTileZ = this.Location.TileZ - Viewer.Camera.TileZ;
+            Vector3 tileOffsetWrtCamera = new Vector3(dTileX * 2048, 0, -dTileZ * 2048);
 
-			// Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
-			Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
-			xnaXfmWrtCamTile = this.Location.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
-			// (Transformation is now with respect to camera-tile origin)
+            // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
+            Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
+            xnaXfmWrtCamTile = this.Location.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
+            // (Transformation is now with respect to camera-tile origin)
 
-			frame.AddPrimitive( this.shapePrimitive.Material, this.shapePrimitive,
-						RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive,
+                        RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
 
-			// Update the pose
-			for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-				AnimateMatrix(iMatrix, AnimationKey);
+            // Update the pose
+            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+                AnimateMatrix(iMatrix, AnimationKey);
 
-			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
-		}
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+        }
 
         internal override void Mark()
         {
             shapePrimitive.Mark();
             base.Mark();
         }
-	} // class SpeedPostShape
+    } // class SpeedPostShape
 
     public class LevelCrossingShape : PoseableShape, IDisposable
     {
@@ -535,9 +538,9 @@ namespace ORTS
             }
             Crossing = viewer.Simulator.LevelCrossings.CreateLevelCrossing(
                 position,
-                from tid in CrossingObj.trItemIDList where tid.db == 0 select tid.dbID, 
-                from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID, 
-                CrossingObj.levelCrParameters.warningTime, 
+                from tid in CrossingObj.trItemIDList where tid.db == 0 select tid.dbID,
+                from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID,
+                CrossingObj.levelCrParameters.warningTime,
                 CrossingObj.levelCrParameters.minimumDistance);
             AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : 1;
         }
@@ -594,7 +597,7 @@ namespace ORTS
         public RoadCarShape(Viewer3D viewer, string path)
             : base(viewer, path, new WorldPosition())
         {
-		}
+        }
     }
 
     public class ShapePrimitive : RenderPrimitive
@@ -650,6 +653,8 @@ namespace ORTS
 
     public class SharedShape
     {
+        static List<string> ShapeWarnings = new List<string>();
+
         // This data is common to all instances of the shape
         public List<string> MatrixNames = new List<string>();
         public Matrix[] Matrices = new Matrix[0];  // the original natural pose for this shape - shared by all instances
@@ -862,21 +867,30 @@ namespace ORTS
                     if (lightModelConfiguration.uv_ops.Count > 0)
                         if (lightModelConfiguration.uv_ops[0].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[0].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
                             options |= UVTextureAddressModeMap[lightModelConfiguration.uv_ops[0].TexAddrMode - 1];
-                        else
-                            Trace.TraceWarning("Skipped unknown texture addressing mode {1} in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
+                        else if (!ShapeWarnings.Contains("texture_addressing_mode:" + lightModelConfiguration.uv_ops[0].TexAddrMode))
+                        {
+                            Trace.TraceWarning("Skipped unknown texture addressing mode {1} first seen in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
+                            ShapeWarnings.Add("texture_addressing_mode:" + lightModelConfiguration.uv_ops[0].TexAddrMode);
+                        }
 
                     if (primitiveState.alphatestmode == 1)
                         options |= SceneryMaterialOptions.AlphaTest;
 
                     if (ShaderNames.ContainsKey(sFile.shape.shader_names[primitiveState.ishader]))
                         options |= ShaderNames[sFile.shape.shader_names[primitiveState.ishader]];
-                    else
-                        Trace.TraceWarning("Skipped unknown shader name {1} in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
+                    else if (!ShapeWarnings.Contains("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]))
+                    {
+                        Trace.TraceWarning("Skipped unknown shader name {1} first seen in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
+                        ShapeWarnings.Add("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]);
+                    }
 
                     if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
-                    else
-                        Trace.TraceWarning("Skipped unknown lighting model index {1} in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
+                    else if (!ShapeWarnings.Contains("lighting_model:" + vertexState.LightMatIdx))
+                    {
+                        Trace.TraceWarning("Skipped unknown lighting model index {1} first seen in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
+                        ShapeWarnings.Add("lighting_model:" + vertexState.LightMatIdx);
+                    }
 
                     if ((textureFlags & Helpers.TextureFlags.Night) != 0)
                         options |= SceneryMaterialOptions.NightTexture;
