@@ -83,9 +83,9 @@ namespace ORTS.Popups
         {
             var vbox = base.Layout(layout).AddLayoutVertical();
             var maxLines = vbox.RemainingHeight / TextSize;
-            var messages = Messages.Take(maxLines);
+            var messages = Messages.Take(maxLines).Reverse().ToList();
             vbox.AddSpace(0, vbox.RemainingHeight - TextSize * messages.Count());
-            foreach (var message in messages.Reverse())
+            foreach (var message in messages)
             {
                 var hbox = vbox.AddLayoutHorizontal(TextSize);
                 var width = hbox.RemainingWidth;
@@ -156,11 +156,11 @@ namespace ORTS.Popups
                 var newMessages = new List<Message>(oldMessages);
 
                 // Find an existing message if there is one.
-                var existingMessage = newMessages.FirstOrDefault(m => m.Key == key);
+                var existingMessage = String.IsNullOrEmpty(key) ? null : newMessages.FirstOrDefault(m => m.Key == key);
 
                 // Clean out any existing duplicate key and expired messages.
                 newMessages = (from m in newMessages
-                               where m.Key != key && m.EndTime + FadeTime > Owner.Viewer.Simulator.GameTime
+                               where (String.IsNullOrEmpty(key) || m.Key != key) && m.EndTime + FadeTime > Owner.Viewer.Simulator.GameTime
                                select m).ToList();
 
                 // Add the new message.
@@ -168,7 +168,7 @@ namespace ORTS.Popups
 
                 // Sort the messages.
                 newMessages = (from m in newMessages
-                               orderby m.StartTime
+                               orderby m.StartTime descending
                                select m).ToList();
 
                 // Thread-safely switch from the old list to the new list; we've only suceeded if the previous (return) value is the old list.
