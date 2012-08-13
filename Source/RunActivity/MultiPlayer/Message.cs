@@ -480,7 +480,7 @@ namespace ORTS.MultiPlayer
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
 				if (Program.Simulator.SwitchIsOccupied(trj))
 				{
-					MPManager.BroadCast((new MSGMessage(user, "Warning:", "Train on the switch, cannot throw")).ToString());
+					MPManager.BroadCast((new MSGMessage(user, "Warning", "Train on the switch, cannot throw")).ToString());
 					return;
 				}
 				trj.SelectedRoute = Selection;
@@ -492,7 +492,7 @@ namespace ORTS.MultiPlayer
 				trj.SelectedRoute = Selection;
 				if (user == MPManager.GetUserName())//got the message with my name, will confirm with the player
 				{
-					Program.Simulator.Confirmer.Message("      ", "Switched, current route is " + (Selection == 0? "main":"side") + " route");
+					Program.Simulator.Confirmer.Information("Switched, current route is " + (Selection == 0? "main":"side") + " route");
 					return;
 				}
 			}
@@ -1233,7 +1233,7 @@ namespace ORTS.MultiPlayer
 			if (MPManager.GetUserName() == user)
 			{
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Message(level, msgx);
+					Program.Simulator.Confirmer.Message(level == "Error" ? ConfirmLevel.Error : level == "Warning" ? ConfirmLevel.Warning : level == "Info" ? ConfirmLevel.Information : ConfirmLevel.None, msgx);
 				System.Console.WriteLine(level + ": " + msgx); 
 				if (level == "Error" && !MPManager.IsServer())//if is a client, fatal error, will close the connection, and get into single mode
 				{
@@ -1282,7 +1282,7 @@ namespace ORTS.MultiPlayer
 				Train train = Program.Simulator.PlayerLocomotive.Train;
 				train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Message("Info:", "You gained back the control of your train");
+					Program.Simulator.Confirmer.Information("You gained back the control of your train");
 				MPManager.Instance().RemoveUncoupledTrains(train);
 			}
 			else if (level == "Confirm") //server inform me that a train is now remote
@@ -1491,7 +1491,7 @@ namespace ORTS.MultiPlayer
 			bool ServerQuit = false;
 			if (Program.Client != null && user.Contains("ServerHasToQuit")) //the server quits, will send a message with ServerHasToQuit\tServerName
 			{
-				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Error", "Server quits, will play as single mode");
+				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Error("Server quits, will play as single mode");
 				user = user.Replace("ServerHasToQuit\t", ""); //get the user name of server from the message
 				ServerQuit = true;
 			}
@@ -1500,7 +1500,7 @@ namespace ORTS.MultiPlayer
 			{
 				p = MPManager.OnlineTrains.Players[user];
 			}
-			if (p != null && Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Info:", this.user + " quit.");
+			if (p != null && Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.user + " quit.");
 			if (MPManager.IsServer())
 			{
 				if (p != null)
@@ -1706,7 +1706,7 @@ namespace ORTS.MultiPlayer
 			{
 				string info = "Trains uncoupled, gain back control by Shift-E";
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Message("Info", info);
+					Program.Simulator.Confirmer.Information(info);
 			}
 
 			/*
@@ -1935,7 +1935,7 @@ namespace ORTS.MultiPlayer
 				{
 					string info = "Trains uncoupled, gain back control by Shift-E";
 					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Message("Info", info);
+						Program.Simulator.Confirmer.Information(info);
 				}
 
 				//if (whichIsPlayer == 0 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train;
@@ -2073,7 +2073,7 @@ namespace ORTS.MultiPlayer
 			{
 				string info = "Trains coupled, hit \\ then Shift-? to release brakes";
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Message("Info", info);
+					Program.Simulator.Confirmer.Information(info);
 			}
 			MPManager.Instance().AddOrRemoveTrain(oldT, false); //remove the old train
 		}
@@ -2191,7 +2191,7 @@ namespace ORTS.MultiPlayer
 			{
 				string info = "Trains coupled, hit \\ then Shift-? to release brakes";
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Message("Info", info);
+					Program.Simulator.Confirmer.Information(info);
 			}
 		}
 	}

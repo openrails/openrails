@@ -248,7 +248,7 @@ namespace ORTS
             World = new World(this);
 
             SoundProcess = new SoundProcess(this);
-            Simulator.Confirmer = new Confirmer( Settings.SuppressConfirmations, World, 1.5 );
+            Simulator.Confirmer = new Confirmer(this, 1.5);
 
             // Now everything is ready to use, changed to saved values if available. 
             if (inf != null)

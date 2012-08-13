@@ -416,7 +416,7 @@ namespace ORTS
 
             if( CutoffController.UpdateValue != 0.0 ) {
                 // On a steam locomotive, the Reverser is the same as the Cut Off Control.
-                Simulator.Confirmer.Update( CabControl.Reverser, GetCutOffControllerStatus() );
+                Simulator.Confirmer.Message( CabControl.Reverser, GetCutOffControllerStatus() );
             }
             if( BlowerController.UpdateValue > 0.0 ) {
                 Simulator.Confirmer.UpdateWithPerCent( CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100 );
@@ -654,7 +654,7 @@ namespace ORTS
         public new void StartReverseIncrease()
         {
             CutoffController.StartIncrease();
-            Simulator.Confirmer.ConfirmWithText( CabControl.Reverser, GetCutOffControllerStatus() );
+            Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
         }
 
         public void StopReverseIncrease()
@@ -665,7 +665,7 @@ namespace ORTS
         public new void StartReverseDecrease()
         {
             CutoffController.StartDecrease();
-            Simulator.Confirmer.ConfirmWithText( CabControl.Reverser, GetCutOffControllerStatus() );
+            Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
         }
 
         public  void StopReverseDecrease()

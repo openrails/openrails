@@ -1,20 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;   // needed for Debug
-using System.Linq;
-using System.Text;
-using System.Timers;    // needed by Timer
+﻿// COPYRIGHT 2012 by the Open Rails project.
+// This code is provided to help you understand what Open Rails does and does
+// not do. Suggestions and contributions to improve Open Rails are always
+// welcome. Use of the code for any other purpose or distribution of the code
+// to anyone else is prohibited without specific written permission from
+// admin@openrails.org.
+
+using System;
 
 namespace ORTS {
-
-    public struct Confirmation {
-        public string Message;
-        public double DurationS;
-    }
+    public enum ConfirmLevel
+    {
+        None,
+        Information,
+        Warning,
+        Error,
+    };
 
     public enum CabControl {
+        None
         // Power
-        Power
+      , Power
       , Pantograph1
       , Pantograph2
       , PlayerDiesel
@@ -60,6 +65,7 @@ namespace ORTS {
       , SwitchBehind
       , SimulationSpeed
     }
+
     public enum CabSetting {
         Off = 1     // 2 or 3 state control/reset/initialise
         , Neutral   // 2 or 3 state control
@@ -78,14 +84,16 @@ namespace ORTS {
     /// Also updates most recent message in list to show values as they changes.
     /// Also suppplements the buzzer with a warning message for operations that are disallowed.
     /// </summary>
-    public class Confirmer {
+    public class Confirmer
+    {
         // ConfirmText provides a 2D array of strings so that all English text is confined to one place and can easily
         // be replaced with French and other languages.
         //
         //                      control, off/reset/initialize, neutral, on/apply/switch, decrease, increase, warn
         readonly string[][] ConfirmText = { 
+              new string [] { "<none>" } 
             // Power
-              new string [] { "Power", "off", null, "on" } 
+            , new string [] { "Power", "off", null, "on" } 
             , new string [] { "Pantograph 1", "lower", null, "raise" } 
             , new string [] { "Pantograph 2", "lower", null, "raise" }
             , new string [] { "Player Diesel Power", "off", null, "on", null, null, "locked. Close throttle then re-try." }
@@ -133,122 +141,115 @@ namespace ORTS {
             , new string [] { "Simulation Speed", "reset", null, null, "decrease", "increase" } 
             };
 
-        public List<Confirmation> ConfirmationList { get; set; }
-        public Confirmation LatestConfirmation {
-            get { return latestConfirmation; }
-            set { latestConfirmation = value; }
-        } private Confirmation latestConfirmation;
-        public bool Updated { get; set; }
+        readonly Viewer3D Viewer;
+        readonly double DefaultDurationS;
 
-        double defaultDurationS;
-        bool suppressConfirmations;
-        World world;
-
-        public Confirmer( bool suppressConfirmations, World world, double defaultDurationS ) {
-            this.suppressConfirmations = suppressConfirmations;
-            this.world = world;
-            this.defaultDurationS = defaultDurationS;
-            ConfirmationList = new List<Confirmation>();
+        public Confirmer(Viewer3D viewer, double defaultDurationS)
+        {
+            Viewer = viewer;
+            DefaultDurationS = defaultDurationS;
         }
 
-        public void Confirm( CabControl control, CabSetting setting ) {
-            var i = (int)control;
-            ConfirmWithText( control, ConfirmText[i][(int)setting] );
+        #region Control confirmation
+
+        public void Confirm(CabControl control, CabSetting setting)
+        {
+            Message(control, "{0}", ConfirmText[(int)control][(int)setting]);
         }
 
-        public void Confirm( CabControl control, CabSetting setting, string text ) {
-            var i = (int)control;
-            ConfirmWithText( control, ConfirmText[i][(int)setting] + " " + text);
+        public void Confirm(CabControl control, CabSetting setting, string text)
+        {
+            Message(control, "{0} {1}", ConfirmText[(int)control][(int)setting], text);
         }
 
-        public void ConfirmWithPerCent( CabControl control, CabSetting setting, float perCent ) {
-            var i = (int)control;
-            string message = String.Format( "{0} to {1:0}%", ConfirmText[i][(int)setting], perCent );
-            ConfirmWithText( control, message );
+        public void ConfirmWithPerCent(CabControl control, CabSetting setting, float perCent)
+        {
+            Message(control, "{0} to {1:0}%", ConfirmText[(int)control][(int)setting], perCent);
         }
 
-        public void ConfirmWithPerCent( CabControl control, CabSetting setting1, float perCent, int setting2 ) {
-            var i = (int)control;
-            string message = String.Format( " {0} {1:0}% {2}", ConfirmText[i][(int)setting1], perCent, ConfirmText[i][setting2] );
-            ConfirmWithText( control, message );
+        public void ConfirmWithPerCent(CabControl control, CabSetting setting1, float perCent, int setting2)
+        {
+            Message(control, "{0} {1:0}% {2}", ConfirmText[(int)control][(int)setting1], perCent, ConfirmText[(int)control][setting2]);
         }
 
-        public void ConfirmWithPerCent( CabControl control, float perCent, CabSetting setting ) {
-            var i = (int)control; 
-            string message = String.Format( " {0:0}% {1}", perCent, ConfirmText[i][(int)setting] );
-            ConfirmWithText( control, message );
+        public void ConfirmWithPerCent(CabControl control, float perCent, CabSetting setting)
+        {
+            Message(control, "{0:0}% {1}", perCent, ConfirmText[(int)control][(int)setting]);
         }
 
-        public void ConfirmWithPerCent( CabControl control, float perCent ) {
-            string message = String.Format( " {0:0}%", perCent );
-            ConfirmWithText( control, message );
+        public void ConfirmWithPerCent(CabControl control, float perCent)
+        {
+            Message(control, "{0:0}%", perCent);
         }
 
-        public void ConfirmWithText( CabControl control, string text ) {
-            if( !suppressConfirmations ) {
-                var i = (int)control;
-                Confirmation a;
-                a.Message = String.Format( "{0}: {1}", ConfirmText[i][0], text );
-                a.DurationS = defaultDurationS;
-                // Messages are added to the confirmation list and not directly to the Messages list to avoid one
-                // thread calling another.
-                ConfirmationList.Add( a );
-                Updated = false;
-            }
+        #endregion
+        #region Control updates
+
+        public void UpdateWithPerCent(CabControl control, int action, float perCent)
+        {
+            Message(control, "{0} {1:0}%", ConfirmText[(int)control][action], perCent);
         }
 
-        public void UpdateWithPerCent( CabControl control, int action, float perCent ) {
-            var i = (int)control;
-            string message = String.Format( "{0} {1:0}%", ConfirmText[i][action], perCent );
-            Update( control, message );
+        public void UpdateWithPerCent(CabControl control, CabSetting setting, float perCent)
+        {
+            Message(control, "{0} {1:0}%", ConfirmText[(int)control][(int)setting], perCent);
         }
 
-        public void UpdateWithPerCent( CabControl control, CabSetting setting, float perCent ) {
-            var i = (int)control;
-            string message = String.Format( "{0} {1:0}%", ConfirmText[i][(int)setting], perCent );
-            Update( control, message );
+        public void Update(CabControl control, CabSetting setting, string text)
+        {
+            Message(control, "{0} {1}", ConfirmText[(int)control][(int)setting], text);
         }
 
-        public void Update( CabControl control, CabSetting setting, string text ) {
-            var i = (int)control;
-            string message = String.Format( "{0} {1}", ConfirmText[i][(int)setting], text );
-            Update( control, message );
+        #endregion
+        #region Control messages
+
+        public void Message(CabControl control, string format, params object[] args)
+        {
+            Message(control, ConfirmLevel.None, String.Format(format, args));
         }
 
-        public void Update( CabControl control, string text ) {
-            if( !suppressConfirmations ) {
-                var i = (int)control;
-                latestConfirmation.Message = String.Format( "{0}: {1}", ConfirmText[i][0], text );
-                latestConfirmation.DurationS = defaultDurationS;
-                Updated = true; // Set here and cancelled by MessageWindow.PrepareFrame()
-            }
+        public void Warning(CabControl control, CabSetting setting)
+        {
+            if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(10);
+            Message(control, ConfirmLevel.Warning, ConfirmText[(int)control][(int)setting]);
         }
 
-        public void Warn( CabControl control, CabSetting setting ) {
-            if( world.GameSounds != null ) world.GameSounds.HandleEvent( 10 );
-            if( !suppressConfirmations ) {
-                var i = (int)control;
-                Confirmation a;
-                a.Message = String.Format( "WARN - {0} {1}", ConfirmText[i][0], ConfirmText[i][(int)setting] );
-                a.DurationS = defaultDurationS;
-                ConfirmationList.Add( a );
-            }
+        #endregion
+        #region Non-control messages
+
+        public void Information(string message)
+        {
+            Message(CabControl.None, ConfirmLevel.Information, message);
         }
 
-		private object lockobj = new object();
+        public void Warning(string message)
+        {
+            Message(CabControl.None, ConfirmLevel.Warning, message);
+        }
 
-		//a general messaging, level: Warning, Error, etc, msg: the message to display
-		public void Message(string level, string msg)
-		{ 
-			Confirmation a;
-			a.Message = String.Format("{0} {1}", level, msg);
-			a.DurationS = defaultDurationS*2; //double the duration time
-			//many threads in Multiplayer may want to confirm something
-			lock (lockobj)
-			{
-				ConfirmationList.Add(a);
-			}
-		}
+        public void Error(string message)
+        {
+            Message(CabControl.None, ConfirmLevel.Error, message);
+        }
 
-	}
+        public void Message(ConfirmLevel level, string message)
+        {
+            Message(CabControl.None, level, message);
+        }
+
+        #endregion
+
+        void Message(CabControl control, ConfirmLevel level, string message)
+        {
+            if (level < ConfirmLevel.Information && Viewer.Settings.SuppressConfirmations)
+                return;
+
+            var format = "{2}";
+            if (control != CabControl.None)
+                format = "{0}: " + format;
+            if (level >= ConfirmLevel.Information)
+                format = "{1} - " + format;
+            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], level, message), level >= ConfirmLevel.Warning ? DefaultDurationS * 2 : DefaultDurationS);
+        }
+    }
 }

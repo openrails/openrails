@@ -116,7 +116,7 @@ namespace ORTS.MultiPlayer
 			}
 
 			System.Console.WriteLine(this.Username + " quit");
-			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Message("Info:", this.Username + " quit.");
+			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.Username + " quit.");
 			Client.Close();
 			MPManager.Instance().AddRemovedPlayer(this);//add this player to be removed
 			MPManager.BroadCast((new MSGQuit(this.Username)).ToString());

@@ -1145,7 +1145,7 @@ namespace ORTS
 		{
             if( Math.Abs(SpeedMpS) >= 0.01 ) {
                 if( Simulator.Confirmer != null ) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Warn( CabControl.InitializeBrakes, CabSetting.Warn );
+                    Simulator.Confirmer.Warning( CabControl.InitializeBrakes, CabSetting.Warn );
                 return;
             }
 			if (Program.Simulator.PlayerLocomotive != null && this == Program.Simulator.PlayerLocomotive.Train)

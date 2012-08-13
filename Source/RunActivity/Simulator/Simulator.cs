@@ -633,7 +633,7 @@ namespace ORTS
 					//notify the server
 					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
 							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected)).ToString());
-					Confirmer.Message("Info:", "Switching Request Sent to the Server");
+					Confirmer.Information("Switching Request Sent to the Server");
 				}
             }
 		}
@@ -673,7 +673,7 @@ namespace ORTS
 					//notify the server
 					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
 							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected)).ToString());
-					Confirmer.Message("Info:", "Switching Request Sent to the Server");
+					Confirmer.Information("Switching Request Sent to the Server");
 				}
 			}
 		}

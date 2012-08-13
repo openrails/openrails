@@ -501,7 +501,7 @@ namespace ORTS
             TrainBrakeController.Update(elapsedClockSeconds);
             if (TrainBrakeController.UpdateValue != 0.0)
             {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, GetTrainBrakeStatus());
+                Simulator.Confirmer.Message(CabControl.TrainBrake, GetTrainBrakeStatus());
             }
 
             if (EngineBrakeController != null)
@@ -1191,7 +1191,7 @@ namespace ORTS
             if (!CanUseDynamicBrake())
                 return;
             DynamicBrakeController.StopIncrease();
-            Simulator.Confirmer.ConfirmWithText( CabControl.DynamicBrake, GetDynamicBrakeStatus() );
+            Simulator.Confirmer.Message(CabControl.DynamicBrake, GetDynamicBrakeStatus());
         }
 
         public void StartDynamicBrakeDecrease()
@@ -1216,7 +1216,7 @@ namespace ORTS
             if (!CanUseDynamicBrake())
                 return;
             DynamicBrakeController.StopDecrease();
-            Simulator.Confirmer.ConfirmWithText( CabControl.DynamicBrake, GetDynamicBrakeStatus() );
+            Simulator.Confirmer.Message(CabControl.DynamicBrake, GetDynamicBrakeStatus());
         }
 
         public void SetDynamicBrakePercent(float percent)
@@ -1851,7 +1851,7 @@ namespace ORTS
             if (!SwapControl()) // tests for CombThrottleTrainBreak
             {
                 if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
-                    Viewer.Simulator.Confirmer.Warn( CabControl.Throttle, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
                     return; 
                 } else
                     Locomotive.StartThrottleIncrease();
@@ -1875,7 +1875,7 @@ namespace ORTS
             if (!SwapControl()) // tests for CombThrottleTrainBreak
             {
                 if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
-                    Viewer.Simulator.Confirmer.Warn( CabControl.Throttle, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
                     return;
                 } else
                     Locomotive.StopThrottleIncrease();
@@ -1902,7 +1902,7 @@ namespace ORTS
             if (!SwapControl())
             {
                 if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
-                    Viewer.Simulator.Confirmer.Warn( CabControl.Throttle, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
                     return;
                 } else
                     Locomotive.StartThrottleDecrease();
@@ -1927,7 +1927,7 @@ namespace ORTS
             if (!SwapControl()) // tests for CombThrottleTrainBrea
             {
                 if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
-                    Viewer.Simulator.Confirmer.Warn( CabControl.Throttle, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
                     return;
                 } else
                     Locomotive.StopThrottleDecrease();
@@ -1948,7 +1948,7 @@ namespace ORTS
                 if( Locomotive.ThrottlePercent < 1 )
                     Locomotive.StartReverseIncrease();
                 else
-                    Viewer.Simulator.Confirmer.Warn( CabControl.Reverser, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn );
             } else {
                 Locomotive.StartReverseIncrease();
             }
@@ -1960,7 +1960,7 @@ namespace ORTS
                 if( Locomotive.ThrottlePercent < 1 )
                     Locomotive.StartReverseDecrease();
                 else
-                    Viewer.Simulator.Confirmer.Warn( CabControl.Reverser, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn );
             } else {
                 Locomotive.StartReverseDecrease();
             }

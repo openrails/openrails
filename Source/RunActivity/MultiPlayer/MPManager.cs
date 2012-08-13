@@ -104,7 +104,7 @@ namespace ORTS.MultiPlayer
 				{
 					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Message("Info:", "You gained back the control of your train");
+						Program.Simulator.Confirmer.Information("You gained back the control of your train");
 					msgctl = new MSGControl(GetUserName(), "Confirm", train);
 					BroadCast(msgctl.ToString());
 				}
