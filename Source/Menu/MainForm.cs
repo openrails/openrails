@@ -281,7 +281,7 @@ namespace ORTS
             Settings.Menu_Selection = new[] {
                 listBoxFolders.SelectedItem != null ? (listBoxFolders.SelectedItem as Folder).Path : "",
                 listBoxRoutes.SelectedItem != null ? (listBoxRoutes.SelectedItem as Route).Path : "",
-                listBoxActivities.SelectedItem != null ? (listBoxActivities.SelectedItem as Activity).FilePath : "",
+                listBoxActivities.SelectedItem != null && (listBoxActivities.SelectedItem as Activity).FilePath != null ? (listBoxActivities.SelectedItem as Activity).FilePath : "",
             };
             Settings.Save();
         }
