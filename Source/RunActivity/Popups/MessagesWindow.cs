@@ -100,7 +100,10 @@ namespace ORTS.Popups
             base.PrepareFrame(elapsedTime, updateFull);
 
             if (MessagesChanged)
+            {
+                MessagesChanged = false;
                 Layout();
+            }
 
             foreach (var message in Messages)
                 message.LabelShadow.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp(255, 0, MathHelper.Clamp((float)((Owner.Viewer.Simulator.GameTime - message.EndTime) / FadeTime), 0, 1));
