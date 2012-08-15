@@ -192,31 +192,38 @@ namespace ORTS
             {
                 var cvfBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW");
                 var cvfFilePath = Path.Combine(cvfBasePath, CVFFileName);
-                CVFFile = new CVFFile(cvfFilePath, cvfBasePath);
-
-                // Set up camera locations for the cab views
-                for( int i = 0; i < CVFFile.Locations.Count; ++i )
+                if (File.Exists(cvfFilePath))
                 {
-                    if (i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count)
+                    CVFFile = new CVFFile(cvfFilePath, cvfBasePath);
+
+                    // Set up camera locations for the cab views
+                    for (int i = 0; i < CVFFile.Locations.Count; ++i)
                     {
-                        Trace.TraceWarning("Skipped cab view camera {1} missing Position and Direction in {0}", cvfFilePath, i);
-                        break;
+                        if (i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count)
+                        {
+                            Trace.TraceWarning("Skipped cab view camera {1} missing Position and Direction in {0}", cvfFilePath, i);
+                            break;
+                        }
+                        ViewPoint viewPoint = new ViewPoint();
+                        viewPoint.Location = CVFFile.Locations[i];
+                        viewPoint.StartDirection = CVFFile.Directions[i];
+                        viewPoint.RotationLimit = new Vector3(0, 0, 0);  // cab views have a fixed head position
+                        FrontCabViewpoints.Add(viewPoint);
+                        if (i == 0 && (CVFFile.Directions[i].Y < -90 || CVFFile.Directions[i].Y > 90))
+                            CabFlipped = true;
                     }
-                    ViewPoint viewPoint = new ViewPoint();
-                    viewPoint.Location = CVFFile.Locations[i];
-                    viewPoint.StartDirection = CVFFile.Directions[i];
-                    viewPoint.RotationLimit = new Vector3( 0,0,0 );  // cab views have a fixed head position
-                    FrontCabViewpoints.Add(viewPoint);
-                    if (i == 0 && (CVFFile.Directions[i].Y < -90 || CVFFile.Directions[i].Y > 90))
-                        CabFlipped = true;
+
+                    ExCVF = null;
+
+                    if (ExCVF == null && !(this is MSTSSteamLocomotive))
+                    {
+                        ExCVF = new ExtendedCVF();
+                        InitializeFromORTSSpecific(cvfFilePath, ExCVF);
+                    }
                 }
-
-                ExCVF = null;
-
-                if (ExCVF == null && !(this is MSTSSteamLocomotive))
+                else
                 {
-                    ExCVF = new ExtendedCVF();
-                    InitializeFromORTSSpecific(cvfFilePath, ExCVF);
+                    Trace.TraceWarning("{0} locomotive's CabView references non-existant {1}", wagFilePath, cvfFilePath);
                 }
             }
 

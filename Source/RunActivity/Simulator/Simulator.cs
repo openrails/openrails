@@ -761,30 +761,30 @@ namespace ORTS
 				if (wagon.IsEngine)
 					wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 
-				try
-				{
-					TrainCar car = RollingStock.Load(this, wagonFilePath, previousCar);
-					car.Flipped = wagon.Flip;
-					car.UiD = wagon.UiD;
-					if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
-					else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
-					train.Cars.Add(car);
-					car.Train = train;
-					previousCar = car;
+                try
+                {
+                    TrainCar car = RollingStock.Load(this, wagonFilePath, previousCar);
+                    car.Flipped = wagon.Flip;
+                    car.UiD = wagon.UiD;
+                    if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
+                    else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
+                    train.Cars.Add(car);
+                    car.Train = train;
+                    previousCar = car;
                     if ((Activity != null) && (car.GetType() == typeof(MSTSDieselLocomotive)))
                     {
                         ((MSTSDieselLocomotive)car).DieselLevelL = ((MSTSDieselLocomotive)car).MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
                     }
-				}
-				catch (Exception error)
-				{
-					Trace.TraceInformation(wagonFilePath);
-					Trace.WriteLine(error);
-                    if( wagon == conFile.Train.TrainCfg.WagonList[0] ) {
-                        // First wagon is the player's loco and required, so issue a fatal error message
-                        throw new InvalidDataException( "Error reading player's loco from file " + wagonFilePath );
-				}
-				}
+                }
+                catch (Exception error)
+                {
+                    Trace.TraceInformation(wagonFilePath);
+                    // First wagon is the player's loco and required, so issue a fatal error message
+                    if (wagon == conFile.Train.TrainCfg.WagonList[0])
+                        throw new InvalidDataException("Error loading the player locomotive.", error);
+                    else
+                        Trace.WriteLine(error);
+                }
 
 			}// for each rail car
 

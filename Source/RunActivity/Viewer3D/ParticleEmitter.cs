@@ -29,7 +29,7 @@ namespace ORTS
             Direction.Y = stf.ReadFloat(STFReader.UNITS.Distance, 1.0f);  // May as well go up by default.
             Direction.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            stf.MustMatch(")");
+            stf.SkipRestOfBlock();
 
             MaxParticlesPerSecond = 60; // May come from the STF in the future.
             ParticleDuration = 5.0f;    // May come from the STF in the future.
