@@ -322,7 +322,7 @@ namespace ORTS
                         || (property.PropertyType == typeof(string[]) && String.Join(",", (string[])defValue) == String.Join(",", (string[])value))
                         || (property.PropertyType == typeof(int[]) && String.Join(",", ((int[])defValue).Select(v => v.ToString()).ToArray()) == String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray())))
                     {
-                        if (values.Contains(property.Name))
+                        if (values.Contains(property.Name, StringComparer.OrdinalIgnoreCase))
                             RK.DeleteValue(property.Name);
                     }
                     else if (property.PropertyType == typeof(string))
