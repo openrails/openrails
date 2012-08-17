@@ -922,12 +922,12 @@ namespace ORTS
                     return new { Key = material.ToString() + "/" + vertexState.imatrix.ToString(), Primitive = primitive, Material = material, HierachyIndex = vertexState.imatrix };
                 }).ToArray();
 #else
-                    var indexData = new List<short>(primitive.indexed_trilist.vertex_idxs.Count * 3);
+                    var indexData = new List<ushort>(primitive.indexed_trilist.vertex_idxs.Count * 3);
                     foreach (vertex_idx vertex_idx in primitive.indexed_trilist.vertex_idxs)
                     {
-                        indexData.Add((short)vertex_idx.a);
-                        indexData.Add((short)vertex_idx.b);
-                        indexData.Add((short)vertex_idx.c);
+                        indexData.Add((ushort)vertex_idx.a);
+                        indexData.Add((ushort)vertex_idx.b);
+                        indexData.Add((ushort)vertex_idx.c);
                     }
 
                     var indexBuffer = new IndexBuffer(sharedShape.Viewer.GraphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
