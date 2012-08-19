@@ -533,6 +533,9 @@ namespace ORTS
             var logFileName = "";
             if (settings.Logging)
             {
+                if( settings.LoggingPath == "" ) {
+                    settings.LoggingPath = Environment.GetFolderPath( Environment.SpecialFolder.Desktop );
+                }
                 if ((settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
                 {
                     var fileName = settings.LoggingFilename;

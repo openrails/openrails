@@ -70,7 +70,7 @@ namespace ORTS
         public bool Logging { get; set; }
         [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
-        [Default("")]
+        [Default( "" )] // If left as "", OR will use the user's desktop folder
         public string LoggingPath { get; set; }
         [Default(false)]
         public bool MSTSBINSound { get; set; }
