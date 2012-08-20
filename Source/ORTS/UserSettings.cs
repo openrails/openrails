@@ -39,6 +39,7 @@ namespace ORTS
     public class UserSettings
     {
         readonly string RegistryKey;
+        readonly Dictionary<string, object> CustomDefaultValues = new Dictionary<string, object>();
         readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
 
         public enum Source
@@ -70,7 +71,7 @@ namespace ORTS
         public bool Logging { get; set; }
         [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
-        [Default( "" )] // If left as "", OR will use the user's desktop folder
+        [Default("")]
         public string LoggingPath { get; set; }
         [Default(false)]
         public bool MSTSBINSound { get; set; }
@@ -127,8 +128,10 @@ namespace ORTS
         public string[] Menu_Selection { get; set; }
 
         // These two are command-line only flags to start multiplayer modes.
+        [Default(false)]
         [DoNotSave]
         public bool MultiplayerClient { get; set; }
+        [Default(false)]
         [DoNotSave]
         public bool MultiplayerServer { get; set; }
 
@@ -180,9 +183,9 @@ namespace ORTS
 
         void InitUserSettings()
         {
-            LoggingPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            ScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
-            Multiplayer_User = Environment.UserName;
+            CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
+            CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
         }
 
         /// <summary>
@@ -209,10 +212,13 @@ namespace ORTS
                 foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
                 {
                     // Get the default value.
-                    var defValue = property.GetValue(this, null);
-                    var defValueAttribute = property.GetCustomAttributes(typeof(DefaultAttribute), false);
-                    if (defValueAttribute.Length > 0)
-                        defValue = (defValueAttribute[0] as DefaultAttribute).Value;
+                    object defValue = null;
+                    if (CustomDefaultValues.ContainsKey(property.Name))
+                        defValue = CustomDefaultValues[property.Name];
+                    else if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
+                        defValue = (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
+                    else
+                        throw new InvalidDataException(String.Format("UserSetting property {0} has no default value.", property.Name));
                     // Read in the registry option, if it exists.
                     var regValue = allowRegistryValues && RK != null ? RK.GetValue(property.Name, null) : null;
                     // Read in the command-line option, if it exists into optValue.
@@ -312,9 +318,12 @@ namespace ORTS
                         continue;
 
                     object defValue = null;
-                    var defValueAttribute = property.GetCustomAttributes(typeof(DefaultAttribute), false);
-                    if (defValueAttribute.Length > 0)
-                        defValue = (defValueAttribute[0] as DefaultAttribute).Value;
+                    if (CustomDefaultValues.ContainsKey(property.Name))
+                        defValue = CustomDefaultValues[property.Name];
+                    else if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
+                        defValue = (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
+                    else
+                        throw new InvalidDataException(String.Format("UserSetting property {0} has no default value.", property.Name));
 
                     var value = property.GetValue(this, null);
 
