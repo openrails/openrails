@@ -399,6 +399,7 @@ namespace ORTS
             outf.Write(CompressorOn);
             outf.Write(AverageForceN);
             outf.Write(LocomotiveAxle.AxleSpeedMpS);
+            outf.Write( CabLightOn );
             ControllerFactory.Save(ThrottleController, outf);
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
@@ -419,6 +420,7 @@ namespace ORTS
             CompressorOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
             LocomotiveAxle.Reset(inf.ReadSingle());
+            CabLightOn = inf.ReadBoolean();
             ThrottleController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             TrainBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
             EngineBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
@@ -1337,10 +1339,10 @@ namespace ORTS
                 if( eventID == EventID.AlerterSndOff ) { AlerterSnd = false; Simulator.Confirmer.Confirm( CabControl.Alerter, CabSetting.Off ); break; }
                 if( eventID == EventID.BellOn ) { Bell = true; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.On ); break; }
                 if( eventID == EventID.BellOff ) { Bell = false; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.Off ); break; }
-                if( eventID == EventID.HornOn ) { 
+                if( eventID == EventID.HornOn ) {
                     Horn = true;
-					if (this != Program.Simulator.PlayerLocomotive) break;
-                    if( this is MSTSSteamLocomotive) {
+                    if( this != Program.Simulator.PlayerLocomotive ) break;
+                    if( this is MSTSSteamLocomotive ) {
                         Simulator.Confirmer.Confirm( CabControl.Whistle, CabSetting.On );
                     } else {
                         Simulator.Confirmer.Confirm( CabControl.Horn, CabSetting.On );
@@ -1349,7 +1351,7 @@ namespace ORTS
                 }
                 if( eventID == EventID.HornOff ) {
                     Horn = false;
-					if (this != Program.Simulator.PlayerLocomotive) break;
+                    if( this != Program.Simulator.PlayerLocomotive ) break;
                     if( this is MSTSSteamLocomotive ) {
                         Simulator.Confirmer.Confirm( CabControl.Whistle, CabSetting.Off );
                     } else {
@@ -1357,11 +1359,11 @@ namespace ORTS
                     }
                     break;
                 }
-                if( eventID == EventID.SanderOn ) { Sander = true; if (this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.On ); break; }
+                if( eventID == EventID.SanderOn ) { Sander = true; if( this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.On ); break; }
                 if( eventID == EventID.SanderOff ) { Sander = false; if( this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.Off ); break; }
-				if (eventID == EventID.WiperOn) { Wiper = true; if (this == Program.Simulator.PlayerLocomotive) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
-				if (eventID == EventID.WiperOff) { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
-                
+                if( eventID == EventID.WiperOn ) { Wiper = true; if( this == Program.Simulator.PlayerLocomotive ) Simulator.Confirmer.Confirm( CabControl.Wipers, CabSetting.On ); break; }
+                if( eventID == EventID.WiperOff ) { Wiper = false; if( this == Program.Simulator.PlayerLocomotive )  Simulator.Confirmer.Confirm( CabControl.Wipers, CabSetting.Off ); break; }
+
                 // <CJ Comment> The "H" key doesn't call these SignalEvents yet. </CJ Comment>
                 if( eventID == EventID.HeadlightOff ) { Headlight = 0; break; }
                 if( eventID == EventID.HeadlightDim ) { Headlight = 1; break; }
@@ -1369,8 +1371,7 @@ namespace ORTS
 
                 if( eventID == EventID.CompressorOn ) { CompressorOn = true; break; }
                 if( eventID == EventID.CompressorOff ) { CompressorOn = false; break; }
-				if (eventID == EventID.LightSwitchToggle) { break; }
-                if (eventID == EventID.ResetWheelSlip) { LocomotiveAxle.Reset(SpeedMpS); ThrottleController.SetValue(0.0f); break; }
+                if( eventID == EventID.ResetWheelSlip ) { LocomotiveAxle.Reset( SpeedMpS ); ThrottleController.SetValue( 0.0f ); break; }
 			} while (false);  // Never repeats
 
             base.SignalEvent(eventID );
@@ -2084,7 +2085,10 @@ namespace ORTS
                 Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(true);
 
             // By GeorgeS
-            if (UserInput.IsPressed(UserCommands.ControlLight)) { Locomotive.CabLightOn = !Locomotive.CabLightOn; Locomotive.SignalEvent(EventID.LightSwitchToggle); }
+            if (UserInput.IsPressed(UserCommands.ControlLight)) { 
+                Locomotive.CabLightOn = !Locomotive.CabLightOn;     // Changes the light in the cab
+                Locomotive.SignalEvent(EventID.LightSwitchToggle);  // Makes a switching sound ?
+            }
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
 
             // By Matej Pacha

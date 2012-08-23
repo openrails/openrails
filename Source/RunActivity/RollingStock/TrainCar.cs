@@ -30,7 +30,7 @@ namespace ORTS
         public float MassKG = 10000;
         public bool IsDriveable = false;
         //public bool HasCabView = false;
-	public bool IsFreight = false;  // indication freigth wagon or passenger car
+	    public bool IsFreight = false;  // indication freigth wagon or passenger car
 
         // This is here so the viewer can see and exploit the car before this one for articulation.
         public TrainCar PreviousCar;
@@ -137,6 +137,7 @@ namespace ORTS
             outf.Write(FrictionForceN);
             outf.Write(SpeedMpS);
             outf.Write(CouplerSlackM);
+            outf.Write( Headlight );
         }
 
         // Game restore
@@ -150,6 +151,7 @@ namespace ORTS
             FrictionForceN = inf.ReadSingle();
             SpeedMpS = inf.ReadSingle();
             CouplerSlackM = inf.ReadSingle();
+            Headlight = inf.ReadInt32();
         }
 
         public virtual float GetCouplerZeroLengthM()
