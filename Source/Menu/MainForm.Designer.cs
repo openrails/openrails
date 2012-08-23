@@ -100,6 +100,7 @@
             // buttonStart
             // 
             this.buttonStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonStart.Enabled = false;
             this.buttonStart.Location = new System.Drawing.Point(820, 418);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(104, 52);
@@ -204,6 +205,7 @@
             // buttonRouteDetails
             // 
             this.buttonRouteDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonRouteDetails.Enabled = false;
             this.buttonRouteDetails.Location = new System.Drawing.Point(6, 371);
             this.buttonRouteDetails.Name = "buttonRouteDetails";
             this.buttonRouteDetails.Size = new System.Drawing.Size(75, 23);
@@ -214,6 +216,7 @@
             // buttonActivityDetails
             // 
             this.buttonActivityDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonActivityDetails.Enabled = false;
             this.buttonActivityDetails.Location = new System.Drawing.Point(6, 371);
             this.buttonActivityDetails.Name = "buttonActivityDetails";
             this.buttonActivityDetails.Size = new System.Drawing.Size(75, 23);
@@ -224,6 +227,7 @@
             // buttonResume
             // 
             this.buttonResume.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonResume.Enabled = false;
             this.buttonResume.Location = new System.Drawing.Point(739, 418);
             this.buttonResume.Name = "buttonResume";
             this.buttonResume.Size = new System.Drawing.Size(75, 23);

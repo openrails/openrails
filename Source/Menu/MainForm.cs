@@ -319,6 +319,7 @@ namespace ORTS
                 RouteLoader.Cancel();
 
             listBoxRoutes.Items.Clear();
+            buttonRouteDetails.Enabled = buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
             var selectedFolder = SelectedFolder;
             RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
             {
@@ -333,6 +334,7 @@ namespace ORTS
                     listBoxRoutes.SelectedIndex = 0;
                 else
                     listBoxRoutes.ClearSelected();
+                buttonRouteDetails.Enabled = listBoxRoutes.Items.Count > 0;
             });
         }
 
@@ -342,6 +344,7 @@ namespace ORTS
                 ActivityLoader.Cancel();
 
             listBoxActivities.Items.Clear();
+            buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
             var selectedRoute = SelectedRoute;
             ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
             {
@@ -356,6 +359,7 @@ namespace ORTS
                     listBoxActivities.SelectedIndex = 0;
                 else
                     listBoxActivities.ClearSelected();
+                buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = listBoxActivities.Items.Count > 0;
             });
         }
 
