@@ -38,6 +38,7 @@ namespace ORTS.MultiPlayer
 
 		private List<Train> uncoupledTrains;
 
+		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
 
 		public void AddUncoupledTrains(Train t)
@@ -173,8 +174,11 @@ namespace ORTS.MultiPlayer
 			if (Program.Server != null && newtime - lastSwitchTime >= MPUpdateInterval)
 			{
 				lastSwitchTime = lastSendTime = newtime;
-				BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
-				BroadCast((new MSGSignalStatus()).ToString());
+				var switchStatus = new MSGSwitchStatus();
+
+				if (switchStatus.OKtoSend) BroadCast(switchStatus.ToString());
+				var signalStatus = new MSGSignalStatus();
+				if (signalStatus.OKtoSend) BroadCast(signalStatus.ToString());
 
 			}
 			

@@ -373,6 +373,7 @@ namespace ORTS.MultiPlayer
 				//System.Console.WriteLine(this.ToString());
 				if (MPManager.IsServer())// && Program.Server.IsRemoteServer())
 				{
+					MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
 					MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
 					MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 
@@ -416,6 +417,7 @@ namespace ORTS.MultiPlayer
 
 			MPManager.OnlineTrains.AddPlayers(this, p);
 			//System.Console.WriteLine(this.ToString());
+			MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
 			MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
 			MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 
@@ -596,9 +598,11 @@ namespace ORTS.MultiPlayer
 	{
 		static SortedList<uint, TrJunctionNode> SwitchState;
 		public string msgx = "";
-
+		public static string prevMSG = "";
+		public bool OKtoSend = false;
 		public MSGSwitchStatus()
 		{
+			OKtoSend = false;
 			if (SwitchState == null)
 			{
 				SwitchState = new SortedList<uint, TrJunctionNode>();
@@ -621,6 +625,9 @@ namespace ORTS.MultiPlayer
 				}
 				msgx += t.Value.SelectedRoute;
 			}
+			if (msgx == prevMSG) { if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime > 3 * MPManager.Instance().MPUpdateInterval) return; }
+			else { prevMSG = msgx; }
+			OKtoSend = true;
 		}
 
 		public MSGSwitchStatus(string m)
@@ -2200,12 +2207,14 @@ namespace ORTS.MultiPlayer
 	#region MSGSignalStatus
 	public class MSGSignalStatus : Message
 	{
-
+		static string prevMSG = "";
 		string msgx = "";
 		static SortedList<int, SignalHead> signals;
+		public bool OKtoSend = false;
 		//constructor to create a message from signal data
 		public MSGSignalStatus()
 		{
+			OKtoSend = false;
 			if (signals == null)
 			{
 				signals = new SortedList<int, SignalHead>();
@@ -2228,6 +2237,9 @@ namespace ORTS.MultiPlayer
 			{
 				msgx += "" + (char)(t.Value.state + 1) + "" + (char)(t.Value.draw_state + 1);//avoid \0
 			}
+			if (msgx == prevMSG) { if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime > 3 * MPManager.Instance().MPUpdateInterval) return; }
+			else { prevMSG = msgx; }
+			OKtoSend = true;
 		}
 
 		//constructor to decode the message "m"
