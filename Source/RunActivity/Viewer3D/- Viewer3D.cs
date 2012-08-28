@@ -261,7 +261,7 @@ namespace ORTS
 
             // Prepare the world to be loaded and then load it from the correct thread for debugging/tracing purposes.
             // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that
-            // all loading is porformed on a single thread that we can handle in debugging and tracing.
+            // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
             LoaderProcess.StartLoad();
             LoaderProcess.WaitTillFinished();

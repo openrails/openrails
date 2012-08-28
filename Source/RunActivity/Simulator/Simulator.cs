@@ -1,4 +1,11 @@
-﻿/// <summary>
+﻿// COPYRIGHT 2012 by the Open Rails project.
+// This code is provided to help you understand what Open Rails does and does
+// not do. Suggestions and contributions to improve Open Rails are always
+// welcome. Use of the code for any other purpose or distribution of the code
+// to anyone else is prohibited without specific written permission from
+// admin@openrails.org.
+
+/// <summary>
 /// This contains all the essential code to operate trains along paths as defined
 /// in the activity.   It is meant to operate in a separate thread it handles the
 /// following:
@@ -13,14 +20,7 @@
 ///     operate ai trains
 ///     
 /// All keyboard input comes from the viewer class as calls on simulator's methods.
-///     
-/// 
-/// COPYRIGHT 2009 by the Open Rails project.
-/// This code is provided to enable you to contribute improvements to the open rails program.  
-/// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from admin@openrails.org.
 /// </summary>
-/// 
 
 // Uncommenting the following will enable the experimental route-editing sandbox:
 //#define RE_ENABLED //WaltN
@@ -278,7 +278,7 @@ namespace ORTS
 
 		/// <summary>
 		/// Update the simulator state 
-		/// elapsedClockSeconds represents the the time since the last call to Simulator.Update
+		/// elapsedClockSeconds represents the time since the last call to Simulator.Update
 		/// Executes in the UpdaterProcess thread.
 		/// </summary>
         [CallOnThread("Updater")]

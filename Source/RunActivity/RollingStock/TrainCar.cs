@@ -30,7 +30,7 @@ namespace ORTS
         public float MassKG = 10000;
         public bool IsDriveable = false;
         //public bool HasCabView = false;
-	    public bool IsFreight = false;  // indication freigth wagon or passenger car
+	    public bool IsFreight = false;  // indication freight wagon or passenger car
 
         // This is here so the viewer can see and exploit the car before this one for articulation.
         public TrainCar PreviousCar;
@@ -47,7 +47,7 @@ namespace ORTS
         // status of the traincar - set by the train physics after it calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
         public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
-        public float _SpeedMpS = 0.0f; // meters pers second; updated by train physics, relative to direction of car  50mph = 22MpS
+        public float _SpeedMpS = 0.0f; // meters per second; updated by train physics, relative to direction of car  50mph = 22MpS
         public float CouplerSlackM = 0f;// extra distance between cars (calculated based on relative speeds)
         public float CouplerSlack2M = 0f;// slack calculated using draft gear force
         public bool WheelSlip = false;// true if locomotive wheels slipping

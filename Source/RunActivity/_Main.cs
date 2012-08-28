@@ -1,6 +1,6 @@
-///// <summary>
+/// <summary>
 /// This application runs an activity.  After loading the activity, main
-/// sets up the simulator engine and connects a 3D viewer 
+/// sets up the simulator engine and connects a 3D viewer.
 /// 
 /// The simulator engine contains all the elements that represent the operations on a route including 
 /// signal conditions, switch track alignment, rolling stock location and movement, track paths, 
@@ -180,9 +180,9 @@ namespace ORTS
         /// <summary>
         /// Save the current game state for later resume.
         /// Save files are stored in the user's local program storage:
-        /// e.g. "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS\\<activity file name> <date_and_time>.save"
+        /// e.g. "C:\Users\Wayne\AppData\Roaming\ORTS\<activity file name> <date_and_time>.save"
         /// or
-        /// e.g. "C:\\Users\\Wayne\\AppData\\Roaming\\ORTS\\<route folder name> <date_and_time>.save"
+        /// e.g. "C:\Users\Wayne\AppData\Roaming\ORTS\<route folder name> <date_and_time>.save"
         /// </summary>
         public static void Save()
         {
