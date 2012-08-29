@@ -90,16 +90,17 @@ namespace ORTS
         // Cameras
         public Camera Camera; // Current camera
         Camera AboveGroundCamera; // Previous camera for when automatically switching to cab.
-        private CabCamera CabCamera; // Camera 1
-        private HeadOutCamera HeadOutForwardCamera; // Camera 1+Up
-        private HeadOutCamera HeadOutBackCamera; // Camera 2+Down
-		private TrackingCamera FrontCamera; // Camera 2
-		private TrackingCamera BackCamera; // Camera 3
-        private TracksideCamera TracksideCamera; // Camera 4
-        private PassengerCamera PassengerCamera; // Camera 5
-        private BrakemanCamera BrakemanCamera; // Camera 6
-        private List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
-        private int PlayerTrainLength = 0; // re-activate cameras when this changes
+        CabCamera CabCamera; // Camera 1
+        HeadOutCamera HeadOutForwardCamera; // Camera 1+Up
+        HeadOutCamera HeadOutBackCamera; // Camera 2+Down
+		TrackingCamera FrontCamera; // Camera 2
+		TrackingCamera BackCamera; // Camera 3
+        TracksideCamera TracksideCamera; // Camera 4
+        PassengerCamera PassengerCamera; // Camera 5
+        BrakemanCamera BrakemanCamera; // Camera 6
+        FreeRoamCamera FreeRoamCamera;  // Camera 8
+        List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
+        int PlayerTrainLength = 0; // re-activate cameras when this changes
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
         private MouseState originalMouseState;      // Current mouse coordinates.
 
@@ -142,6 +143,7 @@ namespace ORTS
             WellKnownCameras.Add(HeadOutForwardCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
             WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
             WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
+            WellKnownCameras.Add(FreeRoamCamera = new FreeRoamCamera( this, FrontCamera ) ); // Any existing camera will suffice to satisfy .Save() and .Restore()
 
             SharedMaterialManager.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
 
@@ -165,8 +167,8 @@ namespace ORTS
 
             WindowManager.Save(outf);
 
-            outf.Write(WellKnownCameras.IndexOf(Camera));
-            foreach (var camera in WellKnownCameras)
+            outf.Write( WellKnownCameras.IndexOf( Camera ) );
+            foreach( var camera in WellKnownCameras )
                 camera.Save(outf);
             Camera.Save(outf);
 
@@ -440,8 +442,13 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.CameraTrackside)) TracksideCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraPassenger) && PassengerCamera.IsAvailable) PassengerCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraBrakeman)) BrakemanCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraFree)) new FreeRoamCamera(this, Camera).Activate();
-            if (UserInput.IsPressed(UserCommands.CameraHeadOutForward) && HeadOutForwardCamera.IsAvailable) HeadOutForwardCamera.Activate();
+            if( UserInput.IsPressed( UserCommands.CameraFree ) ) {
+                FreeRoamCamera = new FreeRoamCamera( this, Camera );
+                FreeRoamCamera.Activate();
+            }
+            if( UserInput.IsPressed( UserCommands.CameraPreviousFree ) )
+                FreeRoamCamera.Activate();
+            if( UserInput.IsPressed( UserCommands.CameraHeadOutForward ) && HeadOutForwardCamera.IsAvailable ) HeadOutForwardCamera.Activate();
             if (UserInput.IsPressed(UserCommands.CameraHeadOutBackward) && HeadOutBackCamera.IsAvailable) HeadOutBackCamera.Activate();
 
             if (UserInput.IsPressed(UserCommands.GameSwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);

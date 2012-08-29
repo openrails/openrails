@@ -116,6 +116,7 @@ namespace ORTS
         CameraPassenger,
         CameraBrakeman,
         CameraFree,
+        CameraPreviousFree, 
         CameraHeadOutForward,
         CameraHeadOutBackward,
         CameraToggleShowCab,
@@ -433,7 +434,8 @@ namespace ORTS
             Commands[(int)UserCommands.CameraPassenger] = new UserCommandKeyInput(0x06);
             Commands[(int)UserCommands.CameraBrakeman] = new UserCommandKeyInput(0x07);
             Commands[(int)UserCommands.CameraFree] = new UserCommandKeyInput(0x09);
-            Commands[(int)UserCommands.CameraHeadOutForward] = new UserCommandKeyInput(0x47);
+            Commands[(int)UserCommands.CameraPreviousFree] = new UserCommandKeyInput( 0x09, KeyModifiers.Shift );
+            Commands[(int)UserCommands.CameraHeadOutForward] = new UserCommandKeyInput( 0x47 );
             Commands[(int)UserCommands.CameraHeadOutBackward] = new UserCommandKeyInput(0x4F);
             Commands[(int)UserCommands.CameraToggleShowCab] = new UserCommandKeyInput(0x02, KeyModifiers.Shift );
             Commands[(int)UserCommands.CameraMoveFast] = new UserCommandModifierInput(KeyModifiers.Shift);
