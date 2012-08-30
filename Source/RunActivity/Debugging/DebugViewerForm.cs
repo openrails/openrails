@@ -256,7 +256,9 @@ namespace ORTS.Debugging
 					  }
 					  else
 					  {
+						  TrVectorSection s = currNode.TrVectorNode.TrVectorSections[0];
 
+						  PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
 						  foreach (TrPin pin in currNode.TrPins)
 						  {
 
@@ -270,16 +272,14 @@ namespace ORTS.Debugging
 							  //occupied = connectedNode   
 							  //}
 
-							  if (currNode.UiD == null && currNode.TrVectorNode.TrVectorSections.Length == 1)
-							  {
+							  /*if (currNode.UiD == null && currNode.TrVectorNode.TrVectorSections.Length == 1)
+							  {*/
 
-								  TrVectorSection s = currNode.TrVectorNode.TrVectorSections[0];
 
-								  PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
 								  PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
 
-								  segments.Add(new LineSegment(A, B, /*s.InterlockingTrack.IsOccupied*/ false, s));
-							  }
+								  segments.Add(new LineSegment(A, B, /*s.InterlockingTrack.IsOccupied*/ false, null));
+							  //}
 						  }
 
 
@@ -412,14 +412,14 @@ namespace ORTS.Debugging
                //   }
                //}
 
-			   /*if (line.curve != null)
+			   if (line.isCurved == true)
 			   {
 				   			   
 				   PointF scaledC = new PointF((line.C.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (line.C.Y - minY - ViewWindow.Y) * yScale);
-				   points[0] = scaledA; points[1] = scaledB; points[2] = scaledC;
+				   points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
 				   g.DrawCurve(p, points);
 			   }
-               else*/ g.DrawLine(p, scaledA, scaledB);
+               else g.DrawLine(p, scaledA, scaledB);
             }
 
 			itemsDrawn.Clear();
@@ -524,15 +524,17 @@ namespace ORTS.Debugging
 				if (pickedItem != null && pickedItemChanged == true && !pickedItemHandled && simulator.GameTime-pickedTime<10)
 				{
 					pickedLocation.X = pickedItem.Location2D.X + 152; pickedLocation.Y = pickedItem.Location2D.Y;
-					g.FillRectangle(Brushes.LightGray, GetRect(pickedLocation, 300f, 64f));
-					pickedLocation.X -= 152; pickedLocation.Y -= 2;
+					g.FillRectangle(Brushes.LightGray, GetRect(pickedLocation, 300f, 80f));
+					pickedLocation.X -= 152; pickedLocation.Y += 10;
 					var node = pickedItem.Item.TrJunctionNode;
 					if (node.SelectedRoute == 0) g.DrawString("Current: Main Route", trainFont, trainBrush, pickedLocation);
 					else g.DrawString("Current: Side Route", trainFont, trainBrush, pickedLocation);
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
-						pickedLocation.Y -= 24;
+						pickedLocation.Y -= 22;
 						g.DrawString("Alt-G to Throw the Switch", trainFont, trainBrush, pickedLocation);
+						pickedLocation.Y -= 22;
+						g.DrawString("Ctrl-Alt-G to watch this Switch", trainFont, trainBrush, pickedLocation);
 					}
 				}
 			}
@@ -1163,39 +1165,44 @@ namespace ORTS.Debugging
    {
 	   public PointF A;
 	   public PointF B;
-	   //public PointF C;
+	   public PointF C;
 	   //public float radius = 0.0f;
-	   //public bool isCurved = false;
+	   public bool isCurved = false;
 
+	   public float angle1, angle2;
 	   //public SectionCurve curve = null;
-	   public TrVectorSection Section;
 
 	   public LineSegment(PointF A, PointF B, bool Occupied, TrVectorSection Section)
 	   {
 		   this.A = A;
 		   this.B = B;
 
-		   
-		   this.Section = Section;
+		   isCurved = false;
+		   if (Section == null) return;
 
-		   /*
+		   
 		   uint k = Section.SectionIndex;
 		   TrackSection ts = Program.Simulator.TSectionDat.TrackSections.Get(k);
 		   if (ts != null)
 		   {
 			   if (ts.SectionCurve != null)
 			   {
-				   curve = ts.SectionCurve;
-				   Vector3 v = new Vector3(B.X - A.X, B.Y - A.Y, 0);
+				   isCurved = true;
+				   //curve = ts.SectionCurve;
+				   Vector3 v = new Vector3(B.X - A.X, 0, B.Y - A.Y);
 				   Vector3 v2 = Vector3.Cross(Vector3.Up, v); v2.Normalize();
+				   v = v / 2; v.X += A.X; v.Z += A.Y;
 				   if (ts.SectionCurve.Angle > 0)
 				   {
-					   v = Vector3.Multiply(v2, (float)(ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 180)))) + v;
+					   v = Vector3.Multiply(v2, (float)(-ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 360)))) + v;
 				   }
-				   else v = Vector3.Multiply(v2, (float)(-ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 180)))) + v;
-				   C = new PointF(v.X, v.Y);
+				   else v = Vector3.Multiply(v2, (float)(ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 360)))) + v;
+				   C = new PointF(v.X, v.Z);
+				    
+
+				   //angle1 = Math.Atan2(
 			   }
-		   }*/
+		   }
 
 	   }
    }

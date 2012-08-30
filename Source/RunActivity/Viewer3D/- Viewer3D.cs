@@ -482,6 +482,24 @@ namespace ORTS
 #endif
             }
 
+			if (UserInput.IsPressed(UserCommands.CameraJumpSeeSwitch))
+			{
+#if ( DEBUG )
+				if (Program.DebugViewer.Enabled && Program.DebugViewer.pickedItem != null)
+				{
+
+					TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+					FreeRoamCamera = new FreeRoamCamera(this, Camera);
+					FreeRoamCamera.SetLocation(new WorldLocation(nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.X, nextSwitchTrack.TN.UiD.Y + 8, nextSwitchTrack.TN.UiD.Z));
+					//FreeRoamCamera
+					FreeRoamCamera.Activate();
+
+
+				}
+				Program.DebugViewer.pickedItemHandled = true;
+#endif
+			}
+
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
             {
                 isMouseShouldVisible = true;

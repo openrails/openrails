@@ -137,7 +137,8 @@ namespace ORTS
         CameraCarFirst,
         CameraCarLast,
         CameraJumpingTrains,
-        CameraJumpBackPlayer,
+		CameraJumpBackPlayer,
+		CameraJumpSeeSwitch,
 
         ControlForwards,
         ControlBackwards,
@@ -456,6 +457,7 @@ namespace ORTS
 			Commands[(int)UserCommands.CameraCarLast] = new UserCommandKeyInput(0x4F, KeyModifiers.Alt);
 			Commands[(int)UserCommands.CameraJumpingTrains] = new UserCommandKeyInput(0x0A, KeyModifiers.Alt);
 			Commands[(int)UserCommands.CameraJumpBackPlayer] = new UserCommandKeyInput(0x0A);
+			Commands[(int)UserCommands.CameraJumpSeeSwitch] = new UserCommandKeyInput(0x22, KeyModifiers.Control | KeyModifiers.Alt);
 
             Commands[(int)UserCommands.ControlForwards] = new UserCommandKeyInput(0x11);
             Commands[(int)UserCommands.ControlBackwards] = new UserCommandKeyInput(0x1F);

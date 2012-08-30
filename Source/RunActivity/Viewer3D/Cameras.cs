@@ -399,6 +399,10 @@ namespace ORTS
         {
         }
 
+		public void SetLocation(WorldLocation l)
+		{
+			cameraLocation = l;
+		}
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             base.HandleUserInput(elapsedTime);
