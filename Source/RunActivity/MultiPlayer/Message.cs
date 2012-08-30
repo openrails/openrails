@@ -1,6 +1,17 @@
-﻿/// The message protocol defined in this file cannot be used in any software without specific written permission from admin@openrails.org.
-/// This file cannot be copied, modified or included in any software which is not distributed directly by the Open Rails project.
+﻿// COPYRIGHT 2012 by the Open Rails project.
+// This code is provided to help you understand what Open Rails does and does
+// not do. Suggestions and contributions to improve Open Rails are always
+// welcome. Use of the code for any other purpose or distribution of the code
+// to anyone else is prohibited without specific written permission from
+// admin@openrails.org.
 
+/// 
+/// Additional Contributions
+/// Copyright (c) Jijun Tang
+/// Can only be used by the Open Rails Project.
+/// The message protocol defined in this file cannot be used in any software without specific written permission from admin@openrails.org.
+/// This file cannot be copied, modified or included in any software which is not distributed directly by the Open Rails project.
+/// 
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -217,6 +228,8 @@ namespace ORTS.MultiPlayer
 		public string[] cars;
 		public string[] ids;
 		public int[] flipped; //if a wagon is engine
+		public int[] lengths; //if a wagon is engine
+
 		public MSGPlayer() { }
 		public MSGPlayer(string m)
 		{
@@ -277,6 +290,7 @@ namespace ORTS.MultiPlayer
 			cars = new string[numCars];//with an empty "" at end
 			ids = new string[numCars];
 			flipped = new int[numCars];
+			lengths = new int[numCars];
 			int index, last;
 			for (var i = 0; i < numCars; i++)
 			{
@@ -288,6 +302,7 @@ namespace ORTS.MultiPlayer
 				string[] carinfo = tmp.Split('\n');
 				ids[i] = carinfo[0];
 				flipped[i] = int.Parse(carinfo[1]);
+				lengths[i] = int.Parse(carinfo[2]);
 			}
 
 		}
@@ -322,12 +337,14 @@ namespace ORTS.MultiPlayer
 			cars = new string[t.Cars.Count];
 			ids = new string[t.Cars.Count];
 			flipped = new int[t.Cars.Count];
+			lengths = new int[t.Cars.Count];
 			for (var i = 0; i < t.Cars.Count; i++)
 			{
 				cars[i] = t.Cars[i].WagFilePath;
 				ids[i] = t.Cars[i].CarID;
 				if (t.Cars[i].Flipped == true) flipped[i] = 1;
 				else flipped[i] = 0;
+				lengths[i] = (int)(t.Cars[i].Length);
 			}
 			if (t.LeadLocomotive != null) leadingID = t.LeadLocomotive.CarID;
 			else leadingID = "NA";
@@ -345,7 +362,7 @@ namespace ORTS.MultiPlayer
 					c = c.Remove(0, index + 17);
 				}//c: wagon path without folder name
 
-				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\t";
+				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
 			}
 
 			return "" + tmp.Length + ": " + tmp;

@@ -554,6 +554,7 @@ namespace MenuWPF
 			MPUserNameTmp = MPUserNameTmp.Replace(" ", "");
 			MPUserNameTmp = MPUserNameTmp.Replace("\"", "");
 			MPUserNameTmp = MPUserNameTmp.Replace("\'", "");
+			MPUserNameTmp = MPUserNameTmp.Replace("\\", "");
 
 			MPUserNameLength = MPUserNameTmp.Length;
 			(sender as TextBox).Text = MPUserNameTmp;

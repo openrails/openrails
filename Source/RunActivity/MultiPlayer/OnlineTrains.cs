@@ -1,4 +1,19 @@
-﻿using System;
+﻿// COPYRIGHT 2012 by the Open Rails project.
+// This code is provided to help you understand what Open Rails does and does
+// not do. Suggestions and contributions to improve Open Rails are always
+// welcome. Use of the code for any other purpose or distribution of the code
+// to anyone else is prohibited without specific written permission from
+// admin@openrails.org.
+
+/// 
+/// Additional Contributions
+/// Copyright (c) Jijun Tang
+/// Can only be used by the Open Rails Project.
+/// This file cannot be copied, modified or included in any software which is not distributed directly by the Open Rails project.
+/// 
+
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -156,28 +171,43 @@ namespace ORTS.MultiPlayer
 			TrainCar previousCar = null;
 			for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
+
 				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + player.cars[i];
+				TrainCar car = null;
 				try
 				{
-					TrainCar car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
-					bool flip = true;
-					if (player.flipped[i] == 0) flip = false;
-					car.Flipped = flip;
-					car.CarID = player.ids[i];
-					train.Cars.Add(car);
-					car.Train = train;
-					previousCar = car;
-					MSTSWagon w = (MSTSWagon)car;
-					if (w != null)
-					{
-						w.AftPanUp = player.pantofirst == 1 ? true : false;
-						w.FrontPanUp = player.pantosecond == 1 ? true : false;
-					}
+					car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
+					car.Length = player.lengths[i];
 				}
 				catch (Exception error)
 				{
-					System.Console.WriteLine(error);
+					System.Console.WriteLine(error + "\n\nWill use the default.");
+					try
+					{
+						wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\DEFAULT\default.wag"; 
+						car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
+						car.Length = player.lengths[i];
+					}
+					catch
+					{
+						System.Console.WriteLine(error + "\n\nThe default is missing.............");
+					}
 				}
+				if (car == null) continue;
+				bool flip = true;
+				if (player.flipped[i] == 0) flip = false;
+				car.Flipped = flip;
+				car.CarID = player.ids[i];
+				train.Cars.Add(car);
+				car.Train = train;
+				previousCar = car;
+				MSTSWagon w = (MSTSWagon)car;
+				if (w != null)
+				{
+					w.AftPanUp = player.pantofirst == 1 ? true : false;
+					w.FrontPanUp = player.pantosecond == 1 ? true : false;
+				}
+
 			}// for each rail car
 
 			if (train.Cars.Count == 0)

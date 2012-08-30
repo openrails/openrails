@@ -5,11 +5,21 @@
  * but the caller does not need to care.
  * 
  * 
-/// COPYRIGHT 2009 by the Open Rails project.
-/// This code is provided to enable you to contribute improvements to the open rails program.  
-/// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from admin@openrails.org.
  */
+
+// COPYRIGHT 2012 by the Open Rails project.
+// This code is provided to help you understand what Open Rails does and does
+// not do. Suggestions and contributions to improve Open Rails are always
+// welcome. Use of the code for any other purpose or distribution of the code
+// to anyone else is prohibited without specific written permission from
+// admin@openrails.org.
+
+/// 
+/// Additional Contributions
+/// Copyright (c) Jijun Tang
+/// Can only be used by the Open Rails Project.
+/// This file cannot be copied, modified or included in any software which is not distributed directly by the Open Rails project.
+/// 
 
 using System;
 using System.Collections.Generic;
