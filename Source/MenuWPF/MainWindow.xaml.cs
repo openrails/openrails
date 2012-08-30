@@ -261,18 +261,27 @@ namespace MenuWPF
 			{
 				MessageBox.Show("The length of User Name must be between 4 and 10 characters!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			}
-			else if ((MPHost || MPIP != "") && (MPUserName!="" &&char.IsDigit(MPUserName[0])))
+			else if ((MPHost || MPIP != "") && (MPUserName != "" && char.IsDigit(MPUserName[0])))
 			{
 				MessageBox.Show("User Name cannot start with digits!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			}
+			else if ((MPHost || MPIP != "") && (MPUserName != "" && !checkUserName(MPUserName)))
+			{
+				MessageBox.Show("User Name cannot contain special characters!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			}
+			else if ((!MPHost && MPIP != "") && !(SelectedActivity is ExploreActivity))
+			{
+				MessageBox.Show("Being a client, you can only select the Explore Mode", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			}
 			else
 			{
                 // Retain settings for convenience
                 using (var RK = Registry.CurrentUser.CreateSubKey(RegistryKey))
                 {
-                    RK.SetValue("Multiplayer_User", textBox3.Text);
-                    RK.SetValue("Multiplayer_Host", textBox2.Text);
-                    try
+                    RK.SetValue("Multiplayer_User", MPUserName);
+					RK.SetValue("Multiplayer_Host", textBox2.Text);
+					RK.SetValue("Multiplayer_Code", MPUserCode);
+					try
                     {
                         RK.SetValue("Multiplayer_Port", int.Parse(textBox1.Text));
                     }
@@ -283,7 +292,17 @@ namespace MenuWPF
 			}
 		}
 
-        private void btnDescription_Click(object sender, System.Windows.RoutedEventArgs e)
+		bool checkUserName(string name)
+		{
+			var count = 0;
+			for (var i = 0; i < name.Length; i++)
+			{
+				if ((char) name[i] < 48 || name[i] == '\\') return false;
+			}
+			return true;
+		}
+
+		private void btnDescription_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (cboEngine.SelectedItem != null)
             {
@@ -538,7 +557,7 @@ namespace MenuWPF
 
 			MPUserNameLength = MPUserNameTmp.Length;
 			(sender as TextBox).Text = MPUserNameTmp;
-			MPUserName = "\"" + MPUserNameTmp + ' ' + MPUserCode + "\"";
+			MPUserName = MPUserNameTmp;
 		}
 
 		private void checkBox1_Checked(object sender, RoutedEventArgs e)

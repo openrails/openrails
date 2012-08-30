@@ -1,4 +1,7 @@
-﻿using System;
+﻿/// The message protocol defined in this file cannot be used in any software without specific written permission from admin@openrails.org.
+/// This file cannot be copied, modified or included in any software which is not distributed directly by the Open Rails project.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
