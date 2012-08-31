@@ -94,6 +94,7 @@ namespace ORTS
             checkBoxBINSound.Checked = Settings.MSTSBINSound;
             checkBoxSuppressConfirmations.Checked = Settings.SuppressConfirmations;
             checkDispatcher.Checked = Settings.ViewDispatcher;
+            numericCab2DStretch.Value = Settings.Cab2DStretch;
         }
 
         string ParseCategoryFrom(string name)
@@ -296,6 +297,7 @@ namespace ORTS
             Settings.MSTSBINSound = checkBoxBINSound.Checked;
             Settings.SuppressConfirmations = checkBoxSuppressConfirmations.Checked;
             Settings.ViewDispatcher = checkDispatcher.Checked;
+            Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

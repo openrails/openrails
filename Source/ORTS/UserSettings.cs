@@ -59,6 +59,8 @@ namespace ORTS
         public bool Alerter { get; set; }
         [Default(21)]
         public int BrakePipeChargingRate { get; set; }
+        [Default( 0 )]
+        public int Cab2DStretch { get; set; }
         [Default(false)]
         public bool DataLogger { get; set; }
         [Default(false)]

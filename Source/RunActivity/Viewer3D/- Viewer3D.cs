@@ -123,6 +123,18 @@ namespace ORTS
         private BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
 
 		public bool DebugViewerEnabled = false;
+
+        // MSTS cab views are images with aspect ratio 4:3.
+        // OR can use cab views with other aspect ratios where these are available.
+        // On screen with other aspect ratios (e.g. 16:9), two approaches are possible:
+        //   1) stretch the width to fit the screen. This gives flattened controls, most noticeable with round dials.
+        //   2) clip the image losing a slice off top and bottom.
+        // Setting.Cab2DStretch controls the amount of stretch and clip. 0 is entirely clipped and 100 is entirely stretched.
+        // No difference is seen on screens with 4:3 aspect ratio.
+        // This adjustment assumes that the cab view is 4:3. Where the cab view matches the aspect ratio of the screen, use an adjustment of 100.
+        public int CabHeightPixels;
+        public int CabYOffsetPixels; // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
+
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
         /// and the graphics device is not ready to accept content.
@@ -171,6 +183,7 @@ namespace ORTS
             foreach( var camera in WellKnownCameras )
                 camera.Save(outf);
             Camera.Save(outf);
+            outf.Write( CabYOffsetPixels );
 
             // Set these so RenderFrame can use them when its thread gets control.
             SaveActivityFileStem = fileStem;
@@ -192,6 +205,8 @@ namespace ORTS
             else
                 WellKnownCameras[cameraToRestore].Activate();
             Camera.Restore(inf);
+            CabYOffsetPixels = inf.ReadInt32();
+
         }
 
         [ThreadName( "Render" )]
@@ -215,6 +230,20 @@ namespace ORTS
             GraphicsDevice = RenderProcess.GraphicsDevice;
             DisplaySize.X = GraphicsDevice.Viewport.Width;
             DisplaySize.Y = GraphicsDevice.Viewport.Height;
+            
+            int MSTSCabHeightPixels = DisplaySize.X * 3 / 4; // MSTS cab views are designed for 4:3 aspect ratio.
+            // For wider screens (e.g. 16:9), the height of the cab view before adjustment exceeds the height of the display.
+            // The user can decide how much of this excess to keep. Setting of 0 keeps all the excess and 100 keeps none.
+
+            // <CJ Comment> This scheme treats all cab views the same and assumes that they have a 4:3 aspect ratio.
+            // For a cab view with a different aspect ratio (e.g. designed for a 16:9 screen), use a setting of 100 which
+            // will disable this feature. A smarter scheme would discover the aspect ratio of the cab view and adjust
+            // appropriately. </CJ Comment>
+
+            int CabExceedsDisplay = (int)((MSTSCabHeightPixels - DisplaySize.Y) * ((100-Settings.Cab2DStretch) / 100f));
+            CabHeightPixels = DisplaySize.Y + CabExceedsDisplay;
+            CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
+
             if (Settings.ShaderModel == 0)
                 Settings.ShaderModel = GraphicsDevice.GraphicsDeviceCapabilities.PixelShaderVersion.Major;
             else if (Settings.ShaderModel < 2)

@@ -2341,7 +2341,7 @@ namespace ORTS
         }
         
         /// <summary>
-        /// Disassembles all compund textures into parts
+        /// Disassembles all compound textures into parts
         /// </summary>
         /// <param name="graphicsDevice">The GraphicsDevice</param>
         /// <param name="fileName">Name of the Texture to be disassembled</param>
@@ -2565,15 +2565,19 @@ namespace ORTS
             _Viewer = viewer;
             _Locomotive = car;
 
+            // _Viewer.DisplaySize intercepted to adjust cab view height
+            Point DisplaySize = _Viewer.DisplaySize;
+            DisplaySize.Y = _Viewer.CabHeightPixels;
+
             if (_Locomotive.ExCVF != null)
             {
-                _Shader = new CabShader(viewer.GraphicsDevice, viewer.RenderProcess.Content,
-                    _Locomotive.ExCVF.TranslatedPosition(_Locomotive.ExCVF.Light1Position, _Viewer.DisplaySize),
-                    _Locomotive.ExCVF.TranslatedPosition(_Locomotive.ExCVF.Light2Position, _Viewer.DisplaySize),
-                    _Locomotive.ExCVF.TranslatedColor(_Locomotive.ExCVF.Light1Color),
-                    _Locomotive.ExCVF.TranslatedColor(_Locomotive.ExCVF.Light2Color));
+                _Shader = new CabShader( viewer.GraphicsDevice, viewer.RenderProcess.Content,
+                    _Locomotive.ExCVF.TranslatedPosition( _Locomotive.ExCVF.Light1Position, DisplaySize ),
+                    _Locomotive.ExCVF.TranslatedPosition( _Locomotive.ExCVF.Light2Position, DisplaySize ),
+                    _Locomotive.ExCVF.TranslatedColor( _Locomotive.ExCVF.Light1Color ),
+                    _Locomotive.ExCVF.TranslatedColor( _Locomotive.ExCVF.Light2Color ) );
             }
-            _PrevScreenSize = _Viewer.DisplaySize;
+            _PrevScreenSize = DisplaySize;
 
             // Loading ACE files, skip displaying ERROR messages
             foreach (string cabfile in car.CVFFile.TwoDViews)
@@ -2657,8 +2661,9 @@ namespace ORTS
             if (_CabTexture == SharedMaterialManager.MissingTexture)
                 return;
 
+            // Cab view height adjusted to allow for clip or stretch
             _CabRect.Width = _Viewer.DisplaySize.X;
-            _CabRect.Height = _Viewer.DisplaySize.Y;
+            _CabRect.Height = _Viewer.CabHeightPixels;
 
             if (_PrevScreenSize != _Viewer.DisplaySize && _Shader != null)
             {
@@ -2682,17 +2687,20 @@ namespace ORTS
         
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            if (_Location == 0 && _Shader != null)
+            // Cab view vertical position adjusted to allow for clip or stretch.
+            Rectangle stretchedCab = new Rectangle( _CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height );
+            
+            if( _Location == 0 && _Shader != null )
             {
                 _Shader.SetData(_Viewer.MaterialManager.sunDirection,
                     _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.Sky.overcast);
 
-                _Shader.SetTexData(_CabRect.Left, _CabRect.Top, _CabRect.Width, _CabRect.Height);
+                _Shader.SetTexData( stretchedCab.Left, stretchedCab.Top, stretchedCab.Width, stretchedCab.Height );
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
 
-            _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
+            _Sprite2DCabView.SpriteBatch.Draw( _CabTexture, stretchedCab, Color.White );
             //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
 
             if (_Location == 0 && _Shader != null)
@@ -2833,10 +2841,10 @@ namespace ORTS
 
             base.PrepareFrame(frame);
 
-			_Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + _Origin.X);
-			_Position.Y = (float)_Viewer.DisplaySize.Y / 480 * ((float)_CabViewControl.PositionY + _Origin.Y);
-
-			_ScaleToScreen = (float)_Viewer.DisplaySize.Y / 480 * _Scale;
+			// Cab view height and vertical position adjusted to allow for clip or stretch.
+            _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + _Origin.X);
+            _Position.Y = (float)_Viewer.CabHeightPixels / 480 * ((float)_CabViewControl.PositionY + _Origin.Y) + _Viewer.CabYOffsetPixels;
+            _ScaleToScreen = (float)_Viewer.DisplaySize.X / 640 * _Scale;
 
             float percent = TranslateToPercent();
             float range;
@@ -2911,8 +2919,9 @@ namespace ORTS
 
             base.PrepareFrame(frame);
 
+            // Cab view height adjusted to allow for clip or stretch.
             float xratio = (float)_Viewer.DisplaySize.X / 640;
-            float yratio = (float)_Viewer.DisplaySize.Y / 480;
+            float yratio = (float)_Viewer.CabHeightPixels / 480;
 
             float percent;
             if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER)
@@ -2944,8 +2953,7 @@ namespace ORTS
 
             float xpos = 0;
             float ypos = 0;
-
-            if (_Gauge.Orientation == 0)    // gauage horiz
+            if (_Gauge.Orientation == 0)    // gauge horiz
             {
                 ypos = (int)_Gauge.Height;
                 if (_Gauge.Direction == 0)  // horiz increasing
@@ -2974,7 +2982,7 @@ namespace ORTS
                         xpos = ((float)_Gauge.Width - (float)_Gauge.Width * percent);
                 }
             } // end if _Gauge.Orientation
-            else                          // gauage vert
+            else                          // gauge vert
             {
                 xpos = (int)_Gauge.Width;
                 if (_Gauge.Direction == 0)
@@ -3003,16 +3011,18 @@ namespace ORTS
                         var centDrec = (int)(xratio * (_CabViewControl.PositionX + (int)30.4f)); 
                         _DestRectangle.X = centDrec - (int)(xratio * xpos);
                     }
-                    
-                             
-                    _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY);
+
+
+                    // Cab view vertical position adjusted to allow for clip or stretch.
+                    _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY) + _Viewer.CabYOffsetPixels;
                     _DestRectangle.Width = (int)(xratio * xpos);
                     _DestRectangle.Height = (int)(yratio * ypos);
                 }
                 else
                 {
+                    // Cab view vertical position adjusted to allow for clip or stretch.
                     _DestRectangle.X = (int)(xratio * _CabViewControl.PositionX);
-                    _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY);
+                    _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY) + _Viewer.CabYOffsetPixels;
                     _DestRectangle.Width = (int)(xratio * xpos);
                     _DestRectangle.Height = (int)(yratio * ypos);
                 }
@@ -3020,8 +3030,9 @@ namespace ORTS
 
             else    // Is this code ever executed ???
             {
+                // Cab view vertical position adjusted to allow for clip or stretch.
                 _DestRectangle.X = (int)(xratio * (_CabViewControl.PositionX + xpos));
-                _DestRectangle.Y = (int)(yratio * (_CabViewControl.PositionY + ypos));
+                _DestRectangle.Y = (int)(yratio * (_CabViewControl.PositionY + ypos)) + _Viewer.CabYOffsetPixels;
                 _DestRectangle.Width = (int)(xratio * _Gauge.Area.Width);
                 _DestRectangle.Height = (int)(yratio * _Gauge.Area.Height);
             }
@@ -3090,11 +3101,12 @@ namespace ORTS
 
             base.PrepareFrame(frame);
 
+            // Cab view height and vertical position adjusted to allow for clip or stretch.
             float xratio = (float)_Viewer.DisplaySize.X / 640;
-            float yratio = (float)_Viewer.DisplaySize.Y / 480;
+            float yratio = (float)_Viewer.CabHeightPixels / 480;
 
             _DestRectangle.X = (int)(xratio * _CabViewControl.PositionX * 1.0001);
-            _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY * 1.0001);
+            _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY * 1.0001) + _Viewer.CabYOffsetPixels;
             _DestRectangle.Width = (int)(xratio * _CabViewControl.Width);
             _DestRectangle.Height = (int)(yratio * _CabViewControl.Height);
         }
@@ -3387,12 +3399,14 @@ namespace ORTS
                 if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
                     _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
                 else
-                _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
-            _Position.Y = (float)_Viewer.DisplaySize.Y / 480 * (float)_CabViewControl.PositionY;
+                    _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
+
+            // Cab view height and vertical position adjusted to allow for clip or stretch.
+            _Position.Y = (float)_Viewer.DisplaySize.X / 640 * (float)_CabViewControl.PositionY + _Viewer.CabYOffsetPixels;
 
             base.PrepareFrame(frame);
 
-			_ScaleToScreen = (float)_Viewer.DisplaySize.Y / 480 * (fontratio);
+            _ScaleToScreen = (float)_Viewer.DisplaySize.X / 640 * (fontratio);
 
             _Num = _Locomotive.GetDataOf(_CabViewControl);
         }

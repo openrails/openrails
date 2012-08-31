@@ -729,28 +729,64 @@ namespace ORTS
             attachedLocation = attachedCar.FrontCabViewpoints[sideLocation].Location;
         }
 
-        void ShiftView(int index)
-        {
-            sideLocation += index;
-
-            if (sideLocation < 0)
-                sideLocation = attachedCar.FrontCabViewpoints.Count - 1;
-            else if (sideLocation >= attachedCar.FrontCabViewpoints.Count)
-                sideLocation = 0;
-
-            SetCameraCar(attachedCar);
-        }
-
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // Switched shift number to select the right cab view - by GeorgeS
+            var speedFactor = 500;  // Gives a fairly smart response.
+            var speed = speedFactor * elapsedTime.RealSeconds; // Independent of framerate
+
             if (UserInput.IsPressed(UserCommands.CameraPanLeft))
                 ShiftView(+1);
             if (UserInput.IsPressed(UserCommands.CameraPanRight))
                 ShiftView(-1);
+            if( UserInput.IsDown( UserCommands.CameraPanUp ) )
+                PanUp( true, speed );
+            if( UserInput.IsDown( UserCommands.CameraPanDown ) )
+                PanUp( false, speed );
 
             // Don't call this or we'll let the user rotate the camera!
-            //base.HandleUserInput(elapsedTime);
+            // Actually, rotating up and down might be useful and similar to raising the driver's seat.
+            // base.HandleUserInput(elapsedTime);
+        }
+
+        void ShiftView( int index ) {
+            sideLocation += index;
+
+            if( sideLocation < 0 )
+                sideLocation = attachedCar.FrontCabViewpoints.Count - 1;
+            else if( sideLocation >= attachedCar.FrontCabViewpoints.Count )
+                sideLocation = 0;
+
+            SetCameraCar( attachedCar );
+        }
+
+        void PanUp( bool up, float speed ) {
+            int max = 0;
+            int min = Viewer.DisplaySize.Y - Viewer.CabHeightPixels; // -ve value
+            int cushionPixels = 40;
+            int slowFactor = 4;
+
+            // Cushioned approach to limits of travel. Within 40 pixels, travel at 1/4 speed
+            if( up && Math.Abs( Viewer.CabYOffsetPixels - max ) < cushionPixels )
+                speed /= slowFactor;
+            if( !up && Math.Abs( Viewer.CabYOffsetPixels - min ) < cushionPixels )
+                speed /= slowFactor;
+            Viewer.CabYOffsetPixels += (up) ? (int)speed : -(int)speed;
+            // Enforce limits to travel
+            if( Viewer.CabYOffsetPixels > max ) {
+                Viewer.CabYOffsetPixels = max;
+                return;
+            }
+            if( Viewer.CabYOffsetPixels < min ) {
+                Viewer.CabYOffsetPixels = min;
+                return;
+            }
+            // Adjust view through window to match
+            var viewSpeed = speed * 0.00105f; // factor found by trial and error.
+            rotationXRadians -= (up) ? viewSpeed : -viewSpeed;
+            var movement = new Vector3( 0, 0, 0 );
+            movement = Vector3.Transform( movement, Matrix.CreateRotationX( rotationXRadians ) );
+            cameraLocation.Location += movement;
+            cameraLocation.Normalize();
         }
     }
 
