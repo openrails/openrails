@@ -977,6 +977,7 @@ namespace ORTS
 		{
 			Train train = car.Train;
 
+			if (MPManager.IsMultiPlayer() && !MPManager.Instance().TrainOK2Decouple(train)) return;
 			int i = 0;
 			while (train.Cars[i] != car) ++i;  // it can't happen that car isn't in car.Train
 			if (i == train.Cars.Count - 1) return;  // can't uncouple behind last car

@@ -317,6 +317,33 @@ namespace ORTS.MultiPlayer
 			
 		}
 
+		//when two player trains connected, require decouple at speed 0.
+		public bool TrainOK2Decouple(Train t)
+		{
+			if (t == null) return false;
+			if (Math.Abs(t.SpeedMpS) < 0.001) return true;
+			try
+			{
+				var count = 0;
+				foreach (var p in OnlineTrains.Players.Keys)
+				{
+					string p1 = p + " ";
+					foreach (var car in t.Cars)
+					{
+						if (car.CarID.Contains(p1)) count++;
+					}
+				}
+				if (count >= 2)
+				{
+					if (Program.Simulator.Confirmer != null)
+						Program.Simulator.Confirmer.Information("Cannot decouple: train has " + count + " players, need to completely stop.");
+					return false;
+				}
+			}
+			catch { return false; }
+			return true;
+		}
+
 		//this will be used in the server, in Simulator.cs
 		public bool TrainOK2Couple(Train t1, Train t2)
 		{
@@ -328,8 +355,8 @@ namespace ORTS.MultiPlayer
 			{
 				foreach (var p in OnlineTrains.Players)
 				{
-					if (p.Value.Train == t1 && Program.Simulator.GameTime  - p.Value.CreatedTime < 120) { result = false; break; }
-					if (p.Value.Train == t2 && Program.Simulator.GameTime - p.Value.CreatedTime < 120) { result = false; break; }
+					if (p.Value.Train == t1 && Program.Simulator.GameTime  - p.Value.CreatedTime < 20) { result = false; break; }
+					if (p.Value.Train == t2 && Program.Simulator.GameTime - p.Value.CreatedTime < 20) { result = false; break; }
 				}
 			}
 			catch (Exception)

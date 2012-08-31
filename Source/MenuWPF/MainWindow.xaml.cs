@@ -269,10 +269,10 @@ namespace MenuWPF
 			{
 				MessageBox.Show("User Name cannot contain special characters!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			}
-			else if ((!MPHost && MPIP != "") && !(SelectedActivity is ExploreActivity))
+			/*else if ((!MPHost && MPIP != "") && !(SelectedActivity is ExploreActivity))
 			{
 				MessageBox.Show("Being a client, you can only select the Explore Mode", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-			}
+			}*/
 			else
 			{
                 // Retain settings for convenience
