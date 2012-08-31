@@ -142,7 +142,7 @@ namespace ORTS.MultiPlayer
 								break;
 							}
 						}
-					carList.Add(len, name); ;
+					carList.Add(len + Program.Random.NextDouble() / 10.0f, name);
 				}
 				catch { }
 			}
