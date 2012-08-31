@@ -283,6 +283,10 @@ namespace ORTS.MultiPlayer
 
 			}// for each rail car
 
+			if (engList != null) engList.Clear();
+			engList = null;
+			if (coachList != null) coachList.Clear();
+			coachList = null;
 			if (train.Cars.Count == 0)
 			{
 				throw (new Exception("The train of player " + player.user + " is empty from "));
