@@ -252,7 +252,7 @@ namespace ORTS.MultiPlayer
 				}
 				catch (Exception error)
 				{
-					System.Console.WriteLine(error + "\n\nWill try to substitute with your existing stocks.");
+					System.Console.WriteLine(error.Message + "\n\nWill try to substitute with your existing stocks.");
 					try
 					{
 						char type = 'w';
@@ -260,10 +260,12 @@ namespace ORTS.MultiPlayer
 						wagonFilePath = SubMissingCar(player.lengths[i], type);
 						car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
 						car.Length = player.lengths[i];
+						if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("Missing car, have substituted with other one.");
+
 					}
 					catch
 					{
-						System.Console.WriteLine(error + "\n\nsubstitution failed, will ignore it.");
+						System.Console.WriteLine(error.Message + "\n\nSubstitution failed, will ignore it.");
 					}
 				}
 				if (car == null) continue;

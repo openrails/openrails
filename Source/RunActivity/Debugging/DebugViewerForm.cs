@@ -258,7 +258,6 @@ namespace ORTS.Debugging
 					  {
 						  TrVectorSection s = currNode.TrVectorNode.TrVectorSections[0];
 
-						  PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
 						  foreach (TrPin pin in currNode.TrPins)
 						  {
 
@@ -272,12 +271,10 @@ namespace ORTS.Debugging
 							  //occupied = connectedNode   
 							  //}
 
-							  /*if (currNode.UiD == null && currNode.TrVectorNode.TrVectorSections.Length == 1)
-							  {*/
-
-
+							  //if (currNode.UiD == null)
+							  //{
+								  PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
 								  PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
-
 								  segments.Add(new LineSegment(A, B, /*s.InterlockingTrack.IsOccupied*/ false, null));
 							  //}
 						  }
@@ -287,6 +284,22 @@ namespace ORTS.Debugging
 				  }
 				  else if (currNode.TrJunctionNode != null)
 				  {
+					  foreach (TrPin pin in currNode.TrPins)
+					  {
+						  if (pin.Direction == 1) continue;
+						  TrVectorSection item = null;
+						  try
+						  {
+							  if (nodes[pin.Link].TrVectorNode == null || nodes[pin.Link].TrVectorNode.TrVectorSections.Length < 1) continue;
+							  item = nodes[pin.Link].TrVectorNode.TrVectorSections.Last();
+						  }
+						  catch { continue; }
+						  PointF A = new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z);
+						  PointF B = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+						  var x = Math.Pow(A.X - B.X, 2) + Math.Pow(A.Y - B.Y, 2);
+						  if (x < 0.1) continue;
+						  segments.Add(new LineSegment(B, A, /*s.InterlockingTrack.IsOccupied*/ false, item));
+					  }
 					  switches.Add(new SwitchWidget(currNode));
 				  }
 			  }
@@ -391,6 +404,11 @@ namespace ORTS.Debugging
             float yScale = pictureBox1.Height/ ViewWindow.Height;
 
 			PointF[] points = new PointF[3];
+			Pen p = grayPen;
+
+			if (xScale > 2.5) p.Width = 2f;
+			else p.Width = 1f;
+
             foreach (var line in segments)
             {
 
@@ -400,9 +418,6 @@ namespace ORTS.Debugging
 
 				if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > IM_Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0)) continue;
 
-               Pen p = grayPen;
-
-               //p.Width = 1f;
 
                //if (highlightTrackSections.Checked)
                //{
@@ -1177,7 +1192,7 @@ namespace ORTS.Debugging
 		   this.A = A;
 		   this.B = B;
 
-		   isCurved = false;
+		   isCurved = false; 
 		   if (Section == null) return;
 
 		   
@@ -1187,20 +1202,19 @@ namespace ORTS.Debugging
 		   {
 			   if (ts.SectionCurve != null)
 			   {
-				   isCurved = true;
+				   float diff = (float) (ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 360)));
+				   if (diff < 3) return; //not need to worry, curve too small
 				   //curve = ts.SectionCurve;
 				   Vector3 v = new Vector3(B.X - A.X, 0, B.Y - A.Y);
+				   isCurved = true;
 				   Vector3 v2 = Vector3.Cross(Vector3.Up, v); v2.Normalize();
 				   v = v / 2; v.X += A.X; v.Z += A.Y;
 				   if (ts.SectionCurve.Angle > 0)
 				   {
-					   v = Vector3.Multiply(v2, (float)(-ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 360)))) + v;
+					   v = v2*-diff + v;
 				   }
-				   else v = Vector3.Multiply(v2, (float)(ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 360)))) + v;
+				   else v = v2*diff + v;
 				   C = new PointF(v.X, v.Z);
-				    
-
-				   //angle1 = Math.Atan2(
 			   }
 		   }
 
