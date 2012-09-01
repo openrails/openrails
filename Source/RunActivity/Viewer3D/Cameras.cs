@@ -724,9 +724,8 @@ namespace ORTS
         protected override void SetCameraCar(TrainCar car)
         {
             base.SetCameraCar(car);
-            rotationXRadians = MSTSMath.M.Radians(attachedCar.FrontCabViewpoints[sideLocation].StartDirection.X);
-            rotationYRadians = MSTSMath.M.Radians(attachedCar.FrontCabViewpoints[sideLocation].StartDirection.Y);
             attachedLocation = attachedCar.FrontCabViewpoints[sideLocation].Location;
+            InitialiseRotation( attachedCar );
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -787,6 +786,15 @@ namespace ORTS
             movement = Vector3.Transform( movement, Matrix.CreateRotationX( rotationXRadians ) );
             cameraLocation.Location += movement;
             cameraLocation.Normalize();
+        }
+
+        /// <summary>
+        /// Sets direction for view out of cab front window. Also called when toggling between full screen and windowed.
+        /// </summary>
+        /// <param name="attachedCar"></param>
+        public void InitialiseRotation(TrainCar attachedCar) {
+            rotationXRadians = MSTSMath.M.Radians( attachedCar.FrontCabViewpoints[sideLocation].StartDirection.X );
+            rotationYRadians = MSTSMath.M.Radians( attachedCar.FrontCabViewpoints[sideLocation].StartDirection.Y );
         }
     }
 

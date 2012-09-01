@@ -329,6 +329,7 @@ namespace ORTS
                 GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
                 GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;
             }
+            Viewer.AdjustCabHeight( GraphicsDeviceManager.PreferredBackBufferWidth, GraphicsDeviceManager.PreferredBackBufferHeight );
             ToggleFullScreenRequested = true;
         }
 

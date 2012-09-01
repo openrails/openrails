@@ -230,19 +230,8 @@ namespace ORTS
             GraphicsDevice = RenderProcess.GraphicsDevice;
             DisplaySize.X = GraphicsDevice.Viewport.Width;
             DisplaySize.Y = GraphicsDevice.Viewport.Height;
-            
-            int MSTSCabHeightPixels = DisplaySize.X * 3 / 4; // MSTS cab views are designed for 4:3 aspect ratio.
-            // For wider screens (e.g. 16:9), the height of the cab view before adjustment exceeds the height of the display.
-            // The user can decide how much of this excess to keep. Setting of 0 keeps all the excess and 100 keeps none.
 
-            // <CJ Comment> This scheme treats all cab views the same and assumes that they have a 4:3 aspect ratio.
-            // For a cab view with a different aspect ratio (e.g. designed for a 16:9 screen), use a setting of 100 which
-            // will disable this feature. A smarter scheme would discover the aspect ratio of the cab view and adjust
-            // appropriately. </CJ Comment>
-
-            int CabExceedsDisplay = (int)((MSTSCabHeightPixels - DisplaySize.Y) * ((100-Settings.Cab2DStretch) / 100f));
-            CabHeightPixels = DisplaySize.Y + CabExceedsDisplay;
-            CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
+            AdjustCabHeight( DisplaySize.X, DisplaySize.Y );
 
             if (Settings.ShaderModel == 0)
                 Settings.ShaderModel = GraphicsDevice.GraphicsDeviceCapabilities.PixelShaderVersion.Major;
@@ -302,6 +291,22 @@ namespace ORTS
 
             if (Settings.FullScreen)
                 RenderProcess.ToggleFullScreen();
+        }
+
+        public void AdjustCabHeight(int windowWidth, int windowHeight) {
+            int MSTSCabHeightPixels = windowWidth * 3 / 4; // MSTS cab views are designed for 4:3 aspect ratio.
+            // For wider screens (e.g. 16:9), the height of the cab view before adjustment exceeds the height of the display.
+            // The user can decide how much of this excess to keep. Setting of 0 keeps all the excess and 100 keeps none.
+
+            // <CJ Comment> This scheme treats all cab views the same and assumes that they have a 4:3 aspect ratio.
+            // For a cab view with a different aspect ratio (e.g. designed for a 16:9 screen), use a setting of 100 which
+            // will disable this feature. A smarter scheme would discover the aspect ratio of the cab view and adjust
+            // appropriately. </CJ Comment>
+
+            int CabExceedsDisplay = (int)((MSTSCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
+            CabHeightPixels = windowHeight + CabExceedsDisplay;
+            CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
+            CabCamera.InitialiseRotation(Simulator.PlayerLocomotive);
         }
 
         string adapterDescription;
