@@ -88,6 +88,7 @@ namespace ORTS
         public float CouplerForceG; // temporary value used by solver
         public float CouplerForceR; // right hand side value
         public float CouplerForceU; // result
+        public bool  CouplerOverloaded; //true when coupler force is higher then Break limit
 
         // set when model is loaded
         public List<WheelAxle> WheelAxles = new List<WheelAxle>();

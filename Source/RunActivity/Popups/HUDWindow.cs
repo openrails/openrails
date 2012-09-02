@@ -308,6 +308,7 @@ namespace ORTS.Popups
                 TableSetCell(table, 5, "{0:F0}", car.CouplerForceU);
                 TableSetCell(table, 6, "{0:F0}", car.MassKG);
                 TableSetCell(table, 7, car.Flipped ? "Flipped" : "");
+                TableSetCell(table, 8, car.CouplerOverloaded ? "Coupler overloaded" : "");
                 TableAddLine(table);
             }
         }

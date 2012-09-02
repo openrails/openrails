@@ -159,6 +159,10 @@ namespace ORTS
                     Couplers[Couplers.Count - 1].SetStiffness(stf.ReadFloat(STFReader.UNITS.Stiffness, null), stf.ReadFloat(STFReader.UNITS.Stiffness, null));
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(coupling(spring(break":
+                    stf.MustMatch("(");
+                    Couplers[Couplers.Count - 1].SetBreak(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    break;
                 case "wagon(coupling(spring(r0":
                     stf.MustMatch("(");
                     Couplers[Couplers.Count - 1].SetR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
@@ -420,6 +424,14 @@ namespace ORTS
             else
                 FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM);
 
+            foreach (MSTSCoupling coupler in Couplers)
+            {
+                if (Math.Abs(CouplerForceU) > coupler.Break1N)
+                    CouplerOverloaded = true;
+                else
+                    CouplerOverloaded = false;
+            }
+
             MSTSBrakeSystem.Update(elapsedClockSeconds);
         }
 
@@ -502,6 +514,9 @@ namespace ORTS
         public float R0Diff = .012f;
         public float Stiffness1NpM = 1e7f;
         public float Stiffness2NpM = 2e7f;
+        public float Break1N = 1e10f;
+        public float Break2N = 1e10f;
+
         public MSTSCoupling()
         {
         }
@@ -510,6 +525,8 @@ namespace ORTS
             Rigid = copy.Rigid;
             R0 = copy.R0;
             R0Diff = copy.R0Diff;
+            Break1N = copy.Break1N;
+            Break2N = copy.Break2N;
         }
         public void SetR0(float a, float b)
         {
@@ -531,6 +548,14 @@ namespace ORTS
             Stiffness2NpM = b;
         }
 
+        public void SetBreak(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+            Break1N = a;
+            Break2N = b;
+        }
+
         /// <summary>
         /// We are saving the game.  Save anything that we'll need to restore the 
         /// status later.
@@ -542,6 +567,8 @@ namespace ORTS
             outf.Write(R0Diff);
             outf.Write(Stiffness1NpM);
             outf.Write(Stiffness2NpM);
+            outf.Write(Break1N);
+            outf.Write(Break2N);
         }
 
         /// <summary>
@@ -555,6 +582,8 @@ namespace ORTS
             R0Diff = inf.ReadSingle();
             Stiffness1NpM = inf.ReadSingle();
             Stiffness2NpM = inf.ReadSingle();
+            Break1N = inf.ReadSingle();
+            Break2N = inf.ReadSingle();
         }
     }
 
