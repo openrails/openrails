@@ -218,10 +218,15 @@ namespace MSTS
         protected void ParsePosition(STFReader stf)
         {
             stf.MustMatch("(");
-            PositionX = stf.ReadInt(STFReader.UNITS.None, null);
-            PositionY = stf.ReadInt(STFReader.UNITS.None, null);
-            Width = stf.ReadInt(STFReader.UNITS.None, null);
-            Height = stf.ReadInt(STFReader.UNITS.None, null);
+            //PositionX = stf.ReadInt(STFReader.UNITS.None, null);
+            //PositionY = stf.ReadInt(STFReader.UNITS.None, null);
+            //Width = stf.ReadInt(STFReader.UNITS.None, null);
+            //Height = stf.ReadInt(STFReader.UNITS.None, null);
+            PositionX = stf.ReadDouble( STFReader.UNITS.None, null );
+            PositionY = stf.ReadDouble( STFReader.UNITS.None, null );
+            Width = stf.ReadDouble( STFReader.UNITS.None, null );
+            Height = stf.ReadDouble( STFReader.UNITS.None, null );
+
             // Handling middle values
             while (!stf.EndOfBlock())
             {
@@ -287,7 +292,7 @@ namespace MSTS
     {
         public float FromDegree = 0;
         public float ToDegree = 0;
-        public int Center = 0;
+        public float Center = 0;
         public int Direction = 0;
         
         public CVCDial(STFReader stf, string basepath)
@@ -301,7 +306,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
-                new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("scalepos", ()=>{
                     stf.MustMatch("(");
