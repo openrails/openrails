@@ -406,14 +406,18 @@ namespace ORTS.Debugging
 			PointF[] points = new PointF[3];
 			Pen p = grayPen;
 
-			if (xScale > 2.5) p.Width = 2f;
+			if (xScale > 3) p.Width = 3f;
+			else if (xScale > 2) p.Width = 2f;
 			else p.Width = 1f;
+			PointF scaledA = new PointF(0, 0);
+			PointF scaledB = new PointF(0, 0);
+			PointF scaledC = new PointF(0, 0);
 
-            foreach (var line in segments)
+			foreach (var line in segments)
             {
 
-				PointF scaledA = new PointF((line.A.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (line.A.Y - minY - ViewWindow.Y) * yScale);
-			   PointF scaledB = new PointF((line.B.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (line.B.Y - minY - ViewWindow.Y) * yScale);
+				scaledA.X = (line.A.X - minX - ViewWindow.X) * xScale; scaledA.Y = pictureBox1.Height - (line.A.Y - minY - ViewWindow.Y) * yScale;
+				scaledB.X = (line.B.X - minX - ViewWindow.X) * xScale; scaledB.Y = pictureBox1.Height - (line.B.Y - minY - ViewWindow.Y) * yScale;
 
 
 				if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > IM_Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0)) continue;
@@ -429,8 +433,7 @@ namespace ORTS.Debugging
 
 			   if (line.isCurved == true)
 			   {
-				   			   
-				   PointF scaledC = new PointF((line.C.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (line.C.Y - minY - ViewWindow.Y) * yScale);
+				   scaledC.X = (line.C.X - minX - ViewWindow.X) * xScale; scaledC.Y = pictureBox1.Height - (line.C.Y - minY - ViewWindow.Y) * yScale;
 				   points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
 				   g.DrawCurve(p, points);
 			   }
@@ -459,16 +462,16 @@ namespace ORTS.Debugging
 				}
 			}
 
-            if (showBuffers.Checked)
+			PointF scaledItem = new PointF(0f, 0f);
+			if (showBuffers.Checked)
             {
                foreach (PointF b in buffers)
                {
 				   x = (b.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (b.Y - minY - ViewWindow.Y) * yScale;
 				   if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 
-				   PointF scaledBuffer = new PointF(x, y);
-
-                  g.FillRectangle(Brushes.Black, GetRect(scaledBuffer, 5f));
+				   scaledItem.X = x; scaledItem.Y = y;
+				   g.FillRectangle(Brushes.Black, GetRect(scaledItem, 5f * p.Width));
                }
             }
 
@@ -478,15 +481,15 @@ namespace ORTS.Debugging
                {
 				    x = (s.Location.X - minX - ViewWindow.X) * xScale; y =pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale;
 					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
-					PointF scaledSignal = new PointF(x, y);
+					scaledItem.X = x; scaledItem.Y = y;
 
                   if (s.IsProceed)
                   {
-                     g.FillEllipse(Brushes.Green, GetRect(scaledSignal, 5f));
+					  g.FillEllipse(Brushes.Green, GetRect(scaledItem, 5f * p.Width));
                   }
                   else
                   {
-                     g.FillEllipse(Brushes.Red, GetRect(scaledSignal, 5f));
+					  g.FillEllipse(Brushes.Red, GetRect(scaledItem, 5f * p.Width));
                   }
                }
             }
@@ -497,12 +500,12 @@ namespace ORTS.Debugging
 				CleanVerticalCells();//clean the drawing area for text of sidings
 				foreach (var s in sidings)
 				{
-					PointF scaledSiding = new PointF((s.Location.X - minX - ViewWindow.X) * xScale, pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale);
-					scaledSiding.Y = DetermineSidingLocation(scaledSiding.X, scaledSiding.Y, s.Name);
-					if (scaledSiding.Y >= 0f) //if we need to draw the siding names
+					scaledItem.X = (s.Location.X - minX - ViewWindow.X) * xScale;
+					scaledItem.Y = DetermineSidingLocation(scaledItem.X, pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale, s.Name);
+					if (scaledItem.Y >= 0f) //if we need to draw the siding names
 					{
 
-						g.DrawString(s.Name, sidingFont, sidingBrush, scaledSiding);
+						g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
 					}
 				}
 				foreach (Train t in simulator.Trains)
@@ -528,11 +531,11 @@ namespace ORTS.Debugging
 					x = (PlayerLocation.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (PlayerLocation.Y - minY - ViewWindow.Y) * yScale;
 					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 
-					PointF trainLocation = new PointF(x, y);
+					scaledItem.X = x; scaledItem.Y = y;
 
-					g.FillRectangle(Brushes.DarkGreen, GetRect(trainLocation, 15f));
-					trainLocation.Y -= 25;
-					g.DrawString(GetTrainName(name), trainFont, trainBrush, trainLocation);
+					g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
+					scaledItem.Y -= 25;
+					g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
 				}
 				if (pickedItemHandled) pickedItem = null;
 

@@ -78,78 +78,6 @@ namespace ORTS.MultiPlayer
 			return tmp;
 
 		}
-		SortedList<double, string> coachList = null;
-		SortedList<double, string> engList = null;
-
-		public string SubMissingCar(int length, char type)
-		{
-
-			type = char.ToLower(type);
-			SortedList<double, string> copyList;
-			if (type == 'w')
-			{
-				if (coachList == null)
-					coachList = GetList(type);
-				copyList = coachList;
-			}
-			else
-			{
-				if (engList == null)
-					engList = GetList(type);
-				copyList = engList;
-			}
-			string bestName = "Default\\default.wag"; double bestDist = 1000;
-
-			foreach (var item in copyList)
-			{
-				var dist = Math.Abs(item.Key - length);
-				if (dist < bestDist) { bestDist = dist; bestName = item.Value; }
-			}
-			return Program.Simulator.BasePath + "\\trains\\trainset\\" + bestName;
-
-		}
-
-		SortedList<double, string> GetList(char type)
-		{
-			string ending = "*.eng";
-			if (type == 'w') ending = "*.wag";
-			string[] filePaths = Directory.GetFiles(Program.Simulator.BasePath + "\\trains\\trainset", ending, SearchOption.AllDirectories);
-			string temp;
-			List<string> allEngines = new List<string>();
-			SortedList<double, string> carList = new SortedList<double, string>();
-			for (var i = 0; i < filePaths.Length; i++)
-			{
-				int index = filePaths[i].LastIndexOf("\\trains\\trainset\\");
-				temp = filePaths[i].Substring(index + 17);
-				if (!temp.Contains("\\")) continue;
-				allEngines.Add(temp);
-			}
-			foreach (string name in allEngines)
-			{
-				double len = 0.0f;
-				try
-				{
-					using (STFReader stf = new STFReader(Program.Simulator.BasePath + "\\trains\\trainset\\" + name, true))
-						while (!stf.Eof)
-						{
-							string token = stf.ReadItem();
-							if (stf.Tree.ToLower() == "wagon(size")
-							{
-								stf.MustMatch("(");
-								stf.ReadFloat(STFReader.UNITS.Distance, null);
-								stf.ReadFloat(STFReader.UNITS.Distance, null);
-								len = stf.ReadFloat(STFReader.UNITS.Distance, null);
-								break;
-							}
-						}
-					carList.Add(len + Program.Random.NextDouble() / 10.0f, name);
-				}
-				catch { }
-			}
-
-			return carList;
-
-		}
 		public string MoveAllPlayerTrain(MSGMove move)
 		{
 			string tmp = "";
@@ -252,21 +180,8 @@ namespace ORTS.MultiPlayer
 				}
 				catch (Exception error)
 				{
-					System.Console.WriteLine(error.Message + "\n\nWill try to substitute with your existing stocks.");
-					try
-					{
-						char type = 'w';
-						if (wagonFilePath.ToLower().Contains(".eng")) type = 'e';
-						wagonFilePath = SubMissingCar(player.lengths[i], type);
-						car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
-						car.Length = player.lengths[i];
-						if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("Missing car, have substituted with other one.");
-
-					}
-					catch
-					{
-						System.Console.WriteLine(error.Message + "\n\nSubstitution failed, will ignore it.");
-					}
+					System.Console.WriteLine(error.Message);
+					car = MPManager.Instance().SubCar(wagonFilePath, player.lengths[i], previousCar);
 				}
 				if (car == null) continue;
 				bool flip = true;
@@ -285,10 +200,6 @@ namespace ORTS.MultiPlayer
 
 			}// for each rail car
 
-			if (engList != null) engList.Clear();
-			engList = null;
-			if (coachList != null) coachList.Clear();
-			coachList = null;
 			if (train.Cars.Count == 0)
 			{
 				throw (new Exception("The train of player " + player.user + " is empty from "));

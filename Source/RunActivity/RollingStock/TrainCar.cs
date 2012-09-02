@@ -20,6 +20,7 @@ namespace ORTS
     {
         public readonly Simulator Simulator;
         public readonly string WagFilePath;
+		public string RealWagFilePath; //we are substituting missing remote cars in MP, so need to remember this
 
         // Some housekeeping
         public bool IsPartOfActiveTrain = true;
@@ -124,6 +125,7 @@ namespace ORTS
 			Simulator = simulator;
             WagFilePath = wagFile;
             PreviousCar = previousCar;
+			RealWagFilePath = wagFile;
         }
 
         // Game save

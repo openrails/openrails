@@ -340,7 +340,7 @@ namespace ORTS.MultiPlayer
 			lengths = new int[t.Cars.Count];
 			for (var i = 0; i < t.Cars.Count; i++)
 			{
-				cars[i] = t.Cars[i].WagFilePath;
+				cars[i] = t.Cars[i].RealWagFilePath;
 				ids[i] = t.Cars[i].CarID;
 				if (t.Cars[i].Flipped == true) flipped[i] = 1;
 				else flipped[i] = 0;
@@ -723,6 +723,7 @@ namespace ORTS.MultiPlayer
 		string[] cars;
 		string[] ids;
 		int[] flipped; //if a wagon is engine
+		int[] lengths;
 		int TrainNum;
 		int direction;
 		int TileX, TileZ;
@@ -760,6 +761,7 @@ namespace ORTS.MultiPlayer
 			cars = new string[areas.Length-1];//with an empty "" at end
 			ids = new string[areas.Length - 1];
 			flipped = new int[areas.Length - 1];
+			lengths = new int[areas.Length - 1];
 			for (var i = 0; i < cars.Length; i++)
 			{
 				index = areas[i].IndexOf('\"');
@@ -770,6 +772,7 @@ namespace ORTS.MultiPlayer
 				string[] carinfo = tmp.Split('\n');
 				ids[i] = carinfo[0];
 				flipped[i] = int.Parse(carinfo[1]);
+				lengths[i] = int.Parse(carinfo[2]);
 			}
 
 			//System.Console.WriteLine(this.ToString());
@@ -781,10 +784,12 @@ namespace ORTS.MultiPlayer
 			cars = new string[t.Cars.Count];
 			ids = new string[t.Cars.Count];
 			flipped = new int[t.Cars.Count];
+			lengths = new int[t.Cars.Count];
 			for (var i = 0; i < t.Cars.Count; i++)
 			{
-				cars[i] = t.Cars[i].WagFilePath;
+				cars[i] = t.Cars[i].RealWagFilePath;
 				ids[i] = t.Cars[i].CarID;
+				lengths[i] = (int)t.Cars[i].Length;
 				if (t.Cars[i].Flipped == true) flipped[i] = 1;
 				else flipped[i] = 0;
 			}
@@ -820,21 +825,26 @@ namespace ORTS.MultiPlayer
 			for(var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
 				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + cars[i];
+				TrainCar car = null;
 				try
 				{
-					TrainCar car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
-					bool flip = true;
-					if (flipped[i] == 0) flip = false;
-					car.Flipped = flip ;
-					car.CarID = ids[i];
-					train.Cars.Add(car);
-					car.Train = train;
-					previousCar = car;
+					car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
+					car.Length = lengths[i];
 				}
 				catch (Exception error)
 				{
 					System.Console.WriteLine( wagonFilePath +" " + error);
+					car = MPManager.Instance().SubCar(wagonFilePath, lengths[i], previousCar);
 				}
+				if (car == null) continue;
+				bool flip = true;
+				if (flipped[i] == 0) flip = false;
+				car.Flipped = flip;
+				car.CarID = ids[i];
+				train.Cars.Add(car);
+				car.Train = train;
+				previousCar = car;
+
 			}// for each rail car
 
 			if (train.Cars.Count == 0) return;
@@ -860,7 +870,7 @@ namespace ORTS.MultiPlayer
 					c = c.Remove(0, index + 17);
 				}//c: wagon path without folder name
 
-				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\t";
+				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
 			}
 			return "" + tmp.Length + ": " + tmp;
 		}
@@ -876,6 +886,7 @@ namespace ORTS.MultiPlayer
 		string[] cars;
 		string[] ids;
 		int[] flipped; //if a wagon is engine
+		int[] lengths; //if a wagon is engine
 		int TrainNum;
 		int direction;
 		int TileX, TileZ;
@@ -918,6 +929,7 @@ namespace ORTS.MultiPlayer
 			cars = new string[areas.Length - 1];//with an empty "" at end
 			ids = new string[areas.Length - 1];
 			flipped = new int[areas.Length - 1];
+			lengths = new int[areas.Length - 1];
 			for (var i = 0; i < cars.Length; i++)
 			{
 				index = areas[i].IndexOf('\"');
@@ -928,6 +940,7 @@ namespace ORTS.MultiPlayer
 				string[] carinfo = tmp.Split('\n');
 				ids[i] = carinfo[0];
 				flipped[i] = int.Parse(carinfo[1]);
+				lengths[i] = int.Parse(carinfo[2]);
 			}
 
 			//System.Console.WriteLine(this.ToString());
@@ -941,8 +954,9 @@ namespace ORTS.MultiPlayer
 			flipped = new int[t.Cars.Count];
 			for (var i = 0; i < t.Cars.Count; i++)
 			{
-				cars[i] = t.Cars[i].WagFilePath;
+				cars[i] = t.Cars[i].RealWagFilePath;
 				ids[i] = t.Cars[i].CarID;
+				lengths[i] = (int)t.Cars[i].Length;
 				if (t.Cars[i].Flipped == true) flipped[i] = 1;
 				else flipped[i] = 0;
 			}
@@ -996,23 +1010,26 @@ namespace ORTS.MultiPlayer
 				for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 				{
 					string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + cars[i];
+					TrainCar car = findCar(train, ids[i]);
 					try
 					{
-						TrainCar car = findCar(train, ids[i]);
 						if (car == null) car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
-						//car.PreviousCar = previousCar;
-						bool flip = true;
-						if (flipped[i] == 0) flip = false;
-						car.Flipped = flip;
-						car.CarID = ids[i];
-						tmpCars.Add(car);
-						car.Train = train;
-						previousCar = car;
+						car.Length = lengths[i];
 					}
 					catch (Exception error)
 					{
 						System.Console.WriteLine(wagonFilePath + " " + error);
+						car = MPManager.Instance().SubCar(wagonFilePath, lengths[i], previousCar);
 					}
+					if (car == null) continue;
+					bool flip = true;
+					if (flipped[i] == 0) flip = false;
+					car.Flipped = flip;
+					car.CarID = ids[i];
+					tmpCars.Add(car);
+					car.Train = train;
+					previousCar = car;
+
 				}// for each rail car
 
 				if (tmpCars.Count == 0) return;
@@ -1033,21 +1050,25 @@ namespace ORTS.MultiPlayer
 			for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
 				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + cars[i];
+				TrainCar car = null;
 				try
 				{
-					TrainCar car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar1);
-					bool flip = true;
-					if (flipped[i] == 0) flip = false;
-					car.Flipped = flip;
-					car.CarID = ids[i];
-					train1.Cars.Add(car);
-					car.Train = train1;
-					previousCar1 = car;
+					car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar1);
+					car.Length = lengths[i];
 				}
 				catch (Exception error)
 				{
 					System.Console.WriteLine(wagonFilePath + " " + error);
+					car = MPManager.Instance().SubCar(wagonFilePath, lengths[i], previousCar1);
 				}
+				if (car == null) continue;
+				bool flip = true;
+				if (flipped[i] == 0) flip = false;
+				car.Flipped = flip;
+				car.CarID = ids[i];
+				train1.Cars.Add(car);
+				car.Train = train1;
+				previousCar1 = car;
 			}// for each rail car
 
 			if (train1.Cars.Count == 0) return;
@@ -1073,7 +1094,7 @@ namespace ORTS.MultiPlayer
 					c = c.Remove(0, index + 17);
 				}//c: wagon path without folder name
 
-				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\t";
+				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
 			}
 			return "" + tmp.Length + ": " + tmp;
 		}
@@ -2063,7 +2084,7 @@ namespace ORTS.MultiPlayer
 			flipped = new int[t.Cars.Count];
 			for (var i = 0; i < t.Cars.Count; i++)
 			{
-				cars[i] = t.Cars[i].WagFilePath;
+				cars[i] = t.Cars[i].RealWagFilePath;
 				ids[i] = t.Cars[i].CarID;
 				if (t.Cars[i].Flipped == true) flipped[i] = 1;
 				else flipped[i] = 0;
