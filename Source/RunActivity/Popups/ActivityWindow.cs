@@ -15,144 +15,154 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
 
-namespace ORTS.Popups {
-    public class ActivityWindow : Window {
-        public Activity Activity;
-        public TextFlow Message;
-        public Label EventNameLabel;
-        public Label ResumeLabel;
-        public Label CloseLabel;
-        public Label QuitLabel;
-        public Label StatusLabel;
+namespace ORTS.Popups
+{
+    public class ActivityWindow : Window
+    {
+        Activity Activity;
+        ControlLayoutScrollbox MessageScroller;
+        TextFlow Message;
+        Label EventNameLabel;
+        Label ResumeLabel;
+        Label CloseLabel;
+        Label QuitLabel;
+        Label StatusLabel;
 
-        public ActivityWindow( WindowManager owner )
-            : base( owner, 400, 180, "Activity Events" ) {
+        public ActivityWindow(WindowManager owner)
+            : base(owner, 400, 180, "Activity Events")
+        {
             Activity = Owner.Viewer.Simulator.ActivityRun;
         }
 
-        protected override ControlLayout Layout( ControlLayout layout ) {
-            var vbox = base.Layout( layout ).AddLayoutVertical();
+        protected override ControlLayout Layout(ControlLayout layout)
+        {
+            var vbox = base.Layout(layout).AddLayoutVertical();
             {
-                var hbox = vbox.AddLayoutHorizontal( 100 );
-                var scrollbox = hbox.AddLayoutScrollboxVertical( hbox.RemainingWidth );
-                scrollbox.Add( Message = new TextFlow( scrollbox.RemainingWidth - ControlLayoutScrollbox.ScrollbarSize, "" ) );
+                var hbox = vbox.AddLayoutHorizontal(100);
+                var scrollbox = hbox.AddLayoutScrollboxVertical(hbox.RemainingWidth);
+                scrollbox.Add(Message = new TextFlow(scrollbox.RemainingWidth - ControlLayoutScrollbox.ScrollbarSize, ""));
+                MessageScroller = (ControlLayoutScrollbox)hbox.Controls.Last();
             }
             vbox.AddHorizontalSeparator();
             var height = vbox.RemainingHeight / 2;
             var width = vbox.RemainingWidth / 3;
             {
-                var hbox = vbox.AddLayoutHorizontal( height );
-                hbox.Add( ResumeLabel = new Label( width, height, "", LabelAlignment.Center ) );
-                hbox.Add( CloseLabel = new Label( width, height, "", LabelAlignment.Center ) );
-                hbox.Add( QuitLabel = new Label( width, height, "", LabelAlignment.Center ) );
-                ResumeLabel.Click += new Action<Control, Point>( ResumeActivity_Click );
-                CloseLabel.Click += new Action<Control, Point>( CloseBox_Click );
-                QuitLabel.Click += new Action<Control, Point>( QuitActivity_Click );
+                var hbox = vbox.AddLayoutHorizontal(height);
+                hbox.Add(ResumeLabel = new Label(width, height, "", LabelAlignment.Center));
+                hbox.Add(CloseLabel = new Label(width, height, "", LabelAlignment.Center));
+                hbox.Add(QuitLabel = new Label(width, height, "", LabelAlignment.Center));
+                ResumeLabel.Click += new Action<Control, Point>(ResumeActivity_Click);
+                CloseLabel.Click += new Action<Control, Point>(CloseBox_Click);
+                QuitLabel.Click += new Action<Control, Point>(QuitActivity_Click);
             }
             vbox.AddHorizontalSeparator();
             {
-                var hbox = vbox.AddLayoutHorizontal( height );
+                var hbox = vbox.AddLayoutHorizontal(height);
                 var width2 = hbox.RemainingWidth / 2;
                 {
-                    var vbox2 = hbox.AddLayoutVertical( width2 );
-                    vbox2.Add( EventNameLabel = new Label( vbox2.RemainingWidth, height, "", LabelAlignment.Left ) );
+                    var vbox2 = hbox.AddLayoutVertical(width2);
+                    vbox2.Add(EventNameLabel = new Label(vbox2.RemainingWidth, height, "", LabelAlignment.Left));
                 }
                 {
-                    var vbox2 = hbox.AddLayoutVertical( width2 );
-                    vbox2.Add( StatusLabel = new Label( vbox2.RemainingWidth, height, "", LabelAlignment.Left ) );
-                    this.StatusLabel.Color = Color.LightSalmon;
+                    var vbox2 = hbox.AddLayoutVertical(width2);
+                    vbox2.Add(StatusLabel = new Label(vbox2.RemainingWidth, height, "", LabelAlignment.Left));
+                    StatusLabel.Color = Color.LightSalmon;
                 }
             }
             return vbox;
         }
 
-        void ResumeActivity_Click( Control arg1, Point arg2 ) {
+        void ResumeActivity_Click(Control arg1, Point arg2)
+        {
             ResumeActivity();
             CloseMenu();
         }
 
-        void CloseBox_Click( Control arg1, Point arg2 ) {
+        void CloseBox_Click(Control arg1, Point arg2)
+        {
             CloseBox();
         }
 
-        void QuitActivity_Click( Control arg1, Point arg2 ) {
+        void QuitActivity_Click(Control arg1, Point arg2)
+        {
             CloseBox();
-            this.Activity.IsSuccessful = false;
-            this.Activity.IsComplete = true;
+            Activity.IsSuccessful = false;
+            Activity.IsComplete = true;
         }
 
-        void CloseBox() {
-            this.Visible = false;
-            this.Activity.IsActivityWindowOpen = this.Visible;
+        void CloseBox()
+        {
+            Visible = false;
+            Activity.IsActivityWindowOpen = Visible;
             ResumeActivity();
         }
 
-        void ResumeActivity() {
-            this.Activity.TriggeredEvent = null;
+        void ResumeActivity()
+        {
+            Activity.TriggeredEvent = null;
             Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
-            this.Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
+            Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
         }
 
-        public override void PrepareFrame( ElapsedTime elapsedTime, bool updateFull ) {
-            base.PrepareFrame( elapsedTime, updateFull );
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
 
-            EventWrapper e;
-
-            if( updateFull ) {
-                Activity act = Owner.Viewer.Simulator.ActivityRun;
-                if( act != null ) {
-
-                    if( this.Activity.ReopenActivityWindow ) {
-                        e = this.Activity.LastTriggeredEvent;
-                    } else {
-                        e = this.Activity.TriggeredEvent;
-                    }
-                    if( e != null ) {
-                        if( this.Activity.IsComplete ) {
-                            Owner.Viewer.Simulator.Paused = true;
-                            string Outcome = "This activity has ended ";
-                            if( this.Activity.IsSuccessful ) {
-                                Outcome += "successfully.";
-                            } else {
-                                Outcome += "without success.";
-                            }
-                            this.Visible = true;
-                            this.Activity.IsActivityWindowOpen = true;
-                            ComposeMenu( e.ParsedObject.Name, Outcome + "\nFor a detailed evaluation, see the Help Window (F1)" );
+            if (updateFull)
+            {
+                var act = Owner.Viewer.Simulator.ActivityRun;
+                if (act != null)
+                {
+                    var e = Activity.ReopenActivityWindow ? Activity.LastTriggeredEvent : Activity.TriggeredEvent;
+                    if (e != null)
+                    {
+                        if (Activity.IsComplete)
+                        {
+                            Visible = Activity.IsActivityWindowOpen = Owner.Viewer.HelpWindow.ActivityUpdated = Owner.Viewer.Simulator.Paused = true;
+                            ComposeMenu(e.ParsedObject.Name, String.Format("This activity has ended {0}.\nFor a detailed evaluation, see the Help Window (F1).", Activity.IsSuccessful ? "successfully" : "without success"));
                             EndMenu();
-                            Owner.Viewer.HelpWindow.ActivityUpdated = true;
-                            this.Visible = true;
-                        } else {
-                            string text = e.ParsedObject.Outcomes.DisplayMessage;
-                            if( text != null && text != "" ) {
-                                if( this.Activity.ReopenActivityWindow ) {
-                                    ComposeMenu( e.ParsedObject.Name, text );
-                                    if( this.Activity.IsActivityResumed ) {
+                        }
+                        else
+                        {
+                            var text = e.ParsedObject.Outcomes.DisplayMessage;
+                            if (!String.IsNullOrEmpty(text))
+                            {
+                                if (Activity.ReopenActivityWindow)
+                                {
+                                    ComposeMenu(e.ParsedObject.Name, text);
+                                    if (Activity.IsActivityResumed)
+                                    {
                                         ResumeActivity();
                                         CloseMenu();
-                                    } else {
-                                        Owner.Viewer.Simulator.Paused = true;
-                                        ResumeMenu();
                                     }
-                                } else {
-                                    // Only needs updating the first time through
-                                    if( Owner.Viewer.Simulator.Paused == false ) {
+                                    else
+                                    {
                                         Owner.Viewer.Simulator.Paused = true;
-                                        ComposeMenu( e.ParsedObject.Name, text );
                                         ResumeMenu();
                                     }
                                 }
-                                Owner.Viewer.HelpWindow.ActivityUpdated = true;
-                                this.Visible = true;
-                            } else {
+                                else
+                                {
+                                    // Only needs updating the first time through
+                                    if (!Owner.Viewer.Simulator.Paused)
+                                    {
+                                        Owner.Viewer.Simulator.Paused = true;
+                                        ComposeMenu(e.ParsedObject.Name, text);
+                                        ResumeMenu();
+                                    }
+                                }
+                                Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
+                            }
+                            else
+                            {
                                 // Cancel the event as pop-up not needed.
-                                this.Activity.TriggeredEvent = null;
+                                Activity.TriggeredEvent = null;
                             }
                         }
                     }
-                    this.Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
-                    this.Activity.IsActivityWindowOpen = this.Visible;
-                    this.Activity.ReopenActivityWindow = false;
+                    Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
+                    Activity.IsActivityWindowOpen = Visible;
+                    Activity.ReopenActivityWindow = false;
                 }
             }
         }
@@ -161,36 +171,41 @@ namespace ORTS.Popups {
         // and change it later to see-through, if box is left on-screen when simulator resumes.
         // Don't know how.
         // </CJ comment>
-        void ResumeMenu() {
-            this.ResumeLabel.Text = "Resume";
-            this.CloseLabel.Text = "Resume and close box";
-            this.QuitLabel.Text = "Quit activity";
-            this.StatusLabel.Text = "Status: Activity paused";
-            this.StatusLabel.Color = Color.LightSalmon;
+        void ResumeMenu()
+        {
+            ResumeLabel.Text = "Resume";
+            CloseLabel.Text = "Resume and close box";
+            QuitLabel.Text = "Quit activity";
+            StatusLabel.Text = "Status: Activity paused";
+            StatusLabel.Color = Color.LightSalmon;
         }
 
         // <CJ comment> At this point, would like to change dialog box background from solid to see-through,
         // but don't know how.
         // </CJ comment>
-        void CloseMenu() {
-            this.ResumeLabel.Text = "";
-            this.CloseLabel.Text = "Close box";
-            this.QuitLabel.Text = "Quit activity";
-            this.StatusLabel.Text = "Status: Activity resumed";
-            this.StatusLabel.Color = Color.LightGreen;
+        void CloseMenu()
+        {
+            ResumeLabel.Text = "";
+            CloseLabel.Text = "Close box";
+            QuitLabel.Text = "Quit activity";
+            StatusLabel.Text = "Status: Activity resumed";
+            StatusLabel.Color = Color.LightGreen;
         }
 
-        void EndMenu() {
-            this.ResumeLabel.Text = "";
-            this.CloseLabel.Text = "";
-            this.QuitLabel.Text = "End Activity";
-            this.StatusLabel.Text = "Status: Activity paused";
-            this.StatusLabel.Color = Color.LightSalmon;
+        void EndMenu()
+        {
+            ResumeLabel.Text = "";
+            CloseLabel.Text = "";
+            QuitLabel.Text = "End Activity";
+            StatusLabel.Text = "Status: Activity paused";
+            StatusLabel.Color = Color.LightSalmon;
         }
 
-        void ComposeMenu( string eventLabel, string message ) {
-            this.EventNameLabel.Text = "Event: " + eventLabel;
-            this.Message.Text = message;
+        void ComposeMenu(string eventLabel, string message)
+        {
+            EventNameLabel.Text = "Event: " + eventLabel;
+            MessageScroller.SetScrollPosition(0);
+            Message.Text = message;
         }
     }
 }

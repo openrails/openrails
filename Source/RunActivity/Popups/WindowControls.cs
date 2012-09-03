@@ -183,12 +183,21 @@ namespace ORTS.Popups {
                     wrap = search;
                     search = Text.IndexOfAny(Whitespace, search + 1);
                 }
-                if (search == -1)
-                    wrap = Text.Length;
-                else if (Text[search] == '\n')
-                    wrap = search;
-                else if (wrap == position)
-                    wrap = search;
+                // Possible cases here:
+                //   SEARCH    NEWLINE   FITS      WRAP=POS  WRAP AT?
+                //   no        no        no        no        wrap
+                //   no        no        no        yes       text.length
+                //   no        no        yes       no        text.length
+                //   no        no        yes       yes       text.length
+                //   yes       no        no        no        wrap
+                //   yes       no        no        yes       search
+                //   yes       yes       no        no        wrap
+                //   yes       yes       no        yes       search
+                //   yes       yes       yes       no        search
+                //   yes       yes       yes       yes       search
+                var width = Font.MeasureString(search == -1 ? Text.Substring(position) : Text.Substring(position, search - position));
+                if (width < Position.Width || wrap == position)
+                    wrap = search == -1 ? Text.Length : search;
                 Lines.Add(Text.Substring(position, wrap - position));
                 position = wrap + 1;
             }
@@ -425,6 +434,8 @@ namespace ORTS.Popups {
         internal abstract void Initialize();
 
         public abstract int ScrollSize { get; }
+
+        public abstract void SetScrollPosition(int position);
     }
 
     public class ControlLayoutScrollboxHorizontal : ControlLayoutScrollbox {
@@ -461,34 +472,28 @@ namespace ORTS.Popups {
             spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = false;
         }
 
-        internal override bool HandleUserInput(WindowMouseEvent e) {
-            if (UserInput.IsMouseLeftButtonDown()) {
+        internal override bool HandleUserInput(WindowMouseEvent e)
+        {
+            if (UserInput.IsMouseLeftButtonDown())
+            {
                 Client.Position.Width = Client.CurrentLeft;
-                if (e.MouseDownPosition.Y > Position.Bottom - ScrollbarSize) {
+                if (e.MouseDownPosition.Y > Position.Bottom - ScrollbarSize)
+                {
                     var thumbOffset = (int)((float)(Position.Width - 3 * ScrollbarSize) * (float)ScrollPosition / (float)ScrollSize);
 
                     // Mouse down occured within the scrollbar.
-                    if (e.MouseDownPosition.X < Position.Left + ScrollbarSize) {
+                    if (e.MouseDownPosition.X < Position.Left + ScrollbarSize)
                         // Mouse down occured on left button.
-                        var newScrollPosition = Math.Max(0, ScrollPosition - 10);
-                        Client.MoveBy(ScrollPosition - newScrollPosition, 0);
-                        ScrollPosition = newScrollPosition;
-                    } else if (e.MouseDownPosition.X < Position.Left + ScrollbarSize + thumbOffset) {
+                        SetScrollPosition(ScrollPosition - 10);
+                    else if (e.MouseDownPosition.X < Position.Left + ScrollbarSize + thumbOffset)
                         // Mouse down occured on left gutter.
-                        var newScrollPosition = Math.Max(0, ScrollPosition - 100);
-                        Client.MoveBy(ScrollPosition - newScrollPosition, 0);
-                        ScrollPosition = newScrollPosition;
-                    } else if (e.MouseDownPosition.X > Position.Right - ScrollbarSize) {
+                        SetScrollPosition(ScrollPosition - 100);
+                    else if (e.MouseDownPosition.X > Position.Right - ScrollbarSize)
                         // Mouse down occured on right button.
-                        var newScrollPosition = Math.Min(ScrollPosition + 10, Math.Max(0, ScrollSize));
-                        Client.MoveBy(ScrollPosition - newScrollPosition, 0);
-                        ScrollPosition = newScrollPosition;
-                    } else if (e.MouseDownPosition.X > Position.Left + 2 * ScrollbarSize + thumbOffset) {
+                        SetScrollPosition(ScrollPosition + 10);
+                    else if (e.MouseDownPosition.X > Position.Left + 2 * ScrollbarSize + thumbOffset)
                         // Mouse down occured on right gutter.
-                        var newScrollPosition = Math.Min(ScrollPosition + 100, Math.Max(0, ScrollSize));
-                        Client.MoveBy(ScrollPosition - newScrollPosition, 0);
-                        ScrollPosition = newScrollPosition;
-                    }
+                        SetScrollPosition(ScrollPosition + 100);
                     return true;
                 }
             }
@@ -505,6 +510,13 @@ namespace ORTS.Popups {
             get {
                 return Client.CurrentLeft - Position.Width;
             }
+        }
+
+        public override void SetScrollPosition(int position)
+        {
+            position = Math.Max(0, Math.Min(Math.Max(0, ScrollSize), position));
+            Client.MoveBy(ScrollPosition - position, 0);
+            ScrollPosition = position;
         }
     }
 
@@ -543,34 +555,28 @@ namespace ORTS.Popups {
             spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = false;
         }
 
-        internal override bool HandleUserInput(WindowMouseEvent e) {
-            if (UserInput.IsMouseLeftButtonDown()) {
+        internal override bool HandleUserInput(WindowMouseEvent e)
+        {
+            if (UserInput.IsMouseLeftButtonDown())
+            {
                 Client.Position.Height = Client.CurrentTop;
-                if (e.MouseDownPosition.X > Position.Right - ScrollbarSize) {
+                if (e.MouseDownPosition.X > Position.Right - ScrollbarSize)
+                {
                     var thumbOffset = (int)((float)(Position.Height - 3 * ScrollbarSize) * (float)ScrollPosition / (float)ScrollSize);
 
                     // Mouse down occured within the scrollbar.
-                    if (e.MouseDownPosition.Y < Position.Top + ScrollbarSize) {
+                    if (e.MouseDownPosition.Y < Position.Top + ScrollbarSize)
                         // Mouse down occured on top button.
-                        var newScrollPosition = Math.Max(0, ScrollPosition - 10);
-                        Client.MoveBy(0, ScrollPosition - newScrollPosition);
-                        ScrollPosition = newScrollPosition;
-                    } else if (e.MouseDownPosition.Y < Position.Top + ScrollbarSize + thumbOffset) {
+                        SetScrollPosition(ScrollPosition - 10);
+                    else if (e.MouseDownPosition.Y < Position.Top + ScrollbarSize + thumbOffset)
                         // Mouse down occured on top gutter.
-                        var newScrollPosition = Math.Max(0, ScrollPosition - 100);
-                        Client.MoveBy(0, ScrollPosition - newScrollPosition);
-                        ScrollPosition = newScrollPosition;
-                    } else if (e.MouseDownPosition.Y > Position.Bottom - ScrollbarSize) {
+                        SetScrollPosition(ScrollPosition - 100);
+                    else if (e.MouseDownPosition.Y > Position.Bottom - ScrollbarSize)
                         // Mouse down occured on bottom button.
-                        var newScrollPosition = Math.Min(ScrollPosition + 10, Math.Max(0, ScrollSize));
-                        Client.MoveBy(0, ScrollPosition - newScrollPosition);
-                        ScrollPosition = newScrollPosition;
-                    } else if (e.MouseDownPosition.Y > Position.Top + 2 * ScrollbarSize + thumbOffset) {
+                        SetScrollPosition(ScrollPosition + 10);
+                    else if (e.MouseDownPosition.Y > Position.Top + 2 * ScrollbarSize + thumbOffset)
                         // Mouse down occured on bottom gutter.
-                        var newScrollPosition = Math.Min(ScrollPosition + 100, Math.Max(0, ScrollSize));
-                        Client.MoveBy(0, ScrollPosition - newScrollPosition);
-                        ScrollPosition = newScrollPosition;
-                    }
+                        SetScrollPosition(ScrollPosition + 100);
                     return true;
                 }
             }
@@ -587,6 +593,13 @@ namespace ORTS.Popups {
             get {
                 return Client.CurrentTop - Position.Height;
             }
+        }
+
+        public override void SetScrollPosition(int position)
+        {
+            position = Math.Max(0, Math.Min(Math.Max(0, ScrollSize), position));
+            Client.MoveBy(0, ScrollPosition - position);
+            ScrollPosition = position;
         }
     }
 }

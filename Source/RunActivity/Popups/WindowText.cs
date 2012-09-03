@@ -134,8 +134,6 @@ namespace ORTS.Popups
                 x += characters.AbcWidths[chIndexes[i]].X;
                 x += characters.AbcWidths[chIndexes[i]].Y;
                 x += characters.AbcWidths[chIndexes[i]].Z;
-                if (text[i] == '\n')
-                    x = 0;
             }
             return (int)x;
         }
