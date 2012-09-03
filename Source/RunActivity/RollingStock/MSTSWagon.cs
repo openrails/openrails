@@ -426,8 +426,10 @@ namespace ORTS
 
             foreach (MSTSCoupling coupler in Couplers)
             {
-                if (Math.Abs(CouplerForceU) > coupler.Break1N)
+                if (-CouplerForceU > coupler.Break1N)
+                {
                     CouplerOverloaded = true;
+                }
                 else
                     CouplerOverloaded = false;
             }

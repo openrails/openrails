@@ -102,6 +102,10 @@ namespace ORTS
         private float maxTimeS = 120;         // check ahead for distance covered in 2 mins.
         private float minCheckDistanceM = 5000;  // minimum distance to check ahead
 
+        //To investigate coupler breaks on route
+        public int NumOfCouplerBreaks = 0;
+        private bool numOfCouplerBreaksNoted = false;
+
 		public TrackLayer EditTrain = null; //WaltN: Temporary facility for track-laying experiments
 
 		/// <summary>
@@ -653,6 +657,9 @@ namespace ORTS
 						if (car.IsDriveable && car is MSTSWagon) (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
 						car.SpeedMpS = SpeedMpS;
 						if (car.Flipped) car.SpeedMpS = -car.SpeedMpS;
+
+                        
+
 #if INDIVIDUAL_CONTROL
 						if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
 						{
@@ -673,6 +680,7 @@ namespace ORTS
 		
 			PropagateBrakePressure(elapsedClockSeconds);
 
+            TrainCar uncoupleBehindCar = null;
 			foreach (TrainCar car in Cars)
 			{
 				car.MotiveForceN = 0;
@@ -696,6 +704,8 @@ namespace ORTS
 					car.TotalForceN = -car.TotalForceN;
 					car.SpeedMpS = -car.SpeedMpS;
 				}
+                if (car.CouplerOverloaded)
+                    uncoupleBehindCar = car;
 			}
 
 			AddCouplerImpuseForces();
@@ -742,6 +752,27 @@ namespace ORTS
 			}
 
 			if (!spad) UpdateSignalState();
+
+            if (uncoupleBehindCar != null)
+            {
+                if (uncoupleBehindCar.CouplerOverloaded)
+                {
+                    if (!numOfCouplerBreaksNoted)
+                    {
+                        NumOfCouplerBreaks++;
+                        numOfCouplerBreaksNoted = true;
+                    }
+                }
+                else
+                    numOfCouplerBreaksNoted = false;
+
+                //Simulator.UncoupleBehind(uncoupleBehindCar);
+                //uncoupleBehindCar.CouplerOverloaded = false;
+                uncoupleBehindCar = null; 
+            }
+            else
+                numOfCouplerBreaksNoted = false;
+
 
 		} // end Update
 
