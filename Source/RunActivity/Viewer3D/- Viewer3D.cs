@@ -306,7 +306,8 @@ namespace ORTS
             int CabExceedsDisplay = (int)((MSTSCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
             CabHeightPixels = windowHeight + CabExceedsDisplay;
             CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
-            CabCamera.InitialiseRotation(Simulator.PlayerLocomotive);
+            if (CabCamera.IsAvailable)
+                CabCamera.InitialiseRotation(Simulator.PlayerLocomotive);
         }
 
         string adapterDescription;
