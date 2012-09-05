@@ -27,7 +27,7 @@ namespace ORTS.MultiPlayer
 	public class OnlinePlayer
 	{
 		public Decoder decoder;
-		public OnlinePlayer(TcpClient t, Server s) { Client = t; Server = s; decoder = new Decoder(); CreatedTime = Program.Simulator.GameTime; }
+		public OnlinePlayer(TcpClient t, Server s) { Client = t; Server = s; decoder = new Decoder(); CreatedTime = Program.Simulator.GameTime; url = "NA";}// "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle"; }
 		public TcpClient Client;
 		public Server Server;
 		public string Username = "";
@@ -38,6 +38,7 @@ namespace ORTS.MultiPlayer
 		public Thread thread;
 		public double CreatedTime;
 		private object lockObj = new object();
+		public string url = ""; //avatar location
 		public void Send(string msg)
 		{
 			try

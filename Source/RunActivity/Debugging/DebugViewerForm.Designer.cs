@@ -45,6 +45,8 @@
 		  this.viewTracksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		  this.viewSignalsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 		  this.viewSwitchesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+		  this.label3 = new System.Windows.Forms.Label();
+		  this.AvatarView = new System.Windows.Forms.ListView();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.menuStrip.SuspendLayout();
@@ -222,7 +224,7 @@
 		  this.menuStrip.Location = new System.Drawing.Point(0, 0);
 		  this.menuStrip.Name = "menuStrip";
 		  this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-		  this.menuStrip.Size = new System.Drawing.Size(760, 24);
+		  this.menuStrip.Size = new System.Drawing.Size(874, 24);
 		  this.menuStrip.TabIndex = 12;
 		  this.menuStrip.Text = "menuStrip1";
 		  // 
@@ -233,36 +235,55 @@
             this.viewSignalsToolStripMenuItem,
             this.viewSwitchesToolStripMenuItem});
 		  this.interlockingToolStripMenuItem.Name = "interlockingToolStripMenuItem";
-		  this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(82, 20);
+		  this.interlockingToolStripMenuItem.Size = new System.Drawing.Size(75, 20);
 		  this.interlockingToolStripMenuItem.Text = "Interlocking";
 		  // 
 		  // viewTracksToolStripMenuItem
 		  // 
 		  this.viewTracksToolStripMenuItem.Name = "viewTracksToolStripMenuItem";
-		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
 		  this.viewTracksToolStripMenuItem.Text = "View Tracks";
 		  this.viewTracksToolStripMenuItem.Click += new System.EventHandler(this.viewTracksToolStripMenuItem_Click);
 		  // 
 		  // viewSignalsToolStripMenuItem
 		  // 
 		  this.viewSignalsToolStripMenuItem.Name = "viewSignalsToolStripMenuItem";
-		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
 		  this.viewSignalsToolStripMenuItem.Text = "View Signals";
 		  this.viewSignalsToolStripMenuItem.Click += new System.EventHandler(this.viewSignalsToolStripMenuItem_Click);
 		  // 
 		  // viewSwitchesToolStripMenuItem
 		  // 
 		  this.viewSwitchesToolStripMenuItem.Name = "viewSwitchesToolStripMenuItem";
-		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
 		  this.viewSwitchesToolStripMenuItem.Text = "View Switches";
 		  this.viewSwitchesToolStripMenuItem.Click += new System.EventHandler(this.viewSwitchesToolStripMenuItem_Click);
+		  // 
+		  // label3
+		  // 
+		  this.label3.AutoSize = true;
+		  this.label3.Location = new System.Drawing.Point(745, 102);
+		  this.label3.Name = "label3";
+		  this.label3.Size = new System.Drawing.Size(41, 13);
+		  this.label3.TabIndex = 13;
+		  this.label3.Text = "Players";
+		  // 
+		  // AvatarView
+		  // 
+		  this.AvatarView.Location = new System.Drawing.Point(737, 165);
+		  this.AvatarView.Name = "AvatarView";
+		  this.AvatarView.Size = new System.Drawing.Size(121, 601);
+		  this.AvatarView.TabIndex = 14;
+		  this.AvatarView.UseCompatibleStateImageBehavior = false;
 		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
-		  this.ClientSize = new System.Drawing.Size(760, 823);
+		  this.ClientSize = new System.Drawing.Size(874, 823);
+		  this.Controls.Add(this.AvatarView);
+		  this.Controls.Add(this.label3);
 		  this.Controls.Add(this.showSignals);
 		  this.Controls.Add(this.showBuffers);
 		  this.Controls.Add(this.showSwitches);
@@ -276,15 +297,6 @@
 		  this.Controls.Add(this.refreshButton);
 		  this.Controls.Add(this.pictureBox1);
 		  this.Controls.Add(this.menuStrip);
-#if false
-		  pictureBox1.ContextMenu = new System.Windows.Forms.ContextMenu();
-		  System.Windows.Forms.MenuItem item1 = new System.Windows.Forms.MenuItem("Main route");
-		  System.Windows.Forms.MenuItem item2 = new System.Windows.Forms.MenuItem("Side route");
-		  pictureBox1.ContextMenu.MenuItems.Add(item1);
-		  pictureBox1.ContextMenu.MenuItems.Add(item2);
-		  item1.Click += new System.EventHandler(switchMainClick);
-		  item2.Click += new System.EventHandler(switchSideClick);
-#endif
 		  this.MainMenuStrip = this.menuStrip;
 		  this.MaximizeBox = false;
 		  this.Name = "DispatchViewer";
@@ -318,5 +330,7 @@
 	  private System.Windows.Forms.ToolStripMenuItem viewTracksToolStripMenuItem;
       private System.Windows.Forms.ToolStripMenuItem viewSignalsToolStripMenuItem;
 	  private System.Windows.Forms.ToolStripMenuItem viewSwitchesToolStripMenuItem;
+	  private System.Windows.Forms.Label label3;
+	  private System.Windows.Forms.ListView AvatarView;
    }
 }

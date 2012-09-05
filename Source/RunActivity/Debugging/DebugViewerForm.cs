@@ -17,11 +17,12 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.IO;
+using System.Net;
+using Microsoft.Xna.Framework;
 using System.Windows.Forms;
 using MSTS;
 using ORTS.Interlocking;
-using Microsoft.Xna.Framework;
-
 namespace ORTS.Debugging
 {
 
@@ -97,6 +98,8 @@ namespace ORTS.Debugging
 	  PointF signalPickedLocation = new PointF();
 	  public bool signalPickedItemHandled = false;
 	  public double signalPickedTime = 0.0f;
+
+	  ImageList imageList1 = null;
 	  /// <summary>
 	  /// contains the last position of the mouse
 	  /// </summary>
@@ -365,9 +368,105 @@ namespace ORTS.Debugging
          }
 
          pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+		 imageList1 = new ImageList();
+		 this.AvatarView.View = View.LargeIcon;
+		 imageList1.ImageSize = new Size(64, 64);
+		 this.AvatarView.LargeImageList = this.imageList1;
 
       }
 
+	  Dictionary<string, Image> avatarList = null;
+	  public void AddAvatar(string name, string url)
+	  {
+		  if (avatarList == null) avatarList = new Dictionary<string, Image>();
+
+		  try
+		  {
+			  var request = WebRequest.Create(url);
+
+			  using (var response = request.GetResponse())
+			  using (var stream = response.GetResponseStream())
+			  {
+				  Image newImage = Image.FromStream(stream);//Image.FromFile("C:\\test1.png");//
+				  avatarList[name] = newImage;
+
+				  /*using (MemoryStream ms = new MemoryStream())
+				  {
+					  // Convert Image to byte[]
+					  newImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+					  byte[] imageBytes = ms.ToArray();
+
+					  // Convert byte[] to Base64 String
+					  string base64String = Convert.ToBase64String(imageBytes);
+				  }*/
+			  }
+		  }
+		  catch
+		  {
+			  byte[] imageBytes = Convert.FromBase64String(imagestring);
+			  MemoryStream ms = new MemoryStream(imageBytes, 0,
+				imageBytes.Length);
+
+			  // Convert byte[] to Image
+			  ms.Write(imageBytes, 0, imageBytes.Length);
+			  Image newImage = Image.FromStream(ms, true);
+			  avatarList[name] = newImage;
+		  }
+
+		  /*
+		  imageList1.Images.Clear();
+		  AvatarView.Items.Clear();
+		  var i = 0;
+		  foreach (var pair in avatarList)
+		  {
+			  if (pair.Value == null) AvatarView.Items.Add(pair.Key);
+			  else
+			  {
+				  AvatarView.Items.Add(pair.Key).ImageIndex = i;
+				  imageList1.Images.Add(pair.Value);
+				  i++;
+			  }
+		  }*/
+	  }
+
+	  public void CheckAvatar()
+	  {
+		  if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.OnlineTrains == null || MultiPlayer.MPManager.OnlineTrains.Players == null) return;
+		  var player = MultiPlayer.MPManager.OnlineTrains.Players;
+		  if (avatarList == null) avatarList = new Dictionary<string, Image>();
+		  if (avatarList.Count == player.Count) return;
+
+		  foreach (var p in player) {
+			  if (avatarList.ContainsKey(p.Key)) continue;
+			  AddAvatar(p.Key, p.Value.url);
+		  }
+
+		  Dictionary<string, Image> tmplist = null;
+		  foreach (var a in avatarList)
+		  {
+			  if (player.ContainsKey(a.Key)) continue;
+			  if (tmplist == null) tmplist = new Dictionary<string, Image>();
+			  tmplist.Add(a.Key, a.Value);
+		  }
+
+		  if (tmplist != null)
+		  {
+			  foreach (var t in tmplist) avatarList.Remove(t.Key);
+		  }
+		  imageList1.Images.Clear();
+		  AvatarView.Items.Clear();
+		  var i = 0;
+		  foreach (var pair in avatarList)
+		  {
+			  if (pair.Value == null) AvatarView.Items.Add(pair.Key).ImageIndex = -1;
+			  else
+			  {
+				  AvatarView.Items.Add(pair.Key).ImageIndex = i;
+				  imageList1.Images.Add(pair.Value);
+				  i++;
+			  }
+		  }
+	  }
 	  public bool firstShow = true;
 
       /// <summary>
@@ -397,6 +496,13 @@ namespace ORTS.Debugging
 			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
 			  firstShow = false;
 		  }
+
+		  //if (Program.Random.Next(100) == 0) AddAvatar("Test:"+Program.Random.Next(5), "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle");
+		  try
+		  {
+			  CheckAvatar();
+		  }
+		  catch {  } //errors for avatar, just ignore
          using(Graphics g = Graphics.FromImage(pictureBox1.Image))
          using(Pen redPen = new Pen(Color.Red))
          using (Pen grayPen = new Pen(Color.Gray))
@@ -1109,6 +1215,7 @@ namespace ORTS.Debugging
 			  return myCp;
 		  }
 	  }
+	  string imagestring = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAACpJREFUOE9jYBjs4D/QgSBMNhg1ABKAFAUi2aFPNY0Ue4FiA6jmlUFsEABfyg/x8/L8/gAAAABJRU5ErkJggg==";
 
    }
 
