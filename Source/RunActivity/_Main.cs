@@ -18,9 +18,7 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 /// </summary>
 
-#if DEBUG
 #define DEBUG_VIEWER
-#endif
 
 using System;
 using System.Collections.Generic;
@@ -155,7 +153,7 @@ namespace ORTS
                 Simulator.Stop();
 
 #if DEBUG_VIEWER
-                if (MPManager.IsMultiPlayer()) DebugViewer.Dispose();
+				if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher) DebugViewer.Dispose();
 #endif
             };
             if (Debugger.IsAttached)

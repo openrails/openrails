@@ -84,12 +84,19 @@ namespace ORTS.Debugging
 	  private bool Dragging = false;
 	  private WorldPosition worldPos;
 	  string name = "";
-	  List<SwitchWidget> itemsDrawn;
-	  public SwitchWidget pickedItem = null;
-	  bool pickedItemChanged = false;
-	  PointF pickedLocation = new PointF();
-	  public bool pickedItemHandled = false;
-	  public double pickedTime = 0.0f;
+	  List<SwitchWidget> switchItemsDrawn;
+	  List<SignalWidget> signalItemsDrawn;
+
+	  public SwitchWidget switchPickedItem = null;
+	  public SignalWidget signalPickedItem = null;
+	  bool switchPickedItemChanged = false;
+	  PointF switchPickedLocation = new PointF();
+	  public bool switchPickedItemHandled = false;
+	  public double switchPickedTime = 0.0f;
+	  bool signalPickedItemChanged = false;
+	  PointF signalPickedLocation = new PointF();
+	  public bool signalPickedItemHandled = false;
+	  public double signalPickedTime = 0.0f;
 	  /// <summary>
 	  /// contains the last position of the mouse
 	  /// </summary>
@@ -234,7 +241,8 @@ namespace ORTS.Debugging
 			  //trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
 		  }
 
-		  itemsDrawn = new List<SwitchWidget>();
+		  switchItemsDrawn = new List<SwitchWidget>();
+		  signalItemsDrawn = new List<SignalWidget>();
 		  switches = new List<SwitchWidget>();
 		  for (int i = 0; i < nodes.Length; i++)
 		  {
@@ -439,10 +447,12 @@ namespace ORTS.Debugging
 			   }
                else g.DrawLine(p, scaledA, scaledB);
             }
-
-			itemsDrawn.Clear();
+			
+			switchItemsDrawn.Clear();
+			signalItemsDrawn.Clear();
 			 float x, y;
-            if (showSwitches.Checked)
+			 PointF scaledItem = new PointF(0f, 0f);
+			if (showSwitches.Checked)
             {
 
 				for (var i = 0; i < switches.Count; i++)
@@ -453,16 +463,15 @@ namespace ORTS.Debugging
 
 					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 
-					PointF scaledSw = new PointF(x, y);
+					scaledItem.X = x; scaledItem.Y = y;
 
 
-					g.FillEllipse(Brushes.Black, GetRect(scaledSw, 5f));
-					sw.Location2D.X = scaledSw.X; sw.Location2D.Y = scaledSw.Y;
-					itemsDrawn.Add(sw);
+					g.FillEllipse(Brushes.Black, GetRect(scaledItem, 5f*p.Width));
+					sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
+					switchItemsDrawn.Add(sw);
 				}
 			}
 
-			PointF scaledItem = new PointF(0f, 0f);
 			if (showBuffers.Checked)
             {
                foreach (PointF b in buffers)
@@ -482,16 +491,22 @@ namespace ORTS.Debugging
 				    x = (s.Location.X - minX - ViewWindow.X) * xScale; y =pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale;
 					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 					scaledItem.X = x; scaledItem.Y = y;
+					s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
 
-                  if (s.IsProceed)
-                  {
-					  g.FillEllipse(Brushes.Green, GetRect(scaledItem, 5f * p.Width));
-                  }
-                  else
-                  {
-					  g.FillEllipse(Brushes.Red, GetRect(scaledItem, 5f * p.Width));
-                  }
-               }
+					if (s.IsProceed == 0)
+					{
+						g.FillEllipse(Brushes.Green, GetRect(scaledItem, 5f * p.Width));
+					}
+					else if (s.IsProceed == 1)
+					{
+						g.FillEllipse(Brushes.Orange, GetRect(scaledItem, 5f * p.Width));
+					}
+					else
+					{
+						g.FillEllipse(Brushes.Red, GetRect(scaledItem, 5f * p.Width));
+					}
+					signalItemsDrawn.Add(s);
+			   }
             }
 
             if (true/*showPlayerTrain.Checked*/)
@@ -537,22 +552,39 @@ namespace ORTS.Debugging
 					scaledItem.Y -= 25;
 					g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
 				}
-				if (pickedItemHandled) pickedItem = null;
+				if (switchPickedItemHandled) switchPickedItem = null;
+				if (signalPickedItemHandled) signalPickedItem = null;
 
-				if (pickedItem != null && pickedItemChanged == true && !pickedItemHandled && simulator.GameTime-pickedTime<10)
+				if (switchPickedItem != null /*&& switchPickedItemChanged == true*/ && !switchPickedItemHandled && simulator.GameTime - switchPickedTime < 5)
 				{
-					pickedLocation.X = pickedItem.Location2D.X + 152; pickedLocation.Y = pickedItem.Location2D.Y;
-					g.FillRectangle(Brushes.LightGray, GetRect(pickedLocation, 300f, 80f));
-					pickedLocation.X -= 152; pickedLocation.Y += 10;
-					var node = pickedItem.Item.TrJunctionNode;
-					if (node.SelectedRoute == 0) g.DrawString("Current: Main Route", trainFont, trainBrush, pickedLocation);
-					else g.DrawString("Current: Side Route", trainFont, trainBrush, pickedLocation);
+					switchPickedLocation.X = switchPickedItem.Location2D.X + 150; switchPickedLocation.Y = switchPickedItem.Location2D.Y;
+					g.FillRectangle(Brushes.LightGray, GetRect(switchPickedLocation, 400f, 64f));
+
+					switchPickedLocation.X -= 180; switchPickedLocation.Y += 10;
+					var node = switchPickedItem.Item.TrJunctionNode;
+					if (node.SelectedRoute == 0) g.DrawString("Current Route: Main Route", trainFont, trainBrush, switchPickedLocation);
+					else g.DrawString("Current Route: Side Route", trainFont, trainBrush, switchPickedLocation);
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
-						pickedLocation.Y -= 22;
-						g.DrawString("Alt-G to Throw the Switch", trainFont, trainBrush, pickedLocation);
-						pickedLocation.Y -= 22;
-						g.DrawString("Ctrl-Alt-G to watch this Switch", trainFont, trainBrush, pickedLocation);
+						switchPickedLocation.Y -= 22;
+						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSwitchPicked] + " to throw the switch", trainFont, trainBrush, switchPickedLocation);
+						switchPickedLocation.Y += 8;
+					}
+					switchPickedLocation.Y -= 30;
+					g.DrawString(InputSettings.Commands[(int)UserCommands.CameraJumpSeeSwitch] + " to see the switch", trainFont, trainBrush, switchPickedLocation);
+				}
+				if (signalPickedItem != null /*&& signalPickedItemChanged == true*/ && !signalPickedItemHandled && simulator.GameTime - signalPickedTime < 5)
+				{
+					signalPickedLocation.X = signalPickedItem.Location2D.X + 150; signalPickedLocation.Y = signalPickedItem.Location2D.Y;
+					g.FillRectangle(Brushes.LightGray, GetRect(signalPickedLocation, 400f, 64f));
+					signalPickedLocation.X -= 180; signalPickedLocation.Y -= 2;
+					if (signalPickedItem.IsProceed == 0) g.DrawString("Current Signal: Proceed", trainFont, trainBrush, signalPickedLocation);
+					else if (signalPickedItem.IsProceed == 1) g.DrawString("Current Signal: Approach", trainFont, trainBrush, signalPickedLocation);
+					else g.DrawString("Current Signal: Stop", trainFont, trainBrush, signalPickedLocation);
+					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
+					{
+						signalPickedLocation.Y -= 24;
+						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
 					}
 				}
 			}
@@ -863,7 +895,8 @@ namespace ORTS.Debugging
 				  var temp = findItemFromMouse(e.X, e.Y, 5);
 				  if (temp != null)
 				  {
-					  pickedItem = temp; //read by MPManager
+					  if (temp is SwitchWidget) switchPickedItem = (SwitchWidget)temp; //read by MPManager
+					  if (temp is SignalWidget) signalPickedItem = (SignalWidget)temp;
 #if false
 					  pictureBox1.ContextMenu.Show(pictureBox1, e.Location);
 					  pictureBox1.ContextMenu.MenuItems[0].Checked = pictureBox1.ContextMenu.MenuItems[1].Checked = false;
@@ -882,9 +915,9 @@ namespace ORTS.Debugging
 #if DEBUG
 	  void switchMainClick(object sender, EventArgs e)
 	  {
-		  if (pickedItem!=null&&pickedItem.Item.TrJunctionNode != null)
+		  if (switchPickedItem != null && switchPickedItem.Item.TrJunctionNode != null)
 		  {
-			  TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+			  TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem.Item.TrJunctionNode;
 			  if (nextSwitchTrack != null && !Program.Simulator.SwitchIsOccupied(nextSwitchTrack))
 			  {
 				  if (nextSwitchTrack.SelectedRoute == 0)
@@ -898,9 +931,9 @@ namespace ORTS.Debugging
 
 	   	  void switchSideClick(object sender, EventArgs e)
 	  {
-		  if (pickedItem!=null&&pickedItem.Item.TrJunctionNode != null)
+		  if (switchPickedItem != null && switchPickedItem.Item.TrJunctionNode != null)
 		  {
-			  TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+			  TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem.Item.TrJunctionNode;
 			  if (nextSwitchTrack != null && !Program.Simulator.SwitchIsOccupied(nextSwitchTrack))
 			  {
 				  if (nextSwitchTrack.SelectedRoute == 0)
@@ -913,17 +946,27 @@ namespace ORTS.Debugging
 	  }
 #endif
 
-	  private SwitchWidget findItemFromMouse(int x, int y, int range)
+	  private ItemWidget findItemFromMouse(int x, int y, int range)
 	  {
-		  foreach (var item in itemsDrawn)
+		  foreach (var item in switchItemsDrawn)
 		  {
 			  //if out of range, continue
 			  if (item.Location2D.X < x - range || item.Location2D.X > x + range
-				  || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
+				 || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
 
-			  if (item != pickedItem) { pickedItemChanged = true; pickedItemHandled = false; pickedTime = simulator.GameTime; }
+			  if (true/*item != switchPickedItem*/) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; }
 			  return item;
 		  }
+		  foreach (var item in signalItemsDrawn)
+		  {
+			  //if out of range, continue
+			  if (item.Location2D.X < x - range || item.Location2D.X > x + range
+				 || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
+
+			  if (true/*item != signalPickedItem*/) { signalPickedItemChanged = true; signalPickedItemHandled = false; signalPickedTime = simulator.GameTime; }
+			  return item;
+		  }
+
 		  return null;
 	  }
 
@@ -1085,18 +1128,23 @@ namespace ORTS.Debugging
 	   /// For now, returns true if any of the signal heads shows any "clear" aspect.
 	   /// This obviously needs some refinement.
 	   /// </summary>
-	   public bool IsProceed
+	   public int IsProceed
 	   {
 		   get
 		   {
-			   bool returnValue = false;
+			   int returnValue = 2;
 
 			   foreach (var head in Signal.SignalHeads)
 			   {
 				   if (head.state == SignalHead.SIGASP.CLEAR_1 ||
 					   head.state == SignalHead.SIGASP.CLEAR_2)
 				   {
-					   returnValue = true;
+					   returnValue = 0;
+				   }
+				   if (head.state == SignalHead.SIGASP.APPROACH_1 ||
+					   head.state == SignalHead.SIGASP.APPROACH_2 || head.state == SignalHead.SIGASP.APPROACH_3)
+				   {
+					   returnValue = 1;
 				   }
 			   }
 

@@ -72,6 +72,7 @@ namespace ORTS
         GameSwitchAhead,
         GameSwitchBehind,
         GameSwitchPicked,
+		GameSignalPicked,
         GameSwitchWithMouse,
         GameUncoupleWithMouse,
         GameLocomotiveSwap,
@@ -392,6 +393,7 @@ namespace ORTS
             Commands[(int)UserCommands.GameSwitchAhead] = new UserCommandKeyInput(0x22);
 			Commands[(int)UserCommands.GameSwitchBehind] = new UserCommandKeyInput(0x22, KeyModifiers.Shift);
 			Commands[(int)UserCommands.GameSwitchPicked] = new UserCommandKeyInput(0x22, KeyModifiers.Alt);
+			Commands[(int)UserCommands.GameSignalPicked] = new UserCommandKeyInput(0x22, KeyModifiers.Control);
 			Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
             Commands[(int)UserCommands.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
             Commands[(int)UserCommands.GameLocomotiveSwap] = new UserCommandKeyInput(0x12, KeyModifiers.Control);

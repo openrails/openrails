@@ -496,13 +496,12 @@ namespace ORTS
 			}
 			if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
 
-			if (UserInput.IsPressed(UserCommands.GameSwitchPicked))
+			if (UserInput.IsPressed(UserCommands.GameSwitchPicked) && (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer()))
 			{
-#if ( DEBUG )
-				if (Program.DebugViewer.Enabled && Program.DebugViewer.pickedItem != null)
+				if (Program.DebugViewer.Enabled && Program.DebugViewer.switchPickedItem != null)
 				{
 
-					TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+					TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem.Item.TrJunctionNode;
 					if (nextSwitchTrack != null && !Simulator.SwitchIsOccupied(nextSwitchTrack))
 					{
 						if (nextSwitchTrack.SelectedRoute == 0)
@@ -513,17 +512,51 @@ namespace ORTS
 
 					}
 				}
-				Program.DebugViewer.pickedItemHandled = true;
-#endif
+				//Program.DebugViewer.switchPickedItemHandled = true;
             }
+
+			if (UserInput.IsPressed(UserCommands.GameSignalPicked) && (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer()))
+			{
+				if (Program.DebugViewer.Enabled && Program.DebugViewer.signalPickedItem != null)
+				{
+
+					var signal = Program.DebugViewer.signalPickedItem.Signal;
+					if (signal != null)
+					{
+						if (Program.DebugViewer.signalPickedItem.IsProceed <= 1)
+						{
+							signal.enabled = false;
+							signal.canUpdate = false;
+							foreach (var head in signal.SignalHeads)
+							{
+								head.SetMostRestrictiveAspect();
+								head.Update();
+							}
+						}
+						else
+						{
+							signal.canUpdate = true;
+							signal.enabled = true; //force it to be green, 
+							//signal.
+							foreach (var head in signal.SignalHeads)
+							{
+								head.SetLeastRestrictiveAspect();
+								head.Update();
+							}
+						}
+						//if (MPManager.IsMultiPlayer() && MPManager.IsServer()) MPManager.BroadCast((new MultiPlayer.MSGSignalStatus()).ToString());
+
+					}
+				}
+				//Program.DebugViewer.signalPickedItemHandled = true;
+			}
 
 			if (UserInput.IsPressed(UserCommands.CameraJumpSeeSwitch))
 			{
-#if ( DEBUG )
-				if (Program.DebugViewer.Enabled && Program.DebugViewer.pickedItem != null)
+				if (Program.DebugViewer.Enabled && Program.DebugViewer.switchPickedItem != null)
 				{
 
-					TrJunctionNode nextSwitchTrack = Program.DebugViewer.pickedItem.Item.TrJunctionNode;
+					TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem.Item.TrJunctionNode;
 					FreeRoamCamera = new FreeRoamCamera(this, Camera);
 					FreeRoamCamera.SetLocation(new WorldLocation(nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.X, nextSwitchTrack.TN.UiD.Y + 8, nextSwitchTrack.TN.UiD.Z));
 					//FreeRoamCamera
@@ -531,8 +564,6 @@ namespace ORTS
 
 
 				}
-				Program.DebugViewer.pickedItemHandled = true;
-#endif
 			}
 
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
