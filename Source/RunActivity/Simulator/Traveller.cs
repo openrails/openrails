@@ -27,7 +27,7 @@ namespace ORTS
         }
 
         // Maximum distance beyond the ends of the track we'll allow for initialization.
-        const float InitErrorMargin = 0.01f;
+        const float InitErrorMargin = 0.5f;
 
         // If a car has some overhang, than it will be offset toward the center of curvature
         // and won't be right along the center line.  I'll have to add some allowance for this
