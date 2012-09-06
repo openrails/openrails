@@ -116,7 +116,7 @@ namespace ORTS.MultiPlayer
 			{
 				if (p.Train != null)
 				{
-					MSGPlayer player = new MSGPlayer(p.Username, "1234", p.con, p.path, p.Train, p.Train.Number);
+					MSGPlayer player = new MSGPlayer(p.Username, "1234", p.con, p.path, p.Train, p.Train.Number, p.url);
 					tmp += player.ToString();
 				}
 			}
@@ -130,6 +130,7 @@ namespace ORTS.MultiPlayer
 			{
 				p = new OnlinePlayer(null, null);
 			}
+			p.url = player.url;
 			p.LeadingLocomotiveID = player.leadingID;
 			Players.Add(player.user, p);
 			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;

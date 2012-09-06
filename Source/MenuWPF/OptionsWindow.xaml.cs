@@ -45,8 +45,9 @@ namespace MenuWPF
             this.sliderWOD.Value = 10;
             this.sliderSound.Value = 5;
             this.cboResolution.Text = "1024x768";
-            this.txtBrakePipe.Text = "21";
-            this.regKey = registryKey;
+			this.txtBrakePipe.Text = "21";
+			this.txtBrakePipe.Text = "http://www.openrails.org/images/ICONmediumOD.jpg";
+			this.regKey = registryKey;
             this.foldersFile = foldersFile;
 
             // Restore retained settings
@@ -71,6 +72,8 @@ namespace MenuWPF
                     this.txtBgImage.Text = RK.GetValue("BackgroundImage", txtBgImage.Text).ToString();
 					this.chkDispatcher.IsChecked = (1 == (int)RK.GetValue("ViewDispatcher", 0));
 					this.textMPUpdate.Text = RK.GetValue("MPUpdateInterval", textMPUpdate.Text).ToString();
+					this.showAvatar.IsChecked = (1 == (int)RK.GetValue("ShowAvatar", 0));
+					this.avatarURL.Text = RK.GetValue("AvatarURL", this.avatarURL.Text).ToString();
 
 				}
 
@@ -149,6 +152,8 @@ namespace MenuWPF
                     RK.SetValue("BackgroundImage", this.txtBgImage.Text);
 					RK.SetValue("ViewDispatcher", this.chkDispatcher.IsChecked.Value ? 1 : 0);
 					RK.SetValue("MPUpdateInterval", (int)double.Parse(textMPUpdate.Text));
+					RK.SetValue("ShowAvatar", this.showAvatar.IsChecked.Value ? 1 : 0);
+					RK.SetValue("AvatarURL", this.avatarURL.Text);
 
                 }
                 SaveFolders();

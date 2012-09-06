@@ -134,7 +134,7 @@ namespace ORTS
 
 				if (Client != null)
 				{
-					Client.Send((new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0)).ToString());
+					Client.Send((new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL)).ToString());
 				}
 
 #if DEBUG_VIEWER

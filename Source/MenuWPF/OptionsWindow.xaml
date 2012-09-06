@@ -254,6 +254,19 @@
                             <Label FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="18,0,236,7" Name="label2" Grid.Row="12" Grid.ColumnSpan="2">MultiPlayer: Update Signal Every</Label>
                             <TextBox FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" HorizontalContentAlignment="Right" Margin="10,4,0,7" MaxLines="1" Name="textMPUpdate" TextWrapping="Wrap" Grid.Column="1" Grid.Row="12" HorizontalAlignment="Left" Width="27">10</TextBox>
                             <Label FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="48,4,0,3" Name="label3" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Grid.Row="12" Width="213.85">Seconds</Label>
+                            <Label FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="64,0,229,7" Name="label4" Grid.Row="13" Grid.ColumnSpan="2">MultiPlayer: Show Avatar</Label>
+                            <CheckBox HorizontalAlignment="Left" Margin="17,13,0,4" Name="showAvatar" RenderTransformOrigin="0.5,0.5" Width="17" Grid.Column="1" Grid.Row="13">
+                                <CheckBox.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="2" ScaleY="2" />
+                                        <SkewTransform />
+                                        <RotateTransform />
+                                        <TranslateTransform />
+                                    </TransformGroup>
+                                </CheckBox.RenderTransform>
+                            </CheckBox>
+                            <Label FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" Margin="152,0,236,0" Name="label5" Grid.Row="14" Height="28" VerticalAlignment="Top" Grid.ColumnSpan="2">Avatar URL</Label>
+                            <TextBox FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" HorizontalContentAlignment="Right" Margin="10,2,0,0" MaxLines="1" Name="avatarURL" TextWrapping="NoWrap" Grid.Column="1" Height="23.733" VerticalAlignment="Top" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="342" Grid.Row="50"></TextBox>
                         </Grid>
 					</Border>
 				</Grid>

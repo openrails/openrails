@@ -48,6 +48,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "CONTROL") return new MSGControl(m.Substring(index + 1));
 			else if (key == "LOCCHANGE") return new MSGLocoChange(m.Substring(index + 1));
 			else if (key == "QUIT") return new MSGQuit(m.Substring(index + 1));
+			else if (key == "AVATAR") return new MSGAvatar(m.Substring(index + 1));
 			else throw new Exception("Unknown Keyword" + key);
 		}
 
@@ -229,12 +230,13 @@ namespace ORTS.MultiPlayer
 		public string[] ids;
 		public int[] flipped; //if a wagon is engine
 		public int[] lengths; //if a wagon is engine
+		public string url;
 
 		public MSGPlayer() { }
 		public MSGPlayer(string m)
 		{
 			string[] areas = m.Split('\r');
-			if (areas.Length <= 5)
+			if (areas.Length <= 6)
 			{
 				throw new Exception("Parsing error in MSGPlayer" + m);
 			}
@@ -260,7 +262,8 @@ namespace ORTS.MultiPlayer
 				route = areas[3].Trim();
 				path = areas[4].Trim();
 				dir = int.Parse(areas[5].Trim());
-				ParseTrainCars(areas[6].Trim());
+				url = areas[6].Trim();
+				ParseTrainCars(areas[7].Trim());
 				leadingID = areas[1].Trim();
 				int index = path.LastIndexOf("\\PATHS\\", StringComparison.OrdinalIgnoreCase);
 				if (index > 0)
@@ -306,8 +309,9 @@ namespace ORTS.MultiPlayer
 			}
 
 		}
-		public MSGPlayer(string n, string cd, string c, string p, Train t, int tn)
+		public MSGPlayer(string n, string cd, string c, string p, Train t, int tn, string avatar)
 		{
+			url = avatar;
 			route = Program.Simulator.RoutePathName;
 			int index = p.LastIndexOf("\\PATHS\\", StringComparison.OrdinalIgnoreCase);
 			if (index > 0)
@@ -352,7 +356,7 @@ namespace ORTS.MultiPlayer
 		}
 		public override string ToString()
 		{
-			string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + seconds + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " \r" + leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r";
+			string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + seconds + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " \r" + leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
 			for (var i = 0; i < cars.Length; i++)
 			{
 				var c = cars[i];
@@ -398,7 +402,7 @@ namespace ORTS.MultiPlayer
 					MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 
 					MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
-						Program.Simulator.PlayerLocomotive.Train.Number);
+						Program.Simulator.PlayerLocomotive.Train.Number, Program.Simulator.Settings.AvatarURL);
 					MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
 
 					foreach (Train t in Program.Simulator.Trains)
@@ -442,7 +446,7 @@ namespace ORTS.MultiPlayer
 			MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 
 			MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
-				Program.Simulator.PlayerLocomotive.Train.Number);
+				Program.Simulator.PlayerLocomotive.Train.Number, Program.Simulator.Settings.AvatarURL);
 
 			MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
 
@@ -2439,5 +2443,50 @@ namespace ORTS.MultiPlayer
 		}
 	}
 	#endregion MSGLocoInfo
+
+	#region MSGAvatar
+	public class MSGAvatar : Message
+	{
+		public string user;
+		public string url;
+		public MSGAvatar(string m)
+		{
+			var tmp = m.Split('\t');
+			user = tmp[0].Trim();
+			url = tmp[1];
+		}
+
+		public MSGAvatar(string u, string l)
+		{
+			user = u;
+			url = l;
+		}
+
+		public override string ToString()
+		{
+
+			string tmp = "AVATAR " + user +"\n" + url;
+			return "" + tmp.Length + ": " + tmp;
+		}
+
+		public override void HandleMsg()
+		{
+			if (user == MPManager.GetUserName()) return; //avoid myself
+
+			foreach (var p in MPManager.OnlineTrains.Players)
+			{
+				if (p.Key == user) p.Value.url = url;
+				Program.DebugViewer.AddAvatar(user, url);
+			}
+
+			if (MPManager.IsServer())
+			{
+				MPManager.BroadCast((new MSGAvatar(user, url)).ToString());
+			}
+		}
+
+	}
+
+	#endregion MSGAvatar
 
 }
