@@ -150,6 +150,8 @@ namespace ORTS
         public int Multiplayer_UpdateInterval { get; set; }
 		[Default("http://openrails.org/images/support-logos.jpg")]
 		public string AvatarURL { get; set; }
+		[Default(false)]
+		public bool ShowAvatar { get; set; }
 
         // Window position settings.
         [Default(new[] { 50, 50 })]

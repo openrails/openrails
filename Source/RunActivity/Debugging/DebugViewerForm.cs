@@ -497,6 +497,9 @@ namespace ORTS.Debugging
 			  firstShow = false;
 		  }
 
+		  if (MultiPlayer.MPManager.IsServer()) rmvButton.Visible = true;
+		  else rmvButton.Visible = false;
+
 		  //if (Program.Random.Next(100) == 0) AddAvatar("Test:"+Program.Random.Next(5), "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle");
 		  try
 		  {
@@ -930,6 +933,20 @@ namespace ORTS.Debugging
          GenerateView();
       }
 
+	  private void rmvButton_Click(object sender, EventArgs e)
+	  {
+		  if (!MultiPlayer.MPManager.IsServer()) return;
+		  var chosen = AvatarView.SelectedItems;
+		  if (chosen.Count > 0)
+		  {
+			  for (var i =0; i < chosen.Count; i++)
+			  {
+				  var tmp = chosen[i];
+				  MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage(tmp.Text, "Error", "Sorry the server has removed you")).ToString());
+			  }
+		  }
+
+	  }
 
 
 
