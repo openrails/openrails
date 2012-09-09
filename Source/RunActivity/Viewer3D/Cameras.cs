@@ -85,22 +85,11 @@ namespace ORTS
         /// </summary>
         public void Activate()
         {
-            if( this is FreeRoamCamera ) {
-                FreeRoamCamera c = this as FreeRoamCamera;
-                Trace.WriteLine( String.Format( "{0} {1} {2} Activate start", cameraLocation.Location.X, cameraLocation.Location.Y, cameraLocation.Location.Z ) );
-
-            }
-
             ScreenChanged();
             OnActivate(Viewer.Camera == this);
             Viewer.Camera = this;
             Update(ElapsedTime.Zero);
             xnaView = GetCameraView();
-            if( this is FreeRoamCamera ) {
-                FreeRoamCamera c = this as FreeRoamCamera;
-                Trace.WriteLine( String.Format( "{0} {1} {2} Activate end", cameraLocation.Location.X, cameraLocation.Location.Y, cameraLocation.Location.Z ) );
-
-            }
         }
 
         /// <summary>
@@ -298,11 +287,8 @@ namespace ORTS
 
     public abstract class RotatingCamera : Camera
     {
-        //CJ
-        //protected float rotationXRadians = 0;
-        //protected float rotationYRadians = 0;
-        public float rotationXRadians = 0;
-        public float rotationYRadians = 0;
+        protected float rotationXRadians = 0;
+        protected float rotationYRadians = 0;
 
         private CameraAngleClamper rotationXClamper = null;
         private CameraAngleClamper rotationYClamper = null;
@@ -360,9 +346,6 @@ namespace ORTS
             }
             if (UserInput.IsDown(UserCommands.CameraRotateUp))
                 rotationXRadians -= speed * SpeedAdjustmentForRotation;
-
-            if( UserInput.IsReleased( UserCommands.CameraRotateUp ) )
-                Trace.WriteLine( String.Format( "{0} {1} Rotate Up released", rotationXRadians, rotationYRadians ) );
             if (UserInput.IsDown(UserCommands.CameraRotateDown))
                 rotationXRadians += speed * SpeedAdjustmentForRotation;
             if (UserInput.IsDown(UserCommands.CameraRotateLeft))
@@ -390,10 +373,6 @@ namespace ORTS
                 movement.Z += speed * axisZSpeedBoost;
             if (UserInput.IsDown(UserCommands.CameraPanOut))
                 movement.Z -= speed * axisZSpeedBoost;
-            
-            //CJ
-            if( UserInput.IsReleased( UserCommands.CameraPanOut ) )
-                Trace.WriteLine( String.Format( "{0} {1} {2} Pan Out released", cameraLocation.Location.X, cameraLocation.Location.Y, cameraLocation.Location.Z ) );
 
             movement = Vector3.Transform(movement, Matrix.CreateRotationX(rotationXRadians));
             movement = Vector3.Transform(movement, Matrix.CreateRotationY(rotationYRadians));
