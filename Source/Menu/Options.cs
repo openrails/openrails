@@ -95,6 +95,9 @@ namespace ORTS
             checkBoxSuppressConfirmations.Checked = Settings.SuppressConfirmations;
             checkDispatcher.Checked = Settings.ViewDispatcher;
             numericCab2DStretch.Value = Settings.Cab2DStretch;
+            checkBoxAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
+            checkBoxBreakCouplers.Checked = Settings.BreakCouplers;
+
         }
 
         string ParseCategoryFrom(string name)
@@ -298,6 +301,8 @@ namespace ORTS
             Settings.SuppressConfirmations = checkBoxSuppressConfirmations.Checked;
             Settings.ViewDispatcher = checkDispatcher.Checked;
             Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
+            Settings.UseAdvancedAdhesion = checkBoxAdvancedAdhesion.Checked;
+            Settings.BreakCouplers = checkBoxBreakCouplers.Checked;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

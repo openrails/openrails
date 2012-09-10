@@ -753,6 +753,7 @@ namespace ORTS
 
 			if (!spad) UpdateSignalState();
 
+            // Coupler breaker
             if (uncoupleBehindCar != null)
             {
                 if (uncoupleBehindCar.CouplerOverloaded)
@@ -760,14 +761,20 @@ namespace ORTS
                     if (!numOfCouplerBreaksNoted)
                     {
                         NumOfCouplerBreaks++;
+                        Trace.WriteLine(String.Format("Num of coupler breaks: {0}", NumOfCouplerBreaks));
                         numOfCouplerBreaksNoted = true;
                     }
                 }
                 else
                     numOfCouplerBreaksNoted = false;
-
-                //Simulator.UncoupleBehind(uncoupleBehindCar);
-                //uncoupleBehindCar.CouplerOverloaded = false;
+                if (Simulator.BreakCouplers)
+                {
+                    Simulator.UncoupleBehind(uncoupleBehindCar);
+                    uncoupleBehindCar.CouplerOverloaded = false;
+                    Simulator.Confirmer.Warning("Coupler broken!");
+                }
+                else
+                    Simulator.Confirmer.Warning("Coupler overloaded!");
                 uncoupleBehindCar = null; 
             }
             else

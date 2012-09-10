@@ -107,8 +107,6 @@ namespace ORTS
         public bool SuppressConfirmations { get; set; }
         [Default(false)]
         public bool TrainLights { get; set; }
-        [Default(true)]
-        public bool UseAdvancedAdhesion { get; set; }
         [Default(false)]
         public bool VerticalSync { get; set; }
         [Default(2000)]
@@ -152,6 +150,12 @@ namespace ORTS
 		public string AvatarURL { get; set; }
 		[Default(false)]
 		public bool ShowAvatar { get; set; }
+
+        // Physics options
+        [Default(true)]
+        public bool UseAdvancedAdhesion { get; set; }
+        [Default(false)]
+        public bool BreakCouplers { get; set; }
 
         // Window position settings.
         [Default(new[] { 50, 50 })]
