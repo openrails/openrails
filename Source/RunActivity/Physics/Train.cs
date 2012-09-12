@@ -1499,7 +1499,7 @@ namespace ORTS
 						&& MPManager.IsMultiPlayer() && !MPManager.IsServer())
 					{
 						MPManager.Notify((new MSGSwitch(MPManager.GetUserName(),
-							sw.TrJunctionNode.TN.UiD.TileX, sw.TrJunctionNode.TN.UiD.TileZ, sw.TrJunctionNode.TN.UiD.WorldID, sw.TrJunctionNode.SelectedRoute)).ToString());
+							sw.TrJunctionNode.TN.UiD.TileX, sw.TrJunctionNode.TN.UiD.TileZ, sw.TrJunctionNode.TN.UiD.WorldID, sw.TrJunctionNode.SelectedRoute, false)).ToString());
 						//MPManager.Instance().ignoreSwitchStart = Simulator.GameTime;
 					}
 					return;

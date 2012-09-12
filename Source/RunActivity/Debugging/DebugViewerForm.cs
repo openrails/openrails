@@ -1020,6 +1020,7 @@ namespace ORTS.Debugging
 				  {
 					  if (temp is SwitchWidget) switchPickedItem = (SwitchWidget)temp; //read by MPManager
 					  if (temp is SignalWidget) signalPickedItem = (SignalWidget)temp;
+					  if (temp == null) { switchPickedItem = null; signalPickedItem = null; }
 #if false
 					  pictureBox1.ContextMenu.Show(pictureBox1, e.Location);
 					  pictureBox1.ContextMenu.MenuItems[0].Checked = pictureBox1.ContextMenu.MenuItems[1].Checked = false;
@@ -1194,7 +1195,12 @@ namespace ORTS.Debugging
          GenerateView();
       }
 
-      private void highlightTrackShapes_CheckedChanged(object sender, EventArgs e)
+	  private void chkAllowUserSwitch_CheckedChanged(object sender, EventArgs e)
+	  {
+		  MultiPlayer.MPManager.Instance().ClientAllowedSwitch = chkAllowUserSwitch.Checked;
+	  }
+	  
+	   private void highlightTrackShapes_CheckedChanged(object sender, EventArgs e)
       {
          GenerateView();
       }

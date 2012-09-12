@@ -470,31 +470,34 @@ namespace ORTS.MultiPlayer
 	{
 		public string user;
 		public int TileX, TileZ, WorldID, Selection;
+		public bool HandThrown;
 
 		public MSGSwitch(string m)
 		{
 
 			string[] tmp = m.Split(' ');
-			if (tmp.Length != 5) throw new Exception("Parsing error " + m);
+			if (tmp.Length != 6) throw new Exception("Parsing error " + m);
 			user = tmp[0];
 			TileX = int.Parse(tmp[1]);
 			TileZ = int.Parse(tmp[2]);
 			WorldID = int.Parse(tmp[3]);
 			Selection = int.Parse(tmp[4]);
+			HandThrown = bool.Parse(tmp[5]);
 		}
 
-		public MSGSwitch(string n, int tX, int tZ, int u, int s)
+		public MSGSwitch(string n, int tX, int tZ, int u, int s, bool handThrown)
 		{
 			user = n;
 			WorldID = u;
 			TileX = tX;
 			TileZ = tZ;
 			Selection = s;
+			HandThrown = handThrown;
 		}
 
 		public override string ToString()
 		{
-			string tmp = "SWITCH " + user + " " + TileX + " " + TileZ + " " + WorldID + " " + Selection;
+			string tmp = "SWITCH " + user + " " + TileX + " " + TileZ + " " + WorldID + " " + Selection + " " + HandThrown;
 			return "" + tmp.Length + ": " + tmp;
 		}
 
@@ -503,6 +506,11 @@ namespace ORTS.MultiPlayer
 			//System.Console.WriteLine(this.ToString());
 			if (MPManager.IsServer()) //server got this message from Client
 			{
+				if (HandThrown == true && !MPManager.Instance().ClientAllowedSwitch)
+				{
+					MPManager.BroadCast((new MSGMessage(user, "Warning", "Server does not allow hand thrown of switch")).ToString());
+					return;
+				}
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
 				if (Program.Simulator.SwitchIsOccupied(trj))
 				{
@@ -516,7 +524,7 @@ namespace ORTS.MultiPlayer
 			{
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
 				trj.SelectedRoute = Selection;
-				if (user == MPManager.GetUserName())//got the message with my name, will confirm with the player
+				if (user == MPManager.GetUserName() && HandThrown == true)//got the message with my name, will confirm with the player
 				{
 					Program.Simulator.Confirmer.Information("Switched, current route is " + (Selection == 0? "main":"side") + " route");
 					return;

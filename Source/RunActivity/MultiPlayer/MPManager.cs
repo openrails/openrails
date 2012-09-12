@@ -51,7 +51,7 @@ namespace ORTS.MultiPlayer
 
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
-
+		public bool ClientAllowedSwitch = true;
 		public void AddUncoupledTrains(Train t)
 		{
 			lock (uncoupledTrains)
@@ -487,6 +487,18 @@ namespace ORTS.MultiPlayer
 							if (t1.Number == t.Number) { hasIt = true; break; }
 						}
 						if (!hasIt) Program.Simulator.Trains.Add(t);
+						if (IsServer())
+						{
+							if (t.Path != null)
+							{
+								t.TrackAuthority = new TrackAuthority(t, t.Number + 100000, 10, t.Path);
+								Program.Simulator.AI.Dispatcher.TrackAuthorities.Add(t.TrackAuthority);
+								Program.Simulator.AI.Dispatcher.RequestAuth(t, true, 0);
+								t.Path.AlignInitSwitches(t.RearTDBTraveller, -1, 500);
+							}
+							else t.TrackAuthority = null;
+						}
+
 					}
 					addedTrains.Clear();
 				}

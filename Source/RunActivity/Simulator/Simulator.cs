@@ -622,7 +622,7 @@ namespace ORTS
 					//multiplayer mode will do some message
 					if (MPManager.IsMultiPlayer())
 						MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute, true)).ToString());
 					Confirmer.Confirm(CabControl.SwitchBehind, CabSetting.On);
 
 				}
@@ -634,7 +634,7 @@ namespace ORTS
 
 					//notify the server
 					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected)).ToString());
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected, true)).ToString());
 					Confirmer.Information("Switching Request Sent to the Server");
 				}
             }
@@ -661,7 +661,7 @@ namespace ORTS
 					//multiplayer mode will do some message
 					if (MPManager.IsMultiPlayer())
 						MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute, true)).ToString());
 					train.ResetSignal(false);
 					Confirmer.Confirm(CabControl.SwitchAhead, CabSetting.On);
 
@@ -674,7 +674,7 @@ namespace ORTS
 
 					//notify the server
 					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected)).ToString());
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected, true)).ToString());
 					Confirmer.Information("Switching Request Sent to the Server");
 				}
 			}

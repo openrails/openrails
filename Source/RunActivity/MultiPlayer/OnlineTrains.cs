@@ -222,6 +222,7 @@ namespace ORTS.MultiPlayer
 				else p.LeadingLocomotiveID = "NA";
 			}
 			p.Train = train;
+			/*
 			if (MPManager.IsServer())
 			{
 				if (train.Path != null)
@@ -233,6 +234,7 @@ namespace ORTS.MultiPlayer
 				}
 				else train.TrackAuthority = null;
 			}
+			 */
 			MPManager.Instance().AddOrRemoveTrain(train, true);
 
 		}
