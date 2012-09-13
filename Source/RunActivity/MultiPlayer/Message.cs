@@ -30,6 +30,7 @@ namespace ORTS.MultiPlayer
 			if (key == "MOVE") return new MSGMove(m.Substring(index + 1));
 			else if (key == "SWITCHSTATES") return new MSGSwitchStatus(m.Substring(index + 1));
 			else if (key == "SIGNALSTATES") return new MSGSignalStatus(m.Substring(index + 1));
+			else if (key == "TEXT") return new MSGText(m.Substring(index + 1));
 			else if (key == "LOCOINFO") return new MSGLocoInfo(m.Substring(index + 1));
 			else if (key == "ALIVE") return new MSGAlive(m.Substring(index + 1));
 			else if (key == "TRAIN") return new MSGTrain(m.Substring(index + 1));
@@ -2496,5 +2497,61 @@ namespace ORTS.MultiPlayer
 	}
 
 	#endregion MSGAvatar
+
+
+	#region MSGText
+	//message to add new train from either a string (received message), or a Train (building a message)
+	public class MSGText : MSGRequired
+	{
+		string msgx;
+		string sender;
+		string user;
+		public MSGText(string m)
+		{
+			string[] t = m.Split('\t');
+			sender = t[0].Trim();
+			user = t[1].Trim();
+			msgx = t[2];
+
+		}
+
+		public MSGText(string s, string u, string m)
+		{
+			sender = s.Trim();
+			user = u;
+			msgx = m;
+		}
+
+		public override void HandleMsg()
+		{
+			if (sender == MPManager.GetUserName()) return; //avoid my own msg
+			string[] users = user.Split('\r');
+			foreach (var name in users)
+			{
+				if (name.Trim() == MPManager.GetUserName())
+				{
+					System.Console.WriteLine("MSG from " + sender + ":" + msgx);
+					if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.MSG(" From "+ sender+": "+msgx);
+					break;
+				}
+			}
+			if (MPManager.IsServer())//server check if need to tell others.
+			{
+				System.Console.WriteLine(users);
+				if (users.Count() == 1 && users[0].Trim() == MPManager.GetUserName()) return;
+				System.Console.WriteLine(this.ToString());
+				MultiPlayer.MPManager.BroadCast(this.ToString());
+			}
+		}
+
+		public override string ToString()
+		{
+			string tmp = "TEXT " + sender + "\t" + user + "\t" + msgx;
+			return "" + tmp.Length + ": " + tmp;
+		}
+	}
+
+	#endregion MSGText
+
 
 }

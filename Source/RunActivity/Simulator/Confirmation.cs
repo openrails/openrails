@@ -14,6 +14,7 @@ namespace ORTS {
         Information,
         Warning,
         Error,
+		MSG,
     };
 
     public enum CabControl {
@@ -222,7 +223,12 @@ namespace ORTS {
             Message(CabControl.None, ConfirmLevel.Information, message);
         }
 
-        public void Warning(string message)
+		public void MSG(string message)
+		{
+			Message(CabControl.None, ConfirmLevel.MSG, message);
+		}
+		
+		public void Warning(string message)
         {
             Message(CabControl.None, ConfirmLevel.Warning, message);
         }
@@ -249,7 +255,10 @@ namespace ORTS {
                 format = "{0}: " + format;
             if (level >= ConfirmLevel.Information)
                 format = "{1} - " + format;
-            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], level, message), level >= ConfirmLevel.Warning ? DefaultDurationS * 2 : DefaultDurationS);
+			var duration = DefaultDurationS;
+			if (level >= ConfirmLevel.Warning) duration *= 2;
+			if (level >= ConfirmLevel.MSG) duration *= 5;
+            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], level, message), duration);
         }
     }
 }

@@ -52,6 +52,7 @@ namespace ORTS.MultiPlayer
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
 		public bool ClientAllowedSwitch = true;
+		public bool ComposingText = false;
 		public void AddUncoupledTrains(Train t)
 		{
 			lock (uncoupledTrains)

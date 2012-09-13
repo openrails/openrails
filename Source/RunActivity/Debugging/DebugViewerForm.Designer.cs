@@ -49,6 +49,11 @@
 		  this.AvatarView = new System.Windows.Forms.ListView();
 		  this.rmvButton = new System.Windows.Forms.Button();
 		  this.chkAllowUserSwitch = new System.Windows.Forms.CheckBox();
+		  this.chkShowAvatars = new System.Windows.Forms.CheckBox();
+		  this.MSG = new System.Windows.Forms.TextBox();
+		  this.msgSelected = new System.Windows.Forms.Button();
+		  this.msgAll = new System.Windows.Forms.Button();
+		  this.composeMSG = new System.Windows.Forms.Button();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.menuStrip.SuspendLayout();
@@ -56,9 +61,9 @@
 		  // 
 		  // pictureBox1
 		  // 
-		  this.pictureBox1.Location = new System.Drawing.Point(10, 99);
+		  this.pictureBox1.Location = new System.Drawing.Point(10, 164);
 		  this.pictureBox1.Name = "pictureBox1";
-		  this.pictureBox1.Size = new System.Drawing.Size(720, 720);
+		  this.pictureBox1.Size = new System.Drawing.Size(684, 646);
 		  this.pictureBox1.TabIndex = 0;
 		  this.pictureBox1.TabStop = false;
 		  this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseMove);
@@ -72,7 +77,7 @@
 		  this.refreshButton.Name = "refreshButton";
 		  this.refreshButton.Size = new System.Drawing.Size(91, 23);
 		  this.refreshButton.TabIndex = 1;
-		  this.refreshButton.Text = "View Player";
+		  this.refreshButton.Text = "View Self";
 		  this.refreshButton.UseVisualStyleBackColor = true;
 		  this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
 		  // 
@@ -226,7 +231,7 @@
 		  this.menuStrip.Location = new System.Drawing.Point(0, 0);
 		  this.menuStrip.Name = "menuStrip";
 		  this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-		  this.menuStrip.Size = new System.Drawing.Size(858, 24);
+		  this.menuStrip.Size = new System.Drawing.Size(865, 24);
 		  this.menuStrip.TabIndex = 12;
 		  this.menuStrip.Text = "menuStrip1";
 		  // 
@@ -264,15 +269,15 @@
 		  // label3
 		  // 
 		  this.label3.AutoSize = true;
-		  this.label3.Location = new System.Drawing.Point(745, 102);
+		  this.label3.Location = new System.Drawing.Point(730, 103);
 		  this.label3.Name = "label3";
-		  this.label3.Size = new System.Drawing.Size(41, 13);
+		  this.label3.Size = new System.Drawing.Size(74, 13);
 		  this.label3.TabIndex = 13;
-		  this.label3.Text = "Players";
+		  this.label3.Text = "Online Players";
 		  // 
 		  // AvatarView
 		  // 
-		  this.AvatarView.Location = new System.Drawing.Point(737, 165);
+		  this.AvatarView.Location = new System.Drawing.Point(728, 165);
 		  this.AvatarView.Name = "AvatarView";
 		  this.AvatarView.Size = new System.Drawing.Size(121, 601);
 		  this.AvatarView.TabIndex = 14;
@@ -280,7 +285,7 @@
 		  // 
 		  // rmvButton
 		  // 
-		  this.rmvButton.Location = new System.Drawing.Point(754, 127);
+		  this.rmvButton.Location = new System.Drawing.Point(733, 127);
 		  this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
 		  this.rmvButton.Name = "rmvButton";
 		  this.rmvButton.Size = new System.Drawing.Size(93, 24);
@@ -296,18 +301,79 @@
 		  this.chkAllowUserSwitch.CheckState = System.Windows.Forms.CheckState.Checked;
 		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(628, 38);
 		  this.chkAllowUserSwitch.Name = "chkAllowUserSwitch";
-		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(205, 17);
+		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(210, 17);
 		  this.chkAllowUserSwitch.TabIndex = 16;
-		  this.chkAllowUserSwitch.Text = "Server Allow Client to Throw Switches";
+		  this.chkAllowUserSwitch.Text = "Server Allows Client to Throw Switches";
 		  this.chkAllowUserSwitch.UseVisualStyleBackColor = true;
 		  this.chkAllowUserSwitch.CheckedChanged += new System.EventHandler(this.chkAllowUserSwitch_CheckedChanged);
+		  // 
+		  // chkShowAvatars
+		  // 
+		  this.chkShowAvatars.AutoSize = true;
+		  this.chkShowAvatars.Checked = true;
+		  this.chkShowAvatars.CheckState = System.Windows.Forms.CheckState.Checked;
+		  this.chkShowAvatars.Location = new System.Drawing.Point(628, 56);
+		  this.chkShowAvatars.Name = "chkShowAvatars";
+		  this.chkShowAvatars.Size = new System.Drawing.Size(92, 17);
+		  this.chkShowAvatars.TabIndex = 17;
+		  this.chkShowAvatars.Text = "Show Avatars";
+		  this.chkShowAvatars.UseVisualStyleBackColor = true;
+		  this.chkShowAvatars.CheckedChanged += new System.EventHandler(this.chkShowAvatars_CheckedChanged);
+		  // 
+		  // MSG
+		  // 
+		  this.MSG.Enabled = false;
+		  this.MSG.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+		  this.MSG.Location = new System.Drawing.Point(14, 100);
+		  this.MSG.Name = "MSG";
+		  this.MSG.Size = new System.Drawing.Size(680, 29);
+		  this.MSG.TabIndex = 18;
+		  this.MSG.WordWrap = false;
+		  // 
+		  // msgSelected
+		  // 
+		  this.msgSelected.Location = new System.Drawing.Point(422, 135);
+		  this.msgSelected.Margin = new System.Windows.Forms.Padding(2);
+		  this.msgSelected.Name = "msgSelected";
+		  this.msgSelected.Size = new System.Drawing.Size(105, 24);
+		  this.msgSelected.TabIndex = 19;
+		  this.msgSelected.Text = "MSG to Selected";
+		  this.msgSelected.UseVisualStyleBackColor = true;
+		  this.msgSelected.Click += new System.EventHandler(this.msgSelected_Click);
+		  // 
+		  // msgAll
+		  // 
+		  this.msgAll.Location = new System.Drawing.Point(280, 135);
+		  this.msgAll.Margin = new System.Windows.Forms.Padding(2);
+		  this.msgAll.Name = "msgAll";
+		  this.msgAll.Size = new System.Drawing.Size(89, 24);
+		  this.msgAll.TabIndex = 20;
+		  this.msgAll.Text = "MSG to All";
+		  this.msgAll.UseVisualStyleBackColor = true;
+		  this.msgAll.Click += new System.EventHandler(this.msgAll_Click);
+		  // 
+		  // composeMSG
+		  // 
+		  this.composeMSG.Location = new System.Drawing.Point(125, 135);
+		  this.composeMSG.Margin = new System.Windows.Forms.Padding(2);
+		  this.composeMSG.Name = "composeMSG";
+		  this.composeMSG.Size = new System.Drawing.Size(94, 24);
+		  this.composeMSG.TabIndex = 21;
+		  this.composeMSG.Text = "Compose MSG";
+		  this.composeMSG.UseVisualStyleBackColor = true;
+		  this.composeMSG.Click += new System.EventHandler(this.composeMSG_Click);
 		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
-		  this.ClientSize = new System.Drawing.Size(874, 717);
+		  this.ClientSize = new System.Drawing.Size(865, 813);
+		  this.Controls.Add(this.composeMSG);
+		  this.Controls.Add(this.msgAll);
+		  this.Controls.Add(this.msgSelected);
+		  this.Controls.Add(this.MSG);
+		  this.Controls.Add(this.chkShowAvatars);
 		  this.Controls.Add(this.chkAllowUserSwitch);
 		  this.Controls.Add(this.rmvButton);
 		  this.Controls.Add(this.AvatarView);
@@ -362,5 +428,10 @@
 	  private System.Windows.Forms.ListView AvatarView;
 	  private System.Windows.Forms.Button rmvButton;
 	  private System.Windows.Forms.CheckBox chkAllowUserSwitch;
+	  private System.Windows.Forms.CheckBox chkShowAvatars;
+	  private System.Windows.Forms.TextBox MSG;
+	  private System.Windows.Forms.Button msgSelected;
+	  private System.Windows.Forms.Button msgAll;
+	  private System.Windows.Forms.Button composeMSG;
    }
 }

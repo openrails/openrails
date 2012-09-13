@@ -186,7 +186,11 @@ namespace ORTS.Debugging
 
 		  InitData();
         InitImage();
-
+		chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
+		if (!MultiPlayer.MPManager.IsMultiPlayer())
+		{
+			msgAll.Enabled = false; msgSelected.Enabled = false; composeMSG.Enabled = false;
+		}
       }
 
 
@@ -997,7 +1001,8 @@ namespace ORTS.Debugging
 		  }
 		  LastCursorPosition.X = e.X;
 		  LastCursorPosition.Y = e.Y;
-
+		  MSG.Enabled = false;
+		  MultiPlayer.MPManager.Instance().ComposingText = false;
 	  }
 
 	  private void pictureBoxMouseUp(object sender, MouseEventArgs e)
@@ -1020,7 +1025,6 @@ namespace ORTS.Debugging
 				  {
 					  if (temp is SwitchWidget) switchPickedItem = (SwitchWidget)temp; //read by MPManager
 					  if (temp is SignalWidget) signalPickedItem = (SignalWidget)temp;
-					  if (temp == null) { switchPickedItem = null; signalPickedItem = null; }
 #if false
 					  pictureBox1.ContextMenu.Show(pictureBox1, e.Location);
 					  pictureBox1.ContextMenu.MenuItems[0].Checked = pictureBox1.ContextMenu.MenuItems[1].Checked = false;
@@ -1031,6 +1035,7 @@ namespace ORTS.Debugging
 					  }
 #endif
 				  }
+				  else { switchPickedItem = null; signalPickedItem = null; }
 			  }
 
 		  }
@@ -1199,6 +1204,11 @@ namespace ORTS.Debugging
 	  {
 		  MultiPlayer.MPManager.Instance().ClientAllowedSwitch = chkAllowUserSwitch.Checked;
 	  }
+
+	  private void chkShowAvatars_CheckedChanged(object sender, EventArgs e)
+	  {
+		  Program.Simulator.Settings.ShowAvatar = chkShowAvatars.Checked;
+	  }
 	  
 	   private void highlightTrackShapes_CheckedChanged(object sender, EventArgs e)
       {
@@ -1239,6 +1249,65 @@ namespace ORTS.Debugging
 		  }
 	  }
 	  string imagestring = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAACpJREFUOE9jYBjs4D/QgSBMNhg1ABKAFAUi2aFPNY0Ue4FiA6jmlUFsEABfyg/x8/L8/gAAAABJRU5ErkJggg==";
+
+	  private void composeMSG_Click(object sender, EventArgs e)
+	  {
+		  MSG.Enabled = true;
+		  MultiPlayer.MPManager.Instance().ComposingText = true;
+	  }
+
+	  private void msgAll_Click(object sender, EventArgs e)
+	  {
+		  if (!MultiPlayer.MPManager.IsMultiPlayer()) return;
+		  var msg = MSG.Text;
+		  msg = msg.Replace("\r", "");
+		  msg = msg.Replace("\t", "");
+		  if (msg != "")
+		  {
+			  try
+			  {
+				  var user = "";
+				  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
+				  {
+					  user += p.Key + "\r";
+				  }
+				  user += "0END";
+				  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+				  MSG.Text = "";
+				  MSG.Enabled = false;
+				  MultiPlayer.MPManager.Instance().ComposingText = false;
+
+			  }
+			  catch { }
+		  }
+	  }
+
+	  private void msgSelected_Click(object sender, EventArgs e)
+	  {
+		  if (!MultiPlayer.MPManager.IsMultiPlayer()) return;
+		  var chosen = AvatarView.SelectedItems;
+		  var msg = MSG.Text;
+		  msg = msg.Replace("\r", "");
+		  msg = msg.Replace("\t", "");
+		  if (msg == "") return;
+		  if (chosen.Count > 0)
+		  {
+			  var user = "";
+
+			  for (var i = 0; i < chosen.Count; i++)
+			  {
+				  user += chosen[i].Text +"\r";
+			  }
+			  user += "0END";
+
+			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+			  MSG.Text = "";
+			  MSG.Enabled = false;
+			  MultiPlayer.MPManager.Instance().ComposingText = false;
+
+		  }
+
+	  }
 
    }
 
