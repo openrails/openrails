@@ -201,14 +201,13 @@
 		  // showBuffers
 		  // 
 		  this.showBuffers.AutoSize = true;
-		  this.showBuffers.Checked = true;
-		  this.showBuffers.CheckState = System.Windows.Forms.CheckState.Checked;
 		  this.showBuffers.Location = new System.Drawing.Point(407, 76);
 		  this.showBuffers.Name = "showBuffers";
 		  this.showBuffers.Size = new System.Drawing.Size(167, 17);
 		  this.showBuffers.TabIndex = 10;
 		  this.showBuffers.Text = "Show Buffers (Black Squares)";
 		  this.showBuffers.UseVisualStyleBackColor = true;
+		  this.showBuffers.Visible = false;
 		  this.showBuffers.CheckedChanged += new System.EventHandler(this.showBuffers_CheckedChanged);
 		  // 
 		  // showSignals

@@ -199,6 +199,7 @@ namespace ORTS.Debugging
 	  private Font sidingFont;
 	  private SolidBrush trainBrush;
 	  private SolidBrush sidingBrush;
+	  private double lastUpdateTime = 0;
 
       /// <summary>
       /// When the user holds down the  "L", "R", "U", "D" buttons,
@@ -231,12 +232,10 @@ namespace ORTS.Debugging
             ShiftViewRight();
          }
 
-         RedrawCount++;
+		 if (Program.Simulator.GameTime - lastUpdateTime < 1) return;
+		 lastUpdateTime = Program.Simulator.GameTime;
 
-         if (RedrawCount > 10)
-         {
             GenerateView();
-         }
       }
 
 	  private void InitData()
