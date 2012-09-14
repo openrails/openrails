@@ -62,6 +62,7 @@ namespace ORTS
 				PathLoader.Cancel();
 
 			listPaths.Items.Clear();
+            buttonOk.Enabled = false;
 			var route = Route;
 			var exploreActivity = ExploreActivity;
             PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(route).OrderBy(p => p.ToString()).ToList(), (paths) =>
@@ -69,12 +70,15 @@ namespace ORTS
 				Paths = paths;
 				foreach (var path in Paths)
 					listPaths.Items.Add(path);
-				var index = Paths.FindIndex(p => p.FilePath == exploreActivity.Path.FilePath);
-				if (index >= 0)
-					listPaths.SelectedIndex = index;
-				else if (Paths.Count > 0)
-					listPaths.SelectedIndex = 0;
-			});
+                var selectionIndex = exploreActivity.Path != null ? Paths.FindIndex(p => p.FilePath == exploreActivity.Path.FilePath) : -1;
+                if (selectionIndex >= 0)
+                    listPaths.SelectedIndex = selectionIndex;
+                else if (Paths.Count > 0)
+                    listPaths.SelectedIndex = 0;
+                else
+                    listPaths.ClearSelected();
+                buttonOk.Enabled = listPaths.Items.Count > 0 && listConsists.Items.Count > 0;
+            });
 		}
 
 		void LoadConsists()
@@ -83,19 +87,23 @@ namespace ORTS
 				ConsistLoader.Cancel();
 
 			listConsists.Items.Clear();
-			var folder = Folder;
+            buttonOk.Enabled = false;
+            var folder = Folder;
 			var exploreActivity = ExploreActivity;
 			ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(folder).OrderBy(c => c.ToString()).ToList(), (consists) =>
 			{
 				Consists = consists;
 				foreach (var consist in Consists)
 					listConsists.Items.Add(consist.ToString());
-				var index = Consists.FindIndex(c => c.FilePath == exploreActivity.Consist.FilePath);
-				if (index >= 0)
-					listConsists.SelectedIndex = index;
-				else if (Consists.Count > 0)
-					listConsists.SelectedIndex = 0;
-			});
+                var selectionIndex = exploreActivity.Consist != null ? Consists.FindIndex(c => c.FilePath == exploreActivity.Consist.FilePath) : -1;
+                if (selectionIndex >= 0)
+                    listConsists.SelectedIndex = selectionIndex;
+                else if (Consists.Count > 0)
+                    listConsists.SelectedIndex = 0;
+                else
+                    listConsists.ClearSelected();
+                buttonOk.Enabled = listPaths.Items.Count > 0 && listConsists.Items.Count > 0;
+            });
 		}
 
 		void ExploreForm_FormClosing(object sender, FormClosingEventArgs e)

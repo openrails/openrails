@@ -327,10 +327,10 @@ namespace ORTS
                 labelRoutes.Visible = Routes.Count == 0;
                 foreach (var route in Routes)
                     listBoxRoutes.Items.Add(route);
-                var selectionIndex = Settings.Menu_Selection.Length > 1 ? routes.FindIndex(f => f.Path == Settings.Menu_Selection[1]) : -1;
+                var selectionIndex = Settings.Menu_Selection.Length > 1 ? Routes.FindIndex(f => f.Path == Settings.Menu_Selection[1]) : -1;
                 if (selectionIndex >= 0)
                     listBoxRoutes.SelectedIndex = selectionIndex;
-                else if (routes.Count > 0)
+                else if (Routes.Count > 0)
                     listBoxRoutes.SelectedIndex = 0;
                 else
                     listBoxRoutes.ClearSelected();
@@ -352,10 +352,10 @@ namespace ORTS
                 labelActivities.Visible = Activities.Count == 0;
                 foreach (var activity in Activities)
                     listBoxActivities.Items.Add(activity);
-                var selectionIndex = Settings.Menu_Selection.Length > 2 ? activities.FindIndex(f => f.FilePath == Settings.Menu_Selection[2]) : -1;
+                var selectionIndex = Settings.Menu_Selection.Length > 2 ? Activities.FindIndex(f => f.FilePath == Settings.Menu_Selection[2]) : -1;
                 if (selectionIndex >= 0)
                     listBoxActivities.SelectedIndex = selectionIndex;
-                else if (activities.Count > 0)
+                else if (Activities.Count > 0)
                     listBoxActivities.SelectedIndex = 0;
                 else
                     listBoxActivities.ClearSelected();
