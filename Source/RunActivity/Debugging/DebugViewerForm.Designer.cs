@@ -249,21 +249,18 @@
 		  this.viewTracksToolStripMenuItem.Name = "viewTracksToolStripMenuItem";
 		  this.viewTracksToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 		  this.viewTracksToolStripMenuItem.Text = "View Tracks";
-		  this.viewTracksToolStripMenuItem.Click += new System.EventHandler(this.viewTracksToolStripMenuItem_Click);
 		  // 
 		  // viewSignalsToolStripMenuItem
 		  // 
 		  this.viewSignalsToolStripMenuItem.Name = "viewSignalsToolStripMenuItem";
 		  this.viewSignalsToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 		  this.viewSignalsToolStripMenuItem.Text = "View Signals";
-		  this.viewSignalsToolStripMenuItem.Click += new System.EventHandler(this.viewSignalsToolStripMenuItem_Click);
 		  // 
 		  // viewSwitchesToolStripMenuItem
 		  // 
 		  this.viewSwitchesToolStripMenuItem.Name = "viewSwitchesToolStripMenuItem";
 		  this.viewSwitchesToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 		  this.viewSwitchesToolStripMenuItem.Text = "View Switches";
-		  this.viewSwitchesToolStripMenuItem.Click += new System.EventHandler(this.viewSwitchesToolStripMenuItem_Click);
 		  // 
 		  // label3
 		  // 

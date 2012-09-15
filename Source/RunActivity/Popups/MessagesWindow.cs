@@ -29,6 +29,19 @@ namespace ORTS.Popups
         List<Message> Messages = new List<Message>();
         bool MessagesChanged;
 
+		public List<string> GetTextMessages()
+		{
+			List<string> text = null;
+			foreach (var m in Messages)
+			{
+				if (true/*m.Text.StartsWith("TEXT")*/)
+				{
+					if (text == null) text = new List<string>();
+					text.Add(m.Text);
+				}
+			}
+			return text;
+		}
         public MessagesWindow(WindowManager owner)
             : base(owner, HorizontalPadding, VerticalPadding, "Messages")
         {

@@ -36,36 +36,7 @@ namespace ORTS.Debugging
 
 
       #region Data Viewers
-      GenericObjectViewerForm trackViewer;
-
-      GenericObjectViewerForm TrackViewer
-      {
-         get
-         {
-            return trackViewer ?? (trackViewer = new GenericObjectViewerForm("Tracks", new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray()));
-         }
-      }
-
-      GenericObjectViewerForm switchViewer;
-
-      GenericObjectViewerForm SwitchViewer
-      {
-         get
-         {
-            return switchViewer ?? (switchViewer = new GenericObjectViewerForm("Tracks", new List<InterlockingSwitch>(simulator.InterlockingSystem.Switches.Values).ToArray()));
-         }
-      }
-
-
-      GenericObjectViewerForm signalViewer;
-
-      GenericObjectViewerForm SignalViewer
-      {
-         get
-         {
-            return signalViewer ?? (signalViewer = new GenericObjectViewerForm("Tracks", new List<InterlockingSignal>(simulator.InterlockingSystem.Signals.Values).ToArray()));
-         }
-      }
+	  public MessageViewer MessageViewer;
       #endregion
 
       /// <summary>
@@ -190,6 +161,12 @@ namespace ORTS.Debugging
 		if (!MultiPlayer.MPManager.IsMultiPlayer())
 		{
 			msgAll.Enabled = false; msgSelected.Enabled = false; composeMSG.Enabled = false;
+		}
+		if (MultiPlayer.MPManager.IsMultiPlayer())
+		{
+			MessageViewer = new MessageViewer();
+			MessageViewer.Show();
+			MessageViewer.Visible = false;
 		}
       }
 
@@ -702,7 +679,6 @@ namespace ORTS.Debugging
 			}
 
          }
-
 
          pictureBox1.Invalidate();
       }
@@ -1219,23 +1195,6 @@ namespace ORTS.Debugging
          GenerateView();
       }
 
-      private void viewTracksToolStripMenuItem_Click(object sender, EventArgs e)
-      {
-         TrackViewer.Show();
-         TrackViewer.BringToFront();
-      }
-
-      private void viewSignalsToolStripMenuItem_Click(object sender, EventArgs e)
-      {
-         SignalViewer.Show();
-         SignalViewer.BringToFront();
-      }
-
-      private void viewSwitchesToolStripMenuItem_Click(object sender, EventArgs e)
-      {
-         SwitchViewer.Show();
-         SwitchViewer.BringToFront();
-      }
 
 	  private const int CP_NOCLOSE_BUTTON = 0x200;
 	  protected override CreateParams CreateParams
