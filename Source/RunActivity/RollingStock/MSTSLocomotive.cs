@@ -2248,31 +2248,20 @@ namespace ORTS
             if (DayTextures.Keys.Contains(FileName))
                 return;
 
-            Texture2D tex;
-
             if (File.Exists(FileName))
-            {
-                tex = viewer.TextureManager.Get(FileName);
-                DayTextures.Add(FileName, tex);
-            }
+                DayTextures.Add(FileName, viewer.TextureManager.Get(FileName));
             else
                 DayTextures.Add(FileName, SharedMaterialManager.MissingTexture);
 
-            string nightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\night" + FileName.Substring(FileName.LastIndexOf('\\'));
+            var nightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "night"), Path.GetFileName(FileName));
             if (File.Exists(nightpath))
-            {
-                tex = viewer.TextureManager.Get(nightpath);
-                NightTextures.Add(FileName, tex);
-            }
+                NightTextures.Add(FileName, viewer.TextureManager.Get(nightpath));
             else
                 NightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
 
-            string lightpath = FileName.Substring(0, FileName.LastIndexOf('\\')) + "\\cablight" + FileName.Substring(FileName.LastIndexOf('\\'));
+            var lightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "cablight"), Path.GetFileName(FileName));
             if (File.Exists(lightpath))
-            {
-                tex = viewer.TextureManager.Get(lightpath);
-                LightTextures.Add(FileName, tex);
-            }
+                LightTextures.Add(FileName, viewer.TextureManager.Get(lightpath));
             else
                 LightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
         }

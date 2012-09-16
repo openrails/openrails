@@ -596,7 +596,10 @@ namespace ORTS
                 else
                     NextTrackVectorSection(trackNode.TrVectorNode.TrVectorSections.Length - 1);
             }
-            JunctionEntryPinIndex = Array.FindIndex(trackNode.TrPins, tp => tp.Link == oldTrackNodeIndex);
+            JunctionEntryPinIndex = -1;
+            for (var i = 0; i < trackNode.TrPins.Length; i++)
+                if (trackNode.TrPins[i].Link == oldTrackNodeIndex)
+                    JunctionEntryPinIndex = i;
             return true;
         }
 

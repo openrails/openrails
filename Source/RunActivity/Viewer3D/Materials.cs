@@ -44,7 +44,7 @@ namespace ORTS
             {
                 try
                 {
-                    Texture2D texture = MSTS.ACEFile.Texture2DFromFile(GraphicsDevice, path);
+                    var texture = MSTS.ACEFile.Texture2DFromFile(GraphicsDevice, path);
                     Textures.Add(path, texture);
                     return texture;
                 }
