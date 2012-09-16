@@ -2561,7 +2561,7 @@ namespace ORTS
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
 			//Sequence = RenderPrimitiveSequence.CabView;
-            _Sprite2DCabView = new SpriteBatchMaterial(viewer);
+            _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
             _Viewer = viewer;
             _Locomotive = car;
 
@@ -2739,7 +2739,7 @@ namespace ORTS
         {
             _CabViewControl = cvc;
             _Shader = shader;
-            _Sprite2DCtlView = new SpriteBatchMaterial(viewer);
+            _Sprite2DCtlView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
 
             CABTextureManager.LoadTextures(viewer, _CabViewControl.ACEFile);
 
