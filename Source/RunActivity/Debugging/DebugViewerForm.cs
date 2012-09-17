@@ -36,7 +36,7 @@ namespace ORTS.Debugging
 
 
       #region Data Viewers
-	  public MessageViewer MessageViewer;
+	  //public MessageViewer MessageViewer;
       #endregion
 
       /// <summary>
@@ -162,12 +162,13 @@ namespace ORTS.Debugging
 		{
 			msgAll.Enabled = false; msgSelected.Enabled = false; composeMSG.Enabled = false;
 		}
+		  /*
 		if (MultiPlayer.MPManager.IsMultiPlayer())
 		{
 			MessageViewer = new MessageViewer();
 			MessageViewer.Show();
 			MessageViewer.Visible = false;
-		}
+		}*/
       }
 
 
@@ -236,7 +237,7 @@ namespace ORTS.Debugging
 
 				  if (currNode.TrEndNode)
 				  {
-					  buffers.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
+					  //buffers.Add(new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z));
 				  }
 				  else if (currNode.TrVectorNode != null)
 				  {
@@ -328,7 +329,7 @@ namespace ORTS.Debugging
 	  bool Inited = false;
 	  List<LineSegment> segments = new List<LineSegment>();
 	  List<SwitchWidget> switches;
-	  List<PointF> buffers = new List<PointF>();
+	  //List<PointF> buffers = new List<PointF>();
 	  List<SignalWidget> signals = new List<SignalWidget>();
 	  List<SidingWidget> sidings = new List<SidingWidget>();
 
@@ -541,62 +542,43 @@ namespace ORTS.Debugging
 			signalItemsDrawn.Clear();
 			 float x, y;
 			 PointF scaledItem = new PointF(0f, 0f);
-			if (showSwitches.Checked)
-            {
+			 for (var i = 0; i < switches.Count; i++)
+			 {
+				 SwitchWidget sw = switches[i];
 
-				for (var i = 0; i < switches.Count; i++)
-				{
-					SwitchWidget sw = switches[i];
+				 x = (sw.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (sw.Location.Y - minY - ViewWindow.Y) * yScale;
 
-					x = (sw.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (sw.Location.Y - minY - ViewWindow.Y) * yScale;
+				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 
-					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
-
-					scaledItem.X = x; scaledItem.Y = y;
+				 scaledItem.X = x; scaledItem.Y = y;
 
 
-					g.FillEllipse(Brushes.Black, GetRect(scaledItem, 5f*p.Width));
-					sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
-					switchItemsDrawn.Add(sw);
-				}
-			}
+				 g.FillEllipse(Brushes.Black, GetRect(scaledItem, 5f * p.Width));
+				 sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
+				 switchItemsDrawn.Add(sw);
+			 }
 
-			if (showBuffers.Checked)
-            {
-               foreach (PointF b in buffers)
-               {
-				   x = (b.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (b.Y - minY - ViewWindow.Y) * yScale;
-				   if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+			 foreach (var s in signals)
+			 {
+				 x = (s.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale;
+				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+				 scaledItem.X = x; scaledItem.Y = y;
+				 s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
 
-				   scaledItem.X = x; scaledItem.Y = y;
-				   g.FillRectangle(Brushes.Black, GetRect(scaledItem, 5f * p.Width));
-               }
-            }
-
-            if (showSignals.Checked)
-            {
-               foreach (var s in signals)
-               {
-				    x = (s.Location.X - minX - ViewWindow.X) * xScale; y =pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale;
-					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
-					scaledItem.X = x; scaledItem.Y = y;
-					s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
-
-					if (s.IsProceed == 0)
-					{
-						g.FillEllipse(Brushes.Green, GetRect(scaledItem, 5f * p.Width));
-					}
-					else if (s.IsProceed == 1)
-					{
-						g.FillEllipse(Brushes.Orange, GetRect(scaledItem, 5f * p.Width));
-					}
-					else
-					{
-						g.FillEllipse(Brushes.Red, GetRect(scaledItem, 5f * p.Width));
-					}
-					signalItemsDrawn.Add(s);
-			   }
-            }
+				 if (s.IsProceed == 0)
+				 {
+					 g.FillEllipse(Brushes.Green, GetRect(scaledItem, 5f * p.Width));
+				 }
+				 else if (s.IsProceed == 1)
+				 {
+					 g.FillEllipse(Brushes.Orange, GetRect(scaledItem, 5f * p.Width));
+				 }
+				 else
+				 {
+					 g.FillEllipse(Brushes.Red, GetRect(scaledItem, 5f * p.Width));
+				 }
+				 signalItemsDrawn.Add(s);
+			 }
 
             if (true/*showPlayerTrain.Checked*/)
             {
@@ -976,7 +958,7 @@ namespace ORTS.Debugging
 		  }
 		  LastCursorPosition.X = e.X;
 		  LastCursorPosition.Y = e.Y;
-		  MSG.Enabled = false;
+		  //MSG.Enabled = false;
 		  MultiPlayer.MPManager.Instance().ComposingText = false;
 	  }
 
@@ -1098,6 +1080,25 @@ namespace ORTS.Debugging
 		  }
 		  LastCursorPosition.X = e.X;
 		  LastCursorPosition.Y = e.Y;
+	  }
+
+	  public bool addNewMessage(double time, string msg)
+	  {
+		  var count = 0;
+		  while (count < 3)
+		  {
+			  try
+			  {
+				  if (messages.Items.Count > 10)
+				  {
+					  messages.Items.RemoveAt(0);
+				  }
+				  messages.Items.Add(msg);
+				  break;
+			  }
+			  catch { count++; }
+		  }
+		  return true;
 	  }
 
       private void leftButton_MouseDown(object sender, MouseEventArgs e)
@@ -1232,7 +1233,7 @@ namespace ORTS.Debugging
 				  user += "0END";
 				  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
 				  MSG.Text = "";
-				  MSG.Enabled = false;
+				  //MSG.Enabled = false;
 				  MultiPlayer.MPManager.Instance().ComposingText = false;
 
 			  }
@@ -1260,11 +1261,26 @@ namespace ORTS.Debugging
 
 			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
 			  MSG.Text = "";
-			  MSG.Enabled = false;
+			  //MSG.Enabled = false;
 			  MultiPlayer.MPManager.Instance().ComposingText = false;
 
 		  }
 
+	  }
+
+	  private void MSGLeave(object sender, EventArgs e)
+	  {
+		  MultiPlayer.MPManager.Instance().ComposingText = false;
+	  }
+
+	  private void MSGEnter(object sender, EventArgs e)
+	  {
+		  MultiPlayer.MPManager.Instance().ComposingText = true;
+	  }
+
+	  private void DispatcherLeave(object sender, EventArgs e)
+	  {
+		  MultiPlayer.MPManager.Instance().ComposingText = false;
 	  }
 
    }

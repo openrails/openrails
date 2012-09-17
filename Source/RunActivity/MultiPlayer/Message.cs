@@ -2532,7 +2532,7 @@ namespace ORTS.MultiPlayer
 				{
 					System.Console.WriteLine("MSG from " + sender + ":" + msgx);
 					if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.MSG(" From "+ sender+": "+msgx);
-					Program.DebugViewer.MessageViewer.addNewMessage(Program.Simulator.GameTime, sender + ": " + msgx);
+					Program.DebugViewer.addNewMessage(Program.Simulator.GameTime, sender + ": " + msgx);
 					break;
 				}
 			}

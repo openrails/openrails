@@ -51,7 +51,7 @@ namespace ORTS.Debugging
 
 					   MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
 					   MSG.Text = "";
-					   MSG.Enabled = false;
+					   //MSG.Enabled = false;
 					   MultiPlayer.MPManager.Instance().ComposingText = false;
 
 				   }
