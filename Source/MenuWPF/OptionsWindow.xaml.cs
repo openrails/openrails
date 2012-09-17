@@ -46,7 +46,7 @@ namespace MenuWPF
             this.sliderSound.Value = 5;
             this.cboResolution.Text = "1024x768";
 			this.txtBrakePipe.Text = "21";
-			this.txtBrakePipe.Text = "http://www.openrails.org/images/ICONmediumOD.jpg";
+			this.avatarURL.Text = "http://www.openrails.org/images/ICONmediumOD.jpg";
 			this.regKey = registryKey;
             this.foldersFile = foldersFile;
 

@@ -1233,7 +1233,7 @@ namespace ORTS.Debugging
 				  user += "0END";
 				  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
 				  MSG.Text = "";
-				  //MSG.Enabled = false;
+				  MSG.Enabled = false;
 				  MultiPlayer.MPManager.Instance().ComposingText = false;
 
 			  }
@@ -1261,7 +1261,7 @@ namespace ORTS.Debugging
 
 			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
 			  MSG.Text = "";
-			  //MSG.Enabled = false;
+			  MSG.Enabled = false;
 			  MultiPlayer.MPManager.Instance().ComposingText = false;
 
 		  }
@@ -1270,17 +1270,17 @@ namespace ORTS.Debugging
 
 	  private void MSGLeave(object sender, EventArgs e)
 	  {
-		  MultiPlayer.MPManager.Instance().ComposingText = false;
+		  //MultiPlayer.MPManager.Instance().ComposingText = false;
 	  }
 
 	  private void MSGEnter(object sender, EventArgs e)
 	  {
-		  MultiPlayer.MPManager.Instance().ComposingText = true;
+		  //MultiPlayer.MPManager.Instance().ComposingText = true;
 	  }
 
 	  private void DispatcherLeave(object sender, EventArgs e)
 	  {
-		  MultiPlayer.MPManager.Instance().ComposingText = false;
+		  //MultiPlayer.MPManager.Instance().ComposingText = false;
 	  }
 
    }

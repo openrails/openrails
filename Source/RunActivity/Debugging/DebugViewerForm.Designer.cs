@@ -154,6 +154,7 @@
 		  // 
 		  // MSG
 		  // 
+		  this.MSG.Enabled = false;
 		  this.MSG.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 		  this.MSG.Location = new System.Drawing.Point(1, 3);
 		  this.MSG.Name = "MSG";
