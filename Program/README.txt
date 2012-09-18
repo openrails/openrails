@@ -1,4 +1,4 @@
-﻿Open Rails software README - Release v7.0 Build v8xx
+﻿Open Rails software README - Release v8.0 Build v123x
 December 2011
 
 Please note the installation and use of Open Rails software is governed by the Open Rails End User License Agreement. 
@@ -24,6 +24,8 @@ CAMERA CONTROLS
 - 5 passenger view
 - 6 brakeman view - home and end move to front and back of train
 - 8 free camera
+- Alt 9 watch other trains
+- Ctrl 9 dispatcher window
 ALT+ENTER toggles fullscreen on and off
 - Pause -  toggles pause on and off
 - PgUp, PgDn - adjusts game speed
@@ -71,6 +73,8 @@ ENVIRONMENT CONTROLS (TEMPORARY DEMO MODE)
 Ctlr+ the above two keys: = Adjust amount of cloud overcast
 Alt+P = Toggle between clear, rain and snow
 
+Multiplayer
+Choose "start as server" if you want to be the server. Client needs to know server IP and port, and can only start in the Explore mode or with activities without AI trains.
 
 GRAPHICS QUALITY
 Note that Open Rails isn't registered with NVidia or ATI so it will run with global settings by default.  
