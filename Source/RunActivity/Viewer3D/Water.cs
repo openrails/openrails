@@ -63,7 +63,7 @@ namespace ORTS
             var dTileZ = TileZ - Viewer.Camera.TileZ;
             var mstsLocation = new Vector3(1024 + dTileX * 2048, 0, 1024 + dTileZ * 2048);
 
-            if (Viewer.Camera.CanSee(mstsLocation, 1448f, 2000f))
+            if (Viewer.Camera.CanSee(mstsLocation, 1448f, Viewer.Settings.ViewingDistance))
             {
                 xnaMatrix.M41 = mstsLocation.X - 1024;
                 xnaMatrix.M43 = 1024 - mstsLocation.Z;

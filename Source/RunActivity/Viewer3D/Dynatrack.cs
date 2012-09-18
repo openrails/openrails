@@ -573,7 +573,7 @@ namespace ORTS
             LODs.Add(lod); // Append this LOD to LODs array
 
             // BALLAST
-            lod = new LOD(2000.0f); // Create LOD for ballast with specified CutoffRadius
+            lod = new LOD(renderProcess.Viewer.Settings.ViewingDistance); // Create LOD for ballast with specified CutoffRadius
             // Single LODItem in this case
             lodItem = new LODItem("Ballast");
             lodItem.TexName = "acleantrack1.ace";

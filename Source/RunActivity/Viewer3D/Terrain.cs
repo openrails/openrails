@@ -49,9 +49,10 @@ namespace ORTS
                 TileZ = VisibleTileZ;
                 var tiles = Tiles;
                 var newTiles = new List<TerrainTile>();
-                for (var x = -1; x <= 1; x++)
+                var needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance / 2048f);
+                for (var x = -needed; x <= needed; x++)
                 {
-                    for (var z = -1; z <= 1; z++)
+                    for (var z = -needed; z <= needed; z++)
                     {
                         var tile = tiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         if (tile == null)
@@ -91,6 +92,12 @@ namespace ORTS
             var tiles = Tiles;
             foreach (var tile in tiles)
                 tile.Mark();
+        }
+
+        [CallOnThread("Updater")]
+        public string GetStatus()
+        {
+            return String.Format("{0:F0} tiles", Tiles.Count);
         }
     }
 
@@ -210,7 +217,7 @@ namespace ORTS
             Vector3 mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
             Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-            frame.AddAutoPrimitive(mstsLocation, 180f, 2000f, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
+            frame.AddAutoPrimitive(mstsLocation, 180f, Viewer.Settings.ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
         }
 
         /// <summary>

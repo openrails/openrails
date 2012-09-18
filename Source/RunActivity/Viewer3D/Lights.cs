@@ -325,7 +325,7 @@ namespace ORTS
             Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
 
             float objectRadius = 20; // Even more arbitrary.
-            float objectViewingDistance = 1500; // Arbitrary.
+            float objectViewingDistance = Viewer.Settings.ViewingDistance; // Arbitrary.
             if (Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
                 foreach (var lightMesh in LightMeshes)
                     if (lightMesh.Enabled || lightMesh.FadeOut)

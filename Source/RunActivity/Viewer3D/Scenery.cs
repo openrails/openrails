@@ -70,9 +70,10 @@ namespace ORTS
                 var worldFiles = WorldFiles;
                 var newWorldFiles = new List<WorldFile>();
                 var oldWorldFiles = new List<WorldFile>(worldFiles);
-                for (var x = -1; x <= 1; x++)
+                var needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance / 2048f);
+                for (var x = -needed; x <= needed; x++)
                 {
-                    for (var z = -1; z <= 1; z++)
+                    for (var z = -needed; z <= needed; z++)
                     {
                         var tile = worldFiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         if (tile == null)
