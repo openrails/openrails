@@ -13,9 +13,13 @@ namespace ORTS
 {
     public partial class MultiplayerForm : Form
     {
-        public MultiplayerForm()
+		readonly UserSettings Settings;
+        
+        public MultiplayerForm(UserSettings settings)
         {
             InitializeComponent();
+
+			Settings = settings;
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the
@@ -24,17 +28,13 @@ namespace ORTS
 
             textBoxUser.Text = Environment.UserName;
 
-            // Restore retained settings
-            using (var RK = Registry.CurrentUser.OpenSubKey(Program.RegistryKey))
-            {
-                if (RK != null)
-                {
-                    this.textBoxUser.Text = (string)RK.GetValue("Multiplayer_User", textBoxUser.Text);
-                    this.textBoxHost.Text = (string)RK.GetValue("Multiplayer_Host", textBoxHost.Text);
-                    this.numericPort.Value = (int)RK.GetValue("Multiplayer_Port", (int)numericPort.Value);
-					this.textMPUpdate.Text = RK.GetValue("MPUpdateInterval", textMPUpdate.Text).ToString();
-                }
-            }
+
+			this.textBoxUser.Text = Settings.Multiplayer_User;
+			this.textBoxHost.Text = Settings.Multiplayer_Host;
+			this.numericPort.Value = Settings.Multiplayer_Port;
+			this.textMPUpdate.Text = ""+Settings.Multiplayer_UpdateInterval;
+			this.showAvatar.Checked = Settings.ShowAvatar;
+			this.avatarURL.Text = Settings.AvatarURL;
         }
 
         void textBoxUser_Validating(object sender, CancelEventArgs e)
@@ -93,14 +93,12 @@ namespace ORTS
         void buttonOK_Click(object sender, EventArgs e)
         {
             // Retain settings for convenience
-            using (var RK = Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
-            {
-                RK.SetValue("Multiplayer_User", textBoxUser.Text);
-                RK.SetValue("Multiplayer_Host", textBoxHost.Text);
-                RK.SetValue("Multiplayer_Port", (int)numericPort.Value);
-				RK.SetValue("MPUpdateInterval", (int)double.Parse(textMPUpdate.Text));
-
-            }
+			Settings.Multiplayer_UpdateInterval = (int)double.Parse(textMPUpdate.Text);
+			Settings.Multiplayer_User = textBoxUser.Text;
+			Settings.Multiplayer_Host = textBoxHost.Text;
+			Settings.Multiplayer_Port = (int)numericPort.Value;
+			Settings.ShowAvatar = showAvatar.Checked;
+			Settings.AvatarURL = avatarURL.Text;
         }
     }
 }

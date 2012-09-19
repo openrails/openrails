@@ -212,7 +212,7 @@ namespace ORTS
 
         void buttonMultiplayer_Click(object sender, EventArgs e)
         {
-            using (var form = new MultiplayerForm())
+            using (var form = new MultiplayerForm(Settings))
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
                     DialogResult = DialogResult.OK;
@@ -402,7 +402,7 @@ namespace ORTS
 
         bool GetMultiplayerInfo()
         {
-            using (var form = new MultiplayerForm())
+            using (var form = new MultiplayerForm(Settings))
             {
                 switch (form.ShowDialog(this))
                 {

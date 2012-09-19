@@ -39,6 +39,9 @@
 			this.textMPUpdate = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
+			this.showAvatar = new System.Windows.Forms.CheckBox();
+			this.avatarURL = new System.Windows.Forms.TextBox();
+			this.label3 = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.epUser)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.epHost)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.epPort)).BeginInit();
@@ -50,7 +53,7 @@
 			this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.buttonCancel.CausesValidation = false;
 			this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.buttonCancel.Location = new System.Drawing.Point(174, 129);
+			this.buttonCancel.Location = new System.Drawing.Point(229, 170);
 			this.buttonCancel.Name = "buttonCancel";
 			this.buttonCancel.Size = new System.Drawing.Size(75, 23);
 			this.buttonCancel.TabIndex = 8;
@@ -117,7 +120,7 @@
 			// 
 			this.buttonClient.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.buttonClient.DialogResult = System.Windows.Forms.DialogResult.No;
-			this.buttonClient.Location = new System.Drawing.Point(93, 129);
+			this.buttonClient.Location = new System.Drawing.Point(148, 170);
 			this.buttonClient.Name = "buttonClient";
 			this.buttonClient.Size = new System.Drawing.Size(75, 23);
 			this.buttonClient.TabIndex = 7;
@@ -129,7 +132,7 @@
 			// 
 			this.buttonServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.buttonServer.DialogResult = System.Windows.Forms.DialogResult.Yes;
-			this.buttonServer.Location = new System.Drawing.Point(12, 129);
+			this.buttonServer.Location = new System.Drawing.Point(67, 170);
 			this.buttonServer.Name = "buttonServer";
 			this.buttonServer.Size = new System.Drawing.Size(75, 23);
 			this.buttonServer.TabIndex = 6;
@@ -181,13 +184,42 @@
 			this.label2.TabIndex = 11;
 			this.label2.Text = "Seconds";
 			// 
+			// showAvatar
+			// 
+			this.showAvatar.AutoSize = true;
+			this.showAvatar.Location = new System.Drawing.Point(224, 94);
+			this.showAvatar.Name = "showAvatar";
+			this.showAvatar.Size = new System.Drawing.Size(87, 17);
+			this.showAvatar.TabIndex = 12;
+			this.showAvatar.Text = "Show Avatar";
+			this.showAvatar.UseVisualStyleBackColor = true;
+			// 
+			// avatarURL
+			// 
+			this.avatarURL.Location = new System.Drawing.Point(93, 121);
+			this.avatarURL.Name = "avatarURL";
+			this.avatarURL.Size = new System.Drawing.Size(243, 20);
+			this.avatarURL.TabIndex = 14;
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(12, 124);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(63, 13);
+			this.label3.TabIndex = 13;
+			this.label3.Text = "Avatar URL";
+			// 
 			// MultiplayerForm
 			// 
 			this.AcceptButton = this.buttonClient;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.CancelButton = this.buttonCancel;
-			this.ClientSize = new System.Drawing.Size(261, 164);
+			this.ClientSize = new System.Drawing.Size(348, 201);
+			this.Controls.Add(this.avatarURL);
+			this.Controls.Add(this.label3);
+			this.Controls.Add(this.showAvatar);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.textMPUpdate);
 			this.Controls.Add(this.label1);
@@ -232,5 +264,8 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TextBox textMPUpdate;
 		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.CheckBox showAvatar;
+		private System.Windows.Forms.TextBox avatarURL;
+		private System.Windows.Forms.Label label3;
     }
 }
