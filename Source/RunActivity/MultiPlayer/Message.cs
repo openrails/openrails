@@ -2528,9 +2528,11 @@ namespace ORTS.MultiPlayer
 			string[] users = user.Split('\r');
 			foreach (var name in users)
 			{
-				if (name.Trim() == MPManager.GetUserName())
+				//someone may send a message with 0Server, which is intended for the server
+				if (name.Trim() == MPManager.GetUserName() || (MPManager.IsServer()&&name.Trim()=="0Server"))
 				{
 					System.Console.WriteLine("MSG from " + sender + ":" + msgx);
+					MPManager.Instance().lastSender = sender;
 					if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.MSG(" From "+ sender+": "+msgx);
 					Program.DebugViewer.addNewMessage(Program.Simulator.GameTime, sender + ": " + msgx);
 					break;
@@ -2538,9 +2540,10 @@ namespace ORTS.MultiPlayer
 			}
 			if (MPManager.IsServer())//server check if need to tell others.
 			{
-				System.Console.WriteLine(users);
+				//System.Console.WriteLine(users);
 				if (users.Count() == 1 && users[0].Trim() == MPManager.GetUserName()) return;
-				System.Console.WriteLine(this.ToString());
+				if (users.Count() == 1 && users[0].Trim() == "0Server") return;
+				//System.Console.WriteLine(this.ToString());
 				MultiPlayer.MPManager.BroadCast(this.ToString());
 			}
 		}

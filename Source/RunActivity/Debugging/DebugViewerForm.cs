@@ -998,7 +998,7 @@ namespace ORTS.Debugging
 		  }
 
 	  }
-#if DEBUG
+#if false
 	  void switchMainClick(object sender, EventArgs e)
 	  {
 		  if (switchPickedItem != null && switchPickedItem.Item.TrJunctionNode != null)
@@ -1212,11 +1212,18 @@ namespace ORTS.Debugging
 	  private void composeMSG_Click(object sender, EventArgs e)
 	  {
 		  MSG.Enabled = true;
+		  MSG.Focus();
 		  MultiPlayer.MPManager.Instance().ComposingText = true;
+		  msgAll.Enabled = true;
+		  msgSelected.Enabled = true;
+		  reply2Selected.Enabled = true;
 	  }
 
 	  private void msgAll_Click(object sender, EventArgs e)
 	  {
+		  msgAll.Enabled = false;
+		  msgSelected.Enabled = false;
+		  reply2Selected.Enabled = false;
 		  if (!MultiPlayer.MPManager.IsMultiPlayer()) return;
 		  var msg = MSG.Text;
 		  msg = msg.Replace("\r", "");
@@ -1241,30 +1248,38 @@ namespace ORTS.Debugging
 		  }
 	  }
 
-	  private void msgSelected_Click(object sender, EventArgs e)
+	  private void replySelected(object sender, EventArgs e)
 	  {
+		  msgAll.Enabled = false;
+		  msgSelected.Enabled = false;
+		  reply2Selected.Enabled = false;
+
 		  if (!MultiPlayer.MPManager.IsMultiPlayer()) return;
-		  var chosen = AvatarView.SelectedItems;
 		  var msg = MSG.Text;
 		  msg = msg.Replace("\r", "");
 		  msg = msg.Replace("\t", "");
 		  if (msg == "") return;
-		  if (chosen.Count > 0)
+		  var user = "";
+		  if (messages.SelectedItems.Count > 0)
 		  {
-			  var user = "";
-
+			  var chosen = messages.SelectedItems;
 			  for (var i = 0; i < chosen.Count; i++)
 			  {
-				  user += chosen[i].Text +"\r";
+				  var tmp = (string)(chosen[i]);
+				  var index = tmp.IndexOf(':');
+				  if (index < 0) continue;
+				  tmp = tmp.Substring(0, index) + "\r";
+				  if (user.Contains(tmp)) continue;
+				  user += tmp;
 			  }
 			  user += "0END";
-
-			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-			  MSG.Text = "";
-			  MSG.Enabled = false;
-			  MultiPlayer.MPManager.Instance().ComposingText = false;
-
 		  }
+		  else return;
+		  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+		  MSG.Text = "";
+		  MSG.Enabled = false;
+		  MultiPlayer.MPManager.Instance().ComposingText = false;
+
 
 	  }
 
@@ -1281,6 +1296,73 @@ namespace ORTS.Debugging
 	  private void DispatcherLeave(object sender, EventArgs e)
 	  {
 		  //MultiPlayer.MPManager.Instance().ComposingText = false;
+	  }
+
+	  private void checkKeys(object sender, PreviewKeyDownEventArgs e)
+	  {
+		  if (e.KeyValue == 13)
+		  {
+			  var msg = MSG.Text;
+			  msg = msg.Replace("\r", "");
+			  msg = msg.Replace("\t", "");
+			  if (msg == "") return;
+			  var user = "";
+
+			  if (MultiPlayer.MPManager.Instance().lastSender == "")
+			  {
+				  //server will broadcast the message to everyone
+				  if (MultiPlayer.MPManager.IsServer())
+				  {
+					  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
+					  {
+						  user += p.Key + "\r";
+					  }
+					  user += "0END";
+
+				  }
+				  else user = "0Server\r0END";
+			  }
+			  else
+			  {
+				  user = MultiPlayer.MPManager.Instance().lastSender + "\r0END";
+			  }
+			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+			  MSG.Text = "";
+			  MSG.Enabled = false;
+			  MultiPlayer.MPManager.Instance().ComposingText = false;
+		  }
+	  }
+
+	  private void msgSelected_Click(object sender, EventArgs e)
+	  {
+		  msgAll.Enabled = false;
+		  msgSelected.Enabled = false;
+		  reply2Selected.Enabled = false;
+
+		  if (!MultiPlayer.MPManager.IsMultiPlayer()) return;
+		  var msg = MSG.Text;
+		  msg = msg.Replace("\r", "");
+		  msg = msg.Replace("\t", "");
+		  if (msg == "") return;
+		  var user = "";
+		  if (AvatarView.SelectedItems.Count > 0)
+		  {
+			  var chosen = this.AvatarView.SelectedItems;
+			  for (var i = 0; i < chosen.Count; i++)
+			  {
+				  user += chosen[i].Text + "\r";
+			  }
+			  user += "0END";
+
+
+		  }
+		  else return;
+
+		  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+		  MSG.Text = "";
+		  MSG.Enabled = false;
+		  MultiPlayer.MPManager.Instance().ComposingText = false;
+
 	  }
 
    }

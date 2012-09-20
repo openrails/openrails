@@ -42,6 +42,7 @@
 		  this.composeMSG = new System.Windows.Forms.Button();
 		  this.label1 = new System.Windows.Forms.Label();
 		  this.messages = new System.Windows.Forms.ListBox();
+		  this.reply2Selected = new System.Windows.Forms.Button();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.SuspendLayout();
@@ -161,6 +162,7 @@
 		  this.MSG.Size = new System.Drawing.Size(583, 26);
 		  this.MSG.TabIndex = 18;
 		  this.MSG.WordWrap = false;
+		  this.MSG.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.checkKeys);
 		  this.MSG.Leave += new System.EventHandler(this.MSGLeave);
 		  this.MSG.Enter += new System.EventHandler(this.MSGEnter);
 		  // 
@@ -216,12 +218,24 @@
 		  this.messages.Size = new System.Drawing.Size(583, 144);
 		  this.messages.TabIndex = 22;
 		  // 
+		  // reply2Selected
+		  // 
+		  this.reply2Selected.Location = new System.Drawing.Point(590, 90);
+		  this.reply2Selected.Margin = new System.Windows.Forms.Padding(2);
+		  this.reply2Selected.Name = "reply2Selected";
+		  this.reply2Selected.Size = new System.Drawing.Size(104, 24);
+		  this.reply2Selected.TabIndex = 23;
+		  this.reply2Selected.Text = "Reply to Selected";
+		  this.reply2Selected.UseVisualStyleBackColor = true;
+		  this.reply2Selected.Click += new System.EventHandler(this.replySelected);
+		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
 		  this.ClientSize = new System.Drawing.Size(868, 813);
+		  this.Controls.Add(this.reply2Selected);
 		  this.Controls.Add(this.messages);
 		  this.Controls.Add(this.composeMSG);
 		  this.Controls.Add(this.msgAll);
@@ -264,5 +278,6 @@
 	  private System.Windows.Forms.Button composeMSG;
 	  private System.Windows.Forms.Label label1;
 	  private System.Windows.Forms.ListBox messages;
+	  private System.Windows.Forms.Button reply2Selected;
    }
 }
