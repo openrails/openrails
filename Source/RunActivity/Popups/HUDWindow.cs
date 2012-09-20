@@ -56,9 +56,7 @@ namespace ORTS.Popups
                 TextPageBrakeInfo,
 				TextPageForceInfo,
                 TextPageDispatcherInfo,
-#if DEBUG
 				TextPageDebugInfo,
-#endif
             };
 
             TextFont = owner.TextFontDefaultOutlined;
