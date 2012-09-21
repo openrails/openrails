@@ -61,11 +61,11 @@
 		  // refreshButton
 		  // 
 		  this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.refreshButton.Location = new System.Drawing.Point(727, 9);
+		  this.refreshButton.Location = new System.Drawing.Point(711, 9);
 		  this.refreshButton.Name = "refreshButton";
-		  this.refreshButton.Size = new System.Drawing.Size(91, 23);
+		  this.refreshButton.Size = new System.Drawing.Size(141, 23);
 		  this.refreshButton.TabIndex = 1;
-		  this.refreshButton.Text = "View Self";
+		  this.refreshButton.Text = "View Selected";
 		  this.refreshButton.UseVisualStyleBackColor = true;
 		  this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
 		  // 
@@ -115,6 +115,7 @@
 		  this.AvatarView.Size = new System.Drawing.Size(121, 626);
 		  this.AvatarView.TabIndex = 14;
 		  this.AvatarView.UseCompatibleStateImageBehavior = false;
+		  this.AvatarView.SelectedIndexChanged += new System.EventHandler(this.AvatarView_SelectedIndexChanged);
 		  // 
 		  // rmvButton
 		  // 
@@ -168,6 +169,7 @@
 		  // 
 		  // msgSelected
 		  // 
+		  this.msgSelected.Enabled = false;
 		  this.msgSelected.Location = new System.Drawing.Point(590, 61);
 		  this.msgSelected.Margin = new System.Windows.Forms.Padding(2);
 		  this.msgSelected.Name = "msgSelected";
@@ -179,6 +181,7 @@
 		  // 
 		  // msgAll
 		  // 
+		  this.msgAll.Enabled = false;
 		  this.msgAll.Location = new System.Drawing.Point(590, 32);
 		  this.msgAll.Margin = new System.Windows.Forms.Padding(2);
 		  this.msgAll.Name = "msgAll";
@@ -217,9 +220,11 @@
 		  this.messages.Name = "messages";
 		  this.messages.Size = new System.Drawing.Size(583, 144);
 		  this.messages.TabIndex = 22;
+		  this.messages.SelectedIndexChanged += new System.EventHandler(this.msgSelectedChanged);
 		  // 
 		  // reply2Selected
 		  // 
+		  this.reply2Selected.Enabled = false;
 		  this.reply2Selected.Location = new System.Drawing.Point(590, 90);
 		  this.reply2Selected.Margin = new System.Windows.Forms.Padding(2);
 		  this.reply2Selected.Name = "reply2Selected";

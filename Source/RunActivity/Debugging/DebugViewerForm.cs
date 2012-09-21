@@ -162,6 +162,12 @@ namespace ORTS.Debugging
 		{
 			msgAll.Enabled = false; msgSelected.Enabled = false; composeMSG.Enabled = false;
 		}
+
+		if (!MultiPlayer.MPManager.IsServer())
+		{
+			this.chkAllowUserSwitch.Visible = false;
+			this.chkAllowUserSwitch.Checked = true;
+		}
 		  /*
 		if (MultiPlayer.MPManager.IsMultiPlayer())
 		{
@@ -414,8 +420,14 @@ namespace ORTS.Debugging
 	  {
 		  if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.OnlineTrains == null || MultiPlayer.MPManager.OnlineTrains.Players == null) return;
 		  var player = MultiPlayer.MPManager.OnlineTrains.Players;
+		  var username =MultiPlayer.MPManager.GetUserName(); 
 		  if (avatarList == null) avatarList = new Dictionary<string, Image>();
-		  if (avatarList.Count == player.Count) return;
+		  if (avatarList.Count == player.Count + 1) return;
+		  //add myself
+		  if (!avatarList.ContainsKey(MultiPlayer.MPManager.GetUserName()))
+		  {
+			  AddAvatar(username, Program.Simulator.Settings.AvatarURL);
+		  }
 
 		  foreach (var p in player) {
 			  if (avatarList.ContainsKey(p.Key)) continue;
@@ -425,7 +437,7 @@ namespace ORTS.Debugging
 		  Dictionary<string, Image> tmplist = null;
 		  foreach (var a in avatarList)
 		  {
-			  if (player.ContainsKey(a.Key)) continue;
+			  if (player.ContainsKey(a.Key) || a.Key == username) continue;
 			  if (tmplist == null) tmplist = new Dictionary<string, Image>();
 			  tmplist.Add(a.Key, a.Value);
 		  }
@@ -436,9 +448,20 @@ namespace ORTS.Debugging
 		  }
 		  imageList1.Images.Clear();
 		  AvatarView.Items.Clear();
-		  var i = 0;
 		  foreach (var pair in avatarList)
 		  {
+			  if (pair.Key != username) continue;
+			  if (pair.Value == null) AvatarView.Items.Add(pair.Key).ImageIndex = -1;
+			  else
+			  {
+				  AvatarView.Items.Add(pair.Key).ImageIndex = 0;
+				  imageList1.Images.Add(pair.Value);
+			  }
+		  }
+		  var i = 1;
+		  foreach (var pair in avatarList)
+		  {
+			  if (pair.Key == username) continue;
 			  if (pair.Value == null) AvatarView.Items.Add(pair.Key).ImageIndex = -1;
 			  else
 			  {
@@ -465,13 +488,38 @@ namespace ORTS.Debugging
 		  if (firstShow)
 		  {
 			  WorldPosition pos;
-			  if (Program.Simulator.PlayerLocomotive != null)
+			  //see who should I look at:
+			  //if the player is selected in the avatar list, show the player, otherwise, show the one with the lowest index
+			  if (AvatarView.SelectedIndices.Count > 0)
 			  {
-				  pos = Program.Simulator.PlayerLocomotive.WorldPosition;
+				  if (AvatarView.SelectedIndices.Contains(0))
+				  {
+					  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
+					  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
+				  }
+				  else
+				  {
+					  try
+					  {
+						  var i = 10000;
+						  foreach (var index in AvatarView.SelectedIndices)
+						  {
+							  if ((int)index < i) i = (int)index;
+						  }
+						  var name = AvatarView.Items[i].Text;
+						  pos = MultiPlayer.MPManager.OnlineTrains.Players[name].Train.Cars[0].WorldPosition;
+					  }
+					  catch
+					  {
+						  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
+						  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
+					  }
+				  }
 			  }
 			  else
 			  {
-				  pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
+				  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
+				  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
 			  }
 			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
 			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
@@ -1215,8 +1263,8 @@ namespace ORTS.Debugging
 		  MSG.Focus();
 		  MultiPlayer.MPManager.Instance().ComposingText = true;
 		  msgAll.Enabled = true;
-		  msgSelected.Enabled = true;
-		  reply2Selected.Enabled = true;
+		  if (messages.SelectedItems.Count > 0) msgSelected.Enabled = true;
+		  if (AvatarView.SelectedItems.Count > 0) reply2Selected.Enabled = true;
 	  }
 
 	  private void msgAll_Click(object sender, EventArgs e)
@@ -1228,6 +1276,9 @@ namespace ORTS.Debugging
 		  var msg = MSG.Text;
 		  msg = msg.Replace("\r", "");
 		  msg = msg.Replace("\t", "");
+		  MultiPlayer.MPManager.Instance().ComposingText = false;
+		  MSG.Text = "";
+		  MSG.Enabled = false;
 		  if (msg != "")
 		  {
 			  try
@@ -1239,9 +1290,6 @@ namespace ORTS.Debugging
 				  }
 				  user += "0END";
 				  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-				  MSG.Text = "";
-				  MSG.Enabled = false;
-				  MultiPlayer.MPManager.Instance().ComposingText = false;
 
 			  }
 			  catch { }
@@ -1258,6 +1306,9 @@ namespace ORTS.Debugging
 		  var msg = MSG.Text;
 		  msg = msg.Replace("\r", "");
 		  msg = msg.Replace("\t", "");
+		  MultiPlayer.MPManager.Instance().ComposingText = false;
+		  MSG.Text = "";
+		  MSG.Enabled = false;
 		  if (msg == "") return;
 		  var user = "";
 		  if (messages.SelectedItems.Count > 0)
@@ -1276,9 +1327,6 @@ namespace ORTS.Debugging
 		  }
 		  else return;
 		  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-		  MSG.Text = "";
-		  MSG.Enabled = false;
-		  MultiPlayer.MPManager.Instance().ComposingText = false;
 
 
 	  }
@@ -1305,6 +1353,10 @@ namespace ORTS.Debugging
 			  var msg = MSG.Text;
 			  msg = msg.Replace("\r", "");
 			  msg = msg.Replace("\t", "");
+			  msg = msg.Replace("\n", "");
+			  MultiPlayer.MPManager.Instance().ComposingText = false;
+			  MSG.Enabled = false;
+			  MSG.Text = "";
 			  if (msg == "") return;
 			  var user = "";
 
@@ -1327,9 +1379,7 @@ namespace ORTS.Debugging
 				  user = MultiPlayer.MPManager.Instance().lastSender + "\r0END";
 			  }
 			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-			  MSG.Text = "";
-			  MSG.Enabled = false;
-			  MultiPlayer.MPManager.Instance().ComposingText = false;
+
 		  }
 	  }
 
@@ -1338,9 +1388,12 @@ namespace ORTS.Debugging
 		  msgAll.Enabled = false;
 		  msgSelected.Enabled = false;
 		  reply2Selected.Enabled = false;
+		  MultiPlayer.MPManager.Instance().ComposingText = false;
+		  MSG.Enabled = false;
 
 		  if (!MultiPlayer.MPManager.IsMultiPlayer()) return;
 		  var msg = MSG.Text;
+		  MSG.Text = "";
 		  msg = msg.Replace("\r", "");
 		  msg = msg.Replace("\t", "");
 		  if (msg == "") return;
@@ -1350,6 +1403,7 @@ namespace ORTS.Debugging
 			  var chosen = this.AvatarView.SelectedItems;
 			  for (var i = 0; i < chosen.Count; i++)
 			  {
+				  if (chosen[i].Text == MultiPlayer.MPManager.GetUserName()) continue;
 				  user += chosen[i].Text + "\r";
 			  }
 			  user += "0END";
@@ -1359,9 +1413,21 @@ namespace ORTS.Debugging
 		  else return;
 
 		  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-		  MSG.Text = "";
-		  MSG.Enabled = false;
-		  MultiPlayer.MPManager.Instance().ComposingText = false;
+
+	  }
+
+	  private void msgSelectedChanged(object sender, EventArgs e)
+	  {
+		  AvatarView.SelectedItems.Clear();
+		  msgSelected.Enabled = false;
+		  if (MSG.Enabled == true) reply2Selected.Enabled = true;
+	  }
+
+	  private void AvatarView_SelectedIndexChanged(object sender, EventArgs e)
+	  {
+		  messages.SelectedItems.Clear();
+		  reply2Selected.Enabled = false;
+		  if (MSG.Enabled == true) msgSelected.Enabled = true;
 
 	  }
 
