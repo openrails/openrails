@@ -78,6 +78,7 @@ namespace ORTS
         GameLocomotiveSwap,
         GameRequestControl,
         GameMultiPlayerDispatcher,
+		GameMultiPlayerTexting,
 
         DisplayNextWindowTab,
         DisplayHelpWindow,
@@ -515,6 +516,7 @@ namespace ORTS
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
 			Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput(0x21, KeyModifiers.Control);
 			Commands[(int)UserCommands.GameMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
+			Commands[(int)UserCommands.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14);
 
             // for every user command
             foreach (var commandEnum in Enum.GetValues(typeof(UserCommands)))

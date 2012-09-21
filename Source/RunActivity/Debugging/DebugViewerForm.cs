@@ -158,15 +158,19 @@ namespace ORTS.Debugging
 		  InitData();
         InitImage();
 		chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
-		if (!MultiPlayer.MPManager.IsMultiPlayer())
+		if (!MultiPlayer.MPManager.IsMultiPlayer())//single player mode, make those unnecessary removed
 		{
-			msgAll.Enabled = false; msgSelected.Enabled = false; composeMSG.Enabled = false;
+			msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
+			AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false;
+			pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
+			refreshButton.Text = "View Self";
 		}
 
 		if (!MultiPlayer.MPManager.IsServer())
 		{
 			this.chkAllowUserSwitch.Visible = false;
 			this.chkAllowUserSwitch.Checked = true;
+			this.rmvButton.Visible = false;
 		}
 		  /*
 		if (MultiPlayer.MPManager.IsMultiPlayer())

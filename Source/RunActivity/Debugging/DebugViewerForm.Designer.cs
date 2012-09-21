@@ -49,7 +49,7 @@
 		  // 
 		  // pictureBox1
 		  // 
-		  this.pictureBox1.Location = new System.Drawing.Point(3, 183);
+		  this.pictureBox1.Location = new System.Drawing.Point(3, 131);
 		  this.pictureBox1.Name = "pictureBox1";
 		  this.pictureBox1.Size = new System.Drawing.Size(684, 626);
 		  this.pictureBox1.TabIndex = 0;
@@ -102,7 +102,7 @@
 		  // 
 		  this.label2.AutoSize = true;
 		  this.label2.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.label2.Location = new System.Drawing.Point(839, 40);
+		  this.label2.Location = new System.Drawing.Point(836, 40);
 		  this.label2.Name = "label2";
 		  this.label2.Size = new System.Drawing.Size(19, 16);
 		  this.label2.TabIndex = 8;
@@ -110,7 +110,7 @@
 		  // 
 		  // AvatarView
 		  // 
-		  this.AvatarView.Location = new System.Drawing.Point(711, 183);
+		  this.AvatarView.Location = new System.Drawing.Point(717, 133);
 		  this.AvatarView.Name = "AvatarView";
 		  this.AvatarView.Size = new System.Drawing.Size(121, 626);
 		  this.AvatarView.TabIndex = 14;
@@ -119,7 +119,7 @@
 		  // 
 		  // rmvButton
 		  // 
-		  this.rmvButton.Location = new System.Drawing.Point(725, 120);
+		  this.rmvButton.Location = new System.Drawing.Point(725, 104);
 		  this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
 		  this.rmvButton.Name = "rmvButton";
 		  this.rmvButton.Size = new System.Drawing.Size(93, 24);
@@ -146,7 +146,7 @@
 		  this.chkShowAvatars.AutoSize = true;
 		  this.chkShowAvatars.Checked = true;
 		  this.chkShowAvatars.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkShowAvatars.Location = new System.Drawing.Point(710, 89);
+		  this.chkShowAvatars.Location = new System.Drawing.Point(710, 85);
 		  this.chkShowAvatars.Name = "chkShowAvatars";
 		  this.chkShowAvatars.Size = new System.Drawing.Size(92, 17);
 		  this.chkShowAvatars.TabIndex = 17;
@@ -213,12 +213,12 @@
 		  // 
 		  // messages
 		  // 
-		  this.messages.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+		  this.messages.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 		  this.messages.FormattingEnabled = true;
-		  this.messages.ItemHeight = 20;
+		  this.messages.ItemHeight = 18;
 		  this.messages.Location = new System.Drawing.Point(1, 38);
 		  this.messages.Name = "messages";
-		  this.messages.Size = new System.Drawing.Size(583, 144);
+		  this.messages.Size = new System.Drawing.Size(583, 76);
 		  this.messages.TabIndex = 22;
 		  this.messages.SelectedIndexChanged += new System.EventHandler(this.msgSelectedChanged);
 		  // 
@@ -239,7 +239,7 @@
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
-		  this.ClientSize = new System.Drawing.Size(868, 813);
+		  this.ClientSize = new System.Drawing.Size(868, 768);
 		  this.Controls.Add(this.reply2Selected);
 		  this.Controls.Add(this.messages);
 		  this.Controls.Add(this.composeMSG);

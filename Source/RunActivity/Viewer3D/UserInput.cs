@@ -30,7 +30,7 @@ namespace ORTS
     public static class UserInput
     {
         public static bool Changed = false;  // flag UpdaterProcess that its time to handle keyboard input
-
+		public static bool ComposingMessage = false;
         public static KeyboardState KeyboardState;
         public static MouseState MouseState;
         static KeyboardState LastKeyboardState;
@@ -48,7 +48,15 @@ namespace ORTS
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
             KeyboardState = viewer.RenderProcess.IsActive ? Keyboard.GetState() : new KeyboardState();
             MouseState = viewer.RenderProcess.IsActive ? Mouse.GetState() : new MouseState(0, 0, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-            if (LastKeyboardState != KeyboardState
+			if (LastKeyboardState != KeyboardState && viewer.ComposeMessageWindow.Visible == true)
+			{
+				Changed = false;
+				viewer.ComposeMessageWindow.AppendMessage(KeyboardState.GetPressedKeys(), LastKeyboardState.GetPressedKeys());
+
+				return;
+			}
+
+			if (LastKeyboardState != KeyboardState
                 || LastMouseState.LeftButton != MouseState.LeftButton
                 || LastMouseState.RightButton != MouseState.RightButton
                 || LastMouseState.MiddleButton != MouseState.MiddleButton)
@@ -91,6 +99,7 @@ namespace ORTS
 
         public static bool IsPressed(UserCommands command)
         {
+			if (ComposingMessage == true) return false;
             if (RDState != null && RDState.IsPressed(command))
                 return true;
             var setting = InputSettings.Commands[(int)command];
@@ -99,7 +108,8 @@ namespace ORTS
 
         public static bool IsReleased(UserCommands command)
         {
-            if (RDState != null && RDState.IsReleased(command))
+			if (ComposingMessage == true) return false;
+			if (RDState != null && RDState.IsReleased(command))
                 return true;
             var setting = InputSettings.Commands[(int)command];
             return !setting.IsKeyDown(KeyboardState) && setting.IsKeyDown(LastKeyboardState);
@@ -107,7 +117,8 @@ namespace ORTS
 
         public static bool IsDown(UserCommands command)
         {
-            if (RDState != null && RDState.IsDown(command))
+			if (ComposingMessage == true) return false;
+			if (RDState != null && RDState.IsDown(command))
                 return true;
             var setting = InputSettings.Commands[(int)command];
             return setting.IsKeyDown(KeyboardState);

@@ -80,8 +80,9 @@ namespace ORTS
         public CompassWindow CompassWindow; // 0 window
         public ActivityWindow ActivityWindow; // pop-up window
 		public TracksDebugWindow TracksDebugWindow; // Control-Alt-F6
-        public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
-        // Route Information
+		public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
+		public ComposeMessage ComposeMessageWindow; // Control-Alt-F11 window
+		// Route Information
         public TileManager Tiles;
         public ENVFile ENVFile;
         public SIGCFGFile SIGCFG;
@@ -263,6 +264,7 @@ namespace ORTS
             ActivityWindow = new ActivityWindow(WindowManager);
             TracksDebugWindow = new TracksDebugWindow(WindowManager);
             SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
+			ComposeMessageWindow = new ComposeMessage(WindowManager);
             WindowManager.Initialize();
 
             World = new World(this);
@@ -431,6 +433,11 @@ namespace ORTS
             WindowManager.HandleUserInput(elapsedTime);
 
             // Check for game control keys
+			if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GameMultiPlayerTexting))
+			{
+				if (ComposeMessageWindow == null) ComposeMessageWindow = new ComposeMessage(WindowManager);
+				ComposeMessageWindow.InitMessage();
+			}
             if (UserInput.IsPressed(UserCommands.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
             if (UserInput.IsPressed(UserCommands.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
             if (UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
