@@ -20,7 +20,7 @@ namespace ORTS.Popups
 
 		int index;
 		public ComposeMessage(WindowManager owner)
-			: base(owner, 600, 72, "Message")
+			: base(owner, 600, 72, "Compose Message (e.g.   receiver1, receiver2: message body)")
 		{
 		}
 

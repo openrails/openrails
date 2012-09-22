@@ -166,12 +166,6 @@ namespace ORTS.Debugging
 			refreshButton.Text = "View Self";
 		}
 
-		if (!MultiPlayer.MPManager.IsServer())
-		{
-			this.chkAllowUserSwitch.Visible = false;
-			this.chkAllowUserSwitch.Checked = true;
-			this.rmvButton.Visible = false;
-		}
 		  /*
 		if (MultiPlayer.MPManager.IsMultiPlayer())
 		{
@@ -427,8 +421,9 @@ namespace ORTS.Debugging
 		  var username =MultiPlayer.MPManager.GetUserName(); 
 		  if (avatarList == null) avatarList = new Dictionary<string, Image>();
 		  if (avatarList.Count == player.Count + 1) return;
+
 		  //add myself
-		  if (!avatarList.ContainsKey(MultiPlayer.MPManager.GetUserName()))
+		  if (!avatarList.ContainsKey(username))
 		  {
 			  AddAvatar(username, Program.Simulator.Settings.AvatarURL);
 		  }
@@ -452,6 +447,7 @@ namespace ORTS.Debugging
 		  }
 		  imageList1.Images.Clear();
 		  AvatarView.Items.Clear();
+
 		  foreach (var pair in avatarList)
 		  {
 			  if (pair.Key != username) continue;
@@ -462,6 +458,7 @@ namespace ORTS.Debugging
 				  imageList1.Images.Add(pair.Value);
 			  }
 		  }
+
 		  var i = 1;
 		  foreach (var pair in avatarList)
 		  {
@@ -491,18 +488,24 @@ namespace ORTS.Debugging
 
 		  if (firstShow)
 		  {
+			  if (!MultiPlayer.MPManager.IsServer())
+			  {
+				  this.chkAllowUserSwitch.Visible = false;
+				  this.chkAllowUserSwitch.Checked = true;
+				  this.rmvButton.Visible = false;
+				  this.msgAll.Text = "MSG to Server";
+			  }
+			  else
+			  {
+				  this.msgAll.Text = "MSG to All";
+			  }
 			  WorldPosition pos;
 			  //see who should I look at:
 			  //if the player is selected in the avatar list, show the player, otherwise, show the one with the lowest index
-			  if (AvatarView.SelectedIndices.Count > 0)
+			  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
+			  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
+			  if (AvatarView.SelectedIndices.Count > 0 && !AvatarView.SelectedIndices.Contains(0))
 			  {
-				  if (AvatarView.SelectedIndices.Contains(0))
-				  {
-					  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
-					  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
-				  }
-				  else
-				  {
 					  try
 					  {
 						  var i = 10000;
@@ -513,25 +516,15 @@ namespace ORTS.Debugging
 						  var name = AvatarView.Items[i].Text;
 						  pos = MultiPlayer.MPManager.OnlineTrains.Players[name].Train.Cars[0].WorldPosition;
 					  }
-					  catch
-					  {
-						  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
-						  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
-					  }
-				  }
-			  }
-			  else
-			  {
-				  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
-				  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
+					  catch { }
 			  }
 			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
 			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
+			  if (MultiPlayer.MPManager.IsServer()) rmvButton.Visible = true;
+			  else rmvButton.Visible = false;
 			  firstShow = false;
 		  }
 
-		  if (MultiPlayer.MPManager.IsServer()) rmvButton.Visible = true;
-		  else rmvButton.Visible = false;
 
 		  //if (Program.Random.Next(100) == 0) AddAvatar("Test:"+Program.Random.Next(5), "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle");
 		  try
@@ -1273,6 +1266,11 @@ namespace ORTS.Debugging
 
 	  private void msgAll_Click(object sender, EventArgs e)
 	  {
+		  msgDefault();
+	  }
+
+	  private void msgDefault()
+	  {
 		  msgAll.Enabled = false;
 		  msgSelected.Enabled = false;
 		  reply2Selected.Enabled = false;
@@ -1281,25 +1279,33 @@ namespace ORTS.Debugging
 		  msg = msg.Replace("\r", "");
 		  msg = msg.Replace("\t", "");
 		  MultiPlayer.MPManager.Instance().ComposingText = false;
-		  MSG.Text = "";
 		  MSG.Enabled = false;
 		  if (msg != "")
 		  {
-			  try
+			  if (MultiPlayer.MPManager.IsServer())
 			  {
-				  var user = "";
-				  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
+				  try
 				  {
-					  user += p.Key + "\r";
-				  }
-				  user += "0END";
-				  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+					  var user = "";
+					  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
+					  {
+						  user += p.Key + "\r";
+					  }
+					  user += "0END";
+					  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+					  MSG.Text = "";
 
+				  }
+				  catch { }
 			  }
-			  catch { }
+			  else
+			  {
+				  var user = "0Server\r+0END";
+				  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+				  MSG.Text = "";
+			  }
 		  }
 	  }
-
 	  private void replySelected(object sender, EventArgs e)
 	  {
 		  msgAll.Enabled = false;
@@ -1354,36 +1360,39 @@ namespace ORTS.Debugging
 	  {
 		  if (e.KeyValue == 13)
 		  {
-			  var msg = MSG.Text;
-			  msg = msg.Replace("\r", "");
-			  msg = msg.Replace("\t", "");
-			  msg = msg.Replace("\n", "");
-			  MultiPlayer.MPManager.Instance().ComposingText = false;
-			  MSG.Enabled = false;
-			  MSG.Text = "";
-			  if (msg == "") return;
-			  var user = "";
-
-			  if (MultiPlayer.MPManager.Instance().lastSender == "")
+			  if (e.KeyValue == 13)
 			  {
-				  //server will broadcast the message to everyone
-				  if (MultiPlayer.MPManager.IsServer())
+				  var msg = MSG.Text;
+				  msg = msg.Replace("\r", "");
+				  msg = msg.Replace("\t", "");
+				  msg = msg.Replace("\n", "");
+				  MultiPlayer.MPManager.Instance().ComposingText = false;
+				  MSG.Enabled = false;
+				  MSG.Text = "";
+				  if (msg == "") return;
+				  var user = "";
+
+				  if (MultiPlayer.MPManager.Instance().lastSender == "")
 				  {
-					  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
+					  //server will broadcast the message to everyone
+					  if (MultiPlayer.MPManager.IsServer())
 					  {
-						  user += p.Key + "\r";
+						  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
+						  {
+							  user += p.Key + "\r";
+						  }
+						  user += "0END";
+
 					  }
-					  user += "0END";
-
+					  else user = "0Server\r0END";
 				  }
-				  else user = "0Server\r0END";
-			  }
-			  else
-			  {
-				  user = MultiPlayer.MPManager.Instance().lastSender + "\r0END";
-			  }
-			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+				  else
+				  {
+					  user = MultiPlayer.MPManager.Instance().lastSender + "\r0END";
+				  }
+				  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
 
+			  }
 		  }
 	  }
 
