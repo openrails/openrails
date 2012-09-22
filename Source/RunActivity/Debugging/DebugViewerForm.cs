@@ -367,6 +367,7 @@ namespace ORTS.Debugging
 
 		  try
 		  {
+			  if (Program.Simulator.Settings.ShowAvatar == false) throw new Exception();
 			  var request = WebRequest.Create(url);
 
 			  using (var response = request.GetResponse())
@@ -1229,6 +1230,10 @@ namespace ORTS.Debugging
 	  private void chkShowAvatars_CheckedChanged(object sender, EventArgs e)
 	  {
 		  Program.Simulator.Settings.ShowAvatar = chkShowAvatars.Checked;
+		  AvatarView.Items.Clear();
+		  avatarList.Clear();
+		  try { CheckAvatar(); }
+		  catch { }
 	  }
 	  
 	   private void highlightTrackShapes_CheckedChanged(object sender, EventArgs e)
@@ -1372,26 +1377,27 @@ namespace ORTS.Debugging
 				  if (msg == "") return;
 				  var user = "";
 
-				  if (MultiPlayer.MPManager.Instance().lastSender == "")
+				  if (MultiPlayer.MPManager.IsServer())
 				  {
-					  //server will broadcast the message to everyone
-					  if (MultiPlayer.MPManager.IsServer())
+					  try
 					  {
 						  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
 						  {
 							  user += p.Key + "\r";
 						  }
 						  user += "0END";
+						  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+						  MSG.Text = "";
 
 					  }
-					  else user = "0Server\r0END";
+					  catch { }
 				  }
 				  else
 				  {
-					  user = MultiPlayer.MPManager.Instance().lastSender + "\r0END";
+					  user = "0Server\r+0END";
+					  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
+					  MSG.Text = "";
 				  }
-				  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-
 			  }
 		  }
 	  }
