@@ -724,7 +724,12 @@ namespace ORTS
             return new List<TrainCar>(new[] { Viewer.PlayerLocomotive });
         }
 
-        protected override void SetCameraCar(TrainCar car)
+        protected void SetCameraCar( TrainCar car, float rotationXRadians ) {
+            SetCameraCar( car );
+            this.rotationXRadians = rotationXRadians;
+        }
+
+        protected override void SetCameraCar( TrainCar car )
         {
             base.SetCameraCar(car);
             attachedLocation = attachedCar.FrontCabViewpoints[sideLocation].Location;
@@ -737,9 +742,9 @@ namespace ORTS
             var speed = speedFactor * elapsedTime.RealSeconds; // Independent of framerate
 
             if (UserInput.IsPressed(UserCommands.CameraPanLeft))
-                ShiftView(+1);
+                ShiftView(+1, rotationXRadians );
             if (UserInput.IsPressed(UserCommands.CameraPanRight))
-                ShiftView(-1);
+                ShiftView( -1, rotationXRadians );
             if( UserInput.IsDown( UserCommands.CameraPanUp ) )
                 PanUp( true, speed );
             if( UserInput.IsDown( UserCommands.CameraPanDown ) )
@@ -750,7 +755,11 @@ namespace ORTS
             // base.HandleUserInput(elapsedTime);
         }
 
-        void ShiftView( int index ) {
+        /// <summary>
+        /// Switches to another cab view (e.g. side view).
+        /// Applies the rotation of the previous external view to the new external view. 
+        /// </summary>
+        void ShiftView( int index, float rotationXRadians ) {
             sideLocation += index;
 
             if( sideLocation < 0 )
@@ -758,7 +767,7 @@ namespace ORTS
             else if( sideLocation >= attachedCar.FrontCabViewpoints.Count )
                 sideLocation = 0;
 
-            SetCameraCar( attachedCar );
+            SetCameraCar( attachedCar, rotationXRadians );
         }
 
         void PanUp( bool up, float speed ) {

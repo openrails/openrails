@@ -319,7 +319,7 @@ namespace MSTS
     }
     #endregion
 
-    #region Guages
+    #region Gauges
     public class CVCGauge : CabViewControl
     {
         public Rectangle Area = new Rectangle();
