@@ -1231,7 +1231,7 @@ namespace ORTS.Debugging
 	  {
 		  Program.Simulator.Settings.ShowAvatar = chkShowAvatars.Checked;
 		  AvatarView.Items.Clear();
-		  avatarList.Clear();
+		  if (avatarList != null) avatarList.Clear();
 		  try { CheckAvatar(); }
 		  catch { }
 	  }
