@@ -438,14 +438,18 @@ namespace ORTS
 				if (ComposeMessageWindow == null) ComposeMessageWindow = new ComposeMessage(WindowManager);
 				ComposeMessageWindow.InitMessage();
 			}
-            if (UserInput.IsPressed(UserCommands.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
+            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
+			if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePauseMenu)) { if (Simulator.Confirmer != null) Simulator.Confirmer.Information("In MP, use Alt-F4 to quit directly"); }
+
             if (UserInput.IsPressed(UserCommands.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
-            if (UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
-            if( UserInput.IsPressed( UserCommands.DebugSpeedUp ) ) {
+			if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
+			if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.DebugSpeedUp))
+			{
                 Simulator.GameSpeed *= 1.5f;
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.SimulationSpeed, CabSetting.Increase, Simulator.GameSpeed * 100 );
             }
-            if( UserInput.IsPressed( UserCommands.DebugSpeedDown ) ) {
+			if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.DebugSpeedDown))
+			{
                 Simulator.GameSpeed /= 1.5f;
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.SimulationSpeed, CabSetting.Decrease, Simulator.GameSpeed * 100 );
             }

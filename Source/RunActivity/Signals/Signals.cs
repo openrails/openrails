@@ -2884,6 +2884,7 @@ namespace ORTS
                                                                          //    for backfacing signal
                 public List<int> Backfacing = new List<int> ();   // Flags heads which are backfacing
 
+				public STFPositionItem Position;
   //================================================================================================//
   //
   // Constructor
@@ -2893,6 +2894,7 @@ namespace ORTS
                 {
                         MSTS.SignalShape thisCFGShape;
 
+						Position = SignalWorldItem.Position;
                         HeadReference = new Dictionary <uint, uint>();
 
   // set flags with length to number of possible SubObjects type

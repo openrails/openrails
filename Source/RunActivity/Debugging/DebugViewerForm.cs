@@ -313,8 +313,7 @@ namespace ORTS.Debugging
 					  if (si.sigObj >=0  && si.sigObj < simulator.Signals.SignalObjects.Length)
 					  {
 						  SignalObject s = simulator.Signals.SignalObjects[si.sigObj];
-
-						  signals.Add(new SignalWidget(item, s));
+						  if (s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
 					  }
 				  }
 
@@ -534,8 +533,10 @@ namespace ORTS.Debugging
 		  }
 		  catch {  } //errors for avatar, just ignore
          using(Graphics g = Graphics.FromImage(pictureBox1.Image))
-         using(Pen redPen = new Pen(Color.Red))
-         using (Pen grayPen = new Pen(Color.Gray))
+		 using (Pen redPen = new Pen(Color.Red))
+		 using (Pen greenPen = new Pen(Color.Green))
+		 using (Pen orangePen = new Pen(Color.Orange))
+		 using (Pen grayPen = new Pen(Color.Gray))
          {
 
             g.Clear(Color.White);
@@ -550,9 +551,11 @@ namespace ORTS.Debugging
 			PointF[] points = new PointF[3];
 			Pen p = grayPen;
 
-			if (xScale > 3) p.Width = 3f;
-			else if (xScale > 2) p.Width = 2f;
-			else p.Width = 1f;
+			p.Width = xScale;
+			if (p.Width < 1) p.Width = 1;
+			//if (xScale > 3) p.Width = 3f;
+			//else if (xScale > 2) p.Width = 2f;
+			//else p.Width = 1f;
 			PointF scaledA = new PointF(0, 0);
 			PointF scaledB = new PointF(0, 0);
 			PointF scaledC = new PointF(0, 0);
@@ -610,20 +613,32 @@ namespace ORTS.Debugging
 				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 				 scaledItem.X = x; scaledItem.Y = y;
 				 s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
+				 if (s.Signal.isSignalNormal())//only show nor
+				 {
+					 var color = Brushes.Green;
+					 var pen = greenPen;
+					 if (s.IsProceed == 0)
+					 {
+					 }
+					 else if (s.IsProceed == 1)
+					 {
+						 color = Brushes.Orange;
+						 pen = orangePen;
+					 }
+					 else
+					 {
+						 color = Brushes.Red;
+						 pen = redPen;
+					 }
+					 g.FillEllipse(color, GetRect(scaledItem, 5f * p.Width));
 
-				 if (s.IsProceed == 0)
-				 {
-					 g.FillEllipse(Brushes.Green, GetRect(scaledItem, 5f * p.Width));
+					 signalItemsDrawn.Add(s);
+					 if (s.hasDir)
+					 {
+						 scaledB.X = (s.Dir.X - minX - ViewWindow.X) * xScale; scaledB.Y = pictureBox1.Height - (s.Dir.Y - minY - ViewWindow.Y) * yScale;
+						 g.DrawLine(pen, scaledItem, scaledB);
+					 }
 				 }
-				 else if (s.IsProceed == 1)
-				 {
-					 g.FillEllipse(Brushes.Orange, GetRect(scaledItem, 5f * p.Width));
-				 }
-				 else
-				 {
-					 g.FillEllipse(Brushes.Red, GetRect(scaledItem, 5f * p.Width));
-				 }
-				 signalItemsDrawn.Add(s);
 			 }
 
             if (true/*showPlayerTrain.Checked*/)
@@ -679,7 +694,7 @@ namespace ORTS.Debugging
 
 					switchPickedLocation.X -= 180; switchPickedLocation.Y += 10;
 					var node = switchPickedItem.Item.TrJunctionNode;
-					if (node.SelectedRoute == 0) g.DrawString("Current Route: Main Route", trainFont, trainBrush, switchPickedLocation);
+					if (node.SelectedRoute == switchPickedItem.main) g.DrawString("Current Route: Main Route", trainFont, trainBrush, switchPickedLocation);
 					else g.DrawString("Current Route: Side Route", trainFont, trainBrush, switchPickedLocation);
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
@@ -1463,7 +1478,8 @@ namespace ORTS.Debugging
 	   /// </summary>
 	   public SignalObject Signal;
 
-
+	   public PointF Dir;
+	   public bool hasDir = false;
 	   /// <summary>
 	   /// For now, returns true if any of the signal heads shows any "clear" aspect.
 	   /// This obviously needs some refinement.
@@ -1497,13 +1513,27 @@ namespace ORTS.Debugging
 	   /// </summary>
 	   /// <param name="item"></param>
 	   /// <param name="signal"></param>
-	   public SignalWidget(TrItem item, SignalObject signal)
+	   public SignalWidget(SignalItem item, SignalObject signal)
 	   {
 		   Item = item;
 		   Signal = signal;
 
-		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+		   var pos = signal.WorldObject.Position;
+		   if (pos != null) { Location = new PointF(item.TileX * 2048 + pos.X, item.TileZ * 2048 + pos.Z); }
+		   else { Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z); }
 		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+		   try
+		   {
+			   var node = Program.Simulator.TDB.TrackDB.TrackNodes[signal.trackNode];
+			   Vector2 v2;
+			   if (node.TrVectorNode != null) { var ts = node.TrVectorNode.TrVectorSections[0]; v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z); }
+			   else if (node.TrJunctionNode != null) { var ts = node.UiD; v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z); }
+			   else throw new Exception();
+			   var v1 = new Vector2(Location.X, Location.Y); var v3 = v1 - v2; v3.Normalize(); v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 10f : -10f);
+			   Dir.X = v2.X; Dir.Y = v2.Y;
+			   hasDir = true;
+		   }
+		   catch { hasDir = false; }
 	   }
    }
 
@@ -1513,7 +1543,7 @@ namespace ORTS.Debugging
    public class SwitchWidget : ItemWidget
    {
 	   public TrackNode Item;
-
+	   public uint main;
 	   /// <summary>
 	   /// 
 	   /// </summary>
@@ -1522,7 +1552,10 @@ namespace ORTS.Debugging
 	   public SwitchWidget(TrackNode item)
 	   {
 		   Item = item;
+		   var TS = Program.Simulator.TSectionDat.TrackShapes.Get(item.TrJunctionNode.ShapeIndex);  // TSECTION.DAT tells us which is the main route
 
+		   if (TS != null) main = TS.MainRoute;
+		   else main = 0;
 		   Location = new PointF(Item.UiD.TileX * 2048 + Item.UiD.X, Item.UiD.TileZ * 2048 + Item.UiD.Z);
 		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
 	   }
