@@ -2005,8 +2005,10 @@ namespace ORTS
   // Update : Perform the update for each head on this signal.
   //
 
+				public double forcedTime = 0;
                 public void Update()
                 {
+					if (forcedTime > 1 && Program.Simulator.GameTime > forcedTime + 300) { canUpdate = true; forcedTime = 0; }
                         if (canUpdate)
                         {
 

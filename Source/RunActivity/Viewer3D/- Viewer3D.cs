@@ -551,11 +551,19 @@ namespace ORTS
 							//signal.
 							foreach (var head in signal.SignalHeads)
 							{
-								head.state = SignalHead.SIGASP.CLEAR_2;
+								//first try to set as approach, if not defined, set as the least
+								var drawstate1 = head.def_draw_state(SignalHead.SIGASP.APPROACH_1);
+								var drawstate2 = head.def_draw_state(SignalHead.SIGASP.APPROACH_2);
+								var drawstate3 = head.def_draw_state(SignalHead.SIGASP.APPROACH_3);
+								if (drawstate1 > 0) { head.state = SignalHead.SIGASP.APPROACH_1; }
+								else if (drawstate2 > 0) { head.state = SignalHead.SIGASP.APPROACH_2; }
+								else if (drawstate3 > 0) { head.state = SignalHead.SIGASP.APPROACH_3; }
+								else head.SetLeastRestrictiveAspect();
+								//head.state = SignalHead.SIGASP.CLEAR_2;
 								head.draw_state = head.def_draw_state(head.state);
-								//head.SetLeastRestrictiveAspect();
 								//head.Update();
 							}
+							signal.forcedTime = Simulator.GameTime;
 						}
 						//if (MPManager.IsMultiPlayer() && MPManager.IsServer()) MPManager.BroadCast((new MultiPlayer.MSGSignalStatus()).ToString());
 

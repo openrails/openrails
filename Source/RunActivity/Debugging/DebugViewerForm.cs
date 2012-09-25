@@ -309,11 +309,11 @@ namespace ORTS.Debugging
 				  {
 
 					  SignalItem si = item as SignalItem;
-
+					  
 					  if (si.sigObj >=0  && si.sigObj < simulator.Signals.SignalObjects.Length)
 					  {
 						  SignalObject s = simulator.Signals.SignalObjects[si.sigObj];
-						  if (s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
+						  if (s.isSignal && s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
 					  }
 				  }
 
@@ -1526,10 +1526,8 @@ namespace ORTS.Debugging
 	   {
 		   Item = item;
 		   Signal = signal;
-
-		   var pos = signal.WorldObject.Position;
-		   if (pos != null) { Location = new PointF(item.TileX * 2048 + pos.X, item.TileZ * 2048 + pos.Z); }
-		   else { Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z); }
+		   hasDir = false;
+		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
 		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
 		   try
 		   {
@@ -1541,8 +1539,10 @@ namespace ORTS.Debugging
 			   var v1 = new Vector2(Location.X, Location.Y); var v3 = v1 - v2; v3.Normalize(); v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 10f : -10f);
 			   Dir.X = v2.X; Dir.Y = v2.Y;
 			   hasDir = true;
+			   var pos = signal.WorldObject.Position;
+			   if (pos != null) { Location.X = item.TileX * 2048 + pos.X; Location.Y = item.TileZ * 2048 + pos.Z; }
 		   }
-		   catch { hasDir = false; }
+		   catch {  }
 	   }
    }
 
