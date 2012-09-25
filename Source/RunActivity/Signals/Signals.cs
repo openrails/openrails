@@ -2005,10 +2005,60 @@ namespace ORTS
   // Update : Perform the update for each head on this signal.
   //
 
+			//a signal maybe forced by the dispatcher, need to release it if it is 300 seconds ago, or a train has passed.
+				private bool ReleaseLock()
+				{
+					if (Program.Simulator.GameTime > forcedTime + 300) { canUpdate = true; forcedTime = 0; return true; }
+					try
+					{
+						var minimumDist = 1000f;
+						var predicted = 2f;
+						var totalDist = minimumDist;
+
+						var item = Program.Simulator.TDB.TrackDB.TrItemTable[this.trItem];
+						var sigLoc = new WorldLocation(item.TileX, item.TileZ, item.X, item.Y, item.Z);
+						foreach (var train in Program.Simulator.Trains)
+						{
+							if (!WorldLocation.Within(sigLoc, train.FrontTDBTraveller.WorldLocation, totalDist) && !WorldLocation.Within(sigLoc, train.RearTDBTraveller.WorldLocation, totalDist))
+								continue;
+
+							var speedMpS = train.SpeedMpS;
+							// Distances forward from the front and rearwards from the rear.
+							var frontDist = this.DistanceTo(train.FrontTDBTraveller);
+							if (frontDist < 0)
+							{
+								frontDist = -this.DistanceTo(new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward));
+								if (frontDist > 0)
+								{
+									// Train cannot find crossing.
+									continue;
+								}
+							}
+							var rearDist = -frontDist - train.Length;
+
+							if (speedMpS < 0)
+							{
+								// Train is reversing; swap distances so frontDist is always the front.
+								var temp = rearDist;
+								rearDist = frontDist;
+								frontDist = temp;
+							}
+
+							if (frontDist <= 1 && rearDist <= predicted)
+							{
+								this.canUpdate = true; forcedTime = 0; return true;
+							}
+						}
+					}
+					catch { }
+					return false;
+				}
+
 				public double forcedTime = 0;
+
                 public void Update()
                 {
-					if (forcedTime > 1 && Program.Simulator.GameTime > forcedTime + 300) { canUpdate = true; forcedTime = 0; }
+					if (forcedTime > 1) ReleaseLock();//forced by the dispatcher, will try to release the lock. forcedTime will only be set to be > 0 in MP mode
                         if (canUpdate)
                         {
 

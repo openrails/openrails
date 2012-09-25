@@ -50,6 +50,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "LOCCHANGE") return new MSGLocoChange(m.Substring(index + 1));
 			else if (key == "QUIT") return new MSGQuit(m.Substring(index + 1));
 			else if (key == "AVATAR") return new MSGAvatar(m.Substring(index + 1));
+			else if (key == "WEATHER") return new MSGWeather(m.Substring(index + 1));
 			else throw new Exception("Unknown Keyword" + key);
 		}
 
@@ -2557,5 +2558,49 @@ namespace ORTS.MultiPlayer
 
 	#endregion MSGText
 
+	#region MSGWeather
+	public class MSGWeather : Message
+	{
+		public  int weather;
+		public float overcast;
+		public MSGWeather(string m)
+		{
+			var tmp = m.Split(' ');
+			weather = int.Parse(tmp[0]);
+			overcast = float.Parse(tmp[1]);
+		}
 
+		public MSGWeather(int w, float o)
+		{
+			weather = -1; overcast = -1f;
+			if (w >= 0) weather = w;
+			if (o > 0) overcast = o;
+		}
+
+		public override string ToString()
+		{
+
+			string tmp = "WEATHER " + weather + " " + overcast;
+			return "" + tmp.Length + ": " + tmp;
+		}
+
+		public override void HandleMsg()
+		{
+			if (MPManager.IsServer()) return;
+			if (weather >= 0)
+			{
+				MPManager.Instance().newWeather = weather;
+				MPManager.Instance().overCast = -1;
+			}
+			if (overcast >= 0)
+			{
+				MPManager.Instance().newWeather = -1;
+				MPManager.Instance().overCast = overcast;
+			}
+			MPManager.Instance().weatherChanged = true;
+		}
+
+	}
+
+	#endregion MSGWeather
 }

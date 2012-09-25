@@ -138,16 +138,42 @@ namespace ORTS
                 fogCoeff = Viewer.World.WeatherControl.fogCoeff;
             }
 
+			if (MultiPlayer.MPManager.IsMultiPlayer())
+			{
+				//received message about weather change
+				if (MultiPlayer.MPManager.Instance().weatherChanged && MultiPlayer.MPManager.Instance().overCast >= 0)
+				{
+					overcast = MultiPlayer.MPManager.Instance().overCast;
+					try
+					{
+						MultiPlayer.MPManager.Instance().weatherChanged = false;
+					}
+					catch { }
+				}
+			}
+
 ////////////////////// T E M P O R A R Y ///////////////////////////
 
             // The following keyboard commands are used for viewing sky and weather effects in "demo" mode
             // The ( + ) key speeds the time forward, the ( - ) key reverses the time.
             // When the Ctrl key is also pressed, the + and - keys control the amount of overcast.
 
-			if (UserInput.IsDown(UserCommands.DebugOvercastIncrease))
+			if (UserInput.IsDown(UserCommands.DebugOvercastIncrease) && !MultiPlayer.MPManager.IsClient())
+			{
 				overcast = MathHelper.Clamp(overcast + 0.005f, 0, 1);
-			if (UserInput.IsDown(UserCommands.DebugOvercastDecrease))
+				if (MultiPlayer.MPManager.IsServer())
+				{
+					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast)).ToString());//server notify others the weather has changed
+				}
+			}
+			if (UserInput.IsDown(UserCommands.DebugOvercastDecrease) && !MultiPlayer.MPManager.IsClient())
+			{
 				overcast = MathHelper.Clamp(overcast - 0.005f, 0, 1);
+				if (MultiPlayer.MPManager.IsServer())
+				{
+					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast)).ToString());//server notify others the weather has changed
+				}
+			}
 			if (UserInput.IsDown(UserCommands.DebugClockForwards) && !MultiPlayer.MPManager.IsMultiPlayer()) //dosen't make sense in MP mode
 			{
 				Viewer.Simulator.ClockTime += 120; // Two-minute (120 second) increments

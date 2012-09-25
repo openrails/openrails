@@ -134,50 +134,51 @@ namespace ORTS
         void Sound()
         {
             Profiler.Start();
-            try
-            {
-                // Update activity sounds
-                {
-                    Activity act = Viewer.Simulator.ActivityRun;
-                    if (act != null)
-                    {
-                        ActivityTask at = act.Current;
-                        if (at != null)
-                        {
-                            if (at.SoundNotify != -1)
-                            {
-                                if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(at.SoundNotify);
-                                at.SoundNotify = -1;
-                            }
-                        }
-                    }
-                }
-                // Update all sound in our list
-                lock (SoundSources)
-                {
-                    List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>> remove = null;
-                    foreach (List<SoundSourceBase> src in SoundSources.Values)
-                    {
-                        foreach (SoundSourceBase ss in src)
-                        {
-                            if (!ss.Update())
-                            {
-                                if (remove == null)
-                                    remove = new List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>>();
-                                remove.Add(new KeyValuePair<List<SoundSourceBase>, SoundSourceBase>(src, ss));
-                            }
-                        }
-                    }
-                    if (remove != null)
-                    {
-                        foreach (KeyValuePair<List<SoundSourceBase>, SoundSourceBase> ss in remove)
-                        {
-                            ss.Value.Dispose();
-                            ss.Key.Remove(ss.Value);
-                        }
-                    }
-                }
-            }
+			try
+			{
+				// Update activity sounds
+				{
+					Activity act = Viewer.Simulator.ActivityRun;
+					if (act != null)
+					{
+						ActivityTask at = act.Current;
+						if (at != null)
+						{
+							if (at.SoundNotify != -1)
+							{
+								if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(at.SoundNotify);
+								at.SoundNotify = -1;
+							}
+						}
+					}
+				}
+				// Update all sound in our list
+				lock (SoundSources)
+				{
+					List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>> remove = null;
+					foreach (List<SoundSourceBase> src in SoundSources.Values)
+					{
+						foreach (SoundSourceBase ss in src)
+						{
+							if (!ss.Update())
+							{
+								if (remove == null)
+									remove = new List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>>();
+								remove.Add(new KeyValuePair<List<SoundSourceBase>, SoundSourceBase>(src, ss));
+							}
+						}
+					}
+					if (remove != null)
+					{
+						foreach (KeyValuePair<List<SoundSourceBase>, SoundSourceBase> ss in remove)
+						{
+							ss.Value.Dispose();
+							ss.Key.Remove(ss.Value);
+						}
+					}
+				}
+			}
+			catch { }
             finally
             {
                 Profiler.Stop();

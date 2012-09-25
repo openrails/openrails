@@ -534,7 +534,12 @@ namespace ORTS
 					var signal = Program.DebugViewer.signalPickedItem.Signal;
 					if (signal != null)
 					{
-						if (Program.DebugViewer.signalPickedItem.IsProceed <= 1)
+						if (signal.forcedTime > 0)
+						{//a signal was set by the dispatcher before, so will need to reset it so that system will control it.
+							signal.canUpdate = true;
+							signal.forcedTime = 0;
+						}
+						else if (Program.DebugViewer.signalPickedItem.IsProceed <= 1)
 						{
 							signal.enabled = false;
 							signal.canUpdate = false;

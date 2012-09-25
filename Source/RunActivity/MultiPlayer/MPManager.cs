@@ -49,6 +49,11 @@ namespace ORTS.MultiPlayer
 
 		private List<Train> uncoupledTrains;
 
+		public bool weatherChanged = false;
+		public bool weatherChangHandled = false;
+		public int newWeather;
+		public float overCast;
+
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
 		public bool ClientAllowedSwitch = true;
@@ -262,6 +267,13 @@ namespace ORTS.MultiPlayer
 			else return false;
 		}
 
+		//check if it is in the server mode
+		public static bool IsClient()
+		{
+			if (Program.Server == null && Program.Client == null) return false;
+			if (Program.Server == null) return true;
+			else return false;
+		}
 		//user name
 		static public string GetUserName()
 		{
