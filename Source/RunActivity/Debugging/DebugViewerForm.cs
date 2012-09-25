@@ -269,8 +269,8 @@ namespace ORTS.Debugging
 
 							  //if (currNode.UiD == null)
 							  //{
-								  PointF A = new PointF(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
-								  PointF B = new PointF(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
+							  dVector A = new dVector(s.TileX * 2048 + s.X, s.TileZ * 2048 + s.Z);
+							  dVector B = new dVector(connectedNode.UiD.TileX * 2048 + connectedNode.UiD.X, connectedNode.UiD.TileZ * 2048 + connectedNode.UiD.Z);
 								  segments.Add(new LineSegment(A, B, /*s.InterlockingTrack.IsOccupied*/ false, null));
 							  //}
 						  }
@@ -282,16 +282,16 @@ namespace ORTS.Debugging
 				  {
 					  foreach (TrPin pin in currNode.TrPins)
 					  {
-						  if (pin.Direction == 1) continue;
 						  TrVectorSection item = null;
 						  try
 						  {
 							  if (nodes[pin.Link].TrVectorNode == null || nodes[pin.Link].TrVectorNode.TrVectorSections.Length < 1) continue;
-							  item = nodes[pin.Link].TrVectorNode.TrVectorSections.Last();
+							  if (pin.Direction == 1) item = nodes[pin.Link].TrVectorNode.TrVectorSections.First();
+							  else item = nodes[pin.Link].TrVectorNode.TrVectorSections.Last();
 						  }
 						  catch { continue; }
-						  PointF A = new PointF(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z);
-						  PointF B = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+						  dVector A = new dVector(currNode.UiD.TileX * 2048 + currNode.UiD.X, currNode.UiD.TileZ * 2048 + currNode.UiD.Z);
+						  dVector B = new dVector(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
 						  var x = Math.Pow(A.X - B.X, 2) + Math.Pow(A.Y - B.Y, 2);
 						  if (x < 0.1) continue;
 						  segments.Add(new LineSegment(B, A, /*s.InterlockingTrack.IsOccupied*/ false, item));
@@ -563,8 +563,8 @@ namespace ORTS.Debugging
 			foreach (var line in segments)
             {
 
-				scaledA.X = (line.A.X - minX - ViewWindow.X) * xScale; scaledA.Y = pictureBox1.Height - (line.A.Y - minY - ViewWindow.Y) * yScale;
-				scaledB.X = (line.B.X - minX - ViewWindow.X) * xScale; scaledB.Y = pictureBox1.Height - (line.B.Y - minY - ViewWindow.Y) * yScale;
+				scaledA.X = ((float)line.A.X - minX - ViewWindow.X) * xScale; scaledA.Y = pictureBox1.Height - ((float)line.A.Y - minY - ViewWindow.Y) * yScale;
+				scaledB.X = ((float)line.B.X - minX - ViewWindow.X) * xScale; scaledB.Y = pictureBox1.Height - ((float)line.B.Y - minY - ViewWindow.Y) * yScale;
 
 
 				if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > IM_Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0)) continue;
@@ -580,7 +580,7 @@ namespace ORTS.Debugging
 
 			   if (line.isCurved == true)
 			   {
-				   scaledC.X = (line.C.X - minX - ViewWindow.X) * xScale; scaledC.Y = pictureBox1.Height - (line.C.Y - minY - ViewWindow.Y) * yScale;
+				   scaledC.X = ((float)line.C.X - minX - ViewWindow.X) * xScale; scaledC.Y = pictureBox1.Height - ((float)line.C.Y - minY - ViewWindow.Y) * yScale;
 				   points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
 				   g.DrawCurve(p, points);
 			   }
@@ -604,6 +604,14 @@ namespace ORTS.Debugging
 
 				 g.FillEllipse(Brushes.Black, GetRect(scaledItem, 5f * p.Width));
 				 sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
+#if false
+				 if (sw.main == sw.Item.TrJunctionNode.SelectedRoute)
+				 {
+					 scaledA.X = ((float)sw.mainEnd.X - minX - ViewWindow.X) * xScale; scaledA.Y = pictureBox1.Height - ((float)sw.mainEnd.Y - minY - ViewWindow.Y) * yScale;
+					 g.DrawLine(redPen, scaledA, scaledItem);
+
+				 }
+#endif
 				 switchItemsDrawn.Add(sw);
 			 }
 
@@ -690,7 +698,7 @@ namespace ORTS.Debugging
 				if (switchPickedItem != null /*&& switchPickedItemChanged == true*/ && !switchPickedItemHandled && simulator.GameTime - switchPickedTime < 5)
 				{
 					switchPickedLocation.X = switchPickedItem.Location2D.X + 150; switchPickedLocation.Y = switchPickedItem.Location2D.Y;
-					g.FillRectangle(Brushes.LightGray, GetRect(switchPickedLocation, 400f, 64f));
+					//g.FillRectangle(Brushes.LightGray, GetRect(switchPickedLocation, 400f, 64f));
 
 					switchPickedLocation.X -= 180; switchPickedLocation.Y += 10;
 					var node = switchPickedItem.Item.TrJunctionNode;
@@ -708,7 +716,7 @@ namespace ORTS.Debugging
 				if (signalPickedItem != null /*&& signalPickedItemChanged == true*/ && !signalPickedItemHandled && simulator.GameTime - signalPickedTime < 5)
 				{
 					signalPickedLocation.X = signalPickedItem.Location2D.X + 150; signalPickedLocation.Y = signalPickedItem.Location2D.Y;
-					g.FillRectangle(Brushes.LightGray, GetRect(signalPickedLocation, 400f, 64f));
+					//g.FillRectangle(Brushes.LightGray, GetRect(signalPickedLocation, 400f, 64f));
 					signalPickedLocation.X -= 180; signalPickedLocation.Y -= 2;
 					if (signalPickedItem.IsProceed == 0) g.DrawString("Current Signal: Proceed", trainFont, trainBrush, signalPickedLocation);
 					else if (signalPickedItem.IsProceed == 1) g.DrawString("Current Signal: Approach", trainFont, trainBrush, signalPickedLocation);
@@ -842,8 +850,8 @@ namespace ORTS.Debugging
 
          for (int i = 0; i < items.Length - 1; i++)
          {
-			 PointF A = new PointF(items[i].TileX * 2048 + items[i].X, items[i].TileZ * 2048 + items[i].Z);
-            PointF B = new PointF(items[i + 1].TileX * 2048 + items[i + 1].X, items[i + 1].TileZ * 2048 + items[i+1].Z);
+			 dVector A = new dVector(items[i].TileX * 2048 + items[i].X, items[i].TileZ * 2048 + items[i].Z);
+			 dVector B = new dVector(items[i + 1].TileX * 2048 + items[i + 1].X, items[i + 1].TileZ * 2048 + items[i + 1].Z);
 
             CalcBounds(ref maxX, A.X, true);
             CalcBounds(ref maxY, A.Y, true);
@@ -866,8 +874,9 @@ namespace ORTS.Debugging
       /// <param name="limit">The current limit.</param>
       /// <param name="value">The value to compare the limit to.</param>
       /// <param name="gt">True when comparison is greater-than. False if less-than.</param>
-      private static void CalcBounds(ref float limit, float value, bool gt)
+      private static void CalcBounds(ref float limit, double v, bool gt)
       {
+		  float value = (float)v;
          if (gt)
          {
             if (value > limit)
@@ -1544,6 +1553,9 @@ namespace ORTS.Debugging
    {
 	   public TrackNode Item;
 	   public uint main;
+#if false
+	   public dVector mainEnd = null;
+#endif
 	   /// <summary>
 	   /// 
 	   /// </summary>
@@ -1554,8 +1566,31 @@ namespace ORTS.Debugging
 		   Item = item;
 		   var TS = Program.Simulator.TSectionDat.TrackShapes.Get(item.TrJunctionNode.ShapeIndex);  // TSECTION.DAT tells us which is the main route
 
-		   if (TS != null) main = TS.MainRoute;
+		   if (TS != null) { main = TS.MainRoute;}
 		   else main = 0;
+#if false
+		   try
+		   {
+			   var pin = item.TrPins[1];
+			   TrVectorSection tn;
+
+			   if (pin.Direction == 1) tn = Program.Simulator.TDB.TrackDB.TrackNodes[pin.Link].TrVectorNode.TrVectorSections.First();
+			   else tn = Program.Simulator.TDB.TrackDB.TrackNodes[pin.Link].TrVectorNode.TrVectorSections.Last();
+
+			   if (tn.SectionIndex == TS.SectionIdxs[TS.MainRoute].TrackSections[0]) { mainEnd = new dVector(tn.TileX * 2048 + tn.X, tn.TileZ * 2048 + tn.Z); }
+			   else
+			   {
+				   var pin2 = item.TrPins[2];
+				   TrVectorSection tn2;
+
+				   if (pin2.Direction == 1) tn2 = Program.Simulator.TDB.TrackDB.TrackNodes[pin2.Link].TrVectorNode.TrVectorSections.First();
+				   else tn2 = Program.Simulator.TDB.TrackDB.TrackNodes[pin2.Link].TrVectorNode.TrVectorSections.Last();
+				   if (tn2.SectionIndex == TS.SectionIdxs[TS.MainRoute].TrackSections[0]) { mainEnd = new dVector(tn.TileX * 2048 + tn.X, tn.TileZ * 2048 + tn.Z); }
+			   }
+			  
+		   }
+		   catch { mainEnd = null; }
+#endif
 		   Location = new PointF(Item.UiD.TileX * 2048 + Item.UiD.X, Item.UiD.TileZ * 2048 + Item.UiD.Z);
 		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
 	   }
@@ -1602,16 +1637,16 @@ namespace ORTS.Debugging
    /// </summary>
    public class LineSegment
    {
-	   public PointF A;
-	   public PointF B;
-	   public PointF C;
+	   public dVector A;
+	   public dVector B;
+	   public dVector C;
 	   //public float radius = 0.0f;
 	   public bool isCurved = false;
 
 	   public float angle1, angle2;
 	   //public SectionCurve curve = null;
 
-	   public LineSegment(PointF A, PointF B, bool Occupied, TrVectorSection Section)
+	   public LineSegment(dVector A, dVector B, bool Occupied, TrVectorSection Section)
 	   {
 		   this.A = A;
 		   this.B = B;
@@ -1629,16 +1664,16 @@ namespace ORTS.Debugging
 				   float diff = (float) (ts.SectionCurve.Radius * (1 - Math.Cos(ts.SectionCurve.Angle * 3.14f / 360)));
 				   if (diff < 3) return; //not need to worry, curve too small
 				   //curve = ts.SectionCurve;
-				   Vector3 v = new Vector3(B.X - A.X, 0, B.Y - A.Y);
+				   Vector3 v = new Vector3((float)(B.X - A.X), 0, (float)(B.Y - A.Y));
 				   isCurved = true;
 				   Vector3 v2 = Vector3.Cross(Vector3.Up, v); v2.Normalize();
-				   v = v / 2; v.X += A.X; v.Z += A.Y;
+				   v = v / 2; v.X += (float)A.X; v.Z += (float)A.Y;
 				   if (ts.SectionCurve.Angle > 0)
 				   {
 					   v = v2*-diff + v;
 				   }
 				   else v = v2*diff + v;
-				   C = new PointF(v.X, v.Z);
+				   C = new dVector(v.X, v.Z);
 			   }
 		   }
 
@@ -1670,5 +1705,11 @@ namespace ORTS.Debugging
 
 		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
 	   }
+   }
+
+   public class dVector
+   {
+	   public double X, Y;
+	   public dVector(double x1, double y1) { X = x1; Y = y1; }
    }
 }

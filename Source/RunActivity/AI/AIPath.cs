@@ -160,8 +160,7 @@ namespace ORTS
 			{
 				if (Program.Simulator.SwitchIsOccupied(tn.TrJunctionNode)) return;
 			}
-			else 
-				tn.TrJunctionNode.SelectedRoute = tn.TrPins[1].Link == vectorIndex ? 0 : 1;
+			tn.TrJunctionNode.SelectedRoute = tn.TrPins[1].Link == vectorIndex ? 0 : 1;
             return;
         }
 

@@ -546,13 +546,15 @@ namespace ORTS
 						}
 						else
 						{
-							signal.canUpdate = true;
-							signal.enabled = true; //force it to be green, 
+							signal.canUpdate = false;
+							signal.enabled = true; //force it to be green,
 							//signal.
 							foreach (var head in signal.SignalHeads)
 							{
-								head.SetLeastRestrictiveAspect();
-								head.Update();
+								head.state = SignalHead.SIGASP.CLEAR_2;
+								head.draw_state = head.def_draw_state(head.state);
+								//head.SetLeastRestrictiveAspect();
+								//head.Update();
 							}
 						}
 						//if (MPManager.IsMultiPlayer() && MPManager.IsServer()) MPManager.BroadCast((new MultiPlayer.MSGSignalStatus()).ToString());
