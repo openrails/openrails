@@ -2290,7 +2290,8 @@ namespace ORTS.MultiPlayer
 			msgx = "";
 			foreach (var t in signals)
 			{
-				msgx += "" + (char)(t.Value.state + 1) + "" + (char)(t.Value.draw_state + 1);//avoid \0
+				msgx += (char)(((int)t.Value.state + 1) * 100 + (t.Value.draw_state + 1));
+				//msgx += "" + (char)(t.Value.state + 1) + "" + (char)(t.Value.draw_state + 1);//avoid \0
 			}
 			if (msgx == prevMSG) { if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime > 3 * MPManager.Instance().MPUpdateInterval) return; }
 			else { prevMSG = msgx; }
@@ -2328,12 +2329,14 @@ namespace ORTS.MultiPlayer
 		{
 			if (Program.Server != null) return; //server will ignore it
 
-			if (signals.Count != msgx.Length / 2) { System.Console.WriteLine("Error in synchronizing signals " + signals.Count + " " + msgx.Length/2); return; }
+			if (signals.Count != msgx.Length) { System.Console.WriteLine("Error in synchronizing signals " + signals.Count + " " + msgx.Length); return; }
 			int i = 0;
+			var v = 0;
 			foreach (var t in signals)
 			{
-				t.Value.state = (SignalHead.SIGASP)(msgx[2 * i] - 1); //we added 1 when build the message, need to subtract it out
-				t.Value.draw_state = (int)(msgx[2 * i + 1] - 1);
+				v = (int) msgx[i]; 
+				t.Value.state = (SignalHead.SIGASP)(v/100)-1; //we added 1 when build the message, need to subtract it out
+				t.Value.draw_state = (int)(v%100)-1;
 				//System.Console.Write(msgx[i]-48);
 				i++;
 			}
