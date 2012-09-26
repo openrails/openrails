@@ -386,7 +386,7 @@ namespace ORTS.MultiPlayer
 					if (MPManager.Instance().FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
 					{
 						MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
-						throw new MultiPlayerError();
+						//throw new MultiPlayerError();
 					}
 				}
 			}
@@ -399,21 +399,8 @@ namespace ORTS.MultiPlayer
 				//System.Console.WriteLine(this.ToString());
 				if (MPManager.IsServer())// && Program.Server.IsRemoteServer())
 				{
-					MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
-					MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
 					MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
-
-					MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
-						Program.Simulator.PlayerLocomotive.Train.Number, Program.Simulator.Settings.AvatarURL);
-					MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
-
-					foreach (Train t in Program.Simulator.Trains)
-					{
-						if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
-						if (MPManager.Instance().FindPlayerTrain(t)) continue;
-						MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
-					}
-
+					MPManager.Instance().PlayerAdded = true;
 				}
 				else //client needs to handle environment
 				{
@@ -443,21 +430,8 @@ namespace ORTS.MultiPlayer
 
 			MPManager.OnlineTrains.AddPlayers(this, p);
 			//System.Console.WriteLine(this.ToString());
-			MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
-			MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
 			MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
-
-			MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
-				Program.Simulator.PlayerLocomotive.Train.Number, Program.Simulator.Settings.AvatarURL);
-
-			MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
-
-			foreach (Train t in Program.Simulator.Trains)
-			{
-				if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
-				if (MPManager.Instance().FindPlayerTrain(t)) continue;
-				MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
-			}
+			MPManager.Instance().PlayerAdded = true;
 
 			//System.Console.WriteLine(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
 
@@ -1626,6 +1600,7 @@ namespace ORTS.MultiPlayer
 			{
 				foreach (Train t in Program.Simulator.Trains)
 				{
+					if (t == null) continue;
 					if (t.Number == num) //found it, broadcast to everyone
 					{
 						MPManager.BroadCast((new MSGUpdateTrain(user, t, t.Number)).ToString());
