@@ -336,8 +336,6 @@ namespace ORTS.Debugging
 	  List<SignalWidget> signals = new List<SignalWidget>();
 	  List<SidingWidget> sidings = new List<SidingWidget>();
 
-	  PointF PlayerLocation = new PointF();
-
 	   /// <summary>
       /// Initialises the picturebox and the image it contains. 
       /// </summary>
@@ -536,9 +534,10 @@ namespace ORTS.Debugging
 		 using (Pen redPen = new Pen(Color.Red))
 		 using (Pen greenPen = new Pen(Color.Green))
 		 using (Pen orangePen = new Pen(Color.Orange))
+		 using (Pen trainPen = new Pen(Color.DarkGreen))
 		 using (Pen grayPen = new Pen(Color.Gray))
          {
-
+			 var subX = minX + ViewWindow.X; var subY = minY + ViewWindow.Y;
             g.Clear(Color.White);
 
             // this is the total size of the entire viewable route (xRange == width, yRange == height in metres)
@@ -553,6 +552,9 @@ namespace ORTS.Debugging
 
 			p.Width = xScale;
 			if (p.Width < 1) p.Width = 1;
+			greenPen.Width = orangePen.Width = redPen.Width = p.Width;
+			trainPen.Width = p.Width*3;
+			if (trainPen.Width < 15f) trainPen.Width = 15f;
 			//if (xScale > 3) p.Width = 3f;
 			//else if (xScale > 2) p.Width = 2f;
 			//else p.Width = 1f;
@@ -563,8 +565,8 @@ namespace ORTS.Debugging
 			foreach (var line in segments)
             {
 
-				scaledA.X = ((float)line.A.X - minX - ViewWindow.X) * xScale; scaledA.Y = pictureBox1.Height - ((float)line.A.Y - minY - ViewWindow.Y) * yScale;
-				scaledB.X = ((float)line.B.X - minX - ViewWindow.X) * xScale; scaledB.Y = pictureBox1.Height - ((float)line.B.Y - minY - ViewWindow.Y) * yScale;
+				scaledA.X = ((float)line.A.X - subX) * xScale; scaledA.Y = pictureBox1.Height - ((float)line.A.Y - subY) * yScale;
+				scaledB.X = ((float)line.B.X - subX) * xScale; scaledB.Y = pictureBox1.Height - ((float)line.B.Y - subY) * yScale;
 
 
 				if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > IM_Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0)) continue;
@@ -580,7 +582,7 @@ namespace ORTS.Debugging
 
 			   if (line.isCurved == true)
 			   {
-				   scaledC.X = ((float)line.C.X - minX - ViewWindow.X) * xScale; scaledC.Y = pictureBox1.Height - ((float)line.C.Y - minY - ViewWindow.Y) * yScale;
+				   scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = pictureBox1.Height - ((float)line.C.Y - subY) * yScale;
 				   points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
 				   g.DrawCurve(p, points);
 			   }
@@ -595,7 +597,7 @@ namespace ORTS.Debugging
 			 {
 				 SwitchWidget sw = switches[i];
 
-				 x = (sw.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (sw.Location.Y - minY - ViewWindow.Y) * yScale;
+				 x = (sw.Location.X - subX) * xScale; y = pictureBox1.Height - (sw.Location.Y - subY) * yScale;
 
 				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 
@@ -617,7 +619,7 @@ namespace ORTS.Debugging
 
 			 foreach (var s in signals)
 			 {
-				 x = (s.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale;
+				 x = (s.Location.X - subX) * xScale; y = pictureBox1.Height - (s.Location.Y - subY) * yScale;
 				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 				 scaledItem.X = x; scaledItem.Y = y;
 				 s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
@@ -643,7 +645,7 @@ namespace ORTS.Debugging
 					 signalItemsDrawn.Add(s);
 					 if (s.hasDir)
 					 {
-						 scaledB.X = (s.Dir.X - minX - ViewWindow.X) * xScale; scaledB.Y = pictureBox1.Height - (s.Dir.Y - minY - ViewWindow.Y) * yScale;
+						 scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = pictureBox1.Height - (s.Dir.Y - subY) * yScale;
 						 g.DrawLine(pen, scaledItem, scaledB);
 					 }
 				 }
@@ -655,42 +657,76 @@ namespace ORTS.Debugging
 				CleanVerticalCells();//clean the drawing area for text of sidings
 				foreach (var s in sidings)
 				{
-					scaledItem.X = (s.Location.X - minX - ViewWindow.X) * xScale;
-					scaledItem.Y = DetermineSidingLocation(scaledItem.X, pictureBox1.Height - (s.Location.Y - minY - ViewWindow.Y) * yScale, s.Name);
+					scaledItem.X = (s.Location.X - subX) * xScale;
+					scaledItem.Y = DetermineSidingLocation(scaledItem.X, pictureBox1.Height - (s.Location.Y - subY) * yScale, s.Name);
 					if (scaledItem.Y >= 0f) //if we need to draw the siding names
 					{
 
 						g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
 					}
 				}
+				var margin = 30 * xScale;
+				var margin2 = 2000 * xScale;
 				foreach (Train t in simulator.Trains)
 				{
 					name = "";
+					TrainCar firstCar = null;
 					if (t.LeadLocomotive != null)
 					{
 						worldPos = t.LeadLocomotive.WorldPosition;
 						name = t.LeadLocomotive.CarID;
+						firstCar = t.LeadLocomotive;
 					}
 					else if (t.Cars != null && t.Cars.Count > 0)
 					{
 						worldPos = t.Cars[0].WorldPosition;
 						name = t.Cars[0].CarID;
+						firstCar = t.Cars[0];
 
 					}
 					else continue;
 
-					PlayerLocation = new PointF(
-					   worldPos.TileX * 2048 + worldPos.Location.X,
-					   worldPos.TileZ * 2048 + worldPos.Location.Z);
+					if (xScale < 0.3 || t.FrontTDBTraveller == null || t.RearTDBTraveller == null)
+					{
+						worldPos = firstCar.WorldPosition;
+						scaledItem.X = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
+						if (scaledItem.X < -10 || scaledItem.X > IM_Width + 10 || scaledItem.Y > IM_Height + 10 || scaledItem.Y < -10) continue;
+						g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
+						scaledItem.Y -= 25;
+						g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
+						continue;
+					}
+					var loc = t.FrontTDBTraveller.WorldLocation;
+					x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pictureBox1.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
+					if (x < -margin2 || x > IM_Width + margin2 || y > IM_Height + margin2 || y < -margin2) continue;
+					foreach (var car in t.Cars)
+					{
+						Traveller t1 = new Traveller(t.RearTDBTraveller);
+						worldPos = car.WorldPosition;
+						var dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
+						if (dist > 0)
+						{
+							t1.Move(dist - 1 + car.Length / 2);
+							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pictureBox1.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+							//x = (worldPos.TileX * 2048 + worldPos.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - minY - ViewWindow.Y) * yScale;
+							if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
 
-					x = (PlayerLocation.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (PlayerLocation.Y - minY - ViewWindow.Y) * yScale;
-					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+							scaledItem.X = x; scaledItem.Y = y;
 
-					scaledItem.X = x; scaledItem.Y = y;
+							t1.Move(-car.Length);
+							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pictureBox1.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+							if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
 
-					g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
-					scaledItem.Y -= 25;
+							scaledA.X = x; scaledA.Y = y;
+							g.DrawLine(trainPen, scaledA, scaledItem);
+							//g.FillEllipse(Brushes.DarkGreen, GetRect(scaledItem, car.Length * xScale));
+						}
+					}
+					worldPos = firstCar.WorldPosition;
+					scaledItem.X = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; scaledItem.Y = -25 + pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
+
 					g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
+
 				}
 				if (switchPickedItemHandled) switchPickedItem = null;
 				if (signalPickedItemHandled) signalPickedItem = null;
@@ -1050,6 +1086,7 @@ namespace ORTS.Debugging
 				  var temp = findItemFromMouse(e.X, e.Y, 5);
 				  if (temp != null)
 				  {
+					  GenerateView();
 					  if (temp is SwitchWidget) switchPickedItem = (SwitchWidget)temp; //read by MPManager
 					  if (temp is SignalWidget) signalPickedItem = (SignalWidget)temp;
 #if false

@@ -84,7 +84,7 @@
             0,
             0});
 		  this.windowSizeUpDown.Minimum = new decimal(new int[] {
-            10,
+            160,
             0,
             0,
             0});
