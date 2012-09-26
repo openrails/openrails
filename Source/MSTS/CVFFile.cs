@@ -110,7 +110,9 @@ namespace MSTS
         STEAMHEAT_PRESSURE,
         FIREBOX,
         RPM,
-        FIREHOLE
+        FIREHOLE,
+        CUTOFF,
+        VACUUM_RESERVOIR_PRESSURE
     }
 
     public enum CABViewControlStyles
