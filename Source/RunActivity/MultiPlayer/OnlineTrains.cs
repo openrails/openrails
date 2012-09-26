@@ -167,7 +167,7 @@ namespace ORTS.MultiPlayer
 				{
 					MPManager.BroadCast((new MSGMessage(player.user, "Error", "MultiPlayer Error：" + e.Message)).ToString());
 				}
-				throw new MultiPlayerError();
+				else throw new MultiPlayerError();
 			}
 			TrainCar previousCar = null;
 			for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {

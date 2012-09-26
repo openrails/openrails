@@ -171,6 +171,7 @@ namespace ORTS.MultiPlayer
 			//get key strokes and determine if some messages should be sent
 			handleUserInput();
 
+			AddPlayer(); //a new player joined? handle it
 			if (begineZeroTime == 0) begineZeroTime = newtime - 10;
 			//server update train location of all
 			if (Program.Server != null && newtime - lastMoveTime >= 1f)
@@ -359,6 +360,28 @@ namespace ORTS.MultiPlayer
 			return true;
 		}
 
+		public bool PlayerAdded = false;
+
+		public void AddPlayer()
+		{
+			if (PlayerAdded == true)
+			{
+				PlayerAdded = false;
+				MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
+				MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
+
+				MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
+					Program.Simulator.PlayerLocomotive.Train.Number, Program.Simulator.Settings.AvatarURL);
+				MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
+
+				foreach (Train t in Program.Simulator.Trains)
+				{
+					if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
+					if (MPManager.Instance().FindPlayerTrain(t)) continue;
+					MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
+				}
+			}
+		}
 		//this will be used in the server, in Simulator.cs
 		public bool TrainOK2Couple(Train t1, Train t2)
 		{
