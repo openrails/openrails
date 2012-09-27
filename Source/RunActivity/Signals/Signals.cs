@@ -626,7 +626,6 @@ namespace ORTS
                         signalObjects[foundSignals].trackNode = trackNode;
                         signalObjects[foundSignals].trRefIndex = nodeIndx;
                         signalObjects[foundSignals].prevSignal = prevSignal;
-                        signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, sigItem);
                         signalObjects[foundSignals].thisRef = foundSignals;
                         signalObjects[foundSignals].signalRef = this;
 
@@ -634,6 +633,7 @@ namespace ORTS
 						{
 							signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
 								sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z, (Traveller.TravellerDirection)(1 - sigItem.Direction));
+							signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, sigItem);
 
 						}
 						catch
@@ -650,9 +650,10 @@ namespace ORTS
 							tmp[trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs++] = trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx];
 							trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs = tmp;
 							signalObjects[foundSignals].trRefIndex = trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs-1;
+							signalObjects[foundSignals].AddHead(signalObjects[foundSignals].trRefIndex, trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs[signalObjects[foundSignals].trRefIndex], sigItem);
 
 						}
-                        signalObjects[foundSignals].WorldObject = null;
+						signalObjects[foundSignals].WorldObject = null;
                         foundSignals++;
                         return foundSignals - 1;
                 } // AddSignal
@@ -672,7 +673,6 @@ namespace ORTS
                         signalObjects[foundSignals].trackNode = trackNode;
                         signalObjects[foundSignals].trRefIndex = nodeIndx;
                         signalObjects[foundSignals].prevSignal = prevSignal;
-                        signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
                         signalObjects[foundSignals].thisRef = foundSignals;
                         signalObjects[foundSignals].signalRef = this;
 
@@ -680,6 +680,7 @@ namespace ORTS
 						{
 							signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
 								speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z, (Traveller.TravellerDirection)signalObjects[foundSignals].direction);
+							signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
 						}
 						catch
 						{
@@ -694,6 +695,7 @@ namespace ORTS
 							tmp[trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs++] = trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx];
 							trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs = tmp;
 							signalObjects[foundSignals].trRefIndex = trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs-1;
+							signalObjects[foundSignals].AddHead(signalObjects[foundSignals].trRefIndex, trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs[signalObjects[foundSignals].trRefIndex], speedItem);
 						}
                         double delta_angle = signalObjects[foundSignals].tdbtraveller.RotY - ((Math.PI/2) - speedItem.Angle);
                         float delta_float = (float)delta_angle;
