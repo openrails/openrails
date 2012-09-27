@@ -604,7 +604,8 @@ namespace ORTS.Debugging
 				 scaledItem.X = x; scaledItem.Y = y;
 
 
-				 g.FillEllipse(Brushes.Black, GetRect(scaledItem, 5f * p.Width));
+				 if (sw.Item.TrJunctionNode.SelectedRoute == sw.main) g.FillEllipse(Brushes.Black, GetRect(scaledItem, 6f * p.Width));
+				 else g.FillEllipse(Brushes.Gray, GetRect(scaledItem, 6f * p.Width));
 				 sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
 #if false
 				 if (sw.main == sw.Item.TrJunctionNode.SelectedRoute)
