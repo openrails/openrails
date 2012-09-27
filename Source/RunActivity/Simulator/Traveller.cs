@@ -513,7 +513,7 @@ namespace ORTS
             var accumulatedDistance = 0f;
             while (accumulatedDistance < maxDistance)
             {
-                if (traveller.IsTrack)
+                if (traveller.IsTrack && traveller.trackSection!= null)//By Jijun Tang, temp fix
                 {
                     var initialOffset = traveller.trackOffset;
                     var radius = traveller.IsTrackCurved ? traveller.trackSection.SectionCurve.Radius : 1;
@@ -796,6 +796,7 @@ namespace ORTS
                 return distanceToGo;
             if (!IsTrack)
                 return MoveInTrackSectionInfinite(distanceToGo);
+			if (trackSection == null) return -1;//no tracksection, force to return as failed By Jijun Tang, need to fix;
             if (IsTrackCurved)
                 return MoveInTrackSectionCurved(distanceToGo);
             return MoveInTrackSectionStraight(distanceToGo);
